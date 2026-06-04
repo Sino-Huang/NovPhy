@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>NovPhy Science Birds WebUI</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="workspace" aria-label="Game display">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">NovPhy manual console</p>
+            <h1>Science Birds WebUI</h1>
+          </div>
+          <div class="status-pill" id="connectionStatus">Disconnected</div>
+        </header>
+
+        <div class="canvas-wrap">
+          <canvas id="gameCanvas" width="640" height="480" aria-label="Science Birds game frame"></canvas>
+          <div id="emptyState" class="empty-state">Start or connect, then refresh a frame.</div>
+        </div>
+
+        <div class="telemetry" aria-live="polite">
+          <div><span>State</span><strong id="gameState">-</strong></div>
+          <div><span>Level</span><strong id="currentLevel">-</strong></div>
+          <div><span>Total</span><strong id="numberOfLevels">-</strong></div>
+          <div><span>Score</span><strong id="score">-</strong></div>
+        </div>
+      </section>
+
+      <aside class="controls" aria-label="Manual controls">
+        <section>
+          <h2>Session</h2>
+          <div class="button-grid">
+            <button id="startBtn">Start game</button>
+            <button id="connectBtn">Connect</button>
+            <button id="stopBtn" class="secondary">Stop</button>
+            <button id="refreshBtn" class="secondary">Refresh frame</button>
+          </div>
+          <label class="check-row">
+            <input type="checkbox" id="autoRefresh" />
+            Auto-refresh frame
+          </label>
+        </section>
+
+        <section>
+          <h2>Level</h2>
+          <label>
+            Minimum level
+            <input id="levelInput" type="number" min="1" value="1" />
+          </label>
+          <div class="button-grid two">
+            <button id="loadLevelBtn">Load next</button>
+            <button id="restartBtn" class="secondary">Restart</button>
+            <button id="zoomOutBtn" class="secondary">Zoom out</button>
+            <button id="zoomInBtn" class="secondary">Zoom in</button>
+          </div>
+        </section>
+
+        <section>
+          <h2>Shot input</h2>
+          <p class="hint">Drag on the frame to preview aim; release to fill x/y. Game coordinates are 640 x 480 with the origin at bottom-left.</p>
+          <div class="field-grid">
+            <label>X<input id="shotX" type="number" min="0" max="640" value="120" /></label>
+            <label>Y<input id="shotY" type="number" min="0" max="480" value="120" /></label>
+            <label>Tap time<input id="tapTime" type="number" min="0" value="0" /></label>
+          </div>
+          <label class="check-row">
+            <input type="checkbox" id="fastShot" checked />
+            Fast shot for responsive release
+          </label>
+          <label class="check-row">
+            <input type="checkbox" id="autoExecuteAgentAction" checked />
+            Release immediately validates/transfers the agent action and sends the translated shot unless unchecked.
+          </label>
+          <button id="shootBtn" class="primary wide">Send shot</button>
+        </section>
+
+        <section>
+          <h2>Log</h2>
+          <pre id="log" class="log">Ready.</pre>
+        </section>
+      </aside>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>
