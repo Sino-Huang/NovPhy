@@ -12,7 +12,7 @@ Run this once before starting the WebUI:
 python3 sciencebirdsagents/Utils/PrepareTestConfig.py --os Linux --novelty-level novelty_level_0 --level-type type010101 --max-levels 20
 ```
 
-Expected result: `sciencebirdsgames/Linux/config.xml`, `sciencebirdsgames/Linux/game_playing_interface.jar`, and `sciencebirdsgames/Linux/DB/` exist.
+Expected result: `sciencebirdsgames/Linux/config.xml` is written after validating that the real Science Birds Java interface assets already exist at `sciencebirdsgames/Linux/game_playing_interface.jar` and `sciencebirdsgames/Linux/DB/`. Provision those runtime assets into the root engine directory before running the command.
 
 ## Start the WebUI
 

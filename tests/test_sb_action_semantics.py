@@ -57,8 +57,6 @@ class ReleaseActionSemanticsTests(unittest.TestCase):
         paths = [
             ROOT / "sciencebirdsagents" / "SBEnvironment" / "SBEnvironmentWrapper.py",
             ROOT / "sciencebirdsagents" / "SBEnvironment" / "SBEnvironmentWrapperOpenAI.py",
-            ROOT / "modules" / "benchmark" / "sciencebirdsagents" / "SBEnvironment" / "SBEnvironmentWrapper.py",
-            ROOT / "modules" / "benchmark" / "sciencebirdsagents" / "SBEnvironment" / "SBEnvironmentWrapperOpenAI.py",
         ]
 
         for path in paths:
@@ -70,7 +68,6 @@ class ReleaseActionSemanticsTests(unittest.TestCase):
     def test_openai_wrappers_accept_dict_actions_before_action_space_contains(self):
         paths = [
             ROOT / "sciencebirdsagents" / "SBEnvironment" / "SBEnvironmentWrapperOpenAI.py",
-            ROOT / "modules" / "benchmark" / "sciencebirdsagents" / "SBEnvironment" / "SBEnvironmentWrapperOpenAI.py",
         ]
 
         for path in paths:
@@ -78,13 +75,6 @@ class ReleaseActionSemanticsTests(unittest.TestCase):
                 source = path.read_text(encoding="utf-8")
                 self.assertIn("if not isinstance(action, dict):\n            assert self.action_space.contains(action)", source)
                 self.assertIn("if isinstance(action, dict):\n            dx, dy, tap_time", source)
-
-    def test_benchmark_helper_matches_top_level_helper(self):
-        top_level = ROOT / "sciencebirdsagents" / "SBEnvironment" / "action_utils.py"
-        benchmark = ROOT / "modules" / "benchmark" / "sciencebirdsagents" / "SBEnvironment" / "action_utils.py"
-
-        self.assertEqual(top_level.read_text(encoding="utf-8"), benchmark.read_text(encoding="utf-8"))
-
 
 if __name__ == "__main__":
     unittest.main()

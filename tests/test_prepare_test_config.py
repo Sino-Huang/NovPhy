@@ -5,6 +5,7 @@ from xml.etree import ElementTree as ET
 
 from sciencebirdsagents.Utils.PrepareTestConfig import (
     discover_level_paths,
+    ensure_java_interface_assets,
     write_config,
 )
 
@@ -69,6 +70,36 @@ class PrepareTestConfigTest(unittest.TestCase):
             level_set = trial.find("game_level_set")
             self.assertEqual(level_set.attrib["mode"], "training")
             self.assertNotIn("/type1/", levels[0])
+
+    def test_ensure_java_interface_assets_uses_root_runtime_assets(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            engine_dir = root / "sciencebirdsgames" / "Linux"
+            (engine_dir / "DB").mkdir(parents=True)
+            (engine_dir / "game_playing_interface.jar").write_bytes(b"jar")
+
+            ensure_java_interface_assets(root, "Linux")
+
+            self.assertFalse((root / "modules").exists())
+
+    def test_ensure_java_interface_assets_reports_root_missing_jar(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            engine_dir = root / "sciencebirdsgames" / "Linux"
+            (engine_dir / "DB").mkdir(parents=True)
+
+            with self.assertRaisesRegex(FileNotFoundError, "sciencebirdsgames/Linux/game_playing_interface.jar"):
+                ensure_java_interface_assets(root, "Linux")
+
+    def test_ensure_java_interface_assets_reports_root_missing_db(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            engine_dir = root / "sciencebirdsgames" / "Linux"
+            engine_dir.mkdir(parents=True)
+            (engine_dir / "game_playing_interface.jar").write_bytes(b"jar")
+
+            with self.assertRaisesRegex(FileNotFoundError, "sciencebirdsgames/Linux/DB"):
+                ensure_java_interface_assets(root, "Linux")
 
 
 if __name__ == "__main__":

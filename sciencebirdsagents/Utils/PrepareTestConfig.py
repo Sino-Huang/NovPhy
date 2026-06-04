@@ -1,5 +1,4 @@
 import argparse
-import shutil
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -10,10 +9,6 @@ def repo_root() -> Path:
 
 def engine_dir_for(root: Path, operating_system: str) -> Path:
     return root / "sciencebirdsgames" / operating_system
-
-
-def benchmark_engine_dir_for(root: Path, operating_system: str) -> Path:
-    return root / "modules" / "benchmark" / "sciencebirdsgames" / operating_system
 
 
 def discover_level_paths(
@@ -98,28 +93,19 @@ def write_config(config_path: Path, level_paths: list[str]) -> None:
 
 def ensure_java_interface_assets(root: Path, operating_system: str) -> None:
     engine_dir = engine_dir_for(root, operating_system)
-    source_engine_dir = benchmark_engine_dir_for(root, operating_system)
+    jar_path = engine_dir / "game_playing_interface.jar"
+    db_path = engine_dir / "DB"
 
-    jar_source = source_engine_dir / "game_playing_interface.jar"
-    jar_target = engine_dir / "game_playing_interface.jar"
-    db_source = source_engine_dir / "DB"
-    db_target = engine_dir / "DB"
-
-    if not jar_source.is_file():
-        raise FileNotFoundError(f"Java interface jar not found: {jar_source}")
-    if not db_source.is_dir():
-        raise FileNotFoundError(f"Java interface DB directory not found: {db_source}")
-
-    if not jar_target.exists() or jar_source.read_bytes() != jar_target.read_bytes():
-        shutil.copy2(jar_source, jar_target)
-
-    for source in db_source.rglob("*"):
-        if source.is_dir():
-            continue
-        target = db_target / source.relative_to(db_source)
-        target.parent.mkdir(parents=True, exist_ok=True)
-        if not target.exists() or source.read_bytes() != target.read_bytes():
-            shutil.copy2(source, target)
+    if not jar_path.is_file():
+        raise FileNotFoundError(
+            f"Java interface jar not found: {jar_path}. "
+            f"Provision the real Science Birds Java interface assets into {engine_dir}."
+        )
+    if not db_path.is_dir():
+        raise FileNotFoundError(
+            f"Java interface DB directory not found: {db_path}. "
+            f"Provision the real Science Birds Java interface assets into {engine_dir}."
+        )
 
 
 def parse_args() -> argparse.Namespace:
