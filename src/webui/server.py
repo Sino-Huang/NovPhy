@@ -44,7 +44,7 @@ class AppState:
     speed: int = 50
     game_headless: bool = False
     start_level: int = 1
-    readiness_timeout: float = 30.0
+    readiness_timeout: float = 60.0
     readiness_poll_delay: float = 0.5
     bridge: ScienceBirdsBridge | None = None
     bridge_lock: threading.Lock = field(default_factory=threading.Lock)

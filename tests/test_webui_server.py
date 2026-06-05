@@ -114,6 +114,9 @@ class ServerTest(unittest.TestCase):
         self.assertTrue(data["ok"])
         self.assertTrue(data["connected"])
 
+    def test_default_readiness_timeout_allows_slow_generated_levels(self):
+        self.assertGreaterEqual(AppState().readiness_timeout, 60)
+
     def test_frame_returns_base64_rgb_and_metadata(self):
         status, data = self.request("GET", "/api/frame")
 
