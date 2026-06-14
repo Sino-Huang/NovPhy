@@ -29,6 +29,25 @@ class FakeBridge:
         self.zoomed_out = 0
         self.states = [GameState.PLAYING]
         self.number_of_levels = 20
+        self.symbolic_state = [
+            {
+                "features": [
+                    {
+                        "geometry": {},
+                        "type": "Feature",
+                        "properties": {"id": "-166", "label": "Ground", "yindex": 286, "colormap": []},
+                    },
+                    {
+                        "geometry": {
+                            "coordinates": [[[210.0, 33.0], [210.0, 99.0], [232.0, 99.0], [232.0, 33.0]]],
+                            "type": "Polygon",
+                        },
+                        "type": "Feature",
+                        "properties": {"currentLife": 3.402823e38, "id": "-302", "label": "Slingshot", "colormap": []},
+                    },
+                ]
+            }
+        ]
 
     def configure(self, agent_id, mode):
         self.configured += 1
@@ -39,7 +58,7 @@ class FakeBridge:
         return 1
 
     def screenshot(self):
-        return Screenshot(width=2, height=1, rgb=bytes([1, 2, 3, 4, 5, 6]))
+        return Screenshot(width=640, height=480, rgb=bytes([1, 2, 3, 4, 5, 6]) * (640 * 480))
 
     def get_game_state(self):
         if len(self.states) > 1:
@@ -55,8 +74,14 @@ class FakeBridge:
     def get_number_of_levels(self):
         return self.number_of_levels
 
-    def shoot(self, x, y, tap_time=0, fast=False):
-        self.shots.append((x, y, tap_time, fast))
+    def get_symbolic_state_without_screenshot(self):
+        return self.symbolic_state
+
+    def shoot(self, x, y, tap_time=0, fast=False, release_time=0):
+        if release_time:
+            self.shots.append((x, y, tap_time, fast, release_time))
+        else:
+            self.shots.append((x, y, tap_time, fast))
         return 1
 
     def load_level(self, level):
@@ -121,12 +146,63 @@ class ServerTest(unittest.TestCase):
         status, data = self.request("GET", "/api/frame")
 
         self.assertEqual(status, 200)
-        self.assertEqual(data["width"], 2)
-        self.assertEqual(data["height"], 1)
-        self.assertEqual(base64.b64decode(data["rgbBase64"]), bytes([1, 2, 3, 4, 5, 6]))
+        self.assertEqual(data["width"], 640)
+        self.assertEqual(data["height"], 480)
+        self.assertEqual(base64.b64decode(data["rgbBase64"]), bytes([1, 2, 3, 4, 5, 6]) * (640 * 480))
         self.assertEqual(data["state"]["name"], "PLAYING")
         self.assertEqual(data["score"], 123)
         self.assertEqual(data["numberOfLevels"], 20)
+        self.assertEqual(data["trajectorySlingCenter"], {"gameX": 219, "gameY": 439, "canvasX": 219, "canvasY": 40})
+
+    def test_frame_exposes_configured_level_camera_width_for_trajectory(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            game_dir = root / "sciencebirdsgames" / "Linux"
+            level = game_dir / "levels" / "level-1.xml"
+            level.parent.mkdir(parents=True)
+            level.write_text(
+                """
+                <Level>
+                  <Camera x="0" y="2" minWidth="20" maxWidth="30" />
+                </Level>
+                """,
+                encoding="utf-8",
+            )
+            (game_dir / "config.xml").write_text(
+                """
+                <evaluation>
+                  <trials>
+                    <trial>
+                      <game_level_set>
+                        <game_levels level_path="levels/level-1.xml" />
+                      </game_level_set>
+                    </trial>
+                  </trials>
+                </evaluation>
+                """,
+                encoding="utf-8",
+            )
+            app = AppState(root=root)
+            app.bridge = FakeBridge()
+            app.bridge.number_of_levels = 1
+            app.bridge.states = [GameState.PLAYING]
+            app.bridge.get_current_level = lambda: 1
+            server = ThreadingHTTPServer(("127.0.0.1", 0), create_handler(app))
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                connection = HTTPConnection("127.0.0.1", server.server_address[1], timeout=5)
+                connection.request("GET", "/api/frame", headers={"Content-Type": "application/json"})
+                response = connection.getresponse()
+                data = json.loads(response.read().decode("utf-8"))
+                connection.close()
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=2)
+
+        self.assertEqual(response.status, 200)
+        self.assertEqual(data["trajectoryWorldWidth"], 30.0)
 
     def test_frame_falls_back_to_configured_level_count_when_socket_reports_zero(self):
         with TemporaryDirectory() as tmp:
@@ -182,17 +258,24 @@ class ServerTest(unittest.TestCase):
 
         self.assertEqual(status, 200)
         self.assertTrue(data["ok"])
-        self.assertEqual(self.app.bridge.shots, [(1, 0, 0, False)])
+        self.assertEqual(self.app.bridge.shots, [(1, 479, 0, False)])
+
+    def test_shot_passes_release_time_to_bridge(self):
+        status, data = self.request("POST", "/api/shot", {"x": 10, "y": 20, "tapTime": 30, "releaseTime": 120, "fast": True})
+
+        self.assertEqual(status, 200)
+        self.assertTrue(data["ok"])
+        self.assertEqual(self.app.bridge.shots, [(10, 459, 30, True, 120)])
 
     def test_async_shot_returns_before_bridge_ack(self):
         started = threading.Event()
         release = threading.Event()
 
         class SlowBridge(FakeBridge):
-            def shoot(self, x, y, tap_time=0, fast=False):
+            def shoot(self, x, y, tap_time=0, fast=False, release_time=0):
                 started.set()
                 release.wait(timeout=2)
-                return super().shoot(x, y, tap_time=tap_time, fast=fast)
+                return super().shoot(x, y, tap_time=tap_time, fast=fast, release_time=release_time)
 
         self.app.bridge = SlowBridge()
 
@@ -232,6 +315,30 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(data["shot"], {"x": 250, "y": 180, "tapTime": 70, "fast": True})
         self.assertEqual(data["action"]["drag_start"], [300, 220])
         self.assertEqual(data["action"]["drag_release"], [-50, 40])
+        self.assertEqual(self.app.bridge.shots, [])
+
+    def test_agent_action_translates_relative_drag_hold_release_without_shooting(self):
+        payload = {
+            "action": {
+                "action_type": "drag_hold_release",
+                "coordinate_frame": "slingshot_relative",
+                "drag_start": [300, 220],
+                "drag_release": [-50, 40],
+                "holdTime": 120,
+                "tapTime": 70,
+            },
+            "fast": True,
+        }
+
+        status, data = self.request("POST", "/api/agent-action", payload)
+
+        self.assertEqual(status, 200)
+        self.assertTrue(data["ok"])
+        self.assertEqual(data["shot"], {"x": 250, "y": 180, "tapTime": 70, "fast": True, "releaseTime": 120})
+        self.assertEqual(data["action"]["action_type"], "drag_hold_release")
+        self.assertEqual(data["action"]["drag_start"], [300, 220])
+        self.assertEqual(data["action"]["drag_release"], [-50, 40])
+        self.assertEqual(data["action"]["holdTime"], 120)
         self.assertEqual(self.app.bridge.shots, [])
 
     def test_agent_action_translates_absolute_release_without_shooting(self):

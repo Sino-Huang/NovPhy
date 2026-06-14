@@ -24,6 +24,8 @@ SETUP_COMMAND = (
     "python3 sciencebirdsagents/Utils/PrepareTestConfig.py --os Linux "
     "--novelty-level novelty_level_0 --level-type type010101 --max-levels 20"
 )
+TRAJECTORY_SLING_REFERENCE_X_OFFSET = 0.45
+TRAJECTORY_SLING_REFERENCE_Y_OFFSET = 0.35
 
 
 def repo_root() -> Path:
@@ -32,6 +34,86 @@ def repo_root() -> Path:
 
 def static_dir() -> Path:
     return Path(__file__).resolve().parent / "static"
+
+
+def _slingshot_vertices_from_ground_truth_item(item: Any) -> list[dict[str, float]] | None:
+    if not isinstance(item, dict):
+        return None
+
+    if item.get("type") == "Slingshot":
+        vertices = item.get("vertices")
+        if isinstance(vertices, list) and vertices:
+            return vertices
+
+    features = item.get("features")
+    if not isinstance(features, list):
+        return None
+
+    for feature in features:
+        if not isinstance(feature, dict):
+            continue
+        properties = feature.get("properties")
+        geometry = feature.get("geometry")
+        if not isinstance(properties, dict) or not isinstance(geometry, dict):
+            continue
+        if properties.get("label") != "Slingshot" or geometry.get("type") != "Polygon":
+            continue
+        coordinates = geometry.get("coordinates")
+        if not isinstance(coordinates, list) or not coordinates:
+            return None
+        polygon = coordinates[0]
+        if not isinstance(polygon, list) or not polygon:
+            return None
+        vertices = []
+        for point in polygon:
+            if not isinstance(point, list | tuple) or len(point) < 2:
+                continue
+            x, y = point[0], point[1]
+            if not isinstance(x, int | float) or not isinstance(y, int | float):
+                continue
+            vertices.append({"x": float(x), "y": float(y)})
+        if vertices:
+            return vertices
+
+    return None
+
+
+def _slingshot_reference_point_from_ground_truth(ground_truth: Any, frame_height: int) -> dict[str, int] | None:
+    if not isinstance(ground_truth, list):
+        return None
+    for item in ground_truth:
+        vertices = _slingshot_vertices_from_ground_truth_item(item)
+        if not vertices:
+            continue
+        x_values = []
+        y_values = []
+        for vertex in vertices:
+            if not isinstance(vertex, dict):
+                continue
+            x = vertex.get("x")
+            y = vertex.get("y")
+            if not isinstance(x, int | float) or not isinstance(y, int | float):
+                continue
+            x_values.append(float(x))
+            y_values.append(float(y))
+        if not x_values or not y_values:
+            return None
+        min_x = min(x_values)
+        max_x = max(x_values)
+        min_y = min(y_values)
+        max_y = max(y_values)
+        sling_width = max_x - min_x
+        if sling_width <= 0:
+            return None
+        canvas_x = int(min_x + TRAJECTORY_SLING_REFERENCE_X_OFFSET * sling_width)
+        canvas_y = int(min_y + TRAJECTORY_SLING_REFERENCE_Y_OFFSET * sling_width)
+        return {
+            "gameX": canvas_x,
+            "gameY": max(0, frame_height - 1 - canvas_y),
+            "canvasX": canvas_x,
+            "canvasY": canvas_y,
+        }
+    return None
 
 
 @dataclass
@@ -85,6 +167,47 @@ class AppState:
         except ET.ParseError:
             return None
         return len(root.findall(".//game_levels"))
+
+    def configured_level_paths(self) -> list[str]:
+        config_path = self.game_dir / "config.xml"
+        if not config_path.is_file():
+            return []
+        try:
+            root = ET.parse(config_path).getroot()
+        except ET.ParseError:
+            return []
+        paths = []
+        for node in root.findall(".//game_levels"):
+            level_path = (node.get("level_path") or node.text or "").strip()
+            if level_path:
+                paths.append(level_path)
+        return paths
+
+    def trajectory_world_width(self, current_level: int | None = None) -> float | None:
+        level_paths = self.configured_level_paths()
+        if not level_paths:
+            return None
+        index = 0
+        if current_level is not None and 1 <= current_level <= len(level_paths):
+            index = current_level - 1
+        level_path = self.game_dir / level_paths[index]
+        if not level_path.is_file():
+            return None
+        try:
+            root = ET.parse(level_path).getroot()
+        except ET.ParseError:
+            return None
+        camera = root.find(".//Camera")
+        for value in (camera.get("maxWidth") if camera is not None else None, camera.get("minWidth") if camera is not None else None, root.get("width")):
+            if value is None:
+                continue
+            try:
+                width = float(value)
+            except ValueError:
+                continue
+            if width > 0:
+                return width
+        return None
 
     def start_game(self) -> dict[str, Any]:
         errors = self.preflight_errors()
@@ -228,6 +351,8 @@ def create_handler(app: AppState):
                 bridge = self._require_bridge()
                 screenshot = bridge.screenshot()
                 number_of_levels = self._number_of_levels_payload(bridge)
+                current_level = self._safe_call(lambda: bridge.get_current_level())
+                app.frame_height = screenshot.height
                 payload = {
                     "ok": True,
                     "width": screenshot.width,
@@ -235,10 +360,11 @@ def create_handler(app: AppState):
                     "rgbBase64": base64.b64encode(screenshot.rgb).decode("ascii"),
                     "state": self._state_payload(bridge),
                     "score": self._safe_call(lambda: bridge.get_current_score()),
-                    "currentLevel": self._safe_call(lambda: bridge.get_current_level()),
+                    "currentLevel": current_level,
                     "numberOfLevels": number_of_levels,
+                    "trajectoryWorldWidth": app.trajectory_world_width(current_level if isinstance(current_level, int) else None),
+                    "trajectorySlingCenter": self._safe_call(lambda: _slingshot_reference_point_from_ground_truth(bridge.get_symbolic_state_without_screenshot(), screenshot.height)),
                 }
-                app.frame_height = screenshot.height
             self._send_json(payload)
 
         def _handle_shot(self) -> None:
@@ -246,10 +372,11 @@ def create_handler(app: AppState):
             x = self._required_int(payload, "x")
             y = self._required_int(payload, "y")
             tap_time = int(payload.get("tapTime", 0))
+            release_time = int(payload.get("releaseTime", payload.get("release_time", 0)))
             fast = bool(payload.get("fast", False))
             run_async = bool(payload.get("async", False))
             bridge_y = max(0, app.frame_height - 1 - y)
-            action = lambda bridge: bridge.shoot(x, bridge_y, tap_time=tap_time, fast=fast)
+            action = lambda bridge: bridge.shoot(x, bridge_y, tap_time=tap_time, fast=fast, release_time=release_time)
             if run_async:
                 self._bridge_action_async(action)
                 self._send_json({"ok": True, "scheduled": True})
@@ -270,12 +397,14 @@ def create_handler(app: AppState):
                 "tapTime": normalized["tapTime"],
                 "fast": fast,
             }
+            if normalized["releaseTime"]:
+                shot["releaseTime"] = normalized["releaseTime"]
             self._send_json({"ok": True, "action": normalized["action"], "shot": shot})
 
         def _normalize_agent_action(self, action: dict[str, Any]) -> dict[str, Any]:
             action_type = action.get("action_type", "drag_release")
-            if action_type != "drag_release":
-                raise ValueError("action_type must be drag_release")
+            if action_type not in {"drag_release", "drag_hold_release"}:
+                raise ValueError("action_type must be drag_release or drag_hold_release")
             coordinate_frame = action.get("coordinate_frame", "slingshot_relative")
             if coordinate_frame not in {"slingshot_relative", "absolute"}:
                 raise ValueError("coordinate_frame must be slingshot_relative or absolute")
@@ -286,6 +415,7 @@ def create_handler(app: AppState):
                 raise ValueError("release must contain x and y values")
 
             tap_time = self._agent_action_int(action.get("tapTime", action.get("tap_time", 0)))
+            release_time = self._agent_action_int(action.get("holdTime", action.get("releaseTime", action.get("release_time", 0))))
             drag_start = action.get("drag_start")
             if coordinate_frame == "slingshot_relative":
                 if not isinstance(drag_start, list | tuple) or len(drag_start) < 2:
@@ -308,17 +438,22 @@ def create_handler(app: AppState):
                 dx = shot_x - start_x
                 dy = start_y - shot_y
 
+            normalized_action = {
+                "action_type": action_type,
+                "coordinate_frame": "slingshot_relative",
+                "drag_start": [start_x, start_y],
+                "drag_release": [dx, dy],
+                "tapTime": tap_time,
+            }
+            if release_time:
+                normalized_action["holdTime"] = release_time
+
             return {
-                "action": {
-                    "action_type": action_type,
-                    "coordinate_frame": "slingshot_relative",
-                    "drag_start": [start_x, start_y],
-                    "drag_release": [dx, dy],
-                    "tapTime": tap_time,
-                },
+                "action": normalized_action,
                 "shot_x": shot_x,
                 "shot_y": shot_y,
                 "tapTime": tap_time,
+                "releaseTime": release_time,
             }
 
         def _agent_action_int(self, value: Any) -> int:

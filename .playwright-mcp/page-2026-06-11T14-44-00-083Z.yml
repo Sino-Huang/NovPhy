@@ -1,0 +1,70 @@
+- main [ref=e2]:
+  - region "Game display" [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - paragraph [ref=e6]: NovPhy manual console
+        - heading "Science Birds WebUI" [level=1] [ref=e7]
+      - generic [ref=e8]: Disconnected
+    - generic [ref=e9]:
+      - generic "Science Birds game frame" [ref=e10]
+      - generic: Start or connect, then refresh a frame.
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]: State
+        - strong [ref=e14]: "-"
+      - generic [ref=e15]:
+        - generic [ref=e16]: Level
+        - strong [ref=e17]: "-"
+      - generic [ref=e18]:
+        - generic [ref=e19]: Total
+        - strong [ref=e20]: "-"
+      - generic [ref=e21]:
+        - generic [ref=e22]: Score
+        - strong [ref=e23]: "-"
+  - complementary "Manual controls" [ref=e24]:
+    - generic [ref=e25]:
+      - heading "Session" [level=2] [ref=e26]
+      - generic [ref=e27]:
+        - button "Start game" [ref=e28] [cursor=pointer]
+        - button "Connect" [ref=e29] [cursor=pointer]
+        - button "Stop" [ref=e30] [cursor=pointer]
+        - button "Refresh frame" [ref=e31] [cursor=pointer]
+      - generic [ref=e32]:
+        - checkbox "Auto-refresh frame" [ref=e33]
+        - text: Auto-refresh frame
+    - generic [ref=e34]:
+      - heading "Level" [level=2] [ref=e35]
+      - generic [ref=e36]:
+        - text: Minimum level
+        - spinbutton "Minimum level" [ref=e37]: "1"
+      - generic [ref=e38]:
+        - button "Load next" [ref=e39] [cursor=pointer]
+        - button "Restart" [ref=e40] [cursor=pointer]
+        - button "Zoom out" [ref=e41] [cursor=pointer]
+        - button "Zoom in" [ref=e42] [cursor=pointer]
+    - generic [ref=e43]:
+      - heading "Shot input" [level=2] [ref=e44]
+      - paragraph [ref=e45]: Drag on the frame to preview aim; release to fill x/y. Game coordinates are 640 x 480 with the origin at bottom-left.
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - text: X
+          - spinbutton "X" [ref=e48]: "120"
+        - generic [ref=e49]:
+          - text: "Y"
+          - spinbutton "Y" [ref=e50]: "120"
+        - generic [ref=e51]:
+          - text: Tap time
+          - spinbutton "Tap time" [ref=e52]: "0"
+        - generic [ref=e53]:
+          - text: Hold time
+          - spinbutton "Hold time" [ref=e54]: "0"
+      - generic [ref=e55]:
+        - checkbox "Fast shot for responsive release" [checked] [ref=e56]
+        - text: Fast shot for responsive release
+      - generic [ref=e57]:
+        - checkbox "Release immediately validates/transfers the agent action and sends the translated shot unless unchecked." [checked] [ref=e58]
+        - text: Release immediately validates/transfers the agent action and sends the translated shot unless unchecked.
+      - button "Send shot" [ref=e59] [cursor=pointer]
+    - generic [ref=e60]:
+      - heading "Log" [level=2] [ref=e61]
+      - generic [ref=e62]: Ready.

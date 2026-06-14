@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import socket
 import struct
 from dataclasses import dataclass
@@ -35,6 +36,7 @@ class RequestCode(IntEnum):
     GET_STATE = 12
     GET_CURRENT_LEVEL = 14
     GET_NUMBER_OF_LEVELS = 15
+    GET_GROUND_TRUTH_WITHOUT_SCREENSHOT = 62
     SHOOT = 31
     FULLY_ZOOM_OUT = 34
     FULLY_ZOOM_IN = 35
@@ -118,6 +120,10 @@ class ScienceBirdsBridge:
         self._send(RequestCode.GET_CURRENT_SCORE)
         return self._read("I")[0]
 
+    def get_symbolic_state_without_screenshot(self):
+        self._send(RequestCode.GET_GROUND_TRUTH_WITHOUT_SCREENSHOT)
+        return self._read_ground_truth()
+
     def load_level(self, level: int) -> int:
         self._send(RequestCode.LOAD_LEVEL, "I", max(1, int(level)))
         return self._read("B")[0]
@@ -163,6 +169,11 @@ class ScienceBirdsBridge:
 
     def _read(self, fmt: str):
         return struct.unpack("!" + fmt, self._read_exact(struct.calcsize("!" + fmt)))
+
+    def _read_ground_truth(self):
+        payload_length = self._read("I")[0]
+        payload = self._read_exact(payload_length)
+        return json.loads(payload.decode("utf-8")[:-5])
 
     def _read_exact(self, size: int) -> bytes:
         sock = self._require_socket()

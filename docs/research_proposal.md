@@ -1,735 +1,326 @@
-## Comprehensive Quality Assessment Report
+# Bi-Granular Neuro-Symbolic JEPA: Adaptive Temporal and Physical Abstraction for Persistent Physical Cascades
 
-Based on five rounds of search, I systematically analyze from five dimensions: **Research Gap, Novelty, Competitive Landscape, Testbed Suitability, Risks and Recommendations**.
-
----
-
-### I. Core Concept Clarification: How Your "Open World" Differs from Existing Terms
-
-Your definition of **Open World** is: an agent's action triggers a chain reaction that persists for multiple timesteps, yet the action itself occupies only 1 timestep. During this period, the world model needs to continuously predict the world's evolution without new action inputs.
-
-This differs from three concepts in existing literature that are easily confused but fundamentally distinct:
-
-| Term                      | Meaning in Existing Literature                                                      | Your Definition                                                                      |
-| ------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| **Open-World RL**         | Large state spaces, unseen novelty (e.g., MineDojo, Minecraft)                      | **Temporal persistence** of action effects, not spatial/state-space scale           |
-| **Open-Loop Prediction**  | Prediction without re-observation and re-encoding (vs Closed-Loop MPC)              | Prediction of the world's autonomous evolution without action inputs                |
-| **Long-Horizon Planning** | Tasks requiring multi-step action sequences                                         | Long-term **physical chain reaction** triggered by a single action                  |
-
-**Key Insight**: Your definition actually reveals a structural blind spot of JEPA-like world models. Existing JEPA (V-JEPA 2, LeWM) predictors are of the form $s_{t+1} = f(s_t, a_t)$. When $a_t = \text{noop}$, the model still does one-step latent prediction, but physical chain reactions (collapse, rolling, collisions) may require tens to hundreds of steps to stabilize. Recursive rollout of JEPA in this scenario suffers from severe error accumulation.
-
-Therefore, we term it as ***prolonged action effect environments**, where a single action triggers persistent physical cascades that evolve for tens to hundreds of timesteps without new action inputs.*
+**Target Venue:** ICLR 2027  
+**Keywords:** JEPA, world models, neuro-symbolic learning, adaptive granularity, physical reasoning, scene graph, energy-based constraints, Angry Birds, NovPhy.
 
 ---
 
-### II. Research Gap Assessment: The Gap is Real and Significant
+## 1. Abstract
 
-#### 2.1 Known Pain Points of JEPA Long-Horizon Prediction
+A single action in Angry Birds triggers a physical cascade lasting 50–150 frames. During this cascade, the agent acts only once; the world evolves autonomously. Standard JEPA world models predict $z_{t+1} = f(z_t, a_t)$. When $a_t = \text{noop}$ for hundreds of steps, recursive latent rollout drifts into physically impossible states—objects penetrate, unsupported blocks float, causal chains break.
 
-Search results show **error accumulation is a recognized core bottleneck** in the JEPA community:
+We argue that this failure is not merely long-horizon error accumulation. It is a **structural granularity mismatch**: JEPA assumes uniform temporal resolution (frame-by-frame) and uniform physical abstraction (pixel-level) across the entire episode. But physical cascades are heterogeneous in time and structure. Collision phases demand fine-grained prediction; inertial glides permit coarse event jumps. Stable configurations support object-level symbolic reasoning; chaotic collapse defies discrete relational description.
 
-- **V-JEPA 2-AC** explicitly states: "autoregressive prediction suffers from error accumulation: the accuracy of the representation-space predictions decreases with longer autoregressive rollouts". They mitigate via rollout loss, but do not solve the fundamental problem.
-- **ThinkJEPA** (March 2026) points out that recursive rollout "is susceptible to error accumulation over time", thus introduces a VLM-thinker to provide semantic guidance.
-- **LeWM** lists "planning restricted to short horizons" as the first limitation, and points to hierarchical world modeling as a future direction.
-- **Sub-JEPA** (May 2026) specifically improves long-horizon stability, showing the community is actively seeking solutions.
+We propose **Bi-Granular Neuro-Symbolic JEPA (BG-NS-JEPA)**, a world model that jointly adapts **temporal resolution** ($\Delta t$) and **physical abstraction** ($\alpha \in \{\text{micro}, \text{macro}, \text{none}\}$) based on the dynamical regime of the environment. The model uses pure neural JEPA during chaotic transients, but anchors to a **learned symbolic scene graph** at stable attractors. This converts PDDL from a planning formalism into a **learned temporal codec** for physical cascade compression.
 
-#### 2.2 Specificity of Physical Chain Reaction Scenarios
+Our core theoretical contribution is **Structured Physical Symbolic Geometry (SPSG)**: we replace crude text-rule encoders with scene-graph neural networks that treat symbols as **submanifolds in latent space**—hard geometric constraints rather than soft energy basins. We further ground the stability gate $\phi(x_t)$ in dynamical systems theory, interpreting it via the largest Lyapunov exponent.
 
-In Angry Birds / NovPhy-type environments, the physical evolution after one launch action has the following characteristics:
+The one-sentence pitch is:
 
-1. **Action sparsity**: Agent performs only one action at $t=0$ (angle/force), then no action for seconds.
-2. **Highly non-linear dynamics**: Collisions, collapses, rolling involve rigid body dynamics, friction, gravity.
-3. **Causal chain**: Initial action → bird flight → impact → structural collapse → chain collisions → pigs eliminated.
-4. **Stable state**: The system eventually reaches a static equilibrium.
-
-This is **precisely the scenario where JEPA's closed-loop assumption is weakest**: The JEPA latent predictor is trained as $s_{t+1} = f(s_t, a_t)$. When $a_t$ is noop, the model lacks an explicit ability to model the "autonomous evolution of the physical system to a steady state".
-
-#### 2.3 The Entry Point for Neuro-Symbolic
-
-The value of existing neuro-symbolic methods in long-horizon planning has been verified:
-
-- **ABIL** (Neuro-Symbolic Abductive Imitation) shows: In Mini-BEHAVIOR tasks requiring 45-step decisions, symbolic-level reasoning avoids the error accumulation of low-level action sequences.
-- **NeuroSymLand** (2025) separates perception-driven world modeling from logic-based safety reasoning, achieving interpretable long-horizon decision-making.
-- **VLC** (2026) proposes using VLM for concept recognition and symbolic circuits for rule-based reasoning.
-
-**Gap Conclusion**: Embedding symbolic physical reasoning (e.g., object relations, stability judgment, collision propagation) into JEPA's latent predictor to mitigate error accumulation in the absence of action inputs — **this direction has not been directly explored**. Causal-JEPA does object-level masking but no symbolic reasoning; ThinkJEPA uses VLM guidance but not symbolic physics.
+> **BG-NS-JEPA treats temporal and physical granularity as jointly learnable control variables: it uses a microscope at collision moments, a telescope during inertial glides, and learns when to switch by monitoring the physical stability of the scene.**
 
 ---
 
-### III. Novelty Assessment: Sufficient, but Requires Precise Contribution Definition
+## 2. Problem: The Granularity Mismatch in Action-Sparse Persistent-Effect Environments
 
-#### 3.1 What is Your Core Novelty?
+### 2.1 Environment Definition
 
-I suggest breaking down the contribution into three levels:
+An episode is $\mathcal{E} = \{(o_t, a_t, x_t)\}_{t=0}^T$ with:
 
-| Level | Contribution                                                                                                         | Novelty Intensity                                              |
-| ----- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| **L1** | Identifying JEPA's structural limitation in "action-sparse + persistent physical effects" scenarios                  | ⭐⭐⭐ High. A critical analysis of the current world model paradigm |
-| **L2** | Proposing Neuro-Symbolic JEPA: Introducing symbolic physical state / rules into latent space for reasoning          | ⭐⭐⭐ High. Causal-JEPA has object-level, but not symbolic physics |
-| **L3** | Validating on NovPhy / LeWM, demonstrating that symbolic guidance reduces long-horizon error accumulation           | ⭐⭐ Medium. Requires direct comparison with Sub-JEPA, ThinkJEPA, etc. |
+- **Action sparsity ratio**: $\rho_a = \frac{1}{T}\sum_{t=0}^{T-1} \mathbf{1}[a_t \neq \text{noop}] \ll 1$
+- **Effect persistence**: $\tau_{\text{eff}} = \min\{k: \forall t > t_{\text{last}}+k, \|x_t - x_{t-1}\| < \epsilon\} \gg 1$
 
-**Core Selling Point**: Existing JEPA/World Model literature implicitly assumes action effects are "instantaneous, single-step". Your work is **the first to introduce the structural challenge of prolonged action effects into world model research**, and to demonstrate that JEPA's $s_{t+1}=f(s_t, a_t)$ exhibits systematic error accumulation in such environments.
+We term these **action-sparse persistent-effect environments**. They are not merely "long-horizon"; they are **action-sparse**, meaning the world evolves autonomously for most of the episode.
 
-This is no longer "yet another JEPA improvement" but the **identification of a neglected environment class** and a targeted solution.
+### 2.2 The Dual-Granularity Trade-off
 
-#### 3.2 Comparison with Direct Competitors
+**Temporal Axis (How often to predict):**
 
-| Work            | Time    | Core Method                                                       | Difference from Yours                                                            |
-| --------------- | ------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| **LeWM**        | 2026.03 | End-to-end JEPA from pixels, SIGReg                               | No symbolic component, short-horizon planning                                    |
-| **V-JEPA 2-AC** | 2025.06 | Rollout loss for error accumulation                               | Pure neural, no symbolic physics                                                 |
-| **ThinkJEPA**   | 2026.03 | VLM-thinker guidance for JEPA                                     | Uses VLM semantic guidance, not symbolic reasoning                               |
-| **Causal-JEPA** | 2026.02 | Object-level masking, latent interventions                        | Object-centric but no symbolic physics rules                                     |
-| **Sub-JEPA**    | 2026.05 | Subspace Gaussian regularization                                  | Improves stability, no symbolic component                                        |
-| **RC-aux**      | 2026.05 | Planning-aligned supervision (reachability)                       | Improves planability, not symbolic                                               |
-| **GC-IDM**      | 2026.05 | Closed-loop inverse dynamics for LeWM                             | Improves control, does not address prediction without action                    |
+- **Fine $\Delta t$ (frame-by-frame)**: High fidelity, but error accumulates exponentially over $\tau_{\text{eff}}$.
+- **Coarse $\Delta t$ (event-level)**: Low drift, but may miss critical collision events that determine final outcome.
+- **Hypothesis**: There exists a **critical granularity** $\Delta t^*$ that maximizes both final-state symbolic accuracy and continuous prediction fidelity.
 
-**Conclusion**: At the three-dimensional intersection of "JEPA + Symbolic Physics + Long-Horizon Error Reduction", **there is currently no direct competitor**. Your novelty is sufficient.
+**Physical Axis (What to predict):**
 
----
+- **Micro abstraction $\alpha = \text{micro}$**: Object-level scene graph (contact, support, velocity-bin). Valid when the system is quasi-static.
+- **Macro abstraction $\alpha = \text{macro}$**: Structure-level predicates (collapsed, cascade-active, steady-state). Valid during smooth evolution or equilibrium.
+- **Chaos regime $\alpha = \text{none}$**: Neither micro nor macro symbolic descriptions are valid. The system is in a high-entropy transient where splintering planks and flying debris defy discrete relational logic.
 
-### IV. Testbed Suitability Analysis: Opportunities and Risks of NovPhy + LeWM
+### 2.3 The Stability Gate: When Are Symbols Valid?
 
-#### 4.1 Why NovPhy is Suitable
+We define a **physical stability indicator** $\phi(x_t) \in \{0, 1\}$:
 
-- **Rich physical scenarios**: Covers single/multiple forces, rolling, falling, sliding, highly aligned with Angry Birds' chain reaction structure.
-- **Novelty mechanism**: 8 novelty types can test world model generalization (a weakness of JEPA).
-- **Symbolic interface**: NovPhy is based on Science Birds, providing symbolic representation of object properties (position, material, shape, HP), facilitating symbolic state extraction.
-- **Baseline gap**: The original NovPhy paper's baselines are DQN, heuristic agents, and trajectory planners — **no JEPA/world model baseline**. This is an opportunity.
+$$\phi(x_t) = \mathbb{1}_{\left[\text{KE}(x_t) < \epsilon_{\text{KE}}\right]} \cdot \mathbb{1}_{\left[\text{contacts}_{\text{active}}(x_t) < \epsilon_{\text{contact}}\right]}$$
 
-#### 4.2 Your Concern about the "VLA for Physics Grounded Motion Forecasting" Field Risk
+When $\phi = 1$, the scene is in a **quasi-static attractor**—symbolic predicates like `supports(A,B)` or `all_pigs_dead` are well-defined. When $\phi = 0$, the system is in a chaotic transient where symbolic logic is **undefined**.
 
-This concern is partially justified, but needs decomposition:
-
-**DeepPHY** (August 2025) indeed uses Angry Birds to evaluate agentic VLMs, finding the best model (Claude 3.7) achieves only 41.18% success vs. human 64.71%. DeepPHY's core finding is:
-
-> "Their primary weakness lies not in simple trajectory calculation, but in predicting the complex, cascading consequences of an action... causing large-scale structural collapse through chain reactions."
-
-This is **highly aligned** with your motivation. However, DeepPHY is a **benchmark for VLMs**, not world model research. Your work is a **world model for prediction and planning**, a different subfield.
-
-**Risk Mitigation Strategies**:
-
-1. **Explicitly distinguish the task setting**: You are not letting the model "play Angry Birds" (agentic task), but evaluating the world model's **prediction accuracy** of physical chain reactions (prediction task). This is entirely different from DeepPHY's VLA evaluation.
-2. **Emphasize the planning perspective**: Your ultimate goal is long-horizon decision making, not motion forecasting. You can cite V-JEPA 2's planning framework, showing how the world model supports CEM/MPC planning.
-3. **Introduce a control baseline**: Compare LeWM + CEM (baseline) vs. your Neuro-Symbolic JEPA + CEM on NovPhy to demonstrate planning success rate improvement.
-
-#### 4.3 Rationale for LeWM as Base Architecture
-
-LeWM is ideal as a base:
-
-- Small model (~15M parameters), single GPU, hours of training.
-- End-to-end trainable, no pre-trained encoder or EMA needed.
-- Explicitly acknowledges long-horizon limitations, leaving room for your improvements.
-- Code open-sourced (le-wm.github.io).
+*Theoretical grounding*: $\phi(x_t)$ can be interpreted via the largest Lyapunov exponent $\lambda_{\max}$: $\phi(x_t) = \mathbb{1}_{[\lambda_{\max}(x_t) < 0]}$, connecting the engineering heuristic to dynamical systems theory. The chaotic collapse corresponds to $\lambda_{\max} > 0$ (expansion); the stable endpoints correspond to $\lambda_{\max} < 0$ (contraction).
 
 ---
 
-### V. Risk Identification and Solutions
+## 3. Key Insight: Let the Neural Network Handle the Chaos, Anchor the Endpoints in Symbolic Logic
 
-#### Risk 1: Terminology Confusion Leading to Reviewer Misunderstanding
+Existing neuro-symbolic JEPA approaches treat symbolic rules as flat textual objects encoded via generic text transformers. This introduces three limitations:
 
-- **Risk**: Reviewer may interpret your "Open World" as Open-World RL (e.g., MineDojo) or Open-Loop Prediction.
-- **Solution**: ***prolonged action effect environments**, where a single action triggers persistent physical cascades that evolve for tens to hundreds of timesteps without new action inputs.* This phrasing (from AAAI 2023 + Mila + Doina Precup) will not be questioned as a made-up term.
+1. **Structural blindness**: Relational physical knowledge (support graphs, contact manifolds) is serialized into sequences, losing compositional semantics.
+2. **Unstructured negativity**: Negative rules are constructed by random corruption, producing physically absurd yet semantically ambiguous samples that pollute the energy landscape.
+3. **Point-wise embedding**: Symbols are treated as isolated attractor points in soft energy basins, rather than geometric constraints defining submanifolds.
 
-#### Risk 2: Neuro-Symbolic Design Dismissed as "Task-Specific Engineering"
+Our solution is **Structured Physical Symbolic Geometry (SPSG)**. We treat symbols as **learnable projection heads** that factorize the latent space into explicit submanifolds:
 
-- **Risk**: Reviewer may argue symbolic physics rules are hand-engineered, violating the "bitter lesson".
-- **Solution**:
-  - Emphasize that symbolic state is **automatically extracted/learned from latent space**, not hand-designed.
-  - Or adopt **learned symbolic abstraction** (e.g., Causal-JEPA's object-level masking + slot attention) rather than hardcoded physics rules.
-  - Cite LeCun's discussion of JEPA needing an "abstract digital twin" to show symbolic layer is a natural extension of abstraction.
+$$\mathcal{M}_{\text{valid}} = \{z \in \mathcal{Z} \mid \forall s: f_s(z) = c_s\}$$
 
-#### Risk 3: Mismatch Between NovPhy's Novelty Detection Task and World Model Prediction Task
+where $f_s: \mathcal{Z} \to \mathbb{R}$ decodes whether symbolic predicate $s$ holds. The conjunction of symbols corresponds to the intersection of submanifolds: $\mathcal{M}_{s_1 \land s_2} = \mathcal{M}_{s_1} \cap \mathcal{M}_{s_2}$. This gives the latent space an **algebraic structure** compatible with logical operations.
 
-- **Risk**: NovPhy's original task is novelty detection + adaptation, while your task is future state prediction.
-- **Solution**:
-  - Design two evaluation tracks: (a) long-horizon prediction accuracy in standard physics scenarios; (b) generalization in novelty scenarios.
-  - Or, use NovPhy as a **training/validation environment** and design a dedicated prediction benchmark (e.g., predicting pig survival rate / block configuration after 50 steps).
-
-#### Risk 4: Unclear Evaluation Metrics for Long-Horizon Prediction
-
-- **Risk**: How to quantify "error accumulation over long horizon" lacks standards.
-- **Solution**:
-  - Adopt ThinkJEPA's rollout metrics: ADE@H, FDE@H, Accuracy@H for H ∈ {4,8,16,32,...}.
-  - Introduce **physical plausibility metrics**: final object position error, structural stability judgment accuracy, collision event detection F1.
-  - Compare open-loop rollout (pure JEPA) vs. closed-loop with symbolic correction (your method).
-
-#### Risk 5: ICLR 2027 Submission Timeline
-
-- Current is May 2026. ICLR 2027 deadline is expected around September 2026 (based on historical patterns).
-- A 3-month research cycle (until August 2026) is feasible but requires focus.
+Critically, we accept that **symbols are only valid at stable attractors**. During the chaotic collapse ($\phi = 0$), the symbolic layer is **completely deactivated**. The neural network is free to predict continuous physics without symbolic "interference." This is not a limitation but a design choice: we do not force discrete logic onto phenomena that are inherently continuous and chaotic.
 
 ---
 
-### VI. Final Recommendation: Project Feasibility Rating
+## 4. Method: Bi-Granular Neuro-Symbolic JEPA
 
-| Dimension                    | Rating   | Explanation                                                                 |
-| ---------------------------- | -------- | --------------------------------------------------------------------------- |
-| **Research Gap Authenticity**| ⭐⭐⭐⭐⭐    | JEPA long-horizon physical prediction is a community pain point, verified by multiple concurrent works |
-| **Novelty Strength**         | ⭐⭐⭐⭐     | Three-way intersection (JEPA + Symbolic + Physics) has no direct competition; needs precise definition |
-| **Technical Feasibility**    | ⭐⭐⭐⭐     | LeWM open-sourced, NovPhy open-sourced, Science Birds has symbolic API      |
-| **Testbed Suitability**      | ⭐⭐⭐⭐     | NovPhy is appropriate, but must be distinguished from VLA/agentic evaluation |
-| **Community Interest**       | ⭐⭐⭐⭐⭐    | ICLR 2026 had a World Models Workshop; JEPA is a core theme                |
-| **Submission Competitiveness**| ⭐⭐⭐⭐    | With solid experiments and thorough comparisons, could target ICLR 2027     |
+All components serve a single objective:
 
-### Suggested Paper Positioning
+$$\boxed{\mathcal{L}_{\text{total}}(\Delta t, \alpha) = \underbrace{\mathcal{L}_{\text{JEPA}}(\Delta t)}_{\text{chaotic phase}} + \underbrace{\phi(x_t) \cdot \mathcal{L}_{\text{EBC}}(\alpha)}_{\text{stable phase}} + \underbrace{\mathcal{L}_{\text{anchor}}}_{\text{terminal state}}}$$
 
-**Title Directions**:
+### 4.1 Component A: JEPA Backbone (The Chaos Engine)
 
-> "Symbolic Physics Guidance for Long-Horizon Latent World Models in Action-Sparse Environments"
-> or
-> "Neuro-Symbolic JEPA: Preventing Error Accumulation in World Models with Persistent Physical Effects"
+Standard action-conditioned latent predictor:
+$$\hat{z}_{t+1} = F_\theta(z_t, a_t)$$
 
-**Core Story**:
+During chaotic phases ($\phi = 0$), this operates **unconstrained**. The neural network predicts continuous physics—splintering planks, flying debris, rolling pigs—without symbolic correction.
 
-1. **Problem**: JEPA-based world models excel at closed-loop control but fail in environments where a single action triggers persistent physical chain reactions (e.g., Angry Birds).
-2. **Insight**: Neural latent prediction alone cannot capture rigid-body dynamics over long horizons; symbolic physical state (object relations, stability, collision graphs) provides complementary long-range constraints.
-3. **Method**: A Neuro-Symbolic JEPA that (a) extracts symbolic physical state from latent embeddings, (b) performs symbolic reasoning about collision propagation and stability, (c) injects symbolic guidance back into latent prediction to correct drift.
-4. **Results**: Significantly reduced error accumulation on NovPhy/LeWM compared to pure JEPA baselines, with better planning success rates.
+### 4.2 Component B: Structured Physical Symbolic Geometry (SPSG)
 
-**Next Steps**:
+**Scene Graph Encoding**:
 
-1. Immediately download LeWM and NovPhy code, verify LeWM's baseline performance on Science Birds.
-2. Design symbolic state extractor: extract object graph from NovPhy API (position, material, velocity, collision relationships).
-3. Implement simplest symbolic guidance: e.g., "if object A is above object B and A is unstable, predict collapse within T steps".
-4. Run 10-step / 50-step / 100-step rollout error accumulation curves to confirm the problem exists.
-5. Gradually add neuro-symbolic components, compare improvements.
+- **Nodes**: Objects (bird, pig, wood_block, TNT) with features $[type, material, position, velocity, shape, health]$.
+- **Edges**: Directed physical relations with features $[relation\_type, relative\_position, distance, contact\_normal, support\_strength]$.
+- **Encoder**: GINEConv (Graph Isomorphism Network with Edge features), preserving permutation invariance, compositionality, and edge semantics.
 
-**This project is worth doing and competitive**. The key is to tell the story clearly, avoid terminology confusion, and ensure thorough experimental comparisons.
+The encoder maps a scene graph $G_t$ to a symbolic embedding:
+$$z_{t,\text{sym}} = f_{\text{GINE}}(G_t)$$
 
----
+**Negative Sampling via Differentiable Physics**:
+Instead of random corruption, we use the physics engine to generate **impossible worlds**:
 
-## I. The "Grand Narrative" Trap of Motivation
+- Anti-gravity: $g = +9.8$
+- Massless materials: $\rho_{\text{wood}} = 0$
+- Anti-support: remove support while keeping structure upright
 
-You spent a full page and a half discussing the LeCun-Xing debate, quoting golden phrases like "heat death of the universe", but **the reader still doesn't know what specific problem you're solving after the third paragraph**.
+These are validated through the engine; if the engine crashes or cannot simulate, the configuration is a **hard negative**. This ensures semantic coherence in the energy landscape.
 
-**Your version**:
+### 4.3 Component C: Dual-Resolution PDDL as Temporal Codec
 
-> "The central tension: LeCun advocates pure continuous latent prediction rejecting discrete symbols; Xing's PAN counters that pure latent-space models risk collapse..."
+**Micro-PDDL** (object-centric, fine physical granularity):
 
-**Problem**: This is a literature review, not a proposal. The debate itself is not a gap. A reviewer reading this will think: "So what? Which side are you on? What are you going to do?"
+```lisp
+(contact block_1 block_2)
+(supports block_1 pig_1)
+(velocity-bin block_3 high)
+(damaged wood_block_7)
+```
 
-**Should be changed to**:
+**Macro-PDDL** (structure-centric, coarse physical granularity):
 
-> "We identify a blind spot shared by both sides: **neither JEPA nor PAN can reliably predict the autonomous physical cascade triggered by a single action.** In Angry Birds, the agent fires once; the world then evolves for 100+ timesteps through collisions, collapses, and rolling. Current JEPA predictors are trained as $s_{t+1}=f(s_t, a_t)$. When $a_t=\text{noop}$ for 100 steps, recursive latent rollout drifts into physically impossible states—objects overlap, unsupported blocks float, causal chains break. This is not a minor accuracy loss; it is structural failure."
+```lisp
+(structure-unstable tower_1)
+(cascade-active tower_1)
+(collapsed tower_1)
+(pigs-cleared left-region)
+(steady-state level)
+```
 
-**Difference**: Start from a **concrete, visualizable scenario**, not a philosophical debate.
+**Abstraction map**: $S_t^M = A(S_t^\mu)$
+**Refinement map**: $\tilde{S}_t^\mu = R(S_t^M, z_t)$
 
----
+**Temporal Codec**: Instead of storing every frame, the model compresses a cascade into an event sequence:
+$$\mathcal{C} = \{(\tau_i, S_{\tau_i}^M, e_i, \Delta_i, S_{\tau_{i+1}}^M)\}_{i=1}^K$$
 
-## II. Terminology Overload Kills Intuition
+Prediction becomes: $(S_{\tau_{i+1}}^M, \Delta_i, e_i) = G_\omega(S_{\tau_i}^M, z_{\tau_i}, a_{\tau_i})$
 
-Your proposal is filled with:
+The continuous JEPA backbone only fills in micro-dynamics inside event intervals:
+$$z_{t+1} = F_\theta(z_t, a_t, S_t^\mu) \quad \text{for } t \in [\tau_i, \tau_i + \delta_i]$$
 
-- "Predictive-Causal Gap"
-- "impossibility theorem"
-- "operational grounding"
-- "energy-based learning"
-- "causal fidelity"
+### 4.4 Component D: Bi-Granular Controller
 
-These words make the reviewer feel **distant**, not **excited**. A good proposal allows a smart graduate student to sketch your method after reading the first paragraph.
+The controller jointly selects temporal resolution $\Delta t_k$ and physical abstraction $\alpha_k$:
 
-**Your version**:
+$$(\Delta t_k, \alpha_k) = \pi_\kappa(u_t, \phi(x_t), p_\eta(E_t), \lambda_t^{(w)})$$
 
-> "The symbolic scene graph acts as an explicit causal structure: relations like support, contact, and containment define which objects are causally connected. By projecting latent predictions onto this causal structure, we force the encoder to maintain sensitivity to system degrees of freedom..."
+where:
 
-**Problem**: Too abstract. The reviewer doesn't know exactly how "projecting" works or what the "energy function" looks like.
+- $u_t$: JEPA predictor uncertainty (latent variance)
+- $\phi(x_t)$: Physical stability indicator (Lyapunov-based)
+- $p_\eta(E_t)$: Predicted event probability
+- $\lambda_t^{(w)}$: Local event density
 
-**Should be changed to**:
+**Decision regimes**:
 
-> "Our core idea is simple: **treat the scene graph as a periodic 'reality check' for the neural predictor.** Every $\tau$ steps, we decode the latent state into a symbolic scene graph (objects + relations), run a learned physics-consistency check ('does this graph violate gravity or contact?'), correct the graph via gradient descent, and re-encode it. This breaks error accumulation by resetting the trajectory to a physically valid manifold."
+| Regime                 | $\phi$ | $u_t$  | $\lambda_t$ | $\Delta t$ | $\alpha$    |
+| ---------------------- | ------ | ------ | ----------- | ---------- | ----------- |
+| Pre-shot stable        | 1      | low    | low         | coarse     | macro       |
+| Collision onset        | 0      | high   | high        | fine       | **none**    |
+| Chaotic collapse       | 0      | high   | high        | fine       | **none**    |
+| Post-collapse settling | 1→0→1  | medium | medium      | adaptive   | micro→macro |
+| Equilibrium            | 1      | low    | low         | coarse     | macro       |
 
-**Difference**: Use a colloquial but precise metaphor ("reality check") with a three-step process (decode → check → correct → re-encode). The reviewer can immediately imagine the system architecture.
+**Key design**: During chaotic collapse, $\alpha = \text{none}$—the symbolic layer is **completely deactivated**. This is the core innovation: we do not attempt to symbolize the unsymbolizable.
 
----
+### 4.5 Component E: Phase-Gated EBC and Terminal Anchor
 
-## III. Method Described as a Parts List, Not an Organism
+**Phase-Gated EBC** (only active when $\phi = 1$):
+$$\mathcal{L}_{\text{EBC}}(\Delta t) = \sum_{k \in \mathcal{K}_{\text{stable}}} \left[ \sum_{(A,C) \in \mathcal{R}_{\text{valid}}} E(A,C) + \lambda \sum_{(A,C_{\text{neg}}) \in \mathcal{R}_{\text{neg}}} \max(0, m - E(A, C_{\text{neg}})) \right]$$
 
-The A/B/C/D components in Section 4.1 are well-described, but **the relationships between them are ambiguous**. After reading, the reviewer will ask: Are these four independent modules or a coupled system? How are they trained end-to-end?
+where $\mathcal{K}_{\text{stable}} = \{k : \phi(x_{k\Delta t}) = 1\}$.
 
-**Your version**:
+**Terminal Anchor Loss** (forces final state to symbolic pole):
+$$\mathcal{L}_{\text{anchor}} = \mathbb{1}_{[\phi(x_T)=1]} \cdot \sum_{c \in \mathcal{C}} \mathbb{1}_{[y=c]} \left\| g(z_c^{(K-1)}) - z_{\text{pole}}^{(c)} \right\|_2^2$$
 
-> "A. Learned Symbolic Scene Graph... B. Learned Consistency Energy Function... C. Symbolic Projection as Error Reset... D. Temporal Abstraction Controller..."
-
-**Problem**: This is a textual version of an architecture diagram, not a story. Each component looks reasonable in isolation, but together they lack an "aha moment".
-
-**Should be changed to**:
-Start with an **intuitive overview**:
-
-> "NS-SGP operates like a pilot using instruments: the neural predictor (JEPA) flies continuously, but periodically glances at the symbolic 'instrument panel' (scene graph) to verify physical reality. If the instruments show an impossible state (e.g., a block floating without support), the pilot corrects course."
-
-Then present the technical details. This gives the reviewer a global picture before diving into specifics.
-
----
-
-## IV. Too Much Defensive Writing, Too Little Offensive Writing
-
-Your Risk Assessment and Expected Contributions are **defensive**:
-
-- "This is not hand-engineering"
-- "Bitter Lesson critique"
-- "GNWM overlap claim"
-
-This sends a subconscious signal: **the author is not confident in their own idea and is apologizing in advance.**
-
-Top-tier proposal writing adopts a posture of: **"Some may question X, but let me show you why X is not a problem, and how our method actually solves Y."**
-
-**Your version**:
-
-> "We distinguish between domain-specific knowledge engineering... and domain-general computational substrate..."
-
-**Should be changed to**:
-
-> "Unlike hand-coded physics engines, our symbolic layer is entirely learned. The relation vocabulary (support, contact, above) is fixed—just as convolutional filters are fixed to local patches—but all edge weights, object assignments, and energy parameters are trained from NovPhy trajectories. This makes the architecture general: we validate on Physhion and CLEVRER without hyperparameter tuning."
-
-**Difference**: Shift from "defensive justification" to "confident differentiation".
+This ensures that even if the neural network hallucinated the trajectory of every splinter, the **final latent state** must collapse onto the symbolic pole of the true outcome.
 
 ---
 
-## V. Missing a "Killer" Numerical or Visual Anchor
+## 5. Theoretical Contributions
 
-Your experimental plan lists many metrics, but **fails to provide a striking expected result** that would catch the reviewer's eye. For example:
+### 5.1 From Energy Basins to Geometric Constraints
 
-- "We expect to reduce 100-step rollout error by 40% compared to V-JEPA 2"
-- "This would be the first world model to achieve >60% final-state accuracy on NovPhy"
+Prior neuro-symbolic work treats symbols as points in low-energy basins. We upgrade this to **submanifold constraints**:
 
-**Your version**:
+$$\mathcal{M}_s = \{z \in \mathcal{Z} : f_s(z) = c_s\}$$
 
-> "Metrics: (1) Final-state accuracy; (2) Trajectory consistency..."
+This converts "make the energy lower" into a **hard geometric constraint** on the latent manifold.
 
-**Problem**: This is a checklist, not a vision.
+### 5.2 Lyapunov Interpretation of the Stability Gate
 
-**Should be changed to**:
+The stability indicator $\phi(x_t)$ can be grounded in dynamical systems theory:
 
-> "We target a concrete milestone: **>60% final-state prediction accuracy on NovPhy novel tasks**, surpassing the strongest baseline (DQN Adapt at ~45%) and approaching human-level performance (~80%). More importantly, we expect the error accumulation curve to remain flat beyond 50-step rollouts, whereas pure JEPA baselines diverge exponentially."
+- $\phi = 1$ corresponds to $\lambda_{\max} < 0$ (contracting/stable manifold)
+- $\phi = 0$ corresponds to $\lambda_{\max} > 0$ (chaotic expansion)
 
----
+This connects the engineering heuristic to rigorous mathematics.
 
-## VI. Summary of Core Issues
+### 5.3 Granularity Scaling Law
 
-| Dimension         | Your English Version                                      | An Exciting Version Should Be Like                       |
-| ----------------- | --------------------------------------------------------- | --------------------------------------------------------- |
-| **Narrative arc** | Flat: Background → Gap → Method → Exp                    | Conflict-driven: Problem → Twist → Solution → Payoff      |
-| **Language density** | High terminology, long sentences, passive voice        | Concrete verbs, short sentences, active voice             |
-| **Reader experience** | "I need to work hard to understand"                     | "I need to work hard to refute"                           |
-| **Emotional hook** | None                                                      | Present: JEPA failure scenarios, human vs. AI comparisons |
-| **Core claim**    | Spread across four components                             | Can be stated in one sentence                             |
+We hypothesize a **Pareto frontier** between temporal granularity and predictive performance:
 
----
+| $\Delta t$            | Symbolic Accuracy $\mathcal{A}_{\text{sym}}$ | Frame MSE    | Error Accumulation |
+| --------------------- | -------------------------------------------- | ------------ | ------------------ |
+| Very coarse (T/2)     | High                                         | High         | Low                |
+| Critical $\Delta t^*$ | **Maximal**                                  | **Balanced** | **Sub-linear**     |
+| Very fine (1 frame)   | Low (drift)                                  | Low (early)  | **Exponential**    |
 
-## VII. Rewriting Suggestions: Comparison of Key Paragraphs
-
-I suggest you rewrite the following three paragraphs, replacing **enumeration** with **narrative**:
-
-**1. Opening (First paragraph)**
-
-> Current: Discuss LeCun-Xing debate
-> Change to: A concrete Angry Birds failure case, then "This is JEPA's blind spot"
-
-**2. Gap paragraph**
-
-> Current: Impossibility theorem and causal fidelity
-> Change to: "We ran a preliminary experiment: LeWM on NovPhy. After 100-step rollout, object position error reached X pixels, and 30% of trajectories exhibited physically impossible states (penetration, floating)."
-
-**3. Method paragraph**
-
-> Current: A/B/C/D four components
-> Change to: A "pilot-instrument-panel" metaphor, then a one-sentence summary of each component's role.
+**Hypothesis**: There exists a critical granularity $\Delta t^*$ where symbolic accuracy and continuous fidelity are jointly optimized. BG-NS-JEPA learns to operate near this critical point by adapting $\Delta t$ dynamically.
 
 ---
 
-## VIII. Final Advice
+## 6. Experimental Methodology
 
-For this proposal to survive ICLR review, it must answer three questions, with answers appearing **within the first 300 words**:
+### 6.1 Stage 1: Oracle Symbol Upper Bound (Weeks 1-4)
 
-1. **What is the exact problem?** (Not "world models are limited", but "JEPA cannot predict 100-step physical cascades in action-sparse environments")
-2. **Why does it matter now?** (NovPhy provides a benchmark, LeWM provides a baseline, community is actively seeking long-horizon solutions)
-3. **What is your one-sentence solution?** ("We periodically project latent predictions onto a learned symbolic scene graph to enforce physical consistency")
+Use ground-truth scene graphs from NovPhy/Box2D. Research question:
 
-Your current problem: **First 300 words discuss philosophical debate; the concrete method appears around word 800.**
+> If symbolic graphs are perfect, can structured symbolic geometry improve JEPA endpoint prediction and OOD robustness?
 
----
+This de-risks the project before solving perception.
 
-## Motivation + Research Question in Both Chinese and English
+### 6.2 Stage 2: Learned Symbolic State (Weeks 5-8)
 
-Already provided above. Now enter the **step-by-step review** – I will question every aspect of this project like a harsh ICLR reviewer.
+Train GINE encoder to decode latent states into scene graphs. Compare:
 
----
+- Oracle symbolic state
+- Learned symbolic state from simulator features
+- Learned symbolic state from image latent only
 
-## Step-by-Step Review: NovPhy + JEPA Project Quality Assessment
+### 6.3 Stage 3: Granularity Ablation (Weeks 9-11)
 
-### Dimension 1: Narrative Hook
+Vary $\Delta t \in \{2, 5, 10, 30, \text{full FPS}\}$ and measure:
 
-**Strengths of current version:**
+- Terminal symbolic accuracy (zero-shot via pole distance)
+- Continuous prediction MSE
+- Physical violation rate (penetration, floating, illegal contact)
+- OOD generalization (novel materials, gravity)
 
-- Opens with a concrete Angry Birds scene, visual
-- The contrast "agent acts only 1 out of 90 frames" is powerful
-- Clear distinction between "mental simulation" vs "planning"
+**Expected signature curve**: U-shaped symbolic accuracy vs. $\Delta t$, with maximum at $\Delta t^*$.
 
-**Potential Risks:**
+### 6.4 Stage 4: Full BG-NS-JEPA (Weeks 12-14)
 
-- Some ICLR reviewers may not be familiar with Angry Birds mechanics. Although the scene is vivid, ensure it's **understandable without game knowledge**. Suggest adding an abstract statement right after: "This is not just a game problem; it's a common challenge in any physical interaction—after a robot pushes an object, collapse effects may persist for seconds."
-- "Mental simulation" has specific meaning in cognitive science and may be challenged. Suggest adding a clarifying note: "Borrowing the cognitive science term, here we refer to the forward prediction capability of a world model."
+End-to-end training with bi-granular controller. Evaluate on:
 
-**Review Conclusion: ✅ Pass, but suggest adding one sentence of cross-domain abstraction.**
+- NovPhy standard and novelty scenarios
+- Cross-domain: Physhion (8 scenarios), CLEVRER (collision reasoning)
 
----
+### 6.5 Baselines
 
-### Dimension 2: Is the Gap Real?
+| Baseline                   | Purpose                              |
+| -------------------------- | ------------------------------------ |
+| LeWM                       | Pure continuous JEPA                 |
+| Sub-JEPA                   | Latent regularization                |
+| Uniform micro              | Always frame-by-frame + object-level |
+| Uniform macro              | Always event-level + structure-level |
+| ThinkJEPA                  | VLM external guidance                |
+| Causal-JEPA                | Object masking                       |
+| BG-NS-JEPA (no phase gate) | Ablates stability gating             |
+| BG-NS-JEPA (no SPSG)       | Ablates structured symbolic geometry |
+| BG-NS-JEPA (oracle graph)  | Upper bound for symbol extraction    |
 
-**Core claim:** JEPA's $s_{t+1}=f(s_t, a_t)$ is a "paradigm mismatch" in action-sparse environments.
+### 6.6 Metrics
 
-**Possible reviewer challenge:**
-
-> "JEPA's predictor can still predict when $a_t = \text{noop}$ because $a_t$ can be a vector representing 'no action'. How is this a paradigm mismatch?"
-
-**Response preparation:**
-
-- It's not a question of "whether it can predict", but "how prediction quality degrades". Existing work (ThinkJEPA, V-JEPA 2-AC) has quantitatively shown error grows exponentially beyond 32 steps.
-- The deeper point: **JEPA's training objective (action-conditioned next-state prediction) does not explicitly model the "autonomous evolution of the physical system to steady state without action inputs"**. Its predictor is trained to minimize one-step prediction error, not to maintain long-range physical consistency.
-- Analogy: Like training a language model for next-token prediction; it can generate short sentences but cannot guarantee narrative coherence over a long document.
-
-**Another challenge:**
-
-> "Existing NovPhy agents fail because they can't plan, not because world models are weak. Are you using the wrong tool?"
-
-**Response preparation:**
-
-- NovPhy agents do use trajectory planners, but their failure on **long-range chain reactions** indicates the planner lacks accurate physical consequence predictions. This is precisely where a world model is needed.
-- Our goal is not to replace planning but to **provide accurate long-range physical predictions for planning**. If the world model can accurately predict states 90 steps ahead, the planner can make better decisions.
-
-**Review Conclusion: ✅ Gap is real, but prepare defense for the strong "paradigm mismatch" claim.**
+**Prediction metrics**: ADE@H, FDE@H, Final-state accuracy, Event prediction F1
+**Physical plausibility**: Object penetration rate, unsupported-floating rate, illegal-contact rate
+**Granularity metrics**: Percentage in micro/macro/none mode, effective prediction steps, switch precision/recall
+**Planning metrics**: Task success, shots-to-success, novelty adaptation speed
 
 ---
 
-### Dimension 3: Uncovering NovPhy's Novelty (The NovPhy Angle)
+## 7. Risk and Mitigation
 
-This is your most concerned part. Let me scrutinize strictly:
-
-**Your claim:** "NovPhy has not been mined by the world model community; this is a doubly overlooked opportunity."
-
-**Fact check:**
-
-- NovPhy paper (Pinto et al., IJCAI 2025) baselines are indeed only DQN, PPO, A2C, heuristic agents. No JEPA, no V-JEPA, no latent world model.
-- But what about **follow-up work** on NovPhy? Search results show DeepPHY (August 2025) appears in NovPhy's citation trail, using Angry Birds to evaluate agentic VLMs.
-
-**Key distinction:**
-
-- DeepPHY evaluates **VLMs as agents** (letting Claude/GPT-4V play the game directly), not world models.
-- Your work is a **world model for prediction**, not agentic task completion.
-
-**Possible reviewer challenge:**
-
-> "DeepPHY already worked on Angry Birds. Isn't your NovPhy+JEPA just swapping the model backbone?"
-
-**Response preparation:**
-
-- DeepPHY inputs are **screenshots + text instructions**, outputs are **actions** (angle/force). It is an **agent**, not a world model.
-- Our inputs are **initial frame + action**, outputs are **predictions of future frames/states**. It is a **predictive model** for mental simulation.
-- More critically, DeepPHY's conclusion that VLMs fail at "complex chain reaction prediction" **actually supports our motivation** – it shows the prediction problem is indeed hard and requires specialized world model architecture.
-
-**Another challenge:**
-
-> "NovPhy is a novelty adaptation benchmark, but your world model does prediction, not adaptation. Is the testbed mismatched?"
-
-**Response preparation:**
-
-- This is a **critical risk**. NovPhy's core tasks are: detect environmental change (novelty detection) → adapt policy (adaptation). Our world model alone does not do adaptation.
-- Solution: Position the world model as the **underlying engine for adaptation**. Specifically, when a novelty occurs (e.g., material changes from wood to ice), the world model needs to re-predict the dynamics of the chain reaction. If the world model can accurately predict the physical behavior of the new material, the agent can adapt faster.
-- Experiment design: Compare "adaptation with world model" vs "adaptation without world model", showing that the world model improves adaptation speed and final performance.
-
-**Review Conclusion: ⚠️ Medium risk.** NovPhy's novelty adaptation task and world model's prediction task need **explicit bridging**. If experiment design is not careful, reviewers will question testbed choice. Suggest adding a subsection explaining how to embed the world model into the adaptation loop.
+| Risk                                           | Mitigation                                                   |
+| ---------------------------------------------- | ------------------------------------------------------------ |
+| Learned symbolic extraction unstable           | Start with oracle; GINE is more stable than slot attention   |
+| "Hand-engineered" vocabulary critique          | Vocabulary is universal physical substrate (like CNN locality); all truth values are learned |
+| NovPhy is adaptation benchmark, not prediction | Add dedicated prediction track; use world model as adaptation engine |
+| Chaos phase has no symbolic supervision        | By design. Chaos uses pure JEPA; symbols only anchor endpoints |
+| Method too complex for 3-4 months              | Oracle-symbol version is minimum publishable unit            |
 
 ---
 
-### Dimension 4: Differentiation from Existing Work (Novelty Boundary)
+## 8. Contributions
 
-**Direct competitor analysis:**
-
-| Work                      | Distance to You | Differentiation Strategy                                               |
-| ------------------------- | --------------- | ---------------------------------------------------------------------- |
-| **LeWM (2026.03)**        | Closest         | LeWM is end-to-end JEPA, no symbolic component. You add symbolic projection. |
-| **ThinkJEPA (2026.03)**   | Very close      | ThinkJEPA uses external VLM guidance. You use internal symbolic constraints. |
-| **V-JEPA 2-AC (2025.06)** | Close           | V-JEPA 2-AC uses rollout loss to mitigate error accumulation. You use symbolic anchors. |
-| **Causal-JEPA (2026.02)** | Medium          | Causal-JEPA does object-level masking. You do relational symbolic reasoning. |
-| **Sub-JEPA (2026.05)**    | Close           | Sub-JEPA uses subspace regularization to improve stability. You do symbolic projection. |
-| **GNWM (2026.04)**        | Close           | GNWM uses spatial grid snapping. You do semantic relational correction. |
-| **NS-DR (2020)**          | Further         | NS-DR does dynamics reasoning on CLEVRER. You do symbolic anchoring inside JEPA. |
-
-**Possible reviewer challenge:**
-
-> "ThinkJEPA already uses VLM to improve long-horizon prediction. How is your symbolic scene graph different from VLM guidance?"
-
-**Response preparation:**
-
-- ThinkJEPA's VLM is an **external knowledge source** (pre-trained, frozen, general-purpose) providing semantic hints at inference time. It does not modify JEPA's internal representations.
-- Our symbolic scene graph is an **internal learnable component**, trained end-to-end, specifically for physical consistency correction. It is not a "hint" but a "manifold constraint".
-- Analogy: ThinkJEPA is like a student consulting a textbook while solving problems; our method is like a student having a physics formula in their head to constantly verify whether an answer is reasonable.
-
-**Review Conclusion: ✅ Differentiation sufficient, but need to explicitly draw boundaries with ThinkJEPA and GNWM within the first two pages.**
+1. **Problem**: Defines action-sparse persistent-effect environments as a stress test for JEPA, and identifies **granularity mismatch** as the root cause of failure.
+2. **Conceptual**: Proposes **Bi-Granular** control—jointly adapting temporal resolution and physical abstraction based on dynamical regime.
+3. **Method**: BG-NS-JEPA with Phase-Gated EBC, SPSG (GINE scene graphs), and PDDL temporal codec.
+4. **Theoretical**: Symbols-as-submanifolds; Lyapunov grounding for stability gate; granularity scaling law.
+5. **Empirical**: NovPhy/Angry Birds evaluation protocol with cross-domain validation (Physhion, CLEVRER).
 
 ---
 
-### Dimension 5: Technical Feasibility (Can it be done in 3 months?)
+## 9. One-Sentence Pitch
 
-**Method components in current proposal:**
-
-1. Slot Attention + ContextFusion + Bootstrap (extract object slots)
-2. GNN + Gumbel-Softmax (build scene graph)
-3. Contrastive energy function (physical consistency)
-4. Projection loop (decode → correct → re-encode)
-5. Temporal abstraction controller (when to project)
-
-**Possible reviewer challenge:**
-
-> "5 components, 3 months, single author (or small team)? This is too ambitious."
-
-**Reality check:**
-
-- LeWM is a small 15M parameter model, single GPU, hours of training. Good news.
-- But Slot Attention stability on physical videos is a known challenge. NovPhy's video resolution, object count, occlusions need verification.
-- GNN + Gumbel-Softmax scene graph generation tends to collapse in dynamic scenes.
-
-**Suggested scope control:**
-
-- **Phase 1 (Month 1)**: Don't implement Slot Attention from scratch. First use NovPhy's provided symbolic API (object positions, materials, shapes) as an **oracle scene graph** to verify whether "if the symbolic graph is perfect, does projection reduce error accumulation?" This is an **upper bound experiment**.
-- **Phase 2 (Month 2)**: Gradually replace oracle with learned scene graph. If learned version's performance is close to oracle, the core idea holds.
-- **Phase 3 (Month 3)**: End-to-end training + cross-domain validation.
-
-**Review Conclusion: ⚠️ Method feasible, but must clearly state scope control and fallback strategies in proposal.**
+> **BG-NS-JEPA lets world models think like physicists: zoom in with neural prediction during chaotic collisions, zoom out with symbolic abstraction during stable glides, and learn the zoom schedule from the physics itself.**
 
 ---
 
-### Dimension 6: Potential "Killer Questions" from Reviewers
+## 10. References
 
-I simulate three harshest reviewer questions:
-
-**Q1 (from World Model reviewer):**
-
-> "JEPA's error accumulation is a known problem, with rollout loss, closed-loop MPC, hierarchical prediction as existing solutions. What is the advantage of your symbolic projection over these? Why isn't it just another ad-hoc trick?"
-
-**Suggested response:**
-
-- Rollout loss (V-JEPA 2-AC) is a **purely neural** mitigation that doesn't change the architecture. Your symbolic projection is a **structural intervention** providing discrete invariants.
-- Closed-loop MPC requires **re-observation**, infeasible in NovPhy (agent cannot intervene mid-flight).
-- Hierarchical prediction (mentioned as future work by LeWM) is **temporal scale** hierarchy; your method is **representation space** hierarchy (latent + symbolic).
-- Key experiment: Compare rollout loss vs. symbolic projection vs. combination, demonstrating complementarity.
-
-**Q2 (from Neuro-Symbolic reviewer):**
-
-> "Your symbolic scene graph's relation vocabulary (support, contact, above, containment) is fixed. Isn't that hand-engineering?"
-
-**Suggested response:**
-
-- Fixed vocabulary is an **inductive bias**, not domain knowledge. Just as CNN's local receptive fields and Transformer's attention are fixed structures.
-- All **content** (which object supports which, support strength, contact surfaces) is learned.
-- Ablation: Randomly initialized relation vocabulary to demonstrate the structure itself provides value.
-
-**Q3 (from Benchmark reviewer):**
-
-> "NovPhy has only 40 templates, 8 novelty types. Is that enough? Also, its evaluation metrics are agent adaptation rates, not world model prediction accuracy. How do you evaluate the world model?"
-
-**Suggested response:**
-
-- Redefine evaluation metrics:
-  - **Prediction accuracy**: Accuracy of predicting final state (which pigs eliminated, which structures collapsed).
-  - **Physical violation rate**: Rate of object penetration, floating, unsupported constraints in rollout trajectories.
-  - **Error accumulation curve**: Rollout error at different horizons (10, 50, 100 steps).
-  - **Adaptation gain**: Improvement in adaptation speed for agents with vs. without world model in novelty scenarios.
-- Data quantity: NovPhy's task generator can produce infinite variants; the 40 templates are just a classification framework.
-
-**Review Conclusion: ⚠️ These three questions must be answered preemptively in the proposal.**
+- LeWorldModel: Stable End-to-End Joint-Embedding Predictive Architecture from Pixels, arXiv:2603.19312.
+- V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning, arXiv:2506.09985.
+- ThinkJEPA: Empowering Latent World Models with Large Vision-Language Reasoning Model, arXiv:2603.22281.
+- Causal-JEPA: Learning World Models through Object-Level Latent Masking, arXiv:2602.11389.
+- Sub-JEPA: Subspace Gaussian Regularization for Stable End-to-End World Models, arXiv:2605.09241.
+- STRIPS-WM: Learning Grounded Propositional STRIPS-style World Models from Images, arXiv:2606.06832.
+- Fox and Long, Modelling Mixed Discrete-Continuous Domains for Planning, JAIR 2006.
+- Playing Angry Birds with a Domain-Independent PDDL+ Planner, arXiv:2107.04635.
+- NovPhy: A physical reasoning benchmark for open-world AI systems.
+- DeepPHY: Benchmarking Agentic VLMs on Physical Reasoning, arXiv:2508.05405.
+- Xu et al., How Powerful are Graph Neural Networks?, ICLR 2019.
 
 ---
 
-### Dimension 7: Alignment with ICLR Review Taste
-
-ICLR 2026 accepted papers and workshops show:
-
-- **World Models Workshop** is a core theme.
-- Community has high interest in **JEPA improvements**, **long-horizon prediction**, **physical reasoning**.
-- But ICLR also values **theoretical insight** and **large-scale experiments**.
-
-**Your project's alignment:**
-
-- ✅ Physical reasoning + world models: highly aligned.
-- ✅ Long-horizon error accumulation: community pain point.
-- ⚠️ Theoretical depth: currently more phenomenological diagnosis, lacks formal analysis.
-- ⚠️ Scale: NovPhy is a small-scale physical environment, not large-scale video prediction.
-
-**Suggested enhancement of theoretical depth:**
-
-- In RQ1, don't just describe phenomena. Try to **formally define** "action-sparse persistent-effect environment":
-  - Define action sparsity ratio $\rho = \frac{\text{timesteps with action}}{\text{total timesteps}}$
-  - Define effect persistence $\tau = \text{mean time for system to reach steady state after last action}$
-  - Prove (or empirically verify) that when $\rho \ll 1$ and $\tau \gg 1$, JEPA's error accumulation rate is proportional to $\tau$.
-- This gives reviewers the sense that "this is not just an engineering improvement, but a theoretical characterization of a class of environments."
-
----
-
-## Comprehensive Review Conclusion
-
-| Dimension                     | Rating   | Key Action                                                                 |
-| ----------------------------- | -------- | -------------------------------------------------------------------------- |
-| **Narrative Hook**            | ⭐⭐⭐⭐      | Add one sentence of cross-domain abstraction                              |
-| **Gap Authenticity**          | ⭐⭐⭐⭐⭐     | Prepare defense for "paradigm mismatch"                                   |
-| **NovPhy Novelty**            | ⭐⭐⭐⭐      | Explicitly bridge world model with novelty adaptation                     |
-| **Differentiation**           | ⭐⭐⭐⭐      | Draw boundaries with ThinkJEPA/GNWM within first two pages                |
-| **Technical Feasibility**     | ⭐⭐⭐       | Add scope control and oracle experiments                                  |
-| **Killer Question Defense**   | ⭐⭐⭐       | Preemptively answer the three killer questions                            |
-| **ICLR Taste Alignment**      | ⭐⭐⭐⭐      | Add formal definitions to enhance theoretical depth                       |
-
-### Final Judgment
-
-**This project is good enough, worth doing, and competitive.** The core selling points (NovPhy as an unexploited touchstone for world models + JEPA's structural blind spot + neuro-symbolic correction) are **differentiating**, not bandwagon-following.
-
-However, your English proposal needs the following modifications to impress ICLR reviewers:
-
-1. **Within the first 300 words, give a concrete scenario + core claim**, don't start with the debate.
-2. **Make explicit NovPhy's "double gap"**: no JEPA baseline, and no evaluation protocol for long-horizon physical prediction.
-3. **Preemptively defend against three killer questions**: difference from rollout loss/MPC, whether symbolic vocabulary is hand-engineered, how metrics are defined.
-4. **Add formal definitions**: action sparsity, effect persistence, error accumulation rate.
-5. **Show scope control**: Month 1 first do oracle symbolic projection upper bound.
-
-## Prompt To LLM
-
-Do you have any schemes that combine PDDL + World Model? I hope you can brainstorm. You can start from timestep granularity, PDDL domain model granularity, etc. to think about a proposed method for PDDL + World Model. Explain why granularity matters: it's a trade-off. Coarse granularity may avoid error accumulation but suffers from low fidelity. This is not just a symbolic modeling issue, but also a consideration when determining the timestep unit. So I want you to brainstorm a methodology that yields a bright, eye-catching expected observation.
-
-## Next
-
-This is a very sharp entry point. Let me first dissect the essence of the **granularity problem**, then propose a concrete, differentiating methodology.
-
----
-
-## I. Why Granularity is the Core Trade-off: A Thought Experiment
-
-Imagine predicting the fall of a row of dominoes:
-
-- **Fine-grained** (frame-by-frame JEPA): You predict block 1 falls → block 2 falls → block 3 falls… At block 50, latent state drift causes block 51 to "penetrate" the table – physical violation.
-- **Coarse-grained** (coarse PDDL): You define an action `domino_collapse`, saying "from block 1 to block N will fall sequentially". But if an obstacle blocks a middle block, the coarse model cannot capture this anomaly – it misses a critical event.
-
-**This is the essence of the trade-off:**
-
-- **Fine = high fidelity + high error accumulation**
-- **Coarse = low error + low fidelity (missed events)**
-
-The blind spot of existing work is: **they treat granularity as a hyperparameter or manual design choice, not as a learnable, dynamically variable quantity that adapts to physical event density.**
-
----
-
-## II. Brainstorm: Event-Driven Adaptive Granularity PDDL-JEPA (AG-PDDL-JEPA)
-
-### Core Story
-
-> **Physical world chain reactions are not uniformly distributed.** In Angry Birds, the first 10 frames are "event-dense" (collisions, fractures, explosions); the next 80 frames are "event-sparse" (rolling, friction deceleration, eventual stillness). Using frame-by-frame JEPA uniformly is like using a microscope on a desert; using coarse-grained PDDL uniformly is like using a telescope on cells under a microscope.
-
-**Our insight: Let the world model decide "what granularity to use now".**
-
-### Method Architecture (Four Components)
-
-#### Component A: Latent Event Detector (LED)
-
-Train a lightweight event detector in JEPA's latent space (2-layer MLP + 1D-CNN).
-
-It identifies three types of physical events:
-
-- **Collision Onset**: Abrupt change in relative distance/velocity of two objects' latent embeddings.
-- **Structural Break**: Latent representation of support relations shifts from "stable" to "unstable".
-- **Steady-State Reached**: System enters low-kinetic-energy, low-change steady state.
-
-**Key**: These events are not hand-crafted from pixels, but **learned** from latent dynamics. LED outputs an event log: $E = [(t_1, e_1), (t_2, e_2), ...]$.
-
-#### Component B: Dual-Resolution PDDL (DR-PDDL)
-
-Maintain two parallel PDDL domain models, both learned from latent state (not hand-written):
-
-| Level          | Granularity | Timestep                               | Described Objects                                                      | Trigger Condition                  |
-| -------------- | ----------- | -------------------------------------- | ---------------------------------------------------------------------- | ---------------------------------- |
-| **Micro-PDDL** | Fine        | $\Delta t = 1$ frame                   | Individual objects (position, velocity, contact relationships)         | Event-dense period (LED detects events) |
-| **Macro-PDDL** | Coarse      | $\Delta t = \tau$ frames (event interval) | Object groups / structures (structural collapse, area clearing, steady state) | Event-sparse period (LED silent)     |
-
-**Micro-PDDL** predicates are object-centric: `at(obj, x, y)`, `contact(obj1, obj2)`, `support(obj1, obj2)`.
-**Macro-PDDL** predicates are region-centric: `collapsed(structure_id)`, `stable(region_id)`, `cleared(area)`.
-
-Action schemas also differ accordingly:
-
-- Micro: `move(obj)`, `break_support(obj1, obj2)` — describe specific physical changes.
-- Macro: `propagate_collapse(structure_id)` — describe event-level cascades.
-
-#### Component C: Uncertainty-Guided Granularity Switch
-
-The switching signal is not an external heuristic but **the JEPA predictor's own uncertainty**:
-
-- Compute JEPA predictor's latent variance $\sigma_t^2$ (or prediction confidence).
-- If $\sigma_t^2 > \theta_{\text{high}}$ or LED detects an event → Switch to Micro-PDDL, correct frame-by-frame.
-- If $\sigma_t^2 < \theta_{\text{low}}$ and LED is silent → Switch to Macro-PDDL, take larger leaps.
-
-**Why uncertainty?** Because JEPA's latent state drift manifests physically as "the model becomes increasingly uncertain about the next frame". This is an internal signal, requiring no external supervision.
-
-#### Component D: Cross-Granularity Consistency (CGC)
-
-This is a critical mechanism preventing coarse and fine layers from "talking past each other."
-
-- When switching from Micro to Macro, the Macro-PDDL initial state must be an **abstraction** (aggregation) of the Micro-PDDL's final state.
-- When switching from Macro back to Micro (e.g., upon detecting a new event), the Micro-PDDL initial state must be a **refinement** of the Macro-PDDL's prediction.
-- Train a **consistency loss**: $L_{\text{cgc}} = \| \text{Abstract}(\text{Micro-State}) - \text{Macro-State} \|^2$
-
-This is analogous to conservation laws in multi-resolution physical simulation (e.g., AMR, Adaptive Mesh Refinement), but applied for the first time in a PDDL+JEPA hybrid architecture.
-
----
-
-## III. Expected Observation: Eye-Catching Experimental Results
-
-I design a **three-part expected observation** to ensure reviewers cannot ignore it:
-
-### Observation 1: Long-Horizon Stability (Accuracy)
-
-> On the 100-step physical cascade prediction task in NovPhy, AG-PDDL-JEPA improves **final-state prediction accuracy** (predicting which pigs are eliminated, which structures collapse) from the pure JEPA baseline (LeWM) of **32%** to **78%** (+46% absolute).
-
-### Observation 2: Physical Plausibility
-
-> The physical violation rate (object penetration, unsupported floating, illegal contacts) drops from **38%** for pure JEPA to **4%** (-34%). More critically, **uniform coarse-PDDL has a violation rate of 15%** because it misses early critical collision events – demonstrating that **dynamic granularity outperforms any fixed granularity**.
-
-### Observation 3: Computational Efficiency
-
-> Through adaptive granularity switching, the model reduces **effective prediction steps during steady-state periods by 62%** (from 100 steps to 38 steps), achieving long-horizon stability without sacrificing early fidelity. This means AG-PDDL-JEPA is not only more accurate but also **faster**.
-
-**Why is this three-number combination striking?**
-
-- It breaks the zero-sum game of "accuracy vs. efficiency": you win on accuracy, plausibility, and efficiency simultaneously.
-- It proves the value of coarse granularity is not "laziness" but "wisdom" – doing the right abstraction at the right time.
-
----
-
-## IV. Precise Boundary with Existing Work
-
-| Existing Work             | What They Do                                                      | Our Difference                                                                                        |
-| ------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| **LatPlan** (Asai et al.) | Learn static PDDL from images                                     | Ours is **dynamic, multi-resolution**; event-driven and granularity-switching                         |
-| **TheoryCoder-2**         | LLM automatically synthesizes PDDL abstractions                   | Our granularity is **data-driven + uncertainty-guided**, not curriculum-learned or manually designed  |
-| **PDDL+** (Fox et al.)    | Hand-written event/process modeling for continuous systems        | Our events are **learned from JEPA latent space**, not hand-written                                   |
-| **GNWM** (2026)           | Spatial grid snapping to prevent geometric drift                  | We do **semantic/relational-level** correction, not geometric                                        |
-| **ThinkJEPA**             | External VLM guidance for long-horizon prediction                 | We have **internal symbolic layer** adaptive computation, no external VLM dependence                  |
-
----
-
-## V. A Further Twist (Optional Enhancement)
-
-If you find the above architecture not "aggressive" enough, consider this **further twist**:
-
-> **PDDL as a Learned "Temporal Codec"**
-
-Treat PDDL not as "planner input", but as JEPA's **temporal compression codec**:
-
-- JEPA's latent trajectory, after passing through LED, is encoded as a PDDL event sequence (similar to keyframes in video coding).
-- For long-horizon prediction, JEPA does not roll out frame-by-frame. Instead, it **first predicts the next PDDL event**, then uses Macro-PDDL to "leap" between events.
-- This essentially uses PDDL's discrete structure to **parameterize JEPA's continuous dynamics**, rather than running two systems in parallel.
-
-This would make your method resemble a **"hybrid automaton"** where PDDL defines discrete modes and JEPA defines continuous flows – a well-founded concept in control theory, but novel in the world model community.
-
----
-
-## VI. Summary: One-Sentence Pitch
-
-> **AG-PDDL-JEPA makes the world model think like a physicist: use a microscope at collision moments, use a telescope during inertial glides – and the switch between microscope and telescope is learned by the model itself from its own prediction uncertainty.**
+这份提案的核心改进在于：
+
+1. **统一公式统领全文**：所有组件都是 $\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{JEPA}} + \phi \cdot \mathcal{L}_{\text{EBC}} + \mathcal{L}_{\text{anchor}}$ 的实现细节，而非并列的五个模块。
+2. **"混沌期关闭"作为设计哲学**：明确声明 $\alpha = \text{none}$ 不是缺陷而是核心设计，直接防御 Bitter Lesson 质疑。
+3. **SPSG 理论升级**：将符号从"能量盆地中的点"提升为"子流形上的硬约束"，给出代数结构（交集=合取）。
+4. **Lyapunov 解释**：给 $\phi(x_t)$ 动力系统理论基础，而非停留在工程启发式。
+5. **Granularity Scaling Law**：提供实验钩子——U型曲线 + 临界粒度 $\Delta t^*$，这是 ICLR 评审容易记住的"杀手图"。
 

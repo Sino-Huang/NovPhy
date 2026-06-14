@@ -33,6 +33,11 @@ class ReleaseActionSemanticsTests(unittest.TestCase):
 
         self.assertEqual(normalize_release_action(action), (-95, 40, 65))
 
+    def test_dict_drag_hold_release_uses_release_vector(self):
+        action = {"action_type": "drag_hold_release", "drag_release": [-95, 40], "holdTime": 120, "tap_time": 65}
+
+        self.assertEqual(normalize_release_action(action), (-95, 40, 65))
+
     def test_dict_release_alias_is_supported(self):
         self.assertEqual(normalize_release_action({"release": [-50, 20]}), (-50, 20, 0))
 

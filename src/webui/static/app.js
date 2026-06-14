@@ -6,7 +6,16 @@ let selectedPoint = null;
 let aimStartPoint = null;
 let aimCurrentPoint = null;
 let latestFrameImage = null;
+let trajectoryWorldWidth = 17.5;
+let trajectorySlingCenter = null;
 let autoTimer = null;
+
+const WEB_TRAJECTORY_DRAG_RADIUS_WORLD = 1;
+const WEB_TRAJECTORY_MAX_LAUNCH_SPEED = 10;
+const WEB_TRAJECTORY_LAUNCH_GRAVITY = 0.48;
+const WEB_TRAJECTORY_TIME_STEP = 0.02;
+const WEB_TRAJECTORY_STEPS = 500;
+const WEB_TRAJECTORY_CANVAS_Y_OFFSET = -1;
 
 function log(message) {
   const stamp = new Date().toLocaleTimeString();
@@ -38,6 +47,8 @@ function setStatus(status) {
 
 function updateTelemetry(frame) {
   const state = frame.state?.name || '-';
+  if (Number(frame.trajectoryWorldWidth) > 0) trajectoryWorldWidth = Number(frame.trajectoryWorldWidth);
+  trajectorySlingCenter = frame.trajectorySlingCenter || null;
   document.getElementById('gameState').textContent = state;
   document.getElementById('currentLevel').textContent = frame.currentLevel ?? '-';
   document.getElementById('numberOfLevels').textContent = frame.numberOfLevels ?? '-';
@@ -61,32 +72,108 @@ function drawCrosshair() {
 
 function drawAimPreview() {
   if (!aimStartPoint || !aimCurrentPoint) return;
+  const slingCenter = previewSlingCenterPoint(aimStartPoint);
+  const release = cappedReleasePoint(slingCenter, aimCurrentPoint);
   ctx.save();
   ctx.strokeStyle = '#9bf3d7';
   ctx.lineWidth = 2;
   ctx.setLineDash([8, 6]);
   ctx.beginPath();
-  ctx.moveTo(aimStartPoint.canvasX, aimStartPoint.canvasY);
-  ctx.lineTo(aimCurrentPoint.canvasX, aimCurrentPoint.canvasY);
+  ctx.moveTo(slingCenter.canvasX, slingCenter.canvasY);
+  ctx.lineTo(release.canvasX, release.canvasY);
   ctx.stroke();
   ctx.restore();
 }
 
+function previewSlingCenterPoint(fallbackPoint = null) {
+  if (trajectorySlingCenter && Number.isFinite(trajectorySlingCenter.canvasX) && Number.isFinite(trajectorySlingCenter.canvasY)) {
+    return {
+      canvasX: trajectorySlingCenter.canvasX,
+      canvasY: trajectorySlingCenter.canvasY,
+    };
+  }
+  return fallbackPoint;
+}
+
+function canvasPixelsPerWorldUnit() {
+  return canvas.width / trajectoryWorldWidth;
+}
+
+function rawCappedReleasePoint(startPoint, releasePoint) {
+  const radius = canvasPixelsPerWorldUnit() * WEB_TRAJECTORY_DRAG_RADIUS_WORLD;
+  const dx = releasePoint.canvasX - startPoint.canvasX;
+  const dy = releasePoint.canvasY - startPoint.canvasY;
+  const distance = Math.hypot(dx, dy);
+  if (distance <= radius || distance === 0) return releasePoint;
+  const scale = radius / distance;
+  return {
+    canvasX: startPoint.canvasX + dx * scale,
+    canvasY: startPoint.canvasY + dy * scale,
+  };
+}
+
+function cappedReleasePoint(startPoint, releasePoint) {
+  const rawRelease = rawCappedReleasePoint(startPoint, releasePoint);
+  return {
+    canvasX: rawRelease.canvasX,
+    canvasY: rawRelease.canvasY + WEB_TRAJECTORY_CANVAS_Y_OFFSET,
+    rawCanvasY: rawRelease.canvasY,
+  };
+}
+
+function buildTrajectoryPreviewPoints(startPoint, releasePoint) {
+  const slingCenter = previewSlingCenterPoint(startPoint);
+  if (!slingCenter) return [];
+  const pixelsPerWorldUnit = canvasPixelsPerWorldUnit();
+  const dragRadius = pixelsPerWorldUnit * WEB_TRAJECTORY_DRAG_RADIUS_WORLD;
+  const rawRelease = rawCappedReleasePoint(slingCenter, releasePoint);
+  const release = cappedReleasePoint(slingCenter, releasePoint);
+  const diffX = slingCenter.canvasX - rawRelease.canvasX;
+  const diffY = slingCenter.canvasY - rawRelease.canvasY;
+  const pullDistance = Math.hypot(diffX, diffY);
+  if (pullDistance === 0) return [];
+
+  const velocityMagnitude = (pullDistance / dragRadius) * WEB_TRAJECTORY_MAX_LAUNCH_SPEED * pixelsPerWorldUnit;
+  const velocity = {
+    x: (diffX / pullDistance) * velocityMagnitude,
+    y: (diffY / pullDistance) * velocityMagnitude,
+  };
+  const gravityY = 9.8 * WEB_TRAJECTORY_LAUNCH_GRAVITY * pixelsPerWorldUnit;
+  const timeStep = WEB_TRAJECTORY_TIME_STEP;
+  const points = [];
+  let position = { ...release };
+  let velocityY = velocity.y;
+
+  for (let i = 0; i < WEB_TRAJECTORY_STEPS; i += 1) {
+    points.push({ canvasX: position.canvasX, canvasY: position.canvasY });
+    position = {
+      canvasX: position.canvasX + velocity.x * timeStep,
+      canvasY: position.canvasY + velocityY * timeStep + 0.5 * gravityY * timeStep * timeStep,
+    };
+    velocityY += gravityY * timeStep;
+  }
+  return points;
+}
+
 function drawTrajectoryPreview() {
   if (!aimStartPoint || !aimCurrentPoint) return;
-  const velocityX = aimStartPoint.canvasX - aimCurrentPoint.canvasX;
-  const velocityY = aimStartPoint.canvasY - aimCurrentPoint.canvasY;
+  const points = buildTrajectoryPreviewPoints(aimStartPoint, aimCurrentPoint);
+  if (!points.length) return;
   ctx.save();
-  ctx.fillStyle = 'rgba(155, 243, 215, 0.78)';
-  for (let i = 1; i <= 12; i += 1) {
-    const time = i / 3;
-    const x = aimStartPoint.canvasX + velocityX * time * 0.18;
-    const y = aimStartPoint.canvasY + velocityY * time * 0.18 + time * time * 5;
-    if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) continue;
-    ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI * 2);
-    ctx.fill();
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.82)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  let pathStarted = false;
+  for (const point of points) {
+    if (point.canvasX < 0 || point.canvasX >= canvas.width || point.canvasY < 0 || point.canvasY >= canvas.height) continue;
+    if (!pathStarted) {
+      ctx.moveTo(point.canvasX, point.canvasY);
+      pathStarted = true;
+    } else {
+      ctx.lineTo(point.canvasX, point.canvasY);
+    }
   }
+  if (pathStarted) ctx.stroke();
   ctx.restore();
 }
 
@@ -111,17 +198,19 @@ function clientToCanvasPoint(event) {
 }
 
 function canvasPointToGamePoint(point) {
-  return { x: point.canvasX, y: canvas.height - 1 - point.canvasY };
+  const canvasY = point.rawCanvasY ?? point.canvasY;
+  return { x: point.canvasX, y: canvas.height - 1 - canvasY };
 }
 
 function buildAgentActionFromDrag(startPoint, releasePoint) {
   const start = canvasPointToGamePoint(startPoint);
   const release = canvasPointToGamePoint(releasePoint);
   return {
-    action_type: 'drag_release',
+    action_type: 'drag_hold_release',
     coordinate_frame: 'slingshot_relative',
     drag_start: [start.x, start.y],
     drag_release: [release.x - start.x, start.y - release.y],
+    holdTime: Number(document.getElementById('holdTime').value),
     tapTime: Number(document.getElementById('tapTime').value),
   };
 }
@@ -138,9 +227,9 @@ function drawFrame(frame) {
   canvas.width = frame.width;
   canvas.height = frame.height;
   latestFrameImage = image;
+  updateTelemetry(frame);
   redrawCanvas();
   emptyState.classList.add('hidden');
-  updateTelemetry(frame);
 }
 
 async function refreshFrame() {
@@ -169,13 +258,12 @@ async function run(label, action, afterFrame = false) {
 }
 
 function fillShotFields(point) {
-  const { canvasX, canvasY } = point;
+  const { canvasX } = point;
   const gamePoint = canvasPointToGamePoint(point);
-  const gameY = canvas.height - 1 - canvasY;
   selectedPoint = point;
   document.getElementById('shotX').value = gamePoint.x;
-  document.getElementById('shotY').value = gameY;
-  log(`Selected shot point x=${canvasX}, y=${gameY}.`);
+  document.getElementById('shotY').value = gamePoint.y;
+  log(`Selected shot point x=${canvasX}, y=${gamePoint.y}.`);
 }
 
 function scheduleAgentActionTransfer(action) {
@@ -206,8 +294,10 @@ canvas.addEventListener('pointermove', (event) => {
 canvas.addEventListener('pointerup', (event) => {
   if (!aimStartPoint) return;
   aimCurrentPoint = clientToCanvasPoint(event);
-  const action = buildAgentActionFromDrag(aimStartPoint, aimCurrentPoint);
-  fillShotFields(aimCurrentPoint);
+  const slingCenter = previewSlingCenterPoint(aimStartPoint);
+  const releasePoint = cappedReleasePoint(slingCenter, aimCurrentPoint);
+  const action = buildAgentActionFromDrag(slingCenter, releasePoint);
+  fillShotFields(releasePoint);
   scheduleAgentActionTransfer(action);
   aimStartPoint = null;
   aimCurrentPoint = null;
@@ -244,6 +334,7 @@ document.getElementById('shootBtn').addEventListener('click', () => {
     x: Number(document.getElementById('shotX').value),
     y: Number(document.getElementById('shotY').value),
     tapTime: Number(document.getElementById('tapTime').value),
+    releaseTime: Number(document.getElementById('holdTime').value),
     fast: document.getElementById('fastShot').checked,
   };
   run(`Shoot x=${payload.x}, y=${payload.y}`, () => post('/api/shot', payload), true);

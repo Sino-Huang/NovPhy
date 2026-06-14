@@ -24,6 +24,9 @@ def _tap_time(action):
 
 def normalize_release_action(action, sling_center=None):
     if isinstance(action, dict):
+        action_type = action.get("action_type", "drag_release")
+        if action_type not in {"drag_release", "drag_hold_release"}:
+            raise ValueError("action_type must be drag_release or drag_hold_release")
         release = action.get("drag_release", action.get("release"))
         if release is None:
             raise ValueError("drag_release or release is required for dict actions")
