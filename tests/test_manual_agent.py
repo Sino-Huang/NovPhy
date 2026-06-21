@@ -1,11 +1,21 @@
 import io
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 from contextlib import redirect_stdout
 from unittest.mock import patch
 
-from scripts.manual_agent import image_is_uniform, prepare_for_play, render_symbolic_frame, repl, save_frame
+from scripts.manual_agent import (
+    capture_pixel_rollout,
+    deduplicate_similar_actions,
+    generate_diverse_drag_release_actions,
+    image_is_uniform,
+    prepare_for_play,
+    render_symbolic_frame,
+    repl,
+    save_frame,
+)
 
 
 class FakeBridge:
@@ -49,6 +59,80 @@ class FakeBridge:
 
 
 class ManualAgentTest(unittest.TestCase):
+    def test_generate_diverse_actions_spreads_angle_strength_hold_and_tap(self):
+        actions = generate_diverse_drag_release_actions(
+            drag_start=(300, 220),
+            count=8,
+            strengths=(40, 90),
+            angles_degrees=(-60, -15, 30, 60),
+            tap_times=(0, 70),
+            hold_times=(0, 120),
+        )
+
+        self.assertEqual(len(actions), 8)
+        self.assertEqual({action["action_type"] for action in actions}, {"drag_hold_release"})
+        self.assertEqual({tuple(action["drag_start"]) for action in actions}, {(300, 220)})
+        self.assertGreaterEqual(len({tuple(action["drag_release"]) for action in actions}), 4)
+        self.assertEqual({action["tapTime"] for action in actions}, {0, 70})
+        self.assertEqual({action.get("holdTime", 0) for action in actions}, {0, 120})
+
+        unique_actions = deduplicate_similar_actions(actions + actions, strength_bin=10, angle_bin_degrees=10)
+        self.assertEqual(unique_actions, actions)
+
+    def test_capture_pixel_rollout_records_timestamped_frames_at_target_fps(self):
+        class RolloutBridge(FakeBridge):
+            def __init__(self):
+                super().__init__()
+                self.frame_index = 0
+
+            def screenshot(self):
+                class Screenshot:
+                    width = 4
+                    height = 3
+
+                    def __init__(self, frame_index):
+                        value = 40 + frame_index
+                        self.rgb = bytes(channel for pixel in range(4 * 3) for channel in (value + pixel, 10, 20))
+
+                screenshot = Screenshot(self.frame_index)
+                self.frame_index += 1
+                return screenshot
+
+            def get_game_state(self):
+                from src.webui.bridge import GameState
+
+                return GameState.PLAYING
+
+            def get_current_score(self):
+                return 100 + self.frame_index
+
+        now = [10.0]
+
+        def clock():
+            return now[0]
+
+        def sleeper(seconds):
+            now[0] += seconds
+
+        with TemporaryDirectory() as tmp:
+            metadata = capture_pixel_rollout(
+                RolloutBridge(),
+                Path(tmp),
+                target_fps=4,
+                duration_seconds=1.0,
+                max_frames=4,
+                clock=clock,
+                sleeper=sleeper,
+            )
+
+            self.assertEqual(metadata["target_fps"], 4)
+            self.assertEqual(metadata["frame_count"], 4)
+            self.assertEqual([round(frame["t"], 2) for frame in metadata["frames"]], [0.0, 0.25, 0.5, 0.75])
+            self.assertEqual(len(metadata["state_samples"]), 4)
+            self.assertTrue((Path(tmp) / "frames" / "frame_000000.png").is_file())
+            saved_metadata = json.loads((Path(tmp) / "metadata.json").read_text(encoding="utf-8"))
+            self.assertEqual(saved_metadata["frame_count"], 4)
+
     def test_prepare_for_play_recovers_from_lost_with_next_level(self):
         class PrepareBridge:
             def __init__(self):

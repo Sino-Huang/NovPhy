@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+import json
+import math
 import subprocess
 import sys
 import time
@@ -36,10 +38,12 @@ Commands:
   rawshoot X Y [tap] [fast|safe]
                                Shoot using raw engine/socket coordinates
   frame [PATH]                 Save one screenshot as a binary PPM file
+  rollout DIR [fps] [seconds]  Capture timestamped pixel frames into DIR
+  diverse [N]                  Print diverse drag-release action dictionaries
   quit                         Disconnect and exit
 
 Notes:
-  - This agent does not poll screenshots unless you run `frame`.
+  - This agent only polls screenshots when you run `frame` or `rollout`.
   - `shoot` treats X/Y as game coordinates with origin at bottom-left.
   - `drag`, `hold`, and `release` model the agent action space; the TCP protocol still sends the final release shot.
   - Keep this prompt open while trying the native Unity window with your mouse.
@@ -194,6 +198,168 @@ def save_frame(bridge: ScienceBirdsBridge, path: Path) -> None:
     print(f"Saved {path} ({screenshot.width}x{screenshot.height}, source=screenshot)")
 
 
+def _frame_stats(path: Path, image: Image.Image, t: float) -> dict:
+    return {
+        "path": str(path),
+        "t": round(float(t), 6),
+        "width": image.width,
+        "height": image.height,
+        "unique_colors": len(image.getcolors(maxcolors=image.width * image.height + 1) or []),
+        "uniform": image_is_uniform(image),
+    }
+
+
+def capture_pixel_rollout(
+    bridge: ScienceBirdsBridge,
+    output_dir: Path,
+    *,
+    target_fps: float = 30.0,
+    duration_seconds: float = 5.0,
+    max_frames: int | None = None,
+    action: dict | None = None,
+    clock=time.monotonic,
+    sleeper=time.sleep,
+) -> dict:
+    if target_fps <= 0:
+        raise ValueError("target_fps must be positive")
+    if duration_seconds <= 0:
+        raise ValueError("duration_seconds must be positive")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    frames_dir = output_dir / "frames"
+    frames_dir.mkdir(parents=True, exist_ok=True)
+
+    interval = 1.0 / float(target_fps)
+    total_frames = max_frames if max_frames is not None else max(1, int(math.ceil(duration_seconds * target_fps)))
+    started_at = clock()
+    frames = []
+    state_samples = []
+
+    for frame_index in range(total_frames):
+        target_time = started_at + frame_index * interval
+        now = clock()
+        if now < target_time:
+            sleeper(target_time - now)
+        elapsed = clock() - started_at
+        if elapsed > duration_seconds and frame_index > 0:
+            break
+
+        screenshot = bridge.screenshot()
+        image = screenshot_to_image(screenshot)
+        if image_is_uniform(image):
+            raise RuntimeError("uniform Science Birds screenshot; refusing to save rollout frame")
+        frame_path = frames_dir / f"frame_{frame_index:06d}.png"
+        image.save(frame_path, format="PNG")
+        frames.append(_frame_stats(frame_path, image, elapsed))
+
+        sample = {"index": frame_index, "t": round(float(elapsed), 6)}
+        try:
+            sample["state"] = bridge.get_game_state().name
+        except Exception as exc:
+            sample["state_error"] = str(exc)
+        try:
+            sample["score"] = bridge.get_current_score()
+        except Exception as exc:
+            sample["score_error"] = str(exc)
+        state_samples.append(sample)
+
+    metadata = {
+        "capture_source": "manual-agent-pixel-screenshot",
+        "target_fps": target_fps,
+        "duration_seconds": duration_seconds,
+        "frame_count": len(frames),
+        "frames_dir": str(frames_dir),
+        "frames": frames,
+        "state_samples": state_samples,
+    }
+    if action is not None:
+        metadata["action"] = action
+        metadata["action_signature"] = action_diversity_signature(action)
+
+    metadata_path = output_dir / "metadata.json"
+    metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+    return metadata
+
+
+def generate_diverse_drag_release_actions(
+    *,
+    drag_start: tuple[int, int] = (300, 220),
+    count: int = 16,
+    strengths: tuple[int, ...] = (45, 70, 95, 120),
+    angles_degrees: tuple[int, ...] = (-70, -45, -20, 5, 30, 55),
+    tap_times: tuple[int, ...] = (0, 45, 70, 90),
+    hold_times: tuple[int, ...] = (0, 120),
+) -> list[dict]:
+    if count < 0:
+        raise ValueError("count must be non-negative")
+    if not strengths or not angles_degrees or not tap_times or not hold_times:
+        raise ValueError("strengths, angles_degrees, tap_times, and hold_times must be non-empty")
+
+    actions = []
+    for index in range(count):
+        angle = angles_degrees[index % len(angles_degrees)]
+        strength = strengths[(index // len(angles_degrees)) % len(strengths)]
+        tap_time = tap_times[index % len(tap_times)]
+        hold_time = hold_times[(index // len(tap_times)) % len(hold_times)]
+        radians = math.radians(angle)
+        dx = -int(round(math.cos(radians) * strength))
+        dy = int(round(math.sin(radians) * strength))
+        action = {
+            "action_type": "drag_hold_release",
+            "coordinate_frame": "slingshot_relative",
+            "drag_start": [int(drag_start[0]), int(drag_start[1])],
+            "drag_release": [dx, dy],
+            "tapTime": int(tap_time),
+        }
+        if hold_time:
+            action["holdTime"] = int(hold_time)
+        actions.append(action)
+    return deduplicate_similar_actions(actions)
+
+
+def action_diversity_signature(
+    action: dict,
+    *,
+    strength_bin: int = 10,
+    angle_bin_degrees: int = 10,
+) -> dict:
+    release = action.get("drag_release", action.get("release"))
+    if not isinstance(release, list | tuple) or len(release) < 2:
+        raise ValueError("drag_release or release must contain x and y values")
+    dx = float(release[0])
+    dy = float(release[1])
+    strength = math.hypot(dx, dy)
+    angle = math.degrees(math.atan2(dy, -dx if dx <= 0 else dx))
+    return {
+        "strength_bin": int(round(strength / strength_bin) * strength_bin),
+        "angle_bin": int(round(angle / angle_bin_degrees) * angle_bin_degrees),
+        "tapTime": int(action.get("tapTime", action.get("tap_time", 0))),
+        "holdTime": int(action.get("holdTime", action.get("releaseTime", action.get("release_time", 0)))),
+    }
+
+
+def deduplicate_similar_actions(
+    actions: list[dict],
+    *,
+    strength_bin: int = 10,
+    angle_bin_degrees: int = 10,
+) -> list[dict]:
+    deduplicated = []
+    seen = set()
+    for action in actions:
+        signature = action_diversity_signature(
+            action,
+            strength_bin=strength_bin,
+            angle_bin_degrees=angle_bin_degrees,
+        )
+        key = tuple(sorted(signature.items()))
+        if key in seen:
+            continue
+        seen.add(key)
+        deduplicated.append(action)
+    return deduplicated
+
+
 def parse_shot(parts: list[str], *, raw: bool, frame_height: int) -> tuple[int, int, int, bool]:
     if len(parts) < 3:
         raise ValueError("usage: shoot X Y [tap] [fast|safe]")
@@ -288,6 +454,21 @@ def repl(bridge: ScienceBirdsBridge, frame_height: int) -> None:
                 print(bridge.shoot(x, y, tap_time=tap_time, fast=fast))
             elif command == "frame":
                 save_frame(bridge, Path(parts[1] if len(parts) > 1 else "sciencebirds-frame.ppm"))
+            elif command == "rollout":
+                if len(parts) < 2:
+                    raise ValueError("usage: rollout DIR [fps] [seconds]")
+                target_fps = float(parts[2]) if len(parts) > 2 else 30.0
+                duration_seconds = float(parts[3]) if len(parts) > 3 else 5.0
+                metadata = capture_pixel_rollout(
+                    bridge,
+                    Path(parts[1]),
+                    target_fps=target_fps,
+                    duration_seconds=duration_seconds,
+                )
+                print(json.dumps({"frame_count": metadata["frame_count"], "metadata": str(Path(parts[1]) / "metadata.json")}))
+            elif command == "diverse":
+                count = int(parts[1]) if len(parts) > 1 else 16
+                print(json.dumps(generate_diverse_drag_release_actions(count=count), indent=2))
             else:
                 print("Unknown command. Type `help`.")
         except Exception as exc:
@@ -307,11 +488,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--no-prepare", action="store_true", help="Connect/configure only; do not auto-load a level")
     parser.add_argument("--start-engine", action="store_true", help="Start game_playing_interface.jar before connecting")
     parser.add_argument("--game-headless", action="store_true", help="Only used with --start-engine")
+    parser.add_argument("--print-diverse-actions", action="store_true", help="Print deterministic diverse drag-release actions and exit")
+    parser.add_argument("--diverse-action-count", type=int, default=16, help="Number of actions for --print-diverse-actions")
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
+    if args.print_diverse_actions:
+        print(json.dumps(generate_diverse_drag_release_actions(count=args.diverse_action_count), indent=2))
+        return
+
     engine_process: subprocess.Popen | None = None
     if args.start_engine:
         engine_process = start_engine(ROOT / "sciencebirdsgames" / "Linux", args.game_headless)

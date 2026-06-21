@@ -19,3 +19,15 @@
 - TCP screenshot request 11 can return uniform gray in this KDE/Wayland runtime because Unity logs `ReadPixels was called to read pixels from system frame buffer, while not inside drawing frame.` Treat that as a failed real-frame capture, not as data.
 - For the 2026-06-13 recollection, stale Science Birds/WebUI runtimes on port 2004 had to be stopped first. A clean foreground Science Birds session on KDE virtual desktop 1 produced visible gameplay frames.
 - Valid actual rendered rollout artifacts were saved under `analysis/manual_agent_capture_review/20260613T121106/`. The capture source is recorded as `spectacle-desktop-crop` with crop box `[0, 600, 650, 1250]`; frames visually show the slingshot, red birds, pig, ground, and level objects.
+
+## High-FPS pixel rollout and action diversity update
+
+- `scripts/manual_agent.py::capture_pixel_rollout()` records raw pixel screenshot sequences into `frames/frame_*.png` with `metadata.json` containing target FPS, elapsed timestamps, per-frame stats, state samples, and optional action signatures.
+- The capture loop uses `ScienceBirdsBridge.screenshot()` directly and still rejects uniform frames; uniform TCP screenshots are failed pixel captures, not training data.
+- The manual REPL command `rollout DIR [fps] [seconds]` captures timestamped pixel frames at the requested target FPS without requiring headless mode.
+- `scripts/manual_agent.py::generate_diverse_drag_release_actions()` creates deterministic `drag_hold_release` action dictionaries spanning release angle, pull strength, tap time, and hold time.
+- `scripts/manual_agent.py::deduplicate_similar_actions()` keeps the first action per binned signature `(strength, angle, tapTime, holdTime)`, which is a lightweight pre-rollout diversity filter before more expensive visual/outcome deduplication.
+- Dry surface check: `python3 scripts/manual_agent.py --print-diverse-actions --diverse-action-count 3` prints JSON actions without connecting to Java.
+- `scripts/collect_rollouts.py` is the standalone collection entry point. Use `python3 scripts/collect_rollouts.py --dry-run --output-dir /tmp/plan --count 3` to write only `action_plan.json`, or run it without `--dry-run` against a connected Science Birds engine to shoot each generated action and save `manifest.json` plus per-shot frame metadata.
+- If no Science Birds engine is listening, `scripts/collect_rollouts.py` auto-starts `sciencebirdsgames/Linux/game_playing_interface.jar`, retries the connection, and terminates only that auto-started process after collection.
+- The collector preflights output-directory writability before engine startup. Owned engine cleanup uses terminate + wait, with kill fallback if the engine ignores termination.
