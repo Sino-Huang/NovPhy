@@ -890,3 +890,13 @@ There are 16 .csv files under ```pre_assumed_moving_average.zip``` and 32 .csv f
 ### 7.1 Human Player Data
 The human player data on NovPhy is given in ```human_playdata.zip```. This includes data collected from 48 players. Each .csv file is for a player and all the columns are same as what was collected for an agent with an additional column at the end "novelty_detected" to indicate if the player detected novelty.
 
+
+
+## Visualization Default
+
+- Yellow guide = pull/release direction.
+- Red marker = release point.
+- Cyan marker = sling/start point.
+- Green guide = actual intended bird launch direction.
+- Default generated actions now aim launch vectors to the right/up toward right-side buildings/objects.
+- The guide lines have black outlines so both yellow pull and green launch are visible.

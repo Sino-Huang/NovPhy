@@ -71,7 +71,11 @@ def start_engine(game_dir: Path, headless: bool) -> subprocess.Popen:
     command = ["java", "-jar", "./game_playing_interface.jar", "--dev"]
     if headless:
         command.insert(-1, "--headless")
-    return subprocess.Popen(command, cwd=game_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    log_path = Path(f"/tmp/novphy_game_engine_{int(time.time() * 1000)}.log")
+    log_file = log_path.open("ab")
+    process = subprocess.Popen(command, cwd=game_dir, stdout=log_file, stderr=subprocess.STDOUT, start_new_session=True)
+    process.novphy_log_file = log_file
+    return process
 
 
 def prepare_for_play(bridge: ScienceBirdsBridge, timeout: float, poll_delay: float) -> GameState:
@@ -217,6 +221,8 @@ def capture_pixel_rollout(
     duration_seconds: float = 5.0,
     max_frames: int | None = None,
     action: dict | None = None,
+    pre_shot_image=None,
+    pre_shot_sample: dict | None = None,
     clock=time.monotonic,
     sleeper=time.sleep,
 ) -> dict:
@@ -272,6 +278,8 @@ def capture_pixel_rollout(
         "frames": frames,
         "state_samples": state_samples,
     }
+    if pre_shot_sample is not None:
+        metadata["pre_shot_sample"] = pre_shot_sample
     if action is not None:
         metadata["action"] = action
         metadata["action_signature"] = action_diversity_signature(action)
@@ -286,9 +294,9 @@ def generate_diverse_drag_release_actions(
     drag_start: tuple[int, int] = (300, 220),
     count: int = 16,
     strengths: tuple[int, ...] = (45, 70, 95, 120),
-    angles_degrees: tuple[int, ...] = (-70, -45, -20, 5, 30, 55),
+    angles_degrees: tuple[int, ...] = (5, 20, 35, 50, 65, 80),
     tap_times: tuple[int, ...] = (0, 45, 70, 90),
-    hold_times: tuple[int, ...] = (0, 120),
+    hold_times: tuple[int, ...] = (600, 900),
 ) -> list[dict]:
     if count < 0:
         raise ValueError("count must be non-negative")
@@ -311,8 +319,7 @@ def generate_diverse_drag_release_actions(
             "drag_release": [dx, dy],
             "tapTime": int(tap_time),
         }
-        if hold_time:
-            action["holdTime"] = int(hold_time)
+        action["holdTime"] = int(hold_time)
         actions.append(action)
     return deduplicate_similar_actions(actions)
 
@@ -504,7 +511,17 @@ def main() -> None:
         engine_process = start_engine(ROOT / "sciencebirdsgames" / "Linux", args.game_headless)
         print(f"Started engine pid={engine_process.pid}")
 
-    bridge = connect_with_retry(args.host, args.port, timeout=args.read_timeout, deadline_seconds=args.connect_timeout)
+    try:
+        bridge = connect_with_retry(args.host, args.port, timeout=args.read_timeout, deadline_seconds=args.connect_timeout)
+    except RuntimeError:
+        if engine_process is not None and engine_process.poll() is None:
+            engine_process.terminate()
+            try:
+                engine_process.wait(timeout=5)
+            except (subprocess.TimeoutExpired, TimeoutError):
+                engine_process.kill()
+                engine_process.wait(timeout=5)
+        raise
     try:
         print("Connected")
         print(f"configure -> {bridge.configure(args.agent_id, PlayingMode.TRAINING)}")
@@ -514,9 +531,16 @@ def main() -> None:
             print(f"Ready: {state.name}")
         repl(bridge, frame_height=args.frame_height)
     finally:
-        bridge.disconnect()
-        if engine_process is not None and engine_process.poll() is None:
-            engine_process.terminate()
+        try:
+            bridge.disconnect()
+        finally:
+            if engine_process is not None and engine_process.poll() is None:
+                engine_process.terminate()
+                try:
+                    engine_process.wait(timeout=5)
+                except (subprocess.TimeoutExpired, TimeoutError):
+                    engine_process.kill()
+                    engine_process.wait(timeout=5)
 
 
 if __name__ == "__main__":

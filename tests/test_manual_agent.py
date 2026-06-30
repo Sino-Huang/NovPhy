@@ -1,5 +1,6 @@
 import io
 import json
+import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
@@ -11,10 +12,12 @@ from scripts.manual_agent import (
     deduplicate_similar_actions,
     generate_diverse_drag_release_actions,
     image_is_uniform,
+    main,
     prepare_for_play,
     render_symbolic_frame,
     repl,
     save_frame,
+    start_engine,
 )
 
 
@@ -66,7 +69,7 @@ class ManualAgentTest(unittest.TestCase):
             strengths=(40, 90),
             angles_degrees=(-60, -15, 30, 60),
             tap_times=(0, 70),
-            hold_times=(0, 120),
+            hold_times=(600, 900),
         )
 
         self.assertEqual(len(actions), 8)
@@ -74,10 +77,18 @@ class ManualAgentTest(unittest.TestCase):
         self.assertEqual({tuple(action["drag_start"]) for action in actions}, {(300, 220)})
         self.assertGreaterEqual(len({tuple(action["drag_release"]) for action in actions}), 4)
         self.assertEqual({action["tapTime"] for action in actions}, {0, 70})
-        self.assertEqual({action.get("holdTime", 0) for action in actions}, {0, 120})
+        self.assertEqual({action.get("holdTime", 0) for action in actions}, {600, 900})
+        self.assertTrue(all(action["holdTime"] >= 600 for action in actions))
 
         unique_actions = deduplicate_similar_actions(actions + actions, strength_bin=10, angle_bin_degrees=10)
         self.assertEqual(unique_actions, actions)
+
+    def test_default_generated_actions_aim_launches_to_the_right(self):
+        actions = generate_diverse_drag_release_actions(count=6)
+
+        self.assertTrue(all(action["drag_release"][0] < 0 for action in actions))
+        self.assertTrue(all(action["drag_release"][1] > 0 for action in actions))
+        self.assertTrue(all(action["holdTime"] >= 600 for action in actions))
 
     def test_capture_pixel_rollout_records_timestamped_frames_at_target_fps(self):
         class RolloutBridge(FakeBridge):
@@ -206,6 +217,98 @@ class ManualAgentTest(unittest.TestCase):
 
         self.assertEqual(bridge.shots, [])
         self.assertIn("drag", output.getvalue())
+
+    def test_start_engine_logs_output_to_file_for_runtime_diagnostics(self):
+        with TemporaryDirectory() as tmp:
+            game_dir = Path(tmp)
+            (game_dir / "game_playing_interface.jar").write_text("jar", encoding="utf-8")
+            opened = []
+
+            def fake_popen(command, **kwargs):
+                opened.append(kwargs["stdout"])
+                return type("Process", (), {"pid": 1234})()
+
+            with patch("scripts.manual_agent.subprocess.Popen", side_effect=fake_popen) as popen:
+                start_engine(game_dir, headless=False)
+
+        self.assertEqual(popen.call_args.args[0], ["java", "-jar", "./game_playing_interface.jar", "--dev"])
+        self.assertIsNot(popen.call_args.kwargs["stdout"], subprocess.DEVNULL)
+        self.assertEqual(popen.call_args.kwargs["stderr"], subprocess.STDOUT)
+        self.assertTrue(opened[0].name.startswith("/tmp/novphy_game_engine_"))
+        self.assertFalse(opened[0].closed)
+
+    def test_main_stops_started_engine_when_connection_fails(self):
+        class FakeProcess:
+            pid = 2468
+
+            def __init__(self):
+                self.terminated = False
+                self.waited = False
+
+            def poll(self):
+                return None
+
+            def terminate(self):
+                self.terminated = True
+
+            def wait(self, timeout=None):
+                self.waited = True
+
+        process = FakeProcess()
+        args = ["manual_agent.py", "--start-engine", "--no-prepare"]
+
+        with (
+            patch("sys.argv", args),
+            patch("scripts.manual_agent.start_engine", return_value=process),
+            patch("scripts.manual_agent.connect_with_retry", side_effect=RuntimeError("connection refused")),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "connection refused"):
+                main()
+
+        self.assertTrue(process.terminated)
+        self.assertTrue(process.waited)
+
+    def test_main_stops_started_engine_when_disconnect_fails(self):
+        class DisconnectFailBridge(FakeBridge):
+            def configure(self, agent_id, mode):
+                return (0, 0, 1)
+
+            def set_speed(self, speed):
+                return 1
+
+            def disconnect(self):
+                raise RuntimeError("disconnect failed")
+
+        class FakeProcess:
+            pid = 2468
+
+            def __init__(self):
+                self.terminated = False
+                self.waited = False
+
+            def poll(self):
+                return None
+
+            def terminate(self):
+                self.terminated = True
+
+            def wait(self, timeout=None):
+                self.waited = True
+
+        process = FakeProcess()
+        args = ["manual_agent.py", "--start-engine", "--no-prepare"]
+
+        with (
+            patch("sys.argv", args),
+            patch("scripts.manual_agent.start_engine", return_value=process),
+            patch("scripts.manual_agent.connect_with_retry", return_value=DisconnectFailBridge()),
+            patch("scripts.manual_agent.repl", return_value=None),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "disconnect failed"):
+                main()
+
+        self.assertTrue(process.terminated)
+        self.assertTrue(process.waited)
 
 
 if __name__ == "__main__":

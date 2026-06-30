@@ -1,0 +1,104 @@
+{
+  "capture_source": "scripts.collect_rollouts",
+  "replay_mode": "same-episode-varied-trials",
+  "target_fps": 30.0,
+  "duration_seconds": 2.0,
+  "rollout_count": 3,
+  "rollouts": [
+    {
+      "name": "shot_001",
+      "action": {
+        "action_type": "drag_hold_release",
+        "coordinate_frame": "slingshot_relative",
+        "drag_start": [
+          300,
+          220
+        ],
+        "drag_release": [
+          -45,
+          4
+        ],
+        "tapTime": 0,
+        "holdTime": 600
+      },
+      "shot": {
+        "x": 255,
+        "y": 263,
+        "gameX": 255,
+        "gameY": 216,
+        "tapTime": 0,
+        "releaseTime": 600
+      },
+      "shoot_response": 1,
+      "frame_count": 44,
+      "slingshot_reference": null,
+      "metadata_path": "data/right_launch_action_overlay_30fps_20260630_010009/shot_001/metadata.json",
+      "pre_shot_path": "data/right_launch_action_overlay_30fps_20260630_010009/shot_001/pre_shot.png",
+      "video_path": "data/right_launch_action_overlay_30fps_20260630_010009/shot_001/rollout.mp4"
+    },
+    {
+      "name": "shot_002",
+      "action": {
+        "action_type": "drag_hold_release",
+        "coordinate_frame": "slingshot_relative",
+        "drag_start": [
+          300,
+          220
+        ],
+        "drag_release": [
+          -42,
+          15
+        ],
+        "tapTime": 45,
+        "holdTime": 600
+      },
+      "shot": {
+        "x": 258,
+        "y": 274,
+        "gameX": 258,
+        "gameY": 205,
+        "tapTime": 45,
+        "releaseTime": 600
+      },
+      "shoot_response": 1,
+      "frame_count": 44,
+      "slingshot_reference": null,
+      "metadata_path": "data/right_launch_action_overlay_30fps_20260630_010009/shot_002/metadata.json",
+      "pre_shot_path": "data/right_launch_action_overlay_30fps_20260630_010009/shot_002/pre_shot.png",
+      "video_path": "data/right_launch_action_overlay_30fps_20260630_010009/shot_002/rollout.mp4"
+    },
+    {
+      "name": "shot_003",
+      "action": {
+        "action_type": "drag_hold_release",
+        "coordinate_frame": "slingshot_relative",
+        "drag_start": [
+          300,
+          220
+        ],
+        "drag_release": [
+          -37,
+          26
+        ],
+        "tapTime": 70,
+        "holdTime": 600
+      },
+      "shot": {
+        "x": 263,
+        "y": 285,
+        "gameX": 263,
+        "gameY": 194,
+        "tapTime": 70,
+        "releaseTime": 600
+      },
+      "shoot_response": 1,
+      "frame_count": 45,
+      "slingshot_reference": null,
+      "metadata_path": "data/right_launch_action_overlay_30fps_20260630_010009/shot_003/metadata.json",
+      "pre_shot_path": "data/right_launch_action_overlay_30fps_20260630_010009/shot_003/pre_shot.png",
+      "video_path": "data/right_launch_action_overlay_30fps_20260630_010009/shot_003/rollout.mp4"
+    }
+  ],
+  "action_log_path": "data/right_launch_action_overlay_30fps_20260630_010009/action_log.json",
+  "action_log_jsonl_path": "data/right_launch_action_overlay_30fps_20260630_010009/action_log.jsonl"
+}
