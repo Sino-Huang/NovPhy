@@ -1,0 +1,395 @@
+diff --git a/.omo/knowledges/fresh-engine-rollout-collection.md b/.omo/knowledges/fresh-engine-rollout-collection.md
+index a71212f..34421d9 100644
+--- a/.omo/knowledges/fresh-engine-rollout-collection.md
++++ b/.omo/knowledges/fresh-engine-rollout-collection.md
+@@ -281,3 +281,390 @@ Validation result:
+ - Actual socket shot was `(52, 256)`, generated from game endpoint `(52, 223)`.
+ - Visual inspection confirmed the cyan marker is aligned to the visible slingshot and the green launch guide points right/up.
+ - MP4 probe: 640x480, `30/1` FPS, 58 frames, duration `1.933333`.
++
++## Stronger pulls and longer holds
++
++Date: 2026-06-30
++
++Default generated review actions were increased from short pulls/holds to more human-like aiming pulls:
++
++- Default pull strengths: `80, 105, 130, 155` pixels.
++- Default hold times: `1000, 1400` ms.
++- Generated review actions still favor right/up launch angles.
++
++Validation artifact:
++
++- `data/strong_pull_long_hold_30fps_20260630_141927/manifest.json`
++- `data/strong_pull_long_hold_30fps_20260630_141927/shot_001/rollout.mp4`
++- `data/strong_pull_long_hold_30fps_20260630_141927/shot_002/rollout.mp4`
++
++Validation result:
++
++- `shot_001`: anchored start `[97, 227]`, pull `[-80, 7]`, pull distance `80.31`, launch `(177, 234)`, `holdTime/releaseTime = 1000`, MP4 640x480 `30/1` FPS, 68 frames.
++- `shot_002`: anchored start `[97, 227]`, pull `[-75, 27]`, pull distance `79.71`, launch `(172, 254)`, `holdTime/releaseTime = 1000`, MP4 640x480 `30/1` FPS, 71 frames.
++- Visual inspection confirmed the cyan start marker is on the visible sling and the green launch guide points right/up.
++
++## Phased pre-drag review video lead-in
++
++Date: 2026-06-30
++
++The review MP4 lead-in used to draw the full pull/release/launch guide on `frame_000000.png`. That made videos look like the bird was already dragged when playback started. `prepare_rollout_video_frames()` now splits pre-shot lead-in frames into explicit phases:
++
++- `pre_drag`: neutral frames copied from `pre_shot.png` with only `phase=pre_drag pre_shot_baseline` in the banner and no pull/release/launch guide.
++- `aim_hold`: staged guide frames drawn on `pre_shot.png`, ramping from a partial pull guide to the full pull/release/launch guide.
++- `rollout`: captured post-shot frames with the full overlay.
++
++Each `shot_*/metadata.json` now records `pre_drag_frame_count`, `aim_hold_frame_count`, and `video_phase_counts` in addition to the existing `pre_action_frame_count` and `video_frame_count`.
++
++Validation result:
++
++- Unit regression: `tests.test_collect_rollouts.CollectRolloutsTest.test_prepare_rollout_video_frames_starts_with_neutral_pre_drag_frame` asserts the first action-area frame matches `pre_shot.png` while the first aim frame differs.
++- Manual QA regenerated frames from `data/strong_pull_long_hold_30fps_20260630_141927/shot_001` into `/tmp/novphy_phase_qa_shot_001`.
++- Regenerated phase counts were `pre_drag: 11`, `aim_hold: 11`, `rollout: 46`, total `68` frames at 30 FPS.
++- Visual inspection confirmed `frame_000000.png` is a clean pre-shot baseline frame with no guide, `frame_000011.png` begins the pull guide, and `frame_000021.png` shows the full guide before rollout frames.
++
++## Deferred desktop shot capture
++
++Date: 2026-07-03
++
++User inspection of `data/strong_pull_long_hold_30fps_20260630_141927/shot_001/frames/frame_000000.png` and `shot_002/frames/frame_000000.png` showed that raw captured frames could start too late relative to the shot. The collector previously called `bridge.shoot(...)` before `capture_desktop_rollout(...)`, so desktop raw frame capture could begin after fast-shot execution had already removed or launched the bird.
++
++Desktop capture now defers the shot into `capture_desktop_rollout()`:
++
++- `collect_rollouts(..., shoot_before_capture=False)` passes a one-shot callback to the capture function instead of firing before capture starts.
++- `capture_desktop_rollout(..., shoot=...)` grabs and saves `frames/frame_000000.png` first, then invokes the shot callback, records `shoot_response`, and records `shoot_frame_index`.
++- CLI desktop capture passes `shoot_before_capture=False`; pixel/protocol capture keeps the old shoot-before-capture behavior.
++
++Validation result:
++
++- Unit regression: `test_capture_desktop_rollout_starts_capture_before_shoot_callback` asserts event order `grab-0`, `shoot`, `grab-1` and metadata `shoot_frame_index: 0`.
++- Unit regression: `test_collect_rollouts_can_defer_shoot_until_desktop_capture_starts` asserts `collect_rollouts()` can route the shot through capture when `shoot_before_capture=False`.
++- Real Xvnc artifact: `/tmp/novphy_deferred_capture_FcNZsj/shot_001/metadata.json` recorded `shoot_response: 1`, `shoot_frame_index: 0`, `frame_count: 13`, and video phase counts `pre_drag: 11`, `aim_hold: 11`, `rollout: 13`.
++- Visual inspection confirmed raw `frames/frame_000000.png` is a pre-shot surface before the shot callback; raw `frames/frame_000001.png` catches the immediate post-shot launch transition.
++- Limitation: the Science Birds TCP protocol sends a final shot command and does not expose a live drag-held mouse state. The pre-shot baseline can show birds queued beside an empty sling, and the first post-shot desktop frame may already be immediate launch rather than a visible held drag pose.
++
++## Action log replay validation
++
++Date: 2026-07-03
++
++The collector now supports replaying an episode from a previous `action_log.json` with `--actions-from-log`. This loads only the saved `trials[*].action` objects and disables slingshot re-anchoring, so the replay uses the exact logged actions rather than regenerated actions or memory from a previous run.
++
++Validation artifacts:
++
++- Original episode: `data/action_log_replay_original_20260703_180602`
++- Replay episode: `data/action_log_replay_replayed_20260703_180704`
++- Replay command used `--actions-from-log data/action_log_replay_original_20260703_180602/action_log.json`.
++
++Validation result:
++
++- Original `action_log.json`: `trial_count: 2`, `action_log.jsonl` has 2 lines, both `shoot_response` values were `1`.
++- Replay `action_log.json`: `trial_count: 2`, `action_log.jsonl` has 2 lines, both `shoot_response` values were `1`.
++- The replayed `trials[*].action` list exactly matched the original `trials[*].action` list.
++- `shot_001` MP4 probe matched across original and replay: 640x480, `30/1` FPS, 34 frames, duration `1.133333`.
++- `shot_002` MP4 probe matched across original and replay: 640x480, `30/1` FPS, 27 frames, duration `0.900000`.
++
++## Shot-completion desktop capture
++
++Date: 2026-07-03
++
++The fixed-duration desktop capture could still stop while the bird was airborne. In `data/action_log_replay_original_20260703_180602/shot_001/frames/frame_000011.png`, the bird was visibly mid-flight, but the original short capture ended at `frame_000011.png`. The cause was that `duration_seconds` was treated as a total wall-clock capture budget, including the blocking time spent inside `bridge.shoot(...)`, and there was no visual-settle requirement before advancing to the next shot.
++
++Desktop capture with a deferred shot callback now treats `duration_seconds` as the minimum post-shot capture time, then keeps recording until frame deltas remain below the visual settle threshold for the quiet window, or until a max-duration cap is reached. The per-shot metadata records `capture_stop_reason`, `post_shot_capture_seconds`, `min_post_shot_duration_seconds`, `max_duration_seconds`, `settle_seconds`, and `settle_pixel_threshold`.
++
++Validation artifacts:
++
++- Original episode with completion capture: `data/action_log_completion_original_20260703_200446`
++- Replay episode from that original log: `data/action_log_completion_replayed_20260703_200622`
++- Replay command used `--actions-from-log data/action_log_completion_original_20260703_200446/action_log.json`.
++
++Validation result:
++
++- `frame_000011.png` in the original `shot_001` still shows the bird airborne, proving the old cutoff point was incomplete.
++- Original and replay `trials[*].action` lists matched exactly; original and replay `trials[*].shot` lists also matched exactly.
++- Original `shot_001`: 89 raw frames, `capture_stop_reason: settled`, `post_shot_capture_seconds: 4.07189`, MP4 640x480, `30/1` FPS, 111 frames, duration `3.700000`.
++- Replay `shot_001`: 89 raw frames, `capture_stop_reason: settled`, `post_shot_capture_seconds: 4.070352`, MP4 640x480, `30/1` FPS, 111 frames, duration `3.700000`.
++- Original `shot_002`: 82 raw frames, `capture_stop_reason: settled`, `post_shot_capture_seconds: 3.74332`, MP4 640x480, `30/1` FPS, 104 frames, duration `3.466667`.
++- Replay `shot_002`: 86 raw frames, `capture_stop_reason: settled`, `post_shot_capture_seconds: 3.74305`, MP4 640x480, `30/1` FPS, 108 frames, duration `3.600000`.
++- Visual inspection confirmed the final replay frames no longer show an airborne bird or active collapse; static trajectory lines may remain because Science Birds keeps trajectory marks visible after the shot.
++
++## Dataset partition helper
++
++Date: 2026-07-04
++
++`scripts/prepare_rollout_dataset.py` prepares deterministic train/dev/test partitions over installed NovPhy XML levels and writes a dry-run train/dev collection script. The default `plan` command only scans levels and writes files; it does not start Unity, run rollouts, or mutate `sciencebirdsgames/Linux/config.xml`.
++
++Use it from the repo root after initializing the project environment:
++
++```sh
++source ~/cd_novphy && \
++python scripts/prepare_rollout_dataset.py plan \
++  --output-dir data/rollout_dataset_plan \
++  --command-output-root data/rollout_dataset \
++  --count 2 \
++  --fps 30 \
++  --duration 5 \
++  --display :149
++```
++
++This writes:
++
++- `data/rollout_dataset_plan/partitions.json`: schema `novphy-rollout-dataset-partitions-v1`, split counts, and level entries grouped by `train`, `dev`, and `test`.
++- `data/rollout_dataset_plan/collect_train_dev.sh`: executable command script for train/dev levels only.
++
++The generated script intentionally leaves Xvnc startup as an explicit operator step. Start Xvnc first, then run selected lines or the whole script:
++
++```sh
++source ~/cd_novphy
++Xvnc :149 -geometry 1024x768 -depth 24 -SecurityTypes None -rfbport 0 >/tmp/novphy_rollout_xvnc_149.log 2>&1 &
++data/rollout_dataset_plan/collect_train_dev.sh
++```
++
++For each train/dev level, the script first calls:
++
++```sh
++python scripts/prepare_rollout_dataset.py write-config \
++  --manifest data/rollout_dataset_plan/partitions.json \
++  --split train \
++  --level-path 9001_Data/StreamingAssets/Levels/...
++```
++
++That is the explicit point where `sciencebirdsgames/Linux/config.xml` is mutated to contain exactly one level. The following `collect_rollouts.py` invocation then runs desktop capture with `--fresh-engine-per-rollout`, `--ui-level 1`, and the configured rollout count/FPS/duration.
++
++Partitioning details:
++
++- Discovery scans `sciencebirdsgames/Linux/9001_Data/StreamingAssets/Levels/novelty_level_*/type010*/Levels/*.xml`.
++- Splits are computed independently per `novelty_level/type010...` bucket, using a stable SHA-256 key over `seed + relative_path`.
++- Defaults are approximately 80/10/10 train/dev/test per bucket, with small buckets preserving train/dev/test when possible.
++- Commands are generated only for train/dev by default; test levels remain held out.
++
++Verification on 2026-07-04:
++
++```sh
++source ~/cd_novphy && python -m unittest tests.test_prepare_rollout_dataset
++```
++
++The helper test suite covers stable non-overlapping splits, train/dev-only command generation, and clear missing/empty level-root failures.
++
++## Fresh-engine readiness retries
++
++Date: 2026-07-05
++
++During a full train/dev dataset run, one fresh-engine rollout failed before capture after repeatedly printing `State NEWTRIAL: ready_for_new_set` and timing out in `prepare_for_play()`. Earlier rollouts for the same level had reached `PLAYING`, so this was treated as a transient fresh-engine readiness failure rather than a partition/config problem.
++
++`scripts/collect_rollouts.py` now supports bounded per-action retries in fresh-engine mode:
++
++- CLI flag: `--fresh-engine-attempts`, default `3`.
++- Each action starts a fresh engine per attempt.
++- If startup/connect/configure/prepare/select/capture fails before success, the failed bridge/engine is cleaned up and the same action is retried in a new engine until attempts are exhausted.
++- Existing generated `collect_train_dev.sh` scripts inherit the default because they call `collect_rollouts.py --fresh-engine-per-rollout` without overriding `--fresh-engine-attempts`.
++- Successful fresh-engine manifests record `fresh_engine_attempts`; per-rollout entries record `fresh_engine_attempt` when retries are enabled.
++
++Validation:
++
++```sh
++source ~/cd_novphy && python -m unittest tests.test_collect_rollouts.CollectRolloutsTest.test_collect_fresh_engine_rollouts_retries_prepare_timeout_with_new_engine
++source ~/cd_novphy && python -m unittest tests.test_manual_agent tests.test_collect_rollouts tests.test_prepare_rollout_dataset
++```
++
++The regression test fails first without the retry parameter, then passes by simulating a first-attempt `TimeoutError("Science Birds did not reach PLAYING before timeout")` followed by a successful second fresh engine. A small live Xvnc/Java smoke with `--fresh-engine-attempts 2` also reached `PLAYING` and collected one desktop rollout after passing through `NEWTRIAL`/`NEWTRAININGSET`/`MAIN_MENU` readiness states.
++
++## Full dataset failure ledger
++
++Date: 2026-07-05
++
++The generated full train/dev collection script no longer aborts the entire dataset at the first failed level. `scripts/prepare_rollout_dataset.py::generate_collection_commands()` still emits `set -euo pipefail`, but each per-level `write-config` plus `collect_rollouts.py --fresh-engine-per-rollout` pair is wrapped in one `if ...; then ... else ... fi` block.
++
++Failure behavior:
++
++- `PLAN_DIR/failed_levels.tsv` is initialized with columns `split`, `level_path`, `output_dir`, and `status`.
++- If either config writing or rollout collection fails for a level, the generated script appends one TSV row, increments `failure_count`, prints a warning, and continues with the next train/dev level.
++- After all requested levels have been attempted, the generated script exits `1` if any failures occurred, so automation still detects an incomplete dataset.
++- If no level fails, the generated script exits `0` and prints the ledger path.
++- `scripts/collect_full_rollout_training_dataset.sh` now documents this behavior in `--help` and at launch.
++
++Verification on 2026-07-05:
++
++```sh
++source ~/cd_novphy && python -m unittest tests.test_prepare_rollout_dataset tests.test_collect_rollouts
++source ~/cd_novphy && python -m py_compile scripts/prepare_rollout_dataset.py tests/test_prepare_rollout_dataset.py
++bash -n scripts/collect_full_rollout_training_dataset.sh
++source ~/cd_novphy && python scripts/prepare_rollout_dataset.py plan --output-dir /tmp/opencode/novphy_ledger_plan --command-output-root /tmp/opencode/novphy_ledger_out --count 1 --fps 1 --duration 1 --display :149
++bash -n /tmp/opencode/novphy_ledger_plan/collect_train_dev.sh
++```
++
++The generated script was inspected and begins with `failure_ledger=/tmp/opencode/novphy_ledger_plan/failed_levels.tsv`, initializes the TSV header, wraps per-level commands in guarded blocks, and ends with a nonzero summary when `failure_count > 0`. `basedpyright-langserver` was still not installed, so Python LSP diagnostics could not run.
++
++Post-review security hardening:
++
++- A review pass found that generated status messages originally embedded `split` and `level_path` inside shell single-quoted `echo` strings.
++- `generate_collection_commands()` now emits `printf` status messages and passes all dynamic values through `shlex.quote` as separate shell words.
++- Regression coverage: `test_generate_collection_commands_quotes_status_messages_for_single_quote_level_path` builds a manifest containing a single quote in `relative_path`, writes the generated script, and asserts `bash -n` succeeds.
++- Verification after the fix: `source ~/cd_novphy && python -m unittest tests.test_prepare_rollout_dataset tests.test_collect_rollouts` passed 49 tests, `py_compile` passed, launcher `bash -n` passed, and a regenerated full command script under `/tmp/opencode/novphy_ledger_plan_after_quote_fix` passed `bash -n`.
++
++## Fresh-engine readiness debounce
++
++Date: 2026-07-05
++
++A bounded 10-minute observation run on a fresh Xvnc display did not reproduce the earlier `xdotool` / Xvnc client-limit failure (`Maximum number of clients reached`, `Failed creating new xdo instance`). It did reproduce a separate readiness inefficiency: some fresh engines remain in `NEWTRIAL` for the whole prepare timeout while `prepare_for_play()` sends `ready_for_new_set()` every poll.
++
++Observation artifact:
++
++- Log: `/tmp/opencode/novphy_observation_20260705_183403.log`
++- Plan dir: `data/novphy_rollouts_observation_plan_20260705_183403`
++- Output dir: `data/novphy_rollouts_observation_20260705_183403`
++- Display: `:151`
++
++`scripts/manual_agent.py::prepare_for_play()` now debounces transition commands for unchanged states:
++
++- First `NEWTRIAL` / `NEWTRAININGSET` / `RESUMETRAINING` / `NEWTESTSET` poll sends `ready_for_new_set()`.
++- Repeated polls of the same state print `State <STATE>: waiting` and do not resend the transition command.
++- First `MAIN_MENU` / `EPISODE_MENU` / `LEVEL_SELECTION` / `WON` / `LOST` poll still sends `load_next_available_level()` with the novelty-info preflight.
++- Repeated polls of the same menu/end state wait instead of resending the transition command.
++- Passive states such as `LOADING` clear the debounce memory, so a later transition state can still be acted on.
++
++Regression coverage:
++
++- `tests.test_manual_agent.ManualAgentTest.test_prepare_for_play_does_not_spam_same_new_trial_transition` failed before the fix with `ready_calls == 3`, then passed after the debounce with one `ready_for_new_set()` and two passive waits.
++
++Verification on 2026-07-05:
++
++```sh
++source ~/cd_novphy && python -m unittest tests.test_manual_agent.ManualAgentTest.test_prepare_for_play_does_not_spam_same_new_trial_transition
++source ~/cd_novphy && python -m unittest tests.test_manual_agent tests.test_collect_rollouts
++source ~/cd_novphy && python -m py_compile scripts/manual_agent.py scripts/collect_rollouts.py tests/test_manual_agent.py tests/test_collect_rollouts.py
++GIT_MASTER=1 git diff --check -- scripts/manual_agent.py tests/test_manual_agent.py
++```
++
++The related test suites passed 52 tests. `basedpyright-langserver` was still not installed, so Python LSP diagnostics could not run.
++
++## WebUI mechanism boundary for rollout collector fixes
++
++Date: 2026-07-05
++
++The WebUI is useful comparison evidence for the rollout collector, but it is not a rewrite target for the current rollout menu or static-shot plan. Preserve current WebUI route semantics while fixing collector behavior.
++
++Current WebUI behavior checked in local code and README:
++
++1. `src/webui/server.py::connect_bridge()` calls `_prepare_game_for_play()` only during startup or connect configuration. That recovery loop uses protocol transitions: `ready_for_new_set()` for `NEWTRAININGSET`, `RESUMETRAINING`, `NEWTRIAL`, and `NEWTESTSET`; `get_novelty_info()` plus `load_next_available_level()` for menu states. It exits when the engine reaches `PLAYING`.
++2. `/api/shot` reads the shot payload and calls `bridge.shoot(...)`. It does not re-run `_prepare_game_for_play()` and does not re-prepare gameplay before each shot.
++3. `/api/load-level` validates the requested minimum level, then currently routes to `load_next_available_level()`. `/api/restart` also routes to `load_next_available_level()`. In `src/webui/bridge.py`, that method sends protocol `53`.
++4. `src/webui/bridge.py` still exposes explicit `load_level()` and `restart_level()` methods, which send protocol `51` and protocol `52`. Local WebUI README/research says those explicit paths can hang in this Unity build, especially from menu/startup or after loading NovPhy levels.
++
++Collector guardrails:
++
++1. Do not default the collector fix to protocol `51` or protocol `52`. Treat those as known risky comparison points unless later bounded runtime QA proves a narrow safe use.
++2. Prefer protocol-only recovery already used by the collector/manual-agent path: new-set readiness via `ready_for_new_set()` and menu/end-state progression via novelty-info preflight plus `load_next_available_level()`.
++3. WebUI route semantics are out of scope for this plan. Do not change `/api/shot`, `/api/load-level`, `/api/restart`, `src/webui/bridge.py`, `scripts/webui.sh`, or Java code while addressing the rollout collector bug.
++
++## Collector pre-shot gameplay guard
++
++Date: 2026-07-06
++
++`scripts/collect_rollouts.py::collect_rollouts()` now guards every dataset shot before `shoot_once()` by combining protocol state and the actual desktop pre-shot surface when `pre_shot_grabber` is available.
++
++- Protocol `PLAYING` is necessary but not sufficient for desktop capture; menu-like or uniform pre-shot images are rejected before shooting.
++- Failed guards write `shot_*/metadata.json` with `pre_shot_guard.status: recovery_failed`, protocol/visual evidence, recovery attempts, recovery errors, and computed `artifact_validation` before raising.
++- Bounded safe recovery mirrors `manual_agent.prepare_for_play()` semantics: `ready_for_new_set()` for `NEWTRIAL`/new-set states, and `get_novelty_info()` plus `load_next_available_level()` for menu/end or visually invalid surfaces.
++- The collector guard intentionally does not call protocol `load_level(51)` or `restart_level(52)`.
++
++Verification shape:
++
++```sh
++source "$HOME/cd_novphy" && python -m unittest tests.test_collect_rollouts.CollectRolloutsTest.test_pre_shot_guard_rejects_menu_surface_even_when_protocol_playing
++source "$HOME/cd_novphy" && python -m unittest tests.test_collect_rollouts.CollectRolloutsTest.test_pre_shot_guard_recovers_new_trial_before_shooting
++source "$HOME/cd_novphy" && python -m unittest tests.test_collect_rollouts
++source "$HOME/cd_novphy" && python -m py_compile scripts/collect_rollouts.py tests/test_collect_rollouts.py
++```
++
++## Static/menu artifact fix and operator guidance
++
++Date: 2026-07-06
++
++Root cause: static, menu, and non-gameplay artifacts were accepted because the earlier collection path trusted `shoot_response=1` and protocol shot responses, then counted saved shot directories without validating the visual artifact. It also lacked accepted-vs-attempt separation, so a failed visual attempt could occupy `shot_002` or `shot_003` as if it were a usable rollout.
++
++Known pre-fix bad artifact:
++
++- `data/novphy_rollouts_dataset/train/novelty_level_0_type010101_00001_0_1_010101_0_1`
++- `shot_001` is the valid baseline.
++- `shot_002` is low-motion suspicious.
++- `shot_003` is a SELECT LEVEL menu/static artifact.
++
++Do not treat this pre-fix dataset path, or any artifact collected by the old path, as valid training data until it has been validated shot by shot. Do not trust `shoot_response=1` as proof of gameplay. The validator must decide acceptance from metadata plus frame evidence.
++
++Validator outcomes now used by the collector:
++
++- `gameplay-valid`: accepted. The shot has gameplay surface evidence and enough post-shot frame or pre-shot delta evidence.
++- `menu_detected`: rejected and quarantined. Menu-like frames or SELECT LEVEL capture are not retryable acceptance candidates.
++- `low_motion_suspicious`: rejected by default and marked retryable. This covers the known `shot_002` style, where motion is too small to trust as a gameplay rollout without stronger evidence.
++- `no_frame_motion`: rejected. Static frames with no meaningful motion are not accepted.
++- `missing_artifact`: rejected fail-closed when metadata, frames, or referenced artifacts are absent.
++
++Runtime guards and gates:
++
++- The pre-shot guard requires protocol and desktop evidence before shooting. Protocol `PLAYING` is necessary but not sufficient.
++- The post-shot gate validates the newly written `shot_*/` directory before it can increment the accepted rollout count.
++- `collect_rollouts.py` writes `attempt_count`, `accepted_rollout_count`, accepted rollout lists, and invalid attempt data so operators can distinguish attempts from usable samples.
++- Invalid attempts are recorded under `invalid_attempts/` and do not increment accepted rollout count.
++- Retryable low-motion attempts can start a fresh-engine retry while `fresh_engine_attempts` remain.
++- Menu/static/non-retryable invalid attempts are quarantined, not silently overwritten or counted.
++- Persistent `NEWTRIAL` after an invalid retry required bounded `prepare_for_play()` reissue and escalation. The safe lifecycle is bounded `ready_for_new_set()` reissue, then `get_novelty_info()` plus `load_next_available_level()` escalation when needed.
++- Do not use protocol `load_level(51)` or `restart_level(52)` as the recovery path. They remain hang-risk commands for this Unity build.
++
++Task 7 bounded runtime QA result:
++
++- Run root: `/tmp/opencode/rollout_bugfix_check_retry_20260706_024619`
++- Configured level: `9001_Data/StreamingAssets/Levels/novelty_level_0/type010101/Levels/00001_0_1_010101_0_1.xml`
++- Collector command status: `0`
++- Manifest: `/tmp/opencode/rollout_bugfix_check_retry_20260706_024619/out/manifest.json`
++- Scope: one configured reported level, not a full train/dev collection.
++- Result: one accepted `gameplay-valid` shot, five invalid/quarantined attempts, no accepted menu/static shots.
++- Counts: `attempt_count=6`, `accepted_rollout_count=1`, `invalid_attempt_count=5`, `quarantined_invalid_attempt_count=5`.
++- Accepted shot: `shot_001`, `max_frame_delta=1049`, `max_pre_shot_delta=1541`, score `1770`.
++- Invalid reasons observed: `low_motion_suspicious` and `menu_detected`, including `no-frame-motion` signals on menu captures.
++- Runtime lifecycle evidence: recovered through `NEWTRIAL`, `NEWTRAININGSET`, `MAIN_MENU`, and `LOST` paths; one persistent `NEWTRIAL` attempt timed out, then the collector retried with a fresh engine.
++- Cleanup evidence: no stale `rollout_bugfix_check`, `Xvnc :153`, `game_playing_interface`, or `collect_rollouts.py` process remained after the command exited.
++
++Bounded QA command shape for operators:
++
++```sh
++set -euo pipefail
++source ~/cd_novphy
++RUN_ROOT="/tmp/opencode/rollout_bugfix_check_$(date +%Y%m%d_%H%M%S)"
++mkdir -p "$RUN_ROOT" .omo/evidence
++python scripts/prepare_rollout_dataset.py write-config \
++  --manifest data/novphy_rollouts_dataset_plan/partitions.json \
++  --split train \
++  --level-path 9001_Data/StreamingAssets/Levels/novelty_level_0/type010101/Levels/00001_0_1_010101_0_1.xml
++Xvnc :153 -geometry 1024x768 -depth 24 -SecurityTypes None -rfbport 0 \
++  >"$RUN_ROOT/xvnc.log" 2>&1 &
++XVNC_PID=$!
++trap 'kill "$XVNC_PID" 2>/dev/null || true; wait "$XVNC_PID" 2>/dev/null || true' EXIT
++sleep 2
++DISPLAY=:153 LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH-}" \
++  timeout -s INT 15m python scripts/collect_rollouts.py \
++    --output-dir "$RUN_ROOT/out" \
++    --capture-source desktop \
++    --fresh-engine-per-rollout \
++    --ui-level 1 \
++    --count 3 \
++    --fps 30 \
++    --duration 5 \
++    --connect-timeout 60 \
++    --prepare-timeout 90 \
++    --read-timeout 420 \
++    --speed 1
++STATUS=$?
++kill "$XVNC_PID" 2>/dev/null || true
++wait "$XVNC_PID" 2>/dev/null || true
++trap - EXIT
++exit "$STATUS"
++```
++
++Safe operator guidance:
++
++- Before training on or using `data/novphy_rollouts_dataset`, validate pre-fix shots and exclude any shot whose validator result is not `gameplay-valid`.
++- Use bounded QA on one or a few targeted levels before any large collection.
++- Check `manifest.json`, `action_log.json`, per-shot `metadata.json`, and `invalid_attempts/` together. `rollout_count` or `shoot_response=1` alone is not enough.
++- Treat a command exit of `0` plus accepted `gameplay-valid` shots as bounded-QA evidence only, not a promise that all levels or the full dataset are valid.
++- Do not run a full train/dev dataset collection until the final verification wave passes and the user explicitly chooses to proceed.
++- If final verification later approves a large collection, keep the same acceptance checks in place and review the invalid attempt ledger before using the dataset.

@@ -1,0 +1,35 @@
+Task 7 environment assessment
+2026-07-06T01:52:04+10:00
+PWD=/home/sukai/Project/NovPhy
+python=/home/sukai/miniconda3/envs/novphy/bin/python
+Python 3.11.15
+java=/usr/bin/java
+openjdk version "21.0.11" 2026-04-21
+OpenJDK Runtime Environment (build 21.0.11+10-1-24.04.2-Ubuntu)
+OpenJDK 64-Bit Server VM (build 21.0.11+10-1-24.04.2-Ubuntu, mixed mode, sharing)
+Xvnc=/usr/bin/Xvnc
+timeout=/usr/bin/timeout
+CONDA_PREFIX=/home/sukai/miniconda3/envs/novphy
+Existing output dirs:
+/tmp/opencode/rollout_bugfix_check exists? no
+Pre-run matching processes:
+1477249    6961 Ss         00:01 /usr/bin/zsh -c set -euo pipefail source ~/cd_novphy mkdir -p .omo/evidence /tmp/opencode {   printf 'Task 7 environment assessment\n'   date -Is   printf 'PWD=%s\n' "$PWD"   printf 'python=%s\n' "$(command -v python)"   python --version   printf 'java=%s\n' "$(command -v java || true)"   java -version 2>&1 || true   printf 'Xvnc=%s\n' "$(command -v Xvnc || true)"   printf 'timeout=%s\n' "$(command -v timeout)"   printf 'CONDA_PREFIX=%s\n' "${CONDA_PREFIX-}"   printf 'Existing output dirs:\n'   printf '/tmp/opencode/rollout_bugfix_check exists? '   test -e /tmp/opencode/rollout_bugfix_check && printf 'yes\n' || printf 'no\n'   printf 'Pre-run matching processes:\n'   ps -eo pid,ppid,stat,etime,cmd | rg 'rollout_bugfix_check|Xvnc :153|game_playing_interface|collect_rollouts.py' || true } | tee .omo/evidence/task-7-command-transcript.txt if [ -e /tmp/opencode/rollout_bugfix_check ]; then   RUN_ROOT="/tmp/opencode/rollout_bugfix_check_$(date +%Y%m%d_%H%M%S)" else   RUN_ROOT="/tmp/opencode/rollout_bugfix_check" fi mkdir -p "$RUN_ROOT" printf '%s\n' "$RUN_ROOT" > .omo/evidence/task-7-output-dir.txt printf 'Selected RUN_ROOT=%s\n' "$RUN_ROOT" | tee -a .omo/evidence/task-7-command-transcript.txt
+1477255 1477249 S          00:00 /usr/bin/zsh -c set -euo pipefail source ~/cd_novphy mkdir -p .omo/evidence /tmp/opencode {   printf 'Task 7 environment assessment\n'   date -Is   printf 'PWD=%s\n' "$PWD"   printf 'python=%s\n' "$(command -v python)"   python --version   printf 'java=%s\n' "$(command -v java || true)"   java -version 2>&1 || true   printf 'Xvnc=%s\n' "$(command -v Xvnc || true)"   printf 'timeout=%s\n' "$(command -v timeout)"   printf 'CONDA_PREFIX=%s\n' "${CONDA_PREFIX-}"   printf 'Existing output dirs:\n'   printf '/tmp/opencode/rollout_bugfix_check exists? '   test -e /tmp/opencode/rollout_bugfix_check && printf 'yes\n' || printf 'no\n'   printf 'Pre-run matching processes:\n'   ps -eo pid,ppid,stat,etime,cmd | rg 'rollout_bugfix_check|Xvnc :153|game_playing_interface|collect_rollouts.py' || true } | tee .omo/evidence/task-7-command-transcript.txt if [ -e /tmp/opencode/rollout_bugfix_check ]; then   RUN_ROOT="/tmp/opencode/rollout_bugfix_check_$(date +%Y%m%d_%H%M%S)" else   RUN_ROOT="/tmp/opencode/rollout_bugfix_check" fi mkdir -p "$RUN_ROOT" printf '%s\n' "$RUN_ROOT" > .omo/evidence/task-7-output-dir.txt printf 'Selected RUN_ROOT=%s\n' "$RUN_ROOT" | tee -a .omo/evidence/task-7-command-transcript.txt
+1477281 1477255 S          00:00 rg rollout_bugfix_check|Xvnc :153|game_playing_interface|collect_rollouts.py
+Selected RUN_ROOT=/tmp/opencode/rollout_bugfix_check
+
+=== Task 7 bounded collector run ===
+2026-07-06T01:53:29+10:00
+RUN_ROOT=/tmp/opencode/rollout_bugfix_check
+Writing one-level config for reported level...
+{
+  "config": "/mnt/array/sukaih/Project/NovPhy/sciencebirdsgames/Linux/config.xml",
+  "level_path": "9001_Data/StreamingAssets/Levels/novelty_level_0/type010101/Levels/00001_0_1_010101_0_1.xml"
+}
+write_config_status=0
+Starting Xvnc :153...
+XVNC_PID=1477637
+Collecting 3 desktop fresh-engine shots...
+collector_status=1
+Stopping Xvnc...
+Xvnc log path: /tmp/opencode/rollout_bugfix_check/xvnc.log

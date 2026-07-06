@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import shutil
 import subprocess
 import sys
 import time
@@ -27,6 +28,10 @@ from src.webui.bridge import PlayingMode  # noqa: E402
 
 DEFAULT_DESKTOP_GAME_CROP = (32, 64, 672, 544)
 DEFAULT_HUMAN_HOLD_MS = 600
+PRE_DRAG_OVERLAY_TEXT = "phase=pre_drag pre_shot_baseline"
+DEFAULT_PRE_SHOT_GUARD_RECOVERY_ATTEMPTS = 2
+PRE_SHOT_NEW_SET_STATES = {"NEWTRAININGSET", "RESUMETRAINING", "NEWTRIAL", "NEWTESTSET"}
+PRE_SHOT_MENU_STATES = {"MAIN_MENU", "EPISODE_MENU", "LEVEL_SELECTION", "WON", "LOST"}
 
 
 def _image_is_uniform(image) -> bool:
@@ -162,21 +167,29 @@ def _launch_guide_points(action: dict, image_height: int) -> tuple[tuple[int, in
     return (int(start_x), image_height - 1 - int(start_y)), (launch_x, image_height - 1 - launch_y)
 
 
-def _draw_overlay(image, text: str, action: dict, shot: dict):
+def _interpolate_point(start: tuple[int, int], end: tuple[int, int], fraction: float) -> tuple[int, int]:
+    clamped = min(1.0, max(0.0, fraction))
+    return (int(round(start[0] + (end[0] - start[0]) * clamped)), int(round(start[1] + (end[1] - start[1]) * clamped)))
+
+
+def _draw_overlay(image, text: str, action: dict, shot: dict, *, action_fraction: float = 1.0, show_action_guides: bool = True):
     from PIL import ImageDraw, ImageFont
 
     output = image.copy()
     draw = ImageDraw.Draw(output)
     banner_height = min(max(24, output.height // 14), max(24, output.height))
-    draw.rectangle((0, 0, output.width, banner_height), fill=(0, 0, 0))
+    draw.rectangle((0, 0, output.width, banner_height - 1), fill=(0, 0, 0))
     try:
         font = ImageFont.load_default()
     except OSError:
         font = None
     draw.text((6, 5), text, fill=(255, 255, 255), font=font)
+    if not show_action_guides:
+        return output
     guide_points = _action_guide_points(action, shot, output.height)
     if guide_points is not None:
-        start, end = guide_points
+        start, release_end = guide_points
+        end = _interpolate_point(start, release_end, action_fraction)
         draw.line((start[0], start[1], end[0], end[1]), fill=(0, 0, 0), width=7)
         draw.line((start[0], start[1], end[0], end[1]), fill=(255, 230, 0), width=5)
         radius = 5
@@ -184,7 +197,8 @@ def _draw_overlay(image, text: str, action: dict, shot: dict):
         draw.ellipse((end[0] - radius, end[1] - radius, end[0] + radius, end[1] + radius), outline=(255, 80, 80), width=2)
     launch_points = _launch_guide_points(action, output.height)
     if launch_points is not None:
-        launch_start, launch_end = launch_points
+        launch_start, full_launch_end = launch_points
+        launch_end = _interpolate_point(launch_start, full_launch_end, action_fraction)
         draw.line((launch_start[0], launch_start[1], launch_end[0], launch_end[1]), fill=(0, 0, 0), width=8)
         draw.line((launch_start[0], launch_start[1], launch_end[0], launch_end[1]), fill=(80, 255, 120), width=5)
         radius = 6
@@ -216,11 +230,23 @@ def prepare_rollout_video_frames(
     overlay_text = format_action_overlay_text(action, shot)
     video_index = 0
     pre_action_frame_count = 0
+    pre_drag_frame_count = 0
+    aim_hold_frame_count = 0
     if pre_shot_path is not None and pre_shot_path.is_file():
         pre_shot_image = Image.open(pre_shot_path).convert("RGB")
         pre_action_frame_count = max(1, int(round(float(fps) * lead_in_seconds)))
-        for _ in range(pre_action_frame_count):
-            _draw_overlay(pre_shot_image, overlay_text, action, shot).save(video_frames_dir / f"frame_{video_index:06d}.png", format="PNG")
+        pre_drag_frame_count = max(1, pre_action_frame_count // 2)
+        aim_hold_frame_count = pre_action_frame_count - pre_drag_frame_count
+        for _ in range(pre_drag_frame_count):
+            _draw_overlay(pre_shot_image, PRE_DRAG_OVERLAY_TEXT, action, shot, show_action_guides=False).save(
+                video_frames_dir / f"frame_{video_index:06d}.png", format="PNG"
+            )
+            video_index += 1
+        for aim_index in range(aim_hold_frame_count):
+            action_fraction = 0.25 + (0.75 * (aim_index + 1) / aim_hold_frame_count)
+            _draw_overlay(pre_shot_image, f"phase=aim_hold {overlay_text}", action, shot, action_fraction=action_fraction).save(
+                video_frames_dir / f"frame_{video_index:06d}.png", format="PNG"
+            )
             video_index += 1
 
     for frame_path in sorted(frames_dir.glob("frame_*.png")):
@@ -232,6 +258,13 @@ def prepare_rollout_video_frames(
         "video_frames_dir": str(video_frames_dir),
         "video_input_pattern": str(video_frames_dir / "frame_%06d.png"),
         "pre_action_frame_count": pre_action_frame_count,
+        "pre_drag_frame_count": pre_drag_frame_count,
+        "aim_hold_frame_count": aim_hold_frame_count,
+        "video_phase_counts": {
+            "pre_drag": pre_drag_frame_count,
+            "aim_hold": aim_hold_frame_count,
+            "rollout": video_index - pre_action_frame_count,
+        },
         "video_frame_count": video_index,
         "video_overlay": {
             "position": "top",
@@ -241,9 +274,10 @@ def prepare_rollout_video_frames(
     }
 
 
-def write_action_logs(output_dir: Path, rollouts: list[dict]) -> dict[str, str]:
+def write_action_logs(output_dir: Path, attempts: list[dict]) -> dict[str, str]:
     trials = []
-    for rollout in rollouts:
+    accepted_trials = []
+    for rollout in attempts:
         trial = {
             "shot_name": rollout["name"],
             "action": rollout["action"],
@@ -252,14 +286,42 @@ def write_action_logs(output_dir: Path, rollouts: list[dict]) -> dict[str, str]:
             "frame_count": rollout["frame_count"],
             "metadata_path": rollout["metadata_path"],
         }
-        for key in ("pre_shot_path", "video_path", "slingshot_reference"):
+        for key in (
+            "pre_shot_path",
+            "video_path",
+            "slingshot_reference",
+            "fresh_engine_attempt",
+            "attempt_status",
+            "invalid_reason",
+            "retry_attempt",
+            "quarantined_path",
+            "prior_invalid_attempts",
+            "pre_shot_protocol_state",
+            "post_shoot_protocol_state",
+            "post_capture_protocol_state",
+            "post_recovery_protocol_state",
+            "recovery_action",
+            "pre_shot_guard",
+            "artifact_validation",
+        ):
             if rollout.get(key) is not None:
                 trial[key] = rollout[key]
+        trial["accepted"] = bool(trial.get("artifact_validation", {}).get("accepted"))
         trials.append(trial)
+        if trial["accepted"]:
+            accepted_trials.append(trial)
 
     action_log_path = output_dir / "action_log.json"
     action_log_jsonl_path = output_dir / "action_log.jsonl"
-    payload = {"episode_dir": str(output_dir), "trial_count": len(trials), "trials": trials}
+    payload = {
+        "episode_dir": str(output_dir),
+        "attempt_count": len(trials),
+        "accepted_trial_count": len(accepted_trials),
+        "invalid_attempts": [trial for trial in trials if not trial["accepted"]],
+        "trial_count": len(trials),
+        "trials": trials,
+        "accepted_trials": accepted_trials,
+    }
     action_log_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     action_log_jsonl_path.write_text("".join(json.dumps(trial) + "\n" for trial in trials), encoding="utf-8")
     return {"action_log_path": str(action_log_path), "action_log_jsonl_path": str(action_log_jsonl_path)}
@@ -298,8 +360,39 @@ def _frame_stats(path: Path, image, t: float) -> dict:
     }
 
 
+def _normalize_rgb_image(image):
+    if image.mode == "RGB":
+        return image
+    return image.convert("RGB")
+
+
+def _normalize_delta_images(previous_image, current_image):
+    previous_image = _normalize_rgb_image(previous_image)
+    current_image = _normalize_rgb_image(current_image)
+    if current_image.size != previous_image.size:
+        current_image = current_image.resize(previous_image.size)
+    return previous_image, current_image
+
+
 def _action_int(value) -> int:
     return int(value)
+
+
+def _protocol_state_snapshot(bridge) -> dict[str, Any]:
+    snapshot: dict[str, Any] = {}
+    try:
+        snapshot["game_state"] = bridge.get_game_state().name
+    except Exception as exc:
+        snapshot["game_state_error"] = str(exc)
+    try:
+        snapshot["current_level"] = bridge.get_current_level()
+    except Exception as exc:
+        snapshot["current_level_error"] = str(exc)
+    try:
+        snapshot["score"] = bridge.get_current_score()
+    except Exception as exc:
+        snapshot["score_error"] = str(exc)
+    return snapshot
 
 
 def _point_xy(point: Any) -> tuple[float, float] | None:
@@ -384,6 +477,7 @@ def anchor_action_to_slingshot_reference(action: dict, slingshot_reference: dict
 def _image_delta_stats(previous_image, current_image) -> dict[str, float | int | list[int] | None]:
     from PIL import ImageChops, ImageStat
 
+    previous_image, current_image = _normalize_delta_images(previous_image, current_image)
     difference = ImageChops.difference(previous_image, current_image)
     raw_pixels = difference.tobytes()
     changed_pixel_count = sum(1 for offset in range(0, len(raw_pixels), 3) if raw_pixels[offset : offset + 3] != b"\x00\x00\x00")
@@ -395,6 +489,614 @@ def _image_delta_stats(previous_image, current_image) -> dict[str, float | int |
         "mean_absolute_channel_delta": round(float(mean_absolute_channel_delta), 6),
         "bbox": list(bbox) if bbox is not None else None,
     }
+
+
+def _artifact_missing_result(shot_dir: Path, message: str) -> dict:
+    return {
+        "accepted": False,
+        "classification": "missing-artifact",
+        "invalid_reason": "missing_artifact",
+        "signals": ["missing-artifact"],
+        "shot_dir": str(shot_dir),
+        "message": message,
+    }
+
+
+def _resolve_artifact_path(path_value, shot_dir: Path) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path
+    for candidate in (ROOT / path, shot_dir / path, shot_dir.parent / path):
+        if candidate.exists():
+            return candidate
+    return ROOT / path
+
+
+def _numeric_metadata_value(metadata: dict, key: str) -> int:
+    value = metadata.get(key, 0)
+    if isinstance(value, int | float):
+        return int(value)
+    return 0
+
+
+def _score_from_metadata(metadata: dict) -> int | None:
+    state_samples = metadata.get("state_samples")
+    if not isinstance(state_samples, list):
+        return None
+    for sample in reversed(state_samples):
+        if not isinstance(sample, dict):
+            continue
+        score = sample.get("score")
+        if isinstance(score, int | float):
+            return int(score)
+    return None
+
+
+def _frame_paths_from_metadata(metadata: dict, shot_dir: Path, frames_dir: Path) -> list[Path]:
+    frames = metadata.get("frames")
+    paths = []
+    if isinstance(frames, list):
+        for frame in frames:
+            if not isinstance(frame, dict) or not frame.get("path"):
+                continue
+            paths.append(_resolve_artifact_path(frame["path"], shot_dir))
+    if paths:
+        return paths
+    return sorted(frames_dir.glob("frame_*.png"))
+
+
+def _menu_like_frame_evidence(image) -> dict[str, float | int | bool]:
+    image = _normalize_rgb_image(image)
+    total_pixels = image.width * image.height
+    raw_pixels = image.tobytes()
+    white_pixels = 0
+    bright_saturated_pixels = 0
+    for offset in range(0, len(raw_pixels), 3):
+        red, green, blue = raw_pixels[offset], raw_pixels[offset + 1], raw_pixels[offset + 2]
+        if red >= 200 and green >= 200 and blue >= 200:
+            white_pixels += 1
+        if max(red, green, blue) >= 120 and max(red, green, blue) - min(red, green, blue) >= 80:
+            bright_saturated_pixels += 1
+    unique_colors = len(image.getcolors(maxcolors=total_pixels + 1) or [])
+    white_ratio = white_pixels / total_pixels if total_pixels else 0.0
+    bright_saturated_ratio = bright_saturated_pixels / total_pixels if total_pixels else 0.0
+    menu_like = white_ratio >= 0.7 and unique_colors <= 3300
+    return {
+        "menu_like": menu_like,
+        "unique_colors": unique_colors,
+        "white_ratio": round(float(white_ratio), 6),
+        "bright_saturated_ratio": round(float(bright_saturated_ratio), 6),
+    }
+
+
+class RolloutCollectionError(RuntimeError):
+    pass
+
+
+class PreShotGuardError(RuntimeError):
+    def __init__(self, metadata: dict[str, Any]):
+        self.metadata = metadata
+        self.rollout: dict[str, Any] | None = None
+        message = metadata.get("error") or metadata.get("invalid_reason") or "pre-shot guard failed"
+        super().__init__(f"recovery_failed: {message}")
+
+
+def _pre_shot_surface_evidence(image) -> dict[str, Any]:
+    if image is None:
+        return {
+            "available": False,
+            "valid": True,
+            "classification": "not-captured",
+            "invalid_reason": None,
+        }
+    image = _normalize_rgb_image(image)
+    uniform = _image_is_uniform(image)
+    menu_evidence = _menu_like_frame_evidence(image)
+    if uniform:
+        classification = "uniform-pre-shot"
+        invalid_reason = "uniform_pre_shot"
+        valid = False
+    elif menu_evidence["menu_like"]:
+        classification = "menu-like-pre-shot"
+        invalid_reason = "menu_like_pre_shot"
+        valid = False
+    else:
+        classification = "gameplay-candidate"
+        invalid_reason = None
+        valid = True
+    return {
+        "available": True,
+        "valid": valid,
+        "classification": classification,
+        "invalid_reason": invalid_reason,
+        "uniform": uniform,
+        "width": image.width,
+        "height": image.height,
+        **menu_evidence,
+    }
+
+
+def _pre_shot_attempt_evidence(protocol_state: dict[str, Any], pre_shot_image) -> dict[str, Any]:
+    visual_evidence = _pre_shot_surface_evidence(pre_shot_image)
+    game_state = protocol_state.get("game_state")
+    protocol_playing = game_state == "PLAYING"
+    if not protocol_playing:
+        invalid_reason = "protocol_not_playing"
+    elif not visual_evidence["valid"]:
+        invalid_reason = visual_evidence["invalid_reason"]
+    else:
+        invalid_reason = None
+    return {
+        "accepted": invalid_reason is None,
+        "invalid_reason": invalid_reason,
+        "protocol_playing": protocol_playing,
+        "protocol_state": protocol_state,
+        "visual_evidence": visual_evidence,
+    }
+
+
+def _call_pre_shot_recovery(bridge, attempt: dict[str, Any]) -> dict[str, Any]:
+    protocol_state = attempt["protocol_state"]
+    visual_evidence = attempt["visual_evidence"]
+    game_state = protocol_state.get("game_state")
+    if game_state in PRE_SHOT_NEW_SET_STATES:
+        action = "ready_for_new_set"
+        if not hasattr(bridge, "ready_for_new_set"):
+            return {"action": action, "ok": False, "error": "bridge missing ready_for_new_set"}
+        try:
+            result = bridge.ready_for_new_set()
+        except Exception as exc:
+            return {"action": action, "ok": False, "error": str(exc)}
+        return {"action": action, "ok": True, "result": result}
+
+    visual_invalid = visual_evidence.get("invalid_reason") in {"menu_like_pre_shot", "uniform_pre_shot"}
+    if game_state in PRE_SHOT_MENU_STATES or visual_invalid:
+        action = "load_next_available_level"
+        if not hasattr(bridge, "load_next_available_level"):
+            return {"action": action, "ok": False, "error": "bridge missing load_next_available_level"}
+        recovery: dict[str, Any] = {"action": action, "ok": True}
+        try:
+            if hasattr(bridge, "get_novelty_info"):
+                recovery["novelty_info"] = bridge.get_novelty_info()
+            recovery["result"] = bridge.load_next_available_level()
+        except Exception as exc:
+            return {"action": action, "ok": False, "error": str(exc)}
+        return recovery
+
+    if game_state == "LOADING":
+        return {"action": "wait", "ok": True}
+    return {"action": None, "ok": False, "error": f"no safe recovery path for {game_state}"}
+
+
+def _pre_shot_sample_from_protocol_state(protocol_state: dict[str, Any]) -> dict[str, Any]:
+    sample: dict[str, Any] = {}
+    if "game_state" in protocol_state:
+        sample["state"] = protocol_state["game_state"]
+    if "score" in protocol_state:
+        sample["score"] = protocol_state["score"]
+    return sample
+
+
+def _save_pre_shot_attempt_image(shot_dir: Path, image, attempt_number: int) -> str | None:
+    if image is None:
+        return None
+    attempt_path = shot_dir / f"pre_shot_guard_attempt_{attempt_number:02d}.png"
+    image.save(attempt_path, format="PNG")
+    return str(attempt_path)
+
+
+def _run_pre_shot_guard(
+    bridge,
+    shot_dir: Path,
+    *,
+    initial_protocol_state: dict[str, Any],
+    pre_shot_grabber=None,
+    max_recovery_attempts: int = DEFAULT_PRE_SHOT_GUARD_RECOVERY_ATTEMPTS,
+    poll_delay: float = 0.5,
+    sleeper=time.sleep,
+) -> dict[str, Any]:
+    max_recovery_attempts = max(0, int(max_recovery_attempts))
+    recovery_attempts = 0
+    protocol_state = dict(initial_protocol_state)
+    attempts = []
+    recoveries = []
+    last_successful_recovery_action = None
+    last_image = None
+
+    while True:
+        attempt_number = len(attempts) + 1
+        last_image = pre_shot_grabber() if pre_shot_grabber is not None else None
+        attempt = _pre_shot_attempt_evidence(protocol_state, last_image)
+        attempt_path = _save_pre_shot_attempt_image(shot_dir, last_image, attempt_number)
+        if attempt_path is not None:
+            attempt["visual_evidence"]["path"] = attempt_path
+        attempts.append(attempt)
+
+        if attempt["accepted"]:
+            if last_image is not None:
+                pre_shot_path = shot_dir / "pre_shot.png"
+                last_image.save(pre_shot_path, format="PNG")
+                attempt["visual_evidence"]["accepted_path"] = str(pre_shot_path)
+            post_guard_protocol_state = _protocol_state_snapshot(bridge)
+            status = "accepted_after_recovery" if recovery_attempts else "accepted"
+            guard = {
+                "status": status,
+                "recovery_attempts": recovery_attempts,
+                "invalid_reason": None,
+                "protocol_state": protocol_state,
+                "post_guard_protocol_state": post_guard_protocol_state,
+                "visual_evidence": attempt["visual_evidence"],
+                "attempts": attempts,
+                "recoveries": recoveries,
+            }
+            return {
+                "pre_shot_image": last_image,
+                "pre_shot_sample": _pre_shot_sample_from_protocol_state(post_guard_protocol_state) if last_image is not None else None,
+                "post_recovery_protocol_state": post_guard_protocol_state,
+                "recovery_action": last_successful_recovery_action,
+                "pre_shot_guard": guard,
+            }
+
+        if recovery_attempts >= max_recovery_attempts:
+            guard = {
+                "status": "recovery_failed",
+                "recovery_attempts": recovery_attempts,
+                "invalid_reason": attempt["invalid_reason"],
+                "protocol_state": protocol_state,
+                "visual_evidence": attempt["visual_evidence"],
+                "attempts": attempts,
+                "recoveries": recoveries,
+                "recovery_action": last_successful_recovery_action,
+                "post_recovery_protocol_state": protocol_state,
+                "error": f"pre-shot surface remained invalid: {attempt['invalid_reason']}",
+            }
+            raise PreShotGuardError(guard)
+
+        recovery = _call_pre_shot_recovery(bridge, attempt)
+        recoveries.append(recovery)
+        if not recovery.get("ok"):
+            guard = {
+                "status": "recovery_failed",
+                "recovery_attempts": recovery_attempts,
+                "invalid_reason": attempt["invalid_reason"],
+                "protocol_state": protocol_state,
+                "visual_evidence": attempt["visual_evidence"],
+                "attempts": attempts,
+                "recoveries": recoveries,
+                "recovery_action": last_successful_recovery_action,
+                "post_recovery_protocol_state": protocol_state,
+                "error": recovery.get("error") or "safe recovery failed",
+            }
+            raise PreShotGuardError(guard)
+        recovery_attempts += 1
+        if recovery.get("action") != "wait":
+            last_successful_recovery_action = recovery.get("action")
+        if poll_delay > 0:
+            sleeper(poll_delay)
+        protocol_state = _protocol_state_snapshot(bridge)
+
+
+def _rollout_frame_evidence(frame_paths: list[Path], pre_shot_path: Path | None) -> dict:
+    from PIL import Image
+
+    previous_image = None
+    max_frame_delta = 0
+    max_pre_shot_delta = 0
+    first_frame_evidence = None
+    pre_shot_image = None
+    if pre_shot_path is not None and pre_shot_path.is_file():
+        pre_shot_image = Image.open(pre_shot_path)
+    for index, frame_path in enumerate(frame_paths):
+        image = Image.open(frame_path)
+        if index == 0:
+            first_frame_evidence = _menu_like_frame_evidence(image)
+        if previous_image is not None:
+            max_frame_delta = max(max_frame_delta, int(_image_delta_stats(previous_image, image)["changed_pixel_count"]))
+        if pre_shot_image is not None:
+            max_pre_shot_delta = max(max_pre_shot_delta, int(_image_delta_stats(pre_shot_image, image)["changed_pixel_count"]))
+        previous_image = image
+    return {
+        "observed_max_frame_delta": max_frame_delta,
+        "observed_max_pre_shot_delta": max_pre_shot_delta,
+        "first_frame_evidence": first_frame_evidence or {},
+    }
+
+
+def validate_rollout_artifact(shot_dir: Path, *, gameplay_motion_threshold: int = 100) -> dict:
+    shot_dir = Path(shot_dir)
+    if not shot_dir.is_dir():
+        return _artifact_missing_result(shot_dir, "missing shot directory")
+    metadata_path = shot_dir / "metadata.json"
+    if not metadata_path.is_file():
+        return _artifact_missing_result(shot_dir, "missing metadata.json")
+    try:
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return _artifact_missing_result(shot_dir, f"unreadable metadata.json: {exc}")
+    if not isinstance(metadata, dict):
+        return _artifact_missing_result(shot_dir, "metadata.json must contain an object")
+
+    frames_dir_value = metadata.get("frames_dir")
+    if not frames_dir_value:
+        return _artifact_missing_result(shot_dir, "missing frames_dir metadata")
+    frames_dir = _resolve_artifact_path(frames_dir_value, shot_dir)
+    if not frames_dir.is_dir():
+        return _artifact_missing_result(shot_dir, f"missing frames directory: {frames_dir}")
+
+    frame_paths = _frame_paths_from_metadata(metadata, shot_dir, frames_dir)
+    missing_frame_paths = [frame_path for frame_path in frame_paths if not frame_path.is_file()]
+    if not frame_paths or missing_frame_paths:
+        return _artifact_missing_result(shot_dir, f"missing frames: {len(missing_frame_paths) or 'none listed'}")
+    frame_count = _numeric_metadata_value(metadata, "frame_count")
+    if frame_count <= 0 or len(frame_paths) < frame_count:
+        return _artifact_missing_result(shot_dir, f"missing frames: expected {frame_count}, found {len(frame_paths)}")
+
+    pre_shot_path = _resolve_artifact_path(metadata["pre_shot_path"], shot_dir) if metadata.get("pre_shot_path") else None
+    try:
+        frame_evidence = _rollout_frame_evidence(frame_paths, pre_shot_path)
+    except OSError as exc:
+        return _artifact_missing_result(shot_dir, f"unreadable frame artifact: {exc}")
+
+    reported_max_frame_delta = _numeric_metadata_value(metadata, "max_frame_delta")
+    reported_max_pre_shot_delta = _numeric_metadata_value(metadata, "max_pre_shot_delta")
+    max_frame_delta = int(frame_evidence["observed_max_frame_delta"])
+    max_pre_shot_delta = int(frame_evidence["observed_max_pre_shot_delta"])
+    first_frame_evidence = frame_evidence["first_frame_evidence"]
+    signals = []
+    if max_frame_delta == 0:
+        signals.append("no-frame-motion")
+    if max_frame_delta == 0 and max_pre_shot_delta == 0 and first_frame_evidence.get("menu_like"):
+        signals.append("menu-detected")
+    if 0 < max_frame_delta < gameplay_motion_threshold:
+        signals.append("low-motion-suspicious")
+
+    if "menu-detected" in signals:
+        classification = "menu-detected"
+        invalid_reason = "menu_detected"
+        accepted = False
+    elif "no-frame-motion" in signals:
+        classification = "no-frame-motion"
+        invalid_reason = "no_frame_motion"
+        accepted = False
+    elif "low-motion-suspicious" in signals:
+        classification = "low-motion-suspicious"
+        invalid_reason = "low_motion_suspicious"
+        accepted = False
+    else:
+        classification = "gameplay-valid"
+        invalid_reason = None
+        accepted = True
+        signals.append("gameplay-valid")
+
+    retryable = classification == "low-motion-suspicious"
+    retry_decision = "retry" if retryable else ("accept" if accepted else "quarantine")
+
+    return {
+        "accepted": accepted,
+        "classification": classification,
+        "invalid_reason": invalid_reason,
+        "retryable": retryable,
+        "retry_decision": retry_decision,
+        "signals": signals,
+        "shot_dir": str(shot_dir),
+        "metadata_path": str(metadata_path),
+        "frames_dir": str(frames_dir),
+        "frame_count": frame_count,
+        "frame_path_count": len(frame_paths),
+        "max_frame_delta": max_frame_delta,
+        "max_pre_shot_delta": max_pre_shot_delta,
+        "observed_max_frame_delta": max_frame_delta,
+        "observed_max_pre_shot_delta": max_pre_shot_delta,
+        "reported_max_frame_delta": reported_max_frame_delta,
+        "reported_max_pre_shot_delta": reported_max_pre_shot_delta,
+        "capture_stop_reason": metadata.get("capture_stop_reason"),
+        "score": _score_from_metadata(metadata),
+        "first_frame_evidence": first_frame_evidence,
+        "message": classification,
+    }
+
+
+def _invalid_attempt_status(artifact_validation: dict, retryable_recovery_action: str) -> str:
+    if artifact_validation.get("retryable") and retryable_recovery_action == "fresh_engine_retry":
+        return "invalid_retryable"
+    if artifact_validation.get("retryable") and retryable_recovery_action == "fresh_engine_attempts_exhausted":
+        return "invalid_exhausted"
+    return "invalid_quarantined"
+
+
+def _invalid_attempt_recovery_action(artifact_validation: dict, retryable_recovery_action: str) -> str:
+    if artifact_validation.get("retryable"):
+        return retryable_recovery_action
+    return "quarantine"
+
+
+def _quarantine_target(output_dir: Path, shot_name: str, retry_attempt: int) -> Path:
+    invalid_root = output_dir / "invalid_attempts"
+    invalid_root.mkdir(parents=True, exist_ok=True)
+    return invalid_root / f"{shot_name}_attempt_{int(retry_attempt):02d}"
+
+
+def _quarantined_path_value(value, shot_dir: Path, quarantined_path: Path):
+    if not isinstance(value, str) or not value:
+        return value
+    path = Path(value)
+    if path.is_absolute():
+        try:
+            return str(quarantined_path / path.relative_to(shot_dir))
+        except ValueError:
+            return value
+    if path.parts and path.parts[0] == shot_dir.name:
+        return str(quarantined_path.joinpath(*path.parts[1:]))
+    try:
+        return str(quarantined_path / (shot_dir.parent / path).relative_to(shot_dir))
+    except ValueError:
+        return value
+
+
+def _rewrite_quarantined_metadata(metadata: dict, shot_dir: Path, quarantined_path: Path) -> dict:
+    rewritten = dict(metadata)
+    for key in ("metadata_path", "pre_shot_path", "video_path", "frames_dir", "video_frames_dir", "video_input_pattern"):
+        if key in rewritten:
+            rewritten[key] = _quarantined_path_value(rewritten[key], shot_dir, quarantined_path)
+
+    frames = rewritten.get("frames")
+    if isinstance(frames, list):
+        rewritten_frames = []
+        for frame in frames:
+            if isinstance(frame, dict):
+                rewritten_frame = dict(frame)
+                if "path" in rewritten_frame:
+                    rewritten_frame["path"] = _quarantined_path_value(rewritten_frame["path"], shot_dir, quarantined_path)
+                rewritten_frames.append(rewritten_frame)
+            else:
+                rewritten_frames.append(frame)
+        rewritten["frames"] = rewritten_frames
+
+    validation = rewritten.get("artifact_validation")
+    if isinstance(validation, dict):
+        rewritten_validation = dict(validation)
+        rewritten_validation["shot_dir"] = str(quarantined_path)
+        if "metadata_path" in rewritten_validation:
+            rewritten_validation["metadata_path"] = str(quarantined_path / "metadata.json")
+        if "frames_dir" in rewritten_validation:
+            rewritten_validation["frames_dir"] = _quarantined_path_value(rewritten_validation["frames_dir"], shot_dir, quarantined_path)
+        rewritten["artifact_validation"] = rewritten_validation
+    return rewritten
+
+
+def _copy_invalid_attempt(shot_dir: Path, quarantined_path: Path) -> dict:
+    if quarantined_path.exists():
+        raise RuntimeError(f"invalid attempt quarantine path already exists: {quarantined_path}")
+    shutil.copytree(shot_dir, quarantined_path)
+    metadata_path = quarantined_path / "metadata.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    rewritten = _rewrite_quarantined_metadata(metadata, shot_dir, quarantined_path)
+    _write_metadata(metadata_path, rewritten)
+    rewritten["artifact_validation"] = validate_rollout_artifact(quarantined_path)
+    _write_metadata(metadata_path, rewritten)
+    return rewritten
+
+
+def _invalid_attempt_reference(rollout: dict) -> dict[str, Any]:
+    reference = {
+        "shot_name": rollout["name"],
+        "attempt_status": rollout.get("attempt_status"),
+        "accepted": False,
+        "invalid_reason": rollout.get("invalid_reason"),
+        "retry_attempt": rollout.get("retry_attempt"),
+        "recovery_action": rollout.get("recovery_action"),
+        "quarantined_path": rollout.get("quarantined_path"),
+        "metadata_path": rollout.get("metadata_path"),
+    }
+    if rollout.get("fresh_engine_attempt") is not None:
+        reference["fresh_engine_attempt"] = rollout["fresh_engine_attempt"]
+    validation = rollout.get("artifact_validation")
+    if isinstance(validation, dict):
+        reference["artifact_validation"] = validation
+    return {key: value for key, value in reference.items() if value is not None}
+
+
+def _write_metadata(path: Path, metadata: dict) -> None:
+    path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+
+
+def _finalize_attempt_metadata(
+    *,
+    output_dir: Path,
+    shot_dir: Path,
+    metadata: dict,
+    artifact_validation: dict,
+    retry_attempt: int,
+    prior_invalid_attempts: list[dict] | None,
+    retryable_recovery_action: str,
+    override_recovery_action: bool = True,
+) -> dict:
+    metadata["artifact_validation"] = artifact_validation
+    metadata["accepted"] = bool(artifact_validation.get("accepted"))
+    metadata["retry_attempt"] = int(retry_attempt)
+    if prior_invalid_attempts:
+        metadata["prior_invalid_attempts"] = list(prior_invalid_attempts)
+
+    if metadata["accepted"]:
+        metadata["attempt_status"] = "accepted"
+        return metadata
+
+    recovery_action = _invalid_attempt_recovery_action(artifact_validation, retryable_recovery_action)
+    metadata["attempt_status"] = _invalid_attempt_status(artifact_validation, retryable_recovery_action)
+    metadata["invalid_reason"] = artifact_validation.get("invalid_reason")
+    if override_recovery_action:
+        metadata["recovery_action"] = recovery_action
+    quarantined_path = _quarantine_target(output_dir, shot_dir.name, retry_attempt)
+    metadata["quarantined_path"] = str(quarantined_path)
+    _write_metadata(shot_dir / "metadata.json", metadata)
+    metadata = _copy_invalid_attempt(shot_dir, quarantined_path)
+    return metadata
+
+
+def _rollout_record_from_metadata(
+    shot_dir: Path,
+    *,
+    action: dict,
+    shot: dict,
+    metadata: dict,
+    shoot_response=None,
+    slingshot_reference=None,
+) -> dict[str, Any]:
+    return {
+        "name": shot_dir.name,
+        "action": action,
+        "shot": shot,
+        "shoot_response": shoot_response,
+        "frame_count": metadata["frame_count"],
+        "slingshot_reference": slingshot_reference,
+        "metadata_path": str(Path(metadata["quarantined_path"]) / "metadata.json")
+        if metadata.get("quarantined_path")
+        else str(shot_dir / "metadata.json"),
+        "pre_shot_protocol_state": metadata.get("pre_shot_protocol_state"),
+        "post_shoot_protocol_state": metadata.get("post_shoot_protocol_state"),
+        "post_capture_protocol_state": metadata.get("post_capture_protocol_state"),
+        "post_recovery_protocol_state": metadata.get("post_recovery_protocol_state"),
+        "recovery_action": metadata.get("recovery_action"),
+        "pre_shot_guard": metadata.get("pre_shot_guard"),
+        "artifact_validation": metadata.get("artifact_validation"),
+        "attempt_status": metadata.get("attempt_status"),
+        "accepted": bool(metadata.get("accepted")),
+        "invalid_reason": metadata.get("invalid_reason"),
+        "retry_attempt": metadata.get("retry_attempt"),
+        "quarantined_path": metadata.get("quarantined_path"),
+        "prior_invalid_attempts": metadata.get("prior_invalid_attempts"),
+        **({"pre_shot_path": metadata["pre_shot_path"]} if "pre_shot_path" in metadata else {}),
+        **({"video_path": metadata["video_path"]} if "video_path" in metadata else {}),
+    }
+
+
+def _mark_guard_failure_retryable(artifact_validation: dict, retryable_recovery_action: str) -> dict:
+    if retryable_recovery_action not in {"fresh_engine_retry", "fresh_engine_attempts_exhausted"}:
+        return artifact_validation
+    marked = dict(artifact_validation)
+    marked["retryable"] = True
+    marked["retry_decision"] = "retry" if retryable_recovery_action == "fresh_engine_retry" else "retry_exhausted"
+    return marked
+
+
+def _record_fresh_engine_attempt_metadata(
+    output_dir: Path,
+    rollout: dict,
+    *,
+    attempt: int,
+    slingshot_reference: dict[str, int] | None,
+) -> None:
+    rollout["slingshot_reference"] = slingshot_reference
+    rollout["fresh_engine_attempt"] = attempt
+    metadata_paths = [output_dir / rollout["name"] / "metadata.json", Path(rollout["metadata_path"])]
+    for shot_metadata_path in dict.fromkeys(metadata_paths):
+        if not shot_metadata_path.is_file():
+            continue
+        shot_metadata = json.loads(shot_metadata_path.read_text(encoding="utf-8"))
+        shot_metadata["fresh_engine_attempt"] = attempt
+        if slingshot_reference is not None:
+            shot_metadata["slingshot_reference"] = slingshot_reference
+        _write_metadata(shot_metadata_path, shot_metadata)
 
 
 def action_to_shot(action: dict, *, frame_height: int) -> dict:
@@ -420,6 +1122,25 @@ def write_action_plan(output_dir: Path, *, count: int, drag_start: tuple[int, in
     return path
 
 
+def load_actions_from_action_log(path: Path) -> list[dict]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    trials = payload.get("trials")
+    if not isinstance(trials, list):
+        raise ValueError("action log must contain a trials list")
+    actions = []
+    for index, trial in enumerate(trials, start=1):
+        if not isinstance(trial, dict) or "action" not in trial:
+            raise ValueError(f"trial {index} is missing action")
+        action = trial["action"]
+        if not isinstance(action, dict):
+            raise ValueError(f"trial {index} action must be an object")
+        actions.append(action)
+    trial_count = payload.get("trial_count")
+    if trial_count is not None and int(trial_count) != len(actions):
+        raise ValueError("action log trial_count does not match trials length")
+    return actions
+
+
 def ensure_output_dir(output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     probe = output_dir / ".write_test"
@@ -439,6 +1160,10 @@ def capture_desktop_rollout(
     pre_shot_sample: dict | None = None,
     desktop_crop: tuple[int, int, int, int] | None = DEFAULT_DESKTOP_GAME_CROP,
     grabber=None,
+    shoot=None,
+    max_duration_seconds: float | None = None,
+    settle_seconds: float = 1.5,
+    settle_pixel_threshold: int = 100,
     clock=time.monotonic,
     sleeper=time.sleep,
 ) -> dict:
@@ -446,6 +1171,12 @@ def capture_desktop_rollout(
         raise ValueError("target_fps must be positive")
     if duration_seconds <= 0:
         raise ValueError("duration_seconds must be positive")
+    if max_duration_seconds is not None and max_duration_seconds <= 0:
+        raise ValueError("max_duration_seconds must be positive")
+    if settle_seconds < 0:
+        raise ValueError("settle_seconds must be non-negative")
+    if settle_pixel_threshold < 0:
+        raise ValueError("settle_pixel_threshold must be non-negative")
 
     if grabber is None:
         from PIL import ImageGrab
@@ -466,8 +1197,12 @@ def capture_desktop_rollout(
         pre_shot_image.save(pre_shot_path, format="PNG")
 
     interval = 1.0 / float(target_fps)
-    total_frames = max_frames if max_frames is not None else max(1, int(math.ceil(duration_seconds * target_fps)))
+    completion_capture = shoot is not None and max_frames is None
+    if completion_capture and max_duration_seconds is None:
+        max_duration_seconds = max(duration_seconds * 8.0, duration_seconds + 12.0)
+    total_frames = None if completion_capture else max_frames if max_frames is not None else max(1, int(math.ceil(duration_seconds * target_fps)))
     started_at = clock()
+    schedule_started_at = started_at
     frames = []
     state_samples = []
     previous_image = None
@@ -475,14 +1210,23 @@ def capture_desktop_rollout(
     max_mean_absolute_channel_delta = 0.0
     max_pre_shot_delta = 0
     max_pre_shot_delta_bbox = None
+    shoot_response = None
+    shoot_frame_index = None
+    post_shot_started_at = None
+    settled_since = None
+    stop_reason = "max_frames" if max_frames is not None else "fixed_duration"
 
-    for frame_index in range(total_frames):
-        target_time = started_at + frame_index * interval
+    frame_index = 0
+    while total_frames is None or frame_index < total_frames:
+        if completion_capture and post_shot_started_at is not None and clock() - post_shot_started_at >= float(max_duration_seconds):
+            stop_reason = "max_duration"
+            break
+        target_time = schedule_started_at + frame_index * interval
         now = clock()
         if now < target_time:
             sleeper(target_time - now)
         elapsed = clock() - started_at
-        if elapsed > duration_seconds and frame_index > 0:
+        if not completion_capture and elapsed > duration_seconds and frame_index > 0:
             break
 
         image = grabber.grab()
@@ -508,6 +1252,32 @@ def capture_desktop_rollout(
                 max_pre_shot_delta_bbox = pre_shot_delta["bbox"]
         frames.append(frame)
         previous_image = image
+        if shoot is not None and shoot_response is None:
+            shoot_response = shoot()
+            shoot_frame_index = frame_index
+            post_shot_started_at = clock()
+            schedule_started_at = post_shot_started_at
+            settled_since = None
+
+        if completion_capture and post_shot_started_at is not None and shoot_frame_index is not None and frame_index > shoot_frame_index:
+            post_shot_elapsed = clock() - post_shot_started_at
+            frame_delta = frame.get("frame_delta")
+            changed_pixels = frame_delta.get("changed_pixel_count") if isinstance(frame_delta, dict) else None
+            if isinstance(changed_pixels, int) and changed_pixels <= settle_pixel_threshold:
+                if settled_since is None:
+                    settled_since = clock()
+            else:
+                settled_since = None
+            settled_elapsed = 0.0 if settled_since is None else clock() - settled_since
+            if post_shot_elapsed >= duration_seconds and settled_elapsed >= settle_seconds:
+                stop_reason = "settled"
+                frame_index += 1
+                break
+            if post_shot_elapsed >= float(max_duration_seconds):
+                stop_reason = "max_duration"
+                frame_index += 1
+                break
+        frame_index += 1
 
     if frames:
         sample = {"index": len(frames) - 1, "t": frames[-1]["t"], "phase": "post_capture"}
@@ -531,7 +1301,15 @@ def capture_desktop_rollout(
         "state_samples": state_samples,
         "max_frame_delta": max_frame_delta,
         "max_mean_absolute_channel_delta": round(max_mean_absolute_channel_delta, 6),
+        "capture_stop_reason": stop_reason,
     }
+    if completion_capture:
+        metadata["min_post_shot_duration_seconds"] = duration_seconds
+        metadata["max_duration_seconds"] = max_duration_seconds
+        metadata["settle_seconds"] = settle_seconds
+        metadata["settle_pixel_threshold"] = settle_pixel_threshold
+        if post_shot_started_at is not None:
+            metadata["post_shot_capture_seconds"] = round(float(clock() - post_shot_started_at), 6)
     if pre_shot_path is not None:
         metadata["pre_shot_path"] = str(pre_shot_path)
         metadata["max_pre_shot_delta"] = max_pre_shot_delta
@@ -542,6 +1320,9 @@ def capture_desktop_rollout(
         metadata["pre_shot_sample"] = pre_shot_sample
     if action is not None:
         metadata["action"] = action
+    if shoot_response is not None:
+        metadata["shoot_response"] = shoot_response
+        metadata["shoot_frame_index"] = shoot_frame_index
 
     (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     return metadata
@@ -586,35 +1367,77 @@ def collect_rollouts(
     video_runner=subprocess.run,
     clock=time.monotonic,
     sleeper=time.sleep,
+    shoot_before_capture: bool = True,
+    anchor_actions: bool = True,
+    retry_attempt: int = 1,
+    prior_invalid_attempts: list[dict] | None = None,
+    retryable_recovery_action: str = "quarantine",
 ) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
-    actions = anchor_actions_to_current_slingshot(bridge, actions, frame_height)
+    prior_invalid_attempts = list(prior_invalid_attempts or [])
+    if anchor_actions:
+        actions = anchor_actions_to_current_slingshot(bridge, actions, frame_height)
     rollouts = []
     for index, action in enumerate(actions, start=start_index):
         if reset_rollout is not None:
             reset_rollout(index, action)
         shot = action_to_shot(action, frame_height=frame_height)
         shot_dir = output_dir / f"shot_{index:03d}"
+        if retry_attempt > 1 and shot_dir.exists():
+            shutil.rmtree(shot_dir)
         shot_dir.mkdir(parents=True, exist_ok=True)
         pre_shot_image = None
         pre_shot_sample = None
-        if pre_shot_grabber is not None:
-            pre_shot_image = pre_shot_grabber()
-            if _image_is_uniform(pre_shot_image):
-                raise RuntimeError("uniform desktop pre-shot screenshot; refusing to save rollout baseline")
-            pre_shot_path = shot_dir / "pre_shot.png"
-            pre_shot_image.save(pre_shot_path, format="PNG")
-            pre_shot_sample = {
-                "state": bridge.get_game_state().name,
-                "score": bridge.get_current_score(),
+        pre_shot_protocol_state = _protocol_state_snapshot(bridge)
+        try:
+            pre_shot_guard_result = _run_pre_shot_guard(
+                bridge,
+                shot_dir,
+                initial_protocol_state=pre_shot_protocol_state,
+                pre_shot_grabber=pre_shot_grabber,
+                sleeper=sleeper,
+            )
+        except PreShotGuardError as exc:
+            metadata = {
+                "frame_count": 0,
+                "pre_shot_protocol_state": pre_shot_protocol_state,
+                "post_recovery_protocol_state": exc.metadata.get("post_recovery_protocol_state"),
+                "post_shoot_protocol_state": None,
+                "post_capture_protocol_state": _protocol_state_snapshot(bridge),
+                "recovery_action": exc.metadata.get("recovery_action"),
+                "pre_shot_guard": exc.metadata,
             }
-        response = bridge.shoot(
-            shot["x"],
-            shot["y"],
-            tap_time=shot["tapTime"],
-            fast=fast,
-            release_time=shot["releaseTime"],
-        )
+            _write_metadata(shot_dir / "metadata.json", metadata)
+            metadata["artifact_validation"] = _mark_guard_failure_retryable(
+                validate_rollout_artifact(shot_dir),
+                retryable_recovery_action,
+            )
+            metadata = _finalize_attempt_metadata(
+                output_dir=output_dir,
+                shot_dir=shot_dir,
+                metadata=metadata,
+                artifact_validation=metadata["artifact_validation"],
+                retry_attempt=retry_attempt,
+                prior_invalid_attempts=prior_invalid_attempts,
+                retryable_recovery_action=retryable_recovery_action,
+                override_recovery_action=False,
+            )
+            if metadata.get("accepted"):
+                _write_metadata(shot_dir / "metadata.json", metadata)
+            exc.rollout = _rollout_record_from_metadata(shot_dir, action=action, shot=shot, metadata=metadata)
+            raise
+        pre_shot_image = pre_shot_guard_result["pre_shot_image"]
+        pre_shot_sample = pre_shot_guard_result["pre_shot_sample"]
+        pre_shot_guard = pre_shot_guard_result["pre_shot_guard"]
+        def shoot_once():
+            return bridge.shoot(
+                shot["x"],
+                shot["y"],
+                tap_time=shot["tapTime"],
+                fast=fast,
+                release_time=shot["releaseTime"],
+            )
+
         capture_kwargs = {
             "target_fps": target_fps,
             "duration_seconds": duration_seconds,
@@ -623,11 +1446,39 @@ def collect_rollouts(
             "clock": clock,
             "sleeper": sleeper,
         }
+        if not shoot_before_capture:
+            capture_kwargs["shoot"] = shoot_once
         if pre_shot_image is not None:
             capture_kwargs["pre_shot_image"] = pre_shot_image
         if pre_shot_sample is not None:
             capture_kwargs["pre_shot_sample"] = pre_shot_sample
+        post_recovery_protocol_state = pre_shot_guard_result["post_recovery_protocol_state"]
+        post_shoot_protocol_state = None
+        response = None
+        if shoot_before_capture:
+            response = shoot_once()
+            post_shoot_protocol_state = _protocol_state_snapshot(bridge)
+        else:
+            def shoot_and_snapshot():
+                nonlocal post_shoot_protocol_state
+                result = shoot_once()
+                post_shoot_protocol_state = _protocol_state_snapshot(bridge)
+                return result
+
+            capture_kwargs["shoot"] = shoot_and_snapshot
         metadata = capture_rollout(bridge, shot_dir, **capture_kwargs)
+        if response is None:
+            response = metadata.get("shoot_response")
+        metadata["pre_shot_protocol_state"] = pre_shot_protocol_state
+        metadata["post_recovery_protocol_state"] = post_recovery_protocol_state
+        if post_shoot_protocol_state is None:
+            post_shoot_protocol_state = metadata.get("post_shoot_protocol_state")
+        if post_shoot_protocol_state is not None:
+            metadata["post_shoot_protocol_state"] = post_shoot_protocol_state
+        metadata["post_capture_protocol_state"] = _protocol_state_snapshot(bridge)
+        if "recovery_action" not in metadata:
+            metadata["recovery_action"] = pre_shot_guard_result["recovery_action"]
+        metadata["pre_shot_guard"] = pre_shot_guard
         if metadata.get("frames_dir"):
             pre_shot_path = Path(metadata["pre_shot_path"]) if metadata.get("pre_shot_path") else None
             video_frame_metadata = prepare_rollout_video_frames(
@@ -652,28 +1503,44 @@ def collect_rollouts(
         slingshot_reference = action.get("slingshot_reference")
         if slingshot_reference is not None:
             metadata["slingshot_reference"] = slingshot_reference
-        (shot_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+        _write_metadata(shot_dir / "metadata.json", metadata)
+        artifact_validation = validate_rollout_artifact(shot_dir)
+        metadata = _finalize_attempt_metadata(
+            output_dir=output_dir,
+            shot_dir=shot_dir,
+            metadata=metadata,
+            artifact_validation=artifact_validation,
+            retry_attempt=retry_attempt,
+            prior_invalid_attempts=prior_invalid_attempts,
+            retryable_recovery_action=retryable_recovery_action,
+        )
+        if metadata.get("accepted"):
+            _write_metadata(shot_dir / "metadata.json", metadata)
         rollouts.append(
-            {
-                "name": shot_dir.name,
-                "action": action,
-                "shot": shot,
-                "shoot_response": response,
-                "frame_count": metadata["frame_count"],
-                "slingshot_reference": slingshot_reference,
-                "metadata_path": str(shot_dir / "metadata.json"),
-                **({"pre_shot_path": metadata["pre_shot_path"]} if "pre_shot_path" in metadata else {}),
-                **({"video_path": metadata["video_path"]} if "video_path" in metadata else {}),
-            }
+            _rollout_record_from_metadata(
+                shot_dir,
+                action=action,
+                shot=shot,
+                metadata=metadata,
+                shoot_response=response,
+                slingshot_reference=slingshot_reference,
+            )
         )
 
+    accepted_rollouts = [rollout for rollout in rollouts if rollout.get("accepted")]
+    invalid_attempts = [rollout for rollout in rollouts if not rollout.get("accepted")]
     manifest = {
         "capture_source": "scripts.collect_rollouts",
         "replay_mode": "same-episode-varied-trials",
         "target_fps": target_fps,
         "duration_seconds": duration_seconds,
-        "rollout_count": len(rollouts),
+        "attempt_count": len(rollouts),
+        "accepted_rollout_count": len(accepted_rollouts),
+        "rollout_count": len(accepted_rollouts),
+        "attempts": rollouts,
         "rollouts": rollouts,
+        "accepted_rollouts": accepted_rollouts,
+        "invalid_attempts": invalid_attempts,
     }
     manifest.update(write_action_logs(output_dir, rollouts))
     if write_manifest:
@@ -702,6 +1569,7 @@ def collect_fresh_engine_rollouts(
     ui_settle_seconds: float,
     engine_settle_seconds: float = 0.0,
     agent_settle_seconds: float = 0.0,
+    fresh_engine_attempts: int = 3,
     start_engine_func=start_engine,
     connect_func=connect_with_retry,
     prepare_func=prepare_for_play,
@@ -710,75 +1578,150 @@ def collect_fresh_engine_rollouts(
     select_level_func=select_level_in_display,
     video_runner=subprocess.run,
     sleeper=time.sleep,
+    shoot_before_capture: bool = True,
+    anchor_actions: bool = True,
 ) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     rollouts = []
+    attempts_per_action = max(1, int(fresh_engine_attempts))
     for index, action in enumerate(actions, start=1):
-        engine_process = start_engine_func(game_dir, headless)
-        print(f"Started engine pid={engine_process.pid} for rollout {index}")
-        if engine_settle_seconds > 0:
-            sleeper(engine_settle_seconds)
-        bridge = None
-        try:
-            bridge = connect_func(host, port, timeout=read_timeout, deadline_seconds=connect_timeout)
-            if agent_settle_seconds > 0:
-                sleeper(agent_settle_seconds)
-            print(f"configure -> {bridge.configure(agent_id, PlayingMode.TRAINING)}")
-            print(f"speed -> {bridge.set_speed(speed)}")
-            print(f"ready -> {prepare_func(bridge, timeout=prepare_timeout, poll_delay=0.5).name}")
-            if ui_level is not None:
-                if ui_settle_seconds > 0:
-                    sleeper(ui_settle_seconds)
-                select_level_func(ui_level)
-                if ui_settle_seconds > 0:
-                    sleeper(ui_settle_seconds)
+        prior_invalid_attempts: list[dict] = []
+        for attempt in range(1, attempts_per_action + 1):
             slingshot_reference = None
-            anchored_action = action
-            if action.get("coordinate_frame", "slingshot_relative") == "slingshot_relative":
-                slingshot_reference = slingshot_reference_point_from_symbolic_state(
-                    bridge.get_symbolic_state_without_screenshot(),
-                    frame_height,
+            engine_process = start_engine_func(game_dir, headless)
+            attempt_label = f" for rollout {index}" if attempts_per_action == 1 else f" for rollout {index} attempt {attempt}/{attempts_per_action}"
+            print(f"Started engine pid={engine_process.pid}{attempt_label}")
+            if engine_settle_seconds > 0:
+                sleeper(engine_settle_seconds)
+            bridge = None
+            try:
+                bridge = connect_func(host, port, timeout=read_timeout, deadline_seconds=connect_timeout)
+                if agent_settle_seconds > 0:
+                    sleeper(agent_settle_seconds)
+                print(f"configure -> {bridge.configure(agent_id, PlayingMode.TRAINING)}")
+                print(f"speed -> {bridge.set_speed(speed)}")
+                print(f"ready -> {prepare_func(bridge, timeout=prepare_timeout, poll_delay=0.5).name}")
+                if ui_level is not None:
+                    if ui_settle_seconds > 0:
+                        sleeper(ui_settle_seconds)
+                    select_level_func(ui_level)
+                    if ui_settle_seconds > 0:
+                        sleeper(ui_settle_seconds)
+                anchored_action = action
+                if anchor_actions and action.get("coordinate_frame", "slingshot_relative") == "slingshot_relative":
+                    slingshot_reference = slingshot_reference_point_from_symbolic_state(
+                        bridge.get_symbolic_state_without_screenshot(),
+                        frame_height,
+                    )
+                    if slingshot_reference is None:
+                        raise RuntimeError("could not resolve slingshot reference from symbolic state")
+                    anchored_action = anchor_action_to_slingshot_reference(action, slingshot_reference)
+                partial = collect_rollouts(
+                    bridge,
+                    output_dir,
+                    [anchored_action],
+                    target_fps=target_fps,
+                    duration_seconds=duration_seconds,
+                    frame_height=frame_height,
+                    fast=fast,
+                    capture_rollout=capture_rollout,
+                    pre_shot_grabber=pre_shot_grabber,
+                    start_index=index,
+                    write_manifest=False,
+                    video_runner=video_runner,
+                    shoot_before_capture=shoot_before_capture,
+                    anchor_actions=anchor_actions,
+                    retry_attempt=attempt,
+                    prior_invalid_attempts=prior_invalid_attempts,
+                    retryable_recovery_action="fresh_engine_retry" if attempt < attempts_per_action else "fresh_engine_attempts_exhausted",
                 )
-                if slingshot_reference is None:
-                    raise RuntimeError("could not resolve slingshot reference from symbolic state")
-                anchored_action = anchor_action_to_slingshot_reference(action, slingshot_reference)
-            partial = collect_rollouts(
-                bridge,
-                output_dir,
-                [anchored_action],
-                target_fps=target_fps,
-                duration_seconds=duration_seconds,
-                frame_height=frame_height,
-                fast=fast,
-                capture_rollout=capture_rollout,
-                pre_shot_grabber=pre_shot_grabber,
-                start_index=index,
-                write_manifest=False,
-                video_runner=video_runner,
-            )
-            partial["rollouts"][0]["slingshot_reference"] = slingshot_reference
-            rollouts.extend(partial["rollouts"])
-        finally:
-            if bridge is not None:
-                try:
-                    bridge.disconnect()
-                finally:
-                    stop_owned_engine(engine_process)
-            else:
-                stop_owned_engine(engine_process)
+                rollout = partial["rollouts"][0]
+                _record_fresh_engine_attempt_metadata(
+                    output_dir,
+                    rollout,
+                    attempt=attempt,
+                    slingshot_reference=slingshot_reference,
+                )
 
+                rollouts.append(rollout)
+                if rollout.get("accepted"):
+                    break
+                prior_invalid_attempts.append(_invalid_attempt_reference(rollout))
+                artifact_validation = rollout.get("artifact_validation")
+                retryable = isinstance(artifact_validation, dict) and artifact_validation.get("retryable")
+                if retryable and attempt < attempts_per_action:
+                    print(f"Rollout {index} attempt {attempt}/{attempts_per_action} invalid: {rollout.get('invalid_reason')}; retrying")
+                    continue
+                break
+            except PreShotGuardError as exc:
+                if exc.rollout is not None:
+                    rollout = exc.rollout
+                    _record_fresh_engine_attempt_metadata(
+                        output_dir,
+                        rollout,
+                        attempt=attempt,
+                        slingshot_reference=slingshot_reference,
+                    )
+                    rollouts.append(rollout)
+                    prior_invalid_attempts.append(_invalid_attempt_reference(rollout))
+                    if attempt < attempts_per_action:
+                        print(f"Rollout {index} attempt {attempt}/{attempts_per_action} failed: {exc}; retrying")
+                        continue
+                    break
+                if attempt >= attempts_per_action:
+                    raise
+                print(f"Rollout {index} attempt {attempt}/{attempts_per_action} failed: {exc}; retrying")
+            except Exception as exc:
+                if attempt >= attempts_per_action:
+                    raise
+                print(f"Rollout {index} attempt {attempt}/{attempts_per_action} failed: {exc}; retrying")
+            finally:
+                if bridge is not None:
+                    try:
+                        bridge.disconnect()
+                    finally:
+                        stop_owned_engine(engine_process)
+                else:
+                    stop_owned_engine(engine_process)
+
+    accepted_rollouts = [rollout for rollout in rollouts if rollout.get("accepted")]
+    invalid_attempts = [rollout for rollout in rollouts if not rollout.get("accepted")]
     manifest = {
         "capture_source": getattr(capture_rollout, "__name__", "custom-capture"),
         "replay_mode": "fresh-engine-per-rollout",
         "target_fps": target_fps,
         "duration_seconds": duration_seconds,
-        "rollout_count": len(rollouts),
+        "fresh_engine_attempts": attempts_per_action,
+        "attempt_count": len(rollouts),
+        "accepted_rollout_count": len(accepted_rollouts),
+        "rollout_count": len(accepted_rollouts),
+        "attempts": rollouts,
         "rollouts": rollouts,
+        "accepted_rollouts": accepted_rollouts,
+        "invalid_attempts": invalid_attempts,
     }
     if ui_level is not None:
         manifest["ui_level"] = ui_level
+    exhausted_attempts = [attempt for attempt in invalid_attempts if attempt.get("attempt_status") == "invalid_exhausted"]
+    if exhausted_attempts:
+        invalid_reasons = sorted({str(attempt.get("invalid_reason") or "unknown") for attempt in exhausted_attempts})
+        manifest["collection_status"] = "retry_exhausted"
+        manifest["collection_error"] = {
+            "error": "fresh_engine_retries_exhausted",
+            "accepted_rollout_count": len(accepted_rollouts),
+            "requested_rollout_count": len(actions),
+            "attempt_count": len(rollouts),
+            "invalid_reasons": invalid_reasons,
+        }
     manifest.update(write_action_logs(output_dir, rollouts))
-    (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    manifest_path = output_dir / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    if exhausted_attempts:
+        raise RolloutCollectionError(
+            "fresh-engine retries exhausted: "
+            f"accepted {len(accepted_rollouts)}/{len(actions)} requested rollouts after {len(rollouts)} attempts; "
+            f"final invalid reason(s): {', '.join(invalid_reasons)}; manifest: {manifest_path}"
+        )
     return manifest
 
 
@@ -801,12 +1744,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--game-headless", action="store_true", help="Only used with --start-engine")
     parser.add_argument("--safe", action="store_true", help="Use safe shot instead of fast shot")
     parser.add_argument("--dry-run", action="store_true", help="Only write action_plan.json; do not connect to Java")
+    parser.add_argument("--actions-from-log", type=Path, help="Replay exact actions loaded from a previous action_log.json")
     parser.add_argument("--capture-source", choices=("protocol", "desktop"), default="protocol")
     parser.add_argument("--fresh-engine-per-rollout", action="store_true")
     parser.add_argument("--ui-level", type=int, help="Visible level number to enter with xdotool for each fresh rollout")
     parser.add_argument("--ui-settle-seconds", type=float, default=5.0)
     parser.add_argument("--engine-settle-seconds", type=float, default=20.0)
     parser.add_argument("--agent-settle-seconds", type=float, default=45.0)
+    parser.add_argument("--fresh-engine-attempts", type=int, default=3)
     return parser
 
 
@@ -871,7 +1816,8 @@ def main() -> None:
         from PIL import ImageGrab
 
         pre_shot_grabber = ImageGrab.grab
-    actions = generate_diverse_drag_release_actions(count=args.count)
+    actions_from_log = args.actions_from_log is not None
+    actions = load_actions_from_action_log(args.actions_from_log) if actions_from_log else generate_diverse_drag_release_actions(count=args.count)
 
     if args.fresh_engine_per_rollout:
         manifest = collect_fresh_engine_rollouts(
@@ -894,8 +1840,11 @@ def main() -> None:
             ui_settle_seconds=args.ui_settle_seconds,
             engine_settle_seconds=args.engine_settle_seconds,
             agent_settle_seconds=args.agent_settle_seconds,
+            fresh_engine_attempts=args.fresh_engine_attempts,
             capture_rollout=capture_rollout,
             pre_shot_grabber=pre_shot_grabber,
+            shoot_before_capture=args.capture_source != "desktop",
+            anchor_actions=not actions_from_log,
         )
         print(json.dumps({"manifest": str(args.output_dir / "manifest.json"), "rollout_count": manifest["rollout_count"]}, indent=2))
         return
@@ -925,6 +1874,8 @@ def main() -> None:
             fast=not args.safe,
             capture_rollout=capture_rollout,
             pre_shot_grabber=pre_shot_grabber,
+            shoot_before_capture=args.capture_source != "desktop",
+            anchor_actions=not actions_from_log,
         )
         print(json.dumps({"manifest": str(args.output_dir / "manifest.json"), "rollout_count": manifest["rollout_count"]}, indent=2))
     finally:

@@ -88,7 +88,8 @@ class ManualAgentTest(unittest.TestCase):
 
         self.assertTrue(all(action["drag_release"][0] < 0 for action in actions))
         self.assertTrue(all(action["drag_release"][1] > 0 for action in actions))
-        self.assertTrue(all(action["holdTime"] >= 600 for action in actions))
+        self.assertTrue(all(action["holdTime"] >= 1000 for action in actions))
+        self.assertTrue(all((action["drag_release"][0] ** 2 + action["drag_release"][1] ** 2) ** 0.5 >= 75 for action in actions))
 
     def test_capture_pixel_rollout_records_timestamped_frames_at_target_fps(self):
         class RolloutBridge(FakeBridge):
@@ -174,6 +175,167 @@ class ManualAgentTest(unittest.TestCase):
         state = prepare_for_play(bridge, timeout=2, poll_delay=0)
 
         self.assertEqual(state.name, "PLAYING")
+        self.assertEqual(bridge.novelty_calls, 1)
+        self.assertEqual(bridge.next_calls, 1)
+        self.assertEqual(bridge.zoom_out_calls, 1)
+
+    def test_prepare_for_play_recovers_from_evaluation_terminated_with_next_level(self):
+        class PrepareBridge:
+            def __init__(self):
+                self.states = ["EVALUATION_TERMINATED", "PLAYING"]
+                self.novelty_calls = 0
+                self.next_calls = 0
+                self.zoom_out_calls = 0
+
+            def get_game_state(self):
+                from src.webui.bridge import GameState
+
+                state = self.states.pop(0)
+                return getattr(GameState, state)
+
+            def get_novelty_info(self):
+                self.novelty_calls += 1
+                return -1
+
+            def load_next_available_level(self):
+                self.next_calls += 1
+                return 1
+
+            def fully_zoom_out(self):
+                self.zoom_out_calls += 1
+                return 1
+
+        bridge = PrepareBridge()
+        state = prepare_for_play(bridge, timeout=2, poll_delay=0)
+
+        self.assertEqual(state.name, "PLAYING")
+        self.assertEqual(bridge.novelty_calls, 1)
+        self.assertEqual(bridge.next_calls, 1)
+        self.assertEqual(bridge.zoom_out_calls, 1)
+
+    def test_prepare_for_play_does_not_spam_same_new_trial_transition(self):
+        class PrepareBridge:
+            def __init__(self):
+                self.states = ["NEWTRIAL", "NEWTRIAL", "NEWTRIAL", "PLAYING"]
+                self.ready_calls = 0
+                self.zoom_out_calls = 0
+
+            def get_game_state(self):
+                from src.webui.bridge import GameState
+
+                state = self.states.pop(0)
+                return getattr(GameState, state)
+
+            def ready_for_new_set(self):
+                self.ready_calls += 1
+                return (1, 0, 0, 0, 0, 0, 0)
+
+            def fully_zoom_out(self):
+                self.zoom_out_calls += 1
+                return 1
+
+        bridge = PrepareBridge()
+        state = prepare_for_play(bridge, timeout=2, poll_delay=0)
+
+        self.assertEqual(state.name, "PLAYING")
+        self.assertEqual(bridge.ready_calls, 1)
+        self.assertEqual(bridge.zoom_out_calls, 1)
+
+    def test_prepare_for_play_reissues_new_trial_after_bounded_wait(self):
+        class PrepareBridge:
+            def __init__(self):
+                self.ready_calls = 0
+                self.zoom_out_calls = 0
+
+            def get_game_state(self):
+                from src.webui.bridge import GameState
+
+                if self.ready_calls >= 2:
+                    return GameState.PLAYING
+                return GameState.NEWTRIAL
+
+            def ready_for_new_set(self):
+                self.ready_calls += 1
+                return (1, 0, 0, 0, 0, 0, 0)
+
+            def fully_zoom_out(self):
+                self.zoom_out_calls += 1
+                return 1
+
+        now = [0.0]
+
+        def clock():
+            return now[0]
+
+        def sleeper(seconds):
+            now[0] += seconds
+
+        bridge = PrepareBridge()
+        state = prepare_for_play(
+            bridge,
+            timeout=5,
+            poll_delay=0.5,
+            transition_retry_seconds=1.0,
+            clock=clock,
+            sleeper=sleeper,
+        )
+
+        self.assertEqual(state.name, "PLAYING")
+        self.assertEqual(bridge.ready_calls, 2)
+        self.assertEqual(bridge.zoom_out_calls, 1)
+
+    def test_prepare_for_play_uses_next_level_after_persistent_new_trial_retries(self):
+        class PrepareBridge:
+            def __init__(self):
+                self.ready_calls = 0
+                self.novelty_calls = 0
+                self.next_calls = 0
+                self.zoom_out_calls = 0
+
+            def get_game_state(self):
+                from src.webui.bridge import GameState
+
+                if self.next_calls:
+                    return GameState.PLAYING
+                return GameState.NEWTRIAL
+
+            def ready_for_new_set(self):
+                self.ready_calls += 1
+                return (1, 0, 0, 0, 0, 0, 0)
+
+            def get_novelty_info(self):
+                self.novelty_calls += 1
+                return -1
+
+            def load_next_available_level(self):
+                self.next_calls += 1
+                return 1
+
+            def fully_zoom_out(self):
+                self.zoom_out_calls += 1
+                return 1
+
+        now = [0.0]
+
+        def clock():
+            return now[0]
+
+        def sleeper(seconds):
+            now[0] += seconds
+
+        bridge = PrepareBridge()
+        state = prepare_for_play(
+            bridge,
+            timeout=10,
+            poll_delay=0.5,
+            transition_retry_seconds=1.0,
+            new_set_ready_attempts=2,
+            clock=clock,
+            sleeper=sleeper,
+        )
+
+        self.assertEqual(state.name, "PLAYING")
+        self.assertEqual(bridge.ready_calls, 2)
         self.assertEqual(bridge.novelty_calls, 1)
         self.assertEqual(bridge.next_calls, 1)
         self.assertEqual(bridge.zoom_out_calls, 1)

@@ -78,8 +78,22 @@ def start_engine(game_dir: Path, headless: bool) -> subprocess.Popen:
     return process
 
 
-def prepare_for_play(bridge: ScienceBirdsBridge, timeout: float, poll_delay: float) -> GameState:
-    deadline = time.time() + timeout
+def prepare_for_play(
+    bridge: ScienceBirdsBridge,
+    timeout: float,
+    poll_delay: float,
+    *,
+    transition_retry_seconds: float = 5.0,
+    new_set_ready_attempts: int = 3,
+    clock=time.time,
+    sleeper=time.sleep,
+) -> GameState:
+    deadline = clock() + timeout
+    last_transition_state: GameState | None = None
+    last_transition_time: float | None = None
+    transition_attempt_count = 0
+    transition_retry_seconds = max(0.0, float(transition_retry_seconds))
+    new_set_ready_attempts = max(1, int(new_set_ready_attempts))
     new_set_states = {
         GameState.NEWTRAININGSET,
         GameState.RESUMETRAINING,
@@ -92,25 +106,63 @@ def prepare_for_play(bridge: ScienceBirdsBridge, timeout: float, poll_delay: flo
         GameState.LEVEL_SELECTION,
         GameState.WON,
         GameState.LOST,
+        GameState.EVALUATION_TERMINATED,
     }
 
-    while time.time() < deadline:
+    while clock() < deadline:
+        now = clock()
         state = bridge.get_game_state()
         if state == GameState.PLAYING:
             bridge.fully_zoom_out()
             return state
+        if state != last_transition_state:
+            transition_attempt_count = 0
         if state in new_set_states:
-            print(f"State {state.name}: ready_for_new_set")
-            bridge.ready_for_new_set()
+            should_retry = (
+                state != last_transition_state
+                or last_transition_time is None
+                or now - last_transition_time >= transition_retry_seconds
+            )
+            if should_retry:
+                if transition_attempt_count >= new_set_ready_attempts:
+                    print(f"State {state.name}: load_next_available_level")
+                    bridge.get_novelty_info()
+                    bridge.load_next_available_level()
+                    transition_attempt_count = 0
+                else:
+                    print(f"State {state.name}: ready_for_new_set")
+                    bridge.ready_for_new_set()
+                    transition_attempt_count += 1
+                last_transition_state = state
+                last_transition_time = now
+            else:
+                print(f"State {state.name}: waiting")
         elif state in menu_states:
-            print(f"State {state.name}: load_next_available_level")
-            bridge.get_novelty_info()
-            bridge.load_next_available_level()
+            should_retry = (
+                state != last_transition_state
+                or last_transition_time is None
+                or now - last_transition_time >= transition_retry_seconds
+            )
+            if should_retry:
+                print(f"State {state.name}: load_next_available_level")
+                bridge.get_novelty_info()
+                bridge.load_next_available_level()
+                last_transition_state = state
+                last_transition_time = now
+                transition_attempt_count = 0
+            else:
+                print(f"State {state.name}: waiting")
         elif state == GameState.LOADING:
+            last_transition_state = None
+            last_transition_time = None
+            transition_attempt_count = 0
             print("State LOADING: waiting")
         else:
+            last_transition_state = None
+            last_transition_time = None
+            transition_attempt_count = 0
             print(f"State {state.name}: waiting")
-        time.sleep(poll_delay)
+        sleeper(poll_delay)
     raise TimeoutError("Science Birds did not reach PLAYING before timeout")
 
 
@@ -293,10 +345,10 @@ def generate_diverse_drag_release_actions(
     *,
     drag_start: tuple[int, int] = (300, 220),
     count: int = 16,
-    strengths: tuple[int, ...] = (45, 70, 95, 120),
+    strengths: tuple[int, ...] = (80, 105, 130, 155),
     angles_degrees: tuple[int, ...] = (5, 20, 35, 50, 65, 80),
     tap_times: tuple[int, ...] = (0, 45, 70, 90),
-    hold_times: tuple[int, ...] = (600, 900),
+    hold_times: tuple[int, ...] = (1000, 1400),
 ) -> list[dict]:
     if count < 0:
         raise ValueError("count must be non-negative")

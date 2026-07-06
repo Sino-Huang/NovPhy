@@ -1,0 +1,95 @@
+{
+  "capture_source": "scripts.collect_rollouts",
+  "replay_mode": "same-episode-varied-trials",
+  "target_fps": 30.0,
+  "duration_seconds": 1.5,
+  "rollout_count": 2,
+  "rollouts": [
+    {
+      "name": "shot_001",
+      "action": {
+        "action_type": "drag_hold_release",
+        "coordinate_frame": "slingshot_relative",
+        "drag_start": [
+          97,
+          227
+        ],
+        "drag_release": [
+          -80,
+          7
+        ],
+        "tapTime": 0,
+        "holdTime": 1000,
+        "slingshot_reference": {
+          "gameX": 97,
+          "gameY": 227,
+          "canvasX": 97,
+          "canvasY": 252
+        }
+      },
+      "shot": {
+        "x": 17,
+        "y": 259,
+        "gameX": 17,
+        "gameY": 220,
+        "tapTime": 0,
+        "releaseTime": 1000
+      },
+      "shoot_response": 1,
+      "frame_count": 12,
+      "slingshot_reference": {
+        "gameX": 97,
+        "gameY": 227,
+        "canvasX": 97,
+        "canvasY": 252
+      },
+      "metadata_path": "data/action_log_replay_original_20260703_180602/shot_001/metadata.json",
+      "pre_shot_path": "data/action_log_replay_original_20260703_180602/shot_001/pre_shot.png",
+      "video_path": "data/action_log_replay_original_20260703_180602/shot_001/rollout.mp4"
+    },
+    {
+      "name": "shot_002",
+      "action": {
+        "action_type": "drag_hold_release",
+        "coordinate_frame": "slingshot_relative",
+        "drag_start": [
+          97,
+          227
+        ],
+        "drag_release": [
+          -75,
+          27
+        ],
+        "tapTime": 45,
+        "holdTime": 1000,
+        "slingshot_reference": {
+          "gameX": 97,
+          "gameY": 227,
+          "canvasX": 97,
+          "canvasY": 252
+        }
+      },
+      "shot": {
+        "x": 22,
+        "y": 279,
+        "gameX": 22,
+        "gameY": 200,
+        "tapTime": 45,
+        "releaseTime": 1000
+      },
+      "shoot_response": 1,
+      "frame_count": 5,
+      "slingshot_reference": {
+        "gameX": 97,
+        "gameY": 227,
+        "canvasX": 97,
+        "canvasY": 252
+      },
+      "metadata_path": "data/action_log_replay_original_20260703_180602/shot_002/metadata.json",
+      "pre_shot_path": "data/action_log_replay_original_20260703_180602/shot_002/pre_shot.png",
+      "video_path": "data/action_log_replay_original_20260703_180602/shot_002/rollout.mp4"
+    }
+  ],
+  "action_log_path": "data/action_log_replay_original_20260703_180602/action_log.json",
+  "action_log_jsonl_path": "data/action_log_replay_original_20260703_180602/action_log.jsonl"
+}
