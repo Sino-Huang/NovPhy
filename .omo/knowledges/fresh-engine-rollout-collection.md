@@ -156,6 +156,16 @@ Verification summary:
 - `sciencebirdsgames/Linux/config.xml` was restored to `novelty_level_0/type010102` after collection.
 - `novelty_level_8/type010805` was attempted but repeatedly stayed in `LOST` and timed out before capture, so it was not included in the final high-FPS review set.
 
+## Pre-Shot Guard Crop Alignment
+
+Date: 2026-07-06
+
+Reported artifact `data/novphy_rollouts_dataset/train/novelty_level_0_type010101_00002_0_1_010101_0_1/shot_001/frames/frame_000000.png` showed the SELECT LEVEL menu even though the pre-shot guard metadata reported `classification: gameplay-candidate`. The root cause was a surface mismatch: `capture_desktop_rollout()` cropped Xvnc screenshots to the 640x480 game viewport with `DEFAULT_DESKTOP_GAME_CROP`, but `_run_pre_shot_guard()` classified the uncropped 1024x768 desktop. A full desktop with black padding around a menu-like game crop could therefore pass the guard and only be rejected after capture.
+
+The guard now normalizes/crops pre-shot desktop grabs before classifying and saving guard evidence, so the pre-shot guard, `pre_shot.png`, rollout frames, and validator all refer to the same 640x480 game surface. Regression coverage: `tests.test_collect_rollouts.CollectRolloutsTest.test_pre_shot_guard_rejects_menu_inside_default_desktop_crop` fails without the crop alignment and passes with it.
+
+Action-side finding from the same investigation: fresh-engine collection is still the correct mode for dataset generation because `scripts/prepare_rollout_dataset.py` emits `--capture-source desktop --fresh-engine-per-rollout --ui-level 1`. In that path, each attempt re-reads request-62 symbolic state and anchors slingshot-relative actions to the current slingshot/bird-on-sling before shooting. The benchmark wrappers follow the same contract: actions are `[dx, dy, tap_time]` relative to the current sling center, with the engine advancing to the next bird after each shot. Low/no-motion captures are not proof of a second-bird action bug by themselves; they are already classified as `low_motion_suspicious`, marked retryable, and retried/quarantined by the post-shot validator.
+
 ## Same-episode action overlay videos
 
 Date: 2026-06-29
@@ -668,3 +678,59 @@ Safe operator guidance:
 - Treat a command exit of `0` plus accepted `gameplay-valid` shots as bounded-QA evidence only, not a promise that all levels or the full dataset are valid.
 - Do not run a full train/dev dataset collection until the final verification wave passes and the user explicitly chooses to proceed.
 - If final verification later approves a large collection, keep the same acceptance checks in place and review the invalid attempt ledger before using the dataset.
+
+## Fresh Engine Process-Group Cleanup
+
+Date: 2026-07-07
+
+Large fresh-engine dataset runs can leave orphaned Unity children (`./9001.x86_64 ... --agent-port 2004 --dev`) even after the Java `game_playing_interface.jar` wrapper is stopped. Runtime inspection showed hundreds of PPID-1 Unity processes from prior rollout attempts, including user-reported PIDs `965979`, `967421`, `968797`, `974306`, `977147`, and `994093`.
+
+`scripts.manual_agent.start_engine()` launches the Java wrapper with `start_new_session=True`; it now marks the returned process with `novphy_process_group = True`. `scripts.collect_rollouts.stop_owned_engine()` uses that marker to terminate the owned process group with `SIGTERM`, escalating to `SIGKILL` on timeout, and falls back to the previous PID-only terminate/kill behavior for unmarked injected or externally-owned processes.
+
+Verification used a real process-group smoke: spawn a marked `bash` parent in a new session with a child `sleep`, call `stop_owned_engine()`, then `pgrep -g <pgid>` returns no remaining processes.
+
+## Parallel Rollout Worker Port Isolation
+
+Date: 2026-07-08
+
+A real `WORKERS=3` run originally generated distinct requested ports (`9001`, `9011`, `9021`) but the Java wrapper/Unity children still bound the default game-thread ports (`9001`, `9002`, etc.), producing `java.net.BindException: Address already in use` and leaving workers stuck without manifests. The root cause was that `scripts.manual_agent.start_engine(..., game_port=...)` passed `--port`, which is a Unity-side flag and is ignored by `game_playing_interface.jar`.
+
+Bytecode inspection of `sciencebirdsgames/Linux/game_playing_interface.jar` proved the Java wrapper's actual flag is `--game-start-port`: `server.ABServer` parses it into `ABServer.gameStartPort`, and `server.ABServerManager.getFreePort()` starts allocation from that field. `scripts.manual_agent.start_engine()` now forwards `game_port` as `--game-start-port`, while `--agent-port` remains the wrapper's agent socket.
+
+Bounded runtime proof used two temporary engine copies on isolated high ports, not a full dataset collection:
+
+- Worker A: `--agent-port 2304 --game-start-port 9301`, `configure -> [1, 207, 0]`, log line `Starting new game thread with socket on port: 9301`.
+- Worker B: `--agent-port 2314 --game-start-port 9311`, `configure -> [1, 207, 0]`, log line `Starting new game thread with socket on port: 9311`.
+- No `BindException` appeared in either Java log.
+- Default game port `9001` stayed closed during the high-port smoke.
+- Cleanup left ports `2304`, `2314`, `9301`, `9311`, `9001`, and `9011` closed.
+
+Current safe behavior:
+
+- `WORKERS=1` remains the default serial behavior.
+- `scripts/prepare_rollout_dataset.py plan --workers N` rejects `N < 1` as invalid.
+- `WORKERS>1` is enabled for planning and generates per-worker X displays, temporary engine copies, output roots, agent ports, and Java game-start ports.
+- Worker specs use `agent_port=2004 + index * 10` and `game_port=9001 + index * 10`; generated collection commands pass both `--engine-agent-port` and `--engine-game-port` into `scripts/collect_rollouts.py`.
+- Generated worker functions remove their temporary engine copy with `trap 'rm -rf "$worker_root"' RETURN` when the worker exits.
+- Generated parallel scripts keep the consumer-facing dataset layout as `OUT_ROOT/{train,dev}/...`; worker IDs are not inserted into final output paths.
+- Generated parallel scripts track background worker PIDs, kill/wait them on `EXIT`, `INT`, or `TERM`, and clear the trap after all workers finish.
+- `scripts/collect_full_rollout_training_dataset.sh` starts one Xvnc display per worker, then runs the generated parallel collection script.
+- `scripts/collect_full_rollout_training_dataset.sh` rejects non-`:N` `DISPLAY_ID` values before Bash arithmetic expansion, preventing arithmetic command-substitution injection.
+- Because the Java wrapper exposes unauthenticated agent/game sockets, `scripts/collect_full_rollout_training_dataset.sh` requires `NOVPHY_ALLOW_NETWORK_LISTENERS=1` for `WORKERS>1`; set it only on an isolated/firewalled host.
+- `scripts.manual_agent.main()` now uses process-group-aware cleanup for engines it starts, matching the Java/Unity child cleanup strategy used by `scripts.collect_rollouts.stop_owned_engine()`.
+
+Operator caution: the port-isolation path is now proven for startup/configure and Java/Unity socket binding, but full train/dev collection is still a large side-effecting operation. Use a bounded output root first when changing worker counts or capture parameters.
+
+Validation commands run after the port-isolation fix:
+
+```sh
+source ~/cd_novphy && python -m unittest tests.test_prepare_rollout_dataset
+source ~/cd_novphy && python -m unittest tests.test_manual_agent
+source ~/cd_novphy && python -m unittest tests.test_collect_rollouts.CollectRolloutsTest.test_connect_or_start_engine_auto_starts_engine_after_connection_refusal tests.test_collect_rollouts.CollectRolloutsTest.test_connect_or_start_engine_forwards_custom_engine_ports tests.test_collect_rollouts.CollectRolloutsTest.test_main_wires_desktop_fresh_engine_baseline_capture
+source ~/cd_novphy && python -m unittest tests.test_collect_rollouts.CollectRolloutsTest.test_stop_owned_engine_terminates_process_group_for_started_engine tests.test_collect_rollouts.CollectRolloutsTest.test_stop_owned_engine_falls_back_to_process_when_group_lookup_fails tests.test_collect_rollouts.CollectRolloutsTest.test_stop_owned_engine_escalates_process_group_after_timeout
+source ~/cd_novphy && python -m py_compile scripts/prepare_rollout_dataset.py tests/test_prepare_rollout_dataset.py scripts/manual_agent.py tests/test_manual_agent.py scripts/collect_rollouts.py tests/test_collect_rollouts.py
+source ~/cd_novphy && bash -n scripts/collect_full_rollout_training_dataset.sh
+git diff --check
+```
+
+`basedpyright-langserver` was not installed, so LSP diagnostics could not run. The broad `tests.test_collect_rollouts` suite still has one unrelated fixture failure from previously mutated generated dataset artifacts: `test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots` expects `max_frame_delta=965`, while the current artifact reports `898`.

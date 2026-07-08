@@ -4,6 +4,8 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
+import signal
 import subprocess
 import sys
 import time
@@ -64,18 +66,53 @@ def connect_with_retry(host: str, port: int, timeout: float, deadline_seconds: f
     raise RuntimeError(f"Could not connect to Science Birds at {host}:{port}: {last_error}")
 
 
-def start_engine(game_dir: Path, headless: bool) -> subprocess.Popen:
+def start_engine(game_dir: Path, headless: bool, *, agent_port: int | None = None, game_port: int | None = None) -> subprocess.Popen:
     jar_path = game_dir / "game_playing_interface.jar"
     if not jar_path.is_file():
         raise FileNotFoundError(f"Missing {jar_path}")
-    command = ["java", "-jar", "./game_playing_interface.jar", "--dev"]
+    command = ["java", "-jar", "./game_playing_interface.jar"]
     if headless:
-        command.insert(-1, "--headless")
+        command.append("--headless")
+    if agent_port is not None:
+        command.extend(["--agent-port", str(agent_port)])
+    if game_port is not None:
+        command.extend(["--game-start-port", str(game_port)])
+    command.append("--dev")
     log_path = Path(f"/tmp/novphy_game_engine_{int(time.time() * 1000)}.log")
     log_file = log_path.open("ab")
     process = subprocess.Popen(command, cwd=game_dir, stdout=log_file, stderr=subprocess.STDOUT, start_new_session=True)
     process.novphy_log_file = log_file
+    process.novphy_process_group = True
     return process
+
+
+def stop_started_engine(engine_process: subprocess.Popen | None) -> None:
+    if engine_process is None or engine_process.poll() is not None:
+        return
+    pgid = None
+    if getattr(engine_process, "novphy_process_group", False):
+        try:
+            pgid = os.getpgid(engine_process.pid)
+        except (OSError, ProcessLookupError):
+            pgid = None
+    if pgid is not None:
+        try:
+            os.killpg(pgid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+    else:
+        engine_process.terminate()
+    try:
+        engine_process.wait(timeout=5)
+    except (subprocess.TimeoutExpired, TimeoutError):
+        if pgid is not None:
+            try:
+                os.killpg(pgid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        else:
+            engine_process.kill()
+        engine_process.wait(timeout=5)
 
 
 def prepare_for_play(
@@ -566,13 +603,7 @@ def main() -> None:
     try:
         bridge = connect_with_retry(args.host, args.port, timeout=args.read_timeout, deadline_seconds=args.connect_timeout)
     except RuntimeError:
-        if engine_process is not None and engine_process.poll() is None:
-            engine_process.terminate()
-            try:
-                engine_process.wait(timeout=5)
-            except (subprocess.TimeoutExpired, TimeoutError):
-                engine_process.kill()
-                engine_process.wait(timeout=5)
+        stop_started_engine(engine_process)
         raise
     try:
         print("Connected")
@@ -586,13 +617,7 @@ def main() -> None:
         try:
             bridge.disconnect()
         finally:
-            if engine_process is not None and engine_process.poll() is None:
-                engine_process.terminate()
-                try:
-                    engine_process.wait(timeout=5)
-                except (subprocess.TimeoutExpired, TimeoutError):
-                    engine_process.kill()
-                    engine_process.wait(timeout=5)
+            stop_started_engine(engine_process)
 
 
 if __name__ == "__main__":

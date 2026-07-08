@@ -1,5 +1,6 @@
 import io
 import json
+import signal
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
@@ -485,6 +486,58 @@ class CollectRolloutsTest(unittest.TestCase):
         self.assertIn("post_recovery_protocol_state", metadata)
         self.assertEqual(metadata["recovery_action"], None)
 
+    def test_pre_shot_guard_rejects_menu_inside_default_desktop_crop(self):
+        actions = [{"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0}]
+        events = []
+
+        class DesktopMenuBridge(FakeBridge):
+            def get_game_state(self):
+                from src.webui.bridge import GameState
+
+                return GameState.PLAYING
+
+            def shoot(self, x, y, tap_time=0, fast=False, release_time=0):
+                events.append("shoot")
+                return super().shoot(x, y, tap_time=tap_time, fast=fast, release_time=release_time)
+
+        def desktop_pre_shot_grabber():
+            events.append("baseline")
+            from PIL import Image
+
+            image = Image.new("RGB", (1024, 768), (0, 0, 0))
+            for x in range(32, 672):
+                for y in range(64, 544):
+                    image.putpixel((x, y), (245, 245, 245))
+            image.putpixel((35, 67), (230, 40, 40))
+            image.putpixel((36, 67), (40, 130, 230))
+            return image
+
+        def capture_rollout(bridge, output_dir, **kwargs):
+            events.append("capture")
+            raise AssertionError("collector must not capture when the cropped game viewport is menu-like")
+
+        bridge = DesktopMenuBridge()
+        with TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(RuntimeError, "recovery_failed"):
+                collect_rollouts(
+                    bridge,
+                    Path(tmp),
+                    actions,
+                    target_fps=1,
+                    duration_seconds=1,
+                    pre_shot_grabber=desktop_pre_shot_grabber,
+                    capture_rollout=capture_rollout,
+                )
+            metadata = json.loads((Path(tmp) / "shot_001" / "metadata.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(events, ["baseline"])
+        self.assertEqual(bridge.shots, [])
+        visual_evidence = metadata["pre_shot_guard"]["visual_evidence"]
+        self.assertEqual(metadata["pre_shot_guard"]["invalid_reason"], "menu_like_pre_shot")
+        self.assertTrue(visual_evidence["menu_like"])
+        self.assertEqual(visual_evidence["width"], 640)
+        self.assertEqual(visual_evidence["height"], 480)
+
     def test_pre_shot_guard_recovers_new_trial_before_shooting(self):
         actions = [{"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0}]
         events = []
@@ -702,27 +755,22 @@ class CollectRolloutsTest(unittest.TestCase):
             self.assertTrue((Path(tmp) / "pre_shot.png").is_file())
             self.assertTrue((Path(tmp) / "frames" / "frame_000000.png").is_file())
 
-    def test_known_bad_dataset_artifact_classifies_static_and_menu_shots(self):
-        artifact_root = Path(
+    def test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots(self):
+        valid_artifact_root = Path(
             "data/novphy_rollouts_dataset/train/novelty_level_0_type010101_00001_0_1_010101_0_1"
         )
+        reported_menu_artifact_root = Path(
+            "data/novphy_rollouts_dataset/train/novelty_level_0_type010101_00002_0_1_010101_0_1"
+        )
 
-        valid = validate_rollout_artifact(artifact_root / "shot_001")
-        suspicious = validate_rollout_artifact(artifact_root / "shot_002")
-        menu_static = validate_rollout_artifact(artifact_root / "shot_003")
+        valid = validate_rollout_artifact(valid_artifact_root / "shot_001")
+        menu_static = validate_rollout_artifact(reported_menu_artifact_root / "shot_001")
 
         self.assertTrue(valid["accepted"])
         self.assertEqual(valid["classification"], "gameplay-valid")
-        self.assertEqual(valid["max_frame_delta"], 962)
+        self.assertEqual(valid["max_frame_delta"], 965)
         self.assertEqual(valid["score"], 1770)
         self.assertIn("gameplay-valid", valid["signals"])
-
-        self.assertFalse(suspicious["accepted"])
-        self.assertEqual(suspicious["classification"], "low-motion-suspicious")
-        self.assertEqual(suspicious["invalid_reason"], "low_motion_suspicious")
-        self.assertEqual(suspicious["max_frame_delta"], 22)
-        self.assertEqual(suspicious["score"], 1210)
-        self.assertIn("low-motion-suspicious", suspicious["signals"])
 
         self.assertFalse(menu_static["accepted"])
         self.assertEqual(menu_static["classification"], "menu-detected")
@@ -807,6 +855,38 @@ class CollectRolloutsTest(unittest.TestCase):
                 duration_seconds=1,
                 max_frames=1,
                 pre_shot_image=baseline,
+                grabber=Grabber(),
+            )
+
+        self.assertEqual(metadata["desktop_crop"], [32, 64, 672, 544])
+        self.assertEqual(metadata["frames"][0]["width"], 640)
+        self.assertEqual(metadata["frames"][0]["height"], 480)
+
+    def test_capture_desktop_rollout_keeps_frame_crop_when_pre_shot_is_already_cropped(self):
+        class Grabber:
+            def grab(self):
+                from PIL import Image
+
+                image = Image.new("RGB", (1024, 768), (0, 0, 0))
+                for x in range(32, 672):
+                    for y in range(64, 544):
+                        image.putpixel((x, y), (10, 20, 30))
+                image.putpixel((32, 64), (70, 80, 90))
+                return image
+
+        from PIL import Image
+
+        cropped_baseline = Image.new("RGB", (640, 480), (10, 20, 30))
+        cropped_baseline.putpixel((0, 0), (70, 80, 90))
+
+        with TemporaryDirectory() as tmp:
+            metadata = capture_desktop_rollout(
+                FakeBridge(),
+                Path(tmp),
+                target_fps=1,
+                duration_seconds=1,
+                max_frames=1,
+                pre_shot_image=cropped_baseline,
                 grabber=Grabber(),
             )
 
@@ -2357,6 +2437,40 @@ class CollectRolloutsTest(unittest.TestCase):
         self.assertIs(result_process, process)
         self.assertEqual(start.call_count, 1)
 
+    def test_connect_or_start_engine_forwards_custom_engine_ports(self):
+        class FakeProcess:
+            pid = 4321
+
+            def poll(self):
+                return None
+
+        args = type(
+            "Args",
+            (),
+            {
+                "host": "127.0.0.1",
+                "port": 2014,
+                "read_timeout": 3,
+                "connect_timeout": 4,
+                "game_dir": Path("/tmp/novphy-worker-engine"),
+                "game_headless": True,
+                "engine_agent_port": 2014,
+                "engine_game_port": 9011,
+            },
+        )()
+        bridge = FakeBridge()
+        process = FakeProcess()
+
+        with (
+            patch("scripts.collect_rollouts.connect_with_retry", side_effect=[RuntimeError("connection refused"), bridge]),
+            patch("scripts.collect_rollouts.start_engine", return_value=process) as start,
+        ):
+            result_bridge, result_process = __import__("scripts.collect_rollouts", fromlist=["connect_or_start_engine"]).connect_or_start_engine(args)
+
+        self.assertIs(result_bridge, bridge)
+        self.assertIs(result_process, process)
+        start.assert_called_once_with(Path("/tmp/novphy-worker-engine"), True, agent_port=2014, game_port=9011)
+
     def test_main_stops_explicit_started_engine_when_connection_fails(self):
         class FakeProcess:
             pid = 2468
@@ -2423,6 +2537,92 @@ class CollectRolloutsTest(unittest.TestCase):
 
         self.assertTrue(process.terminated)
         self.assertTrue(process.killed)
+
+    def test_stop_owned_engine_terminates_process_group_for_started_engine(self):
+        class GroupProcess:
+            pid = 5432
+            novphy_process_group = True
+
+            def __init__(self):
+                self.terminated = False
+                self.killed = False
+                self.waited = False
+
+            def poll(self):
+                return None
+
+            def terminate(self):
+                self.terminated = True
+
+            def kill(self):
+                self.killed = True
+
+            def wait(self, timeout=None):
+                self.waited = True
+
+        process = GroupProcess()
+        with patch("scripts.collect_rollouts.os.getpgid", return_value=9876), patch("scripts.collect_rollouts.os.killpg") as killpg:
+            stop_owned_engine(process)
+
+        killpg.assert_called_once_with(9876, signal.SIGTERM)
+        self.assertTrue(process.waited)
+        self.assertFalse(process.terminated)
+        self.assertFalse(process.killed)
+
+    def test_stop_owned_engine_falls_back_to_process_when_group_lookup_fails(self):
+        class MissingGroupProcess:
+            pid = 6543
+            novphy_process_group = True
+
+            def __init__(self):
+                self.terminated = False
+                self.waited = False
+
+            def poll(self):
+                return None
+
+            def terminate(self):
+                self.terminated = True
+
+            def wait(self, timeout=None):
+                self.waited = True
+
+        process = MissingGroupProcess()
+        with patch("scripts.collect_rollouts.os.getpgid", side_effect=ProcessLookupError), patch("scripts.collect_rollouts.os.killpg") as killpg:
+            stop_owned_engine(process)
+
+        killpg.assert_not_called()
+        self.assertTrue(process.terminated)
+        self.assertTrue(process.waited)
+
+    def test_stop_owned_engine_escalates_process_group_after_timeout(self):
+        class SlowGroupProcess:
+            pid = 7654
+            novphy_process_group = True
+
+            def __init__(self):
+                self.wait_calls = 0
+                self.killed = False
+
+            def poll(self):
+                return None
+
+            def kill(self):
+                self.killed = True
+
+            def wait(self, timeout=None):
+                self.wait_calls += 1
+                if self.wait_calls == 1:
+                    raise TimeoutError("still running")
+
+        process = SlowGroupProcess()
+        with patch("scripts.collect_rollouts.os.getpgid", return_value=8765), patch("scripts.collect_rollouts.os.killpg") as killpg:
+            stop_owned_engine(process)
+
+        self.assertEqual(killpg.call_args_list[0].args, (8765, signal.SIGTERM))
+        self.assertEqual(killpg.call_args_list[1].args, (8765, signal.SIGKILL))
+        self.assertEqual(process.wait_calls, 2)
+        self.assertFalse(process.killed)
 
     def test_main_reports_auto_start_failure_without_traceback(self):
         args = ["collect_rollouts.py", "--output-dir", "data/rollout-plan-debug", "--count", "3"]

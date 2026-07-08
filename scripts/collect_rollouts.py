@@ -4,7 +4,9 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -590,6 +592,7 @@ def _pre_shot_surface_evidence(image) -> dict[str, Any]:
             "invalid_reason": None,
         }
     image = _normalize_rgb_image(image)
+    image = _crop_desktop_image(image, _default_desktop_crop_for(image))
     uniform = _image_is_uniform(image)
     menu_evidence = _menu_like_frame_evidence(image)
     if uniform:
@@ -706,6 +709,8 @@ def _run_pre_shot_guard(
     while True:
         attempt_number = len(attempts) + 1
         last_image = pre_shot_grabber() if pre_shot_grabber is not None else None
+        if last_image is not None:
+            last_image = _crop_desktop_image(_normalize_rgb_image(last_image), _default_desktop_crop_for(last_image))
         attempt = _pre_shot_attempt_evidence(protocol_state, last_image)
         attempt_path = _save_pre_shot_attempt_image(shot_dir, last_image, attempt_number)
         if attempt_path is not None:
@@ -1189,8 +1194,8 @@ def capture_desktop_rollout(
 
     pre_shot_path = None
     if pre_shot_image is not None:
-        desktop_crop = _default_desktop_crop_for(pre_shot_image) if desktop_crop == DEFAULT_DESKTOP_GAME_CROP else desktop_crop
-        pre_shot_image = _crop_desktop_image(pre_shot_image, desktop_crop)
+        pre_shot_crop = _default_desktop_crop_for(pre_shot_image) if desktop_crop == DEFAULT_DESKTOP_GAME_CROP else desktop_crop
+        pre_shot_image = _crop_desktop_image(pre_shot_image, pre_shot_crop)
         if _image_is_uniform(pre_shot_image):
             raise RuntimeError("uniform desktop pre-shot screenshot; refusing to save rollout baseline")
         pre_shot_path = output_dir / "pre_shot.png"
@@ -1570,6 +1575,8 @@ def collect_fresh_engine_rollouts(
     engine_settle_seconds: float = 0.0,
     agent_settle_seconds: float = 0.0,
     fresh_engine_attempts: int = 3,
+    engine_agent_port: int | None = None,
+    engine_game_port: int | None = None,
     start_engine_func=start_engine,
     connect_func=connect_with_retry,
     prepare_func=prepare_for_play,
@@ -1588,7 +1595,12 @@ def collect_fresh_engine_rollouts(
         prior_invalid_attempts: list[dict] = []
         for attempt in range(1, attempts_per_action + 1):
             slingshot_reference = None
-            engine_process = start_engine_func(game_dir, headless)
+            try:
+                engine_process = start_engine_func(game_dir, headless, agent_port=engine_agent_port, game_port=engine_game_port)
+            except TypeError:
+                if engine_agent_port is not None or engine_game_port is not None:
+                    raise
+                engine_process = start_engine_func(game_dir, headless)
             attempt_label = f" for rollout {index}" if attempts_per_action == 1 else f" for rollout {index} attempt {attempt}/{attempts_per_action}"
             print(f"Started engine pid={engine_process.pid}{attempt_label}")
             if engine_settle_seconds > 0:
@@ -1734,6 +1746,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--frame-height", type=int, default=480)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=2004)
+    parser.add_argument("--game-dir", type=Path, default=ROOT / "sciencebirdsgames" / "Linux")
+    parser.add_argument("--engine-agent-port", type=int)
+    parser.add_argument("--engine-game-port", type=int)
     parser.add_argument("--agent-id", type=int, default=28888)
     parser.add_argument("--speed", type=int, default=50)
     parser.add_argument("--connect-timeout", type=float, default=30)
@@ -1759,8 +1774,11 @@ def connect_or_start_engine(args) -> tuple[object, object | None]:
     try:
         return connect_with_retry(args.host, args.port, timeout=args.read_timeout, deadline_seconds=args.connect_timeout), None
     except RuntimeError as first_error:
+        game_dir = getattr(args, "game_dir", ROOT / "sciencebirdsgames" / "Linux")
+        engine_agent_port = getattr(args, "engine_agent_port", None)
+        engine_game_port = getattr(args, "engine_game_port", None)
         try:
-            engine_process = start_engine(ROOT / "sciencebirdsgames" / "Linux", args.game_headless)
+            engine_process = start_engine(game_dir, args.game_headless, agent_port=engine_agent_port, game_port=engine_game_port)
         except (OSError, FileNotFoundError) as exc:
             message = (
                 f"Could not connect to Science Birds at {args.host}:{args.port}, and could not start the local engine.\n"
@@ -1789,11 +1807,29 @@ def connect_or_start_engine(args) -> tuple[object, object | None]:
 def stop_owned_engine(engine_process) -> None:
     if engine_process is None or engine_process.poll() is not None:
         return
-    engine_process.terminate()
+    pgid = None
+    if getattr(engine_process, "novphy_process_group", False):
+        try:
+            pgid = os.getpgid(engine_process.pid)
+        except (OSError, ProcessLookupError):
+            pgid = None
+    if pgid is not None:
+        try:
+            os.killpg(pgid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+    else:
+        engine_process.terminate()
     try:
         engine_process.wait(timeout=5)
     except (subprocess.TimeoutExpired, TimeoutError):
-        engine_process.kill()
+        if pgid is not None:
+            try:
+                os.killpg(pgid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        else:
+            engine_process.kill()
         engine_process.wait(timeout=5)
 
 
@@ -1823,7 +1859,7 @@ def main() -> None:
         manifest = collect_fresh_engine_rollouts(
             args.output_dir,
             actions,
-            game_dir=ROOT / "sciencebirdsgames" / "Linux",
+            game_dir=args.game_dir,
             host=args.host,
             port=args.port,
             agent_id=args.agent_id,
@@ -1841,6 +1877,8 @@ def main() -> None:
             engine_settle_seconds=args.engine_settle_seconds,
             agent_settle_seconds=args.agent_settle_seconds,
             fresh_engine_attempts=args.fresh_engine_attempts,
+            engine_agent_port=args.engine_agent_port,
+            engine_game_port=args.engine_game_port,
             capture_rollout=capture_rollout,
             pre_shot_grabber=pre_shot_grabber,
             shoot_before_capture=args.capture_source != "desktop",
@@ -1850,7 +1888,7 @@ def main() -> None:
         return
 
     if args.start_engine:
-        engine_process = start_engine(ROOT / "sciencebirdsgames" / "Linux", args.game_headless)
+        engine_process = start_engine(args.game_dir, args.game_headless, agent_port=args.engine_agent_port, game_port=args.engine_game_port)
         print(f"Started engine pid={engine_process.pid}")
         try:
             bridge = connect_with_retry(args.host, args.port, timeout=args.read_timeout, deadline_seconds=args.connect_timeout)

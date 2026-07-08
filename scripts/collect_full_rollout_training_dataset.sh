@@ -12,6 +12,7 @@ fps="${ROLLOUT_FPS:-30}"
 duration="${ROLLOUT_DURATION:-5}"
 display_label="${display_id#:}"
 xvnc_log="${XVNC_LOG:-/tmp/novphy_rollout_xvnc_${USER:-user}_${display_label}.log}"
+workers="${WORKERS:-1}"
 
 usage() {
   cat <<'EOF'
@@ -29,6 +30,9 @@ Environment overrides:
   ROLLOUT_COUNT     Rollouts per level, default 2
   ROLLOUT_FPS       Capture FPS, default 30
   ROLLOUT_DURATION  Minimum post-shot capture duration, default 5
+  WORKERS           Parallel rollout workers, default 1. Workers use isolated X displays, engine dirs, agent ports, and game ports.
+  NOVPHY_ALLOW_NETWORK_LISTENERS=1
+                     Required with WORKERS>1 after confirming the host is isolated/firewalled.
   XVNC_LOG          Xvnc log path, default /tmp/novphy_rollout_xvnc_${USER}_${DISPLAY_ID-without-colon}.log
   NOVPHY_YES=1      Skip the confirmation prompt
 
@@ -40,6 +44,26 @@ EOF
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   usage
   exit 0
+fi
+
+if ! [[ "$workers" =~ ^[0-9]+$ ]]; then
+  echo "WORKERS must be a positive integer." >&2
+  exit 2
+fi
+
+if [[ "$workers" -lt 1 ]]; then
+  echo "WORKERS must be at least 1." >&2
+  exit 2
+fi
+
+if ! [[ "$display_id" =~ ^:[0-9]+$ ]]; then
+  echo "DISPLAY_ID must be an X display like :149 when this launcher manages Xvnc." >&2
+  exit 2
+fi
+
+if [[ "$workers" -gt 1 && "${NOVPHY_ALLOW_NETWORK_LISTENERS:-}" != "1" ]]; then
+  echo "WORKERS>1 opens additional unauthenticated local network listeners; set NOVPHY_ALLOW_NETWORK_LISTENERS=1 only on an isolated/firewalled host." >&2
+  exit 2
 fi
 
 if ! command -v Xvnc >/dev/null 2>&1; then
@@ -54,6 +78,7 @@ echo "Display:        $display_id"
 echo "Rollouts/level: $count"
 echo "FPS:            $fps"
 echo "Duration:       $duration"
+echo "Workers:        $workers"
 echo ""
 echo "Important: sciencebirdsgames/Linux/config.xml will be rewritten per level"
 echo "and left pointing at the final collected level. Test levels are not collected."
@@ -73,19 +98,25 @@ python scripts/prepare_rollout_dataset.py plan \
   --count "$count" \
   --fps "$fps" \
   --duration "$duration" \
-  --display "$display_id"
+  --display "$display_id" \
+  --workers "$workers"
 
-xvnc_pid=""
+xvnc_pids=()
 cleanup() {
-  if [[ -n "$xvnc_pid" ]]; then
+  for xvnc_pid in "${xvnc_pids[@]}"; do
     kill "$xvnc_pid" 2>/dev/null || true
     wait "$xvnc_pid" 2>/dev/null || true
-  fi
+  done
 }
 trap cleanup EXIT
 
-Xvnc "$display_id" -geometry 1024x768 -depth 24 -SecurityTypes None -rfbport 0 >"$xvnc_log" 2>&1 &
-xvnc_pid=$!
+base_display_number="${display_id#:}"
+for ((worker_index = 0; worker_index < workers; worker_index++)); do
+  worker_display=":$((base_display_number + worker_index))"
+  worker_log="${xvnc_log%.log}_${worker_display#:}.log"
+  Xvnc "$worker_display" -geometry 1024x768 -depth 24 -SecurityTypes None -rfbport 0 >"$worker_log" 2>&1 &
+  xvnc_pids+=("$!")
+done
 sleep 2
 
 bash "$plan_dir/collect_train_dev.sh"

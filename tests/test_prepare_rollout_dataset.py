@@ -1,4 +1,5 @@
 import json
+import os
 import shlex
 import subprocess
 import tempfile
@@ -85,6 +86,171 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             self.assertIn("--split train", commands)
             self.assertIn("--split dev", commands)
             self.assertNotIn("--split test", commands)
+            self.assertIn("worker_count=1", commands)
+            self.assertNotIn("run_worker", commands)
+            self.assertNotIn("--engine-agent-port", commands)
+            self.assertNotIn("--engine-game-port", commands)
+            self.assertNotIn("worker_engine_dir=", commands)
+
+    def test_generate_collection_commands_isolates_parallel_workers(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            engine_dir = root / "sciencebirdsgames" / "Linux"
+            for index in range(9):
+                make_level(engine_dir, "novelty_level_0", "type010101", f"level_{index:03d}.xml")
+
+            partitions = partition_levels(discover_level_entries(engine_dir), seed="parallel-seed")
+            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
+
+            commands = generate_collection_commands(
+                manifest_path,
+                output_root=Path("data/generated_rollouts"),
+                options=CollectionOptions(count=2, fps=30, duration=4.5, display=":149", workers=3),
+            )
+
+            self.assertIn("worker_count=3", commands)
+            self.assertIn("run_worker()", commands)
+            self.assertIn("trap 'rm -rf \"$worker_root\"' RETURN", commands)
+            self.assertIn("run_worker 0 ':149' 2004 9001 &", commands)
+            self.assertIn("run_worker 1 ':150' 2014 9011 &", commands)
+            self.assertIn("run_worker 2 ':151' 2024 9021 &", commands)
+            self.assertIn("worker_engine_dir=", commands)
+            self.assertIn("--game-dir \"$worker_engine_dir\"", commands)
+            self.assertIn("--port \"$agent_port\"", commands)
+            self.assertIn("--engine-agent-port \"$agent_port\"", commands)
+            self.assertIn("--engine-game-port \"$game_port\"", commands)
+            self.assertIn("worker_pids=()", commands)
+            self.assertIn("trap cleanup_workers EXIT INT TERM", commands)
+            self.assertIn("worker_pids+=(\"$!\")", commands)
+            self.assertIn("for worker_pid in \"${worker_pids[@]}\"; do", commands)
+            self.assertIn("data/generated_rollouts/train/", commands)
+            self.assertNotIn("data/generated_rollouts/worker_00/train/", commands)
+
+    def test_generate_serial_collection_commands_does_not_require_parallel_display_shape(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            engine_dir = root / "sciencebirdsgames" / "Linux"
+            for index in range(3):
+                make_level(engine_dir, "novelty_level_0", "type010101", f"level_{index:03d}.xml")
+
+            partitions = partition_levels(discover_level_entries(engine_dir), seed="serial-display-seed")
+            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
+
+            commands = generate_collection_commands(
+                manifest_path,
+                output_root=Path("data/generated_rollouts"),
+                options=CollectionOptions(display="localhost:10.0", workers=1),
+            )
+
+            self.assertIn("DISPLAY=localhost:10.0", commands)
+            self.assertNotIn("run_worker", commands)
+
+    def test_collect_full_rollout_training_dataset_reaches_planner_for_parallel_workers(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            fake_bin = Path(tmp) / "bin"
+            fake_bin.mkdir()
+            fake_python = fake_bin / "python"
+            fake_python.write_text(
+                "#!/usr/bin/env bash\n"
+                "printf 'planner reached: %s\\n' \"$*\" >&2\n"
+                "exit 42\n",
+                encoding="utf-8",
+            )
+            fake_python.chmod(0o755)
+            env = os.environ.copy()
+            env.update(
+                {
+                    "WORKERS": "2",
+                    "NOVPHY_YES": "1",
+                    "NOVPHY_ALLOW_NETWORK_LISTENERS": "1",
+                    "PATH": f"{fake_bin}:{env['PATH']}",
+                }
+            )
+
+            result = subprocess.run(
+                ["bash", "scripts/collect_full_rollout_training_dataset.sh"],
+                cwd=Path(__file__).resolve().parents[1],
+                env=env,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 42)
+        self.assertIn("planner reached:", result.stderr)
+        self.assertIn("--workers 2", result.stderr)
+        self.assertNotIn("WORKERS>1 is disabled", result.stderr)
+        self.assertNotIn("Missing Xvnc", result.stderr)
+
+    def test_collect_full_rollout_training_dataset_reports_zero_workers_as_invalid(self):
+        env = os.environ.copy()
+        env.update({"WORKERS": "0", "NOVPHY_YES": "1"})
+
+        result = subprocess.run(
+            ["bash", "scripts/collect_full_rollout_training_dataset.sh"],
+            cwd=Path(__file__).resolve().parents[1],
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("WORKERS must be at least 1", result.stderr)
+        self.assertNotIn("WORKERS>1", result.stderr)
+        self.assertNotIn("Missing Xvnc", result.stderr)
+
+    def test_collect_full_rollout_training_dataset_rejects_invalid_display_before_arithmetic(self):
+        env = os.environ.copy()
+        env.update({"DISPLAY_ID": ':a[$(printf injected >&2)]', "NOVPHY_YES": "1"})
+
+        result = subprocess.run(
+            ["bash", "scripts/collect_full_rollout_training_dataset.sh"],
+            cwd=Path(__file__).resolve().parents[1],
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("DISPLAY_ID must be an X display", result.stderr)
+        self.assertNotIn("injected", result.stderr)
+        self.assertNotIn("Missing Xvnc", result.stderr)
+
+    def test_collect_full_rollout_training_dataset_requires_network_listener_ack_for_parallel_workers(self):
+        env = os.environ.copy()
+        env.update({"WORKERS": "2", "NOVPHY_YES": "1"})
+
+        result = subprocess.run(
+            ["bash", "scripts/collect_full_rollout_training_dataset.sh"],
+            cwd=Path(__file__).resolve().parents[1],
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("NOVPHY_ALLOW_NETWORK_LISTENERS=1", result.stderr)
+        self.assertNotIn("Missing Xvnc", result.stderr)
+
+    def test_generate_collection_commands_rejects_invalid_worker_count(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            engine_dir = root / "sciencebirdsgames" / "Linux"
+            for index in range(3):
+                make_level(engine_dir, "novelty_level_0", "type010101", f"level_{index:03d}.xml")
+
+            partitions = partition_levels(discover_level_entries(engine_dir), seed="worker-count-seed")
+            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
+
+            with self.assertRaisesRegex(ValueError, "workers must be at least 1"):
+                generate_collection_commands(
+                    manifest_path,
+                    output_root=Path("data/generated_rollouts"),
+                    options=CollectionOptions(workers=0),
+                )
 
     def test_write_config_requires_level_to_belong_to_requested_split(self):
         with tempfile.TemporaryDirectory() as tmp:

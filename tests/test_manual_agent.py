@@ -1,5 +1,6 @@
 import io
 import json
+import signal
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -18,6 +19,7 @@ from scripts.manual_agent import (
     repl,
     save_frame,
     start_engine,
+    stop_started_engine,
 )
 
 
@@ -391,13 +393,40 @@ class ManualAgentTest(unittest.TestCase):
                 return type("Process", (), {"pid": 1234})()
 
             with patch("scripts.manual_agent.subprocess.Popen", side_effect=fake_popen) as popen:
-                start_engine(game_dir, headless=False)
+                process = start_engine(game_dir, headless=False)
 
         self.assertEqual(popen.call_args.args[0], ["java", "-jar", "./game_playing_interface.jar", "--dev"])
         self.assertIsNot(popen.call_args.kwargs["stdout"], subprocess.DEVNULL)
         self.assertEqual(popen.call_args.kwargs["stderr"], subprocess.STDOUT)
         self.assertTrue(opened[0].name.startswith("/tmp/novphy_game_engine_"))
         self.assertFalse(opened[0].closed)
+        self.assertTrue(process.novphy_process_group)
+
+    def test_start_engine_accepts_isolated_worker_ports(self):
+        with TemporaryDirectory() as tmp:
+            game_dir = Path(tmp)
+            (game_dir / "game_playing_interface.jar").write_text("jar", encoding="utf-8")
+
+            def fake_popen(command, **kwargs):
+                return type("Process", (), {"pid": 1234})()
+
+            with patch("scripts.manual_agent.subprocess.Popen", side_effect=fake_popen) as popen:
+                start_engine(game_dir, headless=True, agent_port=2014, game_port=9011)
+
+        self.assertEqual(
+            popen.call_args.args[0],
+            [
+                "java",
+                "-jar",
+                "./game_playing_interface.jar",
+                "--headless",
+                "--agent-port",
+                "2014",
+                "--game-start-port",
+                "9011",
+                "--dev",
+            ],
+        )
 
     def test_main_stops_started_engine_when_connection_fails(self):
         class FakeProcess:
@@ -429,6 +458,32 @@ class ManualAgentTest(unittest.TestCase):
 
         self.assertTrue(process.terminated)
         self.assertTrue(process.waited)
+
+    def test_stop_started_engine_terminates_process_group_for_started_engine(self):
+        class GroupProcess:
+            pid = 1357
+            novphy_process_group = True
+
+            def __init__(self):
+                self.terminated = False
+                self.waited = False
+
+            def poll(self):
+                return None
+
+            def terminate(self):
+                self.terminated = True
+
+            def wait(self, timeout=None):
+                self.waited = True
+
+        process = GroupProcess()
+        with patch("scripts.manual_agent.os.getpgid", return_value=2468), patch("scripts.manual_agent.os.killpg") as killpg:
+            stop_started_engine(process)
+
+        killpg.assert_called_once_with(2468, signal.SIGTERM)
+        self.assertTrue(process.waited)
+        self.assertFalse(process.terminated)
 
     def test_main_stops_started_engine_when_disconnect_fails(self):
         class DisconnectFailBridge(FakeBridge):

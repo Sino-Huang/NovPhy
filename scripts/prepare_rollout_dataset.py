@@ -64,6 +64,15 @@ class CollectionOptions:
     prepare_timeout: float = 90.0
     read_timeout: float = 420.0
     speed: int = 1
+    workers: int = 1
+
+
+@dataclass(frozen=True)
+class WorkerSpec:
+    index: int
+    display: str
+    agent_port: int
+    game_port: int
 
 
 def engine_dir_for(root: Path = ROOT, operating_system: str = "Linux") -> Path:
@@ -194,7 +203,122 @@ def _safe_output_name(entry: LevelEntry) -> str:
     return f"{entry.novelty_level}_{entry.level_type}_{entry.stem}".replace("/", "_")
 
 
-def generate_collection_commands(
+def _worker_display(base_display: str, worker_index: int) -> str:
+    if not base_display.startswith(":"):
+        raise ValueError("display must be an X display like :149 for parallel workers")
+    try:
+        base_number = int(base_display[1:])
+    except ValueError as exc:
+        raise ValueError("display must be an X display like :149 for parallel workers") from exc
+    return f":{base_number + worker_index}"
+
+
+def _worker_specs(opts: CollectionOptions) -> list[WorkerSpec]:
+    if opts.workers < 1:
+        raise ValueError("workers must be at least 1")
+    if opts.workers == 1:
+        return [WorkerSpec(index=0, display=opts.display, agent_port=2004, game_port=9001)]
+    return [
+        WorkerSpec(index=index, display=_worker_display(opts.display, index), agent_port=2004 + index * 10, game_port=9001 + index * 10)
+        for index in range(opts.workers)
+    ]
+
+
+def _collection_command_lines(
+    *,
+    output_dir: str | Path,
+    opts: CollectionOptions,
+    display: str,
+    game_dir: str | None = None,
+    port: str | None = None,
+    engine_agent_port: str | None = None,
+    engine_game_port: str | None = None,
+) -> list[str]:
+    args = [
+        f"--output-dir {_quote(output_dir)}",
+        "--capture-source desktop",
+        "--fresh-engine-per-rollout",
+        "--ui-level 1",
+        f"--ui-settle-seconds {_format_number(opts.ui_settle_seconds)}",
+        f"--count {_format_number(opts.count)}",
+        f"--fps {_format_number(opts.fps)}",
+        f"--duration {_format_number(opts.duration)}",
+        f"--connect-timeout {_format_number(opts.connect_timeout)}",
+        f"--prepare-timeout {_format_number(opts.prepare_timeout)}",
+        f"--read-timeout {_format_number(opts.read_timeout)}",
+        f"--speed {_format_number(opts.speed)}",
+    ]
+    if game_dir is not None:
+        args.append(f"--game-dir {game_dir}")
+    if port is not None:
+        args.append(f"--port {port}")
+    if engine_agent_port is not None:
+        args.append(f"--engine-agent-port {engine_agent_port}")
+    if engine_game_port is not None:
+        args.append(f"--engine-game-port {engine_game_port}")
+
+    lines = [
+        f"DISPLAY={display} LD_LIBRARY_PATH=\"$CONDA_PREFIX/lib:${{LD_LIBRARY_PATH-}}\" \\",
+        "  python scripts/collect_rollouts.py \\",
+    ]
+    for index, arg in enumerate(args):
+        suffix = " \\" if index < len(args) - 1 else ""
+        lines.append(f"    {arg}{suffix}")
+    return lines
+
+
+def _append_level_collection(
+    lines: list[str],
+    *,
+    manifest: Path,
+    safe_split: str,
+    level_path: str,
+    output_dir: str | Path,
+    opts: CollectionOptions,
+    display: str,
+    failure_ledger: str,
+    config_path: str | None = None,
+    game_dir: str | None = None,
+    port: str | None = None,
+    engine_agent_port: str | None = None,
+    engine_game_port: str | None = None,
+) -> None:
+    write_config = (
+        "if python scripts/prepare_rollout_dataset.py write-config "
+        f"--manifest {_quote(manifest)} "
+        f"--split {_quote(safe_split)} "
+        f"--level-path {_quote(level_path)}"
+    )
+    if config_path is not None:
+        write_config += f" --config-path {config_path}"
+    write_config += " &&"
+    lines.extend(
+        [
+            f"# {safe_split}: {level_path}",
+            write_config,
+            *_collection_command_lines(
+                output_dir=output_dir,
+                opts=opts,
+                display=display,
+                game_dir=game_dir,
+                port=port,
+                engine_agent_port=engine_agent_port,
+                engine_game_port=engine_game_port,
+            ),
+            "then",
+            f"    printf 'Completed %s: %s\\n' {_quote(safe_split)} {_quote(level_path)}",
+            "else",
+            "    status=$?",
+            "    failure_count=$((failure_count + 1))",
+            f"    printf '%s\\t%s\\t%s\\t%s\\n' {_quote(safe_split)} {_quote(level_path)} {_quote(output_dir)} \"$status\" >> {failure_ledger}",
+            f"    printf 'Failed %s: %s (status %s). Continuing with the next level.\\n' {_quote(safe_split)} {_quote(level_path)} \"$status\" >&2",
+            "fi",
+            "",
+        ]
+    )
+
+
+def _generate_collection_commands_serial_legacy(
     manifest_path: Path,
     *,
     output_root: Path,
@@ -270,6 +394,140 @@ def generate_collection_commands(
     return "\n".join(lines).rstrip() + "\n"
 
 
+def generate_collection_commands(
+    manifest_path: Path,
+    *,
+    output_root: Path,
+    options: CollectionOptions | None = None,
+    splits: tuple[str, ...] = ("train", "dev"),
+) -> str:
+    opts = options or CollectionOptions()
+    display = _require_single_line_shell_value("display", opts.display)
+    manifest = Path(_require_single_line_shell_value("manifest_path", manifest_path))
+    output_base = Path(_require_single_line_shell_value("output_root", output_root))
+    failure_ledger = manifest.parent / "failed_levels.tsv"
+    partitions = load_partition_manifest(manifest_path)
+    specs = _worker_specs(opts)
+    lines = [
+        "#!/usr/bin/env bash",
+        "set -euo pipefail",
+        "source ~/cd_novphy",
+        "",
+        f"failure_ledger={_quote(failure_ledger)}",
+        "failure_count=0",
+        f"worker_count={opts.workers}",
+        "printf 'split\\tlevel_path\\toutput_dir\\tstatus\\n' > \"$failure_ledger\"",
+        "",
+        "# Start Xvnc separately before running this script, for example:",
+        f"# Xvnc {display} -geometry 1024x768 -depth 24 -SecurityTypes None -rfbport 0 >/tmp/novphy_rollout_xvnc_${{USER}}.log 2>&1 &",
+        "",
+    ]
+
+    if opts.workers == 1:
+        for split in splits:
+            safe_split = _require_single_line_shell_value("split", split)
+            for entry in partitions.get(split, []):
+                level_path = _require_single_line_shell_value("level_path", entry.relative_path)
+                output_name = _require_single_line_shell_value("output_name", _safe_output_name(entry))
+                output_dir = output_base / safe_split / output_name
+                _append_level_collection(
+                    lines,
+                    manifest=manifest,
+                    safe_split=safe_split,
+                    level_path=level_path,
+                    output_dir=output_dir,
+                    opts=opts,
+                    display=_quote(display),
+                    failure_ledger='"$failure_ledger"',
+                )
+    else:
+        worker_entries: list[list[tuple[str, LevelEntry]]] = [[] for _ in specs]
+        ordinal = 0
+        for split in splits:
+            safe_split = _require_single_line_shell_value("split", split)
+            for entry in partitions.get(split, []):
+                worker_entries[ordinal % len(specs)].append((safe_split, entry))
+                ordinal += 1
+
+        lines.extend(
+            [
+                "run_worker() {",
+                "    local worker_index=\"$1\"",
+                "    local display_id=\"$2\"",
+                "    local agent_port=\"$3\"",
+                "    local game_port=\"$4\"",
+                "    local worker_root",
+                "    worker_root=\"$(mktemp -d \"${TMPDIR:-/tmp}/novphy_rollout_worker_${worker_index}_XXXXXX\")\"",
+                "    trap 'rm -rf \"$worker_root\"' RETURN",
+                "    local worker_engine_dir",
+                "    worker_engine_dir=\"$worker_root/engine\"",
+                "    cp -a sciencebirdsgames/Linux \"$worker_engine_dir\"",
+                "    local failure_count=0",
+                "",
+            ]
+        )
+        for spec in specs:
+            lines.append(f"    if [[ \"$worker_index\" == \"{spec.index}\" ]]; then")
+            for safe_split, entry in worker_entries[spec.index]:
+                level_path = _require_single_line_shell_value("level_path", entry.relative_path)
+                output_name = _require_single_line_shell_value("output_name", _safe_output_name(entry))
+                output_dir = output_base / safe_split / output_name
+                _append_level_collection(
+                    lines,
+                    manifest=manifest,
+                    safe_split=safe_split,
+                    level_path=level_path,
+                    output_dir=output_dir,
+                    opts=opts,
+                    display='"$display_id"',
+                    failure_ledger='"$failure_ledger"',
+                    config_path='"$worker_engine_dir/config.xml"',
+                    game_dir='"$worker_engine_dir"',
+                    port='"$agent_port"',
+                    engine_agent_port='"$agent_port"',
+                    engine_game_port='"$game_port"',
+                )
+            lines.append("    fi")
+        lines.extend(["    return \"$failure_count\"", "}", ""])
+        lines.append("worker_pids=()")
+        lines.extend(
+            [
+                "cleanup_workers() {",
+                "    for worker_pid in \"${worker_pids[@]}\"; do",
+                "        kill \"$worker_pid\" 2>/dev/null || true",
+                "        wait \"$worker_pid\" 2>/dev/null || true",
+                "    done",
+                "}",
+                "trap cleanup_workers EXIT INT TERM",
+            ]
+        )
+        for spec in specs:
+            lines.append(f"run_worker {spec.index} '{spec.display}' {spec.agent_port} {spec.game_port} &")
+            lines.append("worker_pids+=(\"$!\")")
+        lines.extend(
+            [
+                "for worker_pid in \"${worker_pids[@]}\"; do",
+                "    if ! wait \"$worker_pid\"; then",
+                "        failure_count=$((failure_count + 1))",
+                "    fi",
+                "done",
+                "trap - EXIT INT TERM",
+                "",
+            ]
+        )
+
+    lines.extend(
+        [
+            "if [[ \"$failure_count\" -gt 0 ]]; then",
+            "    echo \"Completed with $failure_count failed level(s). See $failure_ledger\" >&2",
+            "    exit 1",
+            "fi",
+            "echo \"Completed all requested train/dev levels. Failure ledger: $failure_ledger\"",
+        ]
+    )
+    return "\n".join(lines).rstrip() + "\n"
+
+
 def write_commands(path: Path, commands: str) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(commands, encoding="utf-8")
@@ -302,6 +560,7 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--fps", type=float, default=30.0)
     plan.add_argument("--duration", type=float, default=5.0)
     plan.add_argument("--display", default=":149")
+    plan.add_argument("--workers", type=int, default=1)
 
     write_config_parser = subparsers.add_parser("write-config", help="Write config.xml for one level from a partition manifest")
     write_config_parser.add_argument("--manifest", type=Path, required=True)
@@ -323,7 +582,7 @@ def main() -> None:
         commands = generate_collection_commands(
             manifest_path,
             output_root=args.command_output_root,
-            options=CollectionOptions(count=args.count, fps=args.fps, duration=args.duration, display=args.display),
+            options=CollectionOptions(count=args.count, fps=args.fps, duration=args.duration, display=args.display, workers=args.workers),
         )
         write_commands(commands_path, commands)
         print(json.dumps({"manifest": str(manifest_path), "commands": str(commands_path), "counts": {name: len(items) for name, items in partitions.items()}}, indent=2))
