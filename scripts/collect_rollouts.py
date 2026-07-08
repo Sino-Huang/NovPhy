@@ -29,6 +29,7 @@ from src.webui.bridge import PlayingMode  # noqa: E402
 
 
 DEFAULT_DESKTOP_GAME_CROP = (32, 64, 672, 544)
+DEFAULT_GAME_VIEWPORT_SIZE = (640, 480)
 DEFAULT_HUMAN_HOLD_MS = 600
 PRE_DRAG_OVERLAY_TEXT = "phase=pre_drag pre_shot_baseline"
 DEFAULT_PRE_SHOT_GUARD_RECOVERY_ATTEMPTS = 2
@@ -42,10 +43,29 @@ def _image_is_uniform(image) -> bool:
 
 
 def _default_desktop_crop_for(image) -> tuple[int, int, int, int] | None:
+    detected_crop = _detect_desktop_game_crop(image)
+    if detected_crop is not None:
+        return detected_crop
     left, top, right, bottom = DEFAULT_DESKTOP_GAME_CROP
     if image.width >= right and image.height >= bottom:
         return DEFAULT_DESKTOP_GAME_CROP
     return None
+
+
+def _detect_desktop_game_crop(image) -> tuple[int, int, int, int] | None:
+    viewport_width, viewport_height = DEFAULT_GAME_VIEWPORT_SIZE
+    if image.width < viewport_width or image.height < viewport_height:
+        return None
+    bbox = image.convert("RGB").getbbox()
+    if bbox is None:
+        return None
+    left, top, right, bottom = bbox
+    if right <= left or bottom <= top:
+        return None
+    crop = (left, top, left + viewport_width, top + viewport_height)
+    if crop[2] > image.width or crop[3] > image.height:
+        return None
+    return crop
 
 
 def _crop_desktop_image(image, crop: tuple[int, int, int, int] | None):

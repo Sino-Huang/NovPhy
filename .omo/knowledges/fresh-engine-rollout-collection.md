@@ -734,3 +734,20 @@ git diff --check
 ```
 
 `basedpyright-langserver` was not installed, so LSP diagnostics could not run. The broad `tests.test_collect_rollouts` suite still has one unrelated fixture failure from previously mutated generated dataset artifacts: `test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots` expects `max_frame_delta=965`, while the current artifact reports `898`.
+
+## Dynamic Xvnc Game Viewport Crop
+
+Date: 2026-07-08
+
+A `WORKERS=3` collection at `data/novphy_rollouts_dataset_20260708_122204` produced 640x480 saved frames with large black padding at the top and left. The reported frame
+`train/novelty_level_0_type010101_00002_0_1_010101_0_1/shot_002/frames/frame_000001.png` had non-black content only inside bbox `(160, 80, 640, 480)`, so the historical fixed desktop crop `(32, 64, 672, 544)` was starting 160 px too far left and 80 px too high for that run.
+
+The desktop crop path now detects the visible non-black game surface on the full Xvnc desktop first and crops a 640x480 viewport from that origin, falling back to the historical `(32, 64, 672, 544)` crop when detection is unavailable. This keeps old 1024x768 Xvnc layouts working while allowing shifted Unity windows such as inferred full-desktop crop `(192, 144, 832, 624)`.
+
+Regression coverage:
+
+```sh
+source ~/cd_novphy && python -m unittest tests.test_collect_rollouts.CollectRolloutsTest.test_capture_desktop_rollout_detects_shifted_xvnc_game_viewport
+```
+
+Bounded image QA, without recollecting the full dataset, reconstructed the full-desktop placement from the bad saved frame and confirmed `_default_desktop_crop_for()` returns `(192, 144, 832, 624)`, the corrected crop is 640x480, and the non-black bbox moves to `(0, 0, 480, 400)` instead of being offset to `(160, 80, 640, 480)`.

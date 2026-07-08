@@ -862,6 +862,42 @@ class CollectRolloutsTest(unittest.TestCase):
         self.assertEqual(metadata["frames"][0]["width"], 640)
         self.assertEqual(metadata["frames"][0]["height"], 480)
 
+    def test_capture_desktop_rollout_detects_shifted_xvnc_game_viewport(self):
+        def desktop_image():
+            from PIL import Image
+
+            image = Image.new("RGB", (1024, 768), (0, 0, 0))
+            for x in range(192, 672):
+                for y in range(144, 544):
+                    image.putpixel((x, y), (10, 20, 30))
+            image.putpixel((192, 144), (70, 80, 90))
+            return image
+
+        class Grabber:
+            def grab(self):
+                return desktop_image()
+
+        with TemporaryDirectory() as tmp:
+            metadata = capture_desktop_rollout(
+                FakeBridge(),
+                Path(tmp),
+                target_fps=1,
+                duration_seconds=1,
+                max_frames=1,
+                pre_shot_image=desktop_image(),
+                grabber=Grabber(),
+            )
+
+            from PIL import Image
+
+            with Image.open(Path(tmp) / "frames" / "frame_000000.png") as image:
+                saved_top_left = image.getpixel((0, 0))
+
+        self.assertEqual(metadata["desktop_crop"], [192, 144, 832, 624])
+        self.assertEqual(metadata["frames"][0]["width"], 640)
+        self.assertEqual(metadata["frames"][0]["height"], 480)
+        self.assertEqual(saved_top_left, (70, 80, 90))
+
     def test_capture_desktop_rollout_keeps_frame_crop_when_pre_shot_is_already_cropped(self):
         class Grabber:
             def grab(self):
