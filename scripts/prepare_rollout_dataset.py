@@ -20,6 +20,7 @@ from sciencebirdsagents.Utils.PrepareTestConfig import write_config  # noqa: E40
 
 SCHEMA = "novphy-rollout-dataset-partitions-v1"
 DEFAULT_OUTPUT_DIR = Path("data/rollout_dataset_plan")
+NOVELTY_LEVELS = tuple(f"novelty_level_{index}" for index in range(1, 9))
 
 
 @dataclass(frozen=True)
@@ -180,6 +181,23 @@ def load_partition_manifest(path: Path) -> dict[str, list[LevelEntry]]:
         name: [LevelEntry.from_json(entry) for entry in entries]
         for name, entries in manifest["splits"].items()
     }
+
+
+def _round_robin_novelty_entries(entries: Iterable[LevelEntry], split: str) -> list[LevelEntry]:
+    entries_by_novelty = {novelty_level: [] for novelty_level in NOVELTY_LEVELS}
+    for entry in entries:
+        if entry.novelty_level in entries_by_novelty:
+            entries_by_novelty[entry.novelty_level].append(entry)
+
+    ordered = [
+        entries_by_novelty[novelty_level][entry_index]
+        for entry_index in range(max(len(level_entries) for level_entries in entries_by_novelty.values()))
+        for novelty_level in NOVELTY_LEVELS
+        if entry_index < len(entries_by_novelty[novelty_level])
+    ]
+    if not ordered:
+        raise ValueError(f"Requested split contains no novelty levels 1 through 8: {split}")
+    return ordered
 
 
 def _format_number(value: float | int) -> str:
@@ -346,7 +364,7 @@ def _generate_collection_commands_serial_legacy(
     ]
     for split in splits:
         safe_split = _require_single_line_shell_value("split", split)
-        for entry in partitions.get(split, []):
+        for entry in _round_robin_novelty_entries(partitions.get(split, []), safe_split):
             level_path = _require_single_line_shell_value("level_path", entry.relative_path)
             output_name = _require_single_line_shell_value("output_name", _safe_output_name(entry))
             output_dir = output_base / safe_split / output_name
@@ -426,7 +444,7 @@ def generate_collection_commands(
     if opts.workers == 1:
         for split in splits:
             safe_split = _require_single_line_shell_value("split", split)
-            for entry in partitions.get(split, []):
+            for entry in _round_robin_novelty_entries(partitions.get(split, []), safe_split):
                 level_path = _require_single_line_shell_value("level_path", entry.relative_path)
                 output_name = _require_single_line_shell_value("output_name", _safe_output_name(entry))
                 output_dir = output_base / safe_split / output_name
@@ -445,7 +463,7 @@ def generate_collection_commands(
         ordinal = 0
         for split in splits:
             safe_split = _require_single_line_shell_value("split", split)
-            for entry in partitions.get(split, []):
+            for entry in _round_robin_novelty_entries(partitions.get(split, []), safe_split):
                 worker_entries[ordinal % len(specs)].append((safe_split, entry))
                 ordinal += 1
 

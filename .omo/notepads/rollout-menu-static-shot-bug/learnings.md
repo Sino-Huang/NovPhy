@@ -86,3 +86,12 @@
 
 ## 2026-07-06 F2 Review Fresh-Engine Guard Exhaustion Gap
 - Fresh-engine retries that fail inside the pre-shot guard can create quarantined `invalid_attempts/shot_NNN_attempt_MM/` directories, then re-raise `PreShotGuardError` after the final attempt without writing `manifest.json` or `action_log.json`; this leaves operator evidence on disk but hidden from the normal retry-exhaustion ledger.
+
+## 2026-07-15 Rollout Collection Novelty Ordering
+- `generate_collection_commands()` now filters collection plans to `novelty_level_1` through `novelty_level_8`, preserves manifest order within each novelty family, and interleaves those families round-robin before serial emission or multi-worker ordinal assignment.
+- `novelty_level_0` is intentionally excluded from generated collection commands. A requested split with no eligible novelty entries now fails clearly rather than silently falling back to baseline tasks; collector `--ui-level 1` remains unchanged because each invocation writes one XML to `config.xml`.
+
+Bounded inspection of the real `20260708_171531` plan confirmed a repeated `novelty_level_1` through `novelty_level_8` prefix across 11,200 train entries, no level 0 command, `--ui-level 1` on every collector invocation, and valid rendered shell syntax. This proves the planning order and single-XML UI-slot contract without running a live collection or changing existing artifacts under `data/novphy_rollouts_dataset_20260708_171531`.
+
+## 2026-07-15 Round-Robin Documentation Correction
+- Serial plans write the selected XML to `sciencebirdsgames/Linux/config.xml`; parallel workers write it to their isolated temporary engine copy through `--config-path "$worker_engine_dir/config.xml"`. Both modes retain exactly one active XML and therefore Unity `--ui-level 1`.

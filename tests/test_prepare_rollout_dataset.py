@@ -23,6 +23,77 @@ def make_level(engine_dir: Path, novelty_level: str, level_type: str, name: str)
 
 
 class PrepareRolloutDatasetTest(unittest.TestCase):
+    def test_generate_collection_commands_round_robins_novelty_levels_one_through_eight(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            engine_dir = root / "sciencebirdsgames" / "Linux"
+            for novelty_index in range(9):
+                make_level(
+                    engine_dir,
+                    f"novelty_level_{novelty_index}",
+                    f"type010{novelty_index:02d}",
+                    "level_000.xml",
+                )
+            make_level(engine_dir, "novelty_level_1", "type010101", "level_001.xml")
+
+            partitions = {"train": discover_level_entries(engine_dir), "dev": [], "test": []}
+            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
+
+            serial_commands = generate_collection_commands(
+                manifest_path,
+                output_root=Path("data/generated_rollouts"),
+                splits=("train",),
+            )
+            parallel_commands = generate_collection_commands(
+                manifest_path,
+                output_root=Path("data/generated_rollouts"),
+                options=CollectionOptions(workers=2),
+                splits=("train",),
+            )
+
+            serial_paths = [
+                line.removeprefix("# train: ")
+                for line in serial_commands.splitlines()
+                if line.startswith("# train: ")
+            ]
+            parallel_paths = [
+                line.removeprefix("# train: ")
+                for line in parallel_commands.splitlines()
+                if line.startswith("# train: ")
+            ]
+            levels_root = "9001_Data/StreamingAssets/Levels"
+            expected_round_robin = [
+                f"{levels_root}/novelty_level_{index}/type010{index:02d}/Levels/level_000.xml"
+                for index in range(1, 9)
+            ]
+            expected_round_robin.append(
+                f"{levels_root}/novelty_level_1/type010101/Levels/level_001.xml"
+            )
+
+            self.assertEqual(serial_paths, expected_round_robin)
+            self.assertEqual(
+                parallel_paths,
+                expected_round_robin[::2] + expected_round_robin[1::2],
+            )
+            self.assertNotIn("novelty_level_0", serial_commands)
+            self.assertNotIn("novelty_level_0", parallel_commands)
+            self.assertIn("--ui-level 1", serial_commands)
+
+    def test_generate_collection_commands_rejects_split_without_novelty_levels_one_through_eight(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            engine_dir = root / "sciencebirdsgames" / "Linux"
+            make_level(engine_dir, "novelty_level_0", "type010101", "level_000.xml")
+            partitions = {"train": discover_level_entries(engine_dir), "dev": [], "test": []}
+            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
+
+            with self.assertRaisesRegex(ValueError, "contains no novelty levels 1 through 8: train"):
+                generate_collection_commands(
+                    manifest_path,
+                    output_root=Path("data/generated_rollouts"),
+                    splits=("train",),
+                )
+
     def test_partition_levels_are_stable_non_overlapping_and_bucketed(self):
         with tempfile.TemporaryDirectory() as tmp:
             engine_dir = Path(tmp) / "sciencebirdsgames" / "Linux"
@@ -59,7 +130,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             root = Path(tmp)
             engine_dir = root / "sciencebirdsgames" / "Linux"
             for index in range(6):
-                make_level(engine_dir, "novelty_level_0", "type010101", f"level_{index:03d}.xml")
+                make_level(engine_dir, "novelty_level_1", "type010101", f"level_{index:03d}.xml")
 
             partitions = partition_levels(discover_level_entries(engine_dir), seed="manifest-seed")
             manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
@@ -67,7 +138,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
 
             self.assertEqual(manifest["schema"], "novphy-rollout-dataset-partitions-v1")
             self.assertEqual(manifest["counts"]["total"], 6)
-            self.assertIn("9001_Data/StreamingAssets/Levels/novelty_level_0/type010101/Levels/level_", json.dumps(manifest))
+            self.assertIn("9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/level_", json.dumps(manifest))
 
             commands = generate_collection_commands(
                 manifest_path,
@@ -97,7 +168,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             root = Path(tmp)
             engine_dir = root / "sciencebirdsgames" / "Linux"
             for index in range(9):
-                make_level(engine_dir, "novelty_level_0", "type010101", f"level_{index:03d}.xml")
+                make_level(engine_dir, "novelty_level_1", "type010101", f"level_{index:03d}.xml")
 
             partitions = partition_levels(discover_level_entries(engine_dir), seed="parallel-seed")
             manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
@@ -131,7 +202,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             root = Path(tmp)
             engine_dir = root / "sciencebirdsgames" / "Linux"
             for index in range(3):
-                make_level(engine_dir, "novelty_level_0", "type010101", f"level_{index:03d}.xml")
+                make_level(engine_dir, "novelty_level_1", "type010101", f"level_{index:03d}.xml")
 
             partitions = partition_levels(discover_level_entries(engine_dir), seed="serial-display-seed")
             manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
@@ -299,10 +370,10 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
                 "splits": {
                     "train": [
                         {
-                            "novelty_level": "novelty_level_0",
+                            "novelty_level": "novelty_level_1",
                             "level_type": "type010101",
-                            "bucket": "novelty_level_0/type010101",
-                            "relative_path": "9001_Data/StreamingAssets/Levels/novelty_level_0/type010101/Levels/level_000.xml\ninjected-command",
+                            "bucket": "novelty_level_1/type010101",
+                            "relative_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/level_000.xml\ninjected-command",
                         }
                     ],
                     "dev": [],
@@ -325,10 +396,10 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
                 "splits": {
                     "train; injected-command #": [
                         {
-                            "novelty_level": "novelty_level_0",
+                            "novelty_level": "novelty_level_1",
                             "level_type": "type010101",
-                            "bucket": "novelty_level_0/type010101",
-                            "relative_path": "9001_Data/StreamingAssets/Levels/novelty_level_0/type010101/Levels/level_000.xml",
+                            "bucket": "novelty_level_1/type010101",
+                            "relative_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/level_000.xml",
                         }
                     ]
                 },
@@ -349,7 +420,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             root = Path(tmp)
             engine_dir = root / "sciencebirdsgames" / "Linux"
             for index in range(6):
-                make_level(engine_dir, "novelty_level_0", "type010101", f"level_{index:03d}.xml")
+                make_level(engine_dir, "novelty_level_1", "type010101", f"level_{index:03d}.xml")
 
             partitions = partition_levels(discover_level_entries(engine_dir), seed="failure-ledger-seed")
             manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
@@ -376,7 +447,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             manifest_path = root / "partitions.json"
-            level_path = "9001_Data/StreamingAssets/Levels/novelty_level_0/type010101/Levels/level_'001.xml"
+            level_path = "9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/level_'001.xml"
             manifest = {
                 "schema": "novphy-rollout-dataset-partitions-v1",
                 "seed": "single-quote-level-path-seed",
@@ -384,9 +455,9 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
                 "splits": {
                     "train": [
                         {
-                            "novelty_level": "novelty_level_0",
+                            "novelty_level": "novelty_level_1",
                             "level_type": "type010101",
-                            "bucket": "novelty_level_0/type010101",
+                            "bucket": "novelty_level_1/type010101",
                             "relative_path": level_path,
                         }
                     ],
@@ -396,7 +467,11 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             }
             manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
 
-            commands = generate_collection_commands(manifest_path, output_root=Path("data/generated_rollouts"))
+            commands = generate_collection_commands(
+                manifest_path,
+                output_root=Path("data/generated_rollouts"),
+                splits=("train",),
+            )
             script_path = root / "collect_train_dev.sh"
             script_path.write_text(commands, encoding="utf-8")
 

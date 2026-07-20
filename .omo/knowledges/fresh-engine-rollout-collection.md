@@ -751,3 +751,25 @@ source ~/cd_novphy && python -m unittest tests.test_collect_rollouts.CollectRoll
 ```
 
 Bounded image QA, without recollecting the full dataset, reconstructed the full-desktop placement from the bad saved frame and confirmed `_default_desktop_crop_for()` returns `(192, 144, 832, 624)`, the corrected crop is 640x480, and the non-black bbox moves to `(0, 0, 480, 400)` instead of being offset to `(160, 80, 640, 480)`.
+
+## Novelty-Level Round-Robin Collection Scheduling
+
+Date: 2026-07-15
+
+Generated rollout collection commands now schedule task folders `novelty_level_1` through `novelty_level_8` in deterministic round-robin order. The planner preserves each novelty family's manifest order, then emits one entry from each available family before returning to the next entry in those families. This ordering is applied before serial command emission and before worker ordinal assignment, so both serial and parallel plans avoid a long prefix from one novelty family.
+
+`novelty_level_0` is intentionally excluded from generated collection plans. Level 0 contains the non-novel baseline tasks and isn't part of this novelty rollout schedule. If a requested split contains only `novelty_level_0`, command generation raises a clear `Requested split contains no novelty levels 1 through 8` error instead of silently producing a baseline-only collection script.
+
+The `novelty_level_N` folder name and Unity's `ui_level` are separate concepts. The folder identifies which novelty task XML is being scheduled. In serial plans, `write-config` writes exactly one selected XML to `sciencebirdsgames/Linux/config.xml`. In parallel plans, each worker writes exactly one selected XML to its isolated temporary engine copy's `config.xml` through the existing `--config-path "$worker_engine_dir/config.xml"`. In both modes, that XML is Unity's first and only configured UI slot, so the following collector command must retain `--ui-level 1`. The round-robin change does not select Unity UI slots 1 through 8.
+
+Focused verification:
+
+```sh
+source ~/cd_novphy && python -m unittest tests.test_prepare_rollout_dataset
+```
+
+This ran 18 tests and finished `OK`. `py_compile` and `git diff --check` also passed.
+
+Bounded real-plan QA inspected and rendered the existing `20260708_171531` plan without running collection. Its generated train command prefix is `novelty_level_1` through `novelty_level_8`, then the same sequence repeats. The plan schedules 11,200 train entries, contains no `novelty_level_0` collection command, retains `--ui-level 1` in all 11,200 collector invocations, and the rendered shell passes `bash -n`.
+
+This change affects generated planning command order only. It does not recollect, rewrite, or otherwise modify existing artifacts under `data/novphy_rollouts_dataset_20260708_171531`.
