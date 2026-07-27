@@ -11,6 +11,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Any
 
 
@@ -233,7 +234,7 @@ def _draw_overlay(image, text: str, action: dict, shot: dict, *, action_fraction
 
 
 def prepare_rollout_video_frames(
-    shot_dir: Path,
+    video_frames_dir: Path,
     frames_dir: Path,
     *,
     action: dict,
@@ -244,10 +245,7 @@ def prepare_rollout_video_frames(
 ) -> dict:
     from PIL import Image
 
-    video_frames_dir = shot_dir / "video_frames"
     video_frames_dir.mkdir(parents=True, exist_ok=True)
-    for old_frame in video_frames_dir.glob("frame_*.png"):
-        old_frame.unlink()
 
     overlay_text = format_action_overlay_text(action, shot)
     video_index = 0
@@ -1139,9 +1137,19 @@ def action_to_shot(action: dict, *, frame_height: int) -> dict:
     }
 
 
-def write_action_plan(output_dir: Path, *, count: int, drag_start: tuple[int, int] = (300, 220)) -> Path:
+def write_action_plan(
+    output_dir: Path,
+    *,
+    count: int,
+    drag_start: tuple[int, int] = (300, 220),
+    bidirectional_launches: bool = False,
+) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
-    actions = generate_diverse_drag_release_actions(drag_start=drag_start, count=count)
+    actions = generate_diverse_drag_release_actions(
+        drag_start=drag_start,
+        count=count,
+        bidirectional_launches=bidirectional_launches,
+    )
     path = output_dir / "action_plan.json"
     path.write_text(json.dumps({"action_count": len(actions), "actions": actions}, indent=2), encoding="utf-8")
     return path
@@ -1506,25 +1514,42 @@ def collect_rollouts(
         metadata["pre_shot_guard"] = pre_shot_guard
         if metadata.get("frames_dir"):
             pre_shot_path = Path(metadata["pre_shot_path"]) if metadata.get("pre_shot_path") else None
-            video_frame_metadata = prepare_rollout_video_frames(
-                shot_dir,
-                Path(metadata["frames_dir"]),
-                action=action,
-                shot=shot,
-                fps=target_fps,
-                pre_shot_path=pre_shot_path,
-            )
-            metadata.update(video_frame_metadata)
-            try:
-                video = write_rollout_video(
-                    Path(metadata["video_frames_dir"]),
-                    shot_dir / "rollout.mp4",
+            with TemporaryDirectory(prefix="rollout-video-") as temporary_directory:
+                video_frames_dir = Path(temporary_directory)
+                video_frame_metadata = prepare_rollout_video_frames(
+                    video_frames_dir,
+                    Path(metadata["frames_dir"]),
+                    action=action,
+                    shot=shot,
                     fps=target_fps,
-                    runner=video_runner,
+                    pre_shot_path=pre_shot_path,
                 )
-                metadata.update(video)
-            except Exception as exc:
-                metadata["video_error"] = str(exc)
+                metadata.update(
+                    {
+                        key: value
+                        for key, value in video_frame_metadata.items()
+                        if key not in {"video_frames_dir", "video_input_pattern"}
+                    }
+                )
+                temporary_video_path = shot_dir / ".rollout.tmp.mp4"
+                final_video_path = shot_dir / "rollout.mp4"
+                metadata.pop("video_path", None)
+                try:
+                    write_rollout_video(
+                        video_frames_dir,
+                        temporary_video_path,
+                        fps=target_fps,
+                        runner=video_runner,
+                    )
+                    temporary_video_path.replace(final_video_path)
+                    metadata["video_path"] = str(final_video_path)
+                except Exception as exc:
+                    temporary_video_path.unlink(missing_ok=True)
+                    metadata["video_error"] = (
+                        str(exc)
+                        .replace(str(video_frames_dir), "<temporary-video-frames>")
+                        .replace(str(temporary_video_path), "<temporary-rollout.mp4>")
+                    )
         slingshot_reference = action.get("slingshot_reference")
         if slingshot_reference is not None:
             metadata["slingshot_reference"] = slingshot_reference
@@ -1780,6 +1805,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--safe", action="store_true", help="Use safe shot instead of fast shot")
     parser.add_argument("--dry-run", action="store_true", help="Only write action_plan.json; do not connect to Java")
     parser.add_argument("--actions-from-log", type=Path, help="Replay exact actions loaded from a previous action_log.json")
+    parser.add_argument("--bidirectional-launches", action="store_true", help="Alternate generated drag-release horizontal signs")
     parser.add_argument("--capture-source", choices=("protocol", "desktop"), default="protocol")
     parser.add_argument("--fresh-engine-per-rollout", action="store_true")
     parser.add_argument("--ui-level", type=int, help="Visible level number to enter with xdotool for each fresh rollout")
@@ -1856,7 +1882,11 @@ def stop_owned_engine(engine_process) -> None:
 def main() -> None:
     args = build_parser().parse_args()
     if args.dry_run:
-        path = write_action_plan(args.output_dir, count=args.count)
+        path = write_action_plan(
+            args.output_dir,
+            count=args.count,
+            bidirectional_launches=args.bidirectional_launches,
+        )
         print(json.dumps({"action_plan": str(path)}, indent=2))
         return
 
@@ -1873,7 +1903,14 @@ def main() -> None:
 
         pre_shot_grabber = ImageGrab.grab
     actions_from_log = args.actions_from_log is not None
-    actions = load_actions_from_action_log(args.actions_from_log) if actions_from_log else generate_diverse_drag_release_actions(count=args.count)
+    actions = (
+        load_actions_from_action_log(args.actions_from_log)
+        if actions_from_log
+        else generate_diverse_drag_release_actions(
+            count=args.count,
+            bidirectional_launches=args.bidirectional_launches,
+        )
+    )
 
     if args.fresh_engine_per_rollout:
         manifest = collect_fresh_engine_rollouts(

@@ -1,6 +1,7 @@
 import io
 import json
 import signal
+import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
@@ -1235,6 +1236,8 @@ class CollectRolloutsTest(unittest.TestCase):
 
         def video_runner(command, check, stdout, stderr):
             runner_calls.append(command)
+            self.assertEqual(Path(command[-1]).parent.name, "shot_001")
+            self.assertFalse((Path(command[-1]).parent / "rollout.mp4").exists())
             Path(command[-1]).write_bytes(b"mp4")
 
         with TemporaryDirectory() as tmp:
@@ -1247,12 +1250,20 @@ class CollectRolloutsTest(unittest.TestCase):
                 capture_rollout=capture_rollout,
                 video_runner=video_runner,
             )
-            metadata = json.loads((Path(tmp) / "shot_001" / "metadata.json").read_text(encoding="utf-8"))
+            shot_dir = Path(tmp) / "shot_001"
+            metadata = json.loads((shot_dir / "metadata.json").read_text(encoding="utf-8"))
 
-        self.assertEqual(manifest["rollouts"][0]["video_path"], str(Path(tmp) / "shot_001" / "rollout.mp4"))
-        self.assertEqual(metadata["video_path"], str(Path(tmp) / "shot_001" / "rollout.mp4"))
-        self.assertIn("-framerate", runner_calls[0])
-        self.assertIn("30", runner_calls[0])
+            self.assertEqual(manifest["rollouts"][0]["video_path"], str(Path(tmp) / "shot_001" / "rollout.mp4"))
+            self.assertEqual(metadata["video_path"], str(Path(tmp) / "shot_001" / "rollout.mp4"))
+            self.assertEqual((shot_dir / "rollout.mp4").read_bytes(), b"mp4")
+            self.assertEqual(sorted(path.name for path in (shot_dir / "frames").glob("frame_*.png")), ["frame_000000.png", "frame_000001.png"])
+            self.assertFalse((shot_dir / "video_frames").exists())
+            self.assertNotIn("video_frames_dir", metadata)
+            self.assertNotIn("video_input_pattern", metadata)
+            self.assertNotIn(runner_calls[0][runner_calls[0].index("-i") + 1], json.dumps(metadata))
+            self.assertEqual(Path(runner_calls[0][-1]).name, ".rollout.tmp.mp4")
+            self.assertIn("-framerate", runner_calls[0])
+            self.assertIn("30", runner_calls[0])
 
     def test_prepare_rollout_video_frames_prefixes_pre_shot_and_overlays_action_text(self):
         from PIL import Image, ImageChops
@@ -1277,8 +1288,9 @@ class CollectRolloutsTest(unittest.TestCase):
             for index, color in enumerate(((50, 60, 70), (80, 90, 100))):
                 Image.new("RGB", (160, 90), color).save(frames_dir / f"frame_{index:06d}.png", format="PNG")
 
+            overlay_frames_dir = shot_dir / "temporary_video_frames"
             video = prepare_rollout_video_frames(
-                shot_dir,
+                overlay_frames_dir,
                 frames_dir,
                 action=action,
                 shot={"x": 250, "y": 299, "tapTime": 70, "releaseTime": 120},
@@ -1293,7 +1305,7 @@ class CollectRolloutsTest(unittest.TestCase):
 
         self.assertEqual(video["pre_action_frame_count"], 2)
         self.assertEqual(video["video_frame_count"], 4)
-        self.assertEqual(video["video_input_pattern"], str(Path(tmp) / "video_frames" / "frame_%06d.png"))
+        self.assertEqual(video["video_input_pattern"], str(Path(tmp) / "temporary_video_frames" / "frame_%06d.png"))
         self.assertIn("drag_mode=slingshot_relative", video["video_overlay"]["text"])
         self.assertIn("drag_xy=(300,220)", video["video_overlay"]["text"])
         self.assertIn("pull_release_xy=(-50,40)", video["video_overlay"]["text"])
@@ -1325,8 +1337,9 @@ class CollectRolloutsTest(unittest.TestCase):
             pre_shot.save(pre_shot_path, format="PNG")
             Image.new("RGB", (160, 90), (50, 60, 70)).save(frames_dir / "frame_000000.png", format="PNG")
 
+            overlay_frames_dir = shot_dir / "temporary_video_frames"
             video = prepare_rollout_video_frames(
-                shot_dir,
+                overlay_frames_dir,
                 frames_dir,
                 action=action,
                 shot={"x": 50, "y": 59, "tapTime": 70, "releaseTime": 120},
@@ -1372,7 +1385,7 @@ class CollectRolloutsTest(unittest.TestCase):
         self.assertIn("drag_mode=absolute", absolute_text)
         self.assertIn("pull_release_xy=(250,260)", absolute_text)
 
-    def test_collect_rollouts_writes_action_logs_and_uses_video_frames_for_mp4(self):
+    def test_collect_rollouts_writes_action_logs_and_uses_temporary_overlays_for_mp4(self):
         actions = [
             {
                 "action_type": "drag_hold_release",
@@ -1426,7 +1439,7 @@ class CollectRolloutsTest(unittest.TestCase):
         self.assertEqual(json.loads(jsonl_lines[0])["action"], actions[0])
         self.assertEqual(manifest["action_log_path"], str(Path(tmp) / "action_log.json"))
         self.assertEqual(manifest["action_log_jsonl_path"], str(Path(tmp) / "action_log.jsonl"))
-        self.assertIn("video_frames/frame_%06d.png", runner_calls[0][runner_calls[0].index("-i") + 1])
+        self.assertNotIn("video_frames", runner_calls[0][runner_calls[0].index("-i") + 1])
         self.assertGreater(metadata["video_frame_count"], metadata["frame_count"])
         self.assertIn("video_overlay", metadata)
 
@@ -1467,18 +1480,25 @@ class CollectRolloutsTest(unittest.TestCase):
         self.assertEqual([trial["shot_name"] for trial in action_log["trials"]], ["shot_001", "shot_002", "shot_003"])
         self.assertEqual(len({tuple(trial["action"].get("release", [])) for trial in action_log["trials"]}), 3)
 
-    def test_collect_rollouts_records_video_error_without_losing_frames(self):
+    def test_collect_rollouts_preserves_valid_raw_evidence_when_video_encoding_fails(self):
         actions = [{"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0}]
+        runner_calls = []
 
         def capture_rollout(bridge, output_dir, **kwargs):
+            from PIL import Image
+
             frames_dir = output_dir / "frames"
             frames_dir.mkdir(parents=True)
-            metadata = {"frame_count": 1, "frames_dir": str(frames_dir)}
+            Image.new("RGB", (20, 20), (10, 20, 30)).save(frames_dir / "frame_000000.png", format="PNG")
+            Image.new("RGB", (20, 20), (110, 20, 30)).save(frames_dir / "frame_000001.png", format="PNG")
+            metadata = {"frame_count": 2, "frames_dir": str(frames_dir)}
             (output_dir / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
             return metadata
 
         def video_runner(command, check, stdout, stderr):
-            raise FileNotFoundError("ffmpeg")
+            runner_calls.append(command)
+            Path(command[-1]).write_bytes(b"partial mp4")
+            raise subprocess.CalledProcessError(1, command)
 
         with TemporaryDirectory() as tmp:
             manifest = collect_rollouts(
@@ -1490,10 +1510,23 @@ class CollectRolloutsTest(unittest.TestCase):
                 capture_rollout=capture_rollout,
                 video_runner=video_runner,
             )
-            metadata = json.loads((Path(tmp) / "shot_001" / "metadata.json").read_text(encoding="utf-8"))
+            shot_dir = Path(tmp) / "shot_001"
+            metadata = json.loads((shot_dir / "metadata.json").read_text(encoding="utf-8"))
 
-        self.assertEqual(manifest["rollouts"][0]["frame_count"], 1)
-        self.assertIn("ffmpeg", metadata["video_error"])
+            self.assertEqual(manifest["rollouts"][0]["frame_count"], 2)
+            self.assertTrue(manifest["rollouts"][0]["accepted"])
+            self.assertIn("ffmpeg", metadata["video_error"])
+            self.assertNotIn("video_path", metadata)
+            self.assertNotIn("video_frames_dir", metadata)
+            self.assertNotIn("video_input_pattern", metadata)
+            self.assertNotIn(runner_calls[0][runner_calls[0].index("-i") + 1], json.dumps(metadata))
+            self.assertNotIn(runner_calls[0][-1], json.dumps(metadata))
+            self.assertTrue(metadata["artifact_validation"]["accepted"])
+            self.assertTrue((shot_dir / "frames" / "frame_000000.png").is_file())
+            self.assertFalse((shot_dir / "video_frames").exists())
+            self.assertFalse((shot_dir / "rollout.mp4").exists())
+            self.assertEqual(Path(runner_calls[0][-1]).name, ".rollout.tmp.mp4")
+            self.assertFalse((shot_dir / ".rollout.tmp.mp4").exists())
 
     def test_parser_defaults_to_high_fps_for_review_collection(self):
         args = build_parser().parse_args(["--output-dir", "data/review"])
@@ -2186,7 +2219,7 @@ class CollectRolloutsTest(unittest.TestCase):
                 "action_type": "drag_hold_release",
                 "coordinate_frame": "slingshot_relative",
                 "drag_start": [300, 220],
-                "drag_release": [-50, 40],
+                "drag_release": [50, 40],
                 "tapTime": 0,
             }
         ]
@@ -2266,7 +2299,8 @@ class CollectRolloutsTest(unittest.TestCase):
 
         self.assertEqual(manifest["rollouts"][0]["slingshot_reference"], {"gameX": 118, "gameY": 315, "canvasX": 118, "canvasY": 164})
         self.assertEqual(manifest["rollouts"][0]["action"]["drag_start"], [118, 315])
-        self.assertEqual(bridge.shots[0], (68, 204, 0, True, 600))
+        self.assertEqual(manifest["rollouts"][0]["action"]["drag_release"], [50, 40])
+        self.assertEqual(bridge.shots[0], (168, 204, 0, True, 600))
         self.assertEqual(saved_metadata["slingshot_reference"], {"gameX": 118, "gameY": 315, "canvasX": 118, "canvasY": 164})
         self.assertTrue(all(process.terminated and process.waited for process in processes))
 
@@ -2337,6 +2371,28 @@ class CollectRolloutsTest(unittest.TestCase):
             self.assertEqual(len(payload["actions"]), 3)
             self.assertEqual(payload["actions"][0]["action_type"], "drag_hold_release")
 
+    def test_main_dry_run_writes_bidirectional_generated_action_plan(self):
+        with TemporaryDirectory() as tmp:
+            args = [
+                "collect_rollouts.py",
+                "--output-dir",
+                tmp,
+                "--count",
+                "4",
+                "--bidirectional-launches",
+                "--dry-run",
+            ]
+
+            with patch("sys.argv", args):
+                main()
+
+            payload = json.loads((Path(tmp) / "action_plan.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(
+            [action["drag_release"][0] > 0 for action in payload["actions"]],
+            [False, True, False, True],
+        )
+
     def test_load_actions_from_action_log_returns_exact_logged_actions(self):
         logged_actions = [
             {
@@ -2394,17 +2450,27 @@ class CollectRolloutsTest(unittest.TestCase):
                 json.dumps({"trial_count": 1, "trials": [{"shot_name": "shot_001", "action": logged_action}]}),
                 encoding="utf-8",
             )
-            args = ["collect_rollouts.py", "--output-dir", tmp, "--actions-from-log", str(action_log), "--no-prepare"]
+            args = [
+                "collect_rollouts.py",
+                "--output-dir",
+                tmp,
+                "--actions-from-log",
+                str(action_log),
+                "--bidirectional-launches",
+                "--no-prepare",
+            ]
 
             with (
                 patch("sys.argv", args),
                 patch("scripts.collect_rollouts.connect_or_start_engine", return_value=(FakeBridge(), None)),
+                patch("scripts.collect_rollouts.generate_diverse_drag_release_actions") as generate_actions,
                 patch("scripts.collect_rollouts.collect_rollouts", return_value={"rollout_count": 1}) as collect,
             ):
                 main()
 
         self.assertEqual(collect.call_args.args[2], [logged_action])
         self.assertFalse(collect.call_args.kwargs["anchor_actions"])
+        generate_actions.assert_not_called()
 
     def test_main_wires_desktop_fresh_engine_baseline_capture(self):
         with TemporaryDirectory() as tmp:

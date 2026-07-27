@@ -1,23 +1,23 @@
-# Bi-Granular Neuro-Symbolic JEPA: Adaptive Temporal and Physical Abstraction for Persistent Physical Cascades
+# Regime-Adaptive World Models: Joint Temporal and Symbolic Abstraction for Persistent Physical Cascades
 
 **Target Venue:** ICLR 2027  
-**Keywords:** JEPA, world models, neuro-symbolic learning, adaptive granularity, physical reasoning, scene graph, energy-based constraints, Angry Birds, NovPhy.
+**Keywords:** world models, JEPA, neuro-symbolic learning, adaptive abstraction, temporal abstraction, physical reasoning, scene graphs, Angry Birds, NovPhy.
 
 ---
 
 ## 1. Abstract
 
-A single action in Angry Birds triggers a physical cascade lasting 50–150 frames. During this cascade, the agent acts only once; the world evolves autonomously. Standard JEPA world models predict $z_{t+1} = f(z_t, a_t)$. When $a_t = \text{noop}$ for hundreds of steps, recursive latent rollout drifts into physically impossible states—objects penetrate, unsupported blocks float, causal chains break.
+A single action in Angry Birds can trigger a physical cascade lasting 50–150 frames while the agent does not act again. Existing JEPA world models normally predict on a fixed temporal clock with a fixed latent abstraction. In this setting, short strides compound rollout error while long strides can skip collision events that determine the outcome; a fixed object-level symbolic description can likewise be unreliable while contact topology changes rapidly.
 
-We argue that this failure is not merely long-horizon error accumulation. It is a **structural granularity mismatch**: JEPA assumes uniform temporal resolution (frame-by-frame) and uniform physical abstraction (pixel-level) across the entire episode. But physical cascades are heterogeneous in time and structure. Collision phases demand fine-grained prediction; inertial glides permit coarse event jumps. Stable configurations support object-level symbolic reasoning; chaotic collapse defies discrete relational description.
+We identify this as a **representation-control problem**, not only a long-horizon prediction problem. Persistent physical cascades are heterogeneous: interaction-active intervals require fine continuous prediction, while quiescent intervals and stable endpoints admit compact relational abstractions. Existing world models learn representations or improve training stability; neuro-symbolic world models learn symbolic states or operators. Neither treats prediction horizon and symbolic abstraction as **joint, state-dependent decisions**.
 
-We propose **Bi-Granular Neuro-Symbolic JEPA (BG-NS-JEPA)**, a world model that jointly adapts **temporal resolution** ($\Delta t$) and **physical abstraction** ($\alpha \in \{\text{micro}, \text{macro}, \text{none}\}$) based on the dynamical regime of the environment. The model uses pure neural JEPA during chaotic transients, but anchors to a **learned symbolic scene graph** at stable attractors. This converts PDDL from a planning formalism into a **learned temporal codec** for physical cascade compression.
+We propose **Bi-Granular Neuro-Symbolic JEPA (BG-NS-JEPA)**, a regime-adaptive world model that selects temporal resolution $\Delta t$ and representational abstraction $\alpha \in \{\text{continuous}, \text{micro-relational}, \text{macro-event}\}$ from the current predictive state. A learned symbolic-reliability estimator gates fine relational constraints, allowing continuous dynamics to dominate when contact/support predicates are unreliable while retaining event-level descriptions when they remain useful. The symbolic layer supplies compositional state and cross-level consistency; it is not a universal rule engine.
 
-Our core theoretical contribution is **Structured Physical Symbolic Geometry (SPSG)**: we replace crude text-rule encoders with scene-graph neural networks that treat symbols as **submanifolds in latent space**—hard geometric constraints rather than soft energy basins. We further ground the stability gate $\phi(x_t)$ in dynamical systems theory, interpreting it via the largest Lyapunov exponent.
+Our secondary representational contribution, **Structured Physical Symbolic Geometry (SPSG)**, uses scene-graph and tensor-product structure to regularize relational states. We treat the resulting geometry as a learned soft constraint, with optional inference-time projection, rather than claiming an unconditional hard manifold or a dynamical-systems equivalence.
 
 The one-sentence pitch is:
 
-> **BG-NS-JEPA treats temporal and physical granularity as jointly learnable control variables: it uses a microscope at collision moments, a telescope during inertial glides, and learns when to switch by monitoring the physical stability of the scene.**
+> **BG-NS-JEPA lets a world model change both its prediction horizon and its symbolic resolution when the physical regime changes.**
 
 ---
 
@@ -36,58 +36,64 @@ We term these **action-sparse persistent-effect environments**. They are not mer
 
 **Temporal Axis (How often to predict):**
 
-- **Fine $\Delta t$ (frame-by-frame)**: High fidelity, but error accumulates exponentially over $\tau_{\text{eff}}$.
+- **Fine $\Delta t$ (frame-by-frame)**: High local fidelity, but recursive errors can accumulate over $\tau_{\text{eff}}$.
 - **Coarse $\Delta t$ (event-level)**: Low drift, but may miss critical collision events that determine final outcome.
-- **Hypothesis**: There exists a **critical granularity** $\Delta t^*$ that maximizes both final-state symbolic accuracy and continuous prediction fidelity.
+- **Hypothesis**: No fixed stride is Pareto-optimal across all dynamical regimes; a regime-adaptive policy can improve the prediction–computation frontier.
 
 **Physical Axis (What to predict):**
 
-- **Micro abstraction $\alpha = \text{micro}$**: Object-level scene graph (contact, support, velocity-bin). Valid when the system is quasi-static.
-- **Macro abstraction $\alpha = \text{macro}$**: Structure-level predicates (collapsed, cascade-active, steady-state). Valid during smooth evolution or equilibrium.
-- **Chaos regime $\alpha = \text{none}$**: Neither micro nor macro symbolic descriptions are valid. The system is in a high-entropy transient where splintering planks and flying debris defy discrete relational logic.
+- **Continuous $\alpha = \text{continuous}$**: A neural latent for rapidly changing contact and motion.
+- **Micro-relational $\alpha = \text{micro}$**: Object-level graph predicates (contact, support, velocity-bin), used only when their reliability is high.
+- **Macro-event $\alpha = \text{macro}$**: Structure/event predicates (cascade-active, collapsed, pigs-cleared, steady-state), which can remain useful even while individual contacts change.
 
-### 2.3 The Stability Gate: When Are Symbols Valid?
+### 2.3 Symbolic Reliability: When Is a Relational Constraint Useful?
 
-We define a **physical stability indicator** $\phi(x_t) \in \{0, 1\}$:
+We use a **symbolic-reliability estimator** $r_\psi(h_t) \in [0, 1]$, where $h_t$ contains the latent state, predictive uncertainty, and event likelihood. An oracle label can be constructed from simulator features during training:
 
-$$\phi(x_t) = \mathbb{1}_{\left[\text{KE}(x_t) < \epsilon_{\text{KE}}\right]} \cdot \mathbb{1}_{\left[\text{contacts}_{\text{active}}(x_t) < \epsilon_{\text{contact}}\right]}$$
+$$\phi^*(x_t) = \mathbb{1}_{\left[\text{KE}(x_t) < \epsilon_{\text{KE}}\right]} \cdot \mathbb{1}_{\left[\text{contacts}_{\text{active}}(x_t) < \epsilon_{\text{contact}}\right]}.$$
 
-When $\phi = 1$, the scene is in a **quasi-static attractor**—symbolic predicates like `supports(A,B)` or `all_pigs_dead` are well-defined. When $\phi = 0$, the system is in a chaotic transient where symbolic logic is **undefined**.
-
-*Theoretical grounding*: $\phi(x_t)$ can be interpreted via the largest Lyapunov exponent $\lambda_{\max}$: $\phi(x_t) = \mathbb{1}_{[\lambda_{\max}(x_t) < 0]}$, connecting the engineering heuristic to dynamical systems theory. The chaotic collapse corresponds to $\lambda_{\max} > 0$ (expansion); the stable endpoints correspond to $\lambda_{\max} < 0$ (contraction).
+High reliability means that the selected fine relational ontology, for example `supports(A,B)`, is expected to be stable enough to constrain a rollout. Low reliability does not make all symbols meaningless: coarse event predicates may still be available. Kinetic energy, contact activity, and finite-time divergence are diagnostics for this estimator, not definitions equivalent to a largest Lyapunov exponent.
 
 ---
 
-## 3. Key Insight: Let the Neural Network Handle the Chaos, Anchor the Endpoints in Symbolic Logic
+## 3. Research Gap: World Models Do Not Control Their Representation
 
-Existing neuro-symbolic JEPA approaches treat symbolic rules as flat textual objects encoded via generic text transformers. This introduces three limitations:
+The nearest research threads leave a specific gap:
 
-1. **Structural blindness**: Relational physical knowledge (support graphs, contact manifolds) is serialized into sequences, losing compositional semantics.
-2. **Unstructured negativity**: Negative rules are constructed by random corruption, producing physically absurd yet semantically ambiguous samples that pollute the energy landscape.
-3. **Point-wise embedding**: Symbols are treated as isolated attractor points in soft energy basins, rather than geometric constraints defining submanifolds.
+1. **JEPA world models** improve representation learning, object structure, or optimization stability, but normally retain a fixed temporal sampling policy and prediction representation.
+2. **Temporal-abstraction methods** learn when an agent acts, rather than when a world model should advance time and change state abstraction.
+3. **Symbolic world models** induce a fixed abstract transition system; they do not model a continuous cascade in which the reliability of object-level relations itself changes.
 
-Our solution is **Structured Physical Symbolic Geometry (SPSG)**. We treat symbols as **learnable projection heads** that factorize the latent space into explicit submanifolds:
+Our response is **joint regime-adaptive representation control**. **Structured Physical Symbolic Geometry (SPSG)** is the relational mechanism within that controller, not the paper's primary novelty. It uses learnable predicate projections to regularize a latent toward relationally consistent regions:
 
 $$\mathcal{M}_{\text{valid}} = \{z \in \mathcal{Z} \mid \forall s: f_s(z) = c_s\}$$
 
-where $f_s: \mathcal{Z} \to \mathbb{R}$ decodes whether symbolic predicate $s$ holds. The conjunction of symbols corresponds to the intersection of submanifolds: $\mathcal{M}_{s_1 \land s_2} = \mathcal{M}_{s_1} \cap \mathcal{M}_{s_2}$. This gives the latent space an **algebraic structure** compatible with logical operations.
+where $f_s: \mathcal{Z} \to \mathbb{R}$ decodes whether symbolic predicate $s$ holds. The conjunction of symbols corresponds to the intersection of submanifolds: $\mathcal{M}_{s_1 \land s_2} = \mathcal{M}_{s_1} \cap \mathcal{M}_{s_2}$. This supplies an algebraic inductive bias compatible with conjunction when the predicate maps are sufficiently well behaved; the implementation enforces it with losses and optional projection rather than an unconditional hard constraint.
 
-Critically, we accept that **symbols are only valid at stable attractors**. During the chaotic collapse ($\phi = 0$), the symbolic layer is **completely deactivated**. The neural network is free to predict continuous physics without symbolic "interference." This is not a limitation but a design choice: we do not force discrete logic onto phenomena that are inherently continuous and chaotic.
+During interaction-active intervals, the controller may select a continuous latent and mask unreliable fine relational losses. At stable or slowly changing intervals, it can select micro-relational or macro-event states and enforce cross-level consistency. The novelty is the state-dependent selection of this pair, not a claim that one representation is universally correct.
 
 ---
 
-## 4. Method: Bi-Granular Neuro-Symbolic JEPA
+## 4. Method: Joint Regime-Adaptive Abstraction
 
-All components serve a single objective:
+At each decision point, the controller chooses a pair from the cross-product of temporal and representational choices:
 
-$$\boxed{\mathcal{L}_{\text{total}}(\Delta t, \alpha) = \underbrace{\mathcal{L}_{\text{JEPA}}(\Delta t)}_{\text{chaotic phase}} + \underbrace{\phi(x_t) \cdot \mathcal{L}_{\text{EBC}}(\alpha)}_{\text{stable phase}} + \underbrace{\mathcal{L}_{\text{anchor}}}_{\text{terminal state}}}$$
+$$t_{k+1}=\min(t_k+\Delta_k,T), \qquad (\Delta_k,\alpha_k) \sim \pi_\kappa(\cdot\mid h_{t_k}),$$
 
-### 4.1 Component A: JEPA Backbone (The Chaos Engine)
+where $\Delta_k \in \mathcal{D}$ is a prediction horizon, $\alpha_k \in \{\text{continuous},\text{micro},\text{macro}\}$ is an abstraction, and $h_t$ includes the current latent, uncertainty, event likelihood, and symbolic reliability. The controller is joint rather than factorized: it must learn, for example, that a short continuous prediction is useful at collision onset while a long macro-event transition can be appropriate after settling.
 
-Standard action-conditioned latent predictor:
-$$\hat{z}_{t+1} = F_\theta(z_t, a_t)$$
+All components serve one duration-normalized objective:
 
-During chaotic phases ($\phi = 0$), this operates **unconstrained**. The neural network predicts continuous physics—splintering planks, flying debris, rolling pigs—without symbolic correction.
+$$\boxed{\mathcal{L}_{\text{total}} = \mathbb{E}\!\left[\sum_k \frac{\Delta_k}{T}\left(\mathcal{L}_{\text{pred}}^{\Delta_k,\alpha_k} + \lambda_{\text{sym}}\omega_\psi(h_{t_k},\alpha_k)\mathcal{L}_{\text{sym}}^{\alpha_k} + \lambda_{\text{cons}}\mathcal{L}_{\text{cross}} + \lambda_{\text{cost}}c(\Delta_k,\alpha_k)\right) + \lambda_{\text{anchor}}\mathcal{L}_{\text{anchor}}\right].}$$
+
+$\mathcal{L}_{\text{sym}}$ collects semantic, structural, and contrastive terms. $\omega_\psi(h,\alpha)$ is $r_\psi(h)$ for micro-relational constraints, $1$ for selected macro-event supervision, and $0$ for a continuous step. $\mathcal{L}_{\text{cross}}$ enforces agreement between micro and macro descriptions; $c$ prevents the controller from selecting a degenerate always-fine solution.
+
+### 4.1 Component A: Continuous Dynamics Backbone
+
+Action-conditioned, horizon-indexed latent predictor:
+$$\hat{z}_{t_{k+1}} = F_\theta^{\Delta_k,\alpha_k}(z_{t_k}, a_{[t_k,t_{k+1})}).$$
+
+When the controller selects the continuous abstraction, it predicts rapidly changing physics without fine relational correction. It is not assumed that all event-level semantics disappear in this regime.
 
 ### 4.2 Component B: Structured Physical Symbolic Geometry (SPSG)
 
@@ -100,16 +106,16 @@ During chaotic phases ($\phi = 0$), this operates **unconstrained**. The neural 
 The encoder maps a scene graph $G_t$ to a symbolic embedding:
 $$z_{t,\text{sym}} = f_{\text{GINE}}(G_t)$$
 
-**Negative Sampling via Differentiable Physics**:
-Instead of random corruption, we use the physics engine to generate **impossible worlds**:
+**Physics-validated negative sampling**:
+Instead of random corruption, use simulator-validated counterfactual configurations:
 
-- Anti-gravity: $g = +9.8$
+- Reversed gravity under an explicit simulator coordinate convention
 - Massless materials: $\rho_{\text{wood}} = 0$
 - Anti-support: remove support while keeping structure upright
 
-These are validated through the engine; if the engine crashes or cannot simulate, the configuration is a **hard negative**. This ensures semantic coherence in the energy landscape.
+Only configurations with an explicit semantic or physical violation are retained as negatives; a simulator failure is not itself evidence of an impossible world.
 
-### 4.3 Component C: Dual-Resolution PDDL as Temporal Codec
+### 4.3 Component C: Dual-Resolution Relational State and Event Interface
 
 **Micro-PDDL** (object-centric, fine physical granularity):
 
@@ -133,83 +139,80 @@ These are validated through the engine; if the engine crashes or cannot simulate
 **Abstraction map**: $S_t^M = A(S_t^\mu)$
 **Refinement map**: $\tilde{S}_t^\mu = R(S_t^M, z_t)$
 
-**Temporal Codec**: Instead of storing every frame, the model compresses a cascade into an event sequence:
+The macro state provides an event interface that can summarize a cascade:
 $$\mathcal{C} = \{(\tau_i, S_{\tau_i}^M, e_i, \Delta_i, S_{\tau_{i+1}}^M)\}_{i=1}^K$$
 
-Prediction becomes: $(S_{\tau_{i+1}}^M, \Delta_i, e_i) = G_\omega(S_{\tau_i}^M, z_{\tau_i}, a_{\tau_i})$
+Prediction becomes: $(S_{\tau_{i+1}}^M, \Delta_i, e_i) = G_\omega(S_{\tau_i}^M, z_{\tau_i}, a_{\tau_i})$.
 
-The continuous JEPA backbone only fills in micro-dynamics inside event intervals:
+The continuous JEPA backbone fills in micro-dynamics inside selected event intervals:
 $$z_{t+1} = F_\theta(z_t, a_t, S_t^\mu) \quad \text{for } t \in [\tau_i, \tau_i + \delta_i]$$
 
-### 4.4 Component D: Bi-Granular Controller
+PDDL is an optional serialization for a downstream planner; it is not itself claimed to be a learned temporal codec.
+
+### 4.4 Component D: Joint Bi-Granular Controller
 
 The controller jointly selects temporal resolution $\Delta t_k$ and physical abstraction $\alpha_k$:
 
-$$(\Delta t_k, \alpha_k) = \pi_\kappa(u_t, \phi(x_t), p_\eta(E_t), \lambda_t^{(w)})$$
+$$(\Delta t_k, \alpha_k) = \pi_\kappa(u_t, r_\psi(h_t), p_\eta(E_t), \lambda_t^{(w)}).$$
 
 where:
 
 - $u_t$: JEPA predictor uncertainty (latent variance)
-- $\phi(x_t)$: Physical stability indicator (Lyapunov-based)
+- $r_\psi(h_t)$: learned reliability of fine relational constraints
 - $p_\eta(E_t)$: Predicted event probability
 - $\lambda_t^{(w)}$: Local event density
 
 **Decision regimes**:
 
-| Regime                 | $\phi$ | $u_t$  | $\lambda_t$ | $\Delta t$ | $\alpha$    |
+| Regime                 | $r_\psi$ | $u_t$  | $\lambda_t$ | $\Delta t$ | $\alpha$    |
 | ---------------------- | ------ | ------ | ----------- | ---------- | ----------- |
 | Pre-shot stable        | 1      | low    | low         | coarse     | macro       |
-| Collision onset        | 0      | high   | high        | fine       | **none**    |
-| Chaotic collapse       | 0      | high   | high        | fine       | **none**    |
+| Collision onset        | low    | high   | high        | fine       | continuous  |
+| Interaction-active collapse | low | high | high        | fine       | continuous  |
 | Post-collapse settling | 1→0→1  | medium | medium      | adaptive   | micro→macro |
 | Equilibrium            | 1      | low    | low         | coarse     | macro       |
 
-**Key design**: During chaotic collapse, $\alpha = \text{none}$—the symbolic layer is **completely deactivated**. This is the core innovation: we do not attempt to symbolize the unsymbolizable.
+**Key design**: the controller selects the pair $(\Delta t,\alpha)$ jointly. Fine relational losses are masked when reliability is low, while a macro event representation may still be selected if it predicts the outcome more accurately or cheaply.
 
-### 4.5 Component E: Phase-Gated EBC and Terminal Anchor
+### 4.5 Component E: Reliability-Gated Constraints and Terminal Anchor
 
-**Phase-Gated EBC** (only active when $\phi = 1$):
-$$\mathcal{L}_{\text{EBC}}(\Delta t) = \sum_{k \in \mathcal{K}_{\text{stable}}} \left[ \sum_{(A,C) \in \mathcal{R}_{\text{valid}}} E(A,C) + \lambda \sum_{(A,C_{\text{neg}}) \in \mathcal{R}_{\text{neg}}} \max(0, m - E(A, C_{\text{neg}})) \right]$$
+**Reliability-gated constraint**:
+$$\ell_{\text{sym},k}=\sum_{(A,C)\in\mathcal{R}_{\text{valid}}}E(A,C)+\lambda\sum_{(A,C_{\text{neg}})\in\mathcal{R}_{\text{neg}}}\max(0,m-E(A,C_{\text{neg}})).$$
 
-where $\mathcal{K}_{\text{stable}} = \{k : \phi(x_{k\Delta t}) = 1\}$.
+The total objective weights $\ell_{\text{sym},k}$ with $\omega_\psi(h_{t_k},\alpha_k)$, so only the constraint type selected by the controller receives supervision.
 
-**Terminal Anchor Loss** (forces final state to symbolic pole):
-$$\mathcal{L}_{\text{anchor}} = \mathbb{1}_{[\phi(x_T)=1]} \cdot \sum_{c \in \mathcal{C}} \mathbb{1}_{[y=c]} \left\| g(z_c^{(K-1)}) - z_{\text{pole}}^{(c)} \right\|_2^2$$
+**Terminal anchor loss** (encourages an outcome-consistent endpoint):
+$$\mathcal{L}_{\text{anchor}} = r_\psi(h_T) \cdot \sum_{c \in \mathcal{C}} \mathbb{1}_{[y=c]} \left\| g(z_c^{(K-1)}) - z_{\text{pole}}^{(c)} \right\|_2^2.$$
 
-This ensures that even if the neural network hallucinated the trajectory of every splinter, the **final latent state** must collapse onto the symbolic pole of the true outcome.
+This applies outcome-level pressure at a reliable terminal state; it does not by itself guarantee a correct rollout.
 
 ---
 
 ## 5. Theoretical Contributions
 
-### 5.1 From Energy Basins to Geometric Constraints
+### 5.1 Structured Relational Regularization
 
-Prior neuro-symbolic work treats symbols as points in low-energy basins. We upgrade this to **submanifold constraints**:
+SPSG treats predicate projections as structured regularizers:
 
 $$\mathcal{M}_s = \{z \in \mathcal{Z} : f_s(z) = c_s\}$$
 
-This converts "make the energy lower" into a **hard geometric constraint** on the latent manifold.
+If $c_s$ is a regular value of $f_s$, then $f_s^{-1}(c_s)$ is locally a submanifold. The implemented losses only encourage proximity to this set; a hard constraint requires an explicit projection or constrained optimizer. This distinction keeps the geometry claim precise.
 
-### 5.2 Lyapunov Interpretation of the Stability Gate
+### 5.2 Reliability-Aware Switching
 
-The stability indicator $\phi(x_t)$ can be grounded in dynamical systems theory:
+The theory target is not a Lyapunov equivalence. It is a switching claim: when different regimes prefer different $(\Delta,\alpha)$ pairs, a sufficiently accurate state-dependent controller can outperform every fixed pair, subject to its prediction and compute costs. Simulator-derived stability measures provide supervision and diagnostics for the reliability estimator.
 
-- $\phi = 1$ corresponds to $\lambda_{\max} < 0$ (contracting/stable manifold)
-- $\phi = 0$ corresponds to $\lambda_{\max} > 0$ (chaotic expansion)
+### 5.3 Joint Granularity Frontier
 
-This connects the engineering heuristic to rigorous mathematics.
+We evaluate a **Pareto frontier** over temporal and representational granularity:
 
-### 5.3 Granularity Scaling Law
+| Controller choice | Endpoint correctness | Local fidelity | Compute |
+| ----------------- | -------------------- | -------------- | ------- |
+| Fixed coarse macro | May miss interactions | Low | Low |
+| Fixed fine continuous | High locally, may drift | High | High |
+| Joint regime-adaptive | **Hypothesized best trade-off** | Regime-dependent | Adaptive |
 
-We hypothesize a **Pareto frontier** between temporal granularity and predictive performance:
-
-| $\Delta t$            | Symbolic Accuracy $\mathcal{A}_{\text{sym}}$ | Frame MSE    | Error Accumulation |
-| --------------------- | -------------------------------------------- | ------------ | ------------------ |
-| Very coarse (T/2)     | High                                         | High         | Low                |
-| Critical $\Delta t^*$ | **Maximal**                                  | **Balanced** | **Sub-linear**     |
-| Very fine (1 frame)   | Low (drift)                                  | Low (early)  | **Exponential**    |
-
-**Hypothesis**: There exists a critical granularity $\Delta t^*$ where symbolic accuracy and continuous fidelity are jointly optimized. BG-NS-JEPA learns to operate near this critical point by adapting $\Delta t$ dynamically.
+**Hypothesis**: A joint controller beats fixed and factorized choices at matched compute because physical regimes induce different preferred pairs, not merely different temporal strides.
 
 ---
 
@@ -231,16 +234,16 @@ Train GINE encoder to decode latent states into scene graphs. Compare:
 - Learned symbolic state from simulator features
 - Learned symbolic state from image latent only
 
-### 6.3 Stage 3: Granularity Ablation (Weeks 9-11)
+### 6.3 Stage 3: Joint-Controller Ablation (Weeks 9-11)
 
-Vary $\Delta t \in \{2, 5, 10, 30, \text{full FPS}\}$ and measure:
+Compare fixed pairs, temporal-only adaptation, abstraction-only adaptation, a factorized controller $\pi_\Delta\pi_\alpha$, and the joint controller. Measure:
 
 - Terminal symbolic accuracy (zero-shot via pole distance)
-- Continuous prediction MSE
+- Horizon-normalized continuous prediction error at matched compute
 - Physical violation rate (penetration, floating, illegal contact)
 - OOD generalization (novel materials, gravity)
 
-**Expected signature curve**: U-shaped symbolic accuracy vs. $\Delta t$, with maximum at $\Delta t^*$.
+**Expected signature**: the joint controller improves the endpoint-correctness/physical-plausibility/compute frontier and chooses regime-aligned pairs more accurately than factorized alternatives.
 
 ### 6.4 Stage 4: Full BG-NS-JEPA (Weeks 12-14)
 
@@ -259,7 +262,11 @@ End-to-end training with bi-granular controller. Evaluate on:
 | Uniform macro              | Always event-level + structure-level |
 | ThinkJEPA                  | VLM external guidance                |
 | Causal-JEPA                | Object masking                       |
-| BG-NS-JEPA (no phase gate) | Ablates stability gating             |
+| Temporal-only adaptive     | Learns $\Delta t$ with fixed abstraction |
+| Abstraction-only adaptive  | Learns $\alpha$ with fixed stride   |
+| Factorized controller      | Learns $\pi_\Delta\pi_\alpha$ rather than a joint policy |
+| BG-NS-JEPA (oracle reliability) | Upper bound for the learned gate |
+| BG-NS-JEPA (no reliability gate) | Applies fine relational constraints uniformly |
 | BG-NS-JEPA (no SPSG)       | Ablates structured symbolic geometry |
 | BG-NS-JEPA (oracle graph)  | Upper bound for symbol extraction    |
 
@@ -267,7 +274,7 @@ End-to-end training with bi-granular controller. Evaluate on:
 
 **Prediction metrics**: ADE@H, FDE@H, Final-state accuracy, Event prediction F1
 **Physical plausibility**: Object penetration rate, unsupported-floating rate, illegal-contact rate
-**Granularity metrics**: Percentage in micro/macro/none mode, effective prediction steps, switch precision/recall
+**Granularity metrics**: effective prediction steps, controller cost, switch precision/recall against oracle regimes, and joint-pair calibration
 **Planning metrics**: Task success, shots-to-success, novelty adaptation speed
 
 ---
@@ -279,24 +286,25 @@ End-to-end training with bi-granular controller. Evaluate on:
 | Learned symbolic extraction unstable           | Start with oracle; GINE is more stable than slot attention   |
 | "Hand-engineered" vocabulary critique          | Vocabulary is universal physical substrate (like CNN locality); all truth values are learned |
 | NovPhy is adaptation benchmark, not prediction | Add dedicated prediction track; use world model as adaptation engine |
-| Chaos phase has no symbolic supervision        | By design. Chaos uses pure JEPA; symbols only anchor endpoints |
+| Reliability estimator misclassifies a regime   | Report oracle-gate upper bound; train with noisy labels and use calibrated confidence |
+| Reviewer sees a component bundle               | Make joint-controller and factorization ablations the primary evidence |
 | Method too complex for 3-4 months              | Oracle-symbol version is minimum publishable unit            |
 
 ---
 
 ## 8. Contributions
 
-1. **Problem**: Defines action-sparse persistent-effect environments as a stress test for JEPA, and identifies **granularity mismatch** as the root cause of failure.
-2. **Conceptual**: Proposes **Bi-Granular** control—jointly adapting temporal resolution and physical abstraction based on dynamical regime.
-3. **Method**: BG-NS-JEPA with Phase-Gated EBC, SPSG (GINE scene graphs), and PDDL temporal codec.
-4. **Theoretical**: Symbols-as-submanifolds; Lyapunov grounding for stability gate; granularity scaling law.
-5. **Empirical**: NovPhy/Angry Birds evaluation protocol with cross-domain validation (Physhion, CLEVRER).
+1. **Problem**: Defines action-sparse persistent-effect environments as a world-model setting with nonuniform temporal and representational demands.
+2. **Conceptual**: Identifies **joint regime-adaptive representation control** as the missing principle: a world model selects prediction horizon and abstraction together.
+3. **Method**: BG-NS-JEPA, combining a joint controller, a learned symbolic-reliability estimator, cross-level relational consistency, and a continuous JEPA backbone.
+4. **Representation**: SPSG supplies compositional scene-graph and TPR regularization when fine relational predicates are reliable.
+5. **Empirical**: Tests whether the joint controller improves the prediction–plausibility–compute frontier over fixed, single-axis, and factorized baselines on NovPhy and cross-domain physics tasks.
 
 ---
 
 ## 9. One-Sentence Pitch
 
-> **BG-NS-JEPA lets world models think like physicists: zoom in with neural prediction during chaotic collisions, zoom out with symbolic abstraction during stable glides, and learn the zoom schedule from the physics itself.**
+> **BG-NS-JEPA lets a world model change both its prediction horizon and its symbolic resolution when the physical regime changes.**
 
 ---
 
@@ -308,6 +316,8 @@ End-to-end training with bi-granular controller. Evaluate on:
 - Causal-JEPA: Learning World Models through Object-Level Latent Masking, arXiv:2602.11389.
 - Sub-JEPA: Subspace Gaussian Regularization for Stable End-to-End World Models, arXiv:2605.09241.
 - STRIPS-WM: Learning Grounded Propositional STRIPS-style World Models from Images, arXiv:2606.06832.
+- TempoRL: Learning When to Act, arXiv:2106.05262.
+- Sutton, Precup, and Singh, Between MDPs and Semi-MDPs: A Framework for Temporal Abstraction in Reinforcement Learning, AIJ 1999.
 - Fox and Long, Modelling Mixed Discrete-Continuous Domains for Planning, JAIR 2006.
 - Playing Angry Birds with a Domain-Independent PDDL+ Planner, arXiv:2107.04635.
 - NovPhy: A physical reasoning benchmark for open-world AI systems.
@@ -316,11 +326,4 @@ End-to-end training with bi-granular controller. Evaluate on:
 
 ---
 
-这份提案的核心改进在于：
-
-1. **统一公式统领全文**：所有组件都是 $\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{JEPA}} + \phi \cdot \mathcal{L}_{\text{EBC}} + \mathcal{L}_{\text{anchor}}$ 的实现细节，而非并列的五个模块。
-2. **"混沌期关闭"作为设计哲学**：明确声明 $\alpha = \text{none}$ 不是缺陷而是核心设计，直接防御 Bitter Lesson 质疑。
-3. **SPSG 理论升级**：将符号从"能量盆地中的点"提升为"子流形上的硬约束"，给出代数结构（交集=合取）。
-4. **Lyapunov 解释**：给 $\phi(x_t)$ 动力系统理论基础，而非停留在工程启发式。
-5. **Granularity Scaling Law**：提供实验钩子——U型曲线 + 临界粒度 $\Delta t^*$，这是 ICLR 评审容易记住的"杀手图"。
-
+Positioning note: the paper's novelty is the joint controller and its causal evidence, not a claim that symbolic constraints, TPRs, or temporal abstraction are individually new. Present SPSG as an enabling relational inductive bias and evaluate it separately from the controller.

@@ -5,39 +5,56 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 plan_dir="${PLAN_DIR:-data/rollout_dataset_plan_$(date +%Y%m%d_%H%M%S)}"
-out_root="${OUT_ROOT:-data/rollout_dataset_$(date +%Y%m%d_%H%M%S)}"
+out_root="${OUT_ROOT:-}"
 display_id="${DISPLAY_ID:-:149}"
-count="${ROLLOUT_COUNT:-2}"
+count="${ROLLOUT_COUNT:-12}"
 fps="${ROLLOUT_FPS:-30}"
 duration="${ROLLOUT_DURATION:-5}"
 display_label="${display_id#:}"
 xvnc_log="${XVNC_LOG:-/tmp/novphy_rollout_xvnc_${USER:-user}_${display_label}.log}"
-workers="${WORKERS:-1}"
+workers="${WORKERS:-6}"
+agent_port_base="${AGENT_PORT_BASE:-2004}"
+game_port_base="${GAME_PORT_BASE:-9001}"
+resume="${RESUME:-}"
+train_target="${TRAIN_TARGET_PER_BUCKET:-100}"
+dev_target="${DEV_TARGET_PER_BUCKET:-20}"
+seed="${PARTITION_SEED:-novphy-rollout-dataset-v1}"
+proc_root="${NOVPHY_PROC_ROOT:-/proc}"
+x11_tmp_root="${NOVPHY_X11_TMP_ROOT:-/tmp}"
 
 usage() {
   cat <<'EOF'
 Collect the full NovPhy train/dev rollout dataset.
 
-This script plans deterministic train/dev/test partitions, starts Xvnc,
-then runs the generated train/dev collection script. Test levels stay held out.
+This script inventories an existing output root, publishes a capped deterministic
+train/dev collection plan, starts Xvnc, then runs only the generated script.
+Test levels stay unscheduled.
 Failed levels are logged to PLAN_DIR/failed_levels.tsv; collection continues to
 later levels, then exits nonzero if any level failed.
 
 Environment overrides:
   PLAN_DIR          Output directory for partitions and generated commands
-  OUT_ROOT          Output root for collected rollout data
+  OUT_ROOT          Required existing output root for collected rollout data
   DISPLAY_ID        X display for Xvnc and desktop capture, default :149
-  ROLLOUT_COUNT     Rollouts per level, default 2
+  ROLLOUT_COUNT     Rollouts per episode, default 12
   ROLLOUT_FPS       Capture FPS, default 30
   ROLLOUT_DURATION  Minimum post-shot capture duration, default 5
-  WORKERS           Parallel rollout workers, default 1. Workers use isolated X displays, engine dirs, agent ports, and game ports.
+  WORKERS           Parallel rollout workers, default 6. Workers use isolated X displays, engine dirs, agent ports, and game ports.
+  AGENT_PORT_BASE   First worker agent port, default 2004; later workers add 10
+  GAME_PORT_BASE    First worker game port, default 9001; later workers add 10
+  RESUME=1          Required. Preserve existing output paths and schedule only absent paths.
+  TRAIN_TARGET_PER_BUCKET
+                    Episodes per normal/novel bucket for train, default 100
+  DEV_TARGET_PER_BUCKET
+                    Episodes per normal/novel bucket for dev, default 20
+  PARTITION_SEED    Deterministic planner seed, default novphy-rollout-dataset-v1
   NOVPHY_ALLOW_NETWORK_LISTENERS=1
                      Required with WORKERS>1 after confirming the host is isolated/firewalled.
   XVNC_LOG          Xvnc log path, default /tmp/novphy_rollout_xvnc_${USER}_${DISPLAY_ID-without-colon}.log
   NOVPHY_YES=1      Skip the confirmation prompt
 
 Example:
-  source ~/cd_novphy && NOVPHY_YES=1 scripts/collect_full_rollout_training_dataset.sh
+  source ~/cd_novphy && RESUME=1 OUT_ROOT=/absolute/path/to/existing/output/root NOVPHY_YES=1 scripts/collect_full_rollout_training_dataset.sh
 EOF
 }
 
@@ -46,13 +63,78 @@ if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   exit 0
 fi
 
+parse_port_base() {
+  local name="$1" value="$2" normalized
+  if ! [[ "$value" =~ ^[0-9]+$ ]]; then
+    echo "$name must be a decimal integer in 1..65535." >&2
+    return 1
+  fi
+  normalized="$value"
+  while [[ ${#normalized} -gt 1 && "${normalized:0:1}" == "0" ]]; do
+    normalized="${normalized:1}"
+  done
+  if [[ ${#normalized} -gt 5 || ( ${#normalized} -eq 5 && "$normalized" > "65535" ) || "$normalized" == "0" ]]; then
+    echo "$name must be a decimal integer in 1..65535." >&2
+    return 1
+  fi
+  REPLY=$((10#$normalized))
+}
+
+if ! parse_port_base "AGENT_PORT_BASE" "$agent_port_base"; then
+  exit 2
+fi
+agent_port_base="$REPLY"
+
+if ! parse_port_base "GAME_PORT_BASE" "$game_port_base"; then
+  exit 2
+fi
+game_port_base="$REPLY"
+
+if [[ "$resume" != "1" ]]; then
+  echo "This launcher requires RESUME=1." >&2
+  exit 2
+fi
+
 if ! [[ "$workers" =~ ^[0-9]+$ ]]; then
   echo "WORKERS must be a positive integer." >&2
   exit 2
 fi
 
-if [[ "$workers" -lt 1 ]]; then
+while [[ ${#workers} -gt 1 && "${workers:0:1}" == "0" ]]; do
+  workers="${workers:1}"
+done
+if [[ ${#workers} -gt 4 || "$workers" -lt 1 ]]; then
   echo "WORKERS must be at least 1." >&2
+  exit 2
+fi
+
+workers=$((10#$workers))
+final_agent_port=$((agent_port_base + (workers - 1) * 10))
+final_game_port=$((game_port_base + (workers - 1) * 10))
+if [[ "$final_agent_port" -gt 65535 ]]; then
+  echo "AGENT_PORT_BASE final worker port exceeds 65535." >&2
+  exit 2
+fi
+if [[ "$final_game_port" -gt 65535 ]]; then
+  echo "GAME_PORT_BASE final worker port exceeds 65535." >&2
+  exit 2
+fi
+if (( (agent_port_base - game_port_base) % 10 == 0 && agent_port_base <= final_game_port && game_port_base <= final_agent_port )); then
+  if (( agent_port_base > game_port_base )); then
+    overlap_port="$agent_port_base"
+  else
+    overlap_port="$game_port_base"
+  fi
+  echo "agent and game port families must be disjoint: $overlap_port." >&2
+  exit 2
+fi
+
+if [[ -z "${OUT_ROOT+x}" || -z "$out_root" ]]; then
+  echo "RESUME=1 requires an explicit OUT_ROOT." >&2
+  exit 2
+fi
+if [[ ! -d "$out_root" ]]; then
+  echo "RESUME=1 requires OUT_ROOT to exist: $out_root" >&2
   exit 2
 fi
 
@@ -66,21 +148,138 @@ if [[ "$workers" -gt 1 && "${NOVPHY_ALLOW_NETWORK_LISTENERS:-}" != "1" ]]; then
   exit 2
 fi
 
-if ! command -v Xvnc >/dev/null 2>&1; then
-  echo "Missing Xvnc on PATH. Initialize the NovPhy environment first, for example: source ~/cd_novphy" >&2
+out_root_canonical="$(realpath -m -- "$out_root")"
+
+refuse_active_collector() {
+  local proc_dir cmdline_path cmdline
+  if [[ ! -d "$proc_root" ]]; then
+    echo "Cannot inspect process state: $proc_root is unavailable." >&2
+    return 1
+  fi
+  for proc_dir in "$proc_root"/[0-9]*; do
+    [[ -e "$proc_dir" ]] || continue
+    cmdline_path="$proc_dir/cmdline"
+    if [[ ! -r "$cmdline_path" ]]; then
+      echo "Cannot inspect process state: $cmdline_path is unreadable." >&2
+      return 1
+    fi
+    cmdline="$(tr '\000' ' ' < "$cmdline_path")"
+    if [[ "$cmdline" == *"collect_rollouts.py"* && "$cmdline" == *"$out_root_canonical/"* ]]; then
+      echo "Matching collect_rollouts.py is already active for OUT_ROOT descendants: $out_root_canonical" >&2
+      return 1
+    fi
+  done
+  return 0
+}
+
+refuse_occupied_port() {
+  local port="$1" label="$2" port_hex tcp_path inspection
+  printf -v port_hex '%04X' "$port"
+  for tcp_path in "$proc_root/net/tcp" "$proc_root/net/tcp6"; do
+    if [[ ! -r "$tcp_path" ]]; then
+      echo "Cannot inspect $label port $port: $tcp_path is unreadable." >&2
+      return 1
+    fi
+    if ! inspection="$(awk -v port="$port_hex" '
+      $4 == "0A" && $2 ~ (":" port "$") { found = 1 }
+      END { print found ? "occupied" : "available" }
+    ' "$tcp_path")"; then
+      echo "Cannot inspect $label port $port: failed to parse $tcp_path." >&2
+      return 1
+    fi
+    if [[ "$inspection" == "occupied" ]]; then
+      echo "$label port $port is occupied." >&2
+      return 1
+    fi
+    if [[ "$inspection" != "available" ]]; then
+      echo "Cannot inspect $label port $port: unexpected inspection output for $tcp_path." >&2
+      return 1
+    fi
+  done
+  return 0
+}
+
+refuse_occupied_display() {
+  local display="$1" display_number
+  display_number="${display#:}"
+  if [[ ! -d "$x11_tmp_root" || ! -d "$x11_tmp_root/.X11-unix" ]]; then
+    echo "Cannot inspect X display state under $x11_tmp_root." >&2
+    return 1
+  fi
+  if [[ -e "$x11_tmp_root/.X${display_number}-lock" || -S "$x11_tmp_root/.X11-unix/X${display_number}" ]]; then
+    echo "X display $display is occupied." >&2
+    return 1
+  fi
+  return 0
+}
+
+preflight_resources() {
+  local worker_index worker_display agent_port game_port base_display_number
+  refuse_active_collector
+  base_display_number="${display_id#:}"
+  for ((worker_index = 0; worker_index < workers; worker_index++)); do
+    worker_display=":$((base_display_number + worker_index))"
+    agent_port="$((agent_port_base + worker_index * 10))"
+    game_port="$((game_port_base + worker_index * 10))"
+    refuse_occupied_display "$worker_display"
+    refuse_occupied_port "$agent_port" "agent"
+    refuse_occupied_port "$game_port" "game"
+  done
+}
+
+preflight_resources
+
+lock_path="${out_root_canonical}.novphy_rollout_collection.lock"
+exec {collection_lock_fd}>"$lock_path"
+if ! flock -n "$collection_lock_fd"; then
+  echo "Another collector holds the output-root lock: $lock_path" >&2
   exit 1
 fi
 
-echo "This will collect train/dev rollouts for the installed NovPhy levels."
+python scripts/prepare_rollout_dataset.py plan \
+  --output-dir "$plan_dir" \
+  --command-output-root "$out_root_canonical" \
+  --train-target "$train_target" \
+  --dev-target "$dev_target" \
+  --seed "$seed" \
+  --count "$count" \
+  --fps "$fps" \
+  --duration "$duration" \
+  --display "$display_id" \
+  --workers "$workers" \
+  --agent-port-base "$agent_port_base" \
+  --game-port-base "$game_port_base"
+
+echo "This will collect the newly scheduled capped train/dev rollout cohort."
 echo "Plan directory: $plan_dir"
-echo "Output root:    $out_root"
+echo "Output root:    $out_root_canonical"
 echo "Display:        $display_id"
 echo "Rollouts/level: $count"
 echo "FPS:            $fps"
 echo "Duration:       $duration"
 echo "Workers:        $workers"
+echo "Agent port base: $agent_port_base"
+echo "Game port base:  $game_port_base"
+echo "Train target/bucket: $train_target"
+echo "Dev target/bucket:   $dev_target"
+echo "Planner seed:        $seed"
 echo ""
-echo "Important: sciencebirdsgames/Linux/config.xml will be rewritten per level"
+echo "Reconciled plan summary:"
+python - "$plan_dir/collection_plan.json" <<'PY'
+import json
+import sys
+
+plan = json.loads(open(sys.argv[1], encoding="utf-8").read())
+contract = plan["contract"]
+counts = plan["counts"]
+print(json.dumps({
+    "buckets": len(plan["summary"]) // 2,
+    "contract": contract,
+    "counts": counts,
+}, indent=2, sort_keys=True))
+PY
+echo ""
+echo "Important: worker-local sciencebirdsgames/Linux/config.xml will be rewritten per level"
 echo "and left pointing at the final collected level. Test levels are not collected."
 echo "Failed levels will be logged to $plan_dir/failed_levels.tsv and later levels will continue."
 
@@ -92,14 +291,12 @@ if [[ "${NOVPHY_YES:-}" != "1" ]]; then
   fi
 fi
 
-python scripts/prepare_rollout_dataset.py plan \
-  --output-dir "$plan_dir" \
-  --command-output-root "$out_root" \
-  --count "$count" \
-  --fps "$fps" \
-  --duration "$duration" \
-  --display "$display_id" \
-  --workers "$workers"
+preflight_resources
+
+if ! command -v Xvnc >/dev/null 2>&1; then
+  echo "Missing Xvnc on PATH. Initialize the NovPhy environment first, for example: source ~/cd_novphy" >&2
+  exit 1
+fi
 
 xvnc_pids=()
 cleanup() {
@@ -118,5 +315,11 @@ for ((worker_index = 0; worker_index < workers; worker_index++)); do
   xvnc_pids+=("$!")
 done
 sleep 2
+for xvnc_pid in "${xvnc_pids[@]}"; do
+  if ! kill -0 "$xvnc_pid" 2>/dev/null; then
+    echo "Xvnc failed to start; cleaning up owned Xvnc processes." >&2
+    exit 1
+  fi
+done
 
 bash "$plan_dir/collect_train_dev.sh"

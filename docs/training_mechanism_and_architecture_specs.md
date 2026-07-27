@@ -1,6 +1,6 @@
-# BG-NS-JEPA: Training Mechanism and Architectural Specification
+# BG-NS-JEPA: Regime-Adaptive Training and Architectural Specification
 
-**Bi-Granular Neuro-Symbolic JEPA with Semantic Tensor-Product Geometry**
+**Joint temporal and symbolic abstraction with semantic tensor-product geometry**
 
 *Technical Document — June 2026*
 
@@ -12,8 +12,9 @@ This document specifies the complete training mechanism for BG-NS-JEPA, integrat
 - **Semantic predicate embeddings** (CLIP-like similarity) over binary scalars
 - **Tensor Product Representations (TPR)** for strict compositional binding
 - **Hybrid GINE-TPR architecture** combining relational perception with algebraic structure
-- **Phase-gated training** that deactivates symbolic constraints during chaos ($\phi = 0$)
-- **Inference-time semantic projection** to prevent latent drift
+- **A joint controller** over prediction horizon and representational abstraction
+- **Reliability-gated relational supervision** rather than universally active symbols
+- **Optional inference-time relational projection** when fine relations are reliable
 
 ---
 
@@ -28,18 +29,18 @@ An episode $\mathcal{E} = \{(o_t, a_t, x_t)\}_{t=0}^T$ where:
 Standard JEPA $\hat{z}_{t+1} = F_\theta(z_t, a_t)$ with $a_t = \text{noop}$ for extended periods causes recursive latent rollout drift into physically impossible states.
 
 ### 2.3 Core Insight
-Symbols are only valid at **stable attractors** ($\phi = 1$). During chaotic transients ($\phi = 0$), symbolic constraints must be **completely deactivated**.
+Physical cascades are nonuniform in both time and representation. The model must jointly decide how far to predict and whether a continuous, micro-relational, or macro-event state is appropriate. Fine contact/support relations are reliability-gated; coarse event descriptions can remain useful during interaction-active intervals.
 
 ---
 
 ## 3. Architectural Components
 
-### 3.1 JEPA Backbone (The Chaos Engine)
-Standard action-conditioned latent predictor:
-$$\hat{z}_{t+1} = F_\theta(z_t, a_t)$$
+### 3.1 Continuous Dynamics Backbone
+Horizon- and abstraction-conditioned predictor:
+$$\hat{z}_{t_{k+1}} = F_\theta^{\Delta_k,\alpha_k}(z_{t_k},a_{[t_k,t_{k+1})}).$$
 
 **Active**: Always.
-**Role**: Predicts continuous physics in latent space during all phases.
+**Role**: Predicts continuous or abstract transitions selected by the controller.
 
 ---
 
@@ -68,22 +69,22 @@ Where $\otimes$ denotes the tensor product, producing a vector in $\mathbb{R}^{d
 
 **Semantic Predicate Embeddings**: Each predicate $s$ has a learned continuous embedding $\mathbf{v}_s$ (not a binary scalar). Similarity between predicates is computed as $\cos(\mathbf{v}_{s_1}, \mathbf{v}_{s_2})$.
 
-**Active**: Only during stable phases ($\phi = 1$).
+**Active**: When the controller selects a relational abstraction and $r_\psi(h_t)$ is high enough to make fine relational constraints reliable.
 
 ---
 
-### 3.4 Bi-Granular Controller
-Jointly selects temporal resolution $\Delta t_k$ and physical abstraction $\alpha_k$:
+### 3.4 Joint Bi-Granular Controller
+Jointly selects temporal resolution $\Delta t_k$ and representational abstraction $\alpha_k$ from their cross-product:
 
-$$(\Delta t_k, \alpha_k) = \pi_\kappa(u_t, \phi(x_t), p_\eta(E_t), \lambda_t^{(w)})$$
+$$(\Delta t_k, \alpha_k) \sim \pi_\kappa(\cdot \mid u_t, r_\psi(h_t), p_\eta(E_t), \lambda_t^{(w)}).$$
 
 **Decision Regimes**:
 
-| Regime                 | $\phi$ | $u_t$  | $\lambda_t$ | $\Delta t$ | $\alpha$    |
+| Regime                 | $r_\psi$ | $u_t$  | $\lambda_t$ | $\Delta t$ | $\alpha$    |
 | ---------------------- | ------ | ------ | ----------- | ---------- | ----------- |
 | Pre-shot stable        | 1      | low    | low         | coarse     | macro       |
-| Collision onset        | 0      | high   | high        | fine       | **none**    |
-| Chaotic collapse       | 0      | high   | high        | fine       | **none**    |
+| Collision onset        | low    | high   | high        | fine       | continuous  |
+| Interaction-active collapse | low | high | high        | fine       | continuous  |
 | Post-collapse settling | 1→0→1  | medium | medium      | adaptive   | micro→macro |
 | Equilibrium            | 1      | low    | low         | coarse     | macro       |
 
@@ -91,43 +92,46 @@ $$(\Delta t_k, \alpha_k) = \pi_\kappa(u_t, \phi(x_t), p_\eta(E_t), \lambda_t^{(w
 
 ---
 
-### 3.5 Stability Gate (Lyapunov Grounded)
-$$\phi(x_t) = \mathbb{1}_{[\text{KE}(x_t) < \epsilon_{\text{KE}}]} \cdot \mathbb{1}_{[\text{contacts}_{\text{active}}(x_t) < \epsilon_{\text{contact}}]}$$
+### 3.5 Symbolic-Reliability Estimator
+$$r_\psi(h_t) \in [0,1], \qquad \phi^*(x_t)=\mathbb{1}_{[\mathrm{KE}(x_t)<\epsilon_{\mathrm{KE}}]}\mathbb{1}_{[\mathrm{contacts}_{\mathrm{active}}(x_t)<\epsilon_{\mathrm{contact}}]}.$$
 
-**Theoretical grounding**: $\phi = 1 \iff \lambda_{\max} < 0$ (contracting manifold), $\phi = 0 \iff \lambda_{\max} > 0$ (chaotic expansion).
+$\phi^*$ is an oracle training label or diagnostic derived from simulator state. $r_\psi$ is the learned test-time estimator. It measures the expected reliability of fine relational constraints; it is not claimed to be equivalent to a Lyapunov exponent or to determine whether every possible symbol is meaningful.
 
 ---
 
 ## 4. Unified Training Loss
 
-The complete training objective is:
+The complete duration-normalized objective is:
 
 $$
 \boxed{
 \begin{aligned}
-\mathcal{L}_{\text{total}} = \; & 
-\underbrace{\mathcal{L}_{\text{JEPA}}}_{\text{(1) Always Active}} \\
-& + \phi(x_t) \cdot \Bigg[
-\underbrace{\mathcal{L}_{\text{semantic}}}_{\text{(2) Semantic Alignment}} + 
-\underbrace{\mathcal{L}_{\text{struct}}}_{\text{(3) TPR Composition}} + 
-\underbrace{\mathcal{L}_{\text{contrastive}}}_{\text{(4) Hard Negatives}}
-\Bigg] \\
-& + \underbrace{\mathcal{L}_{\text{anchor}}}_{\text{(5) Terminal Pole}}
+\mathcal{L}_{\text{total}} = \; &
+\mathbb{E}\left[\sum_k\frac{\Delta_k}{T}\Big(
+\underbrace{\mathcal{L}_{\text{pred}}^{\Delta_k,\alpha_k}}_{\text{(1) Prediction}} +
+\lambda_{\text{sym}}\omega_\psi(h_{t_k},\alpha_k)\big[
+\underbrace{\mathcal{L}_{\text{semantic}}}_{\text{(2) Semantic Alignment}} +
+\underbrace{\mathcal{L}_{\text{struct}}}_{\text{(3) TPR Composition}} +
+\underbrace{\mathcal{L}_{\text{contrastive}}}_{\text{(4) Physics-validated negatives}}
+\big] \\
+&\qquad + \lambda_{\text{cross}}\underbrace{\mathcal{L}_{\text{cross}}}_{\text{(5) Cross-level consistency}}
++ \lambda_{\text{cost}}\underbrace{c(\Delta_k,\alpha_k)}_{\text{(6) Controller cost}}
+\Big) + \lambda_{\text{anchor}}\underbrace{\mathcal{L}_{\text{anchor}}}_{\text{(7) Terminal anchor}}\right].
 \end{aligned}
 }
 $$
 
-### 4.1 Component (1): JEPA Prediction Loss (Always Active)
+### 4.1 Component (1): Horizon-Conditioned Prediction Loss
 
-$$\mathcal{L}_{\text{JEPA}} = \mathbb{E}_{t} \left[ \| \hat{z}_{t+1} - z_{t+1} \|_2^2 \right]$$
+$$\mathcal{L}_{\text{pred}}^{\Delta_k,\alpha_k} = \left\| \hat{z}_{t_{k+1}} - z_{t_{k+1}} \right\|_2^2, \qquad t_{k+1}=\min(t_k+\Delta_k,T).$$
 
-Where $\hat{z}_{t+1} = F_\theta(z_t, a_t)$.
+Where $\hat{z}_{t_{k+1}}=F_\theta^{\Delta_k,\alpha_k}(z_{t_k},a_{[t_k,t_{k+1})})$.
 
-This ensures continuous physics prediction operates **unconstrained** during chaos.
+The duration weighting makes fixed- and variable-horizon comparisons meaningful. Define $\omega_\psi(h,\alpha)$ as $r_\psi(h)$ for micro-relational constraints, $1$ for selected macro-event supervision, and $0$ for a continuous step. This masks unreliable fine relations without making all event-level supervision disappear.
 
 ---
 
-### 4.2 Component (2): Semantic Alignment Loss (Active Only When $\phi = 1$)
+### 4.2 Component (2): Reliability-Gated Semantic Alignment
 
 For each ground-truth predicate $s \in \mathcal{S}_{\text{true}}$ active in the scene:
 
@@ -137,11 +141,11 @@ Where:
 - $f_s: \mathcal{Z} \to \mathbb{R}^{d_v}$ is a learned projection head (MLP) decoding predicate $s$
 - $\mathbf{v}_s \in \mathbb{R}^{d_v}$ is the learned semantic embedding for predicate $s$
 
-**Why this matters**: This forces the latent space to arrange itself so that the geometric distance between $f_{\text{supports}}(z)$ and $f_{\text{contact}}(z)$ mirrors their physical/functional similarity. Predicate embeddings are learned jointly, enabling smooth generalization.
+**Why this matters**: This aligns the latent with a selected relational vocabulary when that vocabulary is reliable. Semantic similarity is an empirical property to test, not an automatic consequence of learning embedding vectors.
 
 ---
 
-### 4.3 Component (3): TPR Compositional Loss (Active Only When $\phi = 1$)
+### 4.3 Component (3): TPR Compositional Regularizer
 
 $$\mathcal{L}_{\text{struct}} = \left\| z_t - \sum_{(o_i, o_j, s) \in \mathcal{G}_t} \mathbf{r}_{o_i} \otimes \mathbf{r}_{o_j} \otimes \mathbf{v}_{s} \right\|_2^2$$
 
@@ -150,16 +154,16 @@ Where:
 - $\mathbf{r}_{o_i}$ are learned role embeddings for each object
 - $\mathbf{v}_{s}$ are the same semantic predicate embeddings
 
-**Why this matters**: The tensor product preserves variable binding—"A supports B" and "B supports A" occupy orthogonal subspaces. The gradient flows backward through GINE, organizing its latent space according to the TPR algebra.
+**Why this matters**: The tensor product preserves role-filler binding, so "A supports B" and "B supports A" have different representations. The loss is a soft compositional regularizer, not a proof that arbitrary learned roles are orthogonal.
 
 **Implementation Note**: In practice, we compute this loss using a **TPR Readout Head** attached to GINE, not by explicitly computing the full tensor product over all objects (which would be $O(N^3)$). The head predicts the role and filler vectors for each node/edge.
 
 ---
 
-### 4.4 Component (4): Semantic Contrastive Loss (Active Only When $\phi = 1$)
+### 4.4 Component (4): Physics-Validated Contrastive Loss
 
 Hard negatives are generated via differentiable physics:
-- Anti-gravity: $g = -9.8$
+- Reversed gravity under an explicit simulator coordinate convention
 - Massless materials: $\rho_{\text{wood}} = 0$
 - Anti-support: remove support while keeping structure upright
 
@@ -171,44 +175,53 @@ Where:
 - $z_{\text{neg}}$ is the latent of an impossible configuration
 - $m$ is the margin hyperparameter
 
-**Why this matters**: Negative samples are semantically coherent (the engine validates them), ensuring the energy landscape has meaningful structure.
+**Why this matters**: Retain a negative only when its intended physical or semantic violation is explicitly validated. A simulator crash is not evidence that a configuration is an invalid physical state.
 
 ---
 
-### 4.5 Component (5): Terminal Anchor Loss (Always Active, but Only Applies When $\phi(T) = 1$)
+### 4.5 Component (5): Cross-Level Consistency
 
-$$\mathcal{L}_{\text{anchor}} = \mathbb{1}_{[\phi(x_T)=1]} \cdot \sum_{c \in \mathcal{C}} \mathbb{1}_{[y=c]} \left\| g(z_c^{(K-1)}) - z_{\text{pole}}^{(c)} \right\|_2^2$$
+For states where both descriptions are available, enforce that the macro state agrees with an abstraction of the micro state:
+
+$$\mathcal{L}_{\text{cross}} = \left\|A(S_t^\mu)-S_t^M\right\|_2^2 + \left\|R(S_t^M,z_t)-S_t^\mu\right\|_2^2.$$
+
+This is what makes temporal and representational granularity compose rather than merely coexist.
+
+### 4.6 Component (7): Terminal Anchor Loss
+
+$$\mathcal{L}_{\text{anchor}} = r_\psi(h_T) \cdot \sum_{c \in \mathcal{C}} \mathbb{1}_{[y=c]} \left\| g(z_c^{(K-1)}) - z_{\text{pole}}^{(c)} \right\|_2^2$$
 
 Where:
 - $z_T$ is the final latent state
 - $z_{\text{pole}}^{(c)}$ is the learned symbolic pole for outcome $c$
 - $g$ is a learned projection
 
-**Why this matters**: Even if the neural network hallucinated the trajectory of every splinter, the final latent state must collapse onto the symbolic pole of the true outcome.
+**Why this matters**: This applies outcome-level pressure to a reliable terminal state. It improves endpoint consistency but does not guarantee a correct rollout.
 
 ---
 
-## 5. Inference-Time Semantic Projection (The "Reality Check")
+## 5. Optional Inference-Time Relational Projection
 
-During rollouts in stable phases ($\phi = 1$), we prevent drift by projecting the predicted latent back onto the valid semantic manifold **before** feeding it into the next JEPA step.
+When $r_\psi(h_t)$ is high and the controller selects a relational abstraction, an optional projection step can reduce violation of the learned relational regularizer before the next rollout step. It is an approximate optimization procedure, not an exact projection onto a known manifold.
 
 ### Algorithm
 
 ```
 for each prediction step t:
-    1. Predict: \hat{z}_{t+1} = F_\theta(z_t, a_t)
+    1. Select: (Delta_t, alpha_t) ~ pi_kappa(. | h_t)
+    2. Predict: z_hat = F_theta^(Delta_t, alpha_t)(z_t, action_segment)
     
-    2. If \phi(x_t) = 1:
-        a. Decode \hat{z}_{t+1} into a raw scene graph via GINE decoder
-        b. Generate target tensor: z_target = TPR_Head(\hat{z}_{t+1})
+    3. If r_psi(h_t) is high and alpha_t is relational:
+        a. Decode z_hat into a raw scene graph via GINE decoder
+        b. Generate target tensor: z_target = TPR_Head(z_hat)
         c. Apply semantic projection (frozen backbone):
-           \hat{z}_{t+1} ← \hat{z}_{t+1} - η · ∇_{\hat{z}} (1 - cos-sim(\hat{z}_{t+1}, z_target))
+           z_hat ← z_hat - eta * grad_z_hat(1 - cosine_similarity(z_hat, z_target))
         d. Repeat steps b-c for 1-3 iterations
         
-    3. Feed corrected \hat{z}_{t+1} into the next JEPA step
+    4. Feed the selected prediction into the next controller step
 ```
 
-**Why this works**: The projection "snaps" the latent to the nearest semantically plausible region of the manifold, preventing the accumulation of small errors that would otherwise lead to physically impossible states.
+**Why this works**: The step can reduce the chosen relational residual before another rollout. Its effect on physical plausibility and planning must be measured against a no-projection ablation.
 
 ---
 
@@ -217,7 +230,7 @@ for each prediction step t:
 ### Stage 1: Oracle Symbols (Weeks 1-4)
 - Ground-truth scene graphs available
 - Train GINE + TPR Head with $\mathcal{L}_{\text{semantic}} + \mathcal{L}_{\text{struct}}$ using oracle predicates
-- Verify that SPSG improves JEPA endpoint prediction
+- Verify that relational regularization improves endpoint prediction and cross-level consistency
 - **Minimum publishable unit**
 
 ### Stage 2: Learned Symbols (Weeks 5-8)
@@ -226,13 +239,13 @@ for each prediction step t:
 - Jointly train predicate embeddings $\mathbf{v}_s$ end-to-end
 - Compare: oracle vs. learned symbolic state
 
-### Stage 3: Granularity Ablation (Weeks 9-11)
-- Fix controller, vary $\Delta t \in \{2, 5, 10, 30, \text{full FPS}\}$
-- Measure: terminal symbolic accuracy, continuous MSE, physical violation rate
-- Find $\Delta t^*$ (U-shaped curve)
+### Stage 3: Joint-Controller Ablation (Weeks 9-11)
+- Compare fixed $(\Delta,\alpha)$ pairs, temporal-only adaptation, abstraction-only adaptation, a factorized controller, and a joint controller
+- Measure endpoint accuracy, horizon-normalized prediction error, physical violations, controller cost, and switch calibration
+- Evaluate oracle-reliability and learned-reliability variants
 
 ### Stage 4: Full BG-NS-JEPA (Weeks 12-14)
-- End-to-end training with bi-granular controller
+- End-to-end training with a joint bi-granular controller
 - Evaluate on NovPhy, Physhion, CLEVRER
 
 ---
@@ -305,7 +318,7 @@ class SemanticProjection(nn.Module):
 - **Learning rate**: $3 \times 10^{-4}$ (warmup + cosine decay)
 - **Gradient clipping**: 1.0
 - **Batch size**: 64
-- **Phase gate $\phi$**: Computed online from simulator state
+- **Reliability estimator $r_\psi$**: learned from latent features; simulator-derived $\phi^*$ is used only as supervision and an oracle upper bound
 
 ---
 
@@ -313,23 +326,23 @@ class SemanticProjection(nn.Module):
 
 | Requirement                      | How BG-NS-JEPA Satisfies It                                  |
 | -------------------------------- | ------------------------------------------------------------ |
-| **Semantic similarity**          | Predicates embedded as continuous vectors $\mathbf{v}_s$; $\cos(\mathbf{v}_{s_1}, \mathbf{v}_{s_2})$ enables smooth generalization |
+| **Semantic similarity**          | Predicate embeddings make semantic similarity measurable and testable |
 | **Compositional reasoning**      | TPR enforces explicit Role-Filler binding; "A supports B" ≠ "B supports A" |
 | **Handles arbitrary graph size** | GINE processes variable nodes/edges natively                 |
-| **Chaos robustness**             | $\phi=0$ deactivates all symbolic constraints; pure JEPA handles splintering |
-| **Stable phase precision**       | $\phi=1$ activates semantic + TPR + contrastive losses; sharp symbolic constraints |
-| **Drift prevention**             | Inference-time semantic projection (Reality Check) snaps latents to valid manifold |
-| **Final outcome guarantee**      | Terminal anchor loss forces final state onto symbolic pole   |
+| **Interaction-active robustness** | Low reliability masks fine relational constraints; continuous dynamics remain active |
+| **Reliable relational precision** | High reliability activates semantic, TPR, and contrastive regularizers |
+| **Drift mitigation**             | Optional inference-time projection reduces the chosen relational residual |
+| **Endpoint consistency**         | Terminal anchor encourages an outcome-consistent final latent |
 
 ---
 
 ## 9. Key Theoretical Insight
 
-**From Energy Basins to Geometric Constraints with Semantic Smoothing**:
+**Structured Relational Regularization with Semantic Smoothing**:
 
 Prior work: Symbols as points in low-energy basins (soft, no structure)
 
-**Ours**: Symbols as **semantically grounded submanifolds** in latent space:
+**Ours**: Predicate projections define semantically grounded level sets in latent space:
 
 $$\mathcal{M}_s = \{z \in \mathcal{Z} : f_s(z) = \mathbf{v}_s\}$$
 
@@ -337,13 +350,13 @@ Where $\mathbf{v}_s$ is a learned continuous embedding. Logical conjunction beco
 
 $$\mathcal{M}_{s_1 \land s_2} = \mathcal{M}_{s_1} \cap \mathcal{M}_{s_2}$$
 
-And semantic similarity is preserved because $\text{dist}(\mathcal{M}_{s_1}, \mathcal{M}_{s_2}) \propto \|\mathbf{v}_{s_1} - \mathbf{v}_{s_2}\|$.
+When $\mathbf{v}_s$ is a regular value of $f_s$, the level set is locally a submanifold. The losses encourage proximity to these sets; they do not enforce the proportional distance relation above without additional constraints.
 
 **The hybrid GINE-TPR architecture implements this by**:
 - GINE provides flexible perception of arbitrary graphs
 - TPR provides the algebraic structure for composition
-- The geometric loss forces GINE's latent space to obey TPR geometry
-- The phase gate $\phi$ determines when this structure is enforced
+- The geometric loss encourages GINE's latent space to respect the TPR structure
+- The learned reliability estimator determines when fine relational regularization is applied
 
 ---
 
@@ -354,7 +367,11 @@ And semantic similarity is preserved because $\text{dist}(\mathcal{M}_{s_1}, \ma
 | LeWM                        | Pure continuous JEPA                                         |
 | Uniform micro               | Always frame-by-frame + object-level                         |
 | Uniform macro               | Always event-level + structure-level                         |
-| BG-NS-JEPA (no phase gate)  | Ablates stability gating ($\phi$ always 1)                   |
+| Temporal-only adaptive      | Learns $\Delta t$ with a fixed abstraction                   |
+| Abstraction-only adaptive   | Learns $\alpha$ with a fixed temporal stride                 |
+| Factorized controller       | Learns $\pi_\Delta\pi_\alpha$ rather than a joint policy    |
+| BG-NS-JEPA (oracle reliability) | Uses simulator-derived reliability at test time          |
+| BG-NS-JEPA (no reliability gate) | Applies fine relational regularization uniformly        |
 | BG-NS-JEPA (no SPSG)        | Ablates structured symbolic geometry (uses flat text encoding) |
 | BG-NS-JEPA (binary symbols) | Ablates semantic embeddings (uses $c_s \in \{0,1\}$)         |
 | BG-NS-JEPA (oracle graph)   | Upper bound for symbol extraction                            |
@@ -375,9 +392,10 @@ And semantic similarity is preserved because $\text{dist}(\mathcal{M}_{s_1}, \ma
 - Illegal-contact rate
 
 **Granularity**:
-- Percentage of time in micro/macro/none mode
+- Percentage of time in continuous/micro/macro mode
 - Effective prediction steps
-- Switch precision/recall
+- Controller cost and matched-compute frontier
+- Switch precision/recall and joint-pair calibration against oracle regimes
 
 **Planning**:
 - Task success rate
@@ -393,26 +411,26 @@ And semantic similarity is preserved because $\text{dist}(\mathcal{M}_{s_1}, \ma
 | Learned symbolic extraction unstable    | Start with oracle; GINE more stable than slot attention      |
 | "Hand-engineered" vocabulary critique   | Vocabulary is universal physical substrate; all truth values learned |
 | TPR computation expensive               | Use efficient TPR approximations (e.g., random projections)  |
-| Phase gate misclassification            | Use hysteresis; train with noisy $\phi$ for robustness       |
-| Chaos phase has no symbolic supervision | **By design**—chaos uses pure JEPA; symbols only anchor endpoints |
+| Reliability estimator misclassification | Report oracle-reliability upper bound; train with noisy labels and calibrated confidence |
+| Reviewer sees a component bundle        | Make joint-vs-factorized-controller ablations the primary evidence |
 | Method too complex for timeline         | Oracle-symbol version is minimum publishable unit            |
 
 ---
 
 ## 13. Conclusion
 
-BG-NS-JEPA is a **principled, implementable** framework that:
+BG-NS-JEPA is a regime-adaptive world-model framework that:
 
-1. **Solves** the granularity mismatch in action-sparse persistent-effect environments
-2. **Unifies** semantic similarity (via predicate embeddings) with compositional reasoning (via TPR)
-3. **Respects** the physics by deactivating symbols during chaos ($\phi = 0$)
-4. **Prevents drift** via inference-time semantic projection
-5. **Is trainable end-to-end** with a clear staged de-risking plan
+1. Treats temporal horizon and representational abstraction as joint, state-dependent choices
+2. Uses reliability-gated relational regularization instead of assuming universal symbolic validity
+3. Uses semantic embeddings and TPR as compositional inductive biases, not as the primary novelty claim
+4. Evaluates optional projection and terminal anchoring as empirical drift-mitigation mechanisms
+5. Is trainable end-to-end with explicit fixed, single-axis, factorized, and oracle-controller ablations
 
-The hybrid GINE-TPR architecture gives us the best of both worlds: GINE's relational perception + TPR's algebraic compositionality, all grounded in a phase-gated training objective that matches the underlying dynamical systems.
+The hybrid GINE-TPR architecture supplies relational perception and compositional structure inside a controller that changes the world model's resolution when the physical regime changes.
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: June 2026
+**Document Version**: 1.1
+**Last Updated**: July 2026
 **Status**: Ready for supervisor presentation and implementation

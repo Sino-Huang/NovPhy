@@ -1,5 +1,25 @@
 # Fresh Engine Rollout Collection
 
+## Safe Resume Contract
+
+Date: 2026-07-21
+
+Dataset resume treats an episode as complete only when its manifest proves the exact planned desktop contract: `capture_source` is `capture_desktop_rollout`, numeric non-boolean `target_fps` and `duration_seconds` equal the plan, `ui_level` is integer `1`, and all existing replay, error, attempt, aggregate-count, status, and artifact-validation checks pass. Resume uses exclusive episode-directory creation to preserve unsafe existing outputs; non-resume preserves the direct collection command shape.
+
+The full-dataset launcher canonicalizes `OUT_ROOT` with `realpath -m` and uses that one identity for output reporting, planner output, active collector detection, and the adjacent collection lock. `RESUME=1` validates the explicit existing root before creating anything. Port inspection accepts only an awk-produced `occupied` or `available` result and fails closed for awk errors or unexpected output.
+
+## Directional Action Sampling
+
+Date: 2026-07-22
+
+`scripts/manual_agent.py::generate_diverse_drag_release_actions()` samples default angles from 5 to 80 degrees and derives `dx` as `-round(cos(angle) * strength)`. Default generated actions therefore always have a negative horizontal release offset: the sling is pulled left, and the bird launches right. An audit of 34,668 accepted actions in `data/novphy_rollouts_dataset_20260708_171531` found 34,668 negative `drag_release.x` values, zero positive values, and zero zero-valued offsets (range: -105 through -14). Right-to-left initial launches require custom/replayed actions with positive horizontal release values or a generator configured with angles beyond 90 degrees.
+
+## Level-5 Mixed Launch Coverage
+
+Date: 2026-07-22
+
+New plans route only `novelty_level_5` entries through `scripts/collect_rollouts.py --bidirectional-launches`. Generated actions remain standard rightward launches at zero-based even positions and horizontally mirrored leftward launches at odd positions, so an even action count is a 50/50 split and an odd count has one additional standard action. Other novelty levels, direct collector defaults, and action-log replay remain unchanged. This preserves mixed coverage for the relation novelty without changing existing artifacts or resume eligibility.
+
 Date: 2026-06-22
 
 The original `scripts/collect_rollouts.py` was only partially suitable for diverse rollouts: it generated diverse drag/release actions, but fired them sequentially into one evolving engine session and used the TCP screenshot capture path. On this migrated server, TCP screenshots can be uniform gray, and sequential shots do not rerun the same episode from the same initial state.
@@ -693,6 +713,12 @@ Verification used a real process-group smoke: spawn a marked `bash` parent in a 
 
 Date: 2026-07-08
 
+### Configurable worker port bases
+
+The rollout planner defaults to agent/game base ports `2004` and `9001` with a fixed stride of `10`. `plan --agent-port-base` and `--game-port-base`, plus the full launcher environment variables `AGENT_PORT_BASE` and `GAME_PORT_BASE`, select an independent port family. Both values are decimal ports in `1..65535`; validation rejects a base whose final configured worker port would overflow and rejects any intersection between the derived agent and game port families. For example, `DISPLAY_ID=:152 AGENT_PORT_BASE=2034 GAME_PORT_BASE=9031 WORKERS=3` maps workers to `:152`/`2034`/`9031`, `:153`/`2044`/`9041`, and `:154`/`2054`/`9051`.
+
+The launcher validates the configured bases and cross-family disjointness before output-root or lock filesystem effects, preflights the exact derived ports both before and after planning, and forwards the normalized bases to the planner. Default one-worker command scripts preserve their previous port-free collector invocation; a nondefault base makes the serial script explicitly pass its resolved agent and game ports. Port bases are intentionally not persisted in resume manifests because resume eligibility remains based solely on the existing completed episode contract.
+
 A real `WORKERS=3` run originally generated distinct requested ports (`9001`, `9011`, `9021`) but the Java wrapper/Unity children still bound the default game-thread ports (`9001`, `9002`, etc.), producing `java.net.BindException: Address already in use` and leaving workers stuck without manifests. The root cause was that `scripts.manual_agent.start_engine(..., game_port=...)` passed `--port`, which is a Unity-side flag and is ignored by `game_playing_interface.jar`.
 
 Bytecode inspection of `sciencebirdsgames/Linux/game_playing_interface.jar` proved the Java wrapper's actual flag is `--game-start-port`: `server.ABServer` parses it into `ABServer.gameStartPort`, and `server.ABServerManager.getFreePort()` starts allocation from that field. `scripts.manual_agent.start_engine()` now forwards `game_port` as `--game-start-port`, while `--agent-port` remains the wrapper's agent socket.
@@ -773,3 +799,23 @@ This ran 18 tests and finished `OK`. `py_compile` and `git diff --check` also pa
 Bounded real-plan QA inspected and rendered the existing `20260708_171531` plan without running collection. Its generated train command prefix is `novelty_level_1` through `novelty_level_8`, then the same sequence repeats. The plan schedules 11,200 train entries, contains no `novelty_level_0` collection command, retains `--ui-level 1` in all 11,200 collector invocations, and the rendered shell passes `bash -n`.
 
 This change affects generated planning command order only. It does not recollect, rewrite, or otherwise modify existing artifacts under `data/novphy_rollouts_dataset_20260708_171531`.
+
+## Capped Non-Destructive Rollout Cohort
+
+Date: 2026-07-25
+
+`scripts/prepare_rollout_dataset.py plan` now inventories an existing output root without writing to it. The default contract selects exactly 100 train and 20 dev episodes for each of the 80 discovered normal/novel `(novelty_level, level_type)` buckets: 9,600 selected episodes total, split evenly into 4,800 normal and 4,800 novel episodes. Test remains unscheduled.
+
+Canonical existing episodes count only when their fresh-engine desktop manifest exactly matches `count=12`, `fps=30`, `duration=5`, `ui_level=1`, accepted-attempt validation, required action logs, and raw accepted-shot artifacts. Level-5 existing episodes additionally require accepted action-log horizontal release signs to begin negative and alternate negative/positive. Incompatible, partial, unreadable, escaping, and symlinked paths are preserved as surplus; the planner chooses a later absent path instead.
+
+The emitted script contains only absent selections, reserves each output directory with exclusive `mkdir`, and appends failures through a locked ledger. It retains fresh-engine worker isolation and applies `--bidirectional-launches` only to `novelty_level_5`.
+
+Non-destructive dry plan verification against `data/novphy_rollouts_dataset_20260708_171531` wrote only `/tmp/opencode/novphy_capped_dry_plan`: 9,600 selected, 2,200 canonical existing, and 7,400 newly scheduled; `bash -n` passed for the generated script. No rollout collector, engine, Java, Unity, Xvnc, or generated script was run.
+
+## Partition-Safe Capped Plans
+
+Date: 2026-07-25
+
+The capped planner retains the v1 partition contract: `DEFAULT_SEED` is `novphy-rollout-dataset-v1`, and `partition_levels()` deterministically splits each novelty/type bucket into disjoint train, dev, and test populations before cap selection. `build_collection_plan()` selects only from the corresponding train or dev partition, so a path cannot be planned for both collection splits and test remains unscheduled.
+
+`CollectionOptions` and generated scripts retain the runtime collector contract: `DISPLAY="$display_id"`, `LD_LIBRARY_PATH`, `--ui-settle-seconds 5`, `--connect-timeout 60`, `--prepare-timeout 90`, `--read-timeout 420`, and `--speed 1`, in addition to worker engine and port options. The full launcher names its controls `PARTITION_SEED`, `TRAIN_TARGET_PER_BUCKET`, and `DEV_TARGET_PER_BUCKET`.

@@ -93,6 +93,36 @@ class ManualAgentTest(unittest.TestCase):
         self.assertTrue(all(action["holdTime"] >= 1000 for action in actions))
         self.assertTrue(all((action["drag_release"][0] ** 2 + action["drag_release"][1] ** 2) ** 0.5 >= 75 for action in actions))
 
+    def test_bidirectional_generated_actions_mirror_odd_indices_without_changing_other_fields(self):
+        default_actions = generate_diverse_drag_release_actions(count=6)
+        explicitly_default_actions = generate_diverse_drag_release_actions(count=6, bidirectional_launches=False)
+        bidirectional_actions = generate_diverse_drag_release_actions(count=6, bidirectional_launches=True)
+
+        self.assertEqual(default_actions, explicitly_default_actions)
+        self.assertEqual(
+            [action["drag_release"][0] > 0 for action in bidirectional_actions],
+            [False, True, False, True, False, True],
+        )
+        for index, (default_action, bidirectional_action) in enumerate(zip(default_actions, bidirectional_actions)):
+            expected_action = (
+                default_action
+                if index % 2 == 0
+                else {
+                    **default_action,
+                    "drag_release": [-default_action["drag_release"][0], default_action["drag_release"][1]],
+                }
+            )
+            self.assertEqual(bidirectional_action, expected_action)
+
+    def test_bidirectional_generated_actions_with_odd_count_include_three_standard_and_two_mirrored_launches(self):
+        actions = generate_diverse_drag_release_actions(count=5, bidirectional_launches=True)
+        release_x_values = [action["drag_release"][0] for action in actions]
+
+        self.assertEqual(len(actions), 5)
+        self.assertEqual(sum(release_x < 0 for release_x in release_x_values), 3)
+        self.assertEqual(sum(release_x > 0 for release_x in release_x_values), 2)
+        self.assertEqual([release_x > 0 for release_x in release_x_values], [False, True, False, True, False])
+
     def test_capture_pixel_rollout_records_timestamped_frames_at_target_fps(self):
         class RolloutBridge(FakeBridge):
             def __init__(self):

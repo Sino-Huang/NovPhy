@@ -386,6 +386,7 @@ def generate_diverse_drag_release_actions(
     angles_degrees: tuple[int, ...] = (5, 20, 35, 50, 65, 80),
     tap_times: tuple[int, ...] = (0, 45, 70, 90),
     hold_times: tuple[int, ...] = (1000, 1400),
+    bidirectional_launches: bool = False,
 ) -> list[dict]:
     if count < 0:
         raise ValueError("count must be non-negative")
@@ -400,6 +401,8 @@ def generate_diverse_drag_release_actions(
         hold_time = hold_times[(index // len(tap_times)) % len(hold_times)]
         radians = math.radians(angle)
         dx = -int(round(math.cos(radians) * strength))
+        if bidirectional_launches and index % 2 == 1:
+            dx = -dx
         dy = int(round(math.sin(radians) * strength))
         action = {
             "action_type": "drag_hold_release",

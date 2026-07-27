@@ -1,495 +1,512 @@
 import json
 import os
-import shlex
+import shutil
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts.prepare_rollout_dataset import (
+    PLAN_SCHEMA,
+    SCHEMA,
     CollectionOptions,
+    CollectionTargets,
+    LevelEntry,
+    PlannedEpisode,
+    _is_canonically_complete_fresh_engine_episode,
+    _safe_output_name,
+    build_collection_plan,
     discover_level_entries,
     generate_collection_commands,
+    load_partition_manifest,
     partition_levels,
     write_config_for_manifest_level,
+    write_collection_plan,
     write_partition_manifest,
 )
 
 
 def make_level(engine_dir: Path, novelty_level: str, level_type: str, name: str) -> None:
-    level_path = engine_dir / "9001_Data" / "StreamingAssets" / "Levels" / novelty_level / level_type / "Levels" / name
-    level_path.parent.mkdir(parents=True, exist_ok=True)
-    level_path.write_text("<Level />", encoding="utf-8")
+    path = engine_dir / "9001_Data" / "StreamingAssets" / "Levels" / novelty_level / level_type / "Levels" / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("<Level />", encoding="utf-8")
+
+
+def make_complete_episode(output_dir: Path, options: CollectionOptions, *, bidirectional: bool = False) -> None:
+    output_dir.mkdir(parents=True)
+    trials = []
+    for index in range(options.count):
+        shot_name = f"shot_{index + 1:03d}"
+        shot_dir = output_dir / shot_name
+        (shot_dir / "frames").mkdir(parents=True)
+        frame_path = shot_dir / "frames" / "frame_000000.png"
+        frame_path.write_bytes(b"frame")
+        (shot_dir / "pre_shot.png").write_bytes(b"pre")
+        (shot_dir / "metadata.json").write_text(
+            json.dumps(
+                {
+                    "frame_count": 1,
+                    "frames": [{"path": str(frame_path)}],
+                }
+            ),
+            encoding="utf-8",
+        )
+        release_x = -80 if not bidirectional or index % 2 == 0 else 80
+        trials.append({"shot_name": shot_name, "accepted": True, "action": {"drag_release": [release_x, 8]}})
+    attempts = [
+        {
+            "accepted": True,
+            "attempt_status": "accepted",
+            "artifact_validation": {
+                "accepted": True,
+                "classification": "gameplay-valid",
+                "retryable": False,
+                "retry_decision": "accept",
+            },
+        }
+        for _ in range(options.count)
+    ]
+    manifest = {
+        "capture_source": "capture_desktop_rollout",
+        "replay_mode": "fresh-engine-per-rollout",
+        "target_fps": options.fps,
+        "duration_seconds": options.duration,
+        "ui_level": 1,
+        "accepted_rollout_count": options.count,
+        "rollout_count": options.count,
+        "attempt_count": options.count,
+        "attempts": attempts,
+    }
+    (output_dir / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+    (output_dir / "action_log.json").write_text(json.dumps({"accepted_trials": trials}), encoding="utf-8")
+    (output_dir / "action_log.jsonl").write_text("\n".join(json.dumps(trial) for trial in trials) + "\n", encoding="utf-8")
+
+
+def make_full_level_tree(engine_dir: Path, count: int) -> list[LevelEntry]:
+    for novelty in range(9):
+        type_novelties = range(1, 9) if novelty == 0 else (novelty,)
+        for type_novelty in type_novelties:
+            for scenario in range(1, 6):
+                level_type = f"type010{type_novelty}{scenario:02d}"
+                for index in range(count):
+                    make_level(engine_dir, f"novelty_level_{novelty}", level_type, f"level_{index:03d}.xml")
+    return discover_level_entries(engine_dir)
 
 
 class PrepareRolloutDatasetTest(unittest.TestCase):
-    def test_generate_collection_commands_round_robins_novelty_levels_one_through_eight(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            engine_dir = root / "sciencebirdsgames" / "Linux"
-            for novelty_index in range(9):
-                make_level(
-                    engine_dir,
-                    f"novelty_level_{novelty_index}",
-                    f"type010{novelty_index:02d}",
-                    "level_000.xml",
-                )
-            make_level(engine_dir, "novelty_level_1", "type010101", "level_001.xml")
-
-            partitions = {"train": discover_level_entries(engine_dir), "dev": [], "test": []}
-            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
-
-            serial_commands = generate_collection_commands(
-                manifest_path,
-                output_root=Path("data/generated_rollouts"),
-                splits=("train",),
-            )
-            parallel_commands = generate_collection_commands(
-                manifest_path,
-                output_root=Path("data/generated_rollouts"),
-                options=CollectionOptions(workers=2),
-                splits=("train",),
-            )
-
-            serial_paths = [
-                line.removeprefix("# train: ")
-                for line in serial_commands.splitlines()
-                if line.startswith("# train: ")
-            ]
-            parallel_paths = [
-                line.removeprefix("# train: ")
-                for line in parallel_commands.splitlines()
-                if line.startswith("# train: ")
-            ]
-            levels_root = "9001_Data/StreamingAssets/Levels"
-            expected_round_robin = [
-                f"{levels_root}/novelty_level_{index}/type010{index:02d}/Levels/level_000.xml"
-                for index in range(1, 9)
-            ]
-            expected_round_robin.append(
-                f"{levels_root}/novelty_level_1/type010101/Levels/level_001.xml"
-            )
-
-            self.assertEqual(serial_paths, expected_round_robin)
-            self.assertEqual(
-                parallel_paths,
-                expected_round_robin[::2] + expected_round_robin[1::2],
-            )
-            self.assertNotIn("novelty_level_0", serial_commands)
-            self.assertNotIn("novelty_level_0", parallel_commands)
-            self.assertIn("--ui-level 1", serial_commands)
-
-    def test_generate_collection_commands_rejects_split_without_novelty_levels_one_through_eight(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            engine_dir = root / "sciencebirdsgames" / "Linux"
-            make_level(engine_dir, "novelty_level_0", "type010101", "level_000.xml")
-            partitions = {"train": discover_level_entries(engine_dir), "dev": [], "test": []}
-            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
-
-            with self.assertRaisesRegex(ValueError, "contains no novelty levels 1 through 8: train"):
-                generate_collection_commands(
-                    manifest_path,
-                    output_root=Path("data/generated_rollouts"),
-                    splits=("train",),
-                )
-
-    def test_partition_levels_are_stable_non_overlapping_and_bucketed(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            engine_dir = Path(tmp) / "sciencebirdsgames" / "Linux"
+    def test_partition_levels_restores_v1_stable_disjoint_bucketed_splits(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            engine_dir = Path(temporary) / "engine"
             for index in range(10):
                 make_level(engine_dir, "novelty_level_0", "type010101", f"level_{index:03d}.xml")
                 make_level(engine_dir, "novelty_level_3", "type010303", f"level_{index:03d}.xml")
 
-            entries = discover_level_entries(engine_dir)
-            first = partition_levels(entries, seed="unit-seed")
-            second = partition_levels(entries, seed="unit-seed")
+            first = partition_levels(discover_level_entries(engine_dir), seed="unit-seed")
+            second = partition_levels(discover_level_entries(engine_dir), seed="unit-seed")
 
             self.assertEqual(first, second)
-            for split_name in ("train", "dev", "test"):
-                self.assertIn(split_name, first)
+            paths = {split: {entry.relative_path for entry in entries} for split, entries in first.items()}
+            self.assertFalse(paths["train"] & paths["dev"])
+            self.assertFalse(paths["train"] & paths["test"])
+            self.assertFalse(paths["dev"] & paths["test"])
+            self.assertEqual(sum(map(len, paths.values())), 20)
 
-            all_paths_by_split = {
-                split_name: {entry.relative_path for entry in split_entries}
-                for split_name, split_entries in first.items()
-            }
-            self.assertFalse(all_paths_by_split["train"] & all_paths_by_split["dev"])
-            self.assertFalse(all_paths_by_split["train"] & all_paths_by_split["test"])
-            self.assertFalse(all_paths_by_split["dev"] & all_paths_by_split["test"])
-            self.assertEqual(sum(len(paths) for paths in all_paths_by_split.values()), 20)
+    def test_capped_plan_selects_only_entries_from_their_v1_partition(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entries = make_full_level_tree(root / "engine", 5)
+            out_root = root / "out"
+            out_root.mkdir()
+            partitions = partition_levels(entries, seed="split-safe")
 
-            train_buckets = {(entry.novelty_level, entry.level_type) for entry in first["train"]}
-            dev_buckets = {(entry.novelty_level, entry.level_type) for entry in first["dev"]}
-            test_buckets = {(entry.novelty_level, entry.level_type) for entry in first["test"]}
-            self.assertEqual(train_buckets, {("novelty_level_0", "type010101"), ("novelty_level_3", "type010303")})
-            self.assertEqual(dev_buckets, train_buckets)
-            self.assertEqual(test_buckets, train_buckets)
+            episodes, _ = build_collection_plan(
+                entries,
+                output_root=out_root,
+                options=CollectionOptions(count=2, workers=1),
+                targets=CollectionTargets(train=2, dev=1),
+                seed="split-safe",
+            )
 
-    def test_write_partition_manifest_and_commands_for_train_dev_only(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            engine_dir = root / "sciencebirdsgames" / "Linux"
+            for episode in episodes:
+                self.assertIn(episode.entry, partitions[episode.split])
+            train_paths = {episode.entry.relative_path for episode in episodes if episode.split == "train"}
+            dev_paths = {episode.entry.relative_path for episode in episodes if episode.split == "dev"}
+            self.assertFalse(train_paths & dev_paths)
+
+    def test_v1_partition_manifest_loads_and_write_config_remains_split_scoped(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            engine_dir = root / "engine"
             for index in range(6):
                 make_level(engine_dir, "novelty_level_1", "type010101", f"level_{index:03d}.xml")
-
             partitions = partition_levels(discover_level_entries(engine_dir), seed="manifest-seed")
-            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-
-            self.assertEqual(manifest["schema"], "novphy-rollout-dataset-partitions-v1")
-            self.assertEqual(manifest["counts"]["total"], 6)
-            self.assertIn("9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/level_", json.dumps(manifest))
-
-            commands = generate_collection_commands(
-                manifest_path,
-                output_root=Path("data/generated_rollouts"),
-                options=CollectionOptions(count=2, fps=30, duration=4.5, display=":149"),
-            )
-
-            self.assertIn("source ~/cd_novphy", commands)
-            self.assertIn("python scripts/prepare_rollout_dataset.py write-config", commands)
-            self.assertIn("python scripts/collect_rollouts.py", commands)
-            self.assertIn("--capture-source desktop", commands)
-            self.assertIn("--fresh-engine-per-rollout", commands)
-            self.assertIn("--count 2", commands)
-            self.assertIn("--fps 30", commands)
-            self.assertIn("--duration 4.5", commands)
-            self.assertIn("--split train", commands)
-            self.assertIn("--split dev", commands)
-            self.assertNotIn("--split test", commands)
-            self.assertIn("worker_count=1", commands)
-            self.assertNotIn("run_worker", commands)
-            self.assertNotIn("--engine-agent-port", commands)
-            self.assertNotIn("--engine-game-port", commands)
-            self.assertNotIn("worker_engine_dir=", commands)
-
-    def test_generate_collection_commands_isolates_parallel_workers(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            engine_dir = root / "sciencebirdsgames" / "Linux"
-            for index in range(9):
-                make_level(engine_dir, "novelty_level_1", "type010101", f"level_{index:03d}.xml")
-
-            partitions = partition_levels(discover_level_entries(engine_dir), seed="parallel-seed")
-            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
-
-            commands = generate_collection_commands(
-                manifest_path,
-                output_root=Path("data/generated_rollouts"),
-                options=CollectionOptions(count=2, fps=30, duration=4.5, display=":149", workers=3),
-            )
-
-            self.assertIn("worker_count=3", commands)
-            self.assertIn("run_worker()", commands)
-            self.assertIn("trap 'rm -rf \"$worker_root\"' RETURN", commands)
-            self.assertIn("run_worker 0 ':149' 2004 9001 &", commands)
-            self.assertIn("run_worker 1 ':150' 2014 9011 &", commands)
-            self.assertIn("run_worker 2 ':151' 2024 9021 &", commands)
-            self.assertIn("worker_engine_dir=", commands)
-            self.assertIn("--game-dir \"$worker_engine_dir\"", commands)
-            self.assertIn("--port \"$agent_port\"", commands)
-            self.assertIn("--engine-agent-port \"$agent_port\"", commands)
-            self.assertIn("--engine-game-port \"$game_port\"", commands)
-            self.assertIn("worker_pids=()", commands)
-            self.assertIn("trap cleanup_workers EXIT INT TERM", commands)
-            self.assertIn("worker_pids+=(\"$!\")", commands)
-            self.assertIn("for worker_pid in \"${worker_pids[@]}\"; do", commands)
-            self.assertIn("data/generated_rollouts/train/", commands)
-            self.assertNotIn("data/generated_rollouts/worker_00/train/", commands)
-
-    def test_generate_serial_collection_commands_does_not_require_parallel_display_shape(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            engine_dir = root / "sciencebirdsgames" / "Linux"
-            for index in range(3):
-                make_level(engine_dir, "novelty_level_1", "type010101", f"level_{index:03d}.xml")
-
-            partitions = partition_levels(discover_level_entries(engine_dir), seed="serial-display-seed")
-            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
-
-            commands = generate_collection_commands(
-                manifest_path,
-                output_root=Path("data/generated_rollouts"),
-                options=CollectionOptions(display="localhost:10.0", workers=1),
-            )
-
-            self.assertIn("DISPLAY=localhost:10.0", commands)
-            self.assertNotIn("run_worker", commands)
-
-    def test_collect_full_rollout_training_dataset_reaches_planner_for_parallel_workers(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            fake_bin = Path(tmp) / "bin"
-            fake_bin.mkdir()
-            fake_python = fake_bin / "python"
-            fake_python.write_text(
-                "#!/usr/bin/env bash\n"
-                "printf 'planner reached: %s\\n' \"$*\" >&2\n"
-                "exit 42\n",
-                encoding="utf-8",
-            )
-            fake_python.chmod(0o755)
-            env = os.environ.copy()
-            env.update(
-                {
-                    "WORKERS": "2",
-                    "NOVPHY_YES": "1",
-                    "NOVPHY_ALLOW_NETWORK_LISTENERS": "1",
-                    "PATH": f"{fake_bin}:{env['PATH']}",
-                }
-            )
-
-            result = subprocess.run(
-                ["bash", "scripts/collect_full_rollout_training_dataset.sh"],
-                cwd=Path(__file__).resolve().parents[1],
-                env=env,
-                text=True,
-                capture_output=True,
-                check=False,
-            )
-
-        self.assertEqual(result.returncode, 42)
-        self.assertIn("planner reached:", result.stderr)
-        self.assertIn("--workers 2", result.stderr)
-        self.assertNotIn("WORKERS>1 is disabled", result.stderr)
-        self.assertNotIn("Missing Xvnc", result.stderr)
-
-    def test_collect_full_rollout_training_dataset_reports_zero_workers_as_invalid(self):
-        env = os.environ.copy()
-        env.update({"WORKERS": "0", "NOVPHY_YES": "1"})
-
-        result = subprocess.run(
-            ["bash", "scripts/collect_full_rollout_training_dataset.sh"],
-            cwd=Path(__file__).resolve().parents[1],
-            env=env,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("WORKERS must be at least 1", result.stderr)
-        self.assertNotIn("WORKERS>1", result.stderr)
-        self.assertNotIn("Missing Xvnc", result.stderr)
-
-    def test_collect_full_rollout_training_dataset_rejects_invalid_display_before_arithmetic(self):
-        env = os.environ.copy()
-        env.update({"DISPLAY_ID": ':a[$(printf injected >&2)]', "NOVPHY_YES": "1"})
-
-        result = subprocess.run(
-            ["bash", "scripts/collect_full_rollout_training_dataset.sh"],
-            cwd=Path(__file__).resolve().parents[1],
-            env=env,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("DISPLAY_ID must be an X display", result.stderr)
-        self.assertNotIn("injected", result.stderr)
-        self.assertNotIn("Missing Xvnc", result.stderr)
-
-    def test_collect_full_rollout_training_dataset_requires_network_listener_ack_for_parallel_workers(self):
-        env = os.environ.copy()
-        env.update({"WORKERS": "2", "NOVPHY_YES": "1"})
-
-        result = subprocess.run(
-            ["bash", "scripts/collect_full_rollout_training_dataset.sh"],
-            cwd=Path(__file__).resolve().parents[1],
-            env=env,
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("NOVPHY_ALLOW_NETWORK_LISTENERS=1", result.stderr)
-        self.assertNotIn("Missing Xvnc", result.stderr)
-
-    def test_generate_collection_commands_rejects_invalid_worker_count(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            engine_dir = root / "sciencebirdsgames" / "Linux"
-            for index in range(3):
-                make_level(engine_dir, "novelty_level_0", "type010101", f"level_{index:03d}.xml")
-
-            partitions = partition_levels(discover_level_entries(engine_dir), seed="worker-count-seed")
-            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
-
-            with self.assertRaisesRegex(ValueError, "workers must be at least 1"):
-                generate_collection_commands(
-                    manifest_path,
-                    output_root=Path("data/generated_rollouts"),
-                    options=CollectionOptions(workers=0),
-                )
-
-    def test_write_config_requires_level_to_belong_to_requested_split(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            engine_dir = root / "sciencebirdsgames" / "Linux"
-            for index in range(6):
-                make_level(engine_dir, "novelty_level_0", "type010101", f"level_{index:03d}.xml")
-
-            partitions = partition_levels(discover_level_entries(engine_dir), seed="write-config-seed")
-            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
+            manifest_path = write_partition_manifest(root / "plan", partitions, seed="manifest-seed")
             config_path = root / "config.xml"
             dev_level = partitions["dev"][0].relative_path
 
-            written = write_config_for_manifest_level(manifest_path, "dev", dev_level, config_path)
-
-            self.assertEqual(written, config_path)
+            self.assertEqual(load_partition_manifest(manifest_path), partitions)
+            self.assertEqual(write_config_for_manifest_level(manifest_path, "dev", dev_level, config_path), config_path)
             self.assertIn(dev_level, config_path.read_text(encoding="utf-8"))
             with self.assertRaisesRegex(ValueError, "not part of split train"):
                 write_config_for_manifest_level(manifest_path, "train", dev_level, config_path)
 
-    def test_generate_collection_commands_rejects_newline_display(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            engine_dir = root / "sciencebirdsgames" / "Linux"
-            for index in range(3):
-                make_level(engine_dir, "novelty_level_0", "type010101", f"level_{index:03d}.xml")
+    def test_generated_commands_preserve_runtime_display_library_and_timeouts(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            out_root = root / "out"
+            out_root.mkdir()
+            entry = LevelEntry("novelty_level_1", "type010101", "levels/one.xml")
+            episode = PlannedEpisode("train", entry, out_root / "train" / _safe_output_name(entry), "scheduled")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="commands")
 
-            partitions = partition_levels(discover_level_entries(engine_dir), seed="newline-display-seed")
-            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
+            commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(workers=1))
 
-            with self.assertRaisesRegex(ValueError, "display must not contain newline"):
-                generate_collection_commands(
-                    manifest_path,
-                    output_root=Path("data/generated_rollouts"),
-                    options=CollectionOptions(display=":149\ninjected-command"),
-                )
+            self.assertIn('DISPLAY="$display_id" LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH-}"', commands)
+            self.assertIn("--ui-settle-seconds 5", commands)
+            self.assertIn("--connect-timeout 60", commands)
+            self.assertIn("--prepare-timeout 90", commands)
+            self.assertIn("--read-timeout 420", commands)
+            self.assertIn("--speed 1", commands)
 
-    def test_generate_collection_commands_rejects_newline_level_path_from_manifest(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            manifest_path = root / "partitions.json"
-            manifest = {
-                "schema": "novphy-rollout-dataset-partitions-v1",
-                "seed": "malicious-manifest-seed",
-                "counts": {"train": 1, "dev": 0, "test": 0, "total": 1},
-                "splits": {
-                    "train": [
-                        {
-                            "novelty_level": "novelty_level_1",
-                            "level_type": "type010101",
-                            "bucket": "novelty_level_1/type010101",
-                            "relative_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/level_000.xml\ninjected-command",
-                        }
-                    ],
-                    "dev": [],
-                    "test": [],
-                },
-            }
-            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    def test_collection_options_preserve_runtime_defaults(self):
+        self.assertEqual(CollectionOptions().ui_settle_seconds, 5.0)
+        self.assertEqual(CollectionOptions().connect_timeout, 60.0)
+        self.assertEqual(CollectionOptions().prepare_timeout, 90.0)
+        self.assertEqual(CollectionOptions().read_timeout, 420.0)
+        self.assertEqual(CollectionOptions().speed, 1)
 
-            with self.assertRaisesRegex(ValueError, "level_path must not contain newline"):
-                generate_collection_commands(manifest_path, output_root=Path("data/generated_rollouts"))
+    def test_partition_manifest_uses_v1_schema(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entry = LevelEntry("novelty_level_1", "type010101", "levels/one.xml")
 
-    def test_generate_collection_commands_quotes_dynamic_split_argument(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            manifest_path = root / "partitions.json"
-            manifest = {
-                "schema": "novphy-rollout-dataset-partitions-v1",
-                "seed": "quoted-split-seed",
-                "counts": {"train; injected-command #": 1, "total": 1},
-                "splits": {
-                    "train; injected-command #": [
-                        {
-                            "novelty_level": "novelty_level_1",
-                            "level_type": "type010101",
-                            "bucket": "novelty_level_1/type010101",
-                            "relative_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/level_000.xml",
-                        }
-                    ]
-                },
-            }
-            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            manifest_path = write_partition_manifest(root, {"train": [entry], "dev": [], "test": []})
 
-            commands = generate_collection_commands(
-                manifest_path,
-                output_root=Path("data/generated_rollouts"),
-                splits=("train; injected-command #",),
+            self.assertEqual(json.loads(manifest_path.read_text(encoding="utf-8"))["schema"], SCHEMA)
+
+    def test_partition_levels_preserve_a_test_holdout_when_bucket_capacity_allows(self):
+        entries = [LevelEntry("novelty_level_1", "type010101", f"levels/{index}.xml") for index in range(10)]
+
+        partitions = partition_levels(entries)
+
+        self.assertTrue(partitions["test"])
+
+    def test_collection_targets_default_to_capped_contract(self):
+        self.assertEqual(CollectionTargets(), CollectionTargets(train=100, dev=20))
+        self.assertEqual(CollectionOptions(), CollectionOptions(count=12, fps=30.0, duration=5.0, workers=6))
+
+    def test_plan_selects_existing_then_absent_to_fill_every_normal_and_novel_bucket(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entries = make_full_level_tree(root / "engine", 4)
+            out_root = root / "out"
+            out_root.mkdir()
+            options = CollectionOptions(count=2, workers=1)
+            existing_entry = next(
+                entry
+                for entry in partition_levels(entries, seed="test")["train"]
+                if entry.bucket == "novelty_level_0/type010101"
             )
+            make_complete_episode(out_root / "train" / _safe_output_name(existing_entry), options)
 
-            self.assertIn("--split 'train; injected-command #'", commands)
-            self.assertNotIn("--split train; injected-command #", commands)
+            episodes, summary = build_collection_plan(entries, output_root=out_root, options=options, targets=CollectionTargets(train=2, dev=1), seed="test")
 
-    def test_generate_collection_commands_logs_failed_levels_and_continues(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            engine_dir = root / "sciencebirdsgames" / "Linux"
-            for index in range(6):
-                make_level(engine_dir, "novelty_level_1", "type010101", f"level_{index:03d}.xml")
+            self.assertEqual(len(episodes), 80 * 3)
+            self.assertEqual(sum(item.entry.novelty_level == "novelty_level_0" for item in episodes), 40 * 3)
+            self.assertEqual(sum(item.entry.novelty_level != "novelty_level_0" for item in episodes), 40 * 3)
+            self.assertEqual(summary["train:novelty_level_0/type010101"], {"target": 2, "existing": 1, "scheduled": 1})
+            self.assertEqual(sum(item.source == "scheduled" for item in episodes), 239)
 
-            partitions = partition_levels(discover_level_entries(engine_dir), seed="failure-ledger-seed")
-            manifest_path = write_partition_manifest(root / "data" / "rollout_dataset_plan", partitions)
+    def test_plan_is_deterministic_and_never_writes_output_root(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entries = make_full_level_tree(root / "engine", 4)
+            out_root = root / "out"
+            out_root.mkdir()
+            before = sorted(path.relative_to(out_root).as_posix() for path in out_root.rglob("*"))
 
-            commands = generate_collection_commands(
-                manifest_path,
-                output_root=Path("data/generated_rollouts"),
-                options=CollectionOptions(count=2, fps=30, duration=4.5, display=":149"),
-            )
+            first, _ = build_collection_plan(entries, output_root=out_root, options=CollectionOptions(count=2, workers=1), targets=CollectionTargets(train=2, dev=1), seed="stable")
+            second, _ = build_collection_plan(entries, output_root=out_root, options=CollectionOptions(count=2, workers=1), targets=CollectionTargets(train=2, dev=1), seed="stable")
 
-            self.assertIn("failure_ledger=", commands)
-            self.assertIn("failed_levels.tsv", commands)
-            self.assertIn("failure_count=0", commands)
-            self.assertIn("if python scripts/prepare_rollout_dataset.py write-config", commands)
-            self.assertIn("then\n    printf 'Completed %s: %s\\n'", commands)
-            self.assertIn("else\n    status=$?", commands)
-            self.assertIn("failure_count=$((failure_count + 1))", commands)
-            self.assertIn("printf '%s\\t%s\\t%s\\t%s\\n'", commands)
-            self.assertIn("Continuing with the next level", commands)
-            self.assertIn("if [[ \"$failure_count\" -gt 0 ]]; then", commands)
-            self.assertIn("exit 1", commands)
+            self.assertEqual(first, second)
+            self.assertEqual(before, sorted(path.relative_to(out_root).as_posix() for path in out_root.rglob("*")))
 
-    def test_generate_collection_commands_quotes_status_messages_for_single_quote_level_path(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            manifest_path = root / "partitions.json"
-            level_path = "9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/level_'001.xml"
-            manifest = {
-                "schema": "novphy-rollout-dataset-partitions-v1",
-                "seed": "single-quote-level-path-seed",
-                "counts": {"train": 1, "dev": 0, "test": 0, "total": 1},
-                "splits": {
-                    "train": [
-                        {
-                            "novelty_level": "novelty_level_1",
-                            "level_type": "type010101",
-                            "bucket": "novelty_level_1/type010101",
-                            "relative_path": level_path,
-                        }
-                    ],
-                    "dev": [],
-                    "test": [],
-                },
+    def test_plan_skips_occupied_symlinked_incomplete_and_escaping_paths(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entries = make_full_level_tree(root / "engine", 10)
+            out_root = root / "out"
+            out_root.mkdir()
+            bucket_entries = [
+                entry
+                for entry in partition_levels(entries, seed="capacity")["train"]
+                if entry.bucket == "novelty_level_1/type010101"
+            ]
+            occupied = out_root / "train" / _safe_output_name(bucket_entries[0])
+            occupied.mkdir(parents=True)
+            (occupied / "sentinel").write_text("preserve", encoding="utf-8")
+            symlink = out_root / "train" / _safe_output_name(bucket_entries[1])
+            symlink.symlink_to(root / "outside", target_is_directory=True)
+            incomplete = out_root / "train" / _safe_output_name(bucket_entries[2])
+            incomplete.mkdir()
+            (incomplete / "manifest.json").write_text("{}", encoding="utf-8")
+
+            episodes, _ = build_collection_plan(entries, output_root=out_root, options=CollectionOptions(count=2, workers=1), targets=CollectionTargets(train=2, dev=1), seed="capacity")
+
+            chosen = [item.output_dir for item in episodes if item.split == "train" and item.entry.bucket == "novelty_level_1/type010101"]
+            self.assertNotIn(occupied, chosen)
+            self.assertNotIn(symlink, chosen)
+            self.assertNotIn(incomplete, chosen)
+            self.assertEqual((occupied / "sentinel").read_text(encoding="utf-8"), "preserve")
+
+    def test_plan_fails_when_a_bucket_has_no_absent_capacity(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entries = make_full_level_tree(root / "engine", 3)
+            out_root = root / "out"
+            out_root.mkdir()
+            for entry in (item for item in entries if item.bucket == "novelty_level_1/type010101"):
+                path = out_root / "train" / _safe_output_name(entry)
+                path.mkdir(parents=True)
+
+            with self.assertRaisesRegex(RuntimeError, "insufficient safe absent capacity"):
+                build_collection_plan(entries, output_root=out_root, options=CollectionOptions(count=2, workers=1), targets=CollectionTargets(train=3, dev=1), seed="capacity")
+
+    def test_canonical_existing_requires_raw_artifacts_and_level_five_action_policy(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            options = CollectionOptions(count=2, workers=1)
+            complete = root / "complete"
+            make_complete_episode(complete, options, bidirectional=True)
+            self.assertTrue(_is_canonically_complete_fresh_engine_episode(complete, options, level_five=True))
+            self.assertTrue(_is_canonically_complete_fresh_engine_episode(complete, options, level_five=False))
+            (complete / "shot_001" / "frames" / "frame_000000.png").unlink()
+            self.assertFalse(_is_canonically_complete_fresh_engine_episode(complete, options, level_five=True))
+            make_complete_episode(root / "legacy", options, bidirectional=False)
+            self.assertFalse(_is_canonically_complete_fresh_engine_episode(root / "legacy", options, level_five=True))
+
+    def test_canonical_existing_rejects_symlinked_or_incomplete_raw_artifacts(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            options = CollectionOptions(count=2, workers=1)
+            external = root / "external"
+            make_complete_episode(external, options, bidirectional=True)
+
+            def complete_case(name: str) -> Path:
+                episode = root / name
+                make_complete_episode(episode, options, bidirectional=True)
+                return episode
+
+            symlink_cases = {
+                "shot directory": lambda episode: (
+                    shutil.rmtree(episode / "shot_001"),
+                    shutil.copytree(external / "shot_001", episode / "inside-shot"),
+                    (episode / "inside-shot" / "metadata.json").write_text(
+                        json.dumps(
+                            {
+                                "frame_count": 1,
+                                "frames": [
+                                    {"path": str(episode / "shot_001" / "frames" / "frame_000000.png")}
+                                ],
+                            }
+                        ),
+                        encoding="utf-8",
+                    ),
+                    (episode / "shot_001").symlink_to(episode / "inside-shot", target_is_directory=True),
+                ),
+                "metadata": lambda episode: (
+                    (episode / "shot_001" / "metadata.json").unlink(),
+                    (episode / "shot_001" / "metadata.json").symlink_to(external / "shot_001" / "metadata.json"),
+                ),
+                "frames directory": lambda episode: (
+                    shutil.rmtree(episode / "shot_001" / "frames"),
+                    (episode / "shot_001" / "frames").symlink_to(external / "shot_001" / "frames", target_is_directory=True),
+                ),
+                "frame": lambda episode: (
+                    (episode / "shot_001" / "frames" / "frame_000000.png").unlink(),
+                    (episode / "shot_001" / "frames" / "frame_000000.png").symlink_to(external / "shot_001" / "frames" / "frame_000000.png"),
+                ),
+                "pre-shot image": lambda episode: (
+                    (episode / "shot_001" / "pre_shot.png").unlink(),
+                    (episode / "shot_001" / "pre_shot.png").symlink_to(external / "shot_001" / "pre_shot.png"),
+                ),
             }
-            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            for name, corrupt in symlink_cases.items():
+                with self.subTest(name=name):
+                    episode = complete_case(name.replace(" ", "-"))
+                    corrupt(episode)
+                    self.assertFalse(_is_canonically_complete_fresh_engine_episode(episode, options, level_five=True))
 
-            commands = generate_collection_commands(
-                manifest_path,
-                output_root=Path("data/generated_rollouts"),
-                splits=("train",),
+            incomplete = complete_case("incomplete")
+            metadata_path = incomplete / "shot_001" / "metadata.json"
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            metadata["frame_count"] = 2
+            metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+            self.assertFalse(_is_canonically_complete_fresh_engine_episode(incomplete, options, level_five=True))
+
+            inconsistent = complete_case("inconsistent-frame-list")
+            metadata_path = inconsistent / "shot_001" / "metadata.json"
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            metadata["frames"][0]["path"] = str(inconsistent / "shot_001" / "pre_shot.png")
+            metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+            self.assertFalse(_is_canonically_complete_fresh_engine_episode(inconsistent, options, level_five=True))
+
+    def test_canonical_existing_rejects_unreadable_raw_artifacts(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            options = CollectionOptions(count=2, workers=1)
+            episode = root / "complete"
+            metadata_path = episode / "shot_001" / "metadata.json"
+            make_complete_episode(episode, options, bidirectional=True)
+            access = os.access
+
+            with patch("scripts.prepare_rollout_dataset.os.access", side_effect=lambda path, mode: False if Path(path) == metadata_path else access(path, mode)):
+                self.assertFalse(_is_canonically_complete_fresh_engine_episode(episode, options, level_five=True))
+
+    def test_plan_preserves_unsafe_existing_episode_and_schedules_later_absent_candidate(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entries = make_full_level_tree(root / "engine", 5)
+            out_root = root / "out"
+            out_root.mkdir()
+            options = CollectionOptions(count=2, workers=1)
+            bucket_entries = [
+                entry
+                for entry in partition_levels(entries, seed="unsafe-raw") ["train"]
+                if entry.bucket == "novelty_level_1/type010101"
+            ]
+            unsafe = out_root / "train" / _safe_output_name(bucket_entries[0])
+            make_complete_episode(unsafe, options)
+            pre_shot = unsafe / "shot_001" / "pre_shot.png"
+            preserved_target = root / "preserved-pre-shot.png"
+            preserved_target.write_bytes(b"preserve")
+            pre_shot.unlink()
+            pre_shot.symlink_to(preserved_target)
+
+            episodes, summary = build_collection_plan(
+                entries,
+                output_root=out_root,
+                options=options,
+                targets=CollectionTargets(train=1, dev=1),
+                seed="unsafe-raw",
             )
-            script_path = root / "collect_train_dev.sh"
-            script_path.write_text(commands, encoding="utf-8")
+            selected = [
+                episode
+                for episode in episodes
+                if episode.split == "train" and episode.entry.bucket == "novelty_level_1/type010101"
+            ]
 
-            subprocess.run(["bash", "-n", str(script_path)], check=True)
-            self.assertIn(shlex.quote(level_path), commands)
-            self.assertNotIn(f"echo 'Completed train: {level_path}'", commands)
-            self.assertNotIn(f"echo 'Failed train: {level_path}", commands)
+            self.assertEqual(len(selected), 1)
+            self.assertEqual(selected[0].source, "scheduled")
+            self.assertNotEqual(selected[0].output_dir, unsafe)
+            self.assertTrue(pre_shot.is_symlink())
+            self.assertEqual(preserved_target.read_bytes(), b"preserve")
+            self.assertEqual(summary["train:novelty_level_1/type010101"], {"target": 1, "existing": 0, "scheduled": 1})
 
-    def test_discover_level_entries_reports_missing_or_empty_root(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            engine_dir = Path(tmp) / "sciencebirdsgames" / "Linux"
+    def test_level_five_policy_incompatible_existing_is_surplus_and_later_absent_path_is_scheduled(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entries = make_full_level_tree(root / "engine", 5)
+            out_root = root / "out"
+            out_root.mkdir()
+            options = CollectionOptions(count=2, workers=1)
+            level_five = [
+                entry
+                for entry in partition_levels(entries, seed="level-five")["train"]
+                if entry.bucket == "novelty_level_5/type010501"
+            ]
+            legacy = out_root / "train" / _safe_output_name(level_five[0])
+            make_complete_episode(legacy, options, bidirectional=False)
+            legacy_log = legacy.joinpath("action_log.json").read_text(encoding="utf-8")
 
-            with self.assertRaisesRegex(FileNotFoundError, "Levels directory not found"):
-                discover_level_entries(engine_dir)
+            episodes, _ = build_collection_plan(entries, output_root=out_root, options=options, targets=CollectionTargets(train=2, dev=1), seed="level-five")
+            chosen = [item.output_dir for item in episodes if item.split == "train" and item.entry.bucket == "novelty_level_5/type010501"]
 
-            (engine_dir / "9001_Data" / "StreamingAssets" / "Levels").mkdir(parents=True)
-            with self.assertRaisesRegex(RuntimeError, "No NovPhy level XML files found"):
-                discover_level_entries(engine_dir)
+            self.assertNotIn(legacy, chosen)
+            self.assertEqual(legacy.joinpath("action_log.json").read_text(encoding="utf-8"), legacy_log)
+
+    def test_plan_artifact_is_atomic_and_contains_reconciled_summary(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entry = LevelEntry("novelty_level_1", "type010101", "levels/one.xml")
+            out_root = root / "out"
+            out_root.mkdir()
+            episode = PlannedEpisode("train", entry, out_root / "train" / _safe_output_name(entry), "scheduled")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={"train:novelty_level_1/type010101": {"target": 1, "existing": 0, "scheduled": 1}}, options=CollectionOptions(count=12, workers=1), targets=CollectionTargets(train=1, dev=1), seed="artifact")
+
+            payload = json.loads(plan_path.read_text(encoding="utf-8"))
+            self.assertEqual(payload["schema"], PLAN_SCHEMA)
+            self.assertEqual(payload["counts"], {"existing": 0, "scheduled": 1, "selected": 1, "normal": 0, "novel": 1, "test": 0})
+            self.assertFalse(any(path.name.startswith("tmp") for path in plan_path.parent.iterdir()))
+
+    def test_generated_commands_schedule_only_absent_paths_with_reservation_and_locked_ledger(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            out_root = root / "out"
+            out_root.mkdir()
+            entry = LevelEntry("novelty_level_5", "type010501", "levels/one.xml")
+            planned = PlannedEpisode("train", entry, out_root / "train" / _safe_output_name(entry), "scheduled")
+            retained = PlannedEpisode("train", entry, out_root / "train" / "already-complete", "existing")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[planned, retained], summary={}, options=CollectionOptions(count=12, workers=1), targets=CollectionTargets(train=1, dev=1), seed="commands")
+
+            commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(count=12, workers=1))
+
+            self.assertIn("mkdir --", commands)
+            self.assertIn("flock -x", commands)
+            self.assertIn('if [[ "$failure_count" -gt 0 ]]; then return 1; fi', commands)
+            self.assertIn("--bidirectional-launches", commands)
+            self.assertNotIn("already-complete", commands)
+            self.assertNotIn("--split test", commands)
+            script = root / "collect.sh"
+            script.write_text(commands, encoding="utf-8")
+            subprocess.run(["bash", "-n", str(script)], check=True)
+
+    def test_generated_schedule_interleaves_normal_and_novelty_then_stripes_workers(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            out_root = root / "out"
+            out_root.mkdir()
+            episodes = [
+                PlannedEpisode("train", LevelEntry(f"novelty_level_{novelty}", "type010101", f"levels/{novelty}.xml"), out_root / "train" / f"episode-{novelty}", "scheduled")
+                for novelty in (0, 1, 2, 3)
+            ]
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=episodes, summary={}, options=CollectionOptions(count=12, workers=2), targets=CollectionTargets(train=1, dev=1), seed="stripe")
+            commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(count=12, workers=2))
+
+            worker_zero, worker_one = commands.split('if [[ "$worker_index" == "1" ]]; then', maxsplit=1)
+            self.assertIn("levels/0.xml", worker_zero)
+            self.assertIn("levels/2.xml", worker_zero)
+            self.assertIn("levels/1.xml", worker_one)
+            self.assertIn("levels/3.xml", worker_one)
+            script = root / "collect.sh"
+            script.write_text(commands, encoding="utf-8")
+            subprocess.run(["bash", "-n", str(script)], check=True)
+
+    def test_launcher_requires_resume_existing_root_and_forwards_capped_contract_before_xvnc(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            fake_bin = root / "bin"
+            fake_bin.mkdir()
+            (fake_bin / "python").write_text("#!/usr/bin/env bash\nprintf '%s\\n' \"$*\" >&2\nexit 42\n", encoding="utf-8")
+            (fake_bin / "python").chmod(0o755)
+            out_root = root / "out"
+            out_root.mkdir()
+            proc_root = root / "proc"
+            (proc_root / "net").mkdir(parents=True)
+            header = "  sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode\n"
+            (proc_root / "net" / "tcp").write_text(header, encoding="utf-8")
+            (proc_root / "net" / "tcp6").write_text(header, encoding="utf-8")
+            (root / "x11" / ".X11-unix").mkdir(parents=True)
+            env = os.environ | {"OUT_ROOT": str(out_root), "RESUME": "1", "PLAN_DIR": str(root / "plan"), "PARTITION_SEED": "operator-seed", "TRAIN_TARGET_PER_BUCKET": "7", "DEV_TARGET_PER_BUCKET": "3", "NOVPHY_YES": "1", "NOVPHY_ALLOW_NETWORK_LISTENERS": "1", "NOVPHY_PROC_ROOT": str(proc_root), "NOVPHY_X11_TMP_ROOT": str(root / "x11"), "PATH": f"{fake_bin}:{os.environ['PATH']}"}
+
+            result = subprocess.run(["bash", "scripts/collect_full_rollout_training_dataset.sh"], cwd=Path(__file__).resolve().parents[1], env=env, text=True, capture_output=True, check=False)
+
+            self.assertEqual(result.returncode, 42)
+            self.assertIn("--train-target 7", result.stderr)
+            self.assertIn("--dev-target 3", result.stderr)
+            self.assertIn("--seed operator-seed", result.stderr)
+            self.assertLess(result.stderr.index("prepare_rollout_dataset.py plan"), result.stderr.index("--train-target 7"))
 
 
 if __name__ == "__main__":
