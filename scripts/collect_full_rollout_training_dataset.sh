@@ -18,17 +18,19 @@ game_port_base="${GAME_PORT_BASE:-9001}"
 resume="${RESUME:-}"
 train_target="${TRAIN_TARGET_PER_BUCKET:-100}"
 dev_target="${DEV_TARGET_PER_BUCKET:-20}"
+test_target="${TEST_TARGET_PER_BUCKET:-0}"
 seed="${PARTITION_SEED:-novphy-rollout-dataset-v1}"
 proc_root="${NOVPHY_PROC_ROOT:-/proc}"
 x11_tmp_root="${NOVPHY_X11_TMP_ROOT:-/tmp}"
+include_test=0
 
 usage() {
   cat <<'EOF'
-Collect the full NovPhy train/dev rollout dataset.
+Collect the full NovPhy selected-split rollout dataset.
 
 This script inventories an existing output root, publishes a capped deterministic
-train/dev collection plan, starts Xvnc, then runs only the generated script.
-Test levels stay unscheduled.
+train/dev collection plan by default, starts Xvnc, then runs only the generated
+script. Pass --include-test to additionally select test levels.
 Failed levels are logged to PLAN_DIR/failed_levels.tsv; collection continues to
 later levels, then exits nonzero if any level failed.
 
@@ -47,6 +49,8 @@ Environment overrides:
                     Episodes per normal/novel bucket for train, default 100
   DEV_TARGET_PER_BUCKET
                     Episodes per normal/novel bucket for dev, default 20
+  TEST_TARGET_PER_BUCKET
+                    Episodes per normal/novel bucket for test, default 0; used only with --include-test
   PARTITION_SEED    Deterministic planner seed, default novphy-rollout-dataset-v1
   NOVPHY_ALLOW_NETWORK_LISTENERS=1
                      Required with WORKERS>1 after confirming the host is isolated/firewalled.
@@ -55,13 +59,26 @@ Environment overrides:
 
 Example:
   source ~/cd_novphy && RESUME=1 OUT_ROOT=/absolute/path/to/existing/output/root NOVPHY_YES=1 scripts/collect_full_rollout_training_dataset.sh
+  source ~/cd_novphy && RESUME=1 TEST_TARGET_PER_BUCKET=20 OUT_ROOT=/absolute/path/to/existing/output/root NOVPHY_YES=1 scripts/collect_full_rollout_training_dataset.sh --include-test
 EOF
 }
 
-if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-  usage
-  exit 0
-fi
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --include-test)
+      include_test=1
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown launcher option: $1" >&2
+      exit 2
+      ;;
+  esac
+  shift
+done
 
 parse_port_base() {
   local name="$1" value="$2" normalized
@@ -236,21 +253,31 @@ if ! flock -n "$collection_lock_fd"; then
   exit 1
 fi
 
-python scripts/prepare_rollout_dataset.py plan \
-  --output-dir "$plan_dir" \
-  --command-output-root "$out_root_canonical" \
-  --train-target "$train_target" \
-  --dev-target "$dev_target" \
-  --seed "$seed" \
-  --count "$count" \
-  --fps "$fps" \
-  --duration "$duration" \
-  --display "$display_id" \
-  --workers "$workers" \
-  --agent-port-base "$agent_port_base" \
+plan_command=(
+  python scripts/prepare_rollout_dataset.py plan
+  --output-dir "$plan_dir"
+  --command-output-root "$out_root_canonical"
+  --train-target "$train_target"
+  --dev-target "$dev_target"
+  --seed "$seed"
+  --count "$count"
+  --fps "$fps"
+  --duration "$duration"
+  --display "$display_id"
+  --workers "$workers"
+  --agent-port-base "$agent_port_base"
   --game-port-base "$game_port_base"
+)
+selected_split_label="train/dev"
+collection_script="$plan_dir/collect_train_dev.sh"
+if [[ "$include_test" == "1" ]]; then
+  plan_command+=(--include-test --test-target "$test_target")
+  selected_split_label="train/dev/test"
+  collection_script="$plan_dir/collect_train_dev_test.sh"
+fi
+"${plan_command[@]}"
 
-echo "This will collect the newly scheduled capped train/dev rollout cohort."
+echo "This will collect the newly scheduled capped $selected_split_label rollout cohort."
 echo "Plan directory: $plan_dir"
 echo "Output root:    $out_root_canonical"
 echo "Display:        $display_id"
@@ -262,6 +289,9 @@ echo "Agent port base: $agent_port_base"
 echo "Game port base:  $game_port_base"
 echo "Train target/bucket: $train_target"
 echo "Dev target/bucket:   $dev_target"
+if [[ "$include_test" == "1" ]]; then
+  echo "Test target/bucket:  $test_target"
+fi
 echo "Planner seed:        $seed"
 echo ""
 echo "Reconciled plan summary:"
@@ -273,18 +303,18 @@ plan = json.loads(open(sys.argv[1], encoding="utf-8").read())
 contract = plan["contract"]
 counts = plan["counts"]
 print(json.dumps({
-    "buckets": len(plan["summary"]) // 2,
+    "buckets": len(plan["summary"]) // len(plan["selected_splits"]),
     "contract": contract,
     "counts": counts,
 }, indent=2, sort_keys=True))
 PY
 echo ""
 echo "Important: worker-local sciencebirdsgames/Linux/config.xml will be rewritten per level"
-echo "and left pointing at the final collected level. Test levels are not collected."
+echo "and left pointing at the final collected level. Selected splits: $selected_split_label."
 echo "Failed levels will be logged to $plan_dir/failed_levels.tsv and later levels will continue."
 
 if [[ "${NOVPHY_YES:-}" != "1" ]]; then
-  read -r -p "Continue with full train/dev collection? Type 'yes' to proceed: " answer
+  read -r -p "Continue with full $selected_split_label collection? Type 'yes' to proceed: " answer
   if [[ "$answer" != "yes" ]]; then
     echo "Aborted."
     exit 1
@@ -322,4 +352,4 @@ for xvnc_pid in "${xvnc_pids[@]}"; do
   fi
 done
 
-bash "$plan_dir/collect_train_dev.sh"
+bash "$collection_script"

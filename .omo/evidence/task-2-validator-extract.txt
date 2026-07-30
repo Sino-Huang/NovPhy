@@ -1,0 +1,219 @@
+TASK 2 VALIDATOR EXTRACTION EVIDENCE
+Date: 2026-07-28 Australia/Melbourne
+Workspace: /mnt/array/sukaih/Project/NovPhy
+
+DONE CLAIM
+{
+  "status": "complete",
+  "surface": "canonical rollout episode validator and planner delegation",
+  "validator": "scripts/rollout_artifacts.py",
+  "planner_wrapper": "scripts.prepare_rollout_dataset._is_canonically_complete_fresh_engine_episode",
+  "typed_results": ["EpisodeAccepted", "EpisodeRejected"],
+  "full_relevant_tests": "55 passed",
+  "manual_cases": "10 passed",
+  "read_only": true,
+  "temporary_roots_removed": true
+}
+
+1. DIRTY-WORKTREE BASELINE / PRESERVATION
+
+Invocation:
+  git status --short
+
+Pre-existing unrelated state observed before edits:
+  M .omo/boulder.json
+  M scripts/collect_full_rollout_training_dataset.sh
+  M scripts/prepare_rollout_dataset.py
+  M tests/test_prepare_rollout_dataset.py
+  ?? .omo/drafts/
+  ?? multiple existing .omo evidence/plan/run-continuation paths
+  ?? tests/test_world_model_data.py
+  ?? world_model/
+
+The shared planner/test files already contained concurrent Todo 3 and package work.
+No unrelated hunk was reverted. Final git status retained those entries. Concurrent
+catalog work under world_model/data/catalog.py was allowed to settle before the
+final combined test run.
+
+Unrelated Python processes observed and preserved:
+  /usr/bin/python3 unattended-upgrade-shutdown
+  python -u /cloudflare-ddns.py --repeat
+  nvitop processes
+  VS Code python environment server
+
+Final QA-process scan:
+  ps -eo pid,etimes,args | rg 'unittest|compileall' | rg -v 'rg ' || true
+Output: empty
+
+2. PRIOR PLANNER BEHAVIOR RECEIPT (BEFORE PRODUCTION EXTRACTION)
+
+Invocation:
+  python -m unittest \
+    tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_canonical_existing_requires_raw_artifacts_and_level_five_action_policy \
+    tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_canonical_existing_rejects_symlinked_or_incomplete_raw_artifacts \
+    tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_canonical_existing_rejects_unreadable_raw_artifacts
+
+Observable:
+  Ran 3 tests in 0.011s
+  OK
+
+These characterization tests pinned accepted episodes, missing/noncontiguous raw
+frames, level-five launch direction, symlink rejection, inconsistent metadata,
+and unreadable artifact rejection before the embedded predicate was removed.
+
+3. FAILING-FIRST RECEIPT
+
+Invocation:
+  python -m unittest tests.test_world_model_data.RolloutArtifactValidatorTests
+
+Observable before scripts/rollout_artifacts.py existed:
+  Ran 2 tests in 0.001s
+  FAILED (failures=2)
+  AssertionError: False is not true : public validator module is missing
+
+The two red tests covered the public accepted result / malformed JSONL non-read
+and fail-closed unknown/physics capture contracts.
+
+4. IMPLEMENTED CONTRACT
+
+scripts/rollout_artifacts.py is the sole episode acceptance predicate. It exposes:
+  EpisodeValidationContract (frozen)
+  EpisodeAccepted (frozen)
+  EpisodeRejected (immutable NamedTuple)
+  EpisodeRejectionCode (stable StrEnum)
+  ValidatedEpisode / ValidatedShot (frozen parsed facts)
+  validate_rollout_episode(...)
+
+scripts/prepare_rollout_dataset.py retains the compatibility boolean wrapper but
+delegates directly to validate_rollout_episode. The former embedded helpers and
+predicate body were removed.
+
+Boundary invariants verified:
+  - capture_contract absent => LEGACY_RGB_V1 inferred
+  - explicit unknown capture contract => unknown_capture_contract
+  - structurally exact PHYSICS_CAPTURE_V1 => unsupported_capture_contract
+  - malformed explicit descriptor never falls back to legacy
+  - action_log.jsonl is checked only as a contained readable artifact
+  - action_log.jsonl payload is never opened or parsed
+  - episode roots and artifacts are never written or repaired
+  - planner's explicit count/fps/duration/level-five semantics are unchanged
+
+5. MANUAL TERMINAL/DATA QA
+
+Exact shell form:
+  python - <<'PY' | tee /tmp/task2-manual-qa.txt
+  # The driver imported validate_rollout_episode and the real synthetic fixture
+  # builder, allocated one tempfile.TemporaryDirectory, created each named case,
+  # hashed every path before and after validation, printed JSON result codes,
+  # called temporary.cleanup(), and printed the root-existence result.
+  PY
+
+The complete executable heredoc created these cases:
+  accepted: complete fixture; action_log.jsonl overwritten with "not-json\n"
+  partial: complete fixture; action_log.json removed
+  malformed: complete fixture; manifest.json overwritten with "{"
+  missing: nonexistent episode path
+  noncontiguous: frame_000000.png removed
+  symlink: frame_000000.png replaced by symlink to external.png
+  escaping: accepted_trials[0].shot_name changed to "../outside"
+  wrong_contract: manifest capture_source changed to "wrong"
+  unknown_contract: explicit future_capture_v9 descriptor
+  physics_contract: structurally serialized PHYSICS_CAPTURE_V1 descriptor
+
+Binary assertions in the driver:
+  result is EpisodeAccepted => "accepted"
+  otherwise result.code.value is emitted
+  snapshot(case) before validation == snapshot(case) after validation
+  temporary root does not exist after cleanup
+
+Exact output:
+{
+  "read_only": true,
+  "results": {
+    "accepted": "accepted",
+    "escaping": "escaping_artifact",
+    "malformed": "malformed_json",
+    "missing": "missing_artifact",
+    "noncontiguous": "noncontiguous_frames",
+    "partial": "missing_artifact",
+    "physics_contract": "unsupported_capture_contract",
+    "symlink": "symlink_artifact",
+    "unknown_contract": "unknown_capture_contract",
+    "wrong_contract": "invalid_episode_contract"
+  }
+}
+{"temporary_root_removed": true}
+EXIT_STATUS=0
+
+6. FINAL AUTOMATED GATES
+
+Scenario: stable typed validator result/rejection matrix, repeated for flake check.
+Invocation (run twice):
+  python -m unittest tests.test_world_model_data.RolloutArtifactValidatorTests
+Observable run 1:
+  Ran 3 tests in 0.025s
+  OK
+  FOCUSED_RUN_1_EXIT_STATUS=0
+Observable run 2:
+  Ran 3 tests in 0.019s
+  OK
+  FOCUSED_RUN_2_EXIT_STATUS=0
+
+Scenario: planner parity plus package fixtures, validator, and catalog consumer.
+Invocation:
+  timeout 60s python -m unittest tests.test_prepare_rollout_dataset tests.test_world_model_data
+Observable:
+  Ran 55 tests in 1.172s
+  OK
+  FULL_RELEVANT_EXIT_STATUS=0
+
+Scenario: owned Python files compile without syntax/import bytecode failures.
+Invocation:
+  timeout 30s python -m compileall -q \
+    scripts/rollout_artifacts.py scripts/prepare_rollout_dataset.py \
+    tests/test_prepare_rollout_dataset.py tests/test_world_model_data.py
+Observable:
+  COMPILE_EXIT_STATUS=0
+
+Scenario: new canonical module satisfies the Python no-excuse audit.
+Invocation:
+  python /home/sukai/.codex/plugins/cache/sisyphuslabs/omo/4.19.2/skills/programming/scripts/python/check-no-excuse-rules.py scripts/rollout_artifacts.py
+Observable:
+  no violations in 1 file(s)
+  CANONICAL_MODULE_AUDIT_EXIT_STATUS=0
+
+The checker was also run broadly over the shared planner/test files. It reported
+only inherited legacy-size/generic-exception/object findings in the planner and
+large test modules; none originate in the extracted validator. Those unrelated
+files were not globally restyled or split.
+
+Scenario: JSONL payload non-parsing audit.
+Invocation:
+  rg -n 'action_log\.jsonl' scripts/rollout_artifacts.py
+Observable:
+  264: required: Final = (... root / "action_log.jsonl")
+  JSONL_SCAN_EXIT_STATUS=0
+
+Only the required-file tuple references JSONL; there is no read_text/json.loads
+call for that path.
+
+7. ULTRAQA RECEIPT
+
+Malformed input: exercised missing, partial, malformed JSON, noncontiguous,
+symlink, escaping, wrong, unknown, and unsupported physics contracts.
+Stale state: isolated TemporaryDirectory fixtures; focused suite repeated twice.
+Dirty worktree: baseline/final status recorded; unrelated changes preserved.
+Hung/long commands: unittest bounded at 60s; compileall bounded at 30s.
+Flaky tests: focused validator suite passed twice with identical 3-test count.
+Misleading output: exit statuses and result.code.value fields asserted directly.
+Repeated interruptions: N/A, validator is a synchronous one-shot local call.
+Cancel/resume: N/A, validator has no resumable state.
+Prompt injection: N/A, input is typed local paths/contracts and parsed JSON values;
+no input text is interpreted as instructions.
+
+8. CLEANUP
+
+Manual temporary root: removed=true.
+QA unittest/compileall processes after completion: none.
+No active raw rollout root was modified.
+Unrelated pre-existing services and worktree entries remain preserved.

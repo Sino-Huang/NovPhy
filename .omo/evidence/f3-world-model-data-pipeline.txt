@@ -1,0 +1,64 @@
+Final Verification Wave F3: Real data-surface QA
+Decision: APPROVE
+Date: 2026-07-30
+
+Active-root command:
+/home/sukai/miniconda3/bin/python -m world_model.data.inspect --root data/novphy_rollouts_dataset_20260708_171531 --splits train dev --json
+
+Active-root result:
+Exit status: 0
+Root: data/novphy_rollouts_dataset_20260708_171531
+Capture contract: legacy_rgb_v1 version 1; declared_capabilities=[]; supported_capabilities=[]
+Temporal request: null
+Reported splits: train, dev
+Test split reported: false
+
+Active-root train summary:
+accepted_episodes=4975
+accepted_shots=59700
+rejected_episodes=5353
+rejection_counts={"missing_artifact": 5353}
+windows_feasible=true
+novelty_level_composition={"status": "unavailable", "counts": {}}
+scenario_type_composition={"status": "unavailable", "counts": {}}
+
+Active-root dev summary:
+accepted_episodes=463
+accepted_shots=5556
+rejected_episodes=1137
+rejection_counts={"missing_artifact": 1137}
+windows_feasible=true
+novelty_level_composition={"status": "unavailable", "counts": {}}
+scenario_type_composition={"status": "unavailable", "counts": {}}
+
+Partial-artifact behavior:
+The active-root command did not crash despite incomplete/reserved directories. It reported those directories as rejected episodes with the typed reason missing_artifact rather than admitting them to accepted samples.
+
+No invented test split/source provenance:
+The train/dev active-root report contained only train and dev; test was absent. Both novelty-level and scenario-type composition were explicitly unavailable because no collection plan was supplied. A separate explicit test request exited nonzero with stderr JSON {"error": "requested split has zero accepted episodes"}, so the inspector did not invent held-out test data.
+
+Active-root write checks:
+git status --short -- data/novphy_rollouts_dataset_20260708_171531 returned no output.
+strace write-intent filter over the active-root inspector run found dataset_write_intent_count=0 for open/create/truncate/mkdir/rename/unlink/rmdir operations under data/novphy_rollouts_dataset_20260708_171531.
+
+Isolated fixture command:
+/home/sukai/miniconda3/bin/python -m world_model.data.inspect --root /tmp/opencode/f3-world-model-8lrp1swz --splits train --json
+
+Isolated fixture result:
+Exit status: 0
+accepted_episodes=1
+rejected_episodes=1
+rejection_counts={"missing_artifact": 1}
+test_split_reported=false
+novelty_level_composition={"status": "unavailable", "counts": {}}
+scenario_type_composition={"status": "unavailable", "counts": {}}
+tree_before={"dirs": 6, "files": 10, "max_mtime_ns": 1785408552099844835, "sha256": "6b8d63771d90a7afc21c3833af0f11d4f53e893023dd983227620561429b23f7"}
+tree_after={"dirs": 6, "files": 10, "max_mtime_ns": 1785408552099844835, "sha256": "6b8d63771d90a7afc21c3833af0f11d4f53e893023dd983227620561429b23f7"}
+tree_unchanged=true
+
+Cleanup receipts:
+/tmp/opencode/f3-world-model-8lrp1swz removed; cleanup_exists_after=false.
+/tmp/opencode/f3-active-inspect.json and /tmp/opencode/f3-active-inspect-strace.log removed after evidence creation.
+
+F3 conclusion:
+APPROVE. Required real data-surface QA passed: active-root inspection completed read-only, partial artifacts were rejected/skipped without crashing, no test split or source provenance was invented without a plan, isolated fixture mutation checks passed, and no active-root writes were observed.

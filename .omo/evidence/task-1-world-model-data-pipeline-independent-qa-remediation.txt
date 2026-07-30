@@ -1,0 +1,221 @@
+AdversarialVerify JSON
+{
+  "task": "Task 1 - independent verification of temporal-window remediation and real rollout fixture surface",
+  "verdict": "confirmed",
+  "confidence": "high",
+  "summary": "The exact-int temporal-window boundary is remediated: all fractional and boolean requests are rejected before arithmetic, while TemporalWindowRequest(2, 3) derives horizon_frames=6. The prior real PNG/collector fixture remains valid, isolated, and cleaned up.",
+  "surfaceEvidence": [
+    {
+      "scenarioId": "remediation-targeted-test",
+      "criterionReference": "Task 1 TemporalWindowRequest requires positive integers; remediation regression test",
+      "surface": "terminal unittest",
+      "exactInvocation": "python -m unittest tests.test_world_model_data.WorldModelDataFixtureTests.test_temporal_window_request_rejects_noninteger_values",
+      "verdict": "PASS",
+      "observables": "exit=0; Ran 1 test; OK. Repeated independently twice with exit=0 each.",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "remediation-direct-boundary",
+      "criterionReference": "Task 1 TemporalWindowRequest exact integer type boundary and horizon derivation",
+      "surface": "terminal Python constructor surface",
+      "exactInvocation": "python - <<'PY' ... TemporalWindowRequest invalid probes and valid=(2, 3) ... PY",
+      "verdict": "PASS",
+      "observables": "(1.5,1), (1,1.5), (True,1), and (1,False) each raised ContractValueError with the integer-type reason; valid=(2, 3) reported horizon_frames=6; exit=0.",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "full-world-model-suite",
+      "criterionReference": "Task 1 world-model fixture suite",
+      "surface": "terminal unittest",
+      "exactInvocation": "python -m unittest tests.test_world_model_data",
+      "verdict": "PASS",
+      "observables": "exit=0; Ran 16 tests in 0.016s; OK.",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "real-png-fixture",
+      "criterionReference": "Task 1 complete fixture has real PNGs and collector layout",
+      "surface": "terminal unittest/data fixture",
+      "exactInvocation": "python -m unittest tests.test_world_model_data.WorldModelDataFixtureTests.test_complete_fixture_has_real_pngs_and_collector_layout",
+      "verdict": "PASS",
+      "observables": "exit=0; Ran 1 test; OK.",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "immutable-descriptor",
+      "criterionReference": "Task 1 capture contract descriptor is immutable",
+      "surface": "terminal Python dataclass surface",
+      "exactInvocation": "python - <<'PY' ... LEGACY_RGB_V1.contract_name mutation ... PY",
+      "verdict": "PASS",
+      "observables": "exit=0; before=legacy_rgb_v1; assignment raised FrozenInstanceError: cannot assign to field 'contract_name'.",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "nonpositive-frame-count",
+      "criterionReference": "Task 1 fixture builder rejects nonpositive frame count before writing",
+      "surface": "terminal Python fixture builder",
+      "exactInvocation": "python - <<'PY' ... make_complete_rollout_episode(... RolloutFixtureSpec(frame_count=0)) ... PY",
+      "verdict": "PASS",
+      "observables": "exit=0; ContractValueError invalid frame_count: must be positive; destination_exists False.",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "literal-real-fixture-surface",
+      "criterionReference": "Task 1 manual QA real fixture: PNG signature, sequential names, manifest/logs, action shape, cleanup",
+      "surface": "terminal/data surface",
+      "exactInvocation": "python -c '... TemporaryDirectory(prefix=\"novphy-task1-\"); make_complete_rollout_episode(... frame_count=3, shot_count=1); inspect and cleanup ...'",
+      "verdict": "PASS",
+      "observables": "exit=0; signature=89504e470d0a1a0a; frame_names=[frame_000000.png, frame_000001.png, frame_000002.png]; manifest/action_log/action_log_jsonl=true; accepted_trial_count=1; action=[300,220,-80,20,120]; independent_roots=true; first_root_absent=true; second_root_absent=true; preexisting_tmp_unchanged=true.",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "compileall",
+      "criterionReference": "Task 1 Python sources compile",
+      "surface": "terminal Python compiler",
+      "exactInvocation": "python -m compileall -q world_model tests/test_world_model_data.py",
+      "verdict": "PASS",
+      "observables": "exit=0; no compile errors.",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "no-excuse-audit",
+      "criterionReference": "Task 1 source quality gate",
+      "surface": "terminal audit script",
+      "exactInvocation": "python /home/sukai/.codex/plugins/cache/sisyphuslabs/omo/4.19.2/skills/programming/scripts/python/check-no-excuse-rules.py world_model/__init__.py world_model/data/__init__.py world_model/data/types.py tests/test_world_model_data.py",
+      "verdict": "PASS",
+      "observables": "exit=0; no violations in 4 file(s).",
+      "artifactRefs": ["remediation-report"]
+    }
+  ],
+  "adversarialCases": [
+    {
+      "scenarioId": "malformed-temporal-input",
+      "criterionReference": "Task 1 TemporalWindowRequest requires positive integers",
+      "adversarialClass": "malformed input/type boundary",
+      "expectedBehavior": "Reject float and bool prediction_steps/stride_frames before positivity or horizon arithmetic",
+      "verdict": "PASS",
+      "artifactRefs": ["remediation-report", "prior-task1-evidence"]
+    },
+    {
+      "scenarioId": "malformed-frame-count",
+      "criterionReference": "Task 1 fixture builder must reject nonpositive frame counts before writing",
+      "adversarialClass": "malformed input",
+      "expectedBehavior": "ContractValueError and no destination tree",
+      "verdict": "PASS",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "stale-independent-roots",
+      "criterionReference": "Task 1 reusable fixtures isolate roots",
+      "adversarialClass": "stale state",
+      "expectedBehavior": "Two independent temporary roots, no stale files, both removed after cleanup",
+      "verdict": "PASS",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "sidecar-path-containment",
+      "criterionReference": "Task 1 validated relative sidecar paths",
+      "adversarialClass": "path traversal/absolute path",
+      "expectedBehavior": "Empty, absolute, parent-traversal, and backslash paths rejected",
+      "verdict": "PASS",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "flaky-repeat",
+      "criterionReference": "Task 1 temporal remediation repeatability",
+      "adversarialClass": "flaky test/repeated execution",
+      "expectedBehavior": "Targeted remediation test exits 0 on both sequential runs",
+      "verdict": "PASS",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "misleading-success",
+      "criterionReference": "QA evidence must include observable exit codes and direct outputs",
+      "adversarialClass": "misleading success assertion",
+      "expectedBehavior": "All claimed checks have exit=0 and matching direct observables",
+      "verdict": "PASS",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "process-temp-cleanup",
+      "criterionReference": "QA cleanup requirement",
+      "adversarialClass": "hung/long process and temporary-root lifecycle",
+      "expectedBehavior": "No QA-created pip/unittest/test process or novphy-task1/novphy-fixture temporary root remains",
+      "verdict": "PASS",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "dirty-worktree-preservation",
+      "criterionReference": "QA must preserve unrelated concurrent changes",
+      "adversarialClass": "dirty worktree",
+      "expectedBehavior": "Initial and final git status listings match; unrelated files are untouched",
+      "verdict": "PASS",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "prompt-injection",
+      "criterionReference": "Task 1 local package surface",
+      "adversarialClass": "prompt injection",
+      "expectedBehavior": "Not applicable: no untrusted prompt/text ingestion surface",
+      "verdict": "NOT_APPLICABLE",
+      "reason": "Local frozen-value and fixture-file constructors accept typed Python values only.",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "cancel-resume",
+      "criterionReference": "Task 1 local package surface",
+      "adversarialClass": "cancel/resume",
+      "expectedBehavior": "Not applicable: no resumable workflow or cancellation handler",
+      "verdict": "NOT_APPLICABLE",
+      "reason": "Checks run synchronously in one-shot Python processes.",
+      "artifactRefs": ["remediation-report"]
+    },
+    {
+      "scenarioId": "repeated-interruptions",
+      "criterionReference": "Task 1 local package surface",
+      "adversarialClass": "repeated interruptions",
+      "expectedBehavior": "Not applicable: no long-lived interactive process",
+      "verdict": "NOT_APPLICABLE",
+      "reason": "The package contract and fixture builder expose no interruptible session state.",
+      "artifactRefs": ["remediation-report"]
+    }
+  ],
+  "artifactRefs": [
+    {
+      "id": "remediation-report",
+      "kind": "manualQa",
+      "description": "Independent remediation command outputs, fixture observables, adversarial matrix, cleanup, and process receipts",
+      "path": ".omo/evidence/task-1-world-model-data-pipeline-independent-qa-remediation.txt"
+    },
+    {
+      "id": "prior-task1-evidence",
+      "kind": "priorEvidence",
+      "description": "Original Task 1 evidence capturing the pre-fix three-failure temporal boundary and subsequent green receipt",
+      "path": ".omo/evidence/task-1-world-model-data-pipeline.txt"
+    }
+  ],
+  "priorDefectVerification": {
+    "evidencePath": ".omo/evidence/task-1-world-model-data-pipeline.txt",
+    "preFixReceipt": "Lines 46-49 record exit=1: ContractValueError was not raised for (1.5,1), (1,1.5), or (True,1); (1,False) already failed positivity.",
+    "postFixReceipt": "Lines 50-57 record the targeted green test and full suite green at 16 tests.",
+    "distinguishesDefect": true
+  },
+  "cleanupReceipt": {
+    "temporaryRoots": "Manual fixture roots removed; first_root_absent=true, second_root_absent=true, preexisting_tmp_unchanged=true; final /tmp novphy-task1-* and novphy-fixture-* scan was empty.",
+    "processes": "No QA-created pip, unittest, test_world_model_data, compileall, or no-excuse process remained. Existing unrelated cloudflare-ddns, nvitop, and rollout collector Python processes were observed and preserved.",
+    "worktree": "Initial and final git status --short listings matched: .omo/boulder.json, existing scripts/tests modifications, and existing untracked .omo/world_model/test artifacts remained unchanged."
+  },
+  "commandReceipts": [
+    "python -m unittest ...test_temporal_window_request_rejects_noninteger_values -> exit 0; Ran 1 test; OK (twice sequentially)",
+    "direct TemporalWindowRequest probes -> exit 0; four malformed pairs rejected; valid (2,3) horizon_frames=6",
+    "python -m unittest tests.test_world_model_data -> exit 0; Ran 16 tests; OK",
+    "literal fixture python -c probe -> exit 0; PNG signature 89504e470d0a1a0a, sequential names, manifests/logs, five-value action, root cleanup",
+    "immutable descriptor direct probe -> exit 0; FrozenInstanceError",
+    "nonpositive-frame direct probe -> exit 0; ContractValueError and destination_exists False",
+    "sidecar path direct probe -> exit 0; four malformed paths rejected",
+    "python -m compileall -q world_model tests/test_world_model_data.py -> exit 0",
+    "check-no-excuse-rules.py on four files -> exit 0; no violations in 4 file(s)"
+  ]
+}
+
+Verification note: an initial batch of exploratory one-line `python -c` probes used literal `\\n` shell text and exited 1 with SyntaxError; these were invocation-shape errors, not product outcomes, and were superseded by the successful here-document probes recorded above. No product or test files were edited.

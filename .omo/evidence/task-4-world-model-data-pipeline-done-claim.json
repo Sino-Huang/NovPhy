@@ -1,0 +1,110 @@
+{
+  "task": "4",
+  "plan": "world-model-data-pipeline",
+  "status": "DONE",
+  "date": "2026-07-28",
+  "summary": "Implemented and fixed world_model/data/dataset.py: corrected frame path resolution (catalog-root-relative, not episode-relative), added WindowSample TypedDict, replaced bare ValueError with NoEligibleTemporalWindowError, removed broad except(Exception).",
+  "files_changed": [
+    "world_model/data/dataset.py",
+    "tests/test_world_model_data.py"
+  ],
+  "files_not_changed": [
+    "world_model/data/catalog.py",
+    "world_model/data/types.py",
+    "world_model/data/__init__.py",
+    "scripts/rollout_artifacts.py",
+    "scripts/prepare_rollout_dataset.py"
+  ],
+  "test_results": {
+    "run_1": {
+      "command": "python -m unittest tests.test_world_model_data.TemporalWindowDatasetTests -v",
+      "exit_status": 0,
+      "ran": 7,
+      "passed": 7,
+      "failed": 0,
+      "errors": 0
+    },
+    "run_2": {
+      "command": "python -m unittest tests.test_world_model_data.TemporalWindowDatasetTests -v",
+      "exit_status": 0,
+      "ran": 7,
+      "passed": 7,
+      "failed": 0,
+      "errors": 0
+    },
+    "full_suite": {
+      "command": "python -m unittest tests.test_world_model_data tests.test_prepare_rollout_dataset -v",
+      "exit_status": 0,
+      "ran": 62,
+      "passed": 62,
+      "failed": 0,
+      "errors": 0
+    }
+  },
+  "fixes": [
+    {
+      "issue": "frame_path_double_prefix",
+      "description": "FrameRecord.relative_path is already rebased to catalog-root-relative by catalog.py. dataset.py was incorrectly prepending episode.relative_path again.",
+      "before": "abs_path = self._root / episode.relative_path / frame_record.relative_path",
+      "after": "abs_path = self._root / frame_record.relative_path",
+      "wrong_path_example": "/tmp/<root>/train/episode_001/train/episode_001/shot_001/frames/frame_000000.png",
+      "correct_path_example": "/tmp/<root>/train/episode_001/shot_001/frames/frame_000000.png"
+    },
+    {
+      "issue": "bare_dict_return",
+      "description": "Added WindowSample TypedDict with all documented keys; __getitem__ now returns WindowSample.",
+      "before": "def __getitem__(self, idx: int) -> dict:",
+      "after": "def __getitem__(self, idx: int) -> WindowSample:"
+    },
+    {
+      "issue": "generic_value_error",
+      "description": "Added NoEligibleTemporalWindowError(ValueError) typed subclass; NoEligibleWindowError is a backwards-compatible alias.",
+      "before": "raise ValueError(...)",
+      "after": "raise NoEligibleTemporalWindowError(split=..., prediction_steps=..., stride_frames=..., horizon_frames=...)"
+    },
+    {
+      "issue": "broad_except",
+      "description": "Removed catch-all except(Exception); only image/decode/IO error types are caught.",
+      "before": "except (OSError, IOError, Exception) as exc:",
+      "after": "except (OSError, UnidentifiedImageError) as exc:"
+    },
+    {
+      "issue": "test_frame_path",
+      "description": "Fixed test_post_snapshot_frame_removal_raises_typed_read_error to use root / frame.relative_path (not root / episode.relative_path / frame.relative_path).",
+      "file": "tests/test_world_model_data.py",
+      "before": "frame_path = root / episode.relative_path / shot.frames[0].relative_path",
+      "after": "frame_path = root / shot.frames[0].relative_path"
+    }
+  ],
+  "manual_probes": {
+    "rgb_sample": {
+      "description": "TemporaryDirectory fixture with 5-frame episode, prediction_steps=2, stride_2",
+      "context_image_shape": [3, 6, 8],
+      "context_image_dtype": "torch.float32",
+      "pixel_r_value": 0.0784,
+      "pixel_g_value": 0.1608,
+      "pixel_b_value": 0.2353,
+      "expected_r": 0.0784,
+      "expected_g": 0.1608,
+      "expected_b": 0.2353,
+      "verified": true
+    },
+    "deleted_frame": {
+      "description": "Delete frame_000000.png after construction; verify FrameReadError raised",
+      "frame_relative_path": "train/episode_001/shot_001/frames/frame_000000.png",
+      "raises": "FrameReadError",
+      "is_ioerror_subclass": true,
+      "verified": true
+    },
+    "no_eligible_window": {
+      "description": "2-frame episode with prediction_steps=5, stride=2 (horizon=10)",
+      "raises": "NoEligibleTemporalWindowError",
+      "is_valueerror_subclass": true,
+      "verified": true
+    }
+  },
+  "no_commits": true,
+  "no_sidecar_access": true,
+  "no_filesystem_rescan": true,
+  "evidence_file": ".omo/evidence/task-4-world-model-data-pipeline.txt"
+}

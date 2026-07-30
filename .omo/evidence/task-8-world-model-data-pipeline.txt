@@ -1,0 +1,147 @@
+TASK 8: TEMPORAL-GRANULARITY ABLATIONS AND MATCHED-BUDGET ACCOUNTING
+Date: 2026-07-29
+Interpreter: /home/sukai/miniconda3/bin/python
+
+SCOPE
+- Added world_model/data/ablations.py.
+- Extended the explicit world_model.data public API in world_model/data/__init__.py.
+- Added only TemporalAblationTests to tests/test_world_model_data.py.
+- Did not implement Todo 9 documentation/integration coverage, trainer/model/controller code,
+  abstraction/symbolic options, payload readers, distributed behavior, or dependencies.
+
+TDD RED PROOF
+Command:
+  /home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.TemporalAblationTests
+Result: exit 1, FAILED (errors=17 across 13 tests/subtests).
+Failure reason: the tests reached the intended missing contract and reported absent public
+symbols such as WindowCostRule and get_temporal_ablation_preset. The test file compiled first.
+
+TDD GREEN PROOF
+Command:
+  /home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.TemporalAblationTests
+Result: exit 0, Ran 13 tests, OK.
+
+Required happy QA:
+  /home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.TemporalAblationTests.test_equal_cost_presets_are_compute_matched
+Result: exit 0, Ran 1 test, OK. Hand totals: fixed_short 4 draws * 1 predicted
+frame = 4; fixed_long 1 draw * 4 predicted frames = 4; sample_unmatched and
+compute_matched.
+
+Required failure QA:
+  /home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.TemporalAblationTests.test_equal_draw_count_with_unequal_cost_is_not_compute_matched
+Result: exit 0, Ran 1 test, OK. Equal draw counts and identical cost-rule identity are
+sample_matched; computed totals 2 versus 8 are compute_unmatched.
+
+REGRESSION AND REPEATABILITY
+- /home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data
+  exit 0, Ran 79 tests, OK (run after final source edit).
+- /home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.CurriculumPolicyTests
+  exit 0, Ran 15 tests, OK.
+- /home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.TemporalAblationTests tests.test_world_model_data.TemporalAblationTests
+  exit 0, Ran 26 tests, OK; no order/flakiness signal.
+- Two independent interpreter processes emitted the same manifest digest:
+  c0638e0c51e5a0f6404344d6a03463aee7c5c204369839be886fe820d1991745
+  (PROCESS_STABLE_PASS).
+
+MANUAL QA: REAL TEMPORARY CATALOG + TODO 7 POLICY
+Command form:
+  /home/sukai/miniconda3/bin/python - <<'PY'
+  ... build _build_catalog_from_fixture(frame_count=12), CurriculumSchedule,
+      CurriculumPolicy, bound CurriculumState, two manifests, and comparison ...
+  PY
+Result: exit 0 and final MANUAL_QA_PASS.
+
+fixed_short manifest excerpt:
+  {"preset_name":"fixed_short","draw_count":2,
+   "prediction_steps_distribution":{"1":2},"stride_frames_distribution":{"1":2},
+   "horizon_frames_distribution":{"1":2},"total_prediction_steps":2,
+   "effective_prediction_steps":1.0,"total_predicted_frame_cost":2,
+   "temporal_controller_cost":0,"computed_budget_total":2,
+   "digest":"d9dec82d81471d3613441194cf17daa5c10b58deb32d7f900bca42dd64bfe481"}
+
+fixed_long manifest excerpt:
+  {"preset_name":"fixed_long","draw_count":2,
+   "prediction_steps_distribution":{"4":2},"stride_frames_distribution":{"2":2},
+   "horizon_frames_distribution":{"8":2},"total_prediction_steps":8,
+   "effective_prediction_steps":4.0,"total_predicted_frame_cost":8,
+   "temporal_controller_cost":0,"computed_budget_total":8,
+   "digest":"03046dea3a3bb97c17d15de67978959297c9f8503b5658ad2adee36dab0dc714"}
+
+comparison JSON:
+  {"sample_match":"sample_matched","compute_match":"compute_unmatched",
+   "left_computed_budget_total":2,"right_computed_budget_total":8}
+
+Hand calculation: the rule is base_window_cost=0 and predicted_frame_cost=1.
+The selected budget is draw_count * base_window_cost +
+total_prediction_steps * predicted_frame_cost + temporal_controller_cost.
+Thus short=2 and long=8 exactly; unequal totals were never labeled compute_matched.
+
+ADVERSARIAL PROBES
+- Malformed input: unknown/injection-like preset name, boolean cost, duplicate choices,
+  and unsupported symbolic keyword yielded ContractValueError, ContractValueError,
+  ContractValueError, and TypeError respectively.
+- Stale state: changed catalog digest yielded CurriculumBindingMismatchError before sampling.
+- Required unequal compute match: yielded typed ComputeBudgetMismatchError.
+- Global randomness: mutating Python's global random state did not change provenance digest;
+  a changed local sampling seed did.
+- Filesystem/payload isolation: ablations.py contains no random module, hash(), filesystem,
+  image decode, catalog refresh, sidecar, abstraction, or symbolic access.
+- Dirty worktree: scoped status showed pre-existing untracked evidence/notepads/test state;
+  world_model/data files are ignored by .gitignore:8 data/. No reset, clean, revert,
+  commit, push, package install, or unrelated edit was performed.
+- Scoped git diff was empty because the scoped product/test files are untracked or ignored;
+  no-index stats confirmed ablations.py (300 physical lines), __init__.py (86 physical
+  lines), and the existing test module are present and were inspected directly.
+- Misleading success output: every accepted PASS above was paired with tool exit 0 and
+  asserted values; the initial red exit 1 was retained as red proof.
+- Prompt injection: preset names are validated against four literals and canonicalized as
+  data; no prompt, shell, or tool instruction is interpreted by the implementation.
+- Cancellation/hung commands: all tests and scripts were bounded at 120 seconds and
+  completed in under one second; no background process, signal, or cancellation path exists.
+- Repeated interruption: verification ran synchronously without continuation state or
+  external worker handoff, so there was no interrupted task-owned process to recover.
+
+STATIC AND SOURCE CHECKS
+- py_compile on ablations.py, data/__init__.py, and test_world_model_data.py: exit 0.
+- programming check-no-excuse-rules.py on production changed files: no violations.
+- ablations.py pure LOC: 249. This is in the 200-250 warning band; the next substantive
+  feature edit should split serialization/comparison from selection/accounting.
+- Source probes found no Any, cast, type-ignore, pyright-ignore, process hash(), global
+  random access, file/image/sidecar access, abstraction, or symbolic field.
+- basedpyright LSP diagnostics could not run because the server is not installed and its
+  installation was previously declined. No package was installed; compile, unittest,
+  process-stability, source-rule, and manual-runtime checks were used instead.
+
+CLEANUP RECEIPT
+- The literal QA printed CLEANUP_PASS for its TemporaryDirectory path after asserting the
+  path no longer existed.
+- All unit fixtures used TemporaryDirectory contexts.
+- No persistent fixture, cache, child process, or task-owned server remains.
+
+ARCHITECTURE REVIEW
+- Single responsibility: ablations.py owns temporal ablation accounting.
+- Boundary purity: public constructors parse strict frozen typed values; no Any/raw input
+  crosses into selection.
+- Variant discrimination: no enum/tagged-union if/elif chain was introduced.
+- Escape hatches: none.
+- Defensive layers: validation is limited to public boundary values and resume binding.
+- One-off helpers: helpers are reused for identities, distributions, and deterministic draws.
+- Tests: every introduced behavior has a focused regression test, including typed failures.
+- Parameter bloat: build_temporal_ablation_manifest takes policy, state, and one frozen
+  AblationRunConfig; related seed/draw/cost/preset inputs are grouped as a domain value.
+- Redundant verification: none in production.
+- Negative naming: comparison fields use positive match concepts and explicit unmatched labels.
+- Logging: untouched; the package has no invited logging surface.
+
+DONE CLAIM
+{"task":8,"status":"done","changed_files":["world_model/data/ablations.py",
+"world_model/data/__init__.py","tests/test_world_model_data.py",
+".omo/evidence/task-8-world-model-data-pipeline.txt",
+".omo/knowledges/world-model-curriculum-policy.md",
+".omo/notepads/world-model-data-pipeline/decisions.md",
+".omo/notepads/world-model-data-pipeline/learnings.md",
+".omo/notepads/world-model-data-pipeline/issues.md"],
+"focused_tests":"13 passed","world_model_regression":"79 passed",
+"manual_qa":"MANUAL_QA_PASS","cleanup":"temporary roots removed; no processes remain",
+"residual_risks":["basedpyright unavailable by prior decline",
+"ablations.py at 249 pure LOC warning band","Todo 9 intentionally not implemented"]}

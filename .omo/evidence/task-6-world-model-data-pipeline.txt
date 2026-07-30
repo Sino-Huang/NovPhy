@@ -1,0 +1,24 @@
+Todo 6 evidence: read-only inspection report
+
+Automated verification
+- python -m unittest tests.test_world_model_data.InspectionCommandTests
+  PASS: complete/partial fixture report, empty split report, and CLI JSON output.
+- python -m compileall -q world_model/data/catalog.py world_model/data/inspect.py
+  PASS.
+- git diff --check
+  PASS.
+
+Manual QA
+- `InspectionCommandTests.test_cli_emits_json_for_complete_fixture` invokes the
+  real module CLI against PNG-backed rollout artifacts. It observed exit code
+  zero and JSON containing one accepted train episode.
+- The nonexistent test split CLI returned structured JSON on stderr and exit 2.
+- An unsupported required capability returned structured JSON on stderr and exit 2.
+
+Adversarial and cleanup
+- Partial episode: counted as a rejection rather than a crash.
+- Empty requested split: nonzero structured error.
+- Unsupported capability: fail-closed nonzero structured error.
+- Raw-root mutation: none; inspection only builds in-memory catalogs.
+- Two bounded active-root probes were terminated after exceeding the command
+  window; no inspection process remains.

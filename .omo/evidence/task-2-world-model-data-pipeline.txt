@@ -1,0 +1,150 @@
+Task 2: Extract one public canonical validator and build immutable catalogs
+Date: 2026-07-28
+Evidence artifact: .omo/evidence/task-2-world-model-data-pipeline.txt
+
+SCOPE
+- Added: world_model/data/catalog.py
+- Changed: world_model/data/__init__.py (added EpisodeCatalog, check_source_key_disjointness exports)
+- Changed: tests/test_world_model_data.py (added EpisodeCatalogTests class, _fix_episode_for_count1 helper, updated imports)
+- scripts/rollout_artifacts.py was retained from Task 1 (already extracted); not reverted or re-extracted.
+- No collector, planner, dataset, sampler, curriculum, ablation, inspector, model, or trainer code was changed.
+- No raw rollout root was mutated.
+
+TDD RECEIPT
+1. Baseline characterization test (passing before catalog exists)
+   Invocation: python -m unittest tests.test_world_model_data.EpisodeCatalogTests.test_existing_validator_accepts_complete_episode_and_infers_legacy_contract
+   Exit: 0
+   Observable: Ran 1 test; OK. The existing public validator returned EpisodeAccepted with LEGACY_RGB_V1 contract, one shot, three frames (indices 0,1,2), and a five-value action. This test passed before catalog.py was created.
+
+2. Failing tests before catalog.py
+   Invocation: python -m unittest tests.test_world_model_data.EpisodeCatalogTests.test_catalog_snapshot_and_plan_backed_source_provenance
+   Exit: 1 before catalog.py existed
+   Observable: ModuleNotFoundError: No module named 'world_model.data.catalog'. All catalog tests failed with this error as expected.
+
+3. Green suite after catalog.py and __init__.py update
+   Invocation: python -m unittest tests.test_prepare_rollout_dataset tests.test_world_model_data.EpisodeCatalogTests
+   Exit: 0
+   Observable: Ran 36 tests; OK.
+
+4. Full suite green
+   Invocation: python -m unittest tests.test_prepare_rollout_dataset tests.test_world_model_data
+   Exit: 0
+   Observable: Ran 55 tests; OK.
+
+CIRCULAR IMPORT RESOLUTION
+The catalog module imports from scripts.rollout_artifacts which itself imports from world_model.data.
+This creates a circular dependency at module load time. Resolution: catalog.py uses local (function-level)
+imports for validate_rollout_episode, EpisodeAccepted, and EpisodeValidationContract, deferring them
+until first use rather than at module initialization.
+
+ACCEPTANCE CRITERIA VERIFICATION
+
+Scenario: happy path - snapshot and plan-backed source provenance.
+Invocation (run 1): python -m unittest tests.test_world_model_data.EpisodeCatalogTests.test_catalog_snapshot_and_plan_backed_source_provenance
+Exit: 0
+Observable: Ran 1 test; OK.
+
+Invocation (run 2): python -m unittest tests.test_world_model_data.EpisodeCatalogTests.test_catalog_snapshot_and_plan_backed_source_provenance
+Exit: 0
+Observable: Ran 1 test; OK.
+
+Scenario: failure path - unknown or unvalidated capture contract is rejected.
+Invocation (run 1): python -m unittest tests.test_world_model_data.EpisodeCatalogTests.test_unknown_or_unvalidated_capture_contract_is_rejected
+Exit: 0
+Observable: Ran 1 test; OK. physics_capture_v1 episodes produced rejection_codes=('unsupported_capture_contract',) and zero accepted episodes.
+
+Invocation (run 2): python -m unittest tests.test_world_model_data.EpisodeCatalogTests.test_unknown_or_unvalidated_capture_contract_is_rejected
+Exit: 0
+Observable: Ran 1 test; OK.
+
+Scenario: full acceptance criteria command.
+Invocation (run 1): python -m unittest tests.test_prepare_rollout_dataset tests.test_world_model_data.EpisodeCatalogTests
+Exit: 0
+Observable: Ran 36 tests; OK.
+
+Invocation (run 2): python -m unittest tests.test_prepare_rollout_dataset tests.test_world_model_data.EpisodeCatalogTests
+Exit: 0
+Observable: Ran 36 tests; OK.
+
+CATALOG BEHAVIOR PROBES
+
+Scenario: plan-backed split root, builds catalog, adds valid episode, confirms original unchanged, refresh contains late episode.
+Invocation: python -c '<TemporaryDirectory fixture creates plan-backed split root>'
+Exit: 0
+Captured output:
+  initial episode count: 1
+  source_level_key: levels/one.xml
+  provenance_available: True
+  original tuple unchanged: True
+  original tuple len still: 1
+  refreshed is new instance: True
+  refreshed episode count: 2
+  late episode in refresh: True
+Binary observables:
+- source_level_key was the exact relative_path from the plan record, not derived from directory name.
+- Original catalog.episodes tuple was unchanged after late episode appeared on disk.
+- refresh() returned a new distinct instance containing the late episode.
+
+Scenario: malformed JSON episode.
+Exit: 0
+Captured output: malformed_json: episodes= 0 rejections= 1 codes= ('malformed_json',)
+Binary observables: malformed manifest produces a rejection code, not a crash.
+
+Scenario: symlink exclusion.
+Exit: 0
+Captured output: symlink excluded: True | good included: True | episode count: 1
+Binary observables: symlinked directory at split level was not enumerated; good direct directory was accepted.
+
+Scenario: unsupported and unknown capture contracts.
+Exit: 0
+Captured output:
+  physics rejected: episodes= 0 codes= ('unsupported_capture_contract',)
+  unknown rejected: episodes= 0 codes= ('unknown_capture_contract',)
+Binary observables: neither contract silently fell back to legacy_rgb_v1.
+
+Scenario: stale snapshot then refresh.
+Exit: 0
+Captured output: stale snapshot episodes: 0 | refresh has late ep: 1
+Binary observables: original empty snapshot was unaffected by late filesystem write; refresh picked it up.
+
+Scenario: parse catalog properties (not stdout).
+Exit: 0
+Captured output (partial): {'episodes': 1, 'split': 'train', 'provenance_available': False, 'rejection_count': 0, 'rejection_codes': (), 'capture_contract': 'legacy_rgb_v1', 'ep_name': 'ep001', 'ep_split': <SplitName.TRAIN: 'train'>, 'ep_source_key': None, 'ep_shots': 1, 'ep_contract': 'legacy_rgb_v1'}
+Binary observables: all catalog properties parseable without reading stdout; source_level_key=None when no plan supplied.
+
+Scenario: flaky test rerun check (two independent runs).
+Exit: 0 (both runs)
+Captured output: run1 exit: 0 run2 exit: 0 | run1 stable: True run2 stable: True
+Binary observables: no flakiness observed across two independent runs.
+
+CONTRACT OBSERVABLES
+- EpisodeCatalog.build() enumerates only direct non-symlink subdirectories of root/split.
+- Symlinks at the split level are silently excluded (counted as rejection by validator or skipped at enumeration).
+- Files (non-directories) at the split level are silently skipped.
+- When collection_plan is supplied, source_level_key is the exact plan relative_path; provenance_available=True.
+- When collection_plan is absent, source_level_key=None for all episodes; provenance_available=False.
+- physics_capture_v1 descriptor in manifest results in rejection_codes=('unsupported_capture_contract',).
+- Unknown contract name results in rejection_codes=('unknown_capture_contract',).
+- Required capability not declared in capture_contract raises ValueError immediately (fail-closed).
+- check_source_key_disjointness raises ValueError when two plan-backed catalogs share a source key.
+- catalog.episodes is an immutable tuple; assignment raises AttributeError.
+- refresh() returns a new EpisodeCatalog instance; original episodes tuple is unchanged.
+- No JSONL payload is parsed; no sidecar files are opened or compared.
+- No file is written inside the raw rollout root.
+
+ADVERSARIAL QA
+- Malformed boundary: malformed manifest JSON produces rejection code 'malformed_json', not crash.
+- Symlink/escape: symlink at split level excluded; good direct episode accepted.
+- Unsupported/unknown contract: both produce typed rejection codes, no silent fallback.
+- Stale snapshot: original catalog unchanged by later filesystem writes; refresh is explicit.
+- Dirty worktree: .omo/boulder.json and unrelated scripts/tests have unrelated modifications. None were touched.
+- Flaky test rerun: two independent runs both exited 0 with identical test counts.
+- Misleading output: all claimed probes have observed exit codes and captured output above.
+- Path containment: episodes resolved under root/split confirmed by test_episode_paths_are_contained_within_split_root.
+- Cross-catalog duplicate source key: check_source_key_disjointness raises ValueError as required.
+- Circular import: resolved via function-level deferred imports; no module-level import cycle.
+
+CLEANUP RECEIPT
+All temporary directories created during QA probes were managed by Python's tempfile.TemporaryDirectory context managers and cleaned up automatically.
+No background processes remain.
+No catalog caches or data files were written.

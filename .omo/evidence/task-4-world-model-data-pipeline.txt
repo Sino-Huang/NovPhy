@@ -1,0 +1,248 @@
+Task 4: lazy action-conditioned temporal-window dataset reads
+
+Scope and worktree
+- Changed only: world_model/data/dataset.py (new), world_model/data/__init__.py (added exports), tests/test_world_model_data.py (added TemporalWindowDatasetTests class + _build_catalog_from_fixture helper).
+- Initial dirty worktree contained unrelated .omo/boulder.json, scripts/collect_full_rollout_training_dataset.sh, scripts/prepare_rollout_dataset.py, tests/test_prepare_rollout_dataset.py, and multiple .omo/ directories. They were preserved.
+
+Deliverables
+- world_model/data/dataset.py: TemporalWindowDataset (PyTorch Dataset), FrameReadError, NoEligibleTemporalWindowError, WindowSample, and _WindowEntry.
+- world_model/data/__init__.py: exports FrameReadError, NoEligibleTemporalWindowError, TemporalWindowDataset, WindowSample.
+- tests/test_world_model_data.py: TemporalWindowDatasetTests class with 7 tests, _build_catalog_from_fixture helper.
+- .omo/evidence/task-4-world-model-data-pipeline.txt: this file.
+
+TDD: characterization test (passes before production code exists)
+Scenario: a 5-frame shot in a real catalog satisfies prediction_steps=2, stride=2.
+Invocation:
+  python -m unittest tests.test_world_model_data.TemporalWindowDatasetTests.test_catalog_fixture_has_eligible_window_for_stride_two
+Exit: 0 (world_model/data/dataset.py did not yet exist)
+Binary observable: catalog returns 1 episode with 1 shot with 5 frames; horizon=4; exactly start_frame=0 is eligible; no import of dataset.py required.
+Captured output:
+  Ran 1 test in 0.016s
+  OK
+
+TDD: red tests before production code
+Invocation:
+  python -m unittest tests.test_world_model_data.TemporalWindowDatasetTests.test_two_prediction_steps_at_stride_two_reads_frames_zero_two_four tests.test_world_model_data.TemporalWindowDatasetTests.test_post_snapshot_frame_removal_raises_typed_read_error tests.test_world_model_data.TemporalWindowDatasetTests.test_does_not_open_declared_supervision_sidecars
+Exit: 1 (before dataset.py existed)
+Binary observable: ModuleNotFoundError: No module named 'world_model.data.dataset' for all three.
+Captured output excerpt:
+  EEE
+  ModuleNotFoundError: No module named 'world_model.data.dataset'
+  Ran 3 tests in 0.001s
+  FAILED (errors=3)
+
+Required verification: happy path
+Scenario: sample[0] uses frames 0,2,4 with correct tensor shape/range/dtype, strict [5] action, prediction_steps/stride arithmetic, and immutable shot-local provenance.
+Invocation:
+  python -m unittest tests.test_world_model_data.TemporalWindowDatasetTests.test_two_prediction_steps_at_stride_two_reads_frames_zero_two_four -v
+Exit: 0
+Binary observables asserted in the test:
+  - context_image: torch.Size([3, H, W]) float32, range [0.0, 1.0], CHW layout.
+  - target_images: list of 2 CHW float32 tensors.
+  - frame_indices: [0, 2, 4] (context=0, target1=2, target2=4).
+  - action shape: torch.Size([5]).
+  - horizon_frames=4, prediction_steps=2, stride_frames=2.
+  - provenance.split="train", source_level_key=None, episode="episode_001", shot="shot_001".
+  - provenance.capture_contract is CaptureContractDescriptor instance.
+  - provenance.declared_capabilities and sidecar_paths are tuples.
+Captured output:
+  test_two_prediction_steps_at_stride_two_reads_frames_zero_two_four ... ok
+  Ran 1 test in 0.017s
+  OK
+
+Required verification: post-snapshot frame removal raises typed read error
+Invocation:
+  python -m unittest tests.test_world_model_data.TemporalWindowDatasetTests.test_post_snapshot_frame_removal_raises_typed_read_error -v
+Exit: 0
+Binary observable: after frame_000000.png is unlinked after dataset construction, dataset[0] raises FrameReadError (not generic OSError).
+Captured output:
+  test_post_snapshot_frame_removal_raises_typed_read_error ... ok
+  Ran 1 test in 0.009s
+  OK
+
+Required verification: sidecar non-access
+Invocation:
+  python -m unittest tests.test_world_model_data.TemporalWindowDatasetTests.test_does_not_open_declared_supervision_sidecars -v
+Exit: 0
+Binary observable: with builtins.open patched, the set of opened basenames contains only frame PNGs (frame_000000.png, frame_000002.png, frame_000004.png) and never physics_state.jsonl or physics_events.jsonl.
+Captured output:
+  test_does_not_open_declared_supervision_sidecars ... ok
+  Ran 1 test in 0.011s
+  OK
+
+Full TemporalWindowDatasetTests suite
+Invocation:
+  python -m unittest tests.test_world_model_data.TemporalWindowDatasetTests -v
+Exit: 0
+Captured output (7 tests):
+  test_catalog_fixture_has_eligible_window_for_stride_two ... ok
+  test_does_not_open_declared_supervision_sidecars ... ok
+  test_explicit_transform_is_applied_to_all_images ... ok
+  test_multiple_shots_generate_multiple_windows ... ok
+  test_no_eligible_window_raises_value_error ... ok
+  test_post_snapshot_frame_removal_raises_typed_read_error ... ok
+  test_two_prediction_steps_at_stride_two_reads_frames_zero_two_four ... ok
+  Ran 7 tests in 0.033s
+  OK
+
+Broader validation
+Invocation:
+  python -m unittest tests.test_world_model_data tests.test_prepare_rollout_dataset
+Exit: 0
+Binary observable: all 62 tests pass; unrelated planner/collector tests are undisturbed.
+Captured output:
+  Ran 62 tests in 6.321s
+  OK
+
+Flake rerun (3 consecutive runs)
+Invocation:
+  python -m unittest tests.test_world_model_data.TemporalWindowDatasetTests
+Exit: 0 (all 3 runs)
+Captured output:
+  Run 1: Ran 7 tests in 0.034s OK
+  Run 2: Ran 7 tests in 0.033s OK
+  Run 3: Ran 7 tests in 0.034s OK
+
+Manual QA: real RGB fixture with TemporaryDirectory
+Procedure:
+  TemporaryDirectory created; synthetic 64x48 RGB PNGs written for shot_001 frames 0-4 (pixel colors vary per frame index).
+  Catalog built: EpisodeCatalog.build(root, split="train", capture_contract=LEGACY_RGB_V1).
+  Dataset built: TemporalWindowDataset(catalog, TemporalWindowRequest(prediction_steps=2, stride_frames=2)).
+  sample = dataset[0] accessed.
+Results:
+  catalog.episodes: 1
+  dataset len: 1
+  context_image shape: torch.Size([3, 48, 64]), dtype: torch.float32, range: [0.000, 0.784]
+  target_images: 2 tensors, each torch.Size([3, 48, 64])
+  frame_indices: [0, 2, 4]
+  action shape: torch.Size([5]), values: [300.0, 220.0, -80.0, 20.0, 120.0]
+  horizon_frames: 4, prediction_steps: 2, stride_frames: 2
+  provenance.split: train
+  provenance.source_level_key: None
+  provenance.episode: qa_episode_001
+  provenance.shot: shot_001
+  provenance.capture_contract: legacy_rgb_v1
+  provenance.declared_capabilities: ()
+  provenance.sidecar_paths: ()
+Frame removal test:
+  Removed frame_000000.png after dataset construction.
+  dataset[0] raised: FrameReadError (PASS)
+Temp directory cleanup:
+  TemporaryDirectory context exited; root confirmed absent. PASS.
+
+Adversarial probes
+- malformed window values: TemporalWindowRequest(0, 1) raised ContractValueError "invalid prediction_steps: must be positive". TemporalWindowRequest(True, 1) raised "must be an integer". TemporalWindowRequest(1.5, 1) raised "must be an integer". All PASS.
+- no eligible window: TemporalWindowRequest(5, 2) against a 2-frame shot raised ValueError "No eligible temporal window found in catalog (split='train') ... Every shot must have at least 11 frames." PASS.
+- stale snapshot: episode added to filesystem after catalog.build() not visible in original catalog.episodes; catalog.refresh() returns new instance with the added episode. PASS.
+- sidecar nonaccess: physics_state.jsonl and physics_events.jsonl placed in episode directory; builtins.open tracking confirmed neither was opened during dataset[0]. Opened basenames contained only frame PNGs. PASS.
+- dirty worktree: pre-existing unrelated .omo/boulder.json, scripts/collect_full_rollout_training_dataset.sh, scripts/prepare_rollout_dataset.py, tests/test_prepare_rollout_dataset.py changes preserved. PASS.
+- misleading stdout: sample provenance, tensor shapes, and frame_indices parsed from Python objects, not printed text. PASS.
+- flake rerun: 3 consecutive identical runs passed. PASS.
+- bridging shots: N/A; each _WindowEntry stores a single shot; index build loops within one shot's frames only.
+- fabricating frames: N/A; only indices in catalog shot.frames tuple accessed; no synthesis code exists.
+- physics sidecar parsing: N/A; no JSONL reads, no sidecar opens, no physics payload deserialization.
+- cancel/resume: N/A; no resumable flow introduced; catalog snapshotted at build(); index materialized once.
+- prompt injection: N/A; no untrusted text executed or interpreted.
+
+Key design invariants confirmed
+1. PNG decoding is lazy: __init__ never calls Image.open; only __getitem__ does.
+2. Index is deterministic: built from catalog.episodes (immutable tuple) in episode -> shot -> start_frame order.
+3. Frame paths are catalog-root-relative: catalog.py _build_episode_record_from_validated rebases paths; dataset uses root / frame.relative_path directly.
+4. Action is strict [5]: torch.tensor([float(v) for v in shot.action.values], dtype=torch.float32).
+5. FrameReadError is typed IOError: catches OSError/IOError from Image.open and wraps; callers can distinguish from ValueError.
+6. No sidecar access: dataset.py has no JSONL/JSON reads; only PIL Image.open for PNG frames.
+7. Snapshot stability: EpisodeCatalog is immutable after build(); adding files does not affect an existing dataset index.
+
+DoneClaim (original)
+{
+  "task": "4",
+  "plan": "world-model-data-pipeline",
+  "deliverables": [
+    "world_model/data/dataset.py",
+    "world_model/data/__init__.py (FrameReadError, NoEligibleTemporalWindowError, TemporalWindowDataset, WindowSample exported)",
+    "tests/test_world_model_data.py (TemporalWindowDatasetTests: 7 tests)"
+  ],
+  "required_tests_pass": {
+    "test_two_prediction_steps_at_stride_two_reads_frames_zero_two_four": "PASS exit=0",
+    "test_post_snapshot_frame_removal_raises_typed_read_error": "PASS exit=0",
+    "test_does_not_open_declared_supervision_sidecars": "PASS exit=0"
+  },
+  "full_suite": "62 tests, exit=0",
+  "commit": "no (per plan: do not commit)"
+}
+
+══════════════════════════════════════════════════════════════════════════════
+TODO-4 REPAIR PASS (2026-07-28) — failing-first patch of double-path bug
+══════════════════════════════════════════════════════════════════════════════
+
+Root cause confirmed:
+  catalog.py _build_episode_record_from_validated rebases FrameRecord.relative_path
+  to be catalog-root-relative (e.g. train/episode_001/shot_001/frames/frame_000000.png).
+  A prior fix had added episode.relative_path as a prefix again, producing:
+    root / "train/episode_001" / "train/episode_001/shot_001/frames/frame_000000.png"
+  which resolves to a non-existent doubled path.
+
+Changes in world_model/data/dataset.py (no catalog change):
+  (a) Frame path resolution — removed episode_abs prefix:
+      Before: episode_abs = self._root / episode.relative_path
+              abs_path = episode_abs / frame_record.relative_path
+      After:  abs_path = self._root / frame_record.relative_path
+  (b) NoEligibleTemporalWindowError renamed as primary; NoEligibleWindowError
+      kept as a backwards-compatible alias.
+  (c) FrameReadError catches only (OSError, UnidentifiedImageError); removed
+      redundant IOError alias and overly broad SyntaxError.
+  (d) __getitem__ return type: WindowSample TypedDict (was bare dict annotation).
+
+Tests run (pytest, twice):
+
+  --- REPAIR RUN 1 (2026-07-28) ---
+  pytest tests/test_world_model_data.py::TemporalWindowDatasetTests -v
+  7 passed in 0.97s
+
+  --- REPAIR RUN 2 (2026-07-28) ---
+  pytest tests/test_world_model_data.py::TemporalWindowDatasetTests -v
+  7 passed in 0.93s
+
+  --- FULL SUITE (no regression) ---
+  pytest tests/ -v
+  1 pre-existing failure (test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots,
+    requires real dataset files absent from repo), 212 passed, 23 subtests passed.
+  All 36 test_world_model_data.py tests PASSED.
+
+TemporaryDirectory manual real-PNG probe:
+  len(dataset) = 1
+  context_image: dtype=torch.float32, shape=(3, 6, 8), min=0.0784, max=0.2353
+  target_images count: 2, action shape: (5,), frame_indices: [0, 2, 4]
+  horizon_frames=4, prediction_steps=2, stride_frames=2
+  Pixel RGB check at frame_000000 [0,0]: R=0.0784 G=0.1608 B=0.2353  VERIFIED OK
+  NoEligibleTemporalWindowError is subclass of ValueError: True
+  WindowSample is dict at runtime (TypedDict): True
+
+Deleted-frame probe:
+  frame relative_path: train/episode_001/shot_001/frames/frame_000000.png
+  frame exists before delete: True / after delete: False
+  dataset[0] raised FrameReadError (isinstance IOError = True)  VERIFIED OK
+
+No-eligible-window probe:
+  2-frame catalog, horizon=10 → NoEligibleTemporalWindowError raised
+  isinstance(e, ValueError) = True  VERIFIED OK
+
+DoneClaim (repair)
+{
+  "task": "4-repair",
+  "plan": "world-model-data-pipeline",
+  "file_changed": "world_model/data/dataset.py",
+  "bug_fixed": "double episode.relative_path prefix on frame paths",
+  "additional_fixes": [
+    "NoEligibleTemporalWindowError as primary typed error (ValueError subclass)",
+    "FrameReadError catches only OSError+UnidentifiedImageError",
+    "WindowSample TypedDict replaces bare dict return annotation"
+  ],
+  "7_tests_pass_run1": "7 passed in 0.97s",
+  "7_tests_pass_run2": "7 passed in 0.93s",
+  "full_suite": "212 passed (1 pre-existing unrelated failure), all 36 test_world_model_data pass",
+  "temporarydirectory_real_png_probe": "PASS",
+  "deleted_frame_probe": "PASS",
+  "no_eligible_window_probe": "PASS",
+  "commit": "no (per instructions)"
+}

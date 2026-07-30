@@ -193,8 +193,208 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
         self.assertTrue(partitions["test"])
 
     def test_collection_targets_default_to_capped_contract(self):
-        self.assertEqual(CollectionTargets(), CollectionTargets(train=100, dev=20))
+        self.assertEqual(CollectionTargets(), CollectionTargets(train=100, dev=20, test=0))
         self.assertEqual(CollectionOptions(), CollectionOptions(count=12, fps=30.0, duration=5.0, workers=6))
+
+    def test_default_collection_plan_selects_train_and_dev_only(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entries = make_full_level_tree(root / "engine", 5)
+            output_root = root / "out"
+            output_root.mkdir()
+
+            episodes, _ = build_collection_plan(
+                entries,
+                output_root=output_root,
+                options=CollectionOptions(count=2, workers=1),
+                targets=CollectionTargets(train=1, dev=1),
+                seed="default-selection",
+            )
+
+            self.assertEqual({episode.split for episode in episodes}, {"train", "dev"})
+
+    def test_test_collection_requires_explicit_flag(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            engine_dir = root / "engine"
+            make_full_level_tree(engine_dir, 10)
+            output_root = root / "out"
+            output_root.mkdir()
+            script = Path(__file__).resolve().parents[1] / "scripts" / "prepare_rollout_dataset.py"
+            base_command = [
+                "python",
+                str(script),
+                "plan",
+                "--engine-dir",
+                str(engine_dir),
+                "--command-output-root",
+                str(output_root),
+                "--train-target",
+                "1",
+                "--dev-target",
+                "1",
+                "--test-target",
+                "1",
+                "--workers",
+                "1",
+            ]
+
+            without_flag = subprocess.run(
+                [*base_command, "--output-dir", str(root / "without-flag")],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertEqual(without_flag.returncode, 0, without_flag.stderr)
+            without_payload = json.loads((root / "without-flag" / "collection_plan.json").read_text(encoding="utf-8"))
+            self.assertEqual(without_payload["selected_splits"], ["train", "dev"])
+            self.assertEqual(without_payload["counts"]["test"], 0)
+
+            invalid_opt_in = subprocess.run(
+                [
+                    "python",
+                    str(script),
+                    "plan",
+                    "--engine-dir",
+                    str(engine_dir),
+                    "--command-output-root",
+                    str(output_root),
+                    "--include-test",
+                    "--test-target",
+                    "0",
+                ],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+            self.assertNotEqual(invalid_opt_in.returncode, 0)
+            self.assertIn("--include-test requires --test-target >= 1", invalid_opt_in.stderr)
+
+    def test_replanning_removes_the_opposite_mode_collection_script(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            engine_dir = root / "engine"
+            make_full_level_tree(engine_dir, 10)
+            output_root = root / "out"
+            output_root.mkdir()
+            plan_dir = root / "plan"
+            script = Path(__file__).resolve().parents[1] / "scripts" / "prepare_rollout_dataset.py"
+            common = [
+                "python",
+                str(script),
+                "plan",
+                "--engine-dir",
+                str(engine_dir),
+                "--output-dir",
+                str(plan_dir),
+                "--command-output-root",
+                str(output_root),
+                "--train-target",
+                "1",
+                "--dev-target",
+                "1",
+                "--test-target",
+                "1",
+                "--workers",
+                "1",
+            ]
+            default_script = plan_dir / "collect_train_dev.sh"
+            test_script = plan_dir / "collect_train_dev_test.sh"
+
+            first_opt_in = subprocess.run([*common, "--include-test"], text=True, capture_output=True, check=False)
+            self.assertEqual(first_opt_in.returncode, 0, first_opt_in.stderr)
+            self.assertTrue(test_script.is_file())
+            self.assertIn("--split test", test_script.read_text(encoding="utf-8"))
+
+            default = subprocess.run(common, text=True, capture_output=True, check=False)
+            self.assertEqual(default.returncode, 0, default.stderr)
+            self.assertTrue(default_script.is_file())
+            self.assertFalse(test_script.exists())
+            self.assertNotIn("--split test", default_script.read_text(encoding="utf-8"))
+            self.assertEqual(json.loads((plan_dir / "collection_plan.json").read_text(encoding="utf-8"))["selected_splits"], ["train", "dev"])
+
+            second_opt_in = subprocess.run([*common, "--include-test"], text=True, capture_output=True, check=False)
+            self.assertEqual(second_opt_in.returncode, 0, second_opt_in.stderr)
+            self.assertTrue(test_script.is_file())
+            self.assertFalse(default_script.exists())
+            self.assertIn("--split test", test_script.read_text(encoding="utf-8"))
+            self.assertEqual(json.loads((plan_dir / "collection_plan.json").read_text(encoding="utf-8"))["selected_splits"], ["train", "dev", "test"])
+
+    def test_opt_in_test_collection_preserves_disjoint_source_partitions(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entries = make_full_level_tree(root / "engine", 10)
+            output_root = root / "out"
+            output_root.mkdir()
+            targets = CollectionTargets(train=1, dev=1, test=1)
+            selected_splits = ("train", "dev", "test")
+
+            episodes, summary = build_collection_plan(
+                entries,
+                output_root=output_root,
+                options=CollectionOptions(count=2, workers=1),
+                targets=targets,
+                selected_splits=selected_splits,
+                seed="test-opt-in",
+            )
+            partitions = partition_levels(entries, seed="test-opt-in")
+            selected_paths = {
+                split: {episode.entry.relative_path for episode in episodes if episode.split == split}
+                for split in selected_splits
+            }
+            plan_path = write_collection_plan(
+                root / "plan",
+                output_root=output_root,
+                episodes=episodes,
+                summary=summary,
+                options=CollectionOptions(count=2, workers=1),
+                targets=targets,
+                selected_splits=selected_splits,
+                seed="test-opt-in",
+            )
+            payload = json.loads(plan_path.read_text(encoding="utf-8"))
+            test_level = next(episode.entry.relative_path for episode in episodes if episode.split == "test")
+
+            self.assertTrue(selected_paths["test"])
+            self.assertTrue(selected_paths["train"].isdisjoint(selected_paths["dev"]))
+            self.assertTrue(selected_paths["train"].isdisjoint(selected_paths["test"]))
+            self.assertTrue(selected_paths["dev"].isdisjoint(selected_paths["test"]))
+            for split in selected_splits:
+                self.assertTrue(selected_paths[split].issubset({entry.relative_path for entry in partitions[split]}))
+            self.assertEqual(payload["selected_splits"], ["train", "dev", "test"])
+            self.assertEqual(payload["contract"]["test_target"], 1)
+            self.assertIn("--split test", generate_collection_commands(plan_path, output_root=output_root, options=CollectionOptions(count=2, workers=1)))
+            config_path = root / "config.xml"
+            self.assertEqual(write_config_for_manifest_level(plan_path, "test", test_level, config_path), config_path)
+
+    def test_test_collection_fails_without_capacity_preserving_outputs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            entries = make_full_level_tree(root / "engine", 20)
+            output_root = root / "out"
+            output_root.mkdir()
+            seed = "test-capacity"
+            blocked_entry = next(
+                entry
+                for entry in partition_levels(entries, seed=seed)["test"]
+                if entry.bucket == "novelty_level_1/type010101"
+            )
+            blocked_output = output_root / "test" / _safe_output_name(blocked_entry)
+            blocked_output.mkdir(parents=True)
+            sentinel = blocked_output / "sentinel"
+            sentinel.write_text("preserve", encoding="utf-8")
+
+            with self.assertRaisesRegex(RuntimeError, "insufficient safe absent capacity"):
+                build_collection_plan(
+                    entries,
+                    output_root=output_root,
+                    options=CollectionOptions(count=2, workers=1),
+                    targets=CollectionTargets(train=1, dev=1, test=2),
+                    selected_splits=("test",),
+                    seed=seed,
+                )
+
+            self.assertEqual(sentinel.read_text(encoding="utf-8"), "preserve")
 
     def test_plan_selects_existing_then_absent_to_fill_every_normal_and_novel_bucket(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -361,7 +561,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             make_complete_episode(episode, options, bidirectional=True)
             access = os.access
 
-            with patch("scripts.prepare_rollout_dataset.os.access", side_effect=lambda path, mode: False if Path(path) == metadata_path else access(path, mode)):
+            with patch("scripts.rollout_artifacts.os.access", side_effect=lambda path, mode: False if Path(path) == metadata_path else access(path, mode)):
                 self.assertFalse(_is_canonically_complete_fresh_engine_episode(episode, options, level_five=True))
 
     def test_plan_preserves_unsafe_existing_episode_and_schedules_later_absent_candidate(self):
@@ -498,7 +698,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             (proc_root / "net" / "tcp").write_text(header, encoding="utf-8")
             (proc_root / "net" / "tcp6").write_text(header, encoding="utf-8")
             (root / "x11" / ".X11-unix").mkdir(parents=True)
-            env = os.environ | {"OUT_ROOT": str(out_root), "RESUME": "1", "PLAN_DIR": str(root / "plan"), "PARTITION_SEED": "operator-seed", "TRAIN_TARGET_PER_BUCKET": "7", "DEV_TARGET_PER_BUCKET": "3", "NOVPHY_YES": "1", "NOVPHY_ALLOW_NETWORK_LISTENERS": "1", "NOVPHY_PROC_ROOT": str(proc_root), "NOVPHY_X11_TMP_ROOT": str(root / "x11"), "PATH": f"{fake_bin}:{os.environ['PATH']}"}
+            env = os.environ | {"OUT_ROOT": str(out_root), "RESUME": "1", "PLAN_DIR": str(root / "plan"), "PARTITION_SEED": "operator-seed", "TRAIN_TARGET_PER_BUCKET": "7", "DEV_TARGET_PER_BUCKET": "3", "TEST_TARGET_PER_BUCKET": "5", "NOVPHY_YES": "1", "NOVPHY_ALLOW_NETWORK_LISTENERS": "1", "NOVPHY_PROC_ROOT": str(proc_root), "NOVPHY_X11_TMP_ROOT": str(root / "x11"), "PATH": f"{fake_bin}:{os.environ['PATH']}"}
 
             result = subprocess.run(["bash", "scripts/collect_full_rollout_training_dataset.sh"], cwd=Path(__file__).resolve().parents[1], env=env, text=True, capture_output=True, check=False)
 
@@ -506,6 +706,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             self.assertIn("--train-target 7", result.stderr)
             self.assertIn("--dev-target 3", result.stderr)
             self.assertIn("--seed operator-seed", result.stderr)
+            self.assertNotIn("--test-target", result.stderr)
             self.assertLess(result.stderr.index("prepare_rollout_dataset.py plan"), result.stderr.index("--train-target 7"))
 
 

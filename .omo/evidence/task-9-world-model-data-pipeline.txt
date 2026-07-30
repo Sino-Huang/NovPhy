@@ -1,0 +1,129 @@
+TASK 9: END-TO-END INTEGRATION, DOCUMENTATION, AND ACTIVE-ROOT QA
+Date: 2026-07-29
+Interpreter: /home/sukai/miniconda3/bin/python
+
+SCOPE
+- Added a real PNG, plan-backed train/dev/test integration fixture and explicit no-plan provenance coverage.
+- Added public pipeline documentation for schemas, snapshots, capability negotiation, curriculum resume, ablation accounting, inspection, and experimental boundaries.
+- Kept Torch-backed world_model.data exports lazy for no-Torch planner imports.
+- Parallelized ordered independent catalog validation and added a bounded non-materializing inspector summary path.
+- Optimized constructed-frame validation to avoid repeated Path.resolve/relative_to work while retaining full-catalog per-frame readability checks.
+
+TDD AND REGRESSION
+- Frame-resolution regression initially failed: 216 Path.resolve calls for 100 frames; final focused test passed with fewer than 30.
+- Catalog concurrency regression initially observed one worker; final implementation uses ordered ThreadPoolExecutor validation.
+- Final command: /home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data tests.test_prepare_rollout_dataset
+- Result: exit 0, Ran 110 tests in 2.653s, OK.
+- py_compile for rollout_artifacts.py, data package files, inspector, and tests: exit 0.
+- No-Torch planner import smoke: `import world_model.data.types; import scripts.prepare_rollout_dataset`: ok.
+- Established-interpreter lazy exports: TemporalWindowDataset, EpochSampler, TemporalWindowCollator: ok.
+- Static lazy-import source gate: no violations in 1 file(s).
+
+ACTIVE-ROOT MANUAL QA
+- Exact command: timeout 300 /home/sukai/miniconda3/bin/python -m world_model.data.inspect --root data/novphy_rollouts_dataset_20260708_171531 --splits train dev --json
+- Result: exit 0; stderr empty.
+- Train: 4,975 accepted episodes, 5,353 rejected episodes, 59,700 accepted shots; all rejections typed missing_artifact.
+- Dev: 463 accepted episodes, 1,137 rejected episodes, 5,556 accepted shots; all rejections typed missing_artifact.
+- Both requested splits reported windows_feasible=true.
+
+READ-ONLY RECEIPT
+- Before and after counts matched exactly: directories=196878, frame_directories=65338, metadata_files=7393607, symlinks=0, other=0.
+- Before and after total metadata size matched: 272550691466 bytes.
+- Before and after metadata SHA-256 matched: 5cd6506ed90545f53fb481936250ecffedcdc5d808d818328f2f90ec807f8180.
+- No pixel contents were opened by the fingerprint or inspector.
+
+LIMITATIONS
+- basedpyright is unavailable because installation was previously declined. Compilation, unit tests, imports, and source gates passed.
+- Inspector summaries avoid per-frame accessibility syscalls for bounded operation; normal materialized catalogs retain them.
+
+DONE CLAIM
+{"task":9,"status":"done","tests":"110 passed","active_root_inspector":"exit 0","active_root_unchanged":true,"metadata_sha256":"5cd6506ed90545f53fb481936250ecffedcdc5d808d818328f2f90ec807f8180","residual_risks":["basedpyright unavailable by prior decline"]}
+
+INDEPENDENT VERIFICATION FAILURE AND REMEDIATION - 2026-07-30
+
+FAILURE REPRODUCTION
+- Focused composition test observed `novelty_level_composition={"novelty":1}` instead of explicit unavailability.
+- Focused validator test observed canonical `unreadable_artifact` rejection while `materialize_frames=False` returned `EpisodeAccepted`.
+- Required static command reproduced 9 violations: silent exception, type-ignore, two generic errors, two object annotations, broad exception, and catalog oversized at 383 pure LOC.
+
+REMEDIATION
+- Added `EpisodeSummary`, which is distinct from `EpisodeAccepted` and carries `canonical_acceptance_available=false`.
+- Inspector schema now uses `validation_status=noncanonical_metadata_summary`, `summary_eligible_episodes`, `summary_rejected_episodes`, `summary_eligible_shots`, and `summary_rejection_counts`; it never labels summary-only episodes accepted.
+- No-plan novelty/scenario composition is exactly `{"status":"unavailable","counts":{}}`.
+- Extracted immutable validation outcomes to `scripts/rollout_validation_types.py`.
+- Split catalog responsibilities into typed errors, plan parsing, record conversion, and provenance-invariant modules while preserving `world_model.data.catalog.EpisodeCatalog` and ordered `executor.map` behavior.
+- Replaced generic public ValueErrors with `RequiredCapabilityError` and `DuplicateSourceKeyError`; regression tests assert both exact types.
+- Removed the silent pass, return-value type-ignore, object annotations, broad exception, and all touched-module size exemptions.
+
+RED/GREEN PROOF
+- Red: 2 focused semantic tests failed with weaker `EpisodeAccepted` summary and invented `{"novelty":1}` composition.
+- Green: focused validator, inspector, typed-error, catalog concurrency, provenance, and rollout validator run passed 12 tests.
+- Canonical-parity proof: a mocked unreadable frame produces canonical `EpisodeRejected(UNREADABLE_ARTIFACT)` while summary mode produces `EpisodeSummary(canonical_acceptance_available=False)`, never `EpisodeAccepted`.
+
+FINAL STATIC AND TEST GATES
+- Combined command: `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data tests.test_prepare_rollout_dataset`
+- Result: exit 0, Ran 112 tests in 2.517s, OK.
+- Production static command over 9 touched modules: `no violations in 9 file(s)`.
+- Pure LOC: rollout_artifacts.py=250; rollout_validation_types.py=54; catalog.py=243; catalog_errors.py=21; catalog_plan.py=97; catalog_provenance.py=22; catalog_records.py=53; inspect.py=166; data/__init__.py=101.
+- py_compile: exit 0.
+- No-Torch planner imports: ok.
+- Established-interpreter lazy exports and typed catalog errors: ok.
+- LSP requested for every changed Python file; basedpyright remains unavailable by prior decline.
+
+FINAL ACTIVE-ROOT QA
+- Exact command under `timeout 300`: exit 0 in 155 seconds; stderr empty.
+- Train excerpt: `{"validation_status":"noncanonical_metadata_summary","canonical_acceptance_available":false,"summary_eligible_episodes":4975,"summary_rejected_episodes":5353,"summary_eligible_shots":59700,"novelty_level_composition":{"status":"unavailable","counts":{}},"scenario_type_composition":{"status":"unavailable","counts":{}}}`.
+- Dev excerpt: `{"validation_status":"noncanonical_metadata_summary","canonical_acceptance_available":false,"summary_eligible_episodes":463,"summary_rejected_episodes":1137,"summary_eligible_shots":5556,"novelty_level_composition":{"status":"unavailable","counts":{}},"scenario_type_composition":{"status":"unavailable","counts":{}}}`.
+- Post-run fingerprint matches the inherited pre-run receipt exactly: directories=196878, frame_directories=65338, metadata_files=7393607, total_metadata_size=272550691466, SHA-256=5cd6506ed90545f53fb481936250ecffedcdc5d808d818328f2f90ec807f8180.
+
+UPDATED DONE CLAIM
+{"task":9,"status":"done","changed_files":["scripts/rollout_artifacts.py","scripts/rollout_validation_types.py","world_model/data/catalog.py","world_model/data/catalog_errors.py","world_model/data/catalog_plan.py","world_model/data/catalog_provenance.py","world_model/data/catalog_records.py","world_model/data/inspect.py","world_model/data/__init__.py","tests/test_world_model_data.py","docs/world_model_data_pipeline.md",".omo/evidence/task-9-world-model-data-pipeline.txt",".omo/notepads/world-model-data-pipeline/decisions.md",".omo/notepads/world-model-data-pipeline/learnings.md",".omo/notepads/world-model-data-pipeline/issues.md",".omo/notepads/world-model-data-pipeline/problems.md"],"tests":{"combined":112,"status":"passed"},"static_gate":{"files":9,"violations":0},"live_inspector":{"exit_code":0,"seconds":155,"composition":{"novelty_level":{"status":"unavailable","counts":{}},"scenario_type":{"status":"unavailable","counts":{}}}},"canonical_parity":{"canonical_unreadable":"rejected","summary_status":"noncanonical_metadata_summary","summary_called_accepted":false},"cleanup":"temporary QA files and debug journal removed","active_root_unchanged":true,"risks":["basedpyright unavailable by prior decline"]}
+
+TODO 9 FINAL ASSERTION AUDIT AND VERIFICATION RERUN - 2026-07-30
+
+SCOPE
+- Finished Todo 9 only: strengthened existing end-to-end synthetic integration assertions and tightened `docs/world_model_data_pipeline.md` field names.
+- Product code under `world_model/data/*` was not changed in this final Todo 9 pass.
+- Did not alter `docs/research_proposal.md`, plan checkboxes, final-wave checkboxes, Boulder state, active rollout artifacts, caches, trainer/controller/model code, or physics sidecar readers.
+
+TDD / ASSERTION AUDIT
+- Red/audit finding from explore agents: `WorldModelDataIntegrationTests` already covered the requested synthetic train/dev/test pipeline, but the integration layer did not explicitly assert plan-backed `catalog.provenance_available` and caught duplicate source keys through the base `ValueError` contract.
+- Added integration assertions that every plan-backed train/dev/test catalog reports `provenance_available=True` before source disjointness is treated as leakage validation.
+- Added integration assertions for `DuplicateSourceKeyError.source_key`, `first_split`, and `second_split`, proving duplicate plan source rejection is typed and split-specific.
+- Documentation audit found that manifest concepts were covered but exact serialized field names were abbreviated; docs now name `preset_identity`, `schedule_version`, `schedule_digest`, `active_stage_name`, `sampling_seed`, `cost_rule_identity`, `sample_match`, and `compute_match` explicitly.
+
+REQUIRED VERIFICATION COMMANDS
+- `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.WorldModelDataIntegrationTests.test_plan_backed_pipeline_resumes_with_stable_manifest` -> exit 0, Ran 1 test in 0.908s, OK.
+- `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.WorldModelDataIntegrationTests.test_duplicate_plan_source_key_across_splits_is_rejected` -> exit 0, Ran 1 test in 0.019s, OK.
+- `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data tests.test_prepare_rollout_dataset` -> exit 0, Ran 113 tests in 2.476s, OK.
+- `/home/sukai/miniconda3/bin/python -m world_model.data.inspect --root data/novphy_rollouts_dataset_20260708_171531 --splits train dev --json` -> first harness attempt timed out after 300s with no output; rerun with a longer harness timeout used the same CLI command and exited 0.
+- `/home/sukai/miniconda3/bin/python -m compileall -q world_model tests/test_world_model_data.py` -> exit 0, no output.
+- `GIT_MASTER=1 git diff --check` -> exit 0, no whitespace errors.
+
+ACTIVE-ROOT READ-ONLY MANUAL QA EXCERPTS
+- Command did not pass an output/report path and produced JSON on stdout only.
+- Train: `accepted_episodes=4975`, `rejected_episodes=5353`, `accepted_shots=59700`, `rejection_counts={"missing_artifact":5353}`, `windows_feasible=true`, `novelty_level_composition={"status":"unavailable","counts":{}}`, `scenario_type_composition={"status":"unavailable","counts":{}}`.
+- Dev: `accepted_episodes=463`, `rejected_episodes=1137`, `accepted_shots=5556`, `rejection_counts={"missing_artifact":1137}`, `windows_feasible=true`, `novelty_level_composition={"status":"unavailable","counts":{}}`, `scenario_type_composition={"status":"unavailable","counts":{}}`.
+- Active-root inspection remained read-only by CLI surface: no cache/catalog/report artifact was requested or written by the command.
+
+FIXTURE ASSERTIONS EXERCISED
+- Plan-backed train/dev/test catalog -> dataset -> deterministic epoch sampler -> collator -> curriculum policy/state -> temporal ablation manifest path.
+- Stable resumed provenance: equal sampler indices, equal candidate IDs, equal sampled-provenance digest, and equal manifest digest after `validate_resume`.
+- No source-level leakage: train/dev/test source-key sets are pairwise disjoint and match their plan `LevelEntry.relative_path` values.
+- Partial artifacts excluded: scheduled reserved train directory is rejected as `missing_artifact`, absent from accepted catalog names, absent from samples, absent from curriculum candidates, and absent from the ablation manifest JSON.
+- No-plan provenance unavailable: no-plan catalog has `provenance_available=False`, sample provenance source keys are `None`, disjointness returns without a leakage claim, and no `leakage_validated` attribute is invented.
+
+ADVERSARIAL CLASS PROBES
+- Duplicate source key across plan-backed splits -> typed `DuplicateSourceKeyError` with `source_key=<train relative_path>`, `first_split="train"`, `second_split="dev"`.
+- Live active-root partial/incomplete artifacts -> typed `missing_artifact` rejection counts, no sample/report mutation.
+- No-plan active-root source composition -> explicit unavailable novelty/scenario composition, not inferred from directory names.
+- Physics payload boundary -> docs state sidecars are provenance only and scene nodes, contacts, support relations, kinematics, events, symbolic labels, and validating readers are deferred to the physics-instrumentation plan.
+
+CLEANUP / TOOLING RECEIPTS
+- No temporary fixture directories from tests survived; all new integration fixtures used `tempfile.TemporaryDirectory()`.
+- No active rollout files, catalog caches, inspection reports, or committed data artifacts were created.
+- LSP diagnostics were requested for `tests/test_world_model_data.py`; result: `basedpyright` is not installed and user previously declined installation, so LSP diagnostics could not run.
+- `GIT_MASTER=1 git status --short` showed many pre-existing unrelated dirty/untracked files; this pass intentionally changed only `tests/test_world_model_data.py`, `docs/world_model_data_pipeline.md`, and this evidence file.
+
+FINAL DONE CLAIM
+{"task":9,"status":"done","changed_files":["tests/test_world_model_data.py","docs/world_model_data_pipeline.md",".omo/evidence/task-9-world-model-data-pipeline.txt"],"tests":[{"command":"/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.WorldModelDataIntegrationTests.test_plan_backed_pipeline_resumes_with_stable_manifest","exit_status":0},{"command":"/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.WorldModelDataIntegrationTests.test_duplicate_plan_source_key_across_splits_is_rejected","exit_status":0},{"command":"/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data tests.test_prepare_rollout_dataset","exit_status":0,"tests_run":113},{"command":"/home/sukai/miniconda3/bin/python -m world_model.data.inspect --root data/novphy_rollouts_dataset_20260708_171531 --splits train dev --json","exit_status":0,"note":"same command passed on rerun with longer harness timeout after initial 300s harness timeout"},{"command":"/home/sukai/miniconda3/bin/python -m compileall -q world_model tests/test_world_model_data.py","exit_status":0},{"command":"GIT_MASTER=1 git diff --check","exit_status":0}],"manual_qa":{"artifact_path":".omo/evidence/task-9-world-model-data-pipeline.txt","active_root":"data/novphy_rollouts_dataset_20260708_171531","read_only":true,"train":{"accepted_episodes":4975,"rejected_episodes":5353,"accepted_shots":59700,"rejection_counts":{"missing_artifact":5353}},"dev":{"accepted_episodes":463,"rejected_episodes":1137,"accepted_shots":5556,"rejection_counts":{"missing_artifact":1137}},"composition":"unavailable without collection plan"},"adversarial_classes":["duplicate plan source key across splits","scheduled partial artifact excluded from samples/candidates/manifests","no-plan provenance unavailable without leakage claim","active-root missing artifacts rejected read-only","physics payload readers deferred"],"cleanup":"tempfile fixtures auto-removed; no active-root reports/caches/catalog artifacts written; no commit created","risks":["basedpyright LSP unavailable because installation was previously declined","active-root inspector exceeded 300s harness timeout once, then passed with a longer harness timeout"],"product_code_outside_tests_docs_changed":false}

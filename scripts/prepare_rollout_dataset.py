@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import shlex
 import sys
 import tempfile
@@ -18,6 +17,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from sciencebirdsagents.Utils.PrepareTestConfig import write_config  # noqa: E402
+from scripts.rollout_artifacts import (  # noqa: E402
+    EpisodeAccepted,
+    EpisodeValidationContract,
+    validate_rollout_episode,
+)
 
 
 SCHEMA: Final = "novphy-rollout-dataset-partitions-v1"
@@ -28,6 +32,8 @@ DEFAULT_AGENT_PORT_BASE: Final = 2004
 DEFAULT_GAME_PORT_BASE: Final = 9001
 WORKER_PORT_STRIDE: Final = 10
 MAX_PORT: Final = 65535
+COLLECTION_SPLITS: Final = ("train", "dev", "test")
+DEFAULT_COLLECTION_SPLITS: Final = ("train", "dev")
 
 
 class JsonValue(TypedDict, total=False):
@@ -69,13 +75,18 @@ class LevelEntry:
 class CollectionTargets:
     train: int = 100
     dev: int = 20
+    test: int = 0
 
     def for_split(self, split: str) -> int:
-        if split == "train":
-            return self.train
-        if split == "dev":
-            return self.dev
-        raise ValueError(f"Unsupported scheduled split: {split}")
+        match split:
+            case "train":
+                return self.train
+            case "dev":
+                return self.dev
+            case "test":
+                return self.test
+            case _:
+                raise ValueError(f"Unsupported scheduled split: {split}")
 
 
 @dataclass(frozen=True, slots=True)
@@ -265,177 +276,17 @@ def _read_json(path: Path) -> dict[str, object] | None:
     return payload if isinstance(payload, dict) else None
 
 
-def _numeric_contract_value(value: object, expected: float) -> bool:
-    return type(value) in (int, float) and value == expected
-
-
-def _accepted_action_signs(action_log: dict[str, object], count: int) -> list[int] | None:
-    accepted = action_log.get("accepted_trials")
-    if not isinstance(accepted, list) or len(accepted) != count:
-        return None
-    signs: list[int] = []
-    for trial in accepted:
-        if not isinstance(trial, dict):
-            return None
-        action = trial.get("action")
-        if not isinstance(action, dict):
-            return None
-        release = action.get("drag_release", action.get("release"))
-        if not isinstance(release, list) or len(release) < 1 or type(release[0]) not in (int, float):
-            return None
-        x = release[0]
-        if x == 0:
-            return None
-        signs.append(-1 if x < 0 else 1)
-    return signs
-
-
-def _contained_readable_artifact(path: Path, episode_dir: Path, *, directory: bool) -> bool:
-    try:
-        relative = path.relative_to(episode_dir)
-        current = episode_dir
-        for component in relative.parts:
-            current /= component
-            if current.is_symlink():
-                return False
-        resolved_episode_dir = episode_dir.resolve(strict=True)
-        resolved = path.resolve(strict=True)
-        resolved.relative_to(resolved_episode_dir)
-    except (OSError, ValueError):
-        return False
-    if directory:
-        return path.is_dir() and os.access(path, os.R_OK | os.X_OK)
-    return path.is_file() and os.access(path, os.R_OK)
-
-
-def _metadata_frame_matches(value: object, expected_frame: Path, shot_dir: Path) -> bool:
-    if not isinstance(value, str):
-        return False
-    accepted_paths = {str(expected_frame)}
-    try:
-        accepted_paths.add(str(expected_frame.relative_to(shot_dir)))
-    except ValueError:
-        pass
-    try:
-        accepted_paths.add(str(expected_frame.relative_to(Path.cwd())))
-    except ValueError:
-        pass
-    return value in accepted_paths
-
-
-def _accepted_raw_artifacts_present(output_dir: Path, action_log: dict[str, object], count: int) -> bool:
-    accepted = action_log.get("accepted_trials")
-    if not isinstance(accepted, list) or len(accepted) != count:
-        return False
-    for trial in accepted:
-        if not isinstance(trial, dict) or not isinstance(trial.get("shot_name"), str):
-            return False
-        shot_dir = output_dir / trial["shot_name"]
-        if not _contained_readable_artifact(shot_dir, output_dir, directory=True):
-            return False
-        metadata_path = shot_dir / "metadata.json"
-        frames_dir = shot_dir / "frames"
-        pre_shot_path = shot_dir / "pre_shot.png"
-        if (
-            not _contained_readable_artifact(metadata_path, output_dir, directory=False)
-            or not _contained_readable_artifact(frames_dir, output_dir, directory=True)
-            or not _contained_readable_artifact(pre_shot_path, output_dir, directory=False)
-        ):
-            return False
-        metadata = _read_json(metadata_path)
-        frame_count = None if metadata is None else metadata.get("frame_count")
-        if type(frame_count) is not int or frame_count < 1:
-            return False
-        expected_frames = [frames_dir / f"frame_{index:06d}.png" for index in range(frame_count)]
-        if not all(_contained_readable_artifact(frame_path, output_dir, directory=False) for frame_path in expected_frames):
-            return False
-        if "frames" in metadata:
-            frames = metadata["frames"]
-            if not isinstance(frames, list) or len(frames) != frame_count:
-                return False
-            for expected_frame, frame in zip(expected_frames, frames, strict=True):
-                if not isinstance(frame, dict):
-                    return False
-                if not _metadata_frame_matches(frame.get("path"), expected_frame, shot_dir):
-                    return False
-    return True
-
-
-def _accepted_attempts_are_canonical(manifest: dict[str, object], count: int) -> bool:
-    attempts = manifest.get("attempts")
-    if not isinstance(attempts, list) or manifest.get("attempt_count") != len(attempts):
-        return False
-    accepted = 0
-    for attempt in attempts:
-        if not isinstance(attempt, dict):
-            return False
-        validation = attempt.get("artifact_validation")
-        if not isinstance(validation, dict):
-            return False
-        if attempt.get("accepted") is True:
-            accepted += 1
-            if (
-                attempt.get("attempt_status") != "accepted"
-                or validation.get("accepted") is not True
-                or validation.get("classification") != "gameplay-valid"
-                or validation.get("retryable") is not False
-                or validation.get("retry_decision") != "accept"
-            ):
-                return False
-        elif not (
-            attempt.get("accepted") is False
-            and attempt.get("attempt_status") == "invalid_retryable"
-            and validation.get("accepted") is False
-            and validation.get("retryable") is True
-            and validation.get("retry_decision") == "retry"
-        ):
-            return False
-    return accepted == count
-
-
 def _is_canonically_complete_fresh_engine_episode(
     output_dir: Path,
     opts: CollectionOptions,
     *,
     level_five: bool = False,
 ) -> bool:
-    if output_dir.is_symlink() or not output_dir.is_dir() or not os.access(output_dir, os.R_OK | os.X_OK):
-        return False
-    manifest_path = output_dir / "manifest.json"
-    action_log_path = output_dir / "action_log.json"
-    action_log_jsonl_path = output_dir / "action_log.jsonl"
-    if not all(
-        _contained_readable_artifact(path, output_dir, directory=False)
-        for path in (manifest_path, action_log_path, action_log_jsonl_path)
-    ):
-        return False
-    manifest = _read_json(manifest_path)
-    action_log = _read_json(action_log_path)
-    if manifest is None or action_log is None:
-        return False
-    if (
-        manifest.get("capture_source") != "capture_desktop_rollout"
-        or manifest.get("replay_mode") != "fresh-engine-per-rollout"
-        or not _numeric_contract_value(manifest.get("target_fps"), opts.fps)
-        or not _numeric_contract_value(manifest.get("duration_seconds"), opts.duration)
-        or manifest.get("ui_level") != 1
-        or type(manifest.get("accepted_rollout_count")) is not int
-        or manifest["accepted_rollout_count"] != opts.count
-        or type(manifest.get("rollout_count")) is not int
-        or manifest["rollout_count"] != opts.count
-        or manifest.get("collection_status") == "retry_exhausted"
-        or manifest.get("collection_error") is not None
-        or not _accepted_attempts_are_canonical(manifest, opts.count)
-    ):
-        return False
-    if not _accepted_raw_artifacts_present(output_dir, action_log, opts.count):
-        return False
-    signs = _accepted_action_signs(action_log, opts.count)
-    if signs is None:
-        return False
-    if level_five and signs != [-1 if index % 2 == 0 else 1 for index in range(opts.count)]:
-        return False
-    return True
+    result = validate_rollout_episode(
+        output_dir,
+        EpisodeValidationContract(opts.count, opts.fps, opts.duration, level_five),
+    )
+    return isinstance(result, EpisodeAccepted)
 
 
 def _path_is_safe_absent(path: Path, output_root: Path) -> bool:
@@ -463,6 +314,17 @@ def _bucket_entries(entries: Iterable[LevelEntry]) -> dict[str, list[LevelEntry]
     for entry in entries:
         buckets.setdefault(entry.bucket, []).append(entry)
     return buckets
+
+
+def _selected_splits(selected_splits: tuple[str, ...]) -> tuple[str, ...]:
+    if not selected_splits:
+        raise ValueError("At least one collection split must be selected")
+    if len(set(selected_splits)) != len(selected_splits):
+        raise ValueError("Collection splits must not contain duplicates")
+    unsupported = set(selected_splits) - set(COLLECTION_SPLITS)
+    if unsupported:
+        raise ValueError(f"Unsupported collection splits: {', '.join(sorted(unsupported))}")
+    return selected_splits
 
 
 def _plan_bucket(
@@ -499,22 +361,24 @@ def build_collection_plan(
     output_root: Path,
     options: CollectionOptions | None = None,
     targets: CollectionTargets | None = None,
+    selected_splits: tuple[str, ...] = DEFAULT_COLLECTION_SPLITS,
     seed: str = DEFAULT_SEED,
 ) -> tuple[list[PlannedEpisode], dict[str, dict[str, int]]]:
     opts = options or CollectionOptions()
     target = targets or CollectionTargets()
+    splits = _selected_splits(selected_splits)
     _worker_specs(opts)
     if not output_root.is_dir():
         raise FileNotFoundError(f"Existing output root is required: {output_root}")
     partitions = partition_levels(entries, seed=seed)
     buckets = _bucket_entries(entries)
-    partition_buckets = {split: _bucket_entries(partitions[split]) for split in ("train", "dev")}
+    partition_buckets = {split: _bucket_entries(partitions[split]) for split in splits}
     if len(buckets) != 80:
         raise RuntimeError(f"Expected 80 normal and novel buckets, found {len(buckets)}")
     plan: list[PlannedEpisode] = []
     summary: dict[str, dict[str, int]] = {}
     for bucket in sorted(buckets):
-        for split in ("train", "dev"):
+        for split in splits:
             candidates = partition_buckets[split].get(bucket, [])
             if not candidates:
                 raise RuntimeError(f"Bucket {bucket} has no {split} partition capacity")
@@ -613,19 +477,25 @@ def generate_collection_commands(
     *,
     output_root: Path,
     options: CollectionOptions | None = None,
-    splits: tuple[str, ...] = ("train", "dev"),
+    splits: tuple[str, ...] | None = None,
 ) -> str:
     opts = options or CollectionOptions()
     specs = _worker_specs(opts)
     artifact = _read_json(plan_path)
     if artifact is None or artifact.get("schema") != PLAN_SCHEMA:
         raise ValueError(f"Unsupported collection plan schema: {None if artifact is None else artifact.get('schema')}")
+    artifact_splits = artifact.get("selected_splits")
+    if not isinstance(artifact_splits, list) or not all(isinstance(split, str) for split in artifact_splits):
+        raise ValueError("Collection plan must contain selected_splits")
+    plan_splits = _selected_splits(tuple(artifact_splits))
+    if splits is not None and _selected_splits(splits) != plan_splits:
+        raise ValueError("Requested command splits do not match the collection plan")
     selected = artifact.get("selected")
     if not isinstance(selected, list):
         raise ValueError("Collection plan must contain selected episodes")
     scheduled: list[PlannedEpisode] = []
     for value in selected:
-        if not isinstance(value, dict) or value.get("source") != "scheduled" or value.get("split") not in splits:
+        if not isinstance(value, dict) or value.get("source") != "scheduled" or value.get("split") not in plan_splits:
             continue
         output_path = value.get("output_path")
         if not all(isinstance(value.get(key), str) for key in ("split", "novelty_level", "level_type", "relative_path")) or not isinstance(output_path, str):
@@ -687,7 +557,7 @@ def generate_collection_commands(
             "  if ! wait \"$worker_pid\"; then failure_count=$((failure_count + 1)); fi",
             "done",
             "if [[ \"$failure_count\" -gt 0 ]]; then exit 1; fi",
-            "echo \"Completed newly scheduled train/dev episodes. Failure ledger: $failure_ledger\"",
+            f"echo \"Completed newly scheduled {'/'.join(plan_splits)} episodes. Failure ledger: $failure_ledger\"",
         ]
     )
     return "\n".join(lines) + "\n"
@@ -703,6 +573,17 @@ def _atomic_write(path: Path, content: str, *, executable: bool = False) -> Path
     return path
 
 
+def _collection_commands_path(output_dir: Path, selected_splits: tuple[str, ...]) -> Path:
+    return output_dir / f"collect_{'_'.join(selected_splits)}.sh"
+
+
+def _remove_opposite_collection_commands(output_dir: Path, commands_path: Path) -> None:
+    for splits in (DEFAULT_COLLECTION_SPLITS, COLLECTION_SPLITS):
+        path = _collection_commands_path(output_dir, splits)
+        if path != commands_path and (path.is_file() or path.is_symlink()):
+            path.unlink()
+
+
 def write_collection_plan(
     output_dir: Path,
     *,
@@ -712,13 +593,16 @@ def write_collection_plan(
     options: CollectionOptions,
     targets: CollectionTargets,
     seed: str,
+    selected_splits: tuple[str, ...] = DEFAULT_COLLECTION_SPLITS,
 ) -> Path:
     episode_list = list(episodes)
+    splits = _selected_splits(selected_splits)
     payload = {
         "schema": PLAN_SCHEMA,
         "seed": seed,
         "output_root": str(output_root.resolve(strict=True)),
-        "contract": {"count": options.count, "fps": options.fps, "duration": options.duration, "workers": options.workers, "train_target": targets.train, "dev_target": targets.dev},
+        "contract": {"count": options.count, "fps": options.fps, "duration": options.duration, "workers": options.workers, "train_target": targets.train, "dev_target": targets.dev, "test_target": targets.test, "selected_splits": list(splits)},
+        "selected_splits": list(splits),
         "summary": summary,
         "counts": {
             "selected": len(episode_list),
@@ -726,7 +610,7 @@ def write_collection_plan(
             "scheduled": sum(item.source == "scheduled" for item in episode_list),
             "normal": sum(item.entry.novelty_level == "novelty_level_0" for item in episode_list),
             "novel": sum(item.entry.novelty_level != "novelty_level_0" for item in episode_list),
-            "test": 0,
+            "test": sum(item.split == "test" for item in episode_list),
         },
         "selected": [episode.to_json(output_root) for episode in episode_list],
     }
@@ -752,6 +636,13 @@ def write_config_for_manifest_level(plan_path: Path, split: str, level_path: str
     if payload is not None and payload.get("schema") == SCHEMA:
         entries = load_partition_manifest(plan_path).get(split, [])
     else:
+        if payload is None:
+            raise ValueError(f"Unsupported collection plan schema: {None}")
+        artifact_splits = payload.get("selected_splits")
+        if not isinstance(artifact_splits, list) or not all(isinstance(selected_split, str) for selected_split in artifact_splits):
+            raise ValueError("Collection plan must contain selected_splits")
+        if split not in _selected_splits(tuple(artifact_splits)):
+            raise ValueError(f"Split {split} was not selected for collection")
         entries = load_plan_entries(plan_path, split)
     if level_path not in {entry.relative_path for entry in entries}:
         raise ValueError(f"Level path is not part of split {split}: {level_path}")
@@ -772,14 +663,17 @@ def _parse_port_base(value: str) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Prepare a non-destructive capped NovPhy rollout collection plan")
     subparsers = parser.add_subparsers(dest="command", required=True)
-    plan = subparsers.add_parser("plan", help="Inventory an existing root and atomically publish a capped train/dev plan")
+    plan = subparsers.add_parser("plan", help="Inventory an existing root and atomically publish a capped selected-split plan")
     plan.add_argument("--os", default="Linux")
+    plan.add_argument("--engine-dir", type=Path)
     plan.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     plan.add_argument("--command-output-root", type=Path, required=True)
     plan.add_argument("--commands-path", type=Path)
     plan.add_argument("--seed", default=DEFAULT_SEED)
     plan.add_argument("--train-target", type=int, default=100)
     plan.add_argument("--dev-target", type=int, default=20)
+    plan.add_argument("--test-target", type=int, default=0)
+    plan.add_argument("--include-test", action="store_true")
     plan.add_argument("--count", type=int, default=12)
     plan.add_argument("--fps", type=float, default=30.0)
     plan.add_argument("--duration", type=float, default=5.0)
@@ -789,7 +683,7 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--game-port-base", type=_parse_port_base, default=DEFAULT_GAME_PORT_BASE)
     config = subparsers.add_parser("write-config", help="Write config.xml for a selected plan episode")
     config.add_argument("--manifest", type=Path, required=True)
-    config.add_argument("--split", choices=("train", "dev"), required=True)
+    config.add_argument("--split", choices=COLLECTION_SPLITS, required=True)
     config.add_argument("--level-path", required=True)
     config.add_argument("--config-path", type=Path, required=True)
     return parser
@@ -801,16 +695,23 @@ def main() -> None:
         print(json.dumps({"config": str(write_config_for_manifest_level(args.manifest, args.split, args.level_path, args.config_path)), "level_path": args.level_path}, indent=2))
         return
     options = CollectionOptions(count=args.count, fps=args.fps, duration=args.duration, display=args.display, workers=args.workers, agent_port_base=args.agent_port_base, game_port_base=args.game_port_base)
-    targets = CollectionTargets(train=args.train_target, dev=args.dev_target)
+    targets = CollectionTargets(train=args.train_target, dev=args.dev_target, test=args.test_target)
     if targets.train < 1 or targets.dev < 1:
         raise ValueError("train and dev targets must be positive")
+    if targets.test < 0:
+        raise ValueError("test target must be non-negative")
+    if args.include_test and targets.test < 1:
+        raise ValueError("--include-test requires --test-target >= 1")
+    selected_splits = ("train", "dev", "test") if args.include_test else DEFAULT_COLLECTION_SPLITS
     output_root = args.command_output_root.resolve(strict=True)
-    episodes, summary = build_collection_plan(discover_level_entries(engine_dir_for(ROOT, args.os)), output_root=output_root, options=options, targets=targets, seed=args.seed)
-    plan_path = write_collection_plan(args.output_dir, output_root=output_root, episodes=episodes, summary=summary, options=options, targets=targets, seed=args.seed)
-    commands_path = args.commands_path or args.output_dir / "collect_train_dev.sh"
+    engine_dir = args.engine_dir or engine_dir_for(ROOT, args.os)
+    episodes, summary = build_collection_plan(discover_level_entries(engine_dir), output_root=output_root, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed)
+    plan_path = write_collection_plan(args.output_dir, output_root=output_root, episodes=episodes, summary=summary, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed)
+    commands_path = args.commands_path or _collection_commands_path(args.output_dir, selected_splits)
     _atomic_write(commands_path, generate_collection_commands(plan_path, output_root=output_root, options=options), executable=True)
+    _remove_opposite_collection_commands(args.output_dir, commands_path)
     counts = json.loads(plan_path.read_text(encoding="utf-8"))["counts"]
-    print(json.dumps({"plan": str(plan_path), "commands": str(commands_path), "counts": counts, "bucket_summary": {"buckets": len(summary) // 2, "train_target": targets.train, "dev_target": targets.dev}}, indent=2, sort_keys=True))
+    print(json.dumps({"plan": str(plan_path), "commands": str(commands_path), "counts": counts, "bucket_summary": {"buckets": len(summary) // len(selected_splits), "train_target": targets.train, "dev_target": targets.dev, "test_target": targets.test, "selected_splits": selected_splits}}, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":

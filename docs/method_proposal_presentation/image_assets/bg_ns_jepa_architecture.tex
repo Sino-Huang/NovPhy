@@ -1,0 +1,81 @@
+\documentclass[border=8pt]{standalone}
+
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit,backgrounds}
+
+% --- OpenTikZ palette (light / default, color-blind-friendly Okabe-Ito) ---
+\definecolor{otblue}{HTML}{0072B2}
+\definecolor{otorange}{HTML}{E69F00}
+\definecolor{otteal}{HTML}{009E73}
+\definecolor{otpurple}{HTML}{CC79A7}
+\definecolor{otgray}{HTML}{5A5A5A}
+
+\begin{document}
+% ==== parameters =========================================================
+\def\rowsep{1.05}
+\def\colsep{1.35}
+\def\boxminw{2.55}
+\def\boxminh{1.08}
+\def\clientlabel{Current state $z_t$\\+ action segment}
+\def\gatewaylabel{State summary $h_t$\\from latent encoder}
+\def\svconelabel{Joint controller\\$\pi_\kappa(\Delta_k,\alpha_k\mid h_t)$}
+\def\svctwolabel{Horizon-conditioned\\predictor $F_\theta^{\Delta_k,\alpha_k}$}
+\def\dblabel{Predicted state\\$\hat z_{t+\Delta_k}$}
+\def\cachelabel{Diagnostics\\$u_t,\ r_\psi,\ p(E_t),\ \lambda_t^{(w)}$}
+\def\relationlabel{Selected\\relational heads\\GINE $+$ TPR\\$+$ event predicates}
+\def\losslabel{Duration-normalized\\objective\\prediction $+$ gated structure\\$+$ consistency $+$ cost\\$+$ terminal anchor}
+\def\grouplabel{One adaptive BG-NS-JEPA rollout step}
+% =========================================================================
+
+\begin{tikzpicture}[
+    node distance=\rowsep cm and \colsep cm,
+    >={Stealth[length=2.4mm]},
+    comp/.style={
+      rounded corners=3pt, line width=0.75pt, align=center,
+      minimum width=\boxminw cm, minimum height=\boxminh cm,
+      inner xsep=8pt, inner ysep=6pt, font=\sffamily\small,
+    },
+    external/.style={comp, draw=otgray!65, fill=otgray!9, dashed},
+    process/.style={comp, draw=otblue!75!black, fill=otblue!14},
+    controller/.style={comp, draw=otorange!85!black, fill=otorange!20, line width=1.0pt},
+    state/.style={comp, draw=otteal!75!black, fill=otteal!15},
+    auxiliary/.style={comp, draw=otpurple!80!black, fill=otpurple!14},
+    objective/.style={comp, draw=otorange!80!black, fill=otorange!10},
+    link/.style={draw=otgray!78, line width=0.9pt, ->},
+    condition/.style={draw=otpurple!85!black, line width=0.9pt, ->},
+    elabel/.style={font=\sffamily\scriptsize, text=otgray, fill=otgray!0, inner sep=1.5pt},
+    group/.style={
+      draw=otgray!55, dashed, rounded corners=5pt, line width=0.8pt,
+      inner sep=13pt, fill=otgray!3,
+    },
+  ]
+
+  \node[external] (client) {\clientlabel};
+  \node[process, right=of client] (gateway) {\gatewaylabel};
+  \node[controller, right=of gateway] (svc1) {\svconelabel};
+  \node[process, right=of svc1] (svc2) {\svctwolabel};
+  \node[state, right=of svc2] (db) {\dblabel};
+  \node[auxiliary, above=of svc1] (cache) {\cachelabel};
+  \node[auxiliary, below=of svc2, text width=2.8cm] (relation) {\relationlabel};
+  \node[objective, below=of db, text width=3.0cm] (loss) {\losslabel};
+
+  \draw[link] (client) -- (gateway);
+  \draw[link] (gateway) -- (svc1);
+  \draw[condition] (cache) -- (svc1);
+  \draw[link] (svc1) -- (svc2);
+  \draw[link] (svc2) -- (db);
+  \draw[condition] (gateway.south) |- (relation.west);
+  \draw[condition] (svc1.south) -- (relation.north)
+    node[midway, right, elabel] {gate / mode};
+  \draw[link] (db) -- (loss);
+  \draw[condition] (relation) -- (loss);
+
+  \begin{scope}[on background layer]
+    \node[group, fit=(gateway)(cache)(svc1)(svc2)(db)(relation)(loss)] (backend) {};
+    \node[font=\sffamily\footnotesize, text=otgray, anchor=north west]
+      at ([xshift=4pt,yshift=-3pt]backend.north west) {\grouplabel};
+  \end{scope}
+
+\end{tikzpicture}
+\end{document}

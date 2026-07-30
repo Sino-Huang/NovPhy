@@ -1,0 +1,50 @@
+Todo 5 evidence: deterministic sampler and variable-length temporal collator
+
+Implementation
+- Added world_model/data/sampling.py with EpochSampler(dataset, seed, draw_count).
+- EpochSampler uses a new local torch.Generator per iteration, derived from the
+  configured seed and epoch. It has no filesystem, rank, world-size, Python
+  global random, or Torch global RNG input.
+- Added TemporalWindowCollator. It stacks [B, 3, H, W] contexts and [B, 5]
+  actions, pads only target_images to [B, T_max, 3, H, W], returns boolean
+  target_mask and prediction_steps, and retains the input provenance objects.
+
+Commands and results
+- python -m unittest tests.test_world_model_data.DeterministicSamplingTests
+  PASS: 12 tests, 0 failures (2026-07-28)
+- python -m unittest tests.test_world_model_data.DeterministicSamplingTests.test_manual_qa_real_dataset_collation
+  PASS: 1 test, 0 failures (2026-07-28)
+- python -m compileall -q world_model/data/sampling.py
+  PASS
+- git diff --check
+  PASS
+- python -c 'from world_model.data import EpochSampler, TemporalWindowBatch, TemporalWindowCollator; print(EpochSampler.__name__, TemporalWindowBatch.__name__, TemporalWindowCollator.__name__)'
+  PASS: EpochSampler TemporalWindowBatch TemporalWindowCollator
+
+Manual QA
+- The named fixture test builds actual temporary PNG rollout episodes, constructs
+  an EpisodeCatalog and TemporalWindowDataset, samples four decoded windows,
+  and collates them. It observed action shape [4, 5], all-real target masks for
+  equal two-step windows, and identical index sequences from independent
+  sampler instances with the same seed and epoch.
+
+Adversarial probes
+- Nonpositive draw_count is rejected.
+- Empty dataset is rejected.
+- draw_count larger than dataset length produces exactly the requested number
+  of valid indices using replacement.
+- Python and Torch global seeds are perturbed between independent samplers;
+  their locally generated order remains identical.
+- Mismatched context/target geometry and malformed [4] action vectors are
+  rejected before collation.
+- Padded target positions alone receive False mask values; provenance entries
+  preserve object identity.
+
+Cleanup
+- Temporary fixture roots are managed by each test's TemporaryDirectory context.
+- No dataset artifacts, cache files, or commits were created.
+
+Risks
+- basedpyright language-server diagnostics were unavailable because the server
+  is not installed. Runtime tests, bytecode compilation, import smoke check,
+  and whitespace validation passed.

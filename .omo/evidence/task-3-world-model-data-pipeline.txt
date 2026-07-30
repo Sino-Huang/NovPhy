@@ -1,0 +1,154 @@
+Task 3: opt-in held-out test collection
+
+Scope and worktree
+- Changed only: scripts/prepare_rollout_dataset.py, scripts/collect_full_rollout_training_dataset.sh, tests/test_prepare_rollout_dataset.py.
+- Initial dirty worktree contained unrelated .omo/boulder.json, .omo/drafts/, .omo/plans/, .omo/start-work/, and .omo/ulw-research/ entries. They were preserved.
+
+TDD characterization
+Scenario: Default planner selection remains train/dev only before production changes.
+Invocation:
+  python -m unittest tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_default_collection_plan_selects_train_and_dev_only
+Exit: 0
+Binary observable: 1 test ran and passed; its selected episode splits equal {"train", "dev"}.
+Captured artifact: this evidence file; command output excerpt:
+  Ran 1 test in 0.053s
+  OK
+
+Red test before production edits
+Invocation:
+  python -m unittest tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_test_collection_requires_explicit_flag tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_opt_in_test_collection_preserves_disjoint_source_partitions tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_test_collection_fails_without_capacity_preserving_outputs
+Exit: 1
+Binary observable: expected missing interfaces failed: CollectionTargets rejected test=, build_collection_plan rejected selected_splits=, and the CLI rejected --engine-dir/--test-target.
+Captured artifact: this evidence file; output excerpt:
+  TypeError: CollectionTargets.__init__() got an unexpected keyword argument 'test'
+  prepare_rollout_dataset.py: error: unrecognized arguments: --engine-dir ... --test-target 1
+
+Required verification, run 1
+Scenario: Explicit test selection requires its flag and rejects an invalid opt-in target.
+Invocation:
+  python -m unittest tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_test_collection_requires_explicit_flag
+Exit: 0
+Binary observable: positive test target alone writes selected_splits=["train", "dev"] and test count 0; --include-test with --test-target 0 fails.
+Captured artifact: this evidence file; output excerpt: Ran 1 test in 0.292s, OK.
+
+Scenario: Opt-in test episodes remain inside their hashed source partitions and disjoint from train/dev.
+Invocation:
+  python -m unittest tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_opt_in_test_collection_preserves_disjoint_source_partitions
+Exit: 0
+Binary observable: test episodes are partition-disjoint, the plan persists selected_splits and test_target, generated commands include --split test, and write-config accepts a selected test level.
+Captured artifact: this evidence file; output excerpt: Ran 1 test in 0.137s, OK.
+
+Scenario: Insufficient test capacity preserves occupied outputs.
+Invocation:
+  python -m unittest tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_test_collection_fails_without_capacity_preserving_outputs
+Exit: 0
+Binary observable: planner raises insufficient safe absent capacity and the blocked output sentinel remains "preserve".
+Captured artifact: this evidence file; output excerpt: Ran 1 test in 0.147s, OK.
+
+Required verification, run 2 (timing-independent flake probe)
+Invocation:
+  python -m unittest tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_test_collection_requires_explicit_flag
+Exit: 0
+Captured artifact: this evidence file; output excerpt: Ran 1 test in 0.282s, OK.
+Invocation:
+  python -m unittest tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_opt_in_test_collection_preserves_disjoint_source_partitions
+Exit: 0
+Captured artifact: this evidence file; output excerpt: Ran 1 test in 0.125s, OK.
+Invocation:
+  python -m unittest tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_test_collection_fails_without_capacity_preserving_outputs
+Exit: 0
+Captured artifact: this evidence file; output excerpt: Ran 1 test in 0.128s, OK.
+
+Broader validation
+Invocation:
+  python -m unittest tests.test_prepare_rollout_dataset
+  bash -n scripts/collect_full_rollout_training_dataset.sh
+  python -m py_compile scripts/prepare_rollout_dataset.py
+Exit: 0
+Binary observable: full module suite passed and both changed production scripts parsed.
+Captured artifact: this evidence file; output excerpt:
+  Ran 25 tests in 1.119s
+  OK
+
+Manual CLI QA (real plan command, no dry-run)
+Fixture: temporary 80-bucket source root, 10 XML levels per bucket, and an empty temporary output root.
+Invocation:
+  python scripts/prepare_rollout_dataset.py plan --engine-dir <temporary-engine> --output-dir <temporary-with-test-plan> --command-output-root <temporary-output> --train-target 1 --dev-target 1 --test-target 1 --include-test --workers 1
+Exit: 0
+Binary observable obtained by parsing collection_plan.json and the generated command script:
+  {"command_has_test": true, "selected_splits": ["train", "dev", "test"], "test_count": 80, "test_target": 1}
+Captured artifact: this evidence file; CLI output also reported selected=240 and test=80.
+
+Invocation:
+  python scripts/prepare_rollout_dataset.py plan --engine-dir <temporary-engine> --output-dir <temporary-default-plan> --command-output-root <temporary-output> --train-target 1 --dev-target 1 --test-target 1 --workers 1
+Exit: 0
+Binary observable obtained by parsing collection_plan.json and the generated command script:
+  {"command_has_test": false, "selected_splits": ["train", "dev"], "test_count": 0, "test_target": 1}
+Captured artifact: this evidence file; CLI output also reported selected=160 and test=0.
+Cleanup receipt:
+  TemporaryDirectory removed /tmp/novphy-task3-bwb_9yct on context exit.
+  CLEANUP_VERIFIED: temporary manual-QA roots are absent
+
+Adversarial probes
+- malformed input: `python scripts/prepare_rollout_dataset.py plan --command-output-root . --include-test --test-target 0` exited 1 with `ValueError: --include-test requires --test-target >= 1`.
+- malformed target: `python scripts/prepare_rollout_dataset.py plan --command-output-root . --test-target -1` exited 1 with `ValueError: test target must be non-negative`.
+- stale state: regenerated the same temporary plan directory first with --include-test and then without it. Parsed final artifact: {"first_exit": 0, "second_exit": 0, "regenerated_selected_splits": ["train", "dev"], "regenerated_test_count": 0, "regenerated_command_has_test": false}. Cleanup receipt: TemporaryDirectory removed /tmp/novphy-task3-stale-7jyktl3l on context exit; absence verified.
+- dirty worktree: preserved pre-existing unrelated changes listed above.
+- misleading success output: manual assertions parsed collection_plan.json and generated command scripts, not the CLI's summary text.
+- long commands: not applicable; verification used local unittest and CLI invocations only.
+- prompt injection: not applicable; no untrusted text was executed or interpreted.
+- cancel/resume: not applicable; no resumable new flow was introduced. Existing RESUME=1, output-root locking, capacity checks, safe-absent paths, and partition hashing remain in place.
+- flaky tests: the three required timing-independent tests passed twice.
+- repeated interruptions: not applicable; this was an atomic local CLI change.
+
+Stale generated-command correction
+Problem: regenerating one plan directory from --include-test to default left the prior collect_train_dev_test.sh runnable, even though collection_plan.json selected only train/dev.
+
+Failing-first regression
+Invocation:
+  python -m unittest tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_replanning_removes_the_opposite_mode_collection_script
+Exit before fix: 1
+Binary observable: after opt-in -> default in one plan directory, test_script.exists() was True.
+Captured artifact: this evidence file; output excerpt:
+  AssertionError: True is not false
+
+Implementation evidence
+- The planner now atomically writes the selected command file, then removes only the two known opposite-mode generated script paths under --output-dir. No removal path is derived from user-provided content or points outside the plan directory.
+- Regression covers opt-in -> default and default -> opt-in reuse in the same directory; both transition artifacts are parsed directly.
+
+Verification
+Invocation:
+  python -m unittest tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_replanning_removes_the_opposite_mode_collection_script
+Exit: 0 (run twice; 0.441s and 0.455s)
+Binary observable: the inactive mode script is absent after each replan and the active script contains the selected mode only.
+Captured artifact: this evidence file; output excerpt: Ran 1 test, OK.
+
+Invocation:
+  python -m unittest tests.test_prepare_rollout_dataset
+  python -m py_compile scripts/prepare_rollout_dataset.py
+  bash -n scripts/collect_full_rollout_training_dataset.sh
+Exit: 0
+Binary observable: 26 planner tests passed; Python and launcher syntax checks passed.
+Captured artifact: this evidence file; output excerpt: Ran 26 tests in 1.437s, OK.
+
+Manual CLI QA (real plan command; no dry-run)
+Fixture: temporary 80-bucket source root with 10 XML levels per bucket, temporary output root, and one reused temporary plan directory.
+Invocation sequence:
+  python scripts/prepare_rollout_dataset.py plan --engine-dir <temporary-engine> --output-dir <same-temporary-plan> --command-output-root <temporary-output> --train-target 1 --dev-target 1 --test-target 1 --workers 1 --include-test
+  python scripts/prepare_rollout_dataset.py plan --engine-dir <temporary-engine> --output-dir <same-temporary-plan> --command-output-root <temporary-output> --train-target 1 --dev-target 1 --test-target 1 --workers 1
+  python scripts/prepare_rollout_dataset.py plan --engine-dir <temporary-engine> --output-dir <same-temporary-plan> --command-output-root <temporary-output> --train-target 1 --dev-target 1 --test-target 1 --workers 1 --include-test
+Exit: 0 for all three commands.
+Binary observables parsed from current collection_plan.json and current collect_*.sh directory contents:
+  opt_in_first: {"current_has_test": true, "scripts": ["collect_train_dev_test.sh"], "selected_splits": ["train", "dev", "test"]}
+  default: {"current_has_test": false, "scripts": ["collect_train_dev.sh"], "selected_splits": ["train", "dev"]}
+  opt_in_second: {"current_has_test": true, "scripts": ["collect_train_dev_test.sh"], "selected_splits": ["train", "dev", "test"]}
+Captured artifact: this evidence file.
+Cleanup receipt:
+  TemporaryDirectory removed /tmp/novphy-task3-stale-fix-qz801cdk on context exit.
+  CLEANUP_VERIFIED: stale-fix manual QA root is absent.
+
+Adversarial correction probes
+- stale state: covered by the real same-directory opt-in -> default -> opt-in sequence above; inactive script is absent, not merely ignored.
+- dirty worktree: unrelated changes remained untouched.
+- misleading success output: parsed current JSON and globbed current collect_*.sh files rather than trusting planner stdout.
+- malformed input, prompt injection, cancel/resume, long commands, and repeated interruptions: unchanged from the prior evidence because this correction only removes known generated plan scripts after successful atomic output generation.

@@ -1,0 +1,88 @@
+\documentclass[border=8pt]{standalone}
+
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,shapes.misc,fit,backgrounds,decorations.pathreplacing}
+
+% --- OpenTikZ palette (light / default, color-blind-friendly Okabe-Ito) ---
+\definecolor{otblue}{HTML}{0072B2}
+\definecolor{otorange}{HTML}{E69F00}
+\definecolor{otteal}{HTML}{009E73}
+\definecolor{otpurple}{HTML}{CC79A7}
+\definecolor{otgray}{HTML}{5A5A5A}
+
+\begin{document}
+% ==== parameters =========================================================
+\def\rowsep{0.55}
+\def\colsep{0.70}
+\def\boxminw{2.82}
+\def\boxminh{1.72}
+\def\startlabel{Pre-shot stable\\[2pt]$r_\psi$: high\\$\Delta$: long $\mid$ $\alpha$: macro}
+\def\readlabel{Collision onset\\[2pt]$r_\psi$: low\\$\Delta$: short $\mid$ $\alpha$: continuous}
+\def\checklabel{Active collapse\\[2pt]$r_\psi$: low\\$\Delta$: short $\mid$ $\alpha$: continuous}
+\def\proclabel{Settling\\[2pt]$r_\psi$: rising\\$\Delta$: adaptive $\mid$ $\alpha$: micro}
+\def\endlabel{Equilibrium\\[2pt]$r_\psi$: high\\$\Delta$: long $\mid$ $\alpha$: macro}
+\def\errorlabel{Joint controller changes both axes at regime boundaries}
+\def\yeslabel{impact}
+\def\nolabel{contacts stabilize}
+\def\looplabel{one action, autonomous physical evolution}
+% =========================================================================
+
+\begin{tikzpicture}[
+    node distance=\rowsep cm and \colsep cm,
+    >={Stealth[length=2.4mm]},
+    base/.style={
+      line width=0.75pt, align=center, font=\sffamily\small,
+      minimum width=\boxminw cm, minimum height=\boxminh cm,
+      inner xsep=8pt, inner ysep=7pt, rounded corners=3pt,
+    },
+    terminal/.style={base, draw=otteal!75!black, fill=otteal!15},
+    process/.style={base, draw=otblue!75!black, fill=otblue!14},
+    decision/.style={base, draw=otorange!85!black, fill=otorange!19},
+    flow/.style={draw=otgray!78, line width=0.95pt, ->},
+    loop/.style={draw=otpurple!85!black, line width=1.0pt, ->},
+    elabel/.style={font=\sffamily\scriptsize, text=otgray, fill=otgray!0, inner sep=1.5pt},
+    axislabel/.style={font=\sffamily\footnotesize\bfseries, text=otgray, align=right},
+    callout/.style={
+      draw=otorange!85!black, fill=otorange!10, rounded corners=3pt,
+      font=\sffamily\footnotesize, text=otgray, align=center,
+      inner xsep=8pt, inner ysep=5pt,
+    },
+    group/.style={
+      draw=otgray!50, dashed, rounded corners=5pt, fill=otgray!3,
+      line width=0.7pt, inner sep=9pt,
+    },
+  ]
+
+  % Semantic names from the OpenTikZ flowchart contract are retained.
+  \node[terminal] (start) {\startlabel};
+  \node[decision, right=of start] (read) {\readlabel};
+  \node[decision, right=of read] (check) {\checklabel};
+  \node[process, right=of check] (proc) {\proclabel};
+  \node[terminal, right=of proc] (end) {\endlabel};
+  \node[callout, below=1.35cm of check] (error) {\errorlabel};
+
+  \draw[flow] (start) -- (read)
+    node[midway, above, elabel] {shot released};
+  \draw[flow] (read) -- (check)
+    node[midway, above, elabel] {\yeslabel};
+  \draw[flow] (check) -- (proc)
+    node[midway, above, elabel] {energy dissipates};
+  \draw[flow] (proc) -- (end)
+    node[midway, above, elabel] {\nolabel};
+
+  \draw[loop] (error.north) -- (check.south);
+  \draw[decorate, decoration={brace, amplitude=5pt, raise=4pt},
+        draw=otgray, line width=0.8pt]
+    (start.north west) -- (end.north east)
+    node[midway, above=8pt, font=\sffamily\footnotesize, text=otgray]
+      {\looplabel};
+
+  \begin{scope}[on background layer]
+    \node[group, fit=(read)(check)] (interactionactive) {};
+  \end{scope}
+  \node[font=\sffamily\scriptsize, text=otgray, below=2pt of interactionactive]
+    {interaction-active: fine continuous prediction dominates};
+
+\end{tikzpicture}
+\end{document}

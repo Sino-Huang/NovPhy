@@ -1,0 +1,139 @@
+Todo 7 evidence: declarative temporal curriculum policy
+
+Implemented paths
+- world_model/data/curriculum.py
+- world_model/data/__init__.py
+- tests/test_world_model_data.py
+
+TDD
+- RED: `python -m unittest tests.test_world_model_data.CurriculumPolicyTests` was initially blocked at import because the active novphy interpreter lacks its pre-existing torch dependency.
+- GREEN: `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.CurriculumPolicyTests` passed all five curriculum tests against real temporary rollout catalogs.
+
+Automated verification
+- `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data`: PASS, 56 tests in 0.182s.
+- `/home/sukai/miniconda3/bin/python -m compileall -q world_model/data/curriculum.py world_model/data/__init__.py tests/test_world_model_data.py`: PASS.
+- `git diff --check`: PASS.
+- `awk '!/^[[:space:]]*$/ && !/^[[:space:]]*(//|#|--)/' world_model/data/curriculum.py | wc -l`: 246, within the 250-LOC limit.
+- LSP diagnostics unavailable because basedpyright is not installed and was previously declined.
+- Ruff unavailable in the active shell.
+
+Manual QA
+- A direct isolated driver loaded the production curriculum module with real immutable episode, shot, frame, and temporal-request objects. It confirmed novelty/scenario filtering, normalized start-frame filtering, seed-local deterministic candidates, serializable state, and matching resume validation: `manual curriculum policy surface: PASS 2`.
+
+Environment note
+- The active interpreter is `/home/sukai/miniconda3/envs/novphy/bin/python`; `import torch` fails with `ModuleNotFoundError`. The existing base interpreter `/home/sukai/miniconda3/bin/python` already provides PyTorch 2.13.0 and Pillow 12.1.0, so it was used for native verification. No dependency was installed or project environment changed.
+
+Independent verification and correction, 2026-07-29
+
+Inherited implementation assessment
+- Baseline characterization: `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.CurriculumPolicyTests.test_existing_dataset_candidate_order_and_provenance_are_immutable`
+  Output: `Ran 1 test in 0.034s` and `OK`.
+- Baseline suite before correction: `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.CurriculumPolicyTests`
+  Output: `Ran 5 tests in 0.043s` and `OK`.
+- Active-environment truth: `python -m unittest tests.test_world_model_data.CurriculumPolicyTests`
+  Output: import failed with `ModuleNotFoundError: No module named 'torch'` from `world_model/data/dataset.py`; interpreter `/home/sukai/miniconda3/envs/novphy/bin/python`.
+- Independent probes proved inherited gaps: `active_stage(0, True)`, `active_stage(0, 1.0)`, and `start_frame_range=(False, 0.5)` were accepted; `repr` hashing assigned different digests to equivalent allowed sets.
+- RED command: `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.CurriculumPolicyTests.test_step_bindings_reject_bool_and_float_equivalents tests.test_world_model_data.CurriculumPolicyTests.test_normalized_progress_bounds_reject_boolean_values tests.test_world_model_data.CurriculumPolicyTests.test_schedule_digest_is_canonical_for_allowed_sets tests.test_world_model_data.CurriculumPolicyTests.test_one_frame_normalized_start_is_zero`
+  Output: `FAILED (failures=4, errors=1)` for the intended accepted-bool/float, noncanonical-digest, and missing-one-frame-rule gaps.
+
+Corrections
+- Exact integer boundaries now reject booleans and equal floats without coercion.
+- Stage filters, temporal choices, ranges, schedules, seeds, and checkpoint state validate their immutable value shapes.
+- Schedule, catalog, and candidate-order identities use schema-tagged canonical JSON plus SHA-256; declared allowed sets are sorted for identity.
+- One-frame normalized position is explicitly `0.0`; positive temporal horizons still produce no candidate from a one-frame shot.
+- Candidate generation remains in-memory over the fixed catalog snapshot and reads no frames, sidecars, wall clock, or filesystem state.
+
+Required automated QA
+- `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.CurriculumPolicyTests`
+  Output: `Ran 15 tests in 0.059s` and `OK`.
+- `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.CurriculumPolicyTests.test_three_stage_schedule_selects_exact_temporal_choices_at_boundaries`
+  Output: `Ran 1 test in 0.021s` and `OK`.
+- `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.CurriculumPolicyTests.test_resume_rejects_schedule_catalog_or_seed_drift`
+  Output: `Ran 1 test in 0.012s` and `OK`.
+- Flake probe: `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data.CurriculumPolicyTests tests.test_world_model_data.CurriculumPolicyTests tests.test_world_model_data.CurriculumPolicyTests`
+  Output: `Ran 45 tests in 0.133s` and `OK`.
+- Regression scope: `/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data`
+  Output: `Ran 66 tests in 0.232s` and `OK`.
+- Compile: `/home/sukai/miniconda3/bin/python -m compileall -q world_model/data/curriculum.py world_model/data/__init__.py tests/test_world_model_data.py`
+  Output: none; exit 0.
+- Source rules: `/home/sukai/miniconda3/bin/python /home/sukai/.cache/opencode/packages/oh-my-openagent@latest/node_modules/oh-my-openagent/dist/skills/programming/scripts/python/check-no-excuse-rules.py world_model/data/curriculum.py`
+  Output: `no violations in 1 file(s)`.
+- Pure LOC: `awk '!/^[[:space:]]*$/ && !/^[[:space:]]*(\/\/|#|--)/' world_model/data/curriculum.py | wc -l`
+  Output: `250`.
+- Whitespace: `git diff --check -- world_model/data/curriculum.py world_model/data/__init__.py tests/test_world_model_data.py`
+  Output: none; exit 0.
+- Source audit pattern `\bAny\b|\bcast\(|type:\s*ignore|pyright:\s*ignore|import random|random\.|time\.|Path\(|open\(|refresh\(|read_text|read_bytes|Image` in `curriculum.py`: no matches.
+- LSP diagnostics were requested for every scoped Python file. Result: basedpyright is not installed and installation was previously declined. No package was installed; compileall, unittest, and no-excuse checks supplied the available static/runtime evidence.
+
+Literal manual QA command and output
+```bash
+/home/sukai/miniconda3/bin/python - <<'PY'
+import json
+import tempfile
+from pathlib import Path
+
+from tests.test_world_model_data import _build_catalog_from_fixture
+from world_model.data import (
+    CurriculumBindingMismatchError,
+    CurriculumPolicy,
+    CurriculumSchedule,
+    CurriculumStage,
+    TemporalWindowRequest,
+)
+
+with tempfile.TemporaryDirectory() as temporary:
+    catalog = _build_catalog_from_fixture(Path(temporary), frame_count=9, shot_count=1)
+    schedule = CurriculumSchedule(
+        version="manual-v1",
+        total_steps=9,
+        stages=(
+            CurriculumStage("short", 0, 3, (TemporalWindowRequest(1, 1),), start_frame_range=(0.0, 0.5)),
+            CurriculumStage("medium", 3, 6, (TemporalWindowRequest(2, 1),)),
+            CurriculumStage("long", 6, 9, (TemporalWindowRequest(2, 2),)),
+        ),
+    )
+    policy = CurriculumPolicy(catalog, schedule, sampler_seed=17)
+    views = tuple(policy.candidate_view(step, 9) for step in (0, 2, 3, 5, 6, 8))
+    stage_names = tuple(view.active_stage.name for view in views)
+    candidate_ids = tuple(candidate.candidate_id for candidate in views[2].candidates)
+    state = policy.state(3, 9)
+    serialized_state = json.dumps(state.to_dict(), sort_keys=True, separators=(",", ":"))
+    print("BOUNDARY_STAGES", stage_names)
+    print("CANDIDATE_IDS", candidate_ids)
+    print("SERIALIZED_STATE", serialized_state)
+    assert stage_names == ("short", "short", "medium", "medium", "long", "long")
+    assert candidate_ids
+    assert json.loads(serialized_state)["active_stage_name"] == "medium"
+    policy.validate_resume(state)
+    try:
+        CurriculumPolicy(catalog, schedule, sampler_seed=18).validate_resume(state)
+    except CurriculumBindingMismatchError as error:
+        print("DRIFT_REJECTED", error.binding)
+        assert error.binding == "sampler_seed"
+    else:
+        raise AssertionError("sampler seed drift was accepted")
+    print("MANUAL_QA_PASS")
+PY
+```
+Output:
+```text
+BOUNDARY_STAGES ('short', 'short', 'medium', 'medium', 'long', 'long')
+CANDIDATE_IDS ('train:train/episode_001:train/episode_001/shot_001:3:2:1', 'train:train/episode_001:train/episode_001/shot_001:6:2:1', 'train:train/episode_001:train/episode_001/shot_001:2:2:1', 'train:train/episode_001:train/episode_001/shot_001:4:2:1', 'train:train/episode_001:train/episode_001/shot_001:0:2:1', 'train:train/episode_001:train/episode_001/shot_001:1:2:1', 'train:train/episode_001:train/episode_001/shot_001:5:2:1')
+SERIALIZED_STATE {"active_stage_name":"medium","catalog_digest":"2f3b44ed381d8673bf0914d3c25e0a4d5946bc7cd87392b6075f70d1417cf89c","global_step":3,"sampler_seed":17,"schedule_digest":"12b3c66e95dd04bb36d103bc48e09bf67fa3744207537893cafee59474c72f17","schedule_version":"manual-v1","total_steps":9}
+DRIFT_REJECTED sampler_seed
+MANUAL_QA_PASS
+```
+Binary observable: final line `MANUAL_QA_PASS`, exit 0.
+
+Adversarial and cleanup receipt
+- Malformed input: strict tests reject bool/float step bindings, boolean range values, overlap, gaps, empty choices, and invalid immutable shapes.
+- Stale state: schedule version/digest, catalog digest, sampler seed, total-step binding, and active stage are validated fail-closed; required failure QA passed.
+- Dirty worktree: `git status --short` showed pre-existing changes under `.cache`, `.omo`, scripts, and tests. No reset, checkout, clean, commit, or unrelated edit was performed.
+- Scoped status caveat: `.gitignore:8` ignores every directory named `data/`, including `world_model/data/curriculum.py` and `world_model/data/__init__.py`; therefore ordinary `git status` omits those product files even though they exist and were verified. `tests/test_world_model_data.py` and append-only `.omo` records remain untracked in this inherited worktree.
+- Flaky tests: the complete curriculum class ran three consecutive times in one process, 45/45 passing.
+- Misleading success output: every manual print is followed by assertions; unittest/compile/source checks were accepted only with exit code 0.
+- Prompt injection: not applicable; inputs are local typed schedule/catalog values, not interpreted instructions.
+- Cancel/resume flow: cancellation is not part of this pure policy; checkpoint resume binding is directly covered.
+- Hung external commands: not applicable; all commands were local and completed under 120-second tool timeouts.
+- Repeated interruptions: not applicable; no process or external service lifecycle exists.
+- Temporary artifacts: manual QA used `tempfile.TemporaryDirectory()` and exited its context. `test ! -e /tmp/novphy-curriculum-manual` printed `CLEANUP_PASS: no persistent manual-QA fixture path`. No fixture, cache, dependency, or generated report was intentionally left behind.

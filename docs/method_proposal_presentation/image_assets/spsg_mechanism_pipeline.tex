@@ -1,0 +1,91 @@
+\documentclass[border=8pt]{standalone}
+
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit,backgrounds}
+
+% --- OpenTikZ palette (light / default, color-blind-friendly Okabe-Ito) ---
+\definecolor{otblue}{HTML}{0072B2}
+\definecolor{otorange}{HTML}{E69F00}
+\definecolor{otteal}{HTML}{009E73}
+\definecolor{otpurple}{HTML}{CC79A7}
+\definecolor{otgray}{HTML}{5A5A5A}
+
+\begin{document}
+% ==== parameters =========================================================
+\def\rowsep{0.72}
+\def\colsep{1.05}
+\def\boxminw{2.45}
+\def\boxminh{1.08}
+\def\clientlabel{Simulator scene\\objects $+$ physical state}
+\def\gatewaylabel{Directed scene graph\\nodes $+$ relation edges}
+\def\svconelabel{GINE encoder\\edge-aware message passing}
+\def\svctwolabel{Semantic heads\\predicate embeddings}
+\def\dblabel{TPR head\\role--filler binding}
+\def\cachelabel{Validated negative\\explicit physics violation}
+\def\grouplabel{Structured Physical Symbolic Geometry (SPSG)}
+\def\supportlabel{$A\!\to\!B$: supports}
+\def\reverselabel{$B\!\to\!A$: supported-by}
+\def\outputlabel{Reliability-gated symbolic loss\\$r_\psi(h_t)\,[\mathcal L_{\rm semantic}+\mathcal L_{\rm struct}+\mathcal L_{\rm contrastive}]$}
+% =========================================================================
+
+\begin{tikzpicture}[
+    node distance=\rowsep cm and \colsep cm,
+    >={Stealth[length=2.4mm]},
+    comp/.style={
+      rounded corners=3pt, line width=0.75pt, align=center,
+      minimum width=\boxminw cm, minimum height=\boxminh cm,
+      inner xsep=8pt, inner ysep=6pt, font=\sffamily\small,
+    },
+    external/.style={comp, draw=otgray!65, fill=otgray!9, dashed},
+    process/.style={comp, draw=otblue!75!black, fill=otblue!14},
+    store/.style={comp, draw=otteal!75!black, fill=otteal!15},
+    cachestore/.style={comp, draw=otpurple!80!black, fill=otpurple!14},
+    objective/.style={comp, draw=otorange!85!black, fill=otorange!12, line width=1.0pt},
+    link/.style={draw=otgray!78, line width=0.95pt, ->},
+    branch/.style={draw=otpurple!85!black, line width=0.9pt, ->},
+    contrast/.style={draw=otorange!85!black, line width=0.9pt, ->},
+    group/.style={
+      draw=otgray!55, dashed, rounded corners=6pt, line width=0.8pt,
+      inner sep=13pt, fill=otgray!3,
+    },
+    object/.style={
+      circle, draw=otteal!75!black, fill=otteal!15, line width=0.75pt,
+      minimum size=7.5mm, font=\sffamily\small\bfseries,
+    },
+    relabel/.style={font=\sffamily\scriptsize, text=otgray, fill=otgray!0, inner sep=1pt},
+  ]
+
+  \node[external] (client) {\clientlabel};
+  \node[process, right=of client] (gateway) {\gatewaylabel};
+  \node[process, right=of gateway] (svc1) {\svconelabel};
+
+  \node[store, above right=of svc1] (svc2) {\svctwolabel};
+  \node[store, right=of svc1] (db) {\dblabel};
+  \node[cachestore, below right=of svc1] (cache) {\cachelabel};
+  \node[objective, right=1.25cm of db, text width=4.2cm] (loss) {\outputlabel};
+
+  \node[object, above=1.05cm of svc1, xshift=-7mm] (objectA) {$A$};
+  \node[object, right=1.25cm of objectA] (objectB) {$B$};
+  \draw[link] (objectA) to[bend left=16]
+    node[midway, above, relabel] {\supportlabel} (objectB);
+  \draw[branch] (objectB) to[bend left=16]
+    node[midway, below, relabel] {\reverselabel} (objectA);
+
+  \draw[link] (client) -- (gateway);
+  \draw[link] (gateway) -- (svc1);
+  \draw[link] (svc1) -- (svc2);
+  \draw[branch] (svc1) -- (db);
+  \draw[contrast] (svc1) -- (cache);
+  \draw[link] (svc2.east) -| (loss.north);
+  \draw[branch] (db) -- (loss);
+  \draw[contrast] (cache.east) -| (loss.south);
+
+  \begin{scope}[on background layer]
+    \node[group, fit=(gateway)(objectA)(objectB)(svc1)(svc2)(db)(cache)] (backend) {};
+    \node[font=\sffamily\footnotesize, text=otgray, anchor=north west]
+      at ([xshift=4pt,yshift=-3pt]backend.north west) {\grouplabel};
+  \end{scope}
+
+\end{tikzpicture}
+\end{document}
