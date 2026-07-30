@@ -32,13 +32,17 @@ At each rollout decision, the model selects a **joint pair**:
 $$
 (\Delta_k,\alpha_k)\sim\pi_\kappa(\cdot\mid h_{t_k}),
 \qquad
-\alpha_k\in\{\text{continuous},\text{micro},\text{macro}\}.
+\alpha_k\in\{\text{continuous},\text{micro},\text{macro}\},
+\qquad
+t_{k+1}=t_k+\Delta_k .
 $$
 
-- $\Delta_k$ controls **how far forward** the model advances.
-- $\alpha_k$ controls **what representation** the predictor uses.
-- $h_{t_k}$ is the **controller state**: current latent $z_t$ plus predictive uncertainty, event likelihood, and local event density.
-- $r_\psi(h_t)\in[0,1]$ is a **learned reliability estimate** of whether fine object relations are stable enough to constrain the prediction (low $r_\psi$ → mask micro-relational constraints, continuous dynamics dominate).
+*One rollout is a sequence of adaptive decisions $k=0,\dots,K$: at decision $k$ (frame time $t_k$) the controller looks at the current state and jumps $\Delta_k$ frames ahead.*
+
+- $\Delta_k$: **how far forward** the model advances this step.
+- $\alpha_k$: **what representation** the predictor uses this step.
+- $h_{t_k}$: **controller state** — current latent $z_t$ plus predictive uncertainty, event likelihood, and local event density.
+- $r_\psi(h_t)\in[0,1]$: **learned reliability** of fine object relations (low → mask micro-relational constraints; continuous dynamics dominate).
 - A horizon-conditioned JEPA predictor remains the continuous dynamics backbone.
 
 ---
@@ -146,6 +150,8 @@ Interpretation:
 - **Validated negatives** contrast the scene with an explicitly verified physical violation.
 
 SPSG remains a **soft relational regularizer**; it does not imply an automatically exact hard manifold.
+The constraint *content* comes from SPSG, but *when and how strongly* it applies is decided by the learned gate:
+$\lambda_{\text{sym}}\,\omega_\psi(h_t)\,\mathcal{L}_{\text{sym}}$ — high $r_\psi$ enforces the geometry, low $r_\psi$ suspends it while continuous dynamics dominate.
 
 ---
 
@@ -177,6 +183,28 @@ $$
 The $\Delta_k/T$ weighting makes variable-horizon training and fixed-policy baselines comparable by represented duration.
 
 ---
+
+# How $(\Delta,\alpha)$ trains the JEPA world model
+
+Standard JEPA training fixes the prediction task by hand: context latent $z_t$ → predict a **stop-gradient target latent** at a **fixed temporal offset**, in a **fixed embedding space**.
+
+BG-NS-JEPA turns both fixed choices into state-dependent decisions:
+
+- $\Delta_k$ — **how far ahead the target is**: predict at $t_k+\Delta_k$
+- $\alpha_k$ — **which space the target lives in**: continuous latent (the usual JEPA target encoder), micro scene-graph predicates, or macro event states
+
+Each selected pair instantiates one JEPA sub-task; a single predictor conditioned on $(\Delta,\alpha)$ is trained **multi-task over the pair grid**, with the latent-prediction loss weighted by $\Delta_k/T$. $\pi_\kappa$ is thus a **learned task scheduler** — like making the masking/window strategy of masked representation learning adaptive per state, instead of a fixed hyperparameter.
+
+**Chicken-and-egg:** scheduler labels depend on predictor performance, but the predictor's training distribution depends on scheduler choices. Staged resolution:
+
+1. **Stage 1 (exhaustive scoring):** train candidate $(\Delta,\alpha)$ predictors on oracle trajectories; score every pair per state → per-state **best-pair labels**
+2. **Stage 3 (amortized scheduler):** distill the per-state argmin into $\pi_\kappa$; ablate joint vs. factorized
+3. **Stage 4 (optional end-to-end):** discrete relaxation (Gumbel-softmax), kept only if it improves the frontier
+
+*Stage 2 (learned symbol extraction) runs orthogonally — it changes where scene graphs come from, not how the controller or predictor are trained.*
+
+---
+
 
 # What is fixed now, and what will experiments decide?
 

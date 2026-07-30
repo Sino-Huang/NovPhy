@@ -14,18 +14,14 @@
 \begin{document}
 % ==== parameters =========================================================
 \def\rowsep{0.72}
-\def\branchxsep{1.35}
 \def\boxminw{3.05}
 \def\boxminh{0.90}
 \def\startlabel{Predictive state $h_t$}
 \def\readlabel{Estimate $u_t,\ r_\psi(h_t),\ p(E_t),\ \lambda_t^{(w)}$}
-\def\checklabel{Are fine relations reliable?}
-\def\proclabel{Keep micro-relational\\choices admissible}
-\def\errorlabel{Mask micro-relational loss;\\continuous and macro remain admissible}
-\def\scorelabel{Score all admissible joint pairs\\$(\Delta,\alpha)$ with prediction $+$ compute cost}
+\def\gatelabel{Soft reliability gate\\$\omega_\psi = r_\psi(h_t)\in[0,1]$}
+\def\notelabel{$r_\psi\!\to\!1$: micro fully admissible\\[1pt]$r_\psi\!\to\!0$: micro masked,\\continuous \& macro remain}
+\def\scorelabel{Score joint pairs $(\Delta,\alpha)$ by\\prediction $+$ compute cost;\\micro pairs weighted by $\omega_\psi$}
 \def\endlabel{Select pair and predict to $t+\Delta_k$}
-\def\yeslabel{high $r_\psi$}
-\def\nolabel{low $r_\psi$}
 \def\looplabel{next predictive state}
 % =========================================================================
 
@@ -39,34 +35,31 @@
     },
     terminal/.style={base, shape=rounded rectangle, draw=otteal!75!black, fill=otteal!15},
     process/.style={base, rounded corners=3pt, draw=otblue!75!black, fill=otblue!14},
-    decision/.style={base, shape=diamond, aspect=2.65, inner sep=1pt,
-      draw=otorange!85!black, fill=otorange!19, minimum width=4.1cm},
-    masked/.style={process, draw=otpurple!80!black, fill=otpurple!14},
-    score/.style={process, draw=otorange!80!black, fill=otorange!10, minimum width=5.0cm},
+    gate/.style={base, rounded corners=3pt, draw=otpurple!80!black, fill=otpurple!14, minimum width=4.0cm},
+    note/.style={align=center, font=\sffamily\footnotesize, text=otpurple!85!black, inner sep=2pt},
+    score/.style={process, draw=otorange!80!black, fill=otorange!10, minimum width=5.2cm},
     flow/.style={draw=otgray!78, line width=0.9pt, ->},
+    gateflow/.style={draw=otpurple!85!black, line width=0.9pt, dashed, ->},
     loop/.style={draw=otpurple!85!black, line width=1.0pt, ->},
-    elabel/.style={font=\sffamily\footnotesize, text=otgray, fill=otgray!0, inner sep=1.5pt},
+    elabel/.style={font=\sffamily\footnotesize, text=otgray, inner sep=1.5pt},
   ]
 
   \node[terminal] (start) {\startlabel};
   \node[process, below=of start] (read) {\readlabel};
-  \node[decision, below=1.0cm of read] (check) {\checklabel};
-  \node[process, below left=1.25cm and \branchxsep cm of check] (proc) {\proclabel};
-  \node[masked, below right=1.25cm and \branchxsep cm of check] (error) {\errorlabel};
-  \node[score, below=2.05cm of check] (scorepairs) {\scorelabel};
+  \node[gate, below=of read] (gate) {\gatelabel};
+  \node[note, right=0.55cm of gate] (gatenote) {\notelabel};
+  \node[score, below=of gate] (scorepairs) {\scorelabel};
   \node[terminal, below=of scorepairs] (end) {\endlabel};
 
   \draw[flow] (start) -- (read);
-  \draw[flow] (read) -- (check);
-  \draw[flow] (check) -- (proc)
-    node[midway, above left, elabel] {\yeslabel};
-  \draw[flow] (check) -- (error)
-    node[midway, above right, elabel] {\nolabel};
-  \draw[flow] (proc) |- (scorepairs);
-  \draw[flow] (error) |- (scorepairs);
+  \draw[flow] (read) -- (gate);
+  \draw[gateflow] (gate) -- (gatenote);
+  \draw[flow] (gate) -- (scorepairs)
+    node[midway, right, elabel] {configures admissible pool};
   \draw[flow] (scorepairs) -- (end);
   \draw[loop] (end.west) -| ([xshift=-34mm]read.west) -- (read.west)
-    node[pos=0.25, left, font=\sffamily\footnotesize, text=otpurple!85!black]
+    node[pos=0.25, left, font=\sffamily\footnotesize, text=otpurple!85!black,
+         fill=white, inner sep=2pt]
       {\looplabel};
 
 \end{tikzpicture}
