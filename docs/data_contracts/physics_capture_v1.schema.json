@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://novphy.org/data-contracts/physics_capture_v1.schema.json",
+  "title": "NovPhy physics_capture_v1 records",
+  "oneOf": [
+    { "$ref": "#/$defs/state_header" },
+    { "$ref": "#/$defs/state" },
+    { "$ref": "#/$defs/event" },
+    { "$ref": "#/$defs/capture_failure" }
+  ],
+  "$defs": {
+    "coordinates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["world_space", "world_origin", "world_x_axis", "world_y_axis", "world_length_unit", "screen_space", "screen_origin", "screen_x_axis", "screen_y_axis", "screen_length_unit", "time_unit", "angle_unit", "mass_unit", "velocity_unit", "angular_velocity_unit", "kinetic_energy_unit", "impulse_unit"],
+      "properties": {
+        "world_space": { "const": "unity_world_2d" },
+        "world_origin": { "const": "scene_defined" },
+        "world_x_axis": { "const": "right" },
+        "world_y_axis": { "const": "up" },
+        "world_length_unit": { "const": "unity_unit" },
+        "screen_space": { "const": "rgb_pixel_2d" },
+        "screen_origin": { "const": "top_left" },
+        "screen_x_axis": { "const": "right" },
+        "screen_y_axis": { "const": "down" },
+        "screen_length_unit": { "const": "pixel" },
+        "time_unit": { "const": "second" },
+        "angle_unit": { "const": "degree" },
+        "mass_unit": { "const": "unity_mass_unit" },
+        "velocity_unit": { "const": "unity_unit/second" },
+        "angular_velocity_unit": { "const": "degree/second" },
+        "kinetic_energy_unit": { "const": "unity_mass_unit*unity_unit^2/second^2" },
+        "impulse_unit": { "const": "unity_mass_unit*unity_unit/second" }
+      }
+    },
+    "record_clock": {
+      "type": "object",
+      "required": ["schema_version", "capture_id", "shot_id", "sequence", "render_frame", "render_time", "fixed_step", "fixed_time", "coordinates"],
+      "properties": {
+        "schema_version": { "const": "physics_capture_v1" },
+        "capture_id": { "type": "string", "minLength": 1 },
+        "shot_id": { "type": "string", "pattern": "^shot_[0-9]{3,}$" },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "render_frame": { "type": "integer", "minimum": 0 },
+        "render_time": { "type": "number", "minimum": 0 },
+        "fixed_step": { "type": "integer", "minimum": 0 },
+        "fixed_time": { "type": "number", "minimum": 0 },
+        "coordinates": { "$ref": "#/$defs/coordinates" }
+      }
+    },
+    "vector2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": { "x": { "type": "number" }, "y": { "type": "number" } }
+    },
+    "entity_id": {
+      "type": "string",
+      "pattern": "^(-?[0-9]+:[0-9]+|world:static:-?[0-9]+)$"
+    },
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["present", "velocity", "angular_velocity_degrees_per_second", "mass_unity_units", "kinetic_energy_unity_units"],
+      "properties": {
+        "present": { "type": "boolean" },
+        "velocity": { "oneOf": [{ "$ref": "#/$defs/vector2" }, { "type": "null" }] },
+        "angular_velocity_degrees_per_second": { "type": ["number", "null"] },
+        "mass_unity_units": { "type": ["number", "null"], "minimum": 0 },
+        "kinetic_energy_unity_units": { "type": ["number", "null"], "minimum": 0 }
+      },
+      "allOf": [
+        { "if": { "properties": { "present": { "const": false } } }, "then": { "properties": { "velocity": { "type": "null" }, "angular_velocity_degrees_per_second": { "type": "null" }, "mass_unity_units": { "type": "null" }, "kinetic_energy_unity_units": { "type": "null" } } } }
+      ]
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entity_id", "unity_instance_id", "object_class", "object_type", "screen_polygon", "world_pose", "life", "body"],
+      "properties": {
+        "entity_id": { "$ref": "#/$defs/entity_id" },
+        "unity_instance_id": { "type": "integer" },
+        "object_class": { "type": "string", "minLength": 1 },
+        "object_type": { "type": "string", "minLength": 1 },
+        "screen_polygon": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/vector2" } },
+        "world_pose": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["position", "rotation_degrees"],
+          "properties": { "position": { "$ref": "#/$defs/vector2" }, "rotation_degrees": { "type": "number" } }
+        },
+        "life": { "type": ["number", "null"] },
+        "body": { "$ref": "#/$defs/body" }
+      }
+    },
+    "rgb_frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["relative_path", "render_frame", "width_pixels", "height_pixels", "source"],
+      "properties": {
+        "relative_path": { "type": "string", "pattern": "^frames/frame_[0-9]{6}\\.png$" },
+        "render_frame": { "type": "integer", "minimum": 0 },
+        "width_pixels": { "type": "integer", "minimum": 1 },
+        "height_pixels": { "type": "integer", "minimum": 1 },
+        "source": { "const": "synchronized_endpoint" }
+      }
+    },
+    "raw_contact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contact_id", "entity_a_id", "entity_b_id", "collider_a_id", "collider_b_id", "point", "normal_a_to_b", "separation", "relative_velocity_a_to_b", "normal_impulse", "tangent_impulse", "is_trigger"],
+      "properties": {
+        "contact_id": { "type": "string", "pattern": "^contact:[0-9]+:.+:[0-9]+$" },
+        "entity_a_id": { "$ref": "#/$defs/entity_id" },
+        "entity_b_id": { "$ref": "#/$defs/entity_id" },
+        "collider_a_id": { "type": "integer" },
+        "collider_b_id": { "type": "integer" },
+        "point": { "$ref": "#/$defs/vector2" },
+        "normal_a_to_b": { "$ref": "#/$defs/vector2" },
+        "separation": { "type": "number" },
+        "relative_velocity_a_to_b": { "$ref": "#/$defs/vector2" },
+        "normal_impulse": { "type": ["number", "null"] },
+        "tangent_impulse": { "type": ["number", "null"] },
+        "is_trigger": { "const": false }
+      }
+    },
+    "support_edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["support_id", "rule_version", "supporter_id", "supported_id", "evidence_contact_ids", "evidence_fixed_steps"],
+      "properties": {
+        "support_id": { "type": "string", "pattern": "^support:.+->.+$" },
+        "rule_version": { "const": "support_v1" },
+        "supporter_id": { "$ref": "#/$defs/entity_id" },
+        "supported_id": { "$ref": "#/$defs/entity_id" },
+        "evidence_contact_ids": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } },
+        "evidence_fixed_steps": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 0 } }
+      }
+    },
+    "support_rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "minimum_consecutive_fixed_steps", "minimum_abs_normal_y", "minimum_vertical_center_delta", "include_triggers", "missing_contact_policy", "static_entity_id_prefix"],
+      "properties": {
+        "name": { "const": "support_v1" },
+        "minimum_consecutive_fixed_steps": { "const": 2 },
+        "minimum_abs_normal_y": { "const": 0.5 },
+        "minimum_vertical_center_delta": { "const": 0.0001 },
+        "include_triggers": { "const": false },
+        "missing_contact_policy": { "const": "no_support" },
+        "static_entity_id_prefix": { "const": "world:static:" }
+      }
+    },
+    "event_type": {
+      "enum": ["bird_launched", "collision", "explosion", "entity_destroyed", "pig_removed", "bird_exhausted", "stable_entered", "stable_exited", "level_cleared", "level_failed"]
+    },
+    "capture_limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_state_records", "max_event_records", "max_total_bytes"],
+      "properties": {
+        "max_state_records": { "type": "integer", "minimum": 1 },
+        "max_event_records": { "type": "integer", "minimum": 1 },
+        "max_total_bytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "state_header": {
+      "allOf": [
+        { "$ref": "#/$defs/record_clock" },
+        {
+          "type": "object",
+          "required": ["record_type", "capture_status", "state_sidecar", "event_sidecar", "support_rule", "event_taxonomy", "capture_limits"],
+          "properties": {
+            "record_type": { "const": "state_header" },
+            "capture_status": { "const": "complete" },
+            "state_sidecar": { "const": "physics_state.jsonl" },
+            "event_sidecar": { "const": "physics_events.jsonl" },
+            "support_rule": { "$ref": "#/$defs/support_rule" },
+            "event_taxonomy": { "type": "array", "prefixItems": [{ "const": "bird_launched" }, { "const": "collision" }, { "const": "explosion" }, { "const": "entity_destroyed" }, { "const": "pig_removed" }, { "const": "bird_exhausted" }, { "const": "stable_entered" }, { "const": "stable_exited" }, { "const": "level_cleared" }, { "const": "level_failed" }], "items": false },
+            "capture_limits": { "$ref": "#/$defs/capture_limits" }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "state": {
+      "allOf": [
+        { "$ref": "#/$defs/record_clock" },
+        {
+          "type": "object",
+          "required": ["record_type", "rgb_frame", "nodes", "raw_contacts", "support_edges"],
+          "properties": {
+            "record_type": { "const": "state" },
+            "rgb_frame": { "$ref": "#/$defs/rgb_frame" },
+            "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
+            "raw_contacts": { "type": "array", "items": { "$ref": "#/$defs/raw_contact" } },
+            "support_edges": { "type": "array", "items": { "$ref": "#/$defs/support_edge" } }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "event_payload": {
+      "oneOf": [
+        { "type": "object", "additionalProperties": false, "required": ["launch_velocity"], "properties": { "launch_velocity": { "$ref": "#/$defs/vector2" } } },
+        { "type": "object", "additionalProperties": false, "required": ["contact_ids", "relative_speed"], "properties": { "contact_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "relative_speed": { "type": "number", "minimum": 0 } } },
+        { "type": "object", "additionalProperties": false, "required": ["radius_unity_units"], "properties": { "radius_unity_units": { "type": "number", "minimum": 0 } } },
+        { "type": "object", "additionalProperties": false, "required": ["reason"], "properties": { "reason": { "type": "string", "minLength": 1 } } },
+        { "type": "object", "additionalProperties": false, "required": ["birds_remaining"], "properties": { "birds_remaining": { "const": 0 } } },
+        { "type": "object", "additionalProperties": false, "required": ["debounce_fixed_steps"], "properties": { "debounce_fixed_steps": { "type": "integer", "minimum": 1 } } },
+        { "type": "object", "additionalProperties": false, "required": ["score"], "properties": { "score": { "type": "integer" } } }
+      ]
+    },
+    "event": {
+      "allOf": [
+        { "$ref": "#/$defs/record_clock" },
+        {
+          "type": "object",
+          "required": ["record_type", "event_id", "event_type", "participants", "payload"],
+          "properties": {
+            "record_type": { "const": "event" },
+            "event_id": { "type": "string", "pattern": "^event:[0-9]{8}$" },
+            "event_type": { "$ref": "#/$defs/event_type" },
+            "participants": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/entity_id" } },
+            "payload": { "$ref": "#/$defs/event_payload" }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "capture_failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "capture_id", "shot_id", "failure_code", "message", "observed", "limit"],
+      "properties": {
+        "schema_version": { "const": "physics_capture_v1" },
+        "capture_id": { "type": "string", "minLength": 1 },
+        "shot_id": { "type": "string", "minLength": 1 },
+        "failure_code": { "enum": ["record_limit_exceeded", "byte_limit_exceeded", "capture_timeout", "truncated_finalization"] },
+        "message": { "type": "string", "minLength": 1 },
+        "observed": { "type": "integer", "minimum": 0 },
+        "limit": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}
