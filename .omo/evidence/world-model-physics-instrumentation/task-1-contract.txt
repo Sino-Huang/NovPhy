@@ -84,3 +84,11 @@ db72b46 docs(physics-contract): freeze physics capture v1 schema
 8909e4d docs(physics-contract): record task one decisions
 c271302 docs(knowledge): capture physics contract boundary
 evidence_commit=self; report final hash in DoneClaim
+
+[post-commit-verification]
+command=/home/sukai/miniconda3/bin/python -c 'jsonschema.Draft202012Validator(schema).iter_errors(record) for every JSONL record'
+result=FIXTURE_SCHEMA_VALID 12 records; EXIT=0
+command=/usr/bin/time -f 'DURATION_SECONDS=%e EXIT=%x' /home/sukai/miniconda3/bin/python -m unittest tests.test_physics_capture_contract -v
+result=Ran 14 tests in 0.029s; OK; DURATION_SECONDS=0.08; EXIT=0
+final_status=GIT_MASTER=1 git status --short shows only the pre-existing unrelated dirty paths; task-owned files are committed and no staged task changes remain
+final_evidence_parent=538bbd4 docs(physics-contract): record contract verification evidence
