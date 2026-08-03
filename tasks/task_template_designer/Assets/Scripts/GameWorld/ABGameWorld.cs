@@ -110,6 +110,7 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
 
     void Awake()
     {
+        PhysicalSnapshotRuntime.Attach(gameObject).ResetLevel();
         isBannerShowing = false;
         blocksTransform = GameObject.Find("Blocks").transform;
         birdsTransform = GameObject.Find("Birds").transform;
@@ -210,6 +211,7 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
 
     public void DecodeLevel(ABLevel currentLevel)
     {
+        PhysicalSnapshotRuntime.Attach(gameObject).ResetLevel();
         isBannerShowing = false;
         CleanCache();
         if (NOVELTIES != null) {
@@ -409,6 +411,12 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
             Time.timeScale = SimulationSpeed;
         }
 
+    }
+
+    public void CapturePhysicalSnapshot(System.Action<PhysicalSceneSnapshot> completed)
+    {
+        PhysicalSnapshotRuntime runtime = PhysicalSnapshotRuntime.Attach(gameObject);
+        StartCoroutine(runtime.CaptureAtEndOfRenderFrame(new SymbolicGameState(false), completed));
     }
 
     public bool IsObjectOutOfWorld(Transform abGameObject, Collider2D abCollider)

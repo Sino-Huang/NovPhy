@@ -92,3 +92,19 @@ command=/usr/bin/time -f 'DURATION_SECONDS=%e EXIT=%x' /home/sukai/miniconda3/bi
 result=Ran 14 tests in 0.029s; OK; DURATION_SECONDS=0.08; EXIT=0
 final_status=GIT_MASTER=1 git status --short shows only the pre-existing unrelated dirty paths; task-owned files are committed and no staged task changes remain
 final_evidence_parent=538bbd4 docs(physics-contract): record contract verification evidence
+
+[independent-review]
+reviewed_at=2026-07-31T23:21:08+10:00 verdict=confirmed scope=Todo_1_only
+baseline_command=/home/sukai/miniconda3/bin/python -m unittest tests.test_world_model_data tests.test_prepare_rollout_dataset; exit_code=0; observable=113_tests_OK
+focused_command=/home/sukai/miniconda3/bin/python -m unittest tests.test_physics_capture_contract -v; exit_code=0; observable=14_tests_OK
+named_failure_command=malformed_schema duplicate_sequence nonpersistent_support mismatched_render_frame; exit_code=0; observable=4_tests_OK
+schema_command=Draft202012Validator.check_schema plus root-oneOf validation of every JSONL record; exit_code=0; observable=12_records_OK branches=state_header,state,event
+static_command=compileall plus check-no-excuse-rules on 4 sources and 1 test; exit_code=0; observable=no_violations
+runtime_probe=valid parse plus frozen-record/formula/alignment/contact/support/event/bounds assertions, then fresh TemporaryDirectory mutation; exit_code=0; observable=stale_version_rejected temp_cleanup=True
+parser_observables=strict fields; immutable typed tuples/dataclasses; current 0.5*m*(vx^2+vy^2); synchronized_endpoint equal render_frame; canonical non-trigger contacts; two retained consecutive support samples; deterministic event taxonomy/cardinality/order; positive bounds
+scope_command=GIT_MASTER=1 git diff --name-status origin/env..HEAD and GIT_MASTER=1 git show --stat --oneline; exit_code=0; observable=Todo_1_paths_only; commits=db72b46,8da3bac,041e3be,8909e4d,c271302,538bbd4,d72d1af
+scope_exclusion=unrelated Boulder/ledger/proposal/presentation paths remain dirty or untracked and are not attributed to Todo_1
+secret_command=python /home/sukai/.config/opencode/skills/secret-guard/scripts/scan_secrets.py tracked; exit_code=0; observable=2110_files_no_secrets
+lsp=attempted on scripts/physics_capture_contract.py, parsing.py, types.py, validation.py, and tests/test_physics_capture_contract.py; basedpyright unavailable and installation previously declined
+adversarial=malformed_input, stale_state, dirty_worktree, flaky_tests, misleading_success_output applicable and independently checked; prompt_injection, cancel_resume, hung/long_commands, repeated_interruptions not_applicable with no execution/instruction/resume/long-lived process surface
+cleanup=temporary probe directory removed; task-specific generated pyc caches removed; no processes, servers, ports, active rollout/player assets, or unrelated changes modified

@@ -11,10 +11,30 @@
 **What it will NOT do:** It will not modify the active rollout root, retrofit labels onto old RGB-only episodes, add a learned scene-graph/world-model component, or use an external physics engine.
 
 **Effort:** XL
-**Risk:** High - Unity 2019.3 player rebuilding and exact engine/RGB synchronization are external build/runtime boundaries.
+**Risk:** High - isolated Unity 2019.4 LTS migration, player rebuilding, and exact engine/RGB synchronization are external build/runtime boundaries.
 **Decisions to sanity-check:** `physics_state.jsonl` and `physics_events.jsonl` are mandatory only for a new `physics_capture_v1` cohort; support is explicitly derived from retained raw contacts; a staged enriched player is promoted only after a live smoke test.
 
 Your next move: start the approved plan in a worker session. Full execution detail follows below.
+
+## Current execution status (2026-08-03)
+
+- Progress is `1/14`: Todo 1 is complete and independently verified; Todo 2 is in progress; Todos 3-10 and F1-F4 remain unchecked.
+- The user authorized migration from Unity `2019.3.4f1` to exact Unity `2019.4.40f1 (ffc62b691db5)`. The durable migration branch/worktree is `physics-unity-2019.4` at `/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4`; only this staged project may be opened by Unity 2019.4. The canonical project and `sciencebirdsgames/Linux` remain immutable baselines.
+- The official target Editor is installed at `$HOME/.local/share/novphy-unity/2019.4.40f1-ffc62b691db5/editor/Editor/Unity`. Its archive SHA-256 is `c592296df9dd888e5239ad7dda276bb718b33075c679a2fec9c080764644435f`, executable SHA-256 is `1fdc5220ec0cc3e7d2832412eb2ed39bb0ad9ea0a712fa4619b6f82045865918`, and `-version` prints `2019.4.40f1 (ffc62b691db5)`.
+- Resume environment:
+
+  ```bash
+  export UNITY_2019_4_40F1="$HOME/.local/share/novphy-unity/2019.4.40f1-ffc62b691db5/editor/Editor/Unity"
+  export UNITY_LTS_LIBS="/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib"
+
+  LD_LIBRARY_PATH="$UNITY_LTS_LIBS${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
+    "$UNITY_2019_4_40F1" -batchmode -nographics -quit -logFile -
+  ```
+
+- Ubuntu 24.04 does not provide legacy `libgconf-2.so.4`; the private libraries above resolve it and produce a clean Editor `-version` run without changing system packages. For durable evidence commands, use a concrete `-logFile /absolute/path/to/log` because this old Editor reports `CreateDirectory '' failed` with `-logFile -` even though it continues.
+- The user reports completing Unity Hub/Personal activation, but batch license validation is **not yet proven**. The latest probe reached the Licensing Client and failed before entitlement validation: first missing ICU; setting `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1` bypassed that crash, then the bundled client reported `No usable version of libssl was found` because Ubuntu 24.04 has OpenSSL 3 while this client expects OpenSSL 1.1. It fell back to legacy licensing and printed `Missing or bad username or password`; this fallback is not evidence that the Hub Personal license is absent.
+- Next session must privately extract official Ubuntu Focal `libssl1.1` version `1.1.1f-1ubuntu2.24` (do not install/downgrade host OpenSSL), add its library directory to `UNITY_LTS_LIBS`, retain `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1`, and rerun a bounded license probe. Only after the Licensing Client remains alive and recognizes the Hub entitlement may it import the migrated project and run Todo 2 EditMode/parity/original-integrity gates.
+- Detailed resume knowledge: `.omo/knowledges/unity-2019-4-lts-resume.md`. Migration evidence is under the migration worktree's `.omo/evidence/world-model-physics-instrumentation/`.
 
 ---
 
@@ -36,7 +56,7 @@ Your next move: start the approved plan in a worker session. Full execution deta
 
 ## Verification strategy
 > Zero human intervention - all verification is agent-executed.
-- Test decision: tests-after. Use Unity 2019.3 EditMode tests for pure schema/contact/event logic and Python `unittest` in `tests/` for protocol, artifact, validator, and launcher behavior.
+- Test decision: tests-after. Use exact Unity `2019.4.40f1 (ffc62b691db5)` EditMode tests in a sibling migration worktree for pure schema/contact/event logic and Python `unittest` in `tests/` for protocol, artifact, validator, and launcher behavior. The canonical `2019.3.4f1` project and production player remain immutable baselines.
 - Evidence: `.omo/evidence/world-model-physics-instrumentation/task-<N>-<name>.{txt,json,xml}`. Persist commands, fixture hashes, test output, staged-player SHA-256, and the live smoke manifest; never treat console text alone as proof.
 - Required non-test evidence: a dedicated temporary output root containing one accepted `physics_capture_v1` shot whose PNG, state records, event stream, manifest provenance, and schema validation are all checked by a machine-readable smoke report.
 
@@ -61,7 +81,7 @@ Wave 1 establishes the contract and engine exporter. Wave 2 adds transport, coll
 ## Todos
 > Implementation + Test = ONE todo. Never separate.
 <!-- APPEND TASK BATCHES BELOW THIS LINE WITH edit/apply_patch - never rewrite the headers above. -->
-- [ ] 1. Freeze the `physics_capture_v1` schema, temporal contract, and fixtures.
+- [x] 1. Freeze the `physics_capture_v1` schema, temporal contract, and fixtures.
   What to do / Must NOT do: Add a versioned JSON Schema/contract document and golden JSONL fixtures under a new `docs/data_contracts/` plus test fixtures. Require a state header and every state/event record to carry `schema_version`, `capture_id`, `shot_id`, monotonic `sequence`, Unity render frame/time, fixed-step/fixed time, and coordinate/unit declaration. Define state-node fields (lifetime `entity_id`, Unity instance ID, class/type, screen polygon, world pose, life, velocity, angular velocity, mass, kinetic energy); raw contact fields (two IDs/collider IDs, point, canonical normal, separation, relative velocity, impulse when available); and events (ID, ordered timestamp, taxonomy, participants, payload). Set support v1 precisely: only non-trigger contacts persistent for two consecutive fixed steps, `abs(normal_y) >= 0.5`, and a positive vertical-centre ordering of at least `1e-4` Unity units create one `supporter -> supported` edge; sort ties by `entity_id`, retain ground/static contacts with a synthetic `world:static:<collider-id>` ID, and never derive support from absent contacts. Define one-shot launch, destruction, explosion, per-unordered-pair-per-fixed-step collision, pig removal, bird exhaustion, clear/fail, and debounced stable-enter/exit events. Define the only RGB alignment guarantee: every enriched PNG is returned in the same endpoint response as its snapshot and has identical Unity `render_frame`; desktop captures are never labeled exact. Must NOT encode sidecars in `metadata.json` or claim SI units.
   Parallelization: Wave 1 | Blocked by: `world-model-data-pipeline` completion | Blocks: 2-9.
   References (executor has NO interview context - be exhaustive): `.omo/drafts/world-model-physics-instrumentation.md`; `.omo/ulw-research/20260727-223250/SYNTHESIS.md`; `tasks/task_template_designer/Assets/Scripts/GroundTruth/SymbolicGameState.cs:32-368`; Unity 2019.4 `Rigidbody2D.velocity`, `Rigidbody2D.mass`, `ContactPoint2D`, and `Collider2D.GetContacts` documentation cited in the synthesis.
@@ -69,12 +89,12 @@ Wave 1 establishes the contract and engine exporter. Wave 2 adds transport, coll
   QA scenarios (name the exact tool + invocation): happy: `python -m unittest tests.test_physics_capture_contract -v`; failure: run its malformed-schema, duplicate-sequence, nonpersistent-support, and mismatched-render-frame cases. Evidence `.omo/evidence/world-model-physics-instrumentation/task-1-contract.txt`.
   Commit: Y | `feat(physics-contract): define versioned engine supervision sidecars`
 
-- [ ] 2. Implement Unity-side physical snapshot export with stable IDs and explicit clocks.
-  What to do / Must NOT do: Add focused Unity exporter/registry components alongside `SymbolicGameState` that reset per level, assign `entity_id = <unity-instance-id>:<spawn-ordinal>` for the object's lifetime, and emit the current symbolic-node fields plus Rigidbody2D data at an end-of-render-frame snapshot. Record both `Time.frameCount`/`Time.time` and a monotonic fixed-step counter/`Time.fixedTime`; expose no stale `lastVelocity` as current velocity. Compute kinetic energy from current mass and linear velocity, marking absent bodies/static entities explicitly rather than inventing zero mass. Reuse existing symbolic geometry/type extraction, but leave request 62 payload and development/noise behavior unchanged.
+- [ ] 2. Migrate an isolated project stage to Unity 2019.4 LTS and implement physical snapshot export with stable IDs and explicit clocks.
+  What to do / Must NOT do: Create a sibling Git worktree containing an exact overlay of the current Todo 2 Unity changes, record pre-migration manifests for the canonical project and production player, and open only that staged project with exact Unity `2019.4.40f1 (ffc62b691db5)`. Preserve the canonical `2019.3.4f1 (4f139db2fdbd)` project and `sciencebirdsgames/Linux` byte-for-byte. In the migrated worktree, add focused Unity exporter/registry components alongside `SymbolicGameState` that reset per level, assign `entity_id = <unity-instance-id>:<spawn-ordinal>` for the object's lifetime, and emit the current symbolic-node fields plus Rigidbody2D data at an end-of-render-frame snapshot. Record both `Time.frameCount`/`Time.time` and a monotonic fixed-step counter/`Time.fixedTime`; expose no stale `lastVelocity` as current velocity. Compute kinetic energy from current mass and linear velocity, marking absent bodies/static entities explicitly rather than inventing zero mass. Reuse existing symbolic geometry/type extraction, but leave request 62 payload and development/noise behavior unchanged. Generated `Library`, `Temp`, `Obj`, `Logs`, `UserSettings`, test results, and player builds stay outside versioned source; never symlink project inputs or reverse-copy migrated files over the canonical project.
   Parallelization: Wave 1 | Blocked by: 1 | Blocks: 3, 4, 7.
-  References (executor has NO interview context - be exhaustive): `tasks/task_template_designer/Assets/Scripts/GroundTruth/SymbolicGameState.cs:32-368`; `tasks/task_template_designer/Assets/Scripts/GameWorld/ABGameObject.cs:24-35,54-99,124-244`; `tasks/task_template_designer/Assets/Scripts/GameWorld/ABGameWorld.cs:372-395`; `tasks/task_template_designer/ProjectSettings/ProjectVersion.txt:1-2`.
-  Acceptance criteria (agent-executable): EditMode tests instantiate a dynamic and static fixture, assert unique lifetime IDs, current velocity/mass/energy formula, exact render/fixed clock fields, deterministic node order, and unchanged legacy `SymbolicGameState.GetGTJson()` fixture output.
-  QA scenarios (name the exact tool + invocation): happy: `"$UNITY_2019_3" -batchmode -nographics -projectPath tasks/task_template_designer -runTests -testPlatform EditMode -testResults .omo/evidence/world-model-physics-instrumentation/task-2-unity.xml -quit`; failure: the same tests cover destroyed/recreated instance-ID reuse and absent Rigidbody2D. Evidence `.omo/evidence/world-model-physics-instrumentation/task-2-unity.xml`.
+  References (executor has NO interview context - be exhaustive): `tasks/task_template_designer/Assets/Scripts/GroundTruth/SymbolicGameState.cs:32-368`; `tasks/task_template_designer/Assets/Scripts/GameWorld/ABGameObject.cs:24-35,54-99,124-244`; `tasks/task_template_designer/Assets/Scripts/GameWorld/ABGameWorld.cs:372-395`; `tasks/task_template_designer/ProjectSettings/ProjectVersion.txt:1-2`; Unity `2019.4.40f1` changeset `ffc62b691db5`; `.omo/knowledges/unity-2019-3-licensing-constraint.md`.
+  Acceptance criteria (agent-executable): migration provenance records the exact source/target editor revisions, official archive and executable SHA-256, overlay and pre/post project manifests, changed-path audit, and unchanged canonical-project/player manifests. EditMode tests instantiate a dynamic and static fixture, assert unique lifetime IDs, current velocity/mass/energy formula, exact render/fixed clock fields, deterministic node order, and unchanged legacy `SymbolicGameState.GetGTJson()` fixture output.
+  QA scenarios (name the exact tool + invocation): happy: `"$UNITY_2019_4_40F1" -batchmode -nographics -projectPath "$MIGRATED_UNITY_PROJECT" -runTests -testPlatform EditMode -testResults .omo/evidence/world-model-physics-instrumentation/task-2-unity.xml -quit -logFile .omo/evidence/world-model-physics-instrumentation/task-2-unity.log`; failure: the same tests cover destroyed/recreated instance-ID reuse and absent Rigidbody2D. Evidence also includes `task-2-migration-provenance.json`, `task-2-migration-diff.txt`, `task-2-legacy-parity.json`, and `task-2-originals-unchanged.json`.
   Commit: Y | `feat(unity): export aligned physical scene snapshots`
 
 - [ ] 3. Export raw contacts, derived support, and macro events from authoritative callbacks.
@@ -82,7 +102,7 @@ Wave 1 establishes the contract and engine exporter. Wave 2 adds transport, coll
   Parallelization: Wave 1 | Blocked by: 1, 2 | Blocks: 4, 7.
   References (executor has NO interview context - be exhaustive): `ABGameObject.cs:93-156,258-298`; `ABGameWorld.cs:372-403,665-789`; `tasks/task_template_designer/Assets/Scripts/AIBirdsConnection.cs:327-505,1581-1610`; `.omo/ulw-research/20260727-223250/cause-disappearance.md`; Unity contact API sources in task 1.
   Acceptance criteria (agent-executable): EditMode tests cover two-step support creation/removal, ground/static contact, trigger exclusion, pair ordering/deduplication, collision-per-fixed-step behavior, one-shot launch/destroy/terminal events, and overflow/timeout failure envelopes.
-  QA scenarios (name the exact tool + invocation): happy: `"$UNITY_2019_3" -batchmode -nographics -projectPath tasks/task_template_designer -runTests -testPlatform EditMode -testResults .omo/evidence/world-model-physics-instrumentation/task-3-physics.xml -quit`; failure: use fixture contacts that last one tick, reverse normal orientation, and exceed recorder capacity. Evidence `.omo/evidence/world-model-physics-instrumentation/task-3-physics.xml`.
+  QA scenarios (name the exact tool + invocation): happy: `"$UNITY_2019_4_40F1" -batchmode -nographics -projectPath "$MIGRATED_UNITY_PROJECT" -runTests -testPlatform EditMode -testResults .omo/evidence/world-model-physics-instrumentation/task-3-physics.xml -quit`; failure: use fixture contacts that last one tick, reverse normal orientation, and exceed recorder capacity. Evidence `.omo/evidence/world-model-physics-instrumentation/task-3-physics.xml`.
   Commit: Y | `feat(unity): record contacts support and physics macro events`
 
 - [ ] 4. Add a versioned direct-socket enriched-capture protocol and bridge API.
@@ -109,12 +129,12 @@ Wave 1 establishes the contract and engine exporter. Wave 2 adds transport, coll
   QA scenarios (name the exact tool + invocation): happy: `python -m unittest tests.test_prepare_rollout_dataset.PhysicsLauncherTests -v`; failure: `PHYSICS_CAPTURE_V1=1 OUT_ROOT=data/novphy_rollouts_dataset_20260708_171531 bash scripts/collect_full_rollout_training_dataset.sh --help` must exit nonzero before any write, captured in the test harness. Evidence `.omo/evidence/world-model-physics-instrumentation/task-6-launcher.txt`.
   Commit: Y | `feat(dataset): stage opt-in physics rollout collection`
 
-- [ ] 7. Build, package, and test a reproducible Unity 2019.3 enriched Linux player.
-  What to do / Must NOT do: Add a Unity Editor build entry point pinned to `2019.3.4f1`, build into a versioned staging path outside `sciencebirdsgames/Linux`, package an archive with a manifest recording Unity/project revision/schema/protocol versions and SHA-256s, and add an explicit rollback rule: failed build/test leaves the current player untouched. Rebuild only after tasks 2-4 pass; unpack the staged archive to a temporary worker clone and execute legacy request 62 plus request 70 compatibility tests. Do not use Unity 2019.4 APIs unavailable in 2019.3, overwrite the production player, or promote on a static assembly-symbol check alone.
+- [ ] 7. Build, package, and test a reproducible Unity 2019.4.40f1 enriched Linux player.
+  What to do / Must NOT do: Add a Unity Editor build entry point pinned to `2019.4.40f1 (ffc62b691db5)`, build from the migrated sibling worktree into a versioned staging path outside `sciencebirdsgames/Linux`, package an archive with a manifest recording canonical/migrated Unity revisions, project revision, schema/protocol versions, migration provenance, and SHA-256s, and add an explicit rollback rule: failed build/test leaves the current player and canonical project untouched. Rebuild only after tasks 2-4 pass; unpack the staged archive to a temporary worker clone and execute legacy request 62 plus request 70 compatibility tests. Do not overwrite the production player, silently rebuild existing asset bundles, or promote on a static assembly-symbol check alone.
   Parallelization: Wave 3 | Blocked by: 1-6 | Blocks: 8, F1-F4.
   References (executor has NO interview context - be exhaustive): `tasks/task_template_designer/ProjectSettings/ProjectVersion.txt:1-2`; `README.md:342-346,372-385`; `tasks/task_template_designer/Assets/Scripts/Editor/`; `sciencebirdsgames/Linux.zip`; `scripts/prepare_rollout_dataset.py:663-667`.
   Acceptance criteria (agent-executable): CI/local script invokes the pinned Unity executable, produces a staged archive and provenance manifest, verifies checksums after unpack, and proves the staged player handles legacy and v1 protocol fixtures; failure preserves hashes of `sciencebirdsgames/Linux` and the active data root.
-  QA scenarios (name the exact tool + invocation): happy: `"$UNITY_2019_3" -batchmode -nographics -projectPath tasks/task_template_designer -executeMethod NovPhyBuild.BuildPhysicsLinux -quit && python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1`; failure: run `python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha deadbeef` and require failure. Evidence `.omo/evidence/world-model-physics-instrumentation/task-7-build.txt`.
+  QA scenarios (name the exact tool + invocation): happy: `"$UNITY_2019_4_40F1" -batchmode -nographics -projectPath "$MIGRATED_UNITY_PROJECT" -executeMethod NovPhyBuild.BuildPhysicsLinux -quit && python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1`; failure: run `python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha deadbeef` and require failure. Evidence `.omo/evidence/world-model-physics-instrumentation/task-7-build.txt`.
   Commit: Y | `build(unity): package staged physics capture player`
 
 - [ ] 8. Run the dedicated live engine smoke test and establish promotion criteria.
@@ -146,7 +166,7 @@ Wave 1 establishes the contract and engine exporter. Wave 2 adds transport, coll
 - [ ] F1. Plan compliance audit
   Verify every todo's outputs, guardrails, schema fields, test receipts, commit boundaries, and dependency order against this plan; reject missing sidecar/temporal/provenance proof. Evidence `.omo/evidence/world-model-physics-instrumentation/f1-plan-compliance.txt`.
 - [ ] F2. Code quality review
-  Review Unity/C#/Python/shell changes for legacy protocol compatibility, bounded-memory behavior, atomic artifact lifecycle, deterministic ordering, and 2019.3 API compatibility. Evidence `.omo/evidence/world-model-physics-instrumentation/f2-code-quality.txt`.
+  Review Unity/C#/Python/shell changes for legacy protocol compatibility, bounded-memory behavior, atomic artifact lifecycle, deterministic ordering, exact 2019.4.40f1 compatibility, and immutable 2019.3 baseline preservation. Evidence `.omo/evidence/world-model-physics-instrumentation/f2-code-quality.txt`.
 - [ ] F3. Real manual QA
   Execute task 8's dedicated staged-player smoke flow plus legacy request 62 interaction and inspect machine-produced output only; verify the active cohort/player checksums did not change. Evidence `.omo/evidence/world-model-physics-instrumentation/f3-live-qa.json`.
 - [ ] F4. Scope fidelity
@@ -161,4 +181,4 @@ Wave 1 establishes the contract and engine exporter. Wave 2 adds transport, coll
 - An opt-in world-model data sample can expose only schema-valid, exact-frame `physics_capture_v1` supervision records while its default RGB/action path, temporal curriculum, and legacy RGB-only catalog behavior remain unchanged.
 - Existing request 38/62 callers, normal collector commands, and canonical RGB-only data still pass their preexisting test fixtures.
 - Enriched capture refuses unsafe roots, unstaged/unverified players, partial sidecars, malformed schema, protocol incompatibility, and temporal mismatch before producing an accepted episode.
-- The pinned Unity 2019.3 build, Python tests, staged-player verification, and live smoke report all pass before any promotion or full enriched rollout collection.
+- The pinned Unity 2019.4.40f1 migrated build, Python tests, staged-player verification, live smoke report, and byte-for-byte original project/player preservation checks all pass before any promotion or full enriched rollout collection.
