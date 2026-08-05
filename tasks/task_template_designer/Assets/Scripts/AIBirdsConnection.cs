@@ -400,6 +400,7 @@ public class AIBirdsConnection : ABSingleton<AIBirdsConnection>
             HUD.Instance.SimulatedTapTime = tapTime;
             // Start recording
             ABGameWorld.isRecordingBatchGroundTruth = true;
+            PhysicalSnapshotRuntime.BeginShotCallback(100000, 16 * 1024 * 1024, MAX_TOTAL_WAIT_TIME_FOR_BATCH);
 
             id = data [0];
 
@@ -1632,6 +1633,7 @@ public class AIBirdsConnection : ABSingleton<AIBirdsConnection>
         
         // read port from command line arguments, by default 9000 is used
         port = 9000;
+        int directPhysicsPort = 2004;
         var args = System.Environment.GetCommandLineArgs();
 
         for (int i = 0; i < args.Length; i++) {
@@ -1640,9 +1642,13 @@ public class AIBirdsConnection : ABSingleton<AIBirdsConnection>
                 port = Int32.Parse(args [i + 1]);
                 UnityEngine.Debug.Log("Assigned custom port: " + port);
             }
+            if (args [i] == "--physics-port") {
+                directPhysicsPort = Int32.Parse(args [i + 1]);
+                UnityEngine.Debug.Log("Assigned physics capture port: " + directPhysicsPort);
+            }
         }
 
-
+        PhysicsCaptureDirectSocket.Attach(gameObject, directPhysicsPort);
 
 
         socket = new WebSocket(new Uri("ws://localhost:" + port + "/"));
