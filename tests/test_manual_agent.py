@@ -441,7 +441,7 @@ class ManualAgentTest(unittest.TestCase):
                 return type("Process", (), {"pid": 1234})()
 
             with patch("scripts.manual_agent.subprocess.Popen", side_effect=fake_popen) as popen:
-                start_engine(game_dir, headless=True, agent_port=2014, game_port=9011)
+                start_engine(game_dir, headless=True, agent_port=2014, game_port=9011, physics_port=2015)
 
         self.assertEqual(
             popen.call_args.args[0],
@@ -454,6 +454,8 @@ class ManualAgentTest(unittest.TestCase):
                 "2014",
                 "--game-start-port",
                 "9011",
+                "--physics-port",
+                "2015",
                 "--dev",
             ],
         )
