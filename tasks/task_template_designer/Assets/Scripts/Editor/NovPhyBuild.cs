@@ -36,7 +36,7 @@ public static class NovPhyBuild
             scenes = scenes,
             locationPathName = output,
             target = BuildTarget.StandaloneLinux64,
-            options = BuildOptions.StrictMode
+            options = BuildOptions.NoUniqueIdentifier | BuildOptions.StrictMode
         };
         BuildReport report = BuildPipeline.BuildPlayer(options);
         if (report.summary.result != BuildResult.Succeeded || !File.Exists(output))
