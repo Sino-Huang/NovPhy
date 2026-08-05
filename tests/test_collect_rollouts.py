@@ -1,14 +1,25 @@
 import io
 import hashlib
 import json
+import shlex
 import shutil
 import signal
 import subprocess
+import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 from contextlib import redirect_stderr
 from unittest.mock import patch
+
+from scripts.prepare_rollout_dataset import (
+    CollectionOptions,
+    LevelEntry,
+    PhysicsCaptureProvenance,
+    PlannedEpisode,
+    WorkerSpec,
+    _collection_command_lines,
+)
 
 from scripts.collect_rollouts import (
     PRE_DRAG_OVERLAY_TEXT,
@@ -647,6 +658,89 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
             self.assertEqual(bridge.request_count, 2)
             self.assertEqual((current["player_sha256"], current["protocol_sha256"], current["archive_sha256"]), ("d" * 64, "e" * 64, "f" * 64))
             self.assertEqual((stale["player_sha256"], stale["protocol_sha256"], stale["archive_sha256"]), ("a" * 64, "b" * 64, "c" * 64))
+
+    def test_generated_enriched_desktop_worker_runs_through_actual_collector(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+        call_order = []
+
+        class Bridge(FakeBridge):
+            def shoot(self, *args, **kwargs):
+                raise AssertionError("enriched generated command must not use legacy shoot")
+
+            def shoot_and_record_ground_truth(self, x, y, tap_time=0, release_time=0, frequency=1):
+                call_order.append(("recorder-action", x, y, tap_time, release_time, frequency))
+                return 1
+
+            def get_physics_capture_v1(self):
+                call_order.append("request-70")
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        guard = {
+            "pre_shot_image": self._pre_shot(),
+            "pre_shot_sample": {"state": "PLAYING", "score": 0},
+            "post_recovery_protocol_state": {},
+            "recovery_action": None,
+            "pre_shot_guard": {"status": "accepted", "invalid_reason": None},
+        }
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            episode = PlannedEpisode(
+                split="train",
+                entry=LevelEntry("novelty_level_1", "type01001", "level.xml"),
+                output_dir=root / "rollouts",
+                source="scheduled",
+            )
+            provenance = PhysicsCaptureProvenance(
+                root / "player.tar",
+                root / "smoke.json",
+                "a" * 64,
+                "b" * 64,
+                "c" * 64,
+            )
+            command = " ".join(
+                line.strip().removesuffix("\\").strip()
+                for line in _collection_command_lines(
+                    episode,
+                    CollectionOptions(count=1, fps=1, duration=1),
+                    WorkerSpec(index=0, display=":149", agent_port=2004, game_port=9001),
+                    provenance,
+                )[2:]
+            )
+            argv = ["collect_rollouts.py", *shlex.split(command)]
+            bridge = Bridge()
+
+            def run_actual_collector(output_dir, actions, **kwargs):
+                return collect_rollouts(
+                    bridge,
+                    output_dir,
+                    actions,
+                    target_fps=kwargs["target_fps"],
+                    duration_seconds=kwargs["duration_seconds"],
+                    max_frames=1,
+                    capture_rollout=kwargs["capture_rollout"],
+                    shoot_before_capture=kwargs["shoot_before_capture"],
+                    anchor_actions=False,
+                    physics_capture_v1=kwargs["physics_capture_v1"],
+                    physics_player_sha256=kwargs["physics_player_sha256"],
+                    physics_protocol_sha256=kwargs["physics_protocol_sha256"],
+                    physics_archive_sha256=kwargs["physics_archive_sha256"],
+                )
+
+            with (
+                patch.object(sys, "argv", argv),
+                patch("scripts.collect_rollouts.collect_fresh_engine_rollouts", side_effect=run_actual_collector),
+                patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard),
+                patch("PIL.ImageGrab.grab"),
+            ):
+                main()
+
+            self.assertTrue((episode.output_dir / "shot_001").is_dir())
+            self.assertFalse((episode.output_dir / "shot_001.tmp").exists())
+            self.assertEqual(call_order[0][0], "recorder-action")
+            self.assertEqual(call_order[1], "request-70")
 
     def test_physics_capture_rejects_explicit_and_derived_frame_counts_above_contract(self):
         class Bridge:
