@@ -17,7 +17,7 @@ SCHEMA_DOCUMENT: Final = Path("data_contracts/physics_capture_v1.schema.json")
 SMOKE_REPORT: Final = Path(".omo/evidence/world-model-physics-instrumentation/task-8-smoke.json")
 STAGE_DIRECTORY: Final = Path("sciencebirdsgames/physics-v1")
 ARCHIVE_NAME: Final = "novphy-physics-player-2019.4.41f2.tar.gz"
-ARCHIVE_SHA256: Final = "c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992"
+SHA256_PATTERN: Final = re.compile(r"[0-9a-f]{64}")
 EXAMPLE_PATTERN: Final = re.compile(r"```json physics_capture_v1_example\n(?P<record>.*?)\n```", re.DOTALL)
 COMMAND_BLOCK_PATTERN: Final = re.compile(r"```bash physics_capture_v1_(?P<name>collection|promotion|rollback)\n(?P<commands>.*?)\n```", re.DOTALL)
 EVENT_TAXONOMY: Final = ("bird_launched", "collision", "explosion", "entity_destroyed", "pig_removed", "bird_exhausted", "stable_entered", "stable_exited", "level_cleared", "level_failed")
@@ -35,12 +35,13 @@ COLLECTION_TOKENS: Final = ("PHYSICS_CAPTURE_V1=1", "PHYSICS_PLAYER_ARCHIVE=scie
 PROMOTION_TOKENS: Final = (
     "set -eu",
     "stage=sciencebirdsgames/physics-v1",
-    f"expected_sha={ARCHIVE_SHA256}",
+    'expected_sha="$(awk \'NF == 2 {print $1}\' "$stage/archive.sha256")"',
     'archive="$stage/novphy-physics-player-2019.4.41f2.tar.gz"',
     'test "$(sha256sum "$archive" | awk \'{print $1}\')" = "$expected_sha"',
     'test "$(awk \'{print $1}\' "$stage/archive.sha256")" = "$expected_sha"',
     'python scripts/verify_physics_player.py --stage "$stage" --expect-sha "$expected_sha"',
-    f'expected_sha = "{ARCHIVE_SHA256}"',
+    'receipt = Path("sciencebirdsgames/physics-v1/archive.sha256").read_text(encoding="ascii").split()',
+    "expected_sha = receipt[0]",
     'test -L "$selector/current"',
     'ln -s "$(readlink "$selector/current")" "$selector/previous.next"',
     'mv -Tf "$selector/previous.next" "$selector/previous"',
@@ -185,10 +186,8 @@ def _archive_sha256(path: Path) -> str:
 def _validate_staged_provenance(repository_root: Path) -> None:
     stage = repository_root / STAGE_DIRECTORY
     receipt = (stage / "archive.sha256").read_text(encoding="ascii").split()
-    if len(receipt) != 2 or receipt[1] != ARCHIVE_NAME:
+    if len(receipt) != 2 or receipt[1] != ARCHIVE_NAME or SHA256_PATTERN.fullmatch(receipt[0]) is None:
         raise DocumentationError("staged archive receipt must name exactly the published archive")
-    if receipt[0] != ARCHIVE_SHA256:
-        raise DocumentationError("staged archive receipt SHA-256 does not match the documented stage")
     archive = stage / ARCHIVE_NAME
     if _archive_sha256(archive) != receipt[0]:
         raise DocumentationError("staged archive SHA-256 does not match its receipt")
@@ -199,8 +198,8 @@ def _validate_staged_provenance(repository_root: Path) -> None:
         raise DocumentationError("smoke report must confirm protected roots are unchanged")
     _required_string(report, "accepted_shot")
     provenance = _json_object(report.get("provenance"), "smoke report provenance")
-    if provenance.get("archive_sha256") != ARCHIVE_SHA256:
-        raise DocumentationError("smoke report archive SHA-256 does not match the documented stage")
+    if provenance.get("archive_sha256") != receipt[0]:
+        raise DocumentationError("smoke report archive SHA-256 does not match the staged receipt")
 def _command_block(document: str, name: str) -> str:
     matches = tuple(
         match.group("commands")

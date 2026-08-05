@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
@@ -15,6 +16,14 @@ UNITY_VERSION: Final = "2019.4.41f2"
 UNITY_CHANGESET: Final = "6b23d448b533"
 CAPTURE_SCHEMA: Final = "physics_capture_v1"
 PROTOCOL_VERSION: Final = 1
+
+
+@dataclass(frozen=True, slots=True)
+class PackagingError(RuntimeError):
+    reason: str
+
+    def __str__(self) -> str:
+        return self.reason
 
 
 def sha256_file(path: Path) -> str:
@@ -37,18 +46,26 @@ def git_revision(worktree: Path) -> tuple[str, str]:
     head = subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=worktree, text=True, capture_output=True, check=True
     ).stdout.strip()
-    status = subprocess.run(
-        ["git", "status", "--short", "--untracked-files=all"],
+    tree = subprocess.run(
+        ["git", "rev-parse", "HEAD^{tree}"],
         cwd=worktree,
         text=True,
         capture_output=True,
         check=True,
-    ).stdout.encode("utf-8")
-    return head, hashlib.sha256(status).hexdigest()
+    ).stdout.strip()
+    source_diff = subprocess.run(
+        ["git", "diff", "--quiet", "HEAD", "--", ".", ":(exclude).omo", ":(exclude).omo/**"],
+        cwd=worktree,
+        check=False,
+    )
+    if source_diff.returncode == 1:
+        raise PackagingError("tracked product source differs from HEAD")
+    source_diff.check_returncode()
+    return head, tree
 
 
 def write_manifest(payload: Path, worktree: Path, migration_provenance: Path) -> Path:
-    head, worktree_state = git_revision(worktree)
+    head, tree = git_revision(worktree)
     manifest = {
         "schema_version": STAGE_SCHEMA,
         "unity": {
@@ -57,7 +74,7 @@ def write_manifest(payload: Path, worktree: Path, migration_provenance: Path) ->
             "version": UNITY_VERSION,
             "changeset": UNITY_CHANGESET,
         },
-        "project": {"git_head": head, "worktree_state_sha256": worktree_state},
+        "project": {"git_head": head, "git_tree": tree},
         "capture": {"schema_version": CAPTURE_SCHEMA, "protocol_version": PROTOCOL_VERSION},
         "migration": {
             "provenance_file": migration_provenance.name,
@@ -97,8 +114,8 @@ def main() -> int:
     parser.add_argument("--worktree", type=Path, required=True)
     parser.add_argument("--migration-provenance", type=Path, required=True)
     args = parser.parse_args()
-    args.stage.mkdir(parents=True, exist_ok=True)
     write_manifest(args.payload, args.worktree, args.migration_provenance)
+    args.stage.mkdir(parents=True, exist_ok=True)
     archive = args.stage / "novphy-physics-player-2019.4.41f2.tar.gz"
     create_archive(args.payload, archive)
     (args.stage / "archive.sha256").write_text(

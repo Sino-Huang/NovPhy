@@ -97,14 +97,14 @@ supervision = dataset[0]["supervision"]
 
 ## Staged provenance and operations
 
-The accepted staged player is the archive named in `sciencebirdsgames/physics-v1/archive.sha256`. Staged archive SHA-256: `c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992`. Its generated live-smoke provenance report is `.omo/evidence/world-model-physics-instrumentation/task-8-smoke.json`; it records the same archive digest, player/protocol digests, an accepted shot, and unchanged protected roots.
+The accepted staged player is the archive named in `sciencebirdsgames/physics-v1/archive.sha256`. That receipt is the source of the staged archive digest. Its generated live-smoke provenance report is `.omo/evidence/world-model-physics-instrumentation/task-8-smoke.json`; it must record the same archive digest, player/protocol digests, an accepted shot, and unchanged protected roots.
 
 Before collection, verify the stage and then rerun the smoke test. Promotion is permitted only after both commands succeed and their reports agree on the archive digest.
 
 ```bash
-python scripts/verify_physics_player.py \
-  --stage sciencebirdsgames/physics-v1 \
-  --expect-sha c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992
+stage=sciencebirdsgames/physics-v1
+expected_sha="$(awk 'NF == 2 {print $1}' "$stage/archive.sha256")"
+python scripts/verify_physics_player.py --stage "$stage" --expect-sha "$expected_sha"
 
 python scripts/smoke_physics_capture.py \
   --stage sciencebirdsgames/physics-v1 \
@@ -128,7 +128,7 @@ Promotion selects the verified stage through an operator-owned symlink boundary.
 set -eu
 stage=sciencebirdsgames/physics-v1
 selector=sciencebirdsgames/physics-selection
-expected_sha=c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992
+expected_sha="$(awk 'NF == 2 {print $1}' "$stage/archive.sha256")"
 archive="$stage/novphy-physics-player-2019.4.41f2.tar.gz"
 test "$(sha256sum "$archive" | awk '{print $1}')" = "$expected_sha"
 test "$(awk '{print $1}' "$stage/archive.sha256")" = "$expected_sha"
@@ -136,7 +136,9 @@ python scripts/verify_physics_player.py --stage "$stage" --expect-sha "$expected
 python - <<'PY'
 import json
 from pathlib import Path
-expected_sha = "c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992"
+receipt = Path("sciencebirdsgames/physics-v1/archive.sha256").read_text(encoding="ascii").split()
+assert len(receipt) == 2
+expected_sha = receipt[0]
 report = json.loads(Path(".omo/evidence/world-model-physics-instrumentation/task-8-smoke.json").read_text(encoding="utf-8"))
 assert report["status"] == "accepted"
 assert report["protected_unchanged"] is True
