@@ -133,13 +133,16 @@ public class SymbolicGameState
             string blockName = gameObject.GetComponent<SpriteRenderer>().sprite.name;
             if (gameObject.name == "BasicSmall(Clone)" || gameObject.name == "BasicMedium(Clone)" || gameObject.name == "BasicBig(Clone)")
             {
+                PolygonCollider2D collider = gameObject.GetComponent<PolygonCollider2D>();
+                if (collider == null)
+                    continue;
                 float hp = gameObject.GetComponent<ABGameObject>().getCurrentLife();
                 string pigID = gameObject.GetInstanceID().ToString();
-                int pathCount = gameObject.GetComponent<PolygonCollider2D>().pathCount;
+                int pathCount = collider.pathCount;
                 List<Vector2[]> paths = new List<Vector2[]>();
 //                ObjectContour[] noisyPaths = new ObjectContour[pathCount];
                 for(int i = 0; i < pathCount; i++ ){
-                    Vector2[] objPoints = gameObject.GetComponent<PolygonCollider2D>().GetPath(i);
+                    Vector2[] objPoints = collider.GetPath(i);
                     
                     //vertices that is in unity coordinate system
                     //the origin is buttom-left corner 
@@ -174,7 +177,7 @@ public class SymbolicGameState
                 string objectType = "Object";
                 if(this.devMode){
                     objectType = blockName;
-                }                    
+                }
                 GTObject pig = new GTObject(pigID, objectType, objColors, paths, hp);
                 gtJson = gtJson + pig.ToJsonString(this.devMode) + ',';
             }
@@ -192,6 +195,9 @@ public class SymbolicGameState
 
             if (gameObject.GetComponent<SpriteRenderer>().color.a != 0)
             {   
+                PolygonCollider2D collider = gameObject.GetComponent<PolygonCollider2D>();
+                if (collider == null)
+                    continue;
                 bool outOfBound = false;
                 float hp = gameObject.GetComponent<ABGameObject>().getCurrentLife();
                 //filter out invisible objects
@@ -199,10 +205,10 @@ public class SymbolicGameState
                 //     continue;
                 // }
                 string birdID = gameObject.GetInstanceID().ToString();
-                int pathCount = gameObject.GetComponent<PolygonCollider2D>().pathCount;
+                int pathCount = collider.pathCount;
                 List<Vector2[]> paths = new List<Vector2[]>();
                 for(int i = 0; i < pathCount; i++ ){
-                    Vector2[] objPoints = gameObject.GetComponent<PolygonCollider2D>().GetPath(i);
+                    Vector2[] objPoints = collider.GetPath(i);
                     Vector3[] screenPoints = new Vector3[objPoints.Length];
                     Vector2[] noisePoints = new Vector2[objPoints.Length];
 
