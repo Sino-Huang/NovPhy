@@ -1,5 +1,7 @@
 import importlib.util
+import hashlib
 import json
+import shutil
 import tempfile
 import unittest
 from dataclasses import FrozenInstanceError, dataclass
@@ -130,6 +132,87 @@ def make_complete_rollout_episode(
         encoding="utf-8",
     )
     return output_dir
+
+
+def make_physics_rollout_episode(output_dir: Path) -> Path:
+    episode_dir = make_complete_rollout_episode(
+        output_dir,
+        RolloutFixtureSpec(frame_count=2, shot_count=1, fps=1.0, duration_seconds=1.0),
+    )
+    _fix_episode_for_count1(episode_dir)
+    shot_dir = episode_dir / "shot_001"
+    fixture_dir = Path(__file__).parent / "fixtures" / "physics_capture_v1"
+    states = [
+        json.loads(line)
+        for line in (fixture_dir / "physics_state.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    events = [
+        json.loads(line)
+        for line in (fixture_dir / "physics_events.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    shutil.rmtree(shot_dir / "frames")
+    (shot_dir / "frames").mkdir()
+    frame_checksums = []
+    for index, state in enumerate(states[1:]):
+        frame_path = shot_dir / "frames" / f"frame_{index:06d}.png"
+        Image.new("RGB", (640, 480), (index + 1, 2, 3)).save(frame_path, format="PNG")
+        frame_checksums.append(
+            {
+                "relative_path": f"frames/{frame_path.name}",
+                "sha256": hashlib.sha256(frame_path.read_bytes()).hexdigest(),
+            }
+        )
+    state_path = shot_dir / "physics_state.jsonl"
+    event_path = shot_dir / "physics_events.jsonl"
+    state_path.write_text(
+        "".join(f"{json.dumps(record, sort_keys=True, separators=(',', ':'))}\n" for record in states),
+        encoding="utf-8",
+    )
+    event_path.write_text(
+        "".join(f"{json.dumps(record, sort_keys=True, separators=(',', ':'))}\n" for record in events),
+        encoding="utf-8",
+    )
+    metadata = {
+        "capture_contract": "physics_capture_v1",
+        "schema_version": "physics_capture_v1",
+        "protocol_version": 1,
+        "player_sha256": "a" * 64,
+        "protocol_sha256": "b" * 64,
+        "archive_sha256": "c" * 64,
+        "frame_count": 2,
+        "frames_dir": "frames",
+        "frames": [{"path": f"frames/frame_{index:06d}.png"} for index in range(2)],
+        "frame_checksums": frame_checksums,
+        "physics_state_path": "physics_state.jsonl",
+        "physics_events_path": "physics_events.jsonl",
+        "physics_state_count": 2,
+        "physics_event_count": len(events),
+        "physics_state_sha256": hashlib.sha256(state_path.read_bytes()).hexdigest(),
+        "physics_events_sha256": hashlib.sha256(event_path.read_bytes()).hexdigest(),
+        "sidecars_closed": True,
+    }
+    (shot_dir / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+    manifest_path = episode_dir / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["capture_source"] = "capture_physics_rollout"
+    manifest["target_fps"] = 1.0
+    manifest["duration_seconds"] = 1.0
+    manifest["capture_contract"] = {
+        "contract_name": world_model_data.PHYSICS_CAPTURE_V1.contract_name,
+        "contract_version": world_model_data.PHYSICS_CAPTURE_V1.contract_version,
+        "artifact_layout_version": world_model_data.PHYSICS_CAPTURE_V1.artifact_layout_version,
+        "player_sha256": "a" * 64,
+        "protocol_sha256": "b" * 64,
+        "archive_sha256": "c" * 64,
+        "declared_capabilities": list(world_model_data.PHYSICS_CAPTURE_V1.declared_capabilities),
+        "sidecar_paths": [
+            {"relative_path": sidecar.relative_path, "capabilities": list(sidecar.capabilities)}
+            for sidecar in world_model_data.PHYSICS_CAPTURE_V1.sidecar_paths
+        ],
+    }
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    (shot_dir / "pre_shot.png").unlink()
+    return episode_dir
 
 
 class WorldModelDataFixtureTests(unittest.TestCase):
@@ -2764,3 +2847,96 @@ class WorldModelDataIntegrationTests(unittest.TestCase):
             ))
             self.assertIsNone(disjointness_result)
             self.assertFalse(hasattr(catalog, "leakage_validated"))
+
+
+class PhysicsSupervisionReaderTests(unittest.TestCase):
+    def _build_catalog(self, root: Path):
+        make_physics_rollout_episode(root / "train" / "episode_001")
+        return world_model_data.EpisodeCatalog.build(root, "train", world_model_data.PHYSICS_CAPTURE_V1, required_capabilities=world_model_data.PHYSICS_CAPTURE_V1_CAPABILITIES)
+
+    def test_valid_enriched_fixture_maps_exact_immutable_supervision(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            catalog = self._build_catalog(Path(temporary))
+            request = world_model_data.PhysicsSupervisionRequest(world_model_data.PHYSICS_CAPTURE_V1_CAPABILITIES, True, True)
+            sample = world_model_data.TemporalWindowDataset(catalog, world_model_data.TemporalWindowRequest(1, 1), supervision=request)[0]
+            supervision = sample["supervision"]
+            self.assertIsInstance(supervision, tuple)
+            self.assertEqual(tuple(frame.render_frame for frame in supervision), (100, 101))
+            self.assertEqual(tuple(frame.frame_index for frame in supervision), (0, 1))
+            self.assertIsInstance(supervision[0], world_model_data.PhysicsFrameSupervision)
+            self.assertIsInstance(supervision[0].nodes[0].screen_polygon, tuple)
+            self.assertEqual((len(supervision[1].raw_contacts), len(supervision[1].support_edges)), (2, 2))
+            self.assertNotEqual(supervision[1].raw_contacts, supervision[1].support_edges)
+            self.assertTrue(all(isinstance(event, world_model_data.PhysicsEvent) for event in supervision[1].events))
+            self.assertEqual(supervision[0].coordinates.velocity_unit, "unity_unit/second")
+            self.assertEqual(supervision[0].coordinates.mass_unit, "unity_mass_unit")
+            self.assertEqual(supervision[0].rgb_source, "synchronized_endpoint")
+            with self.assertRaises(FrozenInstanceError):
+                supervision[0].render_frame = 999
+
+    def test_undeclared_capability_raises_contract_error(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            catalog = self._build_catalog(Path(temporary))
+            request = world_model_data.PhysicsSupervisionRequest(("undeclared_capability",))
+            with self.assertRaises(world_model_data.ContractValueError):
+                world_model_data.TemporalWindowDataset(
+                    catalog,
+                    world_model_data.TemporalWindowRequest(1, 1),
+                    supervision=request,
+                )
+
+    def test_raw_contact_and_event_flags_filter_without_tensorizing_graphs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            catalog = self._build_catalog(Path(temporary))
+            request = world_model_data.PhysicsSupervisionRequest(("scene_nodes", "derived_support"), False, False)
+            sample = world_model_data.TemporalWindowDataset(catalog, world_model_data.TemporalWindowRequest(1, 1), supervision=request)[0]
+            supervision = sample["supervision"]
+            self.assertEqual((supervision[1].raw_contacts, supervision[1].events), ((), ()))
+            self.assertEqual(len(supervision[1].support_edges), 2)
+            self.assertNotIsInstance(supervision[1].support_edges, __import__("torch").Tensor)
+
+    def test_required_capability_rejects_legacy_rgb_episode(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            episode = make_complete_rollout_episode(root / "train" / "episode_001", RolloutFixtureSpec(frame_count=2, shot_count=1))
+            _fix_episode_for_count1(episode)
+            with self.assertRaises(world_model_data.RequiredCapabilityError):
+                world_model_data.EpisodeCatalog.build(root, "train", world_model_data.LEGACY_RGB_V1, required_capabilities=("scene_nodes",))
+
+    def test_rejects_missing_corrupt_stale_or_render_misaligned_sidecars(self):
+        mutations = {
+            "missing": lambda shot: (shot / "physics_events.jsonl").unlink(),
+            "corrupt": lambda shot: (shot / "physics_state.jsonl").write_text('{"schema_version":', encoding="utf-8"),
+            "stale": lambda shot: self._rewrite_state(shot, 1, "schema_version", "physics_capture_v0"),
+            "misaligned": lambda shot: self._rewrite_rgb(shot, 1, 999),
+            "duplicate": lambda shot: self._rewrite_state(shot, 2, "sequence", 1),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                episode = make_physics_rollout_episode(root / "train" / "episode_001")
+                mutate(episode / "shot_001")
+                catalog = world_model_data.EpisodeCatalog.build(root, "train", world_model_data.PHYSICS_CAPTURE_V1, required_capabilities=("scene_nodes",))
+                self.assertEqual((catalog.episodes, catalog.rejection_count), ((), 1))
+
+    def test_snapshot_survives_post_catalog_sidecar_drift(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            catalog = self._build_catalog(root)
+            dataset = world_model_data.TemporalWindowDataset(catalog, world_model_data.TemporalWindowRequest(1, 1), supervision=world_model_data.PhysicsSupervisionRequest(("scene_nodes",), False, False))
+            (root / "train/episode_001/shot_001/physics_state.jsonl").write_text('{"corrupt":true}\n', encoding="utf-8")
+            self.assertEqual(tuple(frame.render_frame for frame in dataset[0]["supervision"]), (100, 101))
+
+    @staticmethod
+    def _rewrite_state(shot: Path, index: int, field: str, value) -> None:
+        path = shot / "physics_state.jsonl"
+        records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+        records[index][field] = value
+        path.write_text("".join(f"{json.dumps(record)}\n" for record in records), encoding="utf-8")
+
+    @staticmethod
+    def _rewrite_rgb(shot: Path, index: int, value: int) -> None:
+        path = shot / "physics_state.jsonl"
+        records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+        records[index]["rgb_frame"]["render_frame"] = value
+        path.write_text("".join(f"{json.dumps(record)}\n" for record in records), encoding="utf-8")
