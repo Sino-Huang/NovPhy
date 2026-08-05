@@ -15,6 +15,8 @@ public class ABTNT : ABGameObject
         if (!_exploded)
         {
             _exploded = true;
+            PhysicalSnapshotRuntime.RecordTntExplosionCallback(
+                PhysicalSnapshotRuntime.EntityIdForCallback(gameObject), _explosionArea);
             Explode(transform.position, _explosionArea, _explosionPower, _explosionDamage, gameObject);
         }
 

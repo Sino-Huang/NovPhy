@@ -125,6 +125,7 @@ public class ABBird : ABCharacter
 
     public override void OnCollisionEnter2D(Collision2D collision)
     {
+        base.OnCollisionEnter2D(collision);
         if (OutOfSlingShot && !IsDying)
         {
             IsFlying = false;
@@ -301,6 +302,8 @@ public class ABBird : ABCharacter
 
     public void LaunchBird()
     {
+        PhysicalSnapshotRuntime.RecordLaunchCallback(
+            PhysicalSnapshotRuntime.EntityIdForCallback(gameObject), _rigidBody.velocity);
         _animator.Play("flying", 0, 0f);
 
         IsFlying = true;

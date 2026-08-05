@@ -101,6 +101,7 @@ public class ABGameObject : MonoBehaviour
 
     public virtual void Die(bool withEffect = true)
     {
+        PhysicalSnapshotRuntime.RecordDeathCallback(PhysicalSnapshotRuntime.EntityIdForCallback(gameObject));
         if (!ABGameWorld.Instance._isSimulation && withEffect)
         {
 
@@ -117,12 +118,13 @@ public class ABGameObject : MonoBehaviour
 
     private void WaitParticlesAndDestroy()
     {
-
+        PhysicalSnapshotRuntime.RecordDestroyedCallback(PhysicalSnapshotRuntime.EntityIdForCallback(gameObject));
         Destroy(gameObject);
     }
 
     public virtual void OnCollisionEnter2D(Collision2D collision)
     {
+        PhysicalSnapshotRuntime.RecordCollisionCallback(collision);
         float damage = 0f;
 
         // if this object has rigidbody
