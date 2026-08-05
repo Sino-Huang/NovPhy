@@ -1,5 +1,7 @@
 import io
+import hashlib
 import json
+import shutil
 import signal
 import subprocess
 from pathlib import Path
@@ -14,6 +16,9 @@ from scripts.collect_rollouts import (
     _launch_guide_points,
     action_to_shot,
     capture_desktop_rollout,
+    capture_physics_rollout,
+    cleanup_incomplete_physics_attempts,
+    recover_physics_capture_attempts,
     collect_fresh_engine_rollouts,
     collect_rollouts,
     build_parser,
@@ -28,6 +33,776 @@ from scripts.collect_rollouts import (
     validate_rollout_artifact,
     write_action_plan,
 )
+from scripts.rollout_artifacts import validate_physics_shot_artifact
+from scripts.rollout_validation_types import PhysicsArtifactError
+from scripts.physics_capture_contract import PhysicsContractError, load_physics_capture
+from scripts.physics_rollout_contract import MAX_TOTAL_BYTES
+
+PHYSICS_FIXTURES = Path(__file__).parent / "fixtures" / "physics_capture_v1"
+
+class PhysicsCapturePersistenceTests(unittest.TestCase):
+    @staticmethod
+    def _records():
+        states = [json.loads(line) for line in (PHYSICS_FIXTURES / "physics_state.jsonl").read_text(encoding="utf-8").splitlines()]
+        events = [json.loads(line) for line in (PHYSICS_FIXTURES / "physics_events.jsonl").read_text(encoding="utf-8").splitlines()]
+        for record in states + events:
+            record["shot_id"] = "shot_000"
+        states[1]["rgb_frame"].update({"relative_path": "frames/frame_000000.png", "width_pixels": 4, "height_pixels": 3})
+        return states, events
+
+    @staticmethod
+    def _png():
+        from PIL import Image
+
+        data = io.BytesIO()
+        Image.new("RGB", (4, 3), (30, 20, 10)).save(data, format="PNG")
+        return data.getvalue()
+
+    def test_persistence_error_supports_standard_exception_traceback_state(self):
+        from scripts.physics_rollout_contract import PersistenceErrorCode, PhysicsPersistenceError
+
+        error = PhysicsPersistenceError(PersistenceErrorCode.MALFORMED_CAPTURE, "invalid")
+        error.__traceback__ = None
+
+        self.assertIsNone(error.__traceback__)
+
+    def test_valid_capture_has_closed_sidecars_and_exact_pair(self):
+        from src.webui.bridge import PhysicsCaptureV1
+        records, events = self._records()
+        png = self._png()
+        class Bridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+        with TemporaryDirectory() as temporary:
+            shot = Path(temporary) / "shot_000.tmp"
+            metadata = capture_physics_rollout(Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1, state_header=records[0], player_sha256="a" * 64, protocol_sha256="b" * 64, archive_sha256="c" * 64, clock=lambda: 0.0, sleeper=lambda _seconds: None)
+            self.assertTrue(metadata["sidecars_closed"])
+            self.assertTrue(validate_rollout_artifact(shot, capture_contract="physics_capture_v1")["accepted"])
+            self.assertEqual(metadata["frame_checksums"][0]["sha256"], hashlib.sha256(png).hexdigest())
+
+    def test_persistence_accepts_immutable_nested_mapping_from_real_decoder(self):
+        from src.webui.bridge import ScienceBirdsBridge, encode_physics_capture_v1
+
+        records, _ = self._records()
+        png = self._png()
+        response = bytearray(encode_physics_capture_v1(png, records[1], []))
+
+        class Socket:
+            def settimeout(self, _timeout):
+                pass
+
+            def connect(self, _address):
+                pass
+
+            def sendall(self, data):
+                self.request = data
+
+            def recv(self, size):
+                chunk = response[:size]
+                del response[:size]
+                return bytes(chunk)
+
+            def close(self):
+                pass
+
+        socket = Socket()
+        bridge = ScienceBirdsBridge(socket_factory=lambda *_args: socket)
+        with TemporaryDirectory() as temporary:
+            shot = Path(temporary) / "shot_000.tmp"
+            metadata = capture_physics_rollout(
+                bridge,
+                shot,
+                target_fps=1,
+                duration_seconds=1,
+                max_frames=1,
+                state_header=records[0],
+                player_sha256="a" * 64,
+                protocol_sha256="b" * 64,
+                archive_sha256="c" * 64,
+                clock=lambda: 0.0,
+                sleeper=lambda _seconds: None,
+            )
+
+        self.assertEqual(socket.request, b"\x46")
+        self.assertEqual(metadata["frame_count"], 1)
+
+    def test_physics_capture_requests_are_paced_at_target_fps(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        # Given: a deterministic monotonic clock and a two-frame request-70 capture.
+        records, _ = self._records()
+        png = self._png()
+        virtual_time = 0.0
+        request_times = []
+        sleep_durations = []
+
+        class Bridge:
+            request_count = 0
+
+            def get_physics_capture_v1(self):
+                state = json.loads(json.dumps(records[1]))
+                request_times.append(virtual_time)
+                state["sequence"] += self.request_count
+                state["render_frame"] += self.request_count
+                state["fixed_step"] += self.request_count
+                state["render_time"] += self.request_count / 2
+                state["fixed_time"] += self.request_count / 2
+                state["rgb_frame"]["render_frame"] = state["render_frame"]
+                self.request_count += 1
+                return PhysicsCaptureV1(png, state, ())
+
+        def clock():
+            return virtual_time
+
+        def sleeper(seconds):
+            nonlocal virtual_time
+            sleep_durations.append(seconds)
+            virtual_time += seconds
+
+        # When: capture runs at two frames per second without real sleeping.
+        with TemporaryDirectory() as temporary:
+            capture_physics_rollout(
+                Bridge(),
+                Path(temporary) / "shot_000.tmp",
+                target_fps=2,
+                duration_seconds=1,
+                max_frames=2,
+                state_header=records[0],
+                clock=clock,
+                sleeper=sleeper,
+                player_sha256="a" * 64,
+                protocol_sha256="b" * 64,
+                archive_sha256="c" * 64,
+            )
+
+        # Then: request timestamps, not implementation calls, prove pacing.
+        self.assertEqual(request_times, [0.0, 0.5])
+        self.assertEqual(sleep_durations, [0.5])
+
+    def test_empty_event_stream_is_a_valid_closed_sidecar(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, _ = self._records()
+        png = self._png()
+        class Bridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], ())
+        with TemporaryDirectory() as temporary:
+            shot = Path(temporary) / "shot_000.tmp"
+            capture_physics_rollout(Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1, state_header=records[0], player_sha256="a" * 64, protocol_sha256="b" * 64, archive_sha256="c" * 64)
+            self.assertEqual((shot / "physics_events.jsonl").read_bytes(), b"")
+            self.assertTrue(validate_rollout_artifact(shot, capture_contract="physics_capture_v1")["accepted"])
+
+    def test_physics_capture_uses_recorder_backed_action_before_request_70(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+        call_order = []
+
+        class Bridge(FakeBridge):
+            def shoot(self, *args, **kwargs):
+                raise AssertionError("physics capture must not use legacy shoot")
+
+            def shoot_and_record_ground_truth(self, x, y, tap_time=0, release_time=0, frequency=1):
+                call_order.append(("recorder-action", x, y, tap_time, release_time, frequency))
+                return 1
+
+            def get_physics_capture_v1(self):
+                call_order.append("request-70")
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        action = {"coordinate_frame": "absolute", "drag_start": [100, 200], "drag_release": [130, 150], "tapTime": 70, "holdTime": 600}
+        guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
+        with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
+            manifest = collect_rollouts(Bridge(), Path(temporary), [action], target_fps=1, duration_seconds=1, max_frames=1, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64)
+
+        self.assertEqual(call_order[0][0], "recorder-action")
+        self.assertEqual(call_order[1], "request-70")
+        self.assertEqual(manifest["rollout_count"], 1)
+
+    def test_missing_provenance_and_sidecar_fail_closed(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+        class Bridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+        with TemporaryDirectory() as temporary:
+            shot = Path(temporary) / "shot_000.tmp"
+            capture_physics_rollout(Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1, state_header=records[0], player_sha256="a" * 64, protocol_sha256="b" * 64, archive_sha256="c" * 64)
+            metadata = json.loads((shot / "metadata.json").read_text(encoding="utf-8"))
+            del metadata["archive_sha256"]
+            (shot / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+            self.assertFalse(validate_rollout_artifact(shot, capture_contract="physics_capture_v1")["accepted"])
+
+    def test_fixed_name_state_sidecar_symlink_outside_shot_is_rejected(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class Bridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shot = root / "shot_000.tmp"
+            capture_physics_rollout(
+                Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
+                state_header=records[0], player_sha256="a" * 64,
+                protocol_sha256="b" * 64, archive_sha256="c" * 64,
+            )
+            state_path = shot / "physics_state.jsonl"
+            external_state = root / "external-state.jsonl"
+            state_path.replace(external_state)
+            state_path.symlink_to(external_state)
+
+            with self.assertRaisesRegex(PhysicsArtifactError, "symlink|outside"):
+                validate_physics_shot_artifact(shot)
+            self.assertFalse(validate_rollout_artifact(shot, capture_contract="physics_capture_v1")["accepted"])
+
+    def test_physics_frame_symlink_is_rejected_before_image_open(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class Bridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shot = root / "shot_000.tmp"
+            capture_physics_rollout(
+                Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
+                state_header=records[0], player_sha256="a" * 64,
+                protocol_sha256="b" * 64, archive_sha256="c" * 64,
+            )
+            frame_path = shot / "frames" / "frame_000000.png"
+            external_frame = root / "external-frame.png"
+            frame_path.replace(external_frame)
+            frame_path.symlink_to(external_frame)
+
+            with self.assertRaisesRegex(PhysicsArtifactError, "symlink|outside"):
+                validate_physics_shot_artifact(shot)
+
+    def test_physics_frame_relative_path_cannot_escape_shot_root(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class Bridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shot = root / "shot_000.tmp"
+            capture_physics_rollout(
+                Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
+                state_header=records[0], player_sha256="a" * 64,
+                protocol_sha256="b" * 64, archive_sha256="c" * 64,
+            )
+            state_path = shot / "physics_state.jsonl"
+            state_records = [json.loads(line) for line in state_path.read_text(encoding="utf-8").splitlines()]
+            state_records[1]["rgb_frame"]["relative_path"] = "../external-frame.png"
+            state_path.write_text(
+                "".join(json.dumps(record, separators=(",", ":")) + "\n" for record in state_records),
+                encoding="utf-8",
+            )
+            frame_path = shot / "frames" / "frame_000000.png"
+            frame_path.replace(root / "external-frame.png")
+
+            with self.assertRaisesRegex(PhysicsArtifactError, "outside"):
+                validate_physics_shot_artifact(shot)
+
+    def test_checked_sidecar_and_frame_cannot_be_swapped_to_external_symlink(self):
+        from scripts import physics_artifact_validation
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class Bridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        for relative_path in (Path("physics_state.jsonl"), Path("frames/frame_000000.png")):
+            with self.subTest(relative_path=relative_path), TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                shot = root / "shot_000.tmp"
+                capture_physics_rollout(
+                    Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
+                    state_header=records[0], player_sha256="a" * 64,
+                    protocol_sha256="b" * 64, archive_sha256="c" * 64,
+                )
+                target = shot / relative_path
+                external = root / f"external-{target.name}"
+                shutil.copy2(target, external)
+                original_confined_file = physics_artifact_validation._confined_file
+                swapped = False
+
+                def swap_after_check(path, confined_root):
+                    nonlocal swapped
+                    checked = original_confined_file(path, confined_root)
+                    if path == target:
+                        target.unlink()
+                        target.symlink_to(external)
+                        swapped = True
+                    return checked
+
+                with (
+                    patch("scripts.physics_artifact_validation._confined_file", side_effect=swap_after_check),
+                    self.assertRaisesRegex(PhysicsArtifactError, "symlink|changed|outside"),
+                ):
+                    validate_physics_shot_artifact(shot)
+                self.assertTrue(swapped, "the regression did not exercise the post-check swap")
+
+    def test_oversized_sidecars_are_rejected_before_jsonl_reader_runs(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state_path = root / "physics_state.jsonl"
+            event_path = root / "physics_events.jsonl"
+            with state_path.open("wb") as stream:
+                stream.truncate(MAX_TOTAL_BYTES + 1)
+            event_path.touch()
+
+            with (
+                patch(
+                    "scripts.physics_capture_parsing._read_jsonl",
+                    side_effect=AssertionError("oversized sidecar reached JSONL reader"),
+                ),
+                self.assertRaisesRegex(PhysicsContractError, "byte|limit|size"),
+            ):
+                load_physics_capture(state_path, event_path)
+
+    def test_physics_artifact_hashing_does_not_materialize_whole_files(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class Bridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        with TemporaryDirectory() as temporary:
+            shot = Path(temporary) / "shot_000.tmp"
+            capture_physics_rollout(
+                Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
+                state_header=records[0], player_sha256="a" * 64,
+                protocol_sha256="b" * 64, archive_sha256="c" * 64,
+            )
+
+            with patch.object(Path, "read_bytes", side_effect=AssertionError("whole-file hash read")):
+                summary = validate_physics_shot_artifact(shot)
+
+            self.assertEqual(summary.state_count, 1)
+
+    def test_physics_artifact_validation_does_not_use_whole_file_text_reads(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class Bridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        with TemporaryDirectory() as temporary:
+            shot = Path(temporary) / "shot_000.tmp"
+            capture_physics_rollout(
+                Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
+                state_header=records[0], player_sha256="a" * 64,
+                protocol_sha256="b" * 64, archive_sha256="c" * 64,
+            )
+
+            with patch.object(Path, "read_text", side_effect=AssertionError("whole-file text read")):
+                summary = validate_physics_shot_artifact(shot)
+
+            self.assertEqual(summary.state_count, 1)
+
+    def test_corrupt_completed_attempt_is_moved_to_quarantine(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            completed = root / "shot_001"
+            completed.mkdir()
+            (completed / "metadata.json").write_text("{}", encoding="utf-8")
+            recovery = recover_physics_capture_attempts(root)
+            self.assertEqual(recovery.quarantined, ("invalid_attempts/shot_001_recovered_01",))
+            self.assertFalse(completed.exists())
+            self.assertTrue((root / recovery.quarantined[0] / "metadata.json").is_file())
+
+    def test_completed_shot_with_nondirectory_frames_is_quarantined(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class Bridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            completed = root / "shot_001"
+            capture_physics_rollout(
+                Bridge(), completed, target_fps=1, duration_seconds=1, max_frames=1,
+                state_header=records[0], player_sha256="a" * 64,
+                protocol_sha256="b" * 64, archive_sha256="c" * 64,
+            )
+            shutil.rmtree(completed / "frames")
+            (completed / "frames").write_text("not a directory", encoding="utf-8")
+
+            recovery = recover_physics_capture_attempts(root)
+
+            self.assertEqual(recovery.quarantined, ("invalid_attempts/shot_001_recovered_01",))
+            self.assertFalse(completed.exists())
+            self.assertTrue((root / recovery.quarantined[0] / "frames").is_file())
+
+    def test_actual_collector_promotes_only_accepted_attempt(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+        class Bridge(FakeBridge):
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+        action = {"coordinate_frame": "absolute", "drag_start": [100, 200], "drag_release": [130, 150], "tapTime": 70, "holdTime": 600}
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
+            with patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
+                manifest = collect_rollouts(Bridge(), root, [action], target_fps=1, duration_seconds=1, max_frames=1, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64)
+            self.assertTrue((root / "shot_001").is_dir(), manifest)
+            self.assertFalse((root / "shot_001.tmp").exists())
+            self.assertEqual(manifest["capture_contract"]["archive_sha256"], "c" * 64)
+
+    def test_second_collection_reuses_valid_completed_shot_without_bridge_calls(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class Bridge(FakeBridge):
+            request_count = 0
+
+            def get_physics_capture_v1(self):
+                self.request_count += 1
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        action = {"coordinate_frame": "absolute", "drag_start": [100, 200], "drag_release": [130, 150], "tapTime": 70, "holdTime": 600}
+        guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
+        with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
+            root = Path(temporary)
+            bridge = Bridge()
+            kwargs = dict(target_fps=1, duration_seconds=1, max_frames=1, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64)
+            collect_rollouts(bridge, root, [action], **kwargs)
+            shot = root / "shot_001"
+            first_metadata = (shot / "metadata.json").read_bytes()
+            first_request_count = bridge.request_count
+            first_shot_count = len(bridge.shots)
+
+            manifest = collect_rollouts(bridge, root, [action], **kwargs)
+
+            self.assertEqual((shot / "metadata.json").read_bytes(), first_metadata)
+            self.assertEqual(bridge.request_count, first_request_count)
+            self.assertEqual(len(bridge.shots), first_shot_count)
+            self.assertEqual(manifest["rollout_count"], 1)
+            self.assertFalse((root / "shot_001.tmp").exists())
+
+    def test_physics_capture_routes_gameplay_action_and_request_70_to_separate_bridges(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class GameplayBridge(FakeBridge):
+            def get_physics_capture_v1(self):
+                raise AssertionError("request 70 must not use the gameplay connection")
+
+        class PhysicsBridge:
+            request_count = 0
+
+            def get_physics_capture_v1(self):
+                self.request_count += 1
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
+        with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
+            gameplay = GameplayBridge()
+            physics = PhysicsBridge()
+            collect_rollouts(
+                gameplay,
+                Path(temporary),
+                [{"coordinate_frame": "absolute", "release": [130, 150], "tapTime": 70}],
+                target_fps=1,
+                duration_seconds=1,
+                max_frames=1,
+                anchor_actions=False,
+                video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0),
+                physics_capture_v1=True,
+                physics_bridge=physics,
+                physics_player_sha256="a" * 64,
+                physics_protocol_sha256="b" * 64,
+                physics_archive_sha256="c" * 64,
+            )
+
+        self.assertEqual(len(gameplay.shots), 1)
+        self.assertEqual(physics.request_count, 1)
+
+    def test_temporary_shot_symlink_is_removed_before_any_external_write(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class Bridge(FakeBridge):
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
+        with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
+            root = Path(temporary)
+            external = root / "external"
+            external.mkdir()
+            (root / "shot_001.tmp").symlink_to(external, target_is_directory=True)
+
+            collect_rollouts(
+                Bridge(),
+                root,
+                [{"coordinate_frame": "absolute", "release": [130, 150], "tapTime": 70}],
+                target_fps=1,
+                duration_seconds=1,
+                max_frames=1,
+                anchor_actions=False,
+                video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0),
+                physics_capture_v1=True,
+                physics_player_sha256="a" * 64,
+                physics_protocol_sha256="b" * 64,
+                physics_archive_sha256="c" * 64,
+            )
+
+            self.assertEqual(tuple(external.iterdir()), ())
+            self.assertTrue((root / "shot_001").is_dir())
+            self.assertFalse((root / "shot_001.tmp").exists())
+
+    def test_temporary_sidecar_symlink_is_rejected_without_truncating_external_file(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class Bridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            external = root / "external-state.jsonl"
+            external.write_text("outside\n", encoding="utf-8")
+            shot = root / "shot_001.tmp"
+            shot.mkdir()
+            (shot / "physics_state.jsonl").symlink_to(external)
+
+            with self.assertRaisesRegex(RolloutCollectionError, "output|symlink|confined"):
+                capture_physics_rollout(
+                    Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
+                    state_header=records[0], player_sha256="a" * 64,
+                    protocol_sha256="b" * 64, archive_sha256="c" * 64,
+                )
+
+            self.assertEqual(external.read_text(encoding="utf-8"), "outside\n")
+
+    def test_completed_shot_with_stale_provenance_is_quarantined_and_recaptured(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class Bridge(FakeBridge):
+            request_count = 0
+
+            def get_physics_capture_v1(self):
+                self.request_count += 1
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        action = {"coordinate_frame": "absolute", "release": [130, 150], "tapTime": 70}
+        guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
+        with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
+            root = Path(temporary)
+            bridge = Bridge()
+            common = dict(target_fps=1, duration_seconds=1, max_frames=1, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True)
+            collect_rollouts(bridge, root, [action], physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64, **common)
+
+            collect_rollouts(bridge, root, [action], physics_player_sha256="d" * 64, physics_protocol_sha256="e" * 64, physics_archive_sha256="f" * 64, **common)
+
+            current = json.loads((root / "shot_001" / "metadata.json").read_text(encoding="utf-8"))
+            stale = json.loads((root / "invalid_attempts" / "shot_001_recovered_01" / "metadata.json").read_text(encoding="utf-8"))
+            self.assertEqual(bridge.request_count, 2)
+            self.assertEqual((current["player_sha256"], current["protocol_sha256"], current["archive_sha256"]), ("d" * 64, "e" * 64, "f" * 64))
+            self.assertEqual((stale["player_sha256"], stale["protocol_sha256"], stale["archive_sha256"]), ("a" * 64, "b" * 64, "c" * 64))
+
+    def test_physics_capture_rejects_explicit_and_derived_frame_counts_above_contract(self):
+        class Bridge:
+            request_count = 0
+
+            def get_physics_capture_v1(self):
+                self.request_count += 1
+                raise AssertionError("request 70 must not run for an invalid capture limit")
+
+        for name, parameters in {
+            "explicit max_frames": {"target_fps": 1, "duration_seconds": 1, "max_frames": 64},
+            "fps and duration": {"target_fps": 8, "duration_seconds": 8, "max_frames": None},
+        }.items():
+            with self.subTest(name=name), TemporaryDirectory() as temporary:
+                bridge = Bridge()
+                with self.assertRaisesRegex(RolloutCollectionError, "state record limit"):
+                    capture_physics_rollout(
+                        bridge,
+                        Path(temporary) / "shot_000.tmp",
+                        **parameters,
+                        player_sha256="a" * 64,
+                        protocol_sha256="b" * 64,
+                        archive_sha256="c" * 64,
+                    )
+                self.assertEqual(bridge.request_count, 0)
+
+    def test_physics_capture_accepts_63_frame_boundary(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, _ = self._records()
+        png = self._png()
+
+        class Bridge:
+            request_count = 0
+
+            def get_physics_capture_v1(self):
+                state = json.loads(json.dumps(records[1]))
+                self.request_count += 1
+                state["sequence"] = self.request_count
+                state["render_frame"] += self.request_count - 1
+                state["fixed_step"] += self.request_count - 1
+                state["render_time"] += (self.request_count - 1) / 60
+                state["fixed_time"] += (self.request_count - 1) / 50
+                state["rgb_frame"]["render_frame"] = state["render_frame"]
+                return PhysicsCaptureV1(png, state, ())
+
+        with TemporaryDirectory() as temporary:
+            bridge = Bridge()
+            shot = Path(temporary) / "shot_000.tmp"
+            metadata = capture_physics_rollout(
+                bridge,
+                shot,
+                target_fps=63,
+                duration_seconds=1,
+                max_frames=63,
+                state_header=records[0],
+                player_sha256="a" * 64,
+                protocol_sha256="b" * 64,
+                archive_sha256="c" * 64,
+            )
+
+            self.assertEqual(bridge.request_count, 63)
+            self.assertEqual(metadata["physics_state_count"], 63)
+            self.assertEqual(len((shot / "physics_state.jsonl").read_text(encoding="utf-8").splitlines()), 64)
+            self.assertTrue(validate_rollout_artifact(shot, capture_contract="physics_capture_v1")["accepted"])
+
+    def test_physics_capture_enforces_event_and_total_byte_limits_while_streaming(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        for name, capture_events, message in (
+            (
+                "event count",
+                tuple(
+                    {
+                        **events[0],
+                        "sequence": index,
+                        "event_id": f"event:{index:08d}",
+                    }
+                    for index in range(65)
+                ),
+                "event record limit",
+            ),
+            (
+                "total bytes",
+                (
+                    {
+                        **events[0],
+                        "event_type": "level_failed",
+                        "event_id": "event:00000000",
+                        "payload": {"reason": "x" * 1_048_576},
+                    },
+                ),
+                "sidecar byte limit",
+            ),
+        ):
+            with self.subTest(name=name), TemporaryDirectory() as temporary:
+                class Bridge:
+                    def get_physics_capture_v1(self):
+                        return PhysicsCaptureV1(png, records[1], capture_events)
+
+                shot = Path(temporary) / "shot_000.tmp"
+                with self.assertRaisesRegex(RolloutCollectionError, message):
+                    capture_physics_rollout(
+                        Bridge(),
+                        shot,
+                        target_fps=1,
+                        duration_seconds=1,
+                        max_frames=1,
+                        state_header=records[0],
+                        player_sha256="a" * 64,
+                        protocol_sha256="b" * 64,
+                        archive_sha256="c" * 64,
+                    )
+                self.assertFalse((shot / "metadata.json").exists())
+
+    def test_malformed_request_70_capture_fails_without_success_metadata(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        class Bridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(self_png, {"schema_version": "physics_capture_v1"}, ())
+
+        self_png = self._png()
+        with TemporaryDirectory() as temporary:
+            shot = Path(temporary) / "shot_000.tmp"
+            with self.assertRaisesRegex(RolloutCollectionError, "malformed_capture"):
+                capture_physics_rollout(
+                    Bridge(),
+                    shot,
+                    target_fps=1,
+                    duration_seconds=1,
+                    max_frames=1,
+                    player_sha256="a" * 64,
+                    protocol_sha256="b" * 64,
+                    archive_sha256="c" * 64,
+                )
+            self.assertFalse((shot / "metadata.json").exists())
+
+    @staticmethod
+    def _pre_shot():
+        from PIL import Image
+
+        return Image.new("RGB", (4, 3), (1, 2, 3))
+
+    def test_interrupted_tmp_is_removed_on_repeated_resume(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for _ in range(2):
+                interrupted = root / "shot_000.tmp"
+                interrupted.mkdir()
+                (interrupted / "physics_state.jsonl").write_text('{"truncated":', encoding="utf-8")
+                self.assertEqual(cleanup_incomplete_physics_attempts(root), ("shot_000.tmp",))
+                self.assertFalse(interrupted.exists())
 
 
 class FakeBridge:
@@ -38,6 +813,10 @@ class FakeBridge:
 
     def shoot(self, x, y, tap_time=0, fast=False, release_time=0):
         self.shots.append((x, y, tap_time, fast, release_time))
+        return 1
+
+    def shoot_and_record_ground_truth(self, x, y, tap_time=0, release_time=0, frequency=1):
+        self.shots.append((x, y, tap_time, False, release_time, frequency))
         return 1
 
     def configure(self, agent_id, mode):
@@ -1532,6 +2311,7 @@ class CollectRolloutsTest(unittest.TestCase):
         args = build_parser().parse_args(["--output-dir", "data/review"])
 
         self.assertEqual(args.fps, 30.0)
+        self.assertNotEqual((args.host, args.port), (args.physics_host, args.physics_port))
 
     def test_select_level_in_display_clicks_play_inputs_level_and_confirms(self):
         calls = []

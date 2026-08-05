@@ -34,6 +34,7 @@ WORKER_PORT_STRIDE: Final = 10
 MAX_PORT: Final = 65535
 COLLECTION_SPLITS: Final = ("train", "dev", "test")
 DEFAULT_COLLECTION_SPLITS: Final = ("train", "dev")
+PHYSICS_CAPTURE_CONTRACT: Final = "physics_capture_v1"
 
 
 class JsonValue(TypedDict, total=False):
@@ -281,10 +282,12 @@ def _is_canonically_complete_fresh_engine_episode(
     opts: CollectionOptions,
     *,
     level_five: bool = False,
+    capture_contract: str | None = None,
 ) -> bool:
     result = validate_rollout_episode(
         output_dir,
         EpisodeValidationContract(opts.count, opts.fps, opts.duration, level_five),
+        capture_contract=capture_contract,
     )
     return isinstance(result, EpisodeAccepted)
 
@@ -335,13 +338,14 @@ def _plan_bucket(
     opts: CollectionOptions,
     targets: CollectionTargets,
     seed: str,
+    capture_contract: str | None = None,
 ) -> list[PlannedEpisode]:
     selected: list[PlannedEpisode] = []
     ordered = sorted(entries, key=lambda entry: _stable_key(entry, seed))
     level_five = ordered[0].novelty_level == "novelty_level_5"
     for entry in ordered:
         output_dir = output_root / split / _safe_output_name(entry)
-        if _path_is_safe_existing(output_dir, output_root) and _is_canonically_complete_fresh_engine_episode(output_dir, opts, level_five=level_five):
+        if _path_is_safe_existing(output_dir, output_root) and _is_canonically_complete_fresh_engine_episode(output_dir, opts, level_five=level_five, capture_contract=capture_contract):
             selected.append(PlannedEpisode(split, entry, output_dir, "existing"))
             if len(selected) == targets.for_split(split):
                 return selected
@@ -363,6 +367,7 @@ def build_collection_plan(
     targets: CollectionTargets | None = None,
     selected_splits: tuple[str, ...] = DEFAULT_COLLECTION_SPLITS,
     seed: str = DEFAULT_SEED,
+    capture_contract: str | None = None,
 ) -> tuple[list[PlannedEpisode], dict[str, dict[str, int]]]:
     opts = options or CollectionOptions()
     target = targets or CollectionTargets()
@@ -382,7 +387,7 @@ def build_collection_plan(
             candidates = partition_buckets[split].get(bucket, [])
             if not candidates:
                 raise RuntimeError(f"Bucket {bucket} has no {split} partition capacity")
-            selected = _plan_bucket(candidates, split=split, output_root=output_root, opts=opts, targets=target, seed=seed)
+            selected = _plan_bucket(candidates, split=split, output_root=output_root, opts=opts, targets=target, seed=seed, capture_contract=capture_contract)
             plan.extend(selected)
             summary[f"{split}:{bucket}"] = {
                 "target": target.for_split(split),

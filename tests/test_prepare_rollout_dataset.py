@@ -1,4 +1,5 @@
 import json
+import hashlib
 import os
 import shutil
 import subprocess
@@ -25,6 +26,9 @@ from scripts.prepare_rollout_dataset import (
     write_collection_plan,
     write_partition_manifest,
 )
+from scripts.rollout_artifacts import validate_rollout_episode
+from scripts.rollout_validation_types import EpisodeAccepted, EpisodeRejected, EpisodeValidationContract
+from world_model.data.types import PHYSICS_CAPTURE_V1
 
 
 def make_level(engine_dir: Path, novelty_level: str, level_type: str, name: str) -> None:
@@ -712,3 +716,80 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class PhysicsCaptureValidationTests(unittest.TestCase):
+    def _make_physics_episode(self, root: Path) -> Path:
+        from PIL import Image
+
+        options = CollectionOptions(count=1, workers=1, fps=1, duration=1)
+        make_complete_episode(root, options)
+        shot = root / "shot_001"
+        states = [json.loads(line) for line in (Path(__file__).parent / "fixtures" / "physics_capture_v1" / "physics_state.jsonl").read_text(encoding="utf-8").splitlines()]
+        events = [json.loads(line) for line in (Path(__file__).parent / "fixtures" / "physics_capture_v1" / "physics_events.jsonl").read_text(encoding="utf-8").splitlines()]
+        for record in states + events:
+            record["shot_id"] = "shot_001"
+        shutil.rmtree(shot / "frames")
+        (shot / "frames").mkdir()
+        frame_checksums = []
+        for index, state in enumerate(states[1:]):
+            frame = shot / "frames" / f"frame_{index:06d}.png"
+            Image.new("RGB", (4, 3), (index + 1, 2, 3)).save(frame, format="PNG")
+            state["rgb_frame"].update({"relative_path": f"frames/{frame.name}", "width_pixels": 4, "height_pixels": 3})
+            frame_checksums.append({"relative_path": f"frames/{frame.name}", "sha256": hashlib.sha256(frame.read_bytes()).hexdigest()})
+        state_path = shot / "physics_state.jsonl"
+        event_path = shot / "physics_events.jsonl"
+        state_path.write_text("".join(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n" for record in states), encoding="utf-8")
+        event_path.write_text("".join(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n" for record in events), encoding="utf-8")
+        metadata = {"capture_contract": "physics_capture_v1", "schema_version": "physics_capture_v1", "protocol_version": 1, "player_sha256": "a" * 64, "protocol_sha256": "b" * 64, "archive_sha256": "c" * 64, "frame_count": 2, "frames_dir": "frames", "frames": [{"path": f"frames/frame_{index:06d}.png"} for index in range(2)], "frame_checksums": frame_checksums, "physics_state_path": "physics_state.jsonl", "physics_events_path": "physics_events.jsonl", "physics_state_count": 2, "physics_event_count": len(events), "physics_state_sha256": hashlib.sha256(state_path.read_bytes()).hexdigest(), "physics_events_sha256": hashlib.sha256(event_path.read_bytes()).hexdigest(), "sidecars_closed": True}
+        (shot / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+        manifest_path = root / "manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["capture_source"] = "capture_physics_rollout"
+        manifest["capture_contract"] = {"contract_name": PHYSICS_CAPTURE_V1.contract_name, "contract_version": PHYSICS_CAPTURE_V1.contract_version, "artifact_layout_version": PHYSICS_CAPTURE_V1.artifact_layout_version, "player_sha256": "a" * 64, "protocol_sha256": "b" * 64, "archive_sha256": "c" * 64, "declared_capabilities": list(PHYSICS_CAPTURE_V1.declared_capabilities), "sidecar_paths": [{"relative_path": sidecar.relative_path, "capabilities": list(sidecar.capabilities)} for sidecar in PHYSICS_CAPTURE_V1.sidecar_paths]}
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        (shot / "pre_shot.png").unlink()
+        return root
+
+    def test_legacy_rgb_predicate_remains_default(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "legacy"
+            options = CollectionOptions(count=1, workers=1, fps=1, duration=1)
+            make_complete_episode(root, options)
+            self.assertTrue(_is_canonically_complete_fresh_engine_episode(root, options))
+
+    def test_valid_enriched_episode_requires_explicit_switch(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self._make_physics_episode(Path(temporary) / "physics")
+            contract = EpisodeValidationContract(1, 1, 1)
+            self.assertIsInstance(validate_rollout_episode(root, contract), EpisodeRejected)
+            self.assertIsInstance(validate_rollout_episode(root, contract, capture_contract="physics_capture_v1"), EpisodeAccepted)
+
+    def test_corrupt_sidecar_and_frame_classes_fail_closed(self):
+        mutations = {
+            "missing": lambda shot: (shot / "physics_events.jsonl").unlink(),
+            "truncated": lambda shot: (shot / "physics_state.jsonl").write_text('{"schema_version":', encoding="utf-8"),
+            "extra_png": lambda shot: shutil.copy2(shot / "frames" / "frame_000000.png", shot / "frames" / "frame_999999.png"),
+            "stale_schema": lambda shot: self._rewrite_jsonl(shot / "physics_state.jsonl", 1, "schema_version", "physics_capture_v0"),
+            "duplicate_sequence": lambda shot: self._rewrite_jsonl(shot / "physics_state.jsonl", 2, "sequence", 1),
+            "out_of_order": lambda shot: self._rewrite_jsonl(shot / "physics_events.jsonl", 0, "sequence", 8),
+            "render_frame_mismatch": lambda shot: self._rewrite_nested_jsonl(shot / "physics_state.jsonl", 1, "rgb_frame", "render_frame", 999),
+            "extra_state": lambda shot: (shot / "physics_state.jsonl").write_text((shot / "physics_state.jsonl").read_text(encoding="utf-8") + (shot / "physics_state.jsonl").read_text(encoding="utf-8").splitlines()[-1] + "\n", encoding="utf-8"),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
+                root = self._make_physics_episode(Path(temporary) / "physics")
+                mutate(root / "shot_001")
+                result = validate_rollout_episode(root, EpisodeValidationContract(1, 1, 1), capture_contract="physics_capture_v1")
+                self.assertIsInstance(result, EpisodeRejected)
+
+    @staticmethod
+    def _rewrite_jsonl(path: Path, index: int, key: str, value) -> None:
+        records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+        records[index][key] = value
+        path.write_text("".join(json.dumps(record) + "\n" for record in records), encoding="utf-8")
+
+    @staticmethod
+    def _rewrite_nested_jsonl(path: Path, index: int, container: str, key: str, value) -> None:
+        records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+        records[index][container][key] = value
+        path.write_text("".join(json.dumps(record) + "\n" for record in records), encoding="utf-8")

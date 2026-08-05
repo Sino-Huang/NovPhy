@@ -86,5 +86,29 @@ class EpisodeRejected(NamedTuple):
 EpisodeValidationResult: TypeAlias = EpisodeAccepted | EpisodeSummary | EpisodeRejected
 
 
+@dataclass(frozen=True, slots=True)
+class PhysicsArtifactSummary:
+    state_count: int
+    event_count: int
+    frame_sha256: tuple[str, ...]
+    state_sha256: str
+    event_sha256: str
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicsArtifactError(Exception):
+    artifact: str
+    reason: str
+
+    def __str__(self) -> str:
+        return f"invalid physics artifact {self.artifact}: {self.reason}"
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicsRecoveryResult:
+    removed_temporary: tuple[str, ...]
+    quarantined: tuple[str, ...]
+
+
 def reject(code: EpisodeRejectionCode, artifact: Path | str) -> EpisodeRejected:
     return EpisodeRejected(code, str(artifact))

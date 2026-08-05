@@ -3,28 +3,25 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Final, TypeAlias
+from typing import TypeAlias
 
+from scripts.physics_artifact_validation import _capture_contract, validate_physics_shot_artifact
 from scripts.rollout_validation_types import (
     EpisodeAccepted, EpisodeRejected, EpisodeRejectionCode, EpisodeSummary,
     EpisodeValidationContract, EpisodeValidationMode, EpisodeValidationResult,
-    ValidatedEpisode, ValidatedShot, reject as _reject,
+    PhysicsArtifactError, ValidatedEpisode, ValidatedShot,
+    reject as _reject,
 )
 
 from world_model.data.types import (
     LEGACY_RGB_V1,
     PHYSICS_CAPTURE_V1,
-    CaptureContractDescriptor,
-    ContractValueError,
     FrameRecord,
     ShotAction,
-    SidecarPath,
 )
 
 JsonValue: TypeAlias = None | bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"]
 JsonObject: TypeAlias = dict[str, JsonValue]
-
-
 def _artifact_rejection(path: Path, root: Path, *, directory: bool = False) -> EpisodeRejected | None:
     try:
         relative = path.relative_to(root)
@@ -54,61 +51,18 @@ def _artifact_rejection(path: Path, root: Path, *, directory: bool = False) -> E
     return None
 
 
-def _read_json(path: Path) -> JsonObject | None:
+def _read_json(path: Path, *, max_bytes: int | None = None) -> JsonObject | None:
     try:
-        payload: JsonValue = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+        if max_bytes is not None and path.stat().st_size > max_bytes:
+            return None
+        with path.open("rb") as stream:
+            encoded = stream.read() if max_bytes is None else stream.read(max_bytes + 1)
+        if max_bytes is not None and len(encoded) > max_bytes:
+            return None
+        payload: JsonValue = json.loads(encoded)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return None
     return payload if isinstance(payload, dict) else None
-
-
-def _sidecars(value: JsonValue) -> tuple[SidecarPath, ...] | None:
-    if not isinstance(value, list):
-        return None
-    parsed: list[SidecarPath] = []
-    for item in value:
-        if not isinstance(item, dict):
-            return None
-        path = item.get("relative_path")
-        capabilities = item.get("capabilities")
-        if not isinstance(path, str) or not isinstance(capabilities, list) or not all(isinstance(capability, str) for capability in capabilities):
-            return None
-        try:
-            parsed.append(SidecarPath(path, tuple(capabilities)))
-        except ContractValueError:
-            return None
-    return tuple(parsed)
-
-
-def _capture_contract(manifest: JsonObject) -> CaptureContractDescriptor | EpisodeRejected:
-    if "capture_contract" not in manifest:
-        return LEGACY_RGB_V1
-    raw = manifest["capture_contract"]
-    if not isinstance(raw, dict):
-        return _reject(EpisodeRejectionCode.MALFORMED_CAPTURE_CONTRACT, "capture_contract")
-    name = raw.get("contract_name")
-    if not isinstance(name, str):
-        return _reject(EpisodeRejectionCode.MALFORMED_CAPTURE_CONTRACT, "capture_contract.contract_name")
-    if name not in (LEGACY_RGB_V1.contract_name, PHYSICS_CAPTURE_V1.contract_name):
-        return _reject(EpisodeRejectionCode.UNKNOWN_CAPTURE_CONTRACT, name)
-    version = raw.get("contract_version")
-    layout = raw.get("artifact_layout_version")
-    player = raw.get("player_provenance")
-    protocol = raw.get("protocol_provenance")
-    capabilities = raw.get("declared_capabilities", [])
-    sidecars = _sidecars(raw.get("sidecar_paths", []))
-    valid_provenance = (player is None or isinstance(player, str)) and (protocol is None or isinstance(protocol, str))
-    if not isinstance(version, str) or not isinstance(layout, str) or not valid_provenance or not isinstance(capabilities, list) or not all(isinstance(item, str) for item in capabilities) or sidecars is None:
-        return _reject(EpisodeRejectionCode.MALFORMED_CAPTURE_CONTRACT, "capture_contract")
-    try:
-        descriptor = CaptureContractDescriptor(name, version, layout, player, protocol, tuple(capabilities), sidecars)
-    except ContractValueError:
-        return _reject(EpisodeRejectionCode.MALFORMED_CAPTURE_CONTRACT, "capture_contract")
-    if descriptor == PHYSICS_CAPTURE_V1:
-        return _reject(EpisodeRejectionCode.UNSUPPORTED_CAPTURE_CONTRACT, name)
-    if descriptor != LEGACY_RGB_V1:
-        return _reject(EpisodeRejectionCode.UNKNOWN_CAPTURE_CONTRACT, name)
-    return descriptor
 
 
 def _attempts_are_canonical(manifest: JsonObject, count: int) -> bool:
@@ -155,6 +109,7 @@ def _validated_shots(
     count: int,
     *,
     mode: EpisodeValidationMode,
+    capture_contract: str,
 ) -> tuple[ValidatedShot, ...] | EpisodeRejected:
     materialize_frames = mode.materializes_frames
     accepted = action_log.get("accepted_trials")
@@ -169,13 +124,21 @@ def _validated_shots(
             return _reject(EpisodeRejectionCode.INVALID_ACTION_LOG, "accepted_trials.action")
         shot_name = trial["shot_name"]
         shot_dir = root / shot_name
-        for path, directory in ((shot_dir, True), (shot_dir / "metadata.json", False), (shot_dir / "frames", True), (shot_dir / "pre_shot.png", False)):
+        required_paths = [(shot_dir, True), (shot_dir / "metadata.json", False), (shot_dir / "frames", True)]
+        if capture_contract != PHYSICS_CAPTURE_V1.contract_name:
+            required_paths.append((shot_dir / "pre_shot.png", False))
+        for path, directory in required_paths:
             rejection = _artifact_rejection(path, root, directory=directory)
             if rejection is not None:
                 return rejection
         metadata = _read_json(shot_dir / "metadata.json")
         if metadata is None:
             return _reject(EpisodeRejectionCode.MALFORMED_JSON, shot_dir / "metadata.json")
+        if capture_contract == PHYSICS_CAPTURE_V1.contract_name:
+            try:
+                validate_physics_shot_artifact(shot_dir)
+            except PhysicsArtifactError:
+                return _reject(EpisodeRejectionCode.INVALID_SHOT_ARTIFACT, shot_dir)
         frame_count = metadata.get("frame_count")
         if type(frame_count) is not int or frame_count < 1:
             return _reject(EpisodeRejectionCode.NONCONTIGUOUS_FRAMES, shot_dir / "frames")
@@ -223,6 +186,7 @@ def validate_rollout_episode(
     contract: EpisodeValidationContract,
     *,
     mode: EpisodeValidationMode = EpisodeValidationMode.MATERIALIZED,
+    capture_contract: str | None = None,
 ) -> EpisodeValidationResult:
     if root.is_symlink():
         return _reject(EpisodeRejectionCode.SYMLINK_ARTIFACT, root)
@@ -238,11 +202,13 @@ def validate_rollout_episode(
     action_log = _read_json(required[1])
     if manifest is None or action_log is None:
         return _reject(EpisodeRejectionCode.MALFORMED_JSON, required[0] if manifest is None else required[1])
-    descriptor = _capture_contract(manifest)
+    descriptor = _capture_contract(manifest, capture_contract)
     if isinstance(descriptor, EpisodeRejected):
         return descriptor
+    if capture_contract is not None and descriptor.contract_name != capture_contract:
+        return _reject(EpisodeRejectionCode.INVALID_EPISODE_CONTRACT, required[0])
     valid_contract = (
-        manifest.get("capture_source") == "capture_desktop_rollout"
+        manifest.get("capture_source") == ("capture_physics_rollout" if descriptor.contract_name == PHYSICS_CAPTURE_V1.contract_name else "capture_desktop_rollout")
         and manifest.get("replay_mode") == "fresh-engine-per-rollout"
         and type(manifest.get("target_fps")) in (int, float)
         and manifest.get("target_fps") == contract.fps
@@ -260,7 +226,7 @@ def validate_rollout_episode(
         return _reject(EpisodeRejectionCode.INVALID_EPISODE_CONTRACT, required[0])
     if not _attempts_are_canonical(manifest, contract.count):
         return _reject(EpisodeRejectionCode.INVALID_ATTEMPT_LOG, required[0])
-    shots = _validated_shots(root, action_log, contract.count, mode=mode)
+    shots = _validated_shots(root, action_log, contract.count, mode=mode, capture_contract=descriptor.contract_name)
     if isinstance(shots, EpisodeRejected):
         return shots
     signs = tuple(-1 if shot.release_x < 0 else 1 for shot in shots)
