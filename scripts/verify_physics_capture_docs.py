@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# noqa: SIZE_OK - publication and documentation checks must remain in this owned CLI module.
 from __future__ import annotations
 import argparse
 from dataclasses import dataclass
@@ -14,7 +15,9 @@ JsonObject: TypeAlias = dict[str, JsonValue]
 REPOSITORY_ROOT: Final = Path(__file__).resolve().parents[1]
 CONTRACT_DOCUMENT: Final = Path("data_contracts/physics_capture_v1.md")
 SCHEMA_DOCUMENT: Final = Path("data_contracts/physics_capture_v1.schema.json")
-SMOKE_REPORT: Final = Path(".omo/evidence/world-model-physics-instrumentation/task-8-smoke.json")
+FINAL_PUBLICATION_DIRECTORY: Final = Path(".omo/evidence/world-model-physics-instrumentation/final-published-runtime")
+DONE_CLAIM_SCHEMA: Final = "novphy_final_published_runtime_done_claim_v1"
+PUBLICATION_RECEIPT_SCHEMA: Final = "novphy_final_publication_v1"
 STAGE_DIRECTORY: Final = Path("sciencebirdsgames/physics-v1")
 ARCHIVE_NAME: Final = "novphy-physics-player-2019.4.41f2.tar.gz"
 SHA256_PATTERN: Final = re.compile(r"[0-9a-f]{64}")
@@ -63,6 +66,12 @@ class DocumentationError(RuntimeError):
     reason: str
     def __str__(self) -> str:
         return self.reason
+@dataclass(frozen=True, slots=True)
+class PublicationAuthority:
+    archive_sha256: str
+    receipt_path: Path
+    report_path: Path
+    accepted_shot: Path
 def _json_object(value: JsonValue, field: str) -> JsonObject:
     if not isinstance(value, dict):
         raise DocumentationError(f"schema {field} must be an object")
@@ -172,34 +181,121 @@ def _validate_schema_contract(schema: JsonObject) -> None:
     failure_codes = _string_list(_schema_at(schema, ("$defs", "capture_failure", "properties", "failure_code", "enum")), "failure_code.enum")
     if failure_codes != FAILURE_CODES:
         raise DocumentationError("failure codes do not match the frozen contract")
-def _required_string(value: JsonObject, field: str) -> str:
+def _required_string(value: JsonObject, field: str, label: str) -> str:
     candidate = value.get(field)
     if not isinstance(candidate, str) or not candidate:
-        raise DocumentationError(f"smoke report {field} must be a nonempty string")
+        raise DocumentationError(f"{label} {field} must be a nonempty string")
     return candidate
+def _required_sha256(value: JsonObject, field: str, label: str) -> str:
+    candidate = _required_string(value, field, label)
+    if SHA256_PATTERN.fullmatch(candidate) is None:
+        raise DocumentationError(f"{label} {field} must be a lowercase SHA-256")
+    return candidate
+def _require_true(value: JsonObject, field: str, label: str) -> None:
+    if value.get(field) is not True:
+        raise DocumentationError(f"{label} {field} must be true")
+def _repository_path(repository_root: Path, raw_path: str) -> Path:
+    candidate = Path(raw_path)
+    return (candidate if candidate.is_absolute() else repository_root / candidate).resolve()
+def _confined_evidence_path(evidence_root: Path, raw_path: JsonValue, field: str) -> Path:
+    if not isinstance(raw_path, str) or not raw_path:
+        raise DocumentationError(f"DoneClaim {field} must be a nonempty path")
+    resolved = (Path(raw_path) if Path(raw_path).is_absolute() else evidence_root / raw_path).resolve()
+    try:
+        resolved.relative_to(evidence_root)
+    except ValueError as error:
+        raise DocumentationError(f"DoneClaim {field} must stay within final publication evidence") from error
+    return resolved
 def _archive_sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as archive:
         for chunk in iter(lambda: archive.read(65536), b""):
             digest.update(chunk)
     return digest.hexdigest()
-def _validate_staged_provenance(repository_root: Path) -> None:
-    stage = repository_root / STAGE_DIRECTORY
-    receipt = (stage / "archive.sha256").read_text(encoding="ascii").split()
-    if len(receipt) != 2 or receipt[1] != ARCHIVE_NAME or SHA256_PATTERN.fullmatch(receipt[0]) is None:
-        raise DocumentationError("staged archive receipt must name exactly the published archive")
+def _publication_authority(repository_root: Path) -> PublicationAuthority:
+    evidence_root = (repository_root / FINAL_PUBLICATION_DIRECTORY).resolve()
+    claim = _read_json(evidence_root / "done-claim.json")
+    if claim.get("schemaVersion") != DONE_CLAIM_SCHEMA:
+        raise DocumentationError("DoneClaim schemaVersion is not supported")
+    if claim.get("status") != "complete":
+        raise DocumentationError("DoneClaim status must be complete")
+    source = _json_object(claim.get("source"), "DoneClaim source")
+    publication = _json_object(claim.get("publication"), "DoneClaim publication")
+    runtime = _json_object(claim.get("runtime"), "DoneClaim runtime")
+    for section, label, fields in (
+        (source, "DoneClaim source", ("trackedProductClean",)),
+        (publication, "DoneClaim publication", ("archiveHashExact", "receiptNonempty", "unityBuildLogNonempty")),
+        (runtime, "DoneClaim runtime", ("publishedStage", "request38Compatibility", "request62Compatibility", "request62Decoded", "request70Decoded", "actionPerformed", "accepted", "protectedUnchanged")),
+    ):
+        for field in fields:
+            _require_true(section, field, label)
+    stage = (repository_root / STAGE_DIRECTORY).resolve()
+    claimed_stage = _repository_path(repository_root, _required_string(publication, "stage", "DoneClaim publication"))
+    if claimed_stage != stage:
+        raise DocumentationError("DoneClaim publication stage does not match the repository stage")
+    archive_sha256 = _required_sha256(publication, "archiveSha256", "DoneClaim")
+    if _required_sha256(publication, "targetSha256", "DoneClaim") != archive_sha256:
+        raise DocumentationError("DoneClaim archive SHA-256 does not match target SHA-256")
+    receipt_path = _confined_evidence_path(evidence_root, publication.get("receipt"), "publication receipt")
+    report_path = _confined_evidence_path(evidence_root, runtime.get("report"), "runtime report")
+    accepted_shot = _confined_evidence_path(evidence_root, runtime.get("acceptedShot"), "runtime acceptedShot")
+    if not accepted_shot.is_dir():
+        raise DocumentationError("DoneClaim runtime acceptedShot must be an existing directory")
+    return PublicationAuthority(archive_sha256, receipt_path, report_path, accepted_shot)
+def _validate_publication_receipt(repository_root: Path, authority: PublicationAuthority) -> None:
+    stage = (repository_root / STAGE_DIRECTORY).resolve()
+    receipt = _read_json(authority.receipt_path)
+    if receipt.get("schemaVersion") != PUBLICATION_RECEIPT_SCHEMA:
+        raise DocumentationError("publication receipt schemaVersion is not supported")
+    if receipt.get("status") != "published":
+        raise DocumentationError("publication receipt status must be published")
+    published_stage = _repository_path(repository_root, _required_string(receipt, "stage", "publication receipt"))
+    if published_stage != stage:
+        raise DocumentationError("publication receipt stage does not match the repository stage")
+    archive_record = _json_object(receipt.get("archive"), "publication receipt archive")
     archive = stage / ARCHIVE_NAME
-    if _archive_sha256(archive) != receipt[0]:
-        raise DocumentationError("staged archive SHA-256 does not match its receipt")
-    report = _read_json(repository_root / SMOKE_REPORT)
+    published_archive = _repository_path(repository_root, _required_string(archive_record, "path", "published archive"))
+    if published_archive != archive:
+        raise DocumentationError("published archive path must name exactly the repository stage archive")
+    if _required_sha256(archive_record, "sha256", "publication receipt archive") != authority.archive_sha256:
+        raise DocumentationError("publication receipt archive SHA-256 disagrees with DoneClaim")
+    receipt_record = _json_object(receipt.get("receipt"), "publication receipt receipt")
+    _require_true(receipt_record, "committedLast", "publication receipt")
+    stage_receipt = stage / "archive.sha256"
+    published_receipt = _repository_path(repository_root, _required_string(receipt_record, "path", "publication receipt"))
+    if published_receipt != stage_receipt:
+        raise DocumentationError("publication receipt path must name the staged archive receipt")
+    receipt_bytes = stage_receipt.read_bytes()
+    if _required_sha256(receipt_record, "sha256", "publication receipt") != hashlib.sha256(receipt_bytes).hexdigest():
+        raise DocumentationError("publication receipt staged archive receipt SHA-256 disagrees with its bytes")
+    try:
+        stage_fields = receipt_bytes.decode("ascii").split()
+    except UnicodeDecodeError as error:
+        raise DocumentationError("staged archive receipt must be ASCII") from error
+    if len(stage_fields) != 2 or stage_fields[1] != ARCHIVE_NAME or SHA256_PATTERN.fullmatch(stage_fields[0]) is None:
+        raise DocumentationError("staged archive receipt must name exactly the published archive")
+    if stage_fields[0] != authority.archive_sha256:
+        raise DocumentationError("staged archive receipt SHA-256 disagrees with DoneClaim")
+    if _archive_sha256(archive) != authority.archive_sha256:
+        raise DocumentationError("staged archive SHA-256 does not match the final publication")
+def _validate_final_smoke(repository_root: Path, authority: PublicationAuthority) -> None:
+    evidence_root = (repository_root / FINAL_PUBLICATION_DIRECTORY).resolve()
+    report = _read_json(authority.report_path)
     if report.get("status") != "accepted":
-        raise DocumentationError("smoke report must have status=accepted")
-    if report.get("protected_unchanged") is not True:
-        raise DocumentationError("smoke report must confirm protected roots are unchanged")
-    _required_string(report, "accepted_shot")
-    provenance = _json_object(report.get("provenance"), "smoke report provenance")
-    if provenance.get("archive_sha256") != receipt[0]:
-        raise DocumentationError("smoke report archive SHA-256 does not match the staged receipt")
+        raise DocumentationError("final smoke status must be accepted")
+    if report.get("phase") != "complete":
+        raise DocumentationError("final smoke phase must be complete")
+    _require_true(report, "protected_unchanged", "final smoke")
+    accepted_shot = _confined_evidence_path(evidence_root, report.get("accepted_shot"), "final smoke accepted_shot")
+    if accepted_shot != authority.accepted_shot:
+        raise DocumentationError("final smoke accepted_shot disagrees with DoneClaim")
+    provenance = _json_object(report.get("provenance"), "final smoke provenance")
+    if _required_sha256(provenance, "archive_sha256", "final smoke") != authority.archive_sha256:
+        raise DocumentationError("final smoke archive SHA-256 disagrees with DoneClaim")
+def _validate_staged_provenance(repository_root: Path) -> None:
+    authority = _publication_authority(repository_root)
+    _validate_publication_receipt(repository_root, authority)
+    _validate_final_smoke(repository_root, authority)
 def _command_block(document: str, name: str) -> str:
     matches = tuple(
         match.group("commands")
