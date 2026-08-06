@@ -1,0 +1,65 @@
+    18	    private static readonly byte[] Magic = { (byte)'S', (byte)'B', (byte)'P', (byte)'V' };
+    19	
+    20	    public static byte[] BuildSuccessEnvelope(byte[] png, string stateJson, string eventsJson)
+    21	    {
+    22	        if (png != null && png.Length > MaxPngBytes)
+    23	            return BuildLimitFailure("PNG exceeds request-70 bounds");
+    24	
+    25	        string stateText = stateJson ?? "{}";
+    26	        string eventsText = eventsJson ?? "[]";
+    27	        int stateByteCount = Encoding.UTF8.GetByteCount(stateText);
+    28	        int eventsByteCount = Encoding.UTF8.GetByteCount(eventsText);
+    29	        long payloadLength;
+    30	        long envelopeLength;
+    31	        try
+    32	        {
+    33	            payloadLength = checked(12L + (png == null ? 0 : png.Length)
+    34	                + stateByteCount + eventsByteCount);
+    35	            envelopeLength = checked(16L + payloadLength);
+    36	        }
+    37	        catch (OverflowException)
+    38	        {
+    39	            return BuildLimitFailure("request-70 envelope exceeds bounds");
+    40	        }
+    41	        if (stateByteCount > MaxJsonBytes || eventsByteCount > MaxJsonBytes
+    42	            || envelopeLength > MaxEnvelopeBytes)
+    43	            return BuildLimitFailure("request-70 envelope exceeds bounds");
+    44	
+    45	        byte[] image = Copy(png);
+    46	        byte[] state = Encoding.UTF8.GetBytes(stateText);
+    47	        byte[] events = Encoding.UTF8.GetBytes(eventsText);
+    48	        byte[] payload = new byte[(int)payloadLength];
+    49	        WriteUInt32(payload, 0, (uint)image.Length);
+    50	        WriteUInt32(payload, 4, (uint)state.Length);
+    51	        WriteUInt32(payload, 8, (uint)events.Length);
+    52	        Buffer.BlockCopy(image, 0, payload, 12, image.Length);
+    53	        Buffer.BlockCopy(state, 0, payload, 12 + image.Length, state.Length);
+    54	        Buffer.BlockCopy(events, 0, payload, 12 + image.Length + state.Length, events.Length);
+    55	        return BuildEnvelope(0, 0, payload);
+    56	    }
+    57	
+    58	    public static byte[] BuildFailureEnvelope(PhysicalCaptureFailure failure)
+    59	    {
+    60	        int code = failure == null ? 255 : (int)failure.Code + 1;
+    61	        string text = failure == null ? "capture unavailable" : (failure.Message ?? "capture failed");
+    62	        int messageByteCount = Encoding.UTF8.GetByteCount(text);
+    63	        long envelopeLength;
+    64	        try
+    65	        {
+    66	            envelopeLength = checked(16L + 4L + messageByteCount);
+    67	        }
+    68	        catch (OverflowException)
+    69	        {
+    70	            return BuildLimitFailure("capture failure message exceeds bounds");
+    71	        }
+    72	        if (messageByteCount > MaxFailureMessageBytes || envelopeLength > MaxEnvelopeBytes)
+    73	            return BuildLimitFailure("capture failure message exceeds bounds");
+    74	        byte[] message = Encoding.UTF8.GetBytes(text);
+    75	        byte[] payload = new byte[4 + message.Length];
+    76	        WriteUInt32(payload, 0, (uint)message.Length);
+    77	        Buffer.BlockCopy(message, 0, payload, 4, message.Length);
+    78	        return BuildEnvelope(1, code, payload);
+    79	    }
+    80	
+    81	    public static byte[] BuildCaptureEnvelope(byte[] png, PhysicalSceneSnapshot snapshot, PhysicalShotRecorder recorder)
+    82	    {

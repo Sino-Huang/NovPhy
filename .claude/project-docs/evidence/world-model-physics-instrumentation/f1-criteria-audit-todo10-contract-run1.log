@@ -1,0 +1,43 @@
+test_capture_contract_accepts_future_capability_names (tests.test_world_model_data.WorldModelDataFixtureTests.test_capture_contract_accepts_future_capability_names) ... ok
+test_capture_contract_descriptor_is_immutable (tests.test_world_model_data.WorldModelDataFixtureTests.test_capture_contract_descriptor_is_immutable) ... ok
+test_capture_contract_surface_is_exported (tests.test_world_model_data.WorldModelDataFixtureTests.test_capture_contract_surface_is_exported) ... ok
+test_complete_fixture_has_real_pngs_and_collector_layout (tests.test_world_model_data.WorldModelDataFixtureTests.test_complete_fixture_has_real_pngs_and_collector_layout) ... ok
+test_existing_collector_defaults_define_fixture_contract (tests.test_world_model_data.WorldModelDataFixtureTests.test_existing_collector_defaults_define_fixture_contract) ... ok
+test_explicit_capture_contract_is_preserved (tests.test_world_model_data.WorldModelDataFixtureTests.test_explicit_capture_contract_is_preserved) ... ok
+test_fixture_builder_rejects_nonpositive_frame_count (tests.test_world_model_data.WorldModelDataFixtureTests.test_fixture_builder_rejects_nonpositive_frame_count) ... ok
+test_fixture_builds_are_isolated (tests.test_world_model_data.WorldModelDataFixtureTests.test_fixture_builds_are_isolated) ... ok
+test_legacy_capture_contract_is_inferred_when_descriptor_is_absent (tests.test_world_model_data.WorldModelDataFixtureTests.test_legacy_capture_contract_is_inferred_when_descriptor_is_absent) ... ok
+test_physics_contract_reserves_capabilities_and_relative_sidecars (tests.test_world_model_data.WorldModelDataFixtureTests.test_physics_contract_reserves_capabilities_and_relative_sidecars) ... ok
+test_shot_action_rejects_mutable_value_sequences (tests.test_world_model_data.WorldModelDataFixtureTests.test_shot_action_rejects_mutable_value_sequences) ... ok
+test_shot_action_requires_exactly_five_values (tests.test_world_model_data.WorldModelDataFixtureTests.test_shot_action_requires_exactly_five_values) ... ok
+test_sidecar_path_rejects_parent_traversal (tests.test_world_model_data.WorldModelDataFixtureTests.test_sidecar_path_rejects_parent_traversal) ... ok
+test_temporal_window_request_rejects_noninteger_values (tests.test_world_model_data.WorldModelDataFixtureTests.test_temporal_window_request_rejects_noninteger_values) ... ok
+test_temporal_window_request_rejects_nonpositive_values (tests.test_world_model_data.WorldModelDataFixtureTests.test_temporal_window_request_rejects_nonpositive_values) ... ok
+test_world_model_package_is_available (tests.test_world_model_data.WorldModelDataFixtureTests.test_world_model_package_is_available) ... ok
+test_catalog_only_enumerates_direct_nonsymlink_episode_directories (tests.test_world_model_data.EpisodeCatalogTests.test_catalog_only_enumerates_direct_nonsymlink_episode_directories)
+Symlinks and plain files at the split level are not enumerated. ... ok
+test_catalog_required_capability_not_declared_is_rejected (tests.test_world_model_data.EpisodeCatalogTests.test_catalog_required_capability_not_declared_is_rejected)
+Requesting a capability absent from the contract descriptor fails closed at build time. ... ok
+test_catalog_snapshot_and_plan_backed_source_provenance (tests.test_world_model_data.EpisodeCatalogTests.test_catalog_snapshot_and_plan_backed_source_provenance)
+A catalog snapshot is immutable; a later episode is absent; plan attaches source key. ... ok
+test_catalog_snapshot_is_immutable (tests.test_world_model_data.EpisodeCatalogTests.test_catalog_snapshot_is_immutable)
+episodes property cannot be replaced on an existing catalog instance. ... ok
+test_catalog_validates_independent_episodes_concurrently (tests.test_world_model_data.EpisodeCatalogTests.test_catalog_validates_independent_episodes_concurrently) ... ok
+test_catalog_without_plan_reports_provenance_unavailable (tests.test_world_model_data.EpisodeCatalogTests.test_catalog_without_plan_reports_provenance_unavailable)
+Without a collection plan, source_level_key is None for all episodes. ... ok
+test_cross_catalog_duplicate_source_key_is_detected (tests.test_world_model_data.EpisodeCatalogTests.test_cross_catalog_duplicate_source_key_is_detected)
+Two plan-backed catalogs with an overlapping source key fail disjointness. ... ok
+test_episode_paths_are_contained_within_split_root (tests.test_world_model_data.EpisodeCatalogTests.test_episode_paths_are_contained_within_split_root)
+All accepted episode relative_paths resolve under root/split. ... ok
+test_existing_validator_accepts_complete_episode_and_infers_legacy_contract (tests.test_world_model_data.EpisodeCatalogTests.test_existing_validator_accepts_complete_episode_and_infers_legacy_contract)
+Baseline: the public validator already returns the expected typed facts. ... ok
+test_refresh_returns_new_instance_original_unchanged (tests.test_world_model_data.EpisodeCatalogTests.test_refresh_returns_new_instance_original_unchanged)
+refresh() returns a distinct catalog; original is not mutated. ... ok
+test_summary_validator_rejects_unreadable_frames_canonically (tests.test_world_model_data.EpisodeCatalogTests.test_summary_validator_rejects_unreadable_frames_canonically) ... ok
+test_unknown_or_unvalidated_capture_contract_is_rejected (tests.test_world_model_data.EpisodeCatalogTests.test_unknown_or_unvalidated_capture_contract_is_rejected)
+An unsupported physics_capture_v1 manifest raises rejection counts, zero accepted. ... ok
+
+----------------------------------------------------------------------
+Ran 28 tests in 0.063s
+
+OK

@@ -1,0 +1,44 @@
+State NEWTRAININGSET: ready_for_new_set
+State MAIN_MENU: load_next_available_level
+{
+  "archive_sha256": "c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992",
+  "clone": "/tmp/f3-final-wire2-player-gs0i0_fx",
+  "display": ":234",
+  "player_sha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+  "ports": {
+    "agent": 47485,
+    "game": 39695,
+    "physics": 2004
+  },
+  "request_62": {
+    "feature_batches": 1,
+    "nonempty": true,
+    "payload_sha256": "a0123a9e308b43015d4638f00620c23a97552787ca87d8dfc22b3ae11fab3296"
+  },
+  "request_70": {
+    "event_count": 0,
+    "node_count": 14,
+    "png_bytes": 77137,
+    "png_magic": "89504e470d0a1a0a",
+    "render_frame": 9290
+  },
+  "stage": "sciencebirdsgames/physics-v1",
+  "status": "accepted",
+  "wire": {
+    "agent_request_62_frames": [
+      {
+        "hex": "3e",
+        "label": "agent",
+        "length": 1,
+        "op": "sendall"
+      }
+    ],
+    "agent_send_count": 9,
+    "physics_first_request": {
+      "hex": "46",
+      "label": "physics",
+      "length": 1,
+      "op": "sendall"
+    }
+  }
+}

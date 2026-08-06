@@ -1,0 +1,75 @@
+Todo 4 bridge evidence
+
+Scope
+- Request code 70 is GET_PHYSICS_CAPTURE_V1.
+- Python sends exactly one byte: 46 hex.
+- Existing request 38 framing remains !B + five signed 32-bit integers.
+- Existing request 62 framing remains !B with a length-prefixed JSON response;
+  the legacy fixture test also preserves the existing five-byte response suffix.
+- Unity keeps the existing WebSocket handlers unchanged and exposes request 70
+  on a separate loopback TCP listener, default port 2004, with --physics-port.
+
+Envelope
+- Outer length: network-order uint32, counting the complete inner envelope.
+- Inner header: magic SBPV, version uint8 1, flags uint8, failure code uint16,
+  payload length uint32, all integer fields network order.
+- Success flags/code are zero. Success payload is three uint32 lengths followed
+  by exactly one PNG, one UTF-8 state JSON object, and one UTF-8 event JSON list.
+- Failure flag is 1 and payload is one uint32 message length plus UTF-8 message.
+- Python bounds are 64 MiB envelope, 32 MiB PNG, and 16 MiB per JSON record.
+- Bad magic/version/flags/length/JSON/frame equality/PNG/overflow disconnects
+  before another request can be read, preventing stream desynchronization.
+- Returned Python records are frozen dataclasses with recursively immutable JSON.
+
+Python verification
+Command: python -m unittest tests.test_webui_bridge.PhysicsCaptureV1Tests -v
+Result: Passed 2/2.
+Command: python -m unittest tests.test_webui_bridge.PhysicsCaptureV1MalformedEnvelopeTests -v
+Result: Passed 9/9.
+Command: python -m unittest tests.test_webui_bridge -v
+Result: Passed 19/19.
+Adversarial coverage: bad magic, bad version, truncated/incorrect outer length,
+bad JSON, overflow, invalid flags, invalid failure lengths, frame mismatch, and
+non-PNG payload. Protocol failures close the bridge and leave no unread response
+available for accidental reuse.
+
+Real local TCP manual QA
+The one-shot local server accepted the bridge connection, verified request byte
+70, returned a valid base64-decoded 1x1 PNG envelope, and the bridge parsed it.
+Machine checks passed:
+{"event_render_frame":913,"png_ihdr":"IHDR","png_signature":"89504e470d0a1a0a","render_frame":913,"request":"70","socket_round_trip":"passed"}
+
+Unity verification
+Editor: Unity 2019.4.41f2 (6b23d448b533)
+Command (approved compatibility environment):
+DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 LD_LIBRARY_PATH="$UNITY_LTS_LIBS" "$UNITY_2019_4_41F2" -batchmode -nographics -projectPath "$PWD/tasks/task_template_designer" -runTests -testPlatform EditMode -testFilter 'PhysicsCaptureProtocolTests' -testResults "$PWD/.omo/evidence/world-model-physics-instrumentation/task-4-unity.xml" -logFile "$PWD/.omo/evidence/world-model-physics-instrumentation/task-4-unity.log"
+Result: Passed 2/2, failed 0, skipped 0.
+The focused test encoded an actual Texture2D PNG, asserted PNG signature and
+IHDR bytes in the response, asserted render_frame 73 in the snapshot, and
+asserted an event batch with the same render_frame. The second test asserts the
+capture coroutine yields WaitForEndOfFrame before reading the snapshot.
+The direct listener uses a bounded request-70 envelope and serializes copied
+PNG/state/event bytes after that end-of-frame yield. No player was built or
+promoted.
+
+Final fix verification
+Command: Unity 2019.4.41f2 focused PhysicsCaptureProtocolTests with absolute testResults task-4-fix-green-3.xml and log.
+Result: Passed 5/5, failed 0; XML parsed and required totals matched.
+Final Python bridge command: python -m unittest tests.test_webui_bridge -v
+Result: Passed 19/19.
+Final real local TCP check sent request byte 70 and parsed PNG signature 89504e470d0a1a0a with state/event render_frame 913.
+Final checks: git diff --check passed; canonical_project_cmp=0; production_player_cmp=0; targeted source secret scans clean.
+
+Protected roots
+Canonical project: before/after manifest SHA-256
+a986acc9dc911009e7e04bea85ee531ba4b9f9d692afa915456d81bcf7c8bb56
+Production player: before/after manifest SHA-256
+e92a83fb14638b24ba8a0a05d588829823000f3db349ae9eaf39f188f68e8cd5
+Prior Todo 3 preservation receipt reports canonical_project_cmp=0,
+production_player_cmp=0, active_rollout_modified=false.
+
+Cleanup
+No Unity or player process remains; no Temp/Logs/UnityLockfile remains.
+Generated Unity XML/log are intentionally retained as the Todo 4 receipt.
+Canonical project, sciencebirdsgames/Linux, active dataset, and plan/ledger
+files were not modified.

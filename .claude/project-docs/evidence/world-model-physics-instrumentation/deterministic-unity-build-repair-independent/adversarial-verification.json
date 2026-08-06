@@ -1,0 +1,152 @@
+{
+  "schemaVersion": "AdversarialVerify.v1",
+  "verdict": "confirmed",
+  "recommendation": "APPROVE",
+  "confidence": 0.96,
+  "originalIntent": "Repair the Unity 2019.4 staged-player build so two fresh builds from the same source commit are deterministic without weakening strict build failures, while preserving protected roots and leaving no owned runtime residue.",
+  "desiredOutcome": "Commit 55d6ec93cafc77807342cd7573283f1ed20ca691 builds under exact Unity 2019.4.41f2 (6b23d448b533), two fresh archives have identical SHA-256 plus identical provenance and receipts, both static verifications pass, wrong expected SHA is rejected, protected roots remain unchanged, and cleanup is complete.",
+  "userOutcomeReview": "Confirmed for the deterministic-repair lane. Live gameplay smoke was explicitly excluded and was not run. No production promotion was performed by this repair.",
+  "sourceBinding": {
+    "currentHead": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "currentTree": "c779ce2c5ff7182e1f4af3d99620029245756bad",
+    "claimedHead": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "claimedTree": "c779ce2c5ff7182e1f4af3d99620029245756bad",
+    "scopedDiffAgainstClaimedCommitExit": 0,
+    "archiveProvenanceBuild1Head": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "archiveProvenanceBuild2Head": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "archiveSourceCommitMatchesHead": true
+  },
+  "evidence": {
+    "focusedContractTests": {
+      "command": "python -m unittest tests.test_deterministic_unity_build",
+      "independentRuns": 2,
+      "exitCodes": [0, 0],
+      "testsPerRun": 2,
+      "result": "OK twice"
+    },
+    "unityCompatibility": {
+      "version": "2019.4.41f2",
+      "changeset": "6b23d448b533",
+      "compileLogNonemptyBytes": 32582,
+      "compileLogSha256": "a55e7860f156c76c46d68589b002755ea3cfa1d0b46f25d33dd3b18039a2bdda",
+      "binaryObservables": [
+        "Unity Editor version: 2019.4.41f2 (6b23d448b533)",
+        "Initialize engine version: 2019.4.41f2 (6b23d448b533)",
+        "Batchmode quit successfully invoked - shutting down!",
+        "Exiting batchmode successfully now!"
+      ],
+      "buildProvenanceFileCount": 151,
+      "assemblyCSharpSha256BothBuilds": "edcfd0ad97b5dc958d9f811dfe59956b4ad0e8e6259892f8892f715c76346567"
+    },
+    "reproducibility": {
+      "build1Exit": 0,
+      "build2Exit": 0,
+      "build1ArchiveSha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+      "build2ArchiveSha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+      "archiveCmpExit": 0,
+      "provenanceCmpExit": 0,
+      "receiptCmpExit": 0,
+      "provenanceSha256BothBuilds": "7ea3222052889f0a9c6e3c305bfd718b9f18c5cfbaf496ccb120bec564015ead",
+      "note": "Owned stage archives were removed by the executor cleanup. Validation therefore used retained SHA records, cmp exits, byte-identical nonempty provenance, static verifier JSON/exits, and matching compiled-assembly hashes; no zero-byte success log was treated as proof."
+    },
+    "staticVerification": {
+      "build1Exit": 0,
+      "build2Exit": 0,
+      "build1JsonValidated": true,
+      "build2JsonValidated": true,
+      "archiveChecksumVerified": true,
+      "payloadChecksumsVerified": true,
+      "runtime": null
+    },
+    "wrongSha": {
+      "exit": 1,
+      "stderr": "archive SHA-256 mismatch against --expect-sha",
+      "confirmed": true
+    },
+    "protectedRoots": {
+      "canonicalManifestCmpExit": 0,
+      "productionManifestCmpExit": 0,
+      "activeRootStatCmpExit": 0,
+      "canonicalManifestLiveCmpExit": 0,
+      "productionManifestLiveCmpExit": 0,
+      "activeRootStatLiveCmpExit": 0
+    },
+    "publication": {
+      "performedByRepair": false,
+      "repairCleanupReceiptSaysNoPromotion": true,
+      "existingPublishedArchiveSha256": "61c39c22d4a670e1fde15762ae1441f483240f7c06c7e9edbe13a0a107f19130",
+      "existingPublishedReceiptSha256": "7ce70dad0473eed4f0af7540d4e47bec3ece84ab4a4698c558d1487ec0375316",
+      "existingPublishedBuildLogSha256": "af4d2c9825af9d21ab241af126e83c653e485a09cfe0c446faaf9b289a59cb83",
+      "existingPublishedReceiptCheck": "OK",
+      "note": "The existing publication predates and is not claimed as output of commit 55d6ec93; its hashes were checked only because publication artifacts are present."
+    }
+  },
+  "adversarialClasses": {
+    "stale_state": "passed: executor used separate fresh stages; independently confirmed no owned temporary build/verify roots and source is bound to current HEAD",
+    "dirty_worktree": "passed for product scope: scoped diff against 55d6ec93 is empty; unrelated .omo evidence/plan/notepad changes exist and are excluded by the packaging contract",
+    "misleading_success_output": "passed: zero-byte build command logs and scans were not used as proof; exits, SHA records, nonempty provenance, static JSON, compile log, and live cmp checks were used",
+    "flaky_tests": "passed: independently reran the focused suite twice, both 2/2 in 0.001 seconds",
+    "hung_or_long_commands": "passed: recorded Unity/build/verifier invocations used TERM plus KILL timeouts; receipts show completion, and no owned process remains",
+    "repeated_interruptions": "not exercised deliberately because interrupting shared Unity Library state would be destructive; bounded cancellation exists and both builds completed normally",
+    "wrong_sha": "passed: exit 1 with exact mismatch diagnostic",
+    "source_commit_mismatch": "passed: HEAD, tree, both provenance files, and reproducibility receipt all bind to 55d6ec93/c779ce2c",
+    "archive_nondeterminism": "passed: both retained archive SHA values equal and archive cmp exit is 0",
+    "provenance_nondeterminism": "passed: provenance files are byte-identical with independently recomputed SHA 7ea322...",
+    "receipt_nondeterminism": "passed: receipt cmp exit is 0; reproducibility receipt records matching archive values",
+    "compiler_incompatibility": "passed: nonempty Unity log identifies exact 2019.4.41f2 changeset and successful batch exit; both provenance files identify the same version",
+    "protected_root_mutation": "passed: canonical and production full manifests plus bounded active-root stat compare equal",
+    "cleanup_leak": "passed: independent lock, temp-root, port 2004, and owned process checks all returned absent",
+    "prompt_injection": "not applicable: the lane consumes local source and structured build artifacts only",
+    "network_adversary": "not applicable: no network input or live gameplay smoke is in this deterministic build lane",
+    "privilege_boundary": "not applicable: no privilege transition is performed",
+    "concurrency_race": "mitigated: separate stage roots and Unity lock discipline; exact archives match",
+    "resource_exhaustion": "bounded: all potentially long commands had explicit TERM/KILL limits",
+    "partial_write": "passed by archive checksum, payload verifier JSON, matching provenance, and archive receipt comparisons",
+    "publication_drift": "not applicable to repair output because production_promotion_performed is false; existing unrelated publication receipt currently verifies"
+  },
+  "qualityPass": {
+    "removeAiSlops": "Direct pass found no deletion-only, removal-only, tautological, prose-pin, excessive-test, or unnecessary production extraction. The two tests structurally inspect requested flags and are implementation-adjacent, but behavioral two-build Unity evidence independently establishes the outcome.",
+    "programming": "Python test is 49 LOC, typed, deterministic, isolated, and has no mocks, sleeps, broad exceptions, Any, or generated expected values. C# production change is a one-line platform flag plus the supported Roslyn response file.",
+    "codeReviewCoverage": "The available top-level code review report explicitly applies remove-ai-slops/programming and overfit criteria, but it reviews a different Unity protocol diff. Direct gate review supplies the missing repair-specific coverage; no stated deterministic-repair criterion is failed by this reporting mismatch."
+  },
+  "checkedArtifactPaths": [
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/done-claim.json",
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/reproducibility-receipt.json",
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-1-provenance.json",
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-2-provenance.json",
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-1-static.json",
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-2-static.json",
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/unity-import-compile.log",
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/cleanup-receipt.json",
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_deterministic_unity_build.py",
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets/Scripts/Editor/NovPhyBuild.cs",
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets/csc.rsp",
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets/csc.rsp.meta"
+  ],
+  "exactRepro": [
+    "cd /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+    "git rev-parse HEAD HEAD^{tree}",
+    "git diff --quiet 55d6ec93cafc77807342cd7573283f1ed20ca691 -- tasks/task_template_designer/Assets/Scripts/Editor/NovPhyBuild.cs tasks/task_template_designer/Assets/csc.rsp tasks/task_template_designer/Assets/csc.rsp.meta tests/test_deterministic_unity_build.py",
+    "python -m unittest tests.test_deterministic_unity_build",
+    "python -m unittest tests.test_deterministic_unity_build",
+    "cmp -s .omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-1-provenance.json .omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-2-provenance.json",
+    "sha256sum .omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-{1,2}-provenance.json",
+    "jq -e '.archive_checksum_verified and .payload_checksums_verified and .runtime == null and .archive_sha256 == \"1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4\"' .omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-{1,2}-static.json",
+    "cd sciencebirdsgames/physics-v1 && sha256sum -c archive.sha256"
+  ],
+  "evidenceGaps": [
+    "The two repair-stage tarballs and per-build archive receipt files were removed during cleanup, so a third party cannot recompute the repair archive bytes from retained evidence alone without rerunning the two bounded Unity builds. This does not contradict the criterion because retained independent SHA/cmp/verifier/provenance observables agree and cleanup required removing owned stages.",
+    "No repair-specific standalone code-review report exists; the available top-level report covers a different protocol diff. This gate performed the required direct repair-specific remove-ai-slops/programming pass.",
+    "The active dataset check is intentionally a bounded root stat, not a recursive 6M-file manifest."
+  ],
+  "blockers": [],
+  "cleanupReceipt": {
+    "status": "clean",
+    "productFilesModifiedByVerifier": false,
+    "ownedProcessesAbsent": true,
+    "port2004Absent": true,
+    "unityLockAbsent": true,
+    "temporaryRootsAbsent": true,
+    "createdEvidenceOnly": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/adversarial-verification.json"
+  }
+}

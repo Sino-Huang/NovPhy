@@ -1,0 +1,6 @@
+python -m py_compile scripts/package_physics_player.py tests/test_package_physics_player.py tests/test_build_physics_player.py
+check-no-excuse-rules
+no violations in 3 file(s)
+bash -n scripts/build_physics_player.sh
+git diff --check --cached
+exit=0

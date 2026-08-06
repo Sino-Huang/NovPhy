@@ -1,0 +1,54 @@
+{
+  "scenario": "task-2-hub-locate-private-compatibility-continuation",
+  "timestamp": "2026-08-05T00:55:19+10:00",
+  "surface": {
+    "route": "#/installs",
+    "body_excerpt": "Unity (2019.4.41f2)\nLTS\n0 projects\n\n/home/sukai/.local/share/novphy-unity/hub-layout/2019.4.41f2/Editor/Unity\n\nLinux\nManage\nUnity (editor)\n0 projects\n\n/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity\n\nLinux\nManage",
+    "expected_identity": {
+      "version": "2019.4.41f2",
+      "changeset": "6b23d448b533",
+      "path": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity"
+    },
+    "screenshot": "task-2-hub-locate-2026-08-05-continuation.png"
+  },
+  "persisted_state": {
+    "exact_entry": {
+      "version": "editor",
+      "location": ["/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity"],
+      "manual": true,
+      "architecture": "x86_64",
+      "productName": "Unity",
+      "folderPath": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor"
+    },
+    "new_resolved_entry": {
+      "version": "2019.4.41f2",
+      "location": ["/home/sukai/.local/share/novphy-unity/hub-layout/2019.4.41f2/Editor/Unity"],
+      "manual": true,
+      "architecture": "x86_64",
+      "revisionHash": "6b23d448b533"
+    },
+    "editors_v2_sha256": "e09cefadbeb84b258a068244fc234014fc947f4b5868a87eb5285a65d17457b3",
+    "unsupported_cache": ["editor-x86_64"],
+    "unsupported_cache_sha256": "d3d118e47dcdc283b2111b7780a065d6aff3573c5abde47c79b935814b61d924"
+  },
+  "logs": {
+    "startup": "Migrating 1 legacy located editors.",
+    "previous_probe": "0 releases retrieved from LivePlatformAPI for versions: editor.",
+    "successful_probe": "1 releases retrieved from LivePlatformAPI for versions: 2019.4.41f2, editor.",
+    "cdn": [
+      "Successfully fetched CDN release.json for version: 2019.4.41f2",
+      "Successfully fetched editor release from CDN for version: 2019.4.41f2"
+    ]
+  },
+  "process_cleanup_check": {
+    "unity_editor_processes": 0,
+    "chooser_windows": 0,
+    "private_hub_pid": 2416098,
+    "cdp_listener": "127.0.0.1:9333"
+  },
+  "protected_roots": {
+    "canonical_project_unchanged_evidence": "../.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-2-canonical-project-before.tsv == task-2-canonical-project-after.tsv; sha256 a986acc9dc911009e7e04bea85ee531ba4b9f9d692afa915456d81bcf7c8bb56",
+    "production_player_unchanged_evidence": "../.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-2-production-player-before.tsv == task-2-production-player-after.tsv; sha256 e92a83fb14638b24ba8a0a05d588829823000f3db349ae9eaf39f188f68e8cd5"
+  },
+  "verdict": "PASS"
+}

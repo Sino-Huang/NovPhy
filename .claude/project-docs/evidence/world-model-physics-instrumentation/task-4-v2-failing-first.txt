@@ -1,0 +1,23 @@
+test_request_70_public_records_have_recursive_typed_annotations (tests.test_webui_bridge.PhysicsCaptureV1Tests.test_request_70_public_records_have_recursive_typed_annotations) ... FAIL
+test_request_70_failure_fields_are_immutable (tests.test_webui_bridge.PhysicsCaptureV1Tests.test_request_70_failure_fields_are_immutable) ... FAIL
+
+======================================================================
+FAIL: test_request_70_public_records_have_recursive_typed_annotations (tests.test_webui_bridge.PhysicsCaptureV1Tests.test_request_70_public_records_have_recursive_typed_annotations)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_webui_bridge.py", line 163, in test_request_70_public_records_have_recursive_typed_annotations
+    self.assertNotEqual(annotations["state"], Any)
+AssertionError: typing.Any == typing.Any
+
+======================================================================
+FAIL: test_request_70_failure_fields_are_immutable (tests.test_webui_bridge.PhysicsCaptureV1Tests.test_request_70_failure_fields_are_immutable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_webui_bridge.py", line 169, in test_request_70_failure_fields_are_immutable
+    with self.assertRaises(FrozenInstanceError):
+AssertionError: FrozenInstanceError not raised
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.001s
+
+FAILED (failures=2)

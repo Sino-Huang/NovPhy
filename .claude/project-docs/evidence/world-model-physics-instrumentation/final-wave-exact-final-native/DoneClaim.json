@@ -1,0 +1,38 @@
+{
+  "schema_version": "novphy_done_claim_v1",
+  "claim_type": "DoneClaim",
+  "status": "needs-fix",
+  "verdict": "needs-fix",
+  "task": "final exact-SHA build, package, publication, and real smoke lifecycle",
+  "plan": ".omo/plans/world-model-physics-instrumentation.md",
+  "source": {
+    "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+    "git_head": "6668b12f43f2c577c7f2446c98aedea0811f913e",
+    "git_tree": "4107ef110108c82404974de51c2b3f2409c5fbef",
+    "unity_version": "2019.4.41f2",
+    "unity_changeset": "6b23d448b533",
+    "unity_executable_sha256": "32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150",
+    "product_scope_tracked_diff_exit": 0,
+    "product_scope_staged_diff_exit": 0
+  },
+  "criteria": {
+    "build_1": {"status": "blocked", "invocation": "timeout --signal=TERM --kill-after=30s 900s env NOVPHY_PHYSICS_STAGE=.omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-native/build-1-stage ./scripts/build_physics_player.sh", "observable": "exit=1 before Unity; PackagingError: untracked product source: !! tasks/task_template_designer/Packages/manifest.json", "artifact": "build-1.log"},
+    "build_2": {"status": "not-run", "artifact": null},
+    "archive_byte_equality": {"status": "not-run", "artifact": null},
+    "static_verifier": {"status": "not-run", "artifact": null},
+    "legacy_request_38_62": {"status": "not-run", "artifact": null},
+    "request_70": {"status": "not-run", "artifact": null},
+    "fresh_published_action_smoke": {"status": "not-run", "artifact": null},
+    "publication": {"status": "not-run", "target": "sciencebirdsgames/physics-v1"},
+    "protected_roots": {"status": "passed", "observable": "before/after digests identical", "artifact": "protected-comparison.json"},
+    "cleanup": {"status": "passed", "observable": "no owned Unity/Xvnc/Xvfb/game interface processes, locks, or temporary build roots", "artifacts": ["process-scan.log", "unity-locks.log", "temp-build-roots.log"]}
+  },
+  "blocker": {
+    "criterion": "supported packaging preflight",
+    "reason": "The exact workflow rejects an existing ignored product artifact under tasks/task_template_designer/Packages/manifest.json. This worker must not delete or modify pre-existing user artifacts and cannot bypass the packager guard.",
+    "artifact": "build-1.log"
+  },
+  "publication": {"performed": false, "target": "sciencebirdsgames/physics-v1"},
+  "commits_created": 0,
+  "evidence_dir": ".omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-native"
+}

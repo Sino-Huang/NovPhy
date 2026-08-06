@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "novphy_stop_hook_verification_v2",
+  "verdict": "confirmed",
+  "verifiedAt": "2026-08-06T07:09:57+10:00",
+  "checks": {
+    "priorChecksumChain": true,
+    "sourceHeadExact": true,
+    "sourceTreeExact": true,
+    "archiveProvenanceExact": true,
+    "unityBuildSuccessMarker": true,
+    "acceptedShotSchemaValid": true,
+    "request38Action": true,
+    "request62Decoded": true,
+    "request70Decoded": true,
+    "birdLaunchedCount": 1,
+    "pngMagicValid": true,
+    "protectedRootsUnchanged": true,
+    "ownedProcesses": 0,
+    "ownedListeners": 0,
+    "publishedFilesNonempty": true
+  },
+  "evidence": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/final-published-runtime/stop-hook-2-verification/commands.log",
+  "risks": [
+    "Generic verifier pre-action timeout remains recorded; the dedicated real action smoke is the accepted runtime proof.",
+    "Receipt-last atomic publication is fail-closed but is not an atomic whole-directory exchange."
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "task": "Todo 5 - Persist enriched shot artifacts atomically and validate their capture contract",
+  "verdict": "pending-independent-verification",
+  "changed_files": [
+    "scripts/collect_rollouts.py",
+    "scripts/rollout_artifacts.py",
+    "scripts/prepare_rollout_dataset.py",
+    "scripts/rollout_validation_types.py",
+    "scripts/physics_capture_parsing.py",
+    "tests/test_collect_rollouts.py",
+    "tests/test_prepare_rollout_dataset.py"
+  ],
+  "behavior": {
+    "legacy": "default validate_rollout_artifact and canonical predicate remain RGB-only",
+    "enriched": "explicit physics_capture_v1 switch only; request-70 persistence uses sibling shot_NNN.tmp, streaming closed/fsynced JSONL, schema/frame/checksum acceptance, atomic promotion, and quarantine/recovery"
+  },
+  "evidence": {
+    "red": ".omo/evidence/world-model-physics-instrumentation/task-5-repair-red.log",
+    "focused": ".omo/evidence/world-model-physics-instrumentation/task-5-final-focused-v4.log",
+    "adjacent": ".omo/evidence/world-model-physics-instrumentation/task-5-adjacent-contract-v4.log",
+    "prepare_full": ".omo/evidence/world-model-physics-instrumentation/task-5-full-prepare-v4.log",
+    "collect_full": ".omo/evidence/world-model-physics-instrumentation/task-5-full-collect-v3.log",
+    "compileall": ".omo/evidence/world-model-physics-instrumentation/task-5-compileall-v4.log",
+    "manual": ".omo/evidence/world-model-physics-instrumentation/task-5-manual-qa-v2.json",
+    "data_overlay": ".omo/evidence/world-model-physics-instrumentation/task-5-data-overlay-final-v2.sha256"
+  },
+  "manual_observables": [
+    "accepted shot_000 exists and shot_000.tmp is absent",
+    "shared validator and canonical predicate accepted the enriched artifact",
+    "two repeated tmp cleanup cycles removed shot_001.tmp",
+    "corrupt completed shot_001 was moved under invalid_attempts and rejected by validator",
+    "PNG/state/event SHA-256 checksums were recorded; QA root was removed"
+  ],
+  "adversarial_classes": {
+    "malformed_input": "pass: missing/truncated/extra/out-of-order/duplicate/schema/render mismatch matrix",
+    "cancel_resume": "pass: repeated temporary cleanup",
+    "stale_state": "pass: orphan tmp and corrupt completed attempt quarantine",
+    "dirty_worktree": "pass: concurrent Todo 2-4 changes preserved; .gitignore unchanged",
+    "flaky_tests": "pass: focused and adjacent deterministic reruns in prior evidence; current v3 focused pass",
+    "misleading_success_output": "pass: manual reread validator results and hashes",
+    "repeated_interruptions": "pass: two cleanup cycles",
+    "prompt_injection": "N/A: no instruction-execution surface"
+  },
+  "risks": [
+    "Full collect suite retains one pre-existing protected-data fixture failure at data/novphy_rollouts_dataset/...; focused and affected validator/prepare suites pass.",
+    "Physics parser received the minimal empty-event acceptance change required by the capture contract and should be included in independent scope review.",
+    "Live Unity request-70 collection remains independent verification scope."
+  ]
+}

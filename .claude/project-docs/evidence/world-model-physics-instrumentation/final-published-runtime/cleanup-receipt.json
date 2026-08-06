@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "novphy_runtime_cleanup_v1",
+  "status": "clean",
+  "checkedAt": "2026-08-07T00:31:39+10:00",
+  "reviewedCommitSha": "e2d19ae04946765b0196e043826bb08aa9a09caf",
+  "archiveSha256": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+  "ownedProcessCount": 0,
+  "ownedProcessNote": "A /bin/ps scan for player, Xvfb, smoke, build, and Unity Editor processes matched only this session own scanning shells and an unrelated VSCode server process. No Unity Editor, staged player, Xvfb, or smoke driver from this wave remains.",
+  "ownedListenerCount": 0,
+  "ownedListenerNote": "The only Unity-adjacent listener is 127.0.0.1:9333 held by Unity Hub and its Licensing Client.",
+  "notOwnedByThisRun": [
+    "Unity Hub (unityhub-bin, running over a day, intentionally left untouched)",
+    "Unity Licensing Client on 127.0.0.1:9333",
+    "a long-running zellij session named unityhub belonging to the user",
+    "the VSCode server"
+  ],
+  "removed": [
+    {
+      "path": "/tmp/novphy-smoke-output",
+      "reason": "disposable output from the interrupted prior session, flagged for cleanup in the handoff",
+      "safetyCheck": "recursive diff against final-published-runtime/superseded-1c4e70b/accepted-shot returned identical before deletion, so the artifact is retained in evidence"
+    },
+    {
+      "path": "tasks/task_template_designer/Temp/UnityLockfile",
+      "reason": "0-byte stale lock left by a headless editor that crashed at CEF shutdown",
+      "safetyCheck": "Temp/ is gitignored, fuser reported no holder, and the file was empty"
+    }
+  ],
+  "temporaryBuildStages": [],
+  "temporaryPlayerClones": [],
+  "ownedLocks": [],
+  "publishedStagePreserved": true,
+  "retainedEvidenceOutputRoots": [
+    "final-wave-exact-final-native/e2d19ae/published-smoke-output",
+    "final-wave-exact-final-native/e2d19ae/build-1-stage",
+    "final-wave-exact-final-native/e2d19ae/build-2-stage",
+    "final-wave-exact-final-native/e2d19ae/injections",
+    "final-published-runtime/accepted-shot",
+    "final-published-runtime/superseded-1c4e70b"
+  ],
+  "protectedRootsAfterCleanup": {
+    "canonicalProject": "5c1ec096a2b329295646212ed091e1327a7687e22b599c8c339680adcee392e1",
+    "productionPlayer": "ba826ba78013b95d2f89cae10f8ef1312aa2678df19620f02840a7ded1d54778",
+    "activeData": "82b60d3b7266fff1ca17ed58af2f3bebe49005e8e2069cceb6e35c42c3b313b4",
+    "source": "recomputed by the final live smoke against the real canonical roots, before and after"
+  },
+  "commandLog": "cleanup-commands.log",
+  "observables": "cleanup-observables.txt"
+}

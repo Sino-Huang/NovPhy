@@ -81,7 +81,7 @@ def unity_package_input_digests(worktree: Path) -> dict[str, str]:
 def git_revision(worktree: Path, package_inputs: dict[str, str] | None = None, require_package_inputs: bool = False) -> tuple[str, str]:
     head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=worktree, text=True, capture_output=True, check=True).stdout.strip()
     tree = subprocess.run(["git", "rev-parse", "HEAD^{tree}"], cwd=worktree, text=True, capture_output=True, check=True).stdout.strip()
-    source_diff = subprocess.run(["git", "diff", "--quiet", "HEAD", "--", ".", ":(exclude).omo", ":(exclude).omo/**"], cwd=worktree, check=False)
+    source_diff = subprocess.run(["git", "diff", "--quiet", "HEAD", "--", ".", ":(exclude).claude", ":(exclude).claude/**"], cwd=worktree, check=False)
     if source_diff.returncode == 1:
         raise PackagingError("tracked product source differs from HEAD")
     source_diff.check_returncode()

@@ -1,0 +1,23 @@
+{
+  "scenario": "Post-completion direct verification of the validator extraction evidence",
+  "invocation": [
+    "python -m json.tool .omo/evidence/world-model-physics-instrumentation/f2-validator-extract/done-claim.json",
+    "find .omo/evidence/world-model-physics-instrumentation/f2-validator-extract -type f -size 0 -print",
+    "sha256sum scripts/rollout_artifacts.py scripts/physics_artifact_validation.py tests/test_collect_rollouts.py",
+    "git diff --check"
+  ],
+  "binary_observables": {
+    "evidence_json": "valid",
+    "empty_artifacts": [],
+    "source_hashes_match_claim": true,
+    "diff_check_exit": 0,
+    "recorded_cleanup": "passed"
+  },
+  "source_hashes": {
+    "scripts/rollout_artifacts.py": "b645fb7394230221a52e707df59aa41e416bdf8e0f1cca26e79d248adb3767d7",
+    "scripts/physics_artifact_validation.py": "641b05d92f275985bb7073ae09858b0d4151ed6c946f4f240d88223ffcdd6b0a",
+    "tests/test_collect_rollouts.py": "4e3342f29233a9928f09df064e4e16bfa15c3852684151bec050f12d1d55766d"
+  },
+  "verdict": "confirmed",
+  "cleanup_receipt": ".omo/evidence/world-model-physics-instrumentation/f2-validator-extract/cleanup-receipt.log"
+}

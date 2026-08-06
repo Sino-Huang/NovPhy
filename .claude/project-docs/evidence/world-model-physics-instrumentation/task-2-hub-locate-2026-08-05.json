@@ -1,0 +1,69 @@
+{
+  "task": "2. Unity Hub editor registration gate",
+  "captured_at": "2026-08-05",
+  "surface": "Unity Hub desktop, CDP port 9333, Installs route",
+  "requested_executable": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+  "observable_text": {
+    "hub_route": "#/installs",
+    "installs_before_and_after": "No installs",
+    "locate_control": "Locate",
+    "chooser_title": "Select the Editor you wish to add",
+    "required_editor_visible": false
+  },
+  "invocations": [
+    "curl -sS http://127.0.0.1:9333/json/list",
+    "CDP Runtime.evaluate document.body.innerText on the Unity Hub #/installs page",
+    "CDP Runtime.evaluate [...document.querySelectorAll('button')].find(x => x.innerText.trim() === 'Locate').click()",
+    "X11 xwininfo -root -tree and desktop chooser inspection"
+  ],
+  "verdict": "BLOCKED",
+  "reason": "The real desktop chooser opened with the exact Locate title, but the active file chooser did not accept keyboard or pointer activation and its accessibility registration was unavailable after portal recovery. The exact executable could not be selected, so Unity 2019.4.41f2 (changeset 6b23d448b533) remains absent from visible Installs.",
+  "probe_policy": "PASS: no Unity Editor launch, project import, or equivalent Unity probe was attempted.",
+  "cleanup": {
+    "chooser_windows": "closed",
+    "transient_nautilus_window": "closed",
+    "unity_editor_processes": "none observed",
+    "project_import": "not attempted",
+    "temporary_bridge": "none left running",
+    "canonical_project_or_production_player": "untouched"
+  },
+  "manualQa": {
+    "surfaceEvidence": [
+      {
+        "scenarioId": "hub-locate-exact-editor",
+        "criterionReference": "Todo 2 activation gate",
+        "surface": "Unity Hub Installs -> Locate -> native file chooser",
+        "exactInvocation": "CDP click Locate, then desktop chooser titled Select the Editor you wish to add",
+        "verdict": "BLOCKED",
+        "artifactRefs": ["hub-locate-2026-08-05-json"]
+      }
+    ],
+    "adversarialCases": [
+      {
+        "scenarioId": "no-unity-probe-on-registration-failure",
+        "criterionReference": "Todo 2 probe policy",
+        "adversarialClass": "misleading_success_output",
+        "expectedBehavior": "Do not launch Unity or claim activation when Installs still shows No installs",
+        "verdict": "PASS",
+        "artifactRefs": ["hub-locate-2026-08-05-json"]
+      },
+      {
+        "scenarioId": "chooser-input-blocker",
+        "criterionReference": "Todo 2 activation gate",
+        "adversarialClass": "desktop_input_unavailable",
+        "expectedBehavior": "Record the exact chooser blocker and stop without selecting unrelated files or terms",
+        "verdict": "BLOCKED",
+        "artifactRefs": ["hub-locate-2026-08-05-json"]
+      }
+    ],
+    "artifactRefs": [
+      {
+        "id": "hub-locate-2026-08-05-json",
+        "kind": "json",
+        "description": "Sanitized live Hub Locate attempt and cleanup state",
+        "path": ".omo/evidence/world-model-physics-instrumentation/task-2-hub-locate-2026-08-05.json"
+      }
+    ]
+  },
+  "sanitization": "No credentials, account identifiers, serials, tokens, license contents, or raw license material recorded."
+}

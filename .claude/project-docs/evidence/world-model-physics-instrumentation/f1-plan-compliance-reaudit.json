@@ -1,0 +1,46 @@
+{
+  "task": "F1. Plan compliance audit",
+  "verdict": "confirmed",
+  "confidence": 0.99,
+  "basis": [
+    ".omo/evidence/world-model-physics-instrumentation/f1-plan-compliance-independent.json",
+    ".omo/evidence/world-model-physics-instrumentation/f1-evidence-integrity-independent.json",
+    ".omo/evidence/world-model-physics-instrumentation/f1-scope-guardrails-independent.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-8-action-event-done-claim.json",
+    ".omo/evidence/world-model-physics-instrumentation/f1-plan-compliance-reaudit.log"
+  ],
+  "resolved_blockers": {
+    "todo_8_live_action": {
+      "status": "resolved",
+      "observable": "request 38 response 1 with one ground-truth record; request 70 returned seven ordered events including bird_launched; accepted artifact has one synchronized state and seven events",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-8-action-live/happy.json"
+    },
+    "todo_8_checksum_manifest": {
+      "status": "resolved",
+      "observable": "sha256sum -c passed every manifest entry including the final smoke driver and tests",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-8-evidence.sha256"
+    }
+  },
+  "automated_verification": {
+    "focused": "python -m unittest tests.test_smoke_physics_capture -v: 11 passed",
+    "strict_artifact": "validate_physics_shot_artifact: state_count=1, event_count=7",
+    "matrix": "happy exit 0 accepted; frame mismatch, missing sidecar, and request failure exit 1 rejected",
+    "checksum": "all task-8-evidence.sha256 entries OK"
+  },
+  "manual_qa": {
+    "invocation": "timeout --signal=TERM --kill-after=20s 900s python scripts/smoke_physics_capture.py --stage sciencebirdsgames/physics-v1 --output-dir .omo/evidence/world-model-physics-instrumentation/task-8-action-live/happy --report .omo/evidence/world-model-physics-instrumentation/task-8-action-live/happy.json",
+    "pass_observable": "exit 0, accepted shot_001, action request_code=38, ground_truth_count=1, bird_launched present, protected_unchanged=true"
+  },
+  "adversarial_classes": {
+    "malformed_input": "PASS: frame mismatch and missing sidecar rejected and quarantined",
+    "prompt_injection": "not applicable: structured local protocol and JSON artifacts only",
+    "cancel_resume": "PASS: no final promotion on the three rejected scenarios",
+    "stale_state": "PASS: final checksum manifest verifies current smoke source and test bytes",
+    "dirty_worktree": "PASS: protected canonical project, production player, and active cohort receipts unchanged in all four live runs",
+    "hung_or_long_commands": "PASS: each live command was timeout-bounded and terminated",
+    "flaky_tests": "PASS: focused smoke suite passed after the live matrix",
+    "misleading_success_output": "PASS: verdict uses decoded action, event, validator, filesystem, and protected-root observables rather than exit alone",
+    "repeated_interruptions": "PASS: all recorded PIDs, ports, and temporary clones are absent"
+  },
+  "cleanup_receipt": ".omo/evidence/world-model-physics-instrumentation/f1-plan-compliance-reaudit-cleanup.json"
+}

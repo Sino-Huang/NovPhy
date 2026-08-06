@@ -1,0 +1,56 @@
+{
+  "schema_version": "novphy_stop2_direct_verification_v1",
+  "status": "pass",
+  "direct_execution": {
+    "focused_smoke": {
+      "invocation": "python -m unittest tests.test_smoke_physics_capture -v",
+      "result": "6/6"
+    },
+    "contract": {
+      "invocation": "python -m unittest tests.test_physics_capture_contract -v",
+      "result": "14/14"
+    },
+    "accepted_shot": {
+      "invocation": "validate_physics_shot_artifact + parse_physics_sidecars",
+      "result": {
+        "state_count": 1,
+        "event_count": 0,
+        "node_count": 14,
+        "frame_match": true
+      }
+    },
+    "archive": {
+      "invocation": "sha256sum staged archive and compare archive.sha256",
+      "sha256": "c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992"
+    },
+    "live_matrix": {
+      "invocation": "parse numeric exits and JSON reports",
+      "exits": {
+        "happy": 0,
+        "frame-mismatch": 1,
+        "missing-sidecar": 1,
+        "request-failure": 1
+      },
+      "protected_unchanged": true
+    },
+    "independent_verdicts": {
+      "live": "confirmed",
+      "contract": "confirmed",
+      "boundary": "confirmed"
+    },
+    "cleanup": {
+      "invocation": "pgrep owned processes + ss port 2004",
+      "owned_processes_absent": true,
+      "physics_port_2004_absent": true
+    },
+    "durable_state": {
+      "plan_checkbox": "checked",
+      "ledger_task_completed_records": 1
+    }
+  },
+  "artifacts": {
+    "focused": ".omo/evidence/world-model-physics-instrumentation/task-8-stop2-focused.log",
+    "contract": ".omo/evidence/world-model-physics-instrumentation/task-8-stop2-contract.log",
+    "accepted": ".omo/evidence/world-model-physics-instrumentation/task-8-stop2-accepted-validator.json"
+  }
+}

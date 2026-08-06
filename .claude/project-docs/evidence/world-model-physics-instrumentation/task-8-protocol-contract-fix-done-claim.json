@@ -1,0 +1,112 @@
+{
+  "task": "todo8_request70_producer_contract_repair",
+  "status": "DONE",
+  "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+  "source": {
+    "protocol": "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs",
+    "protocol_sha256": "bd327874dcbe2b34791368a6abc4e42610acd319d62106108a7a2d7bccbcff25",
+    "runtime": "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicalSnapshotRuntime.cs",
+    "runtime_sha256": "23697d5dd4536e68f7292099be6ee02dc16677e876bfd2bd342067b69d49849a",
+    "tests": "tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs",
+    "tests_sha256": "8f3b635f208322ee73f8a20b9af61886dd6907f314169fbf9b567814e4a6f0ab"
+  },
+  "criteria": [
+    {
+      "scenario": "Failing-first producer contract comparison against the frozen schema requirements.",
+      "invocation": "Unity 2019.4.41f2 -batchmode -nographics -runTests -testPlatform EditMode -testFilter PhysicsCaptureProtocolTests.Request70RecordsMatchFrozenPhysicsCaptureV1ProducerContract",
+      "observable": "NUnit result Failed 0/1 with request-70 producer is missing required field: capture_id.",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-red.xml"
+    },
+    {
+      "scenario": "Root-cause toggle removes corrected state capture_id, then restores it.",
+      "invocation": "Run the same focused Unity test once without the state capture_id insertion and once after restoring it.",
+      "observable": "Toggle RED Failed 0/1 with the same capture_id message; toggle GREEN Passed 1/1.",
+      "artifacts": [
+        ".omo/evidence/world-model-physics-instrumentation/task-8-protocol-toggle-red.xml",
+        ".omo/evidence/world-model-physics-instrumentation/task-8-protocol-toggle-green.xml"
+      ]
+    },
+    {
+      "scenario": "All request-70 protocol behaviors after the final fix.",
+      "invocation": "Unity 2019.4.41f2 -batchmode -nographics -runTests -testPlatform EditMode -testFilter PhysicsCaptureProtocolTests",
+      "observable": "NUnit Passed 8/8, failed 0.",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-8-protocol-fixture.xml"
+    },
+    {
+      "scenario": "Adjacent physical recorder/runtime fixtures after the final fix.",
+      "invocation": "Unity 2019.4.41f2 -batchmode -nographics -runTests -testPlatform EditMode -testFilter Physical",
+      "observable": "NUnit Passed 9/9, failed 0.",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-8-physical-fixtures.xml"
+    },
+    {
+      "scenario": "Complete affected EditMode inventory partitioned by fixture to avoid the host CEF crash during an unfiltered run.",
+      "invocation": "Run PhysicsCaptureProtocolTests, Physical, PhysicsShotRecorderTests, LegacyGroundTruthTests, and ABGameWorldLifecycleTests as five exact Unity EditMode filters.",
+      "observable": "Aggregate Passed 35/35, failed 0.",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-8-editmode-partition-receipt.json"
+    },
+    {
+      "scenario": "Legacy request-62 serialization remains byte-exact.",
+      "invocation": "Unity 2019.4.41f2 -batchmode -nographics -runTests -testPlatform EditMode -testFilter LegacyGroundTruthTests.GetGTJson_MinimalFixture_MatchesExactLegacyBytes",
+      "observable": "NUnit Passed 1/1 and LEGACY_GT_SHA256=db0fb151f55403a7a49ae13605fe1c818ad8c00befef9a290cfaddd694eed420.",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-pin-final.xml"
+    },
+    {
+      "scenario": "Exact pinned Unity rebuild into the isolated physics-v1 stage.",
+      "invocation": "timeout --signal=TERM --kill-after=30s 900s ./scripts/build_physics_player.sh",
+      "observable": "Exit 0; archive SHA-256 c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992.",
+      "artifacts": [
+        "sciencebirdsgames/physics-v1/unity-build.log",
+        "sciencebirdsgames/physics-v1/archive.sha256"
+      ]
+    },
+    {
+      "scenario": "Archive and payload provenance verification.",
+      "invocation": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --skip-runtime",
+      "observable": "Exit 0; archive_checksum_verified=true and payload_checksums_verified=true.",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-8-stage-static.json"
+    },
+    {
+      "scenario": "Fresh unpacked player reaches PLAYING and serves legacy request 62 followed by request 70.",
+      "invocation": "DISPLAY=:10 python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --agent-port 22170 --game-port 29170 --physics-port 2004",
+      "observable": "Exit 0; legacy_request_62=true with one feature batch; request_70=true with render frame 9435.",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-8-runtime.json"
+    },
+    {
+      "scenario": "Real request-70 response passes the collector writer and frozen sidecar parser/validator.",
+      "invocation": "Fresh unpacked archive on DISPLAY=:10; request 62 and request 70; capture_physics_rollout(... max_frames=1); validate_physics_shot_artifact(shot_001.tmp).",
+      "observable": "Exit 0; PNG true, capture_id nonempty, state_sequence=1, accepted state_count=1, event_count=0.",
+      "artifacts": [
+        ".omo/evidence/world-model-physics-instrumentation/task-8-writer-probe.json",
+        ".omo/evidence/world-model-physics-instrumentation/task-8-writer-probe/shot_001/physics_state.jsonl",
+        ".omo/evidence/world-model-physics-instrumentation/task-8-writer-probe/shot_001/metadata.json",
+        ".omo/evidence/world-model-physics-instrumentation/task-8-writer-probe/shot_001/frames/frame_000000.png"
+      ]
+    },
+    {
+      "scenario": "Wrong staged archive digest is rejected.",
+      "invocation": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha deadbeef",
+      "observable": "Exit 1; archive SHA-256 mismatch against --expect-sha.",
+      "artifacts": [
+        ".omo/evidence/world-model-physics-instrumentation/task-8-wrong-sha.exit",
+        ".omo/evidence/world-model-physics-instrumentation/task-8-wrong-sha.stderr"
+      ]
+    },
+    {
+      "scenario": "Canonical Unity project, production player, and active dataset remain protected.",
+      "invocation": "Compare before/after sorted SHA-256 manifests for canonical/project and production/player; compare active-dataset directory metadata receipt.",
+      "observable": "canonical_cmp_exit=0, production_cmp_exit=0, active_stat_cmp_exit=0.",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-8-protected-receipt.txt"
+    },
+    {
+      "scenario": "Task-owned runtime resources are cleaned after verification.",
+      "invocation": "Self-excluding process scan, ss scan for ports 2004/22170/22171/29170/29171, and EditorInstance lock check.",
+      "observable": "No task-owned processes, no listening ports, and no task-owned Unity lock.",
+      "artifacts": [
+        ".omo/evidence/world-model-physics-instrumentation/task-8-process-cleanup.txt",
+        ".omo/evidence/world-model-physics-instrumentation/task-8-port-cleanup.txt",
+        ".omo/evidence/world-model-physics-instrumentation/task-8-lock-cleanup.txt"
+      ]
+    }
+  ],
+  "debug_journal": ".omo/evidence/world-model-physics-instrumentation/task-8-debug-journal.md"
+}

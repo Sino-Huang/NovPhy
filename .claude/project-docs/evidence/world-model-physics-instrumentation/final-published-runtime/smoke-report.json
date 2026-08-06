@@ -1,0 +1,102 @@
+{
+  "accepted_shot": "accepted-shot",
+  "action": {
+    "ground_truth_count": 1,
+    "release_time": 1000,
+    "request_code": 38,
+    "response": 1,
+    "slingshot_reference": {
+      "canvasX": 172,
+      "canvasY": 262,
+      "gameX": 172,
+      "gameY": 217
+    },
+    "socket_x": 122,
+    "socket_y": 302,
+    "tap_time": 0
+  },
+  "artifact": {
+    "events": 7,
+    "states": 1
+  },
+  "canonical_root": "/mnt/array/sukaih/Project/NovPhy",
+  "cleanup": {
+    "engine": "pid=751160:exit=143",
+    "temporary_clone": "/tmp/novphy-physics-smoke-duscdmq6",
+    "xvfb": "pid=751157:exit=0"
+  },
+  "derived_from": {
+    "copiedShotDigests": {
+      "frames/frame_000000.png": "72885c26df8a560c6553c732a208e7e90ffad04c58e884bd5b60d35d1ab9134e",
+      "metadata.json": "6a2d6cd6a1ef83551593ef515aacee20ee0a2f4f7353ec97116b84be82b39381",
+      "physics_events.jsonl": "c62d4e3756eacfba57cc911ee053a2e92d77ef1f736b5ed32f393ba226960dc4",
+      "physics_state.jsonl": "375f5121b477aa148a468e8f291d99f1c8218fad483eaf098e1c1c2196acf8ae"
+    },
+    "copyByteIdentical": true,
+    "note": "Machine-produced smoke report with exactly one field re-pointed. Nothing else authored or altered.",
+    "originalValue": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-native/e2d19ae/published-smoke-output/shot_001",
+    "rewriteReason": "verify_physics_capture_docs requires accepted_shot to resolve inside the publication evidence root",
+    "rewrittenField": "accepted_shot",
+    "smokeExitCode": 0,
+    "sourceInvocationLog": "../final-wave-exact-final-native/e2d19ae/published-smoke-invocation.log",
+    "sourceReport": "../final-wave-exact-final-native/e2d19ae/published-smoke.json",
+    "sourceReportSha256": "73b4ae061dc72b6cb85012764b5e5721ec95fb454f24edccece5581406b8efb7"
+  },
+  "display": ":239",
+  "phase": "complete",
+  "ports": {
+    "agent": 57335,
+    "game": 50001,
+    "physics": 2004
+  },
+  "protected_after": {
+    "active_data": "82b60d3b7266fff1ca17ed58af2f3bebe49005e8e2069cceb6e35c42c3b313b4",
+    "canonical_project": "5c1ec096a2b329295646212ed091e1327a7687e22b599c8c339680adcee392e1",
+    "production_player": "ba826ba78013b95d2f89cae10f8ef1312aa2678df19620f02840a7ded1d54778"
+  },
+  "protected_before": {
+    "active_data": "82b60d3b7266fff1ca17ed58af2f3bebe49005e8e2069cceb6e35c42c3b313b4",
+    "canonical_project": "5c1ec096a2b329295646212ed091e1327a7687e22b599c8c339680adcee392e1",
+    "production_player": "ba826ba78013b95d2f89cae10f8ef1312aa2678df19620f02840a7ded1d54778"
+  },
+  "protected_receipt_mode": {
+    "active_data": "complete_nested_find_manifest_sha256",
+    "canonical_project": "content_sha256",
+    "production_player": "content_sha256"
+  },
+  "protected_unchanged": true,
+  "provenance": {
+    "archive_sha256": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+    "player_sha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+    "protocol_sha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a"
+  },
+  "status": "accepted",
+  "wire_capture": {
+    "event_count": 7,
+    "event_types": [
+      "stable_entered",
+      "bird_launched",
+      "stable_exited",
+      "entity_destroyed",
+      "bird_exhausted",
+      "stable_entered",
+      "level_failed"
+    ],
+    "missing_state_fields": [],
+    "render_frame": 16171,
+    "state_fields": [
+      "capture_id",
+      "coordinates",
+      "fixed_step",
+      "fixed_time",
+      "nodes",
+      "raw_contacts",
+      "render_frame",
+      "render_time",
+      "rgb_frame",
+      "schema_version",
+      "sequence",
+      "support_edges"
+    ]
+  }
+}

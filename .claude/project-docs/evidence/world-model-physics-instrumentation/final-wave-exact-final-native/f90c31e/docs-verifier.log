@@ -1,0 +1,28 @@
+started=2026-08-06T23:27:20+10:00
+head=f90c31ed9607a2a2344b5e2bad9f01361439f31d
+=== POSITIVE: real docs against refreshed publication authority, expect exit 0 ===
+invocation=timeout 300s python scripts/verify_physics_capture_docs.py docs
+physics capture documentation verified
+positive_exit=0
+=== NEGATIVE: verifier negative fixtures, run as the tests that own them ===
+invocation=timeout 300s python -m unittest tests.test_verify_physics_capture_docs -v
+test_cli_accepts_current_publication_when_historical_task_8_report_is_stale (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_accepts_current_publication_when_historical_task_8_report_is_stale) ... ok
+test_cli_accepts_harmless_prose_rewrites (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_accepts_harmless_prose_rewrites) ... ok
+test_cli_accepts_the_published_contract_and_schema_example (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_accepts_the_published_contract_and_schema_example) ... ok
+test_cli_rejects_a_malformed_schema_example (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_a_malformed_schema_example) ... ok
+test_cli_rejects_changed_schema_contract_identifiers (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_changed_schema_contract_identifiers) ... ok
+test_cli_rejects_invalid_named_command_block_syntax (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_invalid_named_command_block_syntax) ... ok
+test_cli_rejects_malformed_publication_json_documents (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_malformed_publication_json_documents) ... ok
+test_cli_rejects_malformed_stage_receipts_and_changed_archive_bytes (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_malformed_stage_receipts_and_changed_archive_bytes) ... ok
+test_cli_rejects_non_atomic_promotion_or_rollback_commands (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_non_atomic_promotion_or_rollback_commands) ... ok
+test_cli_rejects_publication_evidence_path_escapes (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_publication_evidence_path_escapes) ... ok
+test_cli_rejects_stale_or_malformed_final_smoke_reports (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_stale_or_malformed_final_smoke_reports) ... ok
+test_cli_rejects_stale_or_malformed_publication_receipts (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_stale_or_malformed_publication_receipts) ... ok
+test_cli_rejects_stale_or_unsuccessful_done_claims (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_stale_or_unsuccessful_done_claims) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 1.960s
+
+OK
+negative_suite_exit=0
+finished=2026-08-06T23:27:22+10:00

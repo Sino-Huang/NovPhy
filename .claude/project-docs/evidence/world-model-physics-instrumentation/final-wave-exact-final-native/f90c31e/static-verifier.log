@@ -1,0 +1,10 @@
+started=2026-08-06T23:04:04+10:00
+=== POSITIVE: correct expected sha, expect exit 0 ===
+invocation=timeout 300s python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha 961d99d40bafe5d262eb843a7aada4f94d9da3ebe8cdf1e7f67ebf82d5f37030 --skip-runtime
+{"archive_checksum_verified": true, "archive_sha256": "961d99d40bafe5d262eb843a7aada4f94d9da3ebe8cdf1e7f67ebf82d5f37030", "payload_checksums_verified": true, "runtime": null}
+positive_exit=0
+=== NEGATIVE: wrong expected sha, expect nonzero ===
+invocation=timeout 300s python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha deadbeef --skip-runtime
+archive SHA-256 mismatch against --expect-sha
+negative_exit=1
+finished=2026-08-06T23:04:05+10:00

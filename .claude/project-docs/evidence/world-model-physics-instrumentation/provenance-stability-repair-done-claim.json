@@ -1,0 +1,128 @@
+{
+  "claim": "archive provenance stability repair complete",
+  "commit": {
+    "sha": "95e7b82919c7cc2cd1aa911c4ebf9ffcfba8f9fe",
+    "message": "fix(physics-capture): stabilize archive provenance"
+  },
+  "changed_files": [
+    "docs/data_contracts/physics_capture_v1.md",
+    "scripts/package_physics_player.py",
+    "scripts/verify_physics_capture_docs.py",
+    "tests/test_package_physics_player.py",
+    "tests/test_verify_physics_capture_docs.py"
+  ],
+  "success_criteria": [
+    {
+      "scenario": "documentation resolves archive provenance from the stage receipt and requires archive and accepted smoke report agreement",
+      "invocation": "python -m unittest tests.test_verify_physics_capture_docs",
+      "binary_observable": "13 documentation and packaging tests passed in the focused suite; dynamic non-pinned digest accepted; receipt/archive and receipt/report disagreement rejected",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-green-focused.log"
+    },
+    {
+      "scenario": "same committed source packages byte-identically after tracked .omo evidence and untracked stage/cache/runtime artifacts change",
+      "invocation": "python -m unittest tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_is_stable_when_only_evidence_and_generated_artifacts_change tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_rejects_tracked_product_dirtiness_before_publishing",
+      "binary_observable": "manifest_identical=true; archive_identical=true; manifest_sha256=78937954421b65fb9e5702912c61378e82be6408f08092deb018f95c3a1b30af; archive_sha256=4c368a1d143f232096558b853fcdfa787c00794f310d962666cc3cbdc2def18b",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-manual-cli-tests.log",
+      "observable_artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-manual-qa.log"
+    },
+    {
+      "scenario": "tracked product edit fails before archive or receipt publication",
+      "invocation": "python -m unittest tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_rejects_tracked_product_dirtiness_before_publishing",
+      "binary_observable": "exit=1; archive_published=false; receipt_published=false; error_observed=true",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-manual-cli-tests.log",
+      "observable_artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-manual-qa.log"
+    },
+    {
+      "scenario": "exact Unity metadata and existing payload-file hashes remain unchanged",
+      "invocation": "python -m unittest tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_preserves_unity_metadata_and_payload_hashes",
+      "binary_observable": "1 characterization test passed; manifest version=2019.4.41f2, changeset=6b23d448b533, and files map equals the payload SHA-256 map",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-characterization.log"
+    }
+  ],
+  "tdd": {
+    "baseline": {
+      "invocation": "python -m unittest tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_preserves_unity_metadata_and_payload_hashes",
+      "result": "passed before implementation changes",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-characterization.log"
+    },
+    "red": {
+      "invocation": "python -m unittest tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_is_stable_when_only_evidence_and_generated_artifacts_change tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_rejects_tracked_product_dirtiness_before_publishing tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_accepts_receipt_archive_and_smoke_agreement_without_a_pinned_digest tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_receipt_report_archive_disagreement",
+      "result": "4 failures for status-sensitive manifest, accepted dirty source, pinned receipt SHA, and pinned-SHA interception before smoke mismatch",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-red.log"
+    },
+    "green": {
+      "invocation": "python -m unittest tests.test_package_physics_player tests.test_verify_physics_capture_docs tests.test_verify_physics_player",
+      "result": "17 tests passed post-commit",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-post-commit-tests.log"
+    }
+  },
+  "verification": [
+    {
+      "invocation": "python scripts/verify_physics_capture_docs.py docs",
+      "result": "exit 0; physics capture documentation verified",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-post-commit-docs.log"
+    },
+    {
+      "invocation": "python -m py_compile scripts/package_physics_player.py scripts/verify_physics_capture_docs.py tests/test_package_physics_player.py tests/test_verify_physics_capture_docs.py",
+      "result": "exit 0",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-static.log"
+    },
+    {
+      "invocation": "check-no-excuse-rules.py on each changed Python file",
+      "result": "no violations in all 4 files",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-static.log"
+    },
+    {
+      "invocation": "git diff --check and hardcoded archive digest/status-field rg scan",
+      "result": "exit 0; hardcoded_archive_sha_scan=clean",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-diff-check.log"
+    },
+    {
+      "invocation": "python -c import package_physics_player.git_revision against the post-commit shared worktree",
+      "result": "git_head=95e7b82919c7cc2cd1aa911c4ebf9ffcfba8f9fe; git_tree=38a67d218fb4573cc73b6827be40130a755f4b98",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-post-commit-static.log"
+    }
+  ],
+  "adversarial": {
+    "stale_state": "receipt/report digest mismatch rejected by test_cli_rejects_receipt_report_archive_disagreement",
+    "dirty_worktree": "tracked .omo dirtiness ignored while tracked product dirtiness exits 1",
+    "misleading_success_output": "status=accepted report with wrong digest rejected; dirty packaging publishes neither fresh archive nor receipt",
+    "malformed_receipt_report": "malformed receipt and malformed JSON report rejected by dedicated CLI tests",
+    "generated_cached_artifacts": "untracked Unity Library cache, runtime cache, stage archive, receipt, and build log do not change provenance",
+    "repeated_packaging": "manifest and archive SHA-256 values are byte-identical across two CLI invocations",
+    "not_applicable": {
+      "ui_visual_accessibility": "offline non-UI packaging and documentation verifier",
+      "network_authentication_authorization": "no network or identity boundary in the changed paths",
+      "database_concurrency": "single-process filesystem CLI with no database or concurrent mutation contract",
+      "unity_runtime_behavior": "runtime capture code is unchanged and the assignment explicitly prohibits the Unity rebuild at this stage",
+      "load_performance": "fixed local payload packaging behavior; no performance contract changed"
+    }
+  },
+  "residual_risks": [
+    "The final Unity player archive has not been rebuilt, as explicitly required; the next rebuild must run from commit 95e7b82919c7cc2cd1aa911c4ebf9ffcfba8f9fe.",
+    "The packager intentionally treats all tracked paths outside .omo as product source; future tracked generated-output directories would fail closed until explicitly classified."
+  ],
+  "remaining_uncommitted": {
+    "tracked_modified_preserved": [
+      ".omo/notepads/world-model-physics-instrumentation/decisions.md",
+      ".omo/notepads/world-model-physics-instrumentation/issues.md",
+      ".omo/notepads/world-model-physics-instrumentation/learnings.md",
+      ".omo/notepads/world-model-physics-instrumentation/problems.md",
+      ".omo/plans/world-model-physics-instrumentation.md",
+      ".omo/start-work/ledger.jsonl"
+    ],
+    "protected_untracked_preserved": [
+      "sciencebirdsgames/physics-v1/",
+      "scripts/9001-player-wrapper.sh"
+    ],
+    "other_untracked": "pre-existing and scoped .omo evidence/run-continuation artifacts; exact 1274-line inventory captured",
+    "inventory_artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-remaining-status.txt"
+  },
+  "cleanup": {
+    "temporary_repositories": "removed by TemporaryDirectory",
+    "temporary_directories_remaining": false,
+    "processes_started": false,
+    "unity_rebuild_run": false,
+    "artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-manual-qa.log"
+  }
+}

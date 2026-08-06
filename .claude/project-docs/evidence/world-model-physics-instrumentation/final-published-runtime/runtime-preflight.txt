@@ -1,0 +1,5 @@
+2026-08-06T06:40:42+10:00
+223828 /usr/bin/zsh -lc sleep 30; ps -eo pid,stat,etime,cmd | rg 'build_physics_player|smoke_physics|Unity.*batchmode|physics-v1' | head -20; find sciencebirdsgames/physics-v1 -maxdepth 1 -type f -printf '%TY-%Tm-%TdT%TH:%TM:%TS %f %s\n' 2>/dev/null | sort -r | head -10
+224111 /usr/bin/zsh -lc E=.omo/evidence/world-model-physics-instrumentation/final-published-runtime {  date -Is  pgrep -a -f 'Unity|Xvnc|Xvfb|game_playing_interface.jar|9001-player|9001.x86_64|smoke_physics_capture|verify_physics_player' || true  ss -ltnp '( sport = :2004 or sport = :22004 or sport = :29001 )' 2>&1 || true  find tasks/task_template_designer -maxdepth 2 \( -name 'UnityLockfile' -o -name '*.lock' \) -print } > "$E/runtime-preflight.txt" cat "$E/runtime-preflight.txt"
+3889975 /home/sukai/.local/share/novphy-unity/hub-3.20.0/root/usr/lib/unityhub/UnityLicensingClient_V1/Unity.Licensing.Client --namedPipe Unity-LicenseClient-sukai --cloudEnvironment production
+State Recv-Q Send-Q Local Address:Port Peer Address:PortProcess

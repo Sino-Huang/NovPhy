@@ -1,0 +1,32 @@
+{
+  "task": "Todo 5 - Persist enriched shot artifacts atomically and validate their capture contract",
+  "verdict": "confirmed",
+  "verification_mode": "direct post-repair runtime and filesystem audit",
+  "automated": {
+    "focused": "9 passed",
+    "adjacent_validator_bridge": "18 passed",
+    "preparation": "29 passed",
+    "compileall": "exit 0",
+    "artifact": ".omo/evidence/world-model-physics-instrumentation/task-5-stop-direct-verification-v2.txt"
+  },
+  "manual_qa": {
+    "result": "accepted final, canonical predicate true, temporary absent, repeated cleanup, corrupt quarantine rejection, 3 payload hashes, root removed",
+    "artifact": ".omo/evidence/world-model-physics-instrumentation/task-5-stop-manual-assertions-v2.json",
+    "cleanup": ".omo/evidence/world-model-physics-instrumentation/task-5-stop-manual-exit-v2.txt"
+  },
+  "adversarial_classes": {
+    "malformed_input": "pass: focused corruption matrix and malformed request-70 tests",
+    "cancel_resume": "pass: repeated temporary cleanup",
+    "stale_state": "pass: orphan temporary and corrupt completed quarantine",
+    "dirty_worktree": "pass: concurrent edits preserved; scoped diff checked",
+    "flaky_tests": "pass: deterministic fresh reruns",
+    "misleading_success_output": "pass: direct parsed acceptance and quarantine assertions",
+    "repeated_interruptions": "pass: two cleanup cycles",
+    "prompt_injection": "not applicable: no instruction-execution surface",
+    "hung_or_long_commands": "not applicable: no long-running command invoked"
+  },
+  "protected_checks": ".omo/evidence/world-model-physics-instrumentation/task-5-stop-protected-v2.txt",
+  "protected_manifests": ".omo/evidence/world-model-physics-instrumentation/task-5-stop-protected-manifests-v2.txt",
+  "known_limitation": "The full collector suite retains one existing protected-data fixture failure because data/novphy_rollouts_dataset is unavailable in this worktree; all affected Todo 5 and preparation/validator suites pass.",
+  "prior_needs_fix": ".omo/evidence/world-model-physics-instrumentation/task-5-independent-verdict.json"
+}

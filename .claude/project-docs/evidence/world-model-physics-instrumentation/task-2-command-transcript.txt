@@ -1,0 +1,114 @@
+NovPhy Unity 2019.4.40f1 isolated migration transcript
+Recorded: 2026-08-02T05:50:29Z
+
+Environment:
+  export UNITY_2019_4_40F1=/home/sukai/.local/share/novphy-unity/2019.4.40f1-ffc62b691db5/editor/Editor/Unity
+  export MIGRATED_UNITY_PROJECT=/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer
+
+1. Baseline identity
+  GIT_MASTER=1 git rev-parse HEAD
+  Result: d72d1af1eb7b9a3cd60b0acb5364689e16735ea5
+  GIT_MASTER=1 git branch --show-current
+  Result: physics-unity-2019.4
+
+2. Full manifests
+  For each canonical project, production player, and staged project root:
+    find "$ROOT" -mindepth 1 '(' -type f -o -type l ')' -print0 | LC_ALL=C sort -z
+    stat -c '%a' FILE; stat -c '%s' FILE; sha256sum FILE
+  Results: 529 canonical files, 29,715 production-player files, 511 clean-stage files.
+  Before/after manifests compare byte-for-byte equal for canonical project and player.
+
+3. Authorized overlay
+  cp --preserve=mode,timestamps -- "$CANONICAL/$RELATIVE" "$STAGE/$RELATIVE"
+  Result: 19/19 files copied; source/stage cmp, mode, size, and SHA-256 all match.
+
+4. Official archive download and validation
+  timeout --signal=TERM --kill-after=30s 1800s curl --fail --location --retry 5 --continue-at - --output Unity-2019.4.40f1.tar.xz.part https://download.unity3d.com/download_unity/ffc62b691db5/LinuxEditorInstaller/Unity-2019.4.40f1.tar.xz
+  xz --test Unity-2019.4.40f1.tar.xz
+  sha256sum Unity-2019.4.40f1.tar.xz
+  Result: size 1914007508; SHA-256 c592296df9dd888e5239ad7dda276bb718b33075c679a2fec9c080764644435f; integrity pass.
+
+5. Editor identity
+  timeout --signal=TERM --kill-after=10s 120s env LD_LIBRARY_PATH=/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib "$UNITY_2019_4_40F1" -batchmode -nographics -version -quit
+  Result: exit 0; 2019.4.40f1 (ffc62b691db5).
+
+6. Actual Hub surface
+  DISPLAY=:97 unityhub --no-sandbox --disable-gpu --remote-debugging-port=9333
+  Result: Unity Hub 3.20.0 launched; Playwright CDP observed route #welcome and heading "Unity Hub Software License Terms".
+  Action: stopped without clicking Agree, signing in, entering credentials, or opening a project.
+
+7. Planned focused gate, intentionally not run at the user-only boundary
+  "$UNITY_2019_4_40F1" -batchmode -nographics -projectPath "$MIGRATED_UNITY_PROJECT" -runTests -testPlatform EditMode -testResults "$EVIDENCE_ROOT/task-2-unity.xml" -quit -logFile "$EVIDENCE_ROOT/task-2-unity.log"
+  Result: NOT RUN. Hub terms acceptance and supported Personal licensing require user action first.
+
+Interruption note:
+  The first manifest loop used zsh's reserved tied variable name "path", which removed commands from PATH and left header-only evidence files. No source was touched. All three files were overwritten by the successful absolute-command-path loop before staging began.
+
+Resume recorded: 2026-08-03T11:33:19Z
+
+8. Private OpenSSL 1.1 compatibility
+  Downloaded Canonical Focal package libssl1.1_1.1.1f-1ubuntu2.24_amd64.deb from Launchpad.
+  Verified package: size 1323248; architecture amd64; SHA-256 7cf39d70a639017d1dd7c8d36daa2258063608688e449fddf40ffdd46f992a78.
+  Extracted with dpkg-deb -x under /tmp/opencode/unity-2019.4-libssl1.1/root.
+  Result: private extraction only; no dpkg install, repository, host linker, or system OpenSSL changes.
+
+9. Bounded licensing probes
+  Environment: DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 and child-only LD_LIBRARY_PATH containing the private OpenSSL 1.1 and GConf paths.
+  Probe A: exact editor with -batchmode -nographics -quit.
+  Probe B: identical command in a clean subsequent process.
+  Probe C: exact editor with documented -force-free plus -batchmode -nographics -quit.
+  Result for all three: Licensing Client launched, live IPC connected, entitlement licensing initiated, licenses updated, and an assignment record was observed; the retained evidence does not prove its license type, and Unity then emitted an activation error.
+  Acceptance: FAILED. Exit code and assignment-record observation do not override the explicit activation error.
+  Privacy: raw identifier-bearing lines were redacted immediately; only task-2-license-probe*.safe.log files remain.
+
+10. Blocked-return verification
+  jq -e . task-2-*.json
+  Result: all evidence JSON parsed successfully.
+  python /home/sukai/.config/opencode/skills/secret-guard/scripts/scan_secrets.py path .omo/evidence/world-model-physics-instrumentation
+  Result: 24 files scanned; no secrets detected.
+  Recomputed full canonical and production-player manifests and compared them with cmp.
+  Result: 529 canonical entries and 29,715 production-player entries; both byte-for-byte equal to baseline.
+  Process and generated-state checks found zero Unity editors, zero Licensing Clients, and no staged Library/Temp/Obj/Logs/UserSettings/TestResults files.
+  Import, EditMode tests, legacy parity, and completion claim verification: NOT RUN because the strict licensing gate failed.
+
+11. Required user action before any future bounded probe
+  Sign in to Unity Hub; open Settings -> Licenses; choose Refresh; accept the displayed Editor Software Terms; confirm visible active Unity Personal.
+  Result: NOT PERFORMED by this executor. No Unity, Hub, browser, or activation command was run in this correction.
+
+12. One post-refresh non-project licensing probe
+  External state: user opened/refreshed Unity Hub directly in the remote-desktop session.
+  Command: timeout --signal=TERM --kill-after=20s 120s env DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 LD_LIBRARY_PATH=<private OpenSSL/GConf paths plus existing value> <exact Unity 2019.4.40f1> -batchmode -nographics -quit -logFile /tmp/opencode/unity-2019.4-license-probe-remote-desktop.raw.log
+  Result: exit 1; live IPC connected; entitlement licensing initiated; licenses updated; explicit Missing or bad username or password activation failure.
+  Decision: FAILED. No project path was supplied, no project was imported, and no second equivalent probe was run.
+  Evidence: task-2-license-probe-remote-desktop.safe.log; SHA-256 75c6b9b25fad940b1ee1145ea0c9275fdc6ef8410f651c88085488f18d600d44.
+  Cleanup: raw log removed; zero Unity Editor processes remain; user's desktop Hub and Licensing Client preserved.
+
+13. Authorized replacement Editor provisioning
+  Downloaded exact official Unity 2019.4.41f2 archive from changeset 6b23d448b533 to a resumable `.part` path.
+  Result: HTTP content length 1913850596; local size matched; `xz --test` passed; archive SHA-256 5426954a630036f59d6d1b40e548bc4d0a47a092475a7530db8013ff5c4aea63.
+  Extracted privately under `/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor` without host package/linker changes.
+  Result: executable SHA-256 32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150; bounded `-version` exit 0; exact identity `2019.4.41f2 (6b23d448b533)`.
+
+14. Single replacement-version licensing probe
+  Command: timeout --signal=TERM --kill-after=20s 120s env DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 LD_LIBRARY_PATH=<private OpenSSL/GConf paths plus existing value> <exact Unity 2019.4.41f2> -batchmode -nographics -quit -logFile /tmp/opencode/unity-2019.4.41f2-license-probe.raw.log
+  Result: exit 1; live IPC connected; entitlement licensing initiated; licenses updated; explicit Missing or bad username or password activation failure.
+  Decision: FAILED. No project path was supplied, no import occurred, and no second replacement-version probe was run.
+  Evidence: task-2-license-probe-2019.4.41f2.safe.log; SHA-256 fc9afc03b36b6a9805eb4518e6d60bcf8b81cc945a851fc863ed066435b98d0e.
+  Cleanup: raw log and partial download absent; zero Unity Editor processes remain; user's desktop Licensing Client preserved.
+
+15. One probe after the second supported Hub Licenses refresh
+  External state: user reports completing Unity Hub Settings -> Licenses -> Refresh and explicitly authorized resumption.
+  Command: timeout --signal=TERM --kill-after=20s 120s env DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 LD_LIBRARY_PATH=<exact private OpenSSL/GConf paths> <exact Unity 2019.4.41f2> -batchmode -nographics -quit -logFile /tmp/opencode/unity-2019.4.41f2-license-probe-refresh-2.raw.log
+  Result: exit 1; live IPC connected; entitlement licensing initiated; licenses updated; explicit Missing or bad username or password activation failure.
+  Decision: FAILED CLOSED. No project path was supplied, no import occurred, and no second equivalent probe was run in this refreshed state.
+  Evidence: task-2-license-probe-2019.4.41f2-refresh-2.safe.log; SHA-256 d133a2e4376c3ad72d9e168d35b786bb5490dae125a7ceeaba41597363f7df08.
+  Preservation: fresh canonical-project and production-player manifests matched their baselines byte-for-byte; task-2-unity.xml and task-2-legacy-parity.json remain absent by design.
+  Cleanup: raw log and temporary manifests removed; zero Unity Editor processes remain; user's Licensing Client preserved.
+
+2026-08-05 successful exact-editor continuation
+
+- Ran exactly one bounded no-project licensing probe with exact `2019.4.41f2`, private compatibility environment, and an absolute private raw log. H1 passed: live IPC, entitlement refresh, assigned non-Pro license current/valid/activated, no activation error. Raw log/private directory removed after sanitized retention.
+- Imported only `/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer`; exact Editor identity and clean compilation observed.
+- The plan-literal test invocation with `-quit` exited before creating XML and was rejected as misleading success. Test Runner invocations without `-quit` produced complete results before old CEF shutdown faults.
+- Focused Todo 2 classes passed twice (`5/5`, zero failed/skipped). All EditMode passed (`5/5`, zero failed/skipped). Legacy exact bytes produced the same SHA-256 in all three runs.
+- Sanitized all retained runtime logs; removed isolated generated state; recomputed canonical-project and production-player manifests and matched both baselines byte-for-byte.

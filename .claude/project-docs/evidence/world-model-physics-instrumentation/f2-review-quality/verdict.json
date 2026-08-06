@@ -1,0 +1,38 @@
+{
+  "goal": "world-model-physics-instrumentation F2 code-quality audit",
+  "verdict": "needs-fix",
+  "codeQualityStatus": "BLOCK",
+  "recommendation": "REQUEST_CHANGES",
+  "reportPath": ".omo/evidence/world-model-physics-instrumentation/f2-review-quality/review.md",
+  "blockers": [
+    {
+      "severity": "HIGH",
+      "file": "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs",
+      "line": 322,
+      "message": "The four-client pending queue excludes in-flight Serve coroutines started every Update, so a sustained silent loopback-client flood is not globally bounded."
+    }
+  ],
+  "freshChecks": {
+    "focusedPython": "PASS: 48 tests in 1.022s",
+    "static": "PASS: git diff --check, py_compile, bash -n",
+    "realDataSurface": "PASS: accepted-shot validator returned 1 state and 0 events",
+    "unityFocused": "BLOCKED_ENVIRONMENT: exact Unity executable cannot load libgconf-2.so.4",
+    "stagedVerifier": "NOT_PASSING: bounded 120-second invocation timed out"
+  },
+  "skillPerspective": {
+    "ran": true,
+    "removeAiSlopsViolation": true,
+    "programmingViolation": false
+  },
+  "ultraQa": {
+    "malformed_input": "triggered",
+    "prompt_injection": "not_applicable",
+    "cancel_resume": "triggered",
+    "stale_state": "triggered",
+    "dirty_worktree": "triggered",
+    "hung_or_long_commands": "triggered",
+    "flaky_tests": "checked",
+    "misleading_success_output": "triggered",
+    "repeated_interruptions": "not_applicable"
+  }
+}

@@ -1,0 +1,18 @@
+E
+======================================================================
+ERROR: test_second_collection_reuses_valid_completed_shot_without_bridge_calls (tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_second_collection_reuses_valid_completed_shot_without_bridge_calls)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 291, in test_second_collection_reuses_valid_completed_shot_without_bridge_calls
+    manifest = collect_rollouts(bridge, root, [action], **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/collect_rollouts.py", line 1678, in collect_rollouts
+    shot_dir.replace(final_shot_dir)
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/pathlib.py", line 1188, in replace
+    os.replace(self, target)
+OSError: [Errno 39] Directory not empty: '/tmp/tmp_taoryd3/shot_001.tmp' -> '/tmp/tmp_taoryd3/shot_001'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.027s
+
+FAILED (errors=1)

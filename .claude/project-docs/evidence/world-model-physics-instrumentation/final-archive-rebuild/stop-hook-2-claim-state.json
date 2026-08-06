@@ -1,0 +1,12 @@
+{
+  "claim_type": "BlockedClaim",
+  "status": "blocked_two_build_reproducibility",
+  "done": false,
+  "blocker": {
+    "criterion": "two independent Unity build outputs package to byte-identical archives and provenance manifests",
+    "observable": "three exact-method successful builds produced three different archive hashes",
+    "cause": "Unity 2019.4 regenerates managed PE checksums/MVIDs and the global build identifier; the source-owned build/package workflow has no deterministic normalization step",
+    "required_change": "source owner must add and validate a deterministic Unity build/normalization strategy; manually substituting bytes would violate the supported workflow and this assignment's source ownership boundary",
+    "artifact": ".omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/reproducibility-blocker.txt"
+  }
+}

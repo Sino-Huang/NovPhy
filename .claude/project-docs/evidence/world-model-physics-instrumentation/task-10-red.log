@@ -1,0 +1,43 @@
+test_raw_contact_and_event_flags_filter_without_tensorizing_graphs (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_raw_contact_and_event_flags_filter_without_tensorizing_graphs) ... ERROR
+test_rejects_missing_corrupt_stale_or_render_misaligned_sidecars (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_rejects_missing_corrupt_stale_or_render_misaligned_sidecars) ... ok
+test_required_capability_rejects_legacy_rgb_episode (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_required_capability_rejects_legacy_rgb_episode) ... ok
+test_snapshot_survives_post_catalog_sidecar_drift (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_snapshot_survives_post_catalog_sidecar_drift) ... ERROR
+test_valid_enriched_fixture_maps_exact_immutable_supervision (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_valid_enriched_fixture_maps_exact_immutable_supervision) ... ERROR
+
+======================================================================
+ERROR: test_raw_contact_and_event_flags_filter_without_tensorizing_graphs (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_raw_contact_and_event_flags_filter_without_tensorizing_graphs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_world_model_data.py", line 2880, in test_raw_contact_and_event_flags_filter_without_tensorizing_graphs
+    request = world_model_data.PhysicsSupervisionRequest(("scene_nodes", "derived_support"), False, False)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/world_model/data/__init__.py", line 62, in __getattr__
+    raise AttributeError(f"module {__name__!r} has no type export {name!r}")
+AttributeError: module 'world_model.data' has no type export 'PhysicsSupervisionRequest'
+
+======================================================================
+ERROR: test_snapshot_survives_post_catalog_sidecar_drift (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_snapshot_survives_post_catalog_sidecar_drift)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_world_model_data.py", line 2915, in test_snapshot_survives_post_catalog_sidecar_drift
+    dataset = world_model_data.TemporalWindowDataset(catalog, world_model_data.TemporalWindowRequest(1, 1), supervision=world_model_data.PhysicsSupervisionRequest(("scene_nodes",), False, False))
+                                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/world_model/data/__init__.py", line 62, in __getattr__
+    raise AttributeError(f"module {__name__!r} has no type export {name!r}")
+AttributeError: module 'world_model.data' has no type export 'PhysicsSupervisionRequest'
+
+======================================================================
+ERROR: test_valid_enriched_fixture_maps_exact_immutable_supervision (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_valid_enriched_fixture_maps_exact_immutable_supervision)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_world_model_data.py", line 2860, in test_valid_enriched_fixture_maps_exact_immutable_supervision
+    request = world_model_data.PhysicsSupervisionRequest(world_model_data.PHYSICS_CAPTURE_V1_CAPABILITIES, True, True)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/world_model/data/__init__.py", line 62, in __getattr__
+    raise AttributeError(f"module {__name__!r} has no type export {name!r}")
+AttributeError: module 'world_model.data' has no type export 'PhysicsSupervisionRequest'
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.884s
+
+FAILED (errors=3)

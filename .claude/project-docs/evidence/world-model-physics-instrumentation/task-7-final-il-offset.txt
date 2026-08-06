@@ -1,0 +1,35 @@
+IL_0600: IL_0600: callvirt !!0 UnityEngine.GameObject::GetComponent<UnityEngine.SpriteRenderer>()
+IL_0605: IL_0605: callvirt UnityEngine.Color UnityEngine.SpriteRenderer::get_color()
+IL_060a: IL_060a: ldfld System.Single UnityEngine.Color::a
+IL_060f: IL_060f: ldc.r4 0
+IL_0614: IL_0614: beq IL_076d
+IL_0619: IL_0619: ldc.i4.0
+IL_061a: IL_061a: stloc.s V_49
+IL_061c: IL_061c: ldloc.s V_47
+IL_061e: IL_061e: callvirt !!0 UnityEngine.GameObject::GetComponent<ABGameObject>()
+IL_0623: IL_0623: callvirt System.Single ABGameObject::getCurrentLife()
+IL_0628: IL_0628: stloc.s V_50
+IL_062a: IL_062a: ldloc.s V_47
+IL_062c: IL_062c: callvirt System.Int32 UnityEngine.Object::GetInstanceID()
+IL_0631: IL_0631: stloc.s V_42
+IL_0633: IL_0633: ldloca.s V_42
+IL_0635: IL_0635: call System.String System.Int32::ToString()
+IL_063a: IL_063a: stloc.s V_51
+IL_063c: IL_063c: ldloc.s V_47
+IL_063e: IL_063e: callvirt !!0 UnityEngine.GameObject::GetComponent<UnityEngine.PolygonCollider2D>()
+IL_0643: IL_0643: callvirt System.Int32 UnityEngine.PolygonCollider2D::get_pathCount()
+IL_0648: IL_0648: stloc.s V_52
+IL_064a: IL_064a: newobj System.Void System.Collections.Generic.List`1<UnityEngine.Vector2[]>::.ctor()
+IL_064f: IL_064f: stloc.s V_53
+IL_0651: IL_0651: ldc.i4.0
+IL_0652: IL_0652: stloc.s V_57
+IL_0654: IL_0654: br IL_0718
+IL_0659: IL_0659: ldloc.s V_47
+IL_065b: IL_065b: callvirt !!0 UnityEngine.GameObject::GetComponent<UnityEngine.PolygonCollider2D>()
+IL_0660: IL_0660: ldloc.s V_57
+IL_0662: IL_0662: callvirt UnityEngine.Vector2[] UnityEngine.PolygonCollider2D::GetPath(System.Int32)
+IL_0667: IL_0667: stloc.s V_58
+IL_0669: IL_0669: ldloc.s V_58
+IL_066b: IL_066b: ldlen
+IL_066c: IL_066c: conv.i4
+IL_066d: IL_066d: newarr UnityEngine.Vector3

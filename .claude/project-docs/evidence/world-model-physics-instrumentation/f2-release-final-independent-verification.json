@@ -1,0 +1,131 @@
+{
+  "kind": "AdversarialVerify",
+  "goalId": "world-model-physics-instrumentation",
+  "verdict": "confirmed",
+  "confidence": "high",
+  "originalIntent": "Approve F2 only when the final release-blocker repair preserves legacy protocol compatibility, bounded-memory behavior, atomic artifact lifecycle, deterministic ordering, Unity 2019.4.41f2 compatibility, and the immutable 2019.3 baseline while satisfying the explicitly enumerated transport, persistence, confinement, provenance, error, recovery, pacing, capacity, and wire-byte adversaries.",
+  "desiredOutcome": "A fresh independent verifier reproduces every required behavior against the exact claimed source hashes, leaves F2 unchecked, and finds no success-criterion failure.",
+  "hashes": {
+    "manifest": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-source-hashes.sha256",
+    "before": "sha256sum -c: 10/10 OK",
+    "after": "sha256sum -c: 10/10 OK",
+    "head": "d72d1af1eb7b9a3cd60b0acb5364689e16735ea5"
+  },
+  "criteria": [
+    {
+      "id": "F2-1",
+      "criterion": "gameplay request 38/62 and direct request 70 use separate connections",
+      "scenario": "Full collector used FakeBridge for the gameplay action and a loopback ScienceBirdsBridge for physics.",
+      "invocation": "fresh inline Python full-collector TCP adversary in the governed worktree",
+      "binaryObservable": "gameplay_shots=1, live_connections=2, wire=[46,46], accepted=1",
+      "artifact": "terminal receipt reproduced during f2_release_gate; summarized in this artifact",
+      "result": "pass"
+    },
+    {
+      "id": "F2-2",
+      "criterion": "request 70 reconnects for every Unity one-response lifecycle call",
+      "scenario": "A real TCP listener accepted two connections, returned one encoded response per connection, and closed each response connection.",
+      "invocation": "fresh inline TCP adversary plus python -m unittest tests.test_webui_bridge.PhysicsCaptureV1Tests.test_request_70_reconnects_for_each_one_response_direct_socket",
+      "binaryObservable": "two accepts, two one-byte 0x46 requests, server thread terminated; focused matrices passed",
+      "artifact": "this artifact and both fresh focused matrix observables",
+      "result": "pass"
+    },
+    {
+      "id": "F2-3",
+      "criterion": "a real encoded request-70 envelope with recursively immutable decoded mappings persists correctly",
+      "scenario": "ScienceBirdsBridge decoded encode_physics_capture_v1 into nested MappingProxyType/tuple values and the persistence boundary materialized valid JSON.",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_persistence_accepts_immutable_nested_mapping_from_real_decoder",
+      "binaryObservable": "included in each 62-test run; both runs OK",
+      "artifact": "this artifact; source test tests/test_collect_rollouts.py",
+      "result": "pass"
+    },
+    {
+      "id": "F2-4",
+      "criterion": "two contract-valid TCP frames carry complete structure and persist render-frame-aligned PNG/state records",
+      "scenario": "Two encoded frames contained coordinates, clocks, nodes, raw contacts, support edges, kinematics-bearing node data, events, and rgb_frame.",
+      "invocation": "fresh inline full-collector loopback TCP adversary",
+      "binaryObservable": "structure_ok=true, pngs=2, persisted_render_frames=[100,101], rgb_render_frames=[100,101], accepted=1",
+      "artifact": "terminal receipt reproduced during f2_release_gate; summarized in this artifact",
+      "result": "pass"
+    },
+    {
+      "id": "F2-5",
+      "criterion": "temporary-root and child symlink swaps cannot escape, follow, or truncate external targets, including after cleanup/mkdir before writes",
+      "scenario": "Immediately after collector mkdir, the shot root was renamed and replaced by an external-directory symlink; separately physics_state.jsonl was introduced as an external-file symlink before persistence open.",
+      "invocation": "fresh inline post-mkdir root/child race adversary plus focused symlink tests",
+      "binaryObservable": "root_swap_rejected=RolloutCollectionError, child_swap_rejected=RolloutCollectionError, root_external_unchanged=true, child_external_unchanged=true",
+      "artifact": "terminal receipt reproduced during f2_release_gate; summarized in this artifact",
+      "result": "pass"
+    },
+    {
+      "id": "F2-6",
+      "criterion": "completed-shot reuse compares requested provenance and stale provenance quarantines/recaptures",
+      "scenario": "A completed shot captured with a/b/c hashes was requested with d/e/f hashes.",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_completed_shot_with_stale_provenance_is_quarantined_and_recaptured",
+      "binaryObservable": "fresh targeted suite OK; current metadata=d/e/f and quarantined metadata=a/b/c are asserted by the test",
+      "artifact": "tests/test_collect_rollouts.py and this artifact",
+      "result": "pass"
+    },
+    {
+      "id": "F2-7",
+      "criterion": "PhysicsPersistenceError supports normal traceback assignment",
+      "scenario": "A constructed PhysicsPersistenceError received normal __traceback__ assignment.",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_persistence_error_supports_standard_exception_traceback_state",
+      "binaryObservable": "included in each 62-test run; both runs OK",
+      "artifact": "tests/test_collect_rollouts.py and this artifact",
+      "result": "pass"
+    },
+    {
+      "id": "F2-8",
+      "criterion": "bounded sidecars, idempotent resume, malformed recovery, absolute pacing, and Unity queued-plus-in-flight capacity remain intact",
+      "scenario": "Focused bounded-sidecar, interrupted-resume, malformed-envelope, pacing, and Unity capacity tests were executed.",
+      "invocation": "fresh 15-test targeted unittest invocation and exact Unity 2019.4.41f2 PhysicsCaptureProtocolTests EditMode fixture",
+      "binaryObservable": "Python 15/15 OK; Unity XML result=Passed total=11 passed=11 failed=0; SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt=Passed",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-final-independent-unity.xml",
+      "result": "pass"
+    },
+    {
+      "id": "F2-9",
+      "criterion": "legacy request 38/62 bytes remain compatible",
+      "scenario": "The bridge emitted the frozen request-38 five-int frame followed by request byte 62, and recorder-backed request 38 retained its exact frame.",
+      "invocation": "fresh targeted unittest invocation for both legacy byte tests",
+      "binaryObservable": "both tests OK; combined focused run 15/15 OK",
+      "artifact": "tests/test_webui_bridge.py and this artifact",
+      "result": "pass"
+    }
+  ],
+  "verificationMatrix": {
+    "focusedRun1": {"invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_physics_capture_contract tests.test_prepare_rollout_dataset.PhysicsCaptureValidationTests tests.test_webui_bridge.PhysicsCaptureV1Tests tests.test_webui_bridge.PhysicsCaptureV1MalformedEnvelopeTests", "observable": "Ran 62 tests; OK"},
+    "focusedRun2": {"invocation": "same exact focused invocation", "observable": "Ran 62 tests; OK"},
+    "adjacentPrepare": {"invocation": "python -m unittest tests.test_prepare_rollout_dataset tests.test_manual_agent", "observable": "Ran 57 tests; OK"},
+    "fullCollector": {"invocation": "python -m unittest tests.test_collect_rollouts", "observable": "Ran 89 tests; one failure only: test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots"},
+    "externalFixtureAudit": {"observable": "Both referenced data/novphy_rollouts_dataset/train episode roots are absent; similarly named material is only under data/deprecated, independently confirming the documented external-fixture absence."},
+    "pyCompile": {"observable": "10 claimed Python/test files compiled successfully"},
+    "diffCheck": {"observable": "git diff --check passed"},
+    "pureLoc": {"observable": "bridge.py=299, manual_agent.py=565, physics_rollout_contract.py=96, physics_rollout_persistence.py=317, collect_rollouts.py=1995, prepare_rollout_dataset.py=739", "judgment": "NOTE only: several inherited/touched modules exceed the remove-ai-slops 250 pure-LOC guideline, but no stated F2 success criterion requires a module split and a read-only release gate cannot refactor them."}
+  },
+  "skillPerspective": {
+    "removeAiSlopsDirectPass": "No deletion-only/removal-only tests, prompt prose pins, output-derived tautologies, or unnecessary production extraction were found in the final blocker tests/diff. Tests assert observable wire bytes, filesystem confinement, persisted records, provenance, and error semantics. The public-type-annotation test is comparatively implementation-facing but does not create false evidence for any blocker.",
+    "programmingDirectPass": "The repaired trust boundaries use descriptor-rooted O_NOFOLLOW opens, typed persistence errors, bounded parsing/writes, absolute pacing, and behavioral tests. Existing broad catches, Any annotations, and oversized legacy modules are maintenance notes and are not tied to a failed F2 criterion.",
+    "codeReviewReportCoverage": ".omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-code-review.json explicitly records both skill perspectives and the overfit gap that originally missed the TOCTOU adversary; the final direct pass independently reproduced the repaired race behavior."
+  },
+  "protectedScope": {
+    "projectVersion": "2019.4.41f2 (6b23d448b533)",
+    "f2PlanState": "unchecked",
+    "immutableBaselineReview": "No final repair hash target modifies the canonical 2019.3 baseline, production player, or active dataset; governed project migration remains explicit in ProjectVersion.txt."
+  },
+  "failures": [
+    {"scope": "full collector", "classification": "allowed external fixture absence", "observable": "one failure from two absent data/novphy_rollouts_dataset roots"},
+    {"scope": "fresh Unity process shutdown", "classification": "non-blocking post-result runtime defect", "observable": "Unity saved a Passed 11/11 XML, then exited 134 from CEF PrintJobManager shutdown SIGSEGV", "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-final-independent-unity.log"},
+    {"scope": "pre-existing f2-robustness-probe.py", "classification": "misleading stale helper", "observable": "direct execution imported src.webui.bridge from the primary checkout and failed ImportError; it was not used as evidence"}
+  ],
+  "cleanup": {
+    "temporaryRoots": "All fresh inline probes used TemporaryDirectory and were absent on exit; no f2-root-race, f2-child-race, or f2-live root remained.",
+    "processes": "No verifier-owned Python, Unity Editor, shader compiler, or TCP server process remained; TCP server thread terminated=true.",
+    "listeners": "The loopback listener closed with its context; no verifier-owned listener remained.",
+    "generatedCaches": "py_compile refreshed ignored __pycache__ files only; no tracked product/test source was edited.",
+    "requiredArtifacts": [".omo/evidence/world-model-physics-instrumentation/f2-release-final-independent-verification.json", ".omo/evidence/world-model-physics-instrumentation/f2-release-final-independent-unity.xml", ".omo/evidence/world-model-physics-instrumentation/f2-release-final-independent-unity.log"]
+  },
+  "failuresBlocking": [],
+  "recommendation": "APPROVE"
+}

@@ -1,0 +1,103 @@
+F1 REAUDIT: Todo8 action/event blocker and checksum blocker
+FOCUSED TESTS:
+test_action_capture_requires_authoritative_launch_event (tests.test_smoke_physics_capture.SmokePhysicsCaptureTests.test_action_capture_requires_authoritative_launch_event) ... ok
+test_action_capture_retries_only_until_recorder_is_finalized (tests.test_smoke_physics_capture.SmokePhysicsCaptureTests.test_action_capture_retries_only_until_recorder_is_finalized) ... ok
+test_active_data_receipt_detects_nested_file_mutation (tests.test_smoke_physics_capture.SmokePhysicsCaptureTests.test_active_data_receipt_detects_nested_file_mutation) ... ok
+test_canonical_root_comes_from_git_common_directory (tests.test_smoke_physics_capture.SmokePhysicsCaptureTests.test_canonical_root_comes_from_git_common_directory) ... ok
+test_captured_request_thaws_nested_bridge_json (tests.test_smoke_physics_capture.SmokePhysicsCaptureTests.test_captured_request_thaws_nested_bridge_json) ... ok
+test_free_port_returns_bindable_port (tests.test_smoke_physics_capture.SmokePhysicsCaptureTests.test_free_port_returns_bindable_port) ... ok
+test_known_action_uses_request_62_slingshot_before_recorded_shoot (tests.test_smoke_physics_capture.SmokePhysicsCaptureTests.test_known_action_uses_request_62_slingshot_before_recorded_shoot) ... ok
+test_missing_root_has_explicit_digest (tests.test_smoke_physics_capture.SmokePhysicsCaptureTests.test_missing_root_has_explicit_digest) ... ok
+test_private_display_uses_glx_capable_xvnc (tests.test_smoke_physics_capture.SmokePhysicsCaptureTests.test_private_display_uses_glx_capable_xvnc) ... ok
+test_stage_archive_provenance_is_verified_in_a_clone (tests.test_smoke_physics_capture.SmokePhysicsCaptureTests.test_stage_archive_provenance_is_verified_in_a_clone) ... ok
+test_tree_digest_is_stable_and_detects_bytes (tests.test_smoke_physics_capture.SmokePhysicsCaptureTests.test_tree_digest_is_stable_and_detects_bytes) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.802s
+
+OK
+STRICT ARTIFACT VALIDATION:
+{'state_count': 1, 'event_count': 7}
+REPORT SEMANTICS:
+{'happy': 'accepted-action-events', 'rejections': 3}
+CHECKSUM MANIFEST:
+.omo/evidence/world-model-physics-instrumentation/task-8-done-claim.json: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-cleanup-receipt.json: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-smoke.json: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-accepted-artifact-audit.json: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-report.json: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-report.json: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-request-failure-report.json: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-final2.log: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-contract-validator-final.log: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-no-excuse-final.log: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-pycompile-final.log: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-cleanup-final.log: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-process-cleanup-final.txt: OK
+.omo/evidence/world-model-physics-instrumentation/task-8-port-cleanup-final.txt: OK
+scripts/smoke_physics_capture.py: OK
+tests/test_smoke_physics_capture.py: OK
+FINAL VERIFICATION RECEIPT:
+{
+  "exits": {
+    "frame-mismatch": 1,
+    "happy": 0,
+    "missing-sidecar": 1,
+    "request-failure": 1
+  },
+  "statuses": {
+    "frame-mismatch": "rejected",
+    "happy": "accepted",
+    "missing-sidecar": "rejected",
+    "request-failure": "rejected"
+  },
+  "event_count": 7,
+  "event_types": [
+    "stable_entered",
+    "bird_launched",
+    "stable_exited",
+    "entity_destroyed",
+    "bird_exhausted",
+    "stable_entered",
+    "level_failed"
+  ],
+  "frame_synchronized": true,
+  "protected_unchanged": {
+    "frame-mismatch": true,
+    "happy": true,
+    "missing-sidecar": true,
+    "request-failure": true
+  },
+  "ports_free": {
+    "2004": true,
+    "34357": true,
+    "37307": true,
+    "41395": true,
+    "41557": true,
+    "44439": true,
+    "49027": true,
+    "50139": true,
+    "60075": true
+  },
+  "processes_absent": {
+    "4186788": true,
+    "4186791": true,
+    "4191046": true,
+    "4191049": true,
+    "4494": true,
+    "4497": true,
+    "593": true,
+    "597": true
+  },
+  "temporary_clones_absent": {
+    "/tmp/novphy-physics-smoke-1rusedn3": true,
+    "/tmp/novphy-physics-smoke-m0x0gsms": true,
+    "/tmp/novphy-physics-smoke-m1tgwuby": true,
+    "/tmp/novphy-physics-smoke-oy_kv2bc": true
+  }
+}
+PROCESS CLEANUP:
+PASS
+PORT CLEANUP:
+PASS
+VERDICT: confirmed

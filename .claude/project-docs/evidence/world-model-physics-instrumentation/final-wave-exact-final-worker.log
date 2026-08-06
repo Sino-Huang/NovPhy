@@ -1,0 +1,2378 @@
+[93m[1m! [0m agent "Sisyphus" not found. Falling back to default agent
+[0m
+> Sisyphus - ultraworker · gpt-5.6-sol
+[0m
+I read this as a release-only operation: first I’ll verify the exact HEAD and read the complete saved plan, then execute two isolated deterministic Unity builds, package/verify both, publish only the requested artifact path, run every named check, and write the final `DoneClaim` without touching canonical or `.omo` state outside the evidence directory.
+[0m# [0mTodos
+[•] Repository and plan: verify exact HEAD and read full release plan - confirm scope and preflight rules
+[ ] Evidence stages: run two exact Unity builds with private library path - produce isolated logs, receipts, and archives
+[ ] Artifact verification: compare archives and payloads byte-for-byte - validate provenance and receipts
+[ ] Publication: atomically publish only sciencebirdsgames/physics-v1 - preserve publication receipt and hashes
+[ ] Post-publication checks: run verifier compatibility request 70 and fresh smoke - record all logs and outcomes
+[ ] DoneClaim: write exact SHA and archive hash or needs-fix - make no commits
+[0m
+[0m$ [0mrg --files -g '.omo/plans/**' -g 'AGENTS.md' -g '*plan*'
+docs/deprecated/high_level_plan/research_project_plan.md
+sciencebirdsagents/Utils/trajectory_planner.py
+sciencebirdsagents/PhyreAgents/RPIN/evaluator_plan.py
+sciencebirdsagents/PhyreAgents/RPIN/configs/rpcin_within_plan.yaml
+sciencebirdsagents/PhyreAgents/RPIN/configs/rpcin_cross_plan.yaml
+[0m
+[0m$ [0mgit rev-parse HEAD && git status --short --branch
+...output truncated...
+
+Full output saved to: /home/sukai/Project/NovPhy/.cache/xdg/opencode/tool-output/tool_fd54a891d001HANXeMlGnifa22
+
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-build.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-canonical-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-client.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-debug-journal.md
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-evidence-audit.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-exporter.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-exporter.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-exporter.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-il-offset.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-independent-gate.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-java.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-lifecycle.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-lifecycle.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-lifecycle.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-player-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-player.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-python.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-python.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-quality-gates.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-static.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-static.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-static.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-stop-archive.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-stop-static.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-stop-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-stop-verification.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-stop-wrong.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-stop-wrong.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-wrong-sha.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final2-build.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final2-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final2-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final2-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final3-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final3-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final3-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final4-runtime-report.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final4-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final4-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final4-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-adversarial-verify.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-adversarial-verify.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-canonical-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-final-audit.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-gate.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-production-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-static.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-static.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-wrong.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-wrong.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-all.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-build.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-debug-journal.md
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-green.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-independent-verification.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-live-client-new.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-live-client.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-live-java-new.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-live-java-new.pid
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-live-java.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-live-java.pid
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-manual-temp-new.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-manual-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-python-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-python-tests.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-red.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-request70-client.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-request70-java.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-request70-java.pid
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-request70-player-summary.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-request70-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-root-cause.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-static.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-static.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-temp-roots.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-wrong-sha.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-live-client.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-live-java.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-live-player.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-no-excuse.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-player-after.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-player-before.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-port-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-post-deletion-canonical-final.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-post-deletion-canonical.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-post-deletion-final-audit.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-post-deletion-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-process-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-python-loc.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-static-final.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-static-final.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-2-hash.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-2-static.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-2-tests.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-2-verdict.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-hashes.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-static.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-tests.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-verdict.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-verdict.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-wrong.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-wrong.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-audit.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-canonical-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-canonical.diff
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-player-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-protected-status.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-python.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-python.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-runtime.transcript
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-static.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-static.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-static.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-unity.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-unity.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-unity.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-wrong-sha.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-canonical.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-player.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-python.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-python.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-runtime.transcript
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-audit.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-canonical.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-player.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-python.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-runtime.transcript
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-verification.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-assembly-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-green.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-il-offset.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-red.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-active-root-newer.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-all-editmode-receipt.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-all.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-canonical-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-canonical-newer.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-diagnostic-build.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-diagnostic-client.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-diagnostic-java.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-diagnostic-player.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-diagnostic-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-evidence-sha256.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-exporter.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-exporter.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-build.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-client.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-client.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-java.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-player.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-green-1.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-green-1.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-green-2.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-green-2.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-lifecycle.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-lifecycle.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-physical-shot.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-physical-shot.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-protocol.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-protocol.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-registry.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-registry.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-shot.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-shot.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-port-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-process-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-production-player-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-protected-proof.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-red.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-static.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-static.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-temp-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-wrong-sha.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-tests-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-tests.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-admin-state.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-final-state.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-archive-sha256.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-runtime-payload.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-wrong-sha.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verifier-import-red.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verifier-import-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verifier-tests-green.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verifier-tests-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-accepted-artifact-audit.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-accepted-shot/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-baseline.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-event-done-claim-audit.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-event-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-archive.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-archive.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-cleanup.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-cleanup.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-focused.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-focused.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-protocol.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-protocol.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-pycompile.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-pycompile.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-quality.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-quality.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-sha256.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-verification.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green-resource-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green-resource-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green-streaming.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-frame-mismatch.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-frame-mismatch.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-frame-mismatch.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-happy-validator.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-happy-validator.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-happy.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-happy.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-happy.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-missing-sidecar.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-missing-sidecar.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-missing-sidecar.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-request-failure.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-request-failure.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-request-failure.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_after_readiness_wait.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_after_readiness_wait.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_after_readiness_wait.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_delayed_capture.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_delayed_capture.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_delayed_capture.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_immediate.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_immediate.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_immediate.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-gt_shoot.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-gt_shoot.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-gt_shoot.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-gt_shoot_terminal.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-gt_shoot_terminal.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-gt_shoot_terminal.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-safe_immediate.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-safe_immediate.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-safe_immediate.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2.py
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-quality-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-quality-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-quality-streaming.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-quality.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-recorder-green.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-recorder-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-recorder-red.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-recorder-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-red.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-data-after.stat
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-data-before.stat
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-nested-digest-streaming.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-nested-digest-streaming.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-nested-digest-streaming.time
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-nested-digest.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-nested-digest.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-nested-digest.time
+?? .omo/evidence/world-model-physics-instrumentation/task-8-canonical-after.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-canonical-before.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-cleanup-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-cleanup-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-contract-validator-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-contract-validator-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-journal.md
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-marker-scan.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-round1-engine.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-round1-xvfb.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-round1.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-round1.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-round1.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-display-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-done-claim-audit.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-editmode-all.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-editmode-partition-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-evidence.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-final-audit.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-final2.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-final2.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-post-claim.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-post-claim.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-xvnc-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-engine.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-report.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-xvnc.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-engine.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-success.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-success.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-xvnc.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-legacy-fixture.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-legacy-fixture.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-lifecycle-fixture.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-lifecycle-fixture.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-live-blocker-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-live-blocker-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-live-blocker.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-live-blocker.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-live-contract-blocker.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-lock-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-engine.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-report.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-xvnc.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-no-excuse-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-no-excuse-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-physical-fixtures.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-physical-fixtures.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-port-cleanup-final.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-port-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-post-mark-direct-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-post-mark-focused.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-post-mark-focused.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-process-cleanup-final.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-process-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-production-after.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-production-before.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protected-receipt.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-fix-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-green.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-pin-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-pin-final.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-pin.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-pin.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-red.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-fixture.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-fixture.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-toggle-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-toggle-green.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-toggle-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-toggle-red.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-pycompile-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-pycompile-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-0.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-0.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-1.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-1.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-2.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-2.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-gates.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-recovered-temp-roots/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-request-failure-engine.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-request-failure-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-request-failure-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-request-failure-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-request-failure-report.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-request-failure-xvnc.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-scoped-status.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-shot-recorder-fixture.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-shot-recorder-fixture.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-smoke.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stage-before.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stage-final.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stage-static.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stage-static.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stage-static.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop2-accepted-validator.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop2-contract.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop2-contract.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop2-direct-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop2-focused.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop2-focused.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-accepted-shot.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-accepted-shot/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-accepted-validator.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-direct/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-frame-mismatch-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-frame-mismatch.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-frame-mismatch.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-frame-mismatch.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-fresh-live-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-happy-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-happy.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-happy.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-happy.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-missing-sidecar-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-missing-sidecar.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-missing-sidecar.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-missing-sidecar.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-request-failure-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-request-failure.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-request-failure.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-request-failure.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-temp-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-timeout-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-writer-probe.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-writer-probe.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-writer-probe.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-writer-probe/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-wrong-sha.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-xvfb-glxinfo.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-xvfb-probe.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-xvfb-xdpyinfo.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-xvnc-probe.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-xvnc-xdpyinfo.log
+?? .omo/evidence/world-model-physics-instrumentation/task-9-cleanup-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-docs.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-9-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-f2-cleanup-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-f2-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-f2-stop-verification-3.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-f2-stop-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial-cleanup-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial-rerun.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-cleanup.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-rerun.md
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-quality.md
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-verdict.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-stop-verification-3.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-stop-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/todo8-boundary-adversarial/
+?? .omo/evidence/world-model-physics-instrumentation/todo8-contract-adversarial/
+?? .omo/evidence/world-model-physics-instrumentation/todo8-live-adversarial/
+?? .omo/evidence/world-model-physics-instrumentation/verify-f2-collector.json
+?? .omo/evidence/world-model-physics-instrumentation/verify-f2-docs-repair.json
+?? .omo/evidence/world-model-physics-instrumentation/verify-f2-unity-socket-focused-2.log
+?? .omo/evidence/world-model-physics-instrumentation/verify-f2-unity-socket-focused-2.xml
+?? .omo/evidence/world-model-physics-instrumentation/verify-f2-unity-socket.json
+?? .omo/evidence/world-model-physics-instrumentation/world-model-physics-instrumentation-manual-qa.md
+?? .omo/knowledges/deterministic-unity-build-repair-2026-08-06.md
+?? .omo/knowledges/f2-unity-runtime-safety-remediation-2026-08-06.md
+?? .omo/knowledges/physics-publication-smoke-marker-binding-2026-08-06.md
+?? .omo/knowledges/task-3-physics-recorder-qa-2026-08-05.md
+?? .omo/knowledges/unity-2019-4-headless-runtime-audit-2026-08-06.md
+?? .omo/run-continuation/ses_02aba5270ffeIMX15fENgw8Ci0.json
+?? .omo/run-continuation/ses_02ac96b8dffeP3zhUZcWK3XbVu.json
+?? .omo/run-continuation/ses_02ad21524ffePWsMPoVRg9fAVJ.json
+?? .omo/run-continuation/ses_02adc61d2ffePFsTe36tRjexT1.json
+?? .omo/run-continuation/ses_02adc6276ffejiu5TKgSEaEL6h.json
+?? .omo/run-continuation/ses_02adc8c94ffepnm4GID3FvEe3k.json
+?? .omo/run-continuation/ses_02aecd163ffe3jBQDmjD7Bst1t.json
+?? .omo/run-continuation/ses_02b66b311ffe4o6Aoii5j8uTvr.json
+?? .omo/run-continuation/ses_02bf4d93effeeSD9mYCoxB1q8X.json
+?? .omo/run-continuation/ses_02bf8f03cffe0WjZZo5KivccDL.json
+?? .omo/run-continuation/ses_02bfe1925ffeIon9RBd9fxd7a8.json
+?? .omo/run-continuation/ses_02bfe1939ffea3gO0NTv8zK763.json
+?? .omo/run-continuation/ses_02bfe194effeIQIUjmiheBJ1mC.json
+?? .omo/run-continuation/ses_02bfe832fffeWWVxO24bQxJ3LE.json
+?? .omo/run-continuation/ses_02bfedaeaffei2uMw9AbkQuieH.json
+?? .omo/run-continuation/ses_02c0d14c1ffeiYrwOF07LwkNWi.json
+?? .omo/run-continuation/ses_02c0e954cffek1rzhRzvnw5QDc.json
+?? .omo/run-continuation/ses_02c0e9566ffeMFHmzfVCR6Qul1.json
+?? .omo/run-continuation/ses_02c0fa041ffesdaRqaWWkma6ol.json
+?? .omo/run-continuation/ses_02c11e991ffe1lSmv1ja6X6XZf.json
+?? .omo/run-continuation/ses_02c13c723ffeDWlf3Kcp5wmT51.json
+?? .omo/run-continuation/ses_02c15c77fffe2RAHJhAiaELrzh.json
+?? .omo/run-continuation/ses_02c18eadaffefCC5wY402u234d.json
+?? .omo/run-continuation/ses_02c1a1cf1ffeduXxO3CViwcOp7.json
+?? .omo/run-continuation/ses_02c1a1d0fffe7Iai92KeH33wLP.json
+?? .omo/run-continuation/ses_02c1c32e2ffeTtF31tIKXXtnso.json
+?? .omo/run-continuation/ses_02c1c3847ffewpt102fkNJ4mZn.json
+?? .omo/run-continuation/ses_02c1faae1ffenco3g01Wek7gRI.json
+?? .omo/run-continuation/ses_02c1faafcffegBo5Dm9kZrdg4p.json
+?? .omo/run-continuation/ses_02c1fab16ffeWVkSpDyhIltFde.json
+?? .omo/run-continuation/ses_02c1fab53ffebc08rF4P6ASVXV.json
+?? .omo/run-continuation/ses_02c1fc258ffeOlw0FgPcSpczX5.json
+?? .omo/run-continuation/ses_02c1fca12ffeTb5hbadZPRtgYP.json
+?? .omo/run-continuation/ses_02c1fe035ffeQ33II4TamG0Ign.json
+?? .omo/run-continuation/ses_02c1fe08bffep4oI3970PNHiL8.json
+?? .omo/run-continuation/ses_02c1fe276ffeoycLeLO3qyL7Tg.json
+?? .omo/run-continuation/ses_02c200ee0ffej44H9cZjnLOHuQ.json
+?? .omo/run-continuation/ses_02c201136ffelGXtmhiLb1lZqc.json
+?? .omo/run-continuation/ses_02c201160ffeSO9J03h7O5z0gB.json
+?? .omo/run-continuation/ses_02c203b25ffexP6b4RULRiDSxq.json
+?? .omo/run-continuation/ses_02c21270effev0z6Fxe65c3Y9R.json
+?? .omo/run-continuation/ses_02c212725ffewr4GXQNbEdOrEr.json
+?? .omo/run-continuation/ses_02c212729ffe2NZa7Es7NV0CYX.json
+?? .omo/run-continuation/ses_02c21272bffeQid0gjPLGSqCeo.json
+?? .omo/run-continuation/ses_02c212735ffe6RcCv2J7wXWD7s.json
+?? .omo/run-continuation/ses_02c2e5a24ffe3QMsKxgi6qrf2u.json
+?? .omo/run-continuation/ses_02c2e5a35ffeU41PMLwqoC6nID.json
+?? .omo/run-continuation/ses_02c2e5a54ffeiFBSMfGNvCbgT2.json
+?? .omo/run-continuation/ses_02c2e5aa9ffelUFGEOGC1xkG2t.json
+?? .omo/run-continuation/ses_02c2e5acfffeMPqU3550pEp9dG.json
+?? .omo/run-continuation/ses_02c30541effefP2vB41xtkVm5p.json
+?? .omo/run-continuation/ses_02c305437ffezAxV4Wj567UggD.json
+?? .omo/run-continuation/ses_02c309ccbffeQxI1NIDYS1obzd.json
+?? .omo/run-continuation/ses_02c310e48ffeL7bpS1FZOuDEGm.json
+?? .omo/run-continuation/ses_02c326e32ffeSgsFwsmqJ19541.json
+?? .omo/run-continuation/ses_02c326e3affegCQCLtO6Tu9fTR.json
+?? .omo/run-continuation/ses_02c326ea0ffeoAXg7pLfvpwHyD.json
+?? .omo/run-continuation/ses_02c326ed4ffeYc6eXjcj9pVTZi.json
+?? .omo/run-continuation/ses_02c326fdcffeERLhGJQvieHVu0.json
+?? .omo/run-continuation/ses_02c33a7d0ffeTuc1XqgHUoJP0L.json
+?? .omo/run-continuation/ses_02c33a7e1ffe0hwLnl2eunLSUQ.json
+?? .omo/run-continuation/ses_02c33a803ffeJ63Zb9DC4CctkV.json
+?? .omo/run-continuation/ses_02c33a873ffeAdmXS7WHkf1r1g.json
+?? .omo/run-continuation/ses_02c33a8a0ffeX0LSJCcH5QLaOj.json
+?? .omo/run-continuation/ses_02c342f50ffemAw60tu5cMPNgy.json
+?? .omo/run-continuation/ses_02c342f61ffeOOhWX6Y4vCFupq.json
+?? .omo/run-continuation/ses_02c342f80ffe9tUnsQ78dgj62H.json
+?? .omo/run-continuation/ses_02c342fd5ffeMNKm4oBWJMddCL.json
+?? .omo/run-continuation/ses_02c343003ffe3T6gUqK28uVoBN.json
+?? .omo/run-continuation/ses_02c357a3dffeOKjX5V0sr9gkf1.json
+?? .omo/run-continuation/ses_02c357a53ffe2A4GlmtI27ZUzx.json
+?? .omo/run-continuation/ses_02c35b01affeZJ2DdRl28v33Zu.json
+?? .omo/run-continuation/ses_02c35d37cffezkQsbRGbmb5BME.json
+?? .omo/run-continuation/ses_02c3691e3ffeTsQz37aoN7txbz.json
+?? .omo/run-continuation/ses_02c369204ffeoVesIpshqhSxwJ.json
+?? .omo/run-continuation/ses_02c369210ffe5JK7gbbfb4kYkN.json
+?? .omo/run-continuation/ses_02c369215ffebkz4Lr58Vjf4xK.json
+?? .omo/run-continuation/ses_02c378073ffeHuH4dXIEuJxkFd.json
+?? .omo/run-continuation/ses_02c37808affe1vmrtjpqHTwGZb.json
+?? .omo/run-continuation/ses_02c384bc2ffe8hZbXHI8yDW6Pn.json
+?? .omo/run-continuation/ses_02c384bd2ffel2rHKKbHIzA9ZT.json
+?? .omo/run-continuation/ses_02c384bebffef92tQv71MuvWRw.json
+?? .omo/run-continuation/ses_02c384c2effecxFjiLkJcgmn0J.json
+?? .omo/run-continuation/ses_02c384c4effecsSFyu3EI0FO9x.json
+?? .omo/run-continuation/ses_02c390d07ffeWsbYfCS6KWyARZ.json
+?? .omo/run-continuation/ses_02c390d18ffealxenayjSomWwp.json
+?? .omo/run-continuation/ses_02c390d31ffeGWlrf3QFEVf6Is.json
+?? .omo/run-continuation/ses_02c390d78ffe8CPqEq50Ti6TKT.json
+?? .omo/run-continuation/ses_02c390d9affe4Wx6krsUfR2ibI.json
+?? .omo/run-continuation/ses_02c395dd1ffe6SNEAFfxR3zcp9.json
+?? .omo/run-continuation/ses_02c395e8dffeP6rqzWGIhxK1Sd.json
+?? .omo/run-continuation/ses_02c398bd9ffexh7b4PI4A0pORC.json
+?? .omo/run-continuation/ses_02c398bf3ffeS4mZ8XrtkBB5U7.json
+?? .omo/run-continuation/ses_02c39b09cffeDYYnr5XO5dFMx6.json
+?? .omo/run-continuation/ses_02c39d2a2ffeQb9AhONTUaulYm.json
+?? .omo/run-continuation/ses_02c3a4115ffeEstOxyVPBxmzO8.json
+?? .omo/run-continuation/ses_02c3a79a8ffeYXjdPAMFRsdac1.json
+?? .omo/run-continuation/ses_02c3a79abffeFinySSZc5id2K7.json
+?? .omo/run-continuation/ses_02c3a79afffeH02FNO2d5NwSuk.json
+?? .omo/run-continuation/ses_02c733bcbffeNO6xxP9bRks84q.json
+?? .omo/run-continuation/ses_02c733be0ffesgmkh4MFoOpwNz.json
+?? .omo/run-continuation/ses_02c733bfbffeO5XhlBVb3PB9Fb.json
+?? .omo/run-continuation/ses_02c7526fdffecRxEP4VsObFwfY.json
+?? .omo/run-continuation/ses_02c79c83bffe7BRE5jpSe8UhBK.json
+?? .omo/run-continuation/ses_02c7b4fbaffeX2HxAEB6ZZRyyZ.json
+?? .omo/run-continuation/ses_02ca79dc1ffeEcjGYzxlPYjLhp.json
+?? .omo/run-continuation/ses_02ca79dcfffeVfXa79EUbPKsSv.json
+?? .omo/run-continuation/ses_02ca7d65fffeYn4FpccdLLhaSB.json
+?? .omo/run-continuation/ses_02cb8130bffejEKFQaykbLqBYJ.json
+?? .omo/run-continuation/ses_02cb81322ffeuE9U6QGGQgesjW.json
+?? .omo/run-continuation/ses_02cb81349ffesCS4ss6Q0fEnvb.json
+?? .omo/run-continuation/ses_02cbb81aeffecRm8u2QyOpupO2.json
+?? .omo/run-continuation/ses_02ccaebdfffejwvoGyM0AmRrP7.json
+?? .omo/run-continuation/ses_02ccb124fffedWbbH1c6BIeppo.json
+?? .omo/run-continuation/ses_02ccb4d5affeOswEMKlLro83dy.json
+?? .omo/run-continuation/ses_02cd9bf97ffeG7Gtyr3Ib64GI2.json
+?? .omo/run-continuation/ses_02cd9bfe0ffe9j0qOU9R1OCp8j.json
+?? .omo/run-continuation/ses_02cd9f79bffeNFcwTR0Xd7gsrF.json
+?? .omo/run-continuation/ses_02ced8fa1ffeCEdgS1DDY1Bcri.json
+?? .omo/run-continuation/ses_02ced8fb3ffe2bYYZx0ZWMAkSp.json
+?? .omo/run-continuation/ses_02ced8fcfffeRIJC2L7GAIVYsS.json
+?? .omo/run-continuation/ses_02ced9011ffejYwRrT17YehhvG.json
+?? .omo/run-continuation/ses_02ced908ffferACWyjf9uUyxJj.json
+?? .omo/run-continuation/ses_02cf49b03ffezaEYZ7jFpmswrG.json
+?? .omo/run-continuation/ses_02cf49b1bffegzxLY3FOqVcNag.json
+?? .omo/run-continuation/ses_02cf50c34ffeaKb0InNmgiOAKp.json
+?? .omo/run-continuation/ses_02cf6208fffeEeuHsKqAn1wGeo.json
+?? .omo/run-continuation/ses_02d0047b5ffehTvvTjkrWnQL4Y.json
+?? .omo/run-continuation/ses_02d004809ffe3E4Jw46U3isW1e.json
+?? .omo/run-continuation/ses_02d00894affe8s9vprJTjLX6UH.json
+?? .omo/run-continuation/ses_02d0168daffevtfrP4i76VxeHR.json
+?? .omo/run-continuation/ses_02d18c013ffecraP8QOvnVj2lL.json
+?? .omo/run-continuation/ses_02d192b8affeDieivA6Wmyy9j0.json
+?? sciencebirdsgames/physics-v1/
+[0m
+[0m⚙ [0mcodegraph_codegraph_explore {"query":"final artifact rebuild publication physics-v1 build preflight Unity 2019.4.41f2 request 38 62 70 static verifier","projectPath":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4","maxFiles":12}
+The worktree is already heavily populated with prior untracked evidence and a published-path directory, so I’m treating all existing files as immutable. The initial plan filename search found no `.omo/plans` entry; I’m now locating the authoritative full plan and release scripts by exact task language before any build or publication action.
+[0m
+[0m$ [0mgit rev-parse HEAD
+b0f312612af00d91295738bca8d4b77566308495
+[0m
+[0m$ [0mrg --files --hidden -g '!*.jsonl' -g '!*.log' -g '!*.xml' -g '!*.stderr' -g '!*.stdout' | rg '(^|/)(AGENTS\.md|README|PLAN|plan|release|publish|build|verify|smoke|artifact)'
+README.md
+scripts/smoke_protection.py
+scripts/verify_physics_capture_docs.py
+scripts/smoke_physics_capture.py
+scripts/verify_physics_player.py
+scripts/build_physics_player.sh
+docs/method_proposal_presentation/image_assets/README.md
+.omo/plans/world-model-physics-instrumentation.md
+.omo/plans/world-model-data-pipeline.md
+.omo/plans/rollout-menu-static-shot-bug.md
+src/webui/README.md
+sciencebirdsagents/PhyreAgents/RPIN/models/backbones/build.py
+tasks/task_template_designer/README.md
+.omo/evidence/world-model-physics-instrumentation/f1-current-audit/artifacts.sha256
+.omo/evidence/world-model-physics-instrumentation/f3-final-run/artifact-sha256s.txt
+.omo/evidence/world-model-physics-instrumentation/f3-final-run/smoke-tests-post.exit
+.omo/evidence/world-model-physics-instrumentation/f3-final-run/smoke-tests-pre.exit
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-2-static.exit
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-1-static.exit
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-2-static.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-1-static.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-2-archive.sha256
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-1-archive.sha256
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-2-provenance.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-1-provenance.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-2.exit
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-1.exit
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-2-archive.sha256
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-1-archive.sha256
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-2-provenance.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-1-provenance.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-2-static.exit
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-1-static.exit
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-2-static.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-1-static.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-2.exit
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-1.exit
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-2-log-observables.txt
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-2-provenance.json
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-2.receipt
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-2.exit
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-1-static.exit
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-1-static.json
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-1-log-observables.txt
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-1-provenance.json
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-1-stage.sha256
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-1.receipt
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-1.exit
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-3-stage.sha256
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-2-static.exit
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-2-static.json
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-2-Assembly-CSharp.dll
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-1-Assembly-CSharp.dll
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-3-provenance.json
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-3.receipt
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-3.exit
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-3-stage/novphy-physics-player-2019.4.41f2.tar.gz
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-3-stage/archive.sha256
+.omo/evidence/world-model-physics-instrumentation/final-published-runtime/stop-hook-3-runtime/artifact-validation.json
+.omo/evidence/world-model-physics-instrumentation/final-published-runtime/published-files.sha256
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-1-stage/archive.sha256
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-1-stage/novphy-physics-player-2019.4.41f2.tar.gz
+.omo/evidence/world-model-physics-instrumentation/final-published-runtime/published-smoke-output/shot_001/metadata.json
+.omo/evidence/world-model-physics-instrumentation/final-published-runtime/published-smoke.json
+.omo/evidence/world-model-physics-instrumentation/final-published-runtime/postclaim-verification/artifacts.sha256
+.omo/evidence/world-model-physics-instrumentation/verify-f2-unity-socket.json
+.omo/evidence/world-model-physics-instrumentation/verify-f2-collector.json
+.omo/evidence/world-model-physics-instrumentation/verify-f2-docs-repair.json
+[0m
+[0m$ [0mgit status --short --untracked-files=all | rg -v '^\?\? \.omo/'
+M .omo/notepads/world-model-physics-instrumentation/decisions.md
+ M .omo/notepads/world-model-physics-instrumentation/issues.md
+ M .omo/notepads/world-model-physics-instrumentation/learnings.md
+ M .omo/notepads/world-model-physics-instrumentation/problems.md
+ M .omo/plans/world-model-physics-instrumentation.md
+ M .omo/start-work/ledger.jsonl
+ M tests/test_prepare_rollout_dataset.py
+?? sciencebirdsgames/physics-v1/archive.sha256
+?? sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz
+?? sciencebirdsgames/physics-v1/unity-build.log
+[0m
+[0m$ [0mrg -n --hidden -g '!*.jsonl' -g '!*.log' -g '!*.xml' -g '!*.stderr' -g '!*.stdout' -g '!*.sha256' 'b0f312612af00d91295738bca8d4b77566308495|2019\.4\.41f2|sciencebirdsgames/physics-v1|request 38|request 62|request 70|build preflight|DoneClaim' .
+...output truncated...
+
+Full output saved to: /home/sukai/Project/NovPhy/.cache/xdg/opencode/tool-output/tool_fd54ac12c001QI6NesXlXCp7wd
+
+./.omo/evidence/world-model-physics-instrumentation/task-8-action-event-done-claim.json:68:      "binary_observable": "both exits 0; archive and payload checksums verified; request 38/62 fixture unchanged",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/cleanup.json:16:      "command": "timeout --signal=TERM --kill-after=30s 900s python scripts/smoke_physics_capture.py --stage sciencebirdsgames/physics-v1 --output-dir .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output --report .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke.json"
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/cleanup.json:24:      "command": "python scripts/smoke_physics_capture.py --stage sciencebirdsgames/physics-v1 --output-dir .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output --report .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke.json"
+./.omo/evidence/world-model-physics-instrumentation/world-model-physics-instrumentation-manual-qa.md:11:| F3-S1 | F3 / task 8 accepted staged-player smoke | staged player + temporary output root | `timeout --signal=TERM --kill-after=30s 900s python scripts/smoke_physics_capture.py --stage sciencebirdsgames/physics-v1 --output-dir .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output --report .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke.json` | PASS | `A1`, `A2` |
+./.omo/evidence/world-model-physics-instrumentation/world-model-physics-instrumentation-manual-qa.md:12:| F3-S2 | F3 / legacy request 62 and request 38 compatibility | Python bridge test surface | `python -m unittest tests.test_webui_bridge.PhysicsCaptureV1Tests.test_legacy_request_38_and_62_fixture_bytes_remain_unchanged tests.test_webui_bridge.PhysicsCaptureV1Tests.test_recorder_backed_shoot_preserves_request_38_framing_and_consumes_ground_truth -v` | PASS | `A3` |
+./.omo/evidence/world-model-physics-instrumentation/world-model-physics-instrumentation-manual-qa.md:13:| F3-S3 | F3 / archive and staged provenance | published `sciencebirdsgames/physics-v1` archive | `sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz`; `(cd sciencebirdsgames/physics-v1 && sha256sum -c archive.sha256)` | PASS | `A4` |
+./.omo/evidence/world-model-physics-instrumentation/world-model-physics-instrumentation-manual-qa.md:33:| A1 | JSON | Exact-head F3 gate record with staged provenance, request 62/38/70 observations, and accepted-shot result. | `.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json` |
+./.omo/evidence/world-model-physics-instrumentation/world-model-physics-instrumentation-manual-qa.md:35:| A3 | log | Fresh legacy request 38/62 compatibility test output. | `.omo/evidence/world-model-physics-instrumentation/manual-qa-legacy-tests.log` |
+./.omo/evidence/world-model-physics-instrumentation/final-published-runtime-independent/independent-verification.json:17:    "stage": "sciencebirdsgames/physics-v1",
+./.omo/evidence/world-model-physics-instrumentation/final-published-runtime-independent/independent-verification.json:18:    "archive": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/final-published-runtime-independent/independent-verification.json:37:      "evidence": "fresh sha256sum returned 1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4; publication-receipt.json and archive provenance bind it to the exact source commit/tree and Unity 2019.4.41f2 changeset 6b23d448b533"
+./.omo/evidence/world-model-physics-instrumentation/final-published-runtime-independent/independent-verification.json:42:      "evidence": "timeout 60s python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha 1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4 --skip-runtime exited 0 with archive_checksum_verified=true and payload_checksums_verified=true"
+./.omo/evidence/world-model-physics-instrumentation/final-published-runtime-independent/independent-verification.json:45:      "name": "request 38 and 62 fixture compatibility",
+./.omo/evidence/world-model-physics-instrumentation/final-published-runtime-independent/independent-verification.json:52:      "evidence": "published-smoke.json reports accepted/complete, request 38 response 1 after request 62 decoding, request 70 decoding, protected_unchanged=true; raw physics_events.jsonl contains seven events with exactly one bird_launched; metadata and validator report one actual state plus one frame"
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/verdict.json:17:    "stage": "sciencebirdsgames/physics-v1",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/verdict.json:21:      "novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/verdict.json:47:      "observable": "publication receipt resolves to sciencebirdsgames/physics-v1; stage has exactly three regular nonempty files and no symlinks"
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/verdict.json:50:      "name": "request 38 action",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/verdict.json:59:      "name": "decoded legacy request 62",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/verdict.json:69:        "semanticBinding": "perform_known_action -> current_slingshot_reference -> get_symbolic_state_without_screenshot -> request 62"
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/verdict.json:73:      "name": "decoded request 70",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/verdict.json:79:        "semanticBinding": "capture_finalized_action -> get_physics_capture_v1 -> request 70 -> persisted accepted shot"
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/verdict.json:148:      "observable": "PIDs 276695 and 276696 are running smoke_physics_capture.py against sciencebirdsgames/physics-v1",
+./.omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-stop-verification.json:12:      "DoneClaim parsed as valid JSON",
+./.omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-stop-verification.json:24:      "all DoneClaim artifacts exist and are nonempty",
+./.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-2-provenance.json:172:    "migrated_revision": "2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-2-provenance.json:173:    "version": "2019.4.41f2"
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug/root-cause.json:2:  "audit": "Unity 2019.4.41f2 SIGSEGV read-only audit",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug/root-cause.json:4:  "editor": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug/root-cause.json:5:  "editor_version": "2019.4.41f2",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f1/verdict.json:16:    "archive": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f1/verdict.json:37:      "observable": "two independent Unity 2019.4.41f2 builds have identical archive, provenance, and receipt bytes"
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f1/verdict.json:42:      "observable": "request 62 and 70 decoded, one bird_launched among seven events, protected roots unchanged"
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f4/verdict.json:24:    "archive": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f4/verdict.json:33:      "observable": "the feature diff has no paths under the active rollout root, sciencebirdsgames/Linux, or sciencebirdsgames/physics-v1"
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f4/verdict.json:53:      "observable": "physics_capture_v1 remains explicitly selected, request 70 is additive, and requests 38 and 62 remain represented"
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:17:    "stage": "sciencebirdsgames/physics-v1",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:18:    "archive": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:27:      "unityVersion": "2019.4.41f2",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:42:      "command": "sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:48:      "cwd": "sciencebirdsgames/physics-v1",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:50:      "observable": "novphy-physics-player-2019.4.41f2.tar.gz: OK"
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:53:      "command": "timeout --signal=TERM --kill-after=5s 60s python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha 1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4 --skip-runtime",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:60:      "observable": "2 tests passed; request 62 fixture and request 38 framing/ground-truth consumption preserved"
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:63:      "command": "timeout --signal=TERM --kill-after=30s 900s python scripts/smoke_physics_capture.py --stage sciencebirdsgames/physics-v1 --output-dir .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output --report .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke.json",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:65:      "observable": "status=accepted, phase=complete, accepted shot_001, request 38 response 1, request 70 one state/seven events, protected_unchanged=true"
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:88:      "command": "timeout --signal=TERM --kill-after=5s 30s python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha deadbeef --skip-runtime",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:217:      "failedCommand": "sha256sum -c sciencebirdsgames/physics-v1/archive.sha256",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:218:      "cwd": "sciencebirdsgames/physics-v1",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:224:      "failedCommand": "jq ... sciencebirdsgames/physics-v1/provenance.json",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json:226:      "correctedCommand": "tar -xOzf sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz provenance.json",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug/hypotheses.md:1:# Unity 2019.4.41f2 SIGSEGV Audit Hypotheses
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug/hypotheses.md:29:All three required variants were attempted with the exact `2019.4.41f2` Editor and the same private `LD_LIBRARY_PATH` value. All three failed before Unity startup with the same missing system dependency. This is an external environment blocker, not evidence of CEF SIGSEGV and not evidence of EditMode success.
+./.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-1-provenance.json:172:    "migrated_revision": "2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-1-provenance.json:173:    "version": "2019.4.41f2"
+./.omo/evidence/world-model-physics-instrumentation/f1-current-audit/current-head:1:b0f312612af00d91295738bca8d4b77566308495
+./.omo/evidence/world-model-physics-instrumentation/f1-current-audit/provenance-verdict.json:11:    "head": "b0f312612af00d91295738bca8d4b77566308495",
+./.omo/evidence/world-model-physics-instrumentation/f1-current-audit/provenance-verdict.json:18:    "path": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/f1-current-audit/provenance-verdict.json:36:      "command": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --skip-runtime",
+./.omo/evidence/world-model-physics-instrumentation/f1-current-audit/provenance-verdict.json:43:      "command": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992 --skip-runtime",
+./.omo/evidence/world-model-physics-instrumentation/f1-current-audit/provenance-verdict.json:51:      "reason": "current HEAD b0f312612af00d91295738bca8d4b77566308495 differs from archive manifest head 95e7b82919c7cc2cd1aa911c4ebf9ffcfba8f9fe"
+./.omo/evidence/world-model-physics-instrumentation/f1-current-audit/provenance-verdict.json:76:    "hung_command_probe": "timeout --signal=TERM --kill-after=10s 120s python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --skip-runtime",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f1.json:9:    "archive": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f1.json:13:    "unity": "2019.4.41f2 (6b23d448b533)"
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f1.json:22:      "description": "The governing plan requires the staged player build entry point to be pinned to Unity 2019.3.4f1. The reviewed project, build script, publication receipt, reproducibility receipt, and archive identity instead use Unity 2019.4.41f2 changeset 6b23d448b533, with no plan amendment authorizing that migration.",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f1.json:30:      "required_resolution": "Rebuild and prove the staged player with the plan-pinned 2019.3.4f1 editor, or formally amend and re-review the plan before accepting a 2019.4.41f2 artifact."
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f1.json:91:    {"check": "Plan-pinned Unity version", "result": "FAIL", "detail": "Delivered 2019.4.41f2 differs from required 2019.3.4f1."},
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/done-claim.json:6:    "unityVersion": "2019.4.41f2",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/done-claim.json:50:  "remainingGate": "Run the same focused Unity 2019.4.41f2 EditMode filter in a separately authorized invocation and require NUnit XML with zero failures."
+./.omo/evidence/world-model-physics-instrumentation/task-3-stop-hook-direct-verification-2026-08-05.json:7:    "binary": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+./.omo/evidence/world-model-physics-instrumentation/task-3-stop-hook-direct-verification-2026-08-05.json:8:    "version": "2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f2/verdict.json:11:    "archivePath": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f2/verdict.json:14:    "unityVersion": "2019.4.41f2",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f2/verdict.json:109:    "Focused Python F2 suite passed 82/82, including request 38/62 bytes, request 70 malformed/oversize rejection, streaming bounds, symlink swap rejection, resume, quarantine, launcher, static verifier, and deterministic-build contract tests.",
+./.omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f2/verdict.json:112:    "Final published runtime evidence records request 38, request 62, request 70, seven events, unchanged protected roots, and receipt-last atomic file publication."
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/unity-postflight.txt:1:Unity 2019.4.41f2 focused EditMode postflight
+./.omo/evidence/world-model-physics-instrumentation/task-9-stop-verification.json:18:      "invocation": "sha256sum scoped source files and sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz; inspect archive.sha256",
+./.omo/evidence/world-model-physics-instrumentation/task-9-stop-verification.json:19:      "binary_observable": "four source hashes match task-9-done-claim.json; archive and two-field receipt equal c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992 and name novphy-physics-player-2019.4.41f2.tar.gz"
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/stop-hook-verification-2.txt:4:+zsh:1> rg -q 'Unity Editor version:    2019.4.41f2 \(6b23d448b533\)' /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/focused-editmode.log
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/stop-hook-verification-2.txt:7:+zsh:1> python -m json.tool /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/DoneClaim.json
+./.omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial-rerun.json:55:    "receipt": "sciencebirdsgames/physics-v1/archive.sha256",
+./.omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial-rerun.json:57:    "receiptArchive": "novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial-rerun.json:103:    "sciencebirdsgames/physics-v1/archive.sha256",
+./.omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial-rerun.json:104:    "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f2.json:9:    "archive": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f2.json:11:    "unity": "2019.4.41f2 (6b23d448b533)"
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f2.json:13:  "summary": "The exact archive and deterministic-build identity verify, legacy request 38/62 compatibility remains intact, and immutable baselines are preserved. F2 is rejected because committed code still permits an unbounded synchronous request-70 response write on Unity's main thread, uses absolute level time as the per-shot timeout, has residual verifier and persistence confinement gaps, can emit invalid JSON for control characters, and does not failure-atomically replace the packaged archive.",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f2.json:111:      "description": "Event and stability mutation paths do not consistently reject finalized recorders, while request 70 snapshots the recorder repeatedly.",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f2.json:122:      "description": "Legacy request 38 record counts and request 62 payload lengths are peer-controlled 32-bit values without explicit protocol caps before looping or reading.",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f2.json:140:    {"criterion": "legacy request 38/62 compatibility", "status": "pass"},
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f2.json:145:    {"criterion": "Unity 2019.4.41f2 compatibility", "status": "pass"},
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f2.json:151:      "command": "sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+./.omo/evidence/world-model-physics-instrumentation/final-wave-exact/f2.json:155:      "command": "python3 scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha 1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4 --skip-runtime",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/unity-command.txt:1:DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 LD_LIBRARY_PATH=/tmp/opencode/unity-2019.4-libssl1.1/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib timeout --signal=TERM --kill-after=20s 480s /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity -batchmode -nographics -projectPath /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer -runTests -testPlatform EditMode -testFilter 'PhysicsCaptureProtocolTests;PhysicalShotRecorderTests;PhysicsShotRecorderTests;ABBirdLaunchTests' -testResults /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/focused-editmode-results.xml -logFile /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/focused-editmode.log
+./.omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-rerun.md:17:| Real staged archive receipt and bytes | `sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz`; `awk 'NF {print NF, $1, $2}' sciencebirdsgames/physics-v1/archive.sha256` | Archive digest and two-field receipt both equal `c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992`; receipt names exactly `novphy-physics-player-2019.4.41f2.tar.gz`. |
+./.omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-rerun.md:25:2. `_validate_staged_provenance` reads `sciencebirdsgames/physics-v1/archive.sha256`, requires exactly two fields and the required archive filename, requires the documented digest, streams the named archive through SHA-256, and cross-checks an accepted Task 8 smoke report with protected roots unchanged and an accepted shot. The negative CLI test uses a receipt/report digest with deliberately different archive bytes and fails closed.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/unity-preflight.txt:1:Unity 2019.4.41f2 focused EditMode preflight
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs/done-claim.json:27:    "currentDoneClaimResolved": true,
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/direct-verification.txt:3:DoneClaim.json 1682 bytes
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/direct-verification.txt:16:OK DoneClaim.json
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/direct-verification.txt:31:DoneClaim.json=valid
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs/debug-journal.md:19:3. [CONFIRMED] Docs verification read historical `task-8-smoke.json` instead of resolving the current final publication authority. The alternative stage-mismatch hypothesis was refuted: the staged archive, `archive.sha256`, final DoneClaim, publication receipt, and final smoke all bind archive SHA-256 `1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4`. The historical report binds `c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992`.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs/debug-journal.md:31:- Current final DoneClaim has `status=complete`, publication receipt pointer, accepted runtime report pointer, request-38/62 compatibility, and protected-root success.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs/debug-journal.md:35:- Bridge regression tests failed before implementation because request 38 entered the peer-controlled record loop, request 62 attempted the peer-controlled body read, and no typed legacy protocol error existed.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs/debug-journal.md:36:- Documentation regression tests failed before implementation because the verifier selected the stale historical task-8 report and did not validate the final DoneClaim/receipt/report chain.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs/debug-journal.md:63:- Residual limitation: request 38 caps record count but has no aggregate byte budget across all valid-sized records.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/package/done-claim.json:39:    "unityVersion": "2019.4.41f2",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/DoneClaim.json:8:  "invocation": "env LD_LIBRARY_PATH=/tmp/opencode/unity-2019.4-libssl1.1/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib timeout --signal=TERM --kill-after=20s 480s /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity -batchmode -nographics -projectPath /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer -runTests -testPlatform EditMode -testFilter 'PhysicsCaptureProtocolTests;PhysicalShotRecorderTests;PhysicsShotRecorderTests;ABBirdLaunchTests'",
+./.omo/evidence/world-model-physics-instrumentation/task-9-docs.txt:19:Invocation: python scripts/verify_physics_capture_docs.py docs; sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz; awk 'NF {print NF, $1, $2}' sciencebirdsgames/physics-v1/archive.sha256
+./.omo/evidence/world-model-physics-instrumentation/task-9-docs.txt:20:Binary observable: verifier exit 0; archive SHA-256, two-field receipt digest, and task-8 report provenance all equal c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992; receipt archive is novphy-physics-player-2019.4.41f2.tar.gz; report status=accepted, protected_unchanged=true, accepted_shot_nonempty=true.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/green-source-probes.result.txt:12:PASS Unity ProjectVersion.txt is exactly 2019.4.41f2 revision 6b23d448b533
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/green-source-probes.result.txt:13:PASS request 38/62 dispatch source path is unchanged and legacy handlers remain present
+./.omo/evidence/world-model-physics-instrumentation/task-10-independent-verification.txt:39:DoneClaim hashes all match current files.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/green-source-probes.sh:157:    version_path.read_text(encoding="utf-8") == "m_EditorVersion: 2019.4.41f2\nm_EditorVersionWithRevision: 2019.4.41f2 (6b23d448b533)\n",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/green-source-probes.sh:158:    "Unity ProjectVersion.txt is exactly 2019.4.41f2 revision 6b23d448b533",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/green-source-probes.sh:170:    "request 38/62 dispatch source path is unchanged and legacy handlers remain present",
+./.omo/evidence/world-model-physics-instrumentation/task-3-evidence.txt:3:Runtime: Unity 2019.4.41f2 (6b23d448b533)
+./.omo/evidence/world-model-physics-instrumentation/task-10-done-claim.json:2:  "DoneClaim": {
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/continuation-notepad.md:6:2. Verify each lane produced a nonempty DoneClaim and cleanup receipt.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/continuation-notepad.md:11:7. Publish the exact verified archive and run real request 62/38/70 smoke.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/continuation-notepad.md:18:- Published happy path: exact staged player invocation must decode request 62, execute request 38, and return one request-70 state plus seven events with exactly one `bird_launched`; PASS only if the captured smoke JSON records all observables and protected roots are byte-unchanged.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/continuation-notepad.md:20:- Determinism/regression: two builds at one final source commit must have identical archive SHA-256 and legacy request 38/62 tests must pass; PASS only with captured hashes and test logs.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/continuation-notepad.md:42:- Verifier lane complete: `verifier/DoneClaim.json` parses with `status=done`; evidence records 15 intended RED failures, two focused GREEN runs, 12 full-module tests, real staged verification, malformed-path and wrong-SHA rejection, Oracle pass, and `verifier/cleanup-receipt.json`.
+./.omo/evidence/world-model-physics-instrumentation/task-3-done-claim.json:3:  "event": "DoneClaim",
+./.omo/evidence/world-model-physics-instrumentation/task-3-done-claim.json:6:  "editor": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+./.omo/evidence/world-model-physics-instrumentation/task-3-done-claim.json:7:  "editor_version": "2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier/DoneClaim.json:27:    "real_static_verifier": "PASS against sciencebirdsgames/physics-v1; archive SHA 1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/independent-verification.json:31:    "editorRevision": "2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/independent-verification.json:60:    "Correct Unity 2019.4.41f2 revision and requested EditMode filter observed.",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier/08-wrong-sha-probe.txt:1:Command: copied sciencebirdsgames/physics-v1 to a temporary stage, replaced the receipt digest with 64 zeroes, ran the real verifier, then removed the copy.
+./.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/debug-journal.md:4:Goal: Make two exact Unity 2019.4.41f2 staged-player builds byte-identical without touching protected or shared product state.
+./.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/debug-journal.md:8:- Runtime: Unity 2019.4.41f2 (6b23d448b533), pinned Linux editor SHA-256 `32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150`.
+./.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/debug-journal.md:22:- [ ] Preserve this evidence directory and final machine-readable DoneClaim; never stage `.omo`.
+./.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/debug-journal.md:42:- 2026-08-06 pinned editor check: `sha256sum $HOME/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity` -> `32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150` (exit 0).
+./.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/debug-journal.md:64:- Unity import artifact SHA-256 `a55e7860f156c76c46d68589b002755ea3cfa1d0b46f25d33dd3b18039a2bdda`; observables: `Initialize engine version: 2019.4.41f2 (6b23d448b533)`, `Batchmode quit successfully invoked`, `Exiting batchmode successfully now`, and no compiler error matches.
+./.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/debug-journal.md:82:- Build 1 command: `timeout --signal=TERM --kill-after=30s 900s env NOVPHY_PHYSICS_STAGE="$PWD/.../build-1-stage" ./scripts/build_physics_player.sh` -> exit `0`; Unity log initialized exact `2019.4.41f2 (6b23d448b533)` and exited batch mode successfully.
+./.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/debug-journal.md:100:- Final validation commands: `python -m json.tool` for DoneClaim, cleanup receipt, and reproducibility receipt all exit `0`; machine assertions for `done`, exact commit, equal archives, all three reproducibility comparisons, and all three protected comparisons exit `0`.
+./.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/debug-journal.md:101:- Final evidence SHA-256: DoneClaim `1ec3b8a1c4879318d85741303884be381d80f59cc407a97ee7afafaee73b56bf`; cleanup receipt `ece3c9c510ac458e4dd6bfd72e139a7f569991d4955e7f24f483afeb113a387f`; reproducibility receipt `46eb703a15477df43b096c2891ae37dccef7dcc681bb409d6195408db90fe86c`.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs-independent/independent-verification.json:6:  "desiredOutcome": "Valid legacy callers remain wire compatible, malformed responses fail closed, and docs verification requires one consistent DoneClaim/receipt/smoke/staged-receipt/archive chain.",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs-independent/independent-verification.json:22:  "checkedArtifacts": [".omo/plans/world-model-physics-instrumentation.md", ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs/done-claim.json", ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs/cleanup-receipt.json", "src/webui/bridge.py", "tests/test_webui_bridge.py", "scripts/verify_physics_capture_docs.py", "tests/test_verify_physics_capture_docs.py", "docs/data_contracts/physics_capture_v1.md", ".omo/evidence/world-model-physics-instrumentation/final-published-runtime/done-claim.json", ".omo/evidence/world-model-physics-instrumentation/final-published-runtime/publication-receipt.json", ".omo/evidence/world-model-physics-instrumentation/final-published-runtime/published-smoke.json", "sciencebirdsgames/physics-v1/archive.sha256", "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz"],
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs-independent/independent-verification.json:33:  "adversarialMatrix": {"oversized_request_38_count": "rejected before loop/read; typed; disconnected", "oversized_request_62_payload": "rejected before body read; typed; disconnected", "truncated_or_malformed_legacy": "typed with cause; disconnected", "valid_legacy_bytes": "unchanged framing and decode", "stale_state": "pending DoneClaim rejected", "dirty_worktree": "trackedProductClean=false claim rejected; ambient dirty review tree not represented as commit binding", "malformed_input": "malformed DoneClaim, receipt, and smoke rejected", "misleading_success_output": "accepted/complete smoke with wrong provenance or shot rejected", "historical_stale_evidence": "ignored for current final publication", "changed_archive_bytes": "rejected"},
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier/07-malformed-path-probe.txt:1:Command: copied sciencebirdsgames/physics-v1 to a temporary stage, changed archive.sha256 filename to ../novphy-physics-player-2019.4.41f2.tar.gz, ran the real verifier, then removed the copy.
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier/07-malformed-path-probe.txt:3:Diagnostic: unsafe archive checksum path: ../novphy-physics-player-2019.4.41f2.tar.gz
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/package-independent/independent-verification.json:6:  "originalIntent": "Make F1/F2 physics-player packaging failure-atomic and bind every build-affecting embedded payload input to clean, reproducible provenance while retaining the exact Unity 2019.4.41f2 build behavior.",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/package-independent/independent-verification.json:100:      "observation": "Unity version 2019.4.41f2, changeset 6b23d448b533, pinned executable SHA-256, build method, output naming, wrapper invocation flags, and payload transform behavior are retained."
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier/06-real-static-verifier.json:2:  "command": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --skip-runtime",
+./.omo/evidence/world-model-physics-instrumentation/task-2-command-transcript.txt:87:  Downloaded exact official Unity 2019.4.41f2 archive from changeset 6b23d448b533 to a resumable `.part` path.
+./.omo/evidence/world-model-physics-instrumentation/task-2-command-transcript.txt:89:  Extracted privately under `/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor` without host package/linker changes.
+./.omo/evidence/world-model-physics-instrumentation/task-2-command-transcript.txt:90:  Result: executable SHA-256 32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150; bounded `-version` exit 0; exact identity `2019.4.41f2 (6b23d448b533)`.
+./.omo/evidence/world-model-physics-instrumentation/task-2-command-transcript.txt:93:  Command: timeout --signal=TERM --kill-after=20s 120s env DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 LD_LIBRARY_PATH=<private OpenSSL/GConf paths plus existing value> <exact Unity 2019.4.41f2> -batchmode -nographics -quit -logFile /tmp/opencode/unity-2019.4.41f2-license-probe.raw.log
+./.omo/evidence/world-model-physics-instrumentation/task-2-command-transcript.txt:96:  Evidence: task-2-license-probe-2019.4.41f2.safe.log; SHA-256 fc9afc03b36b6a9805eb4518e6d60bcf8b81cc945a851fc863ed066435b98d0e.
+./.omo/evidence/world-model-physics-instrumentation/task-2-command-transcript.txt:101:  Command: timeout --signal=TERM --kill-after=20s 120s env DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 LD_LIBRARY_PATH=<exact private OpenSSL/GConf paths> <exact Unity 2019.4.41f2> -batchmode -nographics -quit -logFile /tmp/opencode/unity-2019.4.41f2-license-probe-refresh-2.raw.log
+./.omo/evidence/world-model-physics-instrumentation/task-2-command-transcript.txt:104:  Evidence: task-2-license-probe-2019.4.41f2-refresh-2.safe.log; SHA-256 d133a2e4376c3ad72d9e168d35b786bb5490dae125a7ceeaba41597363f7df08.
+./.omo/evidence/world-model-physics-instrumentation/task-2-command-transcript.txt:110:- Ran exactly one bounded no-project licensing probe with exact `2019.4.41f2`, private compatibility environment, and an absolute private raw log. H1 passed: live IPC, entitlement refresh, assigned non-Pro license current/valid/activated, no activation error. Raw log/private directory removed after sanitized retention.
+./.omo/evidence/world-model-physics-instrumentation/task-2-done-claim-verification-2026-08-05.json:11:      "observable": "DoneClaim complete, test summary PASS, exact/repeated parity true"
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier-independent/independent-verification.json:24:    ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier/DoneClaim.json",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier-independent/independent-verification.json:36:    "sciencebirdsgames/physics-v1/archive.sha256",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier-independent/independent-verification.json:37:    "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz"
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier-independent/independent-verification.json:61:      "command": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --skip-runtime",
+./.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier-independent/independent-verification.json:71:      "command": "tar -xOf sciencebirdsgames/physics-v1/*.tar.gz provenance.json | jq .",
+./.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json:13:    "target_editor": "2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json:25:    "url": "https://download.unity3d.com/download_unity/6b23d448b533/LinuxEditorInstaller/Unity-2019.4.41f2.tar.xz",
+./.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json:29:    "local_path": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/Unity-2019.4.41f2.tar.xz",
+./.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json:34:    "path": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+./.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json:36:    "reported_identity": "2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json:71:      "task-2-license-probe-2019.4.41f2.safe.log",
+./.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json:72:      "task-2-license-probe-2019.4.41f2-refresh-2.safe.log",
+./.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json:90:    "editor_identity": {"path": "/home/sukai/.local/state/novphy-unity-migration/physics-unity-2019.4/editor-2019.4.41f2-version.stdout-stderr.log", "sha256": "f744e09da0620a2d479e472037a33e063f09d2a29063305a6abf258792ab7801"},
+./.omo/evidence/world-model-physics-instrumentation/task-2-test-summary-2026-08-05.json:3:  "editor": "Unity 2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/task-2-editor-identity.json:4:  "requested_version": "2019.4.41f2",
+./.omo/evidence/world-model-physics-instrumentation/task-2-editor-identity.json:6:  "reported_identity": "2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/task-2-editor-identity.json:11:  "stdout_log": "/home/sukai/.local/state/novphy-unity-migration/physics-unity-2019.4/editor-2019.4.41f2-version.stdout-stderr.log",
+./.omo/evidence/world-model-physics-instrumentation/task-2-done-claim.json:2:  "claim_type": "DoneClaim",
+./.omo/evidence/world-model-physics-instrumentation/task-2-done-claim.json:5:  "scope": "Unity 2019.4.41f2 isolated migration stage through exact import and EditMode acceptance gates",
+./.omo/evidence/world-model-physics-instrumentation/task-2-done-claim.json:51:    "reported": "2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/task-2-done-claim.json:70:      "task-2-license-probe-2019.4.41f2.safe.log",
+./.omo/evidence/world-model-physics-instrumentation/task-2-done-claim.json:71:      "task-2-license-probe-2019.4.41f2-refresh-2.safe.log",
+./.omo/evidence/world-model-physics-instrumentation/task-2-license-probe-2026-08-05.json:7:    "version": "2019.4.41f2",
+./.omo/evidence/world-model-physics-instrumentation/task-2-license-probe-2026-08-05.json:9:    "binary": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+./.omo/evidence/world-model-physics-instrumentation/task-2-done-claim-independent-qa-2026-08-05.json:10:    "git status --short --untracked-files=all and exact comparison with DoneClaim changed_product_files",
+./.omo/evidence/world-model-physics-instrumentation/task-2-done-claim-independent-qa-2026-08-05.json:22:      "observed": "All product paths reported by git status exactly match the 20 DoneClaim changed_product_files; unrelated .omo notepad changes remain separate."
+./.omo/evidence/world-model-physics-instrumentation/task-2-done-claim-independent-qa-2026-08-05.json:30:      "observed": "Import log reaches completed reload/Refresh and script compilation with LogAssemblyErrors 0ms; no compiler error marker; target ProjectVersion declares 2019.4.41f2 (6b23d448b533)."
+./.omo/evidence/world-model-physics-instrumentation/task-2-cleanup-receipt.json:17:    "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/Unity-2019.4.41f2.tar.xz",
+./.omo/evidence/world-model-physics-instrumentation/task-2-cleanup-receipt.json:18:    "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor",
+./.omo/evidence/world-model-physics-instrumentation/task-2-cleanup-receipt.json:29:    "task-2-license-probe-2019.4.41f2.safe.log",
+./.omo/evidence/world-model-physics-instrumentation/task-2-cleanup-receipt.json:30:    "task-2-license-probe-2019.4.41f2-refresh-2.safe.log",
+./.omo/evidence/world-model-physics-instrumentation/task-2-migration-diff.txt:41:+m_EditorVersion: 2019.4.41f2
+./.omo/evidence/world-model-physics-instrumentation/task-2-migration-diff.txt:42:+m_EditorVersionWithRevision: 2019.4.41f2 (6b23d448b533)
+./.omo/evidence/world-model-physics-instrumentation/task-3-independent-final-qa-2026-08-05.json:11:    "path": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+./.omo/evidence/world-model-physics-instrumentation/task-3-independent-final-qa-2026-08-05.json:12:    "version_from_logs": "2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/task-3-independent-final-qa-2026-08-05.json:17:    "timeout --signal=TERM --kill-after=20s 480s env LD_LIBRARY_PATH=/tmp/opencode/unity-2019.4-libssl1.1/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity -batchmode -nographics -projectPath /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer -runTests -testPlatform EditMode -testFilter PhysicsShotRecorderTests -testResults /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-3-physics.xml -logFile /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-3-physics.log",
+./.omo/evidence/world-model-physics-instrumentation/task-3-independent-final-qa-2026-08-05.json:18:    "timeout --signal=TERM --kill-after=20s 480s env LD_LIBRARY_PATH=/tmp/opencode/unity-2019.4-libssl1.1/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity -batchmode -nographics -projectPath /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer -runTests -testPlatform EditMode -testFilter PhysicsShotRecorderTests -testResults /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-3-physics-repeat.xml -logFile /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-3-physics-repeat.log",
+./.omo/evidence/world-model-physics-instrumentation/task-4-cleanup-receipt.json:22:    "real_local_tcp": "passed request 70 PNG/frame check",
+./.omo/evidence/world-model-physics-instrumentation/task-4-done-claim.json:3:  "event": "DoneClaim",
+./.omo/evidence/world-model-physics-instrumentation/task-4-done-claim.json:29:    "editor": "2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/task-2-license-probe-2026-08-05-debug-journal.md:5:Goal: Execute exactly one bounded no-project Unity 2019.4.41f2 licensing probe after the user-authorized Hub Personal activation transition, decide from sanitized runtime evidence, and stop before project import.
+./.omo/evidence/world-model-physics-instrumentation/task-2-license-probe-2026-08-05-debug-journal.md:9:- Runtime: exact retained native Unity Editor `2019.4.41f2 (6b23d448b533)`.
+./.omo/evidence/world-model-physics-instrumentation/task-2-license-probe-2026-08-05-debug-journal.md:10:- Entry: `/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity -batchmode -nographics -quit -logFile <absolute-private-raw-log>`.
+./.omo/evidence/world-model-physics-instrumentation/task-2-license-probe-2026-08-05-debug-journal.md:47:- Newly authorized isolated import used only the migration project with exact `2019.4.41f2`; import log contains no compiler error.
+./.omo/evidence/world-model-physics-instrumentation/task-3-independent-qa-2026-08-05.json:6:  "surface": "Unity 2019.4.41f2 EditMode recorder implementation, callback wiring, and retained test evidence",
+./.omo/evidence/world-model-physics-instrumentation/task-3-independent-qa-2026-08-05.json:35:    "editor": "Unity 2019.4.41f2 (6b23d448b533)",
+./.omo/evidence/world-model-physics-instrumentation/task-3-independent-qa-2026-08-05.json:131:    "stale_state": "FAIL: final DoneClaim is internally stale (focused_editmode says 8 tests while final-proof XML has 9), and the requested task-3-physics.xml remains absent after bounded full-suite attempts.",
+./.omo/evidence/world-model-physics-instrumentation/task-4-independent-qa-2026-08-05.json:32:    "legacy_request_38_62": {"status": "pass", "detail": "RequestCode preserves 38 and 62; rerun fixture preserved !B + five signed int32 request 38 and !B request 62 framing/fixture suffix."},
+./.omo/evidence/world-model-physics-instrumentation/task-4-bridge.txt:6:- Existing request 38 framing remains !B + five signed 32-bit integers.
+./.omo/evidence/world-model-physics-instrumentation/task-4-bridge.txt:7:- Existing request 62 framing remains !B with a length-prefixed JSON response;
+./.omo/evidence/world-model-physics-instrumentation/task-4-bridge.txt:9:- Unity keeps the existing WebSocket handlers unchanged and exposes request 70
+./.omo/evidence/world-model-physics-instrumentation/task-4-bridge.txt:43:Editor: Unity 2019.4.41f2 (6b23d448b533)
+./.omo/evidence/world-model-physics-instrumentation/task-4-bridge.txt:56:Command: Unity 2019.4.41f2 focused PhysicsCaptureProtocolTests with absolute testResults task-4-fix-green-3.xml and log.
+./.omo/evidence/world-model-physics-instrumentation/task-6-postclaim2-verification.txt:6:done_claim=DoneClaim verified todo-6-opt-in-physics-launcher
+[0m
+The exact HEAD matches `b0f312612af00d91295738bca8d4b77566308495`. Preflight is already disqualifying: tracked `tests/test_prepare_rollout_dataset.py` is dirty, exactly the non-product test path named in your stop condition; I’m reading the full governing plan now, then I will record the rejection and stop without invoking Unity, packaging, publication, or smoke tests.
+[0m$ [0mgit diff -- tests/test_prepare_rollout_dataset.py .omo/plans/world-model-physics-instrumentation.md
+diff --git a/.omo/plans/world-model-physics-instrumentation.md b/.omo/plans/world-model-physics-instrumentation.md
+index 4f0f8d3..9295a66 100644
+--- a/.omo/plans/world-model-physics-instrumentation.md
++++ b/.omo/plans/world-model-physics-instrumentation.md
+@@ -101,7 +101,7 @@ Wave 1 establishes the contract and engine exporter. Wave 2 adds transport, coll
+   QA scenarios (name the exact tool + invocation): happy: `python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_prepare_rollout_dataset.PhysicsCaptureValidationTests -v`; failure: run their interrupted-write and corrupt-sidecar cases. Evidence `.omo/evidence/world-model-physics-instrumentation/task-5-artifacts.txt`.
+   Commit: Y | `feat(collector): persist validated physics supervision sidecars`
+ 
+-- [ ] 6. Add opt-in launcher controls and staged-player provenance without touching the active cohort.
++- [x] 6. Add opt-in launcher controls and staged-player provenance without touching the active cohort.
+   What to do / Must NOT do: Extend `scripts/collect_full_rollout_training_dataset.sh` and `scripts/prepare_rollout_dataset.py` with a documented `PHYSICS_CAPTURE_V1=1`/CLI equivalent that requires an explicit staged enriched-player directory or archive, an output root different from the active cohort, and a fresh `physics_capture_v1` contract in the plan artifact. Propagate the flag and immutable player archive SHA-256 to every worker-local copy; fail before collection if the staged player/version/protocol smoke marker is absent. Preserve current defaults, train/dev behavior, locks, `RESUME`, and worker cloning; an unset flag must generate byte-equivalent normal collection commands. Do not add test-split collection or mutate source player assets.
+   Parallelization: Wave 2 | Blocked by: 1, 4, 5 | Blocks: 7, 8.
+   References (executor has NO interview context - be exhaustive): `scripts/collect_full_rollout_training_dataset.sh:25-64,151-251,325-340`; `scripts/prepare_rollout_dataset.py:468-528,549-605,616-733`; `.omo/ulw-research/20260727-223250/wave-2-binary-parity-and-physics.md`.
+@@ -145,7 +145,7 @@ Wave 1 establishes the contract and engine exporter. Wave 2 adds transport, coll
+ > Runs in parallel after ALL todos. ALL must APPROVE. Surface results and wait for the user's explicit okay before declaring complete.
+ - [ ] F1. Plan compliance audit
+   Verify every todo's outputs, guardrails, schema fields, test receipts, commit boundaries, and dependency order against this plan; reject missing sidecar/temporal/provenance proof. Evidence `.omo/evidence/world-model-physics-instrumentation/f1-plan-compliance.txt`.
+-- [ ] F2. Code quality review
++- [x] F2. Code quality review
+   Review Unity/C#/Python/shell changes for legacy protocol compatibility, bounded-memory behavior, atomic artifact lifecycle, deterministic ordering, and 2019.3 API compatibility. Evidence `.omo/evidence/world-model-physics-instrumentation/f2-code-quality.txt`.
+ - [ ] F3. Real manual QA
+   Execute task 8's dedicated staged-player smoke flow plus legacy request 62 interaction and inspect machine-produced output only; verify the active cohort/player checksums did not change. Evidence `.omo/evidence/world-model-physics-instrumentation/f3-live-qa.json`.
+diff --git a/tests/test_prepare_rollout_dataset.py b/tests/test_prepare_rollout_dataset.py
+index c1da46b..7e8fcc8 100644
+--- a/tests/test_prepare_rollout_dataset.py
++++ b/tests/test_prepare_rollout_dataset.py
+@@ -726,13 +726,14 @@ class PhysicsLauncherTests(unittest.TestCase):
+         marker.write_text(
+             json.dumps(
+                 {
+-                    "capture_contract": "physics_capture_v1",
+-                    "status": "passed",
+-                    "player_version": "2019.4.41f2-physics-v1",
+-                    "protocol_version": 1,
+-                    "player_sha256": "a" * 64,
+-                    "protocol_sha256": "b" * 64,
+-                    "archive_sha256": archive_sha256,
++                    "status": "accepted",
++                    "accepted_shot": "shot_001",
++                    "protected_unchanged": True,
++                    "provenance": {
++                        "player_sha256": "a" * 64,
++                        "protocol_sha256": "b" * 64,
++                        "archive_sha256": archive_sha256,
++                    },
+                 }
+             ),
+             encoding="utf-8",
+@@ -763,9 +764,9 @@ class PhysicsLauncherTests(unittest.TestCase):
+             failed = json.loads(marker.read_text(encoding="utf-8"))
+             failed["status"] = "failed"
+             marker.write_text(json.dumps(failed), encoding="utf-8")
+-            with self.assertRaisesRegex(ValueError, "status=passed"):
++            with self.assertRaisesRegex(ValueError, "status=accepted"):
+                 resolve_physics_capture_provenance(archive, marker)
+-            marker.write_text(json.dumps({**failed, "status": "passed"}), encoding="utf-8")
++            marker.write_text(json.dumps({**failed, "status": "accepted"}), encoding="utf-8")
+             marker_time = marker.stat().st_mtime_ns
+             os.utime(archive, ns=(marker_time + 1, marker_time + 1))
+             with self.assertRaisesRegex(ValueError, "stale"):
+@@ -773,10 +774,8 @@ class PhysicsLauncherTests(unittest.TestCase):
+ 
+     def test_physics_provenance_rejects_failed_malformed_stale_and_wrong_version_markers(self):
+         mutations = {
+-            "failed": lambda archive, marker: marker.write_text(marker.read_text(encoding="utf-8").replace('"passed"', '"failed"'), encoding="utf-8"),
++            "failed": lambda archive, marker: marker.write_text(marker.read_text(encoding="utf-8").replace('"accepted"', '"failed"'), encoding="utf-8"),
+             "malformed": lambda archive, marker: marker.write_text("{", encoding="utf-8"),
+-            "wrong player version": lambda archive, marker: marker.write_text(marker.read_text(encoding="utf-8").replace("2019.4.41f2-physics-v1", "2019.4.41f2-physics-v0"), encoding="utf-8"),
+-            "wrong protocol": lambda archive, marker: marker.write_text(marker.read_text(encoding="utf-8").replace('"protocol_version": 1', '"protocol_version": 2'), encoding="utf-8"),
+             "uppercase digest": lambda archive, marker: marker.write_text(marker.read_text(encoding="utf-8").replace('"player_sha256": "a', '"player_sha256": "A'), encoding="utf-8"),
+             "stale": lambda archive, marker: os.utime(marker, ns=(archive.stat().st_atime_ns, archive.stat().st_mtime_ns - 1)),
+         }
+@@ -788,6 +787,16 @@ class PhysicsLauncherTests(unittest.TestCase):
+                 with self.assertRaisesRegex(ValueError, "physics smoke marker|stale"):
+                     resolve_physics_capture_provenance(archive, marker)
+ 
++    def test_physics_provenance_accepts_the_documented_smoke_report_shape(self):
++        with tempfile.TemporaryDirectory() as temporary:
++            archive, marker, archive_sha256 = self._provenance(Path(temporary))
++
++            provenance = resolve_physics_capture_provenance(archive, marker)
++
++            self.assertEqual(provenance.archive_sha256, archive_sha256)
++            self.assertEqual(provenance.player_sha256, "a" * 64)
++            self.assertEqual(provenance.protocol_sha256, "b" * 64)
++
+     def test_physics_cli_rejects_non_directory_stage_before_plan_write(self):
+         with tempfile.TemporaryDirectory() as temporary:
+             root = Path(temporary)
+[0m
+[0m$ [0mgit diff --name-only --diff-filter=ACMRTUXB -- tasks sciencebirdsgames src scripts tests | sort
+tests/test_prepare_rollout_dataset.py
+[0m
+[0m→ [0mRead .omo/plans/world-model-physics-instrumentation.md[90m [limit=2000][0m
+The full plan confirms Todo 7 requires a pinned Unity build only after prior gates, while your explicit preflight rule is stricter and mandates stopping on this dirty non-product test. I will create only a new rejection evidence directory with the preflight log, cleanup receipt, and `DoneClaim` marked `needs-fix`; no source, production player, dataset, existing `.omo` artifact, or publication path will be changed.
+[0m
+[0m# [0mTodos
+[✓] Repository and plan: verify exact HEAD and read full release plan - confirm scope and preflight rules
+[ ] Evidence stages: run two exact Unity builds with private library path - produce isolated logs, receipts, and archives
+[ ] Artifact verification: compare archives and payloads byte-for-byte - validate provenance and receipts
+[ ] Publication: atomically publish only sciencebirdsgames/physics-v1 - preserve publication receipt and hashes
+[ ] Post-publication checks: run verifier compatibility request 70 and fresh smoke - record all logs and outcomes
+[•] DoneClaim: write exact SHA and archive hash or needs-fix - make no commits
+[0m
+[0m$ [0mls .omo/evidence/world-model-physics-instrumentation
+__pycache__
+atomic-source-commits-cleanup-receipt.json
+atomic-source-commits.json
+canonical-smoke-marker-repair
+deterministic-build-repair
+deterministic-build-repair-task.md
+deterministic-unity-build-repair
+deterministic-unity-build-repair-independent
+f1-accepted-shot-audit.log
+f1-accepted-shot-fields.txt
+f1-accepted-shot-shape.log
+f1-action-checksum-repair-verification.log
+f1-collection-command-bash-n.log
+f1-contract-data.txt
+f1-contract-doc-observables.txt
+f1-contract-guardrails-cleanup.json
+f1-contract-guardrails-postclaim-verification.json
+f1-contract-guardrails.json
+f1-contract-tests.log
+f1-criteria-audit-manual-reader.exit
+f1-criteria-audit-manual-reader.log
+f1-criteria-audit-stop-hook2.exit
+f1-criteria-audit-stop-hook2.log
+f1-criteria-audit-stop-hook3.exit
+f1-criteria-audit-stop-hook3.log
+f1-criteria-audit-todo10-contract-run1.exit
+f1-criteria-audit-todo10-contract-run1.log
+f1-criteria-audit-todo10-contract-run2.exit
+f1-criteria-audit-todo10-contract-run2.log
+f1-criteria-audit-todo10-supervision-run1.exit
+f1-criteria-audit-todo10-supervision-run1.log
+f1-criteria-audit-todo10-supervision-run2.exit
+f1-criteria-audit-todo10-supervision-run2.log
+f1-criteria-audit.json
+f1-current-audit
+f1-current-criterion-compliance.json
+f1-diff-check.log
+f1-doc-verifier.log
+f1-evidence-audit.txt
+f1-evidence-integrity-cleanup-receipt.json
+f1-evidence-integrity-independent.json
+f1-evidence-inventory-cleanup.json
+f1-evidence-inventory.json
+f1-final-dependency-status.json
+f1-final-json-parse.log
+f1-fix-contract-error.json
+f1-forbidden-scope-scan.log
+f1-generated-artifact-audit.log
+f1-guardrail-audit.txt
+f1-hook2-artifact-check.log
+f1-hook2-doc-verifier.log
+f1-hook2-json-parse.log
+f1-hook3-adversarial-tests.log
+f1-hook3-doc-verifier.log
+f1-hook3-json-parse.log
+f1-hook3-verification.json
+f1-json-parse.log
+f1-legacy-protocol-tests.log
+f1-outputs-audit.txt
+f1-plan-compliance-cleanup-receipt.json
+f1-plan-compliance-independent.json
+f1-plan-compliance-live-blocker-rerun-2.json
+f1-plan-compliance-live-blocker-rerun-2.log
+f1-plan-compliance-live-blocker-rerun-3.json
+f1-plan-compliance-live-blocker-rerun-3.log
+f1-plan-compliance-live-blocker-rerun.json
+f1-plan-compliance-live-blocker-rerun.log
+f1-plan-compliance-reaudit-cleanup.json
+f1-plan-compliance-reaudit.json
+f1-plan-compliance-reaudit.log
+f1-plan-compliance.txt
+f1-postclaim-artifact-check.log
+f1-postclaim-doc-verifier.log
+f1-postclaim-json-parse.log
+f1-postclaim-regression-tests.log
+f1-promotion-command-bash-n.log
+f1-protocol-optin-observables.txt
+f1-rollback-command-bash-n.log
+f1-schema-smoke-diagnosis.log
+f1-schema-smoke.log
+f1-scope-guardrails-cleanup-receipt.json
+f1-scope-guardrails-independent.json
+f1-shell-syntax-rerun.log
+f1-shell-syntax.log
+f1-source-observables.txt
+f1-subagent-stop-checksums.exit
+f1-subagent-stop-checksums.log
+f1-subagent-stop-direct-verification-v2.json
+f1-subagent-stop-direct-verification.exit
+f1-subagent-stop-direct-verification.json
+f1-subagent-stop-focused.exit
+f1-subagent-stop-focused.log
+f1-subagent-stop-v2-bridge.exit
+f1-subagent-stop-v2-bridge.log
+f1-subagent-stop-v2-contract.exit
+f1-subagent-stop-v2-contract.log
+f1-subagent-stop-v2-docs.exit
+f1-subagent-stop-v2-docs.log
+f1-subagent-stop-v2-persistence_launcher.exit
+f1-subagent-stop-v2-persistence_launcher.log
+f1-subagent-stop-v2-reader.exit
+f1-subagent-stop-v2-reader.log
+f1-supervision-tests.log
+f1-ultraqa-na.log
+f1-worktree-paths.log
+f2-b2-b3-reproduction
+f2-b6-marker-repro
+f2-blocker-repair
+f2-blocker-repair-cleanup.json
+f2-blocker-repair-done-claim.json
+f2-blocker-repair-postclaim-verification.json
+f2-blocker-repair-stop-hook-2.json
+f2-blocker-repair-stop-hook-3.json
+f2-bound-sidecars-dirty-worktree.log
+f2-bound-sidecars-focused-run1.log
+f2-bound-sidecars-focused-run2.log
+f2-bound-sidecars-hash-probe.log
+f2-bound-sidecars-probe.log
+f2-bound-sidecars-recheck.json
+f2-bound-sidecars-static-read-order.log
+f2-bound-sidecars-timeout.log
+f2-bound-sidecars-validation-run.log
+f2-cleanup-receipt.json
+f2-code-quality-cleanup-receipt.log
+f2-code-quality-current-robustness.log
+f2-code-quality-diff-check.log
+f2-code-quality-focused-run1.log
+f2-code-quality-focused-run2.log
+f2-code-quality-focused-tests-1.log
+f2-code-quality-focused-tests-2.log
+f2-code-quality-manual-qa.json
+f2-code-quality-pycompile.log
+f2-code-quality-reaudit.json
+f2-code-quality-recovery-edge.json
+f2-code-quality-shell.log
+f2-code-quality.txt
+f2-collector-adjacent.log
+f2-collector-full.log
+f2-collector-manual-qa.log
+f2-collector-manual-qa.py
+f2-collector-persistence-focused-final.log
+f2-collector-persistence-focused-final2.log
+f2-collector-persistence-focused.log
+f2-collector-pycompile.log
+f2-collector-remediation-green-initial.log
+f2-collector-remediation-red.log
+f2-diff-check.log
+f2-done-claim.json
+f2-double-collect.log
+f2-evidence-inventory.log
+f2-final-focused.log
+f2-final-independent-verification.json
+f2-final-remediation
+f2-final-state-transition.json
+f2-focused-tests-run1.log
+f2-focused-tests-run2.log
+f2-helper-status.log
+f2-independent-quality-lane.json
+f2-known-dataset-recheck.log
+f2-missing-fixture-head-match.log
+f2-missing-fixture-proof.log
+f2-no-excuse.log
+f2-pacing-collector-full.log
+f2-pacing-collector-serialized.log
+f2-pacing-debug-marker-scan.log
+f2-pacing-diff-check.log
+f2-pacing-direct-focused.log
+f2-pacing-direct-green.log
+f2-pacing-direct-probe.log
+f2-pacing-direct-verification.json
+f2-pacing-done-claim.json
+f2-pacing-focused-final-1.log
+f2-pacing-focused-final-2.log
+f2-pacing-legacy-38-62.log
+f2-pacing-loc.log
+f2-pacing-prepare-full.log
+f2-pacing-pycompile.log
+f2-pacing-regression-green.log
+f2-pacing-regression-red.log
+f2-pacing-repair
+f2-pacing-repair-verification.json
+f2-pacing-serialized-after.sha256
+f2-pacing-serialized-before.sha256
+f2-path-and-recovery-tests.log
+f2-physics-launcher.log
+f2-prepare-full.log
+f2-pure-loc.log
+f2-python-quality-reaudit
+f2-release-blockers-adjacent-final.log
+f2-release-blockers-adjacent-release.log
+f2-release-blockers-adjacent-run1.log
+f2-release-blockers-boundary-green.log
+f2-release-blockers-child-symlink-red.log
+f2-release-blockers-collector-release-final.log
+f2-release-blockers-collector-release.log
+f2-release-blockers-collector-run1.log
+f2-release-blockers-exception-traceback-red.log
+f2-release-blockers-final-adjacent.log
+f2-release-blockers-final-cleanup-receipt.json
+f2-release-blockers-final-diff-check.log
+f2-release-blockers-final-done-claim.json
+f2-release-blockers-final-focused-run1.log
+f2-release-blockers-final-focused-run2.log
+f2-release-blockers-final-launcher.log
+f2-release-blockers-final-live-multiframe.log
+f2-release-blockers-final-pycompile.log
+f2-release-blockers-final-source-hashes.sha256
+f2-release-blockers-focused-final-run1.log
+f2-release-blockers-focused-final-run2.log
+f2-release-blockers-focused-release-run1.log
+f2-release-blockers-focused-release-run2.log
+f2-release-blockers-focused-run1.log
+f2-release-blockers-green-final-targeted.log
+f2-release-blockers-green.log
+f2-release-blockers-green2.log
+f2-release-blockers-independent-verification.json
+f2-release-blockers-launcher-compat-green.log
+f2-release-blockers-live-multiframe-final.log
+f2-release-blockers-live-multiframe-pass.log
+f2-release-blockers-live-multiframe.log
+f2-release-blockers-real-decoder-green.log
+f2-release-blockers-real-decoder-red.log
+f2-release-blockers-red.log
+f2-release-blockers-routing-green.log
+f2-release-blockers-stop-hook3-static.log
+f2-release-blockers-stop-hook3-targeted.log
+f2-release-blockers-stop-hook3-verification.json
+f2-release-final-independent-unity.log
+f2-release-final-independent-unity.xml
+f2-release-final-independent-verification.json
+f2-remediation-cleanup.json
+f2-remediation-cleanup.log
+f2-remediation-collector-suite-final.log
+f2-remediation-collector-suite.log
+f2-remediation-debug-journal.md
+f2-remediation-diff-check-final.log
+f2-remediation-diff-check.log
+f2-remediation-done-claim.json
+f2-remediation-evidence-inventory-final.log
+f2-remediation-evidence-inventory.log
+f2-remediation-independent-code-review.json
+f2-remediation-independent-runtime
+f2-remediation-known-fixture-gap.log
+f2-remediation-no-excuse-tools.log
+f2-remediation-nondirectory-frames-green.log
+f2-remediation-prepare-suite-final.log
+f2-remediation-prepare-suite.log
+f2-remediation-process-cleanup-final.log
+f2-remediation-pycompile-final.log
+f2-remediation-pycompile-final2.log
+f2-remediation-pycompile.log
+f2-remediation-python-final-run1.log
+f2-remediation-python-final-run2.log
+f2-remediation-python-final2-run1.log
+f2-remediation-python-final2-run2.log
+f2-remediation-python-focused-run1.log
+f2-remediation-python-focused-run2.log
+f2-remediation-python-focused-run3.log
+f2-remediation-python-focused-run4.log
+f2-remediation-python-focused-run5.log
+f2-remediation-python-focused-run6.log
+f2-remediation-python-green-run1.log
+f2-remediation-python-red.log
+f2-remediation-request-38-62-final.log
+f2-remediation-request-38-62.log
+f2-remediation-toctou-cleanup-final.log
+f2-remediation-toctou-cleanup-receipt.json
+f2-remediation-toctou-cleanup.log
+f2-remediation-toctou-collect-rollouts.log
+f2-remediation-toctou-diff-check.log
+f2-remediation-toctou-done-claim.json
+f2-remediation-toctou-final-cleanup.log
+f2-remediation-toctou-final-collect-rollouts.log
+f2-remediation-toctou-final-diff-check.log
+f2-remediation-toctou-final-focused-run1.log
+f2-remediation-toctou-final-focused-run2.log
+f2-remediation-toctou-final-hashes.log
+f2-remediation-toctou-final-pycompile.log
+f2-remediation-toctou-focused-run1.log
+f2-remediation-toctou-focused-run2.log
+f2-remediation-toctou-focused-run3.log
+f2-remediation-toctou-green-post-offset.log
+f2-remediation-toctou-green.log
+f2-remediation-toctou-hashes.log
+f2-remediation-toctou-independent-manual.log
+f2-remediation-toctou-independent-verification.json
+f2-remediation-toctou-json-parse.log
+f2-remediation-toctou-missing-fixture.log
+f2-remediation-toctou-post-refactor-cleanup.log
+f2-remediation-toctou-post-refactor-collect.log
+f2-remediation-toctou-post-refactor-diff-check.log
+f2-remediation-toctou-post-refactor-focused-run1.log
+f2-remediation-toctou-post-refactor-focused-run2.log
+f2-remediation-toctou-post-refactor-hashes.log
+f2-remediation-toctou-post-refactor-prepare-green.log
+f2-remediation-toctou-post-refactor-prepare.log
+f2-remediation-toctou-post-refactor-pycompile.log
+f2-remediation-toctou-post-refactor-race.log
+f2-remediation-toctou-post-refactor-resume.log
+f2-remediation-toctou-prepare-dataset.log
+f2-remediation-toctou-pycompile.log
+f2-remediation-toctou-red.log
+f2-remediation-unity-final-run1.log
+f2-remediation-unity-final-run1.xml
+f2-remediation-unity-final-run2.log
+f2-remediation-unity-final-run2.xml
+f2-remediation-unity-fixture-run1.log
+f2-remediation-unity-fixture-run1.xml
+f2-remediation-unity-fixture-run2.log
+f2-remediation-unity-fixture-run2.xml
+f2-remediation-unity-green-run1.log
+f2-remediation-unity-green-run1.xml
+f2-remediation-unity-legacy.log
+f2-remediation-unity-legacy.xml
+f2-remediation-unity-red.log
+f2-remediation-unity-red.xml
+f2-resume-atomic-audit.json
+f2-resume-atomic-cleanup.json
+f2-resume-atomic-probe.json
+f2-resume-atomic-probe.py
+f2-resume-audit-cont
+f2-review-quality
+f2-robustness-cleanup.json
+f2-robustness-focused-corrected-run1.log
+f2-robustness-focused-corrected-run2.log
+f2-robustness-focused-run1.log
+f2-robustness-focused-run2.log
+f2-robustness-independent.json
+f2-robustness-probe.log
+f2-robustness-probe.py
+f2-robustness-shell-syntax.log
+f2-runtime-data-cleanup.json
+f2-runtime-data-cleanup.log
+f2-runtime-data-corrected-rerun.log
+f2-runtime-data-independent.json
+f2-runtime-data-manual-qa.log
+f2-runtime-data-status.log
+f2-runtime-data-tests.log
+f2-socket-inflight-independent.log
+f2-source-remediation
+f2-stop-hook2-cleanup-final.log
+f2-stop-hook2-cleanup.log
+f2-stop-hook2-collector.log
+f2-stop-hook2-direct-verification.json
+f2-stop-hook2-focused.log
+f2-stop-hook2-hashes.log
+f2-stop-hook2-prepare.log
+f2-stop-hook2-state-check.log
+f2-stop-hook2-static.log
+f2-stop-hook2-toctou.log
+f2-timeout-probe.log
+f2-unity-socket-cleanup-receipt.json
+f2-unity-socket-done-claim.json
+f2-unity-socket-editmode-all.log
+f2-unity-socket-editmode-partition-receipt.json
+f2-unity-socket-fixture-abgame-world-lifecycle.log
+f2-unity-socket-fixture-abgame-world-lifecycle.xml
+f2-unity-socket-fixture-legacy-ground-truth.log
+f2-unity-socket-fixture-legacy-ground-truth.xml
+f2-unity-socket-fixture-physical-entity-registry.log
+f2-unity-socket-fixture-physical-entity-registry.xml
+f2-unity-socket-fixture-physical-shot-recorder.log
+f2-unity-socket-fixture-physical-shot-recorder.xml
+f2-unity-socket-fixture-physical-snapshot-exporter.log
+f2-unity-socket-fixture-physical-snapshot-exporter.xml
+f2-unity-socket-fixture-physics-shot-recorder.log
+f2-unity-socket-fixture-physics-shot-recorder.xml
+f2-unity-socket-fixture-protocol.log
+f2-unity-socket-fixture-protocol.xml
+f2-unity-socket-focused-1.log
+f2-unity-socket-focused-1.xml
+f2-unity-socket-focused-2.log
+f2-unity-socket-focused-2.xml
+f2-unity-socket-manual-qa.md
+f2-unity-socket-red.log
+f2-unity-socket-red.xml
+f2-unity-socket-stop-verification-2.json
+f2-unity-socket-stop-verification-2.log
+f2-unity-socket-stop-verification-2.xml
+f2-unity-socket-stop-verification-3.json
+f2-unity-socket-stop-verification-3.log
+f2-unity-socket-stop-verification-3.xml
+f2-unity-socket-stop-verification.json
+f2-unity-socket-stop-verification.log
+f2-unity-socket-stop-verification.xml
+f2-validator-extract
+f3-action-probe
+f3-execute-now
+f3-final-live-qa.json
+f3-final-retry
+f3-final-run
+f3-live-qa.json
+f3-paused-for-provenance-cleanup.json
+f3-paused-stop-hook-direct-verification.json
+f3-paused-stop-hook-third-verification.json
+f3-run
+f4-scope.txt
+final-archive-rebuild
+final-gates-55d6ec93
+final-published-runtime
+final-published-runtime-independent
+final-wave-exact
+final-wave-exact-final-worker.log
+manual-qa-json-invariants.log
+manual-qa-legacy-tests.log
+manual-qa-negative-sha.log
+manual-qa-provenance.log
+manual-qa-shot-validator.log
+manual-qa-smoke-tests.log
+provenance-stability-repair-characterization.log
+provenance-stability-repair-diff-check.log
+provenance-stability-repair-docs-cli.log
+provenance-stability-repair-done-claim.json
+provenance-stability-repair-final-tests.log
+provenance-stability-repair-green-focused.log
+provenance-stability-repair-independent-verification.json
+provenance-stability-repair-manual-cli-tests.log
+provenance-stability-repair-manual-qa.log
+provenance-stability-repair-post-commit-docs.log
+provenance-stability-repair-post-commit-static.log
+provenance-stability-repair-post-commit-tests.log
+provenance-stability-repair-red.log
+provenance-stability-repair-remaining-status.txt
+provenance-stability-repair-static.log
+provenance-stability-repair-stop-direct.log
+provenance-stability-repair-stop-verification-2.json
+provenance-stability-repair-stop-verification-2.log
+provenance-stability-repair-stop-verification-3.json
+provenance-stability-repair-stop-verification-3.log
+provenance-stability-repair-stop-verification.json
+stale
+t4-review-lanes
+task-1-contract.txt
+task-10-adjacent-validator.log
+task-10-baseline-rgb.log
+task-10-done-claim.json
+task-10-full-data.log
+task-10-green-1.log
+task-10-green-2.log
+task-10-ignored-hashes.txt
+task-10-independent-verdict.json
+task-10-independent-verification-2.txt
+task-10-independent-verification-3.txt
+task-10-independent-verification.txt
+task-10-loader.txt
+task-10-manual-qa.txt
+task-10-no-excuse-final.txt
+task-10-no-excuse.txt
+task-10-pycompile.log
+task-10-recorder-action-done-claim.json
+task-10-red.log
+task-2-bounded-activation-probe-2026-08-05.json
+task-2-bounded-activation-probe-2026-08-05.safe.log
+task-2-bounded-activation-probe-verification-2-2026-08-05.json
+task-2-bounded-activation-probe-verification-2026-08-05.json
+task-2-bounded-activation-probe-verification-3-2026-08-05.json
+task-2-canonical-project-after.tsv
+task-2-canonical-project-before.tsv
+task-2-cleanup-receipt.json
+task-2-command-transcript.txt
+task-2-debug-journal.md
+task-2-done-claim-independent-qa-2026-08-05.json
+task-2-done-claim-verbatim-audit-2026-08-05.txt
+task-2-done-claim-verification-2026-08-05.json
+task-2-done-claim.json
+task-2-editor-identity.json
+task-2-evidence-sha256.txt
+task-2-import.log
+task-2-legacy-parity.json
+task-2-libssl-compatibility.json
+task-2-license-probe-2.safe.log
+task-2-license-probe-2019.4.41f2-refresh-2.safe.log
+task-2-license-probe-2019.4.41f2.safe.log
+task-2-license-probe-2026-08-05-debug-journal.md
+task-2-license-probe-2026-08-05.json
+task-2-license-probe-2026-08-05.safe.log
+task-2-license-probe-force-free.safe.log
+task-2-license-probe-remote-desktop.safe.log
+task-2-license-probe.safe.log
+task-2-migration-diff.txt
+task-2-migration-provenance.json
+task-2-originals-unchanged.json
+task-2-overlay-manifest.tsv
+task-2-overlay-paths.txt
+task-2-production-player-after.tsv
+task-2-production-player-before.tsv
+task-2-stage-after.tsv
+task-2-stage-before.tsv
+task-2-stage-staged.tsv
+task-2-test-summary-2026-08-05.json
+task-2-unity-focused-1.log
+task-2-unity-focused-1.xml
+task-2-unity-focused-2.log
+task-2-unity-focused-2.xml
+task-2-unity.log
+task-2-unity.xml
+task-2-unityhub-boundary.json
+task-3-all-final.log
+task-3-all.log
+task-3-baseline.log
+task-3-canonical-after.tsv
+task-3-canonical-project-after.tsv
+task-3-cleanup-receipt.json
+task-3-clock-ordering-failing-first.log
+task-3-clock-ordering-failing-first.xml
+task-3-contract-failing-first.log
+task-3-contract-green-probe.log
+task-3-contract-green-probe.xml
+task-3-done-claim.json
+task-3-evidence.txt
+task-3-executor-final-receipt-2026-08-05.json
+task-3-failing-first.log
+task-3-focused-1.log
+task-3-focused-2.log
+task-3-focused-3.log
+task-3-focused-final-2.log
+task-3-focused-final-2.xml
+task-3-focused-final-proof.log
+task-3-focused-final-proof.xml
+task-3-focused-final.log
+task-3-focused-final.xml
+task-3-focused-postwire.log
+task-3-focused-postwire.xml
+task-3-focused-repeat-1.log
+task-3-focused-repeat-1.xml
+task-3-focused-repeat-2.log
+task-3-focused-repeat-2.xml
+task-3-fresh-qa.log
+task-3-independent-confirmed-final-2026-08-05.json
+task-3-independent-confirmed-v2-run-1.log
+task-3-independent-confirmed-v2-run-1.xml
+task-3-independent-final-qa-2026-08-05.json
+task-3-independent-qa-2026-08-05.json
+task-3-physics-repeat.log
+task-3-physics-repeat.xml
+task-3-physics.log
+task-3-physics.xml
+task-3-player-after.tsv
+task-3-post-stop-independent-verification.json
+task-3-production-player-after.tsv
+task-3-refresh.log
+task-3-semantic-failing-first.log
+task-3-semantic-failing-first.xml
+task-3-stop-hook-direct-verification-2026-08-05.json
+task-3-stop-hook-run-1.log
+task-3-stop-hook-run-1.xml
+task-3-stop-hook-run-2.log
+task-3-stop-hook-run-2.xml
+task-3-todo2-parity.log
+task-4-allocation-order-final.txt
+task-4-bridge.txt
+task-4-canonical-project-final.tsv
+task-4-cleanup-final.json
+task-4-cleanup-receipt.json
+task-4-done-claim-final-v2.json
+task-4-done-claim-final.json
+task-4-done-claim.json
+task-4-failing-first.txt
+task-4-final-green-1.log
+task-4-final-green-1.xml
+task-4-final-green-2.log
+task-4-final-green-2.xml
+task-4-final-green-3.log
+task-4-final-green-3.xml
+task-4-final-green-4.log
+task-4-final-green-4.xml
+task-4-fix-failing-first.log
+task-4-fix-green-1.log
+task-4-fix-green-1.xml
+task-4-fix-green-2.log
+task-4-fix-green-2.xml
+task-4-fix-green-3.log
+task-4-fix-green-3.xml
+task-4-independent-confirmed-2026-08-05.json
+task-4-independent-confirmed-final-2026-08-05.json
+task-4-independent-qa-2026-08-05.json
+task-4-production-player-final.tsv
+task-4-python-final.txt
+task-4-real-tcp-final.json
+task-4-secret-scan-final.txt
+task-4-stop-hook-direct-verification-v2.json
+task-4-stop-hook-direct-verification-v3.json
+task-4-stop-hook-v2-real-tcp.py
+task-4-unity.log
+task-4-unity.xml
+task-4-v2-baseline.txt
+task-4-v2-cleanup.json
+task-4-v2-failing-first.txt
+task-4-v2-independent-confirmed.json
+task-4-v2-python-final.txt
+task-4-v2-real-tcp.json
+task-4-v2-secret-scan.txt
+task-5-active-dataset-manifest.sha256
+task-5-active-dataset-status.txt
+task-5-adjacent-contract-v2.log
+task-5-adjacent-contract-v3.log
+task-5-adjacent-contract-v4.log
+task-5-artifacts.txt
+task-5-changed-files.txt
+task-5-cleanup-receipt.json
+task-5-compileall-v2.log
+task-5-compileall-v3.log
+task-5-compileall-v4.log
+task-5-data-overlay-final-v2.sha256
+task-5-data-overlay-final.txt
+task-5-data-overlay-hash-verification.txt
+task-5-done-claim-v2.json
+task-5-done-claim.json
+task-5-failed-qa-cleanup-v2.json
+task-5-failing-first.log
+task-5-final-focused-repeat-v3.log
+task-5-final-focused-v2.log
+task-5-final-focused-v3.log
+task-5-final-focused-v4.log
+task-5-final-focused.log
+task-5-final-prepare.log
+task-5-focused-green.log
+task-5-full-collect-v2.log
+task-5-full-collect-v3.log
+task-5-full-prepare-v2.log
+task-5-full-prepare-v3.log
+task-5-full-prepare-v4.log
+task-5-green-1.log
+task-5-green-2.log
+task-5-independent-adjacent-rerun.log
+task-5-independent-focused-rerun.log
+task-5-independent-manual-qa.json
+task-5-independent-overlay.sha256
+task-5-independent-process-scan.txt
+task-5-independent-temp-scan.txt
+task-5-independent-verdict.json
+task-5-legacy-baseline.log
+task-5-manual-qa-v2.json
+task-5-manual-qa-v2.py
+task-5-manual-qa.json
+task-5-no-excuse-scan-v2.txt
+task-5-no-excuse-scan.txt
+task-5-predicate-green.log
+task-5-process-scan-v2.txt
+task-5-process-scan.txt
+task-5-protected-baselines.sha256
+task-5-repair-red.log
+task-5-secret-scan-v2.txt
+task-5-secret-scan.txt
+task-5-stop-direct-verdict-v2.json
+task-5-stop-direct-verification-v2.txt
+task-5-stop-evidence-integrity-v3.json
+task-5-stop-evidence-integrity-v3.txt
+task-5-stop-manual-assertions-v2.json
+task-5-stop-manual-exit-v2.txt
+task-5-stop-manual-qa-v2.json
+task-5-stop-protected-manifests-v2.txt
+task-5-stop-protected-v2.txt
+task-5-stop-reverify-adjacent.log
+task-5-stop-reverify-focused.log
+task-5-stop-reverify-manual.json
+task-5-stop-reverify-overlay.sha256
+task-5-stop-reverify-summary.txt
+task-5-stop-reverify-temp-scan.txt
+task-5-stop-reverify-verdict.json
+task-5-temp-scan-v2.txt
+task-5-temp-scan.txt
+task-5-third-stop-full-collect.log
+task-5-third-stop-full-prepare.log
+task-5-third-stop-protected-data-boundary.txt
+task-5-third-stop-suite-summary.txt
+task-5-third-stop-verdict.json
+task-5-tool-availability-v2.txt
+task-5-v2-accepted-shot-inspection.json
+task-5-v2-adjacent-tests.log
+task-5-v2-cleanup-receipt.json
+task-5-v2-dirty-worktree.txt
+task-5-v2-exact-tests.log
+task-5-v2-independent-verdict.json
+task-5-v2-product-hashes.txt
+task-5-v2-qa-executor.json
+task-5-v2-quarantine-inspection.json
+task-5-v2-test-command-results.json
+task-5-v2-tmp-cleanup-inspection.json
+task-6-active-root-after.sha256
+task-6-adjacent-final.log
+task-6-adjacent.log
+task-6-affected-green.log
+task-6-baseline.log
+task-6-bash-n-final.log
+task-6-bash-n.log
+task-6-cleanup-receipt.final.json
+task-6-cleanup-receipt.json
+task-6-compile.log
+task-6-default-command-baseline.txt
+task-6-diff-check-final.log
+task-6-diff-check.log
+task-6-dirty-worktree-after.txt
+task-6-done-claim.json
+task-6-evidence-sha256.txt
+task-6-failing-first.log
+task-6-focused-1.log
+task-6-focused-2.log
+task-6-focused-final.log
+task-6-focused-green.log
+task-6-generated-temp-root.txt
+task-6-green.log
+task-6-launcher.txt
+task-6-manual-help.stderr
+task-6-manual-help.stdout
+task-6-manual-launcher.stderr
+task-6-manual-launcher.stdout
+task-6-manual-prepare.json
+task-6-manual-temp-root.txt
+task-6-postclaim-affected.log
+task-6-postclaim-cleanup.txt
+task-6-postclaim-compile.log
+task-6-postclaim-evidence.sha256
+task-6-postclaim-focused.log
+task-6-postclaim-shell.log
+task-6-postclaim-verification.sha256
+task-6-postclaim-verification.txt
+task-6-postclaim2-affected.log
+task-6-postclaim2-compile.log
+task-6-postclaim2-diff.log
+task-6-postclaim2-focused.log
+task-6-postclaim2-shell.log
+task-6-postclaim2-verification.sha256
+task-6-postclaim2-verification.txt
+task-6-postclaim3-checksum.log
+task-6-postclaim3-claim.log
+task-6-postclaim3-focused.log
+task-6-postclaim3-verification.sha256
+task-6-postclaim3-verification.txt
+task-6-prepare-final.log
+task-6-protected.json.txt
+task-6-protected.stderr
+task-6-protected.stdout
+task-6-pycompile-final.log
+task-6-pycompile.log
+task-6-real-surface.json
+task-6-real-surface.txt
+task-6-red.log
+task-6-shell-syntax.log
+task-6-source-player-after.sha256
+task-6-stop-hook-2-bash-n.log
+task-6-stop-hook-2-diff-check.log
+task-6-stop-hook-2-focused.log
+task-6-stop-hook-2-pycompile.log
+task-6-stop-hook-3-bash-n.log
+task-6-stop-hook-3-diff-check.log
+task-6-stop-hook-3-focused.log
+task-6-stop-hook-3-pycompile.log
+task-6-stop-hook-bash-n.log
+task-6-stop-hook-focused.log
+task-6-stop-hook-pycompile.log
+task-6-stop-hook-verification-2.txt
+task-6-stop-hook-verification-3.txt
+task-6-stop-hook-verification.txt
+task-7-active-root-after.tsv
+task-7-active-root-before.tsv
+task-7-baseline.log
+task-7-bird-green.log
+task-7-bird-green.xml
+task-7-bird-red.log
+task-7-bird-red.xml
+task-7-build.txt
+task-7-canonical-after.tsv
+task-7-canonical-before.tsv
+task-7-cleanup-receipt.json
+task-7-done-claim.json
+task-7-evidence-sha256.txt
+task-7-evidence-verify.txt
+task-7-failing-first.log
+task-7-final-assembly-temp.txt
+task-7-final-bridge-tests.exit
+task-7-final-bridge-tests.log
+task-7-final-build.log
+task-7-final-canonical-current.tsv
+task-7-final-client.log
+task-7-final-debug-journal.md
+task-7-final-done-claim.json
+task-7-final-evidence-audit.log
+task-7-final-exporter.exit
+task-7-final-exporter.log
+task-7-final-exporter.xml
+task-7-final-il-offset.txt
+task-7-final-independent-gate.json
+task-7-final-java.log
+task-7-final-lifecycle.exit
+task-7-final-lifecycle.log
+task-7-final-lifecycle.xml
+task-7-final-player-current.tsv
+task-7-final-player.log
+task-7-final-python.exit
+task-7-final-python.log
+task-7-final-quality-gates.txt
+task-7-final-runtime.exit
+task-7-final-runtime.json
+task-7-final-runtime.stderr
+task-7-final-static.exit
+task-7-final-static.json
+task-7-final-static.stderr
+task-7-final-stop-archive.sha256
+task-7-final-stop-static.log
+task-7-final-stop-verification.json
+task-7-final-stop-verification.sha256
+task-7-final-stop-wrong.stderr
+task-7-final-stop-wrong.stdout
+task-7-final-temp.txt
+task-7-final-wrong-sha.exit
+task-7-final-wrong-sha.stderr
+task-7-final-wrong-sha.stdout
+task-7-final2-build.log
+task-7-final2-runtime.exit
+task-7-final2-runtime.json
+task-7-final2-runtime.stderr
+task-7-final3-runtime.exit
+task-7-final3-runtime.json
+task-7-final3-runtime.stderr
+task-7-final4-runtime-report.json
+task-7-final4-runtime.exit
+task-7-final4-runtime.json
+task-7-final4-runtime.stderr
+task-7-independent-adversarial-verify.json
+task-7-independent-adversarial-verify.sha256
+task-7-independent-canonical-current.tsv
+task-7-independent-final-audit.txt
+task-7-independent-gate.json
+task-7-independent-production-current.tsv
+task-7-independent-static.stderr
+task-7-independent-static.stdout
+task-7-independent-wrong.stderr
+task-7-independent-wrong.stdout
+task-7-lifecycle-all.log
+task-7-lifecycle-build.log
+task-7-lifecycle-debug-journal.md
+task-7-lifecycle-done-claim.json
+task-7-lifecycle-green.log
+task-7-lifecycle-green.xml
+task-7-lifecycle-independent-verification.txt
+task-7-lifecycle-live-client-new.log
+task-7-lifecycle-live-client.log
+task-7-lifecycle-live-java-new.log
+task-7-lifecycle-live-java-new.pid
+task-7-lifecycle-live-java.log
+task-7-lifecycle-live-java.pid
+task-7-lifecycle-manual-temp-new.txt
+task-7-lifecycle-manual-temp.txt
+task-7-lifecycle-python-final.log
+task-7-lifecycle-python-tests.log
+task-7-lifecycle-red.log
+task-7-lifecycle-red.xml
+task-7-lifecycle-request70-client.log
+task-7-lifecycle-request70-java.log
+task-7-lifecycle-request70-java.pid
+task-7-lifecycle-request70-player-summary.log
+task-7-lifecycle-request70-temp.txt
+task-7-lifecycle-root-cause.log
+task-7-lifecycle-runtime.exit
+task-7-lifecycle-runtime.json
+task-7-lifecycle-runtime.stderr
+task-7-lifecycle-static.json
+task-7-lifecycle-static.stderr
+task-7-lifecycle-temp-roots.txt
+task-7-lifecycle-wrong-sha.exit
+task-7-lifecycle-wrong-sha.stderr
+task-7-lifecycle-wrong-sha.stdout
+task-7-live-client.log
+task-7-live-java.log
+task-7-live-player.log
+task-7-no-excuse.log
+task-7-player-after.tsv
+task-7-player-before.tsv
+task-7-port-cleanup.txt
+task-7-post-deletion-canonical-final.tsv
+task-7-post-deletion-canonical.tsv
+task-7-post-deletion-final-audit.json
+task-7-post-deletion-receipt.json
+task-7-process-cleanup.txt
+task-7-python-loc.txt
+task-7-runtime.json
+task-7-runtime.stderr
+task-7-static-final.json
+task-7-static-final.stderr
+task-7-stop-hook-2-hash.log
+task-7-stop-hook-2-static.log
+task-7-stop-hook-2-tests.log
+task-7-stop-hook-2-verdict.json
+task-7-stop-hook-3-hashes.log
+task-7-stop-hook-3-static.log
+task-7-stop-hook-3-tests.log
+task-7-stop-hook-3-verdict.json
+task-7-stop-hook-3-verdict.sha256
+task-7-stop-hook-3-wrong.stderr
+task-7-stop-hook-3-wrong.stdout
+task-7-stop-hook-final-audit.json
+task-7-stop-hook-final-canonical-current.tsv
+task-7-stop-hook-final-canonical.diff
+task-7-stop-hook-final-player-current.tsv
+task-7-stop-hook-final-protected-status.txt
+task-7-stop-hook-final-python.exit
+task-7-stop-hook-final-python.log
+task-7-stop-hook-final-runtime.exit
+task-7-stop-hook-final-runtime.json
+task-7-stop-hook-final-runtime.stderr
+task-7-stop-hook-final-runtime.transcript
+task-7-stop-hook-final-static.exit
+task-7-stop-hook-final-static.json
+task-7-stop-hook-final-static.stderr
+task-7-stop-hook-final-unity.exit
+task-7-stop-hook-final-unity.log
+task-7-stop-hook-final-unity.xml
+task-7-stop-hook-final-wrong-sha.exit
+task-7-stop-hook-final-wrong-sha.stderr
+task-7-stop-hook-final-wrong-sha.stdout
+task-7-stop-hook-recheck-canonical.tsv
+task-7-stop-hook-recheck-player.tsv
+task-7-stop-hook-recheck-python.exit
+task-7-stop-hook-recheck-python.log
+task-7-stop-hook-recheck-runtime.exit
+task-7-stop-hook-recheck-runtime.json
+task-7-stop-hook-recheck-runtime.stderr
+task-7-stop-hook-recheck-runtime.transcript
+task-7-stop-hook-recheck.json
+task-7-stop-hook-recheck3-audit.json
+task-7-stop-hook-recheck3-canonical.tsv
+task-7-stop-hook-recheck3-player.tsv
+task-7-stop-hook-recheck3-python.log
+task-7-stop-hook-recheck3-runtime.json
+task-7-stop-hook-recheck3-runtime.stderr
+task-7-stop-hook-recheck3-runtime.transcript
+task-7-stop-hook-verification.json
+task-7-stop-hook-verification.sha256
+task-7-symbolic-assembly-temp.txt
+task-7-symbolic-green.log
+task-7-symbolic-green.xml
+task-7-symbolic-il-offset.txt
+task-7-symbolic-red.log
+task-7-symbolic-red.xml
+task-7-symbolic-runtime-active-root-newer.txt
+task-7-symbolic-runtime-all-editmode-receipt.xml
+task-7-symbolic-runtime-all.log
+task-7-symbolic-runtime-canonical-current.tsv
+task-7-symbolic-runtime-canonical-newer.txt
+task-7-symbolic-runtime-diagnostic-build.log
+task-7-symbolic-runtime-diagnostic-client.log
+task-7-symbolic-runtime-diagnostic-java.log
+task-7-symbolic-runtime-diagnostic-player.log
+task-7-symbolic-runtime-diagnostic-temp.txt
+task-7-symbolic-runtime-done-claim.json
+task-7-symbolic-runtime-evidence-sha256.txt
+task-7-symbolic-runtime-exporter.log
+task-7-symbolic-runtime-exporter.xml
+task-7-symbolic-runtime-final-build.log
+task-7-symbolic-runtime-final-client.log
+task-7-symbolic-runtime-final-client.stderr
+task-7-symbolic-runtime-final-java.log
+task-7-symbolic-runtime-final-player.log
+task-7-symbolic-runtime-final-temp.txt
+task-7-symbolic-runtime-final-verification.json
+task-7-symbolic-runtime-green-1.log
+task-7-symbolic-runtime-green-1.xml
+task-7-symbolic-runtime-green-2.log
+task-7-symbolic-runtime-green-2.xml
+task-7-symbolic-runtime-part-lifecycle.log
+task-7-symbolic-runtime-part-lifecycle.xml
+task-7-symbolic-runtime-part-physical-shot.log
+task-7-symbolic-runtime-part-physical-shot.xml
+task-7-symbolic-runtime-part-protocol.log
+task-7-symbolic-runtime-part-protocol.xml
+task-7-symbolic-runtime-part-registry.log
+task-7-symbolic-runtime-part-registry.xml
+task-7-symbolic-runtime-part-shot.log
+task-7-symbolic-runtime-part-shot.xml
+task-7-symbolic-runtime-port-cleanup.txt
+task-7-symbolic-runtime-process-cleanup.txt
+task-7-symbolic-runtime-production-player-current.tsv
+task-7-symbolic-runtime-protected-proof.txt
+task-7-symbolic-runtime-red.log
+task-7-symbolic-runtime-red.xml
+task-7-symbolic-runtime-static.stderr
+task-7-symbolic-runtime-static.stdout
+task-7-symbolic-runtime-temp-cleanup.txt
+task-7-symbolic-runtime-wrong-sha.exit
+task-7-symbolic-runtime-wrong-sha.stderr
+task-7-symbolic-runtime-wrong-sha.stdout
+task-7-tests-final.log
+task-7-tests.log
+task-7-verification-admin-state.json
+task-7-verification-final-state.json
+task-7-verification-rerun-archive-sha256.txt
+task-7-verification-rerun-receipt.json
+task-7-verification-rerun-runtime-payload.json
+task-7-verification-rerun-runtime.exit
+task-7-verification-rerun-runtime.json
+task-7-verification-rerun-runtime.stderr
+task-7-verification-rerun-wrong-sha.exit
+task-7-verification-rerun-wrong-sha.stderr
+task-7-verification-rerun-wrong-sha.stdout
+task-7-verifier-import-red.exit
+task-7-verifier-import-red.log
+task-7-verifier-tests-green.exit
+task-7-verifier-tests-green.log
+task-7-wrong-sha.stderr
+task-7-wrong-sha.stdout
+task-8-accepted-artifact-audit.json
+task-8-accepted-shot
+task-8-action-baseline.json
+task-8-action-event-done-claim-audit.exit
+task-8-action-event-done-claim.json
+task-8-action-final-archive.exit
+task-8-action-final-archive.log
+task-8-action-final-cleanup.exit
+task-8-action-final-cleanup.log
+task-8-action-final-focused.exit
+task-8-action-final-focused.log
+task-8-action-final-protocol.exit
+task-8-action-final-protocol.log
+task-8-action-final-pycompile.exit
+task-8-action-final-pycompile.log
+task-8-action-final-quality.exit
+task-8-action-final-quality.log
+task-8-action-final-sha256.txt
+task-8-action-final-verification.exit
+task-8-action-final-verification.json
+task-8-action-green-final.exit
+task-8-action-green-final.log
+task-8-action-green-resource-final.exit
+task-8-action-green-resource-final.log
+task-8-action-green-streaming.log
+task-8-action-green.exit
+task-8-action-green.log
+task-8-action-live
+task-8-action-live-frame-mismatch.exit
+task-8-action-live-frame-mismatch.stderr
+task-8-action-live-frame-mismatch.stdout
+task-8-action-live-happy-validator.exit
+task-8-action-live-happy-validator.json
+task-8-action-live-happy.exit
+task-8-action-live-happy.stderr
+task-8-action-live-happy.stdout
+task-8-action-live-missing-sidecar.exit
+task-8-action-live-missing-sidecar.stderr
+task-8-action-live-missing-sidecar.stdout
+task-8-action-live-request-failure.exit
+task-8-action-live-request-failure.stderr
+task-8-action-live-request-failure.stdout
+task-8-action-probe-round2
+task-8-action-probe-round2-fast_after_readiness_wait.exit
+task-8-action-probe-round2-fast_after_readiness_wait.stderr
+task-8-action-probe-round2-fast_after_readiness_wait.stdout
+task-8-action-probe-round2-fast_delayed_capture.exit
+task-8-action-probe-round2-fast_delayed_capture.stderr
+task-8-action-probe-round2-fast_delayed_capture.stdout
+task-8-action-probe-round2-fast_immediate.exit
+task-8-action-probe-round2-fast_immediate.stderr
+task-8-action-probe-round2-fast_immediate.stdout
+task-8-action-probe-round2-gt_shoot.exit
+task-8-action-probe-round2-gt_shoot.stderr
+task-8-action-probe-round2-gt_shoot.stdout
+task-8-action-probe-round2-gt_shoot_terminal.exit
+task-8-action-probe-round2-gt_shoot_terminal.stderr
+task-8-action-probe-round2-gt_shoot_terminal.stdout
+task-8-action-probe-round2-safe_immediate.exit
+task-8-action-probe-round2-safe_immediate.stderr
+task-8-action-probe-round2-safe_immediate.stdout
+task-8-action-probe-round2.exit
+task-8-action-probe-round2.py
+task-8-action-probe-round2.stderr
+task-8-action-probe-round2.stdout
+task-8-action-quality-final.exit
+task-8-action-quality-final.log
+task-8-action-quality-streaming.log
+task-8-action-quality.log
+task-8-action-recorder-green.exit
+task-8-action-recorder-green.log
+task-8-action-recorder-red.exit
+task-8-action-recorder-red.log
+task-8-action-red.exit
+task-8-action-red.log
+task-8-active-data-after.stat
+task-8-active-data-before.stat
+task-8-active-nested-digest-streaming.exit
+task-8-active-nested-digest-streaming.log
+task-8-active-nested-digest-streaming.time
+task-8-active-nested-digest.exit
+task-8-active-nested-digest.log
+task-8-active-nested-digest.time
+task-8-canonical-after.sha256
+task-8-canonical-before.sha256
+task-8-cleanup-final.log
+task-8-cleanup-receipt.json
+task-8-contract-validator-final.exit
+task-8-contract-validator-final.log
+task-8-debug-journal.md
+task-8-debug-marker-scan.txt
+task-8-debug-round1-engine.log
+task-8-debug-round1-xvfb.log
+task-8-debug-round1.exit
+task-8-debug-round1.json
+task-8-debug-round1.log
+task-8-display-red.log
+task-8-done-claim-audit.txt
+task-8-done-claim.json
+task-8-editmode-all.log
+task-8-editmode-partition-receipt.json
+task-8-evidence.sha256
+task-8-final-audit.json
+task-8-focused-tests-final.log
+task-8-focused-tests-final2.exit
+task-8-focused-tests-final2.log
+task-8-focused-tests-green.log
+task-8-focused-tests-post-claim.exit
+task-8-focused-tests-post-claim.log
+task-8-focused-tests-xvnc-green.log
+task-8-focused-tests.log
+task-8-frame-mismatch-engine.log
+task-8-frame-mismatch-final.exit
+task-8-frame-mismatch-final.log
+task-8-frame-mismatch-output-root.txt
+task-8-frame-mismatch-report.json
+task-8-frame-mismatch-xvnc.log
+task-8-frame-mismatch.exit
+task-8-frame-mismatch.log
+task-8-happy-engine.log
+task-8-happy-final.exit
+task-8-happy-final.log
+task-8-happy-output-root.txt
+task-8-happy-success.exit
+task-8-happy-success.log
+task-8-happy-xvnc.log
+task-8-happy.log
+task-8-legacy-fixture.log
+task-8-legacy-fixture.xml
+task-8-lifecycle-fixture.log
+task-8-lifecycle-fixture.xml
+task-8-live-blocker-final.exit
+task-8-live-blocker-final.log
+task-8-live-blocker.exit
+task-8-live-blocker.log
+task-8-live-contract-blocker.json
+task-8-lock-cleanup.txt
+task-8-missing-sidecar-engine.log
+task-8-missing-sidecar-final.exit
+task-8-missing-sidecar-final.log
+task-8-missing-sidecar-output-root.txt
+task-8-missing-sidecar-report.json
+task-8-missing-sidecar-xvnc.log
+task-8-no-excuse-final.exit
+task-8-no-excuse-final.log
+task-8-physical-fixtures.log
+task-8-physical-fixtures.xml
+task-8-port-cleanup-final.txt
+task-8-port-cleanup.txt
+task-8-post-mark-direct-verification.json
+task-8-post-mark-focused.exit
+task-8-post-mark-focused.log
+task-8-process-cleanup-final.txt
+task-8-process-cleanup.txt
+task-8-production-after.sha256
+task-8-production-before.sha256
+task-8-protected-receipt.txt
+task-8-protocol-contract-fix-done-claim.json
+task-8-protocol-contract-green.log
+task-8-protocol-contract-green.xml
+task-8-protocol-contract-pin-final.log
+task-8-protocol-contract-pin-final.xml
+task-8-protocol-contract-pin.log
+task-8-protocol-contract-pin.xml
+task-8-protocol-contract-red.log
+task-8-protocol-contract-red.xml
+task-8-protocol-fixture.log
+task-8-protocol-fixture.xml
+task-8-protocol-toggle-green.log
+task-8-protocol-toggle-green.xml
+task-8-protocol-toggle-red.log
+task-8-protocol-toggle-red.xml
+task-8-pycompile-final.exit
+task-8-pycompile-final.log
+task-8-quality-0.exit
+task-8-quality-0.log
+task-8-quality-1.exit
+task-8-quality-1.log
+task-8-quality-2.exit
+task-8-quality-2.log
+task-8-quality-gates.log
+task-8-recovered-temp-roots
+task-8-request-failure-engine.log
+task-8-request-failure-final.exit
+task-8-request-failure-final.log
+task-8-request-failure-output-root.txt
+task-8-request-failure-report.json
+task-8-request-failure-xvnc.log
+task-8-runtime.exit
+task-8-runtime.json
+task-8-runtime.stderr
+task-8-scoped-status.txt
+task-8-shot-recorder-fixture.log
+task-8-shot-recorder-fixture.xml
+task-8-smoke.json
+task-8-stage-before.sha256
+task-8-stage-final.sha256
+task-8-stage-static.exit
+task-8-stage-static.json
+task-8-stage-static.stderr
+task-8-stop2-accepted-validator.json
+task-8-stop2-contract.exit
+task-8-stop2-contract.log
+task-8-stop2-direct-verification.json
+task-8-stop2-focused.exit
+task-8-stop2-focused.log
+task-8-stop3-accepted-shot
+task-8-stop3-accepted-shot.sha256
+task-8-stop3-accepted-validator.json
+task-8-stop3-cleanup.txt
+task-8-stop3-direct
+task-8-stop3-frame-mismatch-output-root.txt
+task-8-stop3-frame-mismatch.exit
+task-8-stop3-frame-mismatch.json
+task-8-stop3-frame-mismatch.log
+task-8-stop3-fresh-live-verification.json
+task-8-stop3-happy-output-root.txt
+task-8-stop3-happy.exit
+task-8-stop3-happy.json
+task-8-stop3-happy.log
+task-8-stop3-missing-sidecar-output-root.txt
+task-8-stop3-missing-sidecar.exit
+task-8-stop3-missing-sidecar.json
+task-8-stop3-missing-sidecar.log
+task-8-stop3-request-failure-output-root.txt
+task-8-stop3-request-failure.exit
+task-8-stop3-request-failure.json
+task-8-stop3-request-failure.log
+task-8-temp-cleanup.txt
+task-8-timeout-red.log
+task-8-writer-probe
+task-8-writer-probe.exit
+task-8-writer-probe.json
+task-8-writer-probe.stderr
+task-8-wrong-sha.exit
+task-8-wrong-sha.stderr
+task-8-wrong-sha.stdout
+task-8-xvfb-glxinfo.log
+task-8-xvfb-probe.log
+task-8-xvfb-xdpyinfo.log
+task-8-xvnc-probe.log
+task-8-xvnc-xdpyinfo.log
+task-9-cleanup-receipt.json
+task-9-docs.txt
+task-9-done-claim.json
+task-9-f2-cleanup-receipt.json
+task-9-f2-done-claim.json
+task-9-f2-stop-verification-3.json
+task-9-f2-stop-verification.json
+task-9-independent-adversarial-cleanup-receipt.json
+task-9-independent-adversarial-rerun.json
+task-9-independent-adversarial.json
+task-9-independent-quality-cleanup.json
+task-9-independent-quality-rerun.md
+task-9-independent-quality.md
+task-9-independent-verdict.json
+task-9-stop-verification-3.json
+task-9-stop-verification.json
+todo8-boundary-adversarial
+todo8-contract-adversarial
+todo8-live-adversarial
+verify-f2-collector.json
+verify-f2-docs-repair.json
+verify-f2-unity-socket-focused-2.log
+verify-f2-unity-socket-focused-2.xml
+verify-f2-unity-socket.json
+world-model-physics-instrumentation-manual-qa.md
+[0m
+[0m% [0mPatch 3 files
+The stop evidence is recorded under the requested final directory. No build or publication command ran; I’m doing a final integrity check now to confirm the `DoneClaim` parses, the stop receipt is coherent, HEAD remains exact, and no non-evidence product paths were changed by this wave.
+[0m
+[0m$ [0mpython -m json.tool .omo/evidence/world-model-physics-instrumentation/final-wave-exact-final/DoneClaim.json >/dev/null && python -m json.tool .omo/evidence/world-model-physics-instrumentation/final-wave-exact-final/cleanup-receipt.json >/dev/null
+(no output)
+[0m
+[0m$ [0msha256sum .omo/evidence/world-model-physics-instrumentation/final-wave-exact-final/preflight.log .omo/evidence/world-model-physics-instrumentation/final-wave-exact-final/cleanup-receipt.json .omo/evidence/world-model-physics-instrumentation/final-wave-exact-final/DoneClaim.json
+d78ed788991ff7a9369d1a0a58f4acc07d79c4dbfc3eabd45bdfe945d7802cc9  .omo/evidence/world-model-physics-instrumentation/final-wave-exact-final/preflight.log
+f57cae1c9efe4ddd518fa4df5b05c86a7c1f9afc64796d5531ca0dc0aafe964d  .omo/evidence/world-model-physics-instrumentation/final-wave-exact-final/cleanup-receipt.json
+b3f0918b23e0eae5f69a3883e13ec9c8d08f1a12e96ef754de746ae585f28b06  .omo/evidence/world-model-physics-instrumentation/final-wave-exact-final/DoneClaim.json
+[0m
+[0m$ [0mgit rev-parse HEAD && git status --short --untracked-files=all | rg '(^\s*[MADRCU?!]{1,2}\s+(tasks/|sciencebirdsgames/|src/|scripts/|tests/))|final-wave-exact-final'
+b0f312612af00d91295738bca8d4b77566308495
+ M tests/test_prepare_rollout_dataset.py
+?? .omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-worker.log
+?? .omo/evidence/world-model-physics-instrumentation/final-wave-exact-final/DoneClaim.json
+?? .omo/evidence/world-model-physics-instrumentation/final-wave-exact-final/cleanup-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/final-wave-exact-final/preflight.log
+?? sciencebirdsgames/physics-v1/archive.sha256
+?? sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz
+?? sciencebirdsgames/physics-v1/unity-build.log
+[0m
+[0m# [0mTodos
+[✓] Repository and plan: verify exact HEAD and read full release plan - confirm scope and preflight rules
+[ ] Evidence stages: run two exact Unity builds with private library path - produce isolated logs, receipts, and archives
+[ ] Artifact verification: compare archives and payloads byte-for-byte - validate provenance and receipts
+[ ] Publication: atomically publish only sciencebirdsgames/physics-v1 - preserve publication receipt and hashes
+[ ] Post-publication checks: run verifier compatibility request 70 and fresh smoke - record all logs and outcomes
+[✓] DoneClaim: write exact SHA and archive hash or needs-fix - make no commits
+[0m
+**Result**
+- Stopped before build preflight because `tests/test_prepare_rollout_dataset.py` is dirty.
+- Exact HEAD confirmed: `b0f312612af00d91295738bca8d4b77566308495`.
+- Full plan read: `.omo/plans/world-model-physics-instrumentation.md`.
+- No Unity builds, packaging, publication, verifier, compatibility checks, or smoke tests were run.
+- Existing canonical/product/dataset/`.omo` state was not modified by this final wave.
+- Wrote `needs-fix` `DoneClaim` and cleanup receipt under `.omo/evidence/world-model-physics-instrumentation/final-wave-exact-final/`.
+- No commits created. Archive SHA: unavailable because rebuild was not performed.

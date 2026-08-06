@@ -1,0 +1,59 @@
+Todo 7 executor receipt: BLOCKED at real protocol QA
+
+Build invocation:
+  ./scripts/build_physics_player.sh
+Observable:
+  exact Unity 2019.4.41f2 (6b23d448b533) batch build completed; archive emitted outside production.
+Artifacts:
+  sciencebirdsgames/physics-v1/unity-build.log
+  sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz
+  sciencebirdsgames/physics-v1/archive.sha256
+Archive SHA-256:
+  496dec89670c62923a4be1bae0eb7e5359a046fab4a6a73cd6ec8d40191847ca
+
+Static verification invocation:
+  python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --skip-runtime
+Observable:
+  archive_checksum_verified=true; payload_checksums_verified=true; temporary unpack clone cleaned.
+
+Failure invocation:
+  python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha deadbeef
+Observable:
+  exit 1; archive SHA-256 mismatch against --expect-sha.
+Artifact:
+  task-7-wrong-sha.stderr
+
+Real surface invocation:
+  DISPLAY=:10 python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1
+Observable:
+  built player launches; legacy configure returned (1,207,0), NEWTRAININGSET=9, level load reached PLAYING=5 in bounded manual trace. Request 62 timed out while Unity emitted repeated ABGameWorld.IsSlingshotBaseActive NullReferenceException. Request 70 direct socket accepted then closed without an envelope. Xvfb isolated display also cannot supply the Unity 2019.4 OpenGL core profile. Acceptance therefore FAILS and stage is not promoted.
+Artifacts:
+  task-7-runtime.stderr
+  task-7-live-client.log
+  task-7-live-player.log
+  task-7-live-java.log
+
+Tests:
+  python -m unittest tests.test_webui_bridge.PhysicsCaptureV1Tests.test_legacy_request_38_and_62_fixture_bytes_remain_unchanged tests.test_verify_physics_player -v
+Observable:
+  4/4 pass.
+Artifacts:
+  task-7-baseline.log
+  task-7-failing-first.log
+  task-7-tests.log
+  task-7-tests-final.log
+
+Protected paths:
+  canonical and production before/after per-file manifests compare equal.
+  active root was never passed to build/package/runtime commands. The attempted fresh all-file manifest is invalid because the live root grew during hashing; task-6's protected digest remains the last trusted baseline. No Todo 7 writes targeted that root.
+
+Adversarial:
+  malformed input: tampered payload manifest rejected.
+  stale_state: archive extracted to a fresh temporary clone each run.
+  dirty_worktree: provenance records HEAD plus dirty-status SHA-256.
+  hung_or_long_commands: build and runtime are bounded; runtime timeout fails closed.
+  flaky_tests: focused verifier passed repeatedly.
+  misleading_success_output: build exit was not accepted; real protocol QA failed the stage.
+  repeated_interruptions: deterministic package rebuilt from clean temporary payload.
+  cancel_resume: not applicable; each package build is atomic via temporary payload and final archive replacement.
+  prompt_injection: not applicable; no prompt/model input surface.

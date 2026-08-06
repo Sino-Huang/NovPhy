@@ -1,0 +1,25 @@
+{
+  "schema_version": "novphy_cleanup_receipt_v1",
+  "task": "todo-8-live-physics-smoke",
+  "reports_checked": [
+    ".omo/evidence/world-model-physics-instrumentation/task-8-smoke.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-report.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-report.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-8-request-failure-report.json"
+  ],
+  "protected_unchanged_all_runs": true,
+  "protected_receipt_modes": {
+    "canonical_project": "content_sha256",
+    "production_player": "content_sha256",
+    "active_data": "root_stat_bounded"
+  },
+  "canonical_project_sha256": "5c1ec096a2b329295646212ed091e1327a7687e22b599c8c339680adcee392e1",
+  "production_player_sha256": "ba826ba78013b95d2f89cae10f8ef1312aa2678df19620f02840a7ded1d54778",
+  "active_data_receipt": "stat:37:17372778534254502821:42:1784979238906231052:1784979238906231052",
+  "processes": "no owned Xvnc, Java interface, Unity player, or smoke Python process",
+  "ports": [2004, 52681, 38257, 47261, 36729, 32867, 49237, 36953, 48095],
+  "ports_listening": false,
+  "temporary_clones": "all four TemporaryDirectory clones absent",
+  "temporary_output_roots": "original /tmp paths absent; roots relocated intact to task-8-recovered-temp-roots for recoverable evidence retention",
+  "cleanup_artifact": ".omo/evidence/world-model-physics-instrumentation/task-8-cleanup-final.log"
+}

@@ -1,0 +1,60 @@
+{
+  "recommendation": "needs-fix",
+  "originalIntent": "Repair F1 publication provenance so ignored Unity package inputs are bound to the exact source commit and rebuilt archive, while preserving the Todo 7 requirement that the published staged player passes real legacy and physics-v1 protocol verification.",
+  "desiredOutcome": "The archive, receipt, provenance manifest, approved package-input digests, commit/tree, and required live verifier all agree for one exact rebuilt publication.",
+  "userOutcomeReview": "The static provenance repair is confirmed, but the exact required live verifier fails reproducibly with a timeout, so the published artifact does not yet satisfy the complete Todo 7 user-visible outcome.",
+  "exactBinding": {
+    "commit": "fdb1bd5e8c9677a3c4ef15d0b8ddec74d55d71a9",
+    "tree": "964a40fd02c0109224e854c984304d7bbc1bc731",
+    "archive": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+    "archiveSha256": "a056271134ff8ccb9ba2b790606b7e29cc3729fa2d16f3b26af37234eeafb63b",
+    "receiptArchiveSha256": "a056271134ff8ccb9ba2b790606b7e29cc3729fa2d16f3b26af37234eeafb63b",
+    "provenanceCommit": "fdb1bd5e8c9677a3c4ef15d0b8ddec74d55d71a9",
+    "provenanceTree": "964a40fd02c0109224e854c984304d7bbc1bc731",
+    "migrationProvenanceSha256": "56e02d9cd7e4cdeb6391ac558e5905a0045d266e9db728ed51438094519dd91d",
+    "packageInputs": {
+      "tasks/task_template_designer/Packages/manifest.json": "05677cc3199d5fff4aac54096877e795518487918e53810f477a228e5d1e28fb",
+      "tasks/task_template_designer/Packages/packages-lock.json": "3101c351984e6a73a1be7ad76d1a67c1b7638a6616554e50000b9672175ebe50"
+    }
+  },
+  "blockers": [
+    {
+      "violatedCriterion": "Todo7.acceptance.live_protocol_fixtures_and_QA_happy_path",
+      "observation": "The exact required invocation `python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1` exited 1 with `timed out` on two runs while ports 2004, 22004, and 29001 were free.",
+      "evidencePointer": ".omo/evidence/world-model-physics-instrumentation/f1-package-remediation/manual-verify.log; .omo/evidence/world-model-physics-instrumentation/f1-package-remediation/manual-verify.exit; .omo/evidence/world-model-physics-instrumentation/f1-package-remediation/manual-verify-run2.log; .omo/evidence/world-model-physics-instrumentation/f1-package-remediation/manual-verify-run2.exit"
+    }
+  ],
+  "adversarialMatrix": {
+    "stale_state": "PASS: preflight snapshot mismatch and approved-digest mismatch are rejected; focused stale-input test passed.",
+    "dirty_worktree": "PASS: package-input preflight passed with unrelated .omo dirtiness, and rejects tracked/untracked/ignored product-input dirtiness outside the exact approved pair.",
+    "malformed_input": "PASS: empty package-input JSON exited nonzero before stage creation; missing and extra ignored Unity package inputs are rejected.",
+    "hung_or_long_commands": "FAIL: the required live verifier terminated internally with `timed out` twice; outer commands were bounded to 120 seconds.",
+    "flaky_tests": "PASS for focused package/build tests (4/4); live verifier failure reproduced twice.",
+    "misleading_success_output": "PASS: prior success prose was not accepted; archive/provenance were parsed and live exit codes reproduced.",
+    "repeated_interruptions": "PASS: no interruption occurred; repeated clean invocations produced the same live failure.",
+    "cancel_resume": "N/A: these are one-shot package verification commands with no resumable state.",
+    "prompt_injection": "N/A: only repository paths, fixed CLI flags, JSON manifests, and local archive bytes are consumed."
+  },
+  "slopAndProgrammingReview": {
+    "directPass": "PASS with notes: no deletion-only, requested-removal-only, tautological, prose-pin, or implementation-mirroring tests in commit fdb1bd5; tests exercise observable rejection and manifest binding. The single CLI remains over 250 pure LOC but carries the skill-permitted self-contained CLI SIZE_OK rationale. No unnecessary extraction, parser, normalizer, dependency, or scope drift was added.",
+    "codeReviewCoverage": "The existing code review explicitly records remove-ai-slops/programming and overfit categories, but it reviews an older Unity protocol boundary rather than commit fdb1bd5. Direct gate review supplies current-commit coverage; this is an evidence note, not the live-gate blocker."
+  },
+  "checkedArtifacts": [
+    ".omo/plans/world-model-physics-instrumentation.md",
+    ".omo/start-work/ledger.jsonl",
+    "git commit fdb1bd5e8c9677a3c4ef15d0b8ddec74d55d71a9",
+    "sciencebirdsgames/physics-v1/archive.sha256",
+    "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+    "archive member provenance.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json",
+    ".omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-native/fdb1bd5e/cleanup-receipt.json",
+    ".omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-native/fdb1bd5e/reproducibility.json",
+    ".omo/evidence/world-model-physics-instrumentation-code-review.md",
+    ".omo/evidence/world-model-physics-instrumentation-gate-review.md"
+  ],
+  "exactEvidenceGaps": [
+    "No successful fresh execution of the plan-required live verifier exists from this gate run; both fresh exact invocations failed.",
+    "The existing code-review report is not bound to remediation commit fdb1bd5, although this gate performed the required direct current-diff skill pass."
+  ],
+  "cleanupReceipt": ".omo/evidence/world-model-physics-instrumentation/f1-package-remediation/cleanup-receipt.json"
+}

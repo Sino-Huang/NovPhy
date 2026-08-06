@@ -1,0 +1,90 @@
+{
+  "artifact_type": "DoneClaim",
+  "task": "F2 request-70 pacing repair",
+  "timestamp": "2026-08-06T03:43:32+10:00",
+  "result": "repair-complete-awaiting-independent-f2-verdict",
+  "root_cause": "The collector adapter exposed injected clock and sleeper dependencies but dropped them; persistence dispatched all request-70 calls in one immediate loop.",
+  "change": "Forward the existing clock and sleeper into persistence and wait against absolute monotonic deadlines before each frame request.",
+  "changed_file_hashes": {
+    "scripts/physics_rollout_persistence.py": "2eaaf1a24fe3071668df816b7a24678bd336ff982afd892f4c7c495c23f4be57",
+    "scripts/collect_rollouts.py": "31f179146d06387c30b61f4515152bae036f91c0d280855b5aca88ab7a3ea928",
+    "tests/test_collect_rollouts.py": "ab5c48a9ee96f2dbcf2b824df8f4a814800ee81bdbdff8bbc2485c1dead1c5f7"
+  },
+  "red_green": {
+    "test": "tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_physics_capture_requests_are_paced_at_target_fps",
+    "red": "exit 1; observed [0.0, 0.0], expected [0.0, 0.5]",
+    "red_artifact": ".omo/evidence/world-model-physics-instrumentation/f2-pacing-regression-red.log",
+    "green": "exit 0",
+    "green_artifact": ".omo/evidence/world-model-physics-instrumentation/f2-pacing-regression-green.log"
+  },
+  "manual_qa": {
+    "scenario": "fixture-backed two-frame capture at 2 fps with injected monotonic time",
+    "invocation": "python inline direct capture_physics_rollout pacing probe",
+    "exit_code": 0,
+    "binary_observable": {
+      "request_times": [0.0, 0.5],
+      "sleep_durations": [0.5],
+      "paced": true
+    },
+    "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-pacing-direct-green.log"
+  },
+  "verification": [
+    {
+      "scenario": "affected physics persistence, validator, contract, and bridge matrix",
+      "invocation": "python -m unittest PhysicsCapturePersistenceTests PhysicsCaptureValidationTests test_physics_capture_contract PhysicsCaptureV1Tests PhysicsCaptureV1MalformedEnvelopeTests -v",
+      "runs": 2,
+      "observable": "54/54 passed on each run",
+      "artifacts": [
+        ".omo/evidence/world-model-physics-instrumentation/f2-pacing-focused-final-1.log",
+        ".omo/evidence/world-model-physics-instrumentation/f2-pacing-focused-final-2.log"
+      ]
+    },
+    {
+      "scenario": "prepare/launcher compatibility",
+      "invocation": "python -m unittest tests.test_prepare_rollout_dataset -v",
+      "observable": "38/38 passed",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-pacing-prepare-full.log"
+    },
+    {
+      "scenario": "legacy request compatibility",
+      "invocation": "two request-38/request-62 bridge fixture tests",
+      "observable": "2/2 passed",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-pacing-legacy-38-62.log"
+    },
+    {
+      "scenario": "full collector module",
+      "invocation": "python -m unittest tests.test_collect_rollouts -v",
+      "observable": "81/82 passed; only the pre-declared absent ignored dataset fixture test failed; pacing passed in serialized hash-stable run",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-pacing-collector-serialized.log"
+    },
+    {
+      "scenario": "static checks",
+      "invocation": "py_compile; git diff --check; debug-marker scan",
+      "observable": "all exit 0; marker scan empty",
+      "artifacts": [
+        ".omo/evidence/world-model-physics-instrumentation/f2-pacing-pycompile.log",
+        ".omo/evidence/world-model-physics-instrumentation/f2-pacing-diff-check.log",
+        ".omo/evidence/world-model-physics-instrumentation/f2-pacing-debug-marker-scan.log"
+      ]
+    }
+  ],
+  "adversarial_classes": {
+    "malformed_input": "PASS in affected 54-test matrix",
+    "stale_state": "PASS in resume and artifact tests",
+    "dirty_worktree": "PASS: three scoped hashes remained stable through serialized full-module run",
+    "hung_or_long_commands": "PASS: all test commands used 180/240 second timeouts",
+    "flaky_tests": "PASS after serializing against shared-worktree writes; pacing passed in full module order",
+    "misleading_success_output": "PASS: first concurrent full-module pacing failure retained; final claim uses hash-stable serialized evidence",
+    "repeated_interruptions": "PASS in existing repeated temporary-attempt cleanup tests",
+    "cancel_resume": "PASS in existing valid-final reuse tests",
+    "prompt_injection": "not applicable: no prompt or model input"
+  },
+  "cleanup": {
+    "temporary_pacing_roots_absent": true,
+    "owned_processes_absent": true,
+    "ports_2004_9001_absent": true,
+    "debug_markers_absent": true
+  },
+  "known_environmental_gap": "The ignored data/novphy_rollouts_dataset fixture directories required by one legacy collector test are absent from both this worktree and the canonical repository.",
+  "next_gate": "A different context must rerun the pacing probe and perform the full F2 code-quality audit; this implementing context cannot mark F2 complete."
+}

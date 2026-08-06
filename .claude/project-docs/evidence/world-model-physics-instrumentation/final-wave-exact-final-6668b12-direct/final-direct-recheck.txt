@@ -1,0 +1,17 @@
+2026-08-06T04:45:32Z
+HEAD 6668b12f43f2c577c7f2446c98aedea0811f913e
+PRODUCT_DIFF_EXIT 0
+PREFLIGHT_EXIT 1
+PREFLIGHT_ERR Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/package_physics_player.py", line 288, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/package_physics_player.py", line 274, in main
+    if args.check_worktree_only: git_revision(args.worktree); return 0
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/package_physics_player.py", line 73, in git_revision
+    raise PackagingError("untracked product source: " + untracked[0])
+PackagingError: untracked product source: !! tasks/task_template_designer/Packages/manifest.json
+BUILD1_EXIT 1
+STAGE1_ENTRIES STAGE2_ENTRIES CLAIM_STATUS needs-fix
+PUB_PERFORMED False

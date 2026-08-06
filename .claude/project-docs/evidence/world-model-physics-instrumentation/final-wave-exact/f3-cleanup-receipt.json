@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "novphy_runtime_cleanup_v1",
+  "gate": "F3",
+  "checkedAt": "2026-08-06T07:34:32+10:00",
+  "status": "clean",
+  "ownedProcesses": {
+    "timeoutPid": 276695,
+    "enginePid": 299512,
+    "displayPid": 299493,
+    "remaining": [],
+    "count": 0
+  },
+  "ownedPorts": {
+    "agent": 58533,
+    "game": 34981,
+    "physics": 2004,
+    "remainingListeners": [],
+    "count": 0
+  },
+  "ownedDisplay": {
+    "display": ":236",
+    "lockPath": "/tmp/.X236-lock",
+    "socketPath": "/tmp/.X11-unix/X236",
+    "processAbsent": true,
+    "lockAbsent": true,
+    "socketAbsent": true
+  },
+  "temporaryClone": {
+    "path": "/tmp/novphy-physics-smoke-p56ajeff",
+    "absent": true
+  },
+  "artifactLifecycle": {
+    "temporaryAttempt": ".omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output/shot_001.tmp",
+    "temporaryAttemptAbsent": true,
+    "invalidAttemptsAbsent": true,
+    "publishedStagePreserved": true
+  },
+  "temporaryProbeFilesRemoved": [
+    "/tmp/novphy-f3-wrong-sha.stdout",
+    "/tmp/novphy-f3-wrong-sha.stderr"
+  ],
+  "retainedAsEvidence": [
+    ".omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke.json",
+    ".omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-invocation.log",
+    ".omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output/shot_001",
+    ".omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3.json",
+    ".omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-cleanup-receipt.json"
+  ],
+  "unownedResourcesTouched": [],
+  "note": "Concurrent final-wave workers and pre-existing Unity/licensing processes were outside F3 ownership and were not touched."
+}

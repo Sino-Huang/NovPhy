@@ -1,0 +1,33 @@
+{
+  "schema_version": "world_model_physics_instrumentation_task_3_done_claim_v1",
+  "event": "DoneClaim",
+  "todo": 3,
+  "status": "done",
+  "editor": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+  "editor_version": "2019.4.41f2 (6b23d448b533)",
+  "project": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer",
+  "changed_files": [
+    "Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs",
+    "Assets/Tests/Editor/PhysicsShotRecorderTests.cs",
+    "Assets/Tests/Editor/PhysicalShotRecorderTests.cs"
+  ],
+  "success_criteria": [
+    {"scenario": "terminal clear/fail callbacks", "invocation": "PhysicsShotRecorderTests.Events_AreExactlyOnceCollisionIsPerPairPerStepAndTerminalIsExclusive", "observable": "first terminal wins and exactly one terminal taxonomy remains", "artifact": "task-3-physics.xml"},
+    {"scenario": "reversed vertical centre ordering", "invocation": "PhysicsShotRecorderTests.Support_RejectsVerticalOrderingReversedBetweenSamples", "observable": "support count is zero", "artifact": "task-3-physics.xml"},
+    {"scenario": "out-of-order event callbacks", "invocation": "PhysicsShotRecorderTests.Events_SortByFullClockThenTaxonomyAndParticipantBeforeSequence", "observable": "fixed-time/taxonomy/participant list order exposes Sequence 1 through 4", "artifact": "task-3-physics.xml"},
+    {"scenario": "record, byte, timeout, and truncated bounds", "invocation": "PhysicsShotRecorderTests.BoundedRecorder_ReportsTypedOverflowTimeoutAndTruncatedFinalization", "observable": "four distinct enum variants and frozen snake-case envelope codes", "artifact": "task-3-physics.xml"},
+    {"scenario": "static IDs, lifetime reuse, and authoritative stability debounce", "invocation": "three focused PhysicsShotRecorderTests runtime cases", "observable": "runtime ID/contact assertions and two-sample transitions pass", "artifact": "task-3-physics.xml"}
+  ],
+  "failing_first": [
+    {"artifact": "task-3-semantic-failing-first.xml", "result": "Failed(Child)", "total": 11, "passed": 6, "failed": 5, "skipped": 0},
+    {"artifact": "task-3-clock-ordering-failing-first.xml", "result": "Failed(Child)", "total": 1, "passed": 0, "failed": 1, "skipped": 0}
+  ],
+  "focused_editmode": [
+    {"artifact": "task-3-physics.xml", "log": "task-3-physics.log", "result": "Passed", "total": 14, "passed": 14, "failed": 0, "skipped": 0},
+    {"artifact": "task-3-physics-repeat.xml", "log": "task-3-physics-repeat.log", "result": "Passed", "total": 14, "passed": 14, "failed": 0, "skipped": 0}
+  ],
+  "manual_qa": {"surface": "Unity 2019.4 EditMode engine execution", "observable": "both complete XML receipts Passed 14/14 with zero failures/skips", "artifacts": ["task-3-physics.xml", "task-3-physics-repeat.xml", "task-3-physics.log", "task-3-physics-repeat.log"]},
+  "protected_manifests": {"canonical_project_cmp": 0, "production_player_cmp": 0, "artifacts": ["task-3-canonical-project-after.tsv", "task-3-production-player-after.tsv"]},
+  "cleanup": "task-3-cleanup-receipt.json",
+  "risks": ["Unity writes complete test XML, then the known CEF shutdown path exits with signal 11; semantic pass/fail is taken only from parsed XML.", "No unfiltered full EditMode suite is claimed."]
+}

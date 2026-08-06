@@ -1,0 +1,50 @@
+{
+  "accepted_artifact": {
+    "events": 0,
+    "frame_sha256": [
+      "9cc4643bd1ff891f1a113a6684dbdef2cfee02cb355578afc520707aff42c25f"
+    ],
+    "path": ".omo/evidence/world-model-physics-instrumentation/task-8-stop3-direct/runtime-roots/happy/physics-smoke/shot_001",
+    "states": 1
+  },
+  "archive_sha256": "c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992",
+  "cases": {
+    "frame-mismatch": {
+      "accepted_shot": null,
+      "exit": 1,
+      "phase": "validate-artifact",
+      "protected_unchanged": true,
+      "status": "rejected"
+    },
+    "happy": {
+      "accepted_shot": "/tmp/tmp.EeLF4SA5EB/physics-smoke/shot_001",
+      "exit": 0,
+      "phase": "complete",
+      "protected_unchanged": true,
+      "status": "accepted"
+    },
+    "missing-sidecar": {
+      "accepted_shot": null,
+      "exit": 1,
+      "phase": "validate-artifact",
+      "protected_unchanged": true,
+      "status": "rejected"
+    },
+    "request-failure": {
+      "accepted_shot": null,
+      "exit": 1,
+      "phase": "load-known-level",
+      "protected_unchanged": true,
+      "status": "rejected"
+    }
+  },
+  "cleanup": {
+    "original_output_roots": "absent",
+    "physics_port_2004": "clear",
+    "processes": "none",
+    "runtime_roots_preserved_under_evidence": true,
+    "temporary_clones": "absent"
+  },
+  "schema_version": "novphy_stop3_direct_runtime_v1",
+  "status": "pass"
+}

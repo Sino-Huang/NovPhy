@@ -1,0 +1,26 @@
+{
+  "schema_version": "novphy_final_state_transition_v1",
+  "task": "F2. Code quality review",
+  "result": "approved",
+  "scenario": "apply the F2 completion state only after a fresh independent verifier confirms the exact post-refactor source hashes",
+  "invocation": "read f2-remediation-toctou-independent-verification.json; mark .omo/plans/world-model-physics-instrumentation.md F2 checked; append one final-verification-approved record to .omo/start-work/ledger.jsonl",
+  "binary_observables": {
+    "independent_verdict": "confirmed",
+    "independent_confidence": 0.99,
+    "plan_line": "148:- [x] F2. Code quality review",
+    "new_ledger_record_parses": true,
+    "new_ledger_verdict": "approved",
+    "diff_check_exit": 0
+  },
+  "source_hashes": {
+    "scripts/physics_artifact_validation.py": "641b05d92f275985bb7073ae09858b0d4151ed6c946f4f240d88223ffcdd6b0a",
+    "scripts/rollout_artifacts.py": "b645fb7394230221a52e707df59aa41e416bdf8e0f1cca26e79d248adb3767d7",
+    "tests/test_collect_rollouts.py": "4e3342f29233a9928f09df064e4e16bfa15c3852684151bec050f12d1d55766d"
+  },
+  "artifacts": [
+    ".omo/evidence/world-model-physics-instrumentation/f2-remediation-toctou-done-claim.json",
+    ".omo/evidence/world-model-physics-instrumentation/f2-remediation-toctou-independent-verification.json",
+    ".omo/evidence/world-model-physics-instrumentation/f2-remediation-toctou-cleanup-receipt.json"
+  ],
+  "known_unrelated_state": "Existing ledger JSONL line 24 is malformed; the appended F2 record parses independently and no historical ledger record was modified."
+}

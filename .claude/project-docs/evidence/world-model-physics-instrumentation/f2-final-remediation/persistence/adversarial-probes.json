@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "observed_at_utc": "2026-08-05T22:33:03Z",
+  "source_binding": {
+    "git_head": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "scripts/physics_rollout_persistence.py_sha256": "10ca6305d2eac6a52faadf9a84f84ac8d39f64feb40213caf1c1b1eb8b56f425",
+    "scripts/collect_rollouts.py_sha256": "409f984aea4892b678e832616379de5db285112c1593fade3a853f86a116ec66",
+    "tests/test_collect_rollouts.py_sha256": "4e8aba745098a39b60eed5631035bd7dce3691dc8bba12ff6b7fff4cff58d73f"
+  },
+  "runtime": {
+    "implementation": "cpython",
+    "version": "3.13.9",
+    "executable": "/home/sukai/miniconda3/bin/python3"
+  },
+  "filesystem": {
+    "kind": "real",
+    "mocked": false,
+    "actual_directories": true,
+    "actual_symlinks": true,
+    "actual_file_descriptors": true,
+    "actual_os_replace": true,
+    "descriptor_relative_operations": true
+  },
+  "case_count": 6,
+  "passed_case_count": 6,
+  "cases": [
+    {
+      "id": 1,
+      "name": "root_pathname_swap_during_persist_metadata_finalization",
+      "status": "pass",
+      "filesystem": "real",
+      "scratch_path": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-scratch-f2-final/case-1-root-path-swap",
+      "root_entry_after_swap": {
+        "is_symlink": true,
+        "target": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-scratch-f2-final/case-1-root-path-swap/external-directory"
+      },
+      "swap_observations": [
+        {
+          "state_sidecar_exists": true,
+          "event_sidecar_exists": true,
+          "frames_directory_exists": true,
+          "metadata_exists_before_swap": false
+        }
+      ],
+      "external_sentinel_sha256_before": "1fc1baf72fdcc120c3eaf1630d7d46cef88da481dc0b35e6f1d17fa64aba4705",
+      "external_sentinel_sha256_after": "1fc1baf72fdcc120c3eaf1630d7d46cef88da481dc0b35e6f1d17fa64aba4705",
+      "external_sentinel_unchanged": true,
+      "retained_metadata_sha256": "f1da1e90c4c26451abd055809237c4c5b7941e5ec86a7e6d24693652eeb25caf",
+      "expected_metadata_sha256": "f1da1e90c4c26451abd055809237c4c5b7941e5ec86a7e6d24693652eeb25caf",
+      "metadata_installed_in_descriptor_retained_directory": true
+    },
+    {
+      "id": 2,
+      "name": "metadata_json_symlink_swap_replaced_without_following",
+      "status": "pass",
+      "filesystem": "real",
+      "scratch_path": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-scratch-f2-final/case-2-metadata-symlink-swap",
+      "external_target_sha256_before": "99222ddfd965a586c969296b1ac3c47aeda2744d75dc0dce83f98f35b743ee7b",
+      "external_target_sha256_after": "99222ddfd965a586c969296b1ac3c47aeda2744d75dc0dce83f98f35b743ee7b",
+      "external_target_unchanged": true,
+      "metadata_entry_is_symlink_after_install": false,
+      "metadata_entry_is_regular_file_after_install": true,
+      "installed_metadata_sha256": "c4bac55bcda8b9597259b3a79d326193dc29d0452be51ee6c94c9805aa148b01",
+      "expected_metadata_sha256": "c4bac55bcda8b9597259b3a79d326193dc29d0452be51ee6c94c9805aa148b01"
+    },
+    {
+      "id": 3,
+      "name": "final_shot_destination_symlink_inserted_before_publication",
+      "status": "pass",
+      "filesystem": "real",
+      "scratch_path": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-scratch-f2-final/case-3-final-destination-symlink",
+      "error": {
+        "type": "PhysicsPersistenceError",
+        "code": "invalid_configuration",
+        "detail": "final physics shot destination already exists"
+      },
+      "external_target_sha256_before": "b175335f25b824be14e07e4a12501d71df456a30ae0db3e8f5a28316f7f1f5f1",
+      "external_target_sha256_after": "b175335f25b824be14e07e4a12501d71df456a30ae0db3e8f5a28316f7f1f5f1",
+      "external_target_unchanged": true,
+      "final_entry_remained_symlink": true,
+      "temporary_shot_remained_unpublished": true,
+      "shot_publication_replace_count": 0
+    },
+    {
+      "id": 4,
+      "name": "temporary_shot_entry_swap_after_descriptor_acquisition",
+      "status": "pass",
+      "filesystem": "real",
+      "scratch_path": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-scratch-f2-final/case-4-temporary-entry-swap",
+      "error": {
+        "type": "PhysicsPersistenceError",
+        "code": "invalid_configuration",
+        "detail": "temporary physics shot entry changed before publication"
+      },
+      "opened_descriptor_identity": {
+        "device": 37,
+        "inode": 14882649014583951425
+      },
+      "replacement_entry_identity": {
+        "device": 37,
+        "inode": 16883427103073226778,
+        "is_symlink": true
+      },
+      "identity_mismatch_observed": true,
+      "external_target_sha256_before": "c3adb3a78530bf3bbed2ea744ac556002e8a65e398f603a3908884b573e10e08",
+      "external_target_sha256_after": "c3adb3a78530bf3bbed2ea744ac556002e8a65e398f603a3908884b573e10e08",
+      "external_target_unchanged": true,
+      "final_destination_exists": false,
+      "retained_opened_directory_exists": true
+    },
+    {
+      "id": 5,
+      "name": "successful_single_descriptor_relative_publication",
+      "status": "pass",
+      "filesystem": "real",
+      "scratch_path": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-scratch-f2-final/case-5-successful-publication",
+      "shot_publication_replace_count": 1,
+      "src_dst_dir_fds_equal_and_non_null": true,
+      "pre_rename_metadata_sha256": "b79270c31280f31061bd660a90bd5780a1363f44282936516cd29e29cfeb8acf",
+      "post_rename_metadata_sha256": "b79270c31280f31061bd660a90bd5780a1363f44282936516cd29e29cfeb8acf",
+      "pre_rename_metadata_size": 146,
+      "post_rename_metadata_size": 146,
+      "metadata_byte_identical": true,
+      "write_open_count_beneath_accepted_shot_after_rename": 0,
+      "temporary_entry_exists_after_publication": false,
+      "accepted_entry_is_directory": true
+    },
+    {
+      "id": 6,
+      "name": "interrupted_tmp_cleanup_two_resume_cycles",
+      "status": "pass",
+      "filesystem": "real",
+      "scratch_path": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-scratch-f2-final/case-6-interrupted-cleanup",
+      "resume_cycles": [
+        {
+          "cycle": 1,
+          "interrupted_sidecar_sha256_before_cleanup": "536ae2a8cfc0a23b5cbbd6bc2bfeee92c8ebd46ae930987c9673e2cb0e6d6d22",
+          "removed_entries": [
+            "shot_000.tmp"
+          ],
+          "temporary_entry_exists_after_cleanup": false
+        },
+        {
+          "cycle": 2,
+          "interrupted_sidecar_sha256_before_cleanup": "536ae2a8cfc0a23b5cbbd6bc2bfeee92c8ebd46ae930987c9673e2cb0e6d6d22",
+          "removed_entries": [
+            "shot_000.tmp"
+          ],
+          "temporary_entry_exists_after_cleanup": false
+        }
+      ],
+      "third_no_op_cleanup_removed_entries": [],
+      "idempotent": true
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "task": 9,
+  "verification": "subagent-stop direct rerun",
+  "result": "pass",
+  "scenarios": [
+    {
+      "scenario": "focused verifier CLI suite",
+      "invocation": "python -m unittest tests.test_verify_physics_capture_docs -v",
+      "binary_observable": "exit 0; Ran 6 tests; OK"
+    },
+    {
+      "scenario": "published documentation against real repository artifacts",
+      "invocation": "python scripts/verify_physics_capture_docs.py docs",
+      "binary_observable": "exit 0; stdout exactly physics capture documentation verified"
+    },
+    {
+      "scenario": "source and staged provenance integrity",
+      "invocation": "sha256sum scoped source files and sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz; inspect archive.sha256",
+      "binary_observable": "four source hashes match task-9-done-claim.json; archive and two-field receipt equal c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992 and name novphy-physics-player-2019.4.41f2.tar.gz"
+    },
+    {
+      "scenario": "quality gates and independent confirmations",
+      "invocation": "python -m py_compile scripts/verify_physics_capture_docs.py tests/test_verify_physics_capture_docs.py; git diff --check; parse both independent verdict artifacts",
+      "binary_observable": "all local gates exit 0; quality verdict CONFIRMED; adversarial verdict confirmed with recommendation APPROVE"
+    }
+  ],
+  "artifacts": [
+    ".omo/evidence/world-model-physics-instrumentation/task-9-docs.txt",
+    ".omo/evidence/world-model-physics-instrumentation/task-9-done-claim.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-rerun.md",
+    ".omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial-rerun.json"
+  ],
+  "judgment": "The prior completion claim is substantiated by a fresh direct rerun and nonempty independent-review artifacts."
+}

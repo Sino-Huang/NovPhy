@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "novphy_final_gate_v1",
+  "gate": "F4",
+  "goalId": "world-model-physics-instrumentation",
+  "audit": "independent read-only scope fidelity",
+  "verifiedAt": "2026-08-06T07:30:37+10:00",
+  "verdict": "needs-fix",
+  "recommendation": "REJECT",
+  "confirmed": false,
+  "confidence": 1.0,
+  "authoritativePlan": {
+    "path": "/mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md",
+    "sha256": "6803f185b12104d775cae9e68367b05f8c3d18eeb582a34f00c7f1180371b3b2"
+  },
+  "source": {
+    "commit": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "tree": "c779ce2c5ff7182e1f4af3d99620029245756bad",
+    "parent": "95e7b82919c7cc2cd1aa911c4ebf9ffcfba8f9fe",
+    "featureBaseline": "8dcec02569dd459a8db7e6393a640aa6a146b114",
+    "featureBaselineRationale": "parent of the first planned physics-contract commit; excludes the inherited update-slide commit from the feature delta",
+    "featureChangedPathCount": 84
+  },
+  "publication": {
+    "archive": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+    "archiveSha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+    "archiveStaticAuthentication": "pass",
+    "protectedRoots": "pass"
+  },
+  "checks": [
+    {
+      "name": "active cohort and production player exclusion",
+      "result": "pass",
+      "observable": "the feature diff has no paths under the active rollout root, sciencebirdsgames/Linux, or sciencebirdsgames/physics-v1"
+    },
+    {
+      "name": "generated source-tree artifact exclusion",
+      "result": "pass",
+      "observable": "the target tree contains no staged physics-v1 archive and no Unity build-output directories or player binaries introduced by this feature"
+    },
+    {
+      "name": "authoritative engine labels without RGB inference",
+      "result": "pass",
+      "observable": "physical body values come from Rigidbody2D and contacts come from Collider2D.GetContacts"
+    },
+    {
+      "name": "no trainer model or controller implementation",
+      "result": "pass",
+      "observable": "no learned trainer, model, optimizer, controller, or symbolic curriculum implementation was added in the feature delta"
+    },
+    {
+      "name": "opt-in capture and additive protocol",
+      "result": "pass",
+      "observable": "physics_capture_v1 remains explicitly selected, request 70 is additive, and requests 38 and 62 remain represented"
+    },
+    {
+      "name": "legacy contract preservation in a clean target tree",
+      "result": "fail",
+      "observable": "committed legacy validation modules import world_model.data, but the target tree omits world_model/data entirely"
+    },
+    {
+      "name": "required Todo 10 supervision reader",
+      "result": "fail",
+      "observable": "the target tree lists only world_model/__init__.py and world_model/requirements.txt; the required world_model/data reader package exists only as ignored local content"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "F4-B1",
+      "severity": "release-blocking",
+      "summary": "The required world_model/data package is absent from the exact target commit.",
+      "evidence": [
+        "git ls-tree lists only world_model/__init__.py and world_model/requirements.txt",
+        "git cat-file cannot resolve target:world_model/data/__init__.py",
+        "world_model/__init__.py and scripts/rollout_validation_types.py import world_model.data",
+        ".gitignore line 8 uses data/, and git check-ignore maps world_model/data/__init__.py to that rule",
+        "git status --ignored reports !! world_model/data/",
+        "Todo 10 commit 2d7f0e4 changes only scripts/physics_capture_parsing.py and tests/test_world_model_data.py"
+      ],
+      "scopeImpact": "The exact target cannot provide the mandatory opt-in typed supervision reader and clean-checkout legacy validation imports fail before contract selection.",
+      "requiredFix": "Narrow the root data ignore rule or explicitly unignore world_model/data, commit the complete intended package, verify it from a clean checkout, and rerun all final gates against the new exact commit and rebuilt archive."
+    }
+  ],
+  "reviewerReconciliation": {
+    "repairAndArtifactAudit": "pass",
+    "archiveAudit": "pass",
+    "protectedRootAudit": "pass",
+    "semanticGuardrailAudit": "fail on missing committed world_model/data package",
+    "commitPathAudit": "the reported update-slide history issue is not a feature-delta blocker because the selected feature baseline is that commit itself"
+  },
+  "stalePriorF4": {
+    "path": ".omo/evidence/world-model-physics-instrumentation/f4-scope.txt",
+    "sha256": "75e1dec47ecbb4336d96f525123c2b52e79359884324b1baa0eedee89c0fa8da",
+    "acceptedAsAuthority": false,
+    "reason": "it contains neither the exact target commit nor the published archive digest"
+  },
+  "evidence": {
+    "commands": ".omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f4/commands.jsonl",
+    "cleanup": ".omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f4/cleanup.json"
+  }
+}

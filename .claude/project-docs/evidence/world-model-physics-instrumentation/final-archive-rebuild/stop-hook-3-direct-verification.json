@@ -1,0 +1,69 @@
+{
+  "schema_version": "novphy_direct_verification_v1",
+  "claim": "Third direct verification confirms that the exact-SHA final archive rebuild remains non-reproducible.",
+  "verdict": "confirmed_blocked",
+  "completion_claim": false,
+  "source_commit": "95e7b82919c7cc2cd1aa911c4ebf9ffcfba8f9fe",
+  "scenarios": [
+    {
+      "scenario": "Hash all three independently successful Unity build archives",
+      "invocation": "sha256sum build-1-stage archive, sciencebirdsgames/physics-v1 archive, and build-3-stage archive",
+      "binary_observable": "three distinct SHA-256 values",
+      "captured_output": [
+        "e8018cb56525b719a854793060638dbc4345cd2a0921c258bf44bd4f9a5627a6",
+        "61c39c22d4a670e1fde15762ae1441f483240f7c06c7e9edbe13a0a107f19130",
+        "20341205a130f5f46378ed5fe69dcb3d093a175b6be6563ab0dbae60fea2c913"
+      ],
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/stop-hook-3-direct-verification.json"
+    },
+    {
+      "scenario": "Compare consecutive build archive bytes",
+      "invocation": "cmp -s build-1 archive final-stage archive; cmp -s final-stage archive build-3 archive",
+      "binary_observable": "both comparisons exit 1",
+      "captured_output": [
+        "build1_build2_cmp=1",
+        "build2_build3_cmp=1"
+      ],
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/stop-hook-3-direct-verification.json"
+    },
+    {
+      "scenario": "Verify the current stage archive and payload checksums through the supported CLI",
+      "invocation": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --skip-runtime",
+      "binary_observable": "exit 0; archive_checksum_verified=true; payload_checksums_verified=true; runtime=null",
+      "captured_output": "{\"archive_checksum_verified\": true, \"archive_sha256\": \"61c39c22d4a670e1fde15762ae1441f483240f7c06c7e9edbe13a0a107f19130\", \"payload_checksums_verified\": true, \"runtime\": null}",
+      "artifact": "sciencebirdsgames/physics-v1/archive.sha256"
+    },
+    {
+      "scenario": "Record and correct an unsupported verifier invocation",
+      "invocation": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --static-only --report /tmp/novphy-stop-hook-3-static.json",
+      "binary_observable": "exit 2 with unrecognized arguments; corrected invocation above exits 0; no temporary report was created",
+      "captured_output": "verify_physics_player.py: error: unrecognized arguments: --static-only --report /tmp/novphy-stop-hook-3-static.json",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/stop-hook-3-direct-verification.json"
+    },
+    {
+      "scenario": "Confirm exact source and protected roots remain unchanged",
+      "invocation": "git rev-parse HEAD; git diff --quiet HEAD excluding .omo; cmp canonical before/after; cmp production before/after",
+      "binary_observable": "HEAD matches source commit; tracked product diff, canonical comparison, and production comparison all exit 0",
+      "captured_output": [
+        "HEAD=95e7b82919c7cc2cd1aa911c4ebf9ffcfba8f9fe",
+        "tracked_product_diff=0",
+        "canonical_cmp=0",
+        "production_cmp=0"
+      ],
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/protected-comparison.txt"
+    },
+    {
+      "scenario": "Confirm blocked claim and runtime cleanup",
+      "invocation": "jq claim fields from done-claim.json; process and port-2004 listener scans",
+      "binary_observable": "BlockedClaim; done=false; no verifier-owned process or port listener",
+      "captured_output": {
+        "claim": "BlockedClaim\tblocked_two_build_reproducibility\tfalse",
+        "owned_processes": [],
+        "port_2004_listeners": [],
+        "excluded_persistent_process": "Unity Licensing Client is environment-owned"
+      },
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/cleanup-receipt.json"
+    }
+  ],
+  "required_next_action": "A source-owning worker must add a failing-first deterministic Unity build strategy, commit it, and produce at least two byte-identical archives before F1-F4 resume."
+}

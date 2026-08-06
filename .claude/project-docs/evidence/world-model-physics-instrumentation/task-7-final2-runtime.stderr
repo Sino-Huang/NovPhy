@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/verify_physics_player.py", line 184, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/verify_physics_player.py", line 170, in main
+    runtime = None if args.skip_runtime else verify_runtime(output, args.agent_port, args.game_port, args.physics_port)
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/verify_physics_player.py", line 125, in verify_runtime
+    capture = physics.get_physics_capture_v1()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ScienceBirdsBridge' object has no attribute 'get_physics_capture_v1'

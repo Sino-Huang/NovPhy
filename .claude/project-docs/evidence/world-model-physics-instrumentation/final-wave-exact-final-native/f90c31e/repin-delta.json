@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "novphy_repin_delta_v1",
+  "previousPin": "1c4e70b2d01d5c6b8b18b0f130ef3bbde06439c6",
+  "currentPin": "f90c31ed9607a2a2344b5e2bad9f01361439f31d",
+  "currentTree": "ce57b6ec0d85b90e8204d6c325a87b1f48321d41",
+  "reason": "Phase 0 finding P0-1: build_physics_player.sh published Unity licensing identity into the promotion stage",
+  "changedFiles": [
+    {"path": "scripts/build_physics_player.sh", "status": "M", "insertions": 9},
+    {"path": "scripts/redact_unity_log.sh", "status": "A", "insertions": 32},
+    {"path": "tests/test_build_physics_player.py", "status": "M", "insertions": 94}
+  ],
+  "unityProjectFilesChanged": 0,
+  "pythonProductFilesChanged": 0,
+  "csharpFilesChanged": 0,
+  "implications": {
+    "playerBinaryUnchanged": true,
+    "playerSha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+    "protocolSha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a",
+    "archiveShaChanged": true,
+    "archiveShaChangeReason": "provenance.json embeds project.git_head and project.git_tree, so any commit changes archive identity even when no shipped byte of the player changes",
+    "priorEditModeReceiptsStillDescribeThisCSharp": true,
+    "note": "A fresh EditMode run at the pinned SHA is still performed for this wave rather than relying on that argument alone."
+  }
+}

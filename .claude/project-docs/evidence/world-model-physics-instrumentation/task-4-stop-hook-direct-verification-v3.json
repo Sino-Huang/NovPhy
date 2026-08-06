@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "event": "subagent-stop direct verification, completion claim 3",
+  "status": "done",
+  "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+  "failed_attempts": [
+    {
+      "scenario": "First monolithic verification attempt",
+      "exit_code": 1,
+      "observable": "FileNotFoundError for incorrectly assumed Assets/Tests/EditMode/PhysicsCaptureProtocolTests.cs",
+      "judgment": "Rejected as completion evidence. Located the real path Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs and reran every check from the beginning."
+    }
+  ],
+  "checks": [
+    {
+      "scenario": "Verify Python resolves the bridge from this worktree.",
+      "invocation": "PYTHONPATH=$PWD python -c 'import src.webui.bridge as b; print(b.__file__)'",
+      "exit_code": 0,
+      "observable": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/src/webui/bridge.py"
+    },
+    {
+      "scenario": "Fresh full Python bridge suite.",
+      "invocation": "PYTHONPATH=$PWD python -m unittest tests.test_webui_bridge -v",
+      "exit_code": 0,
+      "observable": {
+        "tests": 22,
+        "failures": 0,
+        "errors": 0,
+        "summary": "Ran 22 tests in 0.001s; OK",
+        "request_70_regressions": [
+          "test_request_70_failure_fields_are_immutable ... ok",
+          "test_request_70_preserves_nested_decoded_values ... ok",
+          "test_request_70_public_records_have_recursive_typed_annotations ... ok",
+          "test_request_70_round_trips_png_state_and_events_at_one_render_frame ... ok"
+        ]
+      }
+    },
+    {
+      "scenario": "Fresh real loopback TCP request 70 using this worktree bridge.",
+      "invocation": "PYTHONPATH=$PWD python .omo/evidence/world-model-physics-instrumentation/task-4-stop-hook-v2-real-tcp.py",
+      "exit_code": 0,
+      "observable": {
+        "passed": true,
+        "request_code": 70,
+        "request_byte_hex": "46",
+        "png_signature": "89504e470d0a1a0a",
+        "png_ihdr": "IHDR",
+        "state_render_frame": 913,
+        "event_render_frames": [913],
+        "nested_velocity": [1.5, -2.0],
+        "nested_participants": ["bird:1"],
+        "outer_length_equal": true,
+        "recursive_immutable": true
+      },
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-4-stop-hook-v2-real-tcp.py",
+      "artifact_sha256": "b4c3ab2be4b1784fd48aa75479cab2f750aa71817b5e9036f60240ec4d3f1783"
+    },
+    {
+      "scenario": "Parse both Unity NUnit XML receipts and compare freshness to the actual Unity protocol source and test source.",
+      "invocation": "Python xml.etree parse plus pathlib mtime comparison",
+      "exit_code": 0,
+      "sources": [
+        "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs",
+        "tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs"
+      ],
+      "observable": [
+        {
+          "artifact": ".omo/evidence/world-model-physics-instrumentation/task-4-final-green-3.xml",
+          "nonempty": true,
+          "result": "Passed",
+          "total": 6,
+          "passed": 6,
+          "failed": 0,
+          "skipped": 0,
+          "newer_than_sources": true,
+          "sha256": "216bc5aa368c534934b74b3ee01dcc67b63a7ca0791674033f610767a99871da"
+        },
+        {
+          "artifact": ".omo/evidence/world-model-physics-instrumentation/task-4-final-green-4.xml",
+          "nonempty": true,
+          "result": "Passed",
+          "total": 6,
+          "passed": 6,
+          "failed": 0,
+          "skipped": 0,
+          "newer_than_sources": true,
+          "sha256": "b3db2494abc32cb7170228a0d481a361e438f2e006b651ee724227bf11585a9c"
+        }
+      ]
+    },
+    {
+      "scenario": "Byte-compare protected canonical and production player manifests.",
+      "invocation": "Python Path.read_bytes equality comparisons",
+      "exit_code": 0,
+      "observable": {
+        "canonical_equal_and_nonempty": true,
+        "canonical_before_after_sha256": "a986acc9dc911009e7e04bea85ee531ba4b9f9d692afa915456d81bcf7c8bb56",
+        "production_player_equal_and_nonempty": true,
+        "production_player_before_after_sha256": "e92a83fb14638b24ba8a0a05d588829823000f3db349ae9eaf39f188f68e8cd5"
+      }
+    },
+    {
+      "scenario": "Parse the independent verification artifact directly.",
+      "invocation": "Python json.loads task-4-v2-independent-confirmed.json",
+      "exit_code": 0,
+      "observable": {
+        "nonempty": true,
+        "valid_json": true,
+        "verdict": "confirmed",
+        "confidence": "high",
+        "sha256": "ee4e6d2381b8672babd41a7a75600d9f3669a4d26e6bf6f8d1c8e6810d03f3ce"
+      }
+    },
+    {
+      "scenario": "Fresh control-path and cleanup-state inspection.",
+      "invocation": "git diff --exit-code on .omo/plans/.omo/boulder.json/.omo/ulw-loop; pgrep; socket connect_ex; pathlib exists",
+      "exit_code": 0,
+      "observable": {
+        "protected_control_diff_exit": 0,
+        "unity_or_sciencebirds_processes": 0,
+        "port_2004_connect_ex": 111,
+        "port_9000_connect_ex": 111,
+        "editor_instance_absent": true,
+        "temp_absent": true,
+        "logs_absent": true
+      }
+    }
+  ],
+  "judgment": "All direct checks in the corrected monolithic rerun passed. Todo 4 is complete with Python 22/22, real TCP request 70 behavior, Unity 6/6 twice, confirmed/high independent verification, identical protected manifests, unchanged protected control paths, and clean runtime state."
+}

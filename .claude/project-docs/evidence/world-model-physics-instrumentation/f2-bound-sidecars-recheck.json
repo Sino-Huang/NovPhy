@@ -1,0 +1,253 @@
+{
+  "task": "Independent F2 malformed-input bounded-sidecar recheck",
+  "scope": [
+    "scripts/physics_capture_contract.py",
+    "scripts/physics_capture_parsing.py",
+    "scripts/rollout_artifacts.py",
+    "scripts/physics_rollout_persistence.py"
+  ],
+  "verdict": "needs-fix",
+  "findingConfirmed": true,
+  "finding": {
+    "criterionReference": "F2-BOUNDED-MEMORY / Todo 5 malformed and oversized sidecars",
+    "fileLineFindings": [
+      {
+        "file": "scripts/physics_capture_parsing.py",
+        "line": 52,
+        "observation": "Path.read_text(...).splitlines() materializes the complete untrusted sidecar before JSON parsing or any limit check."
+      },
+      {
+        "file": "scripts/physics_capture_parsing.py",
+        "line": 293,
+        "observation": "parse_physics_sidecars reads both complete sidecars and returns a capture without enforcing byte/record limits."
+      },
+      {
+        "file": "scripts/physics_capture_contract.py",
+        "line": 70,
+        "observation": "load_physics_capture invokes parsing first and only then validates using stat sizes."
+      },
+      {
+        "file": "scripts/rollout_artifacts.py",
+        "line": 76,
+        "observation": "Frame hashing uses Path.read_bytes() on complete PNG files."
+      },
+      {
+        "file": "scripts/rollout_artifacts.py",
+        "line": 79,
+        "observation": "State sidecar hashing uses Path.read_bytes() after complete parsing."
+      },
+      {
+        "file": "scripts/rollout_artifacts.py",
+        "line": 80,
+        "observation": "Event sidecar hashing uses Path.read_bytes() after complete parsing."
+      }
+    ],
+    "runtime": {
+      "malformedLargeLine": {
+        "stateBytes": 2000018,
+        "peakBytes": 4041677,
+        "readObservedBytes": 2000018,
+        "exception": "PhysicsContractError: malformed_json",
+        "accepted": false
+      },
+      "oversizedValidHeader": {
+        "stateBytes": 1101359,
+        "declaredLimitBytes": 1048576,
+        "parseAccepted": true,
+        "parseStates": 0,
+        "parseEvents": 0,
+        "loadException": "PhysicsContractError: invalid_value at sidecars: record limit exceeded",
+        "peakBytes": 3314136
+      },
+      "artifactHashing": {
+        "accepted": true,
+        "readBytesCalls": [
+          "frames/frame_000000.png (77 bytes)",
+          "physics_state.jsonl (4138 bytes)",
+          "physics_events.jsonl (7874 bytes)"
+        ]
+      }
+    }
+  },
+  "commands": [
+    {
+      "id": "malformed-and-oversized-temp-root",
+      "surface": "Python parser/contract boundary",
+      "exactInvocation": "python - <<'PY' ... TemporaryDirectory ... creating oversized/malformed sidecars and print machine-parsed acceptance/exception plus peak/relevant observable ... PY",
+      "exitCode": 0,
+      "artifactRefs": ["probe", "static-read-order"],
+      "observable": "Malformed input rejected after a full 2,000,018-byte read; oversized valid header accepted by parser and rejected only by later load validation."
+    },
+    {
+      "id": "artifact-hash-read-order",
+      "surface": "rollout_artifacts.validate_physics_shot_artifact",
+      "exactInvocation": "python - <<'PY' ... TemporaryDirectory ... capture_physics_rollout + validate_physics_shot_artifact with Path.read_bytes spy ... PY",
+      "exitCode": 0,
+      "artifactRefs": ["hash-probe"],
+      "observable": "Validation read complete frame and both complete sidecars through read_bytes."
+    },
+    {
+      "id": "focused-run-1",
+      "surface": "Parser and persistence focused tests",
+      "exactInvocation": "python -m unittest tests.test_physics_capture_contract tests.test_collect_rollouts.PhysicsCapturePersistenceTests -v",
+      "exitCode": 0,
+      "artifactRefs": ["focused-run1"]
+    },
+    {
+      "id": "focused-run-2",
+      "surface": "Parser and persistence focused tests (repeat)",
+      "exactInvocation": "python -m unittest tests.test_physics_capture_contract tests.test_collect_rollouts.PhysicsCapturePersistenceTests -v",
+      "exitCode": 0,
+      "artifactRefs": ["focused-run2"]
+    },
+    {
+      "id": "artifact-validation-tests",
+      "surface": "Rollout artifact validation tests",
+      "exactInvocation": "python -m unittest tests.test_prepare_rollout_dataset.PhysicsCaptureValidationTests -v",
+      "exitCode": 0,
+      "artifactRefs": ["validation-run"]
+    },
+    {
+      "id": "bounded-timeout",
+      "surface": "Focused parser/persistence suite under timeout",
+      "exactInvocation": "timeout 30s python -m unittest tests.test_physics_capture_contract tests.test_collect_rollouts.PhysicsCapturePersistenceTests",
+      "exitCode": 0,
+      "artifactRefs": ["timeout"]
+    },
+    {
+      "id": "dirty-worktree",
+      "surface": "Scoped source worktree",
+      "exactInvocation": "git status --short -- scripts/physics_capture_contract.py scripts/physics_capture_parsing.py scripts/rollout_artifacts.py scripts/physics_rollout_persistence.py",
+      "exitCode": 0,
+      "artifactRefs": ["dirty-worktree"]
+    }
+  ],
+  "surfaceEvidence": [
+    {
+      "scenarioId": "f2-malformed-sidecar",
+      "criterionReference": "F2-BOUNDED-MEMORY",
+      "surface": "parse/load_physics_capture on real malformed temporary-root sidecar",
+      "exactInvocation": "python - <<'PY' ... TemporaryDirectory ... malformed 2,000,018-byte JSONL ... PY",
+      "verdict": "FAIL",
+      "artifactRefs": ["probe"]
+    },
+    {
+      "scenarioId": "f2-oversized-sidecar",
+      "criterionReference": "F2-BOUNDED-MEMORY",
+      "surface": "parse/load_physics_capture on real 1,101,359-byte temporary-root sidecar",
+      "exactInvocation": "python - <<'PY' ... TemporaryDirectory ... oversized valid state header ... PY",
+      "verdict": "FAIL",
+      "artifactRefs": ["probe", "static-read-order"]
+    },
+    {
+      "scenarioId": "f2-hash-sidecars",
+      "criterionReference": "F2 bounded hashing",
+      "surface": "validate_physics_shot_artifact on a real persisted temporary shot",
+      "exactInvocation": "python - <<'PY' ... TemporaryDirectory ... capture_physics_rollout + validate_physics_shot_artifact ... PY",
+      "verdict": "FAIL",
+      "artifactRefs": ["hash-probe"]
+    },
+    {
+      "scenarioId": "f2-focused-repeat",
+      "criterionReference": "F2 parser/persistence regression coverage",
+      "surface": "unittest parser, contract, persistence classes",
+      "exactInvocation": "python -m unittest tests.test_physics_capture_contract tests.test_collect_rollouts.PhysicsCapturePersistenceTests -v (twice)",
+      "verdict": "PASS",
+      "artifactRefs": ["focused-run1", "focused-run2"]
+    }
+  ],
+  "adversarialCases": [
+    {
+      "scenarioId": "aq-malformed-input",
+      "criterionReference": "F2-BOUNDED-MEMORY",
+      "adversarialClass": "malformed_input",
+      "expectedBehavior": "Reject malformed input without materializing an unbounded sidecar.",
+      "verdict": "FAIL",
+      "artifactRefs": ["probe", "static-read-order"]
+    },
+    {
+      "scenarioId": "aq-stale-state",
+      "criterionReference": "F2 fail-closed artifact validation",
+      "adversarialClass": "stale_state",
+      "expectedBehavior": "Corrupt/stale sidecars fail closed.",
+      "verdict": "PASS",
+      "artifactRefs": ["validation-run"]
+    },
+    {
+      "scenarioId": "aq-dirty-worktree",
+      "criterionReference": "verification integrity",
+      "adversarialClass": "dirty_worktree",
+      "expectedBehavior": "Surface concurrent source modifications explicitly.",
+      "verdict": "PASS",
+      "artifactRefs": ["dirty-worktree"]
+    },
+    {
+      "scenarioId": "aq-flaky-tests",
+      "criterionReference": "F2 parser/persistence regressions",
+      "adversarialClass": "flaky_tests",
+      "expectedBehavior": "Repeated focused runs have stable successful outcomes.",
+      "verdict": "PASS",
+      "artifactRefs": ["focused-run1", "focused-run2"]
+    },
+    {
+      "scenarioId": "aq-misleading-success-output",
+      "criterionReference": "F2-BOUNDED-MEMORY",
+      "adversarialClass": "misleading_success_output",
+      "expectedBehavior": "Parser boundary must not report acceptance of an over-limit sidecar.",
+      "verdict": "FAIL",
+      "artifactRefs": ["probe"]
+    },
+    {
+      "scenarioId": "aq-hung-or-long-commands",
+      "criterionReference": "verification bounded execution",
+      "adversarialClass": "hung_or_long_commands",
+      "expectedBehavior": "Focused verification completes within 30 seconds.",
+      "verdict": "PASS",
+      "artifactRefs": ["timeout"]
+    },
+    {
+      "scenarioId": "aq-repeated-interruptions",
+      "criterionReference": "F2 parser/persistence scope",
+      "adversarialClass": "repeated_interruptions",
+      "expectedBehavior": "N/A: scoped parser/hash APIs expose no cancellation or resume state machine.",
+      "verdict": "not_applicable",
+      "reason": "The four scoped modules perform synchronous file parsing/validation; interruption/resume behavior belongs to the collector orchestration outside this blocker.",
+      "artifactRefs": ["static-read-order"]
+    },
+    {
+      "scenarioId": "aq-prompt-injection",
+      "criterionReference": "F2 parser/persistence scope",
+      "adversarialClass": "prompt_injection",
+      "expectedBehavior": "N/A: no prompt or user-authored instruction is consumed by these APIs.",
+      "verdict": "not_applicable",
+      "reason": "Scoped code consumes JSONL and filesystem paths only.",
+      "artifactRefs": ["static-read-order"]
+    },
+    {
+      "scenarioId": "aq-cancel-resume",
+      "criterionReference": "F2 parser/persistence scope",
+      "adversarialClass": "cancel_resume",
+      "expectedBehavior": "N/A: no cancellation/resume API is present in the scoped modules.",
+      "verdict": "not_applicable",
+      "reason": "The probe targets parser and artifact validation boundaries, not collector resume orchestration.",
+      "artifactRefs": ["static-read-order"]
+    }
+  ],
+  "cleanupReceipt": {
+    "temporaryRoots": [
+      {"path": "/tmp/f2-bound-sidecars-kj4ljxfe", "existsAfterCleanup": false},
+      {"path": "/tmp/f2-artifact-hash-p6y_lf40", "existsAfterCleanup": false}
+    ],
+    "artifactRefs": ["probe", "hash-probe"]
+  },
+  "artifactRefs": [
+    {"id": "probe", "kind": "runtime-log", "description": "Real malformed/oversized TemporaryDirectory probe with machine-parsed outcomes, read-call sizes, and tracemalloc peaks.", "path": ".omo/evidence/world-model-physics-instrumentation/f2-bound-sidecars-probe.log"},
+    {"id": "hash-probe", "kind": "runtime-log", "description": "Real persisted-shot validation with Path.read_bytes instrumentation and cleanup receipt.", "path": ".omo/evidence/world-model-physics-instrumentation/f2-bound-sidecars-hash-probe.log"},
+    {"id": "static-read-order", "kind": "source-audit", "description": "AST scan locating whole-file read_text/read_bytes/splitlines calls in scoped modules.", "path": ".omo/evidence/world-model-physics-instrumentation/f2-bound-sidecars-static-read-order.log"},
+    {"id": "focused-run1", "kind": "test-log", "description": "First focused parser/contract/persistence run: 26 tests OK.", "path": ".omo/evidence/world-model-physics-instrumentation/f2-bound-sidecars-focused-run1.log"},
+    {"id": "focused-run2", "kind": "test-log", "description": "Repeated focused parser/contract/persistence run: 26 tests OK.", "path": ".omo/evidence/world-model-physics-instrumentation/f2-bound-sidecars-focused-run2.log"},
+    {"id": "validation-run", "kind": "test-log", "description": "Artifact validation run: 3 tests OK, including corrupt-sidecar fail-closed path.", "path": ".omo/evidence/world-model-physics-instrumentation/f2-bound-sidecars-validation-run.log"},
+    {"id": "timeout", "kind": "command-log", "description": "Focused suite completed under a 30-second timeout.", "path": ".omo/evidence/world-model-physics-instrumentation/f2-bound-sidecars-timeout.log"},
+    {"id": "dirty-worktree", "kind": "git-status", "description": "Scoped worktree status showing concurrent modifications.", "path": ".omo/evidence/world-model-physics-instrumentation/f2-bound-sidecars-dirty-worktree.log"}
+  ]
+}

@@ -1,0 +1,207 @@
+{
+  "schemaVersion": "novphy_five_lane_review_v1",
+  "reviewedCommitSha": "e2d19ae04946765b0196e043826bb08aa9a09caf",
+  "reviewedTreeSha": "f0347223e9b56cde2d2d9b9902ce8b4f139b059f",
+  "archiveSha256": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+  "executedBy": "single reviewer, inline and sequential, per the user's instruction not to use the Agent tool",
+  "planScopeBase": "8dcec02569dd459a8db7e6393a640aa6a146b114",
+  "lanes": [
+    {
+      "lane": 1,
+      "name": "Correctness and logic",
+      "verdict": "APPROVE",
+      "checked": [
+        {
+          "item": "support v1 derivation matches the frozen Todo 1 rule",
+          "evidence": "PhysicsShotRecorder.cs:582-602. Persistence counter requires two consecutive fixed steps; abs(normal.y) >= 0.5f is required on BOTH the current and the prior contact; the vertical-centre ordering must exceed 1e-4 Unity units AND carry the same sign across both samples; supporter/supported is assigned by which centre is below.",
+          "result": "matches the plan's stated rule exactly, including the two-sample requirement that forbids deriving support from a single tick"
+        },
+        {
+          "item": "explicit clocks on every record",
+          "evidence": "live physics_state.jsonl and physics_events.jsonl each carry render_frame, render_time, fixed_step, fixed_time, sequence, capture_id, shot_id, schema_version",
+          "result": "present on the state header, the state record, and all seven events"
+        },
+        {
+          "item": "kinetic energy and units are declared, not assumed SI",
+          "evidence": "every live record embeds a coordinates block declaring unity_unit, unity_mass_unit, unity_unit/second, unity_mass_unit*unity_unit^2/second^2, degree, and screen_origin top_left",
+          "result": "units are explicitly Unity units; no SI claim"
+        },
+        {
+          "item": "launch velocity is the assigned value, not a stale cached one",
+          "evidence": "ABBird.AssignLaunchVelocityAndRecord assigns _rigidBody.velocity then records _rigidBody.velocity; the live run emitted launch_velocity (7.911, 6.117); ABBirdLaunchTests now asserts the recorded value equals the launch value and differs from a deliberately seeded stale value",
+          "result": "correct, and now covered by a test that actually runs"
+        },
+        {
+          "item": "RGB and state share one render frame",
+          "evidence": "smoke asserts PNG/state render_frame equality; the frame-mismatch injection is rejected with render_frame_mismatch at physics_state.jsonl:2",
+          "result": "guarantee holds and its violation is detected"
+        }
+      ],
+      "findings": []
+    },
+    {
+      "lane": 2,
+      "name": "Boundary and adversarial",
+      "verdict": "APPROVE",
+      "checked": [
+        {
+          "item": "envelope bounds are enforced at every construction and transmission point",
+          "evidence": "PhysicsCaptureProtocol.cs:17 MaxEnvelopeBytes = 64 MiB, checked at :45 payload build, :75 failure envelope, :117 body length, :412 before transmit; OverflowException is caught at :40 and :71",
+          "result": "no unchecked length arithmetic on the wire path"
+        },
+        {
+          "item": "bounded memory with typed failure envelopes",
+          "evidence": "PhysicalCaptureLimits(maxRecords, maxBytes, timeoutSeconds); checks at PhysicsShotRecorder.cs:413, :419, :691; five typed codes RecordLimitExceeded, ByteLimitExceeded, CaptureTimeout, TruncatedFinalization, EnvelopeLimitExceeded",
+          "result": "overflow, timeout, and truncation all produce a typed failure that invalidates the shot rather than a partial artifact"
+        },
+        {
+          "item": "pending-client capacity is bounded",
+          "evidence": "MaxPendingClients = 4 at :301, enforced at :337",
+          "result": "excess connections are rejected and closed"
+        },
+        {
+          "item": "prior HIGH-1, main-thread stall on a non-reading client",
+          "evidence": "TransmitResponse at :410-459 uses BeginWrite plus a per-frame yield loop against ResponseWriteTimeoutMilliseconds = 1000, completing EndWrite on a ThreadPool item and closing the client on timeout",
+          "result": "FIXED, and now covered by Request70ResponseTransmissionYieldsAndExpiresWhenClientStopsReading"
+        },
+        {
+          "item": "prior HIGH-2, invalid JSON from unescaped control characters",
+          "evidence": "AppendString at :250-275 emits named escapes and \\uXXXX for every char below 32",
+          "result": "FIXED, and now covered by Request70JsonEscapesEveryControlCharacterAndRoundTrips, which iterates all 32 control characters"
+        },
+        {
+          "item": "fail-closed publication",
+          "evidence": "package_physics_player.publish() replaces the archive then the receipt via os.replace; verify_physics_player rejects a wrong --expect-sha with exit 1; a malformed receipt is rejected",
+          "result": "receipt-last ordering means a torn publication fails closed"
+        },
+        {
+          "item": "live rejection paths",
+          "evidence": "three injections against the real published player",
+          "result": "see injections-summary.json in this directory"
+        }
+      ],
+      "findings": []
+    },
+    {
+      "lane": 3,
+      "name": "Quality and simplification",
+      "verdict": "APPROVE WITH FINDINGS",
+      "checked": [
+        {
+          "item": "module size against the 250 LOC guidance from the earlier code review",
+          "evidence": "nonblank noncomment LOC: PhysicsShotRecorder.cs 678, PhysicsCaptureProtocol.cs 440, PhysicsShotRecorderTests.cs 491, PhysicsCaptureProtocolTests.cs 492, scripts/physics_rollout_persistence.py 434",
+          "result": "still over the guidance; the earlier review's MEDIUM-1 was deferred behind the blockers and never actioned"
+        },
+        {
+          "item": "implementation-mirroring tests",
+          "evidence": "13 reflection call sites in PhysicsCaptureProtocolTests.cs reaching private listener, clients, Serve, and ResponseWriteTimeoutMilliseconds members",
+          "result": "the earlier review's MEDIUM-2 remains; the tests are valuable but brittle to encapsulation changes"
+        }
+      ],
+      "findings": [
+        {
+          "id": "Q-1",
+          "severity": "medium",
+          "title": "Two Unity modules and one Python module remain well over the 250 LOC guidance",
+          "blocking": false,
+          "rationale": "This is pre-existing debt carried from the earlier code review, not a regression introduced by this wave. None of F2's stated criteria (legacy protocol compatibility, bounded memory, atomic artifact lifecycle, deterministic ordering, 2019.4.41f2 compatibility, immutable 2019.3 baseline) turns on module size. Recorded as debt rather than silently dropped."
+        },
+        {
+          "id": "Q-2",
+          "severity": "medium",
+          "title": "Protocol tests reach private members through reflection in 13 places",
+          "blocking": false,
+          "rationale": "Same provenance and same reasoning as Q-1. Worth replacing with an intentional test seam when the protocol module is next split."
+        }
+      ]
+    },
+    {
+      "lane": 4,
+      "name": "Test coverage",
+      "verdict": "APPROVE",
+      "checked": [
+        {
+          "item": "the two previously uncovered failure classes are now covered",
+          "evidence": "Request70ResponseTransmissionYieldsAndExpiresWhenClientStopsReading and Request70JsonEscapesEveryControlCharacterAndRoundTrips",
+          "result": "the exact gaps the earlier review named are closed"
+        },
+        {
+          "item": "EditMode coverage is complete for the first time in this plan",
+          "evidence": "all eight EditMode classes were run as partitions; see editmode-partition-receipt.json",
+          "result": "44 tests. Prior receipts covered only subsets and silently omitted ABBirdLaunchTests entirely."
+        },
+        {
+          "item": "a test that had never passed was found and fixed",
+          "evidence": "finding P3-1; ABBirdLaunchTests failed with NullReferenceException because EditMode does not raise Awake for AddComponent, so both _rigidBody and PhysicalSnapshotRuntime.Active were unbound",
+          "result": "fixed in e2d19ae by driving the real Awake chain rather than assigning private fields"
+        },
+        {
+          "item": "regression coverage for callers this plan did not modify",
+          "evidence": "regression-untouched-callers.log over test_webui_server, test_webui_static, test_prepare_test_config, test_sb_action_semantics, test_iratus_aves_scripts",
+          "result": "63 tests, OK. test_webui_server alone carries 46 references to plan-touched modules."
+        },
+        {
+          "item": "flakiness",
+          "evidence": "the focused suite was run twice; both runs reported an identical 348 tests and an identical failure set",
+          "result": "deterministic, no flakiness"
+        }
+      ],
+      "findings": [
+        {
+          "id": "T-1",
+          "severity": "low",
+          "title": "One pre-existing test requires an external dataset fixture that is absent from both trees",
+          "blocking": false,
+          "detail": "tests.test_collect_rollouts.CollectRolloutsTest.test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots reads data/novphy_rollouts_dataset/train/..., which exists in neither the migration worktree nor canonical NovPhy. The test is present at the plan scope base commit, so it predates all work in this plan.",
+          "disclosure": "DISCLOSED, consistent with every prior lane. Not silently excluded and not counted as a pass."
+        }
+      ]
+    },
+    {
+      "lane": 5,
+      "name": "Scope and regression",
+      "verdict": "APPROVE",
+      "checked": [
+        {
+          "item": "no write to the active cohort",
+          "evidence": "git diff over the plan range touches 0 files under data/ at all, let alone data/novphy_rollouts_dataset_20260708_171531; the live smoke recomputed the real active-root digest before and after and it is unchanged at 82b60d3b",
+          "result": "guardrail held"
+        },
+        {
+          "item": "no write to the production player",
+          "evidence": "0 changed files under sciencebirdsgames/Linux; real digest unchanged at ba826ba7; build_physics_player.sh:17 actively refuses that path as an output",
+          "result": "guardrail held; the script reads the jar, config, and serverbackup from it read-only, which is expected"
+        },
+        {
+          "item": "canonical Unity project untouched and still on 2019.3",
+          "evidence": "canonical ProjectVersion.txt still reads 2019.3.4f1 while the migration worktree reads 2019.4.41f2; canonical digest unchanged at 5c1ec096",
+          "result": "the 2019.3 baseline is preserved byte-for-byte"
+        },
+        {
+          "item": "legacy request 38 and 62 preserved",
+          "evidence": "fixture byte tests pass (legacy-request-38-62-fixtures.log) and the live run exercised 62 for the slingshot reference and 38 for the action",
+          "result": "no legacy contract replacement"
+        },
+        {
+          "item": "enriched capture stays opt-in",
+          "evidence": "capture_contract physics_capture_v1 is requested explicitly; the RGB-only predicate is unchanged and its tests pass",
+          "result": "default behaviour unchanged"
+        },
+        {
+          "item": "no trainer, model, or RGB inference added",
+          "evidence": "the 83 changed product paths are confined to docs/, scripts/, src/webui/bridge.py, the migrated Unity project, and tests/",
+          "result": "in scope"
+        },
+        {
+          "item": "the runtime did not change across either re-pin",
+          "evidence": "the shipped player binary SHA-256 is d74bf3f8... at the original pin and unchanged after both the P0-1 and P3-1 commits, which touched only build tooling and tests",
+          "result": "archive identity changed only because provenance.json embeds git_head and git_tree"
+        }
+      ],
+      "findings": []
+    }
+  ],
+  "aggregateVerdict": "APPROVE",
+  "blockingFindings": [],
+  "nonBlockingFindings": ["Q-1", "Q-2", "T-1"]
+}

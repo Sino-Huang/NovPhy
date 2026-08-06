@@ -1,0 +1,8 @@
+task=todo-6-launcher
+invocation=python -m unittest tests.test_prepare_rollout_dataset.PhysicsLauncherTests -v
+observable=9 tests passed
+artifact=.omo/evidence/world-model-physics-instrumentation/task-6-stop-hook-focused.log
+invocation=bash -n scripts/collect_full_rollout_training_dataset.sh; python -m py_compile scripts/prepare_rollout_dataset.py; git diff --check
+observable=all exit 0
+artifacts=.omo/evidence/world-model-physics-instrumentation/task-6-stop-hook-bash-n.log,.omo/evidence/world-model-physics-instrumentation/task-6-stop-hook-pycompile.log
+cleanup=verified absent:/tmp/task6-qa-OuybLr,/tmp/task6-legacy-prepare.py

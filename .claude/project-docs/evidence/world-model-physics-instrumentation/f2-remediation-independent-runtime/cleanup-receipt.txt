@@ -1,0 +1,25 @@
+F2 independent runtime QA cleanup receipt
+Timestamp: 2026-08-06 (local runtime)
+
+Processes:
+- `pgrep -af '/editor/Editor/Unity|Unity.*-batchmode|test-runner'`: no Unity Editor/test process remained (only the probe shell itself).
+- Unity licensing client remained as the host service; it was not started or stopped by this QA.
+
+Ports:
+- `ss -ltnp` checked ports 9001, 2004, 2014, 2024, and 2034: no listeners remained.
+
+Temporary roots/files:
+- The focused persistence tests created six `/tmp/novphy-f2-*` sidecar files. Each was explicitly unlinked after capture.
+- `find /tmp -maxdepth 1 -name 'novphy-f2-*'`: empty after cleanup.
+- Existing unrelated `/tmp/novphy-*` and `/tmp/novphy-task3-verify-*` paths were not touched.
+
+Crash/core files:
+- No `core`, `core.*`, or `*.dmp` file was found under the physics-unity worktree.
+- Unity logs record the known CEF shutdown SIGSEGV after XML persistence; no core file was emitted in the worktree.
+
+Protected cohort:
+- `/mnt/array/sukaih/Project/NovPhy/data/novphy_rollouts_dataset_20260708_171531` was never opened for write.
+- Read-only max-depth-2 inventory fingerprint after QA: `50a703ecc3155269db3a39802f3108391799a3d3c8b7ea3c478dc66309be95d3`.
+
+Worktree:
+- Existing dirty worktree modifications were observed with `git status --short --branch` before and after; no production, canonical project, player, or active-cohort files were edited by this QA.

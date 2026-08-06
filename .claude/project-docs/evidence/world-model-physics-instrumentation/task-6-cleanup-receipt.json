@@ -1,0 +1,11 @@
+{
+  "task": "task-6-launcher",
+  "cleaned": [
+    "/tmp/task6-qa-OuybLr",
+    "/tmp/task6-legacy-prepare.py"
+  ],
+  "verification": {
+    "invocation": "find /tmp/task6-qa-OuybLr -type f -delete; find /tmp/task6-qa-OuybLr -depth -type d -empty -delete; find /tmp -maxdepth 1 -name task6-legacy-prepare.py -type f -delete",
+    "observable": "both absolute paths absent after cleanup"
+  }
+}

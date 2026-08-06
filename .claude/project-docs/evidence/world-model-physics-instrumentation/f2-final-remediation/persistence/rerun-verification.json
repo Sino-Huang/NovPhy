@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "observed_at_utc": "2026-08-05T22:58:12Z",
+  "source_binding": {
+    "git_head": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "scripts/physics_rollout_persistence.py_sha256": "d2e43a52892aea6bf0ed232816718bc8d08a074fda1c6cf4e291069613adcaad",
+    "scripts/collect_rollouts.py_sha256": "409f984aea4892b678e832616379de5db285112c1593fade3a853f86a116ec66",
+    "tests/test_collect_rollouts.py_sha256": "4e8aba745098a39b60eed5631035bd7dce3691dc8bba12ff6b7fff4cff58d73f"
+  },
+  "runtime": {
+    "implementation": "cpython",
+    "version": "3.13.9",
+    "executable": "/home/sukai/miniconda3/bin/python3"
+  },
+  "adversarial_probe_rerun": {
+    "filesystem": "real",
+    "filesystem_mocked": false,
+    "case_count": 6,
+    "passed_case_count": 6,
+    "cases": [
+      "root_pathname_swap_during_persist_metadata_finalization",
+      "metadata_json_symlink_swap_replaced_without_following",
+      "final_shot_destination_symlink_inserted_before_publication",
+      "temporary_shot_entry_swap_after_descriptor_acquisition",
+      "successful_single_descriptor_relative_publication",
+      "interrupted_tmp_cleanup_two_resume_cycles"
+    ],
+    "publication_replace_count": 1,
+    "equal_non_null_src_dst_dir_fds": true,
+    "metadata_byte_identical": true,
+    "write_open_count_beneath_accepted_shot_after_rename": 0,
+    "all_scratch_paths_absent": true
+  },
+  "tests": {
+    "command": "PYTHONDONTWRITEBYTECODE=1 /home/sukai/miniconda3/bin/python3 -m unittest -v tests.test_collect_rollouts.PhysicsCapturePersistenceTests",
+    "count": 30,
+    "result": "OK",
+    "duration_seconds": 1.467
+  },
+  "static_checks": {
+    "py_compile": "pass",
+    "git_diff_check": "pass",
+    "lsp_diagnostics": "unavailable: basedpyright is not installed and installation was previously declined",
+    "no_excuse_checker": {
+      "status": "legacy_findings_only",
+      "finding_count": 53,
+      "new_remediation_findings": 0
+    }
+  }
+}

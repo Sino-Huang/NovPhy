@@ -1,0 +1,85 @@
+{
+  "schema_version": "novphy_f1_final_provenance_audit_v1",
+  "verdict": "FAIL",
+  "audited_at": "2026-08-06T00:00:00+10:00",
+  "scope": {
+    "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+    "product_edits": false,
+    "artifact_directory": ".omo/evidence/world-model-physics-instrumentation/f1-current-audit"
+  },
+  "source_identity": {
+    "head": "b0f312612af00d91295738bca8d4b77566308495",
+    "tree": "395291095cef12fa8214fc4bff47b033149bba3e",
+    "subject": "fix(physics-capture): validate final publication evidence",
+    "worktree_dirty": true,
+    "worktree_status_count": 1413
+  },
+  "archive_identity": {
+    "path": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+    "sha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+    "declared_sha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+    "payload_file_count": 178,
+    "provenance_manifest": ".omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/final-provenance.json",
+    "provenance_manifest_project_head": "95e7b82919c7cc2cd1aa911c4ebf9ffcfba8f9fe",
+    "provenance_manifest_project_tree": "38a67d218fb4573cc73b6827be40130a755f4b98"
+  },
+  "source_scoped_manifest": {
+    "scripts/build_physics_player.sh": "a1cd0d8811818a3d26241fcec03f0a4100132da2281f45dee5d7e08446a7126e",
+    "scripts/package_physics_player.py": "8e6c87fd7ac77b95ded6a7b46e86d7f5d83b44001098080964255e6786613c9f",
+    "scripts/verify_physics_player.py": "ddacb4e595cbc475f8177ac63834cb94f389b780f103932b1360fb851558411a",
+    "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs": "38334eae168097a25e8606c4475ab79f8fea7a514ffd3315af731b05215bc514",
+    "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs": "3a582a93cc541af7bf9e10fae69e37771dde4c0ef3f1565a87a1e9507d930de2"
+  },
+  "checks": [
+    {
+      "id": "exact-static-verifier",
+      "command": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --skip-runtime",
+      "exit": 0,
+      "observable": "archive_checksum_verified=true; payload_checksums_verified=true; archive_sha256=1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+      "artifact": "f1-current-audit/exact-verifier.log"
+    },
+    {
+      "id": "expected-prior-repair-hash",
+      "command": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992 --skip-runtime",
+      "exit": 1,
+      "observable": "archive SHA-256 mismatch against --expect-sha",
+      "artifact": "f1-current-audit/expected-hash-verifier.log"
+    },
+    {
+      "id": "commit-provenance-agreement",
+      "status": "FAIL",
+      "reason": "current HEAD b0f312612af00d91295738bca8d4b77566308495 differs from archive manifest head 95e7b82919c7cc2cd1aa911c4ebf9ffcfba8f9fe"
+    },
+    {
+      "id": "dirty-worktree",
+      "status": "FAIL",
+      "reason": "worktree has 1414 porcelain entries; archive provenance cannot be attributed to a clean source snapshot"
+    },
+    {
+      "id": "stale-state",
+      "status": "FAIL",
+      "reason": "prior rejected receipts reference c7f9fa4c... and 95e7... while current stage is 1c2a1bbc... at b0f312..."
+    },
+    {
+      "id": "misleading-success",
+      "status": "FAIL",
+      "reason": "static payload verification passes but identity agreement does not"
+    }
+  ],
+  "prior_rejected_evidence": [
+    ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-stop-verification.json",
+    ".omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/done-claim.json",
+    ".omo/evidence/world-model-physics-instrumentation/f3-final-retry/archive-declared.sha256"
+  ],
+  "manual_qa": {
+    "channel": "terminal",
+    "hung_command_probe": "timeout --signal=TERM --kill-after=10s 120s python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --skip-runtime",
+    "binary_observable": "completed exit 0 within timeout"
+  },
+  "reasons": [
+    "Archive payload is internally valid.",
+    "Archive provenance is stale relative to exact current repair commit.",
+    "Expected repair hash from prior acceptance no longer matches current archive.",
+    "Dirty worktree prevents clean source attribution."
+  ]
+}

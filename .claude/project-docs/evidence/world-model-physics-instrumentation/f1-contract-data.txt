@@ -1,0 +1,82 @@
+F1 contract/data audit: Todos 1, 5, and 10
+UTC: 2026-08-06
+Auditor mode: read-only except this report. Current ULW attempt: unavailable: `omo ulw-loop status --json` exited nonzero with ULW_LOOP_PLAN_MISSING, so the required fallback report location is used.
+Overall verdict: FAIL
+
+Scope and source inventory
+- Plan: .omo/plans/world-model-physics-instrumentation.md:64-70 (Todo 1), :96-102 (Todo 5), :136-142 (Todo 10).
+- Contract/source: docs/data_contracts/physics_capture_v1.schema.json; tests/fixtures/physics_capture_v1/{physics_state.jsonl,physics_events.jsonl}; scripts/physics_capture_contract.py:67-73; scripts/physics_capture_parsing.py:292; scripts/physics_capture_validation.py; scripts/rollout_artifacts.py:31-83,141-181,229-354; scripts/collect_rollouts.py:836-858,940-998,1658-1677.
+- Reader/source: world_model/data/{__init__.py,catalog.py,dataset.py,supervision.py,types.py}; tests/test_world_model_data.py:137-212,1255-1292,2852-2931.
+- Existing receipts inspected and nonempty: task-1-contract.txt (7093 bytes); task-5-artifacts.txt (1687 bytes); task-10-loader.txt (3102 bytes); task-10-independent-verdict.json (3129 bytes). They are untrusted historical claims and are not used as decisive proof.
+
+Skill-perspective check: RAN
+- Consulted omo:programming and its Python reference. This review applied its strict boundary/typed-error, immutable-record, parse-at-boundary, no-untyped-escape-hatch, and behavior-oriented-test criteria.
+- Consulted omo:remove-ai-slops. This review checked the changed production/tests for needless parsing/normalization, needless abstractions, tautological or implementation-mirroring tests, deletion-only tests, and overfit prompt tests.
+- Result: Todo 1 and 5 have no material violation found in the reviewed scope. Todo 10 violates the programming perspective: its intended typed boundary failure is a runtime NameError. Its test suite also misses that public failure branch, which is a MEDIUM test-relevance issue below. No deletion-only, prompt/prose, or constant-mirroring test was found; the fixture construction is proportionate to exercising real sidecar validation.
+
+Findings
+HIGH H1 -- Required-capability failure is broken for the opt-in reader.
+- Plan criterion: Todo 10 requires `PhysicsSupervisionRequest(required_capabilities, ...)` and says required capabilities must fail closed (plan :136-141).
+- Source: world_model/data/dataset.py:207-213 performs the correct declared-capability check, but dataset.py never imports `ContractValueError`; its references at :209 and :213 therefore resolve to no name. world_model/data/supervision.py:50-64 only validates the request shape, not whether requested capabilities are declared.
+- Reproduction command (exit 1):
+  python - <<'PY'
+  from pathlib import Path
+  import tempfile
+  from tests.test_world_model_data import make_physics_rollout_episode
+  from world_model.data import EpisodeCatalog, PHYSICS_CAPTURE_V1, PhysicsSupervisionRequest, TemporalWindowDataset, TemporalWindowRequest
+  with tempfile.TemporaryDirectory() as temp:
+      root = Path(temp)
+      make_physics_rollout_episode(root / 'train' / 'episode_001')
+      catalog = EpisodeCatalog.build(root, 'train', PHYSICS_CAPTURE_V1)
+      request = PhysicsSupervisionRequest(('undeclared_capability',), False, False)
+      TemporalWindowDataset(catalog, TemporalWindowRequest(1, 1), supervision=request)[0]
+  PY
+- Direct observable: `NameError: name 'ContractValueError' is not defined` at world_model/data/dataset.py:213. This is not the typed `ContractValueError` expected from the public data boundary. Existing `test_required_capability_rejects_legacy_rgb_episode` tests catalog construction with a legacy descriptor (:2887-2893), not the reader request against an enriched catalog.
+- Required remediation: import/use the typed error correctly and add a behavior test that requests an undeclared capability from a valid enriched catalog, asserting the typed rejection. Rerun the focused reader suite and this adversarial probe.
+
+MEDIUM M1 -- Todo 10 test coverage gives false confidence for the required-capability reader branch.
+- Source: tests/test_world_model_data.py:2852-2931 contains five reader tests. None constructs an enriched catalog and passes `PhysicsSupervisionRequest` with a capability absent from that catalog descriptor.
+- Impact: `python -m unittest ...PhysicsSupervisionReaderTests` remains green while the branch at dataset.py:211-213 crashes. This is not a tautological test; it is a missing direct contract test. It is MEDIUM separately but is subsumed by H1 for approval.
+
+Per-Todo criteria
+Todo 1: PASS (current source/test evidence).
+- Mandatory common IDs/clocks/coordinates and unit declarations are defined at scripts/physics_capture_contract.py:11-31 and parsed/validated by load_physics_capture (:67-73).
+- Contract acceptance/failure tests cover valid immutable separate tuples, missing fields, malformed schema, duplicate/out-of-order sequence, persistent-support evidence, exact render-frame equality, deterministic node/contact/support/event order, lifecycle uniqueness, and byte bounds: tests/test_physics_capture_contract.py:53-204.
+- Current focused command includes the Todo 1 exact suite and passed: 14 contract tests, exit 0 (see test output below). Fixture sidecars and schema files exist and are nonempty.
+
+Todo 5: PASS for current focused source/test criteria.
+- Explicit mode/default-off: scripts/collect_rollouts.py:1935 declares `--physics-capture-v1` as `store_true`; legacy validation default is `capture_contract="legacy_rgb_v1"` at :836.
+- Closed sidecars, metadata/provenance, exact PNG/state cardinality and checksums: scripts/rollout_artifacts.py:31-83; atomic temporary lifecycle and recovery/quarantine: scripts/collect_rollouts.py:940-968 and :1658-1677.
+- Enriched contract validation is explicit and rejects malformed/unsupported descriptor data, missing/extraneous frames, state/event/schema/order errors through the shared validator: scripts/rollout_artifacts.py:141-181,229-354.
+- Named plan command passed: `python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_prepare_rollout_dataset.PhysicsCaptureValidationTests -v`, exit 0, 14 tests. Named cases exercise closed pairs, interrupted tmp cleanup, corrupt completed quarantine, malformed request, provenance/sidecar failure, byte/count boundaries, corrupt/stale/frame classes, and legacy default.
+
+Todo 10: FAIL.
+- Present and otherwise aligned: immutable typed records at world_model/data/supervision.py:23-64; shared artifact validation before parsing at :79-94; exact RGB mapping and immutable variable-cardinality tuples at :95-133; opt-in dataset loading at world_model/data/dataset.py:192-220; catalog routes the enriched contract into shared validation at world_model/data/catalog.py:220-238; default sidecar non-opening has a direct legacy dataset test at tests/test_world_model_data.py:1255-1292.
+- Fails H1, so it cannot satisfy the plan's required-capability fail-closed criterion or be approved.
+
+Focused manual-QA command output (run twice for flake check)
+- Command: `python -m unittest tests.test_physics_capture_contract tests.test_world_model_data.PhysicsSupervisionReaderTests -v`
+- Run 1: exit 0; `Ran 19 tests in 1.008s`; `OK`.
+- Run 2: exit 0; `Ran 19 tests in 0.919s`; `OK`.
+- Named happy/failure behaviors that executed: valid fixture/immutable records; malformed schema; duplicate/out-of-order sequence; nonpersistent support; render mismatch; deterministic ordering; missing/corrupt/stale/misaligned/duplicate sidecars; legacy required-capability rejection; no raw-contact/event inclusion when flags are false; immutable snapshot after sidecar drift.
+- The required scenario missing from both green runs is H1: an enriched catalog with an undeclared `PhysicsSupervisionRequest.required_capabilities` member.
+
+UltraQA
+- malformed_input: PASS for current covered source paths; focused suites executed malformed/corrupt/missing/duplicate/misaligned cases.
+- stale_state: PASS for covered sidecar drift/revalidation behavior; test_world_model_data.py:2911-2917 and test_physics_capture_contract.py:197-204 passed.
+- dirty_worktree: PASS as an audit condition. `git status --short` reports 964 dirty entries; no revert/reset was run, and no conclusions depend on a clean worktree.
+- flaky_tests: PASS for the repeated 19-test focused command. Todo 5 named 14-test suite also passed once.
+- misleading_success_output: FAIL. Prior Todo 10 APPROVE evidence was contradicted by a direct current source/behavior probe; its report did not demonstrate the undeclared-request branch.
+- prompt_injection, cancel_resume, hung_or_long, repeated_interruptions: not applicable; this audit did not operate an instruction-execution service, cancellation/resume flow, or long-running process.
+
+Artifact inventory and cleanup receipt
+- Created: this file only.
+- No product/test/plan/ledger files edited. No processes, ports, or persistent temp directories intentionally created. Test `TemporaryDirectory` roots were context-managed; the process scan found no remaining unittest/smoke process. The broad dirty worktree was preserved.
+
+Final
+PASS/FAIL: FAIL
+codeQualityStatus: BLOCK
+recommendation: REQUEST_CHANGES
+blockers:
+1. Fix the undefined `ContractValueError` reference in world_model/data/dataset.py:209-213 so undeclared `PhysicsSupervisionRequest.required_capabilities` fails with the specified typed boundary error.
+2. Add a non-tautological enriched-catalog reader test for that branch, then rerun the focused suite and adversarial probe.

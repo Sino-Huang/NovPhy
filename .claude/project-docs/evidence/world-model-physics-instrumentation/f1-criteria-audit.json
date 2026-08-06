@@ -1,0 +1,181 @@
+{
+  "schema_version": "world_model_physics_f1_criteria_audit_v1",
+  "verdict": "needs-fix",
+  "review_type": "independent_read_only_plan_compliance_audit",
+  "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+  "governed_head": "d72d1af1eb7b9a3cd60b0acb5364689e16735ea5",
+  "plan": ".omo/plans/world-model-physics-instrumentation.md",
+  "baseline": {
+    "scenario": "preserve an already-dirty shared migration worktree",
+    "invocation": "git rev-parse HEAD; git status --porcelain=v1 | wc -l; git diff --name-only -- .omo/plans/world-model-physics-instrumentation.md docs/data_contracts/physics_capture_v1.md scripts/smoke_physics_capture.py tests/test_smoke_physics_capture.py world_model/data/dataset.py tests/test_world_model_data.py",
+    "observable": "HEAD=d72d1af1eb7b9a3cd60b0acb5364689e16735ea5; status count was 991 at the scoped baseline; the listed product paths were already modified or untracked by shared work",
+    "audit_product_edits": [],
+    "audit_created_paths": [
+      ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-todo10-supervision-run1.log",
+      ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-todo10-supervision-run1.exit",
+      ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-todo10-supervision-run2.log",
+      ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-todo10-supervision-run2.exit",
+      ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-todo10-contract-run1.log",
+      ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-todo10-contract-run1.exit",
+      ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-todo10-contract-run2.log",
+      ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-todo10-contract-run2.exit",
+      ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-manual-reader.log",
+      ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-manual-reader.exit",
+      ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit.json"
+    ]
+  },
+  "criterion_map": {
+    "todo_1_contract_and_fixtures": {
+      "status": "confirmed_from_current_artifact",
+      "scenario": "schema fixture parsing, malformed-field rejection, two-sample support, deterministic ordering",
+      "invocation": "python -m unittest tests.test_physics_capture_contract -v",
+      "binary_observable": "prior independent F1 audit records PASS and names nonempty task-1-contract.txt",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/task-1-contract.txt",
+      "audit_limit": "artifact was inspected through the current independent F1 criterion map; this audit did not rerun Unity/schema tests."
+    },
+    "todo_2_snapshot_export": {
+      "status": "confirmed_from_current_artifact",
+      "scenario": "Unity dynamic/static snapshots, stable IDs, current body facts, deterministic clocks/order, legacy JSON parity",
+      "invocation": "Unity 2019.3 EditMode command recorded by Todo 2 evidence",
+      "binary_observable": "task-2-done-claim-independent-qa-2026-08-05.json is present and JSON-valid; current F1 independent map records PASS",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/task-2-done-claim-independent-qa-2026-08-05.json",
+      "audit_limit": "no fresh Unity process was started by this read-only audit."
+    },
+    "todo_3_contacts_support_events": {
+      "status": "confirmed_from_current_artifact",
+      "scenario": "authoritative contacts, support derivation, event taxonomy, and bounded failure envelopes",
+      "invocation": "Unity 2019.3 EditMode physics command recorded by Todo 3 evidence",
+      "binary_observable": "task-3-independent-confirmed-final-2026-08-05.json is present and the current independent F1 map records PASS",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/task-3-independent-confirmed-final-2026-08-05.json",
+      "audit_limit": "no fresh Unity process was started by this read-only audit."
+    },
+    "todo_4_direct_socket_protocol": {
+      "status": "confirmed_from_current_artifact",
+      "scenario": "request 70 envelope, same-frame PNG/state, legacy 38/62 parity, typed malformed rejection",
+      "invocation": "python -m unittest tests.test_webui_bridge.PhysicsCaptureV1Tests -v and malformed-envelope suite, recorded by Todo 4 evidence",
+      "binary_observable": "task-4-v2-independent-confirmed.json is named PASS by the current independent F1 map",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/task-4-v2-independent-confirmed.json",
+      "audit_limit": "no socket/player was started by this audit."
+    },
+    "todo_5_atomic_artifacts": {
+      "status": "confirmed_from_current_artifact",
+      "scenario": "atomic enriched persistence and legacy-compatible validation",
+      "invocation": "PhysicsCapturePersistenceTests and PhysicsCaptureValidationTests recorded by Todo 5 evidence",
+      "binary_observable": "task-5-v2-independent-verdict.json and the current F1 map report PASS; prior fresh focused result is 20/20 with launcher",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/task-5-v2-independent-verdict.json",
+      "audit_limit": "the direct artifact is relied upon; no collector mutation was performed."
+    },
+    "todo_6_opt_in_launcher": {
+      "status": "confirmed_from_current_artifact",
+      "scenario": "opt-in staging, active-root rejection, provenance propagation, legacy defaults",
+      "invocation": "python -m unittest tests.test_prepare_rollout_dataset.PhysicsLauncherTests -v",
+      "binary_observable": "task-6-done-claim.json and the current F1 map report PASS; prior fresh prepare suite is 38/38",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/task-6-done-claim.json",
+      "audit_limit": "not rerun because this audit's required fresh boundary was Todo 10."
+    },
+    "todo_7_staged_player": {
+      "status": "confirmed_from_current_artifact",
+      "scenario": "reproducible staged Unity player, archive digest, static/runtime verification",
+      "invocation": "Todo 7 static/runtime verifier commands recorded in its final receipts",
+      "binary_observable": "task-7-final-stop-verification.json and task-7-verification-rerun-receipt.json are named PASS by the current F1 map",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/task-7-final-stop-verification.json",
+      "audit_limit": "no player build or runtime was started by this audit."
+    },
+    "todo_8_live_engine_action_smoke": {
+      "status": "needs_fix",
+      "scenario": "load a known level, perform one action through request 70, then validate a real accepted enriched shot",
+      "invocation": "timeout --signal=TERM --kill-after=15s 300s python scripts/smoke_physics_capture.py --stage sciencebirdsgames/physics-v1 --output-dir <mktemp>/physics-smoke --report .omo/evidence/world-model-physics-instrumentation/f3-run/happy.json",
+      "binary_observable": "F3-live-happy has exit=0 and status=accepted but actionPerformed=false and eventCount=0; f3-action-probe/report.json records bridge_shoot_return=1 but event_count=0",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/f3-live-qa.json",
+      "failure": "The accepted result does not prove the required post-action request-70 capture/event behavior. The console/smoke success is misleading."
+    },
+    "todo_9_research_data_docs": {
+      "status": "confirmed_from_current_artifact",
+      "scenario": "research-data contract and loader compatibility documentation",
+      "invocation": "Todo 9 documentation verifier commands recorded by its independent quality rerun",
+      "binary_observable": "task-9-independent-quality-rerun.md is named PASS by the current F1 map",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-rerun.md",
+      "audit_limit": "documentation verifier was not rerun."
+    },
+    "todo_10_supervision_reader": {
+      "status": "confirmed_fresh",
+      "scenario": "public opt-in reader accepts valid immutable physics supervision and fails closed for bad sidecars/capabilities while legacy fixture/catalog behavior remains valid",
+      "invocation": "python -m unittest tests.test_world_model_data.PhysicsSupervisionReaderTests -v",
+      "binary_observable": "run1 exit=0, Ran 6 tests, OK; run2 exit=0, Ran 6 tests, OK",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-todo10-supervision-run2.log",
+      "secondary_invocation": "python -m unittest tests.test_world_model_data.WorldModelDataFixtureTests tests.test_world_model_data.EpisodeCatalogTests -v",
+      "secondary_observable": "run1 and run2 exit=0, Ran 28 tests, OK",
+      "secondary_artifact": ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-todo10-contract-run2.log"
+    },
+    "f1_plan_compliance": {
+      "status": "needs_fix",
+      "scenario": "all implementation criteria have non-misleading current evidence",
+      "invocation": "jq '{verdict,recommendation,blockers,exactEvidenceGaps,todoAudit}' .omo/evidence/world-model-physics-instrumentation/f1-plan-compliance-independent.json",
+      "binary_observable": "recommendation=REJECT; Todo 8 is FAIL due actionPerformed=false/eventCount=0",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/f1-plan-compliance-independent.json"
+    },
+    "f2_code_quality": {
+      "status": "needs_fix",
+      "scenario": "a complete quality claim has no known failing suite",
+      "invocation": "jq '{status,known_test_gap,evidence}' .omo/evidence/world-model-physics-instrumentation/f2-done-claim.json",
+      "binary_observable": "status=done but known_test_gap explicitly records a reproduced failing missing-dataset-fixture test; this cannot support an unqualified fully-green claim",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/f2-done-claim.json"
+    },
+    "f3_real_manual_qa": {
+      "status": "needs_fix",
+      "scenario": "live staged player smoke after a gameplay action",
+      "invocation": "jq '{manualQa}' .omo/evidence/world-model-physics-instrumentation/f3-live-qa.json",
+      "binary_observable": "F3-live-happy verdict=REJECT despite exit=0/status=accepted because actionPerformed=false and eventCount=0",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/f3-live-qa.json"
+    },
+    "f4_scope_fidelity": {
+      "status": "confirmed_from_current_artifact",
+      "scenario": "protected roots, opt-in only, legacy preservation, no out-of-scope model/trainer/controller",
+      "invocation": "scope audit commands recorded in f4-scope.txt: git status/diff/ls-files plus protected-path receipts",
+      "binary_observable": "Recommendation=APPROVE; all eight scope boundaries are PASS",
+      "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/f4-scope.txt"
+    }
+  },
+  "manual_qa": {
+    "scenario": "fresh data-shaped fixture calls the public supervision reader with an undeclared capability",
+    "invocation": "python -c 'import tempfile; from pathlib import Path; import world_model.data as d; from tests.test_world_model_data import make_physics_rollout_episode; ... make_physics_rollout_episode(...); catalog = d.EpisodeCatalog.build(...); d.TemporalWindowDataset(..., supervision=d.PhysicsSupervisionRequest((\"undeclared_capability\",)))'",
+    "exit_code": 0,
+    "observable": "exception=ContractValueError; message=invalid supervision capabilities: missing ('undeclared_capability',)",
+    "captured_artifact": ".omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-manual-reader.log",
+    "result": "PASS: no NameError, no unexpected acceptance, and no alternate exception."
+  },
+  "stale_state_check": {
+    "scenario": "Todo 8 evidence binds the smoke driver and test to current files",
+    "invocation": "sha256sum -c .omo/evidence/world-model-physics-instrumentation/task-8-evidence.sha256",
+    "exit_code": 1,
+    "observable": "scripts/smoke_physics_capture.py: FAILED; tests/test_smoke_physics_capture.py: FAILED; sha256sum warns that 2 computed checksums did not match",
+    "current_hashes": {
+      "scripts/smoke_physics_capture.py": "b7fe75aab388426f8303e425c95d1aebfee976907db031446331c5d4545952f3",
+      "tests/test_smoke_physics_capture.py": "8d3e8085f71b3623b922389345b38e4ff210ca7af536a8425fb975a7b810228e"
+    },
+    "result": "FAIL: Todo 8 acceptance evidence is stale relative to the current smoke implementation."
+  },
+  "ultraqa": {
+    "malformed_input": "PASS: fresh public-reader probe rejects unknown capability with ContractValueError.",
+    "stale_state": "FAIL: Todo 8 checksum manifest has two mismatches against current smoke files.",
+    "dirty_worktree": "PASS_WITH_LIMIT: audit preserved all shared changes. Status count increased from the earlier observed 952 to 991 while concurrent work continued; no clean-final-state claim is made.",
+    "flaky_tests": "PASS: each mandated Todo 10 suite was run twice; supervision=6/6 twice and fixture/catalog=28/28 twice.",
+    "misleading_success_output": "FAIL_DETECTED: F3 reports accepted/exit 0 without action or events, so it is not completion evidence for Todo 8.",
+    "cancel_resume": "NOT_APPLICABLE: this audit started no resumable job.",
+    "repeated_interruptions": "NOT_APPLICABLE: this audit was not interrupted.",
+    "prompt_injection": "NOT_APPLICABLE: evidence was parsed as data and never executed as instructions.",
+    "hung_or_long": "PASS: the fresh Python suites completed in under 2 seconds each; no audit-owned long-running process was started."
+  },
+  "cleanup_receipt": {
+    "audit_resources": "Only short-lived unittest processes and a TemporaryDirectory fixture were created; the fixture was explicitly cleaned up by the manual probe.",
+    "verification_invocation": "ps -eo pid=,command= | rg '[s]moke_physics_capture|[9]001\\.x86_64|[X]vfb|[X]vnc|[g]ame_playing_interface|[f]1-criteria-audit' || true; ss -ltnp '( sport = :2004 or sport = :9001 or sport = :9002 )' || true; test ! -e .omo/evidence/world-model-physics-instrumentation/f1-criteria-audit-tmp",
+    "observable": "No audit-owned test/API process, listener, fixture root, or port remained. A distinct concurrent Todo 8 smoke process was observed and deliberately preserved; it is not owned by this audit.",
+    "result": "PASS"
+  },
+  "required_repairs": [
+    "Make Todo 8's live smoke perform a real action and retain a post-action request-70 capture containing the expected action event(s).",
+    "Regenerate Todo 8 acceptance evidence and task-8-evidence.sha256 from the exact current smoke driver and test after that action-bearing run passes.",
+    "Do not promote F1/F3 or the overall plan based on exit=0/status=accepted alone; assert action and event observables.",
+    "Resolve or explicitly scope the F2 missing-fixture test gap before claiming a fully green quality gate."
+  ]
+}

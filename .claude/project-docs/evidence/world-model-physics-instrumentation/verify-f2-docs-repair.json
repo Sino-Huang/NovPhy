@@ -1,0 +1,82 @@
+{
+  "kind": "AdversarialVerify",
+  "verdict": "confirmed",
+  "originalFinding": "F2 MEDIUM 1: replace the prose-token oracle while retaining executable checks for schema examples, staged provenance, and runnable command blocks",
+  "currentArtifacts": {
+    "scripts/verify_physics_capture_docs.py": "07b6c301664f6bc45d101e23e0cdf186cb4ac989850ded353e9bfae0cfbaed68",
+    "tests/test_verify_physics_capture_docs.py": "0d663510d4ab0f8eae11ee6e4ed7a99f102bc3c4cec48f83c0164aa58dc66e99",
+    "docs/data_contracts/physics_capture_v1.md": "9ecf03ea483c1f1182b5945a1b58e2802323e2281c2bb105607bbb0559f43d4b"
+  },
+  "evidence": [
+    {
+      "scenario": "focused regression suite",
+      "command": "python -m unittest tests.test_verify_physics_capture_docs -v",
+      "observable": "exit 0; Ran 7 tests; OK"
+    },
+    {
+      "scenario": "real published documentation CLI",
+      "command": "python scripts/verify_physics_capture_docs.py docs",
+      "observable": "exit 0; physics capture documentation verified"
+    },
+    {
+      "scenario": "broader harmless explanatory prose rewrite in an isolated docs copy",
+      "command": "replace the cohort explanation outside fenced blocks and invoke the real CLI",
+      "observable": "exit 0"
+    },
+    {
+      "scenario": "exact prior promotion counterexample",
+      "command": "insert an unterminated double quote after stage=sciencebirdsgames/physics-v1 while retaining all required tokens",
+      "observable": "exit 1; promotion command has invalid shell syntax"
+    },
+    {
+      "scenario": "malformed collection block",
+      "command": "insert an unterminated double quote after PHYSICS_CAPTURE_V1=1 while retaining all required tokens",
+      "observable": "exit 1; collection command has invalid shell syntax"
+    },
+    {
+      "scenario": "malformed rollback block targeted within its named fence",
+      "command": "append an unterminated double quote inside physics_capture_v1_rollback while retaining all required tokens",
+      "observable": "verifier exit 1 with rollback command has invalid shell syntax; bash -n independently exits 2"
+    },
+    {
+      "scenario": "machine-consumed schema mutation",
+      "command": "change $defs.coordinates.properties.world_space.const to corrupt_space in an isolated docs copy",
+      "observable": "exit 1; coordinate schema does not match the frozen contract"
+    },
+    {
+      "scenario": "staged provenance mutation",
+      "command": "use the actual staged archive via an isolated repository symlink and change smoke provenance.archive_sha256",
+      "observable": "exit 1; smoke report archive SHA-256 does not match the documented stage"
+    },
+    {
+      "scenario": "current command block syntax",
+      "command": "extract collection, promotion, and rollback blocks and pipe each to bash -n",
+      "observable": "all three exit 0 without execution"
+    },
+    {
+      "scenario": "static and size gates",
+      "command": "python -m py_compile; git diff --check; pure-LOC awk audit",
+      "observable": "all pass; verifier pure LOC=247, below the 250 limit"
+    }
+  ],
+  "staleAndDirtyState": {
+    "archiveBytesSha256": "c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992",
+    "archiveReceiptSha256": "c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992",
+    "staleMismatchObserved": false,
+    "dirtyWorktree": "docs file remains modified and verifier/tests remain untracked; reviewed their full current contents and hashes rather than relying on git diff",
+    "misleadingSuccessProbe": "resolved: syntactically malformed named blocks now produce nonzero status and no success message"
+  },
+  "slopAndProgrammingReview": {
+    "result": "pass for the stated F2 criterion",
+    "production": "The verifier parses machine-consumed schema/provenance structures and uses bash -n for non-executing command syntax validation. General prose wording is no longer pinned.",
+    "tests": "Schema/provenance mutations and real CLI outcomes are behavioral. The new command test preserves required tokens while independently breaking syntax, so it is not a deletion-only or token-mirroring proof.",
+    "size": "247 pure LOC; no oversized-module violation"
+  },
+  "evidencePaths": [
+    ".omo/evidence/world-model-physics-instrumentation/task-9-f2-stop-verification-3.json",
+    ".omo/evidence/world-model-physics-instrumentation/f2-code-quality.txt",
+    "scripts/verify_physics_capture_docs.py:213",
+    "tests/test_verify_physics_capture_docs.py:126"
+  ],
+  "cleanup": "All adversarial mutations used TemporaryDirectory contexts; no QA process, port, or temporary directory remains. Only this requested report artifact was updated."
+}

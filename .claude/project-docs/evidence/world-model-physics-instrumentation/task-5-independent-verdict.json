@@ -1,0 +1,107 @@
+{
+  "plan_task": "Todo 5 - Persist enriched shot artifacts atomically and validate their capture contract",
+  "verdict": "needs-fix",
+  "review_mode": "independent read-only gate with fresh evidence only",
+  "commands": [
+    {
+      "command": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_prepare_rollout_dataset.PhysicsCaptureValidationTests -v",
+      "exit_code": 0,
+      "result": "3 tests passed: one valid one-frame persistence case, repeated tmp cleanup, and legacy default predicate"
+    },
+    {
+      "command": "python -m unittest tests.test_world_model_data.RolloutArtifactValidatorTests tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_canonical_existing_requires_raw_artifacts_and_level_five_action_policy tests.test_prepare_rollout_dataset.PrepareRolloutDatasetTest.test_canonical_existing_rejects_symlinked_or_incomplete_raw_artifacts -v",
+      "exit_code": 1,
+      "result": "6 tests ran; 5 passed and existing RolloutArtifactValidatorTests.test_public_validator_rejects_unknown_and_unsupported_contracts failed: INVALID_SHOT_ARTIFACT returned instead of UNSUPPORTED_CAPTURE_CONTRACT"
+    },
+    {
+      "command": "sha256sum world_model/data/*.py | sort",
+      "exit_code": 0,
+      "result": "all 12 hashes exactly matched task-5-data-pipeline-source-baseline.sha256"
+    },
+    {
+      "command": "git diff --exit-code -- .gitignore",
+      "exit_code": 0,
+      "result": ".gitignore unchanged"
+    },
+    {
+      "command": "inspect.signature(capture_physics_rollout).bind(object(), object(), target_fps=1.0, duration_seconds=1.0, max_frames=1, action={}, clock=..., sleeper=...)",
+      "exit_code": 0,
+      "result": "Reproduced TypeError: got an unexpected keyword argument 'action', proving incompatibility with collect_rollouts capture_kwargs"
+    }
+  ],
+  "source_findings": [
+    {
+      "status": "fail",
+      "criterion": "--physics-capture-v1 collector mode consumes request 70 and persists enriched rollout frames",
+      "evidence": "scripts/collect_rollouts.py:1580-1608 always passes legacy capture_kwargs including action, pre_shot_image/pre_shot_sample when present, clock, and sleeper into capture_rollout. scripts/collect_rollouts.py:956-969 capture_physics_rollout does not accept action or pre-shot keywords. The production opt-in path therefore raises TypeError; the focused persistence test calls capture_physics_rollout directly and does not exercise collect_rollouts."
+    },
+    {
+      "status": "fail",
+      "criterion": "Shared canonical validator accepts valid explicit physics_capture_v1 only after shared sidecar validation and fails closed with required provenance",
+      "evidence": "scripts/rollout_artifacts.py:86-88 accepts the bare string physics_capture_v1 and returns the constant descriptor immediately, bypassing descriptor fields; world_model/data/types.py defines that constant with player_provenance and protocol_provenance as null. scripts/rollout_artifacts.py:98-103 also permits null provenance for object descriptors. This violates complete and validated player/protocol/archive provenance. Archive checksum is not represented or checked by the shared validator."
+    },
+    {
+      "status": "fail",
+      "criterion": "Metadata/manifest contain explicit enriched metadata, provenance, relative sidecar paths, and counts",
+      "evidence": "scripts/collect_rollouts.py:966-1006 defaults player_sha256, protocol_sha256, and archive_sha256 to None and persists those nulls; its manifest uses a bare string capture_contract and has no player/protocol/archive checksum fields."
+    },
+    {
+      "status": "fail",
+      "criterion": "Acceptance tests prove corrupt enriched sidecar classes are excluded",
+      "evidence": "tests/test_prepare_rollout_dataset.py:718-724 contains only test_legacy_rgb_predicate_remains_default. The exact mandated command runs only three tests and has no enriched episode validator cases for missing/truncated/extra/out-of-order/duplicate/render mismatch/stale/extra frame/symlink/path escape."
+    },
+    {
+      "status": "fail",
+      "criterion": "Relevant adjacent validator and legacy tests pass",
+      "evidence": "Fresh adjacent run fails tests.test_world_model_data.RolloutArtifactValidatorTests.test_public_validator_rejects_unknown_and_unsupported_contracts because Todo 5 changed the contract boundary from UNSUPPORTED_CAPTURE_CONTRACT to partial physics validation returning INVALID_SHOT_ARTIFACT."
+    },
+    {
+      "status": "pass",
+      "criterion": "Collector option defaults off and request 70 is selected only in opt-in enriched mode",
+      "evidence": "scripts/collect_rollouts.py parser uses store_true and main replaces capture_rollout with capture_physics_rollout only when args.physics_capture_v1 is true. capture_physics_rollout calls get_physics_capture_v1."
+    },
+    {
+      "status": "pass",
+      "criterion": "Closed JSONL and temporary attempt mechanics exist",
+      "evidence": "_write_closed_jsonl flushes and fsyncs under a context manager; cleanup_incomplete_physics_attempts removes sibling shot_*.tmp directories; accepted enriched paths are renamed after validation."
+    }
+  ],
+  "manual_qa": {
+    "fresh_mktemp_run": "not repeated after source and adjacent-test blockers conclusively required needs-fix; executor receipt was inspected but treated as untrusted",
+    "executor_receipt_findings": "task-5-manual-qa.json covers valid one-frame capture, malformed JSONL, quarantine, and repeated resume cleanup, but does not cover every named corrupt class and used nullable provenance",
+    "hashes": {
+      "world_model_overlay": "exact baseline match",
+      "gitignore": "unchanged"
+    },
+    "cleanup": "No product/test changes or persistent temporary QA root created by reviewer; no reviewer-started Unity/player processes"
+  },
+  "executor_caveat": {
+    "claimed_absent_dataset_test": "tests.test_collect_rollouts.RolloutCollectionTests.test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots references data/novphy_rollouts_dataset/... rather than the protected 20260708 root and is environmental/pre-existing when absent",
+    "gate_effect": "unrelated to the reproduced Todo 5 adjacent regression; the regression cannot be hidden by this caveat"
+  },
+  "adversarial_classes": {
+    "malformed_input": "fail - only malformed JSONL is evidenced; named corrupt matrix lacks tests",
+    "cancel_resume": "partial pass - repeated shot_*.tmp cleanup test passes",
+    "stale_state": "fail - stale schema/files are not covered by acceptance class",
+    "dirty_worktree": "accounted - concurrent Todo 2-4 edits observed and not reverted",
+    "flaky_tests": "fail gate - focused tests pass but adjacent validator deterministically fails",
+    "misleading_success_output": "caught - executor green claim omitted narrow coverage and adjacent regression",
+    "repeated_interruptions": "partial pass - cleanup is deterministic for recreated tmp directory",
+    "prompt_injection": "ruled out - no untrusted instruction-bearing artifact influenced execution",
+    "hung_or_long_commands": "ruled out - all fresh commands completed within 30 seconds"
+  },
+  "protected_state": {
+    "canonical_main_overlay": "world_model/data hashes match source baseline; protected active dataset existence confirmed by executor receipt at /mnt/array/sukaih/Project/NovPhy/data/novphy_rollouts_dataset_20260708_171531",
+    "production_player": "reviewer did not launch or modify it",
+    "canonical_unity_project": "reviewer did not modify it; migration worktree contains concurrent Todo 2-4 changes",
+    "secret_scan": "executor receipt inspected; no reviewer-created secrets",
+    "residue": "no reviewer-created temp directories, ports, locks, or processes"
+  },
+  "risks": [
+    "The actual opt-in collector path is not runnable because its selected capture function is incompatible with the collector's keyword call contract.",
+    "Bare-string enriched contracts can be accepted without immutable player/protocol/archive provenance.",
+    "The current focused suite creates false confidence because almost the entire enriched validator corruption matrix is absent.",
+    "Existing shared-validator behavior has regressed, showing the change is not integration-clean."
+  ],
+  "confidence": "high"
+}

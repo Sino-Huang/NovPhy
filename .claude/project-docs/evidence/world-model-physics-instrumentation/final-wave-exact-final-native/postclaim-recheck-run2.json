@@ -1,0 +1,18 @@
+{
+  "blocker_artifact": "postclaim-recheck-run2.log",
+  "cleanup": "owned recheck process terminated; no Unity/runtime process or lock created",
+  "current_head": "6668b12f43f2c577c7f2446c98aedea0811f913e",
+  "current_tree": "4107ef110108c82404974de51c2b3f2409c5fbef",
+  "original_blocker_artifact": "build-1.log",
+  "packager_guard_exit": 1,
+  "packager_guard_observable": "PackagingError: tracked product source differs from HEAD",
+  "product_diff_exit": 1,
+  "product_diff_paths": [
+    "scripts/build_physics_player.sh",
+    "scripts/package_physics_player.py",
+    "tests/test_build_physics_player.py",
+    "tests/test_package_physics_player.py"
+  ],
+  "protected_roots": "previously verified unchanged in protected-comparison.json; fresh rescan interrupted after bounded wait",
+  "verdict": "needs-fix"
+}

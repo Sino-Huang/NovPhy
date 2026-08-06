@@ -1,0 +1,38 @@
+{
+  "status": "DONE",
+  "build": {
+    "invocation": "timeout 900s ./scripts/build_physics_player.sh",
+    "unity": "2019.4.41f2-6b23d448b533",
+    "archive": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+    "archive_sha256": "127d0846630ae275e0d6f2862ac289fe20e5571866c705f9a1a555a2a67e9166",
+    "artifact": ".omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-build.log"
+  },
+  "manual_protocol": {
+    "scenario": "Fresh unpacked final archive; PLAYING; request 62 then direct request 70",
+    "invocation": "DISPLAY=:10 verify_runtime(agent_port=22124, game_port=29124, physics_port=2004)",
+    "observable": "legacy_request_62=true, legacy_feature_batches=1, request_70=true, request_70_render_frame=9894; no handler NullReferenceException",
+    "artifacts": [
+      ".omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-client.log",
+      ".omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-java.log",
+      ".omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-player.log"
+    ]
+  },
+  "all_affected_editmode": {
+    "scenario": "Complete 33-test EditMode inventory partitioned by fixture after final source",
+    "observable": "7 parseable XML partitions, total=33 passed=33 failed=0",
+    "artifact": ".omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-all-editmode-receipt.xml"
+  },
+  "cleanup": {
+    "observable": "temporary final clone removed; task-owned process, port, and EditorInstance lock receipts empty",
+    "artifacts": [
+      ".omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-temp-cleanup.txt",
+      ".omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-process-cleanup.txt",
+      ".omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-port-cleanup.txt"
+    ]
+  },
+  "protected_roots": {
+    "production_player": "exact manifest match (cmp exit 0)",
+    "active_dataset": "zero files newer than 2026-08-05T17:40:00",
+    "canonical_project": "baseline differs only by pre-existing ABGameWorldLifecycleTests.cs/.meta timestamped 16:48; no files newer than task window"
+  }
+}

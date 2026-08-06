@@ -1,0 +1,61 @@
+{
+  "schema_version": "novphy_done_claim_v1",
+  "task": "F2 descriptor-bound TOCTOU remediation",
+  "result": "done",
+  "completed_at": "2026-08-06T03:57:59+10:00",
+  "source_hashes": {
+    "scripts/physics_artifact_validation.py": "641b05d92f275985bb7073ae09858b0d4151ed6c946f4f240d88223ffcdd6b0a",
+    "scripts/rollout_artifacts.py": "b645fb7394230221a52e707df59aa41e416bdf8e0f1cca26e79d248adb3767d7",
+    "tests/test_collect_rollouts.py": "4e3342f29233a9928f09df064e4e16bfa15c3852684151bec050f12d1d55766d"
+  },
+  "criteria": [
+    {
+      "criterion": "post-check path replacement is rejected",
+      "scenario": "after static confinement succeeds, replace physics_state.jsonl or frames/frame_000000.png with an external byte-identical symlink",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_checked_sidecar_and_frame_cannot_be_swapped_to_external_symlink",
+      "binary_observable": "1 test passed; both subtests raise PhysicsArtifactError after exercising the swap",
+      "artifact": "f2-remediation-toctou-post-refactor-race.log"
+    },
+    {
+      "criterion": "descriptor consumers start at byte zero",
+      "scenario": "validate valid metadata, state/event JSONL, and PNG dimensions/checksums after Pillow and parser descriptor reads",
+      "invocation": "python -m unittest tests.test_physics_capture_contract tests.test_collect_rollouts.PhysicsCapturePersistenceTests",
+      "binary_observable": "37/37 passed twice; no recorded-checksum mismatch",
+      "artifacts": [
+        "f2-remediation-toctou-final-focused-run1.log",
+        "f2-remediation-toctou-final-focused-run2.log"
+      ]
+    },
+    {
+      "criterion": "adjacent dataset preparation remains green",
+      "scenario": "run the complete rollout dataset preparation module",
+      "invocation": "python -m unittest tests.test_prepare_rollout_dataset",
+      "binary_observable": "38/38 passed",
+      "artifact": "f2-remediation-toctou-post-refactor-prepare-green.log"
+    },
+    {
+      "criterion": "collector regression surface remains stable",
+      "scenario": "run the complete collector module in the worktree without copying absent canonical fixtures",
+      "invocation": "python -m unittest tests.test_collect_rollouts",
+      "binary_observable": "83 tests ran; exactly the pre-declared hard-coded missing-dataset-fixture test failed",
+      "artifacts": [
+        "f2-remediation-toctou-final-collect-rollouts.log",
+        "f2-remediation-toctou-missing-fixture.log"
+      ]
+    },
+    {
+      "criterion": "scoped static gates",
+      "scenario": "compile and whitespace-check the extracted validator, caller, and focused test file",
+      "invocation": "python -m py_compile scripts/physics_artifact_validation.py scripts/rollout_artifacts.py tests/test_collect_rollouts.py; git diff --check -- scripts/physics_artifact_validation.py scripts/rollout_artifacts.py tests/test_collect_rollouts.py",
+      "binary_observable": "both commands report PASS",
+      "artifacts": [
+        "f2-remediation-toctou-final-pycompile.log",
+        "f2-remediation-toctou-final-diff-check.log",
+        "f2-remediation-toctou-final-hashes.log"
+      ]
+    }
+  ],
+  "known_environment_condition": "The two data/novphy_rollouts_dataset roots referenced by CollectRolloutsTest.test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots are absent.",
+  "plan_or_ledger_mutated": false,
+  "committed": false
+}

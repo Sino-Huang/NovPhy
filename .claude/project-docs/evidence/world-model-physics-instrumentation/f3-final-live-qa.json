@@ -1,0 +1,127 @@
+{
+  "schema_version": "novphy_f3_manual_qa_v2",
+  "attempt": "F3-final-live",
+  "AdversarialVerify": "needs-fix",
+  "verdict": "needs-fix",
+  "verdict_reasons": [
+    "The literal scripts/smoke_physics_capture.py invocation was bounded and terminated before launch because protected_roots active-data manifest traversal did not complete.",
+    "Independent live request-38/request-70 capture produced a real bird_launched event and synchronized PNG, but capture_physics_rollout rejected the fresh machine response as malformed_capture: clock counters must be nonnegative; no accepted fresh shot exists."
+  ],
+  "stage": "sciencebirdsgames/physics-v1",
+  "archive_sha256": "c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992",
+  "manualQa": {
+    "surfaceEvidence": [
+      {
+        "scenarioId": "F3-live-smoke-happy",
+        "criterionRef": "Todo 8 live staged-player smoke: real gameplay action, authoritative bird_launched, accepted physics_capture_v1 shot",
+        "surface": "scripts/smoke_physics_capture.py against a fresh staged archive clone",
+        "exactInvocation": "timeout --signal=TERM --kill-after=15s 180s python scripts/smoke_physics_capture.py --stage sciencebirdsgames/physics-v1 --output-dir /tmp/f3final-live-20260806-1/physics-smoke --report .omo/evidence/world-model-physics-instrumentation/f3-final-live-happy.json --agent-port 45971 --game-port 59429 --physics-port 2004",
+        "verdict": "FAIL",
+        "binaryObservables": {
+          "exit": "terminated after bounded 60s observation; no report emitted",
+          "phase": "protected_roots active_data nested manifest traversal",
+          "acceptedShot": null,
+          "protectedUnchanged": "not reached"
+        },
+        "artifactRefs": ["smoke-hung-transcript", "smoke-hung-cleanup"]
+      },
+      {
+        "scenarioId": "F3-live-direct-action",
+        "criterionRef": "Todo 8 request-38 action and request-70 authoritative capture",
+        "surface": "fresh unpacked staged player, private Xvnc, Java interface, direct Python bridge",
+        "exactInvocation": "timeout --signal=TERM --kill-after=15s 240s python - <<'PY' ... perform_known_action(bridge); capture_finalized_action(2004); capture_physics_rollout(...) ... PY",
+        "verdict": "FAIL",
+        "binaryObservables": {
+          "legacyRequest62": "one nonempty list feature batch",
+          "request38": "response=1, request_code=38, ground_truth_count=1",
+          "request70": "PNG magic 89504e470d0a1a0a, 80746 bytes, render_frame=16008, nodes=14, events=7",
+          "eventTypes": ["stable_entered", "bird_launched", "stable_exited", "entity_destroyed", "bird_exhausted", "stable_entered", "level_failed"],
+          "stateClocks": {"sequence": 2, "render_frame": 16008, "render_time": 12.2219334, "fixed_step": 548, "fixed_time": 12.2199993},
+          "persistence": "rejected: malformed_capture: invalid_value at physics_state.jsonl:2: clock counters must be nonnegative",
+          "acceptedShot": null
+        },
+        "artifactRefs": ["direct-action-report", "direct-action-state", "direct-action-events", "direct-action-png", "direct-action-cleanup"]
+      },
+      {
+        "scenarioId": "F3-live-legacy-request-62",
+        "criterionRef": "Todo 8 legacy request 62 byte compatibility",
+        "surface": "fresh unpacked staged player, direct recorded socket bridge",
+        "exactInvocation": "timeout --signal=TERM --kill-after=15s 220s python - <<'PY' ... ScienceBirdsBridge(...); configure; prepare_for_play; get_symbolic_state_without_screenshot(); get_physics_capture_v1() ... PY",
+        "verdict": "PASS",
+        "binaryObservables": {
+          "request62WireByte": "3e",
+          "request62FeatureBatches": 1,
+          "request62PayloadSha256": "a0123a9e308b43015d4638f00620c23a97552787ca87d8dfc22b3ae11fab3296",
+          "request70WireByte": "46",
+          "request70PngMagic": "89504e470d0a1a0a",
+          "request70RenderFrame": 9290,
+          "request70Nodes": 14
+        },
+        "artifactRefs": ["legacy-wire-report", "legacy-wire-bytes", "legacy-request62-output", "legacy-wire-cleanup"]
+      },
+      {
+        "scenarioId": "F3-archive-provenance",
+        "criterionRef": "Todo 7 staged archive and provenance",
+        "surface": "sciencebirdsgames/physics-v1 archive receipt",
+        "exactInvocation": "sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz; python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992 --skip-runtime",
+        "verdict": "PASS",
+        "binaryObservables": {"archiveSha256": "c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992", "playerSha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa", "protocolSha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a"},
+        "artifactRefs": ["archive-sha-final", "archive-static-provenance"]
+      },
+      {
+        "scenarioId": "F3-protected-roots",
+        "criterionRef": "Todo 8 canonical project, production player, active cohort unchanged",
+        "surface": "canonical checkout protected roots",
+        "exactInvocation": "python protected receipt comparison for canonical_project, production_player, and active_data root; sha256sum staged archive",
+        "verdict": "FAIL",
+        "binaryObservables": {"canonicalProjectByteEqual": true, "productionPlayerByteEqual": true, "activeRootStatEqual": true, "activeRootRecursiveBytes": "not proven: bounded recursive scan did not complete"},
+        "artifactRefs": ["protected-comparison", "active-data-comparison", "active-stat-after"]
+      },
+      {
+        "scenarioId": "F3-regression-tests",
+        "criterionRef": "Relevant smoke unit tests before and after live execution",
+        "surface": "tests.test_smoke_physics_capture",
+        "exactInvocation": "timeout --signal=TERM --kill-after=10s 120s python -m unittest tests.test_smoke_physics_capture -v",
+        "verdict": "PASS",
+        "binaryObservables": {"preExit": 0, "postExit": 0, "preTests": 11, "postTests": 11},
+        "artifactRefs": ["smoke-tests-pre", "smoke-tests-post"]
+      }
+    ],
+    "adversarialCases": [
+      {"scenarioId": "F3-malformed-clock", "criterionRef": "Fail closed on malformed state", "adversarialClass": "malformed sidecar clock", "expectedBehavior": "validator rejects and no acceptance", "verdict": "PASS", "artifactRefs": ["adversarial-results"]},
+      {"scenarioId": "F3-stale-frame", "criterionRef": "Fail closed on stale/misleading RGB alignment", "adversarialClass": "state/RGB render-frame mismatch", "expectedBehavior": "validator rejects render_frame_mismatch", "verdict": "PASS", "artifactRefs": ["adversarial-results"]},
+      {"scenarioId": "F3-missing-sidecar", "criterionRef": "Fail closed on incomplete artifact", "adversarialClass": "missing physics_events.jsonl", "expectedBehavior": "validator rejects missing artifact", "verdict": "PASS", "artifactRefs": ["adversarial-results"]},
+      {"scenarioId": "F3-hung-command", "criterionRef": "Bounded smoke command and cleanup", "adversarialClass": "hung active-data manifest traversal", "expectedBehavior": "bounded termination, no owned runtime left", "verdict": "PASS", "artifactRefs": ["smoke-hung-cleanup", "process-scan-after"]},
+      {"scenarioId": "F3-interruption-cancel", "criterionRef": "Interruption/cancel cleanup", "adversarialClass": "SIGTERM cancellation during smoke preflight", "expectedBehavior": "engine/display/temp resources absent", "verdict": "PASS", "artifactRefs": ["temp-cleanup", "output-cleanup", "listeners-after"]},
+      {"scenarioId": "F3-dirty-worktree", "criterionRef": "Do not mutate unrelated dirty worktree", "adversarialClass": "pre-existing dirty worktree", "expectedBehavior": "preserve changes and leave staged archive/protected roots unchanged", "verdict": "PASS", "artifactRefs": ["git-status-after", "archive-sha-final", "protected-comparison"]}
+    ]
+  },
+  "artifactRefs": [
+    {"id": "smoke-hung-transcript", "kind": "command-transcript", "description": "Fresh official smoke produced no report while active-data protected manifest traversal remained running.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/happy.stdout"},
+    {"id": "smoke-hung-cleanup", "kind": "cleanup-receipt", "description": "Bounded smoke termination and no report/output acceptance.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/hung-command.cleanup.txt"},
+    {"id": "direct-action-report", "kind": "json-report", "description": "Fresh direct staged-player action and request-70 machine observables; persistence rejected.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/direct-live-3/report.json"},
+    {"id": "direct-action-state", "kind": "raw-machine-output", "description": "Raw request-70 state with clocks and 14 nodes.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/direct-live-3/raw-state.json"},
+    {"id": "direct-action-events", "kind": "raw-machine-output", "description": "Raw request-70 event stream containing bird_launched.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/direct-live-3/raw-events.json"},
+    {"id": "direct-action-png", "kind": "accepted-shot-candidate", "description": "PNG returned in the same request-70 response; no accepted shot because persistence rejected.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/direct-live-3/raw.png"},
+    {"id": "direct-action-cleanup", "kind": "cleanup-receipt", "description": "Direct engine/Xvnc exits after live action.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/direct-live-3/cleanup.json"},
+    {"id": "legacy-wire-report", "kind": "json-report", "description": "Fresh request-62/request-70 direct interaction report.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/legacy-wire-2/report.json"},
+    {"id": "legacy-wire-bytes", "kind": "wire-transcript", "description": "Recorded send/receive bytes showing request 62 byte 0x3e and request 70 byte 0x46.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/legacy-wire-2/wire.jsonl"},
+    {"id": "legacy-request62-output", "kind": "machine-output", "description": "Nonempty JSON feature batch returned by request 62.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/legacy-wire-2/request-62-output.json"},
+    {"id": "legacy-wire-cleanup", "kind": "cleanup-receipt", "description": "Fresh legacy staged-player engine/Xvnc cleanup.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/legacy-wire-2/cleanup.json"},
+    {"id": "archive-sha-final", "kind": "checksum", "description": "Final staged archive checksum.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/archive-sha256-final.txt"},
+    {"id": "archive-static-provenance", "kind": "provenance", "description": "Staged archive provenance manifest and payload verification source.", "path": "sciencebirdsgames/physics-v1/archive.sha256"},
+    {"id": "protected-comparison", "kind": "protected-receipt", "description": "Canonical project and production player content SHA equality; active root bounded note.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/protected-comparison.json"},
+    {"id": "active-data-comparison", "kind": "protected-receipt", "description": "Active cohort root stat receipt equality.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/active-data-comparison.json"},
+    {"id": "active-stat-after", "kind": "protected-receipt", "description": "Active cohort root and top-level directory stats.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/active-stat-after.txt"},
+    {"id": "smoke-tests-pre", "kind": "test-transcript", "description": "Eleven smoke unit tests before live execution.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/smoke-tests-pre.log"},
+    {"id": "smoke-tests-post", "kind": "test-transcript", "description": "Eleven smoke unit tests after live execution.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/smoke-tests-post.log"},
+    {"id": "adversarial-results", "kind": "validator-transcript", "description": "Malformed-clock, stale-frame, and missing-sidecar copies all rejected.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/adversarial-results.json"},
+    {"id": "process-scan-after", "kind": "cleanup-receipt", "description": "Post-run process scan; no owned player/Xvnc/smoke process remained.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/process-scan-after.txt"},
+    {"id": "listeners-after", "kind": "cleanup-receipt", "description": "Post-run listener inventory; physics port 2004 absent.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/listeners-after.txt"},
+    {"id": "temp-cleanup", "kind": "cleanup-receipt", "description": "All five QA-owned temporary player clones removed.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/temp-cleanup-receipt.json"},
+    {"id": "output-cleanup", "kind": "cleanup-receipt", "description": "Official smoke temporary output root removed.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/output-cleanup-receipt.json"},
+    {"id": "git-status-after", "kind": "worktree-observation", "description": "Dirty worktree inventory preserved; no revert performed.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/git-status-after.txt"},
+    {"id": "artifact-checksums", "kind": "checksum-manifest", "description": "SHA-256 inventory for all nonempty F3 final artifacts.", "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/artifact-sha256s.txt"}
+  ],
+  "cleanupReceipt": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/temp-cleanup-receipt.json"
+}

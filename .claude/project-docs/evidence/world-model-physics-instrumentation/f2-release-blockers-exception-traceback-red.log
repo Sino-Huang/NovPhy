@@ -1,0 +1,15 @@
+E
+======================================================================
+ERROR: test_persistence_error_supports_standard_exception_traceback_state (tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_persistence_error_supports_standard_exception_traceback_state)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 76, in test_persistence_error_supports_standard_exception_traceback_state
+    error.__traceback__ = None
+    ^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 5, in __setattr__
+TypeError: super(type, obj): obj must be an instance or subtype of type
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (errors=1)

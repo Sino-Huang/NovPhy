@@ -1,0 +1,42 @@
+SCENARIO: full collector suite lone failure uses fixtures absent from worktree
+INVOCATION: python -m unittest tests.test_collect_rollouts.CollectRolloutsTest.test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots -v
+HEAD contains the same pre-existing hard-coded fixture test:
+    def test_capture_desktop_rollout_does_not_let_state_polling_throttle_frames(self):
+        class Grabber:
+            def grab(self):
+                from PIL import Image
+
+                image = Image.new("RGB", (4, 3), (10, 20, 30))
+                image.putpixel((0, 0), (70, 80, 90))
+                return image
+
+        now = [0.0]
+
+        def clock():
+            return now[0]
+
+        def sleeper(seconds):
+            now[0] += seconds
+
+        class SlowStateBridge(FakeBridge):
+            def get_game_state(self):
+                now[0] += 0.5
+                return super().get_game_state()
+
+Filesystem observables:
+MISSING data/novphy_rollouts_dataset/train/novelty_level_0_type010101_00001_0_1_010101_0_1/shot_001
+MISSING data/novphy_rollouts_dataset/train/novelty_level_0_type010101_00002_0_1_010101_0_1/shot_001
+test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots (tests.test_collect_rollouts.CollectRolloutsTest.test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots) ... FAIL
+
+======================================================================
+FAIL: test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots (tests.test_collect_rollouts.CollectRolloutsTest.test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 1109, in test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots
+    self.assertTrue(valid["accepted"])
+AssertionError: False is not true
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)

@@ -1,0 +1,111 @@
+{
+  "schema_version": "world_model_physics_instrumentation_task_4_independent_qa_v1",
+  "verified_at": "2026-08-05",
+  "todo": 4,
+  "verdict": "needs-fix",
+  "scope": "Independent adversarial verification of Todo 4 only; no product edits made.",
+  "blockers": [
+    {
+      "severity": "high",
+      "finding": "Unity request-70 response serializes runtime.ShotRecorder directly from live read-only views; there is no complete immutable recorder snapshot or finalized-shot validity gate before BuildCaptureEnvelope.",
+      "references": ["tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs:42-50", "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs:256-261", "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:316-329"]
+    },
+    {
+      "severity": "medium",
+      "finding": "Unity-side direct socket path does not enforce MaxEnvelopeBytes or bounded PNG/state/event lengths; bounds exist only in the Python decoder and the Unity constant is unused by Serve.",
+      "references": ["tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs:12-15", "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs:237-263"]
+    },
+    {
+      "severity": "low",
+      "finding": "Repository .gitignore does not cover common secret filenames/extensions; targeted changed-source scans were clean, but the repository-wide scanner timed out.",
+      "references": [".gitignore"]
+    }
+  ],
+  "checks": {
+    "direct_tcp_topology": {"status": "pass", "detail": "Unity uses TcpListener(IPAddress.Loopback, port); Python uses AF_INET/SOCK_STREAM and connects to the same host/port. Legacy WebSocket path remains separate."},
+    "request_70_unused_elsewhere": {"status": "pass", "detail": "RequestCode assigns GET_PHYSICS_CAPTURE_V1=70; targeted protocol dispatch review found no conflicting request-code enum/case."},
+    "python_strict_protocol": {"status": "pass", "detail": "Python checks outer envelope bounds, magic, version, payload length, flags/failure code, failure message length/UTF-8, success record bounds, JSON types/constants, PNG signature, and render-frame equality; protocol errors disconnect."},
+    "immutable_parsed_data": {"status": "pass", "detail": "Parsed state is mappingproxy, nested lists are tuples, events are a tuple; mutation probe rejected mapping and tuple writes."},
+    "png_state_event_frame_equality": {"status": "pass", "detail": "Python decoder requires state render_frame and every event render_frame to match; Unity test and live fixture used matching frame 913/73."},
+    "wait_for_end_of_frame": {"status": "pass", "detail": "PhysicalSnapshotRuntime.CaptureAtEndOfRenderFrame yields WaitForEndOfFrame before CaptureCurrent; Unity focused test passed."},
+    "complete_bounded_recorder_snapshot": {"status": "fail", "detail": "No copied/finalized recorder snapshot is created before serialization; live recorder views are passed to BuildCaptureEnvelope."},
+    "legacy_request_38_62": {"status": "pass", "detail": "RequestCode preserves 38 and 62; rerun fixture preserved !B + five signed int32 request 38 and !B request 62 framing/fixture suffix."},
+    "enum_integrity": {"status": "pass", "detail": "GT_SHOOT=38 and GET_GROUND_TRUTH_WITHOUT_SCREENSHOT=62 remain present and distinct from 70."}
+  },
+  "tests": {
+    "python_command": "python -m unittest tests.test_webui_bridge -v",
+    "python_result": "19/19 passed",
+    "unity_xml": {"path": ".omo/evidence/world-model-physics-instrumentation/task-4-unity.xml", "result": "Passed", "total": 2, "passed": 2, "failed": 0},
+    "xml_parse_command": "python -c 'import xml.etree.ElementTree as ET; ET.parse(\".omo/evidence/world-model-physics-instrumentation/task-4-unity.xml\")'",
+    "xml_newer_than_final_csharp": true,
+    "xml_mtimes_utc": {"protocol_cs": "2026-08-04T18:37:41Z", "protocol_tests_cs": "2026-08-04T18:44:13Z", "unity_xml": "2026-08-04T18:44:35Z"}
+  },
+  "live_socket": {
+    "status": "pass",
+    "command": "python -c '<one-shot localhost TCP server; ScienceBirdsBridge.get_physics_capture_v1()>'",
+    "request_byte_hex": "46",
+    "request_code": 70,
+    "png_signature_hex": "89504e470d0a1a0a",
+    "state_render_frame": 913,
+    "event_render_frame": 913
+  },
+  "adversarial_classes": [
+    "bad magic",
+    "bad version",
+    "truncated/incorrect outer length",
+    "bad JSON and wrong JSON type",
+    "oversize envelope/PNG/JSON bounds",
+    "invalid success flags/failure code",
+    "failure message length and UTF-8",
+    "record length mismatch",
+    "state/event render-frame mismatch",
+    "non-PNG payload",
+    "socket disconnect on protocol error",
+    "recursive parsed-data mutation",
+    "legacy 38/62 byte fixture"
+  ],
+  "hashes": {
+    "bridge_py": "d6dd809fc10263db6c2d195cc119e7f361906a6a11f430c88e5da708053daed3",
+    "bridge_tests_py": "0575f3e0f2dce5e590f066fcad9b1083f57f5d388d2b0341cf67aa5c5d85625f",
+    "aibirds_connection_cs": "9486923cc316777fd171153a233a0beabbeede67265c353e0d59318123612bfb",
+    "physics_capture_protocol_cs": "65b7c10bf3a60eeb7153f7908253a5be00190c6fcbe05d57366ef309ed132376",
+    "physics_capture_protocol_tests_cs": "1d129cf3006589441033f22551a01f67560d7f5ccf58b5782aec17113bc6776d",
+    "canonical_manifest_before_after": "a986acc9dc911009e7e04bea85ee531ba4b9f9d692afa915456d81bcf7c8bb56",
+    "production_player_manifest_before_after": "e92a83fb14638b24ba8a0a05d588829823000f3db349ae9eaf39f188f68e8cd5"
+  },
+  "protected_roots": {
+    "canonical_manifest_cmp": 0,
+    "production_player_manifest_cmp": 0,
+    "active_dataset_modified_paths": [],
+    "active_dataset_note": "Active dataset path is absent from this worktree; no active-dataset path is modified in git status. Prior before/after preservation receipt reports unchanged active rollout data."
+  },
+  "cleanup": {
+    "status": "pass_after_cleanup",
+    "unity_processes_remaining": 0,
+    "player_processes_remaining": 0,
+    "listening_ports_2004_9000": false,
+    "temp_directory_remaining": false,
+    "logs_directory_remaining": false,
+    "unity_lock_remaining": false,
+    "removed_generated": ["tasks/task_template_designer/Temp"],
+    "retained_evidence": ["task-4-bridge.txt", "task-4-unity.xml", "task-4-unity.log", "task-4-done-claim.json"]
+  },
+  "secrets_and_scope": {
+    "targeted_source_scan": "clean",
+    "repository_wide_scan": "timed out",
+    "gitignore_audit": "20 common secret patterns not covered",
+    "product_files_edited_by_verifier": false,
+    "scope_note": "Pre-existing dirty/untracked worktree changes were not reverted or modified."
+  },
+  "commands": [
+    "python -m unittest tests.test_webui_bridge -v",
+    "python -c 'parse task-4-unity.xml with xml.etree.ElementTree'",
+    "python -c 'run one-shot local TCP server and call get_physics_capture_v1'",
+    "python -c 'probe mappingproxy/tuple immutability'",
+    "python /home/sukai/.config/opencode/skills/secret-guard/scripts/scan_secrets.py path src/webui",
+    "python /home/sukai/.config/opencode/skills/secret-guard/scripts/scan_secrets.py path tests",
+    "python /home/sukai/.config/opencode/skills/secret-guard/scripts/scan_secrets.py path tasks/task_template_designer/Assets/Scripts/GroundTruth",
+    "cmp -s task-2 canonical/player before/after manifests",
+    "ps/ss process, port, Temp, Logs, and lock inspection"
+  ]
+}

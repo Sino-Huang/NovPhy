@@ -1,0 +1,114 @@
+{
+  "schema_version": "novphy_done_claim_v1",
+  "task": "F2 blocker repair",
+  "result": "done",
+  "evidence_root": ".omo/evidence/world-model-physics-instrumentation/f2-blocker-repair",
+  "changed_files": [
+    "scripts/physics_capture_parsing.py",
+    "scripts/rollout_artifacts.py",
+    "scripts/collect_rollouts.py",
+    "tests/test_collect_rollouts.py",
+    "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs",
+    "tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs"
+  ],
+  "criteria": [
+    {
+      "criterion": "bounded validation and hashing",
+      "scenario": "oversized sparse sidecar is rejected before the JSONL reader; valid metadata, sidecars, and PNGs validate without Path.read_text or Path.read_bytes",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_oversized_sidecars_are_rejected_before_jsonl_reader_runs tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_physics_artifact_hashing_does_not_materialize_whole_files tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_physics_artifact_validation_does_not_use_whole_file_text_reads",
+      "binary_observable": "RED exits 1 at the unbounded reader APIs; GREEN is included in both 52-test final passes; final rg finds zero read_text/read_bytes calls in the parser/artifact validator",
+      "artifacts": [
+        "f2-blocker-repair/red-bounded-size.log",
+        "f2-blocker-repair/red-stream-hash.log",
+        "f2-blocker-repair/red-stream-metadata.log",
+        "f2-blocker-repair/green-stream-metadata.log",
+        "f2-blocker-repair/whole-file-api-audit-final.log"
+      ]
+    },
+    {
+      "criterion": "sidecar and frame confinement",
+      "scenario": "physics_state.jsonl and synchronized PNG are replaced by symlinks targeting outside the shot root",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_fixed_name_state_sidecar_symlink_outside_shot_is_rejected tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_physics_frame_symlink_is_rejected_before_image_open",
+      "binary_observable": "both RED tests exited 1 because no PhysicsArtifactError was raised; final tests pass and manual symlink_escape_accepted=false with target outside shot=true",
+      "artifacts": [
+        "f2-blocker-repair/red-symlink-sidecar.log",
+        "f2-blocker-repair/red-symlink-frame.log",
+        "f2-blocker-repair/manual-temp-root-final.log"
+      ]
+    },
+    {
+      "criterion": "idempotent valid-final resume",
+      "scenario": "collect the same single physics action twice into a root containing valid shot_001",
+      "invocation": "timeout 60s env PYTHONPATH=. python .omo/evidence/world-model-physics-instrumentation/f2-robustness-probe.py",
+      "binary_observable": "RED ENOTEMPTY exit 1; GREEN repeated_resume_exception=null, final_attempt_after_resume=true, tmp_attempt_after_resume=false, cleanup_root_absent=true",
+      "artifacts": [
+        "f2-blocker-repair/red-resume.log",
+        "f2-blocker-repair/manual-temp-root-final.log"
+      ]
+    },
+    {
+      "criterion": "global pending plus in-flight socket bound with timeout release",
+      "scenario": "four silent clients move from pending into Serve, overflow is rejected, timeout releases capacity, and a subsequent client is admitted",
+      "invocation": "exact Unity 2019.4.41f2 -batchmode -nographics -runTests -testPlatform EditMode -testFilter PhysicsCaptureProtocolTests",
+      "binary_observable": "verified RED XML failed the focused test; final XML receipts each report total=11 passed=11 failed=0; both processes exited 134 only after XML save at known CEF shutdown SIGSEGV",
+      "artifacts": [
+        "f2-blocker-repair/unity-red-verified.txt",
+        "f2-blocker-repair/unity-protocol-1.xml",
+        "f2-blocker-repair/unity-protocol-1.log",
+        "f2-blocker-repair/unity-protocol-2.xml",
+        "f2-blocker-repair/unity-protocol-2.log",
+        "f2-blocker-repair/unity-xml-summary.txt"
+      ]
+    }
+  ],
+  "verification": [
+    {
+      "command": "timeout 120s python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_prepare_rollout_dataset.PhysicsCaptureValidationTests tests.test_physics_capture_contract tests.test_webui_bridge.PhysicsCaptureV1Tests tests.test_webui_bridge.PhysicsCaptureV1MalformedEnvelopeTests",
+      "exits": [0, 0],
+      "observable": "52 tests ran and OK in each final pass",
+      "artifacts": ["f2-blocker-repair/focused-python-final-1.log", "f2-blocker-repair/focused-python-final-2.log"]
+    },
+    {
+      "command": "python -m py_compile scripts/physics_capture_parsing.py scripts/rollout_artifacts.py scripts/collect_rollouts.py tests/test_collect_rollouts.py",
+      "exits": [0, 0],
+      "observable": "no diagnostics",
+      "artifacts": ["f2-blocker-repair/pycompile-final.log", "f2-blocker-repair/pycompile-final-2.log"]
+    },
+    {
+      "command": "git diff --check",
+      "exits": [0, 0],
+      "observable": "no whitespace errors",
+      "artifacts": ["f2-blocker-repair/diff-check-final.log", "f2-blocker-repair/diff-check-final-2.log"]
+    },
+    {
+      "command": "programming skill check-no-excuse-rules.py on four touched Python files",
+      "exits": [1],
+      "observable": "52 findings, dominated by pre-existing oversized modules, raw dict returns, broad exceptions, and legacy typed-error violations; exact output retained and no out-of-scope refactor attempted",
+      "artifacts": ["f2-blocker-repair/no-excuse.log", "f2-blocker-repair/size-audit.txt"]
+    }
+  ],
+  "ultra_qa": {
+    "malformed_input": "PASS: malformed/truncated contract and bridge envelope cases are in both 52-test passes; oversized input is rejected before parsing.",
+    "stale_state": "PASS: valid stale shot_001 is reused; invalid completed attempts remain recovery-quarantined.",
+    "dirty_worktree": "PASS: scoped before/after receipts retained; unrelated modified and untracked files were not reverted.",
+    "hung_or_long_commands": "PASS: Python commands used 60/120-second bounds and Unity used 360-second TERM plus kill-after bounds.",
+    "flaky_tests": "PASS: focused Python and exact Unity protocol suites were each repeated twice.",
+    "misleading_success_output": "PASS: Unity XML 11/11 success is reported separately from editor exit 134 and CEF shutdown crash logs.",
+    "repeated_interruptions": "PASS: repeated interrupted .tmp cleanup is covered; final manual root has no .tmp.",
+    "cancel_resume": "PASS: real repeated collection preserved the valid final and created no temporary attempt.",
+    "prompt_injection": "N/A: this filesystem/parser/socket path consumes no LLM prompt or untrusted instruction text."
+  },
+  "protected_scope_receipt": {
+    "canonical_project": "/mnt/array/sukaih/Project/NovPhy was read only for status capture",
+    "player": "sciencebirdsgames/Linux.zip SHA-256 c45c8b44078ebcf1ba3168d7606a6e2e739cd70da6bf1e0400f66f12d0ba03f0; protected player diff receipt is empty",
+    "active_cohort": "not opened or modified",
+    "artifacts": [
+      "f2-blocker-repair/canonical-status-readonly.txt",
+      "f2-blocker-repair/protected-player.sha256",
+      "f2-blocker-repair/protected-player-diff.txt",
+      "f2-blocker-repair/dirty-before.txt",
+      "f2-blocker-repair/dirty-after.txt"
+    ]
+  },
+  "known_risk": "The exact Unity editor consistently saves complete passing NUnit XML and then exits 134 in the known headless CEF shutdown path. The assigned Python files remain above the programming skill's 250-pure-LOC ceiling and carry inherited no-excuse findings; splitting them was outside this blocker-only repair and would materially broaden scope."
+}

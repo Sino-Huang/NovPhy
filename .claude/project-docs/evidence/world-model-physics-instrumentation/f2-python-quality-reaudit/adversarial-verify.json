@@ -1,0 +1,55 @@
+{
+  "verdict": "needs-fix",
+  "codeQualityStatus": "BLOCK",
+  "recommendation": "REQUEST_CHANGES",
+  "confirmed": [
+    {
+      "id": "F2-PY-001",
+      "severity": "CRITICAL",
+      "file": "scripts/collect_rollouts.py",
+      "lines": "940-947,1547,1706-1707",
+      "finding": "cleanup_incomplete_physics_attempts retains a stale shot_001.tmp symlink. collect_rollouts then writes capture artifacts through it outside output_dir and crashes when rmtree rejects the symlink."
+    },
+    {
+      "id": "F2-PY-002",
+      "severity": "HIGH",
+      "file": "scripts/collect_rollouts.py",
+      "lines": "1721-1740",
+      "finding": "Physics collection reports a successful manifest with capture_source=scripts.collect_rollouts and replay_mode=same-episode-varied-trials, but the downstream physics episode validator requires capture_physics_rollout and fresh-engine-per-rollout."
+    }
+  ],
+  "false-positive": [
+    {
+      "claim": "Physics sidecars, malformed content, size bounds, and normal resume were unprotected.",
+      "result": "false-positive",
+      "evidence": "focused-unittest.log and manual-fixture-final2.log show rejection of truncated/oversized sidecars, symlinked sidecars, valid-final reuse, and repeated ordinary stale-directory cleanup."
+    }
+  ],
+  "needs-fix": ["F2-PY-001", "F2-PY-002"],
+  "needs-human-review": [
+    {
+      "id": "F2-PY-003",
+      "severity": "MEDIUM",
+      "file": "tests/test_collect_rollouts.py",
+      "lines": "341-383",
+      "finding": "Tests patch Path.read_bytes/read_text to pin implementation mechanics. Existing malformed/oversized sidecar tests cover the observable bounded-input contract; these add brittle false confidence."
+    },
+    {
+      "id": "F2-PY-004",
+      "severity": "MEDIUM",
+      "file": "scripts/collect_rollouts.py",
+      "lines": "1-2149",
+      "finding": "The changed collector is 1950 pure LOC and receives more persistence/recovery responsibilities. This violates the consulted slop perspective's size limit and increases regression risk; split ownership before further growth."
+    }
+  ],
+  "logs": [
+    "focused-unittest.log",
+    "manual-fixture-final2.log",
+    "manual-fixture-verdict.log",
+    "pycompile.log",
+    "diff-check.log",
+    "cleanup-receipt.json"
+  ],
+  "protectedRootProof": "FAILED: manual-fixture-verdict.log shows protected_root_before=[] and protected_root_after containing frames, metadata.json, and sidecars.",
+  "promptInjection": "N/A: this review uses local source and deterministic filesystem fixtures, with no untrusted prompt-bearing input."
+}

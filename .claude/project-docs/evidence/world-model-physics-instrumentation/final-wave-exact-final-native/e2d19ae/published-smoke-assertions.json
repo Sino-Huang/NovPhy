@@ -1,0 +1,60 @@
+{
+  "allAssertionsPass": true,
+  "archiveSha256": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+  "assertions": {
+    "acceptedShotRecorded": true,
+    "canonicalRootIsRealNovPhy": true,
+    "exactlyOneBirdLaunched": true,
+    "noMissingStateFields": true,
+    "oneStateRecord": true,
+    "phaseComplete": true,
+    "protectedAfterMatchesRealDigests": true,
+    "protectedBeforeMatchesRealDigests": true,
+    "protectedUnchanged": true,
+    "provenanceBoundToPublishedArchive": true,
+    "request38ActionPerformed": true,
+    "request62SlingshotReferenceResolved": true,
+    "sevenEvents": true,
+    "smokeExitedZero": true,
+    "stateRecordFieldsPresentNotHeaderOnly": true,
+    "statusAccepted": true
+  },
+  "checkedAt": "2026-08-07T00:12:12.614549+10:00",
+  "invocationLog": "published-smoke-invocation.log",
+  "observed": {
+    "cleanup": {
+      "engine": "pid=751160:exit=143",
+      "temporary_clone": "/tmp/novphy-physics-smoke-duscdmq6",
+      "xvfb": "pid=751157:exit=0"
+    },
+    "eventTypes": [
+      "stable_entered",
+      "bird_launched",
+      "stable_exited",
+      "entity_destroyed",
+      "bird_exhausted",
+      "stable_entered",
+      "level_failed"
+    ],
+    "playerSha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+    "ports": {
+      "agent": 57335,
+      "game": 50001,
+      "physics": 2004
+    },
+    "protocolSha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a",
+    "renderFrame": 16171,
+    "slingshotReference": {
+      "canvasX": 172,
+      "canvasY": 262,
+      "gameX": 172,
+      "gameY": 217
+    }
+  },
+  "reportIsMachineProduced": true,
+  "reportSource": "published-smoke.json written by scripts/smoke_physics_capture.py",
+  "reviewedCommitSha": "e2d19ae04946765b0196e043826bb08aa9a09caf",
+  "reviewedTreeSha": "f0347223e9b56cde2d2d9b9902ce8b4f139b059f",
+  "schemaVersion": "novphy_f3_smoke_assertions_v1",
+  "smokeExitCode": 0
+}

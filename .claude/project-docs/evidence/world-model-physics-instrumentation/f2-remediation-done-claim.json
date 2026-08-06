@@ -1,0 +1,86 @@
+{
+  "schema_version": "novphy_done_claim_v1",
+  "task": "F2 blocker remediation",
+  "result": "done",
+  "completed_at": "2026-08-06T03:31:39+10:00",
+  "criteria": [
+    {
+      "criterion": "bounded memory",
+      "scenario": "oversized sparse sidecars are rejected before JSONL parsing; valid sidecars and PNGs hash without Path.read_text/read_bytes",
+      "invocation": "python -m unittest tests.test_physics_capture_contract tests.test_collect_rollouts.PhysicsCapturePersistenceTests",
+      "binary_observable": "35 tests passed twice; typed invalid_value is raised before the patched whole-file APIs can run",
+      "artifacts": [
+        "f2-remediation-python-red.log",
+        "f2-remediation-python-final2-run1.log",
+        "f2-remediation-python-final2-run2.log"
+      ]
+    },
+    {
+      "criterion": "root confinement",
+      "scenario": "real fixed-name state symlink, PNG symlink, explicit ../ PNG escape, and non-directory frames artifact",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests",
+      "binary_observable": "all escaping/symlink shapes raise PhysicsArtifactError; malformed completed shot is moved to invalid_attempts",
+      "artifacts": [
+        "f2-remediation-python-final2-run1.log",
+        "f2-remediation-nondirectory-frames-green.log"
+      ]
+    },
+    {
+      "criterion": "idempotent resume",
+      "scenario": "collect the same valid shot twice into one real TemporaryDirectory",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_second_collection_reuses_valid_completed_shot_without_bridge_calls",
+      "binary_observable": "second pass returns rollout_count=1 with unchanged metadata bytes, unchanged shoot/request counts, and no shot_001.tmp",
+      "artifacts": [
+        "f2-remediation-python-red.log",
+        "f2-remediation-python-final2-run1.log",
+        "f2-remediation-python-final2-run2.log"
+      ]
+    },
+    {
+      "criterion": "Unity global client capacity",
+      "scenario": "four real silent clients are moved in-flight, overflow is closed, all four time out, then request 70 reaches WaitForEndOfFrame",
+      "invocation": "Unity 2019.4.41f2 -batchmode -nographics -runTests -testPlatform EditMode -testFilter PhysicsCaptureProtocolTests with pinned LD_LIBRARY_PATH",
+      "binary_observable": "red XML 0/1; final XML run 1 and run 2 each 11/11 passed, including SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt and Request70EnvelopeContainsActualPngAndSameRenderFrameBatch",
+      "artifacts": [
+        "f2-remediation-unity-red.xml",
+        "f2-remediation-unity-final-run1.xml",
+        "f2-remediation-unity-final-run2.xml"
+      ]
+    },
+    {
+      "criterion": "legacy request preservation",
+      "scenario": "request 38/62 fixture bytes and recorder-backed request 38 framing",
+      "invocation": "python -m unittest tests.test_webui_bridge.PhysicsCaptureV1Tests.test_legacy_request_38_and_62_fixture_bytes_remain_unchanged tests.test_webui_bridge.PhysicsCaptureV1Tests.test_recorder_backed_shoot_preserves_request_38_framing_and_consumes_ground_truth",
+      "binary_observable": "2/2 passed; LegacyGroundTruthTests Unity fixture 3/3 passed",
+      "artifacts": [
+        "f2-remediation-request-38-62-final.log",
+        "f2-remediation-unity-legacy.xml"
+      ]
+    }
+  ],
+  "regression_suites": [
+    {
+      "invocation": "python -m unittest tests.test_prepare_rollout_dataset",
+      "binary_observable": "38/38 passed",
+      "artifact": "f2-remediation-prepare-suite-final.log"
+    },
+    {
+      "invocation": "python -m unittest tests.test_collect_rollouts",
+      "binary_observable": "80 passing behaviors; one known dataset-backed failure because two expected fixture roots are absent",
+      "artifact": "f2-remediation-collector-suite-final.log"
+    },
+    {
+      "invocation": "python -m py_compile scoped Python files; git diff --check scoped files",
+      "binary_observable": "PY_COMPILE_OK and DIFF_CHECK_OK",
+      "artifacts": [
+        "f2-remediation-pycompile-final2.log",
+        "f2-remediation-diff-check-final.log"
+      ]
+    }
+  ],
+  "known_environment_conditions": [
+    "Unity 2019.4 writes authoritative passing XML and then exits 134 in the pre-existing headless CEF PrintJobManager shutdown path.",
+    "The canonical data/novphy_rollouts_dataset fixtures for episode 00001 and 00002 are absent; the protected active cohort exists and was not copied, linked, or mutated."
+  ],
+  "committed": false
+}

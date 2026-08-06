@@ -1,0 +1,28 @@
+Unity Editor version:    2019.4.40f1 (ffc62b691db5)
+Branch:                  2019.4/staging
+Build type:              Debug
+Batch mode:              YES
+System name:             Linux
+Distro version:          #35~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 19:30:42 UTC 2
+Kernel version:          6.17.0-35-generic
+Architecture:            x86_64
+Available memory:        128159 MB
+[LicensingClient] ERROR Failed to connect to local IPC
+[Licensing::Module] Failed to connect to channel: LicenseClient-sukai
+[Licensing::Module] Successfully launched the LicensingClient
+[SignatureVerifier] Application signature verification not supported on this platform.
+[Licensing::Module] Successfully connected to LicensingClient on channel: LicenseClient-sukai
+[Licensing::Module] Successfully launched and connected to LicensingClient
+Entitlement-based licensing initiated
+[LicensingClient] Licenses Updated successfully in LicensingClient
+[Licensing::Module] Serial number assigned to: "[REDACTED]"
+DisplayProgressbar: Unity license
+[UnityConnectServicesConfig] config is NOT valid, switching to default
+[0803/202355:ERROR:browser_main_loop.cc(161)] Running without the SUID sandbox! See https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment for more information on developing with the sandbox on.
+Cancelling DisplayDialog: Failed to activate/update license Missing or bad username or password. Please try again using valid credentials or contact support@unity3d.com
+This should not be called in batch mode. 
+(Filename: ./Editor/Platform/Linux/EditorUtility.cpp Line: 274)
+
+Checking for leaked weakptr:
+  Found no leaked weakptrs.
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1785752674737,"processId":1125893,"allocatedMemory":82645,"memoryLabels":[{"Default":-352},{"Manager":680},{"Serialization":40},{"BaseObject":12336},{"String":14253},{"DynamicArray":86},{"Curl":1112},{"PoolAlloc":120},{"GI":3064},{"VR":80},{"Secure":8957},{"RestService":256},{"License":264},{"UnityConnect":21160},{"Collab":57},{"LocalIPC":100},{"ProfilerEditor":19880},{"Licensing":552}]}

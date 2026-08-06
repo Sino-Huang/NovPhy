@@ -1,0 +1,29 @@
+{
+  "verification": "second direct post-claim audit",
+  "source_artifact": "task-2-bounded-activation-probe-2026-08-05.json",
+  "unity_probe_rerun": false,
+  "checks": [
+    {
+      "command": "jq -e required activation and no-project fields",
+      "observed_output": "true",
+      "verdict": "confirmed"
+    },
+    {
+      "command": "sha256sum alias executable and sanitized log",
+      "observed_output": "32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150; 2f88ab13559cb85ba7d5b13554c426ae8b1758c5906e19f8a98d2e566e8b62f0",
+      "verdict": "confirmed"
+    },
+    {
+      "command": "test -e /tmp/novphy-unity-2019.4-activation-probe-20260805-1785912346.log",
+      "observed_output": "RAW_LOG_ABSENT",
+      "verdict": "confirmed"
+    },
+    {
+      "command": "ps -eo comm= | awk for Unity or UnityCrashHandler",
+      "observed_output": "UNITY_EDITOR_PROCESSES_CLEAR",
+      "verdict": "confirmed"
+    }
+  ],
+  "overall_verdict": "confirmed",
+  "judgment": "Recorded licensing pass and no-project-boundary failure remain directly corroborated; cleanup remains complete."
+}

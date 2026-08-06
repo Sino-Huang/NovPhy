@@ -1,0 +1,15 @@
+{
+  "scenario": "Second post-completion rerun",
+  "invocation": "PYTHONPATH=$PWD python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_checked_sidecar_and_frame_cannot_be_swapped_to_external_symlink; public re-export identity assertion; py_compile; git diff --check; pure-LOC and SHA-256 checks",
+  "binary_observables": {
+    "toctou_race": "1/1 passed",
+    "public_reexport": "identical",
+    "compile": "passed",
+    "diff_check": "passed",
+    "rollout_artifacts_pure_loc": 221,
+    "physics_artifact_validation_pure_loc": 218
+  },
+  "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-validator-extract/subagent-stop-verification-2.log",
+  "cleanup": "No process, port, or temporary directory was created by this in-process unittest scenario.",
+  "verdict": "confirmed"
+}

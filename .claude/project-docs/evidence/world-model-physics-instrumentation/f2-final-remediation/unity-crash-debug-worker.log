@@ -1,0 +1,1092 @@
+[93m[1m! [0m agent "Sisyphus" not found. Falling back to default agent
+[0m
+> Sisyphus - ultraworker · gpt-5.6-sol
+[0m
+I read this as a bounded, read-only runtime investigation. I’ll first load the debugging procedure and inspect only the permitted evidence directory plus existing references, then I’ll run isolated 60-second probes without touching or reopening the migration project.
+[0m# [0mTodos
+[•] Allowed evidence directory: Read debug journal, prior crash logs, and native-binary references to establish probe constraints - expect an evidence-grounded audit scope
+[ ] Allowed evidence directory: Form H1/H2/H3 and select bounded non-project probes plus safe empty-project probe conditions - expect a falsifiable hypothesis matrix
+[ ] Temporary probe workspace: Run exact Unity 2019.4.41f2 probes with private library path and 60s capture bounds - expect exit/signal/log artifacts without migration-project execution
+[ ] Allowed evidence directory: Write hypotheses.md, probe artifacts, root-cause.json, and cleanup-receipt.json - expect complete read-only audit record
+[ ] Allowed evidence directory: Verify ownership, diagnostics, cleanup, and evidence consistency - expect no protected-file changes and a defensible conclusion
+[0m
+[0m→ [0mSkill "debugging"
+[0m⚙ [0mcodegraph_codegraph_explore {"query":"debug-journal.md prior Unity crash logs native-binary debugging references f2-final-remediation unity-crash-debug","maxFiles":12}
+[0m→ [0mRead /home/sukai/.cache/opencode/packages/oh-my-openagent@latest/node_modules/oh-my-openagent/dist/skills/debugging/references/runtimes/native-binary.md[90m [limit=400][0m
+[0m→ [0mRead /home/sukai/.cache/opencode/packages/oh-my-openagent@latest/node_modules/oh-my-openagent/dist/skills/debugging/references/methodology/00-setup.md[90m [limit=400][0m
+[0m→ [0mRead /home/sukai/.cache/opencode/packages/oh-my-openagent@latest/node_modules/oh-my-openagent/dist/skills/debugging/references/methodology/02-investigate.md[90m [limit=400][0m
+[0m→ [0mRead /home/sukai/.cache/opencode/packages/oh-my-openagent@latest/node_modules/oh-my-openagent/dist/skills/debugging/references/methodology/06-fix.md[90m [limit=300][0m
+[0m→ [0mRead /home/sukai/.cache/opencode/packages/oh-my-openagent@latest/node_modules/oh-my-openagent/dist/skills/debugging/references/methodology/09-cleanup.md[90m [limit=400][0m
+The required native-binary and phase references are loaded. I’m now mapping the exact evidence path, Unity executable locations, prior logs, and current process/display state; no project launch or repository mutation will occur during this inventory.
+[0m
+[0m$ [0mrg --files ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug" | sort
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug/debug-journal.md
+[0m
+[0m$ [0mpwd && rg --files -g 'AGENTS.md' -g '!Library/**' -g '!Temp/**' -g '!Logs/**' -g '!UserSettings/**' | sort
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4
+[0m
+[0m$ [0mgit status --short && git diff --stat
+...output truncated...
+
+Full output saved to: /home/sukai/Project/NovPhy/.cache/xdg/opencode/tool-output/tool_fd5230869001tvbQ4dwOtiF9Mn
+
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-assembly-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-bridge-tests.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-bridge-tests.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-build.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-canonical-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-client.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-debug-journal.md
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-evidence-audit.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-exporter.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-exporter.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-exporter.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-il-offset.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-independent-gate.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-java.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-lifecycle.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-lifecycle.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-lifecycle.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-player-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-player.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-python.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-python.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-quality-gates.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-static.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-static.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-static.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-stop-archive.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-stop-static.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-stop-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-stop-verification.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-stop-wrong.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-stop-wrong.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-wrong-sha.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final2-build.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final2-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final2-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final2-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final3-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final3-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final3-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final4-runtime-report.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final4-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final4-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-final4-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-adversarial-verify.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-adversarial-verify.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-canonical-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-final-audit.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-gate.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-production-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-static.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-static.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-wrong.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-independent-wrong.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-all.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-build.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-debug-journal.md
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-green.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-independent-verification.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-live-client-new.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-live-client.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-live-java-new.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-live-java-new.pid
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-live-java.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-live-java.pid
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-manual-temp-new.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-manual-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-python-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-python-tests.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-red.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-request70-client.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-request70-java.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-request70-java.pid
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-request70-player-summary.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-request70-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-root-cause.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-static.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-static.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-temp-roots.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-wrong-sha.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-live-client.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-live-java.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-live-player.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-no-excuse.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-player-after.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-player-before.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-port-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-post-deletion-canonical-final.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-post-deletion-canonical.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-post-deletion-final-audit.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-post-deletion-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-process-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-python-loc.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-static-final.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-static-final.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-2-hash.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-2-static.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-2-tests.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-2-verdict.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-hashes.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-static.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-tests.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-verdict.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-verdict.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-wrong.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-3-wrong.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-audit.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-canonical-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-canonical.diff
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-player-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-protected-status.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-python.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-python.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-runtime.transcript
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-static.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-static.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-static.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-unity.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-unity.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-unity.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-wrong-sha.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-canonical.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-player.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-python.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-python.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck-runtime.transcript
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-audit.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-canonical.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-player.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-python.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-recheck3-runtime.transcript
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-verification.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-assembly-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-green.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-il-offset.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-red.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-active-root-newer.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-all-editmode-receipt.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-all.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-canonical-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-canonical-newer.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-diagnostic-build.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-diagnostic-client.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-diagnostic-java.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-diagnostic-player.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-diagnostic-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-evidence-sha256.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-exporter.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-exporter.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-build.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-client.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-client.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-java.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-player.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-temp.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-final-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-green-1.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-green-1.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-green-2.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-green-2.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-lifecycle.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-lifecycle.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-physical-shot.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-physical-shot.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-protocol.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-protocol.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-registry.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-registry.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-shot.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-part-shot.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-port-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-process-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-production-player-current.tsv
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-protected-proof.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-red.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-static.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-static.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-temp-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-wrong-sha.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-tests-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-tests.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-admin-state.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-final-state.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-archive-sha256.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-runtime-payload.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-wrong-sha.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verifier-import-red.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verifier-import-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verifier-tests-green.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-7-verifier-tests-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-7-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-7-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-accepted-artifact-audit.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-accepted-shot/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-baseline.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-event-done-claim-audit.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-event-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-archive.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-archive.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-cleanup.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-cleanup.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-focused.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-focused.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-protocol.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-protocol.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-pycompile.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-pycompile.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-quality.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-quality.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-sha256.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-verification.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-final-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green-resource-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green-resource-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green-streaming.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-frame-mismatch.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-frame-mismatch.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-frame-mismatch.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-happy-validator.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-happy-validator.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-happy.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-happy.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-happy.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-missing-sidecar.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-missing-sidecar.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-missing-sidecar.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-request-failure.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-request-failure.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live-request-failure.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-live/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_after_readiness_wait.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_after_readiness_wait.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_after_readiness_wait.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_delayed_capture.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_delayed_capture.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_delayed_capture.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_immediate.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_immediate.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-fast_immediate.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-gt_shoot.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-gt_shoot.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-gt_shoot.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-gt_shoot_terminal.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-gt_shoot_terminal.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-gt_shoot_terminal.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-safe_immediate.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-safe_immediate.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2-safe_immediate.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2.py
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-quality-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-quality-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-quality-streaming.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-quality.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-recorder-green.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-recorder-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-recorder-red.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-recorder-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-red.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-action-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-data-after.stat
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-data-before.stat
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-nested-digest-streaming.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-nested-digest-streaming.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-nested-digest-streaming.time
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-nested-digest.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-nested-digest.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-active-nested-digest.time
+?? .omo/evidence/world-model-physics-instrumentation/task-8-canonical-after.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-canonical-before.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-cleanup-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-cleanup-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-contract-validator-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-contract-validator-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-journal.md
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-marker-scan.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-round1-engine.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-round1-xvfb.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-round1.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-round1.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-debug-round1.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-display-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-done-claim-audit.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-editmode-all.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-editmode-partition-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-evidence.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-final-audit.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-final2.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-final2.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-post-claim.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-post-claim.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests-xvnc-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-focused-tests.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-engine.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-report.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch-xvnc.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-frame-mismatch.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-engine.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-success.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-success.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy-xvnc.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-happy.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-legacy-fixture.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-legacy-fixture.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-lifecycle-fixture.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-lifecycle-fixture.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-live-blocker-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-live-blocker-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-live-blocker.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-live-blocker.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-live-contract-blocker.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-lock-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-engine.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-report.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-missing-sidecar-xvnc.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-no-excuse-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-no-excuse-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-physical-fixtures.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-physical-fixtures.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-port-cleanup-final.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-port-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-post-mark-direct-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-post-mark-focused.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-post-mark-focused.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-process-cleanup-final.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-process-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-production-after.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-production-before.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protected-receipt.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-fix-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-green.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-pin-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-pin-final.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-pin.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-pin.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-red.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-fixture.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-fixture.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-toggle-green.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-toggle-green.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-toggle-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-protocol-toggle-red.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-pycompile-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-pycompile-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-0.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-0.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-1.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-1.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-2.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-2.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-quality-gates.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-recovered-temp-roots/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-request-failure-engine.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-request-failure-final.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-request-failure-final.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-request-failure-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-request-failure-report.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-request-failure-xvnc.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-runtime.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-runtime.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-runtime.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-scoped-status.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-shot-recorder-fixture.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-shot-recorder-fixture.xml
+?? .omo/evidence/world-model-physics-instrumentation/task-8-smoke.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stage-before.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stage-final.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stage-static.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stage-static.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stage-static.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop2-accepted-validator.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop2-contract.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop2-contract.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop2-direct-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop2-focused.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop2-focused.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-accepted-shot.sha256
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-accepted-shot/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-accepted-validator.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-direct/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-frame-mismatch-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-frame-mismatch.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-frame-mismatch.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-frame-mismatch.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-fresh-live-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-happy-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-happy.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-happy.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-happy.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-missing-sidecar-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-missing-sidecar.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-missing-sidecar.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-missing-sidecar.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-request-failure-output-root.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-request-failure.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-request-failure.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-stop3-request-failure.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-temp-cleanup.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-8-timeout-red.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-writer-probe.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-writer-probe.json
+?? .omo/evidence/world-model-physics-instrumentation/task-8-writer-probe.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-writer-probe/
+?? .omo/evidence/world-model-physics-instrumentation/task-8-wrong-sha.exit
+?? .omo/evidence/world-model-physics-instrumentation/task-8-wrong-sha.stderr
+?? .omo/evidence/world-model-physics-instrumentation/task-8-wrong-sha.stdout
+?? .omo/evidence/world-model-physics-instrumentation/task-8-xvfb-glxinfo.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-xvfb-probe.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-xvfb-xdpyinfo.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-xvnc-probe.log
+?? .omo/evidence/world-model-physics-instrumentation/task-8-xvnc-xdpyinfo.log
+?? .omo/evidence/world-model-physics-instrumentation/task-9-cleanup-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-docs.txt
+?? .omo/evidence/world-model-physics-instrumentation/task-9-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-f2-cleanup-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-f2-done-claim.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-f2-stop-verification-3.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-f2-stop-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial-cleanup-receipt.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial-rerun.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-cleanup.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-rerun.md
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-quality.md
+?? .omo/evidence/world-model-physics-instrumentation/task-9-independent-verdict.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-stop-verification-3.json
+?? .omo/evidence/world-model-physics-instrumentation/task-9-stop-verification.json
+?? .omo/evidence/world-model-physics-instrumentation/todo8-boundary-adversarial/
+?? .omo/evidence/world-model-physics-instrumentation/todo8-contract-adversarial/
+?? .omo/evidence/world-model-physics-instrumentation/todo8-live-adversarial/
+?? .omo/evidence/world-model-physics-instrumentation/verify-f2-collector.json
+?? .omo/evidence/world-model-physics-instrumentation/verify-f2-docs-repair.json
+?? .omo/evidence/world-model-physics-instrumentation/verify-f2-unity-socket-focused-2.log
+?? .omo/evidence/world-model-physics-instrumentation/verify-f2-unity-socket-focused-2.xml
+?? .omo/evidence/world-model-physics-instrumentation/verify-f2-unity-socket.json
+?? .omo/evidence/world-model-physics-instrumentation/world-model-physics-instrumentation-manual-qa.md
+?? .omo/knowledges/deterministic-unity-build-repair-2026-08-06.md
+?? .omo/knowledges/f2-unity-runtime-safety-remediation-2026-08-06.md
+?? .omo/knowledges/physics-publication-smoke-marker-binding-2026-08-06.md
+?? .omo/knowledges/task-3-physics-recorder-qa-2026-08-05.md
+?? .omo/run-continuation/ses_02aecd163ffe3jBQDmjD7Bst1t.json
+?? .omo/run-continuation/ses_02b66b311ffe4o6Aoii5j8uTvr.json
+?? .omo/run-continuation/ses_02bf4d93effeeSD9mYCoxB1q8X.json
+?? .omo/run-continuation/ses_02bf8f03cffe0WjZZo5KivccDL.json
+?? .omo/run-continuation/ses_02bfe1925ffeIon9RBd9fxd7a8.json
+?? .omo/run-continuation/ses_02bfe1939ffea3gO0NTv8zK763.json
+?? .omo/run-continuation/ses_02bfe194effeIQIUjmiheBJ1mC.json
+?? .omo/run-continuation/ses_02bfe832fffeWWVxO24bQxJ3LE.json
+?? .omo/run-continuation/ses_02bfedaeaffei2uMw9AbkQuieH.json
+?? .omo/run-continuation/ses_02c0d14c1ffeiYrwOF07LwkNWi.json
+?? .omo/run-continuation/ses_02c0e954cffek1rzhRzvnw5QDc.json
+?? .omo/run-continuation/ses_02c0e9566ffeMFHmzfVCR6Qul1.json
+?? .omo/run-continuation/ses_02c0fa041ffesdaRqaWWkma6ol.json
+?? .omo/run-continuation/ses_02c11e991ffe1lSmv1ja6X6XZf.json
+?? .omo/run-continuation/ses_02c13c723ffeDWlf3Kcp5wmT51.json
+?? .omo/run-continuation/ses_02c15c77fffe2RAHJhAiaELrzh.json
+?? .omo/run-continuation/ses_02c18eadaffefCC5wY402u234d.json
+?? .omo/run-continuation/ses_02c1a1cf1ffeduXxO3CViwcOp7.json
+?? .omo/run-continuation/ses_02c1a1d0fffe7Iai92KeH33wLP.json
+?? .omo/run-continuation/ses_02c1c32e2ffeTtF31tIKXXtnso.json
+?? .omo/run-continuation/ses_02c1c3847ffewpt102fkNJ4mZn.json
+?? .omo/run-continuation/ses_02c1faae1ffenco3g01Wek7gRI.json
+?? .omo/run-continuation/ses_02c1faafcffegBo5Dm9kZrdg4p.json
+?? .omo/run-continuation/ses_02c1fab16ffeWVkSpDyhIltFde.json
+?? .omo/run-continuation/ses_02c1fab53ffebc08rF4P6ASVXV.json
+?? .omo/run-continuation/ses_02c1fc258ffeOlw0FgPcSpczX5.json
+?? .omo/run-continuation/ses_02c1fca12ffeTb5hbadZPRtgYP.json
+?? .omo/run-continuation/ses_02c1fe035ffeQ33II4TamG0Ign.json
+?? .omo/run-continuation/ses_02c1fe08bffep4oI3970PNHiL8.json
+?? .omo/run-continuation/ses_02c1fe276ffeoycLeLO3qyL7Tg.json
+?? .omo/run-continuation/ses_02c200ee0ffej44H9cZjnLOHuQ.json
+?? .omo/run-continuation/ses_02c201136ffelGXtmhiLb1lZqc.json
+?? .omo/run-continuation/ses_02c201160ffeSO9J03h7O5z0gB.json
+?? .omo/run-continuation/ses_02c203b25ffexP6b4RULRiDSxq.json
+?? .omo/run-continuation/ses_02c21270effev0z6Fxe65c3Y9R.json
+?? .omo/run-continuation/ses_02c212725ffewr4GXQNbEdOrEr.json
+?? .omo/run-continuation/ses_02c212729ffe2NZa7Es7NV0CYX.json
+?? .omo/run-continuation/ses_02c21272bffeQid0gjPLGSqCeo.json
+?? .omo/run-continuation/ses_02c212735ffe6RcCv2J7wXWD7s.json
+?? .omo/run-continuation/ses_02c2e5a24ffe3QMsKxgi6qrf2u.json
+?? .omo/run-continuation/ses_02c2e5a35ffeU41PMLwqoC6nID.json
+?? .omo/run-continuation/ses_02c2e5a54ffeiFBSMfGNvCbgT2.json
+?? .omo/run-continuation/ses_02c2e5aa9ffelUFGEOGC1xkG2t.json
+?? .omo/run-continuation/ses_02c2e5acfffeMPqU3550pEp9dG.json
+?? .omo/run-continuation/ses_02c30541effefP2vB41xtkVm5p.json
+?? .omo/run-continuation/ses_02c305437ffezAxV4Wj567UggD.json
+?? .omo/run-continuation/ses_02c309ccbffeQxI1NIDYS1obzd.json
+?? .omo/run-continuation/ses_02c310e48ffeL7bpS1FZOuDEGm.json
+?? .omo/run-continuation/ses_02c326e32ffeSgsFwsmqJ19541.json
+?? .omo/run-continuation/ses_02c326e3affegCQCLtO6Tu9fTR.json
+?? .omo/run-continuation/ses_02c326ea0ffeoAXg7pLfvpwHyD.json
+?? .omo/run-continuation/ses_02c326ed4ffeYc6eXjcj9pVTZi.json
+?? .omo/run-continuation/ses_02c326fdcffeERLhGJQvieHVu0.json
+?? .omo/run-continuation/ses_02c33a7d0ffeTuc1XqgHUoJP0L.json
+?? .omo/run-continuation/ses_02c33a7e1ffe0hwLnl2eunLSUQ.json
+?? .omo/run-continuation/ses_02c33a803ffeJ63Zb9DC4CctkV.json
+?? .omo/run-continuation/ses_02c33a873ffeAdmXS7WHkf1r1g.json
+?? .omo/run-continuation/ses_02c33a8a0ffeX0LSJCcH5QLaOj.json
+?? .omo/run-continuation/ses_02c342f50ffemAw60tu5cMPNgy.json
+?? .omo/run-continuation/ses_02c342f61ffeOOhWX6Y4vCFupq.json
+?? .omo/run-continuation/ses_02c342f80ffe9tUnsQ78dgj62H.json
+?? .omo/run-continuation/ses_02c342fd5ffeMNKm4oBWJMddCL.json
+?? .omo/run-continuation/ses_02c343003ffe3T6gUqK28uVoBN.json
+?? .omo/run-continuation/ses_02c357a3dffeOKjX5V0sr9gkf1.json
+?? .omo/run-continuation/ses_02c357a53ffe2A4GlmtI27ZUzx.json
+?? .omo/run-continuation/ses_02c35b01affeZJ2DdRl28v33Zu.json
+?? .omo/run-continuation/ses_02c35d37cffezkQsbRGbmb5BME.json
+?? .omo/run-continuation/ses_02c3691e3ffeTsQz37aoN7txbz.json
+?? .omo/run-continuation/ses_02c369204ffeoVesIpshqhSxwJ.json
+?? .omo/run-continuation/ses_02c369210ffe5JK7gbbfb4kYkN.json
+?? .omo/run-continuation/ses_02c369215ffebkz4Lr58Vjf4xK.json
+?? .omo/run-continuation/ses_02c378073ffeHuH4dXIEuJxkFd.json
+?? .omo/run-continuation/ses_02c37808affe1vmrtjpqHTwGZb.json
+?? .omo/run-continuation/ses_02c384bc2ffe8hZbXHI8yDW6Pn.json
+?? .omo/run-continuation/ses_02c384bd2ffel2rHKKbHIzA9ZT.json
+?? .omo/run-continuation/ses_02c384bebffef92tQv71MuvWRw.json
+?? .omo/run-continuation/ses_02c384c2effecxFjiLkJcgmn0J.json
+?? .omo/run-continuation/ses_02c384c4effecsSFyu3EI0FO9x.json
+?? .omo/run-continuation/ses_02c390d07ffeWsbYfCS6KWyARZ.json
+?? .omo/run-continuation/ses_02c390d18ffealxenayjSomWwp.json
+?? .omo/run-continuation/ses_02c390d31ffeGWlrf3QFEVf6Is.json
+?? .omo/run-continuation/ses_02c390d78ffe8CPqEq50Ti6TKT.json
+?? .omo/run-continuation/ses_02c390d9affe4Wx6krsUfR2ibI.json
+?? .omo/run-continuation/ses_02c395dd1ffe6SNEAFfxR3zcp9.json
+?? .omo/run-continuation/ses_02c395e8dffeP6rqzWGIhxK1Sd.json
+?? .omo/run-continuation/ses_02c398bd9ffexh7b4PI4A0pORC.json
+?? .omo/run-continuation/ses_02c398bf3ffeS4mZ8XrtkBB5U7.json
+?? .omo/run-continuation/ses_02c39b09cffeDYYnr5XO5dFMx6.json
+?? .omo/run-continuation/ses_02c39d2a2ffeQb9AhONTUaulYm.json
+?? .omo/run-continuation/ses_02c3a4115ffeEstOxyVPBxmzO8.json
+?? .omo/run-continuation/ses_02c3a79a8ffeYXjdPAMFRsdac1.json
+?? .omo/run-continuation/ses_02c3a79abffeFinySSZc5id2K7.json
+?? .omo/run-continuation/ses_02c3a79afffeH02FNO2d5NwSuk.json
+?? .omo/run-continuation/ses_02c733bcbffeNO6xxP9bRks84q.json
+?? .omo/run-continuation/ses_02c733be0ffesgmkh4MFoOpwNz.json
+?? .omo/run-continuation/ses_02c733bfbffeO5XhlBVb3PB9Fb.json
+?? .omo/run-continuation/ses_02c7526fdffecRxEP4VsObFwfY.json
+?? .omo/run-continuation/ses_02c79c83bffe7BRE5jpSe8UhBK.json
+?? .omo/run-continuation/ses_02c7b4fbaffeX2HxAEB6ZZRyyZ.json
+?? .omo/run-continuation/ses_02ca79dc1ffeEcjGYzxlPYjLhp.json
+?? .omo/run-continuation/ses_02ca79dcfffeVfXa79EUbPKsSv.json
+?? .omo/run-continuation/ses_02ca7d65fffeYn4FpccdLLhaSB.json
+?? .omo/run-continuation/ses_02cb8130bffejEKFQaykbLqBYJ.json
+?? .omo/run-continuation/ses_02cb81322ffeuE9U6QGGQgesjW.json
+?? .omo/run-continuation/ses_02cb81349ffesCS4ss6Q0fEnvb.json
+?? .omo/run-continuation/ses_02cbb81aeffecRm8u2QyOpupO2.json
+?? .omo/run-continuation/ses_02ccaebdfffejwvoGyM0AmRrP7.json
+?? .omo/run-continuation/ses_02ccb124fffedWbbH1c6BIeppo.json
+?? .omo/run-continuation/ses_02ccb4d5affeOswEMKlLro83dy.json
+?? .omo/run-continuation/ses_02cd9bf97ffeG7Gtyr3Ib64GI2.json
+?? .omo/run-continuation/ses_02cd9bfe0ffe9j0qOU9R1OCp8j.json
+?? .omo/run-continuation/ses_02cd9f79bffeNFcwTR0Xd7gsrF.json
+?? .omo/run-continuation/ses_02ced8fa1ffeCEdgS1DDY1Bcri.json
+?? .omo/run-continuation/ses_02ced8fb3ffe2bYYZx0ZWMAkSp.json
+?? .omo/run-continuation/ses_02ced8fcfffeRIJC2L7GAIVYsS.json
+?? .omo/run-continuation/ses_02ced9011ffejYwRrT17YehhvG.json
+?? .omo/run-continuation/ses_02ced908ffferACWyjf9uUyxJj.json
+?? .omo/run-continuation/ses_02cf49b03ffezaEYZ7jFpmswrG.json
+?? .omo/run-continuation/ses_02cf49b1bffegzxLY3FOqVcNag.json
+?? .omo/run-continuation/ses_02cf50c34ffeaKb0InNmgiOAKp.json
+?? .omo/run-continuation/ses_02cf6208fffeEeuHsKqAn1wGeo.json
+?? .omo/run-continuation/ses_02d0047b5ffehTvvTjkrWnQL4Y.json
+?? .omo/run-continuation/ses_02d004809ffe3E4Jw46U3isW1e.json
+?? .omo/run-continuation/ses_02d00894affe8s9vprJTjLX6UH.json
+?? .omo/run-continuation/ses_02d0168daffevtfrP4i76VxeHR.json
+?? .omo/run-continuation/ses_02d18c013ffecraP8QOvnVj2lL.json
+?? .omo/run-continuation/ses_02d192b8affeDieivA6Wmyy9j0.json
+?? sciencebirdsgames/physics-v1/
+?? scripts/9001-player-wrapper.sh
+?? tasks/task_template_designer/Assets/Tests/Editor/ABBirdLaunchTests.cs
+?? tasks/task_template_designer/Assets/Tests/Editor/ABBirdLaunchTests.cs.meta
+?? tests/test_build_physics_player.py
+[0m
+[0m$ [0mprintf 'DISPLAY=%s\nWAYLAND_DISPLAY=%s\nLD_LIBRARY_PATH=%s\n' "$DISPLAY" "$WAYLAND_DISPLAY" "$LD_LIBRARY_PATH"; command -v timeout || true; command -v strace || true; command -v gdb || true; command -v unity-editor || true; command -v Unity || true; pgrep -a -f 'Unity|unity|Xvfb|Xwayland' || true
+DISPLAY=
+WAYLAND_DISPLAY=
+LD_LIBRARY_PATH=
+/usr/bin/timeout
+/usr/bin/strace
+/usr/bin/gdb
+501687 opencode run --auto --dir /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4 --agent Sisyphus Perform a read-only hypothesis-driven runtime audit of the exact Unity 2019.4.41f2 SIGSEGV seen in f2-final-remediation/unity-runtime-retry. You own only .omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug/. Do not edit product/test/plan/ledger/Boulder/published/protected files and do not run the migration project again. Read the existing debug-journal.md, prior crash logs, and the native-binary debugging references. Form at least three orthogonal hypotheses: H1 CEF/headless incompatibility, H2 project/import state, H3 graphics/display/private-library environment. Run only bounded non-project probes and, if safe, a fresh temporary empty Unity project outside the migration project; use exact Editor 2019.4.41f2 and private LD_LIBRARY_PATH. A probe must have a 60s bound, capture exit/signal/log, and clean temp projects, locks, and core files. Try materially different flags such as -disable-gpu / -force-gfx-st / explicit DISPLAY only if they are safe and do not mutate the migration project. Seek a toggle proof; otherwise report the strongest confirmed external blocker. Write hypotheses.md, probe artifacts, root-cause.json, and cleanup-receipt.json. Do not claim Unity project EditMode success.
+501834 /home/sukai/.omo/codegraph/node --liftoff-only --disable-warning=ExperimentalWarning /home/sukai/.omo/codegraph/lib/dist/bin/codegraph.js serve --mcp --path /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4
+502765 /usr/bin/zsh -c printf 'DISPLAY=%s\nWAYLAND_DISPLAY=%s\nLD_LIBRARY_PATH=%s\n' "$DISPLAY" "$WAYLAND_DISPLAY" "$LD_LIBRARY_PATH"; command -v timeout || true; command -v strace || true; command -v gdb || true; command -v unity-editor || true; command -v Unity || true; pgrep -a -f 'Unity|unity|Xvfb|Xwayland' || true
+621615 zellij a unityhub
+621625 /home/sukai/.cargo/bin/zellij --server /run/user/1002/zellij/contract_version_1/unityhub
+3889690 /home/sukai/.local/share/novphy-unity/hub-3.20.0/root/usr/lib/unityhub/unityhub-bin --no-sandbox --remote-debugging-port=9333
+3889699 /home/sukai/.local/share/novphy-unity/hub-3.20.0/root/usr/lib/unityhub/unityhub-bin --type=zygote --no-zygote-sandbox --no-sandbox
+3889700 /home/sukai/.local/share/novphy-unity/hub-3.20.0/root/usr/lib/unityhub/unityhub-bin --type=zygote --no-sandbox
+3889733 /home/sukai/.local/share/novphy-unity/hub-3.20.0/root/usr/lib/unityhub/unityhub-bin --type=gpu-process --no-sandbox --ozone-platform=x11 --enable-crash-reporter=b1462e64-5a53-4a96-8de1-0eddf3d29cda,no_channel --user-data-dir=/home/sukai/.config/unityhub --gpu-preferences=WAAAAAAAAAAgAQAEAAAAAAAAAAAAAGAAQAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAACAAAAAAAAAAIAAAAAAAAAABAAAAAAAAAAgAAAAAAAAACAAAAAAAAAAIAAAAAAAAAA== --shared-files --field-trial-handle=3,i,18229985656183898667,8386901722907459581,262144 --enable-features=GlobalShortcutsPortalPreferredTrigger,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=7,i,533653770651386722,4988710606112520849,4 --trace-process-track-uuid=3190708988185955192
+3889737 /home/sukai/.local/share/novphy-unity/hub-3.20.0/root/usr/lib/unityhub/unityhub-bin --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --no-sandbox --enable-crash-reporter=b1462e64-5a53-4a96-8de1-0eddf3d29cda,no_channel --user-data-dir=/home/sukai/.config/unityhub --standard-schemes=localasset --secure-schemes=sentry-ipc --bypasscsp-schemes=localasset,sentry-ipc --cors-schemes=localasset,sentry-ipc --fetch-schemes=localasset,sentry-ipc --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,18229985656183898667,8386901722907459581,262144 --enable-features=GlobalShortcutsPortalPreferredTrigger,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=7,i,533653770651386722,4988710606112520849,4 --trace-process-track-uuid=3190708989122997041
+3889753 /home/sukai/.local/share/novphy-unity/hub-3.20.0/root/usr/lib/unityhub/unityhub-bin --type=renderer --enable-crash-reporter=b1462e64-5a53-4a96-8de1-0eddf3d29cda,no_channel --user-data-dir=/home/sukai/.config/unityhub --standard-schemes=localasset --secure-schemes=sentry-ipc --bypasscsp-schemes=localasset,sentry-ipc --cors-schemes=localasset,sentry-ipc --fetch-schemes=localasset,sentry-ipc --app-path=/home/sukai/.local/share/novphy-unity/hub-3.20.0/root/usr/lib/unityhub/resources/app.asar --enable-sandbox --no-sandbox --remote-debugging-port=9333 --ozone-platform=x11 --lang=en-US --num-raster-threads=4 --enable-main-frame-before-activation --renderer-client-id=4 --time-ticks-at-unix-epoch=-1782703038873922 --launch-time-ticks=3209082359683 --shared-files=v8_context_snapshot_data:100 --field-trial-handle=3,i,18229985656183898667,8386901722907459581,262144 --enable-features=GlobalShortcutsPortalPreferredTrigger,PdfUseShowSaveFilePicker --disable-features=DropInputEventsWhilePaintHolding,LocalNetworkAccessChecks,ScreenAIOCREnabled,SpareRendererForSitePerProcess,TraceSiteInstanceGetProcessCreation --variations-seed-version --pseudonymization-salt-handle=7,i,533653770651386722,4988710606112520849,4 --trace-process-track-uuid=3190708990060038890 --hub-startup-projects=[] --hub-startup-config={"hubDisableAnalytics":false,"hubDisableAutoUpdate":false,"hubDisableCommunity":false,"hubDisableElevate":false,"hubDisableLearn":false,"hubDisablePersonalLicense":false,"hubDisableSignin":false,"hubDisableVisualStudioDownload":false,"hubDisableWelcomeScreen":false,"analyticsHighlightUI":false,"hubDisableSignInRequired":false,"hubEnableWorkOffline":false} --hub-startup-prefs=undefined --hub-startup-signed-in=true --hub-startup-getsetup={"hasSeenGetSetUp":true,"shouldHideGetSetUp":false,"hubLicenseEulaAcceptedAt":"2026-06-22T00:00:00Z"} --hub-startup-language=en
+3889975 /home/sukai/.local/share/novphy-unity/hub-3.20.0/root/usr/lib/unityhub/UnityLicensingClient_V1/Unity.Licensing.Client --namedPipe Unity-LicenseClient-sukai --cloudEnvironment production
+[0m
+[0m$ [0mrg --files /home/sukai/.local/share /opt /usr/local 2>/dev/null | rg '2019\.4\.41f2|Unity$|UnitySetup|Editor/Unity$' | sort | head -200
+/home/sukai/.local/share/novphy-unity/2019.4.40f1-ffc62b691db5/editor/Editor/Unity
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/Unity-2019.4.41f2.tar.xz
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/UnityBugReporter
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/UnityBugReporter_s.debug
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/imageformats/libqgif.so
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/imageformats/libqico.so
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/libQt5Core.so.5
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/libQt5DBus.so.5
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/libQt5Gui.so.5
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/libQt5Network.so.5
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/libQt5OpenGL.so.5
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/libQt5PrintSupport.so.5
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/libQt5Widgets.so.5
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/libQt5XcbQpa.so.5
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/libQt5Xml.so.5
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/platforms/libqxcb.so
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/qt.conf
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/BugReporter/xcbglintegrations/libqxcb-glx-integration.so
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/AutoLight.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/GLSLSupport.glslinc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/HLSLSupport.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/Lighting.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/SpeedTree8Common.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/SpeedTreeBillboardCommon.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/SpeedTreeCommon.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/SpeedTreeVertex.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/SpeedTreeWind.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/TerrainEngine.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/TerrainPreview.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/TerrainSplatmapCommon.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/TerrainTool.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/Tessellation.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/TextCoreProperties.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityBuiltin2xTreeLibrary.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityBuiltin3xTreeLibrary.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityCG.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityCG.glslinc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityCustomRenderTexture.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityDeferredLibrary.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityDeprecated.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityGBuffer.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityGlobalIllumination.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityImageBasedLighting.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityInstancing.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityLightingCommon.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityMetaPass.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityPBSLighting.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityRayTracingMeshUtils.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityShaderUtilities.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityShaderVariables.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityShadowLibrary.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnitySprites.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardBRDF.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardConfig.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardCore.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardCoreForward.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardCoreForwardSimple.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardInput.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardMeta.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardParticleEditor.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardParticleInstancing.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardParticleShadow.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardParticles.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardShadow.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStandardUtils.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStereoExtensions.glslinc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityStereoSupport.glslinc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityUI.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/CGIncludes/UnityUIE.cginc
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/ExCSS.Unity.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/Unity.Cecil.Mdb.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/Unity.Cecil.Pdb.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/Unity.Cecil.Rocks.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/Unity.Cecil.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/Unity.CecilTools.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/Unity.CompilationPipeline.Common.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/Unity.Legacy.NRefactory.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/Unity.SerializationLogic.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEditor.Graphs.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEditor.Graphs.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEditor.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEditor.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEditor.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/Unity.Cecil.Mdb.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/Unity.Cecil.Pdb.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/Unity.Cecil.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/Unity.Legacy.NRefactory.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEditor.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEditor.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEditor.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ARModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ARModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ARModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AccessibilityModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AccessibilityModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AccessibilityModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AndroidJNIModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AndroidJNIModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AndroidJNIModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AnimationModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AnimationModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AnimationModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AssetBundleModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AssetBundleModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AssetBundleModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AudioModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AudioModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.AudioModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ClothModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ClothModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ClothModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ClusterInputModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ClusterInputModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ClusterInputModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ClusterRendererModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ClusterRendererModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ClusterRendererModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.CoreModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.CoreModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.CoreModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.CrashReportingModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.CrashReportingModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.CrashReportingModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.DSPGraphModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.DSPGraphModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.DSPGraphModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.DirectorModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.DirectorModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.DirectorModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.GameCenterModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.GameCenterModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.GameCenterModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.GridModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.GridModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.GridModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.HotReloadModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.HotReloadModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.HotReloadModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.IMGUIModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.IMGUIModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.IMGUIModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ImageConversionModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ImageConversionModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ImageConversionModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.InputLegacyModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.InputLegacyModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.InputLegacyModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.InputModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.InputModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.InputModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.JSONSerializeModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.JSONSerializeModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.JSONSerializeModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.LocalizationModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.LocalizationModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.LocalizationModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ParticleSystemModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ParticleSystemModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ParticleSystemModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.PerformanceReportingModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.PerformanceReportingModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.PerformanceReportingModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.Physics2DModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.Physics2DModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.Physics2DModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.PhysicsModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.PhysicsModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.PhysicsModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ProfilerModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ProfilerModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ProfilerModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ScreenCaptureModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ScreenCaptureModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.ScreenCaptureModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SharedInternalsModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SharedInternalsModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SharedInternalsModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SpriteMaskModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SpriteMaskModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SpriteMaskModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SpriteShapeModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SpriteShapeModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SpriteShapeModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.StreamingModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.StreamingModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.StreamingModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SubstanceModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SubstanceModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SubstanceModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SubsystemsModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SubsystemsModule.pdb
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.SubsystemsModule.xml
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.TLSModule.dll
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed/UnityEngine/UnityEngine.TLSModule.pdb
+[0m
+[0m$ [0mgit status --short --untracked-files=all -- .omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug tasks/task_template_designer sciencebirdsgames/physics-v1 scripts tests
+M scripts/build_physics_player.sh
+ M scripts/collect_rollouts.py
+ M scripts/package_physics_player.py
+ M scripts/physics_rollout_persistence.py
+ M scripts/verify_physics_capture_docs.py
+ M scripts/verify_physics_player.py
+ M tasks/task_template_designer/Assets/Scripts/GameWorld/Characters/Birds/ABBird.cs
+ M tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs
+ M tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs
+ M tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs
+ M tasks/task_template_designer/Assets/Tests/Editor/PhysicsShotRecorderTests.cs
+ M tests/test_collect_rollouts.py
+ M tests/test_package_physics_player.py
+ M tests/test_prepare_rollout_dataset.py
+ M tests/test_verify_physics_capture_docs.py
+ M tests/test_verify_physics_player.py
+ M tests/test_webui_bridge.py
+?? .omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug/debug-journal.md
+?? sciencebirdsgames/physics-v1/archive.sha256
+?? sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz
+?? sciencebirdsgames/physics-v1/unity-build.log
+?? scripts/9001-player-wrapper.sh
+?? tasks/task_template_designer/Assets/Tests/Editor/ABBirdLaunchTests.cs
+?? tasks/task_template_designer/Assets/Tests/Editor/ABBirdLaunchTests.cs.meta
+?? tests/test_build_physics_player.py
+[0m
+[0m→ [0mRead .omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug/debug-journal.md[90m [limit=400][0m
+[0m
+[0m$ [0mrg -l -i 'SIGSEGV|segmentation|signal 11|crash|2019\.4\.41f2|unity-runtime-retry|f2-final-remediation' .omo/evidence/world-model-physics-instrumentation/f2-final-remediation .omo/evidence 2>/dev/null | rg 'unity|f2-final-remediation|task-8|task-9' | sort | head -200
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/adversarial-verification.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-1-archive.sha256
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-1-provenance.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-1-unity.log
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-2-archive.sha256
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-2-provenance.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-2-unity.log
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/independent-verification.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-1-archive.sha256
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-1-provenance.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-2-archive.sha256
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/build-2-provenance.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/debug-journal.md
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/done-claim.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/protected-production-after.sha256
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/protected-production-before.sha256
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/reproducibility-receipt.json
+.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair/unity-import-compile.log
+.omo/evidence/world-model-physics-instrumentation/f2-blocker-repair/postclaim-unity-inflight.log
+.omo/evidence/world-model-physics-instrumentation/f2-blocker-repair/red-unity-global-capacity.log
+.omo/evidence/world-model-physics-instrumentation/f2-blocker-repair/red-unity-inflight.log
+.omo/evidence/world-model-physics-instrumentation/f2-blocker-repair/stop-hook-2-unity.log
+.omo/evidence/world-model-physics-instrumentation/f2-blocker-repair/stop-hook-3-unity.log
+.omo/evidence/world-model-physics-instrumentation/f2-blocker-repair/unity-editor.sha256
+.omo/evidence/world-model-physics-instrumentation/f2-blocker-repair/unity-protocol-1.log
+.omo/evidence/world-model-physics-instrumentation/f2-blocker-repair/unity-protocol-2.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs-independent/independent-verification.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs-independent/independent-verification.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs/done-claim.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs/done-claim.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/continuation-notepad.md
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/continuation-notepad.md
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/package-independent/cleanup-receipt.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/package-independent/cleanup-receipt.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/package-independent/independent-verification.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/package-independent/independent-verification.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/package-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/package-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/package/done-claim.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/package/done-claim.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/adversarial-probes.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/adversarial-probes.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/cleanup-receipt.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/cleanup-receipt.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-cleanup.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-cleanup.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/publication-trace.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/publication-trace.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug/debug-journal.md
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-crash-debug/debug-journal.md
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/cleanup-receipt.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/cleanup-receipt.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/focused-editmode.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/focused-editmode.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/independent-verification.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/independent-verification.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/DoneClaim.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/DoneClaim.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/direct-verification.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/direct-verification.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/focused-editmode.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/focused-editmode.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/preflight.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/preflight.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/stop-hook-verification-2.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/stop-hook-verification-2.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/stop-hook-verification-3.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-retry/stop-hook-verification-3.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/done-claim.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/done-claim.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/focused-editmode.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/focused-editmode.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/green-source-probes.command.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/green-source-probes.command.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/green-source-probes.result.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/green-source-probes.result.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/green-source-probes.sh
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/green-source-probes.sh
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/red-source-probes.command.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/red-source-probes.command.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/unity-command.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/unity-command.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/unity-postflight.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/unity-postflight.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/unity-preflight.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/unity-preflight.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier-independent/cleanup-receipt.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier-independent/cleanup-receipt.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier-independent/independent-verification.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier-independent/independent-verification.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier-worker.log
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier/07-malformed-path-probe.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier/07-malformed-path-probe.txt
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier/DoneClaim.json
+.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/verifier/DoneClaim.json
+.omo/evidence/world-model-physics-instrumentation/f2-release-final-independent-unity.log
+.omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-final-run1.log
+.omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-final-run2.log
+.omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-fixture-run1.log
+.omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-fixture-run2.log
+.omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-green-run1.log
+.omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-legacy.log
+.omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-red.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-done-claim.json
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-editmode-all.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-editmode-partition-receipt.json
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-fixture-abgame-world-lifecycle.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-fixture-legacy-ground-truth.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-fixture-physical-entity-registry.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-fixture-physical-shot-recorder.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-fixture-physical-snapshot-exporter.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-fixture-physics-shot-recorder.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-fixture-protocol.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-focused-1.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-focused-2.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-manual-qa.md
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-red.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-stop-verification-2.json
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-stop-verification-2.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-stop-verification-3.json
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-stop-verification-3.log
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-stop-verification.json
+.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-stop-verification.log
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-1-stage/unity-build.log
+.omo/evidence/world-model-physics-instrumentation/final-archive-rebuild/build-3-stage/unity-build.log
+.omo/evidence/world-model-physics-instrumentation/task-2-unity-focused-1.log
+.omo/evidence/world-model-physics-instrumentation/task-2-unity-focused-2.log
+.omo/evidence/world-model-physics-instrumentation/task-2-unity.log
+.omo/evidence/world-model-physics-instrumentation/task-4-unity.log
+.omo/evidence/world-model-physics-instrumentation/task-7-stop-hook-final-unity.log
+.omo/evidence/world-model-physics-instrumentation/task-8-action-final-sha256.txt
+.omo/evidence/world-model-physics-instrumentation/task-8-debug-journal.md
+.omo/evidence/world-model-physics-instrumentation/task-8-editmode-all.log
+.omo/evidence/world-model-physics-instrumentation/task-8-legacy-fixture.log
+.omo/evidence/world-model-physics-instrumentation/task-8-lifecycle-fixture.log
+.omo/evidence/world-model-physics-instrumentation/task-8-physical-fixtures.log
+.omo/evidence/world-model-physics-instrumentation/task-8-production-after.sha256
+.omo/evidence/world-model-physics-instrumentation/task-8-production-before.sha256
+.omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-fix-done-claim.json
+.omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-green.log
+.omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-pin-final.log
+.omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-pin.log
+.omo/evidence/world-model-physics-instrumentation/task-8-protocol-contract-red.log
+.omo/evidence/world-model-physics-instrumentation/task-8-protocol-fixture.log
+.omo/evidence/world-model-physics-instrumentation/task-8-protocol-toggle-green.log
+.omo/evidence/world-model-physics-instrumentation/task-8-protocol-toggle-red.log
+.omo/evidence/world-model-physics-instrumentation/task-8-shot-recorder-fixture.log
+.omo/evidence/world-model-physics-instrumentation/task-8-stage-before.sha256
+.omo/evidence/world-model-physics-instrumentation/task-8-stage-final.sha256
+.omo/evidence/world-model-physics-instrumentation/task-9-docs.txt
+.omo/evidence/world-model-physics-instrumentation/task-9-f2-done-claim.json
+.omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial-rerun.json
+.omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial.json
+.omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-rerun.md
+.omo/evidence/world-model-physics-instrumentation/task-9-independent-verdict.json
+.omo/evidence/world-model-physics-instrumentation/task-9-stop-verification.json
+.omo/evidence/world-model-physics-instrumentation/verify-f2-unity-socket-focused-2.log
+.omo/evidence/world-model-physics-instrumentation/verify-f2-unity-socket.json
+[0m
+The workspace is already dirty in protected product/evidence areas, so I will not alter or clean those changes. The target evidence directory currently contains only the pre-existing journal; the exact `2019.4.41f2` editor is installed, while `DISPLAY` and `LD_LIBRARY_PATH` are unset, making environment capture and an isolated empty-project probe the next decisive steps.
+[0m• [0mPlan bounded Unity audit[90m Plan Agent[0m

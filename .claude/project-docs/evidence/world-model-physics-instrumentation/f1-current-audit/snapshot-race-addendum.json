@@ -1,0 +1,15 @@
+{
+  "verdict": "needs-fix",
+  "reason": "source snapshot mutated after independent verification",
+  "independently_reviewed_head": "b0f312612af00d91295738bca8d4b77566308495",
+  "later_observed_head": "6668b12f43f2c577c7f2446c98aedea0811f913e",
+  "later_observed_tree": "4107ef110108c82404974de51c2b3f2409c5fbef",
+  "archive_sha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+  "binary_observable": "HEAD changed after the reviewer captured post-head/post-tree; F1 cannot bind to the exact final commit while concurrent commits continue",
+  "artifact_paths": [
+    "f1-current-audit/independent-verification.json",
+    "f1-current-audit/final-observed-head",
+    "f1-current-audit/final-observed-tree",
+    "f1-current-audit/recomputed-archive-final.sha256"
+  ]
+}

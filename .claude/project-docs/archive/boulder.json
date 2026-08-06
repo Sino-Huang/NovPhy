@@ -1,0 +1,309 @@
+{
+  "schema_version": 2,
+  "active_work_id": "world-model-physics-instrumentation-622663e5",
+  "works": {
+    "world-model-physics-instrumentation-5e128a20": {
+      "work_id": "world-model-physics-instrumentation-5e128a20",
+      "active_plan": "/mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md",
+      "plan_name": "world-model-physics-instrumentation",
+      "status": "completed",
+      "started_at": "2026-08-03T09:37:58.697Z",
+      "updated_at": "2026-08-03T22:44:47.398Z",
+      "session_ids": [
+        "opencode:ses_03903489affeJ7yiqKwBJzqG5U",
+        "opencode:ses_037b92b3bffenEYTX2XitbeUbH"
+      ],
+      "session_origins": {
+        "opencode:ses_03903489affeJ7yiqKwBJzqG5U": "direct",
+        "opencode:ses_037b92b3bffenEYTX2XitbeUbH": "appended"
+      },
+      "agent": "atlas",
+      "task_sessions": {
+        "todo:2": {
+          "task_key": "todo:2",
+          "task_label": "2",
+          "task_title": "Migrate an isolated project stage to Unity 2019.4 LTS and implement physical snapshot export with stable IDs and explicit clocks.",
+          "session_id": "opencode:ses_038fe0d30ffespRr40cAhphkBE",
+          "agent": "Sisyphus-Junior",
+          "started_at": "2026-08-03T10:53:32.158Z",
+          "ended_at": "2026-08-03T11:33:19Z",
+          "status": "blocked",
+          "updated_at": "2026-08-03T22:44:47.398Z",
+          "reason": "superseded by active work world-model-physics-instrumentation-622663e5; Todo 2 remained blocked and was not completed"
+        }
+      },
+      "ended_at": "2026-08-03T12:07:50.792Z",
+      "elapsed_ms": 8992095
+    },
+    "world-model-physics-instrumentation-622663e5": {
+      "work_id": "world-model-physics-instrumentation-622663e5",
+      "active_plan": "/mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md",
+      "plan_name": "world-model-physics-instrumentation",
+      "status": "awaiting-user-approval",
+      "started_at": "2026-08-03T09:37:58.730Z",
+      "updated_at": "2026-08-07T00:36:29.258266+10:00",
+      "reason": "Final verification wave complete at exact commit e2d19ae04946765b0196e043826bb08aa9a09caf, tree f0347223e9b56cde2d2d9b9902ce8b4f139b059f, archive 429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de. F1-F4 all APPROVE with zero blockers. Awaiting the explicit user approval the plan requires before the work is declared done.",
+      "session_ids": [
+        "opencode:ses_03903489affeJ7yiqKwBJzqG5U",
+        "codex:019fccd9-fda6-7e33-ae29-ee92d192df09",
+        "claude:final-wave-e2d19ae"
+      ],
+      "session_origins": {
+        "opencode:ses_03903489affeJ7yiqKwBJzqG5U": "direct"
+      },
+      "agent": "atlas",
+      "task_sessions": {
+        "todo:2": {
+          "task_key": "todo:2",
+          "task_label": "2",
+          "task_title": "Migrate an isolated project stage to Unity 2019.4 LTS and implement physical snapshot export with stable IDs and explicit clocks.",
+          "session_id": "opencode:ses_038fe0d30ffespRr40cAhphkBE",
+          "agent": "Sisyphus-Junior",
+          "started_at": "2026-08-03T09:43:41.532Z",
+          "status": "completed",
+          "updated_at": "2026-08-05T01:27:31+10:00",
+          "reason": "independently confirmed: exact licensing, isolated import, focused and full EditMode tests, legacy parity, protected manifests, and cleanup all passed"
+        },
+        "final:f1": {
+          "task_key": "final:f1",
+          "task_label": "F1",
+          "task_title": "F1. Plan compliance audit",
+          "session_id": "claude:final-wave-e2d19ae",
+          "agent": "claude",
+          "started_at": "2026-08-06T17:16:25+10:00",
+          "ended_at": "2026-08-07T00:36:29.258266+10:00",
+          "status": "completed",
+          "updated_at": "2026-08-07T00:36:29.258266+10:00",
+          "reason": "APPROVE, zero blockers; ten todo criteria pass, 17/17 evidence pointers exist"
+        },
+        "final:f2": {
+          "task_key": "final:f2",
+          "task_label": "F2",
+          "task_title": "F2. Code quality review",
+          "session_id": "claude:final-wave-e2d19ae",
+          "agent": "claude",
+          "started_at": "2026-08-06T17:16:25+10:00",
+          "ended_at": "2026-08-07T00:36:29.258266+10:00",
+          "status": "completed",
+          "updated_at": "2026-08-07T00:36:29.258266+10:00",
+          "reason": "APPROVE, zero blockers; both prior HIGH findings fixed and covered, EditMode 44/44"
+        },
+        "final:f3": {
+          "task_key": "final:f3",
+          "task_label": "F3",
+          "task_title": "F3. Real manual QA",
+          "session_id": "claude:final-wave-e2d19ae",
+          "agent": "claude",
+          "started_at": "2026-08-06T17:16:25+10:00",
+          "ended_at": "2026-08-07T00:36:29.258266+10:00",
+          "status": "completed",
+          "updated_at": "2026-08-07T00:36:29.258266+10:00",
+          "reason": "APPROVE, zero blockers; live smoke exit 0 with 16/16 invariants, 3/3 injections rejected"
+        },
+        "final:f4": {
+          "task_key": "final:f4",
+          "task_label": "F4",
+          "task_title": "F4. Scope fidelity",
+          "session_id": "claude:final-wave-e2d19ae",
+          "agent": "claude",
+          "started_at": "2026-08-06T17:16:25+10:00",
+          "ended_at": "2026-08-07T00:36:29.258266+10:00",
+          "status": "completed",
+          "updated_at": "2026-08-07T00:36:29.258266+10:00",
+          "reason": "APPROVE, zero blockers; zero changes under data/ or sciencebirdsgames/Linux"
+        }
+      },
+      "final_wave": {
+        "pinnedCommit": "e2d19ae04946765b0196e043826bb08aa9a09caf",
+        "pinnedTree": "f0347223e9b56cde2d2d9b9902ce8b4f139b059f",
+        "archiveSha256": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+        "stage": "sciencebirdsgames/physics-v1",
+        "evidenceRoot": ".omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-native/e2d19ae",
+        "verdicts": {
+          "F1": "APPROVE",
+          "F2": "APPROVE",
+          "F3": "APPROVE",
+          "F4": "APPROVE"
+        },
+        "blockers": [],
+        "promoted": false,
+        "promotionNote": "Nothing promoted beyond the staged player. Production player and active cohort untouched."
+      }
+    }
+  },
+  "active_plan": "/mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md",
+  "started_at": "2026-08-03T09:37:58.730Z",
+  "status": "awaiting-user-approval",
+  "updated_at": "2026-08-07T00:36:29.258266+10:00",
+  "reason": "Final verification wave complete at exact commit e2d19ae04946765b0196e043826bb08aa9a09caf, tree f0347223e9b56cde2d2d9b9902ce8b4f139b059f, archive 429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de. F1-F4 all APPROVE with zero blockers. Awaiting the explicit user approval the plan requires before the work is declared done.",
+  "session_ids": [
+    "opencode:ses_03903489affeJ7yiqKwBJzqG5U",
+    "codex:019fccd9-fda6-7e33-ae29-ee92d192df09",
+    "claude:final-wave-e2d19ae"
+  ],
+  "session_origins": {
+    "opencode:ses_03903489affeJ7yiqKwBJzqG5U": "direct"
+  },
+  "plan_name": "world-model-physics-instrumentation",
+  "task_sessions": {
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "Migrate an isolated project stage to Unity 2019.4 LTS and implement physical snapshot export with stable IDs and explicit clocks.",
+      "session_id": "opencode:ses_038fe0d30ffespRr40cAhphkBE",
+      "agent": "Sisyphus-Junior",
+      "started_at": "2026-08-03T09:43:41.532Z",
+      "status": "completed",
+      "updated_at": "2026-08-05T01:27:31+10:00",
+      "reason": "independently confirmed: exact licensing, isolated import, focused and full EditMode tests, legacy parity, protected manifests, and cleanup all passed"
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "Export raw contacts, derived support, and macro events from authoritative callbacks.",
+      "session_id": "codex:todo3_semantic_fix",
+      "agent": "lazycodex-worker-high",
+      "started_at": "2026-08-05T01:29:00+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-05T04:35:00+10:00",
+      "reason": "independently confirmed: two fresh 14/14 focused Unity receipts, full Todo 1/Todo 3 contract audit, protected manifests, and cleanup passed"
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "Add a versioned direct-socket enriched-capture protocol and bridge API.",
+      "session_id": "codex:todo4_protocol_bridge",
+      "agent": "lazycodex-worker-high",
+      "started_at": "2026-08-05T04:35:00+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-05T05:38:00+10:00",
+      "reason": "independently confirmed: typed immutable Python API, 22/22 bridge tests, real request-70 TCP, Unity 6/6 twice, protected manifests, and cleanup passed"
+    },
+    "todo:5": {
+      "task_key": "todo:5",
+      "task_label": "5",
+      "task_title": "Persist enriched shot artifacts atomically and validate their capture contract.",
+      "session_id": "codex:todo5_atomic_artifacts",
+      "agent": "lazycodex-worker-high",
+      "started_at": "2026-08-05T05:38:00+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-05T11:25:08+10:00",
+      "reason": "independently confirmed: production opt-in collector path, corruption matrix, provenance, atomic promotion, quarantine, resume cleanup, protected state, and no-residue gates passed"
+    },
+    "todo:6": {
+      "task_key": "todo:6",
+      "task_label": "6",
+      "task_title": "Add opt-in launcher controls and staged-player provenance without touching the active cohort.",
+      "session_id": "codex:todo6_launcher_provenance",
+      "agent": "lazycodex-worker-medium",
+      "started_at": "2026-08-05T11:26:00+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-05T12:05:00+10:00",
+      "reason": "independently confirmed: 9/9 launcher tests, 38 affected tests, provenance/digest propagation, protected-root pre-write refusal, legacy byte identity, and cleanup passed"
+    },
+    "todo:7": {
+      "task_key": "todo:7",
+      "task_label": "7",
+      "task_title": "Build, package, and test a reproducible Unity 2019.4.41f2 enriched Linux player.",
+      "session_id": "codex:todo7_symbolic_runtime_fix",
+      "agent": "lazycodex-worker-high",
+      "started_at": "2026-08-05T12:32:00+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-05T23:07:00+10:00",
+      "reason": "independently confirmed: final archive SHA 127d0846, 33/33 EditMode, live request 62/70, protected manifests, and cleanup passed"
+    },
+    "todo:8": {
+      "task_key": "todo:8",
+      "task_label": "8",
+      "task_title": "Run the dedicated live engine smoke test and establish promotion criteria.",
+      "session_id": "codex:todo8_live_smoke",
+      "agent": "lazycodex-worker-high",
+      "started_at": "2026-08-05T23:07:00+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-06T00:48:00+10:00",
+      "reason": "independently confirmed by fresh live, contract-invariant, and protected-boundary adversarial lanes against archive c7f9fa4c; happy accepted, all three injections rejected, protected roots unchanged, cleanup complete"
+    },
+    "todo:9": {
+      "task_key": "todo:9",
+      "task_label": "9",
+      "task_title": "Document the research-data contract and loader compatibility boundary.",
+      "session_id": "codex:todo9_docs",
+      "agent": "lazycodex-worker-medium",
+      "started_at": "2026-08-06T00:49:00+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-06T01:33:00+10:00",
+      "reason": "independently confirmed: contract sections, staged archive/receipt/report provenance, exact operational commands, six verifier tests, and CLI QA passed"
+    },
+    "todo:10": {
+      "task_key": "todo:10",
+      "task_label": "10",
+      "task_title": "Add the post-instrumentation physics_capture_v1 supervision reader to the data pipeline.",
+      "session_id": "codex:todo10_supervision_reader",
+      "agent": "lazycodex-worker-high",
+      "started_at": "2026-08-05T12:32:00+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-05T12:32:00+10:00",
+      "reason": "independently confirmed/APPROVE: focused and full data suites, shared validator, real fixture QA, adversarial and cleanup audits passed"
+    },
+    "todo:10-gate": {
+      "task_key": "todo:10-gate",
+      "task_label": "10-gate",
+      "task_title": "Independent adversarial verification of Todo 10 supervision reader.",
+      "session_id": "codex:todo10_independent_gate",
+      "agent": "lazycodex-gate-reviewer",
+      "started_at": "2026-08-05T16:15:00+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-05T16:15:00+10:00",
+      "reason": "confirmed/APPROVE: fresh focused twice, full data, shared validator, real API QA, adversarial and cleanup audit passed"
+    },
+    "final:f1": {
+      "task_key": "final:f1",
+      "task_label": "F1",
+      "task_title": "F1. Plan compliance audit",
+      "session_id": "claude:final-wave-e2d19ae",
+      "agent": "claude",
+      "started_at": "2026-08-06T17:16:25+10:00",
+      "ended_at": "2026-08-07T00:36:29.258266+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-07T00:36:29.258266+10:00",
+      "reason": "APPROVE, zero blockers; ten todo criteria pass, 17/17 evidence pointers exist"
+    },
+    "final:f2": {
+      "task_key": "final:f2",
+      "task_label": "F2",
+      "task_title": "F2. Code quality review",
+      "session_id": "claude:final-wave-e2d19ae",
+      "agent": "claude",
+      "started_at": "2026-08-06T17:16:25+10:00",
+      "ended_at": "2026-08-07T00:36:29.258266+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-07T00:36:29.258266+10:00",
+      "reason": "APPROVE, zero blockers; both prior HIGH findings fixed and covered, EditMode 44/44"
+    },
+    "final:f3": {
+      "task_key": "final:f3",
+      "task_label": "F3",
+      "task_title": "F3. Real manual QA",
+      "session_id": "claude:final-wave-e2d19ae",
+      "agent": "claude",
+      "started_at": "2026-08-06T17:16:25+10:00",
+      "ended_at": "2026-08-07T00:36:29.258266+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-07T00:36:29.258266+10:00",
+      "reason": "APPROVE, zero blockers; live smoke exit 0 with 16/16 invariants, 3/3 injections rejected"
+    },
+    "final:f4": {
+      "task_key": "final:f4",
+      "task_label": "F4",
+      "task_title": "F4. Scope fidelity",
+      "session_id": "claude:final-wave-e2d19ae",
+      "agent": "claude",
+      "started_at": "2026-08-06T17:16:25+10:00",
+      "ended_at": "2026-08-07T00:36:29.258266+10:00",
+      "status": "completed",
+      "updated_at": "2026-08-07T00:36:29.258266+10:00",
+      "reason": "APPROVE, zero blockers; zero changes under data/ or sciencebirdsgames/Linux"
+    }
+  },
+  "agent": "atlas"
+}

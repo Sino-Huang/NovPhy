@@ -1,0 +1,93 @@
+{
+  "schema_version": "novphy_f1_direct_verification_v2",
+  "scenario": "Directly verify F1 plan compliance after the Todo 8 action-event remediation",
+  "authoritative_plan": "/mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md",
+  "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+  "plan_state": {
+    "todos_1_through_10_checked": true,
+    "f1_checked": true,
+    "f2_through_f4_checked": false
+  },
+  "fresh_suite_exits": {
+    "contract_14_tests": {"path": ".omo/evidence/world-model-physics-instrumentation/f1-subagent-stop-v2-contract.exit", "exit_code": 0},
+    "bridge_14_tests": {"path": ".omo/evidence/world-model-physics-instrumentation/f1-subagent-stop-v2-bridge.exit", "exit_code": 0},
+    "persistence_launcher_20_tests": {"path": ".omo/evidence/world-model-physics-instrumentation/f1-subagent-stop-v2-persistence_launcher.exit", "exit_code": 0},
+    "documentation_7_tests": {"path": ".omo/evidence/world-model-physics-instrumentation/f1-subagent-stop-v2-docs.exit", "exit_code": 0},
+    "supervision_reader_6_tests": {"path": ".omo/evidence/world-model-physics-instrumentation/f1-subagent-stop-v2-reader.exit", "exit_code": 0},
+    "focused_smoke_11_tests": {"path": ".omo/evidence/world-model-physics-instrumentation/f1-subagent-stop-focused.exit", "exit_code": 0}
+  },
+  "todo_semantics": {
+    "todo_1": {"evidence": ".omo/evidence/world-model-physics-instrumentation/task-1-contract.txt", "nonempty": true},
+    "todo_2": {"evidence": ".omo/evidence/world-model-physics-instrumentation/task-2-done-claim.json", "nonempty": true, "todo_2_complete": true},
+    "todo_3": {"evidence": ".omo/evidence/world-model-physics-instrumentation/task-3-independent-confirmed-final-2026-08-05.json", "nonempty": true, "verdict": "confirmed"},
+    "todo_4": {"evidence": ".omo/evidence/world-model-physics-instrumentation/task-4-v2-independent-confirmed.json", "nonempty": true, "verdict": "confirmed"},
+    "todo_5": {"evidence": ".omo/evidence/world-model-physics-instrumentation/task-5-v2-independent-verdict.json", "nonempty": true, "verdict": "confirmed"},
+    "todo_6": {"evidence": ".omo/evidence/world-model-physics-instrumentation/task-6-done-claim.json", "nonempty": true, "status": "verified"},
+    "todo_7": {"evidence": ".omo/evidence/world-model-physics-instrumentation/task-7-final-stop-verification.json", "nonempty": true, "verdict": "confirmed"},
+    "todo_8": {"evidence": ".omo/evidence/world-model-physics-instrumentation/task-8-action-event-done-claim.json", "nonempty": true, "claim": "complete", "final_verdict": "PASS"},
+    "todo_9": {"evidence": ".omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-rerun.md", "nonempty": true, "recommendation": "APPROVE"},
+    "todo_10": {"evidence": ".omo/evidence/world-model-physics-instrumentation/task-10-independent-verdict.json", "nonempty": true, "verdict": "confirmed"}
+  },
+  "todo_8_live_surface": {
+    "archive_sha256": "c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992",
+    "happy": {
+      "report": ".omo/evidence/world-model-physics-instrumentation/task-8-action-live/happy.json",
+      "exit_path": ".omo/evidence/world-model-physics-instrumentation/task-8-action-live-happy.exit",
+      "exit_code": 0,
+      "status": "accepted",
+      "action_request_code": 38,
+      "event_count": 7,
+      "contains_bird_launched": true,
+      "state_render_frame": 16667,
+      "rgb_render_frame": 16667,
+      "protected_unchanged": true
+    },
+    "rejections": {
+      "frame_mismatch": {"report": ".omo/evidence/world-model-physics-instrumentation/task-8-action-live/frame-mismatch.json", "exit_code": 1, "status": "rejected", "accepted_shot": false, "protected_unchanged": true},
+      "missing_sidecar": {"report": ".omo/evidence/world-model-physics-instrumentation/task-8-action-live/missing-sidecar.json", "exit_code": 1, "status": "rejected", "accepted_shot": false, "protected_unchanged": true},
+      "request_failure": {"report": ".omo/evidence/world-model-physics-instrumentation/task-8-action-live/request-failure.json", "exit_code": 1, "status": "rejected", "accepted_shot": false, "protected_unchanged": true}
+    },
+    "cleanup": {
+      "receipt": ".omo/evidence/world-model-physics-instrumentation/task-8-action-final-verification.json",
+      "owned_processes": "none",
+      "temporary_roots": "none",
+      "port_2004_free": true
+    }
+  },
+  "checksum_manifest": {
+    "invocation": "sha256sum -c .omo/evidence/world-model-physics-instrumentation/task-8-evidence.sha256",
+    "observable": "all manifest entries OK",
+    "log": ".omo/evidence/world-model-physics-instrumentation/f1-subagent-stop-checksums.log"
+  },
+  "criteria_summary": {
+    "pass": 11,
+    "fail": 1,
+    "failed_criterion": "commit-boundaries",
+    "reason": "Todos 1-10 specify Commit: Y and F1 requires commit-boundary verification, but 45 non-.omo product paths for Todos 2-10 remain uncommitted. The caller explicitly prohibited commits."
+  },
+  "self_verification": {
+    "invocation": "python -c 'import json; p=\".omo/evidence/world-model-physics-instrumentation/f1-subagent-stop-direct-verification-v2.json\"; d=json.load(open(p)); failed=[]; failed += [k for k,v in d[\"fresh_suite_exits\"].items() if v[\"exit_code\"] != 0]; failed += [k for k,v in d[\"todo_semantics\"].items() if not v[\"nonempty\"]]; failed += ([] if d[\"criteria_summary\"][\"fail\"] == 0 else [d[\"criteria_summary\"][\"failed_criterion\"]]); print({\"failed\": failed, \"verdict\": d[\"DoneClaim\"][\"verdict\"]}); raise SystemExit(bool(failed))'",
+    "expected_exit_code": 1,
+    "binary_observable": "failed=['commit-boundaries']; verdict=FAIL",
+    "executed_exit_code": 1,
+    "executed_output": "{'failed': ['commit-boundaries'], 'verdict': 'FAIL'}"
+  },
+  "DoneClaim": {
+    "task": "F1 plan compliance audit",
+    "changed_files": [".omo/evidence/world-model-physics-instrumentation/f1-subagent-stop-direct-verification-v2.json"],
+    "tests": ["all six fresh suite exit markers are zero", "Todo 8 checksum manifest entries are OK"],
+    "manual_qa": ["Todo 8 happy action/event report accepted with seven ordered events including bird_launched", "three Todo 8 negative scenarios rejected with exit 1"],
+    "cleanup": ["no owned process or temporary root remains", "TCP port 2004 has no listener"],
+    "risks": ["required Todo 2-10 commit boundaries are absent"],
+    "verdict": "FAIL"
+  },
+  "AdversarialVerify": {
+    "verdict": "needs-fix",
+    "evidence": [
+      ".omo/evidence/world-model-physics-instrumentation/f1-current-criterion-compliance.json",
+      ".omo/evidence/world-model-physics-instrumentation/f1-subagent-stop-direct-verification-v2.json"
+    ],
+    "repro": "git log --format='%H%x09%s' --all -- . ':(exclude).omo'; git diff --name-only e5bb99a -- . ':(exclude).omo' | wc -l",
+    "confidence": 1.0
+  }
+}

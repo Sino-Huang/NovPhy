@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/package_physics_player.py", line 288, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/package_physics_player.py", line 274, in main
+    if args.check_worktree_only: git_revision(args.worktree); return 0
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/package_physics_player.py", line 73, in git_revision
+    raise PackagingError("untracked product source: " + untracked[0])
+PackagingError: untracked product source: !! tasks/task_template_designer/Packages/manifest.json

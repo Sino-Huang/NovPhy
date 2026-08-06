@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Failed(Child)" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-08-05 17:17:18Z" end-time="2026-08-05 17:17:20Z" duration="2.1183057">
+  <test-suite type="TestSuite" id="1050" name="Science Birds" fullname="Science Birds" runstate="Runnable" testcasecount="38" result="Failed" site="Child" start-time="2026-08-05 17:17:18Z" end-time="2026-08-05 17:17:20Z" duration="2.118306" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1096" name="Assembly-CSharp-Editor.dll" fullname="/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/ScriptAssemblies/Assembly-CSharp-Editor.dll" runstate="Runnable" testcasecount="38" result="Failed" site="Child" start-time="2026-08-05 17:17:18Z" end-time="2026-08-05 17:17:20Z" duration="2.108604" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="31123" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestFixture" id="1069" name="PhysicsCaptureProtocolTests" fullname="PhysicsCaptureProtocolTests" classname="PhysicsCaptureProtocolTests" runstate="Runnable" testcasecount="11" result="Failed" site="Child" start-time="2026-08-05 17:17:18Z" end-time="2026-08-05 17:17:20Z" duration="2.106764" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1080" name="SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt" fullname="PhysicsCaptureProtocolTests.SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt" methodname="SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="347531500" result="Failed" start-time="2026-08-05 17:17:18Z" end-time="2026-08-05 17:17:20Z" duration="2.096683" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  queued plus in-flight silent clients did not hold the global capacity
+  Expected: True
+  But was:  False
+]]></message>
+            <stack-trace><![CDATA[at PhysicsCaptureProtocolTests.SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt () [0x00180] in /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs:322
+]]></stack-trace>
+          </failure>
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

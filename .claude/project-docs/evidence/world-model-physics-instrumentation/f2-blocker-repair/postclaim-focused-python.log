@@ -1,0 +1,20 @@
+command: timeout 120s python -m unittest focused physics persistence/prepare/contract/bridge suites
+.E...................................................
+======================================================================
+ERROR: test_completed_shot_with_nondirectory_frames_is_quarantined (tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_completed_shot_with_nondirectory_frames_is_quarantined)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 320, in test_completed_shot_with_nondirectory_frames_is_quarantined
+    shutil.rmtree(completed / "frames")
+    ^^^^^^
+NameError: name 'shutil' is not defined
+
+----------------------------------------------------------------------
+Ran 53 tests in 0.223s
+
+FAILED (errors=1)
+{
+  "manifest": "/tmp/tmp38p6j2m2/rollouts/manifest.json",
+  "rollout_count": 1
+}
+exit_code: 1

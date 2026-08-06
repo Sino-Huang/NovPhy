@@ -1,0 +1,28 @@
+started=2026-08-06T07:09:42+10:00
+SCENARIO prior evidence checksum chain
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/final-published-runtime/postclaim-verification/commands.log: OK
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/final-published-runtime/postclaim-verification/verdict.json: OK
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/final-published-runtime/done-claim.json: OK
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/final-published-runtime/published-smoke.json: OK
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz: OK
+sciencebirdsgames/physics-v1/archive.sha256: OK
+sciencebirdsgames/physics-v1/unity-build.log: OK
+checksum_chain_exit=0
+SCENARIO exact source and archive provenance
+head=55d6ec93cafc77807342cd7573283f1ed20ca691
+tree=c779ce2c5ff7182e1f4af3d99620029245756bad
+{"project":{"git_head":"55d6ec93cafc77807342cd7573283f1ed20ca691","git_tree":"c779ce2c5ff7182e1f4af3d99620029245756bad"},"unity":{"canonical_revision":"2019.3.4f1 (4f139db2fdbd)","changeset":"6b23d448b533","migrated_revision":"2019.4.41f2 (6b23d448b533)","version":"2019.4.41f2"},"capture":{"protocol_version":1,"schema_version":"physics_capture_v1"}}
+provenance_extract_exit=0
+SCENARIO Unity build binary success marker
+1213:Exiting batchmode successfully now!
+build_success_marker_exit=0
+SCENARIO accepted shot schema validation and raw event reconciliation
+{"archive_sha": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4", "bird_launched": 1, "png_magic": "89504e470d0a1a0a", "protected_unchanged": true, "report_status": "accepted", "request38": true, "request62": true, "request70": true, "validator_events": 7, "validator_states": 1}
+runtime_reconciliation_exit=0
+SCENARIO current cleanup and publication preservation
+owned_processes=0
+owned_listeners=0
+published_file=sciencebirdsgames/physics-v1/archive.sha256 size=107
+published_file=sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz size=39787071
+published_file=sciencebirdsgames/physics-v1/unity-build.log size=85131
+finished=2026-08-06T07:09:43+10:00

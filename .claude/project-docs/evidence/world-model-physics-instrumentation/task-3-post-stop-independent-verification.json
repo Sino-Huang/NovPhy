@@ -1,0 +1,51 @@
+{
+  "schema_version": "world_model_physics_instrumentation_adversarial_verify_v1",
+  "event": "AdversarialVerify",
+  "task": "3. Export raw contacts, derived support, and macro events from authoritative callbacks",
+  "captured_at": "2026-08-05T04:10:00+10:00",
+  "verdict": "needs-fix",
+  "confidence": 0.99,
+  "reviewed_source_sha256": "4172bb78a8dca3df9dafea3f5096344fb8e22cb2deb9607023f85ff7183724dd",
+  "reviewed_test_sha256": "f513f42d452d1bd4cbbd6d05b562ead5ee43e53813f6b8680029dd56c53124a8",
+  "automated_surface": {
+    "task-3-physics.xml": {"sha256": "33d92dfa622757470052861b4ef8888465921d53e2f13230f43159f70002683e", "result": "Passed", "total": 12, "passed": 12, "failed": 0, "skipped": 0},
+    "task-3-physics-repeat.xml": {"sha256": "45aaf53e20ebf0077dd3039c72e108f4d0549f6d7506e2891cd97cd231355ef6", "result": "Passed", "total": 12, "passed": 12, "failed": 0, "skipped": 0}
+  },
+  "confirmed_fixes": [
+    "terminal clear/fail is mutually exclusive",
+    "support direction persists across both consecutive samples",
+    "events are resequenced after full-clock/taxonomy/participant sorting",
+    "record, byte, timeout, and truncated failures are distinct",
+    "focused static-ID, lifetime-reuse, and stability-debounce tests exist"
+  ],
+  "blockers": [
+    {
+      "criterion": "TODO1_RAW_CONTACT_FIELDS_AND_TODO3_PRESERVE_ALL_RAW_FACTS",
+      "observable": "PhysicalRawContact exposes NormalImpulse only; tangent impulse is absent. ContactId always ends in :0, so multiple points for one pair/step cannot have distinct frozen point indices.",
+      "evidence": "Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:126; Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:169"
+    },
+    {
+      "criterion": "TODO1_EVENT_CARDINALITY_PAYLOAD_AND_PARTICIPANTS",
+      "observable": "PhysicalMacroEvent exposes one Subject string and no unique sorted participant list or event-specific payload fields required by the frozen taxonomy.",
+      "evidence": "Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:213; Assets/Scripts/GroundTruth/PhysicalSnapshotRuntime.cs:124"
+    },
+    {
+      "criterion": "TODO3_ACCEPTANCE_COVERAGE",
+      "observable": "The passing 12-test suite has no assertions for tangent impulse, per-point contact IDs, participant arrays, or required event payloads.",
+      "evidence": "Assets/Tests/Editor/PhysicsShotRecorderTests.cs"
+    }
+  ],
+  "adversarial_classes": {
+    "malformed_input": "FAIL: multiple contact-point identity and complete raw facts are not representable",
+    "stale_state": "PASS: parsed XML hashes bind to current retained receipts",
+    "dirty_worktree": "PASS: audit was read-only and preserved unrelated changes",
+    "flaky_tests": "PASS for the narrow filter: retained XML reports 12/12 twice",
+    "misleading_success_output": "FAIL DETECTED: passing narrow XML does not cover the missing contract fields",
+    "hung_or_long_commands": "PASS: no audit process remained",
+    "repeated_interruptions": "PASS: no task-owned runtime state was created",
+    "prompt_injection": "not applicable: no untrusted external text path",
+    "cancel_resume": "not applicable: read-only synchronous audit"
+  },
+  "cleanup": "No processes, ports, temporary directories, or source edits were created by this verification.",
+  "decision": "Do not mark Todo 3 complete. Dispatch a bounded fix for the three blockers and rerun independent verification."
+}

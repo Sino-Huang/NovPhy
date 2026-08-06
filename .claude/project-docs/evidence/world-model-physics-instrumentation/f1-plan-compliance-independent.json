@@ -1,0 +1,103 @@
+{
+  "goalId": "world-model-physics-instrumentation",
+  "review": "F1 plan compliance independent audit",
+  "recommendation": "REJECT",
+  "verdict": "todo_8_live_smoke_did_not_perform_required_action",
+  "governedCommit": "d72d1af1eb7b9a3cd60b0acb5364689e16735ea5",
+  "originalIntent": "Deliver an opt-in physics_capture_v1 pipeline whose Unity-authoritative synchronized state, contacts, support, events, atomic artifacts, staged player, live smoke, documentation, and supervision reader satisfy Todos 1-10 without mutating protected legacy roots.",
+  "desiredOutcome": "A staged Unity player and collector produce a validated accepted enriched shot after a real gameplay action, reject malformed or incomplete captures, preserve legacy behavior and protected roots, and expose immutable frame-exact supervision through the opt-in data pipeline.",
+  "userOutcomeReview": "Todos 1-7, 9, and 10 have criterion-mapped artifacts, and the bounded collector, launcher, compile, diff, malformed-input, stale-temp, and cleanup checks reproduced successfully. Todo 8 is not complete from the user's perspective: the fresh F3 live smoke accepted a synchronized shot but performed no gameplay action and retained zero events. The separate action probe reports that bridge shoot returned 1 while request 70 still returned zero events. This fails the explicit Todo 8 requirement to load a known level and perform one action through request 70 before acceptance.",
+  "blockers": [
+    {
+      "id": "T8-LIVE-ACTION",
+      "violatedCriterion": "Todo 8 What to do / Must NOT do: the noninteractive smoke driver loads a known level, performs one action through request 70, and validates the resulting enriched output",
+      "observation": "The fresh happy smoke exited 0 and accepted shot data with actionPerformed=false and eventCount=0; the retained direct shoot probe also produced zero request-70 events.",
+      "evidencePointer": ".omo/evidence/world-model-physics-instrumentation/f3-live-qa.json#/manualQa/surfaceEvidence/1/observables and .omo/evidence/world-model-physics-instrumentation/f3-action-probe/report.json"
+    }
+  ],
+  "todoAudit": {
+    "1": {"result": "PASS", "evidence": [".omo/evidence/world-model-physics-instrumentation/task-1-contract.txt"]},
+    "2": {"result": "PASS", "evidence": [".omo/evidence/world-model-physics-instrumentation/task-2-done-claim.json", ".omo/evidence/world-model-physics-instrumentation/task-2-done-claim-independent-qa-2026-08-05.json"]},
+    "3": {"result": "PASS", "evidence": [".omo/evidence/world-model-physics-instrumentation/task-3-independent-confirmed-final-2026-08-05.json"]},
+    "4": {"result": "PASS", "evidence": [".omo/evidence/world-model-physics-instrumentation/task-4-v2-independent-confirmed.json"]},
+    "5": {"result": "PASS", "evidence": [".omo/evidence/world-model-physics-instrumentation/task-5-v2-independent-verdict.json", "fresh focused persistence run: 20/20 with launcher"]},
+    "6": {"result": "PASS", "evidence": [".omo/evidence/world-model-physics-instrumentation/task-6-done-claim.json", "fresh PhysicsLauncherTests run: included in 20/20 focused result", "fresh prepare suite: 38/38"]},
+    "7": {"result": "PASS", "evidence": [".omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-receipt.json", ".omo/evidence/world-model-physics-instrumentation/task-7-final-stop-verification.json"]},
+    "8": {"result": "FAIL", "evidence": [".omo/evidence/world-model-physics-instrumentation/f3-live-qa.json", ".omo/evidence/world-model-physics-instrumentation/f3-action-probe/report.json"]},
+    "9": {"result": "PASS", "evidence": [".omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-rerun.md"]},
+    "10": {"result": "PASS", "evidence": [".omo/evidence/world-model-physics-instrumentation/task-10-independent-verdict.json"]}
+  },
+  "freshCommands": [
+    {
+      "command": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_prepare_rollout_dataset.PhysicsLauncherTests",
+      "exitCode": 0,
+      "observable": "20 tests passed in 0.217s"
+    },
+    {
+      "command": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_prepare_rollout_dataset.PhysicsLauncherTests",
+      "exitCode": 0,
+      "observable": "repeat: 20 tests passed in 0.222s"
+    },
+    {
+      "command": "python -m unittest tests.test_prepare_rollout_dataset",
+      "exitCode": 0,
+      "observable": "38 tests passed in 1.302s"
+    },
+    {
+      "command": "python -m py_compile scripts/collect_rollouts.py scripts/prepare_rollout_dataset.py scripts/physics_rollout_contract.py scripts/physics_rollout_persistence.py",
+      "exitCode": 0,
+      "observable": "no stderr"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "observable": "no whitespace errors"
+    },
+    {
+      "command": "PYTHONPATH=/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4 python /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-collector-manual-qa.py",
+      "exitCode": 0,
+      "observable": "status=passed; accepted final shot_001; malformed final and success metadata absent; misleading final/tmp absent with rollout_count=0; stale shot_099.tmp removed; cleanup_status=passed"
+    }
+  ],
+  "ultraQaClasses": {
+    "malformed_input": "PASS: exact F2 manual QA rejected malformed request-70 state lacking rgb_frame and left final/success metadata absent; F3 rejected render mismatch, missing sidecar, and request failure.",
+    "stale_state": "PASS: stale shot_099.tmp was removed and the manual-QA root was removed.",
+    "dirty_worktree": "PASS: intentionally dirty governed worktree remained usable; audit made no product, plan, Boulder, or unrelated evidence edits.",
+    "flaky_repeated_test_runs": "PASS: focused 20-test suite passed twice, 0.217s and 0.222s.",
+    "misleading_success_output": "FAIL detected: F3 happy smoke exited 0/status accepted despite actionPerformed=false and zero events.",
+    "hung_long_commands": "PASS: all fresh audit commands completed within 1.5 seconds; prior live F3 command was bounded by timeout.",
+    "repeated_interruptions": "NOT_APPLICABLE: audit was not interrupted; existing task receipts cover owned runtime cleanup.",
+    "cancel_resume": "NOT_APPLICABLE: no resumable runtime was started by F1; TemporaryDirectory cleanup and absence checks passed.",
+    "leftover_qa_processes": "PASS: no f2-collector-manual-qa, novphy-f2-collector, or smoke_physics_capture process remains; unrelated persistent Unity Hub licensing client excluded.",
+    "ports": "PASS: no listener found on 2004, 9001, or 9002."
+  },
+  "slopAndProgrammingPass": {
+    "directPassCompleted": true,
+    "finding": "The direct pass confirms the remaining user-visible false-confidence issue: smoke success does not prove the required action. Oversized legacy modules and documentation-test coupling are maintenance notes unless tied to a plan criterion; they are not additional F1 blockers.",
+    "testOverfitReview": "No deletion-only test was used as completion proof. F2 code review identified prose-token and implementation-mirroring risk; Task 9's later quality rerun replaced the rejected state with structural verification. The fresh focused tests assert filesystem and command outcomes, while the live F3 artifact independently exposes the missing-action false positive.",
+    "codeReviewCoverage": "The F2 code-quality report explicitly records both omo:remove-ai-slops and omo:programming perspectives and covers overfit prose checks, untyped boundaries, oversized modules, generated-command execution, protected-root proof, and socket bounds. Its earlier collector integration blockers were remediated and freshly reproduced; its smoke/action concern remains proven by F3."
+  },
+  "checkedArtifactPaths": [
+    "/mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md",
+    "/mnt/array/sukaih/Project/NovPhy/.omo/start-work/ledger.jsonl",
+    ".omo/evidence/world-model-physics-instrumentation/task-1-contract.txt",
+    ".omo/evidence/world-model-physics-instrumentation/task-2-done-claim.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-3-independent-confirmed-final-2026-08-05.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-4-v2-independent-confirmed.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-5-v2-independent-verdict.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-6-done-claim.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-7-final-stop-verification.json",
+    ".omo/evidence/world-model-physics-instrumentation/todo8-live-adversarial/verdict.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-rerun.md",
+    ".omo/evidence/world-model-physics-instrumentation/task-10-independent-verdict.json",
+    ".omo/evidence/world-model-physics-instrumentation/f2-code-quality.txt",
+    ".omo/evidence/world-model-physics-instrumentation/f2-done-claim.json",
+    ".omo/evidence/world-model-physics-instrumentation/f3-live-qa.json",
+    ".omo/evidence/world-model-physics-instrumentation/f3-action-probe/report.json"
+  ],
+  "exactEvidenceGaps": [
+    "No retained fresh live artifact proves that the Todo 8 smoke performs a gameplay action and then captures a request-70 result containing the action event.",
+    "The current fresh F3 artifact proves the opposite: actionPerformed=false and eventCount=0 while the smoke reported accepted."
+  ],
+  "cleanupReceipt": ".omo/evidence/world-model-physics-instrumentation/f1-plan-compliance-cleanup-receipt.json"
+}

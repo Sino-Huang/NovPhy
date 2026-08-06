@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "task": "Todo 2 Hub-facing filesystem alias preparation",
+  "captured_at": "2026-08-05",
+  "verdict": "READY FOR USER GUI",
+  "scenario": "Create and verify a reversible Hub-locatable alias for exact Unity 2019.4.41f2 without modifying Hub state or launching Unity",
+  "alias": "/home/sukai/.local/share/novphy-unity/hub-layout/2019.4.41f2/Editor",
+  "target": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor",
+  "invocations": [
+    "mkdir -p /home/sukai/.local/share/novphy-unity/hub-layout/2019.4.41f2",
+    "ln -s /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor /home/sukai/.local/share/novphy-unity/hub-layout/2019.4.41f2/Editor",
+    "readlink -f /home/sukai/.local/share/novphy-unity/hub-layout/2019.4.41f2/Editor",
+    "sha256sum /home/sukai/.local/share/novphy-unity/hub-layout/2019.4.41f2/Editor/Unity"
+  ],
+  "binary_observables": {
+    "alias_is_symlink": true,
+    "resolved_target_matches": true,
+    "resolved_target": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor",
+    "unity_sha256_matches": true,
+    "unity_sha256": "32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150"
+  },
+  "scope_guards": {
+    "hub_storage_modified": false,
+    "gui_clicked": false,
+    "hub_restarted": false,
+    "unity_launched": false,
+    "probe_run": false,
+    "project_opened_or_imported": false
+  },
+  "cleanup": {
+    "reversible": true,
+    "invocation": "unlink /home/sukai/.local/share/novphy-unity/hub-layout/2019.4.41f2/Editor",
+    "effect": "Removes only the Hub-facing symlink; retained exact Editor files are unchanged. The now-empty parent directories may be removed separately after confirming they are empty."
+  },
+  "sanitization": "Contains no credentials, account identifiers, serials, tokens, license files, or raw license material."
+}

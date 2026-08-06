@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "novphy_editmode_finding_v1",
+  "id": "P3-1",
+  "severity": "medium",
+  "reviewedCommitSha": "f90c31ed9607a2a2344b5e2bad9f01361439f31d",
+  "title": "ABBirdLaunchTests.BirdLaunchRecordsTheExactVelocityAfterItIsAssigned fails, and has never been captured passing",
+  "discovery": "This wave ran ALL eight EditMode test classes as partitions for the first time: 44 tests, 43 passed, 1 failed.",
+  "neverPreviouslyMeasured": {
+    "claim": "No retained EditMode XML anywhere in .omo/evidence contains ABBirdLaunchTests",
+    "method": "grep -rl ABBirdLaunch --include=*.xml over the whole evidence tree returned only this waves own receipt",
+    "implication": "Every prior EditMode receipt in this plan (11/11, 33/33, 37/37 partitions) excluded this class, so its failure was never visible."
+  },
+  "failure": {
+    "exception": "System.NullReferenceException inside ABBird.AssignLaunchVelocityAndRecord",
+    "site": "tasks/task_template_designer/Assets/Scripts/GameWorld/Characters/Birds/ABBird.cs:351",
+    "statement": "_rigidBody.velocity = launchVelocity;",
+    "nullField": "_rigidBody"
+  },
+  "rootCause": {
+    "explanation": "_rigidBody is assigned in ABGameObject.Awake() via GetComponent<Rigidbody2D>(). Unity does not invoke Awake() for a component added with AddComponent in EditMode unless the type is marked ExecuteAlways or ExecuteInEditMode. ABBirdLaunchTests adds a Rigidbody2D and an ABBird and then immediately invokes the private seam, so _rigidBody is still null.",
+    "verdict": "test defect, not a production defect",
+    "productionCodeCorrect": true
+  },
+  "productionPathProvenLive": {
+    "source": "published-smoke-output/shot_001/physics_events.jsonl from the Phase 2 happy run against the published archive",
+    "event": "bird_launched",
+    "eventId": "event:00000001",
+    "launchVelocity": {"x": 7.91103363, "y": 6.117034},
+    "nonZero": true,
+    "interpretation": "The real published player executed AssignLaunchVelocityAndRecord and recorded a genuine launch velocity through PhysicalSnapshotRuntime.RecordLaunchCallback. The behaviour the failing test intends to assert demonstrably works in the real runtime."
+  },
+  "impactOnFinalWave": {
+    "blocksF2": true,
+    "reason": "Todo 2 acceptance requires EditMode tests asserting the launch velocity behaviour. A test that has never passed does not satisfy that criterion, even though the production path is independently proven live. F2 cannot approve while the plans own suite has a failing test."
+  },
+  "proposedFix": "Initialise the component graph the way Unity would before invoking the seam, for example by invoking the protected Awake through reflection after AddComponent, so _rigidBody resolves. This is a test-only change.",
+  "costOfFix": "A test-only commit still re-pins the wave, because provenance.json embeds project.git_head and project.git_tree, so the archive identity changes and the build, publish, and live smoke must be repeated.",
+  "status": "surfaced-awaiting-decision"
+}

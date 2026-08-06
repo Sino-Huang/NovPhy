@@ -1,0 +1,16 @@
+{
+  "scenario": "Fresh exact Todo 7 staged-player verifier reproduction",
+  "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+  "command": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1",
+  "outer_timeout_seconds": 130,
+  "exit_code": 1,
+  "stdout_artifact": "verifier.stdout",
+  "stderr_artifact": "verifier.stderr",
+  "stderr_observable": "timed out",
+  "ports_checked": [2004, 22004, 29001],
+  "ports_observable": "none listening after termination",
+  "archive_sha256": "a056271134ff8ccb9ba2b790606b7e29cc3729fa2d16f3b26af37234eeafb63b",
+  "verdict": "blocked",
+  "judgment": "The prior completion claim is not verified; the exact live verifier still fails reproducibly. No plan checkbox was changed.",
+  "cleanup": "No owned verifier process, listener, or temporary stage remained."
+}

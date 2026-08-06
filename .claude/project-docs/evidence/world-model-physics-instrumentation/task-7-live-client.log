@@ -1,0 +1,13 @@
+connected
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/src/webui/bridge.py", line 137, in configure
+    return self._read("BBB")
+           ^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/src/webui/bridge.py", line 226, in _read
+    return struct.unpack("!" + fmt, self._read_exact(struct.calcsize("!" + fmt)))
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/src/webui/bridge.py", line 236, in _read_exact
+    chunk = sock.recv(size - len(self._buffer))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TimeoutError: timed out
