@@ -4,7 +4,7 @@ import argparse
 import hashlib
 import json
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import signal
 import subprocess
 import sys
@@ -20,10 +20,48 @@ if str(ROOT) not in sys.path:
 UNITY_VERSION: Final = "2019.4.41f2"
 UNITY_CHANGESET: Final = "6b23d448b533"
 STAGE_SCHEMA: Final = "novphy_physics_player_stage_v1"
+MAX_ARCHIVE_MEMBER_SIZE: Final = 512 * 1024 * 1024
 
 
 class VerificationError(RuntimeError):
     pass
+
+
+class UnsafeArchiveChecksumPathError(VerificationError):
+    def __init__(self, path: str) -> None:
+        self.path = path
+        super().__init__(f"unsafe archive checksum path: {path}")
+
+
+class UnsafePayloadManifestPathError(VerificationError):
+    def __init__(self, path: str) -> None:
+        self.path = path
+        super().__init__(f"unsafe payload manifest path: {path}")
+
+
+class UnsafeArchiveMemberError(VerificationError):
+    def __init__(self, name: str) -> None:
+        self.name = name
+        super().__init__(f"unsafe archive member: {name}")
+
+
+def is_single_path_component(value: str) -> bool:
+    posix_path = PurePosixPath(value)
+    windows_path = PureWindowsPath(value)
+    return value not in {".", ".."} and posix_path.parts == (value,) and windows_path.parts == (value,)
+
+
+def is_canonical_payload_path(value: str) -> bool:
+    posix_path = PurePosixPath(value)
+    windows_path = PureWindowsPath(value)
+    return (
+        bool(posix_path.parts)
+        and not posix_path.is_absolute()
+        and not windows_path.anchor
+        and ".." not in posix_path.parts
+        and posix_path.as_posix() == value
+        and windows_path.as_posix() == value
+    )
 
 
 def sha256_file(path: Path) -> str:
@@ -38,7 +76,18 @@ def archive_from_stage(stage: Path) -> tuple[Path, str]:
     checksum = (stage / "archive.sha256").read_text(encoding="ascii").strip().split()
     if len(checksum) != 2:
         raise VerificationError("malformed archive checksum receipt")
-    archive = stage / checksum[1]
+    archive_name = checksum[1]
+    if not is_single_path_component(archive_name):
+        raise UnsafeArchiveChecksumPathError(archive_name)
+    stage_root = stage.resolve()
+    archive = stage_root / archive_name
+    if archive.is_symlink() or not archive.is_file():
+        raise UnsafeArchiveChecksumPathError(archive_name)
+    try:
+        archive = archive.resolve(strict=True)
+        archive.relative_to(stage_root)
+    except (OSError, RuntimeError, ValueError) as error:
+        raise UnsafeArchiveChecksumPathError(archive_name) from error
     actual = sha256_file(archive)
     if actual != checksum[0]:
         raise VerificationError("archive SHA-256 mismatch")
@@ -46,15 +95,36 @@ def archive_from_stage(stage: Path) -> tuple[Path, str]:
 
 
 def safe_unpack(archive: Path, output: Path) -> None:
+    output_root = output.resolve()
     with tarfile.open(archive, "r:gz") as bundle:
-        for member in bundle.getmembers():
-            path = PurePosixPath(member.name)
-            if path.is_absolute() or ".." in path.parts or member.issym() or member.islnk():
-                raise VerificationError("unsafe archive member")
-        bundle.extractall(output)
+        members: list[tarfile.TarInfo] = []
+        while (member := bundle.next()) is not None:
+            posix_path = PurePosixPath(member.name)
+            windows_path = PureWindowsPath(member.name)
+            is_root_directory = member.isdir() and member.name in {".", "./"}
+            has_confined_type = member.isfile() or member.isdir()
+            has_confined_size = not member.isfile() or 0 <= member.size <= MAX_ARCHIVE_MEMBER_SIZE
+            if (
+                not has_confined_type
+                or not has_confined_size
+                or (not posix_path.parts and not is_root_directory)
+                or posix_path.is_absolute()
+                or bool(windows_path.anchor)
+                or ".." in posix_path.parts
+                or ".." in windows_path.parts
+            ):
+                raise UnsafeArchiveMemberError(member.name)
+            destination = output_root.joinpath(*posix_path.parts).resolve()
+            try:
+                destination.relative_to(output_root)
+            except ValueError as error:
+                raise UnsafeArchiveMemberError(member.name) from error
+            members.append(member)
+        bundle.extractall(output_root, members=members, filter="data")
 
 
 def verify_payload(output: Path) -> None:
+    output_root = output.resolve()
     manifest = json.loads((output / "provenance.json").read_text(encoding="utf-8"))
     if manifest.get("schema_version") != STAGE_SCHEMA:
         raise VerificationError("unsupported provenance schema")
@@ -70,7 +140,17 @@ def verify_payload(output: Path) -> None:
     for relative, expected in files.items():
         if not isinstance(relative, str) or not isinstance(expected, str):
             raise VerificationError("payload checksum entry is malformed")
-        path = output / relative
+        if not is_canonical_payload_path(relative):
+            raise UnsafePayloadManifestPathError(relative)
+        path = output_root / relative
+        if any((output_root.joinpath(*PurePosixPath(relative).parts[:index])).is_symlink()
+               for index in range(1, len(PurePosixPath(relative).parts) + 1)):
+            raise UnsafePayloadManifestPathError(relative)
+        try:
+            path = path.resolve()
+            path.relative_to(output_root)
+        except (OSError, RuntimeError, ValueError) as error:
+            raise UnsafePayloadManifestPathError(relative) from error
         if not path.is_file() or sha256_file(path) != expected:
             raise VerificationError("payload SHA-256 mismatch: " + relative)
 
