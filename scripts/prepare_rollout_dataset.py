@@ -158,19 +158,25 @@ def resolve_physics_capture_provenance(archive: Path, smoke_marker: Path) -> Phy
     marker = _read_json(smoke_marker)
     if marker is None:
         raise ValueError("physics smoke marker must be a JSON object")
-    if marker.get("capture_contract") != PHYSICS_CAPTURE_CONTRACT:
-        raise ValueError("physics smoke marker has an unsupported capture contract")
-    if marker.get("status") != "passed":
-        raise ValueError("physics smoke marker must report status=passed")
-    if marker.get("protocol_version") != 1 or marker.get("player_version") != PHYSICS_PLAYER_VERSION:
-        raise ValueError("physics smoke marker must contain player version 2019.4.41f2-physics-v1 and protocol version 1")
-    hashes = tuple(marker.get(name) for name in ("player_sha256", "protocol_sha256", "archive_sha256"))
+    if marker.get("status") != "accepted":
+        raise ValueError("physics smoke marker must report status=accepted")
+    if marker.get("phase") != "complete":
+        raise ValueError("physics smoke marker must report phase=complete")
+    if marker.get("protected_unchanged") is not True:
+        raise ValueError("physics smoke marker must report protected_unchanged=true")
+    accepted_shot = marker.get("accepted_shot")
+    if not isinstance(accepted_shot, str) or not accepted_shot.strip():
+        raise ValueError("physics smoke marker must contain a nonempty accepted_shot")
+    provenance = marker.get("provenance")
+    if not isinstance(provenance, dict):
+        raise ValueError("physics smoke marker must contain a provenance object")
+    hashes = tuple(provenance.get(name) for name in ("player_sha256", "protocol_sha256", "archive_sha256"))
     if not all(_is_sha256(value) for value in hashes):
         raise ValueError("physics smoke marker archive_sha256/player_sha256/protocol_sha256 must be valid SHA-256 values")
     archive_sha256 = _sha256_file(archive)
-    if marker["archive_sha256"] != archive_sha256:
+    if provenance["archive_sha256"] != archive_sha256:
         raise ValueError("physics smoke marker archive_sha256 does not match the staged player archive")
-    return PhysicsCaptureProvenance(archive.resolve(strict=True), smoke_marker.resolve(strict=True), marker["player_sha256"], marker["protocol_sha256"], archive_sha256)
+    return PhysicsCaptureProvenance(archive.resolve(strict=True), smoke_marker.resolve(strict=True), provenance["player_sha256"], provenance["protocol_sha256"], archive_sha256)
 
 
 @dataclass(frozen=True, slots=True)

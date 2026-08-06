@@ -727,6 +727,7 @@ class PhysicsLauncherTests(unittest.TestCase):
             json.dumps(
                 {
                     "status": "accepted",
+                    "phase": "complete",
                     "accepted_shot": "shot_001",
                     "protected_unchanged": True,
                     "provenance": {
@@ -786,6 +787,64 @@ class PhysicsLauncherTests(unittest.TestCase):
 
                 with self.assertRaisesRegex(ValueError, "physics smoke marker|stale"):
                     resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_rejects_missing_phase(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            payload = json.loads(marker.read_text(encoding="utf-8"))
+            del payload["phase"]
+            marker.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "phase=complete"):
+                resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_rejects_missing_protected_unchanged(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            payload = json.loads(marker.read_text(encoding="utf-8"))
+            del payload["protected_unchanged"]
+            marker.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "protected_unchanged"):
+                resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_rejects_missing_or_empty_accepted_shot(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            payload = json.loads(marker.read_text(encoding="utf-8"))
+            del payload["accepted_shot"]
+            marker.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "accepted_shot"):
+                resolve_physics_capture_provenance(archive, marker)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            payload = json.loads(marker.read_text(encoding="utf-8"))
+            payload["accepted_shot"] = ""
+            marker.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "accepted_shot"):
+                resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_rejects_missing_provenance_object(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            payload = json.loads(marker.read_text(encoding="utf-8"))
+            del payload["provenance"]
+            marker.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "provenance object"):
+                resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_rejects_malformed_nested_hashes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            payload = json.loads(marker.read_text(encoding="utf-8"))
+            payload["provenance"]["player_sha256"] = "not-a-hash"
+            marker.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "SHA-256"):
+                resolve_physics_capture_provenance(archive, marker)
 
     def test_physics_provenance_accepts_the_documented_smoke_report_shape(self):
         with tempfile.TemporaryDirectory() as temporary:
