@@ -9,6 +9,9 @@ public class ABBirdLaunchTests
     {
         GameObject runtimeObject = new GameObject("bird-launch-runtime");
         PhysicalSnapshotRuntime runtime = runtimeObject.AddComponent<PhysicalSnapshotRuntime>();
+        // PhysicalSnapshotRuntime.Active is bound in Awake, and the static record callbacks
+        // no-op while it is null, so the runtime needs its lifecycle before BeginShot.
+        AwakeComponent(runtime);
         runtime.BeginShot(8, 64 * 1024, 10f);
         GameObject birdObject = new GameObject("bird-launch-test");
         Rigidbody2D body = birdObject.AddComponent<Rigidbody2D>();
@@ -19,6 +22,9 @@ public class ABBirdLaunchTests
 
         try
         {
+            // EditMode never raises Awake for AddComponent, so _rigidBody would stay null.
+            // Run the real initialisation chain rather than assigning the field directly.
+            AwakeComponent(bird);
             body.velocity = staleVelocity;
             MethodInfo assignAndRecord = typeof(ABBird).GetMethod(
                 "AssignLaunchVelocityAndRecord", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -37,5 +43,18 @@ public class ABBirdLaunchTests
             Object.DestroyImmediate(birdObject);
             Object.DestroyImmediate(runtimeObject);
         }
+    }
+
+    private static void AwakeComponent(MonoBehaviour component)
+    {
+        for (System.Type type = component.GetType(); type != null; type = type.BaseType)
+        {
+            MethodInfo awake = type.GetMethod(
+                "Awake", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+            if (awake == null) continue;
+            awake.Invoke(component, null);
+            return;
+        }
+        Assert.Fail("no Awake found on " + component.GetType().Name + " or its base types");
     }
 }
