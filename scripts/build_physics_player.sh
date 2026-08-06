@@ -27,11 +27,18 @@ payload="$build_root/payload"
 mkdir -p "$payload"
 export NOVPHY_BUILD_OUTPUT="$payload/9001.x86_64"
 
+unity_log="$build_root/unity-build.log"
+unity_exit=0
 DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 \
 LD_LIBRARY_PATH="$compat${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
   "$editor" -batchmode -nographics -projectPath "$project" \
   -executeMethod NovPhyBuild.BuildPhysicsLinux -quit \
-  -logFile "$stage/unity-build.log"
+  -logFile "$unity_log" || unity_exit=$?
+
+# Publish the log even when the build fails, so a failure stays diagnosable,
+# but never publish Unity's licensing identity lines.
+bash "$worktree/scripts/redact_unity_log.sh" "$unity_log" "$stage/unity-build.log"
+[[ "$unity_exit" -eq 0 ]] || { echo "Unity build failed with exit $unity_exit; see $stage/unity-build.log" >&2; exit "$unity_exit"; }
 
 cp "$interface_jar" "$payload/"
 mv "$payload/9001.x86_64" "$payload/9001-player.x86_64"
