@@ -1,6 +1,7 @@
 import io
 import hashlib
 import json
+import os
 import shlex
 import shutil
 import signal
@@ -629,6 +630,237 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 )
 
             self.assertEqual(external.read_text(encoding="utf-8"), "outside\n")
+
+    def test_metadata_finalization_stays_on_trusted_shot_after_root_symlink_swap(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        # Given: request 70 swaps the shot pathname only after descriptor-backed children exist.
+        records, events = self._records()
+        png = self._png()
+        sentinel = b"external metadata sentinel\n"
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shot = root / "shot_001.tmp"
+            trusted_shot = root / "trusted-shot-after-swap"
+            external = root / "external"
+            external.mkdir()
+            external_metadata = external / "metadata.json"
+            external_metadata.write_bytes(sentinel)
+            swap_observations = []
+
+            class Bridge:
+                def get_physics_capture_v1(self):
+                    swap_observations.append(
+                        (
+                            (shot / "physics_state.jsonl").is_file(),
+                            (shot / "physics_events.jsonl").is_file(),
+                            (shot / "frames").is_dir(),
+                            (shot / "metadata.json").exists(),
+                        )
+                    )
+                    shot.replace(trusted_shot)
+                    shot.symlink_to(external, target_is_directory=True)
+                    return PhysicsCaptureV1(png, records[1], tuple(events))
+
+            # When: persistence finalizes metadata after the root pathname has been redirected.
+            metadata = capture_physics_rollout(
+                Bridge(),
+                shot,
+                target_fps=1,
+                duration_seconds=1,
+                max_frames=1,
+                state_header=records[0],
+                player_sha256="a" * 64,
+                protocol_sha256="b" * 64,
+                archive_sha256="c" * 64,
+                clock=lambda: 0.0,
+                sleeper=lambda _seconds: None,
+            )
+
+            # Then: finalization remains descriptor-confined and never follows the replacement symlink.
+            self.assertEqual(swap_observations, [(True, True, True, False)])
+            with self.subTest("external sentinel"):
+                self.assertEqual(external_metadata.read_bytes(), sentinel)
+            with self.subTest("trusted metadata"):
+                self.assertEqual(
+                    (trusted_shot / "metadata.json").read_bytes(),
+                    json.dumps(metadata, indent=2).encode("utf-8"),
+                )
+
+    def test_accepted_physics_shot_is_complete_before_single_atomic_publication(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        # Given: a real request-70 capture with publication, validation, and write tracing enabled.
+        records, events = self._records()
+        png = self._png()
+        gameplay_bridge = FakeBridge()
+
+        class PhysicsBridge:
+            def get_physics_capture_v1(self):
+                return PhysicsCaptureV1(png, records[1], tuple(events))
+
+        class Process:
+            pid = 7301
+
+            def poll(self):
+                return None
+
+            def terminate(self):
+                pass
+
+            def wait(self, timeout=None):
+                pass
+
+        guard = {
+            "pre_shot_image": None,
+            "pre_shot_sample": None,
+            "post_recovery_protocol_state": {},
+            "recovery_action": None,
+            "pre_shot_guard": {"status": "accepted", "invalid_reason": None},
+        }
+        action = {
+            "coordinate_frame": "absolute",
+            "drag_start": [100, 200],
+            "drag_release": [130, 150],
+            "tapTime": 70,
+            "holdTime": 600,
+        }
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            temporary_shot = root / "shot_001.tmp"
+            accepted_shot = root / "shot_001"
+            publication_renames = []
+            validation_paths = []
+            post_publication_mutations = []
+            pre_publication_metadata = None
+            published = False
+            original_os_replace = os.replace
+            original_path_replace = Path.replace
+            original_open = Path.open
+
+            def traced_os_replace(source, target, *, src_dir_fd=None, dst_dir_fd=None):
+                nonlocal pre_publication_metadata, published
+                if (
+                    source == "shot_001.tmp"
+                    and target == "shot_001"
+                    and src_dir_fd is not None
+                    and dst_dir_fd is not None
+                ):
+                    stable_metadata = (
+                        Path(f"/proc/self/fd/{src_dir_fd}")
+                        / "shot_001.tmp"
+                        / "metadata.json"
+                    )
+                    pre_publication_metadata = stable_metadata.read_bytes()
+                    result = original_os_replace(
+                        source,
+                        target,
+                        src_dir_fd=src_dir_fd,
+                        dst_dir_fd=dst_dir_fd,
+                    )
+                    publication_renames.append((source, target, src_dir_fd, dst_dir_fd))
+                    published = True
+                    return result
+                return original_os_replace(
+                    source,
+                    target,
+                    src_dir_fd=src_dir_fd,
+                    dst_dir_fd=dst_dir_fd,
+                )
+
+            def traced_path_replace(source, target):
+                source_path = Path(source)
+                target_path = Path(target)
+                if published and (
+                    source_path == accepted_shot
+                    or accepted_shot in source_path.parents
+                    or target_path == accepted_shot
+                    or accepted_shot in target_path.parents
+                ):
+                    post_publication_mutations.append(("replace", source_path, target_path))
+                return original_path_replace(source_path, target_path)
+
+            def traced_open(path, mode="r", buffering=-1, encoding=None, errors=None, newline=None):
+                path = Path(path)
+                if (
+                    published
+                    and any(flag in mode for flag in ("w", "a", "x", "+"))
+                    and (path == accepted_shot or accepted_shot in path.parents)
+                ):
+                    post_publication_mutations.append(("open", path, mode))
+                return original_open(path, mode, buffering, encoding, errors, newline)
+
+            def traced_validation(path, *args, **kwargs):
+                validation_path = Path(path)
+                result = validate_rollout_artifact(validation_path, *args, **kwargs)
+                if kwargs.get("capture_contract") == "physics_capture_v1":
+                    validation_paths.append((validation_path, published))
+                return result
+
+            # When: the fresh-engine collector accepts and publishes one physics shot.
+            with (
+                patch.object(os, "replace", side_effect=traced_os_replace),
+                patch.object(Path, "replace", new=traced_path_replace),
+                patch.object(Path, "open", new=traced_open),
+                patch("scripts.collect_rollouts.validate_rollout_artifact", side_effect=traced_validation),
+                patch("scripts.collect_rollouts.ScienceBirdsBridge", return_value=PhysicsBridge()),
+                patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard),
+            ):
+                collect_fresh_engine_rollouts(
+                    root,
+                    [action],
+                    game_dir=Path("game"),
+                    host="127.0.0.1",
+                    port=2004,
+                    agent_id=28888,
+                    speed=1,
+                    connect_timeout=1,
+                    read_timeout=2,
+                    prepare_timeout=3,
+                    frame_height=480,
+                    fast=True,
+                    headless=False,
+                    target_fps=1,
+                    duration_seconds=1,
+                    ui_level=None,
+                    ui_settle_seconds=0,
+                    fresh_engine_attempts=1,
+                    start_engine_func=lambda *_args, **_kwargs: Process(),
+                    connect_func=lambda *_args, **_kwargs: gameplay_bridge,
+                    prepare_func=lambda bridge, **_kwargs: bridge.get_game_state(),
+                    video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0),
+                    anchor_actions=False,
+                    physics_capture_v1=True,
+                    physics_player_sha256="a" * 64,
+                    physics_protocol_sha256="b" * 64,
+                    physics_archive_sha256="c" * 64,
+                )
+
+            # Then: completed metadata and validation precede one rename, after which the shot is immutable.
+            self.assertIsNotNone(pre_publication_metadata)
+            published_metadata = (accepted_shot / "metadata.json").read_bytes()
+            published_document = json.loads(published_metadata)
+            with self.subTest("final metadata complete in temporary shot"):
+                self.assertTrue(published_document["accepted"])
+                self.assertTrue(published_document["artifact_validation"]["accepted"])
+                self.assertEqual(published_document.get("fresh_engine_attempt"), 1)
+            with self.subTest("exactly one atomic publication"):
+                self.assertEqual(len(publication_renames), 1)
+                source, target, source_fd, target_fd = publication_renames[0]
+                self.assertEqual((source, target), ("shot_001.tmp", "shot_001"))
+                self.assertIsNotNone(source_fd)
+                self.assertEqual(source_fd, target_fd)
+            with self.subTest("validation remains pre-publication"):
+                self.assertTrue(validation_paths)
+                self.assertTrue(
+                    all(not was_published for _path, was_published in validation_paths),
+                    validation_paths,
+                )
+            with self.subTest("published metadata bytes are unchanged"):
+                self.assertEqual(published_metadata, pre_publication_metadata)
+            with self.subTest("accepted shot is never reopened for mutation"):
+                self.assertEqual(post_publication_mutations, [])
 
     def test_completed_shot_with_stale_provenance_is_quarantined_and_recaptured(self):
         from src.webui.bridge import PhysicsCaptureV1

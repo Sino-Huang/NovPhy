@@ -6,7 +6,9 @@ import io
 import json
 import os
 from pathlib import Path
+import secrets
 import time
+from contextlib import suppress
 from typing import BinaryIO, Mapping, Protocol
 
 from scripts.physics_capture_contract import PhysicsContractError
@@ -29,6 +31,130 @@ from scripts.physics_rollout_contract import (
 
 class _Digest(Protocol):
     def update(self, data: bytes) -> None: ...
+
+
+def install_physics_metadata(shot_descriptor: int, metadata: JsonObject) -> None:
+    encoded = json.dumps(metadata, indent=2).encode("utf-8")
+    temporary_name = f".metadata.json.{secrets.token_hex(16)}.tmp"
+    temporary_descriptor: int | None = None
+    try:
+        temporary_descriptor = os.open(
+            temporary_name,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC | os.O_NOFOLLOW,
+            0o600,
+            dir_fd=shot_descriptor,
+        )
+        with os.fdopen(temporary_descriptor, "wb") as stream:
+            temporary_descriptor = None
+            stream.write(encoded)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(
+            temporary_name,
+            "metadata.json",
+            src_dir_fd=shot_descriptor,
+            dst_dir_fd=shot_descriptor,
+        )
+        os.fsync(shot_descriptor)
+    except OSError as error:
+        if temporary_descriptor is not None:
+            os.close(temporary_descriptor)
+        with suppress(FileNotFoundError):
+            os.unlink(temporary_name, dir_fd=shot_descriptor)
+        raise PhysicsPersistenceError(
+            PersistenceErrorCode.INVALID_CONFIGURATION,
+            "physics capture metadata could not be installed atomically",
+        ) from error
+
+
+def _validate_entry_name(name: str) -> None:
+    path = Path(name)
+    if not name or path.is_absolute() or path.name != name or name in {".", ".."}:
+        raise PhysicsPersistenceError(
+            PersistenceErrorCode.INVALID_CONFIGURATION,
+            "physics shot publication names must be single path components",
+        )
+
+
+def publish_physics_shot(
+    output_dir: Path,
+    temporary_name: str,
+    final_name: str,
+    finalizer: Callable[[int, Path], None],
+) -> None:
+    _validate_entry_name(temporary_name)
+    _validate_entry_name(final_name)
+    try:
+        root_descriptor = os.open(
+            output_dir,
+            os.O_RDONLY | os.O_CLOEXEC | os.O_DIRECTORY | os.O_NOFOLLOW,
+        )
+    except OSError as error:
+        raise PhysicsPersistenceError(
+            PersistenceErrorCode.INVALID_CONFIGURATION,
+            "physics capture output root is not confined",
+        ) from error
+    try:
+        try:
+            shot_descriptor = os.open(
+                temporary_name,
+                os.O_RDONLY | os.O_CLOEXEC | os.O_DIRECTORY | os.O_NOFOLLOW,
+                dir_fd=root_descriptor,
+            )
+        except OSError as error:
+            raise PhysicsPersistenceError(
+                PersistenceErrorCode.INVALID_CONFIGURATION,
+                "temporary physics shot is a symlink or is not confined",
+            ) from error
+        try:
+            stable_shot_path = Path(f"/proc/self/fd/{root_descriptor}") / temporary_name
+            finalizer(shot_descriptor, stable_shot_path)
+            try:
+                opened_status = os.fstat(shot_descriptor)
+                entry_status = os.stat(
+                    temporary_name,
+                    dir_fd=root_descriptor,
+                    follow_symlinks=False,
+                )
+            except OSError as error:
+                raise PhysicsPersistenceError(
+                    PersistenceErrorCode.INVALID_CONFIGURATION,
+                    "temporary physics shot entry changed before publication",
+                ) from error
+            if (opened_status.st_dev, opened_status.st_ino) != (
+                entry_status.st_dev,
+                entry_status.st_ino,
+            ):
+                raise PhysicsPersistenceError(
+                    PersistenceErrorCode.INVALID_CONFIGURATION,
+                    "temporary physics shot entry changed before publication",
+                )
+            destination_exists = True
+            try:
+                os.stat(final_name, dir_fd=root_descriptor, follow_symlinks=False)
+            except FileNotFoundError:
+                destination_exists = False
+            except OSError as error:
+                raise PhysicsPersistenceError(
+                    PersistenceErrorCode.INVALID_CONFIGURATION,
+                    "final physics shot destination could not be inspected",
+                ) from error
+            if destination_exists:
+                raise PhysicsPersistenceError(
+                    PersistenceErrorCode.INVALID_CONFIGURATION,
+                    "final physics shot destination already exists",
+                )
+            os.replace(
+                temporary_name,
+                final_name,
+                src_dir_fd=root_descriptor,
+                dst_dir_fd=root_descriptor,
+            )
+            os.fsync(root_descriptor)
+        finally:
+            os.close(shot_descriptor)
+    finally:
+        os.close(root_descriptor)
 
 
 def _encoded_record(record: JsonObject) -> bytes:
@@ -179,7 +305,6 @@ def persist_physics_rollout(
             PersistenceErrorCode.INVALID_CONFIGURATION,
             "physics capture output directory is not confined",
         ) from error
-    frames_dir = output_dir / "frames"
     state_descriptor: int | None = None
     event_descriptor: int | None = None
     frames_descriptor: int | None = None
@@ -204,15 +329,12 @@ def persist_physics_rollout(
         for descriptor in (state_descriptor, event_descriptor, frames_descriptor):
             if descriptor is not None:
                 os.close(descriptor)
+        os.close(output_descriptor)
         raise PhysicsPersistenceError(
             PersistenceErrorCode.INVALID_CONFIGURATION,
             "physics capture child artifact is a symlink or is not confined",
         ) from error
-    finally:
-        os.close(output_descriptor)
     shot_id = output_dir.name.removesuffix(".tmp")
-    state_path = output_dir / "physics_state.jsonl"
-    event_path = output_dir / "physics_events.jsonl"
     state_digest = hashlib.sha256()
     event_digest = hashlib.sha256()
     frame_entries: list[JsonObject] = []
@@ -311,6 +433,27 @@ def persist_physics_rollout(
             event_stream.flush()
             os.fsync(state_stream.fileno())
             os.fsync(event_stream.fileno())
+
+        metadata: JsonObject = {
+            "capture_contract": "physics_capture_v1",
+            "schema_version": "physics_capture_v1",
+            "protocol_version": 1,
+            "player_sha256": provenance.player_sha256,
+            "protocol_sha256": provenance.protocol_sha256,
+            "archive_sha256": provenance.archive_sha256,
+            "frame_count": bounds.frame_count,
+            "frames_dir": "frames",
+            "frames": frame_entries,
+            "frame_checksums": frame_checksums,
+            "physics_state_path": "physics_state.jsonl",
+            "physics_events_path": "physics_events.jsonl",
+            "physics_state_count": bounds.frame_count,
+            "physics_event_count": progress.event_count,
+            "physics_state_sha256": state_digest.hexdigest(),
+            "physics_events_sha256": event_digest.hexdigest(),
+            "sidecars_closed": True,
+        }
+        install_physics_metadata(output_descriptor, metadata)
     except PhysicsContractError as error:
         raise PhysicsPersistenceError(
             PersistenceErrorCode.MALFORMED_CAPTURE,
@@ -318,25 +461,5 @@ def persist_physics_rollout(
         ) from error
     finally:
         os.close(frames_descriptor)
-
-    metadata: JsonObject = {
-        "capture_contract": "physics_capture_v1",
-        "schema_version": "physics_capture_v1",
-        "protocol_version": 1,
-        "player_sha256": provenance.player_sha256,
-        "protocol_sha256": provenance.protocol_sha256,
-        "archive_sha256": provenance.archive_sha256,
-        "frame_count": bounds.frame_count,
-        "frames_dir": "frames",
-        "frames": frame_entries,
-        "frame_checksums": frame_checksums,
-        "physics_state_path": "physics_state.jsonl",
-        "physics_events_path": "physics_events.jsonl",
-        "physics_state_count": bounds.frame_count,
-        "physics_event_count": progress.event_count,
-        "physics_state_sha256": state_digest.hexdigest(),
-        "physics_events_sha256": event_digest.hexdigest(),
-        "sidecars_closed": True,
-    }
-    (output_dir / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+        os.close(output_descriptor)
     return metadata

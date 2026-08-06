@@ -32,7 +32,9 @@ from scripts.physics_rollout_contract import (  # noqa: E402
     PhysicsPersistenceError,
 )
 from scripts.physics_rollout_persistence import (  # noqa: E402
+    install_physics_metadata,
     persist_physics_rollout,
+    publish_physics_shot,
 )
 from scripts.rollout_validation_types import PhysicsArtifactError, PhysicsRecoveryResult  # noqa: E402
 
@@ -1213,9 +1215,12 @@ def _record_fresh_engine_attempt_metadata(
     *,
     attempt: int,
     slingshot_reference: dict[str, int] | None,
+    physics_capture_v1: bool,
 ) -> None:
     rollout["slingshot_reference"] = slingshot_reference
     rollout["fresh_engine_attempt"] = attempt
+    if physics_capture_v1 and rollout.get("accepted"):
+        return
     metadata_paths = [output_dir / rollout["name"] / "metadata.json", Path(rollout["metadata_path"])]
     for shot_metadata_path in dict.fromkeys(metadata_paths):
         if not shot_metadata_path.is_file():
@@ -1508,6 +1513,7 @@ def collect_rollouts(
     shoot_before_capture: bool = True,
     anchor_actions: bool = True,
     retry_attempt: int = 1,
+    fresh_engine_attempt: int | None = None,
     prior_invalid_attempts: list[dict] | None = None,
     retryable_recovery_action: str = "quarantine",
     physics_capture_v1: bool = False,
@@ -1702,7 +1708,10 @@ def collect_rollouts(
         slingshot_reference = action.get("slingshot_reference")
         if slingshot_reference is not None:
             metadata["slingshot_reference"] = slingshot_reference
-        _write_metadata(shot_dir / "metadata.json", metadata)
+        if fresh_engine_attempt is not None:
+            metadata["fresh_engine_attempt"] = fresh_engine_attempt
+        if not physics_capture_v1:
+            _write_metadata(shot_dir / "metadata.json", metadata)
         artifact_validation = validate_rollout_artifact(shot_dir, capture_contract="physics_capture_v1" if physics_capture_v1 else "legacy_rgb_v1")
         metadata = _finalize_attempt_metadata(
             output_dir=output_dir,
@@ -1714,12 +1723,34 @@ def collect_rollouts(
             retryable_recovery_action=retryable_recovery_action,
         )
         if metadata.get("accepted"):
-            _write_metadata(shot_dir / "metadata.json", metadata)
             if physics_capture_v1:
-                shot_dir.replace(final_shot_dir)
                 metadata = _rewrite_quarantined_metadata(metadata, shot_dir, final_shot_dir)
+
+                def finalize_accepted_physics_shot(
+                    shot_descriptor: int,
+                    stable_shot_path: Path,
+                ) -> None:
+                    install_physics_metadata(shot_descriptor, metadata)
+                    final_validation = validate_rollout_artifact(
+                        stable_shot_path,
+                        capture_contract="physics_capture_v1",
+                    )
+                    if final_validation.get("accepted") is not True:
+                        raise RolloutCollectionError(
+                            "finalized physics shot failed validation before publication"
+                        )
+
+                try:
+                    publish_physics_shot(
+                        output_dir,
+                        shot_dir.name,
+                        final_shot_dir.name,
+                        finalize_accepted_physics_shot,
+                    )
+                except PhysicsPersistenceError as error:
+                    raise RolloutCollectionError(str(error)) from error
                 shot_dir = final_shot_dir
-                metadata["artifact_validation"] = validate_rollout_artifact(shot_dir, capture_contract="physics_capture_v1")
+            else:
                 _write_metadata(shot_dir / "metadata.json", metadata)
         elif physics_capture_v1 and shot_dir.exists():
             shutil.rmtree(shot_dir)
@@ -1864,6 +1895,7 @@ def collect_fresh_engine_rollouts(
                     shoot_before_capture=shoot_before_capture,
                     anchor_actions=anchor_actions,
                     retry_attempt=attempt,
+                    fresh_engine_attempt=attempt if physics_capture_v1 else None,
                     prior_invalid_attempts=prior_invalid_attempts,
                     retryable_recovery_action="fresh_engine_retry" if attempt < attempts_per_action else "fresh_engine_attempts_exhausted",
                     physics_capture_v1=physics_capture_v1,
@@ -1878,6 +1910,7 @@ def collect_fresh_engine_rollouts(
                     rollout,
                     attempt=attempt,
                     slingshot_reference=slingshot_reference,
+                    physics_capture_v1=physics_capture_v1,
                 )
 
                 rollouts.append(rollout)
@@ -1898,6 +1931,7 @@ def collect_fresh_engine_rollouts(
                         rollout,
                         attempt=attempt,
                         slingshot_reference=slingshot_reference,
+                        physics_capture_v1=physics_capture_v1,
                     )
                     rollouts.append(rollout)
                     prior_invalid_attempts.append(_invalid_attempt_reference(rollout))
