@@ -381,6 +381,157 @@ public class PhysicsShotRecorderTests
         }
     }
 
+    [Test]
+    public void TimeoutUsesElapsedFixedTimeFromFirstAuthoritativeSample()
+    {
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(
+            new PhysicalCaptureLimits(16, 64 * 1024, 0.1f));
+
+        recorder.RecordContacts(1000, 50f, new PhysicalContactInput[0]);
+        Assert.IsNull(recorder.Failure, "a late first sample must establish the shot clock");
+        recorder.RecordContacts(1001, 49f, new PhysicalContactInput[0]);
+        Assert.IsNull(recorder.Failure, "elapsed shot time must not become negative");
+        recorder.RecordContacts(1002, 50.1f, new PhysicalContactInput[0]);
+        Assert.IsNull(recorder.Failure, "the timeout boundary is inclusive");
+        recorder.RecordContacts(1003, 50.101f, new PhysicalContactInput[0]);
+
+        Assert.IsNotNull(recorder.Failure);
+        Assert.AreEqual(PhysicalCaptureFailureCode.CaptureTimeout, recorder.Failure.Code);
+    }
+
+    [Test]
+    public void FinalizedRecorderRejectsEveryPublicMutationPath()
+    {
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder)
+        {
+            recorder.RecordContacts(2, new[] { ContactWithCenters(0f, 1f) });
+        }, "contacts array");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder)
+        {
+            recorder.RecordContacts(2, (System.Collections.Generic.IEnumerable<PhysicalContactInput>)new[] { ContactWithCenters(0f, 1f) });
+        }, "contacts enumerable");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder)
+        {
+            recorder.RecordContacts(2, 0.04f, new[] { ContactWithCenters(0f, 1f) });
+        }, "contacts with fixed time");
+        AssertFinalizedUnityContactsReturnBeforeRegistryMutation();
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder)
+        {
+            recorder.RecordEvent(2, 0.04f, PhysicalMacroEventKind.Destroy, "block:2");
+        }, "generic event");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder)
+        {
+            recorder.RecordCollision(2, 0.04f, "a:0", "b:0");
+        }, "collision");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder)
+        {
+            recorder.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { "contact:2" }, 3f);
+        }, "collision payload");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder)
+        {
+            recorder.RecordCollision("a:0", "b:0", 2);
+        }, "collision compatibility overload");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordLaunch("bird:2", 2); }, "launch");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordLaunch("bird:2", 2, Vector2.right); }, "launch payload");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordDestroyed("block:2", 2); }, "destroy");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordDestroyed("block:2", 2, "damage"); }, "destroy payload");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordDeath("block:2", 2); }, "death");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordPigRemoved("pig:2", 2); }, "pig removal");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordPigRemoved("pig:2", 2, "damage"); }, "pig removal payload");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordTntExplosion("tnt:2", 2); }, "TNT explosion");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordTntExplosion("tnt:2", 2, 2f); }, "TNT explosion payload");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordBirdExhaustion(2); }, "bird exhaustion");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordStability(2, true); }, "stability");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordLevelClear(2); }, "level clear");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordLevelClear(2, 10); }, "level clear payload");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordLevelFail(2); }, "level fail");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.RecordLevelFail(2, "reason"); }, "level fail payload");
+        AssertFinalizedMutationIsNoOp(delegate(PhysicsShotRecorder recorder) { recorder.FailTimeout("late timeout"); }, "timeout failure");
+    }
+
+    [Test]
+    public void TruncatedFinalizationSetsFailureBeforeBecomingTerminal()
+    {
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(8, 64 * 1024);
+
+        PhysicalCaptureResult result = recorder.FinalizeShot(false);
+
+        Assert.IsFalse(result.IsValid);
+        Assert.AreEqual(PhysicalCaptureFailureCode.TruncatedFinalization, result.Failure.Code);
+        recorder.FailTimeout("must not replace finalized failure");
+        Assert.AreEqual(PhysicalCaptureFailureCode.TruncatedFinalization, recorder.Failure.Code);
+    }
+
+    private static void AssertFinalizedMutationIsNoOp(Action<PhysicsShotRecorder> mutation, string mutationName)
+    {
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(16, 64 * 1024);
+        recorder.RecordLaunch("bird:1", 1, new Vector2(2f, 1f));
+        recorder.FinalizeShot(true);
+        PhysicalShotRecorderSnapshot before = recorder.CreateFinalizedSnapshot();
+
+        mutation(recorder);
+
+        AssertFinalizedStateUnchanged(recorder, before, mutationName);
+    }
+
+    private static void AssertFinalizedUnityContactsReturnBeforeRegistryMutation()
+    {
+        GameObject ground = new GameObject("finalized-ground");
+        GameObject bodyObject = new GameObject("finalized-body");
+        BoxCollider2D groundCollider = ground.AddComponent<BoxCollider2D>();
+        BoxCollider2D bodyCollider = bodyObject.AddComponent<BoxCollider2D>();
+        Rigidbody2D body = bodyObject.AddComponent<Rigidbody2D>();
+        PhysicalEntityRegistry registry = new PhysicalEntityRegistry();
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(16, 64 * 1024);
+        bool autoSimulation = Physics2D.autoSimulation;
+
+        try
+        {
+            groundCollider.size = new Vector2(4f, 1f);
+            bodyObject.transform.position = new Vector2(0f, 0.9f);
+            body.gravityScale = 0f;
+            body.constraints = RigidbodyConstraints2D.FreezeAll;
+            Physics2D.autoSimulation = false;
+            Physics2D.SyncTransforms();
+            Physics2D.Simulate(0.02f);
+            Physics2D.Simulate(0.02f);
+            Assert.Greater(bodyCollider.GetContacts(new ContactPoint2D[4]), 0,
+                "finalized Unity-contact fixture did not produce an authoritative contact");
+            recorder.RecordLaunch("bird:1", 1, Vector2.right);
+            recorder.FinalizeShot(true);
+            PhysicalShotRecorderSnapshot before = recorder.CreateFinalizedSnapshot();
+
+            recorder.RecordUnityContacts(
+                2, 0.04f, new Collider2D[] { groundCollider, bodyCollider }, registry);
+
+            System.Collections.IDictionary lifetimes = (System.Collections.IDictionary)typeof(PhysicalEntityRegistry)
+                .GetField("currentLifetimes", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(registry);
+            Assert.AreEqual(0, lifetimes.Count,
+                "finalized Unity contacts traversed contacts and mutated the entity registry");
+            AssertFinalizedStateUnchanged(recorder, before, "Unity contacts");
+        }
+        finally
+        {
+            Physics2D.autoSimulation = autoSimulation;
+            UnityEngine.Object.DestroyImmediate(bodyObject);
+            UnityEngine.Object.DestroyImmediate(ground);
+        }
+    }
+
+    private static void AssertFinalizedStateUnchanged(
+        PhysicsShotRecorder recorder, PhysicalShotRecorderSnapshot before, string mutationName)
+    {
+        PhysicalShotRecorderSnapshot after = recorder.CreateFinalizedSnapshot();
+        Assert.IsNull(recorder.Failure, mutationName + " changed finalized failure state");
+        Assert.IsNotNull(after, mutationName + " invalidated the finalized snapshot");
+        Assert.AreEqual(before.RawContacts.Count, after.RawContacts.Count, mutationName + " changed contacts");
+        Assert.AreEqual(before.SupportEdges.Count, after.SupportEdges.Count, mutationName + " changed supports");
+        Assert.AreEqual(before.Events.Count, after.Events.Count, mutationName + " changed events");
+        Assert.AreEqual(before.Events[0].Subject, after.Events[0].Subject, mutationName + " changed snapshot content");
+        Assert.AreEqual(before.Events[0].Payload.LaunchVelocity, after.Events[0].Payload.LaunchVelocity,
+            mutationName + " changed snapshot payload");
+    }
+
     private static PhysicalContactInput ContactWithCenters(float centerAY, float centerBY)
     {
         return new PhysicalContactInput(

@@ -336,6 +336,8 @@ public class PhysicalShotRecorder
     private int estimatedBytes;
     private long currentStep;
     private float currentTime;
+    private float shotStartFixedTime;
+    private bool hasShotStartFixedTime;
     private bool stabilityInitialized;
     private bool stable;
     private bool terminalRecorded;
@@ -378,9 +380,15 @@ public class PhysicalShotRecorder
         }
         currentStep = fixedStep;
         currentTime = fixedTime;
-        if (fixedTime > limits.TimeoutSeconds)
+        if (!hasShotStartFixedTime)
         {
-            Fail(PhysicalCaptureFailureCode.CaptureTimeout, "fixed-time capture timeout");
+            shotStartFixedTime = fixedTime;
+            hasShotStartFixedTime = true;
+        }
+        float elapsedFixedTime = Mathf.Max(0f, fixedTime - shotStartFixedTime);
+        if (elapsedFixedTime > limits.TimeoutSeconds)
+        {
+            Fail(PhysicalCaptureFailureCode.CaptureTimeout, "elapsed fixed-time capture timeout");
             return;
         }
 
@@ -419,6 +427,8 @@ public class PhysicalShotRecorder
 
     public void RecordUnityContacts(long fixedStep, float fixedTime, Collider2D[] colliders, PhysicalEntityRegistry registry = null)
     {
+        if (Failure != null || finalized)
+            return;
         List<PhysicalContactInput> inputs = new List<PhysicalContactInput>();
         foreach (Collider2D collider in (colliders ?? new Collider2D[0]).OrderBy(c => c == null ? int.MaxValue : c.GetInstanceID()))
         {
@@ -542,11 +552,11 @@ public class PhysicalShotRecorder
     {
         if (finalized)
             return new PhysicalCaptureResult(Failure);
-        finalized = true;
         if (Failure == null && !terminal)
         {
             Fail(PhysicalCaptureFailureCode.TruncatedFinalization, "shot finalized before terminal event");
         }
+        finalized = true;
         return new PhysicalCaptureResult(Failure);
     }
 
@@ -601,6 +611,8 @@ public class PhysicalShotRecorder
     private void AddEvent(long fixedStep, float fixedTime, PhysicalMacroEventKind kind, string subject,
         IEnumerable<string> participants, PhysicalMacroEventPayload payload)
     {
+        if (finalized)
+            return;
         if (!CanAddRecord(128))
             return;
         events.Add(new PhysicalMacroEvent(0, fixedStep, fixedTime, kind, subject, participants, payload));
@@ -612,6 +624,8 @@ public class PhysicalShotRecorder
 
     private void AddOneShotEvent(long fixedStep, PhysicalMacroEventKind kind, string subject, PhysicalMacroEventPayload payload)
     {
+        if (finalized)
+            return;
         string key = kind + ":" + subject;
         if (Failure == null && eventKeys.Add(key))
             AddEvent(fixedStep, fixedStep * 0.02f, kind, subject, ParticipantsFor(kind, subject), payload);
@@ -619,7 +633,7 @@ public class PhysicalShotRecorder
 
     private void AddTerminalEvent(long fixedStep, PhysicalMacroEventKind kind, PhysicalMacroEventPayload payload)
     {
-        if (Failure != null || terminalRecorded)
+        if (Failure != null || finalized || terminalRecorded)
             return;
         terminalRecorded = true;
         eventKeys.Add(kind + ":level");
@@ -652,7 +666,7 @@ public class PhysicalShotRecorder
 
     private void Fail(PhysicalCaptureFailureCode code, string message)
     {
-        if (Failure == null)
+        if (!finalized && Failure == null)
         {
             Failure = new PhysicalCaptureFailure(code, message);
         }
