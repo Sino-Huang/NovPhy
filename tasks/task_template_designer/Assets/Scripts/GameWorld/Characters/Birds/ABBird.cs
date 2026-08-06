@@ -302,8 +302,6 @@ public class ABBird : ABCharacter
 
     public void LaunchBird()
     {
-        PhysicalSnapshotRuntime.RecordLaunchCallback(
-            PhysicalSnapshotRuntime.EntityIdForCallback(gameObject), _rigidBody.velocity);
         _animator.Play("flying", 0, 0f);
 
         IsFlying = true;
@@ -333,7 +331,8 @@ public class ABBird : ABCharacter
         Vector2 direction = difference.normalized;
 
         // The launch directly set the velocity of the bird, but not add a force.
-        _rigidBody.velocity = direction * difference.magnitude / _dragRadius * ABConstants.BIRD_MAX_LANUCH_SPEED;
+        Vector2 launchVelocity = direction * difference.magnitude / _dragRadius * ABConstants.BIRD_MAX_LANUCH_SPEED;
+        AssignLaunchVelocityAndRecord(launchVelocity);
 
         // Vector2 f = -deltaPosFromSlingshot * _launchForce;
         // _rigidBody.AddForce(f, ForceMode2D.Impulse);
@@ -345,5 +344,12 @@ public class ABBird : ABCharacter
 
         //ABGameWorld.Instance.KillBird(this);
         
+    }
+
+    protected void AssignLaunchVelocityAndRecord(Vector2 launchVelocity)
+    {
+        _rigidBody.velocity = launchVelocity;
+        PhysicalSnapshotRuntime.RecordLaunchCallback(
+            PhysicalSnapshotRuntime.EntityIdForCallback(gameObject), _rigidBody.velocity);
     }
 }
