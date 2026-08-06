@@ -15,12 +15,14 @@ serverbackup_source="/mnt/array/sukaih/Project/NovPhy/sciencebirdsgames/Linux/se
 [[ "$(realpath "$project")" == "$(realpath "$expected_project")" ]] || { echo "refusing non-migrated Unity project: $project" >&2; exit 2; }
 [[ "$(sha256sum "$editor" | awk '{print $1}')" == "$expected_editor_sha" ]] || { echo "pinned Unity executable checksum mismatch" >&2; exit 2; }
 [[ "$(realpath -m "$stage")" != "$(realpath /mnt/array/sukaih/Project/NovPhy/sciencebirdsgames/Linux)" ]] || { echo "refusing production player output" >&2; exit 2; }
+package_inputs="$(mktemp "${TMPDIR:-/tmp}/novphy_physics_package_inputs_XXXXXX")"
+trap 'rm -f "$package_inputs"' EXIT
 python "$worktree/scripts/package_physics_player.py" --payload "$project" --stage "$stage" --worktree "$worktree" \
-  --migration-provenance "$worktree/.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json" --check-worktree-only
+  --migration-provenance "$worktree/.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json" --check-worktree-only --write-package-inputs "$package_inputs"
 
 mkdir -p "$stage"
 build_root="$(mktemp -d "${TMPDIR:-/tmp}/novphy_physics_build_XXXXXX")"
-trap 'rm -rf "$build_root"' EXIT
+trap 'rm -rf "$build_root"; rm -f "$package_inputs"' EXIT
 payload="$build_root/payload"
 mkdir -p "$payload"
 export NOVPHY_BUILD_OUTPUT="$payload/9001.x86_64"
@@ -46,4 +48,5 @@ python "$worktree/scripts/package_physics_player.py" \
   --unity-executable "$editor" \
   --interface-jar "$interface_jar" \
   --config-source "$config_source" \
-  --serverbackup-source "$serverbackup_source"
+  --serverbackup-source "$serverbackup_source" \
+  --package-inputs "$package_inputs"

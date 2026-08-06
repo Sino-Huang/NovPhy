@@ -19,13 +19,19 @@ class PhysicsPlayerBuildScriptTests(unittest.TestCase):
 
         # When: its build-affecting operations are ordered.
         preflight = source.find("--check-worktree-only")
+        snapshot = source.find("--write-package-inputs")
         stage_creation = source.find('mkdir -p "$stage"')
         unity = source.find('"$editor" -batchmode')
+        final_package = source.rfind("--package-inputs")
 
         # Then: dirty or untracked source fails before build or stage writes.
         self.assertGreaterEqual(preflight, 0)
+        self.assertGreaterEqual(snapshot, 0)
+        self.assertGreaterEqual(final_package, 0)
         self.assertLess(preflight, stage_creation)
+        self.assertLess(snapshot, unity)
         self.assertLess(preflight, unity)
+        self.assertGreater(final_package, unity)
 
     def test_ignored_untracked_unity_asset_is_rejected(self) -> None:
         # Given: Git ignores an untracked asset that Unity would still import.
@@ -40,6 +46,10 @@ class PhysicsPlayerBuildScriptTests(unittest.TestCase):
             asset = repository / "tasks" / "task_template_designer" / "Assets" / "texture.png"
             asset.parent.mkdir(parents=True)
             asset.write_bytes(b"ignored Unity texture")
+            packages = repository / "tasks" / "task_template_designer" / "Packages"
+            packages.mkdir(parents=True)
+            (packages / "manifest.json").write_bytes((ROOT / "tasks/task_template_designer/Packages/manifest.json").read_bytes())
+            (packages / "packages-lock.json").write_bytes((ROOT / "tasks/task_template_designer/Packages/packages-lock.json").read_bytes())
             (repository / ".gitignore").write_text("*.png\n", encoding="ascii")
             subprocess.run(("git", "add", ".gitignore", "scripts/9001-player-wrapper.sh"), cwd=repository, check=True)
             subprocess.run(("git", "commit", "-qm", "fixture"), cwd=repository, check=True)

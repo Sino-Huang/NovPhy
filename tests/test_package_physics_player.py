@@ -1,4 +1,5 @@
 from __future__ import annotations
+# noqa: SIZE_OK - package publication scenarios share one isolated repository fixture.
 
 import hashlib
 import json
@@ -38,12 +39,23 @@ class PhysicsPlayerPackagerTests(unittest.TestCase):
         unity_source = repository / "tasks" / "task_template_designer" / "Assets" / "BuildSource.cs"
         unity_source.parent.mkdir(parents=True)
         unity_source.write_text("internal static class BuildSource {}\n", encoding="utf-8")
+        self._ignored_package_inputs(repository)
         notes = repository / ".omo" / "notepads"
         notes.mkdir(parents=True)
         (notes / "notes.md").write_text("initial evidence\n", encoding="utf-8")
         subprocess.run(("git", "add", "product.txt", "scripts/9001-player-wrapper.sh", "tasks", ".omo/notepads/notes.md"), cwd=repository, check=True)
         subprocess.run(("git", "commit", "-qm", "test fixture"), cwd=repository, check=True)
         return repository
+
+    def _ignored_package_inputs(self, repository: Path) -> dict[str, Path]:
+        project = repository / "tasks" / "task_template_designer"
+        packages = project / "Packages"
+        packages.mkdir(parents=True, exist_ok=True)
+        (project / ".gitignore").write_text("Packages/*\n", encoding="ascii")
+        paths = {name: packages / name for name in ("manifest.json", "packages-lock.json")}
+        for name, path in paths.items():
+            path.write_bytes((ROOT / "tasks/task_template_designer/Packages" / name).read_bytes())
+        return paths
 
     def _package(self, paths: tuple[Path, Path, Path, Path], extra_arguments: tuple[str, ...] = ()) -> subprocess.CompletedProcess[str]:
         repository, payload, stage, migration = paths
@@ -154,6 +166,32 @@ class PhysicsPlayerPackagerTests(unittest.TestCase):
 
             with self.assertRaisesRegex(PackagingError, "untracked product source"):
                 git_revision(repository)
+
+    def test_git_revision_accepts_only_digest_bound_ignored_package_pair(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = self._repository(Path(temporary))
+            paths = self._ignored_package_inputs(repository)
+            digests = {str(path.relative_to(repository)): _sha256(path) for path in paths.values()}
+
+            git_revision(repository, package_inputs=digests, require_package_inputs=True)
+            paths["manifest.json"].write_text('{"dependencies":{"changed":"1"}}\n', encoding="utf-8")
+            with self.assertRaisesRegex(PackagingError, "Unity package input digest differs"):
+                git_revision(repository, package_inputs=digests, require_package_inputs=True)
+
+    def test_git_revision_rejects_missing_or_third_ignored_unity_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = self._repository(Path(temporary))
+            paths = self._ignored_package_inputs(repository)
+            digests = {str(path.relative_to(repository)): _sha256(path) for path in paths.values()}
+            paths["packages-lock.json"].unlink()
+            with self.assertRaisesRegex(PackagingError, "missing provenance-bound Unity package input"):
+                git_revision(repository, package_inputs=digests, require_package_inputs=True)
+
+            paths["packages-lock.json"].write_bytes((ROOT / "tasks/task_template_designer/Packages/packages-lock.json").read_bytes())
+            third = paths["manifest.json"].parent / "third-party.json"
+            third.write_text("third\n", encoding="utf-8")
+            with self.assertRaisesRegex(PackagingError, "untracked product source"):
+                git_revision(repository, package_inputs=digests, require_package_inputs=True)
 
     def test_create_archive_preserves_existing_final_archive_when_gzip_fails(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -313,6 +351,10 @@ class PhysicsPlayerPackagerTests(unittest.TestCase):
                 self.assertEqual(build_inputs[role]["sha256"], _sha256(path))
             self.assertEqual(build_inputs["player_wrapper"]["repository_path"], "scripts/9001-player-wrapper.sh")
             self.assertEqual(build_inputs["player_wrapper"]["sha256"], manifest["files"]["9001.x86_64"])
+            self.assertEqual(build_inputs["unity_package_inputs"]["files"], {
+                "tasks/task_template_designer/Packages/manifest.json": _sha256(repository / "tasks/task_template_designer/Packages/manifest.json"),
+                "tasks/task_template_designer/Packages/packages-lock.json": _sha256(repository / "tasks/task_template_designer/Packages/packages-lock.json"),
+            })
 
 
 if __name__ == "__main__":
