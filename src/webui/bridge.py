@@ -1,4 +1,5 @@
 from __future__ import annotations
+# noqa: SIZE_OK - legacy and request-70 wire surfaces must remain in this owned module.
 
 import json
 import socket
@@ -6,7 +7,7 @@ import struct
 from dataclasses import dataclass
 from enum import IntEnum
 from types import MappingProxyType
-from typing import Mapping, TypeAlias
+from typing import Final, Mapping, TypeAlias
 
 
 JsonScalar: TypeAlias = str | int | float | bool | None
@@ -63,7 +64,25 @@ class PhysicsCaptureV1ProtocolError(ConnectionError):
     """The request-70 stream was malformed or could not be completed."""
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
+class LegacyGroundTruthProtocolError(ConnectionError):
+    request_code: int
+    field: str
+    detail: str
+    value: int | None = None
+    limit: int | None = None
+
+    def __post_init__(self) -> None:
+        ConnectionError.__init__(self, str(self))
+
+    def __str__(self) -> str:
+        message = "request-%d %s: %s" % (self.request_code, self.field, self.detail)
+        if self.value is None:
+            return message
+        return "%s (value=%d, limit=%d)" % (message, self.value, self.limit)
+
+
+@dataclass(frozen=True, slots=True)
 class PhysicsCaptureV1Failure(PhysicsCaptureV1ProtocolError):
     code: int
     message: str
@@ -74,14 +93,14 @@ class PhysicsCaptureV1Failure(PhysicsCaptureV1ProtocolError):
         )
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Screenshot:
     width: int
     height: int
     rgb: bytes
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class PhysicsCaptureV1:
     png: bytes
     state: PhysicsStateV1
@@ -94,6 +113,9 @@ _PHYSICS_FAILURE_FLAG = 1
 _PHYSICS_MAX_ENVELOPE = 64 * 1024 * 1024
 _PHYSICS_MAX_PNG = 32 * 1024 * 1024
 _PHYSICS_MAX_JSON = 16 * 1024 * 1024
+_LEGACY_MAX_GROUND_TRUTH_RECORDS: Final = 10_000
+_LEGACY_MAX_GROUND_TRUTH_PAYLOAD: Final = 16 * 1024 * 1024
+_LEGACY_GROUND_TRUTH_SUFFIX_BYTES: Final = 5
 
 
 class ScienceBirdsBridge:
@@ -162,7 +184,11 @@ class ScienceBirdsBridge:
 
     def get_symbolic_state_without_screenshot(self):
         self._send(RequestCode.GET_GROUND_TRUTH_WITHOUT_SCREENSHOT)
-        return self._read_ground_truth()
+        try:
+            return self._read_ground_truth(RequestCode.GET_GROUND_TRUTH_WITHOUT_SCREENSHOT)
+        except LegacyGroundTruthProtocolError:
+            self.disconnect()
+            raise
 
     def load_level(self, level: int) -> int:
         self._send(RequestCode.LOAD_LEVEL, "I", max(1, int(level)))
@@ -211,7 +237,7 @@ class ScienceBirdsBridge:
         except PhysicsCaptureV1ProtocolError:
             self.disconnect()
             raise
-        except (ConnectionError, OSError, ValueError, struct.error, UnicodeError) as exc:
+        except (ConnectionError, OSError, ValueError, struct.error, UnicodeError, RecursionError) as exc:
             raise PhysicsCaptureV1ProtocolError("invalid request-70 envelope") from exc
         finally:
             self.disconnect()
@@ -239,10 +265,27 @@ class ScienceBirdsBridge:
             int(tap_time),
             int(frequency),
         )
-        ground_truth_count = self._read("I")[0]
-        for _ in range(ground_truth_count):
-            self._read_ground_truth()
-        return ground_truth_count
+        try:
+            ground_truth_count = self._read("I")[0]
+            if ground_truth_count > _LEGACY_MAX_GROUND_TRUTH_RECORDS:
+                raise LegacyGroundTruthProtocolError(
+                    int(RequestCode.GT_SHOOT),
+                    "record_count",
+                    "exceeds maximum",
+                    ground_truth_count,
+                    _LEGACY_MAX_GROUND_TRUTH_RECORDS,
+                )
+            for _ in range(ground_truth_count):
+                self._read_ground_truth(RequestCode.GT_SHOOT)
+            return ground_truth_count
+        except LegacyGroundTruthProtocolError:
+            self.disconnect()
+            raise
+        except (ConnectionError, OSError, struct.error) as exc:
+            self.disconnect()
+            raise LegacyGroundTruthProtocolError(
+                int(RequestCode.GT_SHOOT), "record_count", "is truncated"
+            ) from exc
 
     def _send(self, code: RequestCode, fmt: str = "", *values: int) -> None:
         sock = self._require_socket()
@@ -251,10 +294,36 @@ class ScienceBirdsBridge:
     def _read(self, fmt: str):
         return struct.unpack("!" + fmt, self._read_exact(struct.calcsize("!" + fmt)))
 
-    def _read_ground_truth(self):
-        payload_length = self._read("I")[0]
-        payload = self._read_exact(payload_length)
-        return json.loads(payload.decode("utf-8")[:-5])
+    def _read_ground_truth(self, request_code: RequestCode):
+        try:
+            payload_length = self._read("I")[0]
+        except (ConnectionError, OSError, struct.error) as exc:
+            raise LegacyGroundTruthProtocolError(
+                int(request_code), "payload_length", "is truncated"
+            ) from exc
+        if payload_length > _LEGACY_MAX_GROUND_TRUTH_PAYLOAD:
+            raise LegacyGroundTruthProtocolError(
+                int(request_code),
+                "payload_length",
+                "exceeds maximum",
+                payload_length,
+                _LEGACY_MAX_GROUND_TRUTH_PAYLOAD,
+            )
+        if payload_length < _LEGACY_GROUND_TRUTH_SUFFIX_BYTES:
+            raise LegacyGroundTruthProtocolError(
+                int(request_code),
+                "payload_length",
+                "is smaller than the legacy suffix",
+                payload_length,
+                _LEGACY_GROUND_TRUTH_SUFFIX_BYTES,
+            )
+        try:
+            payload = self._read_exact(payload_length)
+            return json.loads(payload.decode("utf-8")[:-_LEGACY_GROUND_TRUTH_SUFFIX_BYTES])
+        except (ConnectionError, OSError, UnicodeError, ValueError, RecursionError) as exc:
+            raise LegacyGroundTruthProtocolError(
+                int(request_code), "payload", "is malformed or truncated"
+            ) from exc
 
     def _read_exact(self, size: int) -> bytes:
         sock = self._require_socket()

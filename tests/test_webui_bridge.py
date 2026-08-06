@@ -1,4 +1,5 @@
 import struct
+# noqa: SIZE_OK - protocol compatibility and malformed-stream cases share one owned fixture.
 import socket
 import threading
 import unittest
@@ -7,6 +8,7 @@ from typing import Any, get_type_hints
 
 from src.webui.bridge import (
     GameState,
+    LegacyGroundTruthProtocolError,
     PhysicsCaptureV1,
     PhysicsCaptureV1Failure,
     PhysicsCaptureV1ProtocolError,
@@ -19,6 +21,7 @@ class FakeSocket:
     def __init__(self, *args):
         self.sent = bytearray()
         self.responses = bytearray()
+        self.recv_sizes = []
         self.connected_to = None
         self.closed = False
 
@@ -32,6 +35,7 @@ class FakeSocket:
         self.sent.extend(data)
 
     def recv(self, size):
+        self.recv_sizes.append(size)
         chunk = self.responses[:size]
         del self.responses[:size]
         return bytes(chunk)
@@ -209,7 +213,9 @@ class PhysicsCaptureV1Tests(unittest.TestCase):
     def test_legacy_request_38_and_62_fixture_bytes_remain_unchanged(self):
         bridge, fake = self.make_bridge(struct.pack("!I", 7) + b"{}xxxxx")
         bridge._send(38, "iiiii", 1, 2, 3, 4, 5)
-        bridge.get_symbolic_state_without_screenshot()
+        symbolic_state = bridge.get_symbolic_state_without_screenshot()
+
+        self.assertEqual(symbolic_state, {})
         self.assertEqual(bytes(fake.sent), struct.pack("!BiiiiiB", 38, 1, 2, 3, 4, 5, 62))
 
     def test_recorder_backed_shoot_preserves_request_38_framing_and_consumes_ground_truth(self):
@@ -221,6 +227,76 @@ class PhysicsCaptureV1Tests(unittest.TestCase):
         self.assertEqual(ground_truth_count, 2)
         self.assertEqual(bytes(fake.sent), struct.pack("!Biiiii", 38, 1, 2, 3, 4, 1))
         self.assertEqual(bytes(fake.responses), b"")
+
+
+class LegacyGroundTruthProtocolTests(unittest.TestCase):
+    def make_bridge(self, response):
+        fake = FakeSocket()
+        fake.responses.extend(response)
+        bridge = ScienceBirdsBridge(socket_factory=lambda *args: fake)
+        bridge.connect()
+        return bridge, fake
+
+    def assert_typed_error(self, error, request_code, field):
+        self.assertIsInstance(error, LegacyGroundTruthProtocolError)
+        self.assertEqual(error.request_code, request_code)
+        self.assertEqual(error.field, field)
+        self.assertIn("request-%d" % request_code, str(error))
+        self.assertIn(field, str(error))
+
+    def test_request_38_rejects_oversized_count_before_record_read_and_disconnects(self):
+        unread_record = b"record-body"
+        bridge, fake = self.make_bridge(struct.pack("!I", 10_001) + unread_record)
+
+        with self.assertRaises(ConnectionError) as raised:
+            bridge.shoot_and_record_ground_truth(1, 2)
+
+        self.assertEqual(fake.recv_sizes, [4])
+        self.assertEqual(bytes(fake.responses), unread_record)
+        self.assertTrue(fake.closed)
+        self.assertFalse(bridge.connected)
+        self.assert_typed_error(raised.exception, 38, "record_count")
+        self.assertEqual(raised.exception.value, 10_001)
+        self.assertEqual(raised.exception.limit, 10_000)
+
+    def test_request_62_rejects_oversized_payload_before_body_read_and_disconnects(self):
+        unread_payload = b"payload-body"
+        bridge, fake = self.make_bridge(struct.pack("!I", 16 * 1024 * 1024 + 1) + unread_payload)
+
+        with self.assertRaises(ConnectionError) as raised:
+            bridge.get_symbolic_state_without_screenshot()
+
+        self.assertEqual(fake.recv_sizes, [4])
+        self.assertEqual(bytes(fake.responses), unread_payload)
+        self.assertEqual(bytes(fake.sent), b"\x3e")
+        self.assertTrue(fake.closed)
+        self.assertFalse(bridge.connected)
+        self.assert_typed_error(raised.exception, 62, "payload_length")
+        self.assertEqual(raised.exception.value, 16 * 1024 * 1024 + 1)
+        self.assertEqual(raised.exception.limit, 16 * 1024 * 1024)
+
+    def test_request_62_truncated_payload_is_typed_and_disconnects(self):
+        bridge, fake = self.make_bridge(struct.pack("!I", 7) + b"{}")
+
+        with self.assertRaises(ConnectionError) as raised:
+            bridge.get_symbolic_state_without_screenshot()
+
+        self.assertTrue(fake.closed)
+        self.assertFalse(bridge.connected)
+        self.assert_typed_error(raised.exception, 62, "payload")
+        self.assertIsInstance(raised.exception.__cause__, ConnectionError)
+
+    def test_request_38_malformed_record_is_typed_and_disconnects(self):
+        response = struct.pack("!I", 1) + struct.pack("!I", 7) + b"!!xxxxx"
+        bridge, fake = self.make_bridge(response)
+
+        with self.assertRaises(ConnectionError) as raised:
+            bridge.shoot_and_record_ground_truth(1, 2)
+
+        self.assertTrue(fake.closed)
+        self.assertFalse(bridge.connected)
+        self.assert_typed_error(raised.exception, 38, "payload")
+        self.assertIsNotNone(raised.exception.__cause__)
 
 
 class PhysicsCaptureV1MalformedEnvelopeTests(unittest.TestCase):
@@ -270,6 +346,14 @@ class PhysicsCaptureV1MalformedEnvelopeTests(unittest.TestCase):
         state = b'{"schema_version":"physics_capture_v1","render_frame":1}'
         events = b'[]'
         payload = struct.pack("!III", 4, len(state), len(events)) + b"nope" + state + events
+        self.assert_rejected(_envelope(b"SBPV", 1, 0, 0, payload))
+
+    def test_rejects_deeply_nested_json_with_a_typed_protocol_error(self):
+        state = b'{"render_frame":1,"nested":' + b"[" * 2000 + b"0" + b"]" * 2000 + b"}"
+        events = b"[]"
+        payload = struct.pack("!III", 8, len(state), len(events))
+        payload += b"\x89PNG\r\n\x1a\n" + state + events
+
         self.assert_rejected(_envelope(b"SBPV", 1, 0, 0, payload))
 
 
