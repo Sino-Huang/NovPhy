@@ -726,13 +726,14 @@ class PhysicsLauncherTests(unittest.TestCase):
         marker.write_text(
             json.dumps(
                 {
-                    "capture_contract": "physics_capture_v1",
-                    "status": "passed",
-                    "player_version": "2019.4.41f2-physics-v1",
-                    "protocol_version": 1,
-                    "player_sha256": "a" * 64,
-                    "protocol_sha256": "b" * 64,
-                    "archive_sha256": archive_sha256,
+                    "status": "accepted",
+                    "accepted_shot": "shot_001",
+                    "protected_unchanged": True,
+                    "provenance": {
+                        "player_sha256": "a" * 64,
+                        "protocol_sha256": "b" * 64,
+                        "archive_sha256": archive_sha256,
+                    },
                 }
             ),
             encoding="utf-8",
@@ -763,9 +764,9 @@ class PhysicsLauncherTests(unittest.TestCase):
             failed = json.loads(marker.read_text(encoding="utf-8"))
             failed["status"] = "failed"
             marker.write_text(json.dumps(failed), encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "status=passed"):
+            with self.assertRaisesRegex(ValueError, "status=accepted"):
                 resolve_physics_capture_provenance(archive, marker)
-            marker.write_text(json.dumps({**failed, "status": "passed"}), encoding="utf-8")
+            marker.write_text(json.dumps({**failed, "status": "accepted"}), encoding="utf-8")
             marker_time = marker.stat().st_mtime_ns
             os.utime(archive, ns=(marker_time + 1, marker_time + 1))
             with self.assertRaisesRegex(ValueError, "stale"):
@@ -773,10 +774,8 @@ class PhysicsLauncherTests(unittest.TestCase):
 
     def test_physics_provenance_rejects_failed_malformed_stale_and_wrong_version_markers(self):
         mutations = {
-            "failed": lambda archive, marker: marker.write_text(marker.read_text(encoding="utf-8").replace('"passed"', '"failed"'), encoding="utf-8"),
+            "failed": lambda archive, marker: marker.write_text(marker.read_text(encoding="utf-8").replace('"accepted"', '"failed"'), encoding="utf-8"),
             "malformed": lambda archive, marker: marker.write_text("{", encoding="utf-8"),
-            "wrong player version": lambda archive, marker: marker.write_text(marker.read_text(encoding="utf-8").replace("2019.4.41f2-physics-v1", "2019.4.41f2-physics-v0"), encoding="utf-8"),
-            "wrong protocol": lambda archive, marker: marker.write_text(marker.read_text(encoding="utf-8").replace('"protocol_version": 1', '"protocol_version": 2'), encoding="utf-8"),
             "uppercase digest": lambda archive, marker: marker.write_text(marker.read_text(encoding="utf-8").replace('"player_sha256": "a', '"player_sha256": "A'), encoding="utf-8"),
             "stale": lambda archive, marker: os.utime(marker, ns=(archive.stat().st_atime_ns, archive.stat().st_mtime_ns - 1)),
         }
@@ -787,6 +786,16 @@ class PhysicsLauncherTests(unittest.TestCase):
 
                 with self.assertRaisesRegex(ValueError, "physics smoke marker|stale"):
                     resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_accepts_the_documented_smoke_report_shape(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            archive, marker, archive_sha256 = self._provenance(Path(temporary))
+
+            provenance = resolve_physics_capture_provenance(archive, marker)
+
+            self.assertEqual(provenance.archive_sha256, archive_sha256)
+            self.assertEqual(provenance.player_sha256, "a" * 64)
+            self.assertEqual(provenance.protocol_sha256, "b" * 64)
 
     def test_physics_cli_rejects_non_directory_stage_before_plan_write(self):
         with tempfile.TemporaryDirectory() as temporary:
