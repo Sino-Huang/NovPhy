@@ -1,0 +1,52 @@
+{
+  "schema_version": "novphy_direct_verification_v1",
+  "claim": "F3/F4 verification was paused and all verifier-owned runtime resources were cleaned before the parent provenance repair.",
+  "verdict": "confirmed",
+  "scenarios": [
+    {
+      "scenario": "Validate the prior cleanup evidence artifact",
+      "invocation": "python -m json.tool .omo/evidence/world-model-physics-instrumentation/f3-paused-for-provenance-cleanup.json; stat -c evidence_size",
+      "binary_observable": "JSON exit 0; size 1385 bytes",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f3-paused-for-provenance-cleanup.json"
+    },
+    {
+      "scenario": "Confirm owned F3 process groups terminated",
+      "invocation": "kill -0 for PIDs 160430, 160432, and 160433",
+      "binary_observable": "all three PIDs absent",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f3-paused-stop-hook-direct-verification.json"
+    },
+    {
+      "scenario": "Confirm no owned runtime surface remains",
+      "invocation": "pgrep exact/pattern checks for Xvnc, game_playing_interface.jar, 9001-player.x86_64, smoke_physics_capture.py, f3-live and f4-final-scope workers; ss -ltnp sport=:2004",
+      "binary_observable": "all process result sets empty; port 2004 has no listener",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f3-paused-stop-hook-direct-verification.json"
+    },
+    {
+      "scenario": "Confirm verifier-owned temporary roots removed",
+      "invocation": "test -e on f3-execute-now/tmp-qa-20260806-42104-42105, f3-execute-now/happy, and /tmp/novphy-f3-final-retry.371Fcl",
+      "binary_observable": "all three paths absent",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f3-paused-stop-hook-direct-verification.json"
+    },
+    {
+      "scenario": "Confirm final gates were not advanced during the parent repair",
+      "invocation": "rg top-level F1-F4 checkboxes in the authoritative root plan",
+      "binary_observable": "F1, F2, F3, and F4 are all unchecked; F1/F2 explicitly pending final provenance-repair reruns",
+      "artifact": "/mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md"
+    },
+    {
+      "scenario": "Confirm pause cleanup did not leave product/index mutations",
+      "invocation": "git diff --name-only excluding .omo and git diff --cached --name-only",
+      "binary_observable": "both outputs empty; current tracked modifications are confined to .omo workflow state",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f3-paused-stop-hook-direct-verification.json"
+    }
+  ],
+  "residual_evidence_files": [
+    ".omo/evidence/world-model-physics-instrumentation/f3-execute-now/smoke.stdout.log",
+    ".omo/evidence/world-model-physics-instrumentation/f3-execute-now/smoke.stderr.log"
+  ],
+  "residual_evidence_observable": "Both interrupted pre-launch logs are retained and empty; they are evidence only, not a success claim.",
+  "owned_runtime_resources_remaining": false,
+  "product_or_index_diff_remaining": false,
+  "completion_claim": false,
+  "next_action": "Wait for the provenance repair commit and rebuilt archive, then rerun F1-F4 against their exact hashes."
+}

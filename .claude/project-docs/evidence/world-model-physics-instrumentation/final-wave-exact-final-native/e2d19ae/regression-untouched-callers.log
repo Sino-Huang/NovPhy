@@ -1,0 +1,93 @@
+started=2026-08-06T23:58:07+10:00
+head=e2d19ae04946765b0196e043826bb08aa9a09caf
+purpose=regression lane over test modules this plan did NOT modify, chiefly untouched callers of src/webui/bridge.py
+invocation=timeout 900s python -m unittest tests.test_webui_server tests.test_webui_static tests.test_prepare_test_config tests.test_sb_action_semantics tests.test_iratus_aves_scripts -v
+test_agent_action_rejects_bad_action_type (tests.test_webui_server.ServerTest.test_agent_action_rejects_bad_action_type) ... [06/Aug/2026 23:58:08] "POST /api/agent-action HTTP/1.1" 400 -
+ok
+test_agent_action_rejects_bad_coordinate_frame (tests.test_webui_server.ServerTest.test_agent_action_rejects_bad_coordinate_frame) ... [06/Aug/2026 23:58:08] "POST /api/agent-action HTTP/1.1" 400 -
+ok
+test_agent_action_rejects_non_numeric_coordinates_as_bad_request (tests.test_webui_server.ServerTest.test_agent_action_rejects_non_numeric_coordinates_as_bad_request) ... [06/Aug/2026 23:58:09] "POST /api/agent-action HTTP/1.1" 400 -
+ok
+test_agent_action_requires_drag_start_for_relative_frame (tests.test_webui_server.ServerTest.test_agent_action_requires_drag_start_for_relative_frame) ... [06/Aug/2026 23:58:09] "POST /api/agent-action HTTP/1.1" 400 -
+ok
+test_agent_action_translates_absolute_release_without_shooting (tests.test_webui_server.ServerTest.test_agent_action_translates_absolute_release_without_shooting) ... [06/Aug/2026 23:58:10] "POST /api/agent-action HTTP/1.1" 200 -
+ok
+test_agent_action_translates_relative_drag_hold_release_without_shooting (tests.test_webui_server.ServerTest.test_agent_action_translates_relative_drag_hold_release_without_shooting) ... [06/Aug/2026 23:58:10] "POST /api/agent-action HTTP/1.1" 200 -
+ok
+test_agent_action_translates_relative_drag_release_without_shooting (tests.test_webui_server.ServerTest.test_agent_action_translates_relative_drag_release_without_shooting) ... [06/Aug/2026 23:58:11] "POST /api/agent-action HTTP/1.1" 200 -
+ok
+test_async_shot_returns_before_bridge_ack (tests.test_webui_server.ServerTest.test_async_shot_returns_before_bridge_ack) ... [06/Aug/2026 23:58:11] "POST /api/shot HTTP/1.1" 200 -
+ok
+test_connect_accepts_new_training_set_with_ready_for_new_set (tests.test_webui_server.ServerTest.test_connect_accepts_new_training_set_with_ready_for_new_set) ... ok
+test_connect_loads_current_level_from_menu_states (tests.test_webui_server.ServerTest.test_connect_loads_current_level_from_menu_states) ... ok
+test_connect_waits_through_loading_until_playing (tests.test_webui_server.ServerTest.test_connect_waits_through_loading_until_playing) ... ok
+test_default_readiness_timeout_allows_slow_generated_levels (tests.test_webui_server.ServerTest.test_default_readiness_timeout_allows_slow_generated_levels) ... ok
+test_frame_exposes_configured_level_camera_width_for_trajectory (tests.test_webui_server.ServerTest.test_frame_exposes_configured_level_camera_width_for_trajectory) ... [06/Aug/2026 23:58:15] "GET /api/frame HTTP/1.1" 200 -
+ok
+test_frame_falls_back_to_configured_level_count_when_socket_reports_zero (tests.test_webui_server.ServerTest.test_frame_falls_back_to_configured_level_count_when_socket_reports_zero) ... [06/Aug/2026 23:58:16] "GET /api/frame HTTP/1.1" 200 -
+ok
+test_frame_returns_base64_rgb_and_metadata (tests.test_webui_server.ServerTest.test_frame_returns_base64_rgb_and_metadata) ... [06/Aug/2026 23:58:17] "GET /api/frame HTTP/1.1" 200 -
+ok
+test_load_level_rejects_invalid_level (tests.test_webui_server.ServerTest.test_load_level_rejects_invalid_level) ... [06/Aug/2026 23:58:17] "POST /api/load-level HTTP/1.1" 400 -
+ok
+test_load_level_uses_next_available_protocol (tests.test_webui_server.ServerTest.test_load_level_uses_next_available_protocol) ... [06/Aug/2026 23:58:18] "POST /api/load-level HTTP/1.1" 200 -
+ok
+test_restart_uses_next_available_protocol (tests.test_webui_server.ServerTest.test_restart_uses_next_available_protocol) ... [06/Aug/2026 23:58:18] "POST /api/restart HTTP/1.1" 200 -
+ok
+test_shot_passes_release_time_to_bridge (tests.test_webui_server.ServerTest.test_shot_passes_release_time_to_bridge) ... [06/Aug/2026 23:58:19] "POST /api/shot HTTP/1.1" 200 -
+ok
+test_shot_uses_latest_frame_height_for_bridge_y_conversion (tests.test_webui_server.ServerTest.test_shot_uses_latest_frame_height_for_bridge_y_conversion) ... [06/Aug/2026 23:58:19] "GET /api/frame HTTP/1.1" 200 -
+[06/Aug/2026 23:58:19] "POST /api/shot HTTP/1.1" 200 -
+ok
+test_shot_validates_and_calls_bridge (tests.test_webui_server.ServerTest.test_shot_validates_and_calls_bridge) ... [06/Aug/2026 23:58:20] "POST /api/shot HTTP/1.1" 200 -
+ok
+test_start_game_launches_java_in_process_group (tests.test_webui_server.ServerTest.test_start_game_launches_java_in_process_group) ... ok
+test_status_reports_connected_fake_bridge (tests.test_webui_server.ServerTest.test_status_reports_connected_fake_bridge) ... [06/Aug/2026 23:58:21] "GET /api/status HTTP/1.1" 200 -
+ok
+test_stop_terminates_started_process_group (tests.test_webui_server.ServerTest.test_stop_terminates_started_process_group) ... ok
+test_app_builds_agent_action_from_drag_hold_release_and_hold_time (tests.test_webui_static.WebUIStaticTests.test_app_builds_agent_action_from_drag_hold_release_and_hold_time) ... ok
+test_app_has_shared_coordinate_conversion_and_game_y_mapping (tests.test_webui_static.WebUIStaticTests.test_app_has_shared_coordinate_conversion_and_game_y_mapping) ... ok
+test_app_transfers_agent_action_immediately_and_optionally_shoots (tests.test_webui_static.WebUIStaticTests.test_app_transfers_agent_action_immediately_and_optionally_shoots) ... ok
+test_app_uses_pointer_drag_for_local_aim_preview (tests.test_webui_static.WebUIStaticTests.test_app_uses_pointer_drag_for_local_aim_preview) ... ok
+test_drag_hold_release_action_math_executes_with_hold_time (tests.test_webui_static.WebUIStaticTests.test_drag_hold_release_action_math_executes_with_hold_time) ... ok
+test_drag_preview_is_local_and_shot_api_stays_final_only (tests.test_webui_static.WebUIStaticTests.test_drag_preview_is_local_and_shot_api_stays_final_only) ... ok
+test_draw_frame_applies_runtime_sling_center_to_preview_origin (tests.test_webui_static.WebUIStaticTests.test_draw_frame_applies_runtime_sling_center_to_preview_origin) ... ok
+test_readme_documents_local_preview_and_final_shot (tests.test_webui_static.WebUIStaticTests.test_readme_documents_local_preview_and_final_shot) ... ok
+test_shoot_button_includes_release_time_from_hold_time (tests.test_webui_static.WebUIStaticTests.test_shoot_button_includes_release_time_from_hold_time) ... ok
+test_styles_mark_canvas_as_aiming_surface (tests.test_webui_static.WebUIStaticTests.test_styles_mark_canvas_as_aiming_surface) ... ok
+test_trajectory_math_uses_real_sling_center_for_strength (tests.test_webui_static.WebUIStaticTests.test_trajectory_math_uses_real_sling_center_for_strength) ... ok
+test_trajectory_preview_matches_unity_launch_integration (tests.test_webui_static.WebUIStaticTests.test_trajectory_preview_matches_unity_launch_integration) ... ok
+test_ui_explains_drag_to_aim_and_release_coordinates (tests.test_webui_static.WebUIStaticTests.test_ui_explains_drag_to_aim_and_release_coordinates) ... ok
+test_discovers_novphy_level_paths_without_benchmark_type_paths (tests.test_prepare_test_config.PrepareTestConfigTest.test_discovers_novphy_level_paths_without_benchmark_type_paths) ... ok
+test_ensure_java_interface_assets_reports_root_missing_db (tests.test_prepare_test_config.PrepareTestConfigTest.test_ensure_java_interface_assets_reports_root_missing_db) ... ok
+test_ensure_java_interface_assets_reports_root_missing_jar (tests.test_prepare_test_config.PrepareTestConfigTest.test_ensure_java_interface_assets_reports_root_missing_jar) ... ok
+test_ensure_java_interface_assets_uses_root_runtime_assets (tests.test_prepare_test_config.PrepareTestConfigTest.test_ensure_java_interface_assets_uses_root_runtime_assets) ... ok
+test_write_config_uses_existing_level_paths (tests.test_prepare_test_config.PrepareTestConfigTest.test_write_config_uses_existing_level_paths) ... ok
+test_absolute_release_requires_sling_center (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_absolute_release_requires_sling_center) ... ok
+test_dict_absolute_release_converts_from_game_coordinates (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_dict_absolute_release_converts_from_game_coordinates) ... ok
+test_dict_drag_hold_release_uses_release_vector (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_dict_drag_hold_release_uses_release_vector) ... ok
+test_dict_drag_release_defaults_to_slingshot_relative (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_dict_drag_release_defaults_to_slingshot_relative) ... ok
+test_dict_release_alias_is_supported (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_dict_release_alias_is_supported) ... ok
+test_environment_wrappers_use_release_action_normalizer (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_environment_wrappers_use_release_action_normalizer) ... ok
+test_legacy_long_sequence_uses_first_two_values_and_default_tap_time (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_legacy_long_sequence_uses_first_two_values_and_default_tap_time) ... ok
+test_legacy_three_value_sequence_preserves_tap_time (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_legacy_three_value_sequence_preserves_tap_time) ... ok
+test_legacy_two_value_sequence_defaults_tap_time (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_legacy_two_value_sequence_defaults_tap_time) ... ok
+test_missing_release_point_is_rejected (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_missing_release_point_is_rejected) ... ok
+test_openai_wrappers_accept_dict_actions_before_action_space_contains (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_openai_wrappers_accept_dict_actions_before_action_space_contains) ... ok
+test_point_like_action_uses_existing_relative_release_semantics (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_point_like_action_uses_existing_relative_release_semantics) ... ok
+test_unknown_coordinate_frame_is_rejected (tests.test_sb_action_semantics.ReleaseActionSemanticsTests.test_unknown_coordinate_frame_is_rejected) ... ok
+test_generate_script_adds_required_platform_numeric_attributes (tests.test_iratus_aves_scripts.IratusAvesScriptsTest.test_generate_script_adds_required_platform_numeric_attributes) ... ok
+test_generate_script_adds_score_node_required_by_engine_schema (tests.test_iratus_aves_scripts.IratusAvesScriptsTest.test_generate_script_adds_score_node_required_by_engine_schema) ... ok
+test_generate_script_copies_generator_output_into_engine_levels (tests.test_iratus_aves_scripts.IratusAvesScriptsTest.test_generate_script_copies_generator_output_into_engine_levels) ... ok
+test_generate_script_normalizes_iratus_utf16_declaration (tests.test_iratus_aves_scripts.IratusAvesScriptsTest.test_generate_script_normalizes_iratus_utf16_declaration) ... ok
+test_generate_script_normalizes_unclosed_camera_tag (tests.test_iratus_aves_scripts.IratusAvesScriptsTest.test_generate_script_normalizes_unclosed_camera_tag) ... ok
+test_generate_script_normalizes_unclosed_slingshot_tag (tests.test_iratus_aves_scripts.IratusAvesScriptsTest.test_generate_script_normalizes_unclosed_slingshot_tag) ... ok
+test_load_script_rejects_empty_generated_level_directory (tests.test_iratus_aves_scripts.IratusAvesScriptsTest.test_load_script_rejects_empty_generated_level_directory) ... ok
+test_load_script_writes_config_for_generated_levels (tests.test_iratus_aves_scripts.IratusAvesScriptsTest.test_load_script_writes_config_for_generated_levels) ... ok
+
+----------------------------------------------------------------------
+Ran 63 tests in 14.492s
+
+OK
+exit_code=0
+finished=2026-08-06T23:58:22+10:00

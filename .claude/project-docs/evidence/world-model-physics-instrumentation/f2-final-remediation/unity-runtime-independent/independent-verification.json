@@ -1,0 +1,79 @@
+{
+  "contract": "AdversarialVerify",
+  "verdict": "needs-fix",
+  "recommendation": "BLOCK",
+  "confidence": 0.99,
+  "baseHead": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+  "binding": {
+    "kind": "base-head-plus-scoped-dirty-diff",
+    "commitBound": false,
+    "reason": "The worktree is dirty; this independent verification does not claim commit binding.",
+    "scopedDirtyDiffSha256": "7a93dd7a73eebc8688f71157e715f1923f401f6c47eb5fefdfddcfc431d09841",
+    "sourceSha256": {
+      "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs": "38334eae168097a25e8606c4475ab79f8fea7a514ffd3315af731b05215bc514",
+      "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs": "3a582a93cc541af7bf9e10fae69e37771dde4c0ef3f1565a87a1e9507d930de2",
+      "tasks/task_template_designer/Assets/Scripts/GameWorld/Characters/Birds/ABBird.cs": "4870d05745df0028056ef129eb4766b418ce75d1441ef788cbab028f9262ef97",
+      "tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs": "f19e95535eff217d6508327b0681f836675b6a815ba6da74cd59fc7509d440b8",
+      "tasks/task_template_designer/Assets/Tests/Editor/PhysicsShotRecorderTests.cs": "2f97033ae6d09fe5dd2ae012e165db7780608ff5feb6451b1e17b07f8a890423",
+      "tasks/task_template_designer/Assets/Tests/Editor/ABBirdLaunchTests.cs": "598a4f8b654eb934138afea9ff5271d0c9a457a2e03686b27d464cc6d27d0340"
+    }
+  },
+  "command": {
+    "recordedCommand": ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/unity-command.txt",
+    "invocationCount": 1,
+    "outputDirectory": ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent",
+    "exit": "timeout reported Unity dumped core; wrapper could not record exit because zsh status is read-only",
+    "log": "focused-editmode.log",
+    "nunitXml": "focused-editmode-results.xml",
+    "nunitXmlProduced": false
+  },
+  "results": {
+    "editorRevision": "2019.4.41f2 (6b23d448b533)",
+    "correctEditorRevision": true,
+    "nunitDiscovery": true,
+    "nunitExecution": true,
+    "zeroFailures": false,
+    "licensingOrActivationError": false,
+    "nativeTermination": "SIGSEGV signo 11 after EditMode execution began",
+    "terminalLogEvidence": "focused-editmode.log lines 846-857",
+    "runtimeFailure": "ABBirdLaunchTests attempted AddComponent<ABBird> without a required 2D collider at Assets/Tests/Editor/ABBirdLaunchTests.cs:15; Unity then terminated with native SIGSEGV.",
+    "postflight": {
+      "matchingUnityEditorProcess": false,
+      "projectLock": "present, zero-byte tasks/task_template_designer/Temp/UnityLockfile"
+    }
+  },
+  "staticBehaviors": {
+    "boundedNonblockingResponseWrite": "confirmed by worker green source probe",
+    "completeJsonControlEscaping": "confirmed by worker green source probe",
+    "elapsedFixedTimeTimeout": "confirmed by worker green source probe",
+    "recorderFinality": "confirmed by worker green source probe",
+    "assignedLaunchVelocityCapture": "confirmed statically; runtime test did not complete"
+  },
+  "workerEvidence": {
+    "doneClaim": ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/done-claim.json",
+    "doneClaimStatus": "incomplete",
+    "greenSourceProbe": ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime/green-source-probes.result.txt",
+    "greenCheckCount": 17,
+    "greenFailureCount": 0
+  },
+  "adversarialCases": [
+    "Correct Unity 2019.4.41f2 revision and requested EditMode filter observed.",
+    "Actual NUnit discovery and execution observed; no completed NUnit result XML was produced.",
+    "ABBird launch test fixture lacks a required 2D collider before AddComponent<ABBird>.",
+    "Unity native SIGSEGV occurred after test execution began; no retry performed.",
+    "No matching Unity editor process remained after termination.",
+    "Project-local zero-byte UnityLockfile remained after termination.",
+    "Dirty worktree prevents commit-bound claim."
+  ],
+  "artifacts": {
+    "fullLog": ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/focused-editmode.log",
+    "nunitXml": ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/focused-editmode-results.xml",
+    "nunitXmlStatus": "missing after Unity crash"
+  },
+  "blockers": [
+    "Unity run did not complete with zero failures.",
+    "NUnit XML result was not produced.",
+    "UnityLockfile remains present and requires authorized cleanup before another run."
+  ],
+  "cleanupReceipt": ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/cleanup-receipt.json"
+}

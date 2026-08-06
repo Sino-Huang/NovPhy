@@ -1,0 +1,28 @@
+F
+======================================================================
+FAIL: test_physics_artifact_validation_does_not_use_whole_file_text_reads (tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_physics_artifact_validation_does_not_use_whole_file_text_reads)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 287, in test_physics_artifact_validation_does_not_use_whole_file_text_reads
+    summary = validate_physics_shot_artifact(shot)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/rollout_artifacts.py", line 62, in validate_physics_shot_artifact
+    metadata = _read_json(metadata_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/rollout_artifacts.py", line 151, in _read_json
+    payload: JsonValue = json.loads(path.read_text(encoding="utf-8"))
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/mock.py", line 1183, in _execute_mock_call
+    raise effect
+AssertionError: whole-file text read
+
+----------------------------------------------------------------------
+Ran 1 test in 0.022s
+
+FAILED (failures=1)

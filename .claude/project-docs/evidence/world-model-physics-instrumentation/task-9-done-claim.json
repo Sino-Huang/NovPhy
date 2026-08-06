@@ -1,0 +1,17 @@
+{
+  "todo": 9,
+  "status": "complete",
+  "scope": "physics_capture_v1 research-data contract documentation and verifier",
+  "changed_files": [
+    {"path": "docs/data_contracts/physics_capture_v1.md", "sha256": "eaed8216f1edce9ebf83e709aa27bf5390a828722e86112a3e7be1acffe0d089"},
+    {"path": "docs/world_model_data_pipeline.md", "sha256": "22d99e7720b122c3351e61a4a853e349d6ae782896b87e564d7f7fba4ed0b107"},
+    {"path": "scripts/verify_physics_capture_docs.py", "sha256": "d680bc0d874578d3c7997e7f46c5d97b8ef9f5b7e868ec2fdc589024bfafcc2e"},
+    {"path": "tests/test_verify_physics_capture_docs.py", "sha256": "d2cac76e3b2fbd03cd73bc2a63b3c76c81011540da41e418b63b23f5d0fa0a43"}
+  ],
+  "evidence": ".omo/evidence/world-model-physics-instrumentation/task-9-docs.txt",
+  "cleanup_receipt": ".omo/evidence/world-model-physics-instrumentation/task-9-cleanup-receipt.json",
+  "independent_reviews": [
+    {"path": ".omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-rerun.md", "verdict": "CONFIRMED"},
+    {"path": ".omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial-rerun.json", "verdict": "confirmed", "recommendation": "APPROVE"}
+  ]
+}

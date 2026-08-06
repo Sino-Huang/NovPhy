@@ -1,0 +1,19 @@
+{
+  "schema_version": "world_model_physics_f1_cleanup_v1",
+  "checked_at": "2026-08-06",
+  "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+  "qa_processes": [],
+  "qa_ports": [],
+  "temporary_physics_roots": [],
+  "generated_product_files": [],
+  "pre_existing_process_excluded": {
+    "process": "Unity.Licensing.Client",
+    "reason": "pre-existing desktop licensing client, not a QA/player process"
+  },
+  "commands": {
+    "process_scan": "ps -eo pid=,ppid=,stat=,etime=,args= | rg '/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4|test_collect_rollouts|collect_rollouts.py|ScienceBirds|Unity'",
+    "port_scan": "ss -ltnp",
+    "temp_scan": "find /tmp -maxdepth 2 -type d -name '*physics*' -o -name '*novphy*'"
+  },
+  "result": "PASS: no QA processes, ports, temporary physics roots, or generated product files remain"
+}

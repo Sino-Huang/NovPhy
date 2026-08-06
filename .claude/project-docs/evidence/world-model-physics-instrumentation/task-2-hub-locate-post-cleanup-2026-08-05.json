@@ -1,0 +1,42 @@
+{
+  "scenario": "task-2-hub-locate-post-cleanup-read-only",
+  "timestamp": "2026-08-05T01:10:21+10:00",
+  "surface": "private Unity Hub state and desktop process boundary",
+  "invocations": {
+    "resolved_entry": "jq -c '[.data[] | select(.version==\"2019.4.41f2\") | {version,location,revisionHash,manual,architecture}]' /home/sukai/.config/unityhub/editors-v2.json",
+    "exact_path_entry": "jq -c '[.data[] | select((.location // []) | any(. == \"/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity\"))]' /home/sukai/.config/unityhub/editors-v2.json",
+    "runtime_processes": "ps -eo pid=,comm=,args= | awk '$3 ~ /\\/usr\\/lib\\/unityhub\\/unityhub$/ || $3 ~ /\\/UnityLicensingClient_V1$/ || $3 ~ /\\/Editor\\/Unity$/ {print}'",
+    "cdp_listener": "ss -ltnp | awk '$4 ~ /:9333$/ {print}'",
+    "cdp_probe": "curl -sS --max-time 2 http://127.0.0.1:9333/json/list",
+    "chooser_windows": "xwininfo -root -tree | rg -i 'Select the Editor|Nautilus|Unity Hub|UnityHub'",
+    "protected_manifests": "cmp -s task-2-canonical-project-before.tsv task-2-canonical-project-after.tsv; cmp -s task-2-production-player-before.tsv task-2-production-player-after.tsv",
+    "debug_journal": "test -e /mnt/array/sukaih/Project/NovPhy/.debug-journal-unityhub-2026-08-05.md"
+  },
+  "observations": {
+    "resolved_entry": {
+      "version": "2019.4.41f2",
+      "location": "/home/sukai/.local/share/novphy-unity/hub-layout/2019.4.41f2/Editor/Unity",
+      "revisionHash": "6b23d448b533",
+      "manual": true,
+      "architecture": "x86_64"
+    },
+    "exact_path_entry": {
+      "version": "editor",
+      "location": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+      "manual": true,
+      "architecture": "x86_64"
+    },
+    "unity_hub_processes": 0,
+    "unity_editor_processes": 0,
+    "licensing_client_processes": 0,
+    "chooser_windows": 0,
+    "cdp_listener_9333": false,
+    "cdp_probe_exit": 7,
+    "canonical_manifest_cmp": true,
+    "production_player_manifest_cmp": true,
+    "debug_journal_present": false,
+    "canonical_sha256": "a986acc9dc911009e7e04bea85ee531ba4b9f9d692afa915456d81bcf7c8bb56",
+    "production_player_sha256": "e92a83fb14638b24ba8a0a05d588829823000f3db349ae9eaf39f188f68e8cd5"
+  },
+  "verdict": "PASS"
+}

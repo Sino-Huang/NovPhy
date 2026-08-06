@@ -1,0 +1,90 @@
+{
+  "schema_version": "novphy_direct_verification_v1",
+  "snapshot_timestamp": "2026-08-06T05:25:16+10:00",
+  "claim": "F3/F4 remain paused while the parent-owned provenance repair is in progress; verifier-owned runtime cleanup is confirmed.",
+  "verdict": "cleanup_confirmed_shared_repair_in_progress",
+  "scenarios": [
+    {
+      "scenario": "Confirm owned F3 process groups terminated",
+      "invocation": "kill -0 for PIDs 160430, 160432, and 160433",
+      "binary_observable": "all three PIDs absent",
+      "captured_output": [
+        "160430 absent",
+        "160432 absent",
+        "160433 absent"
+      ],
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f3-paused-stop-hook-third-verification.json"
+    },
+    {
+      "scenario": "Confirm no verifier-owned runtime surface remains",
+      "invocation": "process checks for Xvnc, the Java bridge, the staged player, the smoke worker, the F3 worker, and the F4 worker",
+      "binary_observable": "all six process result sets empty",
+      "captured_output": {
+        "xvnc": [],
+        "java_bridge": [],
+        "staged_player": [],
+        "smoke_worker": [],
+        "f3_worker": [],
+        "f4_worker": []
+      },
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f3-paused-stop-hook-third-verification.json"
+    },
+    {
+      "scenario": "Confirm the runtime bridge listener is absent",
+      "invocation": "ss -ltnp '( sport = :2004 )'",
+      "binary_observable": "no listener row after the header",
+      "captured_output": "State Recv-Q Send-Q Local Address:Port Peer Address:PortProcess",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f3-paused-stop-hook-third-verification.json"
+    },
+    {
+      "scenario": "Confirm verifier-owned temporary roots remain removed",
+      "invocation": "test -e on the interrupted QA root, happy-path root, and final-retry root",
+      "binary_observable": "all three paths absent",
+      "captured_output": [
+        ".omo/evidence/world-model-physics-instrumentation/f3-execute-now/tmp-qa-20260806-42104-42105 absent",
+        ".omo/evidence/world-model-physics-instrumentation/f3-execute-now/happy absent",
+        "/tmp/novphy-f3-final-retry.371Fcl absent"
+      ],
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f3-paused-stop-hook-third-verification.json"
+    },
+    {
+      "scenario": "Confirm final gates were not approved during the provenance repair",
+      "invocation": "rg top-level F1-F4 checkboxes in /mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md",
+      "binary_observable": "F1, F2, F3, and F4 all unchecked",
+      "captured_output": [
+        "- [ ] F1. Plan compliance audit",
+        "- [ ] F2. Code quality review",
+        "- [ ] F3. Real manual QA",
+        "- [ ] F4. Scope fidelity"
+      ],
+      "artifact": "/mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md"
+    },
+    {
+      "scenario": "Distinguish the empty index from the active shared repair",
+      "invocation": "git diff --cached --name-only; git diff --numstat -- tests/test_verify_physics_capture_docs.py",
+      "binary_observable": "index output empty; shared repair output reports 54 insertions and 19 deletions",
+      "captured_output": {
+        "index": [],
+        "shared_repair_numstat": "54\t19\ttests/test_verify_physics_capture_docs.py"
+      },
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f3-paused-stop-hook-third-verification.json"
+    }
+  ],
+  "residual_evidence_files": [
+    ".omo/evidence/world-model-physics-instrumentation/f3-execute-now/smoke.stdout.log",
+    ".omo/evidence/world-model-physics-instrumentation/f3-execute-now/smoke.stderr.log"
+  ],
+  "residual_evidence_observable": "Both interrupted pre-launch logs are retained and empty; they are evidence only, not a success claim.",
+  "owned_runtime_resources_remaining": false,
+  "index_empty": true,
+  "shared_repair_diff": {
+    "path": "tests/test_verify_physics_capture_docs.py",
+    "insertions": 54,
+    "deletions": 19,
+    "ownership": "parent",
+    "state": "in_progress"
+  },
+  "repository_quiescence_claim": false,
+  "completion_claim": false,
+  "next_action": "Remain paused until the parent provenance repair commit and rebuilt archive land, then rerun F1/F2 against their exact hashes before F3/F4."
+}

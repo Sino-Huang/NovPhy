@@ -1,0 +1,238 @@
+{
+  "schemaVersion": "novphy_final_wave_gate_v1",
+  "kind": "RealManualQA",
+  "goalId": "world-model-physics-instrumentation",
+  "gate": "F3",
+  "verifiedAt": "2026-08-06T07:34:32+10:00",
+  "verdict": "APPROVE",
+  "confidence": 0.99,
+  "source": {
+    "requiredHead": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "observedHeadBefore": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "observedHeadAfter": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "observedTree": "c779ce2c5ff7182e1f4af3d99620029245756bad",
+    "headExact": true
+  },
+  "publication": {
+    "stage": "sciencebirdsgames/physics-v1",
+    "archive": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+    "requiredArchiveSha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+    "observedArchiveSha256Before": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+    "observedArchiveSha256After": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+    "receiptVerified": true,
+    "payloadChecksumsVerified": true,
+    "provenance": {
+      "gitHead": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+      "gitTree": "c779ce2c5ff7182e1f4af3d99620029245756bad",
+      "unityVersion": "2019.4.41f2",
+      "unityChangeset": "6b23d448b533",
+      "schemaVersion": "physics_capture_v1",
+      "protocolVersion": 1,
+      "playerSha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+      "protocolSha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a"
+    }
+  },
+  "commands": [
+    {
+      "command": "GIT_MASTER=1 git rev-parse HEAD HEAD^{tree}",
+      "exitCode": 0,
+      "observable": "55d6ec93cafc77807342cd7573283f1ed20ca691 and c779ce2c5ff7182e1f4af3d99620029245756bad"
+    },
+    {
+      "command": "sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+      "exitCode": 0,
+      "observable": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4 before and after live QA"
+    },
+    {
+      "command": "sha256sum -c archive.sha256",
+      "cwd": "sciencebirdsgames/physics-v1",
+      "exitCode": 0,
+      "observable": "novphy-physics-player-2019.4.41f2.tar.gz: OK"
+    },
+    {
+      "command": "timeout --signal=TERM --kill-after=5s 60s python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha 1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4 --skip-runtime",
+      "exitCode": 0,
+      "observable": "archive_checksum_verified=true, payload_checksums_verified=true, runtime=null"
+    },
+    {
+      "command": "timeout --signal=TERM --kill-after=5s 30s python -m unittest tests.test_webui_bridge.PhysicsCaptureV1Tests.test_legacy_request_38_and_62_fixture_bytes_remain_unchanged tests.test_webui_bridge.PhysicsCaptureV1Tests.test_recorder_backed_shoot_preserves_request_38_framing_and_consumes_ground_truth -v",
+      "exitCode": 0,
+      "observable": "2 tests passed; request 62 fixture and request 38 framing/ground-truth consumption preserved"
+    },
+    {
+      "command": "timeout --signal=TERM --kill-after=30s 900s python scripts/smoke_physics_capture.py --stage sciencebirdsgames/physics-v1 --output-dir .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output --report .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke.json",
+      "exitCode": 0,
+      "observable": "status=accepted, phase=complete, accepted shot_001, request 38 response 1, request 70 one state/seven events, protected_unchanged=true"
+    },
+    {
+      "command": "timeout --signal=TERM --kill-after=5s 30s python -c 'import json; from pathlib import Path; from scripts.rollout_artifacts import validate_physics_shot_artifact; s=validate_physics_shot_artifact(Path(\".omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output/shot_001\")); print(json.dumps({\"states\":s.state_count,\"events\":s.event_count,\"frame_sha256\":list(s.frame_sha256),\"state_sha256\":s.state_sha256,\"event_sha256\":s.event_sha256},sort_keys=True))'",
+      "exitCode": 0,
+      "observable": "states=1, events=7, frame/state/event SHA-256 values equal metadata and retained files"
+    },
+    {
+      "command": "jq -sc '{line_count:length, bird_launched_count:map(select(.event_type==\"bird_launched\"))|length, event_types:map(.event_type), sequences:map(.sequence), render_frames:map(.render_frame), capture_ids:map(.capture_id)|unique, shot_ids:map(.shot_id)|unique}' .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output/shot_001/physics_events.jsonl",
+      "exitCode": 0,
+      "observable": "7 lines, bird_launched_count=1, sequences 0..6, all render_frame=15182, one capture_id and shot_001"
+    },
+    {
+      "command": "jq -sc '{line_count:length, record_types:map(.record_type), state_render_frames:map(select(.record_type==\"state\")|.render_frame), rgb_render_frames:map(select(.record_type==\"state\")|.rgb_frame.render_frame), node_counts:map(select(.record_type==\"state\")|.nodes|length), sequences:map(.sequence), capture_ids:map(.capture_id)|unique, shot_ids:map(.shot_id)|unique}' .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output/shot_001/physics_state.jsonl",
+      "exitCode": 0,
+      "observable": "state_header plus one state; state and RGB render_frame both 15182; 14 nodes; one capture_id and shot_001"
+    },
+    {
+      "command": "timeout --signal=TERM --kill-after=5s 60s python -m unittest tests.test_smoke_physics_capture -v",
+      "exitCode": 0,
+      "observable": "11 tests passed, including request-62 anchored action, authoritative launch requirement, retry bound, provenance clone, and protected-root mutation detection"
+    },
+    {
+      "command": "timeout --signal=TERM --kill-after=5s 30s python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha deadbeef --skip-runtime",
+      "exitCode": 1,
+      "expectedNonzero": true,
+      "observable": "archive SHA-256 mismatch against --expect-sha"
+    }
+  ],
+  "liveSmoke": {
+    "report": ".omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke.json",
+    "invocationLog": ".omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-invocation.log",
+    "acceptedShot": ".omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output/shot_001",
+    "status": "accepted",
+    "phase": "complete",
+    "request62": {
+      "decoded": true,
+      "interaction": "slingshot reference read before action",
+      "slingshotReference": {
+        "canvasX": 171,
+        "canvasY": 262,
+        "gameX": 171,
+        "gameY": 217
+      }
+    },
+    "request38": {
+      "performed": true,
+      "requestCode": 38,
+      "response": 1,
+      "groundTruthCount": 1,
+      "socketX": 121,
+      "socketY": 302,
+      "releaseTime": 1000,
+      "tapTime": 0
+    },
+    "request70": {
+      "decoded": true,
+      "stateCount": 1,
+      "eventCount": 7,
+      "birdLaunchedCount": 1,
+      "eventTypes": [
+        "stable_entered",
+        "bird_launched",
+        "stable_exited",
+        "entity_destroyed",
+        "bird_exhausted",
+        "stable_entered",
+        "level_failed"
+      ],
+      "eventSequences": [0, 1, 2, 3, 4, 5, 6],
+      "renderFrame": 15182
+    }
+  },
+  "machineProducedArtifact": {
+    "captureContract": "physics_capture_v1",
+    "schemaVersion": "physics_capture_v1",
+    "protocolVersion": 1,
+    "sidecarsClosed": true,
+    "frameCount": 1,
+    "stateCount": 1,
+    "eventCount": 7,
+    "stateSidecarLineCount": 2,
+    "stateSidecarRecordTypes": ["state_header", "state"],
+    "stateRenderFrame": 15182,
+    "rgbRenderFrame": 15182,
+    "nodeCount": 14,
+    "pngMagicHex": "89504e470d0a1a0a",
+    "frameSha256": "86231382cc34a5b1a0ca6cdcf3388cd94469f58d4cb97c6f9c49af6c6adb0702",
+    "stateSha256": "1ae8055e212a4f4b6560f6eabd59914911462ef5ab011a8cc1517c65abdd152e",
+    "eventSha256": "e5617b1a76d72e70c6c9fb70b1c836696a90fe0716f87698c0351940e2f58508",
+    "validatorAccepted": true,
+    "temporaryAttemptAbsent": true,
+    "quarantineAbsent": true
+  },
+  "protectedComparison": {
+    "receiptModes": {
+      "canonicalProject": "content_sha256",
+      "productionPlayer": "content_sha256",
+      "activeCohort": "complete_nested_find_manifest_sha256"
+    },
+    "before": {
+      "canonicalProject": "5c1ec096a2b329295646212ed091e1327a7687e22b599c8c339680adcee392e1",
+      "productionPlayer": "ba826ba78013b95d2f89cae10f8ef1312aa2678df19620f02840a7ded1d54778",
+      "activeCohort": "82b60d3b7266fff1ca17ed58af2f3bebe49005e8e2069cceb6e35c42c3b313b4"
+    },
+    "after": {
+      "canonicalProject": "5c1ec096a2b329295646212ed091e1327a7687e22b599c8c339680adcee392e1",
+      "productionPlayer": "ba826ba78013b95d2f89cae10f8ef1312aa2678df19620f02840a7ded1d54778",
+      "activeCohort": "82b60d3b7266fff1ca17ed58af2f3bebe49005e8e2069cceb6e35c42c3b313b4"
+    },
+    "unchanged": true
+  },
+  "adversarialClasses": {
+    "stale_state": {
+      "result": "PASS",
+      "observable": "fresh HEAD/tree, archive bytes, archive receipt, in-archive provenance, and post-run archive bytes all match exact required identities"
+    },
+    "dirty_worktree": {
+      "result": "PASS",
+      "observable": "concurrent pre-existing untracked evidence was not treated as product state; the smoke's canonical project, production player, and active cohort digests are byte-identical before/after"
+    },
+    "misleading_success_output": {
+      "result": "PASS",
+      "observable": "approval does not rely on exit 0: raw JSONL, PNG magic, metadata checksums, request receipts, and independent validator output were inspected"
+    },
+    "malformed_input": {
+      "result": "PASS",
+      "observable": "wrong expected archive SHA was rejected with exit 1; smoke tests require an authoritative launch event and verified staged provenance"
+    },
+    "flaky_tests": {
+      "result": "PASS",
+      "observable": "fresh live smoke, fresh static verifier, two fresh legacy fixture tests, 11 fresh smoke-driver tests, and retained separate published-path runs agree semantically"
+    },
+    "hung_or_long_commands": {
+      "result": "PASS",
+      "observable": "live smoke completed under its 900-second TERM/KILL bound; static, fixtures, validator, and unit checks used 30-60 second bounds"
+    },
+    "repeated_interruptions": {
+      "result": "NOT_APPLICABLE",
+      "observable": "the F3 run was not interrupted or resumed"
+    },
+    "cancel_resume": {
+      "result": "NOT_APPLICABLE",
+      "observable": "the published stage was immutable and no resumable publication operation was started"
+    },
+    "prompt_injection": {
+      "result": "NOT_APPLICABLE",
+      "observable": "no untrusted instruction-bearing input or model-routing surface was involved"
+    }
+  },
+  "operatorCommandCorrections": [
+    {
+      "failedCommand": "sha256sum -c sciencebirdsgames/physics-v1/archive.sha256",
+      "cwd": "sciencebirdsgames/physics-v1",
+      "cause": "duplicated relative stage prefix",
+      "correctedCommand": "sha256sum -c archive.sha256",
+      "correctedExitCode": 0
+    },
+    {
+      "failedCommand": "jq ... sciencebirdsgames/physics-v1/provenance.json",
+      "cause": "provenance.json is an archive member, not a published loose file",
+      "correctedCommand": "tar -xOzf sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz provenance.json",
+      "correctedExitCode": 0
+    },
+    {
+      "failedCommand": "validator summary formatted with nonexistent frame_hashes attribute and frame_000001.png",
+      "cause": "inspection field/name guess after validation had already returned",
+      "correctedCommand": "use PhysicsArtifactSummary.frame_sha256 and metadata-declared frames/frame_000000.png",
+      "correctedExitCode": 0
+    }
+  ],
+  "cleanupReceipt": ".omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-cleanup-receipt.json",
+  "blockers": []
+}

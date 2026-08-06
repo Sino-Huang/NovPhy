@@ -1,0 +1,23 @@
+{
+  "status": "needs-fix",
+  "criterion": "F2 Unity runtime remediation focused EditMode verification",
+  "baseHead": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+  "fixtureSha256": "713e699e513c30125d81bca31884ac52ad87c06b990619cbb177cb1fe30f30b4",
+  "changedFiles": ["tasks/task_template_designer/Assets/Tests/Editor/ABBirdLaunchTests.cs"],
+  "fixtureChange": "Added BoxCollider2D before ABBird AddComponent; launch velocity assertion preserved.",
+  "invocation": "env LD_LIBRARY_PATH=/tmp/opencode/unity-2019.4-libssl1.1/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib timeout --signal=TERM --kill-after=20s 480s /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity -batchmode -nographics -projectPath /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer -runTests -testPlatform EditMode -testFilter 'PhysicsCaptureProtocolTests;PhysicalShotRecorderTests;PhysicsShotRecorderTests;ABBirdLaunchTests'",
+  "observables": {
+    "log": "focused-editmode.log",
+    "resultsXml": "focused-editmode-results.xml missing",
+    "exitCode": "unity-exit-code.txt",
+    "failure": "Unity native SIGSEGV (signo 11) in CefBrowserMessageLoop; timeout wrapper also hit zsh read-only status variable",
+    "postflight": "postflight.txt",
+    "cleanup": "cleanup-receipt.json"
+  },
+  "adversarialCases": [
+    "No Unity process or lock owner before cleanup",
+    "Stale zero-byte lock removed before launch",
+    "No NUnit XML means actual execution/zero-failure criterion is unproven",
+    "No retry performed after SIGSEGV"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "verification": "Todo 7 completion audit",
+  "source_and_runtime": "confirmed",
+  "source": "tasks/task_template_designer/Assets/Scripts/GroundTruth/SymbolicGameState.cs has the two collider guards and no diagnostic assertions",
+  "archive_sha256": "127d0846630ae275e0d6f2862ac289fe20e5571866c705f9a1a555a2a67e9166",
+  "runtime_rerun": ".omo/evidence/world-model-physics-instrumentation/task-7-verification-rerun-runtime.json",
+  "editmode_receipt": ".omo/evidence/world-model-physics-instrumentation/task-7-symbolic-runtime-all-editmode-receipt.xml",
+  "authoritative_state": {
+    "plan_file": "/mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md",
+    "todo_7_checkbox": "unchecked",
+    "ledger_tail_event": "task-fix-dispatched",
+    "ledger_verdict": "in_progress",
+    "evidence": "rg checkbox and tail ledger commands executed in this audit"
+  },
+  "verdict": "needs_parent_finalize",
+  "blocker": "The parent orchestration session must mark Todo 7 checked and append task-completed after its required independent gate; this worker does not mutate the parent plan/ledger outside the assigned worktree."
+}

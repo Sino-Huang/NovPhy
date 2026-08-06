@@ -1,0 +1,103 @@
+{
+  "schema_version": "novphy_done_claim_v1",
+  "task": "F2 final independent verification release-blocker repair",
+  "result": "ready_for_independent_verification",
+  "f2_plan_state": "unchecked",
+  "base_head": "d72d1af1eb7b9a3cd60b0acb5364689e16735ea5",
+  "recorded_at": "2026-08-06T04:41:22+10:00",
+  "source_hashes_artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-source-hashes.sha256",
+  "source_hashes": {
+    "src/webui/bridge.py": "8196664653b77364354a6a0e4fbeec10449ac5a8cbb4ff29114f025fc59b4878",
+    "scripts/manual_agent.py": "2899223f77267f2daa8acf107db2000eca837fbe014e5b7156a058124fbc48be",
+    "scripts/physics_rollout_contract.py": "cc87462173246de83aff2c3adf8a8602f1e024ee4f409c9ae808f6fed8b28892",
+    "scripts/physics_rollout_persistence.py": "9d42fc0d3fc5d599c9cfe63db7ccbff5eca143da43f57b623b2393ef804c96e5",
+    "scripts/collect_rollouts.py": "cb5f63cc696af594561e9ad6e51b78e42e11e240a59322044a3103a7006da40d",
+    "scripts/prepare_rollout_dataset.py": "62c138d94f9a84fd34b49c3bdeb5fd34e0cd9ea2fe2930f619e4e3e5c391f366",
+    "tests/test_webui_bridge.py": "28fcf5bc845408b9a95703eacf3e397a11af65fb52aeaa613a84fb47001abb14",
+    "tests/test_collect_rollouts.py": "b168a9708ad254c1b4be5cf355dbe09de5c2f1608748aa24923cbaa9deef7273",
+    "tests/test_manual_agent.py": "ecda0e5ee7ae7c34a4fa00fdd57479e8622b56ade183ba1007d696aefb5cec3b",
+    "tests/test_prepare_rollout_dataset.py": "85f516632cf510d6d48e79bcbd54c761deef75e4260942c3d011bb9977e0217c"
+  },
+  "criteria": [
+    {
+      "criterion": "split gameplay and direct physics transports",
+      "scenario": "one collector action sends request 38 through the gameplay bridge while two request-70 frames use a dedicated loopback listener",
+      "invocation": "full collect_rollouts loopback probe with FakeBridge gameplay and ScienceBirdsBridge physics endpoints",
+      "binary_observable": "status=pass, gameplay_shot_count=1, connection_count=2, wire_requests=[46,46], accepted_rollout_count=1",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-live-multiframe.log"
+    },
+    {
+      "criterion": "one-response direct socket reconnects for every frame",
+      "scenario": "the direct listener accepts exactly two connections and closes each after one response",
+      "invocation": "python -m unittest tests.test_webui_bridge.PhysicsCaptureV1Tests.test_request_70_reconnects_for_each_one_response_direct_socket plus the full live probe",
+      "binary_observable": "both focused runs report 62 tests OK; live connection_count=2 and persisted frames=[100,101]",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-focused-run1.log"
+    },
+    {
+      "criterion": "temporary root and child artifacts are confined",
+      "scenario": "a shot_001.tmp symlink is removed before writes and a physics_state.jsonl symlink cannot truncate an external target",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_temporary_shot_symlink_is_removed_before_any_external_write tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_temporary_sidecar_symlink_is_rejected_without_truncating_external_file",
+      "binary_observable": "both tests are included in each 62-test focused run and pass; directory-relative O_NOFOLLOW descriptors are exercised",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-focused-run2.log"
+    },
+    {
+      "criterion": "completed-shot reuse is bound to requested provenance",
+      "scenario": "a valid completed shot with stale player, protocol, or archive hashes is quarantined and recaptured",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_completed_shot_with_stale_provenance_is_quarantined_and_recaptured",
+      "binary_observable": "test is included in each 62-test focused run and passes",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-focused-run1.log"
+    },
+    {
+      "criterion": "real decoder records persist without representation mismatch",
+      "scenario": "an encoded request-70 envelope produces recursively immutable MappingProxyType/tuple JSON and persists a valid synchronized frame",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_persistence_accepts_immutable_nested_mapping_from_real_decoder",
+      "binary_observable": "RED rejected present rgb_frame; GREEN passes and live persisted render frames equal rgb render frames [100,101]",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-real-decoder-red.log"
+    },
+    {
+      "criterion": "typed persistence errors support Python traceback state",
+      "scenario": "Python assigns __traceback__ while reporting a PhysicsPersistenceError",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_persistence_error_supports_standard_exception_traceback_state",
+      "binary_observable": "RED raised TypeError in frozen __setattr__; final focused runs pass",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-exception-traceback-red.log"
+    }
+  ],
+  "verification": [
+    {
+      "scenario": "focused blocker, contract, dataset-validation, and bridge matrix repeated twice",
+      "invocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_physics_capture_contract tests.test_prepare_rollout_dataset.PhysicsCaptureValidationTests tests.test_webui_bridge.PhysicsCaptureV1Tests tests.test_webui_bridge.PhysicsCaptureV1MalformedEnvelopeTests",
+      "binary_observable": "62 tests ran; OK in each run",
+      "artifacts": [
+        ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-focused-run1.log",
+        ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-focused-run2.log"
+      ]
+    },
+    {
+      "scenario": "adjacent generated-command and engine launcher coverage",
+      "invocation": "python -m unittest tests.test_prepare_rollout_dataset tests.test_manual_agent",
+      "binary_observable": "57 tests ran; OK",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-adjacent.log"
+    },
+    {
+      "scenario": "full collector suite",
+      "invocation": "python -m unittest tests.test_collect_rollouts",
+      "binary_observable": "89 tests ran; 88 passed; only known absent dataset fixture test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots failed",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-collector-release-final.log"
+    },
+    {
+      "scenario": "syntax and scoped diff integrity",
+      "invocation": "python -m py_compile on ten repair files; git diff --check on the same scope",
+      "binary_observable": "py_compile=pass and git_diff_check=pass",
+      "artifacts": [
+        ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-pycompile.log",
+        ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-diff-check.log"
+      ]
+    }
+  ],
+  "protected_scope": {
+    "canonical_unity_project_modified_by_repair": false,
+    "production_player_modified_by_repair": false,
+    "active_dataset_modified_by_repair": false
+  },
+  "approval_gate": "Do not check F2 until a fresh independent verifier returns confirmed against these exact source hashes."
+}

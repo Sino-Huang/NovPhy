@@ -1,0 +1,148 @@
+docs/data_contracts/physics_capture_v1.schema.json-14-      "additionalProperties": false,
+docs/data_contracts/physics_capture_v1.schema.json:15:      "required": ["world_space", "world_origin", "world_x_axis", "world_y_axis", "world_length_unit", "screen_space", "screen_origin", "screen_x_axis", "screen_y_axis", "screen_length_unit", "time_unit", "angle_unit", "mass_unit", "velocity_unit", "angular_velocity_unit", "kinetic_energy_unit", "impulse_unit"],
+docs/data_contracts/physics_capture_v1.schema.json-16-      "properties": {
+--
+docs/data_contracts/physics_capture_v1.schema.json-31-        "angular_velocity_unit": { "const": "degree/second" },
+docs/data_contracts/physics_capture_v1.schema.json:32:        "kinetic_energy_unit": { "const": "unity_mass_unit*unity_unit^2/second^2" },
+docs/data_contracts/physics_capture_v1.schema.json-33-        "impulse_unit": { "const": "unity_mass_unit*unity_unit/second" }
+--
+docs/data_contracts/physics_capture_v1.schema.json-37-      "type": "object",
+docs/data_contracts/physics_capture_v1.schema.json:38:      "required": ["schema_version", "capture_id", "shot_id", "sequence", "render_frame", "render_time", "fixed_step", "fixed_time", "coordinates"],
+docs/data_contracts/physics_capture_v1.schema.json-39-      "properties": {
+--
+docs/data_contracts/physics_capture_v1.schema.json-43-        "sequence": { "type": "integer", "minimum": 0 },
+docs/data_contracts/physics_capture_v1.schema.json:44:        "render_frame": { "type": "integer", "minimum": 0 },
+docs/data_contracts/physics_capture_v1.schema.json-45-        "render_time": { "type": "number", "minimum": 0 },
+docs/data_contracts/physics_capture_v1.schema.json:46:        "fixed_step": { "type": "integer", "minimum": 0 },
+docs/data_contracts/physics_capture_v1.schema.json-47-        "fixed_time": { "type": "number", "minimum": 0 },
+--
+docs/data_contracts/physics_capture_v1.schema.json-56-    },
+docs/data_contracts/physics_capture_v1.schema.json:57:    "entity_id": {
+docs/data_contracts/physics_capture_v1.schema.json-58-      "type": "string",
+--
+docs/data_contracts/physics_capture_v1.schema.json-63-      "additionalProperties": false,
+docs/data_contracts/physics_capture_v1.schema.json:64:      "required": ["present", "velocity", "angular_velocity_degrees_per_second", "mass_unity_units", "kinetic_energy_unity_units"],
+docs/data_contracts/physics_capture_v1.schema.json-65-      "properties": {
+--
+docs/data_contracts/physics_capture_v1.schema.json-69-        "mass_unity_units": { "type": ["number", "null"], "minimum": 0 },
+docs/data_contracts/physics_capture_v1.schema.json:70:        "kinetic_energy_unity_units": { "type": ["number", "null"], "minimum": 0 }
+docs/data_contracts/physics_capture_v1.schema.json-71-      },
+docs/data_contracts/physics_capture_v1.schema.json-72-      "allOf": [
+docs/data_contracts/physics_capture_v1.schema.json:73:        { "if": { "properties": { "present": { "const": false } } }, "then": { "properties": { "velocity": { "type": "null" }, "angular_velocity_degrees_per_second": { "type": "null" }, "mass_unity_units": { "type": "null" }, "kinetic_energy_unity_units": { "type": "null" } } } }
+docs/data_contracts/physics_capture_v1.schema.json-74-      ]
+--
+docs/data_contracts/physics_capture_v1.schema.json-78-      "additionalProperties": false,
+docs/data_contracts/physics_capture_v1.schema.json:79:      "required": ["entity_id", "unity_instance_id", "object_class", "object_type", "screen_polygon", "world_pose", "life", "body"],
+docs/data_contracts/physics_capture_v1.schema.json-80-      "properties": {
+docs/data_contracts/physics_capture_v1.schema.json:81:        "entity_id": { "$ref": "#/$defs/entity_id" },
+docs/data_contracts/physics_capture_v1.schema.json-82-        "unity_instance_id": { "type": "integer" },
+--
+docs/data_contracts/physics_capture_v1.schema.json-98-      "additionalProperties": false,
+docs/data_contracts/physics_capture_v1.schema.json:99:      "required": ["relative_path", "render_frame", "width_pixels", "height_pixels", "source"],
+docs/data_contracts/physics_capture_v1.schema.json-100-      "properties": {
+docs/data_contracts/physics_capture_v1.schema.json-101-        "relative_path": { "type": "string", "pattern": "^frames/frame_[0-9]{6}\\.png$" },
+docs/data_contracts/physics_capture_v1.schema.json:102:        "render_frame": { "type": "integer", "minimum": 0 },
+docs/data_contracts/physics_capture_v1.schema.json-103-        "width_pixels": { "type": "integer", "minimum": 1 },
+--
+docs/data_contracts/physics_capture_v1.schema.json-113-        "contact_id": { "type": "string", "pattern": "^contact:[0-9]+:.+:[0-9]+$" },
+docs/data_contracts/physics_capture_v1.schema.json:114:        "entity_a_id": { "$ref": "#/$defs/entity_id" },
+docs/data_contracts/physics_capture_v1.schema.json:115:        "entity_b_id": { "$ref": "#/$defs/entity_id" },
+docs/data_contracts/physics_capture_v1.schema.json-116-        "collider_a_id": { "type": "integer" },
+--
+docs/data_contracts/physics_capture_v1.schema.json-129-      "additionalProperties": false,
+docs/data_contracts/physics_capture_v1.schema.json:130:      "required": ["support_id", "rule_version", "supporter_id", "supported_id", "evidence_contact_ids", "evidence_fixed_steps"],
+docs/data_contracts/physics_capture_v1.schema.json-131-      "properties": {
+docs/data_contracts/physics_capture_v1.schema.json-132-        "support_id": { "type": "string", "pattern": "^support:.+->.+$" },
+docs/data_contracts/physics_capture_v1.schema.json:133:        "rule_version": { "const": "support_v1" },
+docs/data_contracts/physics_capture_v1.schema.json:134:        "supporter_id": { "$ref": "#/$defs/entity_id" },
+docs/data_contracts/physics_capture_v1.schema.json:135:        "supported_id": { "$ref": "#/$defs/entity_id" },
+docs/data_contracts/physics_capture_v1.schema.json-136-        "evidence_contact_ids": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "string" } },
+docs/data_contracts/physics_capture_v1.schema.json:137:        "evidence_fixed_steps": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 0 } }
+docs/data_contracts/physics_capture_v1.schema.json-138-      }
+--
+docs/data_contracts/physics_capture_v1.schema.json-142-      "additionalProperties": false,
+docs/data_contracts/physics_capture_v1.schema.json:143:      "required": ["name", "minimum_consecutive_fixed_steps", "minimum_abs_normal_y", "minimum_vertical_center_delta", "include_triggers", "missing_contact_policy", "static_entity_id_prefix"],
+docs/data_contracts/physics_capture_v1.schema.json-144-      "properties": {
+docs/data_contracts/physics_capture_v1.schema.json:145:        "name": { "const": "support_v1" },
+docs/data_contracts/physics_capture_v1.schema.json:146:        "minimum_consecutive_fixed_steps": { "const": 2 },
+docs/data_contracts/physics_capture_v1.schema.json:147:        "minimum_abs_normal_y": { "const": 0.5 },
+docs/data_contracts/physics_capture_v1.schema.json-148-        "minimum_vertical_center_delta": { "const": 0.0001 },
+--
+docs/data_contracts/physics_capture_v1.schema.json-150-        "missing_contact_policy": { "const": "no_support" },
+docs/data_contracts/physics_capture_v1.schema.json:151:        "static_entity_id_prefix": { "const": "world:static:" }
+docs/data_contracts/physics_capture_v1.schema.json-152-      }
+--
+docs/data_contracts/physics_capture_v1.schema.json-154-    "event_type": {
+docs/data_contracts/physics_capture_v1.schema.json:155:      "enum": ["bird_launched", "collision", "explosion", "entity_destroyed", "pig_removed", "bird_exhausted", "stable_entered", "stable_exited", "level_cleared", "level_failed"]
+docs/data_contracts/physics_capture_v1.schema.json-156-    },
+--
+docs/data_contracts/physics_capture_v1.schema.json-178-            "support_rule": { "$ref": "#/$defs/support_rule" },
+docs/data_contracts/physics_capture_v1.schema.json:179:            "event_taxonomy": { "type": "array", "prefixItems": [{ "const": "bird_launched" }, { "const": "collision" }, { "const": "explosion" }, { "const": "entity_destroyed" }, { "const": "pig_removed" }, { "const": "bird_exhausted" }, { "const": "stable_entered" }, { "const": "stable_exited" }, { "const": "level_cleared" }, { "const": "level_failed" }], "items": false },
+docs/data_contracts/physics_capture_v1.schema.json-180-            "capture_limits": { "$ref": "#/$defs/capture_limits" }
+--
+docs/data_contracts/physics_capture_v1.schema.json-209-        { "type": "object", "additionalProperties": false, "required": ["birds_remaining"], "properties": { "birds_remaining": { "const": 0 } } },
+docs/data_contracts/physics_capture_v1.schema.json:210:        { "type": "object", "additionalProperties": false, "required": ["debounce_fixed_steps"], "properties": { "debounce_fixed_steps": { "type": "integer", "minimum": 1 } } },
+docs/data_contracts/physics_capture_v1.schema.json-211-        { "type": "object", "additionalProperties": false, "required": ["score"], "properties": { "score": { "type": "integer" } } }
+--
+docs/data_contracts/physics_capture_v1.schema.json-223-            "event_type": { "$ref": "#/$defs/event_type" },
+docs/data_contracts/physics_capture_v1.schema.json:224:            "participants": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/entity_id" } },
+docs/data_contracts/physics_capture_v1.schema.json-225-            "payload": { "$ref": "#/$defs/event_payload" }
+--
+docs/world_model_data_pipeline.md-51-before episode enumeration. For `legacy_rgb_v1`, declared sidecar paths remain
+docs/world_model_data_pipeline.md:52:provenance only. A caller that selects `physics_capture_v1` can opt into its
+docs/world_model_data_pipeline.md-53-validating reader with `PhysicsSupervisionRequest`; it returns immutable
+--
+docs/world_model_data_pipeline.md-177-exception: it exposes only schema-valid authoritative Unity-exported records
+docs/world_model_data_pipeline.md:178:from accepted enriched sidecars. It never retrofits labels to RGB-only episodes
+docs/world_model_data_pipeline.md-179-or infers physical labels from images.
+--
+docs/data_contracts/physics_capture_v1.md-6-
+docs/data_contracts/physics_capture_v1.md:7:All physical facts originate in Unity. Every enriched PNG and its state snapshot are returned together by the synchronized endpoint. The PNG descriptor's `render_frame` must equal the state record's Unity `render_frame`; this same-response equality is the only exact RGB alignment guarantee. Desktop screenshots and ordinary screenshot requests are not exact and must not be labeled `physics_capture_v1`.
+docs/data_contracts/physics_capture_v1.md-8-
+docs/data_contracts/physics_capture_v1.md:9:Each state sidecar starts with one `state_header`, followed by `state` records. The event sidecar contains only `event` records. Every record repeats the full identity, clock, and coordinate declaration: `schema_version`, `capture_id`, `shot_id`, sidecar-local strictly increasing `sequence`, Unity render frame/time, monotonic fixed-step/fixed time, and the frozen coordinate/unit object. State records are sorted by `(render_frame, render_time, fixed_step, fixed_time)`. Event records are sorted by `(fixed_step, render_frame, event taxonomy rank, participants, event_id)` before sequence and event IDs are assigned.
+docs/data_contracts/physics_capture_v1.md-10-
+docs/data_contracts/physics_capture_v1.md:11:`capture_id` identifies one endpoint capture. `shot_id` identifies the accepted shot. Dynamic `entity_id` is `<unity-instance-id>:<spawn-ordinal>` and remains stable for that lifetime. Static colliders use `world:static:<collider-id>`. Contact IDs are `contact:<fixed-step>:<entity-a>|<collider-a>:<entity-b>|<collider-b>:<point-index>`. Event IDs are `event:<eight-digit-sidecar-sequence>`. Support IDs are `support:<supporter-id>-><supported-id>`.
+docs/data_contracts/physics_capture_v1.md-12-
+--
+docs/data_contracts/physics_capture_v1.md-14-
+docs/data_contracts/physics_capture_v1.md:15:World coordinates use Unity 2D scene space (`unity_world_2d`), positive x right and positive y up. Screen polygons use RGB pixels (`rgb_pixel_2d`), origin top-left, positive x right and positive y down. Time is in seconds and angles are in degrees. Length, mass, velocity, impulse, and kinetic energy are explicitly named Unity-derived units in the schema. They are not SI quantities and no SI conversion is implied.
+docs/data_contracts/physics_capture_v1.md-16-
+--
+docs/data_contracts/physics_capture_v1.md-18-
+docs/data_contracts/physics_capture_v1.md:19:Nodes are lexically sorted by `entity_id`. A node contains its lifetime ID, Unity instance ID, symbolic class and type, screen polygon, Unity world position and rotation, life, and body state. `body.present=false` requires velocity, angular velocity, mass, and kinetic energy to be null. A present body records current values, and kinetic energy is exactly `0.5 * mass * (vx^2 + vy^2)` in the declared Unity-derived energy unit.
+docs/data_contracts/physics_capture_v1.md-20-
+docs/data_contracts/physics_capture_v1.md:21:Raw contacts include every non-trigger contact point. Participants are canonicalized by lexical `entity_id`; swapping participants also swaps colliders and negates directional normal/relative velocity so `normal_a_to_b` always points from canonical A to B. Each contact contains collider IDs, point, separation, relative velocity, and nullable normal/tangent impulses. Contacts sort by `(entity_a_id, entity_b_id, collider_a_id, collider_b_id, point.x, point.y, contact_id)`.
+docs/data_contracts/physics_capture_v1.md-22-
+docs/data_contracts/physics_capture_v1.md:23:## `support_v1`
+docs/data_contracts/physics_capture_v1.md-24-
+docs/data_contracts/physics_capture_v1.md:25:A directed `supporter -> supported` edge exists only when the same canonical non-trigger contact pair is retained in two consecutive fixed steps, `abs(normal_a_to_b.y) >= 0.5`, and `supported.center_y - supporter.center_y >= 0.0001` Unity units in both samples. The edge cites exactly those two contact IDs and fixed steps. Ties sort by `(supporter_id, supported_id, support_id)`. Static/ground contacts remain raw contacts and use synthetic world IDs. Absent, dropped, truncated, or one-step contact history produces no support edge; support is never reconstructed from images or inferred without evidence.
+docs/data_contracts/physics_capture_v1.md-26-
+--
+docs/data_contracts/physics_capture_v1.md-28-
+docs/data_contracts/physics_capture_v1.md:29:Taxonomy order is `bird_launched`, `collision`, `explosion`, `entity_destroyed`, `pig_removed`, `bird_exhausted`, `stable_entered`, `stable_exited`, `level_cleared`, `level_failed`. Participants are unique and lexically sorted.
+docs/data_contracts/physics_capture_v1.md-30-
+--
+docs/data_contracts/physics_capture_v1.md-32-| --- | --- |
+docs/data_contracts/physics_capture_v1.md:33:| `bird_launched` | Once per shot; launched bird participant; `launch_velocity`. |
+docs/data_contracts/physics_capture_v1.md:34:| `collision` | Once per unordered entity pair per fixed step; `contact_ids` and `relative_speed`. |
+docs/data_contracts/physics_capture_v1.md-35-| `explosion` | Once per exploding entity; `radius_unity_units`. |
+--
+docs/data_contracts/physics_capture_v1.md-38-| `bird_exhausted` | Once per shot when no playable bird remains; `birds_remaining` is zero. |
+docs/data_contracts/physics_capture_v1.md:39:| `stable_entered`, `stable_exited` | Emit only on a debounced transition, never repeatedly while unchanged; `debounce_fixed_steps` is positive. |
+docs/data_contracts/physics_capture_v1.md-40-| `level_cleared`, `level_failed` | Mutually exclusive terminal event, at most one per shot; clear carries `score`, fail carries `reason`. |
+--
+docs/data_contracts/physics_capture_v1.md-61-
+docs/data_contracts/physics_capture_v1.md:62:`physics_capture_v1` is opt-in. A consumer that requires sidecars must select `capture_contract=physics_capture_v1` and pass the required capabilities. The declared capabilities are `scene_nodes`, `raw_contacts`, `derived_support`, `kinematics`, and `macro_events`; state and event sidecars provide the capabilities declared by the immutable contract descriptor.
+docs/data_contracts/physics_capture_v1.md-63-
+docs/data_contracts/physics_capture_v1.md:64:Legacy `legacy_rgb_v1` episodes remain canonical RGB/action episodes and can be consumed without opening physics sidecars. They do not gain labels later: no retroactive annotation is promised. A physical field in an enriched record is authoritative Unity-exported data, not a label inferred from RGB, a desktop screenshot, or visual analysis.
+docs/data_contracts/physics_capture_v1.md-65-
+docs/data_contracts/physics_capture_v1.md:66:The optional Todo 10 reader leaves the default RGB/action sample unchanged. It validates the accepted enriched sidecars before returning immutable frame-exact `PhysicsFrameSupervision` records. `include_raw_contacts` and `include_events` control those variable-cardinality collections; derived support remains distinct from raw contacts. Invalid, stale, incomplete, nonaligned, or capability-incompatible sidecars fail closed. The default reader does not open sidecars.
+docs/data_contracts/physics_capture_v1.md-67-
+--
+docs/data_contracts/physics_capture_v1.md-114-
+docs/data_contracts/physics_capture_v1.md:115:Collect a new cohort only after the staged selector has been promoted. This command is deliberately opt-in and uses a root distinct from the active legacy cohort:
+docs/data_contracts/physics_capture_v1.md-116-
+--
+docs/data_contracts/physics_capture_v1.md-142-assert report["protected_unchanged"] is True
+docs/data_contracts/physics_capture_v1.md:143:assert report["provenance"]["archive_sha256"] == expected_sha
+docs/data_contracts/physics_capture_v1.md-144-PY

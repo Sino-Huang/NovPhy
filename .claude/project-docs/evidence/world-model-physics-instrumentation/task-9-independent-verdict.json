@@ -1,0 +1,109 @@
+{
+  "recommendation": "REJECT",
+  "verdict": "rejected",
+  "goalId": "world-model-physics-instrumentation-task-9",
+  "originalIntent": "Publish an operationally complete research-data contract and loader compatibility boundary for physics_capture_v1, including authoritative semantics, exact alignment limits, opt-in supervision, fixed staged provenance, and executable collection, promotion, and rollback instructions.",
+  "desiredOutcome": "A researcher can distinguish legacy RGB-only episodes from enriched captures, validate a real schema example, request Todo 10 supervision safely, and execute the exact staged collection, promotion, or rollback workflow without relying on unstated implementation knowledge.",
+  "userOutcomeReview": "The contract accurately documents schema authority, support and event semantics, Unity-derived units, clocks, exact same-response render-frame alignment, legacy/enriched compatibility, bounded failure, opt-in capabilities, Todo 10 supervision, and the pinned stage provenance. However, it does not provide the exact promotion and rollback commands explicitly required by Todo 9. Verification and smoke commands are not a promotion command, and prose saying not to run or copy is not a rollback command. Therefore the operational handoff is incomplete from the user's perspective.",
+  "blockers": [
+    {
+      "id": "T9-OPS-EXACT-COMMANDS",
+      "violatedCriterion": "Todo 9 What to do: include the exact staged collection/promotion/rollback commands",
+      "observation": "The document gives an exact collection command and pre-promotion verify/smoke commands, but no exact promotion command and no exact rollback command; rollback is only described as abstaining from collection/copying.",
+      "evidencePointer": "docs/data_contracts/physics_capture_v1.md:100 and docs/data_contracts/physics_capture_v1.md:125"
+    }
+  ],
+  "notes": [
+    {
+      "id": "TEST-PROSE-PINNING",
+      "observation": "The negative test removes exact natural-language sentences and the verifier pins those sentences in REQUIRED_CLAUSES. This is prose-coupled, overfit coverage under the programming/remove-ai-slops criteria and can pass while semantically equivalent operational clauses are absent or fail after harmless rewording.",
+      "evidencePointer": "tests/test_verify_physics_capture_docs.py:31 and scripts/verify_physics_capture_docs.py:24",
+      "blocking": false,
+      "reason": "The direct review found the actual criterion failure; test style alone is not a stated Todo 9 success criterion."
+    },
+    {
+      "id": "INDEPENDENT-JSONSCHEMA-DEPENDENCY",
+      "observation": "A supplemental independent jsonschema.validate run could not execute because the jsonschema package is not installed. The shipped verifier still reads the real schema capture_failure definition, and its malformed-example test passed.",
+      "evidencePointer": "fresh command: python -c 'import jsonschema ...' -> ModuleNotFoundError",
+      "blocking": false,
+      "reason": "Todo 9 requires the documentation example to validate against the real schema; the shipped verifier demonstrably reads that schema definition and rejects a wrong field type."
+    }
+  ],
+  "verifiedCriteria": {
+    "schema_engine_authority_support_events_units_clocks": "pass",
+    "exact_render_frame_guarantee_and_desktop_exclusion": "pass",
+    "legacy_vs_enriched_compatibility": "pass",
+    "sampling_and_buffer_failure": "pass",
+    "opt_in_capture_contract_and_capabilities": "pass",
+    "todo10_supervision_reader": "pass",
+    "archive_and_smoke_provenance_bound_to_c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992": "pass",
+    "exact_collection_command": "pass",
+    "exact_promotion_command": "fail",
+    "exact_rollback_command": "fail",
+    "real_schema_example": "pass_with_note",
+    "no_retrofit_visual_inference_absolute_path_or_stale_claim": "pass"
+  },
+  "freshRuns": [
+    {
+      "command": "python scripts/verify_physics_capture_docs.py docs",
+      "result": "pass; exit 0; physics capture documentation verified"
+    },
+    {
+      "command": "python -m unittest tests.test_verify_physics_capture_docs -v",
+      "result": "pass; 3 tests; happy, removed timing/provenance clauses, and malformed example exercised"
+    },
+    {
+      "command": "python -m py_compile scripts/verify_physics_capture_docs.py tests/test_verify_physics_capture_docs.py",
+      "result": "pass"
+    },
+    {
+      "command": "python check-no-excuse-rules.py scripts/verify_physics_capture_docs.py tests/test_verify_physics_capture_docs.py",
+      "result": "pass; no violations; emitted only an irrelevant no-Rust-files warning"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    },
+    {
+      "command": "python scripts/verify_physics_capture_docs.py /path/that/does/not/exist",
+      "result": "expected rejection; exit 1; missing contract path reported"
+    },
+    {
+      "command": "sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+      "result": "pass; c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992"
+    }
+  ],
+  "adversarialReview": {
+    "stale_state": "pass: exact documented digest matches current archive and task-8-smoke.json provenance",
+    "malformed_input": "pass: malformed embedded example and missing docs root fail closed",
+    "dirty_worktree": "pass: verifier and focused tests pass in the intentionally dirty shared worktree; unrelated changes were not modified",
+    "misleading_success": "fail detected: green verifier does not enforce or prove exact promotion/rollback commands",
+    "cleanup": "pass: focused tests use TemporaryDirectory; no persistent process was started and no task-owned temporary directory was found at repository root"
+  },
+  "slopAndProgrammingPass": {
+    "directPassCompleted": true,
+    "productionCode": "No unnecessary extraction or normalization found that independently violates a Todo 9 criterion; verifier is 205 lines.",
+    "tests": "Found exact-prose pinning and implementation-mirroring risk; no deletion-only production test or excessive test volume.",
+    "codeReviewCoverage": "No Todo 9-specific code-review report with explicit programming/remove-ai-slops coverage was found. Direct gate review was performed instead.",
+    "scopeDrift": "No product/doc files were edited by this review."
+  },
+  "checkedArtifactPaths": [
+    ".omo/plans/world-model-physics-instrumentation.md",
+    ".omo/evidence/world-model-physics-instrumentation/task-9-done-claim.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-9-docs.txt",
+    ".omo/evidence/world-model-physics-instrumentation/task-9-cleanup-receipt.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-8-smoke.json",
+    "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+    "docs/data_contracts/physics_capture_v1.md",
+    "docs/data_contracts/physics_capture_v1.schema.json",
+    "docs/world_model_data_pipeline.md",
+    "scripts/verify_physics_capture_docs.py",
+    "tests/test_verify_physics_capture_docs.py"
+  ],
+  "exactEvidenceGaps": [
+    "No exact staged promotion command is present in the published documentation.",
+    "No exact rollback command is present in the published documentation.",
+    "No Todo 9-specific code-review artifact explicitly records programming and remove-ai-slops coverage.",
+    "The optional external jsonschema package is unavailable for a second-library validation run."
+  ]
+}

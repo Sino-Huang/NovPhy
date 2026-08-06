@@ -1,0 +1,11 @@
+fixture_diff:
+
+fixture_order:
+    12	        runtime.BeginShot(8, 64 * 1024, 10f);
+    13	        GameObject birdObject = new GameObject("bird-launch-test");
+    14	        Rigidbody2D body = birdObject.AddComponent<Rigidbody2D>();
+    15	        birdObject.AddComponent<BoxCollider2D>();
+    16	        ABBird bird = birdObject.AddComponent<ABBird>();
+    17	        Vector2 staleVelocity = new Vector2(-3f, 4f);
+    18	        Vector2 launchVelocity = new Vector2(12.5f, 7.25f);
+    19	

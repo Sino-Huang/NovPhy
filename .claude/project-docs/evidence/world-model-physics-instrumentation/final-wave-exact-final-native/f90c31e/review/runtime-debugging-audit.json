@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "novphy_runtime_debugging_audit_v1",
+  "reviewedCommitSha": "f90c31ed9607a2a2344b5e2bad9f01361439f31d",
+  "archiveSha256": "961d99d40bafe5d262eb843a7aada4f94d9da3ebe8cdf1e7f67ebf82d5f37030",
+  "anomaly": {
+    "description": "In the interrupted prior session, the real smoke command timed out after having already produced a valid accepted shot. That is why its smoke-report.json was hand-reconstructed instead of machine-produced.",
+    "reproduced": true,
+    "reproducedDuring": "the Phase 2 happy-path run at the pinned SHA",
+    "liveEvidence": "smoke-timeout-live-diagnosis.txt"
+  },
+  "hypotheses": [
+    {
+      "id": "H1",
+      "statement": "Unity engine teardown does not reap the player process, so the driver blocks waiting on it.",
+      "verdict": "REFUTED",
+      "evidence": [
+        "At the moment of the block, /bin/ps matched 0 processes containing 9001.",
+        "The completed report records cleanup.engine = pid=726369:exit=143, i.e. the engine had already been signalled and reaped.",
+        "The temporary player clone directory had already been removed (0 matches for /tmp/novphy-physics-smoke-*)."
+      ]
+    },
+    {
+      "id": "H2",
+      "statement": "Xvfb or display cleanup blocks after capture.",
+      "verdict": "REFUTED",
+      "evidence": [
+        "At the moment of the block, /bin/ps matched 0 Xvfb processes.",
+        "The completed report records cleanup.xvfb = pid=726366:exit=0, a clean prior exit."
+      ]
+    },
+    {
+      "id": "H3",
+      "statement": "The driver writes its report after a socket close and blocks on a protocol read or write.",
+      "verdict": "REFUTED",
+      "evidence": [
+        "Kernel wchan was anon_pipe_read, not a socket wait.",
+        "The full open-fd set was /dev/null, the invocation log twice, and two pipes. No socket descriptor was open at all.",
+        "The process had exactly 1 thread, so no background socket worker was involved."
+      ]
+    },
+    {
+      "id": "H4",
+      "statement": "The post-run protected-root receipt scans the active data root, and that scan dominates and can exceed the command timeout.",
+      "verdict": "SUPPORTED",
+      "evidence": [
+        "The sole child process at the moment of the block was: find /mnt/array/sukaih/Project/NovPhy/data/novphy_rollouts_dataset_20260708_171531 -printf %P 0%y 0%s 0%T@ 0%C@ 0%i",
+        "The parent was blocked in anon_pipe_read on that child pipe.",
+        "The active data root contains 14432052 files and 535G.",
+        "The accepted shot (PNG, both sidecars, metadata) was already complete on disk before the block began, which exactly matches the reported prior symptom of timing out after producing a valid shot.",
+        "Independent corroboration: the earlier F1 verdict recorded that a 120-second protection scan timed out and only a 300-second bounded rerun completed.",
+        "Independent corroboration: this session gave the same scan a 600-second bound in Phase 0 and it completed in that window."
+      ]
+    }
+  ],
+  "rootCause": "H4. scripts/smoke_protection.nested_manifest_digest builds a complete nested manifest of the active data root by enumerating every entry. At 14.4 million files the enumeration takes minutes, and the smoke driver performs it twice per run, before and after. The engine phase is comparatively short, so total wall clock is dominated by two full metadata scans of a 535 GB tree.",
+  "whyItLooksLikeAHang": "The scan is pure metadata enumeration with no incremental output, so the driver appears frozen even though it is making progress and the capture already succeeded.",
+  "notADefectIn": [
+    "the request-70 protocol path",
+    "engine or Xvfb lifecycle management",
+    "artifact persistence, which had already completed atomically"
+  ],
+  "remediationApplied": {
+    "change": "none to product code",
+    "operational": "The Phase 2 timeout bound was raised from the prior 900s to 1800s. The happy run then completed in 470 seconds with exit 0.",
+    "rationale": "The scan is already the cheap variant. It enumerates metadata (path, type, size, mtime, ctime, inode) rather than hashing content, so the cost is inherent to the file count, not to an inefficient implementation. Weakening the protected-root check to make it faster would reduce the strength of the guardrail this plan depends on."
+  },
+  "recommendationForFutureRuns": "Any command that invokes the protected-root receipt over the active cohort must budget at least several minutes per scan. Treat a smoke timeout as an inconclusive run to be repeated with a larger bound, never as grounds for reconstructing a report by hand.",
+  "verdict": "explained",
+  "confidence": "high"
+}

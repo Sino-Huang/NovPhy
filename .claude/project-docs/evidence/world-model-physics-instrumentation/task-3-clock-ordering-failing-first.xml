@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="1" result="Failed(Child)" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-08-04 17:59:49Z" end-time="2026-08-04 17:59:49Z" duration="0.0392859">
+  <test-suite type="TestSuite" id="1032" name="Science Birds" fullname="Science Birds" runstate="Runnable" testcasecount="22" result="Failed" site="Child" start-time="2026-08-04 17:59:49Z" end-time="2026-08-04 17:59:49Z" duration="0.039286" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1060" name="Assembly-CSharp-Editor.dll" fullname="/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/ScriptAssemblies/Assembly-CSharp-Editor.dll" runstate="Runnable" testcasecount="22" result="Failed" site="Child" start-time="2026-08-04 17:59:49Z" end-time="2026-08-04 17:59:49Z" duration="0.029828" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="3107263" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestFixture" id="1047" name="PhysicsShotRecorderTests" fullname="PhysicsShotRecorderTests" classname="PhysicsShotRecorderTests" runstate="Runnable" testcasecount="12" result="Failed" site="Child" start-time="2026-08-04 17:59:49Z" end-time="2026-08-04 17:59:49Z" duration="0.028377" total="1" passed="0" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1056" name="Events_SortByFullClockThenTaxonomyAndParticipantBeforeSequence" fullname="PhysicsShotRecorderTests.Events_SortByFullClockThenTaxonomyAndParticipantBeforeSequence" methodname="Events_SortByFullClockThenTaxonomyAndParticipantBeforeSequence" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="1159225125" result="Failed" start-time="2026-08-04 17:59:49Z" end-time="2026-08-04 17:59:49Z" duration="0.017344" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected and actual are both <System.String[4]>
+  Values differ at index [0]
+  String lengths are both 3. Strings differ at index 0.
+  Expected: "z:0"
+  But was:  "a:0"
+  -----------^
+]]></message>
+            <stack-trace><![CDATA[at NUnit.Framework.CollectionAssert.AreEqual (System.Collections.IEnumerable expected, System.Collections.IEnumerable actual, System.String message, System.Object[] args) [0x00008] in <10b6135e63434fdba4fc6c109928ab3b>:0
+at NUnit.Framework.CollectionAssert.AreEqual (System.Collections.IEnumerable expected, System.Collections.IEnumerable actual) [0x00001] in <10b6135e63434fdba4fc6c109928ab3b>:0
+at PhysicsShotRecorderTests.Events_SortByFullClockThenTaxonomyAndParticipantBeforeSequence () [0x0005d] in /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets/Tests/Editor/PhysicsShotRecorderTests.cs:214
+]]></stack-trace>
+          </failure>
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

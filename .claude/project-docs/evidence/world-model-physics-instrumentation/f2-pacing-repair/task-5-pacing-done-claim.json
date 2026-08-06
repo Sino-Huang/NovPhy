@@ -1,0 +1,121 @@
+{
+  "artifactType": "DoneClaim",
+  "task": "request-70 persistence pacing repair",
+  "verdict": "PASS",
+  "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+  "changedFiles": [
+    "scripts/physics_rollout_persistence.py",
+    "tests/test_collect_rollouts.py"
+  ],
+  "concurrentEditReceipt": {
+    "observedAtStart": "The typed clock/sleeper scheduler and narrow pacing regression were already present in the dirty shared worktree when the required reread completed.",
+    "preservation": "No concurrent or unrelated product edit was reverted or rewritten. The scheduler was disabled only transiently to prove red, then restored exactly before green verification.",
+    "adapter": "scripts/collect_rollouts.py already forwarded clock and sleeper to persist_physics_rollout; it was read but not modified by this task."
+  },
+  "behavior": {
+    "schedule": "Each request-70 deadline is anchored to one monotonic start and computed as started_at + index / target_fps; positive remaining delay is passed to the injected sleeper.",
+    "limitsPreserved": {
+      "stateRecords": "PASS: 63 state records plus one header accepted.",
+      "eventRecords": "PASS: the 64-event limit remains enforced; a 65th event is rejected.",
+      "totalSidecarBytes": "PASS: the 1,048,576-byte combined sidecar limit remains enforced."
+    }
+  },
+  "commands": [
+    {
+      "phase": "red",
+      "command": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_physics_capture_requests_are_paced_at_target_fps -v",
+      "exitCode": 1,
+      "observable": "Expected [0.0, 0.5], actual burst request_times [0.0, 0.0]; Ran 1 test; FAILED (failures=1).",
+      "artifact": "red-regression.log"
+    },
+    {
+      "phase": "green",
+      "command": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_physics_capture_requests_are_paced_at_target_fps -v",
+      "exitCode": 0,
+      "observable": "Ran 1 test in 0.019s; OK.",
+      "artifact": "green-regression.log"
+    },
+    {
+      "phase": "focused-run-1",
+      "command": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_physics_capture_contract tests.test_webui_bridge.PhysicsCaptureV1Tests tests.test_webui_bridge.PhysicsCaptureV1MalformedEnvelopeTests -v",
+      "exitCode": 0,
+      "observable": "Ran 51 tests in 1.201s; OK.",
+      "artifact": "focused-run-1.log"
+    },
+    {
+      "phase": "focused-run-2",
+      "command": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_physics_capture_contract tests.test_webui_bridge.PhysicsCaptureV1Tests tests.test_webui_bridge.PhysicsCaptureV1MalformedEnvelopeTests -v",
+      "exitCode": 0,
+      "observable": "Ran 51 tests in 1.202s; OK.",
+      "artifact": "focused-run-2.log"
+    },
+    {
+      "phase": "compile",
+      "command": "python -m py_compile scripts/physics_rollout_persistence.py scripts/collect_rollouts.py tests/test_collect_rollouts.py .omo/evidence/world-model-physics-instrumentation/f2-pacing-repair/manual_qa.py",
+      "exitCode": 0,
+      "observable": "No stderr; all requested modules compiled.",
+      "artifact": "py-compile.log"
+    },
+    {
+      "phase": "diff-check",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "observable": "No whitespace errors.",
+      "artifact": "git-diff-check.log"
+    },
+    {
+      "phase": "manual-qa-first-attempt",
+      "command": "python .omo/evidence/world-model-physics-instrumentation/f2-pacing-repair/manual_qa.py",
+      "exitCode": 1,
+      "observable": "Import shadowing selected /home/sukai/Project/NovPhy/scripts/collect_rollouts.py; the evidence probe was corrected to pin this worktree before rerun.",
+      "artifact": "manual-qa.log"
+    },
+    {
+      "phase": "manual-qa-rerun",
+      "command": "python .omo/evidence/world-model-physics-instrumentation/f2-pacing-repair/manual_qa.py",
+      "exitCode": 0,
+      "observable": "request_times=[10.0,10.25,10.5,10.75], sleep_durations=[0.25,0.25,0.25], planned_elapsed_seconds=0.75, frame_count=4, state_sidecar_lines=5, event_count=0, used_real_sleep=false, temporary_root_removed=true.",
+      "artifact": "manual-qa-rerun.log"
+    },
+    {
+      "phase": "programming-rules-owned-production",
+      "command": "python /home/sukai/.cache/opencode/packages/oh-my-openagent@latest/node_modules/oh-my-openagent/dist/skills/programming/scripts/python/check-no-excuse-rules.py scripts/physics_rollout_persistence.py",
+      "exitCode": 0,
+      "observable": "No violations in 1 file.",
+      "artifact": "no-excuse-production.log"
+    },
+    {
+      "phase": "programming-rules-full-owned-scope",
+      "command": "python /home/sukai/.cache/opencode/packages/oh-my-openagent@latest/node_modules/oh-my-openagent/dist/skills/programming/scripts/python/check-no-excuse-rules.py scripts/physics_rollout_persistence.py tests/test_collect_rollouts.py .omo/evidence/world-model-physics-instrumentation/f2-pacing-repair/manual_qa.py",
+      "exitCode": 1,
+      "observable": "Only inherited test-module findings: tests/test_collect_rollouts.py has 2872 pure LOC and an existing generic RuntimeError at line 2955; no production pacing violation.",
+      "artifact": "no-excuse.log"
+    }
+  ],
+  "ultraQA": {
+    "flaky": "PASS: the identical 51-test focused matrix passed twice with matching test counts.",
+    "misleadingSuccess": "PASS: the new regression fails against burst dispatch and passes only with paced request timestamps.",
+    "hungOrLong": "PASS: focused runs completed in approximately 1.2 seconds each; manual QA used only an injected sleeper.",
+    "staleState": "PASS after rerun: the first evidence probe exposed cross-checkout import shadowing; explicit worktree-root pinning eliminated it.",
+    "dirtyWorktree": "PASS: current dirty state was inspected; only owned files and permitted evidence were handled, with concurrent edits preserved.",
+    "repeatedInterruptions": "PASS: manual QA resumed after the import-shadowing interruption and completed without leaked temporary state.",
+    "cancelResume": "NOT_APPLICABLE: the synchronous persistence boundary exposes no cancellation/resume API."
+  },
+  "cleanupReceipt": {
+    "temporaryRoots": "PASS: the manual probe's TemporaryDirectory root was absent after exit.",
+    "bytecode": "PASS: four py_compile-generated .pyc files were removed and the evidence-only __pycache__ directory was removed.",
+    "processes": "PASS: no server, Unity, socket, thread, or background process was started.",
+    "ports": "PASS: no ports were opened.",
+    "sourceState": "PASS: the transient red toggle was restored before every green/static/manual verification."
+  },
+  "diagnostics": {
+    "lsp": "UNAVAILABLE: basedpyright is not installed and the prior user decision declined installation.",
+    "fallback": "py_compile passed; the owned production no-excuse scan passed; focused runtime suites passed twice."
+  },
+  "residualRisks": [
+    "tests/test_collect_rollouts.py remains an inherited oversized module with an unrelated generic RuntimeError finding; scope restrictions prohibit refactoring it here.",
+    "scripts/physics_rollout_persistence.py is 249 physical lines, near the programming rule's 250 pure-LOC ceiling; future additions should split responsibility first.",
+    "The worktree remains intentionally dirty with extensive concurrent/user changes, so this claim covers only the stated owned behavior and evidence."
+  ],
+  "commit": "NOT_CREATED"
+}

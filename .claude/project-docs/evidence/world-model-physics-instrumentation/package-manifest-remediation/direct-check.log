@@ -1,0 +1,5 @@
+Scenario: direct worktree preflight against the migration worktree containing the exact ignored package pair.
+Invocation: python /home/sukai/Project/NovPhy/scripts/package_physics_player.py --payload /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer --stage /tmp/novphy-package-check-stage --worktree /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4 --migration-provenance /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json --check-worktree-only
+Observable: exit 0.
+Approved package SHA-256: manifest.json 05677cc3199d5fff4aac54096877e795518487918e53810f477a228e5d1e28fb; packages-lock.json 3101c351984e6a73a1be7ad76d1a67c1b7638a6616554e50000b9672175ebe50.
+The env/e5bb99a checkout itself lacks those ignored files and correctly fails closed with missing provenance-bound Unity package input.

@@ -1,0 +1,44 @@
+captured=2026-08-06T23:11:06+10:00
+# Live diagnosis of the smoke timeout anomaly, reproduced during the Phase 2 happy run.
+
+smoke_pid=725089
+tr: extra operand ‘"’
+Only one string may be given when deleting without squeezing repeats.
+Try 'tr --help' for more information.
+smoke_elapsed=
+awk: line 1: runaway string constant "{print ...
+smoke_state=
+smoke_wchan=anon_pipe_read
+smoke_threads=1
+
+# The accepted shot was ALREADY complete before the hang:
+  /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-native/f90c31e/published-smoke-output/shot_001/frames/frame_000000.png (80567 bytes)
+  /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-native/f90c31e/published-smoke-output/shot_001/metadata.json (1035 bytes)
+  /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-native/f90c31e/published-smoke-output/shot_001/physics_events.jsonl (6316 bytes)
+  /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-native/f90c31e/published-smoke-output/shot_001/physics_state.jsonl (9836 bytes)
+
+# Engine and Xvfb had already exited (no such processes):
+  xvfb_processes=0
+  player_processes=0
+  temp_clones=0
+
+# The only child process, i.e. what it is actually waiting on:
+   726774 R          01:24 find /mnt/array/sukaih/Project/NovPhy/data/novphy_rollouts_dataset_20260708_171531 -printf %P 0%y 0%s 0%T@ 0%C@ 0%i 0
+
+# Open file descriptors (blocked reading a pipe from that child):
+  total 0
+  lr-x------ 1 sukai sukai 64 Aug  6 23:10 0 -> /dev/null
+  l-wx------ 1 sukai sukai 64 Aug  6 23:10 1 -> /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-native/f90c31e/published-smoke-invocation.log
+  l-wx------ 1 sukai sukai 64 Aug  6 23:10 2 -> /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/final-wave-exact-final-native/f90c31e/published-smoke-invocation.log
+  lr-x------ 1 sukai sukai 64 Aug  6 23:10 3 -> pipe:[186971830]
+  lr-x------ 1 sukai sukai 64 Aug  6 23:09 5 -> pipe:[186971831]
+
+# --- corrected fields (two shell-quoting glitches above) ---
+corrected_at=2026-08-06T23:11:23+10:00
+smoke_elapsed=05:50
+cut: '"': No such file or directory
+smoke_state=725089 (python) S 725088 725088 725082 0 -1 4194304 37876 111496 0 0 429 201 21019 6194 20 0 1 0 331849380 61583360 9419 18446744073709551615 100426665639936 100426667982037 140720561877248 0 0 0 0 16781312 2 1 0 0 17 2 0 0 0 0 0 100426668951120 100426670391776 100427387756544 140720561879088 140720561879602 140720561879602 140720561885130 0
+smoke_wchan=anon_pipe_read
+find_child_elapsed=01:40
+active_data_root_file_count=14432052
+active_data_root_size=535G

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "novphy_focused_suite_analysis_v1",
+  "run": 1,
+  "reviewedCommitSha": "f90c31ed9607a2a2344b5e2bad9f01361439f31d",
+  "testsRun": 348,
+  "failures": 10,
+  "errors": 0,
+  "exitCode": 1,
+  "failureBuckets": [
+    {
+      "bucket": "stale-publication-evidence",
+      "count": 9,
+      "module": "tests.test_verify_physics_capture_docs",
+      "commonCause": "publication receipt staged archive receipt SHA-256 disagrees with its bytes",
+      "explanation": "The docs verifier derives its authority from .omo/evidence/world-model-physics-instrumentation/final-published-runtime/. That directory still holds the prior sessions reconstructed done-claim, publication receipt, and smoke report, which name the superseded archive ed6f5972 and the superseded stage receipt 1aadc7b2. Re-pinning to f90c31e changed the published archive to 961d99d4 and the stage receipt to be0b9f6f, so the retained authority is stale.",
+      "expected": true,
+      "blocking": true,
+      "remediation": "Refresh final-published-runtime/ from this sessions machine-produced artifacts, then re-run.",
+      "affectedTests": [
+        "test_cli_accepts_the_published_contract_and_schema_example",
+        "test_cli_accepts_harmless_prose_rewrites",
+        "test_cli_rejects_invalid_named_command_block_syntax (collection)",
+        "test_cli_rejects_invalid_named_command_block_syntax (promotion)",
+        "test_cli_rejects_invalid_named_command_block_syntax (rollback)",
+        "test_cli_rejects_non_atomic_promotion_or_rollback_commands (4 parameterisations)"
+      ]
+    },
+    {
+      "bucket": "known-gap-absent-external-dataset-fixture",
+      "count": 1,
+      "test": "tests.test_collect_rollouts.CollectRolloutsTest.test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots",
+      "assertion": "self.assertTrue(valid[\"accepted\"]) at tests/test_collect_rollouts.py:1875",
+      "requiredFixture": "data/novphy_rollouts_dataset/train/novelty_level_0_type010101_0000{1,2}_0_1_010101_0_1",
+      "fixturePresentInMigrationWorktree": false,
+      "fixturePresentInCanonicalNovPhy": false,
+      "preExisting": true,
+      "preExistingProof": "the test already exists at the plan scope base commit 8dcec02569dd459a8db7e6393a640aa6a146b114, before any work in this plan",
+      "introducedByThisPlan": false,
+      "expected": true,
+      "blocking": false,
+      "disclosure": "DISCLOSED as a known gap, consistent with every prior lane in this plan. It is not silently excluded and is not counted as a pass."
+    }
+  ],
+  "netAssessment": "348 tests ran. 1 failure is a disclosed pre-existing gap requiring an absent external dataset. The other 9 are a single real blocking cause that this wave must fix before F1-F4 can approve."
+}

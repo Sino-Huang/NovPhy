@@ -1,0 +1,135 @@
+{
+  "schema": "AdversarialVerify",
+  "verdict": "confirmed",
+  "confidence": 0.98,
+  "commit": {
+    "expected": "95e7b82919c7cc2cd1aa911c4ebf9ffcfba8f9fe",
+    "observed_head": "95e7b82919c7cc2cd1aa911c4ebf9ffcfba8f9fe",
+    "observed_tree": "38a67d218fb4573cc73b6827be40130a755f4b98",
+    "scoped_diff_from_commit_to_head": "empty",
+    "git_diff_check": "passed"
+  },
+  "original_intent": "Make physics-player archive provenance stable for an unchanged committed product tree while allowing evidence and generated artifacts to change, reject tracked product dirtiness before publication, and resolve documentation provenance from mutually agreeing archive, receipt, and accepted smoke evidence rather than a pinned digest.",
+  "user_visible_outcome": "Repeated packaging of the same payload and commit produces byte-identical provenance and archive bytes despite evidence/cache/stage changes; a tracked product edit fails nonzero without publishing an archive or receipt; documentation verification accepts a new valid digest only when archive, receipt, and accepted smoke report agree.",
+  "recommendation": "APPROVE",
+  "blockers": [],
+  "required_verification": [
+    {
+      "command": "python -m unittest tests.test_package_physics_player tests.test_verify_physics_capture_docs tests.test_verify_physics_player",
+      "result": "passed: 17 tests in 1.416s",
+      "evidence_pointer": "independent command output; corroborated by .omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-post-commit-tests.log"
+    },
+    {
+      "command": "python scripts/verify_physics_capture_docs.py docs",
+      "result": "passed: physics capture documentation verified",
+      "evidence_pointer": "independent command output; corroborated by .omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-post-commit-docs.log"
+    },
+    {
+      "command": "python -m unittest tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_is_stable_when_only_evidence_and_generated_artifacts_change tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_rejects_tracked_product_dirtiness_before_publishing",
+      "result": "passed: 2 tests in 0.160s",
+      "evidence_pointer": "tests/test_package_physics_player.py:82 and tests/test_package_physics_player.py:116; .omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-manual-cli-tests.log"
+    },
+    {
+      "command": "python -m unittest tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_receipt_report_archive_disagreement tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_accepts_receipt_archive_and_smoke_agreement_without_a_pinned_digest tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_a_malformed_archive_receipt tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_a_malformed_smoke_report",
+      "result": "passed: 4 tests in 0.184s",
+      "evidence_pointer": "tests/test_verify_physics_capture_docs.py:226"
+    }
+  ],
+  "manual_qa": {
+    "verdict": "passed",
+    "real_subprocess_assertions": [
+      "The stability test invokes scripts/package_physics_player.py twice, saves the first manifest and archive bytes, and independently compares both byte sequences after changing tracked .omo evidence and creating untracked Unity Library and stage artifacts.",
+      "The stability test parses the saved manifest and independently compares project.git_head and project.git_tree with git rev-parse HEAD and HEAD^{tree} from the fixture repository.",
+      "The dirty-source test edits a tracked non-.omo product file, asserts a nonzero subprocess return, requires the specific dirty-source diagnostic, and asserts that neither archive nor archive.sha256 exists."
+    ],
+    "evidence_pointer": "tests/test_package_physics_player.py:82; tests/test_package_physics_player.py:116"
+  },
+  "ultraqa": {
+    "malformed_input": {
+      "result": "ruled_out",
+      "trigger_reason": "A one-field non-SHA receipt and malformed smoke JSON both produce nonzero CLI results in dedicated isolated tests.",
+      "evidence_pointer": "tests/test_verify_physics_capture_docs.py:268; tests/test_verify_physics_capture_docs.py:287"
+    },
+    "stale_state": {
+      "result": "ruled_out",
+      "trigger_reason": "An accepted smoke report carrying a stale digest is rejected even when the archive and receipt agree.",
+      "evidence_pointer": "tests/test_verify_physics_capture_docs.py:226"
+    },
+    "dirty_worktree": {
+      "result": "ruled_out",
+      "trigger_reason": "Tracked .omo evidence changes are deliberately excluded, while a tracked product edit makes git diff --quiet HEAD return 1 and packaging exits before stage creation.",
+      "evidence_pointer": "scripts/package_physics_player.py:45; tests/test_package_physics_player.py:82; tests/test_package_physics_player.py:116"
+    },
+    "misleading_success_output": {
+      "result": "ruled_out",
+      "trigger_reason": "status=accepted alone is insufficient: the verifier recomputes the archive digest and requires receipt/report identity; failed packaging leaves no archive or receipt.",
+      "evidence_pointer": "scripts/verify_physics_capture_docs.py:187; tests/test_verify_physics_capture_docs.py:226; tests/test_package_physics_player.py:116"
+    },
+    "generated_and_cache_artifacts": {
+      "result": "ruled_out",
+      "trigger_reason": "A second real packaging subprocess runs after Unity Library cache and stage log creation and retains exact manifest/archive bytes.",
+      "evidence_pointer": "tests/test_package_physics_player.py:82"
+    },
+    "prompt_injection": {
+      "result": "not_applicable",
+      "trigger_reason": "The scoped offline CLIs contain no prompt, model, network, or instruction-execution boundary; file contents are hashed, archived, or parsed as JSON/document structure."
+    },
+    "cancel_resume_and_repeated_interruptions": {
+      "result": "not_applicable",
+      "trigger_reason": "The scoped synchronous packaging and documentation CLIs expose no cancel, resume, checkpoint, signal-recovery, or interruption contract."
+    },
+    "hung_commands": {
+      "result": "ruled_out_for_scope",
+      "trigger_reason": "All required and focused subprocess suites terminated normally in 1.416s or less, and the post-run process scan found no surviving packager, verifier, or unittest process."
+    },
+    "flaky_timing": {
+      "result": "ruled_out_for_scope",
+      "trigger_reason": "The scoped production and test changes contain no sleep, polling, wall-clock, port, browser, or network dependency; deterministic archive metadata fixes uid, gid, names, and mtime."
+    }
+  },
+  "direct_remove_ai_slops_and_programming_review": {
+    "result": "passed",
+    "findings": [],
+    "analysis": "No deletion-only or requested-removal-only tests, tautologies, prompt/prose assertions, output-derived expected values, excessive test duplication, needless production extraction, or implementation-mirroring mocks were found. The regression tests use TemporaryDirectory and real Git/CLI/tar behavior. Changed Python files remain below the 250 pure-LOC threshold (108, 246, 111, and 245 respectively). The added receipt parser is a required trust-boundary check rather than redundant normalization.",
+    "report_coverage_gap": "The available .omo/evidence/world-model-physics-instrumentation-code-review.md reviews a different Unity protocol boundary and therefore does not explicitly cover this provenance repair. This is non-blocking because the independent direct pass and reproduced behavior support every stated repair criterion."
+  },
+  "done_claim_artifact_audit": {
+    "result": "passed",
+    "checked_count": 11,
+    "all_exist_and_nonempty": true,
+    "evidence_pointers": [
+      ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-characterization.log",
+      ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-diff-check.log",
+      ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-green-focused.log",
+      ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-manual-cli-tests.log",
+      ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-manual-qa.log",
+      ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-post-commit-docs.log",
+      ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-post-commit-static.log",
+      ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-post-commit-tests.log",
+      ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-red.log",
+      ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-remaining-status.txt",
+      ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-static.log"
+    ]
+  },
+  "checked_artifact_paths": [
+    "scripts/package_physics_player.py",
+    "scripts/verify_physics_capture_docs.py",
+    "docs/data_contracts/physics_capture_v1.md",
+    "tests/test_package_physics_player.py",
+    "tests/test_verify_physics_capture_docs.py",
+    ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-done-claim.json"
+  ],
+  "exact_evidence_gaps": [
+    "The existing general code-review report is not scoped to this repair; direct independent skill-perspective review supplies the missing coverage.",
+    "The done claim's manual hashes belong to its isolated fixture commit, not the repository target commit; the required criterion is repeated identity, which the independent two-test subprocess run reproduced."
+  ],
+  "cleanup": {
+    "fixtures": "TemporaryDirectory only",
+    "temporary_directories_remaining": false,
+    "surviving_processes": false,
+    "ports_or_browsers_started": false,
+    "archive_mutation": false,
+    "product_files_modified": false,
+    "only_written_artifact": ".omo/evidence/world-model-physics-instrumentation/provenance-stability-repair-independent-verification.json"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "compatLibraries": {
+    "allPathsPresent": true,
+    "hostPackagesModified": false,
+    "missingCount": 0,
+    "scopedViaLdLibraryPath": true
+  },
+  "editor": {
+    "matches": true,
+    "path": "$HOME/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+    "sha256": "32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150",
+    "sha256Expected": "32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150"
+  },
+  "findings": [
+    {
+      "detail": "build_physics_player.sh writes -logFile directly into the promotion stage. The resulting sciencebirdsgames/physics-v1/unity-build.log retains [Licensing::Module] channel LicenseClient-<user>, a Unity-masked serial with only the final group replaced by XXXX, and LICENSE SYSTEM lines.",
+      "id": "P0-1",
+      "mitigatingContext": "The same log is already saturated with absolute /mnt/array/sukaih and /home/sukai paths, so the account identifier is not incrementally revealed by the licensing line. The distinct item is the partially masked serial.",
+      "resolution": {
+        "change": "Unity logs into the temporary build root; scripts/redact_unity_log.sh publishes a copy with [Licensing::Module], [LicensingClient], and LICENSE SYSTEM lines replaced in place, failing closed if any survive and renaming atomically.",
+        "commit": "f90c31ed9607a2a2344b5e2bad9f01361439f31d",
+        "realSurfaceProbe": {
+          "artifact": "redaction-real-log-probe.log",
+          "outputLines": 1215,
+          "redactionMarkers": 5,
+          "residualLicenseClientChannel": 0,
+          "residualLicenseSystem": 0,
+          "residualLicensingClient": 0,
+          "residualLicensingModule": 0,
+          "residualSerialPrefix": 0,
+          "sourceLines": 1215
+        },
+        "sideBenefits": [
+          "published log no longer carries a per-run license timestamp, so it is deterministic",
+          "log publication is now an atomic rename, closing the non-atomic wrinkle disclosed in the approved plan",
+          "a failed Unity build still publishes its redacted log before propagating the failure"
+        ],
+        "tests": "tests.test_build_physics_player 7/7 pass, including redaction of a real-shaped licensed log, determinism, no temporary residue, and missing-source fail-closed"
+      },
+      "scope": "The log is NOT inside the archive and is NOT part of archive identity; the packager never reads it. Exposure is limited to the untracked stage directory.",
+      "severity": "medium",
+      "status": "resolved",
+      "title": "Published unity-build.log contains Unity licensing lines"
+    }
+  ],
+  "phase": "0-preflight-and-baselines",
+  "protectedRootsBaseline": {
+    "active_data": "82b60d3b7266fff1ca17ed58af2f3bebe49005e8e2069cceb6e35c42c3b313b4",
+    "allExist": true,
+    "canonicalRoot": "/mnt/array/sukaih/Project/NovPhy",
+    "canonical_project": "5c1ec096a2b329295646212ed091e1327a7687e22b599c8c339680adcee392e1",
+    "note": "Supersedes final-published-runtime/protected-before.json, which resolved against worktree paths and recorded production_player=ABSENT and active_data=ABSENT.",
+    "production_player": "ba826ba78013b95d2f89cae10f8ef1312aa2678df19620f02840a7ded1d54778",
+    "resolvedFrom": "git rev-parse --git-common-dir (not a worktree-relative path)"
+  },
+  "publishedStageBefore": {
+    "archiveSha256": "ed6f59723e5b1b5291552487b9e7f2dfb634d01859b09d72c12796e90990c472",
+    "receiptMatchesArchive": true,
+    "receiptSha256": "1aadc7b2733eb636c7374b3ebe66daf84b4fa97ecc69f02eb7f10c7cf09b88e4",
+    "unityBuildLogSha256": "706ece444bea13ea3add677c0b88dbc6367ac4b5691bf7697866bc4272fecefc"
+  },
+  "recordedAt": "2026-08-06T22:59:40.280172+10:00",
+  "schemaVersion": "novphy_final_wave_phase0_v1",
+  "source": {
+    "branch": "physics-unity-2019.4",
+    "head": "f90c31ed9607a2a2344b5e2bad9f01361439f31d",
+    "previousPin": "1c4e70b2d01d5c6b8b18b0f130ef3bbde06439c6",
+    "productClean": true,
+    "productDirtyCount": 0,
+    "repinReason": "finding P0-1 fixed in f90c31e; user authorised fixing the script over disclosing",
+    "tree": "ce57b6ec0d85b90e8204d6c325a87b1f48321d41"
+  },
+  "verdict": "phase 0 baselines established; all preflight gates pass"
+}

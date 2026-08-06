@@ -18,7 +18,7 @@ serverbackup_source="/mnt/array/sukaih/Project/NovPhy/sciencebirdsgames/Linux/se
 package_inputs="$(mktemp "${TMPDIR:-/tmp}/novphy_physics_package_inputs_XXXXXX")"
 trap 'rm -f "$package_inputs"' EXIT
 python "$worktree/scripts/package_physics_player.py" --payload "$project" --stage "$stage" --worktree "$worktree" \
-  --migration-provenance "$worktree/.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json" --check-worktree-only --write-package-inputs "$package_inputs"
+  --migration-provenance "$worktree/.claude/project-docs/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json" --check-worktree-only --write-package-inputs "$package_inputs"
 
 mkdir -p "$stage"
 build_root="$(mktemp -d "${TMPDIR:-/tmp}/novphy_physics_build_XXXXXX")"
@@ -51,7 +51,7 @@ python "$worktree/scripts/package_physics_player.py" \
   --payload "$payload" \
   --stage "$stage" \
   --worktree "$worktree" \
-  --migration-provenance "$worktree/.omo/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json" \
+  --migration-provenance "$worktree/.claude/project-docs/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json" \
   --unity-executable "$editor" \
   --interface-jar "$interface_jar" \
   --config-source "$config_source" \

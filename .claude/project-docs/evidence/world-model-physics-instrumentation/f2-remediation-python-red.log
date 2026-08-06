@@ -1,0 +1,51 @@
+FFE
+======================================================================
+ERROR: test_second_collection_reuses_valid_completed_shot_without_bridge_calls (tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_second_collection_reuses_valid_completed_shot_without_bridge_calls)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 225, in test_second_collection_reuses_valid_completed_shot_without_bridge_calls
+    manifest = collect_rollouts(bridge, root, [action], **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/collect_rollouts.py", line 1678, in collect_rollouts
+    shot_dir.replace(final_shot_dir)
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/pathlib.py", line 1188, in replace
+    os.replace(self, target)
+OSError: [Errno 39] Directory not empty: '/tmp/tmpa26njv33/shot_001.tmp' -> '/tmp/tmpa26njv33/shot_001'
+
+======================================================================
+FAIL: test_oversized_sidecar_is_rejected_before_whole_file_read (tests.test_physics_capture_contract.PhysicsCaptureContractTests.test_oversized_sidecar_is_rejected_before_whole_file_read)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_physics_capture_contract.py", line 209, in test_oversized_sidecar_is_rejected_before_whole_file_read
+    load_physics_capture(state_path, event_path)
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/physics_capture_contract.py", line 71, in load_physics_capture
+    capture = parse_physics_sidecars(state_path, event_path)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/physics_capture_parsing.py", line 293, in parse_physics_sidecars
+    state_records = _read_jsonl(state_path)
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/physics_capture_parsing.py", line 52, in _read_jsonl
+    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/mock.py", line 1183, in _execute_mock_call
+    raise effect
+AssertionError: whole-file read attempted
+
+======================================================================
+FAIL: test_fixed_name_state_sidecar_symlink_outside_shot_is_rejected (tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_fixed_name_state_sidecar_symlink_outside_shot_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 164, in test_fixed_name_state_sidecar_symlink_outside_shot_is_rejected
+    with self.assertRaisesRegex(PhysicsArtifactError, "symlink|outside"):
+AssertionError: PhysicsArtifactError not raised
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.042s
+
+FAILED (failures=2, errors=1)

@@ -1,0 +1,22 @@
+{
+  "bytes": {
+    "task-5-v2-adjacent-tests.log": 23042,
+    "task-5-v2-exact-tests.log": 1640
+  },
+  "commands": [
+    {
+      "command": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_prepare_rollout_dataset.PhysicsCaptureValidationTests -v",
+      "exit_code": 0,
+      "path": ".omo/evidence/world-model-physics-instrumentation/task-5-v2-exact-tests.log"
+    },
+    {
+      "command": "python -m unittest tests.test_physics_capture_contract tests.test_webui_bridge tests.test_world_model_data -v",
+      "exit_code": 0,
+      "path": ".omo/evidence/world-model-physics-instrumentation/task-5-v2-adjacent-tests.log"
+    }
+  ],
+  "sha256": {
+    "task-5-v2-adjacent-tests.log": "47584db1483f05124b699e85e4356144e5ddc1c04a33c2f5cd2dfcdfe4b81882",
+    "task-5-v2-exact-tests.log": "66711da62811ca57d78dd3688b4bd4bf8c91eba4fa7c8902b94b84f32396b479"
+  }
+}

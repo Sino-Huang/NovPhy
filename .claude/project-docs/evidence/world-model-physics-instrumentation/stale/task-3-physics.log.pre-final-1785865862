@@ -1,0 +1,518 @@
+Unity Editor version:    2019.4.41f2 (6b23d448b533)
+Branch:                  HEAD
+Build type:              Debug
+Batch mode:              YES
+System name:             Linux
+Distro version:          #35~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 19:30:42 UTC 2
+Kernel version:          6.17.0-35-generic
+Architecture:            x86_64
+Available memory:        128159 MB
+[LicensingClient] ERROR Failed to connect to local IPC
+[Licensing::Module] Failed to connect to channel: LicenseClient-sukai
+[Licensing::Module] Successfully launched the LicensingClient
+Process terminated. Couldn't find a valid ICU package installed on the system. Set the configuration flag System.Globalization.Invariant to true if you want to run with no globalization support.
+   at System.Environment.FailFast(System.String)
+   at System.Globalization.GlobalizationMode.GetGlobalizationInvariantMode()
+   at System.Globalization.GlobalizationMode..cctor()
+   at System.Globalization.CultureData.CreateCultureWithInvariantData()
+   at System.Globalization.CultureData.get_Invariant()
+   at System.Globalization.CultureInfo..cctor()
+   at System.String.ToLowerInvariant()
+   at System.Text.EncodingHelper.GetCharset()
+   at System.Text.EncodingHelper.GetEncodingFromCharset()
+   at System.ConsolePal.GetConsoleEncoding()
+   at System.Console+<>c.<get_OutputEncoding>b__19_0()
+   at System.Threading.LazyInitializer.EnsureInitializedCore[[System.__Canon, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]](System.__Canon ByRef, System.Object ByRef, System.Func`1<System.__Canon>)
+   at System.Threading.LazyInitializer.EnsureInitialized[[System.__Canon, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]](System.__Canon ByRef, System.Object ByRef, System.Func`1<System.__Canon>)
+   at System.Console.get_OutputEncoding()
+   at System.Console.CreateOutputWriter(System.IO.Stream)
+   at System.Console+<>c.<get_Out>b__26_0()
+   at System.Threading.LazyInitializer.EnsureInitializedCore[[System.__Canon, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]](System.__Canon ByRef, System.Object ByRef, System.Func`1<System.__Canon>)
+   at System.Threading.LazyInitializer.EnsureInitialized[[System.__Canon, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]](System.__Canon ByRef, System.Object ByRef, System.Func`1<System.__Canon>)
+   at System.Console.get_Out()
+   at Unity.Licensing.Client.Program.Main(System.String[])
+[LicensingClient] Timed-out attempting to connect to the Licensing Client on pipe: LicenseClient-sukai.
+[LicensingClient] ERROR Failed to connect to local IPC
+[Licensing::Module] Failed to connect to channel: LicenseClient-sukai
+IPC channel to LicensingClient doesn't exist; falling back to Legacy licensing
+[LicensingClient] ERROR Failed to disconnect local IPC connection
+
+LICENSE SYSTEM [202685 3:33:57] Next license update check is after 2026-08-05T14:59:01
+
+Pro License: NO
+
+LICENSE SYSTEM [202685 3:33:58] Current license is already valid and activated. Skipping license activation process (Provided username/password will be ignored).
+[Package Manager] Server::Start -- Port 38711 was selected
+
+COMMAND LINE ARGUMENTS:
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity
+-batchmode
+-nographics
+-projectPath
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer
+-runTests
+-testPlatform
+EditMode
+-testFilter
+PhysicsShotRecorderTests
+-testResults
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-3-physics.xml
+-logFile
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-3-physics.log
+Successfully changed project path to: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer
+Using Asset Import Pipeline V2.
+DisplayProgressbar: Unity Package Manager
+Adding genesis user token [Package Manager] Done resolving packages in 0.31s seconds
+[Package Manager] Done checking package constraints in 0.00s seconds
+[Package Manager] 
+Registered 41 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.collab-proxy@1.14.18 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.collab-proxy@1.14.18)
+    com.unity.ide.rider@1.2.1 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.ide.rider@1.2.1)
+    com.unity.ide.visualstudio@2.0.15 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.ide.visualstudio@2.0.15)
+    com.unity.ide.vscode@1.2.5 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.ide.vscode@1.2.5)
+    com.unity.test-framework@1.1.31 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.test-framework@1.1.31)
+    com.unity.textmeshpro@2.1.6 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.textmeshpro@2.1.6)
+    com.unity.timeline@1.2.18 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.timeline@1.2.18)
+    com.unity.ext.nunit@1.0.6 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.ext.nunit@1.0.6)
+  Built-in packages:
+    com.unity.ugui@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.ugui@1.0.0)
+    com.unity.modules.ai@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.ai@1.0.0)
+    com.unity.modules.androidjni@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.androidjni@1.0.0)
+    com.unity.modules.animation@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.animation@1.0.0)
+    com.unity.modules.assetbundle@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.assetbundle@1.0.0)
+    com.unity.modules.audio@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.audio@1.0.0)
+    com.unity.modules.cloth@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.cloth@1.0.0)
+    com.unity.modules.director@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.director@1.0.0)
+    com.unity.modules.imageconversion@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.imageconversion@1.0.0)
+    com.unity.modules.imgui@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.imgui@1.0.0)
+    com.unity.modules.jsonserialize@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.jsonserialize@1.0.0)
+    com.unity.modules.particlesystem@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.particlesystem@1.0.0)
+    com.unity.modules.physics@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.physics@1.0.0)
+    com.unity.modules.physics2d@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.physics2d@1.0.0)
+    com.unity.modules.screencapture@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.screencapture@1.0.0)
+    com.unity.modules.terrain@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.terrain@1.0.0)
+    com.unity.modules.terrainphysics@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.terrainphysics@1.0.0)
+    com.unity.modules.tilemap@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.tilemap@1.0.0)
+    com.unity.modules.ui@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.ui@1.0.0)
+    com.unity.modules.uielements@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.uielements@1.0.0)
+    com.unity.modules.umbra@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.umbra@1.0.0)
+    com.unity.modules.unityanalytics@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.unityanalytics@1.0.0)
+    com.unity.modules.unitywebrequest@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.unitywebrequest@1.0.0)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.unitywebrequestassetbundle@1.0.0)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.unitywebrequestaudio@1.0.0)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.unitywebrequesttexture@1.0.0)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.unitywebrequestwww@1.0.0)
+    com.unity.modules.vehicles@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.vehicles@1.0.0)
+    com.unity.modules.video@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.video@1.0.0)
+    com.unity.modules.vr@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.vr@1.0.0)
+    com.unity.modules.wind@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.wind@1.0.0)
+    com.unity.modules.xr@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.xr@1.0.0)
+    com.unity.modules.subsystems@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.subsystems@1.0.0)
+
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.02s seconds
+Refreshing native plugins compatible for Editor in 20.91 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 2019.4.41f2 (6b23d448b533)
+[Subsystems] Discovering subsystems at path /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets
+Forcing GfxDevice: Null
+GfxDevice: creating device client; threaded=0
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Initialize mono
+Mono path[0] = '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed'
+Mono path[1] = '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/MonoBleedingEdge/lib/mono/unityjit'
+Mono config path = '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56193
+ImportWorker Server TCP listen port: 33695
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/PlaybackEngines/LinuxStandaloneSupport/UnityEditor.LinuxStandalone.Extensions.dll
+Registered in 0.000877 seconds.
+Native extension for LinuxStandalone target not found
+Refreshing native plugins compatible for Editor in 18.37 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.538 seconds
+Domain Reload Profiling:
+	ReloadAssembly (550ms)
+		BeginReloadAssembly (17ms)
+			ExecutionOrderSort (0ms)
+			DisableScriptedObjects (0ms)
+			BackupInstance (0ms)
+			ReleaseScriptingObjects (0ms)
+			CreateAndSetChildDomain (1ms)
+		EndReloadAssembly (203ms)
+			LoadAssemblies (16ms)
+			RebuildTransferFunctionScriptingTraits (0ms)
+			SetupTypeCache (79ms)
+			ReleaseScriptCaches (0ms)
+			RebuildScriptCaches (20ms)
+			SetupLoadedEditorAssemblies (72ms)
+				LogAssemblyErrors (0ms)
+				InitializePlatformSupportModulesInManaged (3ms)
+				SetLoadedEditorAssemblies (0ms)
+				RefreshPlugins (19ms)
+				BeforeProcessingInitializeOnLoad (1ms)
+				ProcessInitializeOnLoadAttributes (44ms)
+				ProcessInitializeOnLoadMethodAttributes (4ms)
+				AfterProcessingInitializeOnLoad (0ms)
+				EditorAssembliesLoaded (0ms)
+			ExecutionOrderSort2 (0ms)
+			AwakeInstancesAfterBackupRestoration (0ms)
+Registering precompiled user dll's ...
+Registered in 0.072899 seconds.
+Platform modules already initialized, skipping
+Validating Project structure ... 0.005959 seconds.
+Shader import version has changed; will reimport all shaders...
+Upgrading shader files ...0.005022 seconds.
+Begin MonoManager ReloadAssembly
+Native extension for LinuxStandalone target not found
+Refreshing native plugins compatible for Editor in 0.37 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.504 seconds
+Domain Reload Profiling:
+	ReloadAssembly (525ms)
+		BeginReloadAssembly (36ms)
+			ExecutionOrderSort (0ms)
+			DisableScriptedObjects (1ms)
+			BackupInstance (0ms)
+			ReleaseScriptingObjects (0ms)
+			CreateAndSetChildDomain (17ms)
+		EndReloadAssembly (452ms)
+			LoadAssemblies (32ms)
+			RebuildTransferFunctionScriptingTraits (0ms)
+			SetupTypeCache (148ms)
+			ReleaseScriptCaches (0ms)
+			RebuildScriptCaches (33ms)
+			SetupLoadedEditorAssemblies (199ms)
+				LogAssemblyErrors (0ms)
+				InitializePlatformSupportModulesInManaged (6ms)
+				SetLoadedEditorAssemblies (0ms)
+				RefreshPlugins (1ms)
+				BeforeProcessingInitializeOnLoad (45ms)
+				ProcessInitializeOnLoadAttributes (144ms)
+				ProcessInitializeOnLoadMethodAttributes (2ms)
+				AfterProcessingInitializeOnLoad (1ms)
+				EditorAssembliesLoaded (0ms)
+			ExecutionOrderSort2 (0ms)
+			AwakeInstancesAfterBackupRestoration (1ms)
+Platform modules already initialized, skipping
+RefreshInfo: InitialScriptRefreshV2(NoUpdateAssetOptions)
+RefreshProfiler: Total: 859.072ms
+	InvokeBeforeRefreshCallbacks: 0.310ms
+	ApplyChangesToAssetFolders: 0.048ms
+	WriteModifiedImportersToTextMetaFiles: 0.000ms
+	CleanLegacyArtifacts: 0.000ms
+	Scan: 75.783ms
+	OnSourceAssetsModified: 0.001ms
+	UnregisterDeletedAssets: 0.000ms
+	InitializeImportedAssetsSnapshot: 0.133ms
+	GetAllGuidsForCategorization: 0.062ms
+	CategorizeAssets: 19.642ms
+	ImportAndPostprocessOutOfDateAssets: 757.074ms (756.767ms without children)
+		ImportManagerImport: 0.000ms (0.000ms without children)
+			ImportInProcess: 0.000ms
+			ImportOutOfProcess: 0.000ms
+			UpdateCategorizedAssets: 0.000ms
+			RemoteAssetCacheGetArtifact: 0.000ms (0.000ms without children)
+				RemoteAssetCacheResolve: 0.000ms
+				RemoteAssetCacheDownloadFile: 0.000ms
+		CompileScripts: 0.000ms
+		PostProcessAllAssets: 0.000ms
+		ReloadImportedAssets: 0.000ms
+		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.116ms
+		InitializingProgressBar: 0.001ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.082ms
+		OnDemandSchedulerStart: 0.000ms
+		RestoreLoadedAssetsState: 0.107ms
+	InvokeProjectHasChanged: 0.000ms
+	UpdateImportedAssetsSnapshot: 0.000ms
+	ReloadSourceAssets: 0.269ms
+	UnloadImportedAssets: 0.002ms
+	Hotreload: 0.047ms
+	FixTempGuids: 0.002ms
+	VerifyGuidPMRegistrations: 0.000ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.000ms
+	UnloadStreamsBegin: 0.255ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.003ms
+	GetLoadedSourceAssetsSnapshot: 0.149ms
+	PersistCurrentRevisions: 0.000ms
+	UnloadStreamsEnd: 4.917ms
+	GenerateScriptTypeHashes: 0.144ms
+	Untracked: 0.374ms
+Refreshing native plugins compatible for Editor in 0.21 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Refresh completed in 0.205562 seconds.
+RefreshInfo: RefreshV2(ForceSynchronousImport)
+RefreshProfiler: Total: 205.556ms
+	InvokeBeforeRefreshCallbacks: 0.489ms
+	ApplyChangesToAssetFolders: 0.055ms
+	WriteModifiedImportersToTextMetaFiles: 0.000ms
+	CleanLegacyArtifacts: 0.000ms
+	Scan: 134.133ms
+	OnSourceAssetsModified: 0.001ms
+	UnregisterDeletedAssets: 0.000ms
+	InitializeImportedAssetsSnapshot: 2.732ms
+	GetAllGuidsForCategorization: 0.043ms
+	CategorizeAssets: 17.985ms
+	ImportAndPostprocessOutOfDateAssets: 47.954ms (0.862ms without children)
+		ImportManagerImport: 0.000ms (0.000ms without children)
+			ImportInProcess: 0.000ms
+			ImportOutOfProcess: 0.000ms
+			UpdateCategorizedAssets: 0.000ms
+			RemoteAssetCacheGetArtifact: 0.000ms (0.000ms without children)
+				RemoteAssetCacheResolve: 0.000ms
+				RemoteAssetCacheDownloadFile: 0.000ms
+		CompileScripts: 0.000ms
+		PostProcessAllAssets: 44.639ms
+		ReloadImportedAssets: 0.002ms
+		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.142ms
+		InitializingProgressBar: 0.000ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.077ms
+		OnDemandSchedulerStart: 0.267ms
+		RestoreLoadedAssetsState: 0.682ms
+	InvokeProjectHasChanged: 0.000ms
+	UpdateImportedAssetsSnapshot: 1.283ms
+	ReloadSourceAssets: 0.244ms
+	UnloadImportedAssets: 0.033ms
+	Hotreload: 0.625ms
+	FixTempGuids: 0.001ms
+	VerifyGuidPMRegistrations: 0.000ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.093ms
+	UnloadStreamsBegin: 0.004ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.203ms
+	GetLoadedSourceAssetsSnapshot: 1.226ms
+	PersistCurrentRevisions: 0.000ms
+	UnloadStreamsEnd: 0.390ms
+	GenerateScriptTypeHashes: 0.362ms
+	Untracked: -0.655ms
+RefreshInfo: StopAssetImportingV2(ForceSynchronousImport)
+RefreshProfiler: Total: 36.984ms
+	InvokeBeforeRefreshCallbacks: 0.391ms
+	ApplyChangesToAssetFolders: 0.055ms
+	WriteModifiedImportersToTextMetaFiles: 0.000ms
+	CleanLegacyArtifacts: 0.000ms
+	Scan: 33.551ms
+	OnSourceAssetsModified: 0.000ms
+	UnregisterDeletedAssets: 0.000ms
+	InitializeImportedAssetsSnapshot: 1.943ms
+	GetAllGuidsForCategorization: 0.000ms
+	CategorizeAssets: 0.000ms
+	ImportAndPostprocessOutOfDateAssets: 0.000ms (0.000ms without children)
+		ImportManagerImport: 0.000ms (0.000ms without children)
+			ImportInProcess: 0.000ms
+			ImportOutOfProcess: 0.000ms
+			UpdateCategorizedAssets: 0.000ms
+			RemoteAssetCacheGetArtifact: 0.000ms (0.000ms without children)
+				RemoteAssetCacheResolve: 0.000ms
+				RemoteAssetCacheDownloadFile: 0.000ms
+		CompileScripts: 0.000ms
+		PostProcessAllAssets: 0.000ms
+		ReloadImportedAssets: 0.000ms
+		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.000ms
+		InitializingProgressBar: 0.000ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.000ms
+		RestoreLoadedAssetsState: 0.000ms
+	InvokeProjectHasChanged: 0.000ms
+	UpdateImportedAssetsSnapshot: 0.000ms
+	ReloadSourceAssets: 0.000ms
+	UnloadImportedAssets: 0.000ms
+	Hotreload: 0.012ms
+	FixTempGuids: 0.002ms
+	VerifyGuidPMRegistrations: 0.000ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.096ms
+	UnloadStreamsBegin: 0.048ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.251ms
+	GetLoadedSourceAssetsSnapshot: 0.272ms
+	PersistCurrentRevisions: 0.000ms
+	UnloadStreamsEnd: 0.004ms
+	GenerateScriptTypeHashes: 0.000ms
+	Untracked: 0.362ms
+Refresh completed in 0.101559 seconds.
+RefreshInfo: RefreshV2(NoUpdateAssetOptions)
+RefreshProfiler: Total: 101.554ms
+	InvokeBeforeRefreshCallbacks: 0.000ms
+	ApplyChangesToAssetFolders: 0.044ms
+	WriteModifiedImportersToTextMetaFiles: 0.000ms
+	CleanLegacyArtifacts: 0.000ms
+	Scan: 79.957ms
+	OnSourceAssetsModified: 0.000ms
+	UnregisterDeletedAssets: 0.000ms
+	InitializeImportedAssetsSnapshot: 1.153ms
+	GetAllGuidsForCategorization: 0.040ms
+	CategorizeAssets: 17.352ms
+	ImportAndPostprocessOutOfDateAssets: 1.403ms (0.298ms without children)
+		ImportManagerImport: 0.000ms (0.000ms without children)
+			ImportInProcess: 0.000ms
+			ImportOutOfProcess: 0.000ms
+			UpdateCategorizedAssets: 0.000ms
+			RemoteAssetCacheGetArtifact: 0.000ms (0.000ms without children)
+				RemoteAssetCacheResolve: 0.000ms
+				RemoteAssetCacheDownloadFile: 0.000ms
+		CompileScripts: 0.000ms
+		PostProcessAllAssets: 0.000ms
+		ReloadImportedAssets: 0.000ms
+		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.136ms
+		InitializingProgressBar: 0.000ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.067ms
+		OnDemandSchedulerStart: 0.162ms
+		RestoreLoadedAssetsState: 0.740ms
+	InvokeProjectHasChanged: 0.000ms
+	UpdateImportedAssetsSnapshot: 0.000ms
+	ReloadSourceAssets: 0.288ms
+	UnloadImportedAssets: 0.039ms
+	Hotreload: 0.046ms
+	FixTempGuids: 0.001ms
+	VerifyGuidPMRegistrations: 0.000ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.101ms
+	UnloadStreamsBegin: 0.010ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.202ms
+	GetLoadedSourceAssetsSnapshot: 1.019ms
+	PersistCurrentRevisions: 0.000ms
+	UnloadStreamsEnd: 0.003ms
+	GenerateScriptTypeHashes: 0.000ms
+	Untracked: -0.106ms
+Initializing Unity extensions:
+ '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/UnityExtensions/Unity/UnityVR/Editor/UnityEditor.VR.dll'  GUID: 4ba2329b63d54f0187bcaa12486b1b0f
+UpdateMenuTitleForLanguage: 10
+Unloading 84 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 34.2 MB.
+System memory in use after: 33.5 MB.
+
+Unloading 136 unused Assets to reduce memory usage. Loaded Objects now: 1793.
+Total: 1.805740 ms (FindLiveObjects: 0.078057 ms CreateObjectMapping: 0.017446 ms MarkObjects: 1.222896 ms  DeleteObjects: 0.486820 ms)
+
+[Project] Loading completed in 7.939 seconds
+	Project init time: 				0.073 seconds
+		Template init time: 		0.000 seconds
+		Services packages init time: 	0.000 seconds
+		Package Manager init time: 		0.000 seconds
+		Asset Database init time: 		0.000 seconds
+		Global illumination init time: 	0.000 seconds
+		Assemblies load time: 			0.000 seconds
+		Unity extensions init time: 	0.001 seconds
+		Asset Database refresh time: 	0.000 seconds
+	Scene opening time: 			0.068 seconds
+Running tests for EditMode
+With test filter: PhysicsShotRecorderTests
+Executing tests with settings: test mode = EditMode
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:37)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:InitializeAndExecuteRun (string[]) (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEditor.TestRunner/CommandLineTest/Executer.cs:45)
+UnityEditor.TestTools.TestRunner.CommandLineTest.TestStarter:UpdateWatch () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEditor.TestRunner/CommandLineTest/TestStarter.cs:50)
+System.Reflection.MonoMethod:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+System.Delegate:DynamicInvokeImpl (object[])
+System.MulticastDelegate:DynamicInvokeImpl (object[])
+System.Delegate:DynamicInvoke (object[])
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions () (at /home/bokken/build/output/unity/unity/Editor/Mono/EditorApplication.cs:310)
+ 
+(Filename: /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs Line: 37)
+
+[MODES] Loading mode Default (0) for mode-current-id-Science Birds
+[UnityConnectServicesConfig] config is NOT valid, switching to default
+Created GICache directory at /tmp/GiCache. Took: 0.002s, timestamps: [7.943 - 7.946]
+gi::BakeBackendSwitch: switching bake backend from 3 to 1.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 6 unused Assets to reduce memory usage. Loaded Objects now: 1809.
+Total: 3.431370 ms (FindLiveObjects: 0.155003 ms CreateObjectMapping: 0.020581 ms MarkObjects: 3.222696 ms  DeleteObjects: 0.032349 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.1 MB.
+System memory in use after: 33.2 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1815.
+Total: 3.951830 ms (FindLiveObjects: 0.115393 ms CreateObjectMapping: 0.029414 ms MarkObjects: 3.803928 ms  DeleteObjects: 0.002474 ms)
+
+Saving results to: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-3-physics.xml
+Request timed out while processing request "https://public-cdn.cloud.unity3d.com/config/production", HTTP error code 0
+.[UnityConnect] Request timed out.
+[Performance] Application.InitializeProject                               :        1 samples, Peak.  2.85 s (1.0x), Avg.  2.85 s, Total. 2.848 s (34.0%)
+[Performance] Application.PackageManager.StartServer                      :        1 samples, Peak.  1.27 ms (1.0x), Avg.  1.27 ms, Total. 1.269 ms (0.0%)
+[Performance] Application.IsBrowserCacheEmpty                             :        1 samples, Peak.  89.1 us (1.0x), Avg.  89.1 us, Total. 89.06 us (0.0%)
+[Performance] Application.AcquireProjectLock                              :        1 samples, Peak.  1.84 ms (1.0x), Avg.  1.84 ms, Total. 1.839 ms (0.0%)
+[Performance] Application.InitializeEngineNoGraphics                      :        1 samples, Peak.  6.22 ms (1.0x), Avg.  6.22 ms, Total. 6.216 ms (0.1%)
+[Performance] Application.PackageManager.Initialize                       :        1 samples, Peak.   414 ms (1.0x), Avg.   414 ms, Total. 414.4 ms (4.9%)
+[Performance] CurlRequestCheck                                            :        9 samples, Peak.  77.2 us (2.5x), Avg.  30.6 us, Total. 275.0 us (0.0%)
+[Performance] PackageManager::RunRequestSynchronously                     :        7 samples, Peak.   373 us (5.9x), Avg.  63.4 us, Total. 443.8 us (0.0%)
+[Performance] Application.EngineGraphics.Initialize                       :        1 samples, Peak.  17.5 ms (1.0x), Avg.  17.5 ms, Total. 17.52 ms (0.2%)
+[Performance] Application.GI.Initialize                                   :        1 samples, Peak.  1.96 ms (1.0x), Avg.  1.96 ms, Total. 1.958 ms (0.0%)
+[Performance] Application.LoadAllDefaultResourcesFromEditor               :        1 samples, Peak.  1.77 ms (1.0x), Avg.  1.77 ms, Total. 1.775 ms (0.0%)
+[Performance] Application.LoadMonoAssemblies                              :        1 samples, Peak.   633 ms (1.0x), Avg.   633 ms, Total. 633.5 ms (7.6%)
+[Performance] RestoreManagedReferences                                    :        2 samples, Peak.  2.00 ms (2.0x), Avg.   998 us, Total. 1.996 ms (0.0%)
+[Performance] ProcessService.EditorAfterLoadAllAssemblies                 :        2 samples, Peak.  19.9 ms (1.2x), Avg.  16.1 ms, Total. 32.24 ms (0.4%)
+[Performance] Application.ReadLicenseInfo                                 :        1 samples, Peak.   200 us (1.0x), Avg.   200 us, Total. 200.3 us (0.0%)
+[Performance] Application.InitialScriptRefresh                            :        1 samples, Peak.   860 ms (1.0x), Avg.   860 ms, Total. 860.1 ms (10.3%)
+[Performance] Application.AssetDatabase.Refresh                           :        1 samples, Peak.   206 ms (1.0x), Avg.   206 ms, Total. 205.8 ms (2.5%)
+[Performance] BuildCatalog                                                :        1 samples, Peak.  29.3 ms (1.0x), Avg.  29.3 ms, Total. 29.27 ms (0.3%)
+[Performance] Application.ImportAssetsWithMismatchingAssetImporterVersion :        1 samples, Peak.   149 ms (1.0x), Avg.   149 ms, Total. 148.7 ms (1.8%)
+[Performance] Application.SyncCurrentColorSpace                           :        1 samples, Peak.  5.29 ms (1.0x), Avg.  5.29 ms, Total. 5.292 ms (0.1%)
+[Performance] Application.OnUsbDevicesChanged                             :        1 samples, Peak.   842 ns (1.0x), Avg.   842 ns, Total. 842.0 ns (0.0%)
+[Performance] Application.AssetInstanceCacheUpdate                        :        1 samples, Peak.   240 ns (1.0x), Avg.   240 ns, Total. 240.0 ns (0.0%)
+[Performance] Application.UnityExtensions.Initialize                      :        1 samples, Peak.   558 us (1.0x), Avg.   558 us, Total. 557.6 us (0.0%)
+[Performance] Application.InitializeManagedCompilationPipeline            :        1 samples, Peak.  25.8 ms (1.0x), Avg.  25.8 ms, Total. 25.75 ms (0.3%)
+[Performance] Application.ExecuteStartups                                 :        1 samples, Peak.  4.30 ms (1.0x), Avg.  4.30 ms, Total. 4.297 ms (0.1%)
+[Performance] Application.RebuildOSMenu                                   :        1 samples, Peak.  31.0 ms (1.0x), Avg.  31.0 ms, Total. 31.00 ms (0.4%)
+[Performance] UpdateAllMenus                                              :        6 samples, Peak.  31.0 ms (6.0x), Avg.  5.19 ms, Total. 31.12 ms (0.4%)
+[Performance] Application.editorInitializingProject                       :        1 samples, Peak.  12.5 us (1.0x), Avg.  12.5 us, Total. 12.48 us (0.0%)
+[Performance] Application.FinishLoadingProject                            :        1 samples, Peak.  67.5 ms (1.0x), Avg.  67.5 ms, Total. 67.51 ms (0.8%)
+[Performance] GUIView.RepaintAll.PlayerLoopController                     :        5 samples, Peak.   371 ns (1.4x), Avg.   269 ns, Total. 1.343 us (0.0%)
+[Performance] Application.InvokeFinishedLoadingProject                    :        1 samples, Peak.  20.9 ms (1.0x), Avg.  20.9 ms, Total. 20.92 ms (0.2%)
+[Performance] ProcessService.OnProjectLoaded                              :        1 samples, Peak.  19.0 ms (1.0x), Avg.  19.0 ms, Total. 18.99 ms (0.2%)
+[Performance] Application.InvokeProjectWasLoaded                          :        1 samples, Peak.   213 us (1.0x), Avg.   213 us, Total. 213.0 us (0.0%)
+[Performance] Application.Tick                                            :       22 samples, Peak.   130 ms (9.4x), Avg.  13.8 ms, Total. 304.1 ms (3.6%)
+[Performance] License.Tick                                                :        7 samples, Peak.  2.56 us (1.8x), Avg.  1.42 us, Total. 9.943 us (0.0%)
+[Performance] VCProvider                                                  :       23 samples, Peak.  1.75 us (2.5x), Avg.   715 ns, Total. 16.44 us (0.0%)
+[Performance] MonoCompiler.Tick                                           :        2 samples, Peak.  5.38 us (1.0x), Avg.  5.28 us, Total. 10.56 us (0.0%)
+[Performance] UnityConnect.Tick                                           :        5 samples, Peak.   946 us (4.6x), Avg.   208 us, Total. 1.038 ms (0.0%)
+[Performance] Collab.Tick                                                 :        5 samples, Peak.  1.84 us (1.4x), Avg.  1.30 us, Total. 6.488 us (0.0%)
+[Performance] CurlRequest.Tick                                            :        4 samples, Peak.  2.78 us (1.4x), Avg.  1.95 us, Total. 7.803 us (0.0%)
+[Performance] WebView.Tick                                                :        7 samples, Peak.   143 us (4.2x), Avg.  33.9 us, Total. 237.1 us (0.0%)
+[Performance] WebSocketClient.Tick                                        :        4 samples, Peak.   581 ns (1.1x), Avg.   548 ns, Total. 2.194 us (0.0%)
+[Performance] SceneBackgroundTask.Tick                                    :        3 samples, Peak.   360 ns (1.2x), Avg.   311 ns, Total. 932.0 ns (0.0%)
+[Performance] Scheduler.Tick                                              :       10 samples, Peak.  1.60 ms (9.8x), Avg.   164 us, Total. 1.639 ms (0.0%)
+[Performance] RepaintAllProfilerWindows                                   :        1 samples, Peak.   247 us (1.0x), Avg.   247 us, Total. 247.4 us (0.0%)
+[Performance] PlayerUpdates.Tick                                          :        5 samples, Peak.  25.2 us (1.3x), Avg.  18.9 us, Total. 94.55 us (0.0%)
+[Performance] GlobalCallbacks                                             :       23 samples, Peak.   692 us (18.3x), Avg.  37.8 us, Total. 869.9 us (0.0%)
+[Performance] EditorAnalytics.Tick                                        :        2 samples, Peak.  1.23 us (1.5x), Avg.   842 ns, Total. 1.683 us (0.0%)
+[Performance] GI.Tick                                                     :        5 samples, Peak.   687 us (4.3x), Avg.   160 us, Total. 799.5 us (0.0%)
+[Performance] Video.Update                                                :       23 samples, Peak.  1.30 us (3.1x), Avg.   424 ns, Total. 9.744 us (0.0%)
+[Performance] UnitySynchronization.ExecuteTasks                           :        5 samples, Peak.  4.45 us (1.5x), Avg.  2.96 us, Total. 14.81 us (0.0%)
+[Performance] PreloadManager                                              :       23 samples, Peak.  3.09 us (1.6x), Avg.  1.96 us, Total. 45.17 us (0.0%)
+[Performance] SceneTracker                                                :       22 samples, Peak.   108 ms (8.5x), Avg.  12.7 ms, Total. 279.9 ms (3.3%)
+[Performance] ConsoleLog.Tick                                             :        2 samples, Peak.   110 us (1.9x), Avg.  57.0 us, Total. 114.0 us (0.0%)
+[Performance] HierarchyWindow.Tick                                        :        2 samples, Peak.  76.6 us (1.3x), Avg.  60.8 us, Total. 121.5 us (0.0%)
+[Performance] Inspector.Tick                                              :        2 samples, Peak.  18.6 ms (2.0x), Avg.  9.30 ms, Total. 18.61 ms (0.2%)
+[Performance] Tooltip.Tick                                                :        4 samples, Peak.  1.17 us (1.2x), Avg.   944 ns, Total. 3.775 us (0.0%)
+[Performance] RequestRepaintForPanels                                     :       22 samples, Peak.   143 us (18.1x), Avg.  7.89 us, Total. 173.5 us (0.0%)
+[Performance] UpdateScene                                                 :       22 samples, Peak.   175 us (10.6x), Avg.  16.4 us, Total. 361.8 us (0.0%)
+[Performance] UpdateTextureStreaming                                      :       22 samples, Peak.   221 ns (1.9x), Avg.   114 ns, Total. 2.498 us (0.0%)
+[Performance] UpdateVideoTextures                                         :       22 samples, Peak.   300 ns (3.2x), Avg.  93.3 ns, Total. 2.052 us (0.0%)
+[Performance] PackageImporter.Tick                                        :        2 samples, Peak.  5.68 us (1.8x), Avg.  3.21 us, Total. 6.410 us (0.0%)
+[Performance] InspectorBackground.Tick                                    :        2 samples, Peak.   410 ns (1.3x), Avg.   306 ns, Total. 611.0 ns (0.0%)
+[Performance] ChangeLayoutIfNeeded                                        :       22 samples, Peak.  90.0 ns (2.2x), Avg.  41.0 ns, Total. 901.0 ns (0.0%)
+[Performance] AsyncReadManager.ForceCloseFiles                            :        1 samples, Peak.   195 us (1.0x), Avg.   195 us, Total. 195.4 us (0.0%)
+[Performance] GUIView.RepaintAll.RepaintScene                             :       20 samples, Peak.   211 ns (1.4x), Avg.   149 ns, Total. 2.985 us (0.0%)
+Cleanup mono
+debugger-agent: Unable to listen on 40
+Checking for leaked weakptr:
+  Found no leaked weakptrs.
+[Package Manager] Server::Kill -- Server was shutdown
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1785864841683,"processId":2831193,"allocatedMemory":232773,"memoryLabels":[{"Default":260},{"Permanent":384},{"Thread":151},{"Manager":4832},{"GfxDevice":64},{"Physics":81},{"Serialization":456},{"String":27660},{"DynamicArray":135815},{"HashMap":14993},{"Curl":1112},{"PoolAlloc":120},{"ScriptManager":13044},{"GI":720},{"VR":3867},{"Secure":2104},{"Subsystems":-664},{"EditorUtility":408},{"AssetDatabase":6006},{"RestService":64},{"UnityConnect":20520},{"Collab":776}]}

@@ -1,0 +1,23 @@
+test_git_revision_accepts_only_digest_bound_ignored_package_pair (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_git_revision_accepts_only_digest_bound_ignored_package_pair) ... ERROR
+test_git_revision_rejects_missing_or_third_ignored_unity_inputs (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_git_revision_rejects_missing_or_third_ignored_unity_inputs) ... ERROR
+
+======================================================================
+ERROR: test_git_revision_accepts_only_digest_bound_ignored_package_pair (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_git_revision_accepts_only_digest_bound_ignored_package_pair)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_package_physics_player.py", line 179, in test_git_revision_accepts_only_digest_bound_ignored_package_pair
+    git_revision(repository, package_inputs=digests, require_package_inputs=True)
+TypeError: git_revision() got an unexpected keyword argument 'package_inputs'
+
+======================================================================
+ERROR: test_git_revision_rejects_missing_or_third_ignored_unity_inputs (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_git_revision_rejects_missing_or_third_ignored_unity_inputs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_package_physics_player.py", line 191, in test_git_revision_rejects_missing_or_third_ignored_unity_inputs
+    git_revision(repository, package_inputs=digests, require_package_inputs=True)
+TypeError: git_revision() got an unexpected keyword argument 'package_inputs'
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.035s
+
+FAILED (errors=2)

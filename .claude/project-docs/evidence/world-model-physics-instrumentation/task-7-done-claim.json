@@ -1,0 +1,64 @@
+{
+  "archive_sha256": "496dec89670c62923a4be1bae0eb7e5359a046fab4a6a73cd6ec8d40191847ca",
+  "changed_files": [
+    "tasks/task_template_designer/Assets/Scripts/Editor/NovPhyBuild.cs",
+    "tasks/task_template_designer/Assets/Scripts/Editor/NovPhyBuild.cs.meta",
+    "scripts/build_physics_player.sh",
+    "scripts/9001-player-wrapper.sh",
+    "scripts/package_physics_player.py",
+    "scripts/verify_physics_player.py",
+    "tests/test_verify_physics_player.py"
+  ],
+  "claim_type": "BlockedClaim",
+  "cleanup": {
+    "processes_remaining": false,
+    "production_promoted": false,
+    "temporary_clone_remaining": false
+  },
+  "manual_qa": {
+    "artifacts": [
+      ".omo/evidence/world-model-physics-instrumentation/task-7-runtime.stderr",
+      ".omo/evidence/world-model-physics-instrumentation/task-7-live-player.log",
+      ".omo/evidence/world-model-physics-instrumentation/task-7-live-client.log"
+    ],
+    "invocation": "DISPLAY=:10 python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1",
+    "observable": "player launched/configured and reached PLAYING, but request 62 timed out on ABGameWorld null references and request 70 closed without envelope"
+  },
+  "protected_manifests": {
+    "active_root": "not_written; live concurrent growth made fresh per-file compare untrusted",
+    "artifacts": [
+      ".omo/evidence/world-model-physics-instrumentation/task-7-canonical-before.tsv",
+      ".omo/evidence/world-model-physics-instrumentation/task-7-canonical-after.tsv",
+      ".omo/evidence/world-model-physics-instrumentation/task-7-player-before.tsv",
+      ".omo/evidence/world-model-physics-instrumentation/task-7-player-after.tsv"
+    ],
+    "canonical_equal": true,
+    "production_player_equal": true
+  },
+  "risks": [
+    "Todo 7 acceptance is not met until real request 62 and request 70 succeed.",
+    "Xvfb lacks a usable GL core profile; GPU display :10 is required in this environment.",
+    "Migrated designer level triggers ABGameWorld.IsSlingshotBaseActive NullReferenceException."
+  ],
+  "schema_version": "novphy_done_claim_v1",
+  "stage_artifacts": [
+    "sciencebirdsgames/physics-v1/unity-build.log",
+    "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+    "sciencebirdsgames/physics-v1/archive.sha256"
+  ],
+  "status": "blocked_real_protocol_qa",
+  "task": "todo-7-staged-physics-player",
+  "tests": [
+    {
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-7-tests-final.log",
+      "invocation": "python -m unittest tests.test_verify_physics_player -v",
+      "observable": "3/3 passed"
+    },
+    {
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-7-baseline.log",
+      "invocation": "python -m unittest tests.test_webui_bridge.PhysicsCaptureV1Tests.test_legacy_request_38_and_62_fixture_bytes_remain_unchanged -v",
+      "observable": "1/1 passed"
+    }
+  ],
+  "todo_7_complete": false
+}

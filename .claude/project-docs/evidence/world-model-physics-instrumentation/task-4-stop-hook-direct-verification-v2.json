@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "event": "subagent-stop direct verification, completion claim 2",
+  "status": "done",
+  "verified_at": "2026-08-05",
+  "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+  "checks": [
+    {
+      "scenario": "Fresh full Python bridge suite including request 70 typed and immutable regressions.",
+      "invocation": "python -m unittest tests.test_webui_bridge -v",
+      "exit_code": 0,
+      "observable": "Ran 22 tests in 0.001s; OK; 22/22 passed."
+    },
+    {
+      "scenario": "Fresh real loopback TCP request 70 through ScienceBirdsBridge.",
+      "invocation": "PYTHONPATH=$PWD python .omo/evidence/world-model-physics-instrumentation/task-4-stop-hook-v2-real-tcp.py",
+      "exit_code": 0,
+      "observable": {
+        "passed": true,
+        "request_code": 70,
+        "request_byte_hex": "46",
+        "png_signature": "89504e470d0a1a0a",
+        "png_ihdr": "IHDR",
+        "state_event_render_frame": 913,
+        "nested_velocity": [1.5, -2.0],
+        "nested_participants": ["bird:1"],
+        "outer_length_equal": true,
+        "recursive_immutable": true
+      },
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-4-stop-hook-v2-real-tcp.py",
+      "artifact_sha256": "b4c3ab2be4b1784fd48aa75479cab2f750aa71817b5e9036f60240ec4d3f1783"
+    },
+    {
+      "scenario": "Parse both Unity NUnit XML receipts directly.",
+      "invocation": "xmllint --xpath concat result/total/passed/failed/skipped for task-4-final-green-3.xml and task-4-final-green-4.xml",
+      "exit_code": 0,
+      "observable": [
+        "Passed total=6 passed=6 failed=0 skipped=0",
+        "Passed total=6 passed=6 failed=0 skipped=0"
+      ],
+      "artifacts": [
+        {
+          "path": ".omo/evidence/world-model-physics-instrumentation/task-4-final-green-3.xml",
+          "sha256": "216bc5aa368c534934b74b3ee01dcc67b63a7ca0791674033f610767a99871da"
+        },
+        {
+          "path": ".omo/evidence/world-model-physics-instrumentation/task-4-final-green-4.xml",
+          "sha256": "b3db2494abc32cb7170228a0d481a361e438f2e006b651ee724227bf11585a9c"
+        }
+      ]
+    },
+    {
+      "scenario": "Validate independent verifier verdict and confidence.",
+      "invocation": "jq -e '.verdict == \"confirmed\" and .confidence == \"high\"' task-4-v2-independent-confirmed.json",
+      "exit_code": 0,
+      "observable": "true",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-4-v2-independent-confirmed.json",
+      "artifact_sha256": "ee4e6d2381b8672babd41a7a75600d9f3669a4d26e6bf6f8d1c8e6810d03f3ce"
+    },
+    {
+      "scenario": "Compare protected canonical project and production player manifests with their pre-change baselines.",
+      "invocation": "cmp -s task-2-canonical-project-before.tsv task-4-canonical-project-final.tsv; cmp -s task-2-production-player-before.tsv task-4-production-player-final.tsv",
+      "exit_code": 0,
+      "observable": {
+        "canonical_cmp": 0,
+        "production_player_cmp": 0
+      },
+      "artifacts": [
+        {
+          "path": ".omo/evidence/world-model-physics-instrumentation/task-4-canonical-project-final.tsv",
+          "sha256": "a986acc9dc911009e7e04bea85ee531ba4b9f9d692afa915456d81bcf7c8bb56"
+        },
+        {
+          "path": ".omo/evidence/world-model-physics-instrumentation/task-4-production-player-final.tsv",
+          "sha256": "e92a83fb14638b24ba8a0a05d588829823000f3db349ae9eaf39f188f68e8cd5"
+        }
+      ]
+    },
+    {
+      "scenario": "Fresh control-path, implementation-shape, process, port, and filesystem cleanup inspection.",
+      "invocation": "Python inspection using git diff --quiet, pgrep, loopback connect_ex, pathlib source checks, and filesystem existence checks.",
+      "exit_code": 0,
+      "observable": {
+        "protected_control_diff_exit": 0,
+        "task_process_count": 0,
+        "ports_2004_and_9000_clear": true,
+        "editor_instance_temp_logs_absent": true,
+        "typed_json_alias_present": true,
+        "frozen_dataclass_present": true,
+        "three_regressions_present": true
+      }
+    }
+  ],
+  "failed_attempts_retained_for_audit": [
+    "Implementation-shape command bundle exited 127 because rg was unavailable; no success claim derived from it.",
+    "Fallback command bundle exited 127 because grep was unavailable; no success claim derived from it.",
+    "First TCP invocation exited 1 because inherited PYTHONPATH resolved /home/sukai/Project/NovPhy; rerun explicitly set PYTHONPATH to this worktree and exited 0."
+  ],
+  "conclusion": "Todo 4 completion is directly verified: Python 22/22, real TCP request 70 passed, Unity 6/6 twice, independent verdict confirmed/high, protected manifests identical, protected control paths unchanged, and cleanup state clear."
+}

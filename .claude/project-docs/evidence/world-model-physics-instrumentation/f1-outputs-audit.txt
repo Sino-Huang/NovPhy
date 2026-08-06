@@ -1,0 +1,93 @@
+F1 OUTPUTS AUDIT - world-model-physics-instrumentation
+======================================================
+
+recommendation: FAIL
+
+DoneClaim: FAIL. Todo 1 is evidenced and committed. Todos 2-10 have implemented outputs and generally parseable test receipts, but none has its plan-required Commit:Y boundary. Todo 8 also has no accepted live receipt matching the current action/event smoke implementation. Todo 7's final independent receipt names an obsolete archive digest rather than the current staged archive.
+
+Baseline / failing-first pin
+----------------------------
+Authoritative plan: /mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md
+Ledger: /mnt/array/sukaih/Project/NovPhy/.omo/start-work/ledger.jsonl
+Worktree: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4
+Pinned checklist command:
+  rg -n '^- \[x\] (1\.|2\.|3\.|4\.|5\.|6\.|7\.|8\.|9\.|10\.)' /mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md
+Observable: ten checked headers at plan lines 84,92,100,108,116,124,132,140,148,156.
+Pinned status command: git status --short
+Observable: already heavily dirty; 963 entries were present before this report, including 26 tracked modified files and the untracked implementation/evidence/stage. No pre-existing entry was removed or rewritten by this audit.
+Failure definition: missing/malformed/empty receipt, absent planned artifact, unmatched schema/temporal/provenance output, dependency-order violation, or a claimed pass contradicted by current source/artifact bytes.
+
+Todo acceptance/output map
+--------------------------
+Todo 1: PASS. docs/data_contracts/physics_capture_v1.schema.json, docs/data_contracts/physics_capture_v1.md, both golden JSONL fixtures, and task-1-contract.txt are nonempty. Current tests/source cover required common clocks/IDs/version/units, node/contact/support/event fields, nonpersistent-support rejection, render-frame mismatch, duplicate/order rejection, deterministic ordering, synthetic static IDs, and bounded records. The Todo 1 commit chain exists (db72b46, 8da3bac, 041e3be and evidence commits).
+
+Todo 2: FAIL only on required output boundary. Exporter/registry/runtime source exists; migration provenance, overlay/diff, legacy parity, protected manifests and parseable Unity receipts exist. task-2-unity.xml is Passed 5/5 and repeat receipts are nonempty. Exact editor/archive/executable identities are recorded. Violated requirement: Todo 2 Commit:Y and final commit strategy. No feat(unity): export aligned physical scene snapshots commit exists; task-2-done-claim.json records commit_created=false.
+
+Todo 3: FAIL only on required output boundary. PhysicsShotRecorder.cs and callback hooks exist; task-3-physics.xml is Passed 14/14, repeat/focused receipts and task-3-independent-confirmed-final-2026-08-05.json parse. Tests cover persistence/removal, static contact, trigger exclusion, canonical pair/dedup, event cardinality, timeout/overflow. Violated requirement: Todo 3 Commit:Y; no planned commit exists.
+
+Todo 4: FAIL only on required output boundary. Request 70 dispatch, length-delimited envelope, typed immutable bridge records/errors, legacy 38/62 tests, malformed magic/version/length/JSON/overflow cases, loopback receipt, and Unity handler receipts exist. task-4-unity.xml is Passed 2/2 and final v2 JSON receipts parse. Violated requirement: Todo 4 Commit:Y; no planned commit exists.
+
+Todo 5: FAIL only on required output boundary. Atomic tmp/promote/quarantine persistence, explicit capture switch, closed sidecars, provenance, shared validator and legacy predicate are implemented and covered by nonempty focused/adversarial receipts. Malformed JSONL, missing/extra/stale/order/duplicate/frame mismatch cases are represented. Violated requirement: Todo 5 Commit:Y; no planned commit exists.
+
+Todo 6: FAIL only on required output boundary. Opt-in launcher, explicit stage/digest/marker, active-root refusal, worker propagation, default compatibility and shell/real-surface receipts exist. Violated requirement: Todo 6 Commit:Y; no planned commit exists.
+
+Todo 7: FAIL. Build/package/verifier sources and a nonempty current archive exist. Current archive and archive.sha256 agree on c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992, and later Todo 8/F3 static/live artifacts exercise it. However task-7-independent-adversarial-verify.json and task-7-verification-rerun-receipt.json prove historical 127d0846630ae275e0d6f2862ac289fe20e5571866c705f9a1a555a2a67e9166 bytes, so the Todo 7 final receipt is stale relative to the current archive. Violated requirements: Todo 7 reproducible current archive receipt and Commit:Y; no planned commit exists.
+
+Todo 8: FAIL. Current scripts/smoke_physics_capture.py lines 190-205 perform_known_action() and require_action_events(). Retained task-8-smoke.json/todo8-live-adversarial accepted artifacts predate that behavior: action is absent, event_count=0, and physics_events.jsonl is empty. The later f3-action-probe/report.json performs a shoot but still has event_count=0 and an empty event sidecar. Therefore no fresh accepted shot proves the current implementation's action/event requirement. Frame mismatch, missing sidecar, request failure, provenance, exact-frame state, energy/node ordering, protected roots, and cleanup have otherwise nonempty parseable evidence. Violated requirements: Todo 8 perform-one-action live smoke, event/temporal proof, Success criteria 1/5, and Commit:Y.
+
+Todo 9: FAIL only on required output boundary. Public docs, real schema example, engine-authority/units/timing/support/events/compatibility/provenance, exact collection/promotion/rollback commands, and six-test verifier receipts exist and are current to c7f9fa4. Violated requirement: Todo 9 Commit:Y; no planned commit exists.
+
+Todo 10: FAIL only on required output boundary. Immutable typed supervision records/request, exact (shot_id,render_frame) matching, raw contacts/support distinction, capability fail-closed behavior, default sidecar nonaccess, and legacy behavior are implemented with focused repeated/full/adjacent/manual receipts. Violated requirement: Todo 10 Commit:Y; no planned commit exists.
+
+Schema / provenance / dependency audit
+--------------------------------------
+PASS: authoritative schema JSON parses; JSONL fixture lines parse; required header/state/event fields are represented; retained accepted state has identical state/rgb render_frame, 14 sorted nodes, valid energy fields, and archive/player/protocol provenance.
+PASS: JSON/XML parsing found the primary final receipts used above nonempty and parseable. Several historical files named *.json contain transcript text rather than JSON (task-5-manual-qa-v2.json, task-5-independent-manual-qa.json, and multiple task-7 *runtime.json files); they were not used as final proof. Their misleading extension is a NOTE because final parseable replacements exist.
+PASS: implementation dispatch/order in the ledger respects the dependency matrix through Todo 7/8/9 and permits Todo 10 parallel with Todo 7 after Todos 1/5/data-pipeline.
+FAIL: commit dependency order is unprovable because git log ends after Todo 1. HEAD d72d1af contains only Todo 1 contract/evidence commits; Todos 2-10 remain mutable worktree output. This directly violates every Todo's Commit:Y line and the final commit strategy.
+PASS: current c7f9fa4 archive is provenance-bound in Todo 8/9/F3 artifacts and protected canonical project, production player, and active cohort receipts report unchanged bytes/state.
+
+Test receipts
+-------------
+Todo 1 task-1-contract.txt: nonempty, current contract suite coverage recorded.
+Todo 2 task-2-unity.xml: Passed 5/5; focused repeats nonempty/parseable.
+Todo 3 task-3-physics.xml: Passed 14/14; repeat XML parseable.
+Todo 4 task-4 bridge/v2 Python receipts: 22/22 claimed with test output; task-4-unity.xml Passed 2/2.
+Todos 5/6: focused Python receipts and independent adversarial receipts are nonempty and internally consistent.
+Todo 7: 33-test partition receipts exist but bind historical 127d archive; current c7 archive relies on later Todo 8/F3 receipts.
+Todo 8: adversarial rejection receipts parse, but retained happy acceptance is stale relative to current action/event code and thus does not satisfy current acceptance.
+Todo 9: six documentation verifier tests and CLI receipt pass against current provenance.
+Todo 10: focused 5, full 92, adjacent 17 and repeated/manual receipts are nonempty; independent verdict parses.
+
+remove-ai-slops / programming direct pass
+-----------------------------------------
+No extra criterion blocker. Tests predominantly assert structured outputs and rejection behavior, not deletion-only or tautological removals. Notes: some documentation tests pin prose, bridge.py exceeds the 250 pure-LOC skill ceiling, and historical evidence accumulation is excessive; these do not violate a stated plan success criterion. The current smoke implementation's action/event check is substantive rather than implementation-mirroring, but it has no matching green live artifact.
+
+Required manual-QA channel
+--------------------------
+Invocation: python - <<'PY' (inline script parsed the Todo DoneClaim/final receipt JSON sets, asserted planned evidence nonempty, inspected git commit subjects/current archive/current smoke source/current accepted artifact, printed exactly one status per Todo, and exited nonzero on any failure).
+Full stdout and exit:
+  exit=1
+  TODO_1=PASS:all referenced receipts parse and current criteria are evidenced
+  TODO_2=FAIL:required Todo commit absent
+  TODO_3=FAIL:required Todo commit absent
+  TODO_4=FAIL:required Todo commit absent
+  TODO_5=FAIL:required Todo commit absent
+  TODO_6=FAIL:required Todo commit absent
+  TODO_7=FAIL:required Todo commit absent
+  TODO_8=FAIL:required Todo commit absent; current action/event smoke contract has no matching accepted receipt
+  TODO_9=FAIL:required Todo commit absent
+  TODO_10=FAIL:required Todo commit absent
+Observable required by brief was ten PASS lines and exit 0. Actual observable is exit 1 and nine FAIL lines.
+
+Exact gaps / remediation
+------------------------
+1. Run the current smoke driver against current c7f9fa4 bytes, retain a genuinely accepted shot with performed action and required nonempty authoritative event stream, and rerun all three injected failures. Evidence pointers: scripts/smoke_physics_capture.py:190; task-8-smoke.json; todo8-live-adversarial/accepted-shot/physics_events.jsonl; f3-action-probe/report.json.
+2. Produce a fresh Todo 7 build/verification receipt bound to current c7f9fa4 archive bytes (or explicitly supersede the historical 127d receipt with the later current-archive proof). Evidence pointers: task-7-independent-adversarial-verify.json:evidence.archive_sha256; sciencebirdsgames/physics-v1/archive.sha256.
+3. Preserve Todos 2-10 in independently reviewable commits ordered by the dependency/commit strategy, excluding generated archives/smoke output from source commits, then regenerate receipts against that committed tree. Evidence pointers: git log --oneline --decorate -20; git status --short; task-2-done-claim.json.
+
+Cleanup receipt
+---------------
+Audit was read-only except this report. No Unity/Java/player/X server was started, no PID/port was allocated, and no temporary directory/file was created. Only f1-outputs-audit.txt is authored by this task. Pre-existing and concurrent dirty files were preserved; no product, test, plan, ledger, archive, protected root, or active data was edited.
+
+FINAL: FAIL

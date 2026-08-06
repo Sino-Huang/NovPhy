@@ -1,0 +1,14 @@
+{
+  "temporary_roots": [
+    "f2-bounds-audit-*",
+    "f2-sidecar-symlink-*",
+    "f2-streaming-hash-*"
+  ],
+  "observable": "TemporaryDirectory fixture output reported cleanup; explicit check confirmed /tmp/f2-bounds-audit-wa6pr0no was removed.",
+  "processes": "No lingering unittest, collection, or fixture Python process was observed after the timeout and test runs.",
+  "ports": "No listener on 2004 or 9001 was observed by the audit check.",
+  "protected_roots": {
+    "/mnt/array/sukaih/Project/NovPhy": "Only the f2-bounds-audit-cont evidence directory was created.",
+    "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4": "No production or test file was edited by this audit. Pre-existing dirty task files remain preserved."
+  }
+}

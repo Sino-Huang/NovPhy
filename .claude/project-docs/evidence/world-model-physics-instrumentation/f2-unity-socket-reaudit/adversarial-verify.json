@@ -1,0 +1,66 @@
+{
+  "kind": "AdversarialVerify",
+  "goalId": "world-model-physics-instrumentation",
+  "task": "F2 Unity request-70 socket resource-safety re-audit",
+  "verdict": "needs-fix",
+  "recommendation": "REJECT",
+  "originalIntent": "Provide a bounded direct request-70 socket that preserves legacy request behavior, cannot be exhausted by queued or in-flight clients, times out/cancels safely, rejects malformed or oversized protocol data, and never hangs Unity.",
+  "desiredOutcome": "A request-70 peer may fail or disconnect without blocking Unity's main thread or leaking socket capacity/resources; teardown owns all accepted clients.",
+  "governedWorktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+  "manualQaArtifact": "/mnt/array/sukaih/Project/NovPhy/.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-reaudit/manual-qa.md",
+  "cleanupReceipt": "/mnt/array/sukaih/Project/NovPhy/.omo/evidence/world-model-physics-instrumentation/f2-unity-socket-reaudit/cleanup-receipt.json",
+  "findings": [
+    {
+      "id": "F2-SOCKET-WRITE-001",
+      "severity": "HIGH",
+      "violatedCriterion": "F2-SOCKET-RESOURCE-SAFETY: request-70 clients must not hang Unity and socket I/O must be timeout/cancellation bounded",
+      "observation": "Serve performs synchronous NetworkStream.Write for both failure and up-to-64-MiB success responses on the Unity coroutine/main thread with no SendTimeout, asynchronous yield, cancellation, or bounded write loop. A client can send byte 70 and stop reading, filling the TCP buffer and blocking the frame loop indefinitely.",
+      "evidencePointer": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs:348,358,370; tests cover silent pre-request clients only at PhysicsCaptureProtocolTests.cs:201-352"
+    },
+    {
+      "id": "F2-SOCKET-CANCEL-002",
+      "severity": "HIGH",
+      "violatedCriterion": "F2-SOCKET-RESOURCE-SAFETY: cancellation/destruction must close and release every accepted client",
+      "observation": "After Update dequeues a client, it is no longer present in the only tracked collection. OnDestroy stops the listener and closes queued clients only; it has no in-flight registry or cancellation path. Destruction/interruption therefore does not deterministically close already-serving sockets or release their reservation through the iterator finally block.",
+      "evidencePointer": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs:334-341,344-376,379-390"
+    }
+  ],
+  "confirmedControls": {
+    "queueAndInflightCap": "MaxPendingClients=4 and reservedClientCount is incremented before enqueue and decremented in Serve finally/queued teardown; overflow clients are closed.",
+    "silentRequestTimeout": "A pre-request client is polled without blocking and abandoned after 1000 ms.",
+    "oversizedEnvelope": "Unity preflights PNG, JSON, failure-message, combined payload and envelope sizes; Python decoder rejects declared overflows.",
+    "malformedDecoder": "Python malformed-envelope suite rejects bad magic/version/length/JSON/flags/failure length/render-frame/PNG and overflow.",
+    "bridgeTimeout": "Python bridge sets a socket timeout at connect and disconnects on protocol errors. This does not bound the Unity server's synchronous send."
+  },
+  "commands": [
+    "omo ulw-loop status --json",
+    "timeout --signal=TERM --kill-after=5s 60s python -m unittest tests.test_webui_bridge.PhysicsCaptureV1Tests -v",
+    "for n in 1 2; do timeout --signal=TERM --kill-after=5s 60s python -m unittest tests.test_webui_bridge.PhysicsCaptureV1Tests tests.test_webui_bridge.PhysicsCaptureV1MalformedEnvelopeTests -v || exit $?; done",
+    "timeout --signal=TERM --kill-after=20s 180s env DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1 LD_LIBRARY_PATH=<pinned Unity compatibility paths> /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity -batchmode -nographics -projectPath /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer -runTests -testPlatform EditMode -testFilter PhysicsCaptureProtocolTests.SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt -testResults <fresh.xml> -logFile <fresh.log>",
+    "xmllint --format <fresh.xml>",
+    "awk '!/^[[:space:]]*$/ && !/^[[:space:]]*(#|\\/\\/)/' <file> | wc -l",
+    "git diff --check -- tasks/task_template_designer/Assets/Scripts/AIBirdsConnection.cs",
+    "sha256sum <three scoped Unity files>",
+    "pgrep -af '/editor/Editor/Unity|Unity.*-batchmode' || true",
+    "ss -ltnp | rg ':(2004|9000|9001|2014|2024|2034)\\b' || true"
+  ],
+  "binaryObservables": {
+    "exactPythonClass": "6 tests, OK",
+    "malformedPlusProtocolRepeat": ["15 tests, OK", "15 tests, OK"],
+    "freshUnityXml": "Passed; total=1 passed=1 failed=0; test duration=1.199353s",
+    "freshUnityProcessExit": 134,
+    "sourceHashesUnchanged": true,
+    "qaPidsPortsTempRootsRemaining": 0
+  },
+  "skillPerspective": {
+    "directRemoveAiSlopsPass": "No deletion-only, removal-only, prose-pinning, or tautological tests. Real loopback is useful, but private reflection mirrors implementation and omits response backpressure. Production and test modules exceed 250 pure LOC.",
+    "directProgrammingPass": "Resource ownership is incomplete and blocking I/O is executed on the Unity main thread; tests do not establish cancellation/backpressure safety.",
+    "codeReviewCoverage": "The inspected world-model-physics-instrumentation-code-review.md explicitly records both skill perspectives, overfit categories, synchronous-write blocker, oversized modules, and reflection coupling. Direct review independently confirms them."
+  },
+  "exactEvidenceGaps": [
+    "No real-loopback test sends request byte 70 and then withholds response reads while asserting the Unity frame/coroutine remains bounded.",
+    "No teardown test destroys PhysicsCaptureDirectSocket with a client already in Serve and proves the peer closes and reserved capacity reaches zero.",
+    "Fresh Unity XML is passing, but the runner process exits 134; it is evidence for the named test only, not whole-command success."
+  ],
+  "promptInjection": "N/A: no instruction-text or agent-input surface is present in this socket/protocol scope."
+}

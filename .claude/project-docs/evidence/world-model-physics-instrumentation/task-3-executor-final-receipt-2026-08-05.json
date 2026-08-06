@@ -1,0 +1,60 @@
+{
+  "event": "ExecutorFinalReceipt",
+  "captured_at": "2026-08-05T04:29:58+10:00",
+  "todo": 3,
+  "verdict": "confirmed",
+  "success_criteria": [
+    {
+      "scenario": "focused recorder contract suite, first run",
+      "invocation": "Unity 2019.4 EditMode PhysicsShotRecorderTests and PhysicalShotRecorderTests",
+      "binary_observable": "Passed total=14 passed=14 failed=0 skipped=0",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-3-physics.xml",
+      "sha256": "ac894134278f2b84b598426430bf11e0a4f7934f317d1890784f9bef1f057d99"
+    },
+    {
+      "scenario": "focused recorder contract suite, repeat run",
+      "invocation": "Unity 2019.4 EditMode PhysicsShotRecorderTests and PhysicalShotRecorderTests",
+      "binary_observable": "Passed total=14 passed=14 failed=0 skipped=0",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-3-physics-repeat.xml",
+      "sha256": "89d664dc9bb4028d4e921a0074fdef426c68f94ceff8108b3025973bb312fb74"
+    },
+    {
+      "scenario": "frozen contract and adversarial semantic review",
+      "invocation": "independent read-only Todo 3 final gate",
+      "binary_observable": "verdict=confirmed blockers=0",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-3-independent-confirmed-final-2026-08-05.json",
+      "sha256": "109a70a8f016615cd657755ad02a33f0bdfcf82c348be5018894e6f30cde4dd2"
+    },
+    {
+      "scenario": "canonical project preservation",
+      "invocation": "cmp -s task-2-canonical-project-before.tsv task-3-canonical-project-after.tsv",
+      "binary_observable": "exit_code=0",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-3-canonical-project-after.tsv"
+    },
+    {
+      "scenario": "production player preservation",
+      "invocation": "cmp -s task-2-production-player-before.tsv task-3-production-player-after.tsv",
+      "binary_observable": "exit_code=0",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-3-production-player-after.tsv"
+    },
+    {
+      "scenario": "test artifact freshness",
+      "invocation": "compare XML mtimes with latest recorder source/test mtime",
+      "binary_observable": "both comparisons exit_code=0",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-3-independent-confirmed-final-2026-08-05.json"
+    },
+    {
+      "scenario": "post-validation cleanup",
+      "invocation": "check Unity processes, Temp, Logs, Unity lock files, and completed verifier",
+      "binary_observable": "zero Unity/product/verifier processes; Temp and Logs absent; zero lock files",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-3-cleanup-receipt.json"
+    },
+    {
+      "scenario": "owned diff hygiene",
+      "invocation": "git diff --check -- <owned source and test files>",
+      "binary_observable": "exit_code=0 and empty output",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-3-executor-final-receipt-2026-08-05.json"
+    }
+  ],
+  "scope_note": "No unfiltered full EditMode suite is claimed. Unity's known post-XML CEF shutdown signal does not alter the parsed NUnit result."
+}

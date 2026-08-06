@@ -1,0 +1,126 @@
+{
+  "aggregate": {
+    "failed": 1,
+    "passed": 43,
+    "skipped": 0,
+    "total": 44
+  },
+  "allPassed": false,
+  "checkedAt": "2026-08-06T23:46:39.902487+10:00",
+  "nonPassingCases": [
+    "ABBirdLaunchTests.BirdLaunchRecordsTheExactVelocityAfterItIsAssigned"
+  ],
+  "partitions": [
+    {
+      "counts": {
+        "failed": 1,
+        "passed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "nonPassingCases": [
+        "ABBirdLaunchTests.BirdLaunchRecordsTheExactVelocityAfterItIsAssigned"
+      ],
+      "partition": "ABBirdLaunchTests",
+      "processExitCode": 134,
+      "xmlPresent": true,
+      "xmlResult": "Failed(Child)"
+    },
+    {
+      "counts": {
+        "failed": 0,
+        "passed": 1,
+        "skipped": 0,
+        "total": 1
+      },
+      "nonPassingCases": [],
+      "partition": "ABGameWorldLifecycleTests",
+      "processExitCode": 134,
+      "xmlPresent": true,
+      "xmlResult": "Passed"
+    },
+    {
+      "counts": {
+        "failed": 0,
+        "passed": 3,
+        "skipped": 0,
+        "total": 3
+      },
+      "nonPassingCases": [],
+      "partition": "LegacyGroundTruthTests",
+      "processExitCode": 134,
+      "xmlPresent": true,
+      "xmlResult": "Passed"
+    },
+    {
+      "counts": {
+        "failed": 0,
+        "passed": 2,
+        "skipped": 0,
+        "total": 2
+      },
+      "nonPassingCases": [],
+      "partition": "PhysicalEntityRegistryTests",
+      "processExitCode": 139,
+      "xmlPresent": true,
+      "xmlResult": "Passed"
+    },
+    {
+      "counts": {
+        "failed": 0,
+        "passed": 5,
+        "skipped": 0,
+        "total": 5
+      },
+      "nonPassingCases": [],
+      "partition": "PhysicalShotRecorderTests",
+      "processExitCode": 134,
+      "xmlPresent": true,
+      "xmlResult": "Passed"
+    },
+    {
+      "counts": {
+        "failed": 0,
+        "passed": 2,
+        "skipped": 0,
+        "total": 2
+      },
+      "nonPassingCases": [],
+      "partition": "PhysicalSnapshotExporterTests",
+      "processExitCode": 134,
+      "xmlPresent": true,
+      "xmlResult": "Passed"
+    },
+    {
+      "counts": {
+        "failed": 0,
+        "passed": 13,
+        "skipped": 0,
+        "total": 13
+      },
+      "nonPassingCases": [],
+      "partition": "PhysicsCaptureProtocolTests",
+      "processExitCode": 134,
+      "xmlPresent": true,
+      "xmlResult": "Passed"
+    },
+    {
+      "counts": {
+        "failed": 0,
+        "passed": 17,
+        "skipped": 0,
+        "total": 17
+      },
+      "nonPassingCases": [],
+      "partition": "PhysicsShotRecorderTests",
+      "processExitCode": 134,
+      "xmlPresent": true,
+      "xmlResult": "Passed"
+    }
+  ],
+  "processExitCodeNote": "Every partition writes a complete NUnit XML and then the Unity 2019.4 editor crashes during headless shutdown inside CefBrowserMessageLoop::DoMessageLoopIteration, yielding exit 134 or 139. The crash is after the test run and after the receipt is written, so the XML is the authority, not the process exit code. This is an environment issue in Unity's embedded browser under -batchmode -nographics, not a product defect, and it is why this plan has always used partitioned EditMode receipts rather than a single whole-suite exit code.",
+  "project": "tasks/task_template_designer (migration worktree only)",
+  "reviewedCommitSha": "f90c31ed9607a2a2344b5e2bad9f01361439f31d",
+  "schemaVersion": "novphy_editmode_partition_receipt_v1",
+  "unity": "2019.4.41f2 (6b23d448b533)"
+}

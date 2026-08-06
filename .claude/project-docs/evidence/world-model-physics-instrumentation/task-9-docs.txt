@@ -1,0 +1,45 @@
+Todo 9 final executor verification
+UTC: 2026-08-05T15:28:58Z
+Status: complete; fresh independent quality and adversarial reviews confirmed the final hashes.
+
+Criterion: Published public contract covers authority/alignment, coordinate/unit clocks, support_v1, ordered events, bounded failure, compatibility, Todo 10 reader, and staged provenance.
+Scenario: happy documentation verification against the real repository root, staged archive receipt, archive bytes, and Task 8 smoke report.
+Invocation: python scripts/verify_physics_capture_docs.py docs
+Binary observable: exit 0; stdout exactly "physics capture documentation verified"; stderr empty.
+Artifact: .omo/evidence/world-model-physics-instrumentation/task-9-docs.txt
+
+Criterion: Semantic section regressions, schema regressions, operational atomicity regressions, and staged archive/report disagreement fail closed.
+Scenario: focused documentation verifier CLI suite.
+Invocation: python -m unittest tests.test_verify_physics_capture_docs -v
+Binary observable: exit 0; 6 tests OK. The suite proves nonzero verifier exits for removed authority/support/event-taxonomy/coordinate-unit/bounded-failure terms, removed provenance, malformed capture_failure JSON, non-atomic promotion/rollback commands, and canonical receipt/report with different named archive bytes.
+Artifact: .omo/evidence/world-model-physics-instrumentation/task-9-docs.txt
+
+Criterion: Staged provenance is bound to the named receipt, actual archive bytes, and accepted Task 8 smoke report.
+Scenario: real staged archive and smoke-report cross-check.
+Invocation: python scripts/verify_physics_capture_docs.py docs; sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz; awk 'NF {print NF, $1, $2}' sciencebirdsgames/physics-v1/archive.sha256
+Binary observable: verifier exit 0; archive SHA-256, two-field receipt digest, and task-8 report provenance all equal c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992; receipt archive is novphy-physics-player-2019.4.41f2.tar.gz; report status=accepted, protected_unchanged=true, accepted_shot_nonempty=true.
+Artifact: .omo/evidence/world-model-physics-instrumentation/task-9-docs.txt
+
+Criterion: Exact promotion and rollback command blocks are present and syntactically valid without execution.
+Scenario: extract named physics_capture_v1_promotion and physics_capture_v1_rollback blocks and parse them with Bash.
+Invocation: awk extractors piped to bash -n for both named blocks.
+Binary observable: exit 0; promotion_rollback_bash_syntax=pass. The commands were parsed only and were not executed.
+Artifact: .omo/evidence/world-model-physics-instrumentation/task-9-docs.txt
+
+Criterion: Verifier implementation quality and documentation hygiene.
+Scenario: Python compilation, rule audit, whitespace validation, and stale-claim/path scans.
+Invocation: python -m py_compile scripts/verify_physics_capture_docs.py tests/test_verify_physics_capture_docs.py; python /home/sukai/.codex/plugins/cache/sisyphuslabs/omo/4.19.4/skills/programming/scripts/python/check-no-excuse-rules.py scripts/verify_physics_capture_docs.py tests/test_verify_physics_capture_docs.py; git diff --check; rg stale/path probes.
+Binary observable: all exit 0; no-excuse audit reports no violations in 2 files; stale_reserved_claim=no_matches; stale_deferred_claim=no_matches; implementation_paths=no_matches; verifier is 249 lines.
+Artifact: .omo/evidence/world-model-physics-instrumentation/task-9-docs.txt
+
+Final source hashes:
+eaed8216f1edce9ebf83e709aa27bf5390a828722e86112a3e7be1acffe0d089  docs/data_contracts/physics_capture_v1.md
+22d99e7720b122c3351e61a4a853e349d6ae782896b87e564d7f7fba4ed0b107  docs/world_model_data_pipeline.md
+d680bc0d874578d3c7997e7f46c5d97b8ef9f5b7e868ec2fdc589024bfafcc2e  scripts/verify_physics_capture_docs.py
+d2cac76e3b2fbd03cd73bc2a63b3c76c81011540da41e418b63b23f5d0fa0a43  tests/test_verify_physics_capture_docs.py
+
+Criterion: Independent post-hash quality and adversarial confirmation.
+Scenario: two fresh read-only reruns against the final four source hashes.
+Invocation: independent quality rerun and independent adversarial rerun recorded below.
+Binary observable: quality verdict CONFIRMED with no findings; adversarial verdict confirmed with recommendation APPROVE; both reproduce happy CLI and six-test suite success and adversarial failure probes.
+Artifacts: .omo/evidence/world-model-physics-instrumentation/task-9-independent-quality-rerun.md; .omo/evidence/world-model-physics-instrumentation/task-9-independent-adversarial-rerun.json

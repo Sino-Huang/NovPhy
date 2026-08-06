@@ -1,0 +1,14 @@
+test_entrypoint_imports_bridge_from_worktree_before_pythonpath (tests.test_verify_physics_player.PhysicsPlayerVerifierTests.test_entrypoint_imports_bridge_from_worktree_before_pythonpath) ... FAIL
+
+======================================================================
+FAIL: test_entrypoint_imports_bridge_from_worktree_before_pythonpath (tests.test_verify_physics_player.PhysicsPlayerVerifierTests.test_entrypoint_imports_bridge_from_worktree_before_pythonpath)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_player.py", line 164, in test_entrypoint_imports_bridge_from_worktree_before_pythonpath
+    self.assertEqual(Path(resolved["file"]), ROOT / "src" / "webui" / "bridge.py")
+AssertionError: PosixPath('/tmp/tmpslhv_r2p/shadow/src/webui/bridge.py') != PosixPath('/mnt/array/sukaih/Project/.novphy-worktree[39 chars].py')
+
+----------------------------------------------------------------------
+Ran 1 test in 0.047s
+
+FAILED (failures=1)

@@ -1,0 +1,84 @@
+test_archive_replacement_failure_preserves_published_pair (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_archive_replacement_failure_preserves_published_pair) ... ok
+test_cli_is_stable_when_only_evidence_and_generated_artifacts_change (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_is_stable_when_only_evidence_and_generated_artifacts_change) ... ok
+test_cli_preserves_unity_metadata_and_payload_hashes (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_preserves_unity_metadata_and_payload_hashes) ... ok
+test_cli_rejects_tracked_product_dirtiness_before_publishing (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_rejects_tracked_product_dirtiness_before_publishing) ... ok
+test_cli_rejects_untracked_unity_input_before_staging (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_cli_rejects_untracked_unity_input_before_staging) ... ok
+test_create_archive_preserves_existing_final_archive_when_gzip_fails (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_create_archive_preserves_existing_final_archive_when_gzip_fails) ... ok
+test_git_revision_accepts_only_digest_bound_ignored_package_pair (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_git_revision_accepts_only_digest_bound_ignored_package_pair) ... ok
+test_git_revision_rejects_missing_or_third_ignored_unity_inputs (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_git_revision_rejects_missing_or_third_ignored_unity_inputs) ... ok
+test_git_revision_rejects_untracked_product_inputs (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_git_revision_rejects_untracked_product_inputs) ... ok
+test_manifest_binds_all_payload_sources_and_remains_deterministic (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_manifest_binds_all_payload_sources_and_remains_deterministic) ... ok
+test_receipt_replacement_failure_leaves_valid_uncommitted_archive (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_receipt_replacement_failure_leaves_valid_uncommitted_archive) ... ok
+test_successful_publication_replaces_archive_before_receipt (tests.test_package_physics_player.PhysicsPlayerPackagerTests.test_successful_publication_replaces_archive_before_receipt) ... ok
+test_ignored_untracked_unity_asset_is_rejected (tests.test_build_physics_player.PhysicsPlayerBuildScriptTests.test_ignored_untracked_unity_asset_is_rejected) ... scripts.package_physics_player.PackagingError: missing provenance-bound Unity package input: tasks/task_template_designer/Packages/manifest.json
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/case.py", line 57, in testPartExecutor
+    yield
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/case.py", line 623, in run
+    self._callTestMethod(testMethod)
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/case.py", line 579, in _callTestMethod
+    if method() is not None:
+       ^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_build_physics_player.py", line 54, in test_ignored_untracked_unity_asset_is_rejected
+    with self.assertRaisesRegex(PackagingError, "untracked product source"):
+AssertionError: "untracked product source" does not match "missing provenance-bound Unity package input: tasks/task_template_designer/Packages/manifest.json"
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/__main__.py", line 18, in <module>
+    main(module=None)
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/main.py", line 102, in __init__
+    self.runTests()
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/main.py", line 274, in runTests
+    self.result = testRunner.run(self.test)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/runner.py", line 217, in run
+    test(result)
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/suite.py", line 84, in __call__
+    return self.run(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/suite.py", line 122, in run
+    test(result)
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/suite.py", line 84, in __call__
+    return self.run(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/suite.py", line 122, in run
+    test(result)
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/suite.py", line 84, in __call__
+    return self.run(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/suite.py", line 122, in run
+    test(result)
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/case.py", line 678, in __call__
+    return self.run(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/case.py", line 622, in run
+    with outcome.testPartExecutor(self):
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/contextlib.py", line 158, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/case.py", line 74, in testPartExecutor
+    _addError(self.result, test_case, exc_info)
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/case.py", line 97, in _addError
+    result.addFailure(test, exc_info)
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/runner.py", line 106, in addFailure
+    super(TextTestResult, self).addFailure(test, err)
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/result.py", line 17, in inner
+    return method(self, *args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/result.py", line 122, in addFailure
+    self.failures.append((test, self._exc_info_to_string(err, test)))
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/result.py", line 176, in _exc_info_to_string
+    tb = self._clean_tracebacks(exctype, value, tb, test)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/result.py", line 214, in _clean_tracebacks
+    value.__traceback__ = tb
+    ^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 5, in __setattr__
+TypeError: super(type, obj): obj must be an instance or subtype of type

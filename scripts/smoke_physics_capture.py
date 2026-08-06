@@ -259,7 +259,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--stage", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--report", type=Path, default=ROOT / ".omo/evidence/world-model-physics-instrumentation/task-8-smoke.json")
+    parser.add_argument("--report", type=Path, default=ROOT / ".claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json")
     parser.add_argument("--agent-port", type=int)
     parser.add_argument("--game-port", type=int)
     parser.add_argument("--physics-port", type=int, default=2004)

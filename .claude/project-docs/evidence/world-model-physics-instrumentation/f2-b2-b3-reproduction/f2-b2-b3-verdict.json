@@ -1,0 +1,48 @@
+{
+  "task": "F2 B2/B3 deep debugging verifier",
+  "sourceCommit": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+  "sourceTree": "scoped source paths git diff --quiet exit 0",
+  "verdict": "needs-fix",
+  "scope": "read-only; no Unity build/import; no plan/ledger/stage/protected-root writes",
+  "B2": {
+    "claim": "final shot becomes visible by rename before metadata rewrite/revalidation completes",
+    "verdict": "confirmed",
+    "hypotheses": [
+      {"id":"B2-H1","axis":"ordering","hypothesis":"collect_rollouts promotes shot_dir with Path.replace before quarantine-path metadata rewrite and final validator rerun","verification":"source-order probe","observable":"rename line 1719, rewrite line 1720, revalidation line 1722; rename_before_rewrite=true; rename_before_revalidation=true","artifactRefs":["b2-source-order"]},
+      {"id":"B2-H2","axis":"failure_injection","hypothesis":"a failure in post-rename metadata rewrite leaves final artifact visible even though promotion is incomplete","verification":"actual collector with _rewrite_quarantined_metadata patched to raise after observing paths","observable":"injected exception; final_exists_before_rewrite=true; tmp_exists_before_rewrite=false; final_exists_after_failure=true; tmp_exists_after_failure=false","artifactRefs":["b2-failure-v2"]},
+      {"id":"B2-H3","axis":"ordering/metadata-consistency","hypothesis":"the visible final metadata still carries pre-promotion tmp validation provenance if rewrite fails","verification":"same failure injection, parse final metadata after exception","observable":"final_validation_shot_dir ends in shot_001.tmp while final shot_001 exists; demonstrates externally visible stale path metadata","artifactRefs":["b2-failure-v2"]}
+    ]
+  },
+  "B3": {
+    "claim": "Unity contacts/protocol response strings are fully materialized before configured limits",
+    "verdict": "confirmed",
+    "hypotheses": [
+      {"id":"B3-H1","axis":"ordering","hypothesis":"BuildCaptureEnvelope creates full state/events strings before BuildSuccessEnvelope applies MaxJsonBytes/MaxEnvelopeBytes checks","verification":"source call-order probe and line inspection","observable":"runtime order CreateFinalizedSnapshot -> BuildStateJson -> BuildEventsJson -> BuildSuccessEnvelope; protocol_limit_after_json_materialization=true","artifactRefs":["b3-source-v2"]},
+      {"id":"B3-H2","axis":"failure_injection/oversize input","hypothesis":"an oversized response is represented as a fully allocated string before the limit rejection path","verification":"inspect existing PhysicsCaptureProtocolTests oversized string fixture and BuildSuccessEnvelope ordering","observable":"test allocates new string('x', MaxJsonBytes + 1) before invoking rejection; BuildSuccessEnvelope receives materialized state/events strings","artifactRefs":["b3-source-v2"]},
+      {"id":"B3-H3","axis":"memory allocation","hypothesis":"IEnumerable contact streams and Unity collider inputs are materialized to arrays/lists before recorder record/byte limits execute","verification":"source probe plus bounded Python allocation model of 50,000 contact objects","observable":"IEnumerable ToArray line 370 precedes record limit line 405; Unity inputs list/ToArray lines 439/446 precede limit; bounded model materialized 50,000 objects with 4,436,152-byte peak","artifactRefs":["b3-source-v2","b3-allocation-model"]}
+    ]
+  },
+  "commands": [
+    {"command":"git rev-parse HEAD; git diff --quiet -- <scoped source paths>","exitCode":0,"observable":"exact requested commit; scoped source clean","artifactRefs":["cleanup"]},
+    {"command":"python heredoc actual collector with patched _rewrite_quarantined_metadata", "exitCode":0, "observable":"B2 final visibility/stale metadata failure injection", "artifactRefs":["b2-failure","b2-failure-v2"]},
+    {"command":"python heredoc source order probe", "exitCode":0, "observable":"B2 ordering line relation", "artifactRefs":["b2-source-order"]},
+    {"command":"python heredoc Unity protocol/recorder source allocation-order probe", "exitCode":0, "observable":"B3 protocol/contact materialization before limits", "artifactRefs":["b3-source","b3-source-v2"]},
+    {"command":"python heredoc bounded 50,000-contact allocation model", "exitCode":0, "observable":"4,436,152-byte peak while materializing list", "artifactRefs":["b3-allocation-model"]},
+    {"command":"timeout 30s python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_completed_shot_with_stale_provenance_is_quarantined_and_recaptured tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_generated_enriched_desktop_worker_runs_through_actual_collector -v", "exitCode":0, "observable":"2/2 tests passed; normal path does not cover injected post-rename failure", "artifactRefs":["focused-python"]}
+  ],
+  "findings": [
+    {"severity":"HIGH","id":"B2","file":"scripts/collect_rollouts.py:1719-1722","message":"Rename exposes shot_001 before metadata path rewrite and final revalidation. Injected failure leaves a visible final artifact with artifact_validation.shot_dir pointing to removed shot_001.tmp.","blocking":true},
+    {"severity":"HIGH","id":"B3","file":"tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs:94-99,139-199; tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:370,405,439-446","message":"Protocol JSON strings and contact collections are fully materialized before configured limits can reject them. BuildSuccessEnvelope checks byte counts only after BuildStateJson/BuildEventsJson have already built strings; recorder overloads ToArray before record/byte limit checks.","blocking":true}
+  ],
+  "artifactRefs": [
+    {"id":"b2-failure","kind":"log","description":"B2 post-rename failure injection raw output","path":".omo/evidence/world-model-physics-instrumentation/f2-b2-b3-reproduction/b2-ordering-failure-injection.log"},
+    {"id":"b2-failure-v2","kind":"log","description":"B2 failure injection including stale final metadata validation path","path":".omo/evidence/world-model-physics-instrumentation/f2-b2-b3-reproduction/b2-ordering-failure-injection-v2.log"},
+    {"id":"b2-source-order","kind":"log","description":"B2 source line ordering probe","path":".omo/evidence/world-model-physics-instrumentation/f2-b2-b3-reproduction/b2-source-order.log"},
+    {"id":"b3-source","kind":"log","description":"Initial B3 source allocation probe","path":".omo/evidence/world-model-physics-instrumentation/f2-b2-b3-reproduction/b3-source-allocation-order.log"},
+    {"id":"b3-source-v2","kind":"log","description":"Corrected B3 runtime/source allocation-order probe","path":".omo/evidence/world-model-physics-instrumentation/f2-b2-b3-reproduction/b3-source-allocation-order-v2.log"},
+    {"id":"b3-allocation-model","kind":"log","description":"Bounded 50,000-contact materialization memory model","path":".omo/evidence/world-model-physics-instrumentation/f2-b2-b3-reproduction/b3-bounded-allocation-model.log"},
+    {"id":"focused-python","kind":"log","description":"Fresh focused Python regression tests","path":".omo/evidence/world-model-physics-instrumentation/f2-b2-b3-reproduction/focused-python.log"},
+    {"id":"source-tree","kind":"log","description":"Exact HEAD and scoped source-clean check","path":".omo/evidence/world-model-physics-instrumentation/f2-b2-b3-reproduction/source-tree.log"},
+    {"id":"cleanup","kind":"json","description":"Temporary roots/process/port cleanup receipt","path":".omo/evidence/world-model-physics-instrumentation/f2-b2-b3-reproduction/f2-b2-b3-cleanup.json"}
+  ]
+}

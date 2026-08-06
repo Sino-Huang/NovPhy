@@ -97,7 +97,7 @@ supervision = dataset[0]["supervision"]
 
 ## Staged provenance and operations
 
-The accepted staged player is the archive named in `sciencebirdsgames/physics-v1/archive.sha256`. That receipt is the source of the staged archive digest. Its generated live-smoke provenance report is `.omo/evidence/world-model-physics-instrumentation/task-8-smoke.json`; it must record the same archive digest, player/protocol digests, an accepted shot, and unchanged protected roots.
+The accepted staged player is the archive named in `sciencebirdsgames/physics-v1/archive.sha256`. That receipt is the source of the staged archive digest. Its generated live-smoke provenance report is `.claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json`; it must record the same archive digest, player/protocol digests, an accepted shot, and unchanged protected roots.
 
 Before collection, verify the stage and then rerun the smoke test. Promotion is permitted only after both commands succeed and their reports agree on the archive digest.
 
@@ -109,7 +109,7 @@ python scripts/verify_physics_player.py --stage "$stage" --expect-sha "$expected
 python scripts/smoke_physics_capture.py \
   --stage sciencebirdsgames/physics-v1 \
   --output-dir "$(mktemp -d)/physics-smoke" \
-  --report .omo/evidence/world-model-physics-instrumentation/task-8-smoke.json
+  --report .claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json
 ```
 
 Collect a new cohort only after the staged selector has been promoted. This command is deliberately opt-in and uses a root distinct from the active legacy cohort:
@@ -117,7 +117,7 @@ Collect a new cohort only after the staged selector has been promoted. This comm
 ```bash physics_capture_v1_collection
 PHYSICS_CAPTURE_V1=1 \
 PHYSICS_PLAYER_ARCHIVE=sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz \
-PHYSICS_SMOKE_MARKER=.omo/evidence/world-model-physics-instrumentation/task-8-smoke.json \
+PHYSICS_SMOKE_MARKER=.claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json \
 RESUME=1 OUT_ROOT=data/physics_capture_v1_cohort NOVPHY_YES=1 \
 scripts/collect_full_rollout_training_dataset.sh
 ```
@@ -139,7 +139,7 @@ from pathlib import Path
 receipt = Path("sciencebirdsgames/physics-v1/archive.sha256").read_text(encoding="ascii").split()
 assert len(receipt) == 2
 expected_sha = receipt[0]
-report = json.loads(Path(".omo/evidence/world-model-physics-instrumentation/task-8-smoke.json").read_text(encoding="utf-8"))
+report = json.loads(Path(".claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json").read_text(encoding="utf-8"))
 assert report["status"] == "accepted"
 assert report["protected_unchanged"] is True
 assert report["provenance"]["archive_sha256"] == expected_sha

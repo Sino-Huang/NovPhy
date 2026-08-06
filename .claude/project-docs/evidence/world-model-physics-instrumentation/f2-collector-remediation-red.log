@@ -1,0 +1,57 @@
+EFF
+======================================================================
+ERROR: test_generated_enriched_desktop_worker_runs_through_actual_collector (tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_generated_enriched_desktop_worker_runs_through_actual_collector)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 210, in test_generated_enriched_desktop_worker_runs_through_actual_collector
+    main()
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/collect_rollouts.py", line 2104, in main
+    manifest = collect_fresh_engine_rollouts(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/mock.py", line 1189, in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 188, in run_actual_collector
+    return collect_rollouts(
+           ^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/collect_rollouts.py", line 1656, in collect_rollouts
+    metadata = capture_rollout(bridge, shot_dir, **capture_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: capture_physics_rollout() got an unexpected keyword argument 'shoot'
+
+======================================================================
+FAIL: test_physics_capture_rejects_explicit_and_derived_frame_counts_above_contract (tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_physics_capture_rejects_explicit_and_derived_frame_counts_above_contract) (name='explicit max_frames')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 230, in test_physics_capture_rejects_explicit_and_derived_frame_counts_above_contract
+    capture_physics_rollout(
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/collect_rollouts.py", line 1017, in capture_physics_rollout
+    capture = bridge.get_physics_capture_v1()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 221, in get_physics_capture_v1
+    raise AssertionError("request 70 must not run for an invalid capture limit")
+AssertionError: request 70 must not run for an invalid capture limit
+
+======================================================================
+FAIL: test_physics_capture_rejects_explicit_and_derived_frame_counts_above_contract (tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_physics_capture_rejects_explicit_and_derived_frame_counts_above_contract) (name='fps and duration')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 230, in test_physics_capture_rejects_explicit_and_derived_frame_counts_above_contract
+    capture_physics_rollout(
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/collect_rollouts.py", line 1017, in capture_physics_rollout
+    capture = bridge.get_physics_capture_v1()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 221, in get_physics_capture_v1
+    raise AssertionError("request 70 must not run for an invalid capture limit")
+AssertionError: request 70 must not run for an invalid capture limit
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.019s
+
+FAILED (failures=2, errors=1)

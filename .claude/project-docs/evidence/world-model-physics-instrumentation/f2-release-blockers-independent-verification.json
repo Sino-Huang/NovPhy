@@ -1,0 +1,123 @@
+{
+  "kind": "Sisyphus AdversarialVerify",
+  "goalId": "world-model-physics-instrumentation",
+  "task": "F2 release-blocker repair independent verification",
+  "verdict": "confirmed",
+  "recommendation": "APPROVE",
+  "confidence": "high",
+  "originalIntent": "Remove the final F2 release blockers without regressing legacy request 38/62 behavior, bounded capture, atomic artifact lifecycle, provenance binding, or Unity connection capacity.",
+  "desiredOutcome": "Gameplay request 38 and direct request 70 use separate transports; direct one-response sockets reconnect for every frame; temporary and validated artifacts remain root-confined under symlink and TOCTOU attacks; stale provenance is quarantined; valid captures resume; typed failures and immutable decoder output persist correctly; original F2 Python and Unity bounds remain green.",
+  "userOutcomeReview": "The exact claimed Python source/test state was reproduced and satisfies the requested release-blocker outcome. The sole full-collector failure is the explicitly documented absent external dataset fixture, confirmed absent on disk. No scoped criterion failure was found.",
+  "sourceHashesArtifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-source-hashes.sha256",
+  "sourceHashes": {
+    "src/webui/bridge.py": "8196664653b77364354a6a0e4fbeec10449ac5a8cbb4ff29114f025fc59b4878",
+    "scripts/manual_agent.py": "2899223f77267f2daa8acf107db2000eca837fbe014e5b7156a058124fbc48be",
+    "scripts/physics_rollout_contract.py": "cc87462173246de83aff2c3adf8a8602f1e024ee4f409c9ae808f6fed8b28892",
+    "scripts/physics_rollout_persistence.py": "9d42fc0d3fc5d599c9cfe63db7ccbff5eca143da43f57b623b2393ef804c96e5",
+    "scripts/collect_rollouts.py": "cb5f63cc696af594561e9ad6e51b78e42e11e240a59322044a3103a7006da40d",
+    "scripts/prepare_rollout_dataset.py": "62c138d94f9a84fd34b49c3bdeb5fd34e0cd9ea2fe2930f619e4e3e5c391f366",
+    "tests/test_webui_bridge.py": "28fcf5bc845408b9a95703eacf3e397a11af65fb52aeaa613a84fb47001abb14",
+    "tests/test_collect_rollouts.py": "b168a9708ad254c1b4be5cf355dbe09de5c2f1608748aa24923cbaa9deef7273",
+    "tests/test_manual_agent.py": "ecda0e5ee7ae7c34a4fa00fdd57479e8622b56ade183ba1007d696aefb5cec3b",
+    "tests/test_prepare_rollout_dataset.py": "85f516632cf510d6d48e79bcbd54c761deef75e4260942c3d011bb9977e0217c"
+  },
+  "commandsResults": [
+    {
+      "command": "sha256sum -c .omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-source-hashes.sha256",
+      "result": "PASS twice: all 10 entries OK before and after verification"
+    },
+    {
+      "command": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_physics_capture_contract tests.test_prepare_rollout_dataset.PhysicsCaptureValidationTests tests.test_webui_bridge.PhysicsCaptureV1Tests tests.test_webui_bridge.PhysicsCaptureV1MalformedEnvelopeTests",
+      "result": "PASS twice: 62 tests, 0 failures, 1.326s and 1.322s"
+    },
+    {
+      "command": "python -m unittest tests.test_prepare_rollout_dataset tests.test_manual_agent",
+      "result": "PASS: 57 tests, 0 failures, 1.207s"
+    },
+    {
+      "command": "python -m unittest tests.test_collect_rollouts",
+      "result": "EXPECTED ENVIRONMENT GAP: 89 tests, one failure only in test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots; both referenced data/novphy_rollouts_dataset fixture roots are absent"
+    },
+    {
+      "command": "python -m py_compile <10 manifest-scoped Python files>",
+      "result": "PASS"
+    },
+    {
+      "command": "git diff --check -- <10 manifest-scoped files>",
+      "result": "PASS"
+    },
+    {
+      "command": "python -m unittest -v <10 named transport, confinement, provenance, decoder, traceback adversarial tests>",
+      "result": "PASS: 10 tests, 0 failures, 0.083s"
+    }
+  ],
+  "manualQAObservables": {
+    "transportSeparation": "Fresh named test observed one gameplay recorder action and one request-70 call on distinct bridge objects.",
+    "realTcpReconnect": "Fresh loopback TCP test accepted two separate connections, received byte 0x46 on each, closed each after one response, and decoded two frames.",
+    "legacyByteIdentity": "Fresh tests observed exact request bytes for request 38 and request 62, including recorder-backed request-38 framing and response consumption.",
+    "confinement": "Fresh tests exercised shot_NNN.tmp root symlink, child sidecar symlink, and post-check sidecar/frame swap to external symlinks; rejection occurred and external target contents remained unchanged.",
+    "provenance": "Fresh test quarantined and recaptured completed shots independently mismatched on player, protocol, and archive provenance.",
+    "decoderAndErrors": "Fresh real-decoder immutable nested MappingProxyType/tuple values persisted; PhysicsPersistenceError accepted standard __traceback__ assignment and preserved typed error codes.",
+    "reuseResumePacingBounds": "Focused matrix covers valid completed-shot reuse, repeated resume, timestamp-observable pacing, finite positive bounds, 63-frame ceiling, malformed request-70 typed failures, and no success metadata on failure.",
+    "misleadingSuccess": "Collector validation rejects incomplete enriched artifacts and does not promote temporary output or increment accepted rollout count."
+  },
+  "adversarialClasses": {
+    "separateGameplayAndDirectTransports": "PASS",
+    "oneResponseReconnectForTwoOrMoreFrames": "PASS",
+    "staticRootSymlink": "PASS",
+    "staticChildSidecarAndFrameSymlink": "PASS",
+    "postCheckToctouSwap": "PASS",
+    "externalBytesUnchanged": "PASS",
+    "playerProtocolArchiveMismatch": "PASS",
+    "request38And62ByteIdentity": "PASS",
+    "realDecoderImmutableMappings": "PASS",
+    "standardTracebackState": "PASS",
+    "typedFailureSemantics": "PASS",
+    "validReuseRepeatedResumePacingAndBounds": "PASS",
+    "malformedOversizedAndTemporalMismatch": "PASS"
+  },
+  "unityVerification": {
+    "conditionalFreshRunTriggered": false,
+    "reason": "The final claim's exact source-hash manifest contains no Unity source bytes.",
+    "inspectedArtifacts": [
+      ".omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-final-run1.xml",
+      ".omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-final-run2.xml"
+    ],
+    "result": "Both authoritative exact-Unity EditMode XML files report 11/11 passed and include queued-plus-in-flight capacity rejection, silent-client timeout/release, request-70 envelope bounds, frozen batch serialization, and end-of-render-frame capture.",
+    "currentUnityHashes": {
+      "tasks/task_template_designer/Assets/Scripts/AIBirdsConnection.cs": "9486923cc316777fd171153a233a0beabbeede67265c353e0d59318123612bfb",
+      "tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs": "409bd8083b8f59b71a3e7476871b836e114718211a9d262f2cf4e7162e69ed43"
+    }
+  },
+  "skillPerspective": {
+    "removeAiSlopsDirectPass": "PASS for release criteria: adversarial tests assert wire bytes, external-byte preservation, persisted output, quarantine/recapture, and connection counts; no deletion-only, requested-removal-only, prompt-prose, or implementation-mirroring blocker was found.",
+    "programmingDirectPass": "PASS for release criteria: typed persistence error, bounded records/bytes/frames, descriptor-rooted resource handling, immutable public records, and observable behavior tests are present.",
+    "reviewReportCoverage": "The inspected f2-remediation-independent-code-review.json explicitly records both programming and remove-ai-slops perspectives and previously identified the TOCTOU gap; the repaired manifest-scoped tests now exercise that adversary.",
+    "notes": [
+      "tests/test_prepare_rollout_dataset.py contains a duplicated normalized command SHA assertion at lines 880 and 882; maintenance-only note, not a success-criterion violation.",
+      "scripts/physics_rollout_persistence.py (317 pure LOC) and scripts/collect_rollouts.py (1995 pure LOC) exceed the skill's generic size guideline; size is not a stated F2 release criterion and is therefore non-blocking."
+    ]
+  },
+  "checkedArtifactPaths": [
+    ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-done-claim.json",
+    ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-source-hashes.sha256",
+    ".omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-code-review.json",
+    ".omo/evidence/world-model-physics-instrumentation/f2-code-quality-manual-qa.json",
+    ".omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-final-run1.xml",
+    ".omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-final-run2.xml",
+    ".omo/plans/world-model-physics-instrumentation.md"
+  ],
+  "evidenceGaps": [
+    "The external gameplay dataset fixture required by one legacy collector test is absent from this worktree; this is the sole full-collector failure and matches the documented known gap.",
+    "No fresh Unity clone was run because the governing exact source manifest does not hash Unity bytes; approval relies on inspected authoritative exact-Unity XML for that unchanged, out-of-manifest surface."
+  ],
+  "dirtyState": "The shared worktree was already broadly dirty. All ten scoped paths retained their claimed hashes throughout verification; this verifier made no product or test source edits.",
+  "cleanup": {
+    "temporaryResourcesCreated": 0,
+    "verifierProcessesRemaining": 0,
+    "verifierListenersRemaining": 0,
+    "ports2004_2005_9001": "no listeners observed",
+    "ownedTemporaryArtifactsRemaining": 0
+  },
+  "blockers": []
+}

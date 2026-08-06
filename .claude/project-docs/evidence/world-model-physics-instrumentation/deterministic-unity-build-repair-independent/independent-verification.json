@@ -1,0 +1,95 @@
+{
+  "doneClaim": "AdversarialVerify",
+  "verdict": "confirmed",
+  "confidence": 0.99,
+  "exactCommit": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+  "gitTree": "c779ce2c5ff7182e1f4af3d99620029245756bad",
+  "goal": "Verify that deterministic Roslyn compilation plus Unity BuildOptions.NoUniqueIdentifier and StrictMode produce repeatable exact Unity 2019.4.41f2 staged archives without weakening verification or protected-root guarantees.",
+  "diffReview": {
+    "files": [
+      "tasks/task_template_designer/Assets/Scripts/Editor/NovPhyBuild.cs",
+      "tasks/task_template_designer/Assets/csc.rsp",
+      "tasks/task_template_designer/Assets/csc.rsp.meta",
+      "tests/test_deterministic_unity_build.py"
+    ],
+    "observed": "Assets/csc.rsp contains exactly -deterministic; BuildPlayerOptions combines BuildOptions.NoUniqueIdentifier and BuildOptions.StrictMode; Unity imported and built this exact source twice.",
+    "diffCheckExit": 0
+  },
+  "independentBuilds": {
+    "commandTemplate": "NOVPHY_PHYSICS_STAGE=$PWD/.omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/build-N timeout --signal=TERM --kill-after=30s 900s ./scripts/build_physics_player.sh",
+    "build1Exit": 0,
+    "build2Exit": 0,
+    "unityVersionObserved": "2019.4.41f2 (6b23d448b533)",
+    "archiveSha256Build1": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+    "archiveSha256Build2": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+    "archiveCmpExit": 0,
+    "provenanceSha256Build1": "7ea3222052889f0a9c6e3c305bfd718b9f18c5cfbaf496ccb120bec564015ead",
+    "provenanceSha256Build2": "7ea3222052889f0a9c6e3c305bfd718b9f18c5cfbaf496ccb120bec564015ead",
+    "provenanceCmpExit": 0,
+    "receiptSha256Build1": "350ab7a9fc4d592a0ad053a89e9be62b74a7997b8a9fc6677cf43103e7c881cf",
+    "receiptSha256Build2": "350ab7a9fc4d592a0ad053a89e9be62b74a7997b8a9fc6677cf43103e7c881cf",
+    "receiptCmpExit": 0,
+    "unitySuccessMarkers": [
+      "Initialize engine version: 2019.4.41f2 (6b23d448b533)",
+      "Batchmode quit successfully invoked - shutting down!",
+      "Exiting batchmode successfully now!"
+    ],
+    "evidence": [
+      "build-1-unity.log",
+      "build-2-unity.log",
+      "build-1-archive.sha256",
+      "build-2-archive.sha256",
+      "build-1-provenance.json",
+      "build-2-provenance.json",
+      "archive-cmp.exit",
+      "provenance-cmp.exit",
+      "receipt-cmp.exit"
+    ]
+  },
+  "verification": {
+    "staticCommandTemplate": "timeout --signal=TERM --kill-after=5s 120s python scripts/verify_physics_player.py --stage <independent-stage> --skip-runtime",
+    "build1StaticExit": 0,
+    "build2StaticExit": 0,
+    "staticObservable": "archive_checksum_verified=true; payload_checksums_verified=true; runtime=null",
+    "wrongShaCommand": "timeout --signal=TERM --kill-after=5s 120s python scripts/verify_physics_player.py --stage <build-1> --expect-sha deadbeef --skip-runtime",
+    "wrongShaExit": 1,
+    "wrongShaStdoutBytes": 0,
+    "wrongShaStderr": "archive SHA-256 mismatch against --expect-sha",
+    "focusedCommand": "python -m unittest tests.test_deterministic_unity_build tests.test_package_physics_player -v",
+    "focusedRun1": "exit 0; 5 tests passed in 0.216s",
+    "focusedRun2": "exit 0; 5 tests passed in 0.218s"
+  },
+  "protectedRoots": {
+    "canonicalProject": "No scoped product change after builds; exact HEAD and tree retained. Unity-generated Library state is outside tracked product scope.",
+    "productionPlayer": "No promotion performed. The three production files read by the build script had identical before/after SHA-256 manifests; comparison exit 0. Worker full-root before/after manifests also have comparison exit 0.",
+    "activeDataset": "No command referenced or wrote the active dataset. Worker root-stat comparison exit is 0; the independent run did not recursively scan the multi-million-file active root.",
+    "canonicalProductStatusLines": 0,
+    "productionInputComparisonExit": 0
+  },
+  "adversarialClasses": {
+    "stale_state": "PASS: separate absent evidence-owned stages were used; build payload roots were fresh mktemp directories.",
+    "dirty_worktree": "PASS: pre-existing .omo churn did not affect identical archives; repeated package tests covered tracked product rejection and passed twice.",
+    "misleading_success_output": "PASS: success required process exits, exact SHA-256 equality, byte comparison, embedded provenance comparison, receipt comparison, and verifier JSON; wrong SHA produced no stdout and exited 1.",
+    "malformed_or_wrong_input": "PASS: wrong expected SHA rejected with the exact mismatch diagnostic.",
+    "flaky_tests": "PASS: focused suite passed twice and two full Unity builds were byte-identical.",
+    "hung_or_long_commands": "PASS: both Unity builds and verifiers were bounded by TERM/KILL timeouts.",
+    "cancel_resume": "NOT_APPLICABLE: deliberate interruption could corrupt shared Unity import state; bounded cancellation was installed and neither build hung.",
+    "prompt_injection": "NOT_APPLICABLE: local source/build inputs only.",
+    "live_runtime": "NOT_RUN: static verification only; the assignment did not request starting the player or rebuilding/promoting the canonical stage."
+  },
+  "slopAndProgrammingReview": {
+    "production": "The two production changes are minimal platform flags; no unnecessary extraction, parsing, normalization, broad error handling, dead code, or scope drift found.",
+    "tests": "The source-parsing tests alone are implementation-adjacent and insufficient proof, but they are not the approval basis. Two real Unity builds, archive byte comparison, provenance comparison, receipt comparison, and real verifier execution independently prove the user-visible criterion.",
+    "maintenanceBlocker": false
+  },
+  "cleanup": {
+    "receipt": "cleanup-receipt.json",
+    "ownedStagesAbsent": true,
+    "ownedProcessesAbsent": true,
+    "temporaryBuildRootsAbsent": true,
+    "unityLockAbsent": true,
+    "productChanges": false
+  },
+  "blockers": [],
+  "evidencePath": ".omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent"
+}

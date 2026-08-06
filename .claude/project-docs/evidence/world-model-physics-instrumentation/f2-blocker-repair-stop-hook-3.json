@@ -1,0 +1,46 @@
+{
+  "schema_version": "novphy_stop_hook_verification_v1",
+  "task": "F2 blocker repair",
+  "completion_claim": 3,
+  "verdict": "confirmed",
+  "serialized_verification": {
+    "invocation": "snapshot six scoped hashes; run 53 focused Python tests; run real temp-root probe; run py_compile, git diff --check, and whole-file API scan; snapshot hashes again",
+    "observables": {
+      "focused_python": "53 tests OK, exit 0",
+      "manual": "symlink_escape_accepted=false, repeated_resume_exception=null, tmp_attempt_after_resume=false, cleanup_root_absent=true",
+      "static": "py_compile_exit=0, diff_check_exit=0, whole_file_rg_exit=1",
+      "hash_stability": "exit 0 before and after Python/manual/static phase"
+    },
+    "artifacts": [
+      "f2-blocker-repair/stop-hook-3-python-manual-static.log",
+      "f2-blocker-repair/stop-hook-3-before.sha256",
+      "f2-blocker-repair/stop-hook-3-after-python.sha256"
+    ]
+  },
+  "unity": {
+    "invocation": "exact Unity 2019.4.41f2 compatibility invocation with PhysicsCaptureProtocolTests.SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt",
+    "observable": "NUnit XML reports total=1 passed=1 failed=0; editor exit 134 occurs after result save in known CEF shutdown SIGSEGV",
+    "process_exit": 134,
+    "artifacts": [
+      "f2-blocker-repair/stop-hook-3-unity.xml",
+      "f2-blocker-repair/stop-hook-3-unity.log",
+      "f2-blocker-repair/stop-hook-3-unity.exit",
+      "f2-blocker-repair/stop-hook-3-unity-summary.log"
+    ]
+  },
+  "full_run_hash_binding": {
+    "observable": "all six scoped files remained byte-identical through the Unity run as well",
+    "artifacts": [
+      "f2-blocker-repair/stop-hook-3-final.sha256",
+      "f2-blocker-repair/stop-hook-3-hash-stability.log"
+    ]
+  },
+  "cleanup": {
+    "owned_unity_processes": 0,
+    "worktree_core_files": 0,
+    "temporary_shot_directories": 0,
+    "artifact": "f2-blocker-repair/stop-hook-3-cleanup.log"
+  },
+  "evidence_integrity": "All cited artifacts exist and are nonempty; this JSON parses successfully.",
+  "protected_scope": "No canonical project, staged player, active cohort, plan, ledger, Boulder, or F2 final evidence mutation was performed."
+}

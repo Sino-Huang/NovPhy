@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="6" result="Failed(Child)" total="6" passed="5" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-08-04 20:05:17Z" end-time="2026-08-04 20:05:18Z" duration="0.6194732">
+  <test-suite type="TestSuite" id="1041" name="Science Birds" fullname="Science Birds" runstate="Runnable" testcasecount="30" result="Failed" site="Child" start-time="2026-08-04 20:05:17Z" end-time="2026-08-04 20:05:18Z" duration="0.619473" total="6" passed="5" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1078" name="Assembly-CSharp-Editor.dll" fullname="/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/ScriptAssemblies/Assembly-CSharp-Editor.dll" runstate="Runnable" testcasecount="30" result="Failed" site="Child" start-time="2026-08-04 20:05:17Z" end-time="2026-08-04 20:05:18Z" duration="0.609976" total="6" passed="5" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="3402883" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestFixture" id="1056" name="PhysicsCaptureProtocolTests" fullname="PhysicsCaptureProtocolTests" classname="PhysicsCaptureProtocolTests" runstate="Runnable" testcasecount="6" result="Failed" site="Child" start-time="2026-08-04 20:05:17Z" end-time="2026-08-04 20:05:18Z" duration="0.608456" total="6" passed="5" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1058" name="CaptureAtEndOfRenderFrameUsesWaitForEndOfFrameBeforeBatch" fullname="PhysicsCaptureProtocolTests.CaptureAtEndOfRenderFrameUsesWaitForEndOfFrameBeforeBatch" methodname="CaptureAtEndOfRenderFrameUsesWaitForEndOfFrameBeforeBatch" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="601978264" result="Passed" start-time="2026-08-04 20:05:17Z" end-time="2026-08-04 20:05:17Z" duration="0.082592" asserts="0">
+          <properties />
+          <output><![CDATA[adding novelty level 3
+]]></output>
+        </test-case>
+        <test-case id="1057" name="Request70EnvelopeContainsActualPngAndSameRenderFrameBatch" fullname="PhysicsCaptureProtocolTests.Request70EnvelopeContainsActualPngAndSameRenderFrameBatch" methodname="Request70EnvelopeContainsActualPngAndSameRenderFrameBatch" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="1717921008" result="Passed" start-time="2026-08-04 20:05:17Z" end-time="2026-08-04 20:05:17Z" duration="0.063400" asserts="0">
+          <properties />
+          <output><![CDATA[adding novelty level 3
+]]></output>
+        </test-case>
+        <test-case id="1062" name="Request70PreflightsUtf8AndCombinedEnvelopeBeforeAllocation" fullname="PhysicsCaptureProtocolTests.Request70PreflightsUtf8AndCombinedEnvelopeBeforeAllocation" methodname="Request70PreflightsUtf8AndCombinedEnvelopeBeforeAllocation" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="235507602" result="Failed" start-time="2026-08-04 20:05:17Z" end-time="2026-08-04 20:05:17Z" duration="0.147000" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  Expected: greater than 67108864
+  But was:  63554460
+]]></message>
+            <stack-trace><![CDATA[at PhysicsCaptureProtocolTests.Request70PreflightsUtf8AndCombinedEnvelopeBeforeAllocation () [0x00048] in /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs:130
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1059" name="Request70RejectsRecorderThatWasNotFinalized" fullname="PhysicsCaptureProtocolTests.Request70RejectsRecorderThatWasNotFinalized" methodname="Request70RejectsRecorderThatWasNotFinalized" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="1027385436" result="Passed" start-time="2026-08-04 20:05:17Z" end-time="2026-08-04 20:05:17Z" duration="0.051018" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1061" name="Request70ReturnsTypedFailureForEveryUnityEnvelopeBound" fullname="PhysicsCaptureProtocolTests.Request70ReturnsTypedFailureForEveryUnityEnvelopeBound" methodname="Request70ReturnsTypedFailureForEveryUnityEnvelopeBound" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="18197784" result="Passed" start-time="2026-08-04 20:05:17Z" end-time="2026-08-04 20:05:18Z" duration="0.197982" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1060" name="Request70SerializesFrozenRecorderBatch" fullname="PhysicsCaptureProtocolTests.Request70SerializesFrozenRecorderBatch" methodname="Request70SerializesFrozenRecorderBatch" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="1269089716" result="Passed" start-time="2026-08-04 20:05:18Z" end-time="2026-08-04 20:05:18Z" duration="0.055217" asserts="0">
+          <properties />
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

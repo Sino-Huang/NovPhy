@@ -1,0 +1,14 @@
+Command: /home/sukai/miniconda3/bin/python -m unittest discover -s tests -p 'test_verify_physics_player.py' -k confinement -v
+Exit: 1 (expected failing-first result)
+Result after completing the requested matrix: Ran 6 tests; 15 assertion failures; no syntax, import, or fixture errors.
+
+Observed failures:
+- archive.sha256 absolute, parent, slash-nested, backslash-ambiguous, and symlink-escaped archive names returned exit 0.
+- provenance absolute, parent, slash-nested, backslash-ambiguous, and symlink-escaped payloads raised no VerificationError.
+- FIFO, character-device, block-device, and socket members reached extraction without an unsafe-member diagnostic.
+- a safe regular file and FIFO were both materialized before rejection, proving extraction lacked complete preflight.
+
+Observed controls:
+- confined regular directory/file extraction passed.
+- existing absolute/parent tar paths and symlink/hardlink members were rejected.
+- Python emitted the extractall filter deprecation warning, confirming no explicit tar filter was selected.

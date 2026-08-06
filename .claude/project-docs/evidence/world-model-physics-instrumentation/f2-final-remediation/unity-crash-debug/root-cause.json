@@ -1,0 +1,40 @@
+{
+  "audit": "Unity 2019.4.41f2 SIGSEGV read-only audit",
+  "status": "blocked_external_environment",
+  "editor": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+  "editor_version": "2019.4.41f2",
+  "probe_count": 3,
+  "probes": [
+    {
+      "name": "no-project-nographics",
+      "log": "probe-1.log",
+      "exit_status": null,
+      "signal": "capture_unavailable",
+      "capture_note": "Unity emitted the loader error, then the zsh wrapper failed while assigning reserved variable status before appending result fields; no fourth probe was run.",
+      "observed_error": "libgconf-2.so.4: cannot open shared object file: No such file or directory"
+    },
+    {
+      "name": "no-project-disable-gpu-force-gfx-st",
+      "log": "probe-2.log",
+      "exit_status": 127,
+      "signal": null,
+      "observed_error": "libgconf-2.so.4: cannot open shared object file: No such file or directory"
+    },
+    {
+      "name": "fresh-empty-project",
+      "log": "probe-3.log",
+      "exit_status": 127,
+      "signal": null,
+      "observed_error": "libgconf-2.so.4: cannot open shared object file: No such file or directory"
+    }
+  ],
+  "root_cause": {
+    "classification": "pre_start_dynamic_loader_failure",
+    "mechanism": "The exact Unity executable cannot load because the system dependency libgconf-2.so.4 is unavailable; process execution stops before CEF, project initialization, graphics setup, or SIGSEGV handling.",
+    "confidence": "high",
+    "toggle_proof": false
+  },
+  "cef_sigsegv": "not_observed",
+  "edit_mode_success": "not_claimed",
+  "migration_project_touched": false
+}

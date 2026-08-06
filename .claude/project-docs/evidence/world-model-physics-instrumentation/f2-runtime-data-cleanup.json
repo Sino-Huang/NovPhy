@@ -1,0 +1,21 @@
+{
+  "status": "clean",
+  "manualQaTemporaryRootRemoved": true,
+  "manualQaArtifact": ".omo/evidence/world-model-physics-instrumentation/f2-runtime-data-manual-qa.log",
+  "recoveryArtifact": ".omo/evidence/world-model-physics-instrumentation/f2-runtime-data-cleanup.log",
+  "interruptedTmpRemoved": ["shot_000.tmp"],
+  "corruptCompletedQuarantined": ["invalid_attempts/shot_001_recovered_01"],
+  "temporaryPathsRemaining": [],
+  "finalOriginalShotRemaining": false,
+  "quarantineMetadataPresent": true,
+  "processesStartedByThisQa": [],
+  "portsOpenedByThisQa": [],
+  "residualProcessOrPorts": false,
+  "explicitCleanupCommands": [
+    "python heredoc with tempfile.TemporaryDirectory(prefix='novphy-f2-qa-') actual collector QA",
+    "python heredoc with tempfile.TemporaryDirectory(prefix='novphy-f2-recovery-') recover_physics_capture_attempts QA",
+    "ps -eo pid=,comm=,args= | awk '$2 ~ /(novphy|ScienceBirds|9001|java)/ {print}'",
+    "ss -ltn | awk '$4 ~ /:(2004|9001)$/ {print}'"
+  ],
+  "exitCodes": {"actualCollectorQa": 0, "recoveryQa": 0, "processPortResidueCheck": 0}
+}

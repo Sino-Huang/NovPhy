@@ -1,0 +1,56 @@
+{
+  "schema_version": "world_model_physics_instrumentation_task_4_done_claim_v1",
+  "event": "DoneClaim",
+  "todo": 4,
+  "status": "done",
+  "protocol": {
+    "request_code": 70,
+    "name": "GET_PHYSICS_CAPTURE_V1",
+    "magic": "SBPV",
+    "version": 1,
+    "legacy_38_62_preserved": true,
+    "transport": "direct loopback TCP"
+  },
+  "changed_files": [
+    "src/webui/bridge.py",
+    "tests/test_webui_bridge.py",
+    "tasks/task_template_designer/Assets/Scripts/AIBirdsConnection.cs",
+    "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs",
+    "tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs"
+  ],
+  "python": {
+    "happy": "Passed 2/2",
+    "malformed": "Passed 9/9",
+    "legacy_and_full_bridge": "Passed 19/19",
+    "failing_first": "task-4-failing-first.txt",
+    "command": "python -m unittest tests.test_webui_bridge -v"
+  },
+  "unity": {
+    "editor": "2019.4.41f2 (6b23d448b533)",
+    "result": "Passed 5/5",
+    "xml": "task-4-fix-green-3.xml",
+    "log": "task-4-fix-green-3.log",
+    "test_filter": "PhysicsCaptureProtocolTests",
+    "xml_parse": "Passed; total=5 passed=5 failed=0"
+  },
+  "manual_qa": {
+    "real_local_tcp": "passed",
+    "png_machine_inspection": "IHDR and 89504e470d0a1a0a passed",
+    "state_event_render_frame": 913,
+    "request_byte": 70
+  },
+  "protected_roots": {
+    "canonical_project_before_after_manifest_sha256": "a986acc9dc911009e7e04bea85ee531ba4b9f9d692afa915456d81bcf7c8bb56",
+    "production_player_before_after_manifest_sha256": "e92a83fb14638b24ba8a0a05d588829823000f3db349ae9eaf39f188f68e8cd5",
+    "active_dataset_modified": false
+  },
+  "cleanup": "task-4-cleanup-receipt.json",
+  "evidence": "task-4-bridge.txt",
+  "verification": {
+    "git_diff_check": "pass",
+    "canonical_project_manifest_cmp": 0,
+    "production_player_manifest_cmp": 0,
+    "targeted_secret_scan": "clean",
+    "source_changes_preserved": true
+  }
+}

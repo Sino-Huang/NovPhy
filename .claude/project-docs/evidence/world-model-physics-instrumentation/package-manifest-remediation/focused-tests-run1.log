@@ -1,0 +1,4 @@
+Scenario: package and build preflight tests with the recorded clean Unity package inputs supplied in the migration worktree.
+Invocation: python -m unittest tests.test_package_physics_player -q
+Observable: Ran 12 tests in 0.686s; OK.
+Note: the shared checkout is env/e5bb99a and does not contain the migration's ignored Packages files or build script; the two clean package files were supplied from the existing physics-unity-2019.4 worktree for this isolated run and removed afterward.

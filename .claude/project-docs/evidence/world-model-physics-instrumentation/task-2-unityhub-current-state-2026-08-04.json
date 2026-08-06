@@ -1,0 +1,16 @@
+{
+  "artifact": "task-2-unityhub-current-state",
+  "captured_at": "2026-08-04",
+  "surface": "Unity Hub desktop via CDP 9333",
+  "cdp_endpoint": "http://127.0.0.1:9333",
+  "route": "#/installs",
+  "observable": {
+    "installs_text": "No installs",
+    "exact_editor": "not visible",
+    "required_editor": "Unity 2019.4.41f2 (6b23d448b533)",
+    "license_state": "not accepted as active Unity Personal because required editor registration is absent"
+  },
+  "verdict": "BLOCKED",
+  "reason": "The live Hub does not visibly list the required exact editor, so the activation gate is not genuinely successful. No equivalent Unity probe was run.",
+  "sanitization": "No credentials, account identifiers, serials, tokens, license-file contents, or raw license material captured."
+}

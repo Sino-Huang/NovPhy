@@ -1,0 +1,19 @@
+{
+  "lane": "f2-code-quality-lane",
+  "verdict": "confirmed",
+  "scope": ["scripts/collect_rollouts.py", "scripts/physics_capture_parsing.py", "scripts/rollout_artifacts.py", "src/webui/bridge.py", "tests/test_collect_rollouts.py", "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs"],
+  "findings": [],
+  "commands": ["python -m py_compile scripts/collect_rollouts.py scripts/physics_capture_parsing.py scripts/rollout_artifacts.py src/webui/bridge.py tests/test_collect_rollouts.py", "git diff --check", "python -m unittest -v tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_webui_bridge.PhysicsCaptureV1Tests tests.test_webui_bridge.PhysicsCaptureV1MalformedEnvelopeTests tests.test_physics_capture_contract.PhysicsCaptureContractTests", "python <TemporaryDirectory malformed/truncated/oversized/symlink fixture probe>", "python <real loopback server withholding request-70 response with bridge timeout>", "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_webui_bridge.PhysicsCaptureV1MalformedEnvelopeTests (twice)"],
+  "binaryObservables": {"py_compile_exit": 0, "diff_check_exit": 0, "focused_tests": "51 tests, OK", "temporary_fixture_assertions": 5, "repeat_runs": [0, 0], "hung_request_guard": "PhysicsCaptureV1ProtocolError; server thread clean"},
+  "artifactRefs": [
+    {"id": "pycompile", "kind": "terminal-log", "description": "Scoped Python bytecode compilation", "path": "/mnt/array/sukaih/Project/NovPhy/.omo/evidence/world-model-physics-instrumentation/f2-code-quality-lane-pycompile.log"},
+    {"id": "diff-check", "kind": "terminal-log", "description": "Whitespace/error check for dirty worktree diff", "path": "/mnt/array/sukaih/Project/NovPhy/.omo/evidence/world-model-physics-instrumentation/f2-code-quality-lane-diff-check.log"},
+    {"id": "focused-tests", "kind": "terminal-log", "description": "Collector, bridge, parser focused unit tests", "path": "/mnt/array/sukaih/Project/NovPhy/.omo/evidence/world-model-physics-instrumentation/f2-code-quality-lane-focused-tests.log"},
+    {"id": "temp-fixtures", "kind": "terminal-log", "description": "Real TemporaryDirectory malformed/truncated/oversized/path assertions", "path": "/mnt/array/sukaih/Project/NovPhy/.omo/evidence/world-model-physics-instrumentation/f2-code-quality-lane-temp-fixtures.log"},
+    {"id": "repeat", "kind": "terminal-log", "description": "Repeated focused test runs for flaky behavior", "path": "/mnt/array/sukaih/Project/NovPhy/.omo/evidence/world-model-physics-instrumentation/f2-code-quality-lane-repeat.log"},
+    {"id": "hung", "kind": "terminal-log", "description": "Real loopback request-70 timeout and thread cleanup", "path": "/mnt/array/sukaih/Project/NovPhy/.omo/evidence/world-model-physics-instrumentation/f2-code-quality-lane-hung-command.log"},
+    {"id": "dirty", "kind": "terminal-log", "description": "Pre-existing dirty worktree and protected-scope checksum observation", "path": "/mnt/array/sukaih/Project/NovPhy/.omo/evidence/world-model-physics-instrumentation/f2-code-quality-lane-dirty-worktree.log"},
+    {"id": "unity-static", "kind": "terminal-log", "description": "Static Unity PhysicsCaptureProtocol bounds and socket inspection", "path": "/mnt/array/sukaih/Project/NovPhy/.omo/evidence/world-model-physics-instrumentation/f2-code-quality-lane-unity-static.log"}
+  ],
+  "residualRisk": "Unity edit-mode tests were not executable because no Unity binary is installed in this environment; PhysicsCaptureProtocol.cs was inspected statically and Python protocol/collector tests passed."
+}

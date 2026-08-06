@@ -1,0 +1,72 @@
+{
+  "adversarialVerify": {
+    "cancel_resume": "PASS: injections exercise the quarantine and no-accepted-shot paths; packaging atomicity tests cover archive and receipt replacement interruption.",
+    "dirty_worktree": "PASS: product-scoped git status is empty at the audited commit; packaging preflight would fail closed otherwise.",
+    "hung_or_long_commands": "PASS: the smoke timeout anomaly was reproduced, diagnosed to the 14.4-million-file protected-root scan, and resolved by raising the bound rather than by reconstructing a report.",
+    "malformed_input": "PASS: verify_physics_player with a wrong --expect-sha exits 1; a stale publication receipt made verify_physics_capture_docs exit 1 until the authority was refreshed, which is the fail-closed behaviour working.",
+    "misleading_success_output": "PASS: EditMode process exit codes are 134/139 from a post-run CEF shutdown crash and were explicitly NOT treated as pass/fail; the NUnit XML result attributes are the authority.",
+    "overfit_slop": "PASS: the wave found and fixed a test that had never passed rather than accepting a green-looking partial receipt.",
+    "repeated_interruptions": "PASS: repeated builds, suites, and smokes did not alter source, archive, receipt, or protected roots.",
+    "stale_state": "PASS: HEAD, tree, stage receipt, and archive bytes were re-read at verdict time; every cited artifact was produced at this pin."
+  },
+  "archiveSha256": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+  "blockers": [],
+  "changedPathAudit": {
+    "areas": {
+      "docs": 3,
+      "scripts": 21,
+      "src": 1,
+      "tasks/task_template_designer": 44,
+      "tests": 14
+    },
+    "changedPathList": "f4-scope-changed-paths.txt",
+    "changedProductPaths": 83,
+    "planCommitCount": 32,
+    "planScopeBase": "8dcec02569dd459a8db7e6393a640aa6a146b114",
+    "planScopeHead": "e2d19ae04946765b0196e043826bb08aa9a09caf"
+  },
+  "checkedAt": "2026-08-07T00:29:35.614733+10:00",
+  "exactEvidenceGaps": [],
+  "guardrails": {
+    "activeCohortChangedFiles": 0,
+    "anyDataPathChangedFiles": 0,
+    "canonicalProjectStillOn2019_3": true,
+    "enrichedCaptureDefaultOff": true,
+    "migratedProjectOn2019_4_41f2": true,
+    "noRgbInference": "no image-derived contacts, support, velocity, energy, or events; all facts come from Unity callbacks over request 70",
+    "noSilentLegacyContractReplacement": "RGB-only episodes remain valid under their declared contract; enriched consumers must opt into physics_capture_v1",
+    "noTrainerOrModel": "no trainer, model, controller, or symbolic curriculum added",
+    "productionPlayerChangedFiles": 0
+  },
+  "knownGapsDisclosed": [
+    "tests.test_collect_rollouts.CollectRolloutsTest.test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots"
+  ],
+  "lane": "F4 Scope fidelity",
+  "planScopeBase": "8dcec02569dd459a8db7e6393a640aa6a146b114",
+  "protectedRoots": {
+    "activeData": "82b60d3b7266fff1ca17ed58af2f3bebe49005e8e2069cceb6e35c42c3b313b4",
+    "canonicalProject": "5c1ec096a2b329295646212ed091e1327a7687e22b599c8c339680adcee392e1",
+    "productionPlayer": "ba826ba78013b95d2f89cae10f8ef1312aa2678df19620f02840a7ded1d54778",
+    "resolvedFrom": "git rev-parse --git-common-dir, so against the real /mnt/array/sukaih/Project/NovPhy rather than worktree-relative paths",
+    "unchanged": true
+  },
+  "publication": {
+    "archiveSha256": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+    "receiptCommittedLast": true,
+    "stage": "sciencebirdsgames/physics-v1"
+  },
+  "recommendation": "APPROVE",
+  "reviewedCommitSha": "e2d19ae04946765b0196e043826bb08aa9a09caf",
+  "reviewedTreeSha": "f0347223e9b56cde2d2d9b9902ce8b4f139b059f",
+  "runtimeInvariantAcrossRepins": {
+    "evidence": "protocol-source-identity.txt",
+    "explanation": "Both fixes touched only build tooling and tests. The shipped player is byte-identical throughout. Archive identity changed purely because provenance.json embeds project.git_head and project.git_tree.",
+    "playerSha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+    "protocolSourceBlob": "462f83d83c599bf9600fbc6ba10f65c7c9ed8162",
+    "protocolSourceUnchangedAcrossAllThreePins": true,
+    "unchangedAcrossAllThreePins": true
+  },
+  "schemaVersion": "novphy_f4_scope_v1",
+  "stage": "sciencebirdsgames/physics-v1",
+  "verdict": "confirmed"
+}

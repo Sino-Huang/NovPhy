@@ -1,0 +1,46 @@
+{
+  "schema_version": "novphy_done_claim_v1",
+  "task": "F2 Unity socket safety repair",
+  "result": "done",
+  "implementation": {
+    "source": "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs",
+    "tests": "tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs",
+    "pending_capacity": 4,
+    "request_read_timeout_milliseconds": 1000,
+    "listener_address": "127.0.0.1",
+    "preserved_request_code": 70,
+    "legacy_connection_file_modified_by_this_task": false
+  },
+  "criteria": [
+    {
+      "criterion": "silent client cannot freeze Unity main thread",
+      "scenario": "real loopback TcpClient connects and sends no request byte",
+      "invocation": "Unity -runTests -testPlatform EditMode -testFilter PhysicsCaptureProtocolTests.SilentLoopbackClientDoesNotBlockTheRequestCoroutineBeforeItsFirstYield",
+      "binary_observable": "red: first MoveNext exceeded 250 ms; green: first MoveNext yielded and main-thread next MoveNext completed below 50 ms",
+      "artifacts": ["f2-unity-socket-red.xml", "f2-unity-socket-focused-1.xml", "f2-unity-socket-focused-2.xml"]
+    },
+    {
+      "criterion": "pending client queue is bounded and overflow is closed",
+      "scenario": "eight real loopback clients connect to capacity-four listener",
+      "invocation": "Unity -runTests -testPlatform EditMode -testFilter PhysicsCaptureProtocolTests.LoopbackConnectionsBeyondPendingCapacityAreRejectedAndClosed",
+      "binary_observable": "red: queue depth 8; green: queue depth <=4 and >=4 remote closures",
+      "artifacts": ["f2-unity-socket-red.xml", "f2-unity-socket-focused-1.xml", "f2-unity-socket-focused-2.xml"]
+    },
+    {
+      "criterion": "request-70 behavior and surrounding EditMode suite remain green",
+      "scenario": "protocol fixture plus all EditMode fixture partitions",
+      "invocation": "exact Unity 2019.4.41f2 EditMode, partitioned by fixture after monolithic CEF crash",
+      "binary_observable": "protocol 10/10 passed; aggregate 37/37 passed; zero compiler errors",
+      "artifacts": ["f2-unity-socket-fixture-protocol.xml", "f2-unity-socket-editmode-partition-receipt.json"]
+    },
+    {
+      "criterion": "cleanup and protected boundaries",
+      "scenario": "post-run process, core, path, and retained-change audit",
+      "invocation": "ps/ss/find/git status against isolated worktree only",
+      "binary_observable": "zero Editor/test-listener processes, zero worktree core files, no canonical open and no player build/write",
+      "artifacts": ["f2-unity-socket-cleanup-receipt.json", "task-2-originals-unchanged.json"]
+    }
+  ],
+  "known_environment_condition": "Unity headless CEF SIGSEGV after XML save; short-run XML is authoritative, monolithic run excluded",
+  "committed": false
+}

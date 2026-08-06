@@ -1,0 +1,11 @@
+started=2026-08-06T23:58:57+10:00
+py_files=30
+py_compile_exit=0
+bash -n scripts/9001-player-wrapper.sh exit=0
+bash -n scripts/build_physics_player.sh exit=0
+bash -n scripts/collect_full_rollout_training_dataset.sh exit=0
+bash -n scripts/redact_unity_log.sh exit=0
+diff_check_total_hits=42
+diff_check_hits_in_unity_generated_meta=42
+diff_check_hits_in_hand_written_source=0
+finished=2026-08-06T23:58:57+10:00

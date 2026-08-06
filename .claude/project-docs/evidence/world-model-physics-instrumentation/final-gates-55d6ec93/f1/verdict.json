@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "novphy_final_gate_v1",
+  "gate": "F1",
+  "goalId": "world-model-physics-instrumentation",
+  "audit": "plan compliance",
+  "verifiedAt": "2026-08-06T07:19:36+10:00",
+  "verdict": "needs-fix",
+  "recommendation": "REJECT",
+  "confidence": 0.99,
+  "source": {
+    "commit": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "tree": "c779ce2c5ff7182e1f4af3d99620029245756bad",
+    "headExact": true
+  },
+  "publication": {
+    "archive": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+    "archiveSha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+    "staticVerification": "pass",
+    "twoBuildReproducibility": "pass",
+    "publishedRuntimeVerification": "pass",
+    "cleanup": "pass"
+  },
+  "checks": [
+    {
+      "name": "exact source identity",
+      "result": "pass",
+      "observable": "HEAD and HEAD tree exactly match the audited commit and tree"
+    },
+    {
+      "name": "published archive binding and static verification",
+      "result": "pass",
+      "observable": "fresh SHA-256 equals the publication receipt and verify_physics_player reports archive_checksum_verified=true and payload_checksums_verified=true"
+    },
+    {
+      "name": "deterministic Unity rebuild",
+      "result": "pass",
+      "observable": "two independent Unity 2019.4.41f2 builds have identical archive, provenance, and receipt bytes"
+    },
+    {
+      "name": "published runtime semantics and protected roots",
+      "result": "pass",
+      "observable": "request 62 and 70 decoded, one bird_launched among seven events, protected roots unchanged"
+    },
+    {
+      "name": "Todo 9 documentation verifier",
+      "result": "fail",
+      "observable": "python scripts/verify_physics_capture_docs.py docs exits 1: smoke report archive SHA-256 does not match the staged receipt"
+    },
+    {
+      "name": "Todo 9 documentation tests",
+      "result": "fail",
+      "observable": "python -m unittest tests.test_verify_physics_capture_docs -v runs 10 tests with 9 failures; the stale report mismatch preempts the expected assertions"
+    },
+    {
+      "name": "documented collection provenance",
+      "result": "fail",
+      "observable": "resolve_physics_capture_provenance rejects the documented task-8-smoke.json as stale relative to the published archive"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "todo9-stale-published-smoke-binding",
+      "severity": "release-blocking",
+      "requirement": "Todo 9 documentation and verifier must reference generated staged-player provenance/report that agrees with the published archive",
+      "current": {
+        "documentedSmokeReport": ".omo/evidence/world-model-physics-instrumentation/task-8-smoke.json",
+        "documentedArchiveSha256": "c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992",
+        "publishedArchiveSha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+        "documentedEventCount": 0,
+        "collectorFailure": "physics smoke marker is stale relative to the staged player archive"
+      },
+      "affectedPaths": [
+        "docs/data_contracts/physics_capture_v1.md",
+        "scripts/verify_physics_capture_docs.py",
+        "tests/test_verify_physics_capture_docs.py",
+        ".omo/evidence/world-model-physics-instrumentation/task-8-smoke.json"
+      ],
+      "requiredFix": "Generate or designate a fresh successful smoke marker bound to the current published archive, update the public collection command and verifier binding, then rerun the Todo 9 verifier and tests. Do not substitute final runtime approval prose for a marker unless it satisfies resolve_physics_capture_provenance's marker contract."
+    }
+  ],
+  "adversarialClasses": {
+    "stale_state": "fail: stale pre-repair smoke marker remains the canonical Todo 9 binding",
+    "dirty_worktree": "pass: audit assertions target exact commit/tree and evidence paths",
+    "misleading_success_output": "pass: retained approval receipts were cross-checked against fresh commands; Todo 9 remains rejected",
+    "malformed_or_wrong_input": "pass: wrong publication bindings fail closed",
+    "flaky_tests": "fail-not-indicated: the same deterministic stale binding explains the fresh verifier and nine test failures",
+    "hung_or_long_commands": "pass: fresh audit commands completed within bounded tool timeouts",
+    "cleanup": "pass: cleanup receipt reports zero owned processes/listeners/locks and preserves the published stage"
+  },
+  "evidence": {
+    "commandLog": ".omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f1/commands.log",
+    "reproducibility": ".omo/evidence/world-model-physics-instrumentation/deterministic-unity-build-repair-independent/independent-verification.json",
+    "runtime": ".omo/evidence/world-model-physics-instrumentation/final-published-runtime-independent/independent-verification.json",
+    "cleanup": ".omo/evidence/world-model-physics-instrumentation/final-published-runtime/cleanup-receipt.json"
+  }
+}

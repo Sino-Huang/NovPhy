@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "observed_at_utc": "2026-08-05T22:33:03Z",
+  "case_id": 5,
+  "trace_scope": "publish_physics_shot call including finalizer",
+  "real_filesystem_operations": true,
+  "instrumentation": {
+    "os.open": "counted and delegated to the original CPython os.open",
+    "os.replace": "counted and delegated to the original CPython os.replace",
+    "filesystem_mocked": false
+  },
+  "events": [
+    {
+      "sequence": 1,
+      "operation": "os.open",
+      "path": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-scratch-f2-final/case-5-successful-publication",
+      "resolved_path": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-scratch-f2-final/case-5-successful-publication",
+      "flags": 720896,
+      "mode": 511,
+      "dir_fd": null,
+      "write_access": false,
+      "after_shot_publication_rename": false
+    },
+    {
+      "sequence": 2,
+      "operation": "os.open",
+      "path": "shot_005.tmp",
+      "resolved_path": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-scratch-f2-final/case-5-successful-publication/shot_005.tmp",
+      "flags": 720896,
+      "mode": 511,
+      "dir_fd": 3,
+      "write_access": false,
+      "after_shot_publication_rename": false
+    },
+    {
+      "sequence": 3,
+      "operation": "os.open",
+      "path": ".metadata.json.8a445c24ca9a865d53109a1336963fce.tmp",
+      "resolved_path": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-final-remediation/persistence/probe-scratch-f2-final/case-5-successful-publication/shot_005.tmp/.metadata.json.8a445c24ca9a865d53109a1336963fce.tmp",
+      "flags": 655553,
+      "mode": 384,
+      "dir_fd": 4,
+      "write_access": true,
+      "after_shot_publication_rename": false
+    },
+    {
+      "sequence": 4,
+      "operation": "os.replace",
+      "source": ".metadata.json.8a445c24ca9a865d53109a1336963fce.tmp",
+      "destination": "metadata.json",
+      "src_dir_fd": 4,
+      "dst_dir_fd": 4,
+      "is_shot_publication": false
+    },
+    {
+      "sequence": 5,
+      "operation": "os.replace",
+      "source": "shot_005.tmp",
+      "destination": "shot_005",
+      "src_dir_fd": 3,
+      "dst_dir_fd": 3,
+      "is_shot_publication": true,
+      "metadata_sha256_before_rename": "b79270c31280f31061bd660a90bd5780a1363f44282936516cd29e29cfeb8acf",
+      "metadata_size_before_rename": 146
+    }
+  ],
+  "shot_publication_rename_events": [
+    {
+      "sequence": 5,
+      "operation": "os.replace",
+      "source": "shot_005.tmp",
+      "destination": "shot_005",
+      "src_dir_fd": 3,
+      "dst_dir_fd": 3,
+      "is_shot_publication": true,
+      "metadata_sha256_before_rename": "b79270c31280f31061bd660a90bd5780a1363f44282936516cd29e29cfeb8acf",
+      "metadata_size_before_rename": 146
+    }
+  ],
+  "shot_publication_replace_count": 1,
+  "equal_non_null_src_dst_dir_fds": true,
+  "write_open_events_beneath_accepted_shot_after_rename": [],
+  "write_open_count_beneath_accepted_shot_after_rename": 0,
+  "metadata": {
+    "pre_rename_sha256": "b79270c31280f31061bd660a90bd5780a1363f44282936516cd29e29cfeb8acf",
+    "post_rename_sha256": "b79270c31280f31061bd660a90bd5780a1363f44282936516cd29e29cfeb8acf",
+    "pre_rename_size": 146,
+    "post_rename_size": 146,
+    "byte_identical": true
+  }
+}

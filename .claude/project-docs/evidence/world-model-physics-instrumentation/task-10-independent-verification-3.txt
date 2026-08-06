@@ -1,0 +1,37 @@
+focused
+test_raw_contact_and_event_flags_filter_without_tensorizing_graphs (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_raw_contact_and_event_flags_filter_without_tensorizing_graphs) ... ok
+test_rejects_missing_corrupt_stale_or_render_misaligned_sidecars (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_rejects_missing_corrupt_stale_or_render_misaligned_sidecars) ... ok
+test_required_capability_rejects_legacy_rgb_episode (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_required_capability_rejects_legacy_rgb_episode) ... ok
+test_snapshot_survives_post_catalog_sidecar_drift (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_snapshot_survives_post_catalog_sidecar_drift) ... ok
+test_valid_enriched_fixture_maps_exact_immutable_supervision (tests.test_world_model_data.PhysicsSupervisionReaderTests.test_valid_enriched_fixture_maps_exact_immutable_supervision) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.907s
+
+OK
+full
+............................................................................................
+----------------------------------------------------------------------
+Ran 92 tests in 1.225s
+
+OK
+adjacent
+.................
+----------------------------------------------------------------------
+Ran 17 tests in 0.063s
+
+OK
+compile
+diff-check
+no-excuse
+no violations in 3 file(s)
+manual
+{"accepted": 1, "events": 2, "frames": [[0, 100, "shot_001"], [1, 101, "shot_001"]], "provenance": "synchronized_endpoint", "raw_contacts": 2, "support_edges": 2, "types": ["PhysicsFrameSupervision", "PhysicsFrameSupervision"], "units": {"mass": "unity_mass_unit", "velocity": "unity_unit/second"}}
+{"default_sidecar_open": [], "default_sidecar_stat": []}
+{"missing_sidecar_accepted": 0, "missing_sidecar_rejections": 1}
+hashes
+6986fac05cc0f39e5203e8771e6afe9819295012d754ed0c32c8d62945989511  world_model/data/supervision.py
+69c1d7954534aead25c0d2c4ad658aeb7d9f0683fa128c9a8f1afc24268f4ba5  world_model/data/catalog.py
+ac9cd7fa3d794c059d0b016d088d62b0489d13612fae552c9975cac2b39f8364  world_model/data/dataset.py
+3a9b23d419917a3e93a5f7de0aa903638aa91bc011f8d6cfb3cb3a7512091717  world_model/data/__init__.py
+a2f9a1be9d363088d225870132d93b3d6765bbe3557647b1af89476b5dd833c9  tests/test_world_model_data.py

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "novphy_package_final_remediation_done_claim_v1",
+  "status": "complete",
+  "scope": {
+    "modified": [
+      "scripts/package_physics_player.py",
+      "scripts/build_physics_player.sh",
+      "tests/test_package_physics_player.py"
+    ],
+    "added": [
+      "tests/test_build_physics_player.py"
+    ],
+    "verifiedUnchanged": [
+      "scripts/9001-player-wrapper.sh"
+    ],
+    "committed": false,
+    "staged": false,
+    "publishedStageModified": false
+  },
+  "redGreen": {
+    "initial": "10 tests; 7 intended failures",
+    "finalRun1": "12 tests; OK",
+    "finalRun2": "12 tests; OK",
+    "focusedProbes": "6 tests; OK"
+  },
+  "claims": {
+    "temporaryArchiveFsyncedAndValidated": true,
+    "temporaryReceiptFsyncedAndValidated": true,
+    "archiveReplacedBeforeReceipt": true,
+    "receiptIsCommitMarker": true,
+    "caughtFailureCleansTemporarySiblings": true,
+    "trackedInputModificationRejectedBeforeStage": true,
+    "ordinaryUntrackedInputRejectedBeforeStage": true,
+    "ignoredUntrackedUnityInputRejectedBeforeStage": true,
+    "wrapperTrackedBlobRequired": true,
+    "payloadOwnershipExhaustive": true,
+    "externalSourceDigestsBound": true,
+    "deterministicRepeatedBytes": true,
+    "unityVersion": "2019.4.41f2",
+    "unityChangeset": "6b23d448b533"
+  },
+  "quality": {
+    "pycompile": "pass",
+    "noExcuse": "pass",
+    "shellSyntax": "pass",
+    "diffCheck": "pass",
+    "lsp": "unavailable: servers not installed; prior installation decline recorded"
+  },
+  "integrationGate": {
+    "status": "fail_closed",
+    "reason": "scripts/9001-player-wrapper.sh remains untracked because this task forbade commits and did not authorize index changes; the real build now rejects it before Unity or stage writes",
+    "wrapperSha256": "cff7f36268fd29831e0ab0ac6c952379b390c87bb7b1f152962b87322ec801d1"
+  },
+  "residualRisks": [
+    "SIGKILL can leave an uncommitted temporary sibling or remove the receipt marker; it cannot make an uncommitted archive valid because the receipt is committed last",
+    "Adjacent Unity installation modules and compatibility libraries remain broader toolchain inputs outside the explicit embedded-payload provenance contract"
+  ]
+}

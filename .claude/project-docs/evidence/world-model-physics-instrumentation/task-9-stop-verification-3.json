@@ -1,0 +1,28 @@
+{
+  "task": 9,
+  "verification": "third subagent-stop direct rerun",
+  "result": "pass",
+  "executed": [
+    {
+      "scenario": "all focused documentation CLI behaviors",
+      "invocation": "python -m unittest tests.test_verify_physics_capture_docs -v",
+      "binary_observable": "exit 0; Ran 6 tests in 0.701s; OK"
+    },
+    {
+      "scenario": "real published documentation and staged provenance",
+      "invocation": "python scripts/verify_physics_capture_docs.py docs",
+      "binary_observable": "exit 0; stdout physics capture documentation verified"
+    },
+    {
+      "scenario": "implementation quality gates",
+      "invocation": "python -m py_compile scripts/verify_physics_capture_docs.py tests/test_verify_physics_capture_docs.py; git diff --check",
+      "binary_observable": "both commands exit 0"
+    },
+    {
+      "scenario": "source, archive, and required-evidence integrity",
+      "invocation": "test -s required task-9 evidence artifacts; json.tool the done claim and adversarial report; sha256sum scoped source files and archive",
+      "binary_observable": "all artifacts nonempty; both JSON files valid; source hashes remain eaed8216f1edce9ebf83e709aa27bf5390a828722e86112a3e7be1acffe0d089, 22d99e7720b122c3351e61a4a853e349d6ae782896b87e564d7f7fba4ed0b107, d680bc0d874578d3c7997e7f46c5d97b8ef9f5b7e868ec2fdc589024bfafcc2e, d2cac76e3b2fbd03cd73bc2a63b3c76c81011540da41e418b63b23f5d0fa0a43; archive remains c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992"
+    }
+  ],
+  "judgment": "No failed criterion was observed. Completion remains supported by direct reruns and nonempty independent-review evidence."
+}

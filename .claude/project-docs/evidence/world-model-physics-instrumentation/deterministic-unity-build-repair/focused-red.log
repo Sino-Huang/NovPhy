@@ -1,0 +1,31 @@
+test_player_build_omits_unique_identity_and_keeps_strict_failures (tests.test_deterministic_unity_build.DeterministicUnityBuildContractTests.test_player_build_omits_unique_identity_and_keeps_strict_failures) ... FAIL
+test_roslyn_compilation_is_deterministic (tests.test_deterministic_unity_build.DeterministicUnityBuildContractTests.test_roslyn_compilation_is_deterministic) ... ERROR
+
+======================================================================
+ERROR: test_roslyn_compilation_is_deterministic (tests.test_deterministic_unity_build.DeterministicUnityBuildContractTests.test_roslyn_compilation_is_deterministic)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_deterministic_unity_build.py", line 17, in test_roslyn_compilation_is_deterministic
+    response_tokens = COMPILER_RESPONSE.read_text(encoding="ascii").split()
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/pathlib.py", line 1058, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/pathlib.py", line 1044, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets/csc.rsp'
+
+======================================================================
+FAIL: test_player_build_omits_unique_identity_and_keeps_strict_failures (tests.test_deterministic_unity_build.DeterministicUnityBuildContractTests.test_player_build_omits_unique_identity_and_keeps_strict_failures)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_deterministic_unity_build.py", line 42, in test_player_build_omits_unique_identity_and_keeps_strict_failures
+    self.assertEqual(
+AssertionError: Items in the second set but not the first:
+'BuildOptions.NoUniqueIdentifier'
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.001s
+
+FAILED (failures=1, errors=1)

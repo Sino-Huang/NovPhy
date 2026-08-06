@@ -1,0 +1,106 @@
+{
+  "schema_version": "f2_gate_lane_v1",
+  "task": "F2 independent runtime gate review",
+  "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+  "head_sha": "d72d1af1eb7b9a3cd60b0acb5364689e16735ea5",
+  "dirty_worktree": true,
+  "verdict": "confirmed",
+  "recommendation": "APPROVE",
+  "surfaceEvidence": [
+    {
+      "scenarioId": "F2-G1",
+      "criterionReference": "bounded-sidecar-parsing",
+      "surface": "scripts.physics_capture_parsing.parse_physics_sidecars",
+      "exactInvocation": "PYTHONPATH=\"$PWD\" python -c '...parse_physics_sidecars(state,event)...' > .omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/bounded-sidecar-probe.json",
+      "exitCode": 0,
+      "verdict": "PASS",
+      "observable": "A sparse state sidecar larger than MAX_TOTAL_BYTES was rejected with PhysicsContractError invalid_value before JSONL parsing.",
+      "artifactRefs": ["A1"]
+    },
+    {
+      "scenarioId": "F2-G2",
+      "criterionReference": "root-confinement-and-resume",
+      "surface": "scripts.collect_rollouts and scripts.rollout_artifacts",
+      "exactInvocation": "PYTHONPATH=\"$PWD\" python .omo/evidence/world-model-physics-instrumentation/f2-robustness-probe.py > .omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/robustness-probe.json",
+      "exitCode": 0,
+      "verdict": "PASS",
+      "observable": "Accepted first collection, rejected an external physics_state.jsonl symlink, repeated collection without exception, left no shot_001.tmp, and removed the TemporaryDirectory root.",
+      "artifactRefs": ["A2"]
+    },
+    {
+      "scenarioId": "F2-G3",
+      "criterionReference": "pacing",
+      "surface": "scripts.physics_rollout_persistence.persist_physics_rollout",
+      "exactInvocation": "PYTHONPATH=\"$PWD\" python -m unittest -q tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_physics_capture_requests_are_paced_at_target_fps",
+      "exitCode": 0,
+      "verdict": "PASS",
+      "observable": "Injected-clock test passed with request timestamps [0.0, 0.5] and one 0.5-second sleeper interval.",
+      "artifactRefs": ["A3"]
+    },
+    {
+      "scenarioId": "F2-G4",
+      "criterionReference": "focused-python-regression",
+      "surface": "collector, contract, and dataset-validation Python suites",
+      "exactInvocation": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests tests.test_physics_capture_contract tests.test_prepare_rollout_dataset.PhysicsCaptureValidationTests",
+      "exitCode": 0,
+      "verdict": "PASS",
+      "observable": "39 tests passed on each of two runs.",
+      "artifactRefs": ["A4", "A5"]
+    },
+    {
+      "scenarioId": "F2-G5",
+      "criterionReference": "unity-queued-inflight-capacity",
+      "surface": "PhysicsCaptureDirectSocket EditMode tests",
+      "exactInvocation": "env LD_LIBRARY_PATH=/tmp/opencode/unity-2019.4-libssl1.1/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity -batchmode -nographics -projectPath /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer -runTests -testPlatform EditMode -testFilter PhysicsCaptureProtocolTests -testResults .omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-final-run2.xml -logFile .omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-final-run2.log",
+      "exitCode": 134,
+      "verdict": "PASS",
+      "observable": "The authoritative XML result is Passed with 11/11, including LoopbackConnectionsBeyondPendingCapacityAreRejectedAndClosed and SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt; exit 134 occurs only after test completion in the known headless CEF shutdown path.",
+      "artifactRefs": ["A6", "A7"]
+    },
+    {
+      "scenarioId": "F2-G6",
+      "criterionReference": "syntax-and-diff-integrity",
+      "surface": "Python compile and Git whitespace checks",
+      "exactInvocation": "PYTHONPATH=\"$PWD\" python -m py_compile scripts/collect_rollouts.py scripts/rollout_artifacts.py scripts/physics_rollout_persistence.py scripts/physics_rollout_contract.py scripts/physics_capture_parsing.py src/webui/bridge.py; git diff --check",
+      "exitCode": 0,
+      "verdict": "PASS",
+      "observable": "Both compile and diff checks returned zero.",
+      "artifactRefs": ["A8", "A9"]
+    }
+  ],
+  "adversarialCases": [
+    {"scenarioId":"F2-A1","criterionReference":"malformed_input","adversarialClass":"malformed_input","expectedBehavior":"Reject malformed JSON with a typed contract error.","verdict":"PASS","artifactRefs":["A10"]},
+    {"scenarioId":"F2-A2","criterionReference":"stale_state","adversarialClass":"stale_state","expectedBehavior":"Remove stale temporary attempts and quarantine invalid completed artifacts without touching accepted output.","verdict":"PASS","artifactRefs":["A2","A4"]},
+    {"scenarioId":"F2-A3","criterionReference":"dirty_worktree","adversarialClass":"dirty_worktree","expectedBehavior":"Review remains read-only and preserves unrelated dirty changes.","verdict":"PASS","artifactRefs":["A9","A11"]},
+    {"scenarioId":"F2-A4","criterionReference":"flaky_tests","adversarialClass":"flaky_tests","expectedBehavior":"Repeated focused Python runs and Unity XML runs remain green.","verdict":"PASS","artifactRefs":["A4","A5","A6","A7"]},
+    {"scenarioId":"F2-A5","criterionReference":"misleading_success_output","adversarialClass":"misleading_success_output","expectedBehavior":"Verdict uses parsed JSON/XML observables rather than process text or exit code alone.","verdict":"PASS","artifactRefs":["A2","A6","A7"]},
+    {"scenarioId":"F2-A6","criterionReference":"hung_or_long_commands","adversarialClass":"hung_or_long_commands","expectedBehavior":"Bounded socket and temporary-root probes terminate and leave no residue.","verdict":"PASS","artifactRefs":["A11"]},
+    {"scenarioId":"F2-A7","criterionReference":"repeated_interruptions","adversarialClass":"repeated_interruptions","expectedBehavior":"Repeated cleanup/recovery is idempotent and does not leak roots or listeners.","verdict":"PASS","artifactRefs":["A2","A11"]},
+    {"scenarioId":"F2-A8","criterionReference":"prompt_injection","adversarialClass":"prompt_injection","expectedBehavior":"Not applicable.","verdict":"NOT_APPLICABLE","reason":"Only local source, fixtures, and loopback endpoints were consumed; no instruction-bearing external content was processed.","artifactRefs":["A11"]},
+    {"scenarioId":"F2-A9","criterionReference":"cancel_resume","adversarialClass":"cancel_resume","expectedBehavior":"Not applicable beyond the exercised resume path.","verdict":"NOT_APPLICABLE","reason":"The reviewed terminal persistence API has no cancellation token; valid-final resume was covered by F2-G2.","artifactRefs":["A2"]}
+  ],
+  "findings": [
+    {
+      "severity": "MEDIUM",
+      "file": "scripts/collect_rollouts.py",
+      "title": "Collector module remains oversized",
+      "detail": "The changed collector remains a large orchestration module. This is a maintainability advisory and did not fail the requested runtime blockers.",
+      "recommendation": "Track for a separate refactor; do not broaden this gate into unrelated behavior changes."
+    }
+  ],
+  "artifactRefs": [
+    {"id":"A1","kind":"json","description":"Sparse oversize sidecar rejection probe.","path":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/bounded-sidecar-probe.json"},
+    {"id":"A2","kind":"json","description":"Fresh TemporaryDirectory symlink and repeated-resume probe.","path":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/robustness-probe.json"},
+    {"id":"A3","kind":"terminal-log","description":"Injected-clock pacing assertion.","path":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/pacing-test.log"},
+    {"id":"A4","kind":"terminal-log","description":"Focused Python suite run one.","path":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/focused-run1.log"},
+    {"id":"A5","kind":"terminal-log","description":"Focused Python suite run two.","path":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/focused-run2.log"},
+    {"id":"A6","kind":"xml","description":"Unity protocol EditMode result run one, 11/11 passed.","path":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-final-run1.xml"},
+    {"id":"A7","kind":"xml","description":"Unity protocol EditMode result run two, 11/11 passed.","path":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-final-run2.xml"},
+    {"id":"A8","kind":"terminal-log","description":"Python compile transcript.","path":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/compile.log"},
+    {"id":"A9","kind":"terminal-log","description":"Git diff check transcript.","path":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/diff-check.log"},
+    {"id":"A10","kind":"json","description":"Malformed JSON rejection probe.","path":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/malformed-probe.json"},
+    {"id":"A11","kind":"json","description":"Process, port, and temporary-root cleanup scan.","path":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/cleanup-scan.json"},
+    {"id":"A12","kind":"json","description":"Cleanup receipt for this independent lane.","path":"/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/cleanup-receipt.json"}
+  ],
+  "cleanupReceipt": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/f2-remediation-independent-runtime/gate-lane/cleanup-receipt.json"
+}

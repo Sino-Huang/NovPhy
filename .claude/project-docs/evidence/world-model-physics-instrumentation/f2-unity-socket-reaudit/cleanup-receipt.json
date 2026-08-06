@@ -1,0 +1,23 @@
+{
+  "kind": "CleanupReceipt",
+  "scope": "f2-unity-socket-reaudit",
+  "qaPidsRemaining": 0,
+  "qaPortsRemaining": 0,
+  "qaTempRootsRemaining": 0,
+  "commands": [
+    "pgrep -af '/editor/Editor/Unity|Unity.*-batchmode' || true",
+    "ss -ltnp | rg ':(2004|9000|9001|2014|2024|2034)\\b' || true",
+    "find /tmp -maxdepth 1 -name 'novphy-f2-unity-socket-reaudit-*' -print",
+    "sha256sum tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs tasks/task_template_designer/Assets/Scripts/AIBirdsConnection.cs tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs"
+  ],
+  "observables": {
+    "processProbe": "no Unity process; pgrep output contained only the probe shell itself",
+    "portProbe": "no matching listener",
+    "tempProbe": "no matching path",
+    "sourceHashesBeforeAndAfter": {
+      "PhysicsCaptureProtocol.cs": "e249f64b94f320b9f5634bc80764ef4cb9ba6eb64ee9ea7ed7e2ad9c4e967593",
+      "AIBirdsConnection.cs": "9486923cc316777fd171153a233a0beabbeede67265c353e0d59318123612bfb",
+      "PhysicsCaptureProtocolTests.cs": "409bd8083b8f59b71a3e7476871b836e114718211a9d262f2cf4e7162e69ed43"
+    }
+  }
+}

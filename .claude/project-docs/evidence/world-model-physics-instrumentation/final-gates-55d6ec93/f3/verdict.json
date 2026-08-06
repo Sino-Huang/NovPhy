@@ -1,0 +1,165 @@
+{
+  "schemaVersion": "novphy_final_gate_v1",
+  "gate": "F3",
+  "goalId": "world-model-physics-instrumentation",
+  "audit": "independent read-only real manual QA",
+  "verifiedAt": "2026-08-06T07:23:30+10:00",
+  "verdict": "needs-fix",
+  "recommendation": "REJECT",
+  "confirmed": false,
+  "confidence": 1.0,
+  "source": {
+    "commit": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "tree": "c779ce2c5ff7182e1f4af3d99620029245756bad",
+    "headExact": true
+  },
+  "publication": {
+    "stage": "sciencebirdsgames/physics-v1",
+    "receiptStatus": "published",
+    "stageEntries": [
+      "archive.sha256",
+      "novphy-physics-player-2019.4.41f2.tar.gz",
+      "unity-build.log"
+    ],
+    "stageSymlinks": [],
+    "allStageFilesRegularNonempty": true,
+    "archiveSha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+    "archiveChecksumVerified": true,
+    "payloadChecksumsVerified": true
+  },
+  "runtimeEvidence": {
+    "root": ".omo/evidence/world-model-physics-instrumentation/final-published-runtime",
+    "publishedSmokeStartedAt": "2026-08-06T06:53:16+10:00",
+    "publishedSmokeFinishedAt": "2026-08-06T07:00:53+10:00",
+    "publishedSmokeTimeoutSeconds": 900,
+    "publishedSmokeExitCode": 0,
+    "publishedSmokeStatus": "accepted",
+    "publishedSmokePhase": "complete",
+    "smokeRerunPerformedByReviewer": false,
+    "smokeRerunReason": "Existing published-stage smoke passed direct semantic, checksum, and validator checks",
+    "stalePriorF3EvidenceUsed": false,
+    "excludedEvidencePattern": ".omo/evidence/world-model-physics-instrumentation/f3*"
+  },
+  "checks": [
+    {
+      "name": "actual published stage",
+      "result": "pass",
+      "observable": "publication receipt resolves to sciencebirdsgames/physics-v1; stage has exactly three regular nonempty files and no symlinks"
+    },
+    {
+      "name": "request 38 action",
+      "result": "pass",
+      "observable": {
+        "requestCode": 38,
+        "response": 1,
+        "groundTruthCount": 1
+      }
+    },
+    {
+      "name": "decoded legacy request 62",
+      "result": "pass",
+      "observable": {
+        "slingshotReference": {
+          "canvasX": 171,
+          "canvasY": 262,
+          "gameX": 171,
+          "gameY": 217
+        },
+        "allCoordinatesDecodedIntegers": true,
+        "semanticBinding": "perform_known_action -> current_slingshot_reference -> get_symbolic_state_without_screenshot -> request 62"
+      }
+    },
+    {
+      "name": "decoded request 70",
+      "result": "pass",
+      "observable": {
+        "stateDecoded": true,
+        "eventsDecoded": true,
+        "schemaVersion": "physics_capture_v1",
+        "semanticBinding": "capture_finalized_action -> get_physics_capture_v1 -> request 70 -> persisted accepted shot"
+      }
+    },
+    {
+      "name": "accepted validated shot",
+      "result": "pass",
+      "observable": {
+        "shot": ".omo/evidence/world-model-physics-instrumentation/final-published-runtime/published-smoke-output/shot_001",
+        "validatorAccepted": true,
+        "classification": "gameplay-valid",
+        "retryDecision": "accept",
+        "captureContract": "physics_capture_v1",
+        "sidecarsClosed": true,
+        "temporarySiblingAbsent": true
+      }
+    },
+    {
+      "name": "PNG magic",
+      "result": "pass",
+      "observable": {
+        "magicHex": "89504e470d0a1a0a",
+        "ihdr": "IHDR",
+        "sha256": "0cbc30c4c9217292d8777f9122bc461bf3336024f97980274ae8b1bedb486144"
+      }
+    },
+    {
+      "name": "nonempty physics sidecars",
+      "result": "pass",
+      "observable": {
+        "physicsStateBytes": 9836,
+        "physicsEventsBytes": 6300,
+        "physicsStateSha256": "2e59766f227c1aafa481efb692587bf96a027c7b2eacf2cd84385b6300086427",
+        "physicsEventsSha256": "3f0f22d276cabb3dc4136e56db452a89dd78900af5c5deb4b2d6776dfa9180c7",
+        "metadataChecksumsMatch": true
+      }
+    },
+    {
+      "name": "bird_launched event count",
+      "result": "pass",
+      "observable": {
+        "count": 1,
+        "minimum": 1
+      }
+    },
+    {
+      "name": "protected root equality",
+      "result": "pass",
+      "observable": {
+        "protectedContentBeforeAfterSha256": "3a0caf616a6eac5f40b629fb7410d98bdc0a0fd881a2bdc15a7ea02f22530f2c",
+        "activeRootBeforeAfterSha256": "09b971a07934e06d284f9f93d30b8f909d3f274d38d130af152c5e3afca8d6a3",
+        "reportDigestsEqual": true,
+        "reportProtectedUnchanged": true
+      }
+    },
+    {
+      "name": "no process listener lock or temp residue",
+      "result": "fail",
+      "observable": {
+        "matchingProcessCount": 2,
+        "matchingListenerCount": 0,
+        "lockCount": 1,
+        "temporaryPathCount": 0
+      }
+    }
+  ],
+  "blockers": [
+    {
+      "id": "active-concurrent-published-stage-smoke",
+      "severity": "release-blocking",
+      "observable": "PIDs 276695 and 276696 are running smoke_physics_capture.py against sciencebirdsgames/physics-v1",
+      "reviewerAction": "none; read-only gate did not terminate the process"
+    },
+    {
+      "id": "unity-lock-present",
+      "severity": "release-blocking",
+      "observable": "tasks/task_template_designer/Temp/UnityLockfile exists as a zero-byte file",
+      "reviewerAction": "none; read-only gate did not remove the lock"
+    }
+  ],
+  "evidence": {
+    "commands": ".omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/commands.jsonl",
+    "cleanup": ".omo/evidence/world-model-physics-instrumentation/final-gates-55d6ec93/f3/cleanup.json",
+    "publishedSmokeSha256": "d279b4a3a44ab01cad25333fbac1c7efabd2596648e5393ce80df2ee1faf8024",
+    "publicationReceiptSha256": "36bec2ae8d25da70ed77e2a6894607eb58562dbfc390174dfa96aa5f72ac3f5d",
+    "shotMetadataSha256": "ec99b8802ed2d2701b3ba18c0088c0430edacd2356721d6abd41f2cb0a43e933"
+  }
+}

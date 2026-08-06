@@ -1,0 +1,54 @@
+F1 plan-compliance audit for commit 55d6ec93cafc77807342cd7573283f1ed20ca691
+Executed 2026-08-06 Australia/Melbourne
+
+$ git rev-parse HEAD HEAD^{tree}
+exit: 0
+55d6ec93cafc77807342cd7573283f1ed20ca691
+c779ce2c5ff7182e1f4af3d99620029245756bad
+
+$ sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz
+exit: 0
+1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4  sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz
+
+$ python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha 1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4 --skip-runtime
+exit: 0
+{"archive_checksum_verified": true, "archive_sha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4", "payload_checksums_verified": true, "runtime": null}
+
+$ jq -e '<exact commit/tree, two build exits, archive/provenance/receipt equality, empty blockers>' deterministic-unity-build-repair-independent/independent-verification.json
+exit: 0
+true
+
+$ jq -e '<exact commit/archive, request 62/70, one bird_launched, seven events, unchanged protected roots, empty blockers>' final-published-runtime-independent/independent-verification.json
+exit: 0
+true
+
+$ jq -e '<clean status, no owned runtime resources, published stage preserved>' final-published-runtime/cleanup-receipt.json
+exit: 0
+true
+
+$ python scripts/verify_physics_capture_docs.py docs
+exit: 1
+stderr: smoke report archive SHA-256 does not match the staged receipt
+
+$ python -m unittest tests.test_verify_physics_capture_docs -v
+exit: 1
+Ran 10 tests in 1.052s
+FAILED (failures=9)
+Root diagnostic repeated by acceptance tests: smoke report archive SHA-256 does not match the staged receipt
+
+$ python -c 'from pathlib import Path; from scripts.prepare_rollout_dataset import resolve_physics_capture_provenance; print(resolve_physics_capture_provenance(Path("sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz"), Path(".omo/evidence/world-model-physics-instrumentation/task-8-smoke.json")))'
+exit: 1
+ValueError: physics smoke marker is stale relative to the staged player archive
+
+$ rg -n -C 2 'task-8-smoke\.json|PHYSICS_SMOKE_MARKER' docs/data_contracts/physics_capture_v1.md scripts/verify_physics_capture_docs.py
+exit: 0
+The verifier constant, required collection tokens, public smoke command, public collection command, and promotion assertion all designate task-8-smoke.json.
+
+$ jq '.provenance.archive_sha256, .artifact.events, .status, .protected_unchanged' .omo/evidence/world-model-physics-instrumentation/task-8-smoke.json
+exit: 0
+"c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992"
+0
+"accepted"
+true
+
+Final result: NEEDS-FIX. Todo 9 is not compliant with the current published archive.

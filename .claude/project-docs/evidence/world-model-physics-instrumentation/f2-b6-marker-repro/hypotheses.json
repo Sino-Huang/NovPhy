@@ -1,0 +1,25 @@
+{
+  "head": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+  "hypotheses": [
+    {
+      "id": "H1",
+      "claim": "safe_unpack accepts and creates FIFO special members because it rejects only absolute/traversal paths and symbolic or hard links.",
+      "distinguishing_observable": "safe_unpack returns successfully and stat.S_ISFIFO is true for the extracted member."
+    },
+    {
+      "id": "H2",
+      "claim": "safe_unpack has no expanded-byte or compression-ratio ceiling.",
+      "distinguishing_observable": "A small gzip tar expands a zero-filled member to at least 16 MiB in two bounded runs."
+    },
+    {
+      "id": "H3",
+      "claim": "Deep marker JSON is not converted to a typed rejection because RecursionError is not caught by either reader.",
+      "distinguishing_observable": "Both prepare and docs readers raise RecursionError for a depth-1500 JSON value in two bounded runs."
+    },
+    {
+      "id": "H4",
+      "claim": "No single honest task-8-smoke marker satisfies both consumers because docs requires status=accepted while provenance resolution requires status=passed and additional top-level fields.",
+      "distinguishing_observable": "The real accepted marker passes docs and fails provenance; toggling to a resolver-valid passed marker reverses the result."
+    }
+  ]
+}

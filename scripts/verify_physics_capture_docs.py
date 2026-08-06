@@ -15,7 +15,7 @@ JsonObject: TypeAlias = dict[str, JsonValue]
 REPOSITORY_ROOT: Final = Path(__file__).resolve().parents[1]
 CONTRACT_DOCUMENT: Final = Path("data_contracts/physics_capture_v1.md")
 SCHEMA_DOCUMENT: Final = Path("data_contracts/physics_capture_v1.schema.json")
-FINAL_PUBLICATION_DIRECTORY: Final = Path(".omo/evidence/world-model-physics-instrumentation/final-published-runtime")
+FINAL_PUBLICATION_DIRECTORY: Final = Path(".claude/project-docs/evidence/world-model-physics-instrumentation/final-published-runtime")
 DONE_CLAIM_SCHEMA: Final = "novphy_final_published_runtime_done_claim_v1"
 PUBLICATION_RECEIPT_SCHEMA: Final = "novphy_final_publication_v1"
 STAGE_DIRECTORY: Final = Path("sciencebirdsgames/physics-v1")
@@ -34,7 +34,7 @@ SCHEMA_REQUIREMENTS: Final = (
     ("support rule", ("$defs", "support_rule", "properties", "minimum_abs_normal_y", "const"), 0.5),
     ("support rule", ("$defs", "support_rule", "properties", "minimum_vertical_center_delta", "const"), 0.0001),
 )
-COLLECTION_TOKENS: Final = ("PHYSICS_CAPTURE_V1=1", "PHYSICS_PLAYER_ARCHIVE=sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz", "PHYSICS_SMOKE_MARKER=.omo/evidence/world-model-physics-instrumentation/task-8-smoke.json", "OUT_ROOT=data/physics_capture_v1_cohort", "scripts/collect_full_rollout_training_dataset.sh")
+COLLECTION_TOKENS: Final = ("PHYSICS_CAPTURE_V1=1", "PHYSICS_PLAYER_ARCHIVE=sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz", "PHYSICS_SMOKE_MARKER=.claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json", "OUT_ROOT=data/physics_capture_v1_cohort", "scripts/collect_full_rollout_training_dataset.sh")
 PROMOTION_TOKENS: Final = (
     "set -eu",
     "stage=sciencebirdsgames/physics-v1",

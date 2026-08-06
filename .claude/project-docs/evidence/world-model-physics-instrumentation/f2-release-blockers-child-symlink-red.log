@@ -1,0 +1,13 @@
+F
+======================================================================
+FAIL: test_temporary_sidecar_symlink_is_rejected_without_truncating_external_file (tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_temporary_sidecar_symlink_is_rejected_without_truncating_external_file)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 570, in test_temporary_sidecar_symlink_is_rejected_without_truncating_external_file
+    with self.assertRaisesRegex(RolloutCollectionError, "output|symlink|confined"):
+AssertionError: RolloutCollectionError not raised
+
+----------------------------------------------------------------------
+Ran 1 test in 0.021s
+
+FAILED (failures=1)

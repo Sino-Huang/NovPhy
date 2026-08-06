@@ -1,0 +1,35 @@
+{
+  "status": "needs-fix",
+  "preflight": {
+    "matchingUnityEditorProcess": false,
+    "projectLockBefore": "absent",
+    "criterion": "editor executable ending in /Unity with exact project path"
+  },
+  "postflight": {
+    "matchingUnityEditorProcess": false,
+    "projectLockAfter": "present",
+    "lockPath": "tasks/task_template_designer/Temp/UnityLockfile",
+    "lockSizeBytes": 0,
+    "cleanupComplete": false
+  },
+  "unityInvocation": {
+    "count": 1,
+    "retry": false,
+    "termination": "native SIGSEGV; timeout reported dumped core",
+    "nunitXmlProduced": false
+  },
+  "productFilesEdited": [],
+  "testFilesEdited": [],
+  "planLedgerBoulderPublishedStageProtectedRootEdited": [],
+  "gitOperations": "No commit, reset, revert, checkout, amend, or push performed.",
+  "dirtyWorktree": true,
+  "evidenceFilesCreated": [
+    ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/independent-verification.json",
+    ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/cleanup-receipt.json",
+    ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/unity-runtime-independent/focused-editmode.log"
+  ],
+  "failureEvidence": {
+    "logSha256": "8605fe4ab638d06568cbfe9a85c5e4866092bbae27859be16892d6320f8422d2",
+    "sanitizedFailure": "ABBirdLaunchTests attempted AddComponent<ABBird> without a required 2D collider; Unity subsequently terminated with SIGSEGV."
+  }
+}

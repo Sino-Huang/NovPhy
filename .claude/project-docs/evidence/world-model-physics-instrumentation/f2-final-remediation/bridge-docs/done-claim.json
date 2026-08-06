@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "novphy_f2_bridge_docs_remediation_done_claim_v1",
+  "status": "complete",
+  "completedOn": "2026-08-06",
+  "scope": [
+    "src/webui/bridge.py",
+    "tests/test_webui_bridge.py",
+    "scripts/verify_physics_capture_docs.py",
+    "tests/test_verify_physics_capture_docs.py"
+  ],
+  "sourceSha256": {
+    "src/webui/bridge.py": "8be91ea685049843ceee5b33b825b1df46cd6f859f8fa85da5cc1c963953af10",
+    "tests/test_webui_bridge.py": "fb2edaec9ace7bc7e8dcf09e7b1346c27cfd41281b17ea098b87d7c806f4973f",
+    "scripts/verify_physics_capture_docs.py": "463069b44a116b2947d8f7bf441cf878e45e54afd04171fc96fb4a65d0d7eea6",
+    "tests/test_verify_physics_capture_docs.py": "fd83c70a65b10d90fde9ea1ba90d604e42e17861950f3e29f64dbc1fdeaa9d33"
+  },
+  "bridge": {
+    "request38CountBoundedBeforeLoop": true,
+    "request62LengthBoundedBeforeBodyRead": true,
+    "malformedLegacyResponsesTyped": true,
+    "poisonedStreamDisconnected": true,
+    "request38WireCompatible": true,
+    "request62WireCompatible": true,
+    "request70Decoded": true
+  },
+  "documentation": {
+    "currentDoneClaimResolved": true,
+    "publicationReceiptValidated": true,
+    "finalSmokeValidated": true,
+    "stagedReceiptValidated": true,
+    "archiveBytesValidated": true,
+    "archiveSha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4"
+  },
+  "verification": {
+    "bridgeTests": "29 tests passed twice",
+    "documentationTests": "13 tests passed twice",
+    "documentationCli": "passed",
+    "pyCompile": "passed",
+    "noExcuseRules": "no violations in 4 file(s)",
+    "diffCheck": "passed",
+    "manualLoopback": "passed",
+    "lspDiagnostics": "unavailable: basedpyright not installed; installation previously declined"
+  },
+  "journal": ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs/debug-journal.md",
+  "cleanupReceipt": ".omo/evidence/world-model-physics-instrumentation/f2-final-remediation/bridge-docs/cleanup-receipt.json"
+}

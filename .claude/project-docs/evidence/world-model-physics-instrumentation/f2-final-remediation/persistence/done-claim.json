@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "status": "pass",
+  "claimed_at_utc": "2026-08-05T22:58:12Z",
+  "claim": "Accepted physics shots are finalized and validated in shot_NNN.tmp, then published by exactly one descriptor-relative atomic rename with no post-publication writes.",
+  "acceptance": {
+    "trusted_descriptor_retained_through_metadata_finalization": true,
+    "metadata_installed_descriptor_relatively_without_symlink_following": true,
+    "accepted_metadata_complete_before_publication": true,
+    "accepted_artifact_validated_before_publication": true,
+    "single_atomic_publication_rename": true,
+    "published_metadata_byte_identical_to_prepublication_metadata": true,
+    "post_publication_write_count": 0,
+    "fresh_engine_attempt_finalized_before_publication": true,
+    "resume_cleanup_idempotent": true,
+    "legacy_collection_preserved": true
+  },
+  "evidence": [
+    "debug-journal.md",
+    "adversarial-probes.json",
+    "publication-trace.json",
+    "probe-cleanup.json",
+    "rerun-verification.json",
+    "cleanup-receipt.json"
+  ],
+  "known_constraints": [
+    "basedpyright diagnostics were unavailable because installation was previously declined",
+    "the no-excuse checker reports 53 findings on unchanged legacy lines in pre-existing oversized modules"
+  ]
+}

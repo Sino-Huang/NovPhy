@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2.py", line 131, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2.py", line 121, in main
+    report["cases"].append(run_case(bridge, **selected))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2.py", line 74, in run_case
+    physics_after = request70()
+                    ^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.omo/evidence/world-model-physics-instrumentation/task-8-action-probe-round2.py", line 26, in request70
+    capture = physics.get_physics_capture_v1()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/src/webui/bridge.py", line 208, in get_physics_capture_v1
+    return _decode_physics_capture_v1(body)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/src/webui/bridge.py", line 287, in _decode_physics_capture_v1
+    raise PhysicsCaptureV1Failure(failure_code, message)
+src.webui.bridge.PhysicsCaptureV1Failure: physics capture failed (4): no finalized recorder batch

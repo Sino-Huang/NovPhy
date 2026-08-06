@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "novphy_live_request_coverage_v1",
+  "reviewedCommitSha": "f90c31ed9607a2a2344b5e2bad9f01361439f31d",
+  "archiveSha256": "961d99d40bafe5d262eb843a7aada4f94d9da3ebe8cdf1e7f67ebf82d5f37030",
+  "source": "single Phase 2 happy-path run against the published stage, exit 0",
+  "requestCodesExercisedLive": [
+    {
+      "code": 62,
+      "name": "GET_GROUND_TRUTH_WITHOUT_SCREENSHOT",
+      "path": "scripts/smoke_physics_capture.py perform_known_action -> current_slingshot_reference",
+      "proof": "the run resolved a real slingshot reference {canvasX,canvasY,gameX,gameY}; a null reference raises SmokeError and fails the run",
+      "legacy": true
+    },
+    {
+      "code": 38,
+      "name": "GT_SHOOT",
+      "path": "ScienceBirdsBridge.shoot_and_record_ground_truth",
+      "proof": "report action.request_code=38, action.response=1, action.ground_truth_count=1",
+      "legacy": true
+    },
+    {
+      "code": 70,
+      "name": "GET_PHYSICS_CAPTURE_V1",
+      "path": "request-70 envelope decode into one state record plus seven events",
+      "proof": "report wire_capture with state-record fields and 7 events including exactly one bird_launched",
+      "legacy": false
+    }
+  ],
+  "legacyFixtureBytes": {
+    "note": "byte-level 38/62 framing equality is asserted separately by the named unit tests recorded in legacy-request-38-62-fixtures.log"
+  },
+  "satisfies": "F3 requirement to execute the staged-player smoke flow plus a legacy request 62 interaction"
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": "novphy_stop_verification_v1",
+  "task": "F2 release-blocker repair third completion-claim verification",
+  "recorded_at": "2026-08-06T04:49:38+10:00",
+  "verdict": "confirmed",
+  "independent_verdict": {
+    "verdict": "confirmed",
+    "recommendation": "APPROVE",
+    "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-independent-verification.json",
+    "sha256": "ca6a56610029da417576e39742e01d99a9d487dde9ccec7c591dd671744cf801"
+  },
+  "direct_verification": [
+    {
+      "scenario": "seven named release-blocker regressions covering separate transport, per-frame reconnect, root and child symlink confinement, stale provenance, immutable decoder mappings, and traceback state",
+      "invocation": "python -m unittest <7 named F2 release-blocker tests>",
+      "binary_observable": "Ran 7 tests; OK; exit 0",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-stop-hook3-targeted.log",
+      "artifact_sha256": "3e5917dfc1786bd7a112da89dae00c8042e7da2032f142c53166e98151766c7c"
+    },
+    {
+      "scenario": "syntax compilation and scoped diff integrity for all ten hash-manifest files",
+      "invocation": "python -m py_compile <10 files> && git diff --check -- <10 files>",
+      "binary_observable": "static_checks=pass; exit 0",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-stop-hook3-static.log",
+      "artifact_sha256": "d44e6ced772c222d40ffcc2e779a3f766f68dbb400880e8fe8ca1d6d83352a19"
+    },
+    {
+      "scenario": "current sources match the exact independently verified manifest",
+      "invocation": "sha256sum -c .omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-source-hashes.sha256",
+      "binary_observable": "all ten entries report OK",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f2-release-blockers-final-source-hashes.sha256"
+    }
+  ],
+  "approval_state": {
+    "plan_f2_checked": true,
+    "plan_line": 148,
+    "plan_sha256": "223feb61870f98cf8e9ed6a06346f46294d92a7bfc244a1b6fb12fe07c726dcc",
+    "latest_ledger_record_parses": true,
+    "ledger_sha256": "72c97735c2223475a15b570ce89573c756442f02c3ae59fb89f8a6c97bec7a5f",
+    "ledger_event": "final-verification-approved"
+  },
+  "known_environment_gap": "The full collector suite has one legacy test requiring absent external data/novphy_rollouts_dataset fixtures; the independent verifier reproduced and classified it as outside the scoped release blockers.",
+  "cleanup": {
+    "debug_journal_present": false,
+    "owned_probe_processes_remaining": 0,
+    "source_files_modified_during_stop_verification": false
+  }
+}

@@ -1,0 +1,35 @@
+2026-08-06T13:32:08,732308734+10:00
+artifact_listing:
+DoneClaim.json 1682 bytes
+cleanup-receipt.json 2877 bytes
+direct-verification.txt 54 bytes
+fixture-static-proof.txt 489 bytes
+focused-editmode.log 51261 bytes
+lock-cleanup.txt 34 bytes
+postflight.txt 222 bytes
+pre-run-lock-cleanup.txt 176 bytes
+preflight.txt 2499 bytes
+source-hashes.sha256 136 bytes
+unity-exit-code.txt 79 bytes
+
+json_validation:
+OK DoneClaim.json
+BAD cleanup-receipt.json
+
+fixture_assertions:
+15:        birdObject.AddComponent<BoxCollider2D>();
+24:                "AssignLaunchVelocityAndRecord", BindingFlags.Instance | BindingFlags.NonPublic);
+29:            Assert.AreEqual(launchVelocity, body.velocity);
+
+postflight_process_lock:
+stat: cannot statx '/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Temp/UnityLockfile': No such file or directory
+
+head_fixture_hash:
+55d6ec93cafc77807342cd7573283f1ed20ca691
+713e699e513c30125d81bca31884ac52ad87c06b990619cbb177cb1fe30f30b4  /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets/Tests/Editor/ABBirdLaunchTests.cs
+2026-08-06T13:33:16,721523009+10:00
+DoneClaim.json=valid
+cleanup-receipt.json=valid
+lock=absent
+unity=absent
+results_xml=missing_after_sigsegv

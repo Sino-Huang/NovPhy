@@ -1,0 +1,114 @@
+{
+  "gate": "F2",
+  "reviewType": "independent-read-only-code-quality-and-reproducibility",
+  "status": "needs-fix",
+  "confirmed": false,
+  "reviewedAt": "2026-08-06T07:27:57+10:00",
+  "authoritativePlan": "/mnt/array/sukaih/Project/NovPhy/.omo/plans/world-model-physics-instrumentation.md",
+  "binding": {
+    "commit": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+    "tree": "c779ce2c5ff7182e1f4af3d99620029245756bad",
+    "archivePath": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+    "archiveSha256": "1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4",
+    "archiveReceiptSha256": "350ab7a9fc4d592a0ad053a89e9be62b74a7997b8a9fc6677cf43103e7c881cf",
+    "unityVersion": "2019.4.41f2",
+    "unityChangeset": "6b23d448b533",
+    "unityExecutableSha256": "32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150"
+  },
+  "staleApprovalsUsed": false,
+  "reviewLanes": {
+    "goalAndConstraint": "FAIL",
+    "handsOnQa": "FAIL",
+    "codeQuality": "FAIL",
+    "securityAndConfinement": "FAIL",
+    "contextMining": "FAIL"
+  },
+  "criteria": {
+    "request38And62Compatibility": "pass",
+    "boundedSocketEnvelope": "partial",
+    "boundedMemory": "fail",
+    "atomicArtifactLifecycle": "fail",
+    "deterministicOrderingAndBuild": "pass-with-retained-dual-build-evidence",
+    "unity2019_4Compatibility": "pass-with-published-build-and-retained-test-evidence",
+    "symlinkAndToctouConfinement": "fail",
+    "resumeAndProvenance": "fail",
+    "receiptLastPublicationForExactArchive": "pass",
+    "canonicalAndProductionBaselinePreservation": "pass-with-published-receipts"
+  },
+  "blockers": [
+    {
+      "id": "F2-B1",
+      "severity": "high",
+      "summary": "The authoritative smoke marker is stale and the documented final provenance gate fails.",
+      "evidence": "task-8-smoke.json records c7f9fa4c98480c1c1c8e580cb00454beda4fed4bf28a4822d31c561997906992 while archive.sha256 records 1c2a1bbcea87175150451ad8981e7f28ca09195be98f7da4cb8af577d431fef4. Fresh verify_physics_capture_docs.py execution and its happy-path tests fail.",
+      "locations": [
+        ".omo/evidence/world-model-physics-instrumentation/task-8-smoke.json:36",
+        "scripts/verify_physics_capture_docs.py:17",
+        "docs/data_contracts/physics_capture_v1.md:100"
+      ]
+    },
+    {
+      "id": "F2-B2",
+      "severity": "high",
+      "summary": "Accepted-shot publication is not a single atomic transition.",
+      "evidence": "The collector renames shot_NNN.tmp to shot_NNN and then rewrites metadata and revalidates inside the visible final directory. A crash exposes a final-looking artifact before final bytes are complete.",
+      "locations": ["scripts/collect_rollouts.py:1716"]
+    },
+    {
+      "id": "F2-B3",
+      "severity": "high",
+      "summary": "Configured memory limits are applied after unbounded intermediate materialization.",
+      "evidence": "Unity contact collection and request serialization construct complete contact/input/string collections before recorder or envelope limits reject them.",
+      "locations": [
+        "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:387",
+        "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs:128"
+      ]
+    },
+    {
+      "id": "F2-B4",
+      "severity": "high",
+      "summary": "Output-root ancestor symlinks remain a confinement and TOCTOU gap.",
+      "evidence": "Descriptor-relative no-follow checks protect final components, but cleanup and persistence can follow a symlinked output-root ancestor; an independent temporary PoC deleted or wrote external shot artifacts.",
+      "locations": [
+        "scripts/collect_rollouts.py:940",
+        "scripts/collect_rollouts.py:1519",
+        "scripts/physics_rollout_persistence.py:166",
+        "scripts/prepare_rollout_dataset.py:353"
+      ]
+    },
+    {
+      "id": "F2-B5",
+      "severity": "high",
+      "summary": "Packaging and generated worker setup do not fully bind or safely reproduce the claimed source.",
+      "evidence": "Packaging ignores untracked Unity build inputs, stage confinement does not reject protected-root descendants, and generated workers use unrestricted tar/copy operations after raceable provenance checks.",
+      "locations": [
+        "scripts/package_physics_player.py:45",
+        "scripts/build_physics_player.sh:14",
+        "scripts/prepare_rollout_dataset.py:615"
+      ]
+    },
+    {
+      "id": "F2-B6",
+      "severity": "medium",
+      "summary": "Archive and socket adversarial bounds are incomplete.",
+      "evidence": "safe_unpack rejects traversal and links but accepts special files and has no extraction count/expanded-size bounds; deeply nested JSON can raise uncaught RecursionError instead of a typed protocol error.",
+      "locations": [
+        "scripts/verify_physics_player.py:48",
+        "src/webui/bridge.py:340"
+      ]
+    }
+  ],
+  "additionalFailures": [
+    "The broad relevant Python run completed 278 tests with 10 failures: nine documentation/provenance failures and one known-dataset classification failure.",
+    "A fresh exact-editor Unity test attempt produced no XML with -quit; the retry without -quit exceeded the 300-second bound and dumped core, so it is not passing evidence.",
+    "The full implementation diff check reports trailing whitespace in generated Unity .meta files."
+  ],
+  "passingEvidence": [
+    "The archive independently hashes to the required SHA-256 and archive.sha256 agrees.",
+    "Embedded provenance binds the exact commit and tree and exact Unity revision.",
+    "Focused Python F2 suite passed 82/82, including request 38/62 bytes, request 70 malformed/oversize rejection, streaming bounds, symlink swap rejection, resume, quarantine, launcher, static verifier, and deterministic-build contract tests.",
+    "Static staged-player verification passed archive and all payload checksums.",
+    "Retained independent dual-build receipts report byte-identical archives at the required SHA-256.",
+    "Final published runtime evidence records request 38, request 62, request 70, seven events, unchanged protected roots, and receipt-last atomic file publication."
+  ]
+}

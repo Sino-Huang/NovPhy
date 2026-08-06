@@ -1,0 +1,20 @@
+[
+  {
+    "case": "malformed-clock",
+    "detail": "PhysicsArtifactError: invalid physics artifact .omo/evidence/world-model-physics-instrumentation/f3-final-run/adversarial/malformed-clock: invalid_value at physics_state.jsonl:2: clock counters must be nonnegative",
+    "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/adversarial/malformed-clock",
+    "verdict": "REJECTED"
+  },
+  {
+    "case": "stale-render-frame",
+    "detail": "PhysicsArtifactError: invalid physics artifact .omo/evidence/world-model-physics-instrumentation/f3-final-run/adversarial/stale-render-frame: render_frame_mismatch at physics_state.jsonl:2: RGB and state render_frame/source mismatch",
+    "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/adversarial/stale-render-frame",
+    "verdict": "REJECTED"
+  },
+  {
+    "case": "missing-event-sidecar",
+    "detail": "PhysicsArtifactError: invalid physics artifact .omo/evidence/world-model-physics-instrumentation/f3-final-run/adversarial/missing-event-sidecar/physics_events.jsonl: missing artifact",
+    "path": ".omo/evidence/world-model-physics-instrumentation/f3-final-run/adversarial/missing-event-sidecar",
+    "verdict": "REJECTED"
+  }
+]

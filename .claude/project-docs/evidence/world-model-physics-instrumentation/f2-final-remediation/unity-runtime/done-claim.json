@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "novphy_unity_runtime_final_remediation_done_claim_v1",
+  "status": "incomplete",
+  "complete": false,
+  "scope": {
+    "unityVersion": "2019.4.41f2",
+    "unityRevision": "6b23d448b533",
+    "requestCode": 70,
+    "legacyRequest38And62DispatchModified": false,
+    "committed": false
+  },
+  "implementation": {
+    "boundedNonblockingResponseWrite": true,
+    "allJsonControlCharactersEscaped": true,
+    "elapsedFixedTimeTimeout": true,
+    "finalizedRecorderImmutable": true,
+    "assignedLaunchVelocityRecorded": true
+  },
+  "verification": {
+    "redSourceProbes": {
+      "status": "pass",
+      "defectsObserved": 5,
+      "artifact": "red-source-probes.result.txt"
+    },
+    "greenSourceProbes": {
+      "status": "pass",
+      "declaredCheckCount": 17,
+      "failureCount": 0,
+      "artifact": "green-source-probes.result.txt"
+    },
+    "diffCheck": "pass",
+    "csharpLsp": "unavailable: server not installed and prior installation decline recorded",
+    "unityEditMode": {
+      "status": "not_run",
+      "invocations": 1,
+      "exitCode": 1,
+      "resultsXmlProduced": false,
+      "testsExecuted": false,
+      "reason": "Unity rejected editor-script compilation before NUnit discovery because PhysicsCaptureProtocolTests.cs caught ObjectDisposedException after its InvalidOperationException base type.",
+      "postRunCorrection": "The catch clauses were reordered so ObjectDisposedException precedes InvalidOperationException.",
+      "rerun": "not performed because this remediation authorized exactly one Unity invocation",
+      "artifacts": [
+        "unity-command.txt",
+        "unity-exit-code.txt",
+        "focused-editmode.log"
+      ]
+    }
+  },
+  "verdict": "The source remediation and static regression probes are green, but completion cannot be claimed because the focused EditMode tests did not execute in the sole authorized Unity pass.",
+  "remainingGate": "Run the same focused Unity 2019.4.41f2 EditMode filter in a separately authorized invocation and require NUnit XML with zero failures."
+}

@@ -1,0 +1,11 @@
+scripts/physics_capture_parsing.py:58:            raise contract_error(ContractErrorCode.EXPECTED_OBJECT, f"{path}:{line_number}", "record must be an object")
+scripts/physics_capture_parsing.py:99:def _object(record: JsonObject, field: str, location: str) -> JsonObject:
+scripts/physics_capture_parsing.py:143:    coordinates = _object(record, "coordinates", location)
+scripts/physics_capture_parsing.py:180:    limits_raw = _object(record, "capture_limits", location)
+scripts/physics_capture_parsing.py:185:    rule_raw = _object(record, "support_rule", location)
+scripts/physics_capture_parsing.py:212:    _exact_fields(value, frozenset(("entity_id", "unity_instance_id", "object_class", "object_type", "screen_polygon", "world_pose", "life", "body")), location)
+scripts/physics_capture_parsing.py:219:    pose = _object(value, "world_pose", location)
+scripts/physics_capture_parsing.py:221:    return SceneNode(EntityId(entity_id), _integer(value, "unity_instance_id", location), _string(value, "object_class", location), _string(value, "object_type", location), polygon, WorldPose(_vector(_object(pose, "position", location), location), _number(pose, "rotation_degrees", location)), _optional_number(value, "life", location), _parse_body(_object(value, "body", location), f"{location}.body"))
+scripts/physics_capture_parsing.py:228:    contact = RawContact(ContactId(_string(value, "contact_id", location)), EntityId(_string(value, "entity_a_id", location)), EntityId(_string(value, "entity_b_id", location)), _integer(value, "collider_a_id", location), _integer(value, "collider_b_id", location), _vector(_object(value, "point", location), location), _vector(_object(value, "normal_a_to_b", location), location), _number(value, "separation", location), _vector(_object(value, "relative_velocity_a_to_b", location), location), _optional_number(value, "normal_impulse", location), _optional_number(value, "tangent_impulse", location), _boolean(value, "is_trigger", location))
+scripts/physics_capture_parsing.py:255:    rgb_raw = _object(record, "rgb_frame", location)
+scripts/physics_capture_parsing.py:288:    payload = _object(record, "payload", location)

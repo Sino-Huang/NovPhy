@@ -1,0 +1,17 @@
+.............................F...
+======================================================================
+FAIL: test_physics_frame_relative_path_cannot_escape_shot_root (tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_physics_frame_relative_path_cannot_escape_shot_root)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_collect_rollouts.py", line 216, in test_physics_frame_relative_path_cannot_escape_shot_root
+    with self.assertRaisesRegex(PhysicsArtifactError, "outside"):
+AssertionError: PhysicsArtifactError not raised
+
+----------------------------------------------------------------------
+Ran 33 tests in 0.188s
+
+FAILED (failures=1)
+{
+  "manifest": "/tmp/tmpkosn6tc0/rollouts/manifest.json",
+  "rollout_count": 1
+}

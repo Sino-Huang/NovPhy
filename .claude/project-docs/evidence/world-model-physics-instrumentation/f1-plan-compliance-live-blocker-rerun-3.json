@@ -1,0 +1,17 @@
+{
+  "review": "F1 plan compliance blocker verification rerun 3",
+  "verdict": "needs-fix",
+  "invocation": "python -c 'parse f3-live-qa.json and f3-action-probe/report.json; assert exact blocker fields'",
+  "exit_code": 0,
+  "observable": {
+    "actionPerformed": false,
+    "smokeEventCount": 0,
+    "bridgeShootReturn": 1,
+    "probeEventCount": 0,
+    "smokeStatus": "accepted",
+    "probeStatus": "accepted"
+  },
+  "captured_output": ".omo/evidence/world-model-physics-instrumentation/f1-plan-compliance-live-blocker-rerun-3.log",
+  "conclusion": "F1 cannot be marked complete; Todo 8 must perform and verify a request-70 gameplay action before accepting the shot.",
+  "cleanup": "Read-only verification created no processes, ports, or temporary fixture roots."
+}

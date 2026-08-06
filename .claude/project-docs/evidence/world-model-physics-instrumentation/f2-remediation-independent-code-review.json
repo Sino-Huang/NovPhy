@@ -1,0 +1,113 @@
+{
+  "kind": "AdversarialVerify",
+  "goalId": "world-model-physics-instrumentation",
+  "task": "F2 remediation independent code review",
+  "verdict": "needs-fix",
+  "codeQualityStatus": "BLOCK",
+  "recommendation": "REQUEST_CHANGES",
+  "scope": [
+    "scripts/physics_capture_parsing.py",
+    "scripts/physics_capture_validation.py",
+    "scripts/rollout_artifacts.py",
+    "scripts/collect_rollouts.py",
+    "tests/test_physics_capture_contract.py",
+    "tests/test_collect_rollouts.py",
+    "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs",
+    "tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs"
+  ],
+  "findings": {
+    "CRITICAL": [],
+    "HIGH": [
+      {
+        "id": "F2-TOCTOU-001",
+        "file": "scripts/rollout_artifacts.py",
+        "lines": [32, 45, 92, 118],
+        "title": "Root confinement is check-then-reopen and can be raced",
+        "impact": "_confined_file resolves, checks symlink/type/root, then returns a pathname. validate_physics_shot_artifact later reopens that pathname for parsing, Pillow decoding, and hashing. A writer with access to the shot tree can replace a checked sidecar or frame with an external symlink between those operations. The static symlink tests pass, but they do not protect this interval; identical external bytes can make validation accept a raced artifact while reading outside the shot root.",
+        "failing_first_test": "Create a valid temporary shot. Patch _confined_file so that, immediately after it returns the checked physics_state.jsonl (and separately a frame), atomically replace that entry with a symlink to an external byte-identical copy. validate_physics_shot_artifact must raise PhysicsArtifactError and must not open the external target. The current implementation instead proceeds through load_physics_capture/_sha256_file using the replaced pathname.",
+        "required_direction": "Bind validation and reads to already-open, no-follow descriptors rooted at the shot directory (or another OS-backed dirfd/openat approach), and derive parsing, image decoding, and hashing from those descriptors rather than a path revalidated earlier. Revalidation alone retains the race."
+      }
+    ],
+    "MEDIUM": [
+      {
+        "id": "F2-MAINT-001",
+        "file": "scripts/rollout_artifacts.py",
+        "lines": [1, 368],
+        "title": "Touched artifact validator remains above the configured size ceiling",
+        "impact": "The file has 368 pure LOC; the configured programming/remove-ai-slops perspective requires a responsibility split above 250 pure LOC. The current change adds sensitive confinement and validation behavior to an already oversized module, increasing review and regression risk.",
+        "failing_first_test": "No behavioral test is appropriate for a size-only finding. Split by responsibility only after the TOCTOU regression is locked; retain the existing observable artifact-validation tests."
+      }
+    ],
+    "LOW": []
+  },
+  "verification": {
+    "focused_python": {
+      "command": "timeout 120s python -m unittest tests.test_physics_capture_contract tests.test_collect_rollouts.PhysicsCapturePersistenceTests",
+      "result": "PASS: 35 tests, 0.208s"
+    },
+    "py_compile": {
+      "command": "timeout 60s python -m py_compile scripts/physics_capture_parsing.py scripts/physics_capture_validation.py scripts/rollout_artifacts.py scripts/collect_rollouts.py",
+      "result": "PASS"
+    },
+    "scoped_diff_check": {
+      "command": "git diff --check -- <eight scoped files>",
+      "result": "PASS"
+    },
+    "manual_qa": {
+      "command": "python -m unittest tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_fixed_name_state_sidecar_symlink_outside_shot_is_rejected tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_physics_frame_relative_path_cannot_escape_shot_root tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_second_collection_reuses_valid_completed_shot_without_bridge_calls tests.test_collect_rollouts.PhysicsCapturePersistenceTests.test_completed_shot_with_nondirectory_frames_is_quarantined",
+      "result": "PASS: exactly 4 tests, 0.040s"
+    },
+    "unity_final_xml": [
+      {
+        "path": ".omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-final-run1.xml",
+        "result": "PASS: 11 total, 11 passed, 0 failed"
+      },
+      {
+        "path": ".omo/evidence/world-model-physics-instrumentation/f2-remediation-unity-final-run2.xml",
+        "result": "PASS: 11 total, 11 passed, 0 failed"
+      }
+    ],
+    "red_artifacts": {
+      "bounded_sidecars_and_static_symlink_and_resume": "f2-remediation-python-red.log genuinely fails before repair: whole-file read reached, fixed-name symlink was accepted, and second collection raised ENOTEMPTY.",
+      "unity_capacity": "f2-remediation-unity-red.xml genuinely fails SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt because queued plus in-flight clients did not hold capacity."
+    },
+    "request_preservation": "Historical f2-remediation-request-38-62-final.log reports 2/2 legacy request 38/62 tests passed; request 70 is covered by both final Unity XMLs."
+  },
+  "mechanism_review": {
+    "bounded_memory_parsing_hashing": "PASS for the requested static cases: JSONL reads are capped and incremental, and SHA-256 reads 64 KiB chunks. This does not cure the separate pathname race.",
+    "root_confinement": "FAIL: static traversal/symlink cases reject, but TOCTOU confinement is not atomic.",
+    "resume_quarantine": "PASS for tested valid-final reuse, invalid-final quarantine, stale tmp cleanup, and non-directory frames.",
+    "unity_capacity": "PASS for queued plus in-flight reservation and timeout release in the 11-test final runs. The RED artifact fails the relevant pre-fix condition.",
+    "request_38_62_70": "PASS based on current request-70 tests and inspected 38/62 preservation artifact."
+  },
+  "skill_perspective": {
+    "remove_ai_slops": "ran",
+    "programming": "ran",
+    "violations": [
+      "programming: atomic trust boundary is not maintained; values are checked then reopened by pathname",
+      "remove-ai-slops/programming: rollout_artifacts.py is 368 pure LOC, above the 250-LOC ceiling"
+    ],
+    "tests": "The focused tests are behavior-oriented for static input and do not contain prompt assertions. They miss the concurrency/TOCTOU adversary, so their green result is insufficient for root-confinement approval."
+  },
+  "ultraqa": {
+    "malformed_input": "PASS: focused suite covers malformed/oversized sidecars and invalid artifacts.",
+    "cancel_resume": "PASS for tested interrupted tmp cleanup and valid-final reuse; no interactive cancellation surface was added.",
+    "stale_state": "PASS: valid final is revalidated/reused and invalid final is quarantined in focused tests.",
+    "dirty_worktree": "OBSERVED: shared worktree remains dirty; this review made no product/test edits.",
+    "hung_or_long_commands": "PASS: all review test/compiler commands were timeout-bounded and completed.",
+    "flaky_tests": "PASS for this invocation; final historical Unity XML run1/run2 both pass. No fresh Unity run was launched because the review is read-only and concurrent work owns active test processes.",
+    "misleading_success_output": "FAIL: static symlink success claims do not establish TOCTOU safety; this report names the gap and artifact paths.",
+    "repeated_interruptions": "PASS for the focused static recovery cases; not a substitute for the high-severity root race.",
+    "prompt_injection": "N/A: no instruction-text surface is in scope."
+  },
+  "cleanup_receipt": {
+    "review_created_temp_roots": 0,
+    "review_created_debug_files": 0,
+    "review_created_test_processes": 0,
+    "review_created_listeners": 0,
+    "note": "The final process check observed concurrent team-owned unittest processes and pre-existing Unity Hub/listeners; none were started, stopped, or claimed by this reviewer."
+  },
+  "blockers": [
+    "Fix F2-TOCTOU-001 with descriptor-rooted/no-follow reads and add the specified failing-first race regression."
+  ]
+}

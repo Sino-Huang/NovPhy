@@ -1,0 +1,19 @@
+started=2026-08-06T22:57:39+10:00
+invocation=bash -n scripts/build_physics_player.sh scripts/redact_unity_log.sh
+build_script_syntax_exit=0
+redact_script_syntax_exit=0
+invocation=timeout 180s python -m unittest tests.test_build_physics_player -v
+test_failed_unity_build_still_publishes_a_redacted_log_then_fails (tests.test_build_physics_player.PhysicsPlayerBuildScriptTests.test_failed_unity_build_still_publishes_a_redacted_log_then_fails) ... ok
+test_ignored_untracked_unity_asset_is_rejected (tests.test_build_physics_player.PhysicsPlayerBuildScriptTests.test_ignored_untracked_unity_asset_is_rejected) ... ok
+test_redaction_is_deterministic_and_leaves_no_temporary_residue (tests.test_build_physics_player.PhysicsPlayerBuildScriptTests.test_redaction_is_deterministic_and_leaves_no_temporary_residue) ... ok
+test_redaction_rejects_a_missing_source_log (tests.test_build_physics_player.PhysicsPlayerBuildScriptTests.test_redaction_rejects_a_missing_source_log) ... ok
+test_redaction_removes_licensing_identity_and_preserves_structure (tests.test_build_physics_player.PhysicsPlayerBuildScriptTests.test_redaction_removes_licensing_identity_and_preserves_structure) ... ok
+test_source_preflight_precedes_stage_creation_and_unity (tests.test_build_physics_player.PhysicsPlayerBuildScriptTests.test_source_preflight_precedes_stage_creation_and_unity) ... ok
+test_unity_logs_outside_the_stage_and_is_redacted_before_packaging (tests.test_build_physics_player.PhysicsPlayerBuildScriptTests.test_unity_logs_outside_the_stage_and_is_redacted_before_packaging) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.061s
+
+OK
+unittest_exit=0
+finished=2026-08-06T22:57:39+10:00

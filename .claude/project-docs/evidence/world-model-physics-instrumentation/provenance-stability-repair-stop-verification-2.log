@@ -1,0 +1,80 @@
+verified_head=95e7b82919c7cc2cd1aa911c4ebf9ffcfba8f9fe
+...F.F....FFFFFFF.....
+======================================================================
+FAIL: test_cli_accepts_harmless_prose_rewrites (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_accepts_harmless_prose_rewrites)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_capture_docs.py", line 89, in test_cli_accepts_harmless_prose_rewrites
+    self.assertEqual(result.returncode, 0, result.stderr)
+AssertionError: 1 != 0 : smoke report archive SHA-256 does not match the staged receipt
+
+
+======================================================================
+FAIL: test_cli_accepts_the_published_contract_and_schema_example (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_accepts_the_published_contract_and_schema_example)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_capture_docs.py", line 62, in test_cli_accepts_the_published_contract_and_schema_example
+    self.assertEqual(result.returncode, 0, result.stderr)
+AssertionError: 1 != 0 : smoke report archive SHA-256 does not match the staged receipt
+
+
+======================================================================
+FAIL: test_cli_rejects_invalid_named_command_block_syntax (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_invalid_named_command_block_syntax) (command_name='collection')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_capture_docs.py", line 190, in test_cli_rejects_invalid_named_command_block_syntax
+    self.assertIn(f"{command_name} command has invalid shell syntax", result.stderr)
+AssertionError: 'collection command has invalid shell syntax' not found in 'smoke report archive SHA-256 does not match the staged receipt\n'
+
+======================================================================
+FAIL: test_cli_rejects_invalid_named_command_block_syntax (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_invalid_named_command_block_syntax) (command_name='promotion')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_capture_docs.py", line 190, in test_cli_rejects_invalid_named_command_block_syntax
+    self.assertIn(f"{command_name} command has invalid shell syntax", result.stderr)
+AssertionError: 'promotion command has invalid shell syntax' not found in 'smoke report archive SHA-256 does not match the staged receipt\n'
+
+======================================================================
+FAIL: test_cli_rejects_invalid_named_command_block_syntax (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_invalid_named_command_block_syntax) (command_name='rollback')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_capture_docs.py", line 190, in test_cli_rejects_invalid_named_command_block_syntax
+    self.assertIn(f"{command_name} command has invalid shell syntax", result.stderr)
+AssertionError: 'rollback command has invalid shell syntax' not found in 'smoke report archive SHA-256 does not match the staged receipt\n'
+
+======================================================================
+FAIL: test_cli_rejects_non_atomic_promotion_or_rollback_commands (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_non_atomic_promotion_or_rollback_commands) (removed_operation='expected_sha="$(awk \'NF == 2 {print $1}\' "$stage/archive.sha256")"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_capture_docs.py", line 158, in test_cli_rejects_non_atomic_promotion_or_rollback_commands
+    self.assertIn(expected_error, result.stderr)
+AssertionError: 'promotion command' not found in 'smoke report archive SHA-256 does not match the staged receipt\n'
+
+======================================================================
+FAIL: test_cli_rejects_non_atomic_promotion_or_rollback_commands (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_non_atomic_promotion_or_rollback_commands) (removed_operation='mv -Tf "$selector/next" "$selector/current"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_capture_docs.py", line 158, in test_cli_rejects_non_atomic_promotion_or_rollback_commands
+    self.assertIn(expected_error, result.stderr)
+AssertionError: 'promotion command' not found in 'smoke report archive SHA-256 does not match the staged receipt\n'
+
+======================================================================
+FAIL: test_cli_rejects_non_atomic_promotion_or_rollback_commands (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_non_atomic_promotion_or_rollback_commands) (removed_operation='test -L "$selector/previous"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_capture_docs.py", line 158, in test_cli_rejects_non_atomic_promotion_or_rollback_commands
+    self.assertIn(expected_error, result.stderr)
+AssertionError: 'rollback command' not found in 'smoke report archive SHA-256 does not match the staged receipt\n'
+
+======================================================================
+FAIL: test_cli_rejects_non_atomic_promotion_or_rollback_commands (tests.test_verify_physics_capture_docs.PhysicsCaptureDocumentationTests.test_cli_rejects_non_atomic_promotion_or_rollback_commands) (removed_operation='mv -Tf "$selector/rollback" "$selector/current"')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_capture_docs.py", line 158, in test_cli_rejects_non_atomic_promotion_or_rollback_commands
+    self.assertIn(expected_error, result.stderr)
+AssertionError: 'rollback command' not found in 'smoke report archive SHA-256 does not match the staged receipt\n'
+
+----------------------------------------------------------------------
+Ran 17 tests in 1.408s
+
+FAILED (failures=9)

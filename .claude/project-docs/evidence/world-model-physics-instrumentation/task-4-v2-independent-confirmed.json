@@ -1,0 +1,68 @@
+{
+  "schema_version": "AdversarialVerify.v1",
+  "event": "AdversarialVerify",
+  "todo": 4,
+  "verified_at": "2026-08-05",
+  "verdict": "confirmed",
+  "confidence": "high",
+  "evidence": {
+    "python_suite": "Fresh bounded python -m unittest tests.test_webui_bridge -v ran 22 tests and returned OK (22/22).",
+    "python_compile": "Fresh bounded py_compile of src/webui/bridge.py and tests/test_webui_bridge.py passed.",
+    "typed_records": "Fresh get_type_hints(PhysicsCaptureV1) inspection found no Any recursively; state is Mapping[str, recursive JsonValue] and events is tuple[Mapping[str, recursive JsonValue], ...], with mappings and tuples as read-only containers.",
+    "immutable_error": "PhysicsCaptureV1Failure(7, 'capture failed') preserved code=7, message='capture failed', args and str='physics capture failed (7): capture failed'; assigning code or message raised FrozenInstanceError.",
+    "unity": "Fresh semantic parsing of task-4-final-green-3.xml and task-4-final-green-4.xml found Passed 6/6, failed=0, skipped=0, and every test case Passed. Both XML receipts are newer than PhysicsCaptureProtocol.cs, AIBirdsConnection.cs, and PhysicsCaptureProtocolTests.cs; those inputs were not changed after the receipts.",
+    "protected_roots": "Fresh cmp matched task-4 canonical and production-player manifests byte-for-byte to the protected Todo 2 baselines; SHA-256 values are a986acc9dc911009e7e04bea85ee531ba4b9f9d692afa915456d81bcf7c8bb56 and e92a83fb14638b24ba8a0a05d588829823000f3db349ae9eaf39f188f68e8cd5.",
+    "manual_tcp": "Fresh real ephemeral AF_INET/SOCK_STREAM listener observed byte 0x46/70. The public get_physics_capture_v1 API returned PNG signature 89504e470d0a1a0a and IHDR, state/event render_frame 913 equality, exact outer/payload/record lengths, preserved nested mapping/list values, and rejection of mutation at top-level and nested mappings/tuples.",
+    "secret_scan": "Fresh targeted changed-file scan found no credential-pattern matches in src/webui/bridge.py or tests/test_webui_bridge.py.",
+    "cleanup": "Fresh live inspection found no task-owned or Unity process, no listener on ports 2004 or 9000, and no EditorInstance.json, UnityLockfile, Temp, Logs, or Todo-4 verifier temp directory.",
+    "slop_programming_review": "Direct diff/test/production pass found no deletion-only, requested-removal-only, tautological, implementation-mirroring, or useless excessive tests and no unnecessary extraction/parsing/normalization violating a Todo 4 criterion. The typing assertions are narrow but independently reproduced with recursive inspection and live mutation attempts. bridge.py measures 274 pure LOC, a non-blocking maintenance note because no stated Todo 4 success criterion requires modularization and the new request-70 protocol behavior is cohesive and behavior-covered."
+  },
+  "exact_repro_commands": [
+    "timeout 60s python -m unittest tests.test_webui_bridge -v",
+    "timeout 30s python -m py_compile src/webui/bridge.py tests/test_webui_bridge.py",
+    "python - <<'PY' # recursively inspect get_type_hints(PhysicsCaptureV1), assert no Any; exercise PhysicsCaptureV1Failure code/message assignment and str/args semantics; semantically parse both Unity XML receipts and compare mtimes PY",
+    "cmp -s .omo/evidence/world-model-physics-instrumentation/task-2-canonical-project-before.tsv .omo/evidence/world-model-physics-instrumentation/task-4-canonical-project-final.tsv",
+    "cmp -s .omo/evidence/world-model-physics-instrumentation/task-2-production-player-before.tsv .omo/evidence/world-model-physics-instrumentation/task-4-production-player-final.tsv",
+    "timeout 30s python - <<'PY' # bind AF_INET/SOCK_STREAM to 127.0.0.1:0, serve encoded nested request-70 response, call ScienceBirdsBridge.get_physics_capture_v1, assert framing/PNG/frame/nested values/mutation rejection PY",
+    "rg -n -i '(api[_-]?key|secret|password|token|private[_-]?key|aws_access_key_id|authorization\\s*:|bearer\\s+[A-Za-z0-9._-]+)' src/webui/bridge.py tests/test_webui_bridge.py",
+    "python - <<'PY' # inspect live processes, connect_ex on 127.0.0.1 ports 2004/9000, and cleanup paths PY"
+  ],
+  "ultraqa": {
+    "malformed_input": "PASS: fresh 22/22 suite covers malformed magic, version, envelope/payload/record/failure lengths, flags, JSON, bounds, PNG, and frame mismatch.",
+    "stale_state": "PASS: live EditorInstance.json, UnityLockfile, Temp, and Logs are absent; XML freshness was calculated from artifact/input mtimes rather than prose.",
+    "dirty_worktree_attribution": "PASS: scoped source/test changes and named receipts were reviewed without attributing or reverting unrelated Todo 2/3/notepad changes.",
+    "flaky_tests": "PASS: fresh 22/22 Python run agrees with the saved v2 run, and two independent complete Unity XML receipts agree at Passed 6/6.",
+    "misleading_success_output": "PASS: verdict derives from parsed XML, direct execution, manifest cmp, and live cleanup state rather than DoneClaim prose.",
+    "bounded_or_hung_commands": "PASS: Python suite used a 60-second bound and compile/live TCP used 30-second bounds; all completed immediately.",
+    "repeated_interruptions": "PASS: superseded earlier receipts were not treated as terminal; the affected Python, TCP, typing, cleanup, manifests, and XML semantic checks were freshly completed.",
+    "prompt_injection": "N/A: reviewed surfaces consume binary protocol and JSON data, not natural-language instructions.",
+    "cancel_resume": "N/A: request-70 parsing is a single atomic socket operation and exposes no resumable workflow."
+  },
+  "checked_artifacts": [
+    ".omo/evidence/world-model-physics-instrumentation/task-4-independent-confirmed-2026-08-05.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-4-done-claim-final-v2.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-4-v2-python-final.txt",
+    ".omo/evidence/world-model-physics-instrumentation/task-4-v2-real-tcp.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-4-v2-cleanup.json",
+    ".omo/evidence/world-model-physics-instrumentation/task-4-final-green-3.xml",
+    ".omo/evidence/world-model-physics-instrumentation/task-4-final-green-4.xml",
+    ".omo/evidence/world-model-physics-instrumentation/task-4-final-green-3.log",
+    ".omo/evidence/world-model-physics-instrumentation/task-4-final-green-4.log",
+    ".omo/evidence/world-model-physics-instrumentation/task-2-canonical-project-before.tsv",
+    ".omo/evidence/world-model-physics-instrumentation/task-4-canonical-project-final.tsv",
+    ".omo/evidence/world-model-physics-instrumentation/task-2-production-player-before.tsv",
+    ".omo/evidence/world-model-physics-instrumentation/task-4-production-player-final.tsv",
+    "src/webui/bridge.py",
+    "tests/test_webui_bridge.py"
+  ],
+  "cleanup": {
+    "task_owned_processes": 0,
+    "port_2004_listener": false,
+    "port_9000_listener": false,
+    "temp_exists": false,
+    "logs_exists": false,
+    "unity_lock_exists": false,
+    "editor_instance_exists": false,
+    "verifier_temp_directory_exists": false
+  }
+}

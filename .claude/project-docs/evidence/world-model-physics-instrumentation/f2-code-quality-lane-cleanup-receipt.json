@@ -1,0 +1,7 @@
+{
+  "lane": "f2-code-quality-lane",
+  "temporary_roots": [{"pattern": "/tmp/f2-quality-*", "removed": true, "evidence": "f2-code-quality-lane-temp-fixtures.log root_exists_after_context=False"}],
+  "processes": [{"kind": "loopback-fixture-thread", "removed": true, "evidence": "f2-code-quality-lane-hung-command.log server_thread_clean=PASS"}],
+  "ports": [{"kind": "ephemeral-loopback", "released": true, "evidence": "fixture server closed and thread joined"}],
+  "protected_root_unchanged_proof": {"worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4", "method": "recorded existing dirty status, protected-scope diff paths, and target checksums; no production/test/plan/ledger edits performed by this lane", "artifact": "/mnt/array/sukaih/Project/NovPhy/.omo/evidence/world-model-physics-instrumentation/f2-code-quality-lane-dirty-worktree.log"}
+}

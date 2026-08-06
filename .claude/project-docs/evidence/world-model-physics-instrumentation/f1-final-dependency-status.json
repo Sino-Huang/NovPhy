@@ -1,0 +1,14 @@
+{
+  "task": "F1 plan compliance audit",
+  "verdict": "blocked_on_named_dependency",
+  "current_sha": "55d6ec93cafc77807342cd7573283f1ed20ca691",
+  "required_state": "exact final provenance-repair commit and rebuilt archive",
+  "observed_state": "known rejected SHA remains current while remediation workers own the affected source and test paths",
+  "audit_dispatched": false,
+  "reason": "An F1 audit before the final repair commit and rebuild would be stale by construction.",
+  "cleanup": {
+    "processes_started": 0,
+    "ports_opened": 0,
+    "temporary_directories_created": 0
+  }
+}

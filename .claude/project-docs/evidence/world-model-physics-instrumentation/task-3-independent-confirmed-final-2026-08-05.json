@@ -1,0 +1,92 @@
+{
+  "schema_version": "world_model_physics_instrumentation_task_3_independent_final_v1",
+  "event": "IndependentFinalTodo3Gate",
+  "captured_at": "2026-08-05T04:25:00+10:00",
+  "todo": 3,
+  "verdict": "confirmed",
+  "product_edited": false,
+  "previous_blocker_receipt": {
+    "artifact": ".omo/evidence/world-model-physics-instrumentation/task-3-post-stop-independent-verification.json",
+    "prior_verdict": "needs-fix",
+    "status": "superseded_by_current_source_tests_and_receipts"
+  },
+  "source_and_contract_review": {
+    "source": "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs",
+    "tests": [
+      "tasks/task_template_designer/Assets/Tests/Editor/PhysicsShotRecorderTests.cs",
+      "tasks/task_template_designer/Assets/Tests/Editor/PhysicalShotRecorderTests.cs"
+    ],
+    "todo_1_contract": ".omo/evidence/world-model-physics-instrumentation/task-1-contract.txt",
+    "todo_3_plan": ".omo/plans/world-model-physics-instrumentation.md",
+    "criteria_verified": [
+      "tangent impulse",
+      "distinct per-point contact IDs",
+      "sorted unique participant arrays",
+      "event-specific payloads",
+      "terminal exclusivity",
+      "same-direction two-step support",
+      "post-sort monotonic sequence",
+      "typed limit timeout and truncated codes",
+      "static and reused lifetime IDs",
+      "stability debounce",
+      "ABBird launch forwarding",
+      "trigger exclusion",
+      "aggregate record and byte bounds"
+    ]
+  },
+  "automated_surface": {
+    "task-3-physics.xml": {
+      "result": "Passed",
+      "total": 14,
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "start_time": "2026-08-04 18:19:35Z",
+      "artifact_mtime": "2026-08-05T04:19:35+10:00"
+    },
+    "task-3-physics-repeat.xml": {
+      "result": "Passed",
+      "total": 14,
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "start_time": "2026-08-04 18:20:08Z",
+      "artifact_mtime": "2026-08-05T04:20:08+10:00"
+    },
+    "xml_parse": "valid",
+    "freshness": {
+      "source_mtime": "2026-08-05T04:17:30+10:00",
+      "physics_tests_mtime": "2026-08-05T04:15:23+10:00",
+      "physical_tests_mtime": "2026-08-05T03:50:44+10:00",
+      "both_xml_newer_than_all_reviewed_source_and_tests": true,
+      "unity_rerun": false,
+      "reason": "current XML freshness gate passed"
+    }
+  },
+  "manifest_preservation": {
+    "canonical_project": {
+      "fresh_hash_comparison": "equal",
+      "todo_2_baseline": "task-2-canonical-project-before.tsv",
+      "todo_2_after": "task-2-canonical-project-after.tsv",
+      "task_3_receipt": "task-3-canonical-project-after.tsv"
+    },
+    "production_player": {
+      "fresh_hash_comparison": "equal",
+      "todo_2_baseline": "task-2-production-player-before.tsv",
+      "todo_2_after": "task-2-production-player-after.tsv",
+      "task_3_receipt": "task-3-production-player-after.tsv"
+    },
+    "active_dataset_modified": false
+  },
+  "cleanup": {
+    "unity_processes": 0,
+    "player_processes": 0,
+    "temp_directory_present": false,
+    "logs_directory_present": false,
+    "unity_lockfile_present": false,
+    "task_lock_present": false,
+    "library_editor_instance_metadata": "present_non_lock_metadata",
+    "receipt": ".omo/evidence/world-model-physics-instrumentation/task-3-cleanup-receipt.json"
+  },
+  "blockers": []
+}

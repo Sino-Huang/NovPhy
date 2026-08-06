@@ -1,0 +1,34 @@
+test_cli_rejects_tampered_payload_manifest (tests.test_verify_physics_player.PhysicsPlayerVerifierTests.test_cli_rejects_tampered_payload_manifest) ... FAIL
+test_cli_rejects_wrong_expected_archive_sha (tests.test_verify_physics_player.PhysicsPlayerVerifierTests.test_cli_rejects_wrong_expected_archive_sha) ... FAIL
+test_cli_verifies_archive_and_unpacked_file_checksums (tests.test_verify_physics_player.PhysicsPlayerVerifierTests.test_cli_verifies_archive_and_unpacked_file_checksums) ... FAIL
+
+======================================================================
+FAIL: test_cli_rejects_tampered_payload_manifest (tests.test_verify_physics_player.PhysicsPlayerVerifierTests.test_cli_rejects_tampered_payload_manifest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_player.py", line 119, in test_cli_rejects_tampered_payload_manifest
+    self.assertIn("payload SHA-256 mismatch", result.stderr)
+AssertionError: 'payload SHA-256 mismatch' not found in "/home/sukai/miniconda3/envs/novphy/bin/python: can't open file '/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/verify_physics_player.py': [Errno 2] No such file or directory\n"
+
+======================================================================
+FAIL: test_cli_rejects_wrong_expected_archive_sha (tests.test_verify_physics_player.PhysicsPlayerVerifierTests.test_cli_rejects_wrong_expected_archive_sha)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_player.py", line 86, in test_cli_rejects_wrong_expected_archive_sha
+    self.assertIn("archive SHA-256 mismatch", result.stderr)
+AssertionError: 'archive SHA-256 mismatch' not found in "/home/sukai/miniconda3/envs/novphy/bin/python: can't open file '/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/verify_physics_player.py': [Errno 2] No such file or directory\n"
+
+======================================================================
+FAIL: test_cli_verifies_archive_and_unpacked_file_checksums (tests.test_verify_physics_player.PhysicsPlayerVerifierTests.test_cli_verifies_archive_and_unpacked_file_checksums)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_verify_physics_player.py", line 65, in test_cli_verifies_archive_and_unpacked_file_checksums
+    self.assertEqual(result.returncode, 0, result.stderr)
+AssertionError: 2 != 0 : /home/sukai/miniconda3/envs/novphy/bin/python: can't open file '/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/verify_physics_player.py': [Errno 2] No such file or directory
+
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.030s
+
+FAILED (failures=3)
+exit_code=1

@@ -1,0 +1,29 @@
+{
+  "status": "confirmed",
+  "verified_artifact": ".omo/evidence/world-model-physics-instrumentation/f1-contract-guardrails.json",
+  "checks": [
+    {
+      "scenario": "required documentation manual QA",
+      "invocation": "python scripts/verify_physics_capture_docs.py docs",
+      "binary_observable": "exit=0 and exact stdout 'physics capture documentation verified'",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f1-postclaim-doc-verifier.log"
+    },
+    {
+      "scenario": "contract, opt-in sidecar, and legacy protocol regression verification",
+      "invocation": "python -m unittest tests.test_physics_capture_contract tests.test_world_model_data.PhysicsSupervisionReaderTests tests.test_webui_bridge -v",
+      "binary_observable": "exit=0; 41 tests pass, including stale/misaligned sidecar rejection and unchanged legacy request 38/62 fixture bytes",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f1-postclaim-regression-tests.log"
+    },
+    {
+      "scenario": "evidence integrity",
+      "invocation": "python -c '<parse verdict/cleanup JSON and assert cited logs nonempty>'",
+      "binary_observable": "verdict=confirmed; cleanup process_started=false; all cited primary logs nonempty",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/f1-postclaim-artifact-check.log"
+    }
+  ],
+  "cleanup": {
+    "runtime_player_invoked": false,
+    "process_started": false,
+    "temporary_files_created": []
+  }
+}

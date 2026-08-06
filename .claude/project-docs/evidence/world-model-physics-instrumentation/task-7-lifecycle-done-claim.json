@@ -1,0 +1,57 @@
+{
+  "schema_version": "novphy_done_claim_v1",
+  "claim_type": "BlockedClaim",
+  "task": "todo-7-staged-physics-player-lifecycle",
+  "status": "blocked_legacy_symbolic_exporter",
+  "fix": {
+    "file": "tasks/task_template_designer/Assets/Scripts/GameWorld/ABGameWorld.cs",
+    "lines": [148, 203],
+    "observable": "slingshotBaseTransform is initialized before pre-populated scene iteration and immediately after DecodeLevel, before evaluation callbacks"
+  },
+  "regression": {
+    "test": "ABGameWorldLifecycleTests.Start_PrePopulatedScene_InitializesSlingshotBaseTransform",
+    "red_artifact": ".omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-red.xml",
+    "red_observable": "result=Failed; Expected: not null",
+    "green_artifact": ".omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-green.xml",
+    "green_observable": "result=Passed; total=1; passed=1; failed=0"
+  },
+  "build": {
+    "invocation": "./scripts/build_physics_player.sh",
+    "artifact": "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz",
+    "build_log": ".omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-build.log",
+    "archive_sha256": "b517903e96c577d0c9b5e82d8eb2554c088b2d735bb3be8015831b894c4471aa",
+    "source_assembly_rebuilt": true
+  },
+  "static_gates": [
+    {
+      "invocation": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --skip-runtime",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-static.json",
+      "observable": "archive_checksum_verified=true; payload_checksums_verified=true"
+    },
+    {
+      "invocation": "python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1 --expect-sha deadbeef --skip-runtime",
+      "artifact": ".omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-wrong-sha.stderr",
+      "observable": "archive SHA-256 mismatch against --expect-sha"
+    }
+  ],
+  "protocol_qa": {
+    "invocation": "DISPLAY=:10 python scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1",
+    "artifact": ".omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-runtime.stderr",
+    "observable": "reaches PLAYING then request 62 times out; request 70 invalid envelope"
+  },
+  "root_cause_confirmed": {
+    "artifact": ".omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-root-cause.log",
+    "observable": "prior package showed EvaluationHandler.RecordEvaluationScore after DecodeLevel, followed by sling null; fresh package has null_sling_count=0"
+  },
+  "remaining_blocker": {
+    "artifact": ".omo/evidence/world-model-physics-instrumentation/task-7-lifecycle-request70-player-summary.log",
+    "observable": "fresh package request 62 and request 70 both throw in legacy SymbolicGameState.GetGTJson; request 70 stack reaches PhysicalSnapshotExporter.Capture"
+  },
+  "cleanup": {
+    "processes_remaining": false,
+    "temporary_runtime_clones_remaining": false,
+    "temporary_runtime_paths": [],
+    "note": "All explicitly created temporary runtime roots were removed; process and protocol ports are clear."
+  },
+  "todo_7_complete": false
+}

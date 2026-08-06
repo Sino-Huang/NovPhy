@@ -17,7 +17,7 @@ DOCS = ROOT / "docs"
 VERIFIER = ROOT / "scripts" / "verify_physics_capture_docs.py"
 ARCHIVE_NAME = "novphy-physics-player-2019.4.41f2.tar.gz"
 FINAL_PUBLICATION = Path(
-    ".omo/evidence/world-model-physics-instrumentation/final-published-runtime"
+    ".claude/project-docs/evidence/world-model-physics-instrumentation/final-published-runtime"
 )
 COMMAND_BLOCK = re.compile(
     r"```bash physics_capture_v1_(?P<name>collection|promotion|rollback)\n.*?\n```\n",

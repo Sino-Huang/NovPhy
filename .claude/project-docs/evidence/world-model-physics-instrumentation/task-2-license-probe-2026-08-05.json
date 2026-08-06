@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "task": "Todo 2 single bounded exact-editor no-project licensing probe",
+  "captured_at": "2026-08-05",
+  "invocation_count": 1,
+  "editor": {
+    "version": "2019.4.41f2",
+    "changeset": "6b23d448b533",
+    "binary": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+    "sha256": "32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150"
+  },
+  "scenario": {
+    "arguments": ["-batchmode", "-nographics", "-quit", "-logFile", "<private-absolute-raw-log>"],
+    "project_path_argument_present": false,
+    "timeout_seconds": 90,
+    "exit_code": 0,
+    "private_compatibility_environment": true
+  },
+  "binary_observables": {
+    "licensing_client_ipc_connected": true,
+    "entitlement_based_licensing_initiated": true,
+    "licenses_updated": true,
+    "assignment_present": true,
+    "pro_license": false,
+    "current_license_valid_and_activated": true,
+    "activation_error_present": false,
+    "runtime_compatibility_failure_present": false,
+    "batchmode_quit_successful": true
+  },
+  "hypothesis_classification": {
+    "H1": "CONFIRMED: Hub activation lets the exact Editor initialize licensing",
+    "H2": "REFUTED: prior credential activation error absent",
+    "H3": "REFUTED: runtime reached decisive licensing state and exited successfully"
+  },
+  "protected_roots": {
+    "canonical_project_manifest_sha256": "a986acc9dc911009e7e04bea85ee531ba4b9f9d692afa915456d81bcf7c8bb56",
+    "canonical_project_matches_baseline": true,
+    "production_player_manifest_sha256": "e92a83fb14638b24ba8a0a05d588829823000f3db349ae9eaf39f188f68e8cd5",
+    "production_player_matches_baseline": true,
+    "migration_generated_directories_absent": true
+  },
+  "cleanup": {
+    "raw_log_deleted": true,
+    "private_temp_directory_deleted": true,
+    "probe_processes_absent": true,
+    "unexpected_repository_root_generated_state_removed": true
+  },
+  "sanitized_log": "task-2-license-probe-2026-08-05.safe.log",
+  "verdict": "PROBE PASS"
+}

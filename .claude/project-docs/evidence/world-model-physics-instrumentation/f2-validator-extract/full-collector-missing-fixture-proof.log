@@ -1,0 +1,40 @@
+SCENARIO: full collector failure is constrained to absent ignored dataset fixtures
+INVOCATION: sed -n 1435,1470p tests/test_collect_rollouts.py; find data/novphy_rollouts_dataset
+            self.assertFalse(metadata["frames"][0]["uniform"])
+            self.assertIsNone(metadata["frames"][0]["frame_delta"])
+            self.assertEqual(metadata["frames"][0]["pre_shot_delta"]["changed_pixel_count"], 1)
+            self.assertEqual(metadata["frames"][1]["frame_delta"]["changed_pixel_count"], 1)
+            self.assertEqual(metadata["frames"][1]["pre_shot_delta"]["changed_pixel_count"], 2)
+            self.assertEqual(metadata["max_pre_shot_delta"], 2)
+            self.assertEqual(metadata["max_pre_shot_delta_bbox"], [1, 0, 3, 1])
+            self.assertEqual(metadata["pre_shot_sample"], {"state": "PLAYING", "score": 222})
+            self.assertTrue((Path(tmp) / "pre_shot.png").is_file())
+            self.assertTrue((Path(tmp) / "frames" / "frame_000000.png").is_file())
+
+    def test_known_dataset_artifacts_classify_gameplay_and_reported_menu_shots(self):
+        valid_artifact_root = Path(
+            "data/novphy_rollouts_dataset/train/novelty_level_0_type010101_00001_0_1_010101_0_1"
+        )
+        reported_menu_artifact_root = Path(
+            "data/novphy_rollouts_dataset/train/novelty_level_0_type010101_00002_0_1_010101_0_1"
+        )
+
+        valid = validate_rollout_artifact(valid_artifact_root / "shot_001")
+        menu_static = validate_rollout_artifact(reported_menu_artifact_root / "shot_001")
+
+        self.assertTrue(valid["accepted"])
+        self.assertEqual(valid["classification"], "gameplay-valid")
+        self.assertEqual(valid["max_frame_delta"], 965)
+        self.assertEqual(valid["score"], 1770)
+        self.assertIn("gameplay-valid", valid["signals"])
+
+        self.assertFalse(menu_static["accepted"])
+        self.assertEqual(menu_static["classification"], "menu-detected")
+        self.assertEqual(menu_static["invalid_reason"], "menu_detected")
+        self.assertEqual(menu_static["max_frame_delta"], 0)
+        self.assertEqual(menu_static["max_pre_shot_delta"], 0)
+        self.assertIn("menu-detected", menu_static["signals"])
+        self.assertIn("no-frame-motion", menu_static["signals"])
+
+find: ‘data/novphy_rollouts_dataset’: No such file or directory
+exit=1

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "novphy_final_gate_cleanup_v1",
+  "gate": "F3",
+  "observedAt": "2026-08-06T07:23:30+10:00",
+  "status": "blocked",
+  "clean": false,
+  "readOnlyReviewer": true,
+  "cleanupActionsPerformed": [],
+  "matchingProcesses": [
+    {
+      "pid": 276695,
+      "ppid": 1,
+      "role": "timeout supervisor",
+      "elapsed": "00:01:30",
+      "started": "2026-08-06T07:21:30+10:00",
+      "command": "timeout --signal=TERM --kill-after=30s 900s python scripts/smoke_physics_capture.py --stage sciencebirdsgames/physics-v1 --output-dir .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output --report .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke.json"
+    },
+    {
+      "pid": 276696,
+      "ppid": 276695,
+      "role": "smoke runner",
+      "elapsed": "00:01:30",
+      "started": "2026-08-06T07:21:30+10:00",
+      "command": "python scripts/smoke_physics_capture.py --stage sciencebirdsgames/physics-v1 --output-dir .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke-output --report .omo/evidence/world-model-physics-instrumentation/final-wave-exact/f3-smoke.json"
+    }
+  ],
+  "matchingListeners": [],
+  "locks": [
+    {
+      "path": "tasks/task_template_designer/Temp/UnityLockfile",
+      "size": 0,
+      "modifiedAt": "2026-08-06T07:17:35.989902303+10:00"
+    }
+  ],
+  "temporaryPaths": [],
+  "temporaryStagePaths": [],
+  "knownPublishedSmokeClone": {
+    "path": "/tmp/novphy-physics-smoke-afrpj7m9",
+    "exists": false
+  },
+  "publishedStagePreserved": true,
+  "blockers": [
+    "Two matching smoke processes are active",
+    "UnityLockfile exists"
+  ]
+}
