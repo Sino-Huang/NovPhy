@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using UnityEngine;
 
 public static class PhysicsCaptureV1Protocol
@@ -252,11 +254,22 @@ public static class PhysicsCaptureV1Protocol
         for (int i = 0; i < text.Length; i++)
         {
             char c = text[i];
-            if (c == '"' || c == '\\') json.Append('\\').Append(c);
-            else if (c == '\n') json.Append("\\n");
-            else if (c == '\r') json.Append("\\r");
-            else if (c == '\t') json.Append("\\t");
-            else json.Append(c);
+            switch (c)
+            {
+                case '"': json.Append("\\\""); break;
+                case '\\': json.Append("\\\\"); break;
+                case '\b': json.Append("\\b"); break;
+                case '\f': json.Append("\\f"); break;
+                case '\n': json.Append("\\n"); break;
+                case '\r': json.Append("\\r"); break;
+                case '\t': json.Append("\\t"); break;
+                default:
+                    if (c < 32)
+                        json.Append("\\u").Append(((int)c).ToString("x4", CultureInfo.InvariantCulture));
+                    else
+                        json.Append(c);
+                    break;
+            }
         }
         json.Append('"');
     }
@@ -287,6 +300,7 @@ public sealed class PhysicsCaptureDirectSocket : MonoBehaviour
 {
     public const int MaxPendingClients = 4;
     private const int RequestReadTimeoutMilliseconds = 1000;
+    private const int ResponseWriteTimeoutMilliseconds = 1000;
     private readonly Queue<TcpClient> clients = new Queue<TcpClient>();
     private TcpListener listener;
     private int reservedClientCount;
@@ -355,7 +369,10 @@ public sealed class PhysicsCaptureDirectSocket : MonoBehaviour
             if (read != 1 || request[0] != PhysicsCaptureV1Protocol.RequestCode)
             {
                 byte[] failure = PhysicsCaptureV1Protocol.BuildFailureEnvelope(null);
-                stream.Write(failure, 0, failure.Length);
+                IEnumerator failureTransmission = TransmitResponse(
+                    client, failure, ResponseWriteTimeoutMilliseconds);
+                while (failureTransmission.MoveNext())
+                    yield return failureTransmission.Current;
                 yield break;
             }
             yield return new WaitForEndOfFrame();
@@ -367,13 +384,78 @@ public sealed class PhysicsCaptureDirectSocket : MonoBehaviour
             if (texture != null) Destroy(texture);
             byte[] response = PhysicsCaptureV1Protocol.BuildCaptureEnvelope(
                 png, snapshot, runtime.ShotRecorder, runtime.CaptureId, runtime.NextCaptureSequence);
-            stream.Write(response, 0, response.Length);
+            IEnumerator transmission = TransmitResponse(
+                client, response, ResponseWriteTimeoutMilliseconds);
+            while (transmission.MoveNext())
+                yield return transmission.Current;
         }
         finally
         {
             client.Close();
             lock (clients) reservedClientCount--;
         }
+    }
+
+    private sealed class ResponseWriteCompletion
+    {
+        public readonly NetworkStream Stream;
+        public volatile bool EndWriteFinished;
+
+        public ResponseWriteCompletion(NetworkStream stream)
+        {
+            Stream = stream;
+        }
+    }
+
+    private static IEnumerator TransmitResponse(TcpClient client, byte[] response, int timeoutMilliseconds)
+    {
+        if (response == null || response.Length > PhysicsCaptureV1Protocol.MaxEnvelopeBytes)
+        {
+            client.Close();
+            yield break;
+        }
+
+        NetworkStream stream = client.GetStream();
+        ResponseWriteCompletion completion = new ResponseWriteCompletion(stream);
+        try
+        {
+            stream.BeginWrite(response, 0, response.Length, QueueEndWrite, completion);
+        }
+        catch (IOException)
+        {
+            client.Close();
+            yield break;
+        }
+        catch (ObjectDisposedException)
+        {
+            yield break;
+        }
+
+        Stopwatch deadline = Stopwatch.StartNew();
+        while (!completion.EndWriteFinished && deadline.ElapsedMilliseconds < timeoutMilliseconds)
+            yield return null;
+        if (!completion.EndWriteFinished)
+        {
+            client.Close();
+        }
+    }
+
+    private static void QueueEndWrite(IAsyncResult write)
+    {
+        ThreadPool.QueueUserWorkItem(delegate
+        {
+            ResponseWriteCompletion completion = (ResponseWriteCompletion)write.AsyncState;
+            try
+            {
+                completion.Stream.EndWrite(write);
+            }
+            catch (IOException) { }
+            catch (ObjectDisposedException) { }
+            finally
+            {
+                completion.EndWriteFinished = true;
+            }
+        });
     }
 
     private void OnDestroy()

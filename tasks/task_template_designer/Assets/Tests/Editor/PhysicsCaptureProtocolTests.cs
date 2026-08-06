@@ -199,6 +199,99 @@ public class PhysicsCaptureProtocolTests
     }
 
     [Test]
+    public void Request70ResponseTransmissionYieldsAndExpiresWhenClientStopsReading()
+    {
+        const int testDeadlineMilliseconds = 75;
+        TcpListener listener = new TcpListener(IPAddress.Loopback, 0);
+        TcpClient client = new TcpClient();
+        TcpClient server = null;
+
+        try
+        {
+            listener.Start();
+            client.ReceiveBufferSize = 1024;
+            client.Connect(IPAddress.Loopback, ((IPEndPoint)listener.LocalEndpoint).Port);
+            server = listener.AcceptTcpClient();
+            server.SendBufferSize = 1024;
+            client.GetStream().Write(new byte[] { PhysicsCaptureV1Protocol.RequestCode }, 0, 1);
+            Assert.AreEqual(PhysicsCaptureV1Protocol.RequestCode, server.GetStream().ReadByte());
+
+            MethodInfo transmit = typeof(PhysicsCaptureDirectSocket).GetMethod(
+                "TransmitResponse", BindingFlags.Static | BindingFlags.NonPublic, null,
+                new[] { typeof(TcpClient), typeof(byte[]), typeof(int) }, null);
+            FieldInfo timeout = typeof(PhysicsCaptureDirectSocket).GetField(
+                "ResponseWriteTimeoutMilliseconds", BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.IsNotNull(transmit, "request-70 must use a bounded asynchronous response transmitter");
+            Assert.IsNotNull(timeout, "request-70 response transmission must have a fixed deadline");
+            int timeoutMilliseconds = (int)timeout.GetRawConstantValue();
+            Assert.Greater(timeoutMilliseconds, 0);
+            Assert.LessOrEqual(timeoutMilliseconds, 1000);
+
+            byte[] boundedResponse = new byte[4 * 1024 * 1024];
+            IEnumerator transmission = (IEnumerator)transmit.Invoke(
+                null, new object[] { server, boundedResponse, testDeadlineMilliseconds });
+            Stopwatch firstAdvance = Stopwatch.StartNew();
+            Assert.IsTrue(transmission.MoveNext(),
+                "a non-reading client must make the request-70 transmitter yield instead of blocking");
+            firstAdvance.Stop();
+            Assert.Less(firstAdvance.ElapsedMilliseconds, 250,
+                "request-70 response transmission blocked the Unity-facing coroutine");
+
+            Stopwatch deadline = Stopwatch.StartNew();
+            bool running = true;
+            while (running && deadline.ElapsedMilliseconds <= testDeadlineMilliseconds + 250)
+            {
+                Thread.Sleep(1);
+                running = transmission.MoveNext();
+            }
+
+            Assert.IsFalse(running, "request-70 response transmission exceeded its fixed deadline");
+            Assert.LessOrEqual(deadline.ElapsedMilliseconds, testDeadlineMilliseconds + 250);
+            Assert.IsTrue(IsLocallyClosed(server), "the expired request-70 connection was not closed");
+        }
+        finally
+        {
+            if (server != null) server.Close();
+            client.Close();
+            listener.Stop();
+        }
+    }
+
+    [Test]
+    public void Request70JsonEscapesEveryControlCharacterAndRoundTrips()
+    {
+        char[] controls = new char[32];
+        for (int i = 0; i < controls.Length; i++) controls[i] = (char)i;
+        string value = new string(controls);
+        PhysicalSceneSnapshot snapshot = new PhysicalSceneSnapshot(
+            1, 0f, 1, 0.02f, new PhysicalNodeSnapshot[0]);
+
+        byte[] envelope = PhysicsCaptureV1Protocol.BuildCaptureEnvelope(
+            new byte[0], snapshot, null, value, 1);
+        string json = EnvelopeJson(envelope, false);
+        JSONNode parsed = JSONNode.Parse(json);
+
+        Assert.AreEqual(value, parsed["capture_id"].Value);
+        for (int i = 0; i < controls.Length; i++)
+        {
+            Assert.IsFalse(json.Contains(controls[i].ToString()),
+                "JSON contains an unescaped U+" + i.ToString("X4") + " control character");
+            string expected;
+            switch (i)
+            {
+                case 8: expected = "\\b"; break;
+                case 9: expected = "\\t"; break;
+                case 10: expected = "\\n"; break;
+                case 12: expected = "\\f"; break;
+                case 13: expected = "\\r"; break;
+                default: expected = "\\u" + i.ToString("x4"); break;
+            }
+            StringAssert.Contains(expected, json,
+                "JSON did not use the deterministic escape for U+" + i.ToString("X4"));
+        }
+    }
+
+    [Test]
     public void SilentLoopbackClientDoesNotBlockTheRequestCoroutineBeforeItsFirstYield()
     {
         GameObject host = new GameObject("physics-capture-socket");
@@ -431,5 +524,22 @@ public class PhysicsCaptureProtocolTests
             Thread.Sleep(10);
         }
         return predicate();
+    }
+
+    private static bool IsLocallyClosed(TcpClient client)
+    {
+        try
+        {
+            client.GetStream();
+            return false;
+        }
+        catch (ObjectDisposedException)
+        {
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            return true;
+        }
     }
 }
