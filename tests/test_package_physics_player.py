@@ -40,10 +40,10 @@ class PhysicsPlayerPackagerTests(unittest.TestCase):
         unity_source.parent.mkdir(parents=True)
         unity_source.write_text("internal static class BuildSource {}\n", encoding="utf-8")
         self._ignored_package_inputs(repository)
-        notes = repository / ".omo" / "notepads"
+        notes = repository / ".claude" / "project-docs" / "notepads"
         notes.mkdir(parents=True)
         (notes / "notes.md").write_text("initial evidence\n", encoding="utf-8")
-        subprocess.run(("git", "add", "product.txt", "scripts/9001-player-wrapper.sh", "tasks", ".omo/notepads/notes.md"), cwd=repository, check=True)
+        subprocess.run(("git", "add", "product.txt", "scripts/9001-player-wrapper.sh", "tasks", ".claude/project-docs/notepads/notes.md"), cwd=repository, check=True)
         subprocess.run(("git", "commit", "-qm", "test fixture"), cwd=repository, check=True)
         return repository
 
@@ -118,7 +118,7 @@ class PhysicsPlayerPackagerTests(unittest.TestCase):
             self.assertEqual(first.returncode, 0, first.stderr)
             first_manifest = (payload / "provenance.json").read_bytes()
             first_archive = (stage / ARCHIVE_NAME).read_bytes()
-            (repository / ".omo" / "notepads" / "notes.md").write_text("changed evidence\n", encoding="utf-8")
+            (repository / ".claude" / "project-docs" / "notepads" / "notes.md").write_text("changed evidence\n", encoding="utf-8")
             cache = repository / "tasks" / "task_template_designer" / "Library"
             cache.mkdir(parents=True)
             (cache / "cache.bin").write_bytes(b"generated cache")
