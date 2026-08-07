@@ -206,7 +206,7 @@ fidelity.
 ## Todos
 > Implementation + Test = ONE todo. Never separate.
 
-- [ ] 1. Refresh the canonical smoke marker for the current staged archive
+- [x] 1. Refresh the canonical smoke marker for the current staged archive
   What to do / Must NOT do: Run `scripts/verify_physics_player.py --stage sciencebirdsgames/physics-v1
   --expect-sha <receipt>` (static path; the runtime probe needs the conda-env `Xvfb`) and then
   `scripts/smoke_physics_capture.py --stage sciencebirdsgames/physics-v1 --output-dir <tmp> --report
@@ -220,7 +220,7 @@ fidelity.
   its `archive_sha256` equals the receipt; protected-root digests unchanged before/after.
   Commit: Y | `chore(physics): refresh canonical smoke marker for the published archive`
 
-- [ ] 2. Make the generated collection script CWD-safe and support a scoped level inventory
+- [x] 2. Make the generated collection script CWD-safe and support a scoped level inventory
   What to do / Must NOT do: In `scripts/prepare_rollout_dataset.py`, emit an explicit `cd` to the
   generation-time repo root and `export PYTHONPATH="$PWD"` immediately after `source ~/cd_novphy` in the
   generated collection script, so relative `scripts/…`, plan, and data paths resolve against the repo
@@ -235,7 +235,7 @@ fidelity.
   successfully, and that an unscoped production inventory still requires 80 buckets.
   Commit: Y | `fix(rollouts): resolve collection commands against the generating repo root`
 
-- [ ] 3. Derive macro-state and outcome labels from frozen sidecars
+- [x] 3. Derive macro-state and outcome labels from frozen sidecars
   What to do / Must NOT do: Add `scripts/physics_label_derivation.py` with frozen typed records
   (`OracleGateSpec`, `DerivedFrameLabel`, `ShotOutcome`, `DerivedLabels`) and a pure
   `derive_labels(capture, spec)` over a parsed `PhysicsCapture`. Implement the five macro predicates and
@@ -248,7 +248,7 @@ fidelity.
   the four outcome classes, an event-free capture, and byte-identical repeat derivation.
   Commit: Y | `feat(physics-labels): derive macro-state and outcome labels`
 
-- [ ] 4. Serialize, validate, and re-derive the derived-label sidecar
+- [x] 4. Serialize, validate, and re-derive the derived-label sidecar
   What to do / Must NOT do: Define `physics_derived_labels_v1`: a header record (schema version, shot
   identity, threshold spec, source sidecar digests, taxonomy) followed by one `frame_label` per accepted
   state and one `shot_outcome`. Add a validator that re-derives from the shot's sidecars and rejects
@@ -263,7 +263,7 @@ fidelity.
   `validate_physics_shot_artifact` after the sidecar is written.
   Commit: Y | `feat(physics-labels): add validated derived-label sidecar and CLI`
 
-- [ ] 5. Implement the oracle gate and its per-frame tensor payload
+- [x] 5. Implement the oracle gate and its per-frame tensor payload
   What to do / Must NOT do: Implement `phi*` as the declared conjunction, with `contacts_active` counted
   by the relative-speed threshold, and expose a fixed-order documented numeric vector per frame for
   downstream collation. Must NOT introduce a learned gate, a smoothed/hysteretic variant, or a
@@ -274,7 +274,7 @@ fidelity.
   produce the specified `phi*`; the vector's field order is asserted explicitly.
   Commit: Y | `feat(physics-labels): add oracle scale-separation gate`
 
-- [ ] 6. Join derived labels into the lazy reader
+- [x] 6. Join derived labels into the lazy reader
   What to do / Must NOT do: Add `include_derived_labels` to `PhysicsSupervisionRequest` and a trailing
   `derived_labels` field to `PhysicsFrameSupervision`; load and validate the derived sidecar in
   `read_physics_shot` only when requested, joining on exact `render_frame`. Must NOT open the derived

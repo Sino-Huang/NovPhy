@@ -347,3 +347,59 @@ class MalformedSidecarTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DeriveCliTests(unittest.TestCase):
+    """The derivation CLI must never write inside the protected active cohort."""
+
+    def setUp(self) -> None:
+        self.temporary = Path(tempfile.mkdtemp(prefix="novphy-derive-cli-"))
+        self.addCleanup(shutil.rmtree, self.temporary, ignore_errors=True)
+        self.shot = self.temporary / "train" / "episode_001" / "shot_001"
+        self.shot.mkdir(parents=True)
+        for name in ("physics_state.jsonl", "physics_events.jsonl"):
+            shutil.copy(FIXTURE / name, self.shot / name)
+
+    def test_discovers_shots_beneath_a_cohort_root(self) -> None:
+        from scripts.derive_physics_labels import discover_shots
+
+        self.assertEqual(discover_shots(self.temporary), [self.shot])
+        self.assertEqual(discover_shots(self.shot), [self.shot])
+
+    def test_writes_and_revalidates_every_discovered_shot(self) -> None:
+        from scripts.derive_physics_labels import main
+
+        self.assertEqual(main(["--target", str(self.temporary), "--json"]), 0)
+        self.assertTrue((self.shot / "physics_derived_labels.jsonl").is_file())
+        self.assertEqual(main(["--target", str(self.temporary), "--validate-only", "--json"]), 0)
+
+    def test_refuses_to_write_inside_the_active_cohort(self) -> None:
+        from scripts.derive_physics_labels import ACTIVE_COHORT_DIR_NAME, _refuse_active_cohort
+
+        protected = self.temporary / ACTIVE_COHORT_DIR_NAME / "train" / "episode"
+        with self.assertRaises(SystemExit):
+            _refuse_active_cohort(protected)
+
+    def test_allows_a_distinct_cohort_root(self) -> None:
+        from scripts.derive_physics_labels import _refuse_active_cohort
+
+        _refuse_active_cohort(self.temporary / "physics_capture_v1_cohort" / "train")
+
+    def test_threshold_drift_between_write_and_validate_is_reported(self) -> None:
+        from scripts.derive_physics_labels import main
+
+        self.assertEqual(main(["--target", str(self.temporary), "--json"]), 0)
+        self.assertEqual(
+            main([
+                "--target", str(self.temporary),
+                "--validate-only",
+                "--kinetic-energy-threshold", "0.5",
+                "--json",
+            ]),
+            1,
+        )
+
+    def test_rejects_a_nonpositive_threshold(self) -> None:
+        from scripts.derive_physics_labels import main
+
+        self.assertEqual(main(["--target", str(self.temporary), "--active-contact-threshold", "0"]), 2)
