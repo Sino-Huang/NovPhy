@@ -5,7 +5,10 @@ tasks/task_generator/output/
 *.png
 *.mp4
 
-data/
+# Anchored: this is the rollout-data root. An unanchored `data/` also matches
+# world_model/data/, which silently kept the entire data-pipeline package untracked.
+/data/
+__pycache__/
 
 .cache/
 modules/

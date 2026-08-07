@@ -1,0 +1,20 @@
+{
+  "finding": "staged player emits collision events with an empty payload",
+  "contract_requires": [
+    "contact_ids",
+    "relative_speed"
+  ],
+  "observed_payload": {},
+  "consequence": "validate_physics_shot_artifact rejects every shot containing a collision (invalid_event at the collision event: payload fields differ from taxonomy)",
+  "why_instrumentation_passed": "the accepted smoke shot contains no collision event, so this path was never exercised by the acceptance evidence",
+  "capture_otherwise_healthy": {
+    "frame_count": 60,
+    "physics_state_count": 60,
+    "events": 11,
+    "bird_launched_launch_velocity": {
+      "x": 9.968786,
+      "y": 0.785259
+    }
+  },
+  "physics_port": "player serves the request-70 socket on the agent port (2004); the planner emitted agent_port+1 (2005), where no listener ever appears"
+}
