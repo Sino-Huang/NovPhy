@@ -10,6 +10,12 @@ tasks/task_generator/output/
 /data/
 __pycache__/
 
+# Training artifacts. Run manifests are evidence, but checkpoints and run
+# directories are large and reproducible from the seeded manifest; keep them
+# out of git deliberately.
+/runs/
+/checkpoints/
+
 .cache/
 modules/
 node_modules/

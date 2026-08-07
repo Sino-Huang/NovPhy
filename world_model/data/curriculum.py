@@ -277,6 +277,17 @@ def _schedule_digest(schedule: CurriculumSchedule) -> str:
     return _canonical_digest(("curriculum-schedule-v1", schedule.version, schedule.total_steps, stages))
 
 
+def catalog_digest(catalog: EpisodeCatalog) -> str:
+    """Return the canonical digest of a catalog snapshot.
+
+    This is the reproducibility identity of the data a run consumes: contract
+    identity plus every episode, shot, action, and frame in order.  Two runs
+    that read the same catalog compare equal; any change to the snapshot (or a
+    different split) changes the digest.
+    """
+    return _catalog_digest(catalog)
+
+
 def _catalog_digest(catalog: EpisodeCatalog) -> str:
     contract = catalog.capture_contract
     contract_identity = (contract.contract_name, contract.contract_version,
