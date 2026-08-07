@@ -34,6 +34,13 @@ WORKER_PORT_STRIDE: Final = 10
 MAX_PORT: Final = 65535
 COLLECTION_SPLITS: Final = ("train", "dev", "test")
 DEFAULT_COLLECTION_SPLITS: Final = ("train", "dev")
+#: The production NovPhy level inventory is exactly 40 normal (novelty_level_0) plus
+#: 8 x 5 novel buckets.  A plan that discovers a different count has a truncated
+#: inventory, so the default is fail-closed; a caller with a deliberately scoped
+#: inventory must declare its bucket count explicitly.
+PRODUCTION_BUCKET_COUNT: Final = 80
+#: Production level types are named `type010101` .. `type010805`.
+PRODUCTION_LEVEL_TYPE_PREFIX: Final = "type010"
 PHYSICS_CAPTURE_CONTRACT: Final = "physics_capture_v1"
 PHYSICS_PLAYER_VERSION: Final = "2019.4.41f2-physics-v1"
 ACTIVE_COHORT_ROOT: Final = ROOT / "data" / "novphy_rollouts_dataset_20260708_171531"
@@ -206,14 +213,23 @@ def _levels_root(engine_dir: Path) -> Path:
     return engine_dir / "9001_Data" / "StreamingAssets" / "Levels"
 
 
-def discover_level_entries(engine_dir: Path) -> list[LevelEntry]:
+def discover_level_entries(engine_dir: Path, level_type_prefix: str = PRODUCTION_LEVEL_TYPE_PREFIX) -> list[LevelEntry]:
+    """Inventory level XMLs under an engine directory.
+
+    `level_type_prefix` defaults to the production `type010*` naming.  A deliberately
+    scoped inventory (for example the staged physics player, whose single level lives
+    under `type2`) must name its prefix explicitly, so a foreign or truncated level
+    tree is never planned by accident.
+    """
+    if not level_type_prefix.strip():
+        raise ValueError("level_type_prefix must be nonempty")
     levels_root = _levels_root(engine_dir)
     if not levels_root.is_dir():
         raise FileNotFoundError(f"Levels directory not found: {levels_root}")
     entries = [
         LevelEntry(novelty_dir.name, type_dir.name, xml_path.relative_to(engine_dir).as_posix())
         for novelty_dir in sorted(path for path in levels_root.iterdir() if path.is_dir() and path.name.startswith("novelty_level_"))
-        for type_dir in sorted(path for path in novelty_dir.iterdir() if path.is_dir() and path.name.startswith("type010"))
+        for type_dir in sorted(path for path in novelty_dir.iterdir() if path.is_dir() and path.name.startswith(level_type_prefix))
         for xml_path in sorted((type_dir / "Levels").glob("*.xml"))
     ]
     if not entries:
@@ -432,18 +448,21 @@ def build_collection_plan(
     selected_splits: tuple[str, ...] = DEFAULT_COLLECTION_SPLITS,
     seed: str = DEFAULT_SEED,
     capture_contract: str | None = None,
+    expected_bucket_count: int = PRODUCTION_BUCKET_COUNT,
 ) -> tuple[list[PlannedEpisode], dict[str, dict[str, int]]]:
     opts = options or CollectionOptions()
     target = targets or CollectionTargets()
     splits = _selected_splits(selected_splits)
     _worker_specs(opts)
+    if type(expected_bucket_count) is not int or expected_bucket_count < 1:
+        raise ValueError("expected_bucket_count must be a positive integer")
     if not output_root.is_dir():
         raise FileNotFoundError(f"Existing output root is required: {output_root}")
     partitions = partition_levels(entries, seed=seed)
     buckets = _bucket_entries(entries)
     partition_buckets = {split: _bucket_entries(partitions[split]) for split in splits}
-    if len(buckets) != 80:
-        raise RuntimeError(f"Expected 80 normal and novel buckets, found {len(buckets)}")
+    if len(buckets) != expected_bucket_count:
+        raise RuntimeError(f"Expected {expected_bucket_count} normal and novel buckets, found {len(buckets)}")
     plan: list[PlannedEpisode] = []
     summary: dict[str, dict[str, int]] = {}
     for bucket in sorted(buckets):
@@ -600,6 +619,12 @@ def generate_collection_commands(
         "#!/usr/bin/env bash",
         "set -euo pipefail",
         "source ~/cd_novphy",
+        # The profile chdirs to its own checkout and points PYTHONPATH there, so
+        # re-enter the repo this plan was generated in before any relative path
+        # (scripts/, the plan artifact, data/) is resolved.  Launching from that same
+        # checkout is a no-op; launching from a worktree keeps the worktree's code.
+        f"cd -- {_quote(Path.cwd())}",
+        'export PYTHONPATH="$PWD"',
         f"plan_artifact={_quote(plan_path)}",
         f"failure_ledger={_quote(ledger)}",
         "failure_ledger_lock=\"${failure_ledger}.lock\"",
@@ -794,6 +819,9 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--physics-player-dir", type=Path)
     plan.add_argument("--physics-player-archive", type=Path)
     plan.add_argument("--physics-smoke-marker", type=Path)
+    plan.add_argument("--expected-buckets", type=int, default=PRODUCTION_BUCKET_COUNT, help="Declared level-inventory bucket count; defaults to the production inventory and fails closed on a truncated one")
+    plan.add_argument("--level-type-prefix", default=PRODUCTION_LEVEL_TYPE_PREFIX, help="Level-type directory prefix to inventory; defaults to the production type010* naming")
+    plan.add_argument("--train-only", action="store_true", help="Select only the train split; for a scoped inventory too small to fund a leakage-free dev split")
     config = subparsers.add_parser("write-config", help="Write config.xml for a selected plan episode")
     config.add_argument("--manifest", type=Path, required=True)
     config.add_argument("--split", choices=COLLECTION_SPLITS, required=True)
@@ -832,10 +860,15 @@ def main() -> None:
         raise ValueError("test target must be non-negative")
     if args.include_test and targets.test < 1:
         raise ValueError("--include-test requires --test-target >= 1")
-    selected_splits = ("train", "dev", "test") if args.include_test else DEFAULT_COLLECTION_SPLITS
+    if args.train_only and args.include_test:
+        raise ValueError("--train-only and --include-test are mutually exclusive")
+    if args.train_only:
+        selected_splits = ("train",)
+    else:
+        selected_splits = ("train", "dev", "test") if args.include_test else DEFAULT_COLLECTION_SPLITS
     output_root = args.command_output_root.resolve(strict=True)
     engine_dir = args.engine_dir or engine_dir_for(ROOT, args.os)
-    episodes, summary = build_collection_plan(discover_level_entries(engine_dir), output_root=output_root, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed, capture_contract=PHYSICS_CAPTURE_CONTRACT if physics_provenance is not None else None)
+    episodes, summary = build_collection_plan(discover_level_entries(engine_dir, args.level_type_prefix), output_root=output_root, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed, capture_contract=PHYSICS_CAPTURE_CONTRACT if physics_provenance is not None else None, expected_bucket_count=args.expected_buckets)
     plan_path = write_collection_plan(args.output_dir, output_root=output_root, episodes=episodes, summary=summary, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed, physics_provenance=physics_provenance)
     commands_path = args.commands_path or _collection_commands_path(args.output_dir, selected_splits)
     _atomic_write(commands_path, generate_collection_commands(plan_path, output_root=output_root, options=options, physics_provenance=physics_provenance), executable=True)

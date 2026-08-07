@@ -20,9 +20,12 @@ train_target="${TRAIN_TARGET_PER_BUCKET:-100}"
 dev_target="${DEV_TARGET_PER_BUCKET:-20}"
 test_target="${TEST_TARGET_PER_BUCKET:-0}"
 seed="${PARTITION_SEED:-novphy-rollout-dataset-v1}"
+expected_buckets="${EXPECTED_BUCKETS:-80}"
+level_type_prefix="${LEVEL_TYPE_PREFIX:-type010}"
 proc_root="${NOVPHY_PROC_ROOT:-/proc}"
 x11_tmp_root="${NOVPHY_X11_TMP_ROOT:-/tmp}"
 include_test=0
+train_only=0
 physics_capture="${PHYSICS_CAPTURE_V1:-}"
 physics_player_dir="${PHYSICS_PLAYER_DIR:-}"
 physics_player_archive="${PHYSICS_PLAYER_ARCHIVE:-}"
@@ -36,6 +39,8 @@ Collect the full NovPhy selected-split rollout dataset.
 This script inventories an existing output root, publishes a capped deterministic
 train/dev collection plan by default, starts Xvnc, then runs only the generated
 script. Pass --include-test to additionally select test levels.
+Pass --train-only to select just the train split, for a scoped inventory too small to
+fund a leakage-free dev split (mutually exclusive with --include-test).
 Failed levels are logged to PLAN_DIR/failed_levels.tsv; collection continues to
 later levels, then exits nonzero if any level failed.
 
@@ -57,6 +62,13 @@ Environment overrides:
   TEST_TARGET_PER_BUCKET
                     Episodes per normal/novel bucket for test, default 0; used only with --include-test
   PARTITION_SEED    Deterministic planner seed, default novphy-rollout-dataset-v1
+  EXPECTED_BUCKETS  Declared level-inventory bucket count, default 80 (the production
+                    inventory). Lower it only for a deliberately scoped inventory such
+                    as the single-level staged physics player; the default fails closed
+                    on a truncated production inventory.
+  LEVEL_TYPE_PREFIX Level-type directory prefix to inventory, default type010 (the
+                    production naming). The staged physics player ships its level
+                    under type2.
   NOVPHY_ALLOW_NETWORK_LISTENERS=1
                      Required with WORKERS>1 after confirming the host is isolated/firewalled.
   XVNC_LOG          Xvnc log path, default /tmp/novphy_rollout_xvnc_${USER}_${DISPLAY_ID-without-colon}.log
@@ -85,6 +97,9 @@ while [[ "$#" -gt 0 ]]; do
     --include-test)
       include_test=1
       ;;
+    --train-only)
+      train_only=1
+      ;;
     --help|-h)
       show_help=1
       ;;
@@ -95,6 +110,11 @@ while [[ "$#" -gt 0 ]]; do
   esac
   shift
 done
+
+if [[ "$train_only" == "1" && "$include_test" == "1" ]]; then
+  echo "--train-only and --include-test are mutually exclusive." >&2
+  exit 2
+fi
 
 if [[ "$show_help" == "1" ]]; then
   if [[ "$physics_capture" == "1" ]]; then
@@ -348,13 +368,19 @@ plan_command=(
   --workers "$workers"
   --agent-port-base "$agent_port_base"
   --game-port-base "$game_port_base"
+  --expected-buckets "$expected_buckets"
+  --level-type-prefix "$level_type_prefix"
 )
 if [[ "$physics_capture" == "1" ]]; then
   plan_command+=("${physics_args[@]}")
 fi
 selected_split_label="train/dev"
 collection_script="$plan_dir/collect_train_dev.sh"
-if [[ "$include_test" == "1" ]]; then
+if [[ "$train_only" == "1" ]]; then
+  plan_command+=(--train-only)
+  selected_split_label="train"
+  collection_script="$plan_dir/collect_train.sh"
+elif [[ "$include_test" == "1" ]]; then
   plan_command+=(--include-test --test-target "$test_target")
   selected_split_label="train/dev/test"
   collection_script="$plan_dir/collect_train_dev_test.sh"

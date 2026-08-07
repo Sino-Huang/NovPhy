@@ -20,6 +20,7 @@ from scripts.prepare_rollout_dataset import (
     write_collection_plan,
 )
 import world_model.data as world_model_data
+import world_model.data.inspect as world_model_data_inspect
 
 
 @dataclass(frozen=True, slots=True)
@@ -2940,3 +2941,231 @@ class PhysicsSupervisionReaderTests(unittest.TestCase):
         records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
         records[index]["rgb_frame"]["render_frame"] = value
         path.write_text("".join(f"{json.dumps(record)}\n" for record in records), encoding="utf-8")
+
+
+class DerivedLabelReaderTests(unittest.TestCase):
+    """The derived-label join is opt-in and frame-exact, and fails closed."""
+
+    def _build_catalog(self, root: Path):
+        episode = make_physics_rollout_episode(root / "train" / "episode_001")
+        return (
+            world_model_data.EpisodeCatalog.build(
+                root,
+                "train",
+                world_model_data.PHYSICS_CAPTURE_V1,
+                required_capabilities=world_model_data.PHYSICS_CAPTURE_V1_CAPABILITIES,
+            ),
+            episode,
+        )
+
+    @staticmethod
+    def _write_labels(episode: Path):
+        from scripts.physics_label_derivation import OracleGateSpec, write_derived_labels
+
+        return write_derived_labels(episode / "shot_001", OracleGateSpec())
+
+    def _sample(self, catalog, *, include_derived_labels: bool):
+        request = world_model_data.PhysicsSupervisionRequest(
+            ("scene_nodes", "macro_events"),
+            include_raw_contacts=True,
+            include_events=True,
+            include_derived_labels=include_derived_labels,
+        )
+        dataset = world_model_data.TemporalWindowDataset(
+            catalog, world_model_data.TemporalWindowRequest(1, 1), supervision=request
+        )
+        return dataset[0]["supervision"]
+
+    def test_labels_are_absent_unless_requested(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            catalog, episode = self._build_catalog(Path(temporary))
+            self._write_labels(episode)
+
+            supervision = self._sample(catalog, include_derived_labels=False)
+
+            self.assertTrue(all(frame.derived_labels is None for frame in supervision))
+
+    def test_requested_labels_join_on_exact_render_frame(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            catalog, episode = self._build_catalog(Path(temporary))
+            self._write_labels(episode)
+
+            supervision = self._sample(catalog, include_derived_labels=True)
+
+            self.assertEqual(tuple(frame.render_frame for frame in supervision), (100, 101))
+            for frame in supervision:
+                self.assertIsNotNone(frame.derived_labels)
+                self.assertEqual(frame.derived_labels.render_frame, frame.render_frame)
+                self.assertIsInstance(frame.derived_labels.oracle_gate, bool)
+                self.assertEqual(
+                    len(frame.derived_labels.to_vector()),
+                    len(world_model_data.DERIVED_LABEL_VECTOR_FIELDS),
+                )
+
+    def test_missing_label_sidecar_fails_closed_when_requested(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            catalog, _ = self._build_catalog(Path(temporary))
+
+            with self.assertRaises(world_model_data.ContractValueError):
+                self._sample(catalog, include_derived_labels=True)
+
+    def test_stale_label_sidecar_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            catalog, episode = self._build_catalog(root)
+            path = self._write_labels(episode)
+            records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+            records[0]["source"]["physics_state_sha256"] = "0" * 64
+            path.write_text(
+                "".join(f"{json.dumps(record, sort_keys=True, separators=(',', ':'))}\n" for record in records),
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(world_model_data.ContractValueError):
+                self._sample(catalog, include_derived_labels=True)
+
+    def test_label_frames_that_do_not_match_states_fail_closed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            catalog, episode = self._build_catalog(root)
+            path = self._write_labels(episode)
+            lines = path.read_text(encoding="utf-8").splitlines()
+            # Drop the first frame_label record, leaving the header and outcome.
+            path.write_text("\n".join([lines[0], *lines[2:]]) + "\n", encoding="utf-8")
+
+            with self.assertRaises(world_model_data.ContractValueError):
+                self._sample(catalog, include_derived_labels=True)
+
+    def test_default_sample_keys_are_unchanged_by_the_label_feature(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            catalog, episode = self._build_catalog(Path(temporary))
+            self._write_labels(episode)
+            dataset = world_model_data.TemporalWindowDataset(
+                catalog, world_model_data.TemporalWindowRequest(1, 1)
+            )
+
+            sample = dataset[0]
+
+            self.assertNotIn("supervision", sample)
+            self.assertEqual(
+                sorted(sample),
+                [
+                    "action",
+                    "context_image",
+                    "frame_indices",
+                    "horizon_frames",
+                    "prediction_steps",
+                    "provenance",
+                    "stride_frames",
+                    "target_images",
+                ],
+            )
+
+
+class PhysicsHealthReportTests(unittest.TestCase):
+    """The health report must describe what was collected and what was not."""
+
+    def _cohort(self, root: Path, *, with_labels: bool) -> None:
+        episode = make_physics_rollout_episode(root / "train" / "episode_001")
+        if with_labels:
+            from scripts.physics_label_derivation import OracleGateSpec, write_derived_labels
+
+            write_derived_labels(episode / "shot_001", OracleGateSpec())
+
+    def test_report_counts_capture_and_label_coverage(self):
+        from world_model.data.physics_health import physics_coverage_report
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self._cohort(root, with_labels=True)
+
+            report = physics_coverage_report(root, ("train",))
+
+            train = report["splits"]["train"]
+            self.assertEqual(train["accepted_episodes"], 1)
+            self.assertEqual(train["accepted_shots"], 1)
+            self.assertEqual(train["shots_with_sidecars"], 1)
+            self.assertEqual(train["shots_with_valid_labels"], 1)
+            self.assertEqual(train["shots_with_invalid_labels"], 0)
+            self.assertEqual(train["frames_total"], train["frames_frame_exact"])
+            self.assertGreater(train["frames_total"], 0)
+            self.assertEqual(sum(train["outcome_counts"].values()), 1)
+
+    def test_unlabelled_cohort_reports_zero_label_coverage_without_crashing(self):
+        from world_model.data.physics_health import physics_coverage_report
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self._cohort(root, with_labels=False)
+
+            report = physics_coverage_report(root, ("train",))
+
+            train = report["splits"]["train"]
+            self.assertEqual(train["shots_with_sidecars"], 1)
+            self.assertEqual(train["shots_with_valid_labels"], 0)
+            self.assertEqual(train["shots_with_invalid_labels"], 1)
+            self.assertTrue(train["label_failure_reasons"])
+            self.assertEqual(train["frames_total"], 0)
+            self.assertIsNone(train["oracle_gate_open_rate"])
+
+    def test_report_states_uncovered_regimes_honestly(self):
+        from world_model.data.physics_health import physics_coverage_report
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self._cohort(root, with_labels=True)
+
+            report = physics_coverage_report(root, ("train",))
+
+            uncovered = report["uncovered_regimes"]
+            self.assertEqual(uncovered["production_bucket_count"], 80)
+            self.assertEqual(uncovered["covered_bucket_count"], len(report["covered_buckets"]))
+            self.assertEqual(
+                uncovered["uncovered_bucket_count"],
+                80 - len(report["covered_buckets"]),
+            )
+            self.assertIn("single level", uncovered["note"])
+
+    def test_report_carries_the_threshold_spec_it_validated_against(self):
+        from world_model.data.physics_health import physics_coverage_report
+        from scripts.physics_label_derivation import OracleGateSpec
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self._cohort(root, with_labels=True)
+
+            report = physics_coverage_report(root, ("train",))
+
+            self.assertEqual(report["oracle_gate_spec"], OracleGateSpec().to_json())
+            self.assertEqual(report["oracle_gate_spec_digest"], OracleGateSpec().digest())
+            # A cohort labelled under other thresholds must not silently validate.
+            drifted = physics_coverage_report(root, ("train",), OracleGateSpec(kinetic_energy_threshold=0.5))
+            self.assertEqual(drifted["splits"]["train"]["shots_with_valid_labels"], 0)
+
+    def test_inspection_cli_embeds_physics_coverage_on_request(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self._cohort(root, with_labels=True)
+
+            report = world_model_data_inspect.inspect_root(
+                root,
+                ("train",),
+                world_model_data.PHYSICS_CAPTURE_V1,
+                include_physics_coverage=True,
+            )
+
+            self.assertIn("physics_coverage", report)
+            self.assertEqual(report["physics_coverage"]["splits"]["train"]["shots_with_valid_labels"], 1)
+
+    def test_physics_coverage_requires_the_physics_contract(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self._cohort(root, with_labels=True)
+
+            with self.assertRaises(world_model_data_inspect.InspectionError):
+                world_model_data_inspect.inspect_root(
+                    root,
+                    ("train",),
+                    world_model_data.LEGACY_RGB_V1,
+                    include_physics_coverage=True,
+                )
