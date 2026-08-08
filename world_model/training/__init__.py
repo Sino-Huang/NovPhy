@@ -60,6 +60,21 @@ from world_model.training.grid_data import (
     partition_dev_episodes,
     partition_episodes,
 )
+from world_model.training.grid_run import (
+    CHECKPOINT_VERSION,
+    GRID_VERSION,
+    CheckpointInfo,
+    GridRunError,
+    PhaseAConfig,
+    ScoreResult,
+    checkpoint_digest,
+    fixture_batch,
+    fixture_jepa_config,
+    load_checkpoint,
+    save_checkpoint,
+    score_checkpoint,
+    write_sweep_manifest,
+)
 
 __all__ = [
     "CollapseReport",
@@ -113,4 +128,17 @@ __all__ = [
     "enumerate_scoring_states",
     "partition_dev_episodes",
     "partition_episodes",
+    "CHECKPOINT_VERSION",
+    "GRID_VERSION",
+    "CheckpointInfo",
+    "GridRunError",
+    "PhaseAConfig",
+    "ScoreResult",
+    "checkpoint_digest",
+    "fixture_batch",
+    "fixture_jepa_config",
+    "load_checkpoint",
+    "save_checkpoint",
+    "score_checkpoint",
+    "write_sweep_manifest",
 ]
