@@ -317,6 +317,7 @@ class TemporalWindowDataset(torch.utils.data.Dataset):
             "source_level_key": episode.source_level_key,
             "episode": episode.name,
             "shot": shot.name,
+            "shot_frame_count": len(shot.frames),
             "capture_contract": descriptor,
             "declared_capabilities": descriptor.declared_capabilities,
             "sidecar_paths": descriptor.sidecar_paths,

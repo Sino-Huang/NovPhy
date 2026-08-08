@@ -18,6 +18,12 @@ class TemporalWindowBatch(TypedDict):
     target_mask: torch.Tensor
     action: torch.Tensor
     prediction_steps: torch.Tensor
+    shot_frame_count: torch.Tensor
+    frame_indices: list[list[int]]
+    horizon_frames: torch.Tensor
+    stride_frames: torch.Tensor
+    horizon: torch.Tensor
+    stride: torch.Tensor
     provenance: list
 
 
@@ -130,6 +136,38 @@ class TemporalWindowCollator:
             action=torch.stack([sample["action"] for sample in samples]),
             prediction_steps=torch.tensor(
                 [sample["prediction_steps"] for sample in samples],
+                dtype=torch.long,
+                device=first_context.device,
+            ),
+            shot_frame_count=torch.tensor(
+                [
+                    sample.get(
+                        "shot_frame_count",
+                        sample["provenance"].get("shot_frame_count", max(sample["frame_indices"]) + 1),
+                    )
+                    for sample in samples
+                ],
+                dtype=torch.long,
+                device=first_context.device,
+            ),
+            frame_indices=[list(sample["frame_indices"]) for sample in samples],
+            horizon_frames=torch.tensor(
+                [sample["horizon_frames"] for sample in samples],
+                dtype=torch.long,
+                device=first_context.device,
+            ),
+            stride_frames=torch.tensor(
+                [sample["stride_frames"] for sample in samples],
+                dtype=torch.long,
+                device=first_context.device,
+            ),
+            horizon=torch.tensor(
+                [sample["horizon_frames"] for sample in samples],
+                dtype=torch.long,
+                device=first_context.device,
+            ),
+            stride=torch.tensor(
+                [sample["stride_frames"] for sample in samples],
                 dtype=torch.long,
                 device=first_context.device,
             ),
