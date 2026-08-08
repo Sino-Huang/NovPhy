@@ -75,6 +75,18 @@ from world_model.training.grid_run import (
     score_checkpoint,
     write_sweep_manifest,
 )
+from world_model.training.scoring import (
+    ExhaustiveScoreResult,
+    ExhaustiveScorer,
+    Partition,
+    ScoreArtifactError,
+    ScoreArtifactReceipt,
+    ScoredState,
+    ScoringExample,
+    validate_score_artifacts,
+    write_score_artifacts,
+)
+from world_model.training.scoring_torch import fixture_scoring_examples, score_fixture_checkpoint
 
 __all__ = [
     "CollapseReport",
@@ -141,4 +153,15 @@ __all__ = [
     "save_checkpoint",
     "score_checkpoint",
     "write_sweep_manifest",
+    "ExhaustiveScoreResult",
+    "ExhaustiveScorer",
+    "Partition",
+    "ScoreArtifactError",
+    "ScoreArtifactReceipt",
+    "ScoredState",
+    "ScoringExample",
+    "fixture_scoring_examples",
+    "score_fixture_checkpoint",
+    "validate_score_artifacts",
+    "write_score_artifacts",
 ]

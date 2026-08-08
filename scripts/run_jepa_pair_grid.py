@@ -13,22 +13,26 @@ if str(ROOT) not in sys.path:
 
 from world_model.model import JepaBackbone, JepaConfig
 from world_model.training import (
+    CheckpointInfo,
     GridRunError,
     PhaseAConfig,
     fixture_batch,
     fixture_jepa_config,
     load_checkpoint,
     save_checkpoint,
+    score_fixture_checkpoint,
     score_checkpoint,
     seed_all,
     TeacherForcedTrainer,
+    validate_score_artifacts,
+    write_score_artifacts,
     write_sweep_manifest,
 )
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("train", "score", "frontier", "all"))
+    parser.add_argument("command", choices=("train", "score", "validate", "frontier", "all"))
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--fixture", action="store_true")
     parser.add_argument("--steps", type=int, default=3600)
@@ -65,7 +69,7 @@ def _model_config(args: argparse.Namespace) -> JepaConfig:
     return JepaConfig(encoder=EncoderConfig(), predictor=PredictorConfig())
 
 
-def _train(args: argparse.Namespace, config: PhaseAConfig, model_config: JepaConfig) -> tuple[Path, object]:
+def _train(args: argparse.Namespace, config: PhaseAConfig, model_config: JepaConfig) -> tuple[Path, CheckpointInfo]:
     output = args.output_dir
     checkpoint = args.checkpoint or output / "checkpoint.pt"
     seed_all(config.seed)
@@ -86,6 +90,14 @@ def _train(args: argparse.Namespace, config: PhaseAConfig, model_config: JepaCon
 
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(sys.argv[1:] if argv is None else argv)
+    if args.command == "validate":
+        receipt = validate_score_artifacts(args.output_dir / "score_artifacts")
+        print(
+            f"validated states={receipt.state_count} scores={receipt.score_count} "
+            f"manifest={receipt.manifest_digest}",
+            flush=True,
+        )
+        return 0
     config = _config(args)
     model_config = _model_config(args)
     checkpoint = args.checkpoint or args.output_dir / "checkpoint.pt"
@@ -104,6 +116,37 @@ def main(argv: list[str] | None = None) -> int:
 
             if checkpoint_digest(checkpoint) != expected_digest:
                 raise GridRunError("checkpoint digest mismatch")
+        if args.fixture:
+            for partition in ("controller-train", "calibration", "evaluation"):
+                print(f"scoring partition={partition} states={config.steps}", flush=True)
+            exhaustive, exhaustive_checkpoint_digest = score_fixture_checkpoint(
+                checkpoint, config, model_config
+            )
+            receipt = write_score_artifacts(
+                args.output_dir / "score_artifacts",
+                exhaustive,
+                checkpoint_digest=exhaustive_checkpoint_digest,
+                resume=args.resume,
+            )
+            validate_score_artifacts(args.output_dir / "score_artifacts")
+            (args.output_dir / "score.json").write_text(
+                json.dumps(
+                    {
+                        "error_scale": exhaustive.score_spec.error_scale,
+                        "manifest_digest": receipt.manifest_digest,
+                        "score_count": receipt.score_count,
+                        "state_count": receipt.state_count,
+                    },
+                    sort_keys=True,
+                ) + "\n",
+                encoding="utf-8",
+            )
+            print(
+                f"score states={receipt.state_count} scores={receipt.score_count} "
+                f"error_scale={exhaustive.score_spec.error_scale:.8f}",
+                flush=True,
+            )
+            return 0
         batches = tuple(
             fixture_batch(model_config, seed=config.seed, batch_size=min(config.batch_size, 8), step=step)
             for step in range(9)
