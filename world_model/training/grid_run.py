@@ -171,7 +171,12 @@ def save_checkpoint(
         "torch_rng": torch.get_rng_state(),
     }
     _atomic_torch_save(payload, path)
-    return CheckpointInfo(path, checkpoint_digest(path), trainer._step_count, config_digest)
+    actual_digest = checkpoint_digest(path)
+    digest_path = path.with_name(path.name + ".sha256")
+    temporary = digest_path.with_name(digest_path.name + ".tmp")
+    temporary.write_text(actual_digest + "\n", encoding="ascii")
+    os.replace(temporary, digest_path)
+    return CheckpointInfo(path, actual_digest, trainer._step_count, config_digest)
 
 
 def load_checkpoint(
@@ -185,6 +190,9 @@ def load_checkpoint(
     if not path.is_file() or path.name.endswith(".tmp"):
         raise GridRunError("checkpoint is missing or partial")
     actual_digest = checkpoint_digest(path)
+    digest_path = path.with_name(path.name + ".sha256")
+    if digest_path.is_file() and digest_path.read_text(encoding="ascii").strip() != actual_digest:
+        raise GridRunError("checkpoint digest mismatch")
     if expected_digest is not None and actual_digest != expected_digest:
         raise GridRunError("checkpoint digest mismatch")
     try:
