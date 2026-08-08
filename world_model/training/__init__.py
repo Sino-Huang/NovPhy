@@ -30,9 +30,26 @@ from world_model.training.manifest import (
     capture_environment,
     git_revision,
 )
+from world_model.training.grid_artifacts import (
+    ALPHA_EXCLUSIONS,
+    ArtifactContractError,
+    ArtifactReceipt,
+    ArtifactValidationError,
+    BestPairState,
+    PairMetricArtifact,
+    SweepManifest,
+    canonical_json_bytes,
+    validate_best_pair_artifacts,
+    write_best_pair_artifacts,
+)
 
 __all__ = [
     "CollapseReport",
+    "ALPHA_EXCLUSIONS",
+    "ArtifactContractError",
+    "ArtifactReceipt",
+    "ArtifactValidationError",
+    "BestPairState",
     "MANIFEST_VERSION",
     "OVERFIT_LOSS_THRESHOLD",
     "OVERFIT_RANK_THRESHOLD",
@@ -41,11 +58,14 @@ __all__ = [
     "OverfitReport",
     "RunManifest",
     "RunManifestPayload",
+    "PairMetricArtifact",
+    "SweepManifest",
     "StepResult",
     "TeacherForcedTrainer",
     "TrainingConfig",
     "build_window_loader",
     "capture_environment",
+    "canonical_json_bytes",
     "collapse_diagnostics",
     "effective_rank",
     "git_revision",
@@ -57,4 +77,6 @@ __all__ = [
     "seed_all",
     "select_diverse_windows",
     "select_motion_windows",
+    "validate_best_pair_artifacts",
+    "write_best_pair_artifacts",
 ]
