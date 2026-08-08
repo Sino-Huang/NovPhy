@@ -4,10 +4,11 @@
 dual-output predictor.  `world_model.training` implements a teacher-forced
 single-step training loop with a seeded reproducibility manifest.
 
-This is Milestone 1a and 1b of `docs/high_level_plans/bg_ns_jepa_research_execution.md`
-only.  It does **not** implement the SPSG/GINE relational encoder (1c), the
-macro-event predictor or restriction/lifting maps (1d), the full `(Δ, α)` grid
-sweep (1e), or best-pair / oracle-ceiling scoring (1f).
+The backbone section below documents Milestones 1a and 1b. Todo 8 additionally
+delivers the legacy temporal projection of 1e/1f, documented in
+[`world_model_jepa_pair_grid.md`](world_model_jepa_pair_grid.md). It still does
+**not** implement the SPSG/GINE relational encoder (1c), the macro-event
+predictor or restriction/lifting maps (1d), or any learned symbolic controller.
 
 ## The state-carrier principle
 
@@ -273,3 +274,30 @@ rejections — incomplete collector output, designed behaviour).  A **train**
 catalog validates 10,328 episodes and takes minutes; use `dev` while iterating.
 
 `runs/` and `checkpoints/` are gitignored.
+
+## Todo 8 temporal projection
+
+The approved legacy experiment trains the continuous carrier on
+`delta={1,5,15}` with `abstraction=continuous` only. The real dev catalog is
+read-only and is identified by catalog digest
+`8265809a528e41eaae646cb1cae9d577d7f34fd99b85b859bb14f07a479c6beb` (463
+episodes, 5,556 shots, 562,515 frames, and 1,137 `missing_artifact`
+rejections). The training identity is bound to the checkpoint, config, grid,
+catalog, and run-identity digests; the primary and reproduction runs use seed
+`20260807`, 3,600 steps, batch 64, learning rate `3e-4`, weight decay `0.05`,
+zero warmup, gradient clip `1.0`, and EMA base momentum `0.996`.
+
+Exhaustive scoring enumerates every nonterminal state in each deterministic
+episode partition and evaluates all three requested deltas. A state at a
+terminal edge uses `effective_delta=min(requested_delta, T-t)` for scoring only;
+the serialized label retains both requested and effective delta, plus explicit
+terminal-clamp metadata. Shards are atomic and validators recompute the
+canonical partition-order state digest, score count, per-pair aggregates, and
+provenance before frontier generation.
+
+This is temporal-only evidence. `micro` and `macro` remain unavailable with
+the exact reason `symbolic_supervision_unavailable`; no symbolic, ADE/FDE,
+final-state, event, penetration, floating, or illegal-contact result is
+fabricated. The resulting frontier therefore supports only the scoped
+continuous temporal comparison and makes no claim about the joint `(delta,
+alpha)` controller or oracle-symbol ceiling.

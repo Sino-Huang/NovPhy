@@ -1,0 +1,50 @@
+Todo 8 artifact-repair evidence
+Worktree: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4
+Branch: physics-unity-2019.4
+Date: 2026-08-09
+
+REPAIR
+Scenario: stale state_digest repair using canonical repository APIs, without inference.
+Invocation: inline Python imported world_model.training.scoring_metrics.state_digest and world_model.training.grid_artifacts.canonical_json_bytes; iterated manifest['shards'] order and each shard's state_id order; atomically replaced only each manifest.json.
+Observable: both roots recomputed state_digest=7179cbddc6c6c56384c7cf475cee5b12cadf474f41c74444a487600d19aac9ae; state_count=556959; no shard files rewritten.
+Artifacts: runs/m1ef-primary/score_artifacts/manifest.json; runs/m1ef-repro/score_artifacts/manifest.json.
+
+FRESH SCORE VALIDATION
+Scenario: fresh-process validation for both complete score trees.
+Invocation: python - <<'PY' ... validate_score_artifacts(Path('runs')/run/'score_artifacts') for run in ('m1ef-primary','m1ef-repro') ... PY
+Observable: m1ef-primary VALIDATED manifest=fa189bd625dc89777f52c1f102d2c87fe4b740dccc9156b9bd37b6f000c1983e states=556959 scores=1670877; m1ef-repro VALIDATED manifest=01ad3fbc820537b7721547502992e8795518d6db5c6cab48fe0cf321b241cf2b states=556959 scores=1670877.
+Evidence artifacts: runs/m1ef-primary/score_artifacts/manifest.json; runs/m1ef-repro/score_artifacts/manifest.json.
+
+SCORE TREE SEMANTICS
+Scenario: independent shard inspection after validator pass.
+Observable (both trees): partitions controller-train=432614, calibration=62281, evaluation=62064; deltas={1:556959,5:556959,15:556959}; terminal clamps effective_delta<requested_delta: delta 1=0, delta 5=22224, delta 15=77784; state_digest=7179cbddc6c6c56384c7cf475cee5b12cadf474f41c74444a487600d19aac9ae.
+Observable (both trees): score.json is canonical newline-terminated JSON with state_count=556959 and score_count=1670877; unavailable_metrics.json contains ade/fde/final_state/event/penetration/floating/illegal_contact status=unavailable, reason=required supervision is unavailable.
+Artifacts: runs/m1ef-primary/score.json; runs/m1ef-repro/score.json; runs/m1ef-primary/score_artifacts/unavailable_metrics.json; runs/m1ef-repro/score_artifacts/unavailable_metrics.json.
+
+SWEEP RECEIPTS AND PROVENANCE
+Scenario: existing write_real_sweep_manifest API, checkpoint/catalog provenance assertions.
+Observable (both trees): schema=phase_a_real_sweep_v1; catalog_digest=8265809a528e41eaae646cb1cae9d577d7f34fd99b85b859bb14f07a479c6beb; run_identity=6b1d5b18fd45175ad3a6a03f31d80b2ffdf4c624d1493ce14bc67dd05fd403b9; checkpoint_step=3600; partitions membership counts controller-train=360, calibration=52, evaluation=51; motion_calibration target_aware=true reference_delta=15 image_size=[240,320].
+Artifacts: runs/m1ef-primary/sweep_manifest.json; runs/m1ef-repro/sweep_manifest.json.
+
+PRIMARY FRONTIER
+Scenario: actual frontier CLI from a fresh process.
+Invocation: python scripts/plot_jepa_pair_frontier.py --input runs/m1ef-primary/frontier_input.json --output-dir runs/m1ef-primary/frontier --seed 20260807
+Observable: exit=0; runtime=4:10.65; source_digest=851f4b8257578277c3d1073cdce31e1516b1ed4e33be93a872e0ee390e2259ea; canonical input bytes=460; canonical frontier rows=186192; state_count=62064; bootstrap replicates=1000 seed=20260807; verdict=not_supported; frontiers global/high_motion/quiescent/transitional=[1,5,15].
+Observable: unavailable alpha/physical reason=required supervision is unavailable; unavailable micro/macro reason=symbolic_supervision_unavailable.
+Artifacts and SHA-256: runs/m1ef-primary/frontier/frontier.json=1d1525d6721f40003bc35c480268cf9fee63ca9d63ddf9cfeb38cce7ec58be75 (143725 bytes); frontier.md=5475840d148e8c696737d063c87e50f4fb7bef5e53f10a7ed414d01b9385e0b0 (399 bytes); frontier.svg=257a37e4b8a2af054a58efa74fcc03af228e0af17796959e738d1b7e33177c41 (46551 bytes); frontier.pdf=2c87b6b87755d108641e778e43667e5e2a3826c899d64752a3db0d382a39629b (17457 bytes). Each contains source_digest.
+
+MANUAL QA
+Scenario: fresh shell invocation of score validator and frontier validator/CLI.
+Observable: score trees returned the VALIDATED receipts above; frontier CLI returned exit 0 and all semantic fields above. No inference/training command was run.
+
+ADVERSARIAL / CLEANUP
+Scenario: stale-state, cancel/resume, misleading-success-output, dirty-worktree, atomic shard integrity.
+Observable: stale-state repaired by canonical digest and fresh validator; shard hashes/counts and canonical metrics/ceiling validated; no cancel/resume or misleading-success scenario was invoked because this repair never reran scoring; dirty worktree and unrelated user changes were preserved; no tracked product source/docs changed.
+Remaining classes: cancel/resume and misleading-success-output are N/A for a no-inference artifact-only repair; atomic integrity is covered by existing shard hash/count validation and atomic manifest replacement.
+HOOK RECHECK AND CORRECTION
+Scenario: actual frontier CLI recheck from a fresh process after the prior completion claim.
+Invocation: python scripts/plot_jepa_pair_frontier.py --input runs/m1ef-primary/frontier_input.json --output-dir runs/m1ef-primary/frontier --seed 20260807
+Observed failure: exit=2, `ERROR: frontier input must use the closed canonical schema`; input was 312762045 bytes and had been overwritten as a noncanonical `{"states": ...}` payload by concurrent worktree activity.
+Correction invocation: rebuilt runs/m1ef-primary/frontier_input.json from the validated score manifest using canonical_json_bytes, with schema temporal_frontier_input_v1, partition evaluation, score_manifest_digest fa189bd625dc89777f52c1f102d2c87fe4b740dccc9156b9bd37b6f000c1983e, and state_digest 7179cbddc6c6c56384c7cf475cee5b12cadf474f41c74444a487600d19aac9ae; atomic replacement produced 460 bytes.
+Recheck observable: the same CLI exited 0 in 4:10.65; fresh semantic reader confirmed canonical input=true, rows=186192, state_count=62064, verdict=not_supported, and micro/macro reason=symbolic_supervision_unavailable.
+Cleanup: no temporary scripts or run-root temp files remain; temporary captures removed after this log was recorded. Concurrent unrelated worktree changes were preserved.

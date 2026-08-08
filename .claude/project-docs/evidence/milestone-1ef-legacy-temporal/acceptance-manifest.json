@@ -1,0 +1,147 @@
+{
+  "approved_grid": {
+    "abstraction": "continuous",
+    "deltas": [
+      1,
+      5,
+      15
+    ],
+    "excluded_abstractions": {
+      "macro": "symbolic_supervision_unavailable",
+      "micro": "symbolic_supervision_unavailable"
+    }
+  },
+  "branch": "physics-unity-2019.4",
+  "catalog": {
+    "digest": "8265809a528e41eaae646cb1cae9d577d7f34fd99b85b859bb14f07a479c6beb",
+    "episodes": 463,
+    "frames": 562515,
+    "rejection_reason": "missing_artifact",
+    "rejections": 1137,
+    "shots": 5556
+  },
+  "claim_boundary": "temporal-only-claim-boundary.md",
+  "cpu_gates": {
+    "fixture_cli": "pass",
+    "focused_and_regression": "pass",
+    "fresh_process_validation": "pass"
+  },
+  "frontier": {
+    "bootstrap": {
+      "frontier_membership_frequency": {
+        "1": 1.0,
+        "15": 1.0,
+        "5": 1.0
+      },
+      "intersection_95_interval": [
+        1.0,
+        1.0
+      ],
+      "intersection_frequency": 1.0,
+      "replicates": 1000,
+      "seed": 20260807
+    },
+    "source_digest": "851f4b8257578277c3d1073cdce31e1516b1ed4e33be93a872e0ee390e2259ea",
+    "state_count": 62064,
+    "verdict": "not_supported"
+  },
+  "identity": {
+    "catalog_digest": "8265809a528e41eaae646cb1cae9d577d7f34fd99b85b859bb14f07a479c6beb",
+    "config_digest": "de9197990222350d9e0413d83f7dbe0f8e263d071cb13707fd80a055a1e80e38",
+    "grid_digest": "fa8035ba918f885c1e8e4e505b25086fd2e260673862c48ea9b98491747075dc",
+    "run_identity": "6b1d5b18fd45175ad3a6a03f31d80b2ffdf4c624d1493ce14bc67dd05fd403b9",
+    "step": 3600
+  },
+  "overall_status": "inconclusive_reproducibility_failure",
+  "protected_roots": {
+    "receipt": "protected-roots-before-after.txt",
+    "status": "unchanged",
+    "writes": "none"
+  },
+  "reproducibility": {
+    "aggregate_metrics_within_rtol_1e-2": false,
+    "best_pair_agreement": 0.9695291753971118,
+    "best_pair_threshold": 0.99,
+    "failure_policy": "recorded honestly; thresholds were not weakened",
+    "overall_pass": false
+  },
+  "runs": [
+    {
+      "by_delta": {
+        "1": 1200,
+        "15": 1200,
+        "5": 1200
+      },
+      "keys": {
+        "delta=1,regime=high_motion": 400,
+        "delta=1,regime=quiescent": 400,
+        "delta=1,regime=transitional": 400,
+        "delta=15,regime=high_motion": 400,
+        "delta=15,regime=quiescent": 400,
+        "delta=15,regime=transitional": 400,
+        "delta=5,regime=high_motion": 400,
+        "delta=5,regime=quiescent": 400,
+        "delta=5,regime=transitional": 400
+      },
+      "run": "m1ef-primary"
+    },
+    {
+      "by_delta": {
+        "1": 1200,
+        "15": 1200,
+        "5": 1200
+      },
+      "keys": {
+        "delta=1,regime=high_motion": 400,
+        "delta=1,regime=quiescent": 400,
+        "delta=1,regime=transitional": 400,
+        "delta=15,regime=high_motion": 400,
+        "delta=15,regime=quiescent": 400,
+        "delta=15,regime=transitional": 400,
+        "delta=5,regime=high_motion": 400,
+        "delta=5,regime=quiescent": 400,
+        "delta=5,regime=transitional": 400
+      },
+      "run": "m1ef-repro"
+    }
+  ],
+  "schema_version": "milestone_1ef_todo8_acceptance_v1",
+  "scope": "legacy_rgb_v1 temporal continuous-only projection",
+  "score_artifacts": {
+    "m1ef-primary": {
+      "manifest_digest": "fa189bd625dc89777f52c1f102d2c87fe4b740dccc9156b9bd37b6f000c1983e",
+      "score_count": 1670877,
+      "state_count": 556959
+    },
+    "m1ef-repro": {
+      "manifest_digest": "01ad3fbc820537b7721547502992e8795518d6db5c6cab48fe0cf321b241cf2b",
+      "score_count": 1670877,
+      "state_count": 556959
+    }
+  },
+  "terminal_clamps": {
+    "delta_1": 0,
+    "delta_15": 77784,
+    "delta_5": 22224,
+    "metadata": "effective_delta and duration_weight validated per shard"
+  },
+  "todo": "8",
+  "tracked_evidence_policy": {
+    "checkpoints_committed": false,
+    "runs_committed": false,
+    "secrets_or_nan": false,
+    "temporary_shards_committed": false
+  },
+  "training": {
+    "batch_size": 64,
+    "device": "cuda",
+    "ema_base_momentum": 0.996,
+    "grad_clip": 1.0,
+    "learning_rate": 0.0003,
+    "seed": 20260807,
+    "steps": 3600,
+    "warmup_steps": 0,
+    "weight_decay": 0.05
+  },
+  "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4"
+}

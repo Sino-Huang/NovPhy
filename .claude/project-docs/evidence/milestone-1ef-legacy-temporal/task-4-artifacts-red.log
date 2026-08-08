@@ -1,0 +1,19 @@
+test_world_model_grid_artifacts (unittest.loader._FailedTest.test_world_model_grid_artifacts) ... ERROR
+
+======================================================================
+ERROR: test_world_model_grid_artifacts (unittest.loader._FailedTest.test_world_model_grid_artifacts)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_world_model_grid_artifacts
+Traceback (most recent call last):
+  File "/home/sukai/miniconda3/envs/novphy/lib/python3.11/unittest/loader.py", line 162, in loadTestsFromName
+    module = __import__(module_name)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_world_model_grid_artifacts.py", line 6, in <module>
+    from world_model.training import grid_artifacts as artifacts
+ImportError: cannot import name 'grid_artifacts' from 'world_model.training' (/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/world_model/training/__init__.py)
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

@@ -1,0 +1,27 @@
+# Todo 8 final command receipts
+
+python -m unittest tests.test_world_model_data tests.test_prepare_rollout_dataset tests.test_world_model_model tests.test_world_model_training tests.test_world_model_grid_data tests.test_world_model_pair_grid tests.test_world_model_grid_run tests.test_world_model_scoring tests.test_world_model_real_data tests.test_world_model_frontier
+RESULT: 336 tests, OK
+
+python scripts/run_jepa_pair_grid.py all --device cpu --fixture --steps 18 --output-dir <temporary>
+RESULT: exit 0; 54 states; 162 scores; fresh validation passed
+
+fresh EpisodeCatalog.build(dev, LEGACY_RGB_V1)
+RESULT: digest 8265809a528e41eaae646cb1cae9d577d7f34fd99b85b859bb14f07a479c6beb; 463 episodes; 5556 shots; 562515 frames; 1137 missing_artifact rejections
+
+fresh validate_score_artifacts(runs/m1ef-primary/score_artifacts)
+RESULT: exit 0; 556959 states; 1670877 scores; manifest fa189bd625dc89777f52c1f102d2c87fe4b740dccc9156b9bd37b6f000c1983e
+
+fresh validate_score_artifacts(runs/m1ef-repro/score_artifacts)
+RESULT: exit 0; 556959 states; 1670877 scores; manifest 01ad3fbc820537b7721547502992e8795518d6db5c6cab48fe0cf321b241cf2b
+
+python scripts/run_jepa_pair_grid.py frontier --split dev --seed 20260807 --steps 3600 --batch-size 64 --warmup-steps 0 --device cuda --output-dir runs/m1ef-primary --checkpoint runs/m1ef-primary/checkpoint.pt
+RESULT: exit 0; 1000 bootstrap replicates; verdict not_supported; frontier artifacts emitted
+
+fresh two-run comparison over checkpoint payloads, per-pair metrics, and canonical shards
+RESULT: identity digests match; 1200 updates/delta; 400 updates/(delta,regime); aggregate rtol gate FAIL; best-pair agreement 0.9695291753971118 < 0.99
+
+protected-root before/after metadata and hashes
+RESULT: unchanged; no protected-root writes
+
+Deferred by user instruction: F1-F4 and review-work.
