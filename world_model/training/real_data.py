@@ -179,6 +179,36 @@ class RealPhaseData:
         action = torch.tensor(shot.action.values, dtype=torch.float32)
         return context, target, action
 
+    def state_record(self, state_id: str) -> ScoringState:
+        """Return the immutable scoring index record for a state identity."""
+        return self._state_by_id[state_id]
+
+    def shot_frame_count(self, episode_relative_path: str, shot_relative_path: str) -> int:
+        """Return the immutable frame count for one catalog shot."""
+        shot = self._shots[(episode_relative_path, shot_relative_path)]
+        return len(shot.frames)
+
+    def shot_action(self, episode_relative_path: str, shot_relative_path: str) -> torch.Tensor:
+        """Return one shot's action as a CPU tensor."""
+        shot = self._shots[(episode_relative_path, shot_relative_path)]
+        return torch.tensor(shot.action.values, dtype=torch.float32)
+
+    def shot_frame_batch(
+        self,
+        episode_relative_path: str,
+        shot_relative_path: str,
+        frame_positions: tuple[int, ...],
+    ) -> torch.Tensor:
+        """Decode only the requested frame positions as one bounded batch."""
+        if type(frame_positions) is not tuple or not frame_positions:
+            raise GridRunError("frame batch must be a nonempty immutable tuple")
+        shot = self._shots[(episode_relative_path, shot_relative_path)]
+        if any(type(position) is not int or not 0 <= position < len(shot.frames) for position in frame_positions):
+            raise GridRunError("frame batch position is outside the catalog shot")
+        return torch.stack(
+            tuple(_decode(self._root / shot.frames[position].relative_path, self._image_size) for position in frame_positions)
+        )
+
     def training_batch(
         self, pair: PredictionPair, regime: MotionRegime, batch_size: int, step: int
     ) -> dict[str, object]:

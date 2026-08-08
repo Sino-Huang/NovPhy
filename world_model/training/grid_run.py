@@ -255,7 +255,7 @@ def load_checkpoint(
         trainer._step_count = step
         random.setstate(payload["python_rng"])
         np.random.set_state(payload["numpy_rng"])
-        torch.set_rng_state(payload["torch_rng"])
+        torch.set_rng_state(payload["torch_rng"].cpu())
     except GridRunError:
         raise
     except (KeyError, TypeError, RuntimeError, ValueError, OSError) as error:

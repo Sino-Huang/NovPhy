@@ -53,13 +53,55 @@ class TorchFixturePredictor:
 
 
 class TorchCatalogPredictor:
-    """Decode catalog frames in bounded batches and score frozen model weights."""
+    """Score catalog shots with bounded decode/encode/predictor batches."""
 
-    def __init__(self, backbone: JepaBackbone, data: RealPhaseData, batch_size: int) -> None:
+    def __init__(
+        self,
+        backbone: JepaBackbone,
+        data: RealPhaseData,
+        batch_size: int,
+        examples: tuple[ScoringExample, ...],
+    ) -> None:
+        if type(batch_size) is not int or batch_size <= 0:
+            raise GridRunError("real scoring batch_size must be a positive integer")
         self._backbone = backbone
         self._data = data
         self._batch_size = batch_size
         self._device = next(backbone.parameters()).device
+        self._examples = examples
+        self._shot_latents: dict[
+            tuple[str, str], tuple[torch.Tensor, torch.Tensor, torch.Tensor]
+        ] = {}
+
+    def _cache_shot(
+        self, key: tuple[str, str]
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        cached = self._shot_latents.get(key)
+        if cached is not None:
+            return cached
+        frame_count = self._data.shot_frame_count(*key)
+        context_chunks: list[torch.Tensor] = []
+        target_chunks: list[torch.Tensor] = []
+        for offset in range(0, frame_count, self._batch_size):
+            positions = tuple(range(offset, min(offset + self._batch_size, frame_count)))
+            frames = self._data.shot_frame_batch(*key, positions)
+            if frames.shape[0] != len(positions) or frames.shape[0] > self._batch_size:
+                raise GridRunError("catalog decoder returned an invalid batch")
+            device_frames = frames.to(self._device)
+            with torch.no_grad():
+                context = self._backbone.encode(device_frames).latent.detach().cpu()
+                target = self._backbone.encode_target(device_frames).latent.detach().cpu()
+            if context.shape[0] > self._batch_size or target.shape[0] > self._batch_size:
+                raise GridRunError("catalog encoder returned an oversized batch")
+            context_chunks.append(context)
+            target_chunks.append(target)
+        cached = (
+            torch.cat(context_chunks, dim=0),
+            torch.cat(target_chunks, dim=0),
+            self._data.shot_action(*key).detach().cpu(),
+        )
+        self._shot_latents[key] = cached
+        return cached
 
     def latent_mse(
         self,
@@ -67,25 +109,45 @@ class TorchCatalogPredictor:
         requested_delta: int,
         effective_delta: int,
     ) -> tuple[float, ...]:
+        del effective_delta
         losses: list[float] = []
         pair = PredictionPair(requested_delta, Abstraction.CONTINUOUS)
         for offset in range(0, len(examples), self._batch_size):
             batch = examples[offset : offset + self._batch_size]
-            triples = tuple(
-                self._data.tensor_triplet(
-                    example.state_id, example.context_position + effective_delta
+            rows = tuple(self._data.state_record(item.state_id) for item in batch)
+            shots = {
+                (row.episode_relative_path, row.shot_relative_path): self._cache_shot(
+                    (row.episode_relative_path, row.shot_relative_path)
                 )
-                for example in batch
-            )
-            context = torch.stack([item[0] for item in triples]).to(self._device)
-            target = torch.stack([item[1] for item in triples]).to(self._device)
-            action = torch.stack([item[2] for item in triples]).to(self._device)
+                for row in rows
+            }
+            for item, row in zip(batch, rows, strict=True):
+                if item.frame_count != row.shot_frame_count or item.context_position != row.context_position:
+                    raise GridRunError("scoring example does not match its canonical state")
+                key = (row.episode_relative_path, row.shot_relative_path)
+                if self._data.shot_frame_count(*key) != row.shot_frame_count:
+                    raise GridRunError("canonical state does not match the catalog shot")
+            context_rows: list[torch.Tensor] = []
+            target_rows: list[torch.Tensor] = []
+            action_rows: list[torch.Tensor] = []
+            for row in rows:
+                key = (row.episode_relative_path, row.shot_relative_path)
+                context_latents, target_latents, action = shots[key]
+                context_position = row.context_position
+                target_position = min(context_position + requested_delta, row.shot_frame_count - 1)
+                context_rows.append(context_latents[context_position])
+                target_rows.append(target_latents[target_position])
+                action_rows.append(action)
+            context = torch.stack(context_rows).to(self._device)
+            target = torch.stack(target_rows).to(self._device)
+            action = torch.stack(action_rows).to(self._device)
             with torch.no_grad():
                 prediction = self._backbone.predict(
-                    self._backbone.encode(context).latent, action, pair
+                    context,
+                    action,
+                    pair,
                 ).carrier
-                target_latent = self._backbone.encode_target(target).latent
-                values = (prediction - target_latent).pow(2).mean(dim=1)
+                values = (prediction - target).pow(2).mean(dim=1)
             losses.extend(float(value) for value in values.cpu().tolist())
         return tuple(losses)
 
@@ -163,7 +225,7 @@ def score_real_checkpoint(
         raise GridRunError("exhaustive scoring requires a completed train-mode checkpoint")
     trainer.backbone.eval()
     result = ExhaustiveScorer(
-        TorchCatalogPredictor(trainer.backbone, data, phase_config.batch_size)
+        TorchCatalogPredictor(trainer.backbone, data, phase_config.batch_size, data.examples)
     ).score(data.examples)
     return result, loaded
 

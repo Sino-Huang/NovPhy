@@ -6,11 +6,14 @@ import tempfile
 import unittest
 from dataclasses import replace
 from pathlib import Path
+from types import SimpleNamespace
 
-from world_model.model import JepaBackbone
+import torch
+
+from world_model.model import Abstraction, JepaBackbone, PredictionPair
 from world_model.training.grid_run import PhaseAConfig, fixture_jepa_config, save_checkpoint
 from world_model.training.loop import TeacherForcedTrainer
-from world_model.training.grid_data import MotionRegime
+from world_model.training.grid_data import MotionRegime, ScoringState, ScoringTarget
 from world_model.training.grid_artifacts import canonical_json_bytes
 from world_model.training.scoring import (
     ExhaustiveScorer,
@@ -20,7 +23,7 @@ from world_model.training.scoring import (
     validate_score_artifacts,
     write_score_artifacts,
 )
-from world_model.training.scoring_torch import score_fixture_checkpoint
+from world_model.training.scoring_torch import TorchCatalogPredictor, score_fixture_checkpoint
 
 
 class RegimePredictor:
@@ -40,6 +43,63 @@ class RegimePredictor:
             MotionRegime.HIGH_MOTION: 1,
         }
         return tuple(abs(requested_delta - best[item.motion_regime]) / 10.0 for item in examples)
+
+
+class _SyntheticShotData:
+    def __init__(self, states: tuple[ScoringState, ...]) -> None:
+        self._states = {
+            ScoringExample.from_grid_state(state, Partition.CONTROLLER_TRAIN, MotionRegime.QUIESCENT).state_id: state
+            for state in states
+        }
+        self.decode_batch_sizes: list[int] = []
+
+    def state_record(self, state_id: str):
+        return self._states[state_id]
+
+    def shot_frame_count(self, episode_relative_path: str, shot_relative_path: str) -> int:
+        del episode_relative_path, shot_relative_path
+        return 4
+
+    def shot_action(self, episode_relative_path: str, shot_relative_path: str) -> torch.Tensor:
+        del episode_relative_path, shot_relative_path
+        return torch.tensor((2.0,), dtype=torch.float32)
+
+    def shot_frame_batch(
+        self,
+        episode_relative_path: str,
+        shot_relative_path: str,
+        frame_positions: tuple[int, ...],
+    ) -> torch.Tensor:
+        del episode_relative_path, shot_relative_path
+        self.decode_batch_sizes.append(len(frame_positions))
+        return torch.tensor(
+            [[[[float(position)]]] for position in frame_positions], dtype=torch.float32
+        )
+
+
+class _InstrumentedBackbone:
+    def __init__(self) -> None:
+        self._parameter = torch.nn.Parameter(torch.zeros(1))
+        self.encode_batch_sizes: list[int] = []
+        self.target_encode_batch_sizes: list[int] = []
+        self.predict_batch_sizes: list[int] = []
+
+    def parameters(self):
+        return iter((self._parameter,))
+
+    def encode(self, images: torch.Tensor) -> SimpleNamespace:
+        self.encode_batch_sizes.append(images.shape[0])
+        return SimpleNamespace(latent=images[:, 0, 0, 0].unsqueeze(1))
+
+    def encode_target(self, images: torch.Tensor) -> SimpleNamespace:
+        self.target_encode_batch_sizes.append(images.shape[0])
+        return SimpleNamespace(latent=100.0 + images[:, 0, 0, 0].unsqueeze(1))
+
+    def predict(
+        self, latent: torch.Tensor, action: torch.Tensor, pair: PredictionPair
+    ) -> SimpleNamespace:
+        self.predict_batch_sizes.append(latent.shape[0])
+        return SimpleNamespace(carrier=latent + action + pair.delta)
 
 
 def _examples() -> tuple[ScoringExample, ...]:
@@ -63,6 +123,47 @@ def _examples() -> tuple[ScoringExample, ...]:
 
 
 class ExhaustiveScoringTests(unittest.TestCase):
+    def test_real_catalog_scoring_bounds_decode_and_encode_batches(self) -> None:
+        # Given
+        states = tuple(
+            ScoringState(
+                catalog_digest="a" * 64,
+                split="dev",
+                episode_relative_path="dev/synthetic",
+                shot_relative_path="dev/synthetic/shot_001",
+                context_position=position,
+                shot_frame_count=4,
+                targets=tuple(
+                    ScoringTarget(delta, min(delta, 3 - position), min(position + delta, 3))
+                    for delta in (1, 5, 15)
+                ),
+            )
+            for position in range(3)
+        )
+        examples = tuple(
+            ScoringExample.from_grid_state(state, partition, MotionRegime.QUIESCENT)
+            for state, partition in zip(states, Partition, strict=True)
+        )
+        data = _SyntheticShotData(states)
+        backbone = _InstrumentedBackbone()
+        predictor = TorchCatalogPredictor(backbone, data, batch_size=2, examples=examples)
+
+        # When
+        result = ExhaustiveScorer(predictor).score(examples)
+
+        # Then
+        self.assertLessEqual(max(data.decode_batch_sizes), 2)
+        self.assertLessEqual(max(backbone.encode_batch_sizes), 2)
+        self.assertLessEqual(max(backbone.target_encode_batch_sizes), 2)
+        self.assertLessEqual(max(backbone.predict_batch_sizes), 2)
+        self.assertEqual(data.decode_batch_sizes, [2, 2])
+        for scored in result.scored_states:
+            position = scored.example.context_position
+            for metric in scored.label.metrics:
+                target_position = min(position + metric.requested_delta, 3)
+                expected = (position + 2.0 + metric.requested_delta - (100.0 + target_position)) ** 2
+                self.assertAlmostEqual(metric.latent_mse, expected)
+
     def test_every_state_has_three_ordered_scores_and_one_regime_dependent_label(self) -> None:
         # Given
         predictor = RegimePredictor()
@@ -206,6 +307,22 @@ class ExhaustiveScoringTests(unittest.TestCase):
         # Then
         self.assertEqual(first, second)
         self.assertEqual(validated, first)
+
+    def test_interleaved_partition_results_validate_in_canonical_shard_order(self) -> None:
+        # Given
+        examples = _examples()
+        interleaved = tuple(
+            examples[index]
+            for row in range(6)
+            for index in (row, row + 6, row + 12)
+        )
+        result = ExhaustiveScorer(RegimePredictor()).score(interleaved)
+
+        # When / Then
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "scores"
+            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            self.assertEqual(validate_score_artifacts(root).state_count, len(interleaved))
 
     def test_publication_aborts_for_partial_mixed_nonfinite_or_changed_scale(self) -> None:
         # Given

@@ -190,6 +190,34 @@ class GridRunTests(unittest.TestCase):
             with self.assertRaises(GridRunError):
                 load_checkpoint(path, second, config_digest="0" * 64, grid_digest=phase.grid_digest)
 
+    @unittest.skipUnless(torch.cuda.is_available(), "CUDA is required")
+    def test_checkpoint_round_trip_restores_cpu_rng_state_on_cuda(self) -> None:
+        model_config = fixture_jepa_config()
+        phase = PhaseAConfig(steps=1, batch_size=2, device="cuda")
+        first = TeacherForcedTrainer(
+            JepaBackbone(model_config), phase.training_config(device="cuda")
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "checkpoint.pt"
+            saved = save_checkpoint(
+                path,
+                first,
+                config_digest=phase.identity,
+                grid_digest=phase.grid_digest,
+            )
+            second = TeacherForcedTrainer(
+                JepaBackbone(model_config), phase.training_config(device="cuda")
+            )
+
+            loaded = load_checkpoint(
+                path,
+                second,
+                config_digest=phase.identity,
+                grid_digest=phase.grid_digest,
+            )
+
+            self.assertEqual((loaded.digest, loaded.step), (saved.digest, 0))
+
     def test_checkpoint_rejects_a_stale_catalog_digest(self) -> None:
         # Given
         model_config = fixture_jepa_config()
