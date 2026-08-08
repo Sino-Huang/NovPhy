@@ -7,6 +7,7 @@ import torch
 
 from world_model.data.types import (
     CaptureContractDescriptor,
+    ContractValueError,
     EpisodeRecord,
     FrameRecord,
     ShotAction,
@@ -114,6 +115,23 @@ class GridDataTests(unittest.TestCase):
         self.assertEqual(batch["stride_frames"].tolist(), [2])
         self.assertEqual(batch["horizon"].tolist(), [2])
         self.assertEqual(batch["stride"].tolist(), [2])
+
+    def test_collator_rejects_target_derived_motion_regime(self):
+        from world_model.data.sampling import TemporalWindowCollator
+
+        sample = {
+            "context_image": torch.zeros(3, 4, 4),
+            "target_images": [torch.ones(3, 4, 4)],
+            "action": torch.zeros(5),
+            "frame_indices": [2, 4],
+            "horizon_frames": 2,
+            "prediction_steps": 1,
+            "stride_frames": 2,
+            "shot_frame_count": 5,
+            "provenance": {"motion_regime": "high_motion"},
+        }
+        with self.assertRaises(ContractValueError):
+            TemporalWindowCollator()([sample])
 
     def test_catalog_bound_motion_rejects_state_with_stale_shot_length(self):
         from tests.test_world_model_data import _build_catalog_from_fixture

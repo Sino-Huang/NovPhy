@@ -99,6 +99,11 @@ class TemporalWindowCollator:
             context_image = sample["context_image"]
             self._validate_matching_image(context_image, first_context, "context_image")
             self._validate_action(sample["action"])
+            if "motion_regime" in sample or "motion_regime" in sample["provenance"]:
+                raise ContractValueError(
+                    "motion_regime",
+                    "target-derived motion regimes must not enter training batches",
+                )
 
             targets = sample["target_images"]
             if not targets:
