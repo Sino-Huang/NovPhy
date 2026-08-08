@@ -13,6 +13,7 @@ import random
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from collections.abc import Sequence as SequenceABC
 from typing import Sequence
 
 import numpy as np
@@ -34,6 +35,8 @@ from world_model.model import (
     coerce_abstraction,
     digest,
 )
+from world_model.training.grid_data import MotionRegime
+from world_model.training.pair_grid import APPROVED_PAIRS
 from world_model.training.diagnostics import (
     CollapseReport,
     collapse_diagnostics,
@@ -75,6 +78,7 @@ class TrainingConfig:
     delta: int = 1
     abstraction: Abstraction | str = Abstraction.CONTINUOUS
     device: str = "cuda"
+    grid_schedule: bool = False
 
     def __post_init__(self) -> None:
         if type(self.seed) is not int or self.seed < 0:
@@ -102,6 +106,8 @@ class TrainingConfig:
         )
         if not isinstance(self.device, str) or not self.device.strip():
             raise ContractValueError("device", "must be a nonempty string")
+        if type(self.grid_schedule) is not bool:
+            raise ContractValueError("grid_schedule", "must be a boolean")
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,6 +118,10 @@ class StepResult:
     loss: float
     learning_rate: float
     momentum: float
+    unweighted_loss: float | None = None
+    weighted_loss: float | None = None
+    pair: PredictionPair | None = None
+    motion_regime: MotionRegime | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -359,6 +369,21 @@ class TeacherForcedTrainer:
         progress = min(step, self._config.steps) / self._config.steps
         return 1.0 - (1.0 - base) * (math.cos(math.pi * progress) + 1.0) / 2.0
 
+    def schedule_at(self, step: int) -> tuple[PredictionPair, MotionRegime]:
+        if type(step) is not int or step < 0:
+            raise ContractValueError("step", "must be a nonnegative integer")
+        keys = [
+            (PredictionPair(delta, Abstraction.CONTINUOUS), regime)
+            for delta in (1, 5, 15)
+            for regime in MotionRegime
+        ]
+        cycle = step // len(keys)
+        offset = step % len(keys)
+        generator = random.Random(self._config.seed)
+        for _ in range(cycle + 1):
+            generator.shuffle(keys)
+        return keys[offset]
+
     def encode_target(self, batch: dict) -> torch.Tensor:
         """Return the detached target latent for a single-step batch."""
         return self._backbone.encode_target(self._validate_batch(batch)).latent
@@ -366,18 +391,20 @@ class TeacherForcedTrainer:
     def train_step(self, batch: dict) -> StepResult:
         """Optimize one teacher-forced step and return its observables."""
         config = self._config
-        target_images = self._validate_batch(batch)
+        step = self._step_count
+        target_images, pair, regime, weights = self._prepare_batch(batch, step)
         context = batch["context_image"].to(self.device)
         action = batch["action"].to(self.device)
 
         latent = self._backbone.encode(context).latent
         target_latent = self._backbone.encode_target(target_images).latent
-        prediction = self._backbone.predict(latent, action, self.pair).carrier
-        loss = F.mse_loss(prediction, target_latent)
+        prediction = self._backbone.predict(latent, action, pair).carrier
+        per_example = (prediction - target_latent).pow(2).mean(dim=1)
+        unweighted_loss = per_example.mean()
+        weighted_loss = (per_example * weights).mean()
 
-        step = self._step_count
         self.optimizer.zero_grad(set_to_none=True)
-        loss.backward()
+        weighted_loss.backward()
         nn.utils.clip_grad_norm_(
             self._backbone.trainable_parameters(), config.grad_clip
         )
@@ -394,13 +421,18 @@ class TeacherForcedTrainer:
 
         return StepResult(
             step=step,
-            loss=float(loss.detach().item()),
+            loss=float(unweighted_loss.detach().item()),
             learning_rate=learning_rate,
             momentum=float(momentum),
+            unweighted_loss=float(unweighted_loss.detach().item()),
+            weighted_loss=float(weighted_loss.detach().item()),
+            pair=pair,
+            motion_regime=regime,
         )
 
-    def _validate_batch(self, batch: dict) -> torch.Tensor:
-        """Validate a single-step batch and return its target images, on device."""
+    def _prepare_batch(
+        self, batch: dict, step: int
+    ) -> tuple[torch.Tensor, PredictionPair, MotionRegime | None, torch.Tensor]:
         if not isinstance(batch, dict):
             raise ContractValueError("batch", "must be a mapping")
         target_images = batch.get("target_images")
@@ -414,7 +446,84 @@ class TeacherForcedTrainer:
         for key in ("context_image", "action"):
             if not isinstance(batch.get(key), torch.Tensor):
                 raise ContractValueError(key, "must be a torch tensor")
-        return target_images[:, 0].to(self.device)
+        batch_size = target_images.shape[0]
+        pair_value = batch.get("prediction_pair", batch.get("pair"))
+        regime_value = batch.get("motion_regime")
+        if self._config.grid_schedule:
+            scheduled_pair, scheduled_regime = self.schedule_at(step)
+            if pair_value is None:
+                pair_value = scheduled_pair
+            elif pair_value != scheduled_pair:
+                raise ContractValueError("prediction_pair", "does not match the seeded grid schedule")
+            if regime_value is None:
+                regime_value = scheduled_regime
+            elif self._coerce_regime(regime_value) is not scheduled_regime:
+                raise ContractValueError("motion_regime", "does not match the seeded grid schedule")
+        elif pair_value is None:
+            pair_value = self.pair
+
+        if type(pair_value) is not PredictionPair:
+            raise ContractValueError("prediction_pair", "must be a PredictionPair")
+        if pair_value not in APPROVED_PAIRS and pair_value != self.pair:
+            raise ContractValueError("prediction_pair", "must use an approved continuous pair")
+        regime = self._coerce_regime(regime_value) if regime_value is not None else None
+        grid_metadata = self._config.grid_schedule or any(
+            key in batch
+            for key in (
+                "prediction_pair",
+                "pair",
+                "motion_regime",
+                "shot_frame_count",
+                "frame_count",
+                "frame_indices",
+            )
+        )
+        if not grid_metadata:
+            weights = torch.ones(batch_size, dtype=torch.float32, device=self.device)
+            return target_images[:, 0].to(self.device), pair_value, regime, weights
+
+        frame_counts = batch.get("shot_frame_count", batch.get("frame_count"))
+        frame_indices = batch.get("frame_indices")
+        if not isinstance(frame_counts, torch.Tensor) or frame_counts.ndim != 1:
+            raise ContractValueError("shot_frame_count", "must be a tensor of one frame count per example")
+        if frame_counts.shape[0] != batch_size:
+            raise ContractValueError("shot_frame_count", "must match the batch size")
+        if frame_indices is None or not isinstance(frame_indices, SequenceABC) or len(frame_indices) != batch_size:
+            raise ContractValueError("frame_indices", "must contain context and target positions per example")
+        prediction_steps = batch.get("prediction_steps")
+        if prediction_steps is not None:
+            if not isinstance(prediction_steps, torch.Tensor) or prediction_steps.ndim != 1 or prediction_steps.shape[0] != batch_size:
+                raise ContractValueError("prediction_steps", "must be one-dimensional and match the batch size")
+            if not torch.all(prediction_steps == pair_value.delta):
+                raise ContractValueError("prediction_steps", "must equal prediction_pair.delta")
+        counts = frame_counts.to(device=self.device, dtype=torch.float32)
+        if not torch.isfinite(counts).all() or torch.any(counts <= 1):
+            raise ContractValueError("shot_frame_count", "must be greater than one")
+        for index, frames in enumerate(frame_indices):
+            if not isinstance(frames, SequenceABC) or len(frames) < 2:
+                raise ContractValueError("frame_indices", "must contain context and target positions")
+            context_position, target_position = frames[0], frames[1]
+            if type(context_position) is not int or type(target_position) is not int:
+                raise ContractValueError("frame_indices", "positions must be integers")
+            if context_position < 0 or target_position <= context_position:
+                raise ContractValueError("frame_indices", "target must follow context")
+            if target_position - context_position != pair_value.delta:
+                raise ContractValueError("frame_indices", "target delta does not match prediction_pair.delta")
+            if target_position >= int(frame_counts[index].item()):
+                raise ContractValueError("frame_indices", "target lies outside the shot")
+        return target_images[:, 0].to(self.device), pair_value, regime, pair_value.delta / (counts - 1.0)
+
+    @staticmethod
+    def _coerce_regime(value: object) -> MotionRegime:
+        if isinstance(value, MotionRegime):
+            return value
+        try:
+            return MotionRegime(value)
+        except (TypeError, ValueError) as error:
+            raise ContractValueError("motion_regime", "must be a valid MotionRegime") from error
+
+    def _validate_batch(self, batch: dict) -> torch.Tensor:
+        return self._prepare_batch(batch, self._step_count)[0]
 
 
 def run_overfit(

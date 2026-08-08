@@ -1,0 +1,35 @@
+Todo 3 trainer evidence
+========================
+
+HEAD before edits: 028aa2f91bb9cc97498057f83394cbf20b10a2d0
+Scope: world_model/training/loop.py, tests/test_world_model_training.py
+
+RED TESTS
+Command: python -m unittest -q tests.test_world_model_training.TeacherForcedTrainerTests.test_grid_step_reports_exact_duration_weighting tests.test_world_model_training.TeacherForcedTrainerTests.test_grid_schedule_shuffles_each_nine_step_cycle_deterministically tests.test_world_model_training.TeacherForcedTrainerTests.test_invalid_grid_metadata_fails_before_mutating_optimizer_or_ema
+Result: failed first for missing StepResult.weighted_loss, missing TrainingConfig.grid_schedule, and absent malformed-input rejection.
+
+FOCUSED TESTS
+Command: python -m unittest -q tests.test_world_model_training
+Result: OK, 60 tests.
+Command: python -m unittest -q tests.test_world_model_training && python -m unittest -q tests.test_world_model_training
+Result: OK, 60 tests each, two fresh suite invocations.
+
+REGRESSION
+Command: python -m unittest -q tests.test_world_model_model tests.test_world_model_training tests.test_world_model_data
+Result: OK, 223 tests.
+
+STATIC CHECKS
+Command: python -m py_compile world_model/training/loop.py tests/test_world_model_training.py && git diff --check
+Result: exit 0.
+
+FRESH-PROCESS MANUAL QA
+Command: python - <<'PY' ... schedule Counter, synthetic grid batch, malformed probes ... PY
+Observable output:
+schedule_keys 9 counts [400]
+step_result 0 PredictionPair(delta=5, abstraction=<Abstraction.CONTINUOUS: 'continuous'>) quiescent 0.31511199474334717 0.24473895132541656
+wrong_pair ContractValueError state_unchanged True
+t_nonpositive ContractValueError state_unchanged True
+truncated ContractValueError state_unchanged True
+missing_metadata ContractValueError state_unchanged True
+
+Behavior covered: seeded shuffle-within-cycle schedule, exact per-example delta/(frame_count-1) weighting, pair/regime reporting, continuous-only approved pairs, strict frame eligibility, and fail-closed validation before optimizer/EMA mutation. Motion regime is used for task metadata only and is never passed to predictor conditioning.

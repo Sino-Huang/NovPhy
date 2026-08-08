@@ -22,6 +22,7 @@ from world_model.data.dataset import TemporalWindowDataset
 from world_model.data.types import ContractValueError, TemporalWindowRequest
 from world_model.model import Abstraction, JepaBackbone, PredictionPair
 from world_model.training import (
+    MotionRegime,
     RunManifest,
     TeacherForcedTrainer,
     TrainingConfig,
@@ -386,6 +387,80 @@ class TeacherForcedTrainerTests(unittest.TestCase):
     def test_the_training_config_rejects_a_warmup_longer_than_the_run(self) -> None:
         with self.assertRaises(ContractValueError):
             make_training_config(steps=10, warmup_steps=20)
+
+    def test_grid_step_reports_exact_duration_weighting(self) -> None:
+        batch = make_fixture_batch(2)
+        batch.update(
+            prediction_pair=PredictionPair(5, Abstraction.CONTINUOUS),
+            motion_regime=MotionRegime.QUIESCENT,
+            shot_frame_count=torch.tensor([6, 11, 6, 11]),
+            frame_indices=[[0, 5], [0, 5], [0, 5], [0, 5]],
+            prediction_steps=torch.tensor([5, 5, 5, 5]),
+        )
+        target_images, pair, _regime, weights = self.trainer._prepare_batch(batch, 0)
+        latent = self.backbone.encode(batch["context_image"]).latent
+        target = self.backbone.encode_target(target_images).latent
+        prediction = self.backbone.predict(latent, batch["action"], pair).carrier
+        expected = ((prediction - target).pow(2).mean(dim=1) * weights).mean().item()
+        result = self.trainer.train_step(batch)
+        self.assertAlmostEqual(result.weighted_loss, expected, places=6)
+        self.assertEqual(result.pair, PredictionPair(5, Abstraction.CONTINUOUS))
+        self.assertEqual(result.motion_regime, MotionRegime.QUIESCENT)
+
+    def test_grid_schedule_shuffles_each_nine_step_cycle_deterministically(self) -> None:
+        trainer = TeacherForcedTrainer(
+            JepaBackbone(small_jepa_config()),
+            make_training_config(steps=3600, grid_schedule=True),
+        )
+        first = [trainer.schedule_at(step) for step in range(18)]
+        second = [trainer.schedule_at(step) for step in range(18)]
+        self.assertEqual(first, second)
+        self.assertEqual(set(first[:9]), set(first[9:18]))
+        self.assertEqual(len(set(first[:9])), 9)
+
+    def test_grid_schedule_updates_each_key_exactly_four_hundred_times(self) -> None:
+        trainer = TeacherForcedTrainer(
+            JepaBackbone(small_jepa_config()),
+            make_training_config(steps=3600, grid_schedule=True),
+        )
+        counts: dict[tuple[PredictionPair, MotionRegime], int] = {}
+        for step in range(3600):
+            key = trainer.schedule_at(step)
+            counts[key] = counts.get(key, 0) + 1
+        self.assertEqual(len(counts), 9)
+        self.assertEqual(set(counts.values()), {400})
+
+    def test_invalid_grid_metadata_fails_before_mutating_optimizer_or_ema(self) -> None:
+        batch = make_fixture_batch(3)
+        batch.update(
+            prediction_pair=PredictionPair(5, Abstraction.CONTINUOUS),
+            motion_regime=MotionRegime.TRANSITIONAL,
+            shot_frame_count=torch.tensor([5, 5, 5, 5]),
+            frame_indices=[[0, 1], [0, 1], [0, 1], [0, 1]],
+            prediction_steps=torch.tensor([1, 1, 1, 1]),
+        )
+        before = [parameter.detach().clone() for parameter in self.backbone.target.parameters()]
+        with self.assertRaises(ContractValueError):
+            self.trainer.train_step(batch)
+        self.assertEqual(self.trainer._step_count, 0)
+        for parameter, snapshot in zip(self.backbone.target.parameters(), before):
+            torch.testing.assert_close(parameter, snapshot)
+
+    def test_grid_metadata_failures_are_typed_and_pre_step(self) -> None:
+        cases = (
+            ("wrong pair", {"prediction_pair": PredictionPair(7, Abstraction.CONTINUOUS)}),
+            ("nonpositive T", {"prediction_pair": PredictionPair(5, Abstraction.CONTINUOUS), "shot_frame_count": torch.tensor([0, 0, 0, 0])}),
+            ("truncated", {"prediction_pair": PredictionPair(5, Abstraction.CONTINUOUS), "shot_frame_count": torch.tensor([5, 5, 5, 5]), "frame_indices": [[0, 5]] * 4}),
+            ("absent frame metadata", {"prediction_pair": PredictionPair(5, Abstraction.CONTINUOUS), "motion_regime": MotionRegime.QUIESCENT}),
+        )
+        for name, updates in cases:
+            with self.subTest(name=name):
+                batch = make_fixture_batch(4)
+                batch.update(updates)
+                before = self.trainer._step_count
+                with self.assertRaises(ContractValueError):
+                    self.trainer.train_step(batch)
+                self.assertEqual(self.trainer._step_count, before)
 
     @unittest.skipUnless(torch.cuda.is_available(), "requires CUDA")
     def test_a_step_moves_every_batch_tensor_onto_the_device(self) -> None:
