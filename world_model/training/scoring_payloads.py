@@ -49,6 +49,7 @@ def aggregate_payload(metric) -> dict[str, JsonValue]:
         "sensitivity_lambdas": list(SENSITIVITY_LAMBDAS),
         "sensitivity_selection_counts": list(metric.sensitivity_selection_counts),
         "truncation_count": metric.truncation_count,
+        "truncation_rate": metric.truncation_rate,
         "weighted_error_mean": metric.weighted_error_mean,
         "weighted_error_p50": metric.weighted_error_p50,
         "weighted_error_p90": metric.weighted_error_p90,

@@ -17,6 +17,7 @@ class PairAggregate:
     delta: int
     count: int
     truncation_count: int
+    truncation_rate: float
     latent_mse_mean: float
     weighted_error_mean: float
     weighted_error_p50: float
@@ -74,6 +75,9 @@ def aggregate_labels(
                 if not metrics:
                     continue
                 errors = tuple(metric.weighted_prediction_error for metric in metrics)
+                truncation_count = sum(
+                    metric.effective_delta < metric.requested_delta for metric in metrics
+                )
                 sensitivity = tuple(
                     sum(item.selected_pair.delta == delta for label in selected for item in label.sensitivity if item.lambda_cost == lambda_cost)
                     for lambda_cost in SENSITIVITY_LAMBDAS
@@ -84,7 +88,8 @@ def aggregate_labels(
                         motion_regime=regime,
                         delta=delta,
                         count=len(metrics),
-                        truncation_count=sum(metric.effective_delta < metric.requested_delta for metric in metrics),
+                        truncation_count=truncation_count,
+                        truncation_rate=truncation_count / len(metrics),
                         latent_mse_mean=sum(metric.latent_mse for metric in metrics) / len(metrics),
                         weighted_error_mean=sum(errors) / len(errors),
                         weighted_error_p50=percentile(errors, 0.5),

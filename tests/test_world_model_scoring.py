@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 import tempfile
 import unittest
@@ -10,6 +11,7 @@ from world_model.model import JepaBackbone
 from world_model.training.grid_run import PhaseAConfig, fixture_jepa_config, save_checkpoint
 from world_model.training.loop import TeacherForcedTrainer
 from world_model.training.grid_data import MotionRegime
+from world_model.training.grid_artifacts import canonical_json_bytes
 from world_model.training.scoring import (
     ExhaustiveScorer,
     Partition,
@@ -132,6 +134,53 @@ class ExhaustiveScoringTests(unittest.TestCase):
             for metric in state.label.metrics if metric.pair.delta == 1
         ]
         self.assertEqual(delta_one.latent_mse_mean, sum(item.latent_mse for item in raw) / len(raw))
+
+    def test_every_emitted_aggregate_has_a_canonical_truncation_rate(self) -> None:
+        # Given
+        result = ExhaustiveScorer(RegimePredictor()).score(_examples())
+
+        # When
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "scores"
+            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            payload = json.loads((root / "per_pair_metrics.json").read_text(encoding="ascii"))
+
+        # Then
+        self.assertTrue(result.per_pair_metrics)
+        for aggregate, record in zip(result.per_pair_metrics, payload, strict=True):
+            self.assertGreater(aggregate.count, 0)
+            self.assertTrue(math.isfinite(aggregate.truncation_rate))
+            self.assertEqual(aggregate.truncation_rate, aggregate.truncation_count / aggregate.count)
+            self.assertEqual(record["truncation_rate"], aggregate.truncation_rate)
+
+    def test_empty_motion_groups_are_omitted_instead_of_fabricating_rates(self) -> None:
+        # Given
+        examples = tuple(replace(item, motion_regime=MotionRegime.QUIESCENT) for item in _examples())
+
+        # When
+        result = ExhaustiveScorer(RegimePredictor()).score(examples)
+
+        # Then
+        self.assertEqual(
+            {metric.motion_regime for metric in result.per_pair_metrics},
+            {None, MotionRegime.QUIESCENT},
+        )
+        self.assertTrue(all(metric.count > 0 for metric in result.per_pair_metrics))
+
+    def test_validator_recomputes_truncation_rate_from_label_shards(self) -> None:
+        # Given
+        result = ExhaustiveScorer(RegimePredictor()).score(_examples())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "scores"
+            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            metrics_path = root / "per_pair_metrics.json"
+            payload = json.loads(metrics_path.read_text(encoding="ascii"))
+            payload[0]["truncation_rate"] = 0.5 if payload[0]["truncation_rate"] == 0.0 else 0.0
+            metrics_path.write_bytes(canonical_json_bytes(payload))
+
+            # When / Then
+            with self.assertRaisesRegex(ScoreArtifactError, "do not recompute"):
+                validate_score_artifacts(root)
 
     def test_temporal_oracle_and_fixed_pairs_share_identical_state_set(self) -> None:
         # Given / When

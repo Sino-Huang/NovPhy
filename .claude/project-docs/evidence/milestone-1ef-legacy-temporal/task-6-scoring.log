@@ -204,3 +204,77 @@ $ find /tmp -maxdepth 1 -type d -name novphy-task6-* -print
 $ pgrep -af [r]un_jepa_pair_grid.py
 CLEANUP=PASS temp_roots=0 scoring_processes=0 ports_opened=0 committed_runs_or_checkpoints=0
 12019 .claude/project-docs/evidence/milestone-1ef-legacy-temporal/task-6-scoring.log
+
+CORRECTIVE PIN-RED: required truncation_rate
+$ python -m unittest tests.test_world_model_scoring.ExhaustiveScoringTests.test_every_emitted_aggregate_has_a_canonical_truncation_rate
+E
+======================================================================
+ERROR: test_every_emitted_aggregate_has_a_canonical_truncation_rate (tests.test_world_model_scoring.ExhaustiveScoringTests.test_every_emitted_aggregate_has_a_canonical_truncation_rate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tests/test_world_model_scoring.py", line 151, in test_every_emitted_aggregate_has_a_canonical_truncation_rate
+    self.assertTrue(math.isfinite(aggregate.truncation_rate))
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'PairAggregate' object has no attribute 'truncation_rate'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.036s
+
+FAILED (errors=1)
+
+CORRECTIVE GREEN: truncation_rate contract
+$ python -m unittest tests.test_world_model_scoring tests.test_world_model_grid_run tests.test_world_model_grid_artifacts tests.test_world_model_pair_grid  # run 1
+..........................................
+----------------------------------------------------------------------
+Ran 42 tests in 2.701s
+
+OK
+$ python -m unittest tests.test_world_model_scoring tests.test_world_model_grid_run tests.test_world_model_grid_artifacts tests.test_world_model_pair_grid  # run 2
+..........................................
+----------------------------------------------------------------------
+Ran 42 tests in 2.573s
+
+OK
+$ python -m unittest tests.test_world_model_model tests.test_world_model_training tests.test_world_model_data tests.test_world_model_grid_data
+........................................................................................................................................................................................................................................
+----------------------------------------------------------------------
+Ran 232 tests in 3.918s
+
+OK
+$ python check-no-excuse-rules.py <changed paths>
+no violations in 3 file(s)
+$ python -m py_compile <changed paths>
+$ git diff --check
+
+CORRECTIVE MANUAL QA: canonical truncation_rate
+CORRECTIVE_ROOT=/tmp/novphy-task6-rate.wPLbyw
+$ python scripts/run_jepa_pair_grid.py train --device cpu --fixture --steps 18 --batch-size 2 --output-dir "$corrective_root"
+train step=18 checkpoint=/tmp/novphy-task6-rate.wPLbyw/checkpoint.pt
+$ python scripts/run_jepa_pair_grid.py score --device cpu --fixture --steps 18 --batch-size 2 --output-dir "$corrective_root"
+scoring partition=controller-train states=18
+scoring partition=calibration states=18
+scoring partition=evaluation states=18
+score states=54 scores=162 error_scale=0.17696604
+$ python scripts/run_jepa_pair_grid.py validate --output-dir "$corrective_root"
+validated states=54 scores=162 manifest=57036e98de9132484f59f5d25a41480dcfd8cd46c54e6380a1956ff04892f646
+$ TASK6_ROOT="$corrective_root" python - <<PY  # independent all-rate recomputation
+RATE_RECOMPUTE_OK records=54 aggregates=24 scores=162
+$ copy artifacts; change one canonical truncation_rate; CLI validate copied output
+SUCCESS
+Traceback (most recent call last):
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/run_jepa_pair_grid.py", line 175, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/scripts/run_jepa_pair_grid.py", line 94, in main
+    receipt = validate_score_artifacts(args.output_dir / "score_artifacts")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/world_model/training/scoring_artifacts.py", line 225, in validate_score_artifacts
+    raise ScoreArtifactError("per-pair metrics do not recompute from shards")
+world_model.training.scoring.ScoreArtifactError: per-pair metrics do not recompute from shards
+CORRUPT_RATE_VALIDATOR_STATUS=1 EXPECTED_NONZERO=1
+CORRECTIVE_ROOT_FOR_CLEANUP=/tmp/novphy-task6-rate.wPLbyw
+
+CORRECTIVE CLEANUP RECEIPT
+$ find /tmp -maxdepth 1 -type d -name novphy-task6-rate-* -print
+$ pgrep -af [r]un_jepa_pair_grid.py
+CORRECTIVE_CLEANUP=PASS temp_roots=0 scoring_processes=0 ports=0
