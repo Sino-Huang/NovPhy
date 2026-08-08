@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -16,17 +17,24 @@ from world_model.training import (
     CheckpointInfo,
     GridRunError,
     PhaseAConfig,
+    RealPhaseData,
+    checkpoint_digest,
     fixture_batch,
     fixture_jepa_config,
     load_checkpoint,
     save_checkpoint,
     score_fixture_checkpoint,
-    score_checkpoint,
+    score_real_checkpoint,
     seed_all,
     TeacherForcedTrainer,
     validate_score_artifacts,
     write_score_artifacts,
-    write_sweep_manifest,
+    write_frontier_input,
+    write_real_sweep_manifest,
+)
+
+DEFAULT_DATASET_ROOT = Path(
+    "/mnt/array/sukaih/Project/NovPhy/data/novphy_rollouts_dataset_20260708_171531"
 )
 
 
@@ -35,6 +43,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("command", choices=("train", "score", "validate", "frontier", "all"))
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--fixture", action="store_true")
+    parser.add_argument("--dataset-root", type=Path, default=DEFAULT_DATASET_ROOT)
     parser.add_argument("--steps", type=int, default=3600)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--seed", type=int, default=20260807)
@@ -69,7 +78,23 @@ def _model_config(args: argparse.Namespace) -> JepaConfig:
     return JepaConfig(encoder=EncoderConfig(), predictor=PredictorConfig())
 
 
-def _train(args: argparse.Namespace, config: PhaseAConfig, model_config: JepaConfig) -> tuple[Path, CheckpointInfo]:
+def _validate_output_root(args: argparse.Namespace) -> None:
+    if args.fixture:
+        return
+    dataset = args.dataset_root.resolve()
+    outputs = [args.output_dir]
+    if args.command in ("train", "all") and args.checkpoint is not None:
+        outputs.append(args.checkpoint)
+    if any(output.resolve().is_relative_to(dataset) for output in outputs):
+        raise GridRunError("run output cannot be written inside the protected dataset")
+
+
+def _train(
+    args: argparse.Namespace,
+    config: PhaseAConfig,
+    model_config: JepaConfig,
+    real_data: RealPhaseData | None = None,
+) -> tuple[Path, CheckpointInfo]:
     output = args.output_dir
     checkpoint = args.checkpoint or output / "checkpoint.pt"
     seed_all(config.seed)
@@ -77,19 +102,74 @@ def _train(args: argparse.Namespace, config: PhaseAConfig, model_config: JepaCon
         JepaBackbone(model_config), config.training_config(device="cpu" if args.device == "cpu" else args.device)
     )
     if args.resume:
-        loaded = load_checkpoint(checkpoint, trainer, config_digest=config.identity, grid_digest=config.grid_digest)
+        loaded = load_checkpoint(
+            checkpoint,
+            trainer,
+            config_digest=config.identity,
+            grid_digest=config.grid_digest,
+            expected_catalog_digest=None if real_data is None else real_data.catalog_digest,
+            expected_run_identity=None if real_data is None else real_data.run_identity,
+        )
         start = loaded.step
+        counts = dict(loaded.key_counts)
     else:
         start = 0
+        counts = {}
     for step in range(start, config.steps):
-        batch = fixture_batch(model_config, seed=config.seed, batch_size=config.batch_size, step=step)
+        if real_data is None:
+            batch = fixture_batch(
+                model_config, seed=config.seed, batch_size=config.batch_size, step=step
+            )
+        else:
+            pair, regime = trainer.schedule_at(step)
+            batch = real_data.training_batch(pair, regime, config.batch_size, step)
+            key = f"delta={pair.delta},regime={regime.value}"
+            counts[key] = counts.get(key, 0) + 1
         trainer.train_step(batch)
-    info = save_checkpoint(checkpoint, trainer, config_digest=config.identity, grid_digest=config.grid_digest)
+    if real_data is not None and sum(counts.values()) != config.steps:
+        raise GridRunError("checkpoint key counts do not match the completed schedule")
+    info = save_checkpoint(
+        checkpoint,
+        trainer,
+        config_digest=config.identity,
+        grid_digest=config.grid_digest,
+        catalog_digest=None if real_data is None else real_data.catalog_digest,
+        run_identity=None if real_data is None else real_data.run_identity,
+        key_counts=tuple(sorted(counts.items())),
+    )
     return checkpoint, info
+
+
+def _run_real_frontier(args: argparse.Namespace, checkpoint: Path) -> None:
+    score_root = args.output_dir / "score_artifacts"
+    validate_score_artifacts(score_root)
+    manifest = json.loads((score_root / "manifest.json").read_text(encoding="ascii"))
+    if manifest.get("checkpoint_digest") != checkpoint_digest(checkpoint):
+        raise GridRunError("frontier score/checkpoint digest mismatch")
+    source = args.output_dir / "frontier_input.json"
+    write_frontier_input(score_root, source)
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "plot_jepa_pair_frontier.py"),
+            "--input",
+            str(source),
+            "--output-dir",
+            str(args.output_dir / "frontier"),
+            "--seed",
+            str(args.seed),
+        ],
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+    if completed.returncode != 0:
+        raise GridRunError(f"frontier generation failed: {completed.stderr.strip()}")
 
 
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(sys.argv[1:] if argv is None else argv)
+    _validate_output_root(args)
     if args.command == "validate":
         receipt = validate_score_artifacts(args.output_dir / "score_artifacts")
         print(
@@ -106,14 +186,20 @@ def main(argv: list[str] | None = None) -> int:
     if args.command in ("score", "frontier") and manifest_path.is_file():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         expected_digest = manifest.get("checkpoint_digest")
+    real_data = None
+    if not args.fixture and args.command in ("train", "score", "all"):
+        real_data = RealPhaseData.build(args.dataset_root, config, model_config)
+        print(
+            f"catalog dev: {len(real_data.catalog.episodes)} accepted, "
+            f"{real_data.catalog.rejection_count} rejected digest={real_data.catalog_digest}",
+            flush=True,
+        )
     if args.command in ("train", "all"):
-        checkpoint, checkpoint_info = _train(args, config, model_config)
+        checkpoint, checkpoint_info = _train(args, config, model_config, real_data)
     else:
         checkpoint_info = None
     if args.command in ("score", "frontier", "all"):
         if expected_digest is not None:
-            from world_model.training import checkpoint_digest
-
             if checkpoint_digest(checkpoint) != expected_digest:
                 raise GridRunError("checkpoint digest mismatch")
         if args.fixture:
@@ -147,24 +233,50 @@ def main(argv: list[str] | None = None) -> int:
                 flush=True,
             )
             return 0
-        batches = tuple(
-            fixture_batch(model_config, seed=config.seed, batch_size=min(config.batch_size, 8), step=step)
-            for step in range(9)
-        )
-        result = score_checkpoint(checkpoint, phase_config=config, model_config=model_config, batches=batches)
-        manifest_checkpoint = checkpoint_info
-        if manifest_checkpoint is None:
-            manifest_checkpoint = load_checkpoint(
-                checkpoint,
-                TeacherForcedTrainer(JepaBackbone(model_config), config.training_config(device="cpu")),
-                config_digest=config.identity,
-                grid_digest=config.grid_digest,
-            )
-        write_sweep_manifest(args.output_dir / "sweep_manifest.json", checkpoint=manifest_checkpoint, phase_config=config, score=result)
-        (args.output_dir / "score.json").write_text(json.dumps({"step": result.step, "count": result.count, "mean_loss": result.mean_loss}, sort_keys=True) + "\n", encoding="utf-8")
         if args.command == "frontier":
-            (args.output_dir / "frontier.json").write_text(json.dumps({"verdict": "inconclusive", "reason": "fixture score only"}, sort_keys=True) + "\n", encoding="utf-8")
-        print(f"score step={result.step} count={result.count} mean_loss={result.mean_loss:.8f}")
+            _run_real_frontier(args, checkpoint)
+            print(f"frontier source={args.output_dir / 'frontier_input.json'}")
+            return 0
+        if real_data is None:
+            raise GridRunError("real scoring requires the dev catalog")
+        exhaustive, scored_checkpoint = score_real_checkpoint(
+            checkpoint, config, model_config, real_data
+        )
+        receipt = write_score_artifacts(
+            args.output_dir / "score_artifacts",
+            exhaustive,
+            checkpoint_digest=scored_checkpoint.digest,
+            resume=args.resume,
+        )
+        validated = validate_score_artifacts(args.output_dir / "score_artifacts")
+        write_real_sweep_manifest(
+            args.output_dir / "sweep_manifest.json",
+            data=real_data,
+            phase_config=config,
+            checkpoint=scored_checkpoint,
+            score=validated,
+        )
+        (args.output_dir / "score.json").write_text(
+            json.dumps(
+                {
+                    "error_scale": exhaustive.score_spec.error_scale,
+                    "manifest_digest": receipt.manifest_digest,
+                    "score_count": receipt.score_count,
+                    "state_count": receipt.state_count,
+                },
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="ascii",
+        )
+        print(
+            f"score states={receipt.state_count} scores={receipt.score_count} "
+            f"error_scale={exhaustive.score_spec.error_scale:.8f}",
+            flush=True,
+        )
+        if args.command == "all":
+            _run_real_frontier(args, checkpoint)
+        return 0
     elif checkpoint_info is not None:
         print(f"train step={checkpoint_info.step} checkpoint={checkpoint_info.path}")
     return 0

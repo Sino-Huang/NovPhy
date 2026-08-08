@@ -86,7 +86,13 @@ from world_model.training.scoring import (
     validate_score_artifacts,
     write_score_artifacts,
 )
-from world_model.training.scoring_torch import fixture_scoring_examples, score_fixture_checkpoint
+from world_model.training.scoring_torch import (
+    TorchCatalogPredictor,
+    fixture_scoring_examples,
+    score_fixture_checkpoint,
+    score_real_checkpoint,
+)
+from world_model.training.real_data import RealPhaseData, write_frontier_input, write_real_sweep_manifest
 from world_model.training.frontier import FrontierError, analyze_frontier, pareto_frontier, source_digest
 
 __all__ = [
@@ -163,6 +169,11 @@ __all__ = [
     "ScoringExample",
     "fixture_scoring_examples",
     "score_fixture_checkpoint",
+    "score_real_checkpoint",
+    "TorchCatalogPredictor",
+    "RealPhaseData",
+    "write_frontier_input",
+    "write_real_sweep_manifest",
     "validate_score_artifacts",
     "write_score_artifacts",
     "FrontierError",

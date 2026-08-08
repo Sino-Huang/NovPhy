@@ -1,4 +1,4 @@
-"""Torch adapter for exhaustive fixture scoring from a frozen checkpoint."""
+"""Torch adapters for exhaustive scoring from a frozen checkpoint."""
 from __future__ import annotations
 
 import hashlib
@@ -8,8 +8,15 @@ import torch
 
 from world_model.model import Abstraction, JepaBackbone, JepaConfig, PredictionPair
 from world_model.training.grid_data import MotionRegime, ScoringState, ScoringTarget
-from world_model.training.grid_run import GridRunError, PhaseAConfig, checkpoint_digest, load_checkpoint
+from world_model.training.grid_run import (
+    CheckpointInfo,
+    GridRunError,
+    PhaseAConfig,
+    checkpoint_digest,
+    load_checkpoint,
+)
 from world_model.training.loop import TeacherForcedTrainer
+from world_model.training.real_data import RealPhaseData
 from world_model.training.scoring import ExhaustiveScoreResult, ExhaustiveScorer, Partition, ScoringExample
 
 
@@ -43,6 +50,44 @@ class TorchFixturePredictor:
             target_latent = self._backbone.encode_target(target).latent
             losses = (prediction - target_latent).pow(2).mean(dim=1)
         return tuple(float(value) for value in losses.tolist())
+
+
+class TorchCatalogPredictor:
+    """Decode catalog frames in bounded batches and score frozen model weights."""
+
+    def __init__(self, backbone: JepaBackbone, data: RealPhaseData, batch_size: int) -> None:
+        self._backbone = backbone
+        self._data = data
+        self._batch_size = batch_size
+        self._device = next(backbone.parameters()).device
+
+    def latent_mse(
+        self,
+        examples: tuple[ScoringExample, ...],
+        requested_delta: int,
+        effective_delta: int,
+    ) -> tuple[float, ...]:
+        losses: list[float] = []
+        pair = PredictionPair(requested_delta, Abstraction.CONTINUOUS)
+        for offset in range(0, len(examples), self._batch_size):
+            batch = examples[offset : offset + self._batch_size]
+            triples = tuple(
+                self._data.tensor_triplet(
+                    example.state_id, example.context_position + effective_delta
+                )
+                for example in batch
+            )
+            context = torch.stack([item[0] for item in triples]).to(self._device)
+            target = torch.stack([item[1] for item in triples]).to(self._device)
+            action = torch.stack([item[2] for item in triples]).to(self._device)
+            with torch.no_grad():
+                prediction = self._backbone.predict(
+                    self._backbone.encode(context).latent, action, pair
+                ).carrier
+                target_latent = self._backbone.encode_target(target).latent
+                values = (prediction - target_latent).pow(2).mean(dim=1)
+            losses.extend(float(value) for value in values.cpu().tolist())
+        return tuple(losses)
 
 
 def fixture_scoring_examples(steps: int) -> tuple[ScoringExample, ...]:
@@ -96,4 +141,37 @@ def score_fixture_checkpoint(
     return result, loaded.digest
 
 
-__all__ = ["TorchFixturePredictor", "fixture_scoring_examples", "score_fixture_checkpoint"]
+def score_real_checkpoint(
+    checkpoint: Path,
+    phase_config: PhaseAConfig,
+    model_config: JepaConfig,
+    data: RealPhaseData,
+) -> tuple[ExhaustiveScoreResult, CheckpointInfo]:
+    trainer = TeacherForcedTrainer(
+        JepaBackbone(model_config), phase_config.training_config(device=phase_config.device)
+    )
+    loaded = load_checkpoint(
+        checkpoint,
+        trainer,
+        config_digest=phase_config.identity,
+        grid_digest=phase_config.grid_digest,
+        expected_digest=checkpoint_digest(checkpoint),
+        expected_catalog_digest=data.catalog_digest,
+        expected_run_identity=data.run_identity,
+    )
+    if loaded.step != phase_config.steps:
+        raise GridRunError("exhaustive scoring requires a completed train-mode checkpoint")
+    trainer.backbone.eval()
+    result = ExhaustiveScorer(
+        TorchCatalogPredictor(trainer.backbone, data, phase_config.batch_size)
+    ).score(data.examples)
+    return result, loaded
+
+
+__all__ = [
+    "TorchCatalogPredictor",
+    "TorchFixturePredictor",
+    "fixture_scoring_examples",
+    "score_fixture_checkpoint",
+    "score_real_checkpoint",
+]

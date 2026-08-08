@@ -106,6 +106,9 @@ class CheckpointInfo:
     digest: str
     step: int
     config_digest: str
+    catalog_digest: str | None = None
+    run_identity: str | None = None
+    key_counts: tuple[tuple[str, int], ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -153,13 +156,26 @@ def save_checkpoint(
     *,
     config_digest: str,
     grid_digest: str,
+    catalog_digest: str | None = None,
+    run_identity: str | None = None,
+    key_counts: tuple[tuple[str, int], ...] = (),
 ) -> CheckpointInfo:
     if trainer.config.grid_schedule is not True:
         raise GridRunError("Phase-A checkpoints require grid_schedule=True")
+    if (catalog_digest is None) != (run_identity is None):
+        raise GridRunError("catalog digest and run identity must be recorded together")
+    for name, value in (("catalog_digest", catalog_digest), ("run_identity", run_identity)):
+        if value is not None and (len(value) != 64 or any(char not in "0123456789abcdef" for char in value)):
+            raise GridRunError(f"{name} must be a lowercase SHA-256 digest")
+    if any(type(key) is not str or not key or type(count) is not int or count < 0 for key, count in key_counts):
+        raise GridRunError("key counts must contain named nonnegative counts")
     payload: dict[str, object] = {
         "version": CHECKPOINT_VERSION,
         "config_digest": config_digest,
         "grid_digest": grid_digest,
+        "catalog_digest": catalog_digest,
+        "run_identity": run_identity,
+        "key_counts": key_counts,
         "step": trainer._step_count,
         "model_config_digest": trainer.backbone.config.identity,
         "online_encoder": trainer.backbone.encoder.state_dict(),
@@ -176,7 +192,15 @@ def save_checkpoint(
     temporary = digest_path.with_name(digest_path.name + ".tmp")
     temporary.write_text(actual_digest + "\n", encoding="ascii")
     os.replace(temporary, digest_path)
-    return CheckpointInfo(path, actual_digest, trainer._step_count, config_digest)
+    return CheckpointInfo(
+        path,
+        actual_digest,
+        trainer._step_count,
+        config_digest,
+        catalog_digest,
+        run_identity,
+        key_counts,
+    )
 
 
 def load_checkpoint(
@@ -186,6 +210,8 @@ def load_checkpoint(
     config_digest: str,
     grid_digest: str,
     expected_digest: str | None = None,
+    expected_catalog_digest: str | None = None,
+    expected_run_identity: str | None = None,
 ) -> CheckpointInfo:
     if not path.is_file() or path.name.endswith(".tmp"):
         raise GridRunError("checkpoint is missing or partial")
@@ -201,6 +227,22 @@ def load_checkpoint(
             raise GridRunError("unsupported checkpoint version")
         if payload.get("config_digest") != config_digest or payload.get("grid_digest") != grid_digest:
             raise GridRunError("checkpoint config or grid digest mismatch")
+        catalog_digest = payload.get("catalog_digest")
+        run_identity = payload.get("run_identity")
+        if expected_catalog_digest is not None and catalog_digest != expected_catalog_digest:
+            raise GridRunError("checkpoint catalog digest mismatch")
+        if expected_run_identity is not None and run_identity != expected_run_identity:
+            raise GridRunError("checkpoint run identity mismatch")
+        key_counts = payload.get("key_counts", ())
+        if type(key_counts) is not tuple or any(
+            type(item) is not tuple
+            or len(item) != 2
+            or type(item[0]) is not str
+            or type(item[1]) is not int
+            or item[1] < 0
+            for item in key_counts
+        ):
+            raise GridRunError("checkpoint key counts are invalid")
         if payload.get("model_config_digest") != trainer.backbone.config.identity:
             raise GridRunError("checkpoint model config mismatch")
         trainer.backbone.encoder.load_state_dict(payload["online_encoder"])
@@ -214,9 +256,19 @@ def load_checkpoint(
         random.setstate(payload["python_rng"])
         np.random.set_state(payload["numpy_rng"])
         torch.set_rng_state(payload["torch_rng"])
+    except GridRunError:
+        raise
     except (KeyError, TypeError, RuntimeError, ValueError, OSError) as error:
         raise GridRunError("checkpoint payload is invalid") from error
-    return CheckpointInfo(path, actual_digest, trainer._step_count, config_digest)
+    return CheckpointInfo(
+        path,
+        actual_digest,
+        trainer._step_count,
+        config_digest,
+        catalog_digest,
+        run_identity,
+        key_counts,
+    )
 
 
 def fixture_batch(config: JepaConfig, *, seed: int, batch_size: int, step: int) -> dict[str, object]:
