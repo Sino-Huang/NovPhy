@@ -87,6 +87,7 @@ from world_model.training.scoring import (
     write_score_artifacts,
 )
 from world_model.training.scoring_torch import fixture_scoring_examples, score_fixture_checkpoint
+from world_model.training.frontier import FrontierError, analyze_frontier, pareto_frontier, source_digest
 
 __all__ = [
     "CollapseReport",
@@ -164,4 +165,8 @@ __all__ = [
     "score_fixture_checkpoint",
     "validate_score_artifacts",
     "write_score_artifacts",
+    "FrontierError",
+    "analyze_frontier",
+    "pareto_frontier",
+    "source_digest",
 ]
