@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import pickle
 import random
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -26,6 +27,12 @@ from world_model.training.loop import TeacherForcedTrainer, TrainingConfig, seed
 
 CHECKPOINT_VERSION: Final[str] = "jepa-pair-grid-checkpoint-v1"
 GRID_VERSION: Final[str] = "pair-grid-v1"
+CHECKPOINT_SAFE_GLOBALS: Final = (
+    np._core.multiarray._reconstruct,
+    np.ndarray,
+    np.dtype,
+    type(np.dtype("uint32")),
+)
 
 
 class GridRunError(ValueError):
@@ -222,7 +229,8 @@ def load_checkpoint(
     if expected_digest is not None and actual_digest != expected_digest:
         raise GridRunError("checkpoint digest mismatch")
     try:
-        payload = torch.load(path, map_location=trainer.device, weights_only=False)
+        with torch.serialization.safe_globals(CHECKPOINT_SAFE_GLOBALS):
+            payload = torch.load(path, map_location=trainer.device, weights_only=True)
         if payload.get("version") != CHECKPOINT_VERSION:
             raise GridRunError("unsupported checkpoint version")
         if payload.get("config_digest") != config_digest or payload.get("grid_digest") != grid_digest:
@@ -258,7 +266,7 @@ def load_checkpoint(
         torch.set_rng_state(payload["torch_rng"].cpu())
     except GridRunError:
         raise
-    except (KeyError, TypeError, RuntimeError, ValueError, OSError) as error:
+    except (KeyError, TypeError, RuntimeError, ValueError, OSError, pickle.UnpicklingError) as error:
         raise GridRunError("checkpoint payload is invalid") from error
     return CheckpointInfo(
         path,

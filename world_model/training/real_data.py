@@ -16,6 +16,7 @@ from torch.nn import functional
 from world_model.data import LEGACY_RGB_V1, EpisodeCatalog, catalog_digest
 from world_model.data.types import ShotRecord
 from world_model.model import JepaConfig, PredictionPair, digest
+from world_model.training.frontier import FRONTIER_INPUT_SCHEMA
 from world_model.training.grid_artifacts import ALPHA_EXCLUSIONS, canonical_json_bytes
 from world_model.training.grid_data import (
     DIAGNOSTIC_IMAGE_SIZE,
@@ -265,19 +266,20 @@ def write_real_sweep_manifest(
 
 
 def write_frontier_input(score_root: Path, path: Path) -> None:
-    validate_score_artifacts(score_root)
-    rows: list[dict[str, str | int | float]] = []
-    for shard in sorted((score_root / "label_shards").rglob("*.jsonl")):
-        for line in shard.read_text(encoding="ascii").splitlines():
-            record = json.loads(line)
-            for metric in record["metrics"]:
-                rows.append({
-                    "state_id": record["state_id"], "regime": record["motion_regime"],
-                    "delta": metric["delta"],
-                    "weighted_prediction_error": metric["weighted_error"],
-                    "compute_cost": metric["compute_cost"],
-                })
-    _atomic_write(path, canonical_json_bytes({"states": rows}))
+    receipt = validate_score_artifacts(score_root)
+    manifest = json.loads((score_root / "manifest.json").read_bytes())
+    payload = {
+        "checkpoint_digest": manifest["checkpoint_digest"],
+        "partition": "evaluation",
+        "schema_version": FRONTIER_INPUT_SCHEMA,
+        "score_artifact_root": Path(
+            os.path.relpath(score_root.resolve(), start=path.parent.resolve())
+        ).as_posix(),
+        "score_manifest_digest": receipt.manifest_digest,
+        "score_spec_digest": manifest["score_spec_digest"],
+        "state_digest": manifest["state_digest"],
+    }
+    _atomic_write(path, canonical_json_bytes(payload))
 
 
 __all__ = ["RealPhaseData", "write_frontier_input", "write_real_sweep_manifest"]

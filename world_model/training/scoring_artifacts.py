@@ -89,36 +89,16 @@ def write_score_artifacts(
         raise ScoreArtifactError("checkpoint_digest must be lowercase SHA-256")
     if type(shard_size) is not int or shard_size <= 0:
         raise ScoreArtifactError("shard_size must be positive")
-    existing_manifest = root / "manifest.json"
-    if resume and existing_manifest.is_file():
-        try:
-            existing = json.loads(existing_manifest.read_bytes())
-        except json.JSONDecodeError as error:
-            raise ScoreArtifactError("stale score manifest") from error
-        if existing.get("checkpoint_digest") != checkpoint_digest or existing.get("score_spec_digest") != result.score_spec.identity:
-            raise ScoreArtifactError("resume checkpoint or score-spec binding mismatch")
     entries: list[dict[str, JsonValue]] = []
+    shard_data: list[tuple[Path, bytes]] = []
     for partition in Partition:
         states = tuple(item for item in result.scored_states if item.example.partition is partition)
         for offset in range(0, len(states), shard_size):
             batch = states[offset:offset + shard_size]
             data = b"".join(canonical_json_bytes(state_payload(item)) for item in batch)
             relative = Path("label_shards") / str(partition) / f"shard-{offset // shard_size:06d}.jsonl"
-            path = root / relative
-            if resume and path.is_file() and path.read_bytes() != data:
-                raise ScoreArtifactError(f"stale or tampered shard: {relative}")
-            if not path.is_file():
-                _atomic_write(path, data)
+            shard_data.append((relative, data))
             entries.append({"name": relative.as_posix(), "sha256": _digest(data), "state_count": len(batch)})
-    metrics_data = canonical_json_bytes([aggregate_payload(item) for item in result.per_pair_metrics])
-    ceiling_data = canonical_json_bytes(ceiling_payload(result.temporal_oracle_ceiling))
-    unavailable_data = canonical_json_bytes([
-        {"metric": item.metric, "reason": item.reason, "status": item.status}
-        for item in result.unavailable_metrics
-    ])
-    _atomic_write(root / "per_pair_metrics.json", metrics_data)
-    _atomic_write(root / "temporal_oracle_ceiling.json", ceiling_data)
-    _atomic_write(root / "unavailable_metrics.json", unavailable_data)
     manifest = {
         "checkpoint_digest": checkpoint_digest,
         "error_scale": result.score_spec.error_scale,
@@ -139,6 +119,38 @@ def write_score_artifacts(
         ),
     }
     raw = canonical_json_bytes(manifest)
+    expected_shards = {entry["name"] for entry in entries}
+    shard_root = root / "label_shards"
+    actual_shards = {
+        path.relative_to(root).as_posix()
+        for path in shard_root.rglob("*.jsonl")
+    } if shard_root.is_dir() else set()
+    existing_manifest = root / "manifest.json"
+    if resume and existing_manifest.is_file():
+        try:
+            existing_raw = existing_manifest.read_bytes()
+            existing = json.loads(existing_raw)
+        except json.JSONDecodeError as error:
+            raise ScoreArtifactError("stale score manifest") from error
+        if existing_raw != raw or existing != manifest or actual_shards != expected_shards:
+            raise ScoreArtifactError("resume score topology or binding mismatch")
+    elif resume and actual_shards - expected_shards:
+        raise ScoreArtifactError("resume score topology or binding mismatch")
+    for relative, data in shard_data:
+        path = root / relative
+        if resume and path.is_file() and path.read_bytes() != data:
+            raise ScoreArtifactError(f"stale or tampered shard: {relative}")
+        if not path.is_file():
+            _atomic_write(path, data)
+    metrics_data = canonical_json_bytes([aggregate_payload(item) for item in result.per_pair_metrics])
+    ceiling_data = canonical_json_bytes(ceiling_payload(result.temporal_oracle_ceiling))
+    unavailable_data = canonical_json_bytes([
+        {"metric": item.metric, "reason": item.reason, "status": item.status}
+        for item in result.unavailable_metrics
+    ])
+    _atomic_write(root / "per_pair_metrics.json", metrics_data)
+    _atomic_write(root / "temporal_oracle_ceiling.json", ceiling_data)
+    _atomic_write(root / "unavailable_metrics.json", unavailable_data)
     _atomic_write(root / "manifest.json", raw)
     return ScoreArtifactReceipt(_digest(raw), len(result.scored_states), result.score_count)
 

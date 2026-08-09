@@ -164,7 +164,6 @@ def analyze_frontier(states: Iterable[dict[str, Any]], *, seed: int = 0, replica
     for _ in range(replicates):
         sample = [row for _index in state_groups for row in state_groups[rng.randrange(len(state_groups))]]
         sampled = {regime: [row for row in sample if row["regime"] == regime] for regime in regimes}
-        sampled["global"] = sample
         frontiers_by_sample = {regime: set(pareto_frontier(_aggregate(group))) for regime, group in sampled.items() if group}
         common = set.intersection(*frontiers_by_sample.values()) if frontiers_by_sample else set()
         intersections += bool(common)

@@ -15,6 +15,7 @@ from world_model.training.scoring import (
     write_score_artifacts,
 )
 from world_model.training.frontier import FrontierError, analyze_frontier, pareto_frontier
+from world_model.training.real_data import write_frontier_input as write_production_frontier_input
 
 
 class ZeroPredictor:
@@ -43,6 +44,28 @@ def frontier_rows(per_regime=100, include_selection=True):
     return rows
 
 
+def regime_only_bootstrap_rows():
+    rows = []
+    values = {
+        "active": {1: (6.0, 9.0), 5: (9.0, 6.0), 15: (7.0, 4.0)},
+        "calm": {1: (8.0, 8.0), 5: (1.0, 10.0), 15: (9.0, 7.0)},
+    }
+    selected = {"active": 15, "calm": 5}
+    for regime, metrics in values.items():
+        for state_index in range(100):
+            for delta, (error, cost) in metrics.items():
+                rows.append({
+                    "state_id": f"{regime}-{state_index:03d}",
+                    "regime": regime,
+                    "delta": delta,
+                    "weighted_prediction_error": error,
+                    "compute_cost": cost,
+                    "error_scale": 1.0,
+                    "selected_delta": selected[regime],
+                })
+    return rows
+
+
 def write_frontier_input(root):
     examples = tuple(
         ScoringExample(
@@ -57,24 +80,15 @@ def write_frontier_input(root):
         for index in range(100)
     )
     score_root = root / "scores"
-    receipt = write_score_artifacts(
+    write_score_artifacts(
         score_root,
         ExhaustiveScorer(ZeroPredictor()).score(examples),
         checkpoint_digest="a" * 64,
         shard_size=128,
     )
-    manifest = json.loads((score_root / "manifest.json").read_text(encoding="ascii"))
-    payload = {
-        "checkpoint_digest": manifest["checkpoint_digest"],
-        "partition": "evaluation",
-        "schema_version": "temporal_frontier_input_v1",
-        "score_artifact_root": "scores",
-        "score_manifest_digest": receipt.manifest_digest,
-        "score_spec_digest": manifest["score_spec_digest"],
-        "state_digest": manifest["state_digest"],
-    }
     path = root / "frontier-input.json"
-    path.write_bytes(canonical_json_bytes(payload))
+    write_production_frontier_input(score_root, path)
+    payload = json.loads(path.read_text(encoding="ascii"))
     return path, payload, score_root
 
 
@@ -95,6 +109,18 @@ class FrontierTests(unittest.TestCase):
         self.assertEqual(analyze_frontier(rows, seed=4)["bootstrap"]["replicates"], 1000)
         with self.assertRaises(FrontierError):
             analyze_frontier(frontier_rows(per_regime=99))
+
+    def test_bootstrap_uses_regime_frontiers_not_global_frontier(self):
+        # Given
+        rows = regime_only_bootstrap_rows()
+
+        # When
+        result = analyze_frontier(rows, seed=4, replicates=50)
+
+        # Then
+        self.assertNotIn(1, result["frontiers"]["global"])
+        self.assertEqual(result["bootstrap"]["intersection_frequency"], 1.0)
+        self.assertEqual(result["bootstrap"]["frontier_membership_frequency"]["1"], 1.0)
 
     def test_nonfinite_metric_is_rejected(self):
         rows = frontier_rows()

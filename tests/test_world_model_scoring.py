@@ -407,6 +407,71 @@ class ExhaustiveScoringTests(unittest.TestCase):
                     shard_size=4,
                 )
 
+    def test_resume_rejects_changed_shard_size_when_payloads_match(self) -> None:
+        # Given
+        result = ExhaustiveScorer(RegimePredictor()).score(_examples())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "scores"
+            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=7)
+            manifest_path = root / "manifest.json"
+            before = manifest_path.read_bytes()
+
+            # When / Then
+            with self.assertRaisesRegex(ScoreArtifactError, "topology"):
+                write_score_artifacts(root, result, checkpoint_digest="a" * 64, resume=True, shard_size=8)
+            self.assertEqual(manifest_path.read_bytes(), before)
+
+    def test_resume_rejects_an_unlisted_stale_shard(self) -> None:
+        # Given
+        result = ExhaustiveScorer(RegimePredictor()).score(_examples())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "scores"
+            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            manifest_path = root / "manifest.json"
+            before = manifest_path.read_bytes()
+            stale = root / "label_shards" / "controller-train" / "shard-999999.jsonl"
+            stale.write_bytes(b"stale\n")
+
+            # When / Then
+            with self.assertRaisesRegex(ScoreArtifactError, "topology"):
+                write_score_artifacts(root, result, checkpoint_digest="a" * 64, resume=True, shard_size=4)
+            self.assertEqual(manifest_path.read_bytes(), before)
+            self.assertTrue(stale.is_file())
+
+    def test_resume_rejects_reordered_manifest_shards(self) -> None:
+        # Given
+        result = ExhaustiveScorer(RegimePredictor()).score(_examples())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "scores"
+            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            manifest_path = root / "manifest.json"
+            manifest = json.loads(manifest_path.read_bytes())
+            manifest["shards"] = list(reversed(manifest["shards"]))
+            before = canonical_json_bytes(manifest)
+            manifest_path.write_bytes(before)
+
+            # When / Then
+            with self.assertRaisesRegex(ScoreArtifactError, "topology"):
+                write_score_artifacts(root, result, checkpoint_digest="a" * 64, resume=True, shard_size=4)
+            self.assertEqual(manifest_path.read_bytes(), before)
+
+    def test_resume_rejects_incomplete_manifest_shards(self) -> None:
+        # Given
+        result = ExhaustiveScorer(RegimePredictor()).score(_examples())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "scores"
+            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            manifest_path = root / "manifest.json"
+            manifest = json.loads(manifest_path.read_bytes())
+            manifest["shards"] = manifest["shards"][:-1]
+            before = canonical_json_bytes(manifest)
+            manifest_path.write_bytes(before)
+
+            # When / Then
+            with self.assertRaisesRegex(ScoreArtifactError, "topology"):
+                write_score_artifacts(root, result, checkpoint_digest="a" * 64, resume=True, shard_size=4)
+            self.assertEqual(manifest_path.read_bytes(), before)
+
     def test_validator_rejects_a_corrupted_shard(self) -> None:
         # Given
         result = ExhaustiveScorer(RegimePredictor()).score(_examples())
