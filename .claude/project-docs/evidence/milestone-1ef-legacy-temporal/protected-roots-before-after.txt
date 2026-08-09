@@ -1,35 +1,31 @@
-TODO8_PROTECTED_AFTER_VERSION=1
+TODO8_PROTECTED_BASELINE_VERSION=1
 PHASE=AFTER
-WORKTREE_HEAD=25dd9aad039e408a0a30931c7f65bd455edc34b6
+WORKTREE=/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4
+WORKTREE_BRANCH=physics-unity-2019.4
+WORKTREE_HEAD=2f7843d56ae427d2bf9973d3baf2c1c73cbcebec
 DATASET_CHECKOUT_HEAD=c6be95cdec093949a0f86349dceb95358d48792b
+
 [git_status]
-dataset_checkout_scoped=
-worktree_linux_scoped=
-worktree_physics_v1_scoped=?? sciencebirdsgames/physics-v1/
-[root_stat]
-/mnt/array/sukaih/Project/NovPhy/data/novphy_rollouts_dataset_20260708_171531|type=directory|mode=775|uid=1002|gid=1002|size=42|mtime=2026-07-25 21:33:58.906231052 +1000|ctime=2026-07-25 21:33:58.906231052 +1000|inode=17372778534254502821|device=37|links=4
-/mnt/array/sukaih/Project/NovPhy/data/novphy_rollouts_dataset_20260708_171531/dev|type=directory|mode=775|uid=1002|gid=1002|size=49152|mtime=2026-07-28 00:31:55.885323833 +1000|ctime=2026-07-28 00:31:55.885323833 +1000|inode=10791840088355216057|device=37|links=755
-/mnt/array/sukaih/Project/NovPhy/data/novphy_rollouts_dataset_20260708_171531/train|type=directory|mode=775|uid=1002|gid=1002|size=380928|mtime=2026-07-28 00:39:07.272919744 +1000|ctime=2026-07-28 00:39:07.272919744 +1000|inode=479661331516938534|device=37|links=5243
-sciencebirdsgames/Linux|type=directory|mode=775|uid=1002|gid=1002|size=31|mtime=2026-08-07 11:57:08.560685660 +1000|ctime=2026-08-07 11:57:08.560685660 +1000|inode=14134132538594896064|device=37|links=3
-sciencebirdsgames/Linux/9001_Data|type=directory|mode=775|uid=1002|gid=1002|size=37|mtime=2026-08-07 11:57:08.561227422 +1000|ctime=2026-08-07 11:57:08.561227422 +1000|inode=2223283869247886476|device=37|links=3
-sciencebirdsgames/Linux/9001_Data/StreamingAssets|type=directory|mode=775|uid=1002|gid=1002|size=28|mtime=2026-08-07 11:57:08.561227422 +1000|ctime=2026-08-07 11:57:08.561227422 +1000|inode=8675053584897347163|device=37|links=3
-sciencebirdsgames/physics-v1|type=directory|mode=775|uid=1002|gid=1002|size=115|mtime=2026-08-06 23:55:43.209084549 +1000|ctime=2026-08-06 23:55:43.209084549 +1000|inode=7269252613840306554|device=37|links=2
-sciencebirdsgames/physics-v1/archive.sha256|type=regular file|mode=600|uid=1002|gid=1002|size=107|mtime=2026-08-06 23:55:43.168394429 +1000|ctime=2026-08-06 23:55:43.209084549 +1000|inode=10311952433702748324|device=37|links=1
-sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz|type=regular file|mode=600|uid=1002|gid=1002|size=39794535|mtime=2026-08-06 23:55:42.354085399 +1000|ctime=2026-08-06 23:55:43.204084554 +1000|inode=856890205493393251|device=37|links=1
-sciencebirdsgames/physics-v1/unity-build.log|type=regular file|mode=644|uid=1002|gid=1002|size=84763|mtime=2026-08-06 23:55:33.983208959 +1000|ctime=2026-08-06 23:55:33.985093619 +1000|inode=10990823197774049594|device=37|links=1
-[linux_inventory]
-a6c6c9965dd3f54d766536a2fc132aba8061cfefadff5c6abc78c4023babb7d6  -
-[physics_archive]
-429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de  sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz
+dataset_checkout_scoped_porcelain=
+dataset_checkout_scoped_diff=
+worktree_linux_scoped_porcelain=
+worktree_linux_scoped_diff=
+worktree_physics_v1_scoped_diff=
+worktree_physics_v1_scoped_porcelain=?? sciencebirdsgames/physics-v1/
+
+[protected_hashes]
 0259a94339c99a3cbfd89a344216d174bb9a67ed4314746fbf1aaceed76a031d  sciencebirdsgames/physics-v1/archive.sha256
+429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de  sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz
 11352fd78294a6a23cd0310f86f2db5d5ffe32c99c9f9534fade611976b08854  sciencebirdsgames/physics-v1/unity-build.log
-archive_members=178
-[comparison]
-before_receipt=.omo/evidence/todo8-protected-before.txt
-before_receipt_sha256=a7a31b8072008b9fcfc04b6e83eebd78e8a6442861027b8964ce94524af98d88
-dataset_root_stat=UNCHANGED
-dataset_scoped_git_status=UNCHANGED
-linux_inventory_sha256=UNCHANGED:a6c6c9965dd3f54d766536a2fc132aba8061cfefadff5c6abc78c4023babb7d6
-physics_v1_archive_sha256=UNCHANGED:429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de
-physics_v1_build_log_sha256=UNCHANGED:11352fd78294a6a23cd0310f86f2db5d5ffe32c99c9f9534fade611976b08854
+linux_inventory=a6c6c9965dd3f54d766536a2fc132aba8061cfefadff5c6abc78c4023babb7d6  -
+physics_v1_inventory=da1611bbe13b6658283e714c0294e0fa89c8a49e7669002720f4157b4d971c71  -
+physics_v1_files_inventory=70913a190de53d56d6c917716964d2865424807627210aa60d4c06e68dcf119e  -
+dataset_dev_names=ea7f4f83bc949c7eddf68aacc3cbfe1984634f62b774290fe644f037ccbb8cad  -
+dataset_train_names=d088cf4f89bfea0442321ce67ee59b9577e3e54178877a0ae2313cd72d347077  -
+dataset_dev_count=463
+dataset_train_count=4975
+
+[verdict]
 protected_root_writes=none
+product_file_writes=none
+verdict=PASS
