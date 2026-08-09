@@ -5,7 +5,7 @@ import json
 import os
 import pickle
 import random
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Final
 
@@ -24,6 +24,7 @@ from world_model.model import (
 from world_model.training.grid_artifacts import ALPHA_EXCLUSIONS, APPROVED_DELTAS
 from world_model.training.grid_data import MotionRegime
 from world_model.training.loop import TeacherForcedTrainer, TrainingConfig, seed_all
+from world_model.training.reproducibility import ReproducibilityConfig
 
 CHECKPOINT_VERSION: Final[str] = "jepa-pair-grid-checkpoint-v1"
 GRID_VERSION: Final[str] = "pair-grid-v1"
@@ -50,6 +51,7 @@ class PhaseAConfig:
     ema_base_momentum: float = 0.996
     split: str = "dev"
     device: str = "cuda"
+    reproducibility: ReproducibilityConfig = field(default_factory=ReproducibilityConfig)
 
     def __post_init__(self) -> None:
         if type(self.seed) is not int or self.seed < 0:
@@ -75,7 +77,7 @@ class PhaseAConfig:
     def identity(self) -> str:
         return digest(
             (
-                "phase-a-config-v1",
+                "phase-a-config-v2",
                 self.seed,
                 self.steps,
                 self.batch_size,
@@ -86,6 +88,7 @@ class PhaseAConfig:
                 self.ema_base_momentum,
                 self.split,
                 self.device,
+                self.reproducibility.identity_fields,
                 self.grid_digest,
             )
         )
@@ -116,6 +119,7 @@ class CheckpointInfo:
     catalog_digest: str | None = None
     run_identity: str | None = None
     key_counts: tuple[tuple[str, int], ...] = ()
+    cuda_rng_restored: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -192,6 +196,11 @@ def save_checkpoint(
         "python_rng": random.getstate(),
         "numpy_rng": np.random.get_state(),
         "torch_rng": torch.get_rng_state(),
+        "cuda_rng": (
+            torch.cuda.get_rng_state(trainer.device)
+            if trainer.device.type == "cuda"
+            else None
+        ),
     }
     _atomic_torch_save(payload, path)
     actual_digest = checkpoint_digest(path)
@@ -264,6 +273,15 @@ def load_checkpoint(
         random.setstate(payload["python_rng"])
         np.random.set_state(payload["numpy_rng"])
         torch.set_rng_state(payload["torch_rng"].cpu())
+        cuda_rng_restored = False
+        if trainer.device.type == "cuda":
+            cuda_rng = payload.get("cuda_rng")
+            if not isinstance(cuda_rng, torch.Tensor):
+                raise GridRunError(
+                    "checkpoint has no CUDA RNG state; deterministic CUDA resume is unavailable"
+                )
+            torch.cuda.set_rng_state(cuda_rng.cpu(), trainer.device)
+            cuda_rng_restored = True
     except GridRunError:
         raise
     except (KeyError, TypeError, RuntimeError, ValueError, OSError, pickle.UnpicklingError) as error:
@@ -276,6 +294,7 @@ def load_checkpoint(
         catalog_digest,
         run_identity,
         key_counts,
+        cuda_rng_restored,
     )
 
 
@@ -336,6 +355,7 @@ def write_sweep_manifest(path: Path, *, checkpoint: CheckpointInfo, phase_config
         "checkpoint_step": checkpoint.step,
         "config_digest": phase_config.identity,
         "grid_digest": phase_config.grid_digest,
+        "reproducibility": phase_config.reproducibility.canonical,
         "evaluated_alpha": "continuous",
         "excluded_abstractions": list(ALPHA_EXCLUSIONS),
         "split": phase_config.split,

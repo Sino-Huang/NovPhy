@@ -37,6 +37,7 @@ from world_model.model import (
 )
 from world_model.training.grid_data import MotionRegime
 from world_model.training.pair_grid import APPROVED_PAIRS
+from world_model.training.reproducibility import ReproducibilityConfig, apply_reproducibility
 from world_model.training.diagnostics import (
     CollapseReport,
     collapse_diagnostics,
@@ -137,14 +138,17 @@ class OverfitReport:
     acceptance: str
 
 
-def seed_all(seed: int) -> None:
+def seed_all(seed: int, *, reproducibility: ReproducibilityConfig | None = None) -> None:
     """Seed every RNG the loop touches, for bitwise reproducibility."""
+    if reproducibility is not None:
+        apply_reproducibility(reproducibility)
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    if reproducibility is None:
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
 
 def resize_transform(input_height: int, input_width: int) -> nn.Module:

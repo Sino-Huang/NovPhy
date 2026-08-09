@@ -97,7 +97,7 @@ def _train(
 ) -> tuple[Path, CheckpointInfo]:
     output = args.output_dir
     checkpoint = args.checkpoint or output / "checkpoint.pt"
-    seed_all(config.seed)
+    seed_all(config.seed, reproducibility=config.reproducibility)
     trainer = TeacherForcedTrainer(
         JepaBackbone(model_config), config.training_config(device="cpu" if args.device == "cpu" else args.device)
     )
