@@ -1,0 +1,59 @@
+{
+  "schema": "novphy_runtime_gate_finding_v1",
+  "id": "unity-does-not-map-the-user-assembly",
+  "class": "gate_defect",
+  "severity": "blocker_for_this_wave",
+  "recorded_utc_date": "2026-08-11",
+  "branch": "physics-unity-2019.4",
+  "head": "fc3e34c5f6115b55751874df21c3a9286bd09a5e",
+  "claim": "The listener gate required exactly one file-backed Assembly-CSharp.dll mapping in /proc/<pid>/maps. Unity 2019.4 never produces one, so the invariant was unsatisfiable by construction and no staged candidate could ever pass it.",
+  "how_observed": {
+    "method": "bounded non-gameplay probe; starts display and jar, completes the agent handshake that spawns the player, reads /proc/<pid>/{exe,cwd,maps} for the port owner, tears down. Loads no level and fires no shot.",
+    "probe": ".claude/project-docs/evidence/runtime-repin-gate-20260810/probe_player_maps.py",
+    "receipt": ".claude/project-docs/evidence/runtime-repin-gate-20260810/player-mapping-probe.json"
+  },
+  "measurement": {
+    "owner_pid": 682989,
+    "owner_exe": "/tmp/novphy-maps-clone-h577ntdx/9001.x86_64",
+    "owner_cwd": "/tmp/novphy-maps-clone-h577ntdx",
+    "file_backed_mapping_count": 91,
+    "assembly_csharp_mappings": [],
+    "mapped_dll_names": ["Mono.Security.dll", "System.Core.dll", "System.Xml.dll", "System.dll", "mscorlib.dll", "netstandard.dll"],
+    "mapped_from_candidate_root": [
+      {"device": "103:02", "inode": 69088076, "path": "9001.x86_64"},
+      {"device": "103:02", "inode": 69088091, "path": "9001_Data/Managed/Mono.Security.dll"},
+      {"device": "103:02", "inode": 69088102, "path": "9001_Data/Managed/System.Core.dll"},
+      {"device": "103:02", "inode": 69088149, "path": "9001_Data/Managed/System.Xml.dll"},
+      {"device": "103:02", "inode": 69088152, "path": "9001_Data/Managed/System.dll"},
+      {"device": "103:02", "inode": 69088340, "path": "9001_Data/Managed/mscorlib.dll"},
+      {"device": "103:02", "inode": 69088344, "path": "9001_Data/Managed/netstandard.dll"},
+      {"device": "103:02", "inode": 69088440, "path": "9001_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so"},
+      {"device": "103:02", "inode": 69088593, "path": "UnityPlayer.so"}
+    ],
+    "staged_archive_sha256": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+    "staged_assembly_sha256": "051aac49739a3b09628f03e9f0fc7c0ca5e17b42a66dc7f1707542fad8d73622"
+  },
+  "mechanism": "Mono mmaps class-library assemblies as file-backed mappings. Unity loads the user assembly Assembly-CSharp.dll through its own loader, so it is never a file-backed mapping and cannot appear in the map table.",
+  "first_live_failure": {
+    "receipt": ".claude/project-docs/evidence/runtime-repin-gate-20260810/listener-diagnostic.json",
+    "phase": "bind-physics-listener",
+    "error": "port listener owner pid=675476 has 0 mapped Assembly-CSharp.dll images",
+    "listener_binding": null
+  },
+  "diagnosis": "gate defect, not candidate defect. The measurement distinguishes the two: the owning process's exe and cwd both resolve inside the verified clone, and nine of its file-backed mappings come from that clone, so it is the staged code. Only the required anchor was wrong.",
+  "correction_applied": {
+    "mapped_anchor": "UnityPlayer.so",
+    "why": "it is mapped file-backed from the candidate root, it is the native code that actually owns the socket, and it carries a digest in provenance.json",
+    "assembly_still_pinned_by": "digest read through the listener's own root view at /proc/<pid>/root/<root>/9001_Data/Managed/Assembly-CSharp.dll, plus device and inode observed at that path",
+    "identity_chain_after": "socket inode -> pid -> exe/cwd -> mapped UnityPlayer.so device+inode+digest -> provenance UnityPlayer.so digest -> assembly device+inode+digest via process root -> provenance assembly digest -> provenance bytes digest -> staged archive digest -> launched process tree",
+    "deviation_from_mission_wording": "The mission text names 'mapped Assembly-CSharp.dll' as a binding input. That exact binding is not obtainable from this runtime. The substitute anchor is strictly obtainable and no weaker: it adds a mapped-code digest that the original chain never had, and retains the assembly digest. This deviation is deliberate and is flagged rather than silently taken.",
+    "source": "scripts/smoke_physics_capture.py",
+    "tests": [
+      "test_observation_does_not_require_a_mapped_assembly",
+      "test_observation_rejects_a_process_without_a_mapped_runtime",
+      "test_observation_rejects_provenance_without_a_runtime_digest",
+      "test_runtime_mutation_after_expectation_is_rejected",
+      "test_listener_binding_rejects_every_identity_mismatch"
+    ]
+  }
+}
