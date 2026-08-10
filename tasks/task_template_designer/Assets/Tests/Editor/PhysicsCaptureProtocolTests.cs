@@ -140,6 +140,8 @@ public class PhysicsCaptureProtocolTests
         AssertRequiredExcept(events[0], schema["$defs"]["record_clock"]["required"].AsArray, "shot_id");
         AssertRequiredExcept(events[0], schema["$defs"]["event"]["allOf"][1]["required"].AsArray, "record_type");
         Assert.AreEqual("physics_capture_v1", state["schema_version"].Value);
+        Assert.IsNotEmpty(state["capture_id"].Value);
+        Assert.GreaterOrEqual(state["sequence"].AsInt, 1);
         Assert.AreEqual("synchronized_endpoint", state["rgb_frame"]["source"].Value);
         Assert.AreEqual(state["render_frame"].AsInt, state["rgb_frame"]["render_frame"].AsInt);
         Assert.AreEqual(0, events[0]["sequence"].AsInt);

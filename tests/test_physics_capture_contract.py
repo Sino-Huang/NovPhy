@@ -176,6 +176,14 @@ class PhysicsCaptureContractTests(unittest.TestCase):
         # When/Then: closed event payloads are parsed rather than passed through.
         self.assert_fixture_error(InvalidFixture(_read_jsonl("physics_state.jsonl"), events, ContractErrorCode.INVALID_EVENT))
 
+    def test_empty_collision_payload_is_rejected(self):
+        # Given: a collision record without its required contact evidence.
+        events = _read_jsonl("physics_events.jsonl")
+        events[1]["payload"] = {}
+
+        # When/Then: the consumer fails closed instead of accepting an evidence-free collision.
+        self.assert_fixture_error(InvalidFixture(_read_jsonl("physics_state.jsonl"), events, ContractErrorCode.INVALID_EVENT))
+
     def test_repeated_entity_lifecycle_event_is_rejected(self):
         # Given: a second destruction event for the same entity lifetime.
         events = _read_jsonl("physics_events.jsonl")

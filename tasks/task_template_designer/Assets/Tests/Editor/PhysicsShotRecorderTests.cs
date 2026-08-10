@@ -77,9 +77,9 @@ public class PhysicsShotRecorderTests
         PhysicsShotRecorder recorder = new PhysicsShotRecorder(32, 64 * 1024);
         recorder.RecordLaunch("bird:0", 1);
         recorder.RecordLaunch("bird:0", 1);
-        recorder.RecordCollision("a", "b", 2);
-        recorder.RecordCollision("b", "a", 2);
-        recorder.RecordCollision("a", "b", 3);
+        recorder.RecordCollision(2, 0.04f, "a", "b", new[] { "contact:2:a|b:0" }, 1f);
+        recorder.RecordCollision(2, 0.04f, "b", "a", new[] { "contact:2:a|b:0" }, 1f);
+        recorder.RecordCollision(3, 0.06f, "a", "b", new[] { "contact:3:a|b:0" }, 1f);
         recorder.RecordDestroyed("block:0", 4);
         recorder.RecordDeath("block:0", 4);
         recorder.RecordDestroyed("block:0", 4);
@@ -110,6 +110,52 @@ public class PhysicsShotRecorderTests
         failed.RecordLevelClear(2);
         Assert.AreEqual(1, failed.Events.Count);
         Assert.AreEqual("level_failed", failed.Events[0].Taxonomy);
+    }
+
+    [Test]
+    public void CollisionPayloadRejectsMissingOrInvalidEvidence()
+    {
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(16, 64 * 1024);
+
+        Assert.Throws<ArgumentException>(delegate
+        {
+            recorder.RecordCollision(2, 0.04f, "a:0", "b:0", new string[0], 0f);
+        });
+        Assert.Throws<ArgumentException>(delegate
+        {
+            recorder.RecordCollision(2, 0.04f, "a:0", "b:0");
+        });
+        Assert.Throws<ArgumentException>(delegate
+        {
+            recorder.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { "contact:2" }, -1f);
+        });
+        Assert.Throws<ArgumentException>(delegate
+        {
+            recorder.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { "contact:2" }, float.NaN);
+        });
+    }
+
+    [Test]
+    public void CollisionContactSamplesCreateDeterministicPayloadEvidence()
+    {
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(16, 64 * 1024);
+        PhysicalContactInput[] contacts =
+        {
+            new PhysicalContactInput("z:0", 2, Vector2.right, Vector2.up, -0.1f,
+                Vector2.left, 1f, "a:0", 1, Vector2.zero, Vector2.one, false),
+            new PhysicalContactInput("z:0", 2, Vector2.zero, Vector2.up, -0.1f,
+                Vector2.left, 1f, "a:0", 1, Vector2.zero, Vector2.one, false)
+        };
+
+        recorder.RecordCollision(2, 0.04f, "z:0", "a:0", contacts, 3.5f);
+        recorder.RecordCollision(2, 0.04f, "a:0", "z:0", contacts.Reverse().ToArray(), 3.5f);
+
+        Assert.AreEqual(2, recorder.RawContacts.Count);
+        Assert.AreEqual(1, recorder.Events.Count);
+        CollectionAssert.AreEqual(
+            recorder.RawContacts.Select(contact => contact.ContactId).OrderBy(id => id).ToArray(),
+            recorder.Events[0].Payload.ContactIds);
+        Assert.AreEqual(3.5f, recorder.Events[0].Payload.RelativeSpeed.Value);
     }
 
     [Test]

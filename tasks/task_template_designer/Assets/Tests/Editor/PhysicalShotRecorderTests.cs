@@ -51,9 +51,9 @@ public class PhysicalShotRecorderTests
 
         recorder.RecordEvent(1, 0.02f, PhysicalMacroEventKind.Launch, "bird:1");
         recorder.RecordEvent(1, 0.02f, PhysicalMacroEventKind.Launch, "bird:1");
-        recorder.RecordCollision(1, 0.02f, "20:0", "10:0");
-        recorder.RecordCollision(1, 0.02f, "10:0", "20:0");
-        recorder.RecordCollision(2, 0.04f, "10:0", "20:0");
+        recorder.RecordCollision(1, 0.02f, "20:0", "10:0", new[] { "contact:1:10:0|20:0:0" }, 1f);
+        recorder.RecordCollision(1, 0.02f, "10:0", "20:0", new[] { "contact:1:10:0|20:0:0" }, 1f);
+        recorder.RecordCollision(2, 0.04f, "10:0", "20:0", new[] { "contact:2:10:0|20:0:0" }, 1f);
         recorder.RecordEvent(2, 0.04f, PhysicalMacroEventKind.LevelClear, "level");
         recorder.RecordEvent(2, 0.04f, PhysicalMacroEventKind.LevelClear, "level");
 

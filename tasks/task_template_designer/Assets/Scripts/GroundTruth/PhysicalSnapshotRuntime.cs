@@ -117,13 +117,17 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
             return;
         string first = registry.RegisterCollider(collision.collider);
         string second = registry.RegisterCollider(collision.otherCollider);
-        string[] contactIds = shotRecorder.RawContacts
-            .Where(contact => contact.FixedStep == Clock.FixedStep
-                && (contact.EntityIdA == first && contact.EntityIdB == second
-                    || contact.EntityIdA == second && contact.EntityIdB == first))
-            .Select(contact => contact.ContactId).ToArray();
+        PhysicalContactInput[] contacts = collision.contacts
+            .Where(point => point.collider != null && point.otherCollider != null
+                && !point.collider.isTrigger && !point.otherCollider.isTrigger)
+            .Select(point => new PhysicalContactInput(
+                registry.RegisterCollider(point.collider), point.collider.GetInstanceID(), point.point, point.normal,
+                point.separation, point.relativeVelocity, point.normalImpulse, point.tangentImpulse,
+                registry.RegisterCollider(point.otherCollider), point.otherCollider.GetInstanceID(),
+                point.collider.transform.position, point.otherCollider.transform.position, false))
+            .ToArray();
         shotRecorder.RecordCollision(Clock.FixedStep, Time.fixedTime, first, second,
-            contactIds, collision.relativeVelocity.magnitude);
+            contacts, collision.relativeVelocity.magnitude);
     }
 
     public string EntityIdFor(GameObject gameObject)

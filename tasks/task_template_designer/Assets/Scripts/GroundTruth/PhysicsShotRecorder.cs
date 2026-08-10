@@ -489,14 +489,7 @@ public class PhysicalShotRecorder
     {
         if (Failure != null || finalized)
             return;
-        string first = string.CompareOrdinal(entityA, entityB) <= 0 ? entityA : entityB;
-        string second = first == entityA ? entityB : entityA;
-        string key = fixedStep + ":" + first + ":" + second;
-        if (collisionKeys.Add(key))
-        {
-            AddEvent(fixedStep, fixedTime, PhysicalMacroEventKind.Collision, first + "|" + second,
-                new[] { first, second }, new PhysicalMacroEventPayload(contactIds: new string[0], relativeSpeed: 0f));
-        }
+        throw new ArgumentException("Collision events require contact evidence.");
     }
 
     public void RecordCollision(long fixedStep, float fixedTime, string entityA, string entityB,
@@ -504,12 +497,44 @@ public class PhysicalShotRecorder
     {
         if (Failure != null || finalized)
             return;
+        string[] evidence = (contactIds ?? new string[0])
+            .Where(contactId => !string.IsNullOrEmpty(contactId))
+            .Distinct().OrderBy(contactId => contactId, StringComparer.Ordinal).ToArray();
+        if (evidence.Length == 0)
+            throw new ArgumentException("Collision events require contact evidence.");
+        if (float.IsNaN(relativeSpeed) || float.IsInfinity(relativeSpeed) || relativeSpeed < 0f)
+            throw new ArgumentException("Collision relative speed must be finite and non-negative.");
         string first = string.CompareOrdinal(entityA, entityB) <= 0 ? entityA : entityB;
         string second = first == entityA ? entityB : entityA;
         string key = fixedStep + ":" + first + ":" + second;
         if (collisionKeys.Add(key))
             AddEvent(fixedStep, fixedTime, PhysicalMacroEventKind.Collision, first + "|" + second,
-                new[] { first, second }, new PhysicalMacroEventPayload(contactIds: contactIds, relativeSpeed: relativeSpeed));
+                new[] { first, second }, new PhysicalMacroEventPayload(contactIds: evidence, relativeSpeed: relativeSpeed));
+    }
+
+    public void RecordCollision(long fixedStep, float fixedTime, string entityA, string entityB,
+        PhysicalContactInput[] contacts, float relativeSpeed)
+    {
+        if (Failure != null || finalized)
+            return;
+        string first = string.CompareOrdinal(entityA, entityB) <= 0 ? entityA : entityB;
+        string second = first == entityA ? entityB : entityA;
+        string key = fixedStep + ":" + first + ":" + second;
+        if (collisionKeys.Contains(key))
+            return;
+        string[] contactIds = rawContacts
+            .Where(contact => contact.FixedStep == fixedStep
+                && contact.EntityIdA == first && contact.EntityIdB == second)
+            .Select(contact => contact.ContactId).Distinct().OrderBy(contactId => contactId, StringComparer.Ordinal).ToArray();
+        if (contactIds.Length == 0)
+        {
+            RecordContacts(fixedStep, fixedTime, contacts);
+            contactIds = rawContacts
+                .Where(contact => contact.FixedStep == fixedStep
+                    && contact.EntityIdA == first && contact.EntityIdB == second)
+                .Select(contact => contact.ContactId).Distinct().OrderBy(contactId => contactId, StringComparer.Ordinal).ToArray();
+        }
+        RecordCollision(fixedStep, fixedTime, first, second, contactIds, relativeSpeed);
     }
 
     public void RecordCollision(string entityA, string entityB, long fixedStep)
