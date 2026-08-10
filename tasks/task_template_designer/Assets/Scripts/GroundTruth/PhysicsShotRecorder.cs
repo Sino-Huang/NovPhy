@@ -517,8 +517,19 @@ public class PhysicalShotRecorder
     {
         if (Failure != null || finalized)
             return;
+        if (float.IsNaN(relativeSpeed) || float.IsInfinity(relativeSpeed) || relativeSpeed < 0f)
+            throw new ArgumentException("Collision relative speed must be finite and non-negative.");
         string first = string.CompareOrdinal(entityA, entityB) <= 0 ? entityA : entityB;
         string second = first == entityA ? entityB : entityA;
+        PhysicalContactInput[] evidence = (contacts ?? new PhysicalContactInput[0])
+            .Where(contact => contact != null
+                && (string.Equals(contact.EntityIdA, first, StringComparison.Ordinal)
+                    && string.Equals(contact.EntityIdB, second, StringComparison.Ordinal)
+                    || string.Equals(contact.EntityIdA, second, StringComparison.Ordinal)
+                    && string.Equals(contact.EntityIdB, first, StringComparison.Ordinal)))
+            .ToArray();
+        if (evidence.Length == 0)
+            throw new ArgumentException("Collision events require contact evidence.");
         string key = fixedStep + ":" + first + ":" + second;
         if (collisionKeys.Contains(key))
             return;
@@ -528,7 +539,7 @@ public class PhysicalShotRecorder
             .Select(contact => contact.ContactId).Distinct().OrderBy(contactId => contactId, StringComparer.Ordinal).ToArray();
         if (contactIds.Length == 0)
         {
-            RecordContacts(fixedStep, fixedTime, contacts);
+            RecordContacts(fixedStep, fixedTime, evidence);
             contactIds = rawContacts
                 .Where(contact => contact.FixedStep == fixedStep
                     && contact.EntityIdA == first && contact.EntityIdB == second)

@@ -159,6 +159,32 @@ public class PhysicsShotRecorderTests
     }
 
     [Test]
+    public void CollisionContactSamplesRejectBeforeRecorderMutation()
+    {
+        PhysicsShotRecorder invalidSpeed = new PhysicsShotRecorder(16, 64 * 1024);
+        PhysicalContactInput matching = new PhysicalContactInput("a:0", 1, Vector2.zero, Vector2.up, -0.1f,
+            Vector2.left, 1f, "b:0", 2, Vector2.zero, Vector2.one, false);
+
+        Assert.Throws<ArgumentException>(delegate
+        {
+            invalidSpeed.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { matching }, float.NaN);
+        });
+        Assert.AreEqual(0, invalidSpeed.RawContacts.Count);
+        Assert.AreEqual(0, invalidSpeed.Events.Count);
+
+        PhysicsShotRecorder unrelatedPair = new PhysicsShotRecorder(16, 64 * 1024);
+        PhysicalContactInput unrelated = new PhysicalContactInput("a:0", 1, Vector2.zero, Vector2.up, -0.1f,
+            Vector2.left, 1f, "c:0", 3, Vector2.zero, Vector2.one, false);
+
+        Assert.Throws<ArgumentException>(delegate
+        {
+            unrelatedPair.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { unrelated }, 1f);
+        });
+        Assert.AreEqual(0, unrelatedPair.RawContacts.Count);
+        Assert.AreEqual(0, unrelatedPair.Events.Count);
+    }
+
+    [Test]
     public void BoundedRecorder_ReportsTypedOverflowTimeoutAndTruncatedFinalization()
     {
         PhysicsShotRecorder overflow = new PhysicsShotRecorder(1, 64 * 1024);
