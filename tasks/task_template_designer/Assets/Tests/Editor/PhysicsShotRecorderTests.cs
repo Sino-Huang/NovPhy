@@ -3,9 +3,18 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 public class PhysicsShotRecorderTests
 {
+    // The exact strings the recorder logs when it refuses a collision. LogAssert
+    // matches a string argument exactly, so keeping them here means a wording
+    // change in the product fails these fixtures instead of silently passing.
+    private const string CollisionEvidenceRejection =
+        "physics_capture_v1: refusing a collision event without contact evidence; no event emitted.";
+    private const string CollisionSpeedRejection =
+        "physics_capture_v1: refusing a collision event whose relative speed is not finite and non-negative; no event emitted.";
+
     [Test]
     public void FixedStepContacts_ExcludeTriggersAndSortCanonicalPairs()
     {
@@ -115,24 +124,37 @@ public class PhysicsShotRecorderTests
     [Test]
     public void CollisionPayloadRejectsMissingOrInvalidEvidence()
     {
+        // The two evidence-bearing overloads are reachable from a Unity physics
+        // callback, so they refuse by logging and returning: throwing there would
+        // abort the rest of the caller's OnCollisionEnter2D. The refusal is still
+        // fail-closed at the wire — no event is emitted either way, so
+        // physics_capture_v1 never sees a collision without contact evidence.
         PhysicsShotRecorder recorder = new PhysicsShotRecorder(16, 64 * 1024);
 
-        Assert.Throws<ArgumentException>(delegate
-        {
-            recorder.RecordCollision(2, 0.04f, "a:0", "b:0", new string[0], 0f);
-        });
+        LogAssert.Expect(LogType.Error, CollisionEvidenceRejection);
+        recorder.RecordCollision(2, 0.04f, "a:0", "b:0", new string[0], 0f);
+        Assert.AreEqual(0, recorder.Events.Count);
+
+        LogAssert.Expect(LogType.Error, CollisionSpeedRejection);
+        recorder.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { "contact:2" }, -1f);
+        Assert.AreEqual(0, recorder.Events.Count);
+
+        LogAssert.Expect(LogType.Error, CollisionSpeedRejection);
+        recorder.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { "contact:2" }, float.NaN);
+        Assert.AreEqual(0, recorder.Events.Count);
+
+        // The evidence-free overload has no product caller and is unreachable from
+        // any callback, so its throw stays: it is the API guard that makes
+        // "record a collision without evidence" unusable rather than merely noisy.
         Assert.Throws<ArgumentException>(delegate
         {
             recorder.RecordCollision(2, 0.04f, "a:0", "b:0");
         });
         Assert.Throws<ArgumentException>(delegate
         {
-            recorder.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { "contact:2" }, -1f);
+            recorder.RecordCollision("a:0", "b:0", 2);
         });
-        Assert.Throws<ArgumentException>(delegate
-        {
-            recorder.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { "contact:2" }, float.NaN);
-        });
+        Assert.AreEqual(0, recorder.Events.Count);
     }
 
     [Test]
@@ -161,14 +183,19 @@ public class PhysicsShotRecorderTests
     [Test]
     public void CollisionContactSamplesRejectBeforeRecorderMutation()
     {
+        // Covers the two guards on the PhysicalContactInput[] overload — a
+        // non-finite relative speed, and evidence that names some other pair. Both
+        // now refuse by logging instead of throwing, and a logged refusal must
+        // leave exactly as little behind as the thrown one did: no raw contacts,
+        // no events, nothing half-written. It does not cover the other overloads
+        // or the other rejection reasons; CollisionPayloadRejectsMissingOrInvalidEvidence
+        // does that.
         PhysicsShotRecorder invalidSpeed = new PhysicsShotRecorder(16, 64 * 1024);
         PhysicalContactInput matching = new PhysicalContactInput("a:0", 1, Vector2.zero, Vector2.up, -0.1f,
             Vector2.left, 1f, "b:0", 2, Vector2.zero, Vector2.one, false);
 
-        Assert.Throws<ArgumentException>(delegate
-        {
-            invalidSpeed.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { matching }, float.NaN);
-        });
+        LogAssert.Expect(LogType.Error, CollisionSpeedRejection);
+        invalidSpeed.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { matching }, float.NaN);
         Assert.AreEqual(0, invalidSpeed.RawContacts.Count);
         Assert.AreEqual(0, invalidSpeed.Events.Count);
 
@@ -176,10 +203,8 @@ public class PhysicsShotRecorderTests
         PhysicalContactInput unrelated = new PhysicalContactInput("a:0", 1, Vector2.zero, Vector2.up, -0.1f,
             Vector2.left, 1f, "c:0", 3, Vector2.zero, Vector2.one, false);
 
-        Assert.Throws<ArgumentException>(delegate
-        {
-            unrelatedPair.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { unrelated }, 1f);
-        });
+        LogAssert.Expect(LogType.Error, CollisionEvidenceRejection);
+        unrelatedPair.RecordCollision(2, 0.04f, "a:0", "b:0", new[] { unrelated }, 1f);
         Assert.AreEqual(0, unrelatedPair.RawContacts.Count);
         Assert.AreEqual(0, unrelatedPair.Events.Count);
     }
@@ -280,6 +305,32 @@ public class PhysicsShotRecorderTests
         recorder.RecordContacts(2, new[] { ContactWithCenters(1f, 0f) });
 
         Assert.AreEqual(0, recorder.SupportEdges.Count);
+    }
+
+    [Test]
+    public void CollisionAtAStepDoesNotErasePriorSupportEdges()
+    {
+        // The collision path ingests one pair's contacts, but UpdateSupport treats
+        // its argument as the complete contact set for the step and prunes every
+        // edge it does not see. A collision therefore used to wipe the support
+        // graph of the whole tower at exactly the steps where something happens.
+        // Support derivation belongs solely to the full-set FixedUpdate sampler.
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(64, 64 * 1024);
+        recorder.RecordContacts(1, new[] { ContactWithCenters(0f, 1f) });
+        recorder.RecordContacts(2, new[] { ContactWithCenters(0f, 1f) });
+        Assert.AreEqual(1, recorder.SupportEdges.Count, "the resting pair must have produced a support edge");
+        string survivingPair = recorder.SupportEdges[0].PairKey;
+
+        // A different pair collides on the same fixed step the sampler just covered.
+        PhysicalContactInput colliding = new PhysicalContactInput(
+            "c:0", 3, Vector2.zero, Vector2.up, -0.05f, Vector2.left, 1f,
+            "d:0", 4, Vector2.zero, Vector2.one, false);
+        recorder.RecordCollision(2, 0.04f, "c:0", "d:0", new[] { colliding }, 2.5f);
+
+        Assert.AreEqual(1, recorder.Events.Count, "the collision itself must still be recorded");
+        Assert.AreEqual(1, recorder.SupportEdges.Count,
+            "a collision on one pair must not prune the support edges of every other pair");
+        Assert.AreEqual(survivingPair, recorder.SupportEdges[0].PairKey);
     }
 
     [Test]
