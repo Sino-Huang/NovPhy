@@ -79,6 +79,7 @@ One remediation was tried and reverted, deliberately: treating `FileNotFoundErro
 Verification: focused suite 74/74 with `ResourceWarning` promoted to error; five adjacent physics tooling suites 60/60; eight mutations each turn the suite red, with the source restored byte-identical to `f61ccfa52ef5bed5e156e8480f32f407c13286276df00d8ec676e9671fc84978`.
 
 ## Evidence Paths
+- Handoff to the next session: `handoff-next-session.md` — remaining todos, carried constraints, and the traps this wave paid for.
 - Mapped-anchor finding: `finding-unity-does-not-map-the-user-assembly.json`.
 - Terminal blocker: `finding-collision-payload-blocks-the-final-smoke.json`.
 - Live map table: `player-mapping-probe.json` (and `player-mapping-probe-wrong-port.json`, the run that drove a random port through `--physics-port` and saw no listener).
