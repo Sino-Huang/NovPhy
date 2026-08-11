@@ -1,12 +1,177 @@
 # Runtime Gate Result
 
-**Status: `still_blocked`** (current authority — second session, 2026-08-11)
+**Status: `still_blocked`** (current authority — third session, 2026-08-11)
 
-The first session's record is preserved verbatim below under *"Superseded-in-part: first session record"*. Nothing in it was rewritten; the sections that this session advanced are named explicitly in §S2.9.
+The first and second session records are preserved verbatim below. Nothing in them was rewritten; what this session supersedes is named explicitly in §S3.9, and the second session's machine-readable verdict is preserved byte-identically at `runtime-gate-verdict.session-2.json` (sha256 `c2c7c11e…8510a54d`).
 
 ---
 
-# Second session (2026-08-11) — current authority
+# Third session (2026-08-11) — current authority
+
+**Status: `still_blocked`**
+
+Wave `runtime-repin-gate-20260810`, third implementation session. **No smoke was spent. No retry, no re-pin, no publication, and no cohort collection occurred.**
+
+The mission was: *"Make a bird-reachable collision recordable on the level the smoke plays, prove the rebuilt player deterministic, and spend exactly one bounded full live smoke against it."* The first two were achieved. The third was deliberately withheld, because a pre-existing defect discovered mid-session makes the smoke's later phase a known-failing invariant against a non-retryable run budget.
+
+## S3.1 First failed invariant
+
+> `physics_capture_v1` requires `raw_contacts` globally sorted by `(entity_a_id, entity_b_id, collider_a_id, collider_b_id, point.x, point.y, contact_id)` — a key that **excludes `fixed_step`** (`scripts/physics_capture_parsing.py:281`).
+
+The Unity emitter does not satisfy it. It sorts `raw_contacts` only **within** each fixed step and then concatenates steps into a list that is **never cleared**:
+
+- `PhysicsShotRecorder.RecordContacts:406-435` builds `stepContacts`, sorts with `CompareContacts:751-763` (the parser's key minus `contact_id`), then `rawContacts.AddRange(stepContacts)`.
+- `rawContacts` has no reset anywhere in the file.
+- `PhysicalSnapshotRuntime.FixedUpdate:104-112` calls `RecordUnityContacts` every fixed step over `FindObjectsOfType<Collider2D>()`, so every resting pair contributes contacts at every step.
+- `CreateFinalizedSnapshot:642` passes the cumulative field; `PhysicsCaptureProtocol.BuildContactsJson:148-155` iterates in list order and never sorts.
+
+**Phase and command site.** `validate-artifact`, at `scripts/smoke_physics_capture.py:1151` → `validate_physics_shot_artifact` → `scripts/physics_artifact_validation.py:196` → `parse_physics_sidecars` → `_parse_state`. Expected error: `deterministic_order at physics_state.jsonl:1: raw_contacts`.
+
+**Why that placement is terminal for this wave.** `require_collision` (`:1131`) passes *before* this check. The single non-retryable run would be fully consumed before the failure appeared. `max_frames=1` does not mitigate it: the one persisted state record still carries every contact from every fixed step, because the snapshot is the cumulative finalized batch.
+
+**Proved without spending the run.** `probe_raw_contact_order.py` reconstructs the emitter's output shape and feeds it to the **production parser** — it does not re-implement the ordering predicate. Exit 0, `f1_confirmed` and `f2_confirmed`:
+
+| Probe case | Result |
+|---|---|
+| `single_step_only` | parsed |
+| `emitter_shaped_cumulative_3_steps` | **rejected** — `deterministic_order … raw_contacts` |
+| `globally_sorted_same_set` | parsed |
+| `f2_emitter_shaped_support_edges` | **rejected** — `deterministic_order … support_edges` |
+| `f2_globally_sorted_support_edges` | parsed |
+
+**F2, the same defect class.** `support_edges` (`:283`) is appended in contact-pair order while the contract sorts by `supporter_id`, which is whichever body is lower in y. It is pruned each step rather than cumulative, so violation is geometry-dependent rather than guaranteed — but it is not an invariant either way.
+
+**Not introduced here.** `git diff --name-only` confirms `PhysicsCaptureProtocol.cs` is untouched. No smoke has ever passed `require_collision`, so no run has ever reached the Python parser — which is precisely why the gate never saw this, and why *this* session's wiring is what would expose it.
+
+**Reviewer estimate corrected.** The code reviewer placed the failure in phase `capture-physics-rollout`. It is one phase later, which is strictly worse for the run budget.
+
+Evidence: `finding-sidecar-array-order-violates-contract.json`, `probe-raw-contact-order.json`.
+
+## S3.2 Why it was recorded rather than fixed
+
+The mission's TODO-2 scope check, verbatim: *"If the fix turns out to require changing the event model, the capture schema, the frozen contract, or anything the Python consumer reads — STOP, record the finding, and report back instead of improvising."*
+
+The order of these two arrays **is** read and validated by the Python consumer. Changing the order the emitter writes changes exactly that.
+
+To be explicit about what this is not: the natural fix — sorting once at finalization so the producer conforms to the already-frozen contract — is the *opposite* of weakening it. It is out of scope on surface grounds, not on merit. The candidate fixes and the regression tests they need are written into the finding for the wave that owns that surface.
+
+## S3.3 TODO-1 — empty-evidence policy, decided and pinned
+
+`ArgumentException` thrown inside a Unity physics callback aborts the remainder of the handler: `ABBirdBlack`'s explosion never plays, no terminal event is reached, and the smoke's 30 s finalize deadline expires with the single run consumed.
+
+**Decision.** The two *evidence-bearing* overloads now reject by `Debug.LogError` + early return, leaving the recorder unmutated. The evidence-free overload at `:488` **keeps throwing** — it has no product caller (verified by `grep -rn RecordCollision Assets/Scripts/`; the only product call site is `ABGameObject.cs:127`), and its throw is the API guard that makes "record a collision without evidence" unusable.
+
+**This does not weaken the contract.** In both the old and the new behaviour *no collision event is emitted*, so `physics_capture_v1` sees nothing and `require_collision` still rejects. Only the in-process surfacing changed. Two existing fixtures were updated in lockstep and are the pin.
+
+## S3.4 TODO-2 — gameplay wiring, red then green
+
+`PhysicalSnapshotRuntime.RecordCollisionCallback(collision)` called **directly** (not `base`) at the top of `ABBirdBlack.OnCollisionEnter2D` and at the top of `ABBlock.OnCollisionEnter2D`, hoisted above the `tag == "Bird"` branch so both branches record. Not `base`, because `ABGameObject.OnCollisionEnter2D:125-141` also runs the damage model. The `else` branch keeps its `base` call; the recorder dedupes on `fixedStep:first:second`, so the non-bird path still yields exactly one event — pinned by a test.
+
+New EditMode class `GameplayCollisionRecordingTests` (4 tests), added to `editmode_full_suite.py`. `Collision2D`/`ContactPoint2D` are synthesized by reflection over the engine's internal fields, read out of this exact editor's `UnityEngine.Physics2DModule.dll`; every lookup asserts non-null, so a Unity bump fails loudly rather than silently constructing an unpopulated collision.
+
+| Test | RED (before any product change) |
+|---|---|
+| `BirdBlackImpactRecordsACollisionEventWithContractGradeEvidence` | `Expected: 1 · But was: 0` |
+| `BirdOnBlockImpactRecordsACollisionEventWithContractGradeEvidence` | same, 0 events |
+| `BirdBlackImpactWithoutUsableContactEvidenceCompletesTheHandler` | `Expected log did not appear: [Error] Regex: physics_capture_v1.*contact evidence` |
+| `NonBirdImpactOnBlockRecordsExactlyOneCollisionEvent` | GREEN by design — the double-count regression guard for the hoist |
+| `PhysicsShotRecorderTests.CollisionPayloadRejectsMissingOrInvalidEvidence` | `ArgumentException` at `:504` |
+| `PhysicsShotRecorderTests.CollisionContactSamplesRejectBeforeRecorderMutation` | `ArgumentException` at `:521` |
+
+**GREEN, full per-class suite: 9 classes, 53 tests, 53 passed, 0 failed, 0 skipped, verdict `all_editmode_green`** (`editmode-full.json`). Every editor `process_exit` was `-6` — the known `CefBrowserMessageLoop` shutdown signal, reached after the XML was flushed. The NUnit XML is the authority.
+
+## S3.5 Code review — two passes, one blocker fixed
+
+**B-1 (BLOCKER), fixed red→green.** The collision path handed `UpdateSupport` a **single pair's** contacts, and `UpdateSupport`'s last line prunes every edge whose pair is absent from the set it is given. Every real collision therefore erased the support graph of every other pair. **Not fail-closed** — `support_edges` stayed schema-valid and the smoke would still have passed, while the pinned player produced degraded ground truth for the whole cohort.
+
+Fix: a private `RecordContacts(long, float, PhysicalContactInput[], bool isFullStepSample)`. Public overloads pass `true`; the collision path passes `false` and skips `UpdateSupport`. Support derivation stays owned by the full-set `FixedUpdate` sampler. No event kind, schema field, taxonomy entry or consumer-read field changed.
+
+| Stage | `PhysicsShotRecorderTests` | NUnit XML sha256 |
+|---|---|---|
+| RED | 21 total, 20 passed, **1 failed** — `Expected: 1 · But was: 0` | `e39ff74e…13a14c07` |
+| GREEN | 21 total, 21 passed | `ebe03ca6…4f42036c` |
+
+Evidence: `finding-collision-path-erased-support-edges.json`.
+
+**Accepted MAJOR/MINOR, all remediated.** M-3 (a vacuous life assertion — now discriminating, verified by mutation: forcing the base path failed with `Expected: 9999.3154 · But was: 10000.0`); m-1 (`RawContacts.Count == 2` added, so a dedupe placed after ingestion would fail rather than pass); M-2 and m-3 (comment accuracy).
+
+**Second pass:** *"The diff itself is clean. All four remediations hold, and none of the five hard constraints is violated by this change. Nothing in the diff blocks the pin."* It then raised F1 as a blocker on **spending** the smoke, not on the diff.
+
+**Not acted on, with reasons:** ABEgg M-1 (same defect, unreachable on this level, third build-surface change before a non-retryable run — must be fixed before any white-bird cohort); m-2 smoke log scan (would force a `mutation_check.py` digest update; costs diagnostics only); F3–F7 (collider-identity lookup, no `try/catch` enforcing the never-throw property, 814-line file over the 800-line rule, write-only `currentStep`/`currentTime`, unbounded contact stream). All are cheaper in the wave that fixes F1, since it already reopens this file.
+
+## S3.6 Phase 5 — deterministic, passed
+
+Two builds of the exact committed source into isolated non-production stages via `NOVPHY_PHYSICS_STAGE`; the driver refuses to build into `PRODUCTION` or `STAGED_PIN`. Both exited 0, no orphan package managers reaped.
+
+**`deterministic: true`, `drift: []`, 151 provenance input files compared.** The only differing key between the two build records is `stage`, the isolated output path, which differs by design.
+
+| Artifact | Identical digest |
+|---|---|
+| archive | `2bdd498a928204f5923ef84770b361b6ba31dfa5681867028870237cf048847e` |
+| `9001-player.x86_64` | `d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa` |
+| `9001_Data/Managed/Assembly-CSharp.dll` | `f3557f2bea8f8ee4a40b47d89a091e2e16c45d2245b7840e833fe14768f0108b` |
+| `UnityPlayer.so` | `53b0b8d1d21031c097721b1bf10bf8cd23c34663f871d606e28bd276bd171c28` |
+| `provenance.json` | `723260383068a209a39d74d4e37e019246db5c94e5be7ada38d7672e4e6745b8` |
+
+Provenance identity: `git_head ad2822a92688ff6b9e52428eb24d2dc6537165ad`, `git_tree 231116add9189e06c28f4ab51b4d535766701448`, Unity `2019.4.41f2 (6b23d448b533)`. Excluded member: `unity-build.log` (wall-clock timestamps and temporary paths; published beside the archive, and the archive digest matched byte-for-byte regardless).
+
+**Cross-wave sanity.** Against the second session's build, `UnityPlayer.so` and `9001-player.x86_64` are **byte-identical** and only `Assembly-CSharp.dll` moved (`5d83af30…d098e94` → `f3557f2b…f0108b`) — exactly what a C#-only diff should produce.
+
+Receipts: `phase5-builds/determinism-receipt.json` (sha256 `ddcc1c92…3348b89b`), `phase5-builds/phase5-runs.json`, `phase5-builds.stdout`.
+
+## S3.7 Phase 6 — deliberately not spent
+
+The run would have been consumed into a known-failing invariant (§S3.1), buying nothing the probe has not already established at zero cost. Command that would have been run, and was not:
+
+```
+python scripts/smoke_physics_capture.py --stage <verified-candidate> --output-dir <run> --report <report>.json
+```
+
+Consequently the conditional re-pin authorization — *"overwrite the staged pin ONLY after the full smoke accepts against the rebuilt candidate"* — was never triggered.
+
+## S3.8 Identity, cleanup and protected roots
+
+| Fact | Value |
+|---|---|
+| Branch | `physics-unity-2019.4` |
+| HEAD at session start | `6f25ced4cfc43ca6d6205b916f1a867534f93a1e` |
+| HEAD at Phase 5 | `ad2822a92688ff6b9e52428eb24d2dc6537165ad` |
+| Tracked drift at Phase 5 | 0 |
+| Unpushed commits | 7 · nothing pushed |
+| Staged pin, before and after | `429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de` — **unchanged** |
+| Port 2004 | 0 in `/proc/net/tcp`, 0 in `/proc/net/tcp6` |
+| Stranded processes | 0, bound by `/proc/<pid>/exe` |
+| `scripts/__pycache__/` | absent |
+
+Commits this session: `c455eb3` (`fix`, source), `15bfdac` (`test`), `ad2822a` (`docs`, evidence). HEAD moved because `package_physics_player.py`'s `git_revision` gate refuses to package tracked drift from HEAD.
+
+**Process-identity note.** `pgrep -f 'Unity|9001-player'` reported one match — this session's own `zsh`, whose command line contains the worktree path `physics-unity-2019.4`. Bound by `/proc/<pid>/exe` against the editor, player and package-manager executables, the real count is **0**. Recorded because it is exactly the identity-inference trap the mission forbids.
+
+**Protected roots, all verified untouched:** `.omo/`, `.claude/logs/`, `sciencebirdsgames/physics-v1/` (all `??`, unmodified); `.claude/project-docs/knowledge/` (6 untracked entries, **0 modified or deleted**, 21 tracked files unchanged); the F1–F4 review artifacts and `review-work.md` (`??`, unmodified). The main checkout's Unity project and the protected rollout data were not touched.
+
+## S3.9 What this supersedes, and what did not happen
+
+Superseded in the second-session record below:
+
+- **S2.1's terminal blocker.** *"No object reachable by a bird shot records a collision at all"* is now **fixed at the source**, proved by `GameplayCollisionRecordingTests` red-then-green. The level geometry is unchanged; what changed is that the bird and the struck block now reach the recorder.
+- **S2.2's out-of-scope ruling.** The two gameplay callbacks and the empty-evidence policy were authorized for this session and have been changed.
+- **S2's Phase 5 digest set.** Superseded by §S3.6, which is for the new source.
+
+Nothing else in the first or second session record is rewritten.
+
+**Did not happen:** no smoke spent, no bounded run retried, **no re-pin**, **no publication**, **no cohort collection**, no Todo-8 health report, no F1–F4 / JEPA / SPSG / controller work, and no weakening of the frozen schema, taxonomy, or Python consumer.
+
+## S3.10 Next step
+
+1. Fix F1 by sorting once at `PhysicsShotRecorder.CreateFinalizedSnapshot:639-644` — `rawContacts` by `CompareContacts` extended with `ContactId`, `supportEdges` by `(SupporterEntityId, SupportedEntityId, SupportId)`. Preferred over sorting in `PhysicsCaptureProtocol`, which would put ordering policy in the serializer rather than in the recorder that owns the invariant. Per-step ordering and `PointIndex` assignment stay untouched, so `contact_id`s do not change.
+2. Add the three regression tests named in the finding; `probe_raw_contact_order.py` is the Python one in executable form already.
+3. Fold in F3–F7 and ABEgg in the same wave, since it already reopens `PhysicsShotRecorder.cs`.
+4. Re-run Phase 5 — the F1 fix changes `Assembly-CSharp.dll`, so archive `2bdd498a…48847e` **cannot be reused**.
+5. Then spend the single full smoke on the rebuilt candidate. Only then does the conditional re-pin authorization apply.
+
+---
+
+# Second session (2026-08-11) — superseded in part, preserved verbatim
 
 **Status: `still_blocked`**
 

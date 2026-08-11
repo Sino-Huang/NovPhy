@@ -1,10 +1,107 @@
 # Handoff: NovPhy Physics Re-pin Gate — Next Session
 
-> **CURRENT HANDOFF — second session, 2026-08-11.** Read Part A. Part B is the first session's handoff, preserved verbatim; where the two disagree, Part A wins and says so explicitly.
+> **CURRENT HANDOFF — third session, 2026-08-11.** Read **Part A2 only**. Part A is the second session's handoff and Part B the first's, both preserved verbatim; where any two disagree, the newest wins and says so explicitly.
 
 ---
 
-# Part A — current handoff (second session, 2026-08-11)
+# Part A2 — current handoff (third session, 2026-08-11)
+
+**Wave verdict:** `still_blocked`. Verdict of record: `runtime-gate-result.md` §"Third session" and `runtime-gate-verdict.json`. The second session's machine-readable verdict is preserved byte-identically at `runtime-gate-verdict.session-2.json`.
+
+## A2.0 Read this first, in this order
+
+1. This part (A2). **Do not read Part A or B for current state** — both are superseded on the blocker, and Part A's terminal blocker is now fixed.
+2. `finding-sidecar-array-order-violates-contract.json` — the blocker, with the fix already designed.
+3. `runtime-gate-verdict.json` — machine-readable, this session.
+4. `session-3-plan.md` §"Phase 3b" — the probe table and the reviewer findings not acted on.
+
+Roadmap only from `/mnt/array/sukaih/Project/NovPhy/docs/high_level_plans/bg_ns_jepa_research_execution.md`.
+
+## A2.1 State at the end of this session
+
+| Fact | Value |
+|---|---|
+| Worktree | `/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4` |
+| Branch | `physics-unity-2019.4` |
+| HEAD | `ad2822a92688ff6b9e52428eb24d2dc6537165ad` |
+| Tree | `231116add9189e06c28f4ab51b4d535766701448` |
+| Tracked drift | 0 at Phase 5; the verdict/handoff commit follows |
+| Unpushed | 7 commits, nothing pushed |
+| Staged pin | `429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de` — **unchanged, not re-pinned** |
+| Port 2004 | free (0 / 0) |
+| `scripts/__pycache__/` | absent |
+| EditMode | 9 classes, 53/53 green |
+| `tests.test_smoke_physics_capture` | 75 OK |
+| Smoke runs spent this wave | **0** |
+
+## A2.2 What is done, and what is left
+
+**Done, and committed:**
+
+- The gameplay wiring works. `ABBirdBlack` and `ABBlock` now call `PhysicalSnapshotRuntime.RecordCollisionCallback` directly. **Part A's terminal blocker — "no object reachable by a bird shot records a collision at all" — is fixed at the source**, red-then-green.
+- The empty-evidence policy is decided and pinned: evidence-bearing overloads log and return; the evidence-free overload (no product caller) still throws.
+- A reviewer blocker was found and fixed: the collision path was erasing every other pair's support edges.
+- **Phase 5 passed.** Deterministic, `drift: []`, 151 provenance inputs compared.
+
+**Left:** one blocker, then the smoke.
+
+## A2.3 The blocker, and the fix that is already designed
+
+The emitter writes `raw_contacts` **cumulative and step-major**; `scripts/physics_capture_parsing.py:281` requires it globally sorted by a key that **excludes `fixed_step`**. `support_edges` (`:283`) has the same defect class. Both confirmed against the production parser by `probe_raw_contact_order.py` (exit 0).
+
+**Fix (preferred, already specified):** sort once at `PhysicsShotRecorder.CreateFinalizedSnapshot:639-644` — `rawContacts` by `CompareContacts` extended with `ContactId`, `supportEdges` by `(SupporterEntityId, SupportedEntityId, SupportId)`. Do **not** sort in `PhysicsCaptureProtocol`: that puts ordering policy in the serializer rather than in the recorder that owns the invariant. Per-step ordering and `PointIndex` assignment stay untouched, so `contact_id`s do not change.
+
+**Why this session did not do it.** It changes something the Python consumer reads, which is the mission's named stop condition. To be explicit: the fix makes the producer *conform* to the frozen contract — it is not a weakening, and it should be authorized on that basis.
+
+**Why it was not merely theoretical.** It would have failed at `validate-artifact` (`smoke_physics_capture.py:1151`) — *after* `require_collision` passes at `:1131`, so the single non-retryable run would have been fully consumed first.
+
+## A2.4 Authorization you will need
+
+The session-3 authorization covered exactly two gameplay callbacks and the recorder's empty-evidence policy. **The next wave needs authorization for `PhysicsShotRecorder.CreateFinalizedSnapshot`** — the array ordering the Python consumer validates. The conditional re-pin authorization from §0a/§A4 is still on record and still unused; it remains conditional on a passing smoke.
+
+## A2.5 Bundle these into the same wave
+
+All of them reopen `PhysicsShotRecorder.cs` or the same seam, so they are nearly free once F1 is authorized:
+
+- **ABEgg M-1** (`ABEgg.cs:10-13`) — same unrecorded-collision defect. Unreachable on the smoke level, but **must** be fixed before any white-bird cohort.
+- **F3** collision evidence looked up by entity pair, ignoring collider identity (minor on single-collider prefabs).
+- **F4** the never-throw-in-a-physics-callback property is argued, not enforced by a `try/catch` in `RecordCollisionCallback`.
+- **F5** `PhysicsShotRecorder.cs` is 814 lines, over the project's 800-line rule.
+- **F6** `currentStep`/`currentTime` are write-only.
+- **F7** the contact stream is unbounded in shot duration; ~180k contacts at the 120 s ceiling would trip `RecordLimitExceeded`.
+- **m-2** smoke-harness log scan for `physics_capture_v1: refusing` — requires updating the pinned digest in `mutation_check.py` in the same commit.
+
+## A2.6 Traps this session paid for. Do not re-discover them.
+
+- **`MethodBase.Invoke` dispatches virtually.** A `protected virtual` base implementation cannot be invoked on its own by reflection — `AwakeComponent(block, typeof(ABGameObject))` re-entered `ABBlock.Awake`. Bind the individual field instead.
+- **`ABBird.Start` (not `Awake`) creates `_trailParticles`**, and also does `Resources.Load` plus an `Invoke`, neither usable in EditMode. Set that one field directly.
+- **A defense value of `1e9f` makes a life assertion vacuous** — both the `ABBlock` and `ABGameObject` damage formulas clamp to the same result. Pick a value between them (47f at relativeSpeed 4.25) and prove it discriminating by mutation.
+- **`_parse_support:260` requires `support_id == "support:{supporter}->{supported}"`.** An invented id fails on format *before* the ordering check runs, so a probe using one proves nothing. This cost one wrong `f2_not_reproduced`.
+- **`pgrep -f` on a Unity-ish pattern matches your own shell**, whose command line contains the worktree path `physics-unity-2019.4`. Bind by `/proc/<pid>/exe`, never by name.
+- Carried forward and still true: `PYTHONDONTWRITEBYTECODE=1`; commit before building; new `.cs` files need a committed `.meta`; run EditMode per class; NUnit XML is the authority (editor exits `-6` in CEF shutdown).
+
+## A2.7 Verify before you start
+
+```
+git rev-parse --abbrev-ref HEAD                 # physics-unity-2019.4
+git rev-parse HEAD                              # ad2822a… or later
+git status --porcelain --untracked-files=no     # empty
+sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz
+#   429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de
+grep -ci ':07D4' /proc/net/tcp /proc/net/tcp6   # 0 0
+test -d scripts/__pycache__ && echo PRESENT || echo absent   # absent
+PYTHONDONTWRITEBYTECODE=1 python -m unittest tests.test_smoke_physics_capture   # 75 OK
+```
+
+Do **not** reuse Phase 5's archive `2bdd498a…48847e`. The F1 fix changes `Assembly-CSharp.dll`, so the build must be re-run and re-verified.
+
+## A2.8 Suggested opening move
+
+Get authorization for `CreateFinalizedSnapshot`'s array ordering, then: write the two EditMode ordering fixtures red → apply the sort → green → run `probe_raw_contact_order.py` against emitter-shaped data derived from a real finalized snapshot → re-run Phase 5 → spend the one smoke. The conditional re-pin applies only after that smoke accepts.
+
+---
+
+# Part A — second session's handoff (2026-08-11, superseded, preserved verbatim)
 
 **Wave verdict:** `still_blocked`. Verdict of record: `runtime-gate-result.md` §"Second session" and `runtime-gate-verdict.json` (both in this directory).
 
