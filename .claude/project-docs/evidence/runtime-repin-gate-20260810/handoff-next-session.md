@@ -15,7 +15,19 @@
 6. Roadmap, and only from here: `/mnt/array/sukaih/Project/NovPhy/docs/high_level_plans/bg_ns_jepa_research_execution.md`.
 
 Working tree: `/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4`, branch `physics-unity-2019.4`.
-Branch HEAD and `origin/physics-unity-2019.4` are both `ffb9dda65d7213907b969f3b96206fcdf1c54b9b`. Nothing is unpushed.
+Branch HEAD and `origin/physics-unity-2019.4` are both `d83c148739188e93a4c5aa509d13989928d4361f`. Nothing is unpushed.
+
+---
+
+## 0a. Authorization on record
+
+**Re-pin of `sciencebirdsgames/physics-v1/` is AUTHORIZED.** Granted by the repository owner on 2026-08-11, in response to this handoff. Scope, exactly:
+
+- **Authorized:** rebuild the player from the fixed source and overwrite the staged pin in `sciencebirdsgames/physics-v1/`, **only after the full smoke accepts** against that build. A re-pin before a passing smoke is not covered.
+- **NOT authorized:** publication. Stop and report before publishing; that is a separate decision the owner has not made.
+- **NOT authorized:** cohort collection, in any form.
+
+Everything else in §4 stands unchanged. This authorization supersedes only the first bullet of §4's "Do not" list.
 
 ---
 
@@ -119,7 +131,8 @@ Write `ready_for_repin_approval` or `still_blocked` into `runtime-gate-result.md
 ```bash
 cd /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4
 git rev-parse --abbrev-ref HEAD                 # physics-unity-2019.4
-git rev-parse HEAD                              # ffb9dda65d7213907b969f3b96206fcdf1c54b9b
+git rev-parse HEAD                              # must equal origin/physics-unity-2019.4
+git rev-parse origin/physics-unity-2019.4       # and the HEAD named at the top of this file
 git status --porcelain | grep -v '^??'          # only:  M .claude/project-docs/README.md
 sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz
 #   429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de
