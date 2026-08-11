@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -148,6 +150,109 @@ public class PhysicsCaptureProtocolTests
         Assert.AreEqual("event:00000000", events[0]["event_id"].Value);
         Assert.AreEqual("bird_launched", events[0]["event_type"].Value);
         Assert.AreEqual(2f, events[0]["payload"]["launch_velocity"]["x"].AsFloat);
+    }
+
+    [Test]
+    public void Request70CollisionPayloadCarriesTheContactEvidenceTheContractRequires()
+    {
+        // The 2026-08-06 staged player serialized every collision payload as the
+        // empty object {}, which matches no branch of the frozen event_payload
+        // oneOf, so the Python consumer rejected every shot containing a
+        // collision. The recorder-level fixtures did not catch it because the
+        // defect lived at the recorder -> wire seam: the emitter handed the
+        // serializer an empty ContactIds list and the serializer, correctly,
+        // wrote nothing. This asserts the serialized bytes, not the recorder API.
+        //
+        // Scope, stated honestly: this covers the recorder -> wire seam only. It
+        // feeds PhysicalContactInput[] in directly, so it does NOT cover the
+        // Collision2D.contacts -> PhysicalContactInput[] conversion in
+        // PhysicalSnapshotRuntime, which is where the original defect actually
+        // lived, nor the isTrigger filter there that can empty the array.
+        PhysicalShotRecorder recorder = new PhysicalShotRecorder(new PhysicalCaptureLimits(32, 16384, 10f));
+        PhysicalContactInput near = new PhysicalContactInput(
+            "10:0", 10, new Vector2(0.5f, 0.25f), Vector2.up, 0.01f, new Vector2(3.5f, 0f), 1f,
+            "20:0", 20, Vector2.zero, Vector2.up, false);
+        PhysicalContactInput far = new PhysicalContactInput(
+            "10:0", 10, new Vector2(0.9f, 0.25f), Vector2.up, 0.02f, new Vector2(3.5f, 0f), 1f,
+            "20:0", 20, Vector2.zero, Vector2.up, false);
+        recorder.RecordCollision(2, 0.04f, "20:0", "10:0", new[] { far, near }, 3.5f);
+        recorder.FinalizeShot(true);
+
+        byte[] envelope = PhysicsCaptureV1Protocol.BuildCaptureEnvelope(
+            new byte[] { 0x01 },
+            new PhysicalSceneSnapshot(73, 1.25f, 2, 0.04f, new PhysicalNodeSnapshot[0]), recorder);
+        string eventsJson = EnvelopeJson(envelope, true);
+        JSONNode events = JSONNode.Parse(eventsJson);
+
+        JSONNode collision = null;
+        for (int i = 0; i < events.Count; i++)
+        {
+            if (events[i]["event_type"].Value == "collision") collision = events[i];
+        }
+        Assert.IsNotNull(collision, "request-70 emitted no collision event");
+
+        // The literal below governs the assertion; reading the schema turns this
+        // into a drift detector, so a contract change fails here loudly instead
+        // of leaving the fixture pinned to a branch that no longer exists. Only
+        // `required` is read — additionalProperties, minItems and type are not.
+        JSONNode schema = JSONNode.Parse(File.ReadAllText(Path.GetFullPath(Path.Combine(
+            Application.dataPath, "../../../docs/data_contracts/physics_capture_v1.schema.json"))));
+        List<string> required = new List<string>();
+        foreach (JSONNode branch in schema["$defs"]["event_payload"]["oneOf"].AsArray)
+        {
+            foreach (JSONNode field in branch["required"].AsArray)
+            {
+                if (field.Value == "contact_ids")
+                {
+                    required.Clear();
+                    foreach (JSONNode name in branch["required"].AsArray) required.Add(name.Value);
+                }
+            }
+        }
+        CollectionAssert.AreEquivalent(new[] { "contact_ids", "relative_speed" }, required,
+            "the frozen collision payload branch is not the one this fixture pins");
+
+        List<string> keys = new List<string>();
+        foreach (KeyValuePair<string, JSONNode> field in collision["payload"].AsObject) keys.Add(field.Key);
+        CollectionAssert.AreEquivalent(required, keys,
+            "serialized collision payload does not match the frozen contract branch: " + collision["payload"].ToString());
+
+        JSONArray contactIds = collision["payload"]["contact_ids"].AsArray;
+        Assert.GreaterOrEqual(contactIds.Count, 1, "collision payload carries no contact evidence");
+        for (int i = 0; i < contactIds.Count; i++)
+        {
+            Assert.IsNotEmpty(contactIds[i].Value, "collision payload carries an empty contact id");
+        }
+        for (int i = 1; i < contactIds.Count; i++)
+        {
+            Assert.Less(string.CompareOrdinal(contactIds[i - 1].Value, contactIds[i].Value), 0,
+                "collision contact ids are not sorted unique by ordinal");
+        }
+
+        // Matched against the bytes the envelope actually carries, so a
+        // string-typed speed cannot pass: AsFloat would coerce "3.5" and the
+        // schema requires a JSON number.
+        //
+        // It must be the raw string and not `collision["payload"].ToString()`.
+        // This SimpleJSON build stores every scalar as text and re-quotes it on
+        // ToString, so a round-tripped payload reads "relative_speed":"3.5"
+        // whatever the wire said — the parsed node cannot tell a JSON number
+        // from a JSON string, and asserting on it measures the parser.
+        //
+        // The pattern is anchored on contact_ids, which only the collision
+        // branch carries, so it stays scoped to a collision payload rather than
+        // to any event that happens to serialize a speed; the count assertion
+        // keeps it pinned to this fixture's single collision.
+        //
+        // Success alone already rejects every non-finite form: AppendFloat's "R"
+        // format writes NaN and Infinity as bare words, which the leading -?[0-9]
+        // cannot match. A negative or drifted magnitude fails the equality below.
+        MatchCollection speeds = Regex.Matches(
+            eventsJson, "\"contact_ids\":\\[[^\\]]*\\],\"relative_speed\":(-?[0-9][0-9.eE+-]*)");
+        Assert.AreEqual(1, speeds.Count,
+            "expected exactly one collision payload carrying a JSON-number relative_speed: " + eventsJson);
+        float relativeSpeed = float.Parse(speeds[0].Groups[1].Value, CultureInfo.InvariantCulture);
+        Assert.AreEqual(3.5f, relativeSpeed, 1e-6f, "relative_speed does not carry the recorded magnitude");
     }
 
     [Test]
