@@ -1,0 +1,57 @@
+{
+  "probe": "sidecar_array_order",
+  "findings": [
+    "F1",
+    "F2"
+  ],
+  "question": "Do the emitter's raw_contacts and support_edges arrays satisfy the global ordering contract at scripts/physics_capture_parsing.py:281 and :283?",
+  "parser_entry_point": "scripts.physics_capture_parsing._parse_state",
+  "results": [
+    {
+      "case": "single_step_only",
+      "contact_count": 2,
+      "support_count": 0,
+      "parsed": true,
+      "parsed_contact_count": 2,
+      "parsed_support_count": 0
+    },
+    {
+      "case": "emitter_shaped_cumulative_3_steps",
+      "contact_count": 6,
+      "support_count": 0,
+      "parsed": false,
+      "error_code": "deterministic_order",
+      "error": "deterministic_order at physics_state.jsonl:1: raw_contacts"
+    },
+    {
+      "case": "globally_sorted_same_set",
+      "contact_count": 6,
+      "support_count": 0,
+      "parsed": true,
+      "parsed_contact_count": 6,
+      "parsed_support_count": 0
+    },
+    {
+      "case": "f2_emitter_shaped_support_edges",
+      "contact_count": 6,
+      "support_count": 2,
+      "parsed": false,
+      "error_code": "deterministic_order",
+      "error": "deterministic_order at physics_state.jsonl:1: support_edges"
+    },
+    {
+      "case": "f2_globally_sorted_support_edges",
+      "contact_count": 6,
+      "support_count": 2,
+      "parsed": true,
+      "parsed_contact_count": 6,
+      "parsed_support_count": 2
+    }
+  ],
+  "f1_verdict": "f1_confirmed",
+  "f2_verdict": "f2_confirmed",
+  "interpretation": {
+    "f1": "A single fixed step parses; the same contacts accumulated across three steps do not; globally sorting that identical set makes it parse again. The defect is the order the emitter writes, not the contacts themselves. rawContacts is never cleared, and PhysicalSnapshotRuntime.FixedUpdate:109 samples every collider every fixed step, so any shot longer than one step with more than one contacting pair emits a violating array.",
+    "f2": "support_edges is pruned to the current step, so it is not cumulative \u2014 but its append order follows the contact pair while the contract sorts by supporter_id, which is whichever body is lower in y. Whether a given scene violates the order is therefore a property of its geometry, not an invariant. The case here is one the geometry can produce."
+  }
+}

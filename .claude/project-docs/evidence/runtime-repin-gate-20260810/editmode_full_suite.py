@@ -48,6 +48,7 @@ COMPAT_LIBS = os.environ.get(
 CLASSES = [
     "ABBirdLaunchTests",
     "ABGameWorldLifecycleTests",
+    "GameplayCollisionRecordingTests",
     "LegacyGroundTruthTests",
     "PhysicalEntityRegistryTests",
     "PhysicalShotRecorderTests",

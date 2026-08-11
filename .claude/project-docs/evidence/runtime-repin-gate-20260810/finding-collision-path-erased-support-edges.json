@@ -1,0 +1,46 @@
+{
+  "finding_id": "collision-path-erased-support-edges",
+  "wave": "runtime-repin-gate-20260810",
+  "session": 3,
+  "date": "2026-08-11",
+  "severity": "blocker",
+  "status": "fixed",
+  "discovered_by": "code-reviewer on the session-3 gameplay-wiring diff",
+  "independently_confirmed_against_source": true,
+  "class": "silent_ground_truth_loss",
+  "summary": "The recorder's collision path handed UpdateSupport a single pair's contacts, and UpdateSupport prunes every support edge whose pair is absent from the set it is given. Every real collision therefore erased the support graph of every other pair for that fixed step.",
+  "mechanism": {
+    "entry": "PhysicsShotRecorder.RecordCollision(long, float, string, string, PhysicalContactInput[], float)",
+    "trigger": "contactIds.Length == 0, which is always true for a contact that has just begun",
+    "call": "RecordContacts(fixedStep, fixedTime, evidence) with only the colliding pair's contacts",
+    "prune_site": "PhysicsShotRecorder.UpdateSupport, final statement: supportEdges.RemoveAll(edge => !seen.Contains(edge.PairKey));",
+    "blast_radius": "every support edge for every other pair, at every fixed step where a collision was recorded"
+  },
+  "why_it_was_not_caught_by_the_gate": "It is not a fail-closed break. No event is malformed, no schema field is missing, and the smoke's require_collision still passes. support_edges is schema-required and read by scripts/physics_capture_validation.py:39-53, so the pinned player would have produced structurally valid but degraded ground truth for the whole downstream cohort.",
+  "fix": {
+    "kind": "minimal, in-scope",
+    "change": "Added a private RecordContacts(long, float, PhysicalContactInput[], bool isFullStepSample). The public overloads pass true; the collision path passes false and skips UpdateSupport entirely.",
+    "ownership": "Support derivation stays exclusively owned by the full-set FixedUpdate sampler (RecordUnityContacts), which picks the new pair up on its next full sample.",
+    "scope_check": {
+      "event_model_changed": false,
+      "capture_schema_changed": false,
+      "frozen_taxonomy_changed": false,
+      "python_consumer_field_changed": false,
+      "note": "This repairs a corruption of support_edges so it carries what it always claimed. It does not weaken the contract."
+    }
+  },
+  "regression_test": {
+    "file": "tasks/task_template_designer/Assets/Tests/Editor/PhysicsShotRecorderTests.cs",
+    "test": "PhysicsShotRecorderTests.CollisionAtAStepDoesNotErasePriorSupportEdges",
+    "red_before_fix": {
+      "message": "a collision on one pair must not prune the support edges of every other pair",
+      "detail": "Expected: 1  But was: 0",
+      "nunit_xml_sha256": "e39ff74e5705b0f5ab578deb6bf3f260929af85dd0acd86dd09275e613a14c07",
+      "class_result": "21 total, 20 passed, 1 failed"
+    },
+    "green_after_fix": {
+      "nunit_xml_sha256": "ebe03ca69b55a2ce77a8b6a2f01f1ccf7bfda57727ee7c513c7d88414f42036c",
+      "class_result": "21 total, 21 passed, 0 failed"
+    }
+  }
+}
