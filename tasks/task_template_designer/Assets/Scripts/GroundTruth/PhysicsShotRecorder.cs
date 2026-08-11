@@ -374,6 +374,17 @@ public class PhysicalShotRecorder
 
     public void RecordContacts(long fixedStep, float fixedTime, PhysicalContactInput[] contacts)
     {
+        RecordContacts(fixedStep, fixedTime, contacts, true);
+    }
+
+    // isFullStepSample says whether `contacts` is the complete contact set for this
+    // fixed step. UpdateSupport prunes every edge whose pair is absent from what it
+    // is handed, so it may only ever see a full sample. The collision path ingests
+    // one pair's contacts to mint contact_ids, and passes false: the FixedUpdate
+    // sampler remains the sole owner of support derivation and picks the new pair up
+    // on its next full sample.
+    private void RecordContacts(long fixedStep, float fixedTime, PhysicalContactInput[] contacts, bool isFullStepSample)
+    {
         if (Failure != null || finalized)
         {
             return;
@@ -422,7 +433,8 @@ public class PhysicalShotRecorder
             return;
         }
         rawContacts.AddRange(stepContacts);
-        UpdateSupport(stepContacts, fixedStep);
+        if (isFullStepSample)
+            UpdateSupport(stepContacts, fixedStep);
     }
 
     public void RecordUnityContacts(long fixedStep, float fixedTime, Collider2D[] colliders, PhysicalEntityRegistry registry = null)
@@ -485,6 +497,22 @@ public class PhysicalShotRecorder
         AddEvent(fixedStep, fixedTime, kind, subject, ParticipantsFor(kind, subject), DefaultPayload(kind));
     }
 
+    // Refusal messages for the two evidence-bearing overloads below. Those two are
+    // the only ones a Unity physics callback can reach, and a callback that throws
+    // abandons the rest of its handler: the caller's post-collision gameplay never
+    // runs, no terminal event is ever reached, and a capture run is lost to the
+    // finalize timeout. So they refuse by logging and returning instead. This is
+    // still fail-closed at the wire — the refusal path emits no event, so a
+    // physics_capture_v1 artifact can never carry a collision without contact
+    // evidence or with a non-finite relative speed, exactly as before.
+    private const string CollisionEvidenceRejection =
+        "physics_capture_v1: refusing a collision event without contact evidence; no event emitted.";
+    private const string CollisionSpeedRejection =
+        "physics_capture_v1: refusing a collision event whose relative speed is not finite and non-negative; no event emitted.";
+
+    // No product caller and unreachable from any callback: this overload exists
+    // only to make "record a collision without evidence" an unusable API, so it
+    // keeps throwing.
     public void RecordCollision(long fixedStep, float fixedTime, string entityA, string entityB)
     {
         if (Failure != null || finalized)
@@ -501,9 +529,15 @@ public class PhysicalShotRecorder
             .Where(contactId => !string.IsNullOrEmpty(contactId))
             .Distinct().OrderBy(contactId => contactId, StringComparer.Ordinal).ToArray();
         if (evidence.Length == 0)
-            throw new ArgumentException("Collision events require contact evidence.");
+        {
+            Debug.LogError(CollisionEvidenceRejection);
+            return;
+        }
         if (float.IsNaN(relativeSpeed) || float.IsInfinity(relativeSpeed) || relativeSpeed < 0f)
-            throw new ArgumentException("Collision relative speed must be finite and non-negative.");
+        {
+            Debug.LogError(CollisionSpeedRejection);
+            return;
+        }
         string first = string.CompareOrdinal(entityA, entityB) <= 0 ? entityA : entityB;
         string second = first == entityA ? entityB : entityA;
         string key = fixedStep + ":" + first + ":" + second;
@@ -518,7 +552,10 @@ public class PhysicalShotRecorder
         if (Failure != null || finalized)
             return;
         if (float.IsNaN(relativeSpeed) || float.IsInfinity(relativeSpeed) || relativeSpeed < 0f)
-            throw new ArgumentException("Collision relative speed must be finite and non-negative.");
+        {
+            Debug.LogError(CollisionSpeedRejection);
+            return;
+        }
         string first = string.CompareOrdinal(entityA, entityB) <= 0 ? entityA : entityB;
         string second = first == entityA ? entityB : entityA;
         PhysicalContactInput[] evidence = (contacts ?? new PhysicalContactInput[0])
@@ -529,7 +566,10 @@ public class PhysicalShotRecorder
                     && string.Equals(contact.EntityIdB, first, StringComparison.Ordinal)))
             .ToArray();
         if (evidence.Length == 0)
-            throw new ArgumentException("Collision events require contact evidence.");
+        {
+            Debug.LogError(CollisionEvidenceRejection);
+            return;
+        }
         string key = fixedStep + ":" + first + ":" + second;
         if (collisionKeys.Contains(key))
             return;
@@ -539,7 +579,7 @@ public class PhysicalShotRecorder
             .Select(contact => contact.ContactId).Distinct().OrderBy(contactId => contactId, StringComparer.Ordinal).ToArray();
         if (contactIds.Length == 0)
         {
-            RecordContacts(fixedStep, fixedTime, evidence);
+            RecordContacts(fixedStep, fixedTime, evidence, false);
             contactIds = rawContacts
                 .Where(contact => contact.FixedStep == fixedStep
                     && contact.EntityIdA == first && contact.EntityIdB == second)
