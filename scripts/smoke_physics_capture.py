@@ -619,8 +619,27 @@ def perform_known_action(bridge: ScienceBirdsBridge) -> JsonObject:
     reference = current_slingshot_reference(bridge, FRAME_HEIGHT_PIXELS)
     if reference is None:
         raise SmokeError("known level has no request-62 slingshot reference")
+    # Parameters taken from an accepted legacy rollout whose shot physically
+    # struck a structure (novelty_level_4_type010401_00141_0_1_010401_4_1,
+    # shot_001: ui_level 1, drag_hold_release, slingshot_relative). The single
+    # permitted full smoke has no retry and a collision-free shot fails
+    # acceptance outright, so the release offset must be a verified one rather
+    # than an arbitrary drag. `drag_start` is overwritten by the live slingshot
+    # reference below; it is recorded here as the value the rollout carried.
+    #
+    # KNOWN BLOCKER — these parameters are NOT sufficient on the level this smoke
+    # actually plays. The staged config resolves ui_level 1 to
+    # novelty_level_0/type2/Levels/3_9_6_1.xml, whose only bird is a BirdBlack;
+    # ABBirdBlack overrides OnCollisionEnter2D without reaching the recorder, so
+    # the bird's own impacts are never recorded. Blocks drop the recorder call on
+    # their bird branch, platforms and ground carry no recorder at all, and both
+    # pigs sit enclosed behind platform walls, so no aim reaches the one object
+    # type that does record. Changing this offset changes only launch elevation —
+    # both pulls saturate the drag clamp. See
+    # .claude/project-docs/evidence/runtime-repin-gate-20260810/
+    # finding-smoke-level-geometry-risk.json before spending the run.
     action = anchor_action_to_slingshot_reference(
-        {"coordinate_frame": "slingshot_relative", "drag_start": [0, 0], "drag_release": [-50, 40], "tapTime": 0, "holdTime": 1000},
+        {"coordinate_frame": "slingshot_relative", "drag_start": [97, 227], "drag_release": [-80, 7], "tapTime": 0, "holdTime": 1000},
         reference,
     )
     shot = action_to_shot(action, frame_height=FRAME_HEIGHT_PIXELS)

@@ -31,6 +31,7 @@ from scripts.smoke_physics_capture import (
     canonical_root_from_git,
     capture_finalized_action,
     CapturedRequest,
+    FRAME_HEIGHT_PIXELS,
     ListenerBindingError,
     ListenerObservation,
     SmokeError,
@@ -149,8 +150,32 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
 
         bridge = Bridge()
         receipt = perform_known_action(bridge)
-        self.assertEqual(bridge.recorded_shots, [(59, 247, 0, 1000, 1)])
+        # The release offset is the collision-producing one verified against an
+        # accepted legacy rollout (drag_release [-80, 7]), not an arbitrary drag:
+        # shot_x = gameX - 80 = 29, shot_y = gameY - 7 = 265 -> socket y = 480 - 1 - 265 = 214.
+        self.assertEqual(bridge.recorded_shots, [(29, 214, 0, 1000, 1)])
         self.assertEqual(receipt["response"], 1)
+
+    def test_the_known_action_uses_the_verified_collision_producing_release(self) -> None:
+        """Pin the release offset itself, so a silent edit back to a shot that
+        misses every structure cannot pass. The one permitted full smoke has no
+        retry, and a collision-free shot fails acceptance outright."""
+        recorded: list[dict] = []
+
+        class Bridge:
+            def get_symbolic_state_without_screenshot(self) -> list[dict]:
+                return [{"features": [{"properties": {"label": "Slingshot"}, "geometry": {"type": "Polygon", "coordinates": [[[100, 200], [120, 200], [120, 260], [100, 260]]]}}]}]
+
+            def shoot_and_record_ground_truth(self, x: int, y: int, tap_time: int = 0, release_time: int = 0, frequency: int = 1) -> int:
+                recorded.append({"x": x, "y": y, "tap_time": tap_time, "release_time": release_time})
+                return 1
+
+        receipt = perform_known_action(Bridge())
+
+        reference = receipt["slingshot_reference"]
+        self.assertEqual(recorded[0]["x"] - int(reference["gameX"]), -80)
+        self.assertEqual(int(reference["gameY"]) - (FRAME_HEIGHT_PIXELS - 1 - recorded[0]["y"]), 7)
+        self.assertEqual((recorded[0]["tap_time"], recorded[0]["release_time"]), (0, 1000))
 
     @mock.patch("scripts.smoke_physics_capture.time.sleep")
     @mock.patch("scripts.smoke_physics_capture.connect_with_retry")
