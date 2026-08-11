@@ -1,5 +1,119 @@
 # Handoff: NovPhy Physics Re-pin Gate — Next Session
 
+> **CURRENT HANDOFF — second session, 2026-08-11.** Read Part A. Part B is the first session's handoff, preserved verbatim; where the two disagree, Part A wins and says so explicitly.
+
+---
+
+# Part A — current handoff (second session, 2026-08-11)
+
+**Wave verdict:** `still_blocked`. Verdict of record: `runtime-gate-result.md` §"Second session" and `runtime-gate-verdict.json` (both in this directory).
+
+## A0. Read this first, in this order
+
+1. This Part A.
+2. `runtime-gate-verdict.json` — the machine-readable verdict, every digest.
+3. `runtime-gate-result.md` — the narrative verdict; the first session's record is preserved verbatim at the bottom.
+4. `finding-smoke-level-geometry-risk.json` — **the terminal blocker.** Read it before planning anything.
+5. `finding-collision-payload-root-cause.json` — why the payload was empty, and why it is already fixed.
+6. `finding-simplejson-roundtrip-hides-json-types.json` — a durable EditMode assertion trap.
+7. Part B below, then `notes.md`, `task_plan.md`.
+8. Roadmap, and only from here: `/mnt/array/sukaih/Project/NovPhy/docs/high_level_plans/bg_ns_jepa_research_execution.md`.
+
+## A1. State at the end of this session
+
+| Fact | Value |
+|---|---|
+| Working tree | `/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4` |
+| Branch | `physics-unity-2019.4` |
+| HEAD | the `docs(runtime-gate): record the still_blocked verdict and Phase 5 determinism` commit — the evidence commit, whose parent is `045296d` |
+| Phase 5 provenance HEAD / tree | `045296d6ed9f749d8ea12ca2e4b345d72e5dfce8` / `40f30b59dd8fbf38fc2387d7c0aaf8481a146b89` |
+| Unpushed | 4 commits ahead of `origin/physics-unity-2019.4` (`7f1e8727…`); nothing was pushed |
+| Staged pin (unchanged) | `429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de` |
+| Port 2004 | free |
+| Stranded processes | none (bound by `/proc/<pid>/exe`, not by name) |
+| Single full smoke | **not spent** |
+
+Three commits landed: `a1067e5` (README knowledge-index line, the old TODO-6), `87365fb` (smoke known-action offset + the blocker annotation), `045296d` (the wire-level collision-payload fixture). HEAD moved from the mission's start point `7f1e8727…` because `package_physics_player.py`'s `git_revision` gate refuses to package tracked drift, and Phase 5 needed a clean tree.
+
+**Corrects Part B §0:** the HEADs named there (`d83c1487…`) are two waves stale. Use the table above.
+
+## A2. What is done, and what is left
+
+**Done and passing:**
+- **Phase 5 — deterministic.** Two isolated builds via `NOVPHY_PHYSICS_STAGE`, 151 provenance files compared, zero drift. Archive `d4e55bc4f684ecd4699c81d0c039ab43ab62c70ccf1a5b42d2455e0732147562`, player `d74bf3f8…`, `Assembly-CSharp.dll` `5d83af30…`, `UnityPlayer.so` `53b0b8d1…`, `provenance.json` `1dc3097e…`. Receipts in `phase5-builds/`. **This is already satisfied for the current source** — after the fix in A3 you must re-run it, because the source will change.
+- **The empty collision payload is fixed on this branch**, by `7a2dd02` and `97c4dd6`, both of which postdate the staged build `e2d19ae`. The staged binary is stale relative to its own source. No emitter change was needed or written.
+- **The wire seam is now covered.** `PhysicsCaptureProtocolTests.Request70CollisionPayloadCarriesTheContactEvidenceTheContractRequires`, proved red against a mutation that reproduces `e2d19ae`'s emitter, then green. EditMode full suite 48/48 across 8 classes.
+
+**Left, and blocking:** the smoke's acceptance criterion needs a genuine collision, and on the level the smoke plays **nothing a bird can reach records one**. See A3.
+
+## A3. The terminal blocker, and the exact fix
+
+Level `novelty_level_0/type2/Levels/3_9_6_1.xml` (chosen by `scripts/build_physics_player.sh:47` rewriting `config.xml` for `ui_level 1`):
+
+- Bird is `BirdBlack`; `ABBirdBlack.cs:22` overrides `OnCollisionEnter2D` and never calls base → the recorder is never reached from the bird.
+- 8 Platforms carry zero `m_Script`; Ground is a bare `BoxCollider2D` → neither records.
+- `ABBlock.cs:145` calls base only in the **non-bird** `else` branch → a bird hitting a block records nothing.
+- Only Pigs record, and both are walled in by vertical platforms → structurally unreachable from the slingshot at `x = -12`.
+- **Aim cannot fix this.** Both `[-50, 40]` and `[-80, 7]` saturate the drag clamp (`_dragRadius 1`, `ABBird.cs:233-234`); only elevation changes (≈39.7° → ≈5.0°), never speed.
+
+The fix, in order — do not skip step 2:
+
+1. Call `PhysicalSnapshotRuntime.RecordCollisionCallback(collision)` **directly, not `base`**, at the top of `ABBirdBlack.OnCollisionEnter2D`, and at the top of `ABBlock.OnCollisionEnter2D` hoisted out of the `else` branch so both branches record. A `base` call is wrong here: `ABGameObject.OnCollisionEnter2D:125-141` also runs the damage model, so hoisting base would change gameplay.
+2. **Decide the empty-evidence policy at `PhysicsShotRecorder.cs:531`** before wiring more objects to the recorder. It currently throws `ArgumentException`. Thrown inside a Unity physics callback it aborts the handler → the `BirdBlack` explosion never plays → no terminal event → the smoke's 30 s finalize deadline expires with the single run consumed. A `Debug.LogError` plus early return is equally fail-closed *at the wire* — no event is emitted, so the smoke's `require_collision` still rejects — without killing the handler.
+3. Add EditMode fixtures proving a `BirdBlack` impact and a bird-on-block impact each produce a recorded collision event. Red before, green after.
+4. Re-run Phase 5 (`phase5_build_twice.py` + `compare_builds.py` in this directory), then spend the single full smoke on the rebuilt candidate.
+
+This is two gameplay classes plus a fail-closed throw path — beyond the previous wave's TODO-2 scope, which is why it was recorded and reported instead of improvised on a non-retryable run budget.
+
+## A4. Authorization still on record
+
+Unchanged from Part B §0a and **still conditional**: re-pin `sciencebirdsgames/physics-v1/` only *after* a passing full smoke against the rebuilt candidate. Publication is **not** authorized — stop and report. Cohort collection is **not** authorized.
+
+## A5. Corrections to Part B — read these, they will cost you a run otherwise
+
+1. **`mutation_check.py`'s pinned baseline is now `72f6a12183df97755ab715919557d70eb7cf5c59e9c8311dcab0c9925288b6f6`**, not the `f61ccfa5…` printed in Part B §5. The rule stands: edit `scripts/smoke_physics_capture.py` and you must update that constant in lockstep, or the harness refuses to mutate a file it has not verified.
+2. **`tests.test_smoke_physics_capture` is now 75 tests**, not 74.
+3. **Part B §3's TODO-1 is obsolete.** The collision payload is not the thing to fix; A3 is.
+4. **Part B §3's TODO-2 is done** (`87365fb`) — and the offset it applies is *insufficient on this level*, which is exactly why A3 exists. The source carries that warning in a comment at `perform_known_action`.
+5. **Part B §3's TODO-3 (Phase 5) is done and passed** for the current source.
+6. **Part B §3's TODO-6 is done** (`a1067e5`).
+7. **Part B §6 trap 3's exit code is imprecise.** EditMode invocations on this host exit with a signal inside CEF shutdown — observed as `-6`/`134` depending on how it is read. The point is unchanged: the exit code is not authoritative, the NUnit XML is.
+8. **A single unfiltered EditMode run crashes in `CefBrowserMessageLoop` before flushing its result file**, producing no XML despite executing every test. Run per test class — `editmode_full_suite.py` in this directory does exactly that. See `finding-editmode-harness-deadlock.json`.
+9. **Do not let `python -m unittest` run before a build.** It writes `scripts/__pycache__/`, which `package_physics_player.py:105` rejects as untracked product source, aborting the build. Use `PYTHONDONTWRITEBYTECODE=1`, or remove the directory before building.
+
+## A6. New trap this session paid for
+
+**In EditMode fixtures, assert JSON *structure* through SimpleJSON and JSON *scalar types* through the raw serialized string — never mix the two.** This SimpleJSON build stores every scalar as text and re-quotes it on `ToString()`, so a parsed node cannot tell a JSON number from a JSON string. A type assertion made against `node.ToString()` went RED against provably correct product output; the previous `AsFloat` form was GREEN and would have passed a contract-violating string. Neither carried information about the wire. Full record: `finding-simplejson-roundtrip-hides-json-types.json`.
+
+## A7. Verify before you start
+
+```bash
+cd /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4
+/usr/bin/git rev-parse --abbrev-ref HEAD                # physics-unity-2019.4
+/usr/bin/git log --oneline -5                           # top: docs(runtime-gate): record the still_blocked verdict…
+                                                        # its parent 045296d is the Phase 5 provenance HEAD
+/usr/bin/git rev-list --count origin/physics-unity-2019.4..HEAD   # 4, nothing pushed
+/usr/bin/sha256sum sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz
+#   429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de
+/bin/grep -c ' 07D4 .* 0A ' /proc/net/tcp /proc/net/tcp6   # 0 and 0
+test -d scripts/__pycache__ && echo REMOVE-IT || echo clean
+
+PYTHONDONTWRITEBYTECODE=1 python -W error::ResourceWarning -m unittest tests.test_smoke_physics_capture   # 75 OK
+PYTHONDONTWRITEBYTECODE=1 python .claude/project-docs/evidence/runtime-repin-gate-20260810/mutation_check.py  # 8/8 red
+```
+
+## A8. Suggested opening move
+
+A3 step 2 — decide the `PhysicsShotRecorder.cs:531` empty-evidence policy — before writing any gameplay wiring. Every other step in A3 widens exposure to that throw, and it is the one failure mode that burns the single run without producing a diagnosis.
+
+---
+
+---
+
+# Part B — first session's handoff (verbatim, unaltered)
+
+Retained exactly as written. Where it disagrees with Part A, Part A is current; the specific corrections are enumerated in A5.
+
 **Written** 2026-08-11 by the session that closed wave `runtime-repin-gate-20260810`.
 **Wave verdict:** `still_blocked`. Verdict of record: `runtime-gate-result.md` (same directory).
 

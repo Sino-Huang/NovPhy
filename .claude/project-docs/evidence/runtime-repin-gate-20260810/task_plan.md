@@ -48,3 +48,24 @@ Finish with either `ready_for_repin_approval` backed by deterministic build and 
 
 ## Status
 **still_blocked.** One blocker was found and closed inside this wave (the unsatisfiable mapped-assembly anchor; the corrected gate now binds the live candidate exactly). The remaining blocker cannot be fixed within this wave's permissions: the staged player's empty collision payload makes the single permitted full smoke a guaranteed rejection, and the fix is player-side C# reachable only through a re-pin. Focused Python 74/74 green with `ResourceWarning` promoted to error; 60/60 across five adjacent physics tooling suites; eight mutations confirm each new gate assertion bites, with source restored byte-identical afterwards. Phases 5 and 6 (deterministic builds, final smoke) were not reached: the builds are gated on the tooling commit, and the smoke is provably unable to pass against this candidate.
+
+---
+
+## Second session (2026-08-11) — appended, nothing above rewritten
+
+### Phases
+- [x] TODO-1 (point the known action): applied the handoff-verified offset `[-80, 7]` — commit `87365fb` — then discovered it is *insufficient on this level* and annotated the source at `perform_known_action` with the reason and the finding path.
+- [x] TODO-2 (collision payload): diagnosed in scope; already fixed on this branch by `7a2dd02` and `97c4dd6`, which postdate the staged build `e2d19ae`. No emitter change written. Closed the missing wire-level fixture instead, red before green.
+- [x] Phase 5 (two isolated deterministic builds): **PASSED.** 151 provenance files compared, zero drift.
+- [ ] Phase 6 (single full live smoke): **deliberately not spent.** No reachable success path — see below.
+- [ ] Re-pin: not performed. Conditional on a passing smoke.
+- [x] Verdict, evidence, handoff, commits.
+
+### Errors Encountered
+- The fixture's review-requested JSON-*type* assertion went RED against provably correct product output. It ran against `collision["payload"].ToString()`, and this SimpleJSON build stores every scalar as text and re-quotes on `ToString`, so a parsed node cannot express a JSON type at all. The previous `AsFloat` form was GREEN and would have passed a contract-violating string value. Neither state carried information about the wire. Fixed by matching the raw serialized envelope, anchored on `contact_ids` and pinned to exactly one match. Recorded in `finding-simplejson-roundtrip-hides-json-types.json`.
+- Phase 5 `build-a` aborted at `package_physics_player.py:105` with `PackagingError: untracked product source: !! scripts/__pycache__/`. Self-inflicted: this session's own `python -m unittest` runs wrote bytecode into the gate's untracked scope. The directory held 48 `.pyc` files only and `package_physics_player.py` imports stdlib exclusively, so removal could not change packaging behaviour. Removed; both builds re-run with `PYTHONDONTWRITEBYTECODE=1` and exited 0.
+- A single unfiltered EditMode run crashes in `CefBrowserMessageLoop` before flushing its result file, producing no XML despite executing every test. Per-class invocation via `editmode_full_suite.py` is the working form.
+- HEAD had to move (`7f1e8727…` → `045296d6…`) because `git_revision` refuses to package tracked drift from HEAD. The three commits are the wave's own required outputs.
+
+### Status
+**still_blocked.** The terminal blocker is no longer the collision payload — that is fixed on this branch and the staged binary is simply stale relative to its own source. It is level geometry: on `novelty_level_0/type2/Levels/3_9_6_1.xml`, no object a bird can reach invokes the recorder. `BirdBlack` overrides `OnCollisionEnter2D` without calling base; platforms and ground carry no `ABGameObject`; `ABBlock` records only on its non-bird branch; only pigs record, and both are walled in. Aim cannot fix it — both pulls saturate the drag clamp, so only elevation changes. The fix reaches two gameplay classes plus the fail-closed throw at `PhysicsShotRecorder.cs:531`, which is beyond this wave's TODO-2 scope, so it was recorded and reported rather than improvised against a non-retryable run budget. Phase 5 ran anyway and passed. Tests: 75/75 focused Python, 8/8 mutations red with byte-identical restore, 48/48 EditMode across 8 classes, one fixture red-then-green. No smoke spent, no retry, no re-pin, no publication, no cohort collection; the staged pin is byte-identical to the session start.

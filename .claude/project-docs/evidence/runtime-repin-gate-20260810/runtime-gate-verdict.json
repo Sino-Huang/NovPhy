@@ -1,0 +1,166 @@
+{
+  "schema": "novphy_runtime_repin_gate_verdict_v1",
+  "wave": "runtime-repin-gate-20260810",
+  "session": "second",
+  "recorded": "2026-08-11",
+  "verdict": "still_blocked",
+  "narrative": "runtime-gate-result.md, section 'Second session (2026-08-11) — current authority'",
+
+  "first_failed_invariant": {
+    "invariant": "smoke acceptance requires at least one genuine collision with non-empty sorted unique contact_ids and a finite non-negative relative_speed",
+    "phase": 6,
+    "why_unreachable": "on the level the smoke plays, no object reachable by a bird shot invokes the recorder at all",
+    "level": "tasks/task_template_designer/Assets/StreamingAssets/Levels/novelty_level_0/type2/Levels/3_9_6_1.xml",
+    "selected_by": "scripts/build_physics_player.sh:47",
+    "recording_objects": {
+      "bird_BirdBlack": false,
+      "platforms_x8": false,
+      "ground": false,
+      "blocks_x2_against_a_bird": false,
+      "pigs_x2": true
+    },
+    "pigs_unreachable": "both pigs are enclosed by vertical platform walls; a shot from the slingshot at x=-12 cannot reach either without first striking a non-recording platform",
+    "aim_cannot_fix_it": "both [-50,40] and the handoff-verified [-80,7] pulls saturate the drag clamp (_dragRadius 1, ABBird.cs:233-234); only launch elevation changes",
+    "command_not_run": "python scripts/smoke_physics_capture.py --stage <verified-candidate> --output-dir <run> --report <report>.json",
+    "evidence": "finding-smoke-level-geometry-risk.json"
+  },
+
+  "out_of_scope_ruling": {
+    "rule": "the mission permits fixing the collision payload in the capture path and requires stopping when the fix reaches further",
+    "what_a_fix_would_touch": [
+      "ABBirdBlack.OnCollisionEnter2D (gameplay class)",
+      "the bird branch of ABBlock.OnCollisionEnter2D (gameplay class)",
+      "the fail-closed ArgumentException at PhysicsShotRecorder.cs:531"
+    ],
+    "risk_if_improvised": "a throw inside a Unity physics callback aborts the handler, the BirdBlack explosion never plays, no terminal event is reached, and the smoke's 30 s finalize deadline expires with the single non-retryable run consumed",
+    "decision": "record the finding and report"
+  },
+
+  "todo_outcomes": {
+    "todo_1_point_known_action": "done, then superseded: the handoff-verified offset was applied (commit 87365fb) and the source annotated with the reason it is not sufficient on this level",
+    "todo_2_collision_payload": "diagnosed in scope; already fixed on this branch by 7a2dd02 and 97c4dd6, which postdate the staged build. No emitter change was written. A missing wire-level fixture was added red-then-green.",
+    "todo_3_phase_5_determinism": "COMPLETE and PASSED",
+    "todo_4_phase_6_smoke": "NOT SPENT, deliberately, per the first failed invariant",
+    "todo_5_repin": "NOT PERFORMED; conditional on a passing smoke that did not occur",
+    "todo_6_verdict_and_commits": "this file, runtime-gate-result.md, handoff-next-session.md, and scoped Conventional Commits"
+  },
+
+  "phase_5": {
+    "result": "deterministic",
+    "deterministic": true,
+    "drift_count": 0,
+    "compared_provenance_file_count": 151,
+    "builds": [
+      {"label": "build-a", "exit": 0, "reaped_orphan_package_managers": []},
+      {"label": "build-b", "exit": 0, "reaped_orphan_package_managers": []}
+    ],
+    "identical_digests": {
+      "archive": "d4e55bc4f684ecd4699c81d0c039ab43ab62c70ccf1a5b42d2455e0732147562",
+      "player_9001_x86_64": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+      "assembly_csharp_dll": "5d83af307f293fc1cd374cf3e7489dc4cc7f9db3a4b4a184c508c44cfd098e94",
+      "unity_player_so": "53b0b8d1d21031c097721b1bf10bf8cd23c34663f871d606e28bd276bd171c28",
+      "provenance_json": "1dc3097ef98640e9db13261cfebbbde417066c0e87ae0eceaa06820501590136",
+      "package_input_manifest_json": "05677cc3199d5fff4aac54096877e795518487918e53810f477a228e5d1e28fb",
+      "package_input_packages_lock_json": "3101c351984e6a73a1be7ad76d1a67c1b7638a6616554e50000b9672175ebe50",
+      "unity_editor_executable": "32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150"
+    },
+    "provenance_project_identity": {
+      "git_head": "045296d6ed9f749d8ea12ca2e4b345d72e5dfce8",
+      "git_tree": "40f30b59dd8fbf38fc2387d7c0aaf8481a146b89"
+    },
+    "excluded_member": {
+      "unity-build.log": "Unity diagnostic output; carries wall-clock timestamps and temporary build paths, and is published beside the archive rather than inside it. The archive digest matched byte-for-byte regardless."
+    },
+    "abort_and_cause": {
+      "error": "PackagingError: untracked product source: !! scripts/__pycache__/ at package_physics_player.py:105",
+      "cause": "this session's own python -m unittest runs wrote bytecode into the gate's untracked scope",
+      "why_removal_was_safe": "the directory held 48 .pyc files only, and package_physics_player.py imports stdlib exclusively",
+      "resolution": "removed; both builds re-run with PYTHONDONTWRITEBYTECODE=1 and exited 0; the directory is absent at session end"
+    },
+    "receipts": ["phase5-builds/determinism-receipt.json", "phase5-builds/phase5-runs.json", "phase5-builds.stdout"]
+  },
+
+  "source_identity": {
+    "branch": "physics-unity-2019.4",
+    "head_at_session_start": "7f1e8727782c985370a4c1b482292a20e6787918",
+    "head_at_session_end": "045296d6ed9f749d8ea12ca2e4b345d72e5dfce8",
+    "tree_at_session_end": "40f30b59dd8fbf38fc2387d7c0aaf8481a146b89",
+    "why_head_moved": "package_physics_player.py's git_revision gate refuses to package tracked drift from HEAD, so Phase 5 cannot run against uncommitted work; the three commits are the wave's own required outputs",
+    "commits": [
+      {"sha": "a1067e5", "subject": "docs(project-docs): describe the compressed knowledge index"},
+      {"sha": "87365fb", "subject": "fix(smoke): use the handoff-verified release offset for the known action"},
+      {"sha": "045296d", "subject": "test(physics-capture): pin the request-70 collision payload at the wire"}
+    ],
+    "file_digests": {
+      "scripts/smoke_physics_capture.py": "72f6a12183df97755ab715919557d70eb7cf5c59e9c8311dcab0c9925288b6f6",
+      "tests/test_smoke_physics_capture.py": "3cd544c93d9b31d73e5026c4e87238b00dfb174acc9f75a30ae52a03135a91c0",
+      "tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs": "8ea5ab0b76b9bea1402121238bf57180c0ec344d97cfe80924bb03e41aa012f2",
+      "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs": "0987580887fb07603d1b4174effbdfc83c6cfef8b8554d4d8eaed7934cc879d6",
+      "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureProtocol.cs": "38334eae168097a25e8606c4475ab79f8fea7a514ffd3315af731b05215bc514"
+    }
+  },
+
+  "candidate_identity": {
+    "staged_pin_unchanged": true,
+    "staged_archive_sha256_before": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+    "staged_archive_sha256_after": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+    "phase_5_archive_location": "non-production evidence stages only; never staged, published, or smoked"
+  },
+
+  "listener_request_collision": {
+    "obtained_this_session": false,
+    "reason": "no live run was launched, because the acceptance criterion has no reachable success path against this configuration",
+    "last_live_observation": "listener-diagnostic-corrected.json, from the first session, preserved verbatim in runtime-gate-result.md section 5",
+    "fabricated_substitute": false
+  },
+
+  "tests": {
+    "python_focused": {"command": "python -W error::ResourceWarning -m unittest tests.test_smoke_physics_capture", "tests": 75, "result": "OK"},
+    "mutation_harness": {"mutations": 8, "red": 8, "green_not_covered": 0, "restored_sha256": "72f6a12183df97755ab715919557d70eb7cf5c59e9c8311dcab0c9925288b6f6", "restored_identical": true, "baseline_updated_in_lockstep_with_the_smoke_source_edit": true},
+    "unity_editmode_full": {"classes": 8, "tests": 48, "passed": 48, "failed": 0, "skipped": 0, "verdict": "all_editmode_green", "receipt": "editmode-full.json"},
+    "red_green": {"fixture": "PhysicsCaptureProtocolTests.Request70CollisionPayloadCarriesTheContactEvidenceTheContractRequires", "verdict": "red_then_green", "receipt": "collision-payload-redgreen.json"},
+    "authority": "NUnit XML result attributes; the editor exit code is not authoritative, because every invocation on this host exits with a signal inside CEF shutdown reached after the XML was flushed. No compiler or editor failure occurred before discovery."
+  },
+
+  "review": {
+    "invoked_on_the_exact_diff": true,
+    "findings_that_changed_the_outcome": [
+      "the level's bird type is BirdBlack, which overturned an earlier 'risk is near zero' claim and produced the terminal blocker in section S2.1",
+      "AsFloat coercion would have passed a string-typed relative_speed, which produced the fixture correction and the SimpleJSON finding",
+      "an unrelated README hunk, split into its own commit a1067e5"
+    ],
+    "remediation": "each remediated with red/green evidence"
+  },
+
+  "cleanup_and_protected_roots": {
+    "port_2004_listeners": 0,
+    "stranded_processes_by_exe_match": 0,
+    "process_binding_method": "/proc/<pid>/exe resolution, not name or command substring",
+    "name_substring_false_positive_noted": "a zellij server whose socket path contains 'unityhub' is not a Unity process",
+    "scripts_pycache_present": false,
+    "protected_root_unchanged": "sciencebirdsgames/physics-v1/",
+    "preexisting_dirty_and_untracked_paths_preserved": true
+  },
+
+  "what_did_not_happen": {
+    "smoke_spent": false,
+    "retry_of_any_bounded_run": false,
+    "repin": false,
+    "publication": false,
+    "cohort_collection": false,
+    "todo_8_health_report": false,
+    "f1_f4_jepa_spsg_controller_work": false
+  },
+
+  "supersedes_in_the_first_session_record": [
+    "section 8's 'Phase 5 ... was not reached' — Phase 5 was reached and passed",
+    "section 1's attribution of the blocker to the empty collision payload alone — that defect is fixed on this branch; the terminal blocker is now level geometry"
+  ],
+
+  "next_step": [
+    "call PhysicalSnapshotRuntime.RecordCollisionCallback(collision) directly (not base) at the top of ABBirdBlack.OnCollisionEnter2D and at the top of ABBlock.OnCollisionEnter2D, hoisted out of the else branch",
+    "decide the empty-evidence policy at PhysicsShotRecorder.cs:531 — Debug.LogError plus early return is equally fail-closed at the wire without aborting the physics handler",
+    "add EditMode fixtures proving a BirdBlack impact and a bird-on-block impact each record a collision event, red before and green after",
+    "re-run Phase 5, then spend the single full smoke on the rebuilt candidate; only then does the conditional re-pin authorization apply"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "authority": "read directly from the staged archive's own provenance and from git objects at the named commits, on 2026-08-11",
+  "conclusion": "in_scope_and_already_fixed_at_head",
+  "finding": "The staged player's empty collision payload is a liveness defect at the emit site, not a schema, event-model or consumer defect. It is fixed on this branch by commits that postdate the staged build, so TODO-2 is a verify-and-rebuild, not a repair.",
+  "mission_scope_check": {
+    "question": "why does the payload serialize empty",
+    "answer": "at e2d19ae the emitter queried its contact evidence from a store that is not yet populated when the callback fires",
+    "is_missing_field_assignment_in_the_collision_callback": true,
+    "requires_changing_the_event_model": false,
+    "requires_changing_the_capture_schema": false,
+    "requires_changing_anything_the_python_consumer_reads": false,
+    "frozen_contract_weakened": false,
+    "verdict": "the mission's in-scope branch: fix it. The fix is already committed; no emitter change was written by this wave."
+  },
+  "staged_candidate": {
+    "archive_sha256": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+    "provenance_git_head": "e2d19ae04946765b0196e043826bb08aa9a09caf",
+    "provenance_git_tree": "f0347223e9b56cde2d2d9b9902ce8b4f139b059f",
+    "player_sha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa"
+  },
+  "root_cause": {
+    "site": "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicalSnapshotRuntime.cs, RecordCollision(Collision2D) at e2d19ae",
+    "mechanism": "contactIds was selected from shotRecorder.RawContacts filtered on contact.FixedStep == Clock.FixedStep. OnCollisionEnter2D fires inside the physics step, before FixedUpdate calls RecordUnityContacts for that step, so the store held no rows for the current step and the query returned an empty array.",
+    "propagation": "PhysicsShotRecorder.RecordCollision at e2d19ae accepted the empty array without validation and built PhysicalMacroEventPayload(contactIds: <empty>, relativeSpeed: ...). PhysicsCaptureProtocol.AppendPayload emits the contact_ids/relative_speed pair only when payload.ContactIds.Count > 0, so the wire value became the empty object {}.",
+    "why_the_consumer_rejects": "docs/data_contracts/physics_capture_v1.schema.json $defs.event_payload is a oneOf; {} satisfies no branch, and the collision branch requires contact_ids with minItems 1 plus a numeric relative_speed with minimum 0.",
+    "callback_wiring": "intact at both commits: ABGameObject.OnCollisionEnter2D -> PhysicalSnapshotRuntime.RecordCollisionCallback(collision)"
+  },
+  "correction_to_earlier_framing": "An earlier reading of this wave attributed the defect to the four-argument RecordCollision overload, which at e2d19ae hardcoded new string[0]. That overload exists and is defective at e2d19ae, but the runtime never called it: the call site passed the (empty) queried contactIds to the evidence-carrying overload. The observable outcome is identical; the mechanism recorded above is the accurate one.",
+  "fix_already_on_this_branch": {
+    "commits": [
+      {
+        "sha": "7a2dd02",
+        "subject": "fix(physics): bind collision callbacks to contacts",
+        "ancestor_of_e2d19ae": false,
+        "in_head": true,
+        "effect": "constructs PhysicalContactInput[] directly from collision.contacts, which is live at callback time, and passes it to the contact-carrying overload"
+      },
+      {
+        "sha": "97c4dd6",
+        "subject": "fix(physics): reject collision samples atomically",
+        "ancestor_of_e2d19ae": false,
+        "in_head": true,
+        "effect": "rejects empty evidence and non-finite or negative relative_speed before mutating the recorder; dedupes and ordinally sorts contact ids"
+      },
+      {
+        "sha": "3e16f2f",
+        "ancestor_of_e2d19ae": true,
+        "in_head": true,
+        "effect": "already present in the staged build; not part of the fix"
+      }
+    ],
+    "consequence": "the staged binary is stale relative to its own source branch; rebuilding from HEAD is what closes the blocker"
+  },
+  "test_gap_this_wave_closed": {
+    "gap": "recorder-level fixtures asserted the recorder API, and protocol fixtures asserted the envelope, but nothing asserted the serialized collision payload — the exact seam where an empty ContactIds list silently becomes {} on the wire.",
+    "fixture_added": "PhysicsCaptureProtocolTests.Request70CollisionPayloadCarriesTheContactEvidenceTheContractRequires",
+    "red_green_harness": "collision_payload_redgreen.py",
+    "red_green_receipt": "collision-payload-redgreen.json"
+  },
+  "phase": "todo-2-scope-check",
+  "wave": "runtime-repin-gate-20260810"
+}

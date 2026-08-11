@@ -12,9 +12,23 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+def _repo_root() -> Path:
+    """Locate the worktree root by the file under test, not by a fixed depth.
+
+    A hardcoded ``parents[N]`` silently breaks whenever this evidence directory
+    moves, and it did: the committed ``parents[1]`` resolved to
+    ``.claude/project-docs/evidence`` while the worktree root is ``parents[4]``,
+    so the harness raised ``FileNotFoundError`` before it could refuse anything.
+    """
+    for candidate in Path(__file__).resolve().parents:
+        if (candidate / "scripts/smoke_physics_capture.py").is_file():
+            return candidate
+    raise SystemExit("cannot locate the worktree root containing scripts/smoke_physics_capture.py")
+
+
+ROOT = _repo_root()
 SOURCE = ROOT / "scripts/smoke_physics_capture.py"
-BASELINE = "f61ccfa52ef5bed5e156e8480f32f407c13286276df00d8ec676e9671fc84978"
+BASELINE = "72f6a12183df97755ab715919557d70eb7cf5c59e9c8311dcab0c9925288b6f6"
 
 MUTATIONS: tuple[tuple[str, str, str, str], ...] = (
     (
