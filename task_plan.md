@@ -10,7 +10,7 @@ Reconcile the BG-NS-JEPA roadmap with current accepted evidence and produce an i
 - [x] Correct stale high-level roadmap progress without overclaiming Milestone 1.
 - [x] Write the Milestone 0a execution specification.
 - [x] Run final document/evidence validation and record actual output.
-- [ ] Inspect Git state/diff/history, commit session-owned files, write and commit the handoff, push, and verify `HEAD == upstream`.
+- [x] Inspect Git state/diff/history, commit session-owned files, write and commit the handoff, push, and verify `HEAD == upstream`.
 - [x] Obtain an independent critic review of the completed writing.
 
 ## Key Questions
@@ -31,4 +31,4 @@ Reconcile the BG-NS-JEPA roadmap with current accepted evidence and produce an i
 - The first independent critic review rejected one authority-wording contradiction. The opening status was narrowed to match the already-settled fixture-only authority boundary; no semantic rule changed.
 
 ## Status
-**Currently completing post-review Git finalization** — the correction passed focused validation and follow-up critic review returned ACCEPT.
+**Completed** — roadmap/specification, validation, critic correction and acceptance, Git commits, handoff, and published branch state are complete. The exact next action is the fixture-only implementation session in the handoff.
