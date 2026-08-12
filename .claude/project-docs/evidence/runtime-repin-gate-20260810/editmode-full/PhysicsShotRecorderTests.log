@@ -37,12 +37,12 @@ Process terminated. Couldn't find a valid ICU package installed on the system. S
 IPC channel to LicensingClient doesn't exist; falling back to Legacy licensing
 [LicensingClient] ERROR Failed to disconnect local IPC connection
 
-LICENSE SYSTEM [2026811 19:24:42] Next license update check is after 2026-08-08T14:59:07
+LICENSE SYSTEM [2026812 14:27:1] Next license update check is after 2026-08-08T14:59:07
 
 Pro License: NO
 
-LICENSE SYSTEM [2026811 19:24:42] Current license is already valid and activated. Skipping license activation process (Provided username/password will be ignored).
-[Package Manager] Server::Start -- Port 54605 was selected
+LICENSE SYSTEM [2026812 14:27:1] Current license is already valid and activated. Skipping license activation process (Provided username/password will be ignored).
+[Package Manager] Server::Start -- Port 34069 was selected
 
 COMMAND LINE ARGUMENTS:
 /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity
@@ -63,7 +63,7 @@ Successfully changed project path to: /mnt/array/sukaih/Project/.novphy-worktree
 /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer
 Using Asset Import Pipeline V2.
 DisplayProgressbar: Unity Package Manager
-Adding genesis user token [Package Manager] Done resolving packages in 0.36s seconds
+Adding genesis user token [Package Manager] Done resolving packages in 0.41s seconds
 [Package Manager] Done checking package constraints in 0.00s seconds
 [Package Manager] 
 Registered 41 packages:
@@ -112,8 +112,8 @@ Registered 41 packages:
     com.unity.modules.subsystems@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.subsystems@1.0.0)
 
 [Subsystems] No new subsystems found in resolved package list.
-[Package Manager] Done registering packages in 0.02s seconds
-Refreshing native plugins compatible for Editor in 20.44 ms, found 0 plugins.
+[Package Manager] Done registering packages in 0.03s seconds
+Refreshing native plugins compatible for Editor in 26.43 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Initialize engine version: 2019.4.41f2 (6b23d448b533)
 [Subsystems] Discovering subsystems at path /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Resources/UnitySubsystems
@@ -128,95 +128,95 @@ Initialize mono
 Mono path[0] = '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed'
 Mono path[1] = '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/MonoBleedingEdge/lib/mono/unityjit'
 Mono config path = '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56893
-ImportWorker Server TCP listen port: 40101
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56092
+ImportWorker Server TCP listen port: 39607
 Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
 Register platform support module: /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/PlaybackEngines/LinuxStandaloneSupport/UnityEditor.LinuxStandalone.Extensions.dll
-Registered in 0.000964 seconds.
+Registered in 0.001337 seconds.
 Native extension for LinuxStandalone target not found
-Refreshing native plugins compatible for Editor in 18.53 ms, found 0 plugins.
+Refreshing native plugins compatible for Editor in 22.18 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Mono: successfully reloaded assembly
-- Completed reload, in  0.559 seconds
+- Completed reload, in  0.646 seconds
 Domain Reload Profiling:
-	ReloadAssembly (574ms)
-		BeginReloadAssembly (17ms)
+	ReloadAssembly (660ms)
+		BeginReloadAssembly (19ms)
 			ExecutionOrderSort (0ms)
 			DisableScriptedObjects (0ms)
 			BackupInstance (0ms)
 			ReleaseScriptingObjects (0ms)
 			CreateAndSetChildDomain (1ms)
-		EndReloadAssembly (212ms)
-			LoadAssemblies (17ms)
+		EndReloadAssembly (247ms)
+			LoadAssemblies (18ms)
 			RebuildTransferFunctionScriptingTraits (0ms)
-			SetupTypeCache (79ms)
+			SetupTypeCache (90ms)
 			ReleaseScriptCaches (0ms)
-			RebuildScriptCaches (20ms)
-			SetupLoadedEditorAssemblies (74ms)
+			RebuildScriptCaches (23ms)
+			SetupLoadedEditorAssemblies (89ms)
 				LogAssemblyErrors (0ms)
 				InitializePlatformSupportModulesInManaged (4ms)
 				SetLoadedEditorAssemblies (0ms)
-				RefreshPlugins (19ms)
+				RefreshPlugins (22ms)
 				BeforeProcessingInitializeOnLoad (1ms)
-				ProcessInitializeOnLoadAttributes (46ms)
+				ProcessInitializeOnLoadAttributes (56ms)
 				ProcessInitializeOnLoadMethodAttributes (5ms)
 				AfterProcessingInitializeOnLoad (0ms)
 				EditorAssembliesLoaded (0ms)
 			ExecutionOrderSort2 (0ms)
 			AwakeInstancesAfterBackupRestoration (0ms)
 Registering precompiled user dll's ...
-Registered in 0.097652 seconds.
+Registered in 0.617802 seconds.
 Platform modules already initialized, skipping
-Validating Project structure ... 0.006713 seconds.
+Validating Project structure ... 0.015913 seconds.
 Shader import version has changed; will reimport all shaders...
-Upgrading shader files ...0.005443 seconds.
+Upgrading shader files ...0.014948 seconds.
 Begin MonoManager ReloadAssembly
 Native extension for LinuxStandalone target not found
-Refreshing native plugins compatible for Editor in 0.37 ms, found 0 plugins.
+Refreshing native plugins compatible for Editor in 0.41 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Mono: successfully reloaded assembly
-- Completed reload, in  0.519 seconds
+- Completed reload, in  0.647 seconds
 Domain Reload Profiling:
-	ReloadAssembly (540ms)
-		BeginReloadAssembly (34ms)
+	ReloadAssembly (674ms)
+		BeginReloadAssembly (40ms)
 			ExecutionOrderSort (0ms)
 			DisableScriptedObjects (1ms)
 			BackupInstance (0ms)
 			ReleaseScriptingObjects (0ms)
-			CreateAndSetChildDomain (16ms)
-		EndReloadAssembly (467ms)
-			LoadAssemblies (33ms)
+			CreateAndSetChildDomain (17ms)
+		EndReloadAssembly (586ms)
+			LoadAssemblies (55ms)
 			RebuildTransferFunctionScriptingTraits (0ms)
-			SetupTypeCache (149ms)
+			SetupTypeCache (174ms)
 			ReleaseScriptCaches (0ms)
-			RebuildScriptCaches (32ms)
-			SetupLoadedEditorAssemblies (212ms)
+			RebuildScriptCaches (37ms)
+			SetupLoadedEditorAssemblies (264ms)
 				LogAssemblyErrors (0ms)
 				InitializePlatformSupportModulesInManaged (6ms)
 				SetLoadedEditorAssemblies (0ms)
 				RefreshPlugins (1ms)
-				BeforeProcessingInitializeOnLoad (56ms)
-				ProcessInitializeOnLoadAttributes (146ms)
-				ProcessInitializeOnLoadMethodAttributes (2ms)
+				BeforeProcessingInitializeOnLoad (74ms)
+				ProcessInitializeOnLoadAttributes (178ms)
+				ProcessInitializeOnLoadMethodAttributes (3ms)
 				AfterProcessingInitializeOnLoad (2ms)
 				EditorAssembliesLoaded (0ms)
 			ExecutionOrderSort2 (0ms)
 			AwakeInstancesAfterBackupRestoration (1ms)
 Platform modules already initialized, skipping
 RefreshInfo: InitialScriptRefreshV2(NoUpdateAssetOptions)
-RefreshProfiler: Total: 976.849ms
-	InvokeBeforeRefreshCallbacks: 0.317ms
-	ApplyChangesToAssetFolders: 0.053ms
+RefreshProfiler: Total: 1462.497ms
+	InvokeBeforeRefreshCallbacks: 1.016ms
+	ApplyChangesToAssetFolders: 0.070ms
 	WriteModifiedImportersToTextMetaFiles: 0.000ms
 	CleanLegacyArtifacts: 0.000ms
-	Scan: 134.730ms
+	Scan: 144.392ms
 	OnSourceAssetsModified: 0.001ms
 	UnregisterDeletedAssets: 0.000ms
-	InitializeImportedAssetsSnapshot: 0.148ms
-	GetAllGuidsForCategorization: 0.071ms
-	CategorizeAssets: 19.460ms
-	ImportAndPostprocessOutOfDateAssets: 815.865ms (815.529ms without children)
+	InitializeImportedAssetsSnapshot: 0.177ms
+	GetAllGuidsForCategorization: 0.143ms
+	CategorizeAssets: 25.117ms
+	ImportAndPostprocessOutOfDateAssets: 1284.498ms (1284.087ms without children)
 		ImportManagerImport: 0.000ms (0.000ms without children)
 			ImportInProcess: 0.000ms
 			ImportOutOfProcess: 0.000ms
@@ -228,42 +228,42 @@ RefreshProfiler: Total: 976.849ms
 		PostProcessAllAssets: 0.000ms
 		ReloadImportedAssets: 0.000ms
 		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
-		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.124ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.171ms
 		InitializingProgressBar: 0.002ms
-		PostProcessAllAssetNotificationsAddChangedAssets: 0.084ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.087ms
 		OnDemandSchedulerStart: 0.000ms
-		RestoreLoadedAssetsState: 0.127ms
+		RestoreLoadedAssetsState: 0.152ms
 	InvokeProjectHasChanged: 0.000ms
 	UpdateImportedAssetsSnapshot: 0.000ms
-	ReloadSourceAssets: 0.254ms
-	UnloadImportedAssets: 0.003ms
-	Hotreload: 0.046ms
+	ReloadSourceAssets: 0.317ms
+	UnloadImportedAssets: 0.004ms
+	Hotreload: 0.069ms
 	FixTempGuids: 0.002ms
 	VerifyGuidPMRegistrations: 0.000ms
-	GatherAllCurrentPrimaryArtifactRevisions: 0.000ms
-	UnloadStreamsBegin: 0.270ms
-	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.003ms
-	GetLoadedSourceAssetsSnapshot: 0.169ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.001ms
+	UnloadStreamsBegin: 0.310ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.004ms
+	GetLoadedSourceAssetsSnapshot: 0.200ms
 	PersistCurrentRevisions: 0.000ms
-	UnloadStreamsEnd: 5.074ms
-	GenerateScriptTypeHashes: 0.163ms
-	Untracked: 0.383ms
-Refreshing native plugins compatible for Editor in 0.23 ms, found 0 plugins.
+	UnloadStreamsEnd: 5.770ms
+	GenerateScriptTypeHashes: 0.231ms
+	Untracked: 0.409ms
+Refreshing native plugins compatible for Editor in 0.39 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Refresh completed in 0.174305 seconds.
+Refresh completed in 0.681773 seconds.
 RefreshInfo: RefreshV2(ForceSynchronousImport)
-RefreshProfiler: Total: 174.299ms
-	InvokeBeforeRefreshCallbacks: 0.568ms
-	ApplyChangesToAssetFolders: 0.058ms
+RefreshProfiler: Total: 681.759ms
+	InvokeBeforeRefreshCallbacks: 0.928ms
+	ApplyChangesToAssetFolders: 0.074ms
 	WriteModifiedImportersToTextMetaFiles: 0.000ms
 	CleanLegacyArtifacts: 0.000ms
-	Scan: 102.290ms
-	OnSourceAssetsModified: 0.000ms
+	Scan: 582.432ms
+	OnSourceAssetsModified: 0.001ms
 	UnregisterDeletedAssets: 0.000ms
-	InitializeImportedAssetsSnapshot: 2.982ms
-	GetAllGuidsForCategorization: 0.041ms
-	CategorizeAssets: 17.466ms
-	ImportAndPostprocessOutOfDateAssets: 48.675ms (0.871ms without children)
+	InitializeImportedAssetsSnapshot: 3.751ms
+	GetAllGuidsForCategorization: 0.080ms
+	CategorizeAssets: 21.028ms
+	ImportAndPostprocessOutOfDateAssets: 70.783ms (0.969ms without children)
 		ImportManagerImport: 0.000ms (0.000ms without children)
 			ImportInProcess: 0.000ms
 			ImportOutOfProcess: 0.000ms
@@ -272,39 +272,39 @@ RefreshProfiler: Total: 174.299ms
 				RemoteAssetCacheResolve: 0.000ms
 				RemoteAssetCacheDownloadFile: 0.000ms
 		CompileScripts: 0.000ms
-		PostProcessAllAssets: 44.764ms
+		PostProcessAllAssets: 66.001ms
 		ReloadImportedAssets: 0.002ms
 		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
-		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.161ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.149ms
 		InitializingProgressBar: 0.000ms
-		PostProcessAllAssetNotificationsAddChangedAssets: 0.082ms
-		OnDemandSchedulerStart: 0.413ms
-		RestoreLoadedAssetsState: 1.107ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.085ms
+		OnDemandSchedulerStart: 0.284ms
+		RestoreLoadedAssetsState: 1.051ms
 	InvokeProjectHasChanged: 0.000ms
-	UpdateImportedAssetsSnapshot: 1.274ms
-	ReloadSourceAssets: 0.244ms
-	UnloadImportedAssets: 0.040ms
-	Hotreload: 0.623ms
-	FixTempGuids: 0.001ms
+	UpdateImportedAssetsSnapshot: 2.242ms
+	ReloadSourceAssets: 0.261ms
+	UnloadImportedAssets: 0.046ms
+	Hotreload: 0.856ms
+	FixTempGuids: 0.002ms
 	VerifyGuidPMRegistrations: 0.000ms
-	GatherAllCurrentPrimaryArtifactRevisions: 0.094ms
-	UnloadStreamsBegin: 0.004ms
-	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.162ms
-	GetLoadedSourceAssetsSnapshot: 1.664ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.107ms
+	UnloadStreamsBegin: 0.007ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.192ms
+	GetLoadedSourceAssetsSnapshot: 1.680ms
 	PersistCurrentRevisions: 0.000ms
-	UnloadStreamsEnd: 0.446ms
-	GenerateScriptTypeHashes: 0.365ms
-	Untracked: -1.060ms
+	UnloadStreamsEnd: 0.493ms
+	GenerateScriptTypeHashes: 0.431ms
+	Untracked: -0.962ms
 RefreshInfo: StopAssetImportingV2(ForceSynchronousImport)
-RefreshProfiler: Total: 37.020ms
-	InvokeBeforeRefreshCallbacks: 0.409ms
-	ApplyChangesToAssetFolders: 0.065ms
+RefreshProfiler: Total: 42.505ms
+	InvokeBeforeRefreshCallbacks: 0.620ms
+	ApplyChangesToAssetFolders: 0.075ms
 	WriteModifiedImportersToTextMetaFiles: 0.000ms
 	CleanLegacyArtifacts: 0.000ms
-	Scan: 33.719ms
+	Scan: 38.334ms
 	OnSourceAssetsModified: 0.000ms
 	UnregisterDeletedAssets: 0.000ms
-	InitializeImportedAssetsSnapshot: 1.866ms
+	InitializeImportedAssetsSnapshot: 2.040ms
 	GetAllGuidsForCategorization: 0.000ms
 	CategorizeAssets: 0.000ms
 	ImportAndPostprocessOutOfDateAssets: 0.000ms (0.000ms without children)
@@ -328,31 +328,31 @@ RefreshProfiler: Total: 37.020ms
 	UpdateImportedAssetsSnapshot: 0.000ms
 	ReloadSourceAssets: 0.000ms
 	UnloadImportedAssets: 0.000ms
-	Hotreload: 0.008ms
-	FixTempGuids: 0.002ms
+	Hotreload: 0.030ms
+	FixTempGuids: 0.004ms
 	VerifyGuidPMRegistrations: 0.000ms
-	GatherAllCurrentPrimaryArtifactRevisions: 0.097ms
-	UnloadStreamsBegin: 0.055ms
-	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.177ms
-	GetLoadedSourceAssetsSnapshot: 0.280ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.117ms
+	UnloadStreamsBegin: 0.042ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.379ms
+	GetLoadedSourceAssetsSnapshot: 0.323ms
 	PersistCurrentRevisions: 0.000ms
-	UnloadStreamsEnd: 0.003ms
+	UnloadStreamsEnd: 0.013ms
 	GenerateScriptTypeHashes: 0.000ms
-	Untracked: 0.338ms
-Refresh completed in 0.149135 seconds.
+	Untracked: 0.527ms
+Refresh completed in 0.164071 seconds.
 RefreshInfo: RefreshV2(NoUpdateAssetOptions)
-RefreshProfiler: Total: 149.129ms
+RefreshProfiler: Total: 164.062ms
 	InvokeBeforeRefreshCallbacks: 0.001ms
-	ApplyChangesToAssetFolders: 0.049ms
+	ApplyChangesToAssetFolders: 0.081ms
 	WriteModifiedImportersToTextMetaFiles: 0.000ms
 	CleanLegacyArtifacts: 0.000ms
-	Scan: 126.943ms
+	Scan: 136.307ms
 	OnSourceAssetsModified: 0.001ms
 	UnregisterDeletedAssets: 0.000ms
-	InitializeImportedAssetsSnapshot: 1.352ms
-	GetAllGuidsForCategorization: 0.054ms
-	CategorizeAssets: 17.323ms
-	ImportAndPostprocessOutOfDateAssets: 1.681ms (0.278ms without children)
+	InitializeImportedAssetsSnapshot: 2.492ms
+	GetAllGuidsForCategorization: 0.183ms
+	CategorizeAssets: 20.973ms
+	ImportAndPostprocessOutOfDateAssets: 1.901ms (0.325ms without children)
 		ImportManagerImport: 0.000ms (0.000ms without children)
 			ImportInProcess: 0.000ms
 			ImportOutOfProcess: 0.000ms
@@ -364,38 +364,38 @@ RefreshProfiler: Total: 149.129ms
 		PostProcessAllAssets: 0.000ms
 		ReloadImportedAssets: 0.000ms
 		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
-		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.147ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.169ms
 		InitializingProgressBar: 0.000ms
-		PostProcessAllAssetNotificationsAddChangedAssets: 0.073ms
-		OnDemandSchedulerStart: 0.175ms
-		RestoreLoadedAssetsState: 1.008ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.084ms
+		OnDemandSchedulerStart: 0.112ms
+		RestoreLoadedAssetsState: 1.209ms
 	InvokeProjectHasChanged: 0.000ms
 	UpdateImportedAssetsSnapshot: 0.000ms
-	ReloadSourceAssets: 0.268ms
-	UnloadImportedAssets: 0.045ms
-	Hotreload: 0.054ms
-	FixTempGuids: 0.001ms
+	ReloadSourceAssets: 0.311ms
+	UnloadImportedAssets: 0.048ms
+	Hotreload: 0.055ms
+	FixTempGuids: 0.002ms
 	VerifyGuidPMRegistrations: 0.000ms
-	GatherAllCurrentPrimaryArtifactRevisions: 0.094ms
-	UnloadStreamsBegin: 0.010ms
-	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.248ms
-	GetLoadedSourceAssetsSnapshot: 1.300ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.115ms
+	UnloadStreamsBegin: 0.016ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.259ms
+	GetLoadedSourceAssetsSnapshot: 1.557ms
 	PersistCurrentRevisions: 0.000ms
-	UnloadStreamsEnd: 0.004ms
+	UnloadStreamsEnd: 0.006ms
 	GenerateScriptTypeHashes: 0.000ms
-	Untracked: -0.302ms
+	Untracked: -0.245ms
 Initializing Unity extensions:
  '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/UnityExtensions/Unity/UnityVR/Editor/UnityEditor.VR.dll'  GUID: 4ba2329b63d54f0187bcaa12486b1b0f
 UpdateMenuTitleForLanguage: 10
 Unloading 85 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 34.8 MB.
-System memory in use after: 34.0 MB.
+System memory in use after: 34.1 MB.
 
-Unloading 137 unused Assets to reduce memory usage. Loaded Objects now: 1807.
-Total: 2.285460 ms (FindLiveObjects: 0.127291 ms CreateObjectMapping: 0.028262 ms MarkObjects: 1.595044 ms  DeleteObjects: 0.534342 ms)
+Unloading 137 unused Assets to reduce memory usage. Loaded Objects now: 1808.
+Total: 2.688224 ms (FindLiveObjects: 0.165608 ms CreateObjectMapping: 0.026160 ms MarkObjects: 1.860141 ms  DeleteObjects: 0.635594 ms)
 
-[Project] Loading completed in 8.194 seconds
-	Project init time: 				0.080 seconds
+[Project] Loading completed in 10.202 seconds
+	Project init time: 				0.130 seconds
 		Template init time: 		0.000 seconds
 		Services packages init time: 	0.000 seconds
 		Package Manager init time: 		0.000 seconds
@@ -404,7 +404,7 @@ Total: 2.285460 ms (FindLiveObjects: 0.127291 ms CreateObjectMapping: 0.028262 m
 		Assemblies load time: 			0.000 seconds
 		Unity extensions init time: 	0.001 seconds
 		Asset Database refresh time: 	0.000 seconds
-	Scene opening time: 			0.069 seconds
+	Scene opening time: 			0.075 seconds
 Running tests for EditMode
 With test filter: PhysicsShotRecorderTests
 Executing tests with settings: test mode = EditMode
@@ -425,22 +425,22 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions () (at /home/bokken/b
 
 [MODES] Loading mode Default (0) for mode-current-id-Science Birds
 [UnityConnectServicesConfig] config is NOT valid, switching to default
-Created GICache directory at /tmp/GiCache. Took: 0.003s, timestamps: [8.198 - 8.201]
+Created GICache directory at /tmp/GiCache. Took: 0.003s, timestamps: [10.207 - 10.210]
 gi::BakeBackendSwitch: switching bake backend from 3 to 1.
 Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 34.3 MB.
-System memory in use after: 34.4 MB.
+System memory in use after: 34.5 MB.
 
-Unloading 6 unused Assets to reduce memory usage. Loaded Objects now: 1822.
-Total: 3.706443 ms (FindLiveObjects: 0.109033 ms CreateObjectMapping: 0.017096 ms MarkObjects: 3.556808 ms  DeleteObjects: 0.022995 ms)
+Unloading 6 unused Assets to reduce memory usage. Loaded Objects now: 1823.
+Total: 4.853353 ms (FindLiveObjects: 0.152179 ms CreateObjectMapping: 0.024767 ms MarkObjects: 4.646503 ms  DeleteObjects: 0.029304 ms)
 
 physics_capture_v1: refusing a collision event whose relative speed is not finite and non-negative; no event emitted.
 UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:37)
 UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
 UnityEngine.Logger:Log (UnityEngine.LogType,object)
 UnityEngine.Debug:LogError (object)
-PhysicalShotRecorder:RecordCollision (long,single,string,string,PhysicalContactInput[],single) (at Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:556)
-PhysicsShotRecorderTests:CollisionContactSamplesRejectBeforeRecorderMutation () (at Assets/Tests/Editor/PhysicsShotRecorderTests.cs:198)
+PhysicalShotRecorder:RecordCollision (long,single,string,string,PhysicalContactInput[],single) (at Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:244)
+PhysicsShotRecorderTests:CollisionContactSamplesRejectBeforeRecorderMutation () (at Assets/Tests/Editor/PhysicsShotRecorderTests.cs:199)
 System.Reflection.MonoMethod:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
 System.Reflection.MethodBase:Invoke (object,object[])
 NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
@@ -482,8 +482,8 @@ UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output
 UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
 UnityEngine.Logger:Log (UnityEngine.LogType,object)
 UnityEngine.Debug:LogError (object)
-PhysicalShotRecorder:RecordCollision (long,single,string,string,PhysicalContactInput[],single) (at Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:570)
-PhysicsShotRecorderTests:CollisionContactSamplesRejectBeforeRecorderMutation () (at Assets/Tests/Editor/PhysicsShotRecorderTests.cs:207)
+PhysicalShotRecorder:RecordCollision (long,single,string,string,PhysicalContactInput[],single) (at Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:258)
+PhysicsShotRecorderTests:CollisionContactSamplesRejectBeforeRecorderMutation () (at Assets/Tests/Editor/PhysicsShotRecorderTests.cs:208)
 System.Reflection.MonoMethod:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
 System.Reflection.MethodBase:Invoke (object,object[])
 NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
@@ -525,8 +525,8 @@ UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output
 UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
 UnityEngine.Logger:Log (UnityEngine.LogType,object)
 UnityEngine.Debug:LogError (object)
-PhysicalShotRecorder:RecordCollision (long,single,string,string,System.Collections.Generic.IEnumerable`1<string>,single) (at Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:533)
-PhysicsShotRecorderTests:CollisionPayloadRejectsMissingOrInvalidEvidence () (at Assets/Tests/Editor/PhysicsShotRecorderTests.cs:135)
+PhysicalShotRecorder:RecordCollision (long,single,string,string,System.Collections.Generic.IEnumerable`1<string>,single) (at Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:214)
+PhysicsShotRecorderTests:CollisionPayloadRejectsMissingOrInvalidEvidence () (at Assets/Tests/Editor/PhysicsShotRecorderTests.cs:136)
 System.Reflection.MonoMethod:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
 System.Reflection.MethodBase:Invoke (object,object[])
 NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
@@ -568,8 +568,8 @@ UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output
 UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
 UnityEngine.Logger:Log (UnityEngine.LogType,object)
 UnityEngine.Debug:LogError (object)
-PhysicalShotRecorder:RecordCollision (long,single,string,string,System.Collections.Generic.IEnumerable`1<string>,single) (at Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:538)
-PhysicsShotRecorderTests:CollisionPayloadRejectsMissingOrInvalidEvidence () (at Assets/Tests/Editor/PhysicsShotRecorderTests.cs:139)
+PhysicalShotRecorder:RecordCollision (long,single,string,string,System.Collections.Generic.IEnumerable`1<string>,single) (at Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:219)
+PhysicsShotRecorderTests:CollisionPayloadRejectsMissingOrInvalidEvidence () (at Assets/Tests/Editor/PhysicsShotRecorderTests.cs:140)
 System.Reflection.MonoMethod:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
 System.Reflection.MethodBase:Invoke (object,object[])
 NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
@@ -611,8 +611,8 @@ UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output
 UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
 UnityEngine.Logger:Log (UnityEngine.LogType,object)
 UnityEngine.Debug:LogError (object)
-PhysicalShotRecorder:RecordCollision (long,single,string,string,System.Collections.Generic.IEnumerable`1<string>,single) (at Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:538)
-PhysicsShotRecorderTests:CollisionPayloadRejectsMissingOrInvalidEvidence () (at Assets/Tests/Editor/PhysicsShotRecorderTests.cs:143)
+PhysicalShotRecorder:RecordCollision (long,single,string,string,System.Collections.Generic.IEnumerable`1<string>,single) (at Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs:219)
+PhysicsShotRecorderTests:CollisionPayloadRejectsMissingOrInvalidEvidence () (at Assets/Tests/Editor/PhysicsShotRecorderTests.cs:144)
 System.Reflection.MonoMethod:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
 System.Reflection.MethodBase:Invoke (object,object[])
 NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
@@ -653,22 +653,22 @@ Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
-Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1828.
-Total: 4.338981 ms (FindLiveObjects: 0.106230 ms CreateObjectMapping: 0.017386 ms MarkObjects: 4.201645 ms  DeleteObjects: 0.013229 ms)
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
+Total: 5.538081 ms (FindLiveObjects: 0.154832 ms CreateObjectMapping: 0.020031 ms MarkObjects: 5.354756 ms  DeleteObjects: 0.007751 ms)
 
 Saving results to: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.claude/project-docs/evidence/runtime-repin-gate-20260810/editmode-full/PhysicsShotRecorderTests.xml
-[0811/192445:ERROR:browser_main_loop.cc(161)] Running without the SUID sandbox! See https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment for more information on developing with the sandbox on.
+[0812/142706:ERROR:browser_main_loop.cc(161)] Running without the SUID sandbox! See https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment for more information on developing with the sandbox on.
 Caught fatal signal - signo:11 code:1 errno:0 addr:0x58
 Obtained 12 stack frames.
-#0  0x0079d904845330 in __sigaction
-#1  0x0079d90bcc365d in printing::PrintJobManager::Shutdown()
-#2  0x0079d90bc3bdd6 in CefContext::FinishShutdownOnUIThread(base::WaitableEvent*)
-#3  0x0079d90bc3c901 in CefContext::Shutdown()
-#4  0x0079d90bc3ca1c in CefShutdown()
-#5  0x006011f1568bd7 in CefInstance::~CefInstance()
-#6  0x006011f1568ca9 in CefInstance::~CefInstance()
-#7  0x006011f1567343 in CefInstance::Destroy()
-#8  0x006011ee5d7213 in Application::Terminate(bool)
-#9  0x006011ee5cb04c in Application::Exit(int)
-#10 0x00000041ffe032 in (wrapper managed-to-native) UnityEditor.EditorApplication:Exit (int)
-#11 0x00000041fb5978 in UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator:RunFinished (NUnit.Framework.Interfaces.ITestResult)
+#0  0x0076ee07a45330 in __sigaction
+#1  0x0076ee0eec365d in printing::PrintJobManager::Shutdown()
+#2  0x0076ee0ee3bdd6 in CefContext::FinishShutdownOnUIThread(base::WaitableEvent*)
+#3  0x0076ee0ee3c901 in CefContext::Shutdown()
+#4  0x0076ee0ee3ca1c in CefShutdown()
+#5  0x00650bfed68bd7 in CefInstance::~CefInstance()
+#6  0x00650bfed68ca9 in CefInstance::~CefInstance()
+#7  0x00650bfed67343 in CefInstance::Destroy()
+#8  0x00650bfbdd7213 in Application::Terminate(bool)
+#9  0x00650bfbdcb04c in Application::Exit(int)
+#10 0x000000407df032 in (wrapper managed-to-native) UnityEditor.EditorApplication:Exit (int)
+#11 0x00000040797698 in UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator:RunFinished (NUnit.Framework.Interfaces.ITestResult)

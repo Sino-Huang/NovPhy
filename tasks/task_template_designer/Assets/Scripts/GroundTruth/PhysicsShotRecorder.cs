@@ -3,325 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public enum PhysicalCaptureFailureCode
-{
-    RecordLimitExceeded,
-    ByteLimitExceeded,
-    CaptureTimeout,
-    TruncatedFinalization,
-    EnvelopeLimitExceeded
-}
-
-public static class PhysicsCaptureFailureCode
-{
-    public const PhysicalCaptureFailureCode RecordLimitExceeded = PhysicalCaptureFailureCode.RecordLimitExceeded;
-    public const PhysicalCaptureFailureCode ByteLimitExceeded = PhysicalCaptureFailureCode.ByteLimitExceeded;
-    public const PhysicalCaptureFailureCode CaptureTimeout = PhysicalCaptureFailureCode.CaptureTimeout;
-    public const PhysicalCaptureFailureCode TruncatedFinalization = PhysicalCaptureFailureCode.TruncatedFinalization;
-}
-
-public sealed class PhysicalCaptureFailure
-{
-    public PhysicalCaptureFailureCode Code { get; private set; }
-    public string CodeName
-    {
-        get
-        {
-            switch (Code)
-            {
-                case PhysicalCaptureFailureCode.RecordLimitExceeded: return "record_limit_exceeded";
-                case PhysicalCaptureFailureCode.ByteLimitExceeded: return "byte_limit_exceeded";
-                case PhysicalCaptureFailureCode.CaptureTimeout: return "capture_timeout";
-                case PhysicalCaptureFailureCode.EnvelopeLimitExceeded: return "envelope_limit_exceeded";
-                default: return "truncated_finalization";
-            }
-        }
-    }
-    public string Message { get; private set; }
-
-    public PhysicalCaptureFailure(PhysicalCaptureFailureCode code, string message)
-    {
-        Code = code;
-        Message = message;
-    }
-}
-
-public sealed class PhysicalCaptureLimits
-{
-    public int MaxRecords { get; private set; }
-    public int MaxBytes { get; private set; }
-    public float TimeoutSeconds { get; private set; }
-
-    public PhysicalCaptureLimits(int maxRecords, int maxBytes, float timeoutSeconds)
-    {
-        MaxRecords = maxRecords;
-        MaxBytes = maxBytes;
-        TimeoutSeconds = timeoutSeconds;
-    }
-}
-
-public class PhysicalContactInput
-{
-    public string EntityIdA { get; private set; }
-    public int ColliderIdA { get; private set; }
-    public Vector2 Point { get; private set; }
-    public Vector2 Normal { get; private set; }
-    public float Separation { get; private set; }
-    public Vector2 RelativeVelocity { get; private set; }
-    public float NormalImpulse { get; private set; }
-    public float TangentImpulse { get; private set; }
-    public string EntityIdB { get; private set; }
-    public int ColliderIdB { get; private set; }
-    public Vector2 CenterA { get; private set; }
-    public Vector2 CenterB { get; private set; }
-    public bool IsTrigger { get; private set; }
-
-    public PhysicalContactInput(
-        string entityIdA, int colliderIdA, Vector2 point, Vector2 normal, float separation,
-        Vector2 relativeVelocity, float normalImpulse, string entityIdB, int colliderIdB,
-        Vector2 centerB, bool isTrigger)
-        : this(entityIdA, colliderIdA, point, normal, separation, relativeVelocity, normalImpulse,
-            0f, entityIdB, colliderIdB, Vector2.zero, centerB, isTrigger)
-    {
-    }
-
-    public PhysicalContactInput(
-        string entityIdA, int colliderIdA, Vector2 point, Vector2 normal, float separation,
-        Vector2 relativeVelocity, float normalImpulse, string entityIdB, int colliderIdB,
-        Vector2 centerA, Vector2 centerB, bool isTrigger)
-        : this(entityIdA, colliderIdA, point, normal, separation, relativeVelocity, normalImpulse,
-            0f, entityIdB, colliderIdB, centerA, centerB, isTrigger)
-    {
-    }
-
-    public PhysicalContactInput(
-        string entityIdA, int colliderIdA, Vector2 point, Vector2 normal, float separation,
-        Vector2 relativeVelocity, float normalImpulse, float tangentImpulse, string entityIdB, int colliderIdB,
-        Vector2 centerA, Vector2 centerB, bool isTrigger)
-    {
-        EntityIdA = entityIdA;
-        ColliderIdA = colliderIdA;
-        Point = point;
-        Normal = normal;
-        Separation = separation;
-        RelativeVelocity = relativeVelocity;
-        NormalImpulse = normalImpulse;
-        TangentImpulse = tangentImpulse;
-        EntityIdB = entityIdB;
-        ColliderIdB = colliderIdB;
-        CenterA = centerA;
-        CenterB = centerB;
-        IsTrigger = isTrigger;
-    }
-
-    public PhysicalContactInput(
-        Collider2D colliderA, Collider2D colliderB, Vector2 point, Vector2 normal, float separation,
-        Vector2 relativeVelocity, float normalImpulse)
-        : this(colliderA.GetInstanceID().ToString(), colliderA.GetInstanceID(), point, normal, separation,
-            relativeVelocity, normalImpulse, colliderB.GetInstanceID().ToString(), colliderB.GetInstanceID(),
-            colliderA.transform.position, colliderB.transform.position,
-            colliderA.isTrigger || colliderB.isTrigger)
-    {
-    }
-
-}
-
-public sealed class PhysicsContactInput : PhysicalContactInput
-{
-    public PhysicsContactInput(
-        Collider2D colliderA, Collider2D colliderB, Vector2 point, Vector2 normal,
-        float separation, Vector2 relativeVelocity, float normalImpulse)
-        : base(colliderA, colliderB, point, normal, separation, relativeVelocity, normalImpulse)
-    {
-    }
-}
-
-public sealed class PhysicalRawContact
-{
-    public string EntityIdA { get; private set; }
-    public string EntityIdB { get; private set; }
-    public int ColliderIdA { get; private set; }
-    public int ColliderIdB { get; private set; }
-    public Vector2 Point { get; private set; }
-    public Vector2 Normal { get; private set; }
-    public float Separation { get; private set; }
-    public Vector2 RelativeVelocity { get; private set; }
-    public float NormalImpulse { get; private set; }
-    public float TangentImpulse { get; private set; }
-    public int PointIndex { get; internal set; }
-    public Vector2 CenterA { get; private set; }
-    public Vector2 CenterB { get; private set; }
-    public bool IsTrigger { get; private set; }
-    public long FixedStep { get; private set; }
-    public float FixedTime { get; private set; }
-
-    public PhysicalRawContact(PhysicalContactInput input, long fixedStep, float fixedTime)
-    {
-        bool swap = string.CompareOrdinal(input.EntityIdA, input.EntityIdB) > 0
-            || (string.Equals(input.EntityIdA, input.EntityIdB, StringComparison.Ordinal)
-                && input.ColliderIdA > input.ColliderIdB);
-        EntityIdA = swap ? input.EntityIdB : input.EntityIdA;
-        EntityIdB = swap ? input.EntityIdA : input.EntityIdB;
-        ColliderIdA = swap ? input.ColliderIdB : input.ColliderIdA;
-        ColliderIdB = swap ? input.ColliderIdA : input.ColliderIdB;
-        Point = input.Point;
-        Normal = swap ? -input.Normal : input.Normal;
-        Separation = input.Separation;
-        RelativeVelocity = swap ? -input.RelativeVelocity : input.RelativeVelocity;
-        NormalImpulse = input.NormalImpulse;
-        TangentImpulse = input.TangentImpulse;
-        CenterA = swap ? input.CenterB : input.CenterA;
-        CenterB = swap ? input.CenterA : input.CenterB;
-        IsTrigger = input.IsTrigger;
-        FixedStep = fixedStep;
-        FixedTime = fixedTime;
-    }
-
-    public string PairKey
-    {
-        get { return EntityIdA + ":" + ColliderIdA + "|" + EntityIdB + ":" + ColliderIdB; }
-    }
-
-    public string ContactId
-    {
-        get { return "contact:" + FixedStep + ":" + PairKey + ":" + PointIndex; }
-    }
-}
-
-public sealed class PhysicalSupportEdge
-{
-    public string SupporterEntityId { get; private set; }
-    public string SupportedEntityId { get; private set; }
-    public string PairKey { get; private set; }
-    public string ContactIdA { get; private set; }
-    public string ContactIdB { get; private set; }
-    public long FixedStepA { get; private set; }
-    public long FixedStepB { get; private set; }
-
-    public PhysicalSupportEdge(string supporterEntityId, string supportedEntityId, string pairKey,
-        string contactIdA, long fixedStepA, string contactIdB, long fixedStepB)
-    {
-        SupporterEntityId = supporterEntityId;
-        SupportedEntityId = supportedEntityId;
-        PairKey = pairKey;
-        ContactIdA = contactIdA;
-        FixedStepA = fixedStepA;
-        ContactIdB = contactIdB;
-        FixedStepB = fixedStepB;
-    }
-}
-
-public enum PhysicalMacroEventKind
-{
-    Launch,
-    Collision,
-    Death,
-    Destroy,
-    PigRemoved,
-    TntExplosion,
-    BirdExhaustion,
-    LevelClear,
-    LevelFail,
-    StabilityEnter,
-    StabilityExit
-}
-
-public sealed class PhysicalMacroEvent
-{
-    public long Sequence { get; internal set; }
-    public long FixedStep { get; private set; }
-    public float FixedTime { get; private set; }
-    public PhysicalMacroEventKind Kind { get; private set; }
-    public string Taxonomy
-    {
-        get
-        {
-            switch (Kind)
-            {
-                case PhysicalMacroEventKind.Launch: return "bird_launched";
-                case PhysicalMacroEventKind.Death: return "entity_destroyed";
-                case PhysicalMacroEventKind.Destroy: return "entity_destroyed";
-                case PhysicalMacroEventKind.TntExplosion: return "explosion";
-                case PhysicalMacroEventKind.PigRemoved: return "pig_removed";
-                case PhysicalMacroEventKind.BirdExhaustion: return "bird_exhausted";
-                case PhysicalMacroEventKind.LevelClear: return "level_cleared";
-                case PhysicalMacroEventKind.LevelFail: return "level_failed";
-                case PhysicalMacroEventKind.StabilityEnter: return "stable_entered";
-                case PhysicalMacroEventKind.StabilityExit: return "stable_exited";
-                default: return Kind.ToString().ToLowerInvariant();
-            }
-        }
-    }
-    public string Subject { get; private set; }
-    public IList<string> Participants { get; private set; }
-    public PhysicalMacroEventPayload Payload { get; private set; }
-
-    public PhysicalMacroEvent(long sequence, long fixedStep, float fixedTime, PhysicalMacroEventKind kind,
-        string subject, IEnumerable<string> participants, PhysicalMacroEventPayload payload)
-    {
-        Sequence = sequence;
-        FixedStep = fixedStep;
-        FixedTime = fixedTime;
-        Kind = kind;
-        Subject = subject;
-        Participants = (participants ?? new string[0]).Where(item => !string.IsNullOrEmpty(item))
-            .Distinct().OrderBy(item => item, StringComparer.Ordinal).ToList().AsReadOnly();
-        Payload = payload;
-    }
-}
-
-public sealed class PhysicalMacroEventPayload
-{
-    public Vector2? LaunchVelocity { get; private set; }
-    public IList<string> ContactIds { get; private set; }
-    public float? RelativeSpeed { get; private set; }
-    public float? RadiusUnityUnits { get; private set; }
-    public string Reason { get; private set; }
-    public int? BirdsRemaining { get; private set; }
-    public int? DebounceFixedSteps { get; private set; }
-    public int? Score { get; private set; }
-
-    public PhysicalMacroEventPayload(Vector2? launchVelocity = null, IEnumerable<string> contactIds = null,
-        float? relativeSpeed = null, float? radiusUnityUnits = null, string reason = null,
-        int? birdsRemaining = null, int? debounceFixedSteps = null, int? score = null)
-    {
-        LaunchVelocity = launchVelocity;
-        ContactIds = (contactIds ?? new string[0]).Distinct().OrderBy(item => item, StringComparer.Ordinal).ToList().AsReadOnly();
-        RelativeSpeed = relativeSpeed;
-        RadiusUnityUnits = radiusUnityUnits;
-        Reason = reason;
-        BirdsRemaining = birdsRemaining;
-        DebounceFixedSteps = debounceFixedSteps;
-        Score = score;
-    }
-}
-
-public sealed class PhysicalCaptureResult
-{
-    public PhysicalCaptureFailure Failure { get; private set; }
-    public bool IsValid { get { return Failure == null; } }
-
-    public PhysicalCaptureResult(PhysicalCaptureFailure failure)
-    {
-        Failure = failure;
-    }
-}
-
-public sealed class PhysicalShotRecorderSnapshot
-{
-    public IList<PhysicalRawContact> RawContacts { get; private set; }
-    public IList<PhysicalSupportEdge> SupportEdges { get; private set; }
-    public IList<PhysicalMacroEvent> Events { get; private set; }
-
-    internal PhysicalShotRecorderSnapshot(IList<PhysicalRawContact> rawContacts,
-        IList<PhysicalSupportEdge> supportEdges, IList<PhysicalMacroEvent> events)
-    {
-        RawContacts = new List<PhysicalRawContact>(rawContacts).AsReadOnly();
-        SupportEdges = new List<PhysicalSupportEdge>(supportEdges).AsReadOnly();
-        Events = new List<PhysicalMacroEvent>(events).AsReadOnly();
-    }
-}
-
 public class PhysicalShotRecorder
 {
     private readonly PhysicalCaptureLimits limits;
@@ -330,12 +11,11 @@ public class PhysicalShotRecorder
     private readonly Dictionary<string, PhysicalRawContact> previousContacts = new Dictionary<string, PhysicalRawContact>();
     private readonly HashSet<string> eventKeys = new HashSet<string>();
     private readonly HashSet<string> collisionKeys = new HashSet<string>();
+    private readonly HashSet<string> collisionCitedContactIds = new HashSet<string>();
     private readonly List<PhysicalRawContact> rawContacts = new List<PhysicalRawContact>();
     private readonly List<PhysicalSupportEdge> supportEdges = new List<PhysicalSupportEdge>();
     private readonly List<PhysicalMacroEvent> events = new List<PhysicalMacroEvent>();
     private int estimatedBytes;
-    private long currentStep;
-    private float currentTime;
     private float shotStartFixedTime;
     private bool hasShotStartFixedTime;
     private bool stabilityInitialized;
@@ -382,15 +62,13 @@ public class PhysicalShotRecorder
     // is handed, so it may only ever see a full sample. The collision path ingests
     // one pair's contacts to mint contact_ids, and passes false: the FixedUpdate
     // sampler remains the sole owner of support derivation and picks the new pair up
-    // on its next full sample.
+    // on its next full sample. Retention pruning is likewise full-sample-only.
     private void RecordContacts(long fixedStep, float fixedTime, PhysicalContactInput[] contacts, bool isFullStepSample)
     {
         if (Failure != null || finalized)
         {
             return;
         }
-        currentStep = fixedStep;
-        currentTime = fixedTime;
         if (!hasShotStartFixedTime)
         {
             shotStartFixedTime = fixedTime;
@@ -434,7 +112,10 @@ public class PhysicalShotRecorder
         }
         rawContacts.AddRange(stepContacts);
         if (isFullStepSample)
+        {
             UpdateSupport(stepContacts, fixedStep);
+            PruneRawContacts(fixedStep);
+        }
     }
 
     public void RecordUnityContacts(long fixedStep, float fixedTime, Collider2D[] colliders, PhysicalEntityRegistry registry = null)
@@ -542,8 +223,15 @@ public class PhysicalShotRecorder
         string second = first == entityA ? entityB : entityA;
         string key = fixedStep + ":" + first + ":" + second;
         if (collisionKeys.Add(key))
+        {
+            // F7: the ids a collision event cites are the rows the event's
+            // evidence must survive finalization with, so they are exempt from
+            // step-window retention pruning.
+            foreach (string contactId in evidence)
+                collisionCitedContactIds.Add(contactId);
             AddEvent(fixedStep, fixedTime, PhysicalMacroEventKind.Collision, first + "|" + second,
                 new[] { first, second }, new PhysicalMacroEventPayload(contactIds: evidence, relativeSpeed: relativeSpeed));
+        }
     }
 
     public void RecordCollision(long fixedStep, float fixedTime, string entityA, string entityB,
@@ -573,17 +261,17 @@ public class PhysicalShotRecorder
         string key = fixedStep + ":" + first + ":" + second;
         if (collisionKeys.Contains(key))
             return;
-        string[] contactIds = rawContacts
-            .Where(contact => contact.FixedStep == fixedStep
-                && contact.EntityIdA == first && contact.EntityIdB == second)
-            .Select(contact => contact.ContactId).Distinct().OrderBy(contactId => contactId, StringComparer.Ordinal).ToArray();
+        // F3: the evidence is resolved by exact canonical collider pair — the same
+        // key the raw rows carry — not by entity pair alone, so a sibling collider
+        // on the same entity can no longer leak its contact ids into this event.
+        HashSet<string> evidencePairKeys = new HashSet<string>();
+        foreach (PhysicalContactInput input in evidence)
+            evidencePairKeys.Add(new PhysicalRawContact(input, fixedStep, fixedTime).PairKey);
+        string[] contactIds = RawContactIdsFor(fixedStep, evidencePairKeys);
         if (contactIds.Length == 0)
         {
             RecordContacts(fixedStep, fixedTime, evidence, false);
-            contactIds = rawContacts
-                .Where(contact => contact.FixedStep == fixedStep
-                    && contact.EntityIdA == first && contact.EntityIdB == second)
-                .Select(contact => contact.ContactId).Distinct().OrderBy(contactId => contactId, StringComparer.Ordinal).ToArray();
+            contactIds = RawContactIdsFor(fixedStep, evidencePairKeys);
         }
         RecordCollision(fixedStep, fixedTime, first, second, contactIds, relativeSpeed);
     }
@@ -638,9 +326,21 @@ public class PhysicalShotRecorder
 
     public PhysicalShotRecorderSnapshot CreateFinalizedSnapshot()
     {
-        return finalized && Failure == null
-            ? new PhysicalShotRecorderSnapshot(rawContacts, supportEdges, events)
-            : null;
+        if (finalized && Failure == null)
+        {
+            // F1/F2: the wire carries these lists in list order, so the global
+            // ordering the frozen parser contract demands is satisfied exactly
+            // once, here, by the recorder that owns the arrays — not by the
+            // serializer. Per-step ordering and PointIndex assignment are
+            // untouched, so contact ids never change. The comparator is a total
+            // order even across duplicated rows: identical rows (same step, pair,
+            // point and PointIndex) serialize identically, so their relative order
+            // cannot be observed on the wire.
+            rawContacts.Sort(CompareContactsWithContactId);
+            supportEdges.Sort(CompareSupportEdges);
+            return new PhysicalShotRecorderSnapshot(rawContacts, supportEdges, events);
+        }
+        return null;
     }
 
     public bool TryFinalize(bool terminal)
@@ -684,6 +384,19 @@ public class PhysicalShotRecorder
         supportEdges.RemoveAll(edge => !seen.Contains(edge.PairKey));
     }
 
+    private void PruneRawContacts(long fixedStep)
+    {
+        // F7 bounded retention: a support edge can only cite the current and the
+        // previous fixed step, so after a full sample anything older than that
+        // window is dropped — except rows a collision event cited, which are the
+        // evidence a published artifact must carry to finalization. The byte
+        // estimate is decremented by the same per-contact charge the append path
+        // made, so the byte limit keeps measuring what is actually retained.
+        int removed = rawContacts.RemoveAll(contact =>
+            contact.FixedStep < fixedStep - 1 && !collisionCitedContactIds.Contains(contact.ContactId));
+        estimatedBytes -= removed * 192;
+    }
+
     private void AddEvent(long fixedStep, float fixedTime, PhysicalMacroEventKind kind, string subject,
         IEnumerable<string> participants, PhysicalMacroEventPayload payload)
     {
@@ -714,6 +427,13 @@ public class PhysicalShotRecorder
         terminalRecorded = true;
         eventKeys.Add(kind + ":level");
         AddEvent(fixedStep, fixedStep * 0.02f, kind, "level", new string[0], payload);
+    }
+
+    private string[] RawContactIdsFor(long fixedStep, HashSet<string> pairKeys)
+    {
+        return rawContacts
+            .Where(contact => contact.FixedStep == fixedStep && pairKeys.Contains(contact.PairKey))
+            .Select(contact => contact.ContactId).Distinct().OrderBy(contactId => contactId, StringComparer.Ordinal).ToArray();
     }
 
     private static IEnumerable<string> ParticipantsFor(PhysicalMacroEventKind kind, string subject)
@@ -760,6 +480,27 @@ public class PhysicalShotRecorder
         if (result != 0) return result;
         result = left.Point.x.CompareTo(right.Point.x);
         return result != 0 ? result : left.Point.y.CompareTo(right.Point.y);
+    }
+
+    private static int CompareContactsWithContactId(PhysicalRawContact left, PhysicalRawContact right)
+    {
+        int result = CompareContacts(left, right);
+        if (result != 0) return result;
+        return string.CompareOrdinal(left.ContactId, right.ContactId);
+    }
+
+    private static string SupportIdFor(PhysicalSupportEdge edge)
+    {
+        return "support:" + edge.SupporterEntityId + "->" + edge.SupportedEntityId;
+    }
+
+    private static int CompareSupportEdges(PhysicalSupportEdge left, PhysicalSupportEdge right)
+    {
+        int result = string.CompareOrdinal(left.SupporterEntityId, right.SupporterEntityId);
+        if (result != 0) return result;
+        result = string.CompareOrdinal(left.SupportedEntityId, right.SupportedEntityId);
+        if (result != 0) return result;
+        return string.CompareOrdinal(SupportIdFor(left), SupportIdFor(right));
     }
 
     private bool CanAddRecord(int bytes)

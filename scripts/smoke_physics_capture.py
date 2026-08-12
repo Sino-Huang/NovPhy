@@ -86,6 +86,9 @@ LOOPBACK_BIND_ADDRESSES: Final = frozenset({
 DEFAULT_SMOKE_REPORT: Final = ROOT / ".claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json"
 DEFAULT_DIAGNOSTIC_REPORT: Final = ROOT / ".claude/project-docs/evidence/world-model-physics-instrumentation/listener-diagnostic.json"
 ARTIFACT_NAMES: Final = ("shot_001.tmp", "shot_001")
+# Every recorder refusal is logged with this stable prefix, so the post-run engine
+# log scan and the smoke fixtures can match on it without depending on wording.
+REFUSAL_LOG_PREFIX: Final = "physics_capture_v1: refusing"
 FRAME_HEIGHT_PIXELS: Final = 480
 WIRE_STATE_FIELDS: Final = frozenset(("schema_version", "capture_id", "sequence", "render_frame", "render_time", "fixed_step", "fixed_time", "coordinates", "nodes", "raw_contacts", "support_edges"))
 JsonValue: TypeAlias = None | bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"]
@@ -991,6 +994,35 @@ def quarantine_artifact(report: JsonObject, output_dir: Path, name: str, preexis
         _append_report_entry(report, "quarantine_errors", f"{source}: {error}")
 
 
+def scan_engine_log_for_refusals(engine_log: Path) -> tuple[dict[str, object], ...]:
+    """Return every recorder-refusal line in a flushed engine log.
+
+    The recorder logs a refusal with the stable prefix ``physics_capture_v1:
+    refusing`` whenever it drops an event the capture contract requires. A
+    refusal in the engine log means the run emitted ground truth the smoke is
+    about to certify while silently dropping evidence, so the smoke scans for
+    them only after the engine has terminated and flushed, and treats any
+    refusal as a rejection. An absent log is a clean scan (the engine never
+    launched); an unreadable one is fail-closed.
+    """
+    if not engine_log.is_file():
+        return ()
+    try:
+        lines = engine_log.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError as error:
+        raise SmokeError(f"engine log cannot be scanned after the run: {error}") from error
+    refusals: list[dict[str, object]] = []
+    for line_number, line in enumerate(lines, start=1):
+        if REFUSAL_LOG_PREFIX not in line:
+            continue
+        refusals.append({
+            "prefix": REFUSAL_LOG_PREFIX,
+            "line_number": line_number,
+            "message": line.strip(),
+        })
+    return tuple(refusals)
+
+
 def supersede_prior_report(report_path: Path) -> str:
     """Displace any receipt already at the designated path, before anything runs.
 
@@ -1034,6 +1066,7 @@ def run_smoke(args: argparse.Namespace) -> tuple[JsonObject, int]:
     xvfb: subprocess.Popen[bytes] | None = None
     agent_teardown = "not-started"
     temporary_path = ""
+    engine_log_path: Path | None = None
     result_code = 1
     try:
         # First action inside the guarded block: nothing has launched, so a prior
@@ -1058,7 +1091,7 @@ def run_smoke(args: argparse.Namespace) -> tuple[JsonObject, int]:
             display, xvfb = start_display(args.output_dir / "xvfb.log")
             agent_port = args.agent_port or free_port()
             game_port = args.game_port or free_port()
-            engine_log = args.output_dir / "engine.log"
+            engine_log_path = args.output_dir / "engine.log"
             report.update({"phase": "start-engine", "ports": {"agent": agent_port, "game": game_port, "physics": args.physics_port}, "display": display})
             child_env, stripped_env = launch_environment(display, os.environ)
             report["launch_environment"] = {
@@ -1066,7 +1099,7 @@ def run_smoke(args: argparse.Namespace) -> tuple[JsonObject, int]:
                 "vars_stripped": list(stripped_env),
                 "sha256": hashlib.sha256("\n".join(f"{name}={child_env[name]}" for name in sorted(child_env)).encode("utf-8")).hexdigest(),
             }
-            with engine_log.open("wb") as engine_stream:
+            with engine_log_path.open("wb") as engine_stream:
                 engine = subprocess.Popen(
                     ["java", "-jar", "./game_playing_interface.jar", "--agent-port", str(agent_port), "--game-start-port", str(game_port), "--physics-port", str(args.physics_port), "--dev"],
                     cwd=clone, env=child_env, stdout=engine_stream, stderr=subprocess.STDOUT, start_new_session=True,
@@ -1204,6 +1237,18 @@ def run_smoke(args: argparse.Namespace) -> tuple[JsonObject, int]:
             else:
                 if ":group-residual=" in str(cleanup[name]):
                     failures.append(f"{name} process group survived SIGKILL: {cleanup[name]}")
+        # The refusal scan runs only after the engine has been terminated and the
+        # log file flushed; a refusal logged mid-run means the recorder dropped
+        # evidence the accepted artifact would otherwise claim to carry, so any
+        # refusal rejects the run.
+        if engine_log_path is not None:
+            try:
+                refusals = scan_engine_log_for_refusals(engine_log_path)
+                report["recorder_refusals"] = [entry["message"] for entry in refusals]
+                if refusals:
+                    failures.append(f"engine log records {len(refusals)} physics_capture_v1 refusal(s); a refusal means the recorder dropped an event the artifact was expected to carry")
+            except SmokeError as error:
+                failures.append(str(error))
         try:
             listener_inodes = wait_for_port_release(args.physics_port, grace_seconds=args.port_grace_seconds)
             # An empty inode set makes the scan a full `/proc` walk that can only

@@ -28,7 +28,7 @@ def _repo_root() -> Path:
 
 ROOT = _repo_root()
 SOURCE = ROOT / "scripts/smoke_physics_capture.py"
-BASELINE = "72f6a12183df97755ab715919557d70eb7cf5c59e9c8311dcab0c9925288b6f6"
+BASELINE = "ba3c8772534a5e535c1ba7d16faa1427dae342e6a2f7a8e9017f5449e2d05aea"
 
 MUTATIONS: tuple[tuple[str, str, str, str], ...] = (
     (
@@ -105,6 +105,16 @@ MUTATIONS: tuple[tuple[str, str, str, str], ...] = (
         """    if uncovered:
         raise SmokeError(f"listener observation fields are neither checked nor declared unchecked: {', '.join(uncovered)}")""",
         """    del uncovered""",
+    ),
+    (
+        "recorder-refusals-are-not-fail-closed",
+        "recorder refusals in the engine log must reject the run",
+        """                refusals = scan_engine_log_for_refusals(engine_log_path)
+                report["recorder_refusals"] = [entry["message"] for entry in refusals]
+                if refusals:
+                    failures.append(f"engine log records {len(refusals)} physics_capture_v1 refusal(s); a refusal means the recorder dropped an event the artifact was expected to carry")""",
+        """                refusals = scan_engine_log_for_refusals(engine_log_path)
+                report["recorder_refusals"] = [entry["message"] for entry in refusals]""",
     ),
 )
 

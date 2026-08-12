@@ -189,6 +189,107 @@ public class GameplayCollisionRecordingTests
         }
     }
 
+    [Test]
+    public void CallbackBoundary_ContainsARecorderPathExceptionAndLogsTheStableError()
+    {
+        // F4: the static physics callback seam must never let a recorder-path
+        // failure escape into Unity. The recorder path dereferences the entity
+        // registry; a broken runtime state is exactly the unforeseen defect the
+        // no-throw boundary exists to contain. It must be logged with the stable
+        // physics_capture_v1 refusal prefix and swallowed at the boundary, and
+        // nothing may be half-recorded.
+        GameObject runtimeObject = NewRuntime();
+        PhysicalSnapshotRuntime runtime = runtimeObject.GetComponent<PhysicalSnapshotRuntime>();
+        GameObject a = new GameObject("callback-boundary-a");
+        GameObject b = new GameObject("callback-boundary-b");
+
+        try
+        {
+            BoxCollider2D aCollider = a.AddComponent<BoxCollider2D>();
+            BoxCollider2D bCollider = b.AddComponent<BoxCollider2D>();
+
+            // Sabotage the recorder path the same way an unforeseen defect would:
+            // drop the registry the callback dereferences, so the collision
+            // conversion throws inside Active.RecordCollision.
+            FieldInfo registryField = typeof(PhysicalSnapshotRuntime).GetField(
+                "registry", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(registryField, "PhysicalSnapshotRuntime.registry gates the recorder path");
+            registryField.SetValue(runtime, null);
+
+            Collision2D collision = NewCollision(aCollider, bCollider, new Vector2(1f, 0f), 1);
+
+            LogAssert.Expect(LogType.Error, CallbackBoundaryErrorPattern());
+            Assert.DoesNotThrow(delegate { PhysicalSnapshotRuntime.RecordCollisionCallback(collision); },
+                "a recorder-path exception must not escape the static physics callback boundary");
+
+            Assert.AreEqual(0, runtime.ShotRecorder.Events.Count,
+                "a contained failure must stay fail-closed at the wire: no event may be emitted");
+            Assert.AreEqual(0, runtime.ShotRecorder.RawContacts.Count,
+                "a contained failure must not half-mutate the recorder");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(b);
+            UnityEngine.Object.DestroyImmediate(a);
+            UnityEngine.Object.DestroyImmediate(runtimeObject);
+        }
+    }
+
+    [Test]
+    public void EggImpactRecordsACollisionEventAndCompletesTheHandler()
+    {
+        // ABEgg previously reached the recorder on no path at all: its
+        // OnCollisionEnter2D overrides the base without calling it. The callback
+        // must now be the first statement so gameplay order is preserved --
+        // explosion and death still run after the recorder call, which is what
+        // the disabled-collider assertion below proves.
+        GameObject runtimeObject = NewRuntime();
+        PhysicalSnapshotRuntime runtime = runtimeObject.GetComponent<PhysicalSnapshotRuntime>();
+        GameObject worldObject = new GameObject("egg-world");
+        ABGameWorld world = worldObject.AddComponent<ABGameWorld>();
+        world._isSimulation = true;
+        GameObject eggObject = new GameObject("egg-impact-egg");
+        GameObject targetObject = new GameObject("egg-impact-target");
+
+        try
+        {
+            Rigidbody2D eggBody = eggObject.AddComponent<Rigidbody2D>();
+            eggBody.gravityScale = 0f;
+            eggObject.AddComponent<BoxCollider2D>();
+            eggObject.AddComponent<SpriteRenderer>();
+            ABParticleSystem particles = eggObject.AddComponent<ABParticleSystem>();
+            ABEgg egg = eggObject.AddComponent<ABEgg>();
+            egg._explosionArea = 1f;
+            AwakeComponent(egg);
+            Assert.IsNotNull(particles, "the egg's destroy effect must be bound by ABGameObject.Awake");
+
+            Rigidbody2D targetBody = targetObject.AddComponent<Rigidbody2D>();
+            targetBody.gravityScale = 0f;
+            BoxCollider2D targetCollider = targetObject.AddComponent<BoxCollider2D>();
+            targetObject.transform.position = eggObject.transform.position;
+            BoxCollider2D eggCollider = eggObject.GetComponent<BoxCollider2D>();
+            Assert.IsNotNull(eggCollider, "the egg fixture must carry the collider ABEgg.Awake binds");
+
+            Collision2D collision = NewCollision(eggCollider, targetCollider, new Vector2(2f, 0f), 2);
+
+            Assert.DoesNotThrow(delegate { egg.OnCollisionEnter2D(collision); },
+                "the egg's collision handler must complete after recording");
+
+            AssertOneContractGradeCollision(runtime, 2f);
+            Assert.AreEqual(1, runtime.ShotRecorder.Events.Count(e => e.Taxonomy == "entity_destroyed"),
+                "the egg's death must still be recorded after the collision");
+            Assert.IsFalse(eggCollider.enabled,
+                "the statements after the recorder call — explosion and Die — must still have run");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(targetObject);
+            UnityEngine.Object.DestroyImmediate(eggObject);
+            UnityEngine.Object.DestroyImmediate(worldObject);
+            UnityEngine.Object.DestroyImmediate(runtimeObject);
+        }
+    }
+
     // ---- assertions -------------------------------------------------------
 
     private static void AssertOneContractGradeCollision(PhysicalSnapshotRuntime runtime, float relativeSpeed)
@@ -221,6 +322,16 @@ public class GameplayCollisionRecordingTests
     private static System.Text.RegularExpressions.Regex CollisionEvidenceRejectionPattern()
     {
         return new System.Text.RegularExpressions.Regex("physics_capture_v1.*contact evidence");
+    }
+
+    /// <summary>
+    /// The F4 callback-boundary refusal, matched the same way. The prefix is the
+    /// same stable string the smoke's engine-log scan matches, so the product
+    /// message and this fixture cannot drift apart silently.
+    /// </summary>
+    private static System.Text.RegularExpressions.Regex CallbackBoundaryErrorPattern()
+    {
+        return new System.Text.RegularExpressions.Regex("physics_capture_v1: refusing a recorder exception inside a physics callback");
     }
 
     // ---- scene construction ----------------------------------------------

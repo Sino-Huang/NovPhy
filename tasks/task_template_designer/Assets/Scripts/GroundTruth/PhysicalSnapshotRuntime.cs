@@ -151,7 +151,26 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
     public void RecordLevelFail(string reason) { if (shotRecorder != null) shotRecorder.RecordLevelFail(Clock.FixedStep, reason); }
     public void RecordStability(bool stable) { if (shotRecorder != null) shotRecorder.RecordStability(Clock.FixedStep, stable); }
 
-    public static void RecordCollisionCallback(Collision2D collision) { if (Active != null) Active.RecordCollision(collision); }
+    public static void RecordCollisionCallback(Collision2D collision)
+    {
+        if (Active == null)
+            return;
+        // A Unity physics callback must never throw: an exception here abandons
+        // the rest of the caller's OnCollisionEnter2D for the frame. The recorder
+        // path is already fail-closed at the wire, but this is the narrow actual
+        // boundary that keeps any unforeseen defect inside the recorder path from
+        // escaping into the engine. The error carries the stable physics_capture_v1
+        // refusal prefix so the smoke's log scan and any LogAssert fixture can
+        // match it, and nothing outside this call is swallowed.
+        try
+        {
+            Active.RecordCollision(collision);
+        }
+        catch (Exception)
+        {
+            Debug.LogError("physics_capture_v1: refusing a recorder exception inside a physics callback; no event emitted.");
+        }
+    }
     public static void RecordLaunchCallback(string entityId, Vector2 launchVelocity) { if (Active != null) Active.RecordLaunch(entityId, launchVelocity); }
     public static void RecordDeathCallback(string entityId) { if (Active != null) Active.RecordDeath(entityId); }
     public static void RecordDestroyedCallback(string entityId) { if (Active != null) Active.RecordDestroyed(entityId); }

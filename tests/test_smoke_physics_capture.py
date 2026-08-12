@@ -34,6 +34,7 @@ from scripts.smoke_physics_capture import (
     FRAME_HEIGHT_PIXELS,
     ListenerBindingError,
     ListenerObservation,
+    REFUSAL_LOG_PREFIX,
     SmokeError,
     ListeningSocket,
     free_port,
@@ -46,6 +47,7 @@ from scripts.smoke_physics_capture import (
     require_stable_binding,
     resolve_listener_binding,
     run_smoke,
+    scan_engine_log_for_refusals,
     SocketOwnerScan,
     start_display,
     tree_digest,
@@ -927,6 +929,72 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
         self.assertEqual(report["status"], "rejected")
         self.assertNotIn("accepted_shot", report)
         self.assertEqual(persisted["quarantine"], [str(quarantined)])
+
+    def test_engine_log_refusal_scan_detects_stable_prefix_lines_and_ignores_clean_logs(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            log = Path(temporary) / "engine.log"
+            log.write_text(
+                "Unity engine boot line\n"
+                "physics_capture_v1: refusing a collision event without contact evidence; no event emitted.\n"
+                "physics_capture_v1: refusing a collision event whose relative speed is not finite and non-negative; no event emitted.\n",
+                encoding="utf-8",
+            )
+            refusals = scan_engine_log_for_refusals(log)
+            self.assertEqual(REFUSAL_LOG_PREFIX, "physics_capture_v1: refusing")
+            self.assertEqual(len(refusals), 2)
+            self.assertEqual(refusals[0]["prefix"], REFUSAL_LOG_PREFIX)
+            self.assertEqual(refusals[0]["line_number"], 2)
+            self.assertIn("without contact evidence", refusals[0]["message"])
+            self.assertEqual(refusals[1]["line_number"], 3)
+            self.assertEqual(scan_engine_log_for_refusals(Path(temporary) / "absent.log"), ())
+
+    @mock.patch("scripts.smoke_physics_capture.subprocess.Popen")
+    @mock.patch("scripts.smoke_physics_capture.terminate", return_value="pid=4100:exit=143")
+    @mock.patch("scripts.smoke_physics_capture.wait_for_listener")
+    @mock.patch("scripts.smoke_physics_capture.start_display")
+    @mock.patch("scripts.smoke_physics_capture.archive_details")
+    def test_refusals_in_engine_log_reject_the_run_and_are_recorded(self, archive: mock.Mock, display: mock.Mock, listener: mock.Mock, _terminate: mock.Mock, popen: mock.Mock) -> None:
+        """A refusal in the flushed engine log must fail the run closed.
+
+        The recorder refuses by logging when it cannot emit a collision event the
+        contract requires; an accepted-looking artifact must never have been
+        silently dropped. The scan runs after engine termination, so a refusal
+        line present in the log this run flushed is enough -- the fixture proves
+        the scan, not the recorder.
+
+        The refusal is written by the mocked engine into the very stream
+        `run_smoke` hands to `subprocess.Popen` -- `engine.log` opened for
+        writing. Pre-writing the file before the run would be truncated away by
+        that open and prove nothing about the scan; writing through the
+        engine_stream the run actually opened keeps the injection on the run's
+        own write path.
+        """
+        process = popen.return_value
+        process.pid = 4100
+        display.return_value = (":201", process)
+        archive.side_effect = self._staged_candidate
+        listener.return_value = {"pid": 4100, "socket_inode": "77"}
+        refusal = "physics_capture_v1: refusing a collision event without contact evidence; no event emitted."
+        refusal_line = f"[Error] {refusal}"
+
+        def launch_and_log_refusal(*_args: object, stdout: object = None, **_kwargs: object) -> mock.Mock:
+            # `stdout` is the `engine_log_path.open("wb")` stream the run will
+            # scan after termination; the engine writes its refusal into it
+            # before the context manager closes.
+            assert stdout is not None
+            stdout.write((refusal_line + "\n").encode("utf-8"))  # type: ignore[attr-defined]
+            stdout.flush()  # type: ignore[attr-defined]
+            return process
+
+        popen.side_effect = launch_and_log_refusal
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            report, code = run_smoke(self._listener_only_args(output))
+            persisted = json.loads((output / "report.json").read_text(encoding="utf-8"))
+        self.assertEqual(code, 1)
+        self.assertEqual(report["status"], "rejected")
+        self.assertEqual(persisted["recorder_refusals"], [refusal_line])
+        self.assertIn("refusal", report["cleanup_failures"][0])
 
     def _accepting_args(self, output: Path) -> SimpleNamespace:
         args = self._listener_only_args(output)

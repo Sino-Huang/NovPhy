@@ -9,6 +9,7 @@ public class ABEgg : ABGameObject {
 
 	public override void OnCollisionEnter2D(Collision2D collision) {
 
+		PhysicalSnapshotRuntime.RecordCollisionCallback(collision);
 		ABTNT.Explode (transform.position, _explosionArea, _explosionPower, _explosionDamage, gameObject);
 		Die (true);
 	}

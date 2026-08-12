@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
@@ -583,6 +584,160 @@ public class PhysicsShotRecorderTests
         Assert.AreEqual(PhysicalCaptureFailureCode.TruncatedFinalization, result.Failure.Code);
         recorder.FailTimeout("must not replace finalized failure");
         Assert.AreEqual(PhysicalCaptureFailureCode.TruncatedFinalization, recorder.Failure.Code);
+    }
+
+    [Test]
+    public void Retention_KeepsLastTwoFixedStepsAndFinalizedContactsAreGloballyOrdered()
+    {
+        // F1 + F7 together: after retention the finalized raw-contact stream holds
+        // exactly the last two full fixed steps, and it is globally ordered by the
+        // parser's key (CompareContacts extended with the contact_id ordinal), not
+        // merely sorted within each step. The step-major concatenation puts
+        // pair-low(step 2) before pair-high(step 2) before pair-low(step 3), which
+        // the global sort must repair by moving pair-low(step 3) ahead of
+        // pair-high(step 2).
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(64, 64 * 1024);
+        PhysicalContactInput pairLow = new PhysicalContactInput(
+            "100:0", 11, new Vector2(0.5f, 0.25f), Vector2.up, -0.01f,
+            Vector2.right, 1f, "200:0", 21, Vector2.zero, Vector2.one, false);
+        PhysicalContactInput pairHigh = new PhysicalContactInput(
+            "300:0", 31, new Vector2(0.75f, 0.25f), Vector2.up, -0.01f,
+            Vector2.right, 1f, "400:0", 41, Vector2.zero, Vector2.one, false);
+
+        for (long step = 1; step <= 3; step++)
+            recorder.RecordContacts(step, new[] { pairLow, pairHigh });
+
+        Assert.IsNull(recorder.Failure);
+        Assert.AreEqual(4, recorder.RawContacts.Count, "retention must keep exactly the last two full steps");
+        CollectionAssert.AreEquivalent(new long[] { 2, 2, 3, 3 },
+            recorder.RawContacts.Select(contact => contact.FixedStep).ToArray());
+
+        recorder.FinalizeShot(true);
+        PhysicalShotRecorderSnapshot snapshot = recorder.CreateFinalizedSnapshot();
+        Assert.IsNotNull(snapshot);
+
+        List<PhysicalRawContact> expected = snapshot.RawContacts
+            .OrderBy(c => c.EntityIdA, StringComparer.Ordinal)
+            .ThenBy(c => c.EntityIdB, StringComparer.Ordinal)
+            .ThenBy(c => c.ColliderIdA)
+            .ThenBy(c => c.ColliderIdB)
+            .ThenBy(c => c.Point.x)
+            .ThenBy(c => c.Point.y)
+            .ThenBy(c => c.ContactId, StringComparer.Ordinal)
+            .ToList();
+        CollectionAssert.AreEqual(expected, snapshot.RawContacts,
+            "finalized raw_contacts must be globally ordered by the parser key including contact_id");
+    }
+
+    [Test]
+    public void SupportEdges_FinalizedOrderFollowsSupporterSupportedSupportId()
+    {
+        // F2: UpdateSupport appends edges in contact-pair order, but the parser
+        // sorts by supporter_id. The geometry below makes the append order differ:
+        // a low-numbered pair whose upper member is entity A (supporter is the
+        // high id) is sampled before a high-numbered pair whose lower member is
+        // entity A (supporter is the low id).
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(64, 64 * 1024);
+        PhysicalContactInput upperMemberLowPair = new PhysicalContactInput(
+            "100:0", 11, Vector2.zero, Vector2.up, 0f, Vector2.zero, 0f,
+            "900:0", 91, new Vector2(0f, 1f), new Vector2(0f, 0f), false);
+        PhysicalContactInput lowerMemberHighPair = new PhysicalContactInput(
+            "200:0", 21, Vector2.zero, Vector2.up, 0f, Vector2.zero, 0f,
+            "300:0", 31, new Vector2(0f, 0f), new Vector2(0f, 1f), false);
+        recorder.RecordContacts(1, new[] { upperMemberLowPair, lowerMemberHighPair });
+        recorder.RecordContacts(2, new[] { upperMemberLowPair, lowerMemberHighPair });
+        Assert.AreEqual(2, recorder.SupportEdges.Count);
+        Assert.AreEqual("900:0", recorder.SupportEdges[0].SupporterEntityId,
+            "the fixture must append the high-id supporter first, or it is not the F2 geometry");
+
+        recorder.FinalizeShot(true);
+        PhysicalShotRecorderSnapshot snapshot = recorder.CreateFinalizedSnapshot();
+        Assert.IsNotNull(snapshot);
+        Assert.AreEqual(2, snapshot.SupportEdges.Count);
+        Assert.AreEqual("200:0", snapshot.SupportEdges[0].SupporterEntityId);
+        Assert.AreEqual("300:0", snapshot.SupportEdges[0].SupportedEntityId);
+        Assert.AreEqual("support:200:0->300:0", SupportIdOf(snapshot.SupportEdges[0]));
+        Assert.AreEqual("900:0", snapshot.SupportEdges[1].SupporterEntityId);
+        Assert.AreEqual("100:0", snapshot.SupportEdges[1].SupportedEntityId);
+        Assert.AreEqual("support:900:0->100:0", SupportIdOf(snapshot.SupportEdges[1]));
+    }
+
+    [Test]
+    public void CollisionEvidence_CitesOnlyTheExactColliderPairNotSiblingPairs()
+    {
+        // F3: entity a:0 has two colliders; both pairs with b:0 were sampled by
+        // the full-step sampler. A collision callback for only one collider pair
+        // must cite that pair's contact ids, not its sibling's.
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(32, 64 * 1024);
+        recorder.RecordContacts(5, new[]
+        {
+            new PhysicalContactInput("a:0", 1, new Vector2(0f, 0f), Vector2.up, -0.1f,
+                Vector2.left, 1f, "b:0", 2, Vector2.zero, Vector2.one, false),
+            new PhysicalContactInput("a:0", 3, new Vector2(1f, 1f), Vector2.up, -0.1f,
+                Vector2.left, 1f, "b:0", 2, Vector2.zero, Vector2.one, false)
+        });
+        Assert.AreEqual(2, recorder.RawContacts.Count);
+        Assert.IsTrue(recorder.RawContacts.Any(c => c.PairKey == "a:0:1|b:0:2"));
+        Assert.IsTrue(recorder.RawContacts.Any(c => c.PairKey == "a:0:3|b:0:2"));
+
+        recorder.RecordCollision(5, 0.1f, "a:0", "b:0", new[]
+        {
+            new PhysicalContactInput("a:0", 1, new Vector2(0f, 0f), Vector2.up, -0.1f,
+                Vector2.left, 1f, "b:0", 2, Vector2.zero, Vector2.one, false)
+        }, 2f);
+
+        Assert.AreEqual(1, recorder.Events.Count);
+        CollectionAssert.AreEqual(
+            new[] { "contact:5:a:0:1|b:0:2:0" },
+            recorder.Events[0].Payload.ContactIds,
+            "the event must cite only the collider pair the callback named");
+    }
+
+    [Test]
+    public void BoundedRetention_AllowsLongSequencesAndPreservesCollisionCitedRows()
+    {
+        // F7: with retention, a long sequence of full samples stays under a low
+        // record budget because only the last two fixed steps are kept; support
+        // evidence still resolves (it cites the previous step); and a contact row
+        // a collision event cited at step 1 survives every later prune. The 12
+        // record budget is chosen so the sequence would trip RecordLimitExceeded
+        // at step 10 without retention (raw contacts accumulate one row per step).
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(12, 64 * 1024);
+        PhysicalContactInput pair = new PhysicalContactInput(
+            "a:0", 1, Vector2.zero, Vector2.up, 0f, Vector2.zero, 0f,
+            "b:0", 2, new Vector2(0f, 0f), new Vector2(0f, 1f), false);
+
+        recorder.RecordContacts(1, new[] { pair });
+        string stepOneContactId = recorder.RawContacts[0].ContactId;
+        recorder.RecordCollision(1, 0.02f, "a:0", "b:0", new[] { stepOneContactId }, 1f);
+        Assert.AreEqual(1, recorder.Events.Count);
+
+        for (long step = 2; step <= 20; step++)
+            recorder.RecordContacts(step, new[] { pair });
+
+        Assert.IsNull(recorder.Failure,
+            "retention must keep a 20-step sequence under a 12-record budget");
+        Assert.AreEqual(3, recorder.RawContacts.Count,
+            "retention must keep the last two full steps plus the collision-cited row");
+        Assert.IsTrue(recorder.RawContacts.Any(c => c.ContactId == stepOneContactId),
+            "the collision-cited step-1 contact must survive pruning");
+        Assert.IsTrue(recorder.RawContacts.Any(c => c.FixedStep >= 19),
+            "the last two full steps must be retained");
+        Assert.GreaterOrEqual(recorder.SupportEdges.Count, 1,
+            "support evidence must still resolve after retention");
+
+        recorder.FinalizeShot(true);
+        PhysicalShotRecorderSnapshot snapshot = recorder.CreateFinalizedSnapshot();
+        Assert.IsNotNull(snapshot);
+        Assert.IsTrue(snapshot.RawContacts.Any(c => c.ContactId == stepOneContactId),
+            "the cited row must reach the finalized snapshot");
+        Assert.IsTrue(snapshot.SupportEdges.Any(edge => edge.PairKey == "a:0:1|b:0:2"),
+            "the support edge citing the retained steps must reach the finalized snapshot");
+    }
+
+    private static string SupportIdOf(PhysicalSupportEdge edge)
+    {
+        return "support:" + edge.SupporterEntityId + "->" + edge.SupportedEntityId;
     }
 
     private static void AssertFinalizedMutationIsNoOp(Action<PhysicsShotRecorder> mutation, string mutationName)
