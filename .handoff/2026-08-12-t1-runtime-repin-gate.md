@@ -62,37 +62,18 @@ No cleanup, verification continuation, build, smoke, re-pin, publication, cohort
 
 The first long-running validation worker returned no output but left `session-4-verification/step-0-initial-hashes.txt` and refreshed full EditMode receipts. The four `.pyc` files share one timestamp during that unreported attempt. Suspected cause: that worker executed an import without the required effective `PYTHONDONTWRITEBYTECODE=1`, despite the task instruction. **Confidence: medium.**
 
-## Next Session Options
+## Next Action
 
-### A — continue the active plan at the next dependency-ready item
+Remove the generated `scripts/__pycache__/` directory, confirm it is absent, and resume Phase 2 at the Python RED proof.
 
-Authorize/remove only `scripts/__pycache__/`, verify it is absent, and resume Phase 2 from the Python RED proof. Then, in order:
+Remaining gate sequence:
 
-1. Python RED proof for the retention-shaped parser fixture; restore byte-identically.
-2. Python GREEN: `tests.test_physics_capture_retention_order` and `tests.test_smoke_physics_capture`.
-3. Full per-class EditMode GREEN using `editmode_full_suite.py` and NUnit XML authority.
-4. `mutation_check.py`: require 9/9 RED and source restored identical.
-5. Commit successful verification evidence (the current implementation is already committed as WIP).
-6. Rebuild twice with `phase5_build_twice.py`; require deterministic byte-identical output.
-7. Oracle gate before consuming the run.
-8. Spend exactly one bounded full smoke.
-9. Re-pin only if accepted; stop before publication. Cohort collection remains forbidden.
-
-Acceptance criteria: cache absent before packaging; all Python/EditMode tests green; 9/9 mutations red with identical restoration; two deterministic builds; exactly one smoke; re-pin only on smoke acceptance.
-
-Smallest first command/inspection:
-
-```sh
-/bin/ls -la scripts/__pycache__
-```
-
-Then remove that exact directory only if authorized by the resumed session's cleanup boundary.
-
-### B — investigate the cache producer first
-
-Fast-fail by tracing which validation command ignored `PYTHONDONTWRITEBYTECODE`, without running the remaining gate. Choose this only if preventing recurrence is more important than completing T1 immediately.
-
-**Recommendation: A.** The cache is an understood generated artifact, the implementation passed Oracle review, and the remaining critical path is verification → deterministic build → one smoke.
+1. Python RED and GREEN verification.
+2. Full per-class EditMode GREEN verification.
+3. Mutation proof: 9/9 RED with byte-identical restoration.
+4. Two deterministic builds.
+5. One bounded full smoke.
+6. Conditional re-pin only if the smoke accepts.
 
 ## Authority / Limits
 
