@@ -11,7 +11,7 @@ Reconcile the BG-NS-JEPA roadmap with current accepted evidence and produce an i
 - [x] Write the Milestone 0a execution specification.
 - [x] Run final document/evidence validation and record actual output.
 - [ ] Inspect Git state/diff/history, commit session-owned files, write and commit the handoff, push, and verify `HEAD == upstream`.
-- [ ] Obtain an independent critic review of the completed writing.
+- [x] Obtain an independent critic review of the completed writing.
 
 ## Key Questions
 1. Which exact `physics_capture_v1` fields deterministically support each proposed label?
@@ -28,6 +28,7 @@ Reconcile the BG-NS-JEPA roadmap with current accepted evidence and produce an i
 ## Errors Encountered
 - Three delegated explorer/verification lanes returned session errors without evidence. Known source paths were read directly instead; no task was retried unchanged.
 - Three bounded specification-writer attempts stopped without creating their owned file. Empty/stuck lanes were reconciled or cancelled; the settled specification was then written directly.
+- The first independent critic review rejected one authority-wording contradiction. The opening status was narrowed to match the already-settled fixture-only authority boundary; no semantic rule changed.
 
 ## Status
-**Currently finalizing Git and handoff** — document validation passed; only session-owned files will be staged.
+**Currently completing post-review Git finalization** — the correction passed focused validation and follow-up critic review returned ACCEPT.

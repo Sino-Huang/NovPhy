@@ -52,7 +52,11 @@
 - `git diff --check`: exit 0; no output.
 - Document assertion gate: 29 assertions passed, 0 failed.
 - Corrected roadmap: 305 lines, 20,739 bytes, sha256 `8b7397803060a3d732f0b6d235b9486a6adb4c93fbc5780283cdc6cf8412945d`.
-- Milestone 0a specification: 431 lines, 25,556 bytes, sha256 `bd66e994b4b4b5c029437e8535f146b699bd49b072e0e03ac885c5ebab6e7546`.
+- Initial Milestone 0a specification: 431 lines, 25,556 bytes, sha256 `bd66e994b4b4b5c029437e8535f146b699bd49b072e0e03ac885c5ebab6e7546`.
 - Required facts/terms present: accepted archive/runtime status, accepted-smoke evidence, continuous-only temporal evidence and claim boundary, fixed-step bracketing, pig tags, unavailable states, outcome/equilibrium semantics, evidence paths, and authority gates.
 - Stale terms absent: previous `429cac1d…` digest, the old no-world-model claim, and event alignment by exact event `render_frame`.
 - Git status continued to show only pre-existing unrelated untracked artifacts plus the four session-owned planning/deliverable files; no unrelated artifact was modified or removed.
+- Independent critic review `critics/2026-08-13-critic-1.md` found one blocking wording contradiction: the specification's opening status prohibited all implementation while later sections authorized fixture-only implementation. The status line was corrected to authorize fixture-only implementation within §15 while preserving runtime/publication/cohort/real-data prohibitions.
+- Focused correction validation passed all prior 29 assertions plus three authority checks; `git diff --check` remained clean.
+- Corrected Milestone 0a specification: 431 lines, 25,647 bytes, sha256 `e1ad5ef0a4656f8aeb5ab2aade1e37114545382a7d0e3b455339c63ce57013a5`.
+- Follow-up critic review `critics/2026-08-13-critic-2.md` found no blocking, important, or optional issue and returned `ACCEPT — safe for the fixture-only implementation`.

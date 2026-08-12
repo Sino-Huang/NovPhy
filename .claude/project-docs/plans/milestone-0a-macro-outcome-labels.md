@@ -1,6 +1,6 @@
 # Milestone 0a Execution Specification — Deterministic Macro and Outcome Labels
 
-**Status:** implementation-ready plan, 2026-08-13. No implementation, runtime publication, or cohort collection is authorized by this document.
+**Status:** implementation-ready plan, 2026-08-13. Fixture-only implementation is authorized within the boundaries in §15; runtime execution, publication, cohort collection, and real-cohort writes are not authorized by this document.
 
 **Authority:** this plan follows, in order, the completed T1 handoff, the appended current runtime verdict, the corrected BG-NS-JEPA roadmap, the research proposal and system overview, and the accepted continuous-only Milestone 1e/1f evidence. It supersedes `.claude/project-docs/plans/enriched-cohort-oracle-labels.md` for Milestone 0a semantics and sequencing. The older plan remains historical evidence.
 
