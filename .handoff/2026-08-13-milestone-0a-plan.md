@@ -3,12 +3,16 @@
 ## Completed
 
 - Completed the dependency-ready roadmap reconciliation and Milestone 0a planning item in commit `cbe0bd37b4f909645fd4fb0277730cabfba7e9a7` (`docs(research): plan Milestone 0a macro labels`).
+- Resolved the independent review's sole authority-wording contradiction and recorded both reviews in commit `0e947219d07a98f98cfb4c9842736e615c798ee1` (`docs(research): resolve Milestone 0a review`).
+- Closed the persistent planning record in commit `ba0588666ea144d5a34f3aaa50f7ab06b30f5a5a` (`docs: close Milestone 0a planning record`).
 - Added the corrected current roadmap at `docs/high_level_plans/bg_ns_jepa_research_execution.md`.
 - Added the implementation-ready specification at `.claude/project-docs/plans/milestone-0a-macro-outcome-labels.md`.
 - Reconciled the accepted runtime re-pin (`repin_complete`, archive `de59061350f78f79420d76ec33f1c506aa17c1cfc25d197cdd2f5f770874e838`) and the completed continuous-only Milestone 1e/1f temporal projection without claiming a full oracle-symbol or joint-alpha result.
 - Closed the fixture software contract for the five macro predicates, outcome/capture disposition, terminal equilibrium observation, fixed-step clustering, state/RGB/event identity, canonical `physics_macro_labels_v1` bytes, fail-closed validation, fixtures, evidence, and dependencies.
 - Identified the accepted-runtime clock rule that supersedes the pre-repin scaffolding: event occurrence is keyed by `fixed_step`; event `render_frame` is serialization provenance and must not drive event-to-state joins.
-- Validation passed after commit: `git diff HEAD^ HEAD --check` exited 0; 29/29 document assertions passed; roadmap sha256 `8b7397803060a3d732f0b6d235b9486a6adb4c93fbc5780283cdc6cf8412945d`; specification sha256 `bd66e994b4b4b5c029437e8535f146b699bd49b072e0e03ac885c5ebab6e7546`.
+- Initial validation passed: `git diff HEAD^ HEAD --check` exited 0 and 29/29 document assertions passed.
+- Post-review validation passed all prior assertions plus the explicit fixture-only authority checks. Final roadmap sha256 is `8b7397803060a3d732f0b6d235b9486a6adb4c93fbc5780283cdc6cf8412945d`; final specification sha256 is `e1ad5ef0a4656f8aeb5ab2aade1e37114545382a7d0e3b455339c63ce57013a5`.
+- `critics/2026-08-13-critic-1.md` recorded the initial blocking wording contradiction. `critics/2026-08-13-critic-2.md` verified the correction and returned `ACCEPT — safe for the fixture-only implementation` with no remaining blocking, important, or optional issue.
 - No runtime/player command, smoke rerun, publication, cohort collection, real label write, health report, training, frozen-schema edit, or protected-root write occurred.
 
 ## Authority / Limits
