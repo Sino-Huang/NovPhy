@@ -69,3 +69,25 @@ Finish with either `ready_for_repin_approval` backed by deterministic build and 
 
 ### Status
 **still_blocked.** The terminal blocker is no longer the collision payload — that is fixed on this branch and the staged binary is simply stale relative to its own source. It is level geometry: on `novelty_level_0/type2/Levels/3_9_6_1.xml`, no object a bird can reach invokes the recorder. `BirdBlack` overrides `OnCollisionEnter2D` without calling base; platforms and ground carry no `ABGameObject`; `ABBlock` records only on its non-bird branch; only pigs record, and both are walled in. Aim cannot fix it — both pulls saturate the drag clamp, so only elevation changes. The fix reaches two gameplay classes plus the fail-closed throw at `PhysicsShotRecorder.cs:531`, which is beyond this wave's TODO-2 scope, so it was recorded and reported rather than improvised against a non-retryable run budget. Phase 5 ran anyway and passed. Tests: 75/75 focused Python, 8/8 mutations red with byte-identical restore, 48/48 EditMode across 8 classes, one fixture red-then-green. No smoke spent, no retry, no re-pin, no publication, no cohort collection; the staged pin is byte-identical to the session start.
+
+---
+
+## Third session (2026-08-12) — authorized T1 continuation
+
+### Phases
+- [x] Cleared the packaging blocker by deleting exactly `scripts/__pycache__/`, the only deletion authorized for this continuation.
+- [x] Preserved the accepted C# RED proof: 25 discovered, 23 passed, exactly two ordering regressions failed; XML sha256 `787cba1af6aae45c0dcb6ac14dde56ab09efe32a5597711d2ad6ffc78a5456db`; source restored to `d6bc41af198c986e8ce371131c617f2c0d125b88f02a30388bd33cdcc6d3a2cd`.
+- [x] Python ordering regression: 3/3 passed, including both `DETERMINISTIC_ORDER` rejection guards.
+- [x] Full per-class EditMode: 59/59 passed across nine classes.
+- [x] Mutation proof: 9/9 RED; `scripts/smoke_physics_capture.py` restored byte-identically to `ba3c8772534a5e535c1ba7d16faa1427dae342e6a2f7a8e9017f5449e2d05aea`.
+- [x] Phase 5: build A and build B exited 0; 151 provenance files compared; zero drift; archive sha256 `de59061350f78f79420d76ec33f1c506aa17c1cfc25d197cdd2f5f770874e838`.
+- [x] Phase 6: exactly one full smoke accepted the fresh build. Report: `.claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json`; output: `session-5-full-smoke/`.
+- [x] Conditional re-pin: after acceptance, copied exactly `archive.sha256`, `novphy-physics-player-2019.4.41f2.tar.gz`, and `unity-build.log` into `sciencebirdsgames/physics-v1/`; all bind to `de59061350f78f79420d76ec33f1c506aa17c1cfc25d197cdd2f5f770874e838`.
+
+### Errors Encountered
+- The first mutation run was externally terminated at 120 seconds while mutation 2 was applied. The failure was recorded verbatim. The residue was a certain one-line EASY repair; exact restoration was verified before the one allowed retest, which passed 9/9.
+- Three independent advisory/review agent sessions returned blank terminal results after reading evidence. Their failure was not treated as approval; the receipts were reconciled directly before the smoke.
+- Two delegated smoke executors failed at the session layer before `run_smoke` created its output directory. Audits proved `NOT_CONSUMED`; the exact command was then run once directly and was not retried.
+
+### Current Status
+**`repin_complete`.** The accepted smoke recorded four collisions; the selected collision carried sorted unique `contact_ids` (`contact:361:-632:0:-646|world:static:-466:-466:0`) and finite non-negative `relative_speed` (`10.6197062`). Request identities used one capture id with sequence `1 -> 2`; listener binding remained stable; `recorder_refusals` was empty; port 2004 cleared; the temporary clone was removed; protected roots were unchanged. Publication remains a separate owner decision and is not authorized. Cohort collection did not occur; repository closure commits are finalized separately.

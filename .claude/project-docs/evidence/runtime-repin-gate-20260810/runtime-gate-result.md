@@ -414,3 +414,48 @@ No re-pin. No publication. No overwrite of `sciencebirdsgames/physics-v1/`. No c
 ## 9. Smallest next step
 
 Fix the collision payload in the Unity player's C# capture path so `collision` events carry sorted unique `contact_ids` and a finite non-negative `relative_speed`, then run Phase 5 (two isolated builds, identical archive/player/assembly/package-input/provenance digests) and spend the single full smoke on the rebuilt candidate. That sequence requires re-pin authorization, which this wave does not hold.
+
+---
+
+# Current verdict — third continuation, 2026-08-12
+
+**Status: `repin_complete`**
+
+This section supersedes the historical `still_blocked` verdicts above as current authority; those sections remain unchanged as the audit trail of earlier candidates. The authorized T1 implementation is commit `d5be336be778103ac2ae883d4d946a1df3eaf540`. Closure records began from branch `physics-unity-2019.4` at HEAD `4bde6262e99c4c8d38bfdccc1af3df240d63b159`.
+
+## Verification closure
+
+- Preserved C# RED: `PhysicsShotRecorderTests` discovered 25 tests, 23 passed, and exactly the two ordering regressions failed. NUnit XML sha256: `787cba1af6aae45c0dcb6ac14dde56ab09efe32a5597711d2ad6ffc78a5456db`. Product source was restored byte-identically to `d6bc41af198c986e8ce371131c617f2c0d125b88f02a30388bd33cdcc6d3a2cd`; the RED run was not repeated.
+- Python retention/ordering regression: 3/3 passed.
+- Full per-class Unity EditMode: 59/59 passed, 0 failed, 0 skipped.
+- Mutation proof: 9/9 mutations turned the suite RED; smoke source restored byte-identically to `ba3c8772534a5e535c1ba7d16faa1427dae342e6a2f7a8e9017f5449e2d05aea`.
+- Deterministic builds: build A exit 0; build B exit 0; 151 provenance files compared; zero drift; both archives sha256 `de59061350f78f79420d76ec33f1c506aa17c1cfc25d197cdd2f5f770874e838`.
+
+The first mutation attempt was externally killed at the tool's 120-second ceiling while mutation 2 was active. The actual failure was recorded before repair. The residue was classified EASY: one certain line in `scripts/smoke_physics_capture.py`, no design decision. It was restored exactly, and the single bounded retest passed 9/9 with byte-identical restoration.
+
+## Single full smoke
+
+Exactly one full smoke was consumed against build A. Machine-readable report: `.claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json`. Output: `.claude/project-docs/evidence/runtime-repin-gate-20260810/session-5-full-smoke/`.
+
+- `status: accepted`; `phase: complete`.
+- Provenance archive sha256: `de59061350f78f79420d76ec33f1c506aa17c1cfc25d197cdd2f5f770874e838`.
+- Four collision events were observed. The selected collision carried sorted unique contact id `contact:361:-632:0:-646|world:static:-466:-466:0`, fixed step 361, and finite non-negative relative speed `10.6197062`.
+- Request identities shared capture id `capture-e5f5d8ab461e466ab27839ba6781f94c` with strictly increasing sequences `1 -> 2`.
+- Listener binding and rebinding matched; the stability receipt preserved all 14 identity fields.
+- `recorder_refusals: []`; `cleanup.physics_port_clear: true`; temporary clone removed; protected roots unchanged; no cleanup failure was reported.
+
+Two delegated executor sessions failed before `run_smoke`'s first filesystem action. Both times, audits found the named output directory absent, the designated report still stale, the old pin unchanged, no owned process, and port 2004 free. They did not consume the smoke. The direct fallback then ran the exact bounded command once; it accepted and was not retried.
+
+## Conditional re-pin
+
+The pre-smoke staged archive remained `429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de`. Only after the accepting smoke, the authorized conditional re-pin replaced exactly these files under `sciencebirdsgames/physics-v1/`:
+
+1. `archive.sha256`
+2. `novphy-physics-player-2019.4.41f2.tar.gz`
+3. `unity-build.log`
+
+The staged archive bytes, `archive.sha256`, build-A archive, and smoke provenance now all equal `de59061350f78f79420d76ec33f1c506aa17c1cfc25d197cdd2f5f770874e838`.
+
+## Authority boundary and next decision
+
+No runtime publication occurred. No cohort collection occurred. Repository closure commits are finalized separately and do not publish the runtime artifact. The re-pinned candidate is eligible for a separate publication decision, but this result does not authorize publication. The next action is an explicit owner decision on whether to publish the re-pinned archive; until then, no publication command or cohort command may run.

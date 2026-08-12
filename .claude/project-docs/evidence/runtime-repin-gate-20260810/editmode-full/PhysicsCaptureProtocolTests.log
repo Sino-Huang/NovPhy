@@ -37,12 +37,12 @@ Process terminated. Couldn't find a valid ICU package installed on the system. S
 IPC channel to LicensingClient doesn't exist; falling back to Legacy licensing
 [LicensingClient] ERROR Failed to disconnect local IPC connection
 
-LICENSE SYSTEM [2026812 5:36:3] Next license update check is after 2026-08-08T14:59:07
+LICENSE SYSTEM [2026812 16:4:31] Next license update check is after 2026-08-08T14:59:07
 
 Pro License: NO
 
-LICENSE SYSTEM [2026812 5:36:3] Current license is already valid and activated. Skipping license activation process (Provided username/password will be ignored).
-[Package Manager] Server::Start -- Port 54329 was selected
+LICENSE SYSTEM [2026812 16:4:31] Current license is already valid and activated. Skipping license activation process (Provided username/password will be ignored).
+[Package Manager] Server::Start -- Port 56881 was selected
 
 COMMAND LINE ARGUMENTS:
 /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity
@@ -113,7 +113,7 @@ Registered 41 packages:
 
 [Subsystems] No new subsystems found in resolved package list.
 [Package Manager] Done registering packages in 0.02s seconds
-Refreshing native plugins compatible for Editor in 21.56 ms, found 0 plugins.
+Refreshing native plugins compatible for Editor in 20.86 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Initialize engine version: 2019.4.41f2 (6b23d448b533)
 [Subsystems] Discovering subsystems at path /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Resources/UnitySubsystems
@@ -128,29 +128,29 @@ Initialize mono
 Mono path[0] = '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed'
 Mono path[1] = '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/MonoBleedingEdge/lib/mono/unityjit'
 Mono config path = '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/MonoBleedingEdge/etc'
-Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56747
-ImportWorker Server TCP listen port: 32941
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56762
+ImportWorker Server TCP listen port: 44735
 Begin MonoManager ReloadAssembly
 Registering precompiled unity dll's ...
 Register platform support module: /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/PlaybackEngines/LinuxStandaloneSupport/UnityEditor.LinuxStandalone.Extensions.dll
-Registered in 0.001005 seconds.
+Registered in 0.001023 seconds.
 Native extension for LinuxStandalone target not found
-Refreshing native plugins compatible for Editor in 19.25 ms, found 0 plugins.
+Refreshing native plugins compatible for Editor in 19.04 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Mono: successfully reloaded assembly
-- Completed reload, in  0.571 seconds
+- Completed reload, in  0.555 seconds
 Domain Reload Profiling:
-	ReloadAssembly (584ms)
-		BeginReloadAssembly (18ms)
+	ReloadAssembly (568ms)
+		BeginReloadAssembly (17ms)
 			ExecutionOrderSort (0ms)
 			DisableScriptedObjects (0ms)
 			BackupInstance (0ms)
 			ReleaseScriptingObjects (0ms)
 			CreateAndSetChildDomain (1ms)
-		EndReloadAssembly (215ms)
-			LoadAssemblies (17ms)
+		EndReloadAssembly (212ms)
+			LoadAssemblies (16ms)
 			RebuildTransferFunctionScriptingTraits (0ms)
-			SetupTypeCache (83ms)
+			SetupTypeCache (81ms)
 			ReleaseScriptCaches (0ms)
 			RebuildScriptCaches (21ms)
 			SetupLoadedEditorAssemblies (76ms)
@@ -159,45 +159,45 @@ Domain Reload Profiling:
 				SetLoadedEditorAssemblies (0ms)
 				RefreshPlugins (19ms)
 				BeforeProcessingInitializeOnLoad (1ms)
-				ProcessInitializeOnLoadAttributes (46ms)
-				ProcessInitializeOnLoadMethodAttributes (5ms)
+				ProcessInitializeOnLoadAttributes (47ms)
+				ProcessInitializeOnLoadMethodAttributes (4ms)
 				AfterProcessingInitializeOnLoad (0ms)
 				EditorAssembliesLoaded (0ms)
 			ExecutionOrderSort2 (0ms)
 			AwakeInstancesAfterBackupRestoration (0ms)
 Registering precompiled user dll's ...
-Registered in 0.101739 seconds.
+Registered in 0.092896 seconds.
 Platform modules already initialized, skipping
-Validating Project structure ... 0.006927 seconds.
+Validating Project structure ... 0.006751 seconds.
 Shader import version has changed; will reimport all shaders...
-Upgrading shader files ...0.005589 seconds.
+Upgrading shader files ...0.005334 seconds.
 Begin MonoManager ReloadAssembly
 Native extension for LinuxStandalone target not found
-Refreshing native plugins compatible for Editor in 0.39 ms, found 0 plugins.
+Refreshing native plugins compatible for Editor in 0.37 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
 Mono: successfully reloaded assembly
-- Completed reload, in  0.536 seconds
+- Completed reload, in  0.528 seconds
 Domain Reload Profiling:
-	ReloadAssembly (557ms)
-		BeginReloadAssembly (34ms)
+	ReloadAssembly (549ms)
+		BeginReloadAssembly (35ms)
 			ExecutionOrderSort (0ms)
 			DisableScriptedObjects (1ms)
 			BackupInstance (0ms)
 			ReleaseScriptingObjects (0ms)
-			CreateAndSetChildDomain (16ms)
-		EndReloadAssembly (483ms)
-			LoadAssemblies (35ms)
+			CreateAndSetChildDomain (17ms)
+		EndReloadAssembly (476ms)
+			LoadAssemblies (34ms)
 			RebuildTransferFunctionScriptingTraits (0ms)
-			SetupTypeCache (158ms)
+			SetupTypeCache (149ms)
 			ReleaseScriptCaches (0ms)
-			RebuildScriptCaches (34ms)
-			SetupLoadedEditorAssemblies (217ms)
+			RebuildScriptCaches (33ms)
+			SetupLoadedEditorAssemblies (218ms)
 				LogAssemblyErrors (0ms)
-				InitializePlatformSupportModulesInManaged (7ms)
+				InitializePlatformSupportModulesInManaged (6ms)
 				SetLoadedEditorAssemblies (0ms)
 				RefreshPlugins (1ms)
-				BeforeProcessingInitializeOnLoad (59ms)
-				ProcessInitializeOnLoadAttributes (146ms)
+				BeforeProcessingInitializeOnLoad (54ms)
+				ProcessInitializeOnLoadAttributes (153ms)
 				ProcessInitializeOnLoadMethodAttributes (2ms)
 				AfterProcessingInitializeOnLoad (2ms)
 				EditorAssembliesLoaded (0ms)
@@ -205,18 +205,18 @@ Domain Reload Profiling:
 			AwakeInstancesAfterBackupRestoration (1ms)
 Platform modules already initialized, skipping
 RefreshInfo: InitialScriptRefreshV2(NoUpdateAssetOptions)
-RefreshProfiler: Total: 1002.713ms
-	InvokeBeforeRefreshCallbacks: 0.356ms
-	ApplyChangesToAssetFolders: 0.052ms
+RefreshProfiler: Total: 989.856ms
+	InvokeBeforeRefreshCallbacks: 0.346ms
+	ApplyChangesToAssetFolders: 0.053ms
 	WriteModifiedImportersToTextMetaFiles: 0.000ms
 	CleanLegacyArtifacts: 0.000ms
-	Scan: 139.532ms
+	Scan: 139.131ms
 	OnSourceAssetsModified: 0.001ms
 	UnregisterDeletedAssets: 0.000ms
-	InitializeImportedAssetsSnapshot: 0.147ms
-	GetAllGuidsForCategorization: 0.073ms
-	CategorizeAssets: 19.404ms
-	ImportAndPostprocessOutOfDateAssets: 837.062ms (836.729ms without children)
+	InitializeImportedAssetsSnapshot: 0.160ms
+	GetAllGuidsForCategorization: 0.075ms
+	CategorizeAssets: 19.986ms
+	ImportAndPostprocessOutOfDateAssets: 824.070ms (823.729ms without children)
 		ImportManagerImport: 0.000ms (0.000ms without children)
 			ImportInProcess: 0.000ms
 			ImportOutOfProcess: 0.000ms
@@ -228,42 +228,42 @@ RefreshProfiler: Total: 1002.713ms
 		PostProcessAllAssets: 0.000ms
 		ReloadImportedAssets: 0.000ms
 		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
-		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.116ms
-		InitializingProgressBar: 0.002ms
-		PostProcessAllAssetNotificationsAddChangedAssets: 0.084ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.120ms
+		InitializingProgressBar: 0.001ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.089ms
 		OnDemandSchedulerStart: 0.000ms
 		RestoreLoadedAssetsState: 0.131ms
 	InvokeProjectHasChanged: 0.000ms
 	UpdateImportedAssetsSnapshot: 0.000ms
-	ReloadSourceAssets: 0.279ms
+	ReloadSourceAssets: 0.267ms
 	UnloadImportedAssets: 0.003ms
-	Hotreload: 0.046ms
+	Hotreload: 0.049ms
 	FixTempGuids: 0.002ms
 	VerifyGuidPMRegistrations: 0.000ms
 	GatherAllCurrentPrimaryArtifactRevisions: 0.000ms
-	UnloadStreamsBegin: 0.258ms
-	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.004ms
-	GetLoadedSourceAssetsSnapshot: 0.173ms
+	UnloadStreamsBegin: 0.277ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.003ms
+	GetLoadedSourceAssetsSnapshot: 0.174ms
 	PersistCurrentRevisions: 0.000ms
-	UnloadStreamsEnd: 4.972ms
-	GenerateScriptTypeHashes: 0.168ms
-	Untracked: 0.347ms
-Refreshing native plugins compatible for Editor in 0.29 ms, found 0 plugins.
+	UnloadStreamsEnd: 4.877ms
+	GenerateScriptTypeHashes: 0.169ms
+	Untracked: 0.382ms
+Refreshing native plugins compatible for Editor in 0.28 ms, found 0 plugins.
 Preloading 0 native plugins for Editor in 0.00 ms.
-Refresh completed in 0.241870 seconds.
+Refresh completed in 0.224783 seconds.
 RefreshInfo: RefreshV2(ForceSynchronousImport)
-RefreshProfiler: Total: 241.863ms
-	InvokeBeforeRefreshCallbacks: 0.661ms
-	ApplyChangesToAssetFolders: 0.060ms
+RefreshProfiler: Total: 224.776ms
+	InvokeBeforeRefreshCallbacks: 0.520ms
+	ApplyChangesToAssetFolders: 0.057ms
 	WriteModifiedImportersToTextMetaFiles: 0.000ms
 	CleanLegacyArtifacts: 0.000ms
-	Scan: 164.743ms
+	Scan: 149.181ms
 	OnSourceAssetsModified: 0.001ms
 	UnregisterDeletedAssets: 0.000ms
-	InitializeImportedAssetsSnapshot: 2.930ms
-	GetAllGuidsForCategorization: 0.061ms
-	CategorizeAssets: 18.867ms
-	ImportAndPostprocessOutOfDateAssets: 51.124ms (0.903ms without children)
+	InitializeImportedAssetsSnapshot: 2.991ms
+	GetAllGuidsForCategorization: 0.046ms
+	CategorizeAssets: 19.059ms
+	ImportAndPostprocessOutOfDateAssets: 50.631ms (0.889ms without children)
 		ImportManagerImport: 0.000ms (0.000ms without children)
 			ImportInProcess: 0.000ms
 			ImportOutOfProcess: 0.000ms
@@ -272,39 +272,39 @@ RefreshProfiler: Total: 241.863ms
 				RemoteAssetCacheResolve: 0.000ms
 				RemoteAssetCacheDownloadFile: 0.000ms
 		CompileScripts: 0.000ms
-		PostProcessAllAssets: 47.032ms
+		PostProcessAllAssets: 46.642ms
 		ReloadImportedAssets: 0.002ms
 		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
-		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.143ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.140ms
 		InitializingProgressBar: 0.000ms
-		PostProcessAllAssetNotificationsAddChangedAssets: 0.082ms
-		OnDemandSchedulerStart: 0.268ms
-		RestoreLoadedAssetsState: 1.046ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.081ms
+		OnDemandSchedulerStart: 0.408ms
+		RestoreLoadedAssetsState: 1.000ms
 	InvokeProjectHasChanged: 0.000ms
-	UpdateImportedAssetsSnapshot: 1.647ms
-	ReloadSourceAssets: 0.245ms
-	UnloadImportedAssets: 0.048ms
-	Hotreload: 0.708ms
+	UpdateImportedAssetsSnapshot: 1.469ms
+	ReloadSourceAssets: 0.251ms
+	UnloadImportedAssets: 0.042ms
+	Hotreload: 0.680ms
 	FixTempGuids: 0.002ms
 	VerifyGuidPMRegistrations: 0.000ms
-	GatherAllCurrentPrimaryArtifactRevisions: 0.092ms
-	UnloadStreamsBegin: 0.004ms
-	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.166ms
-	GetLoadedSourceAssetsSnapshot: 1.633ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.098ms
+	UnloadStreamsBegin: 0.005ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.150ms
+	GetLoadedSourceAssetsSnapshot: 1.568ms
 	PersistCurrentRevisions: 0.000ms
-	UnloadStreamsEnd: 1.522ms
-	GenerateScriptTypeHashes: 0.389ms
-	Untracked: -1.002ms
+	UnloadStreamsEnd: 0.461ms
+	GenerateScriptTypeHashes: 0.421ms
+	Untracked: -0.964ms
 RefreshInfo: StopAssetImportingV2(ForceSynchronousImport)
-RefreshProfiler: Total: 39.107ms
-	InvokeBeforeRefreshCallbacks: 0.390ms
-	ApplyChangesToAssetFolders: 0.059ms
+RefreshProfiler: Total: 39.424ms
+	InvokeBeforeRefreshCallbacks: 0.475ms
+	ApplyChangesToAssetFolders: 0.058ms
 	WriteModifiedImportersToTextMetaFiles: 0.000ms
 	CleanLegacyArtifacts: 0.000ms
-	Scan: 35.484ms
+	Scan: 35.928ms
 	OnSourceAssetsModified: 0.000ms
 	UnregisterDeletedAssets: 0.000ms
-	InitializeImportedAssetsSnapshot: 2.061ms
+	InitializeImportedAssetsSnapshot: 1.872ms
 	GetAllGuidsForCategorization: 0.000ms
 	CategorizeAssets: 0.000ms
 	ImportAndPostprocessOutOfDateAssets: 0.000ms (0.000ms without children)
@@ -328,31 +328,31 @@ RefreshProfiler: Total: 39.107ms
 	UpdateImportedAssetsSnapshot: 0.000ms
 	ReloadSourceAssets: 0.000ms
 	UnloadImportedAssets: 0.000ms
-	Hotreload: 0.016ms
+	Hotreload: 0.018ms
 	FixTempGuids: 0.004ms
 	VerifyGuidPMRegistrations: 0.000ms
-	GatherAllCurrentPrimaryArtifactRevisions: 0.101ms
-	UnloadStreamsBegin: 0.045ms
-	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.230ms
-	GetLoadedSourceAssetsSnapshot: 0.292ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.102ms
+	UnloadStreamsBegin: 0.035ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.232ms
+	GetLoadedSourceAssetsSnapshot: 0.277ms
 	PersistCurrentRevisions: 0.000ms
 	UnloadStreamsEnd: 0.008ms
 	GenerateScriptTypeHashes: 0.000ms
-	Untracked: 0.417ms
-Refresh completed in 0.105275 seconds.
+	Untracked: 0.415ms
+Refresh completed in 0.105486 seconds.
 RefreshInfo: RefreshV2(NoUpdateAssetOptions)
-RefreshProfiler: Total: 105.267ms
+RefreshProfiler: Total: 105.479ms
 	InvokeBeforeRefreshCallbacks: 0.001ms
-	ApplyChangesToAssetFolders: 0.071ms
+	ApplyChangesToAssetFolders: 0.060ms
 	WriteModifiedImportersToTextMetaFiles: 0.000ms
 	CleanLegacyArtifacts: 0.000ms
-	Scan: 81.058ms
+	Scan: 82.730ms
 	OnSourceAssetsModified: 0.000ms
 	UnregisterDeletedAssets: 0.000ms
-	InitializeImportedAssetsSnapshot: 2.013ms
-	GetAllGuidsForCategorization: 0.084ms
-	CategorizeAssets: 18.360ms
-	ImportAndPostprocessOutOfDateAssets: 1.783ms (0.302ms without children)
+	InitializeImportedAssetsSnapshot: 1.845ms
+	GetAllGuidsForCategorization: 0.064ms
+	CategorizeAssets: 17.310ms
+	ImportAndPostprocessOutOfDateAssets: 1.656ms (0.296ms without children)
 		ImportManagerImport: 0.000ms (0.000ms without children)
 			ImportInProcess: 0.000ms
 			ImportOutOfProcess: 0.000ms
@@ -364,26 +364,26 @@ RefreshProfiler: Total: 105.267ms
 		PostProcessAllAssets: 0.000ms
 		ReloadImportedAssets: 0.000ms
 		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
-		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.151ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.139ms
 		InitializingProgressBar: 0.000ms
-		PostProcessAllAssetNotificationsAddChangedAssets: 0.075ms
-		OnDemandSchedulerStart: 0.164ms
-		RestoreLoadedAssetsState: 1.092ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.074ms
+		OnDemandSchedulerStart: 0.131ms
+		RestoreLoadedAssetsState: 1.016ms
 	InvokeProjectHasChanged: 0.000ms
 	UpdateImportedAssetsSnapshot: 0.000ms
-	ReloadSourceAssets: 0.291ms
+	ReloadSourceAssets: 0.286ms
 	UnloadImportedAssets: 0.045ms
-	Hotreload: 0.054ms
-	FixTempGuids: 0.002ms
+	Hotreload: 0.055ms
+	FixTempGuids: 0.001ms
 	VerifyGuidPMRegistrations: 0.000ms
-	GatherAllCurrentPrimaryArtifactRevisions: 0.105ms
-	UnloadStreamsBegin: 0.015ms
-	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.243ms
-	GetLoadedSourceAssetsSnapshot: 1.451ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.100ms
+	UnloadStreamsBegin: 0.011ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.230ms
+	GetLoadedSourceAssetsSnapshot: 1.307ms
 	PersistCurrentRevisions: 0.000ms
-	UnloadStreamsEnd: 0.005ms
+	UnloadStreamsEnd: 0.004ms
 	GenerateScriptTypeHashes: 0.000ms
-	Untracked: -0.315ms
+	Untracked: -0.226ms
 Initializing Unity extensions:
  '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/UnityExtensions/Unity/UnityVR/Editor/UnityEditor.VR.dll'  GUID: 4ba2329b63d54f0187bcaa12486b1b0f
 UpdateMenuTitleForLanguage: 10
@@ -392,10 +392,10 @@ System memory in use before: 34.8 MB.
 System memory in use after: 34.1 MB.
 
 Unloading 137 unused Assets to reduce memory usage. Loaded Objects now: 1808.
-Total: 2.279231 ms (FindLiveObjects: 0.146810 ms CreateObjectMapping: 0.028864 ms MarkObjects: 1.541093 ms  DeleteObjects: 0.561753 ms)
+Total: 2.412371 ms (FindLiveObjects: 0.133641 ms CreateObjectMapping: 0.029193 ms MarkObjects: 1.712109 ms  DeleteObjects: 0.536675 ms)
 
-[Project] Loading completed in 8.267 seconds
-	Project init time: 				0.082 seconds
+[Project] Loading completed in 8.209 seconds
+	Project init time: 				0.080 seconds
 		Template init time: 		0.000 seconds
 		Services packages init time: 	0.000 seconds
 		Package Manager init time: 		0.000 seconds
@@ -425,21 +425,21 @@ UnityEditor.EditorApplication:Internal_CallUpdateFunctions () (at /home/bokken/b
 
 [MODES] Loading mode Default (0) for mode-current-id-Science Birds
 [UnityConnectServicesConfig] config is NOT valid, switching to default
-Created GICache directory at /tmp/GiCache. Took: 0.002s, timestamps: [8.271 - 8.273]
+Created GICache directory at /tmp/GiCache. Took: 0.002s, timestamps: [8.213 - 8.215]
 gi::BakeBackendSwitch: switching bake backend from 3 to 1.
 Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
-System memory in use before: 34.3 MB.
+System memory in use before: 34.4 MB.
 System memory in use after: 34.5 MB.
 
 Unloading 6 unused Assets to reduce memory usage. Loaded Objects now: 1823.
-Total: 4.341635 ms (FindLiveObjects: 0.149525 ms CreateObjectMapping: 0.027531 ms MarkObjects: 4.131390 ms  DeleteObjects: 0.032388 ms)
+Total: 3.938180 ms (FindLiveObjects: 0.122824 ms CreateObjectMapping: 0.017837 ms MarkObjects: 3.764419 ms  DeleteObjects: 0.032558 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-System memory in use before: 33.6 MB.
+System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.473293 ms (FindLiveObjects: 0.123084 ms CreateObjectMapping: 0.018068 ms MarkObjects: 4.327975 ms  DeleteObjects: 0.003565 ms)
+Total: 4.154184 ms (FindLiveObjects: 0.125028 ms CreateObjectMapping: 0.026920 ms MarkObjects: 3.998090 ms  DeleteObjects: 0.003345 ms)
 
 adding novelty level 3
 UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:37)
@@ -493,42 +493,42 @@ System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 5.057981 ms (FindLiveObjects: 0.149775 ms CreateObjectMapping: 0.027571 ms MarkObjects: 4.875958 ms  DeleteObjects: 0.003936 ms)
+Total: 4.534375 ms (FindLiveObjects: 0.141041 ms CreateObjectMapping: 0.027051 ms MarkObjects: 4.362096 ms  DeleteObjects: 0.003455 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.784901 ms (FindLiveObjects: 0.146109 ms CreateObjectMapping: 0.027722 ms MarkObjects: 4.604870 ms  DeleteObjects: 0.005498 ms)
+Total: 4.114525 ms (FindLiveObjects: 0.112549 ms CreateObjectMapping: 0.027201 ms MarkObjects: 3.970759 ms  DeleteObjects: 0.003195 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.929528 ms (FindLiveObjects: 0.115133 ms CreateObjectMapping: 0.018988 ms MarkObjects: 4.791090 ms  DeleteObjects: 0.003645 ms)
+Total: 4.194244 ms (FindLiveObjects: 0.076324 ms CreateObjectMapping: 0.016575 ms MarkObjects: 4.092091 ms  DeleteObjects: 0.008683 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.114205 ms (FindLiveObjects: 0.089734 ms CreateObjectMapping: 0.016725 ms MarkObjects: 4.004019 ms  DeleteObjects: 0.003346 ms)
+Total: 3.713653 ms (FindLiveObjects: 0.099600 ms CreateObjectMapping: 0.026820 ms MarkObjects: 3.584129 ms  DeleteObjects: 0.002534 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.814716 ms (FindLiveObjects: 0.141532 ms CreateObjectMapping: 0.028313 ms MarkObjects: 4.640043 ms  DeleteObjects: 0.004146 ms)
+Total: 4.252431 ms (FindLiveObjects: 0.121492 ms CreateObjectMapping: 0.028814 ms MarkObjects: 4.099121 ms  DeleteObjects: 0.002554 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.431580 ms (FindLiveObjects: 0.144016 ms CreateObjectMapping: 0.035924 ms MarkObjects: 4.248366 ms  DeleteObjects: 0.002674 ms)
+Total: 4.067004 ms (FindLiveObjects: 0.112980 ms CreateObjectMapping: 0.029915 ms MarkObjects: 3.920784 ms  DeleteObjects: 0.002784 ms)
 
 adding novelty level 3
 UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:37)
@@ -581,174 +581,168 @@ System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.614816 ms (FindLiveObjects: 0.114622 ms CreateObjectMapping: 0.016855 ms MarkObjects: 4.479122 ms  DeleteObjects: 0.003686 ms)
+Total: 3.972772 ms (FindLiveObjects: 0.108312 ms CreateObjectMapping: 0.026440 ms MarkObjects: 3.834244 ms  DeleteObjects: 0.003154 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.311520 ms (FindLiveObjects: 0.086390 ms CreateObjectMapping: 0.016354 ms MarkObjects: 4.205731 ms  DeleteObjects: 0.002644 ms)
+Total: 3.568766 ms (FindLiveObjects: 0.063405 ms CreateObjectMapping: 0.015674 ms MarkObjects: 3.486332 ms  DeleteObjects: 0.002924 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.680193 ms (FindLiveObjects: 0.127662 ms CreateObjectMapping: 0.027882 ms MarkObjects: 4.520905 ms  DeleteObjects: 0.003054 ms)
+Total: 4.245702 ms (FindLiveObjects: 0.110356 ms CreateObjectMapping: 0.027371 ms MarkObjects: 4.093363 ms  DeleteObjects: 0.013861 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.412282 ms (FindLiveObjects: 0.121983 ms CreateObjectMapping: 0.057576 ms MarkObjects: 4.228326 ms  DeleteObjects: 0.003706 ms)
+Total: 4.608616 ms (FindLiveObjects: 0.145659 ms CreateObjectMapping: 0.027160 ms MarkObjects: 4.431110 ms  DeleteObjects: 0.003696 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 5.107325 ms (FindLiveObjects: 0.154481 ms CreateObjectMapping: 0.028163 ms MarkObjects: 4.919392 ms  DeleteObjects: 0.004657 ms)
+Total: 5.099653 ms (FindLiveObjects: 0.151477 ms CreateObjectMapping: 0.027982 ms MarkObjects: 4.915707 ms  DeleteObjects: 0.003716 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.825521 ms (FindLiveObjects: 0.113891 ms CreateObjectMapping: 0.016755 ms MarkObjects: 4.689999 ms  DeleteObjects: 0.004246 ms)
+Total: 4.298221 ms (FindLiveObjects: 0.108863 ms CreateObjectMapping: 0.026800 ms MarkObjects: 4.157099 ms  DeleteObjects: 0.004908 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.637490 ms (FindLiveObjects: 0.120881 ms CreateObjectMapping: 0.017166 ms MarkObjects: 4.494415 ms  DeleteObjects: 0.004517 ms)
+Total: 3.723698 ms (FindLiveObjects: 0.069374 ms CreateObjectMapping: 0.016405 ms MarkObjects: 3.635236 ms  DeleteObjects: 0.002173 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.297249 ms (FindLiveObjects: 0.113190 ms CreateObjectMapping: 0.026780 ms MarkObjects: 4.153323 ms  DeleteObjects: 0.003275 ms)
+Total: 3.865251 ms (FindLiveObjects: 0.070305 ms CreateObjectMapping: 0.015684 ms MarkObjects: 3.775706 ms  DeleteObjects: 0.003065 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.991220 ms (FindLiveObjects: 0.141111 ms CreateObjectMapping: 0.026420 ms MarkObjects: 4.820084 ms  DeleteObjects: 0.002974 ms)
+Total: 3.856597 ms (FindLiveObjects: 0.099289 ms CreateObjectMapping: 0.027240 ms MarkObjects: 3.726303 ms  DeleteObjects: 0.002984 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.106813 ms (FindLiveObjects: 0.106510 ms CreateObjectMapping: 0.026479 ms MarkObjects: 3.970209 ms  DeleteObjects: 0.003024 ms)
-
-Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
-Fallback handler could not load library /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Mono/lib/libKernel32
-Fallback handler could not load library /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Mono/lib/libKernel32.so
-Fallback handler could not load library /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Mono/lib/Kernel32
-Fallback handler could not load library /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Mono/lib/libKernel32
-Fallback handler could not load library /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Mono/lib/libKernel32.so
-Fallback handler could not load library /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Mono/lib/libKernel32
-System memory in use before: 33.7 MB.
-System memory in use after: 33.8 MB.
-
-Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 5.017179 ms (FindLiveObjects: 0.168583 ms CreateObjectMapping: 0.038558 ms MarkObjects: 4.803579 ms  DeleteObjects: 0.005739 ms)
+Total: 3.691290 ms (FindLiveObjects: 0.096074 ms CreateObjectMapping: 0.026310 ms MarkObjects: 3.566182 ms  DeleteObjects: 0.002133 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.863409 ms (FindLiveObjects: 0.135663 ms CreateObjectMapping: 0.030997 ms MarkObjects: 4.692222 ms  DeleteObjects: 0.003996 ms)
+Total: 4.735957 ms (FindLiveObjects: 0.151948 ms CreateObjectMapping: 0.028813 ms MarkObjects: 4.552001 ms  DeleteObjects: 0.002543 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 5.193384 ms (FindLiveObjects: 0.122804 ms CreateObjectMapping: 0.018137 ms MarkObjects: 5.046904 ms  DeleteObjects: 0.005038 ms)
+Total: 3.786873 ms (FindLiveObjects: 0.074942 ms CreateObjectMapping: 0.015814 ms MarkObjects: 3.693172 ms  DeleteObjects: 0.002574 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.424610 ms (FindLiveObjects: 0.130235 ms CreateObjectMapping: 0.026851 ms MarkObjects: 4.263678 ms  DeleteObjects: 0.003185 ms)
+Total: 5.065793 ms (FindLiveObjects: 0.126510 ms CreateObjectMapping: 0.018187 ms MarkObjects: 4.916719 ms  DeleteObjects: 0.003796 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.475226 ms (FindLiveObjects: 0.129073 ms CreateObjectMapping: 0.028103 ms MarkObjects: 4.314745 ms  DeleteObjects: 0.002664 ms)
+Total: 4.137770 ms (FindLiveObjects: 0.117526 ms CreateObjectMapping: 0.026500 ms MarkObjects: 3.980934 ms  DeleteObjects: 0.012349 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
 System memory in use after: 33.8 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.327544 ms (FindLiveObjects: 0.115102 ms CreateObjectMapping: 0.027372 ms MarkObjects: 4.180674 ms  DeleteObjects: 0.003555 ms)
+Total: 4.130669 ms (FindLiveObjects: 0.071237 ms CreateObjectMapping: 0.016074 ms MarkObjects: 4.039742 ms  DeleteObjects: 0.003245 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
-System memory in use after: 33.8 MB.
+System memory in use after: 33.9 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 5.078882 ms (FindLiveObjects: 0.134332 ms CreateObjectMapping: 0.029304 ms MarkObjects: 4.909377 ms  DeleteObjects: 0.005167 ms)
+Total: 4.341947 ms (FindLiveObjects: 0.104607 ms CreateObjectMapping: 0.026029 ms MarkObjects: 4.207815 ms  DeleteObjects: 0.003005 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
-System memory in use after: 33.8 MB.
+System memory in use after: 33.9 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.492863 ms (FindLiveObjects: 0.088152 ms CreateObjectMapping: 0.016895 ms MarkObjects: 4.384240 ms  DeleteObjects: 0.003085 ms)
+Total: 3.716848 ms (FindLiveObjects: 0.097867 ms CreateObjectMapping: 0.026820 ms MarkObjects: 3.589086 ms  DeleteObjects: 0.002403 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
-System memory in use after: 33.8 MB.
+System memory in use after: 33.9 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.893314 ms (FindLiveObjects: 0.153200 ms CreateObjectMapping: 0.027391 ms MarkObjects: 4.707955 ms  DeleteObjects: 0.004056 ms)
+Total: 3.545050 ms (FindLiveObjects: 0.088633 ms CreateObjectMapping: 0.025939 ms MarkObjects: 3.427804 ms  DeleteObjects: 0.002164 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
-System memory in use after: 33.8 MB.
+System memory in use after: 33.9 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.492742 ms (FindLiveObjects: 0.142063 ms CreateObjectMapping: 0.057357 ms MarkObjects: 4.287554 ms  DeleteObjects: 0.005068 ms)
+Total: 4.785211 ms (FindLiveObjects: 0.115523 ms CreateObjectMapping: 0.017747 ms MarkObjects: 4.641305 ms  DeleteObjects: 0.010135 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
-System memory in use after: 33.8 MB.
+System memory in use after: 33.9 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.666343 ms (FindLiveObjects: 0.135233 ms CreateObjectMapping: 0.027261 ms MarkObjects: 4.500154 ms  DeleteObjects: 0.002994 ms)
+Total: 3.830128 ms (FindLiveObjects: 0.102574 ms CreateObjectMapping: 0.026530 ms MarkObjects: 3.698090 ms  DeleteObjects: 0.002284 ms)
 
 Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
 System memory in use before: 33.7 MB.
-System memory in use after: 33.8 MB.
+System memory in use after: 33.9 MB.
 
 Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
-Total: 4.669789 ms (FindLiveObjects: 0.175394 ms CreateObjectMapping: 0.030235 ms MarkObjects: 4.459873 ms  DeleteObjects: 0.003496 ms)
+Total: 4.261045 ms (FindLiveObjects: 0.108924 ms CreateObjectMapping: 0.027030 ms MarkObjects: 4.121215 ms  DeleteObjects: 0.003095 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.7 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1829.
+Total: 4.169087 ms (FindLiveObjects: 0.071787 ms CreateObjectMapping: 0.016455 ms MarkObjects: 4.075516 ms  DeleteObjects: 0.004777 ms)
 
 Saving results to: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.claude/project-docs/evidence/runtime-repin-gate-20260810/editmode-full/PhysicsCaptureProtocolTests.xml
-[0812/053609:ERROR:browser_main_loop.cc(161)] Running without the SUID sandbox! See https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment for more information on developing with the sandbox on.
+[0812/160437:ERROR:browser_main_loop.cc(161)] Running without the SUID sandbox! See https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment for more information on developing with the sandbox on.
 Caught fatal signal - signo:11 code:1 errno:0 addr:0x58
 Obtained 12 stack frames.
-#0  0x0070bcc2045330 in __sigaction
-#1  0x0070bcc94c365d in printing::PrintJobManager::Shutdown()
-#2  0x0070bcc943bdd6 in CefContext::FinishShutdownOnUIThread(base::WaitableEvent*)
-#3  0x0070bcc943c901 in CefContext::Shutdown()
-#4  0x0070bcc943ca1c in CefShutdown()
-#5  0x005e8590368bd7 in CefInstance::~CefInstance()
-#6  0x005e8590368ca9 in CefInstance::~CefInstance()
-#7  0x005e8590367343 in CefInstance::Destroy()
-#8  0x005e858d3d7213 in Application::Terminate(bool)
-#9  0x005e858d3cb04c in Application::Exit(int)
-#10 0x00000041d7b0a2 in (wrapper managed-to-native) UnityEditor.EditorApplication:Exit (int)
-#11 0x00000041d348a8 in UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator:RunFinished (NUnit.Framework.Interfaces.ITestResult)
+#0  0x00721213e45330 in __sigaction
+#1  0x0072121b2c365d in printing::PrintJobManager::Shutdown()
+#2  0x0072121b23bdd6 in CefContext::FinishShutdownOnUIThread(base::WaitableEvent*)
+#3  0x0072121b23c901 in CefContext::Shutdown()
+#4  0x0072121b23ca1c in CefShutdown()
+#5  0x0055c100568bd7 in CefInstance::~CefInstance()
+#6  0x0055c100568ca9 in CefInstance::~CefInstance()
+#7  0x0055c100567343 in CefInstance::Destroy()
+#8  0x0055c0fd5d7213 in Application::Terminate(bool)
+#9  0x0055c0fd5cb04c in Application::Exit(int)
+#10 0x000000420c90a2 in (wrapper managed-to-native) UnityEditor.EditorApplication:Exit (int)
+#11 0x000000420828a8 in UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator:RunFinished (NUnit.Framework.Interfaces.ITestResult)
