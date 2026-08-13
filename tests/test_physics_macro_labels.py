@@ -1134,6 +1134,51 @@ class DeriveCliTests(unittest.TestCase):
         self.assertIn("active cohort", str(raised.exception))
         self.assertFalse(output.exists())
 
+    def _run_capturing(self, argv: list[str]) -> tuple[int, dict | None, str]:
+        from scripts.derive_physics_macro_labels import main
+
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            code = main(argv)
+        text = stdout.getvalue()
+        return code, (json.loads(text) if text.strip() else None), stderr.getvalue()
+
+    def test_sidecar_free_mirror_inside_a_real_cohort_is_refused(self) -> None:
+        # The label parents under <cohort>/macro-label-mirror hold no sidecars, so
+        # only the capture-tree containment guard can fire.
+        cohort = self.temporary / "fake_cohort"
+        staged = cohort / "train" / "episode_001" / "shot_001"
+        staged.mkdir(parents=True)
+        for name in ("physics_state.jsonl", "physics_events.jsonl"):
+            shutil.copy(shot_dir("canonical_multistate") / name, staged / name)
+        output = cohort / "macro-label-mirror"
+        code, report, stderr = self._run_capturing(
+            ["--target", str(FIXTURE_ROOT), "--output-dir", str(output), "--json"]
+        )
+        self.assertEqual(code, 2)
+        self.assertIsNone(report)
+        self.assertIn("contains physics capture records", stderr)
+        self.assertEqual(list(cohort.rglob(MACRO_LABEL_SIDECAR)), [])
+
+    def test_output_dir_outside_the_temporary_root_exits_2(self) -> None:
+        code, report, stderr = self._run_capturing(
+            ["--target", str(FIXTURE_ROOT), "--output-dir", "/nonexistent-novphy-root/out", "--json"]
+        )
+        self.assertEqual(code, 2)
+        self.assertIsNone(report)
+        self.assertIn("temporary", stderr)
+        self.assertFalse(Path("/nonexistent-novphy-root").exists())
+
+    def test_rewriting_the_same_temporary_mirror_is_allowed(self) -> None:
+        # The mirror tree holds only label files, no capture markers, so a second
+        # write into the same temporary root passes every guard.
+        argv = ["--target", str(FIXTURE_ROOT), "--output-dir", str(self.temporary / "out"), "--json"]
+        code, _ = self._run(argv)
+        self.assertEqual(code, 0)
+        code, report = self._run(argv)
+        self.assertEqual(code, 0)
+        self.assertEqual(report["shots_ok"], 9)
+
     def test_unknown_target_exits_2(self) -> None:
         code, _ = self._run(
             ["--target", str(self.temporary / "does-not-exist"), "--output-dir", str(self.temporary / "o"), "--json"]

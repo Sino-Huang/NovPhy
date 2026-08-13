@@ -15,8 +15,8 @@
     },
     "implementation": {
       "scripts/physics_macro_labels.py": "09669ceef3f26bc1bc6ce4f04953f50f00daa2b45cac1abe62209e47f776350a",
-      "scripts/derive_physics_macro_labels.py": "e152ef8461b5bc962ef780ace648ff5bcec6895a1f0822f806bc33d377ca1f1b",
-      "tests/test_physics_macro_labels.py": "f2e8bee378265038f0b2025fcea637ed345f7b6c2dda5ddc80195130180a4360"
+      "scripts/derive_physics_macro_labels.py": "923eb5c5170398bdfb7c4e7f42d43b6aba2ef2f43fc83b23269cb68876bfa7f9",
+      "tests/test_physics_macro_labels.py": "2e3d737d92dbc4cfdf5bcef8def5d9bfec28c5e66b62d412856a01317cae031c"
     },
     "reader_integration": "world_model/data/supervision.py explicit opt-in flag include_macro_labels; six-field state identity join; events exposed by fixed-step bracketing; default samples unchanged"
   },
@@ -32,7 +32,7 @@
     {"name": "pig_tags", "state_sha256": "edb8cda32de8518afd510b880804f575ef14d534601fdefe9d105208636759f4", "events_sha256": "c5e1b1dd8c5e6d9af74158e150c1930d3dcee76dcc0aaf9c387dac6ba2f383f8", "label_sha256": "5c50e13bb5389aa686a2c8764ae24d627c28d6802b66eb0bba026f2489653306", "states": 2, "events": 4, "outcome_class": "unsettled_nonterminal", "role": "PigSmall/PigMedium/PigBig coverage; same-step triple pig_removed cluster"}
   ],
   "tests": {
-    "focused": {"module": "tests.test_physics_macro_labels", "tests": 72, "result": "pass"},
+    "focused": {"module": "tests.test_physics_macro_labels", "tests": 75, "result": "pass"},
     "adjacent": {"modules": ["tests.test_physics_capture_contract", "tests.test_world_model_data"], "tests": 129, "result": "pass"},
     "legacy_inventory": {"module": "tests.test_physics_label_derivation", "tests": 32, "result": "pass", "note": "pre-repin scaffolding suite; passing is not acceptance of Milestone 0a semantics and the legacy artifact remains unmodified historical scaffolding"}
   },
@@ -75,7 +75,8 @@
       "frame-label/state identity mismatch at the reader",
       "reader macro join missing or stale sidecar",
       "same-type record permutation (reordered intervals or frame labels) at the strict reader",
-      "CLI write without an output directory or into a directory holding frozen sidecars"
+      "CLI write without an output directory or into a directory holding frozen sidecars",
+      "CLI write destination outside the system temporary root or inside a capture-bearing directory tree (including a sidecar-free mirror subdirectory of a real cohort)"
     ],
     "valid_unavailable_test_pinned": [
       "first-state structure-unstable unavailable_no_predecessor",
@@ -84,7 +85,7 @@
       "terminal-after-last-state outcome with terminal_equilibrium not_observed and no per-state backfill"
     ]
   },
-  "independent_review": "critics/2026-08-13-critic-3.md returned REJECT with two blocking findings (strict reader accepted same-type record permutations; CLI had an unrestricted in-shot/arbitrary write mode). Both were fixed and test-pinned (canonical interval/frame order enforced in read_macro_labels; CLI write mode requires --output-dir and preflight-refuses destinations holding frozen sidecars). Re-review verdict is recorded in critics/2026-08-13-critic-4.md.",
+  "independent_review": "critics/2026-08-13-critic-3.md returned REJECT with two blocking findings (strict reader accepted same-type record permutations; CLI had an unrestricted in-shot/arbitrary write mode), fixed in commit cc9d898 (canonical interval/frame order enforced in read_macro_labels; CLI write mode requires --output-dir and preflight-refuses destinations holding frozen sidecars). critics/2026-08-13-critic-4.md confirmed the record-order repair and returned REJECT on the remaining nested-cohort bypass (sidecar-free mirror subdirectory inside a non-active cohort), fixed by making write authorization positive: --output-dir must resolve inside the system temporary root and every destination ancestor tree is scanned for capture markers. Final re-review verdict is recorded in critics/2026-08-13-critic-5.md.",
   "protected_scope_statement": "No Unity/player launch, no smoke rerun, no publication or re-pin, no enriched-cohort collection, no real-cohort label writes (the CLI structurally refuses such writes), no health report or training run, no mutation of the frozen physics_capture_v1 schema/taxonomy/sidecars, legacy physics_derived_labels_v1 bytes, protected rollout roots, the canonical Unity project, or unrelated untracked files. Frozen and legacy paths verified byte-unchanged via git status (empty).",
   "blocked_gates": [
     "representative semantic acceptance (requires authorized representative enriched shots)",

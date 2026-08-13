@@ -86,3 +86,41 @@ python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_ca
 python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro
 # exit 2 — write mode requires --output-dir (fixture-only boundary)
 ```
+
+## Second post-review fix (critics/2026-08-13-critic-4.md nested-cohort bypass)
+
+After the positive write-authorization fix (temporary-root allowlist +
+capture-tree containment scan):
+
+```
+python -m unittest tests.test_physics_macro_labels
+# exit 0 — Ran 75 tests, OK
+
+python -m unittest tests.test_physics_capture_contract tests.test_world_model_data
+# exit 0 — Ran 129 tests, OK
+
+python -m unittest tests.test_physics_label_derivation
+# exit 0 — Ran 32 tests, OK
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a3 --json
+# exit 0 — 9/9 shots ok                              (log: /tmp/novphy-m0a-evidence/15-cli-a3.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-b3 --json
+# exit 0 — 9/9 shots ok                              (log: /tmp/novphy-m0a-evidence/16-cli-b3.log)
+
+diff -r /tmp/novphy-m0a-a3 /tmp/novphy-m0a-b3
+# exit 0 — byte-identical                            (log: /tmp/novphy-m0a-evidence/17-byte-compare3.log)
+
+diff -r /tmp/novphy-m0a-a3 /tmp/novphy-m0a-a
+# exit 0 — label bytes unchanged by both review fixes
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a3 --validate-only --json
+# exit 0                                             (log: /tmp/novphy-m0a-evidence/18-validate-a3.log)
+
+# nested-cohort bypass probe: --output-dir <tmp>/fake_cohort/macro-label-mirror with
+# sidecars staged only at <tmp>/fake_cohort/train/episode_001/shot_001/
+# exit 2 — refusing to write macro labels: destination tree contains physics capture records
+
+# outside-temporary-root probe: --output-dir /nonexistent-novphy-root/out
+# exit 2 — write destination must be the system temporary directory or a descendant of it
+```
