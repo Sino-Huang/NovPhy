@@ -3,14 +3,16 @@
 
 Fixture-only write boundary: write mode REQUIRES `--output-dir`, and the resolved
 destination must be the system temporary directory or a descendant of it.  Before
-any file is written, every ancestor of the resolved destination (up to the
-temporary root, never higher) is scanned for physics-capture records
+any file is written, the destination and every one of its ancestors below the
+temporary root is scanned WITHOUT any depth bound for physics-capture records
 (`physics_state.jsonl`, `physics_events.jsonl`, or an episode `manifest.json`), so
-even a sidecar-free subdirectory of any real cohort is refused; each computed
-label parent must also not already hold frozen sidecars.  Only sidecar-free
-temporary mirror trees are writable.  This never touches the frozen sidecars,
-`frames/`, or `metadata.json`, and refuses to write anywhere inside the active
-legacy cohort.
+even a sidecar-free subdirectory of any real cohort is refused, however deeply the
+cohort is nested; each computed label parent must also not already hold frozen
+sidecars.  The containment scan runs once per invocation, only in write mode,
+stops at the first marker, and never follows symlinks, so its worst case is one
+traversal of the destination's own ancestor trees.  Only sidecar-free temporary
+mirror trees are writable.  This never touches the frozen sidecars, `frames/`, or
+`metadata.json`, and refuses to write anywhere inside the active legacy cohort.
 """
 from __future__ import annotations
 
@@ -76,21 +78,18 @@ def _refuse_active_cohort(target: Path) -> None:
 #: Capture-record markers used by the capture-tree containment guard: the two frozen
 #: sidecars mark a shot directory, `manifest.json` marks an episode directory.
 CAPTURE_TREE_MARKERS = (STATE_SIDECAR, EVENT_SIDECAR, "manifest.json")
-#: How far below each destination ancestor the containment scan descends.  Three
-#: directory levels cover the shot (<cohort>/shot_001), episode
-#: (<cohort>/episode_001/shot_001), and split (<cohort>/<split>/episode_001/shot_001)
-#: layouts, whose marker files sit inside a directory three levels down.
-CAPTURE_SCAN_DEPTH = 3
 
 
-def _find_capture_marker(root: Path, max_depth: int) -> Path | None:
-    """Return the first capture marker in a directory within `max_depth` levels below `root`.
+def _find_capture_marker(root: Path) -> Path | None:
+    """Return the first capture marker anywhere in `root`'s subtree, or None.
 
-    Symlinked entries are skipped; unreadable or missing directories are tolerated.
+    Unbounded walk with deterministic sorted iteration: symlinked entries are never
+    followed, unreadable or missing directories are tolerated, and the walk stops at
+    the first marker found.
     """
-    pending: list[tuple[Path, int]] = [(root, 0)]
+    pending: list[Path] = [root]
     while pending:
-        directory, depth = pending.pop()
+        directory = pending.pop()
         try:
             children = sorted(directory.iterdir())
         except OSError:
@@ -100,8 +99,7 @@ def _find_capture_marker(root: Path, max_depth: int) -> Path | None:
                 if child.is_symlink():
                     continue
                 if child.is_dir():
-                    if depth < max_depth:
-                        pending.append((child, depth + 1))
+                    pending.append(child)
                 elif child.name in CAPTURE_TREE_MARKERS:
                     return child
             except OSError:
@@ -109,19 +107,42 @@ def _find_capture_marker(root: Path, max_depth: int) -> Path | None:
     return None
 
 
+def _immediate_capture_marker(root: Path) -> Path | None:
+    """Return the first capture marker among `root`'s immediate files, or None."""
+    try:
+        children = sorted(root.iterdir())
+    except OSError:
+        return None
+    for child in children:
+        try:
+            if child.is_symlink():
+                continue
+            if child.is_file() and child.name in CAPTURE_TREE_MARKERS:
+                return child
+        except OSError:
+            continue
+    return None
+
+
+# Performance safety: the containment scan runs exactly once per CLI invocation and
+# only in write mode; every walk stops at the first marker found and never follows
+# symlinks.  Its worst case is one full traversal of the destination's ancestor
+# trees inside the temporary root, which for legitimate temporary mirror roots is a
+# handful of label files.
 def _capture_marker_on_destination_path(resolved_output: Path, temporary_root: Path) -> Path | None:
     """Return the first capture marker in any destination ancestor tree, or None.
 
     The walk covers the destination itself and every ancestor below the temporary
-    root, stopping at the temporary root and never going higher: the temporary root
-    is shared scratch space whose deep sibling trees are out of scope, so only its
-    immediate files are checked -- a stale capture copy left on the destination's
-    own path inside the temporary root still trips the guard deliberately.
+    root with NO depth bound, stopping at the temporary root and never going higher:
+    the temporary root is shared scratch space whose deep sibling trees are out of
+    scope, so only its immediate files are checked -- a stale capture copy left on
+    the destination's own path inside the temporary root still trips the guard
+    deliberately.
     """
     for ancestor in (resolved_output, *resolved_output.parents):
         if ancestor == temporary_root:
-            return _find_capture_marker(ancestor, 0)
-        marker = _find_capture_marker(ancestor, CAPTURE_SCAN_DEPTH)
+            return _immediate_capture_marker(ancestor)
+        marker = _find_capture_marker(ancestor)
         if marker is not None:
             return marker
     return None

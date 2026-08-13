@@ -1160,6 +1160,22 @@ class DeriveCliTests(unittest.TestCase):
         self.assertIn("contains physics capture records", stderr)
         self.assertEqual(list(cohort.rglob(MACRO_LABEL_SIDECAR)), [])
 
+    def test_deeply_nested_cohort_mirror_is_refused(self) -> None:
+        # Four directory levels below the cohort root: beyond any fixed depth bound.
+        cohort = self.temporary / "real-cohort"
+        staged = cohort / "region" / "train" / "episode_001" / "shot_001"
+        staged.mkdir(parents=True)
+        for name in ("physics_state.jsonl", "physics_events.jsonl"):
+            shutil.copy(shot_dir("canonical_multistate") / name, staged / name)
+        output = cohort / "macro-label-mirror"
+        code, report, stderr = self._run_capturing(
+            ["--target", str(FIXTURE_ROOT), "--output-dir", str(output), "--json"]
+        )
+        self.assertEqual(code, 2)
+        self.assertIsNone(report)
+        self.assertIn("contains physics capture records", stderr)
+        self.assertEqual(list(cohort.rglob(MACRO_LABEL_SIDECAR)), [])
+
     def test_output_dir_outside_the_temporary_root_exits_2(self) -> None:
         code, report, stderr = self._run_capturing(
             ["--target", str(FIXTURE_ROOT), "--output-dir", "/nonexistent-novphy-root/out", "--json"]

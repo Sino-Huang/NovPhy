@@ -124,3 +124,39 @@ python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_ca
 # outside-temporary-root probe: --output-dir /nonexistent-novphy-root/out
 # exit 2 — write destination must be the system temporary directory or a descendant of it
 ```
+
+## Third post-review fix (critics/2026-08-13-critic-5.md depth-bound removal)
+
+After removing the scan depth bound for the destination's own ancestry:
+
+```
+python -m unittest tests.test_physics_macro_labels
+# exit 0 — Ran 76 tests, OK
+
+python -m unittest tests.test_physics_capture_contract tests.test_world_model_data
+# exit 0 — Ran 129 tests, OK
+
+python -m unittest tests.test_physics_label_derivation
+# exit 0 — Ran 32 tests, OK
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a4 --json
+# exit 0 — 9/9 shots ok                              (log: /tmp/novphy-m0a-evidence/19-cli-a4.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-b4 --json
+# exit 0 — 9/9 shots ok                              (log: /tmp/novphy-m0a-evidence/20-cli-b4.log)
+
+diff -r /tmp/novphy-m0a-a4 /tmp/novphy-m0a-b4
+# exit 0 — byte-identical                            (log: /tmp/novphy-m0a-evidence/21-byte-compare4.log)
+
+diff -r /tmp/novphy-m0a-a4 /tmp/novphy-m0a-a
+# exit 0 — label bytes unchanged by all review fixes
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a4 --validate-only --json
+# exit 0                                             (log: /tmp/novphy-m0a-evidence/22-validate-a4.log)
+
+# depth-4 nested-cohort probe: sidecars at <tmp>/real-cohort/region/train/episode_001/shot_001/,
+# --output-dir <tmp>/real-cohort/macro-label-mirror
+# exit 2 — refusing to write macro labels: destination tree contains physics capture records
+
+# timing sanity: full acceptance run completes in ordinary seconds (<1s wall)
+```
