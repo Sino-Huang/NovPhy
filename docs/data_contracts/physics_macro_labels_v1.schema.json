@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://novphy.org/data-contracts/physics_macro_labels_v1.schema.json",
+  "title": "NovPhy physics_macro_labels_v1 records",
+  "oneOf": [
+    { "$ref": "#/$defs/macro_label_header" },
+    { "$ref": "#/$defs/event_interval" },
+    { "$ref": "#/$defs/frame_label" },
+    { "$ref": "#/$defs/shot_outcome" }
+  ],
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "macro_predicate": {
+      "enum": ["cascade-active", "collapsed", "pigs-cleared", "steady-state", "structure-unstable"]
+    },
+    "availability": {
+      "enum": ["available", "unavailable_no_predecessor", "unavailable_insufficient_state_evidence"]
+    },
+    "semantic_status": {
+      "enum": ["engine_verified", "hypothesis_pending_representative_validation"]
+    },
+    "event_citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capture_id", "shot_id", "event_sequence", "event_id", "fixed_step"],
+      "properties": {
+        "capture_id": { "type": "string", "minLength": 1 },
+        "shot_id": { "type": "string", "pattern": "^shot_[0-9]{3,}$" },
+        "event_sequence": { "type": "integer", "minimum": 0 },
+        "event_id": { "type": "string", "pattern": "^event:[0-9]{8}$" },
+        "fixed_step": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "state_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capture_id", "shot_id", "state_sequence", "render_frame", "fixed_step", "rgb_relative_path"],
+      "properties": {
+        "capture_id": { "type": "string", "minLength": 1 },
+        "shot_id": { "type": "string", "pattern": "^shot_[0-9]{3,}$" },
+        "state_sequence": { "type": "integer", "minimum": 0 },
+        "render_frame": { "type": "integer", "minimum": 0 },
+        "fixed_step": { "type": "integer", "minimum": 0 },
+        "rgb_relative_path": { "type": "string", "pattern": "^frames/frame_[0-9]{6}\\.png$" }
+      }
+    },
+    "predicate_label": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "availability", "evidence"],
+      "properties": {
+        "value": { "type": ["boolean", "null"] },
+        "availability": { "$ref": "#/$defs/availability" },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/event_citation" } }
+      }
+    },
+    "event_clock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["occurrence_authority", "render_frame_role"],
+      "properties": {
+        "occurrence_authority": { "const": "fixed_step" },
+        "render_frame_role": { "const": "provenance_only" }
+      }
+    },
+    "macro_vocabulary_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["predicate", "absorbing", "semantic_status"],
+      "properties": {
+        "predicate": { "$ref": "#/$defs/macro_predicate" },
+        "absorbing": { "type": "boolean" },
+        "semantic_status": { "$ref": "#/$defs/semantic_status" }
+      }
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["physics_state_path", "physics_state_sha256", "physics_events_path", "physics_events_sha256"],
+      "properties": {
+        "physics_state_path": { "const": "physics_state.jsonl" },
+        "physics_state_sha256": { "$ref": "#/$defs/digest" },
+        "physics_events_path": { "const": "physics_events.jsonl" },
+        "physics_events_sha256": { "$ref": "#/$defs/digest" }
+      }
+    },
+    "macro_label_header": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_type", "schema_version", "capture_schema_version", "capture_id", "shot_id", "derivation_spec_version", "derivation_spec_digest", "event_clock", "macro_vocabulary", "pig_class_set", "sources", "state_count", "event_count", "interval_count", "frame_label_count"],
+      "properties": {
+        "record_type": { "const": "macro_label_header" },
+        "schema_version": { "const": "physics_macro_labels_v1" },
+        "capture_schema_version": { "const": "physics_capture_v1" },
+        "capture_id": { "type": "string", "minLength": 1 },
+        "shot_id": { "type": "string", "pattern": "^shot_[0-9]{3,}$" },
+        "derivation_spec_version": { "const": "macro_labels_derivation_v1" },
+        "derivation_spec_digest": { "$ref": "#/$defs/digest" },
+        "event_clock": { "$ref": "#/$defs/event_clock" },
+        "macro_vocabulary": {
+          "type": "array",
+          "prefixItems": [
+            { "allOf": [{ "$ref": "#/$defs/macro_vocabulary_entry" }, { "type": "object", "properties": { "predicate": { "const": "cascade-active" }, "absorbing": { "const": false }, "semantic_status": { "const": "hypothesis_pending_representative_validation" } } }] },
+            { "allOf": [{ "$ref": "#/$defs/macro_vocabulary_entry" }, { "type": "object", "properties": { "predicate": { "const": "collapsed" }, "absorbing": { "const": true }, "semantic_status": { "const": "hypothesis_pending_representative_validation" } } }] },
+            { "allOf": [{ "$ref": "#/$defs/macro_vocabulary_entry" }, { "type": "object", "properties": { "predicate": { "const": "pigs-cleared" }, "absorbing": { "const": true }, "semantic_status": { "const": "hypothesis_pending_representative_validation" } } }] },
+            { "allOf": [{ "$ref": "#/$defs/macro_vocabulary_entry" }, { "type": "object", "properties": { "predicate": { "const": "steady-state" }, "absorbing": { "const": false }, "semantic_status": { "const": "engine_verified" } } }] },
+            { "allOf": [{ "$ref": "#/$defs/macro_vocabulary_entry" }, { "type": "object", "properties": { "predicate": { "const": "structure-unstable" }, "absorbing": { "const": false }, "semantic_status": { "const": "engine_verified" } } }] }
+          ],
+          "items": false
+        },
+        "pig_class_set": {
+          "type": "array",
+          "prefixItems": [{ "const": "PigBig" }, { "const": "PigMedium" }, { "const": "PigSmall" }],
+          "items": false
+        },
+        "sources": { "$ref": "#/$defs/sources" },
+        "state_count": { "type": "integer", "minimum": 0 },
+        "event_count": { "type": "integer", "minimum": 0 },
+        "interval_count": { "type": "integer", "minimum": 0 },
+        "frame_label_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "event_interval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_type", "interval_type", "start_fixed_step", "end_fixed_step", "semantic_status", "evidence"],
+      "properties": {
+        "record_type": { "const": "event_interval" },
+        "interval_type": { "enum": ["steady-state", "cascade-active"] },
+        "start_fixed_step": { "type": "integer", "minimum": 0 },
+        "end_fixed_step": { "type": ["integer", "null"], "minimum": 0 },
+        "semantic_status": { "$ref": "#/$defs/semantic_status" },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/event_citation" } }
+      }
+    },
+    "frame_label": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_type", "capture_id", "shot_id", "state_sequence", "render_frame", "fixed_step", "rgb_relative_path", "predicates", "active_macro_states"],
+      "properties": {
+        "record_type": { "const": "frame_label" },
+        "capture_id": { "type": "string", "minLength": 1 },
+        "shot_id": { "type": "string", "pattern": "^shot_[0-9]{3,}$" },
+        "state_sequence": { "type": "integer", "minimum": 0 },
+        "render_frame": { "type": "integer", "minimum": 0 },
+        "fixed_step": { "type": "integer", "minimum": 0 },
+        "rgb_relative_path": { "type": "string", "pattern": "^frames/frame_[0-9]{6}\\.png$" },
+        "predicates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cascade-active", "collapsed", "pigs-cleared", "steady-state", "structure-unstable"],
+          "properties": {
+            "cascade-active": { "$ref": "#/$defs/predicate_label" },
+            "collapsed": { "$ref": "#/$defs/predicate_label" },
+            "pigs-cleared": { "$ref": "#/$defs/predicate_label" },
+            "steady-state": { "$ref": "#/$defs/predicate_label" },
+            "structure-unstable": { "$ref": "#/$defs/predicate_label" }
+          }
+        },
+        "active_macro_states": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/macro_predicate" }
+        }
+      }
+    },
+    "shot_outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_type", "outcome_class", "score", "reason", "terminal_event", "terminal_equilibrium", "terminal_state", "semantic_status"],
+      "properties": {
+        "record_type": { "const": "shot_outcome" },
+        "outcome_class": { "enum": ["cleared", "failed", "settled_nonterminal", "unsettled_nonterminal"] },
+        "score": { "type": ["integer", "null"] },
+        "reason": { "type": ["string", "null"] },
+        "terminal_event": { "oneOf": [{ "$ref": "#/$defs/event_citation" }, { "type": "null" }] },
+        "terminal_equilibrium": { "enum": ["stable_terminal", "not_observed"] },
+        "terminal_state": { "oneOf": [{ "$ref": "#/$defs/state_identity" }, { "type": "null" }] },
+        "semantic_status": { "$ref": "#/$defs/semantic_status" }
+      }
+    }
+  }
+}

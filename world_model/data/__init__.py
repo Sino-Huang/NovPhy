@@ -16,7 +16,9 @@ from world_model.data.types import (
 )
 from world_model.data.supervision import (
     DERIVED_LABEL_VECTOR_FIELDS,
+    MACRO_LABEL_SIDECAR,
     DerivedFrameLabel,
+    MacroFrameLabel,
     OracleGateSpec,
     PhysicsEvent,
     PhysicsFrameSupervision,
@@ -111,6 +113,8 @@ __all__ = [
     "PhysicsSupervisionRequest",
     "DERIVED_LABEL_VECTOR_FIELDS",
     "DerivedFrameLabel",
+    "MACRO_LABEL_SIDECAR",
+    "MacroFrameLabel",
     "OracleGateSpec",
     "check_source_key_disjointness",
     "build_temporal_ablation_manifest",

@@ -11,6 +11,12 @@ from scripts.physics_label_derivation import (
     OracleGateSpec,
     validate_derived_labels,
 )
+from scripts.physics_macro_labels import (
+    MACRO_LABEL_SIDECAR,
+    MacroFrameLabel,
+    MacroLabelError,
+    validate_macro_labels,
+)
 from scripts.physics_capture_types import (
     CoordinateDeclaration,
     EntityId,
@@ -53,6 +59,7 @@ class PhysicsFrameSupervision:
     support_edges: tuple[SupportEdge, ...]
     events: tuple[PhysicsEvent, ...]
     derived_labels: DerivedFrameLabel | None = None
+    macro_labels: MacroFrameLabel | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,6 +68,7 @@ class PhysicsSupervisionRequest:
     include_raw_contacts: bool = False
     include_events: bool = False
     include_derived_labels: bool = False
+    include_macro_labels: bool = False
     oracle_gate_spec: OracleGateSpec | None = None
 
     def __post_init__(self) -> None:
@@ -74,6 +82,7 @@ class PhysicsSupervisionRequest:
             type(self.include_raw_contacts) is not bool
             or type(self.include_events) is not bool
             or type(self.include_derived_labels) is not bool
+            or type(self.include_macro_labels) is not bool
         ):
             raise ContractValueError("supervision flags", "must be booleans")
         if self.oracle_gate_spec is not None and not isinstance(self.oracle_gate_spec, OracleGateSpec):
@@ -109,6 +118,17 @@ def read_physics_shot(
     except (OSError, PhysicsContractError, PhysicsArtifactError) as error:
         raise ContractValueError("physics sidecars", str(error)) from error
     states_by_path = {}
+    # Events are exposed by fixed-step bracketing, never by event render_frame: the
+    # producer stamps every buffered event with the serialization snapshot's
+    # render_frame, so event render_frame is provenance only and event occurrence
+    # authority is fixed_step (milestone-0a plan section 3.4).  State i exposes
+    # exactly the events with fixed_step in (states[i-1].fixed_step, states[i].fixed_step]
+    # (no lower bound for the first state); events after the last accepted state are
+    # not exposed on any frame.  Events are fixed-step ordered by the frozen
+    # contract, so a single cursor yields deterministic brackets; two states sharing
+    # one fixed step give the later ones an empty bracket.
+    events_by_state: dict[tuple[str, int], tuple[PhysicsEvent, ...]] = {}
+    event_cursor = 0
     for state in capture.states:
         if str(state.clock.shot_id) != shot_name:
             raise ContractValueError("physics shot_id", "does not match shot directory")
@@ -116,11 +136,10 @@ def read_physics_shot(
         if key in states_by_path:
             raise ContractValueError("physics render_frame", "duplicate state key")
         states_by_path[key] = state
-    events_by_frame: dict[int, tuple[PhysicsEvent, ...]] = {}
-    grouped: dict[int, list[PhysicsEvent]] = {}
-    for event in capture.events:
-        grouped.setdefault(event.clock.render_frame, []).append(_event(event))
-    events_by_frame = {frame: tuple(items) for frame, items in grouped.items()}
+        bracket_start = event_cursor
+        while event_cursor < len(capture.events) and capture.events[event_cursor].clock.fixed_step <= state.clock.fixed_step:
+            event_cursor += 1
+        events_by_state[key] = tuple(_event(event) for event in capture.events[bracket_start:event_cursor])
     path_to_state = {state.rgb_frame.relative_path: state for state in capture.states}
     if len(path_to_state) != len(capture.states):
         raise ContractValueError("physics rgb mapping", "duplicate state frame path")
@@ -140,6 +159,42 @@ def read_physics_shot(
             raise ContractValueError(
                 "physics derived labels", "label frames do not match the accepted state frames"
             )
+    macro_by_identity: dict[tuple[str, str, int, int, int, str], MacroFrameLabel] = {}
+    if request.include_macro_labels:
+        # validate_macro_labels re-derives from the frozen sidecars and byte-compares,
+        # so a stale or tampered label file fails closed before any label reaches a sample.
+        try:
+            macro = validate_macro_labels(shot_dir)
+        except (OSError, MacroLabelError, PhysicsContractError) as error:
+            raise ContractValueError("physics macro labels", str(error)) from error
+        for label in macro.frames:
+            identity = label.identity
+            identity_key = (
+                identity.capture_id,
+                identity.shot_id,
+                identity.state_sequence,
+                identity.render_frame,
+                identity.fixed_step,
+                identity.rgb_relative_path,
+            )
+            if identity_key in macro_by_identity:
+                raise ContractValueError("physics macro labels", "duplicate frame-label identity")
+            macro_by_identity[identity_key] = label
+        state_identities = {
+            (
+                str(state.clock.capture_id),
+                str(state.clock.shot_id),
+                state.clock.sequence,
+                state.clock.render_frame,
+                state.clock.fixed_step,
+                state.rgb_frame.relative_path,
+            )
+            for state in capture.states
+        }
+        if set(macro_by_identity) != state_identities:
+            raise ContractValueError(
+                "physics macro labels", "frame labels do not match the accepted state identities"
+            )
     result: list[PhysicsFrameSupervision] = []
     for frame_index, relative_path in enumerate(frame_paths):
         state = path_to_state.get(relative_path)
@@ -148,6 +203,14 @@ def read_physics_shot(
         key = (str(state.clock.shot_id), state.clock.render_frame)
         if states_by_path.get(key) != state:
             raise ContractValueError("physics rgb mapping", "non-unique shot/render-frame state")
+        identity_key = (
+            str(state.clock.capture_id),
+            str(state.clock.shot_id),
+            state.clock.sequence,
+            state.clock.render_frame,
+            state.clock.fixed_step,
+            state.rgb_frame.relative_path,
+        )
         result.append(PhysicsFrameSupervision(
             frame_index=frame_index,
             shot_id=state.clock.shot_id,
@@ -160,7 +223,8 @@ def read_physics_shot(
             nodes=state.nodes,
             raw_contacts=state.raw_contacts if request.include_raw_contacts else (),
             support_edges=state.support_edges,
-            events=events_by_frame.get(state.clock.render_frame, ()) if request.include_events else (),
+            events=events_by_state[key] if request.include_events else (),
             derived_labels=labels_by_frame.get(state.clock.render_frame) if request.include_derived_labels else None,
+            macro_labels=macro_by_identity[identity_key] if request.include_macro_labels else None,
         ))
     return tuple(result)

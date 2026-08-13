@@ -1,0 +1,29 @@
+{
+  "provenance_version": "milestone_0a_fixture_provenance_v1",
+  "date": "2026-08-13",
+  "accepted_smoke_fixture": {
+    "fixture": "tests/fixtures/physics_capture_v1_macro/accepted_smoke_one_state/shot_001",
+    "source": ".claude/project-docs/evidence/runtime-repin-gate-20260810/session-5-full-smoke/shot_001",
+    "source_archive_sha256": "de59061350f78f79420d76ec33f1c506aa17c1cfc25d197cdd2f5f770874e838",
+    "source_sidecar_sha256": {
+      "physics_state.jsonl": "338ca96242ad975626f5b364b694e81dd12c83a04e078b8da68f1988d43cfc53",
+      "physics_events.jsonl": "27b2005c721ef8938c06456ee9678e57c9f16a242c485f26ab950bb90bf7ca2b"
+    },
+    "transformation": "faithful reduction; the smoke was NOT rerun or rerecorded",
+    "preserved_verbatim": [
+      "all 13 event records (byte-identical events sidecar; fixture events sha256 equals source events sha256 27b2005c721ef8938c06456ee9678e57c9f16a242c485f26ab950bb90bf7ca2b)",
+      "the state_header record (byte-identical first line)",
+      "the single state record's full clock (sequence 2, render_frame 15207, render_time 10.8737469, fixed_step 476, fixed_time 10.86), capture_id, shot_id, coordinates, and rgb_frame object"
+    ],
+    "reduced": [
+      "state nodes reduced from 13 to 2: the archived PigSmall node -648:0 (identity, class, type, pose, mass preserved; screen polygon simplified to 3 points) plus static world:static:900",
+      "raw_contacts emptied (source had 6); support_edges unchanged (source had 0)"
+    ],
+    "fidelity_point": "event occurrence authority is fixed_step: the fixture preserves the real batched serialization in which all 13 events carry render_frame 15207 while occurring at distinct fixed steps 267..441, and the step-391 cluster holds two entity_destroyed, one pig_removed, and bird_exhausted atomically"
+  },
+  "synthetic_fixtures": {
+    "cases": ["canonical_multistate", "same_step_cluster", "no_events", "settled_nonterminal", "terminal_after_last_state", "collapse_support_loss_only", "collapse_disappearance", "pig_tags"],
+    "construction": "mechanically generated canonical JSONL (sorted keys, compact separators, LF, single trailing newline); every fixture passes the frozen load_physics_capture parser and validator; generator script not committed (the committed bytes are the fixture)",
+    "convention_note": "synthetic fixtures name rgb frames by render frame (e.g. frames/frame_000105.png); this is contract-valid and proves frame-label identity propagates the state record's rgb_frame.relative_path verbatim"
+  }
+}

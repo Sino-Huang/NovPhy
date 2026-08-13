@@ -3062,6 +3062,181 @@ class DerivedLabelReaderTests(unittest.TestCase):
             )
 
 
+class MacroLabelReaderTests(unittest.TestCase):
+    """The macro-label join is opt-in, identity-exact, fixed-step bracketed, and fails closed."""
+
+    def _build_catalog(self, root: Path):
+        episode = make_physics_rollout_episode(root / "train" / "episode_001")
+        return (
+            world_model_data.EpisodeCatalog.build(
+                root,
+                "train",
+                world_model_data.PHYSICS_CAPTURE_V1,
+                required_capabilities=world_model_data.PHYSICS_CAPTURE_V1_CAPABILITIES,
+            ),
+            episode,
+        )
+
+    @staticmethod
+    def _write_labels(episode: Path):
+        from scripts.physics_macro_labels import write_macro_labels
+
+        return write_macro_labels(episode / "shot_001")
+
+    def _sample(self, catalog, *, include_macro_labels: bool):
+        request = world_model_data.PhysicsSupervisionRequest(
+            ("scene_nodes", "macro_events"),
+            include_raw_contacts=True,
+            include_events=True,
+            include_macro_labels=include_macro_labels,
+        )
+        dataset = world_model_data.TemporalWindowDataset(
+            catalog, world_model_data.TemporalWindowRequest(1, 1), supervision=request
+        )
+        return dataset[0]["supervision"]
+
+    def test_macro_labels_absent_unless_requested(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            catalog, episode = self._build_catalog(Path(temporary))
+            self._write_labels(episode)
+
+            supervision = self._sample(catalog, include_macro_labels=False)
+
+            self.assertTrue(all(frame.macro_labels is None for frame in supervision))
+            self.assertTrue(all(frame.derived_labels is None for frame in supervision))
+
+    def test_requested_macro_labels_join_on_exact_state_identity(self):
+        from scripts.physics_macro_labels import Availability, MacroPredicate
+
+        with tempfile.TemporaryDirectory() as temporary:
+            catalog, episode = self._build_catalog(Path(temporary))
+            self._write_labels(episode)
+
+            supervision = self._sample(catalog, include_macro_labels=True)
+
+            expected_rgb_paths = ("frames/frame_000000.png", "frames/frame_000001.png")
+            expected_sequences = (1, 2)
+            for frame, rgb_path, sequence in zip(supervision, expected_rgb_paths, expected_sequences):
+                self.assertIsNotNone(frame.macro_labels)
+                identity = frame.macro_labels.identity
+                self.assertEqual(identity.render_frame, frame.render_frame)
+                self.assertEqual(identity.fixed_step, frame.fixed_step)
+                self.assertEqual(identity.rgb_relative_path, rgb_path)
+                self.assertEqual(identity.state_sequence, sequence)
+                self.assertEqual(
+                    tuple(predicate for predicate, _ in frame.macro_labels.predicates),
+                    tuple(MacroPredicate),
+                )
+            first = supervision[0].macro_labels
+            self.assertEqual(first.identity.fixed_step, 10)
+            self.assertIs(first.predicate(MacroPredicate.STEADY_STATE).value, True)
+            self.assertIs(
+                first.predicate(MacroPredicate.STRUCTURE_UNSTABLE).availability,
+                Availability.UNAVAILABLE_NO_PREDECESSOR,
+            )
+            self.assertIsNone(first.predicate(MacroPredicate.STRUCTURE_UNSTABLE).value)
+
+    def test_missing_macro_sidecar_fails_closed_when_requested(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            catalog, _ = self._build_catalog(Path(temporary))
+
+            with self.assertRaises(world_model_data.ContractValueError):
+                self._sample(catalog, include_macro_labels=True)
+
+    def test_stale_macro_sidecar_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            catalog, episode = self._build_catalog(root)
+            path = self._write_labels(episode)
+            records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+            records[0]["sources"]["physics_state_sha256"] = "0" * 64
+            path.write_text(
+                "".join(f"{json.dumps(record, sort_keys=True, separators=(',', ':'))}\n" for record in records),
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(world_model_data.ContractValueError):
+                self._sample(catalog, include_macro_labels=True)
+
+    def test_frame_label_state_mismatch_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            catalog, episode = self._build_catalog(root)
+            path = self._write_labels(episode)
+            lines = path.read_text(encoding="utf-8").splitlines()
+            # Drop the first frame_label record, leaving header, intervals, one frame label, outcome.
+            first_frame = next(
+                index for index, line in enumerate(lines) if json.loads(line)["record_type"] == "frame_label"
+            )
+            path.write_text(
+                "\n".join([*lines[:first_frame], *lines[first_frame + 1:]]) + "\n",
+                encoding="utf-8",
+            )
+
+            with self.assertRaises(world_model_data.ContractValueError):
+                self._sample(catalog, include_macro_labels=True)
+
+    def test_default_sample_keys_are_unchanged_by_macro_label_feature(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            catalog, episode = self._build_catalog(Path(temporary))
+            self._write_labels(episode)
+            dataset = world_model_data.TemporalWindowDataset(
+                catalog, world_model_data.TemporalWindowRequest(1, 1)
+            )
+
+            sample = dataset[0]
+
+            self.assertNotIn("supervision", sample)
+            self.assertEqual(
+                sorted(sample),
+                [
+                    "action",
+                    "context_image",
+                    "frame_indices",
+                    "horizon_frames",
+                    "prediction_steps",
+                    "provenance",
+                    "stride_frames",
+                    "target_images",
+                ],
+            )
+
+    def test_event_exposure_uses_fixed_step_bracketing_not_render_frame(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            catalog, episode = self._build_catalog(root)
+            shot = episode / "shot_001"
+            # Stamp every event with a render_frame no state carries; fixed steps stay.
+            event_path = shot / "physics_events.jsonl"
+            events = [json.loads(line) for line in event_path.read_text(encoding="utf-8").splitlines()]
+            for record in events:
+                record["render_frame"] = 999
+                record["render_time"] = 16.65
+            event_path.write_text(
+                "".join(f"{json.dumps(record, sort_keys=True, separators=(',', ':'))}\n" for record in events),
+                encoding="utf-8",
+            )
+            metadata_path = shot / "metadata.json"
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            metadata["physics_events_sha256"] = hashlib.sha256(event_path.read_bytes()).hexdigest()
+            metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+
+            supervision = self._sample(catalog, include_macro_labels=False)
+
+            self.assertEqual(supervision[0].fixed_step, 10)
+            self.assertEqual(supervision[0].events, ())
+            self.assertEqual(supervision[1].fixed_step, 11)
+            self.assertEqual(
+                tuple(event.event_id for event in supervision[1].events),
+                ("event:00000000", "event:00000001"),
+            )
+            self.assertTrue(all(event.render_frame == 999 for event in supervision[1].events))
+
+    def test_macro_labels_request_flag_must_be_bool(self):
+        with self.assertRaises(world_model_data.ContractValueError):
+            world_model_data.PhysicsSupervisionRequest(("scene_nodes",), include_macro_labels=1)
+
+
 class PhysicsHealthReportTests(unittest.TestCase):
     """The health report must describe what was collected and what was not."""
 

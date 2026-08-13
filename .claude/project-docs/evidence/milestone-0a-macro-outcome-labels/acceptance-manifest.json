@@ -1,0 +1,93 @@
+{
+  "manifest_version": "milestone_0a_fixture_acceptance_v1",
+  "date": "2026-08-13",
+  "scope": "fixture_only_software_acceptance",
+  "semantic_acceptance": "pending_authorized_representative_shots",
+  "artifact": {
+    "schema_version": "physics_macro_labels_v1",
+    "capture_schema_version": "physics_capture_v1",
+    "sidecar": "physics_macro_labels.jsonl",
+    "derivation_spec_version": "macro_labels_derivation_v1",
+    "derivation_spec_digest": "0d080786b8f1f091f3e4f603ee8d34208282d040e5c354e9d7cc12668b0c6364",
+    "schema_document": {
+      "path": "docs/data_contracts/physics_macro_labels_v1.schema.json",
+      "sha256": "304943263b67d7ef142a80112f9791b92790347c1ec5110525ecabb055479d9d"
+    },
+    "implementation": {
+      "scripts/physics_macro_labels.py": "d56e590258665df7f94c1827fcf281c62b9ca6b29e4ae4bff3b7362567e1d86d",
+      "scripts/derive_physics_macro_labels.py": "a0e97bf35d5dfc61666293b37beb16346b600ead83bea7e7c92d5285d6249fe6",
+      "tests/test_physics_macro_labels.py": "4f5177f42f9f058cd0d679d064d5eabef878c5d0952f7bbaffb2710719878b51"
+    },
+    "reader_integration": "world_model/data/supervision.py explicit opt-in flag include_macro_labels; six-field state identity join; events exposed by fixed-step bracketing; default samples unchanged"
+  },
+  "fixtures": [
+    {"name": "accepted_smoke_one_state", "state_sha256": "fea10043d94d2d41815a07f53ced2dd4e8e919d1ef3435010e8a33c9d894ef94", "events_sha256": "27b2005c721ef8938c06456ee9678e57c9f16a242c485f26ab950bb90bf7ca2b", "label_sha256": "9602c433dac572a5bd5ae45a1a6ed25b4c4f09ac7db2e33227fc5ede0c486910", "states": 1, "events": 13, "outcome_class": "failed", "role": "accepted-smoke-faithful reduction; all 13 events share render_frame 15207 with distinct fixed steps 267..441"},
+    {"name": "canonical_multistate", "state_sha256": "262121b2f94d5d75a4a396b274f1d5aece6504b5f3dedc83277720e500fafcc2", "events_sha256": "439f1f4f802ac4d14d4dcf3aee17ae9d31bf2c6cf584213f16acc3051ad30d1b", "label_sha256": "3eb494c0cc4a4e81f7da7fed82d6fb56d5103ebffb1d42821e677305825f608b", "states": 6, "events": 7, "outcome_class": "cleared", "role": "canonical multi-state trajectory; positive cases for all five predicates; batch-stamped event render frames"},
+    {"name": "same_step_cluster", "state_sha256": "9d9a0b00e2c8ea5f46924d4a18d974ca3d97cdce1ecf51c6fc7072376083c534", "events_sha256": "dcff133e4b42a74978481dd36203161e0ec570f06061a60ea405206d71258832", "label_sha256": "8b5fea03f2f22919b7aaa312e56b71aff2966b406fba93dd54751336acde8b81", "states": 3, "events": 7, "outcome_class": "unsettled_nonterminal", "role": "same-step launch+causal onset; heterogeneous step-21 cluster (explosion, two entity_destroyed, pig_removed, bird_exhausted); collision citing two sorted contact ids"},
+    {"name": "no_events", "state_sha256": "b521a389af14832d056259323bab43cf7ae276fa56c796d9f614ef067e148fad", "events_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "label_sha256": "62d8b21b5b452eb1094932679757571d8dc8489db0485fb04aea6ed07d5d86f9", "states": 2, "events": 0, "outcome_class": "unsettled_nonterminal", "role": "absent launch/stability/causal/pig-removal/terminal events without synthesis"},
+    {"name": "settled_nonterminal", "state_sha256": "3df65bc8797c404797062d032c3261bba5c4eea9922bdea7e4a49f7a5a0d9275", "events_sha256": "c1548ce7cbd15249cb5e4da7c18faf70507958ae74b7b9fac9fab4386576d227", "label_sha256": "235d056f7c2402baf1846d0e2e66a4d1baca2266f82687f6675ba9648afe374d", "states": 2, "events": 1, "outcome_class": "settled_nonterminal", "role": "trailing open steady interval, no terminal event; no-pig-identity negative"},
+    {"name": "terminal_after_last_state", "state_sha256": "99adf8b7ab8585148eedb2c9bb0d62466226a5209a13976198707bf08db9d07f", "events_sha256": "9fed39135cd0c866342460ee26796908a9a71a2ce573b18f7e0e64ea41f5bf69", "label_sha256": "58f9cf5f5acd420d44918aac8ad8c1391b4b6c542fa49283f54b988cc9081d41", "states": 2, "events": 4, "outcome_class": "failed", "role": "terminal event after the last accepted state; terminal_equilibrium not_observed; no per-state backfill; pre-first-state cascade onset"},
+    {"name": "collapse_support_loss_only", "state_sha256": "986b7a38f5db1a72aec288974ab77c03fa679a52dfa14346c0119f4286d5b110", "events_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "label_sha256": "4170332d53203f65f116115b8d515c4f9497b63946ec45ef7648bee7aedfece8", "states": 3, "events": 0, "outcome_class": "unsettled_nonterminal", "role": "support loss without destruction/disappearance; collapsed negative"},
+    {"name": "collapse_disappearance", "state_sha256": "305a85e55ccbf44dab43bf4439b6f42798ec9d930cc67c6e51235d5d7c8f9f83", "events_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "label_sha256": "a3a1a849a4c60ef706886c48d66c6014757684d057746df6b67f212b0a5a6069", "states": 3, "events": 0, "outcome_class": "unsettled_nonterminal", "role": "support loss plus disappearance; collapsed positive with empty event evidence"},
+    {"name": "pig_tags", "state_sha256": "edb8cda32de8518afd510b880804f575ef14d534601fdefe9d105208636759f4", "events_sha256": "c5e1b1dd8c5e6d9af74158e150c1930d3dcee76dcc0aaf9c387dac6ba2f383f8", "label_sha256": "5c50e13bb5389aa686a2c8764ae24d627c28d6802b66eb0bba026f2489653306", "states": 2, "events": 4, "outcome_class": "unsettled_nonterminal", "role": "PigSmall/PigMedium/PigBig coverage; same-step triple pig_removed cluster"}
+  ],
+  "tests": {
+    "focused": {"module": "tests.test_physics_macro_labels", "tests": 66, "result": "pass"},
+    "adjacent": {"modules": ["tests.test_physics_capture_contract", "tests.test_world_model_data"], "tests": 129, "result": "pass"},
+    "legacy_inventory": {"module": "tests.test_physics_label_derivation", "tests": 32, "result": "pass", "note": "pre-repin scaffolding suite; passing is not acceptance of Milestone 0a semantics and the legacy artifact remains unmodified historical scaffolding"}
+  },
+  "byte_repeat": {
+    "runs": 2,
+    "output_dirs": ["/tmp/novphy-m0a-a", "/tmp/novphy-m0a-b"],
+    "byte_identical": true,
+    "validate_only_both_trees": "pass",
+    "label_sha256_by_relative_path": {
+      "accepted_smoke_one_state/shot_001/physics_macro_labels.jsonl": "9602c433dac572a5bd5ae45a1a6ed25b4c4f09ac7db2e33227fc5ede0c486910",
+      "canonical_multistate/shot_001/physics_macro_labels.jsonl": "3eb494c0cc4a4e81f7da7fed82d6fb56d5103ebffb1d42821e677305825f608b",
+      "collapse_disappearance/shot_001/physics_macro_labels.jsonl": "a3a1a849a4c60ef706886c48d66c6014757684d057746df6b67f212b0a5a6069",
+      "collapse_support_loss_only/shot_001/physics_macro_labels.jsonl": "4170332d53203f65f116115b8d515c4f9497b63946ec45ef7648bee7aedfece8",
+      "no_events/shot_001/physics_macro_labels.jsonl": "62d8b21b5b452eb1094932679757571d8dc8489db0485fb04aea6ed07d5d86f9",
+      "pig_tags/shot_001/physics_macro_labels.jsonl": "5c50e13bb5389aa686a2c8764ae24d627c28d6802b66eb0bba026f2489653306",
+      "same_step_cluster/shot_001/physics_macro_labels.jsonl": "8b5fea03f2f22919b7aaa312e56b71aff2966b406fba93dd54751336acde8b81",
+      "settled_nonterminal/shot_001/physics_macro_labels.jsonl": "235d056f7c2402baf1846d0e2e66a4d1baca2266f82687f6675ba9648afe374d",
+      "terminal_after_last_state/shot_001/physics_macro_labels.jsonl": "58f9cf5f5acd420d44918aac8ad8c1391b4b6c542fa49283f54b988cc9081d41"
+    }
+  },
+  "validation_matrix": {
+    "hard_rejects_test_pinned": [
+      "malformed or invalid frozen sidecars (loader rejection propagates)",
+      "unknown derived field in any record",
+      "wrong record order (header/intervals/frame labels/outcome)",
+      "header count mismatch (state/event/interval/frame-label)",
+      "stale source sidecar digests",
+      "stored bytes disagreeing with fresh derivation",
+      "absorbing predicate reversion",
+      "pig class set missing, reordered, duplicated, or different",
+      "unsorted or duplicated evidence citations",
+      "missing trailing newline or otherwise noncanonical bytes",
+      "invalid availability or semantic-status value",
+      "duplicate frame-label identity",
+      "contradictory same-step stability cluster (stable_entered + stable_exited)",
+      "cascade interval with null end or end <= start",
+      "outcome invariant violations (score/reason/terminal coupling)",
+      "derivation spec digest mismatch",
+      "non-finite numbers",
+      "frame-label/state identity mismatch at the reader",
+      "reader macro join missing or stale sidecar"
+    ],
+    "valid_unavailable_test_pinned": [
+      "first-state structure-unstable unavailable_no_predecessor",
+      "collapsed unavailable_insufficient_state_evidence on a one-state capture",
+      "absent launch/stability/causal/pig-removal/terminal events without synthesized facts",
+      "terminal-after-last-state outcome with terminal_equilibrium not_observed and no per-state backfill"
+    ]
+  },
+  "protected_scope_statement": "No Unity/player launch, no smoke rerun, no publication or re-pin, no enriched-cohort collection, no real-cohort label writes, no health report or training run, no mutation of the frozen physics_capture_v1 schema/taxonomy/sidecars, legacy physics_derived_labels_v1 bytes, protected rollout roots, the canonical Unity project, or unrelated untracked files. Frozen and legacy paths verified byte-unchanged via git status (empty).",
+  "blocked_gates": [
+    "representative semantic acceptance (requires authorized representative enriched shots)",
+    "runtime publication and enriched-cohort collection",
+    "Milestone 0b oracle gate and unified enriched supervision",
+    "full symbolic Milestone 1 (micro/macro scoring, oracle-symbol ceiling)",
+    "physical-violation metrics, controller evidence, and joint-alpha claims"
+  ]
+}

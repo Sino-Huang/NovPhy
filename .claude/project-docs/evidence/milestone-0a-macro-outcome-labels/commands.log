@@ -1,0 +1,52 @@
+# Milestone 0a fixture acceptance — command log
+
+All commands run from the worktree root
+`/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4`
+(branch `physics-unity-2019.4`, base HEAD `5a8c66737ce6158d58f2ff1fd692d5e67701fa5f`).
+Complete captured outputs: `/tmp/novphy-m0a-evidence/*.log` (ephemeral).
+
+## Baseline inventory (pre-implementation; not acceptance of M0a semantics)
+
+```
+python -m unittest -v tests.test_physics_label_derivation
+# exit 0 — Ran 32 tests, OK (pre-repin scaffolding suite, inventory only)
+```
+
+## Final verification (post-implementation)
+
+```
+python -m unittest -v tests.test_physics_macro_labels
+# exit 0 — Ran 66 tests, OK                       (log: /tmp/novphy-m0a-evidence/01-focused.log)
+
+python -m unittest -v tests.test_physics_capture_contract tests.test_world_model_data
+# exit 0 — Ran 129 tests, OK                      (log: /tmp/novphy-m0a-evidence/02-adjacent.log)
+
+python -m unittest -v tests.test_physics_label_derivation
+# exit 0 — Ran 32 tests, OK (legacy suite unchanged)  (log: /tmp/novphy-m0a-evidence/03-legacy.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a --json
+# exit 0 — shots_total 9, shots_ok 9, shots_failed 0  (log: /tmp/novphy-m0a-evidence/04-cli-a.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-b --json
+# exit 0 — shots_total 9, shots_ok 9, shots_failed 0  (log: /tmp/novphy-m0a-evidence/05-cli-b.log)
+
+diff -r /tmp/novphy-m0a-a /tmp/novphy-m0a-b
+# exit 0 — no differences                           (log: /tmp/novphy-m0a-evidence/06-byte-compare.log)
+
+# per-file sha256 comparison across both trees: 9 files each, identical digests
+# (see canonical-bytes.json)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a --validate-only --json
+# exit 0 — mode validate, failures []             (log: /tmp/novphy-m0a-evidence/07-validate-a.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-b --validate-only --json
+# exit 0 — mode validate, failures []             (log: /tmp/novphy-m0a-evidence/08-validate-b.log)
+
+git status --porcelain -- docs/data_contracts/physics_capture_v1.schema.json docs/data_contracts/physics_capture_v1.md scripts/physics_capture_contract.py scripts/physics_capture_parsing.py scripts/physics_capture_types.py scripts/physics_capture_validation.py scripts/physics_label_derivation.py scripts/derive_physics_labels.py tests/fixtures/physics_capture_v1 tests/test_physics_label_derivation.py
+# exit 0 — empty output: frozen and legacy paths byte-unchanged  (log: /tmp/novphy-m0a-evidence/09-frozen-unchanged.log)
+```
+
+Note: the first attempt at the combined digest-listing subcommand inside step 6
+failed with a shell quoting error (exit 1, no repository or artifact impact); the
+byte-identity check was then executed as `diff -r` plus a per-file sha256
+comparison, both recorded above and in `canonical-bytes.json`.
