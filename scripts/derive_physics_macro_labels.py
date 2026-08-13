@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Derive `physics_macro_labels_v1` sidecars for a shot or a root of shots.
 
-Read-only with respect to the frozen capture sidecars: this writes exactly one new
-file per accepted shot and never touches `frames/` or `metadata.json`.  Refuses to
-write anywhere inside the active legacy cohort.
+Fixture-only write boundary: write mode REQUIRES `--output-dir` and preflight-
+refuses any destination whose parent directory already holds frozen capture
+sidecars (`physics_state.jsonl`/`physics_events.jsonl`), so label files can never
+be placed into a shot or cohort directory -- only sidecar-free mirror trees (for
+example under a temporary test root) are writable.  This never touches the frozen
+sidecars, `frames/`, or `metadata.json`, and refuses to write anywhere inside the
+active legacy cohort.
 """
 from __future__ import annotations
 
@@ -27,7 +31,6 @@ from scripts.physics_macro_labels import (  # noqa: E402
     derive_macro_labels_for_shot,
     validate_macro_labels,
     write_macro_label_file,
-    write_macro_labels,
 )
 from scripts.prepare_rollout_dataset import ACTIVE_COHORT_ROOT  # noqa: E402
 
@@ -92,15 +95,35 @@ def main(argv: list[str] | None = None) -> int:
     if not args.target.exists():
         print(json.dumps({"error": f"target does not exist: {args.target}"}), file=sys.stderr)
         return 2
-    # Refuse a protected write destination before scanning it, so the guard does not
-    # depend on whether the scan happens to find shots there.
+    # Refuse protected targets/destinations before scanning them, so the guards do
+    # not depend on whether the scan happens to find shots there.
     if not args.validate_only:
-        _refuse_active_cohort(args.output_dir if args.output_dir is not None else args.target)
+        if args.output_dir is None:
+            print(
+                json.dumps({"error": "write mode requires --output-dir: in-shot writes are not permitted, label files never live beside frozen sidecars"}),
+                file=sys.stderr,
+            )
+            return 2
+        _refuse_active_cohort(args.target)
+        _refuse_active_cohort(args.output_dir)
 
     shots = discover_shots(args.target)
     if not shots:
         print(json.dumps({"error": f"no physics shots found under {args.target}"}), file=sys.stderr)
         return 2
+
+    if not args.validate_only:
+        # Preflight (before any file is written): a destination whose parent already
+        # holds frozen capture sidecars is a shot/cohort directory, not a mirror
+        # tree; refuse the whole run so no label file is ever placed there.
+        for shot in shots:
+            destination_parent = _label_path(shot, args.target, args.output_dir).parent
+            if (destination_parent / STATE_SIDECAR).exists() or (destination_parent / EVENT_SIDECAR).exists():
+                print(
+                    json.dumps({"error": f"refusing to write macro labels into a directory holding frozen capture sidecars: {destination_parent}"}),
+                    file=sys.stderr,
+                )
+                return 2
 
     entries: list[dict[str, object]] = []
     failures: list[dict[str, str]] = []
@@ -108,11 +131,8 @@ def main(argv: list[str] | None = None) -> int:
         label_path = _label_path(shot, args.target, args.output_dir)
         try:
             if not args.validate_only:
-                if args.output_dir is not None:
-                    label_path.parent.mkdir(parents=True, exist_ok=True)
-                    write_macro_label_file(derive_macro_labels_for_shot(shot), label_path)
-                else:
-                    label_path = write_macro_labels(shot)
+                label_path.parent.mkdir(parents=True, exist_ok=True)
+                write_macro_label_file(derive_macro_labels_for_shot(shot), label_path)
             stored = validate_macro_labels(shot, label_path)
             entries.append(
                 {

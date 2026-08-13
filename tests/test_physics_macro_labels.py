@@ -915,6 +915,41 @@ class FailClosedMutationTests(unittest.TestCase):
         self._rewrite(records)
         self._assert_read_and_validate_reject()
 
+    def test_permuted_event_intervals_are_rejected(self) -> None:
+        # Swapping the two interval records keeps counts and every individual record
+        # valid; only the canonical-order check can fire.
+        records = self._records()
+        interval_indices = [
+            index for index, record in enumerate(records) if record["record_type"] == "event_interval"
+        ]
+        self.assertEqual(len(interval_indices), 2)
+        first, second = interval_indices
+        records[first], records[second] = records[second], records[first]
+        self._rewrite(records)
+        with self.assertRaises(MacroLabelError) as raised:
+            read_macro_labels(self.label_path)
+        self.assertIn("canonical order", str(raised.exception))
+        with self.assertRaises(MacroLabelError):
+            validate_macro_labels(self.shot)
+
+    def test_permuted_frame_labels_are_rejected(self) -> None:
+        # Swapping the frame labels at fixed steps 11 and 12 keeps counts unchanged
+        # and identities unique; only the accepted-state-order check can fire.
+        records = self._records()
+        frame_indices = {
+            record["fixed_step"]: index
+            for index, record in enumerate(records)
+            if record["record_type"] == "frame_label"
+        }
+        first, second = frame_indices[11], frame_indices[12]
+        records[first], records[second] = records[second], records[first]
+        self._rewrite(records)
+        with self.assertRaises(MacroLabelError) as raised:
+            read_macro_labels(self.label_path)
+        self.assertIn("accepted state order", str(raised.exception))
+        with self.assertRaises(MacroLabelError):
+            validate_macro_labels(self.shot)
+
 
 class DerivationRejectionTests(unittest.TestCase):
     """M0a cross-cutting: contradictory stability and render_frame non-joining."""
@@ -1044,14 +1079,60 @@ class DeriveCliTests(unittest.TestCase):
         self.assertEqual(report["shots_failed"], 1)
         self.assertIn("canonical_multistate", report["failures"][0]["shot"])
 
-    def test_in_shot_write_mode_writes_beside_the_sidecars(self) -> None:
+    def test_write_mode_without_output_dir_exits_2(self) -> None:
+        code, report = self._run(["--target", str(FIXTURE_ROOT), "--json"])
+        self.assertEqual(code, 2)
+        self.assertIsNone(report)
+        self.assertEqual(list(self.temporary.rglob(MACRO_LABEL_SIDECAR)), [])
+
+    def test_write_destination_parent_with_sidecars_is_refused(self) -> None:
+        # A mirror shot dir that already holds frozen sidecars is a shot/cohort
+        # directory, not a writable mirror tree.
+        output = self.temporary / "out"
+        staged = output / "pig_tags" / "shot_001"
+        staged.mkdir(parents=True)
+        for name in ("physics_state.jsonl", "physics_events.jsonl"):
+            shutil.copy(shot_dir("pig_tags") / name, staged / name)
+        code, report = self._run(
+            ["--target", str(FIXTURE_ROOT), "--output-dir", str(output), "--json"]
+        )
+        self.assertEqual(code, 2)
+        self.assertIsNone(report)
+        self.assertFalse((staged / MACRO_LABEL_SIDECAR).exists())
+
+    def test_preflight_refusal_writes_nothing_for_any_shot(self) -> None:
+        # Sidecars staged under exactly one mirror: the other eight shots would pass,
+        # but the preflight refuses the whole run before any file is written.
+        output = self.temporary / "out"
+        staged = output / "no_events" / "shot_001"
+        staged.mkdir(parents=True)
+        for name in ("physics_state.jsonl", "physics_events.jsonl"):
+            shutil.copy(shot_dir("no_events") / name, staged / name)
+        code, _ = self._run(
+            ["--target", str(FIXTURE_ROOT), "--output-dir", str(output), "--json"]
+        )
+        self.assertEqual(code, 2)
+        self.assertEqual(
+            [path for path in output.rglob(MACRO_LABEL_SIDECAR)],
+            [],
+        )
+
+    def test_validate_only_without_output_dir_accepts_in_shot_labels(self) -> None:
         shot = copy_shot("pig_tags", self.temporary)
-        code, _ = self._run(["--target", str(shot), "--json"])
-        self.assertEqual(code, 0)
-        self.assertTrue((shot / "physics_macro_labels.jsonl").is_file())
+        write_macro_labels(shot)  # library call on a temp copy, not the CLI
         code, report = self._run(["--target", str(shot), "--validate-only", "--json"])
         self.assertEqual(code, 0)
         self.assertEqual(report["shots_ok"], 1)
+        self.assertEqual(report["output_dir"], None)
+
+    def test_output_dir_inside_active_cohort_is_refused(self) -> None:
+        from scripts.derive_physics_macro_labels import ACTIVE_COHORT_DIR_NAME
+
+        output = self.temporary / ACTIVE_COHORT_DIR_NAME / "labels"
+        with self.assertRaises(SystemExit) as raised:
+            self._run(["--target", str(FIXTURE_ROOT), "--output-dir", str(output), "--json"])
+        self.assertIn("active cohort", str(raised.exception))
+        self.assertFalse(output.exists())
 
     def test_unknown_target_exits_2(self) -> None:
         code, _ = self._run(

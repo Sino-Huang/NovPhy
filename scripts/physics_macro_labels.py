@@ -1223,6 +1223,19 @@ def read_macro_labels(path: Path) -> MacroLabels:
                 raise MacroLabelError(location, f"absorbing predicate {absorbing.value} must not revert")
             seen_true = seen_true or frame.predicate(absorbing).value is True
 
+    # Same-type records must carry the canonical emission order, not just valid
+    # individual shapes: intervals are ordered by (start_fixed_step, interval_type)
+    # and frame labels follow the accepted-state order (strictly increasing
+    # state_sequence).  A permutation that leaves counts and identities intact is
+    # still contract drift and fails closed here.
+    if intervals != tuple(
+        sorted(intervals, key=lambda interval: (interval.start_fixed_step, interval.interval_type))
+    ):
+        raise MacroLabelError(location, "event intervals differ from canonical order")
+    state_sequences = tuple(frame.identity.state_sequence for frame in frames)
+    if any(previous >= current for previous, current in zip(state_sequences, state_sequences[1:])):
+        raise MacroLabelError(location, "frame labels differ from accepted state order")
+
     return MacroLabels(
         capture_id=header.capture_id,
         shot_id=header.shot_id,

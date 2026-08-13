@@ -50,3 +50,39 @@ Note: the first attempt at the combined digest-listing subcommand inside step 6
 failed with a shell quoting error (exit 1, no repository or artifact impact); the
 byte-identity check was then executed as `diff -r` plus a per-file sha256
 comparison, both recorded above and in `canonical-bytes.json`.
+
+## Post-review fixes (critics/2026-08-13-critic-3.md blocking findings)
+
+After the strict-reader ordering and CLI write-boundary fixes:
+
+```
+python -m unittest tests.test_physics_macro_labels
+# exit 0 — Ran 72 tests, OK
+
+python -m unittest tests.test_physics_capture_contract tests.test_world_model_data
+# exit 0 — Ran 129 tests, OK
+
+python -m unittest tests.test_physics_label_derivation
+# exit 0 — Ran 32 tests, OK
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a2 --json
+# exit 0 — 9/9 shots ok                              (log: /tmp/novphy-m0a-evidence/10-cli-a2.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-b2 --json
+# exit 0 — 9/9 shots ok                              (log: /tmp/novphy-m0a-evidence/11-cli-b2.log)
+
+diff -r /tmp/novphy-m0a-a2 /tmp/novphy-m0a-b2
+# exit 0 — byte-identical                            (log: /tmp/novphy-m0a-evidence/12-byte-compare2.log)
+
+diff -r /tmp/novphy-m0a-a2 /tmp/novphy-m0a-a
+# exit 0 — label bytes unchanged by the review fixes
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a2 --validate-only --json
+# exit 0                                             (log: /tmp/novphy-m0a-evidence/13-validate-a2.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-b2 --validate-only --json
+# exit 0                                             (log: /tmp/novphy-m0a-evidence/14-validate-b2.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro
+# exit 2 — write mode requires --output-dir (fixture-only boundary)
+```
