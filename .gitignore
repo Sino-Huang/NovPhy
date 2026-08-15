@@ -5,7 +5,14 @@ tasks/task_generator/output/
 *.png
 *.mp4
 
-data/
+# Anchored: this is the rollout-data root. An unanchored `data/` also matches
+# world_model/data/, which would hide the data-pipeline package from Git.
+/data/
+__pycache__/
+
+# Reproducible training outputs remain local; manifests and source stay visible.
+/runs/
+/checkpoints/
 
 .cache/
 modules/
@@ -14,3 +21,24 @@ node_modules/
 .cache/xdg/opencode/opencode.db-shm
 .cache/xdg/opencode/opencode.db-wal
 .cache/xdg/opencode/log/opencode.log
+
+# Local agent and debug state
+/.claude/logs/
+/.playwright-mcp/
+/.debug-probe/
+/.omo/
+/temp/
+/.novphy-worktrees/
+/ElectronWindowFileDialog-2AK9yaUb.js
+/.local-artifacts/
+
+# Local deepwork state
+/.slim/deepwork/
+
+# Local Unity build artifacts
+/sciencebirdsgames/physics-v1/archive.sha256
+/sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz
+/sciencebirdsgames/physics-v1/unity-build.log
+/.claude/project-docs/evidence/runtime-repin-gate-20260810/phase5-builds/build-a/
+/.claude/project-docs/evidence/runtime-repin-gate-20260810/phase5-builds/build-b/
+/.claude/project-docs/evidence/runtime-repin-gate-20260810/session-5-full-smoke/
