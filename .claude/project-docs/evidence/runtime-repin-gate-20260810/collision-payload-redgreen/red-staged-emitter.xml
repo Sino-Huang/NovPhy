@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="14" result="Failed(Child)" total="14" passed="13" failed="1" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:08Z" duration="2.3383875">
+  <test-suite type="TestSuite" id="1061" name="Science Birds" fullname="Science Birds" runstate="Runnable" testcasecount="48" result="Failed" site="Child" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:08Z" duration="2.338388" total="14" passed="13" failed="1" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1118" name="Assembly-CSharp-Editor.dll" fullname="/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/ScriptAssemblies/Assembly-CSharp-Editor.dll" runstate="Runnable" testcasecount="48" result="Failed" site="Child" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:08Z" duration="2.328664" total="14" passed="13" failed="1" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="1156655" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestFixture" id="1082" name="PhysicsCaptureProtocolTests" fullname="PhysicsCaptureProtocolTests" classname="PhysicsCaptureProtocolTests" runstate="Runnable" testcasecount="14" result="Failed" site="Child" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:08Z" duration="2.326971" total="14" passed="13" failed="1" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-case id="1084" name="CaptureAtEndOfRenderFrameUsesWaitForEndOfFrameBeforeBatch" fullname="PhysicsCaptureProtocolTests.CaptureAtEndOfRenderFrameUsesWaitForEndOfFrameBeforeBatch" methodname="CaptureAtEndOfRenderFrameUsesWaitForEndOfFrameBeforeBatch" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="597489568" result="Passed" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:06Z" duration="0.085493" asserts="0">
+          <properties />
+          <output><![CDATA[adding novelty level 3
+]]></output>
+        </test-case>
+        <test-case id="1095" name="LoopbackConnectionsBeyondPendingCapacityAreRejectedAndClosed" fullname="PhysicsCaptureProtocolTests.LoopbackConnectionsBeyondPendingCapacityAreRejectedAndClosed" methodname="LoopbackConnectionsBeyondPendingCapacityAreRejectedAndClosed" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="1314031257" result="Passed" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:06Z" duration="0.068743" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1088" name="Request70CollisionPayloadCarriesTheContactEvidenceTheContractRequires" fullname="PhysicsCaptureProtocolTests.Request70CollisionPayloadCarriesTheContactEvidenceTheContractRequires" methodname="Request70CollisionPayloadCarriesTheContactEvidenceTheContractRequires" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="204836527" result="Failed" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:06Z" duration="0.071309" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[  serialized collision payload does not match the frozen contract branch: {}
+  Expected: equivalent to < "contact_ids", "relative_speed" >
+  But was:  <empty>
+]]></message>
+            <stack-trace><![CDATA[at NUnit.Framework.CollectionAssert.AreEquivalent (System.Collections.IEnumerable expected, System.Collections.IEnumerable actual, System.String message, System.Object[] args) [0x00008] in <10b6135e63434fdba4fc6c109928ab3b>:0
+at PhysicsCaptureProtocolTests.Request70CollisionPayloadCarriesTheContactEvidenceTheContractRequires () [0x00366] in /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs:217
+]]></stack-trace>
+          </failure>
+        </test-case>
+        <test-case id="1083" name="Request70EnvelopeContainsActualPngAndSameRenderFrameBatch" fullname="PhysicsCaptureProtocolTests.Request70EnvelopeContainsActualPngAndSameRenderFrameBatch" methodname="Request70EnvelopeContainsActualPngAndSameRenderFrameBatch" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="1201174499" result="Passed" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:06Z" duration="0.063162" asserts="0">
+          <properties />
+          <output><![CDATA[adding novelty level 3
+]]></output>
+        </test-case>
+        <test-case id="1093" name="Request70JsonEscapesEveryControlCharacterAndRoundTrips" fullname="PhysicsCaptureProtocolTests.Request70JsonEscapesEveryControlCharacterAndRoundTrips" methodname="Request70JsonEscapesEveryControlCharacterAndRoundTrips" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="7298001" result="Passed" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:06Z" duration="0.050760" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1091" name="Request70PreflightsUtf8AndCombinedEnvelopeBeforeAllocation" fullname="PhysicsCaptureProtocolTests.Request70PreflightsUtf8AndCombinedEnvelopeBeforeAllocation" methodname="Request70PreflightsUtf8AndCombinedEnvelopeBeforeAllocation" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="310431019" result="Passed" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:06Z" duration="0.214080" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1087" name="Request70RecordsMatchFrozenPhysicsCaptureV1ProducerContract" fullname="PhysicsCaptureProtocolTests.Request70RecordsMatchFrozenPhysicsCaptureV1ProducerContract" methodname="Request70RecordsMatchFrozenPhysicsCaptureV1ProducerContract" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="456449916" result="Passed" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:06Z" duration="0.056068" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1085" name="Request70RejectsRecorderThatWasNotFinalized" fullname="PhysicsCaptureProtocolTests.Request70RejectsRecorderThatWasNotFinalized" methodname="Request70RejectsRecorderThatWasNotFinalized" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="259554206" result="Passed" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:06Z" duration="0.049988" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1092" name="Request70ResponseTransmissionYieldsAndExpiresWhenClientStopsReading" fullname="PhysicsCaptureProtocolTests.Request70ResponseTransmissionYieldsAndExpiresWhenClientStopsReading" methodname="Request70ResponseTransmissionYieldsAndExpiresWhenClientStopsReading" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="601928393" result="Passed" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:06Z" duration="0.130690" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1090" name="Request70ReturnsTypedFailureForEveryUnityEnvelopeBound" fullname="PhysicsCaptureProtocolTests.Request70ReturnsTypedFailureForEveryUnityEnvelopeBound" methodname="Request70ReturnsTypedFailureForEveryUnityEnvelopeBound" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="889854007" result="Passed" start-time="2026-08-11 07:53:06Z" end-time="2026-08-11 07:53:07Z" duration="0.176107" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1089" name="Request70RuntimeCaptureIdentityIsStableAndStateSequenceIncreases" fullname="PhysicsCaptureProtocolTests.Request70RuntimeCaptureIdentityIsStableAndStateSequenceIncreases" methodname="Request70RuntimeCaptureIdentityIsStableAndStateSequenceIncreases" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="1435308993" result="Passed" start-time="2026-08-11 07:53:07Z" end-time="2026-08-11 07:53:07Z" duration="0.050917" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1086" name="Request70SerializesFrozenRecorderBatch" fullname="PhysicsCaptureProtocolTests.Request70SerializesFrozenRecorderBatch" methodname="Request70SerializesFrozenRecorderBatch" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="1121261996" result="Passed" start-time="2026-08-11 07:53:07Z" end-time="2026-08-11 07:53:07Z" duration="0.053278" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1096" name="SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt" fullname="PhysicsCaptureProtocolTests.SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt" methodname="SilentInFlightClientsHoldCapacityUntilTimeoutThenReleaseIt" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="1921646698" result="Passed" start-time="2026-08-11 07:53:07Z" end-time="2026-08-11 07:53:08Z" duration="1.177119" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1094" name="SilentLoopbackClientDoesNotBlockTheRequestCoroutineBeforeItsFirstYield" fullname="PhysicsCaptureProtocolTests.SilentLoopbackClientDoesNotBlockTheRequestCoroutineBeforeItsFirstYield" methodname="SilentLoopbackClientDoesNotBlockTheRequestCoroutineBeforeItsFirstYield" classname="PhysicsCaptureProtocolTests" runstate="Runnable" seed="1152485176" result="Passed" start-time="2026-08-11 07:53:08Z" end-time="2026-08-11 07:53:08Z" duration="0.065490" asserts="0">
+          <properties />
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

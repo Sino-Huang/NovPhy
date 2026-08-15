@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://novphy.org/data-contracts/best_pair_labels_v1.schema.json",
+  "title": "NovPhy auditable best-pair sweep artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "artifact_type", "source_digest", "checkpoint_digest", "catalog_digest", "grid_digest", "score_digest", "partition_digest", "state_count", "shard_size", "evaluated_alpha", "excluded_abstractions", "shards"],
+  "properties": {
+    "schema_version": {"const": "best_pair_labels_v1"},
+    "artifact_type": {"const": "best_pair_sweep"},
+    "source_digest": {"$ref": "#/$defs/digest"},
+    "checkpoint_digest": {"$ref": "#/$defs/digest"},
+    "catalog_digest": {"$ref": "#/$defs/digest"},
+    "grid_digest": {"$ref": "#/$defs/digest"},
+    "score_digest": {"$ref": "#/$defs/digest"},
+    "partition_digest": {"$ref": "#/$defs/digest"},
+    "state_count": {"type": "integer", "minimum": 4096, "multipleOf": 4096},
+    "shard_size": {"const": 4096},
+    "evaluated_alpha": {"const": "continuous"},
+    "excluded_abstractions": {"const": [{"alpha": "micro", "reason": "symbolic_supervision_unavailable"}, {"alpha": "macro", "reason": "symbolic_supervision_unavailable"}]},
+    "shards": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/shard"}}
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "shard": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "state_count", "sha256"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^shard-[0-9]{6}\\.jsonl$"},
+        "state_count": {"const": 4096},
+        "sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "metric": {
+      "type": "object", "additionalProperties": false,
+      "required": ["alpha", "availability", "compute_cost", "delta", "effective_delta", "requested_delta", "weighted_error"],
+      "properties": {
+        "alpha": {"const": "continuous"}, "availability": {"enum": ["available", "unavailable"]},
+        "compute_cost": {"type": "number", "finite": true, "minimum": 0}, "delta": {"type": "integer", "minimum": 1},
+        "effective_delta": {"type": "integer", "minimum": 1}, "requested_delta": {"type": "integer", "minimum": 1},
+        "weighted_error": {"type": "number", "finite": true, "minimum": 0}
+      }
+    },
+    "state": {
+      "type": "object", "additionalProperties": false,
+      "required": ["record_type", "schema_version", "state_index", "temporal_ceiling", "metrics", "pareto_points", "selected"],
+      "properties": {
+        "record_type": {"const": "state"}, "schema_version": {"const": "best_pair_labels_v1"},
+        "state_index": {"type": "integer", "minimum": 0}, "temporal_ceiling": {"type": "integer", "minimum": 1},
+        "metrics": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/metric"}},
+        "pareto_points": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["compute_cost", "delta", "weighted_error"], "properties": {"compute_cost": {"type": "number", "minimum": 0}, "delta": {"type": "integer", "minimum": 1}, "weighted_error": {"type": "number", "minimum": 0}}}},
+        "selected": {"type": "object", "additionalProperties": false, "required": ["alpha", "delta"], "properties": {"alpha": {"const": "continuous"}, "delta": {"type": "integer", "minimum": 1}}}
+      }
+    },
+    "shard_header": {"type": "object", "additionalProperties": false, "required": ["record_type", "schema_version", "shard_size", "evaluated_alpha", "excluded_abstractions", "state_count"], "properties": {"record_type": {"const": "shard_header"}, "schema_version": {"const": "best_pair_labels_v1"}, "shard_size": {"const": 4096}, "evaluated_alpha": {"const": "continuous"}, "excluded_abstractions": {"const": [{"alpha": "micro", "reason": "symbolic_supervision_unavailable"}, {"alpha": "macro", "reason": "symbolic_supervision_unavailable"}]}, "state_count": {"const": 4096}}},
+    "shard_footer": {"type": "object", "additionalProperties": false, "required": ["record_type", "schema_version", "state_count", "state_digest"], "properties": {"record_type": {"const": "shard_footer"}, "schema_version": {"const": "best_pair_labels_v1"}, "state_count": {"const": 4096}, "state_digest": {"$ref": "#/$defs/digest"}}}
+  }
+}

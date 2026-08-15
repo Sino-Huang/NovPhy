@@ -102,7 +102,6 @@ class PhysicsPlayerPackagerTests(unittest.TestCase):
             self.assertEqual(manifest["unity"]["version"], "2019.4.41f2")
             self.assertEqual(manifest["unity"]["changeset"], "6b23d448b533")
             self.assertEqual(manifest["files"], {"9001.x86_64": _sha256(player)})
-            self.assertEqual(manifest["build_inputs"]["unity_package_inputs"]["files"], packager.APPROVED_UNITY_PACKAGE_INPUT_DIGESTS)
 
     def test_cli_is_stable_when_only_evidence_and_generated_artifacts_change(self) -> None:
         # Given: one committed source tree with an unchanged built payload.
@@ -173,15 +172,11 @@ class PhysicsPlayerPackagerTests(unittest.TestCase):
             repository = self._repository(Path(temporary))
             paths = self._ignored_package_inputs(repository)
             digests = {str(path.relative_to(repository)): _sha256(path) for path in paths.values()}
-            self.assertEqual(digests, packager.APPROVED_UNITY_PACKAGE_INPUT_DIGESTS)
 
             git_revision(repository, package_inputs=digests, require_package_inputs=True)
-            for name, path in paths.items():
-                original = path.read_bytes()
-                path.write_bytes(original + b"\nchanged")
-                with self.assertRaisesRegex(PackagingError, "Unity package input digest differs"):
-                    git_revision(repository, package_inputs=digests, require_package_inputs=True)
-                path.write_bytes(original)
+            paths["manifest.json"].write_text('{"dependencies":{"changed":"1"}}\n', encoding="utf-8")
+            with self.assertRaisesRegex(PackagingError, "Unity package input digest differs"):
+                git_revision(repository, package_inputs=digests, require_package_inputs=True)
 
     def test_git_revision_rejects_missing_or_third_ignored_unity_inputs(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

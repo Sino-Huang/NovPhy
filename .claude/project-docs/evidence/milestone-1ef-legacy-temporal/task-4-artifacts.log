@@ -1,0 +1,21 @@
+SCENARIO baseline
+INVOCATION python -m unittest tests.test_world_model_pair_grid tests.test_world_model_training -v
+OBSERVABLE existing RunManifest/pair-grid regression lane passed (75 tests).
+
+SCENARIO artifact-focused-twice
+INVOCATION python -m unittest tests.test_world_model_grid_artifacts tests.test_world_model_pair_grid tests.test_world_model_training -v (twice)
+OBSERVABLE both exits 0 (80 tests each); fixture asserts two 4096-state shards, resume, and byte-identical manifest/shard bytes. Console timing differs in training integration output and is not used as reproducibility evidence.
+
+SCENARIO fresh-process-fixture
+INVOCATION python -m unittest tests.test_world_model_grid_artifacts.GridArtifactTests.test_two_shards_round_trip_and_resume_are_byte_identical -v
+OBSERVABLE exit 0; validate_best_pair_artifacts accepts only complete hashed shards and resume returns identical manifest digest.
+
+SCENARIO adversarial
+INVOCATION focused tests for nonfinite metric, protected frames output, tampered source provenance, reordered state, canonical JSON, alpha exclusion metadata
+OBSERVABLE all rejected/accepted as contract requires; micro and macro carry symbolic_supervision_unavailable and evaluated alpha is continuous.
+
+SCENARIO static
+INVOCATION python -m py_compile world_model/training/grid_artifacts.py tests/test_world_model_grid_artifacts.py; python JSON parse docs/data_contracts/best_pair_labels_v1.schema.json; git diff --check -- owned paths
+OBSERVABLE exit 0 for compile/schema/diff checks.
+
+RESIDUAL: schema finite keyword is documentary JSON-Schema metadata; Python validator enforces finite values with allow_nan=False and math.isfinite.

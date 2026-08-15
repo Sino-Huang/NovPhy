@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="25" result="Passed" total="25" passed="25" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.0851008">
+  <test-suite type="TestSuite" id="1073" name="Science Birds" fullname="Science Birds" runstate="Runnable" testcasecount="59" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.085101" total="25" passed="25" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties />
+    <test-suite type="Assembly" id="1142" name="Assembly-CSharp-Editor.dll" fullname="/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/ScriptAssemblies/Assembly-CSharp-Editor.dll" runstate="Runnable" testcasecount="59" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.073467" total="25" passed="25" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="2109034" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+      </properties>
+      <test-suite type="TestFixture" id="1116" name="PhysicsShotRecorderTests" fullname="PhysicsShotRecorderTests" classname="PhysicsShotRecorderTests" runstate="Runnable" testcasecount="25" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.071773" total="25" passed="25" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1123" name="BoundedRecorder_ReportsTypedOverflowTimeoutAndTruncatedFinalization" fullname="PhysicsShotRecorderTests.BoundedRecorder_ReportsTypedOverflowTimeoutAndTruncatedFinalization" methodname="BoundedRecorder_ReportsTypedOverflowTimeoutAndTruncatedFinalization" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="1656382809" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.016744" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1141" name="BoundedRetention_AllowsLongSequencesAndPreservesCollisionCitedRows" fullname="PhysicsShotRecorderTests.BoundedRetention_AllowsLongSequencesAndPreservesCollisionCitedRows" methodname="BoundedRetention_AllowsLongSequencesAndPreservesCollisionCitedRows" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="1494019344" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.007479" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1128" name="CollisionAtAStepDoesNotErasePriorSupportEdges" fullname="PhysicsShotRecorderTests.CollisionAtAStepDoesNotErasePriorSupportEdges" methodname="CollisionAtAStepDoesNotErasePriorSupportEdges" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="1040777928" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.001487" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1121" name="CollisionContactSamplesCreateDeterministicPayloadEvidence" fullname="PhysicsShotRecorderTests.CollisionContactSamplesCreateDeterministicPayloadEvidence" methodname="CollisionContactSamplesCreateDeterministicPayloadEvidence" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="1914924529" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.002225" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1122" name="CollisionContactSamplesRejectBeforeRecorderMutation" fullname="PhysicsShotRecorderTests.CollisionContactSamplesRejectBeforeRecorderMutation" methodname="CollisionContactSamplesRejectBeforeRecorderMutation" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="1262613285" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.003616" asserts="0">
+          <properties />
+          <output><![CDATA[physics_capture_v1: refusing a collision event whose relative speed is not finite and non-negative; no event emitted.
+physics_capture_v1: refusing a collision event without contact evidence; no event emitted.
+]]></output>
+        </test-case>
+        <test-case id="1140" name="CollisionEvidence_CitesOnlyTheExactColliderPairNotSiblingPairs" fullname="PhysicsShotRecorderTests.CollisionEvidence_CitesOnlyTheExactColliderPairNotSiblingPairs" methodname="CollisionEvidence_CitesOnlyTheExactColliderPairNotSiblingPairs" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="1498421498" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.000742" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1120" name="CollisionPayloadRejectsMissingOrInvalidEvidence" fullname="PhysicsShotRecorderTests.CollisionPayloadRejectsMissingOrInvalidEvidence" methodname="CollisionPayloadRejectsMissingOrInvalidEvidence" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="612998416" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.002662" asserts="0">
+          <properties />
+          <output><![CDATA[physics_capture_v1: refusing a collision event without contact evidence; no event emitted.
+physics_capture_v1: refusing a collision event whose relative speed is not finite and non-negative; no event emitted.
+physics_capture_v1: refusing a collision event whose relative speed is not finite and non-negative; no event emitted.
+]]></output>
+        </test-case>
+        <test-case id="1124" name="Contacts_CanonicalizeByLifetimeIdAndNegateDirectionalValues" fullname="PhysicsShotRecorderTests.Contacts_CanonicalizeByLifetimeIdAndNegateDirectionalValues" methodname="Contacts_CanonicalizeByLifetimeIdAndNegateDirectionalValues" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="917554817" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.000856" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1125" name="Contacts_PreserveTangentImpulseAndAssignUniquePointIndices" fullname="PhysicsShotRecorderTests.Contacts_PreserveTangentImpulseAndAssignUniquePointIndices" methodname="Contacts_PreserveTangentImpulseAndAssignUniquePointIndices" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="246182925" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.000631" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1119" name="Events_AreExactlyOnceCollisionIsPerPairPerStepAndTerminalIsExclusive" fullname="PhysicsShotRecorderTests.Events_AreExactlyOnceCollisionIsPerPairPerStepAndTerminalIsExclusive" methodname="Events_AreExactlyOnceCollisionIsPerPairPerStepAndTerminalIsExclusive" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="1336870141" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.001415" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1131" name="Events_ExposeSortedParticipantsAndFrozenPayloadFields" fullname="PhysicsShotRecorderTests.Events_ExposeSortedParticipantsAndFrozenPayloadFields" methodname="Events_ExposeSortedParticipantsAndFrozenPayloadFields" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="2081283413" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.001519" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1130" name="Events_SortByFullClockThenTaxonomyAndParticipantBeforeSequence" fullname="PhysicsShotRecorderTests.Events_SortByFullClockThenTaxonomyAndParticipantBeforeSequence" methodname="Events_SortByFullClockThenTaxonomyAndParticipantBeforeSequence" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="289779412" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.001463" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1129" name="Events_UseFrozenTaxonomyAndBoundsIncludeEvents" fullname="PhysicsShotRecorderTests.Events_UseFrozenTaxonomyAndBoundsIncludeEvents" methodname="Events_UseFrozenTaxonomyAndBoundsIncludeEvents" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="582309432" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.000301" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1136" name="FinalizedRecorderRejectsEveryPublicMutationPath" fullname="PhysicsShotRecorderTests.FinalizedRecorderRejectsEveryPublicMutationPath" methodname="FinalizedRecorderRejectsEveryPublicMutationPath" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="460567459" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.004780" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1117" name="FixedStepContacts_ExcludeTriggersAndSortCanonicalPairs" fullname="PhysicsShotRecorderTests.FixedStepContacts_ExcludeTriggersAndSortCanonicalPairs" methodname="FixedStepContacts_ExcludeTriggersAndSortCanonicalPairs" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="2076129520" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.001228" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1133" name="LifetimeReuse_ProducesDistinctContactAndEventParticipants" fullname="PhysicsShotRecorderTests.LifetimeReuse_ProducesDistinctContactAndEventParticipants" methodname="LifetimeReuse_ProducesDistinctContactAndEventParticipants" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="603418593" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.001552" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1138" name="Retention_KeepsLastTwoFixedStepsAndFinalizedContactsAreGloballyOrdered" fullname="PhysicsShotRecorderTests.Retention_KeepsLastTwoFixedStepsAndFinalizedContactsAreGloballyOrdered" methodname="Retention_KeepsLastTwoFixedStepsAndFinalizedContactsAreGloballyOrdered" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="1450862962" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.003290" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1132" name="RuntimeContacts_UseStaticWorldIdsAndLifetimeRegistryIds" fullname="PhysicsShotRecorderTests.RuntimeContacts_UseStaticWorldIdsAndLifetimeRegistryIds" methodname="RuntimeContacts_UseStaticWorldIdsAndLifetimeRegistryIds" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="2112081972" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.001726" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1134" name="RuntimeStability_RequiresTwoAuthoritativeFixedStepSamplesPerTransition" fullname="PhysicsShotRecorderTests.RuntimeStability_RequiresTwoAuthoritativeFixedStepSamplesPerTransition" methodname="RuntimeStability_RequiresTwoAuthoritativeFixedStepSamplesPerTransition" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="1901846300" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.002199" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1126" name="Support_CitesBothConsecutiveContactSamplesAndRejectsOneStepHistory" fullname="PhysicsShotRecorderTests.Support_CitesBothConsecutiveContactSamplesAndRejectsOneStepHistory" methodname="Support_CitesBothConsecutiveContactSamplesAndRejectsOneStepHistory" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="2078138691" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.000565" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1127" name="Support_RejectsVerticalOrderingReversedBetweenSamples" fullname="PhysicsShotRecorderTests.Support_RejectsVerticalOrderingReversedBetweenSamples" methodname="Support_RejectsVerticalOrderingReversedBetweenSamples" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="1746697294" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.000272" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1139" name="SupportEdges_FinalizedOrderFollowsSupporterSupportedSupportId" fullname="PhysicsShotRecorderTests.SupportEdges_FinalizedOrderFollowsSupporterSupportedSupportId" methodname="SupportEdges_FinalizedOrderFollowsSupporterSupportedSupportId" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="86808854" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.000645" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1118" name="SupportV1_RequiresTwoConsecutiveFixedStepsAndRemovesAfterGap" fullname="PhysicsShotRecorderTests.SupportV1_RequiresTwoConsecutiveFixedStepsAndRemovesAfterGap" methodname="SupportV1_RequiresTwoConsecutiveFixedStepsAndRemovesAfterGap" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="381918785" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.000574" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1135" name="TimeoutUsesElapsedFixedTimeFromFirstAuthoritativeSample" fullname="PhysicsShotRecorderTests.TimeoutUsesElapsedFixedTimeFromFirstAuthoritativeSample" methodname="TimeoutUsesElapsedFixedTimeFromFirstAuthoritativeSample" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="420919403" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.000338" asserts="0">
+          <properties />
+        </test-case>
+        <test-case id="1137" name="TruncatedFinalizationSetsFailureBeforeBecomingTerminal" fullname="PhysicsShotRecorderTests.TruncatedFinalizationSetsFailureBeforeBecomingTerminal" methodname="TruncatedFinalizationSetsFailureBeforeBecomingTerminal" classname="PhysicsShotRecorderTests" runstate="Runnable" seed="1066486487" result="Passed" start-time="2026-08-12 06:04:47Z" end-time="2026-08-12 06:04:47Z" duration="0.000243" asserts="0">
+          <properties />
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

@@ -1,0 +1,156 @@
+{
+  "schema": "novphy.runtime_gate.review_remediation.v1",
+  "wave": "runtime-repin-gate-20260810",
+  "recorded_on": "2026-08-11",
+  "review": {
+    "pass": 6,
+    "scope": "uncommitted diff of scripts/smoke_physics_capture.py and tests/test_smoke_physics_capture.py against fc3e34c5f6115b55751874df21c3a9286bd09a5e",
+    "blocker": 0,
+    "major": 7,
+    "minor": 17,
+    "design_points_validated": [
+      "the UnityPlayer.so mapped anchor is namespace-global (device:inode compared against a pre-launch stat) and therefore not forgeable by a co-resident process",
+      "removing the assembly_path equality check was correct: it compared a value to itself, because the reader constructs that exact path",
+      "reading through /proc/<pid>/root/ is strictly stronger than a host-path read and degenerates to it in the same-namespace case"
+    ],
+    "mutations_that_survived_at_review_time": [
+      "_process_view replaced by `lambda pid, path: path`",
+      "_process_tree replaced by a direct-children-only walk"
+    ]
+  },
+  "remediations": [
+    {
+      "id": "MAJOR-1",
+      "defect": "terminate() keyed teardown and escalation on the group leader, so a reaped JVM left the Unity grandchild holding port 2004 and a leader-keyed wait reported a clean stop while the player ran",
+      "source_fix": "terminate() signals the group unconditionally, polls _process_group_members() to empty, SIGKILLs whatever outlives drain_seconds, and reports group-escalated / group-residual in the receipt; a residual group is folded into cleanup_failures",
+      "tests": [
+        "test_terminate_signals_the_group_even_after_the_leader_exited",
+        "test_terminate_escalates_to_sigkill_on_a_group_that_ignores_sigterm",
+        "test_terminate_really_kills_a_grandchild_that_outlives_the_leader",
+        "test_terminate_tolerates_an_empty_process_group",
+        "test_a_process_group_census_excludes_zombies"
+      ]
+    },
+    {
+      "id": "MAJOR-2",
+      "defect": "a source comment claimed the teardown receipt could not flip an accepted run to rejected, which was false",
+      "source_fix": "the false clause is replaced by an explicit statement that a failed teardown does reject, deliberately, because cleanup facts are fail-closed here",
+      "tests": ["test_a_failing_agent_disconnect_is_recorded_not_raised"]
+    },
+    {
+      "id": "MAJOR-3",
+      "defect": "the socket-owner scan and the identity reads are two independent /proc passes with nothing tying them to one process incarnation; an owner exiting between them could have its pid recycled and the binding would splice a dead process's socket inode onto a live process's identity",
+      "source_fix": "the reader captures /proc/<pid>/stat starttime before the identity reads, re-reads it afterwards, and re-reads the descriptor table via _process_socket_inodes(); a changed starttime or a socket the pid no longer holds rejects",
+      "tests": [
+        "test_the_observation_reader_rejects_a_recycled_owner_pid",
+        "test_the_observation_reader_rejects_an_owner_that_dropped_the_socket"
+      ]
+    },
+    {
+      "id": "MAJOR-4",
+      "defect": "the launch environment was the one gate input nothing pinned: LD_PRELOAD loads native code that is in no candidate digest and can forge the very collision and capture payloads the smoke measures, while every digest, the archive, and tree membership still pass",
+      "source_fix": "launch_environment() refuses LD_PRELOAD, LD_AUDIT, MONO_PATH, MONO_GAC_PREFIX, MONO_CONFIG and DOTNET_STARTUP_HOOKS outright, strips LD_LIBRARY_PATH (refusing it would make the gate unrunnable on CUDA hosts) and records the drop; the report carries the refused list, the stripped list, and a digest of the child environment",
+      "tests": [
+        "test_the_launch_environment_refuses_code_interposition",
+        "test_the_launch_environment_strips_the_loader_search_path"
+      ]
+    },
+    {
+      "id": "MAJOR-5",
+      "defect": "_process_view had zero coverage; replacing it with the identity function survived the whole suite, because in the same-namespace case both reads return identical bytes",
+      "source_fix": "none required; the hardening was already correct",
+      "tests": ["test_process_view_reads_through_the_observed_process_root"]
+    },
+    {
+      "id": "MAJOR-6",
+      "defect": "the port-clear regression spent twenty real seconds busy-spinning the grace window",
+      "source_fix": "the grace window is a flag (--port-grace-seconds) rather than a constant, so tests drive it",
+      "tests": ["test_the_port_clear_check_waits_out_a_draining_player"]
+    },
+    {
+      "id": "MAJOR-7",
+      "defect": "transitive descendant containment was untested; a direct-children-only process tree passed the entire suite and would then place the real listener (a grandchild) outside the launched tree",
+      "source_fix": "resolve_listener_binding additionally requires the observed tree to be rooted at launched_pid, so membership in an unrooted tree cannot prove containment",
+      "tests": [
+        "test_process_tree_reaches_transitive_descendants",
+        "test_the_binding_rejects_every_identity_mismatch (process_tree=() and process_tree=(4100,) cases)"
+      ]
+    }
+  ],
+  "additional_hardening_not_requested_by_review": [
+    {
+      "change": "wait_for_listener rejects a physics port bound to any non-loopback address",
+      "reason": "a wildcard bind exposes the port to the network for the life of the run; the gate previously recorded that address without objecting to it",
+      "tests": ["test_wait_for_listener_rejects_a_port_bound_to_the_wildcard_address"]
+    },
+    {
+      "change": "resolve_listener_binding fails closed on any ListenerObservation field that is neither compared nor named in UNCHECKED_OBSERVATION_FIELDS",
+      "reason": "a field added without deciding its fate reads as covered while contributing nothing",
+      "tests": ["test_every_observation_field_is_checked_or_declared_unchecked"]
+    },
+    {
+      "change": "run_smoke forces status=rejected and drops accepted_shot when an exception outside the handled tuple unwinds through the outer finally",
+      "reason": "such a run would otherwise publish the last successful phase's status, handing a downstream gate an accepted receipt for a run that raised"
+    },
+    {
+      "change": "--listener-only writes to listener-diagnostic.json, not the designated smoke report path",
+      "reason": "sharing the marker path let a diagnostic displace a real accepted receipt and exit 0, which any step keying on exit status alone reads as a passed smoke"
+    },
+    {
+      "change": "the agent read timeout is its own flag (--agent-timeout-seconds) instead of a function of --listener-deadline-seconds",
+      "reason": "raising the listener budget silently applied the same large read timeout to every later gameplay read"
+    }
+  ],
+  "self_reverted": {
+    "change": "counting FileNotFoundError from /proc/<pid>/fd readlink as a blind spot",
+    "why_reverted": "Path.iterdir() holds its own descriptor, which is closed by the time the readlink loop runs, so every process on the host including this one was marked unreadable and the census became noise. A co-owner closing a dup here stays invisible, but that is the same residual already recorded on require_full_attribution and it cannot be separated from ordinary fd churn through /proc.",
+    "evidence": "test_socket_owner_scan_reports_owners_and_blind_spots failed with the test process itself in the blind-spot set"
+  },
+  "verification": {
+    "focused_suite": {
+      "command": "python -W error::ResourceWarning -m unittest tests.test_smoke_physics_capture",
+      "tests": 74,
+      "result": "OK"
+    },
+    "adjacent_suites": {
+      "command": "python -W error::ResourceWarning -m unittest tests.test_build_physics_player tests.test_package_physics_player tests.test_physics_capture_contract tests.test_verify_physics_player tests.test_verify_physics_capture_docs",
+      "tests": 60,
+      "result": "OK"
+    },
+    "mutation_check": {
+      "script": "mutation_check.py",
+      "baseline_source_sha256": "f61ccfa52ef5bed5e156e8480f32f407c13286276df00d8ec676e9671fc84978",
+      "restored_source_sha256": "f61ccfa52ef5bed5e156e8480f32f407c13286276df00d8ec676e9671fc84978",
+      "restored_identical": true,
+      "results": [
+        {"mutation": "process-tree-direct-children-only", "closes": "MAJOR 7", "suite": "red"},
+        {"mutation": "process-view-uses-host-path", "closes": "MAJOR 5", "suite": "red"},
+        {"mutation": "terminate-guarded-on-the-leader", "closes": "MAJOR 1", "suite": "red"},
+        {"mutation": "terminate-never-escalates", "closes": "MAJOR 1", "suite": "red"},
+        {"mutation": "launch-environment-passes-everything-through", "closes": "MAJOR 4", "suite": "red"},
+        {"mutation": "no-owner-reconfirmation", "closes": "MAJOR 3", "suite": "red"},
+        {"mutation": "wildcard-bind-accepted", "closes": "loopback enforcement", "suite": "red"},
+        {"mutation": "unchecked-observation-fields-tolerated", "closes": "field-completeness guard", "suite": "red"}
+      ],
+      "note": "the two mutations that survived at review time (_process_view, _process_tree) are now red"
+    }
+  },
+  "source_identity": {
+    "branch": "physics-unity-2019.4",
+    "head_before_commit": "fc3e34c5f6115b55751874df21c3a9286bd09a5e",
+    "tree_before_commit": "8893df9ed6f455b984fefb096c95a906ce752e12",
+    "scripts/smoke_physics_capture.py.sha256": "f61ccfa52ef5bed5e156e8480f32f407c13286276df00d8ec676e9671fc84978",
+    "tests/test_smoke_physics_capture.py.sha256": "d79e5a0bae96736a8f06fc0bb154e7d95470ef715445973287e0a26f10223823"
+  },
+  "protected_state": {
+    "staged_archive_sha256": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+    "staged_files_mtime": "2026-08-06 23:55",
+    "staged_pin_untouched": true,
+    "tracked_dirty_paths": [
+      ".claude/project-docs/README.md",
+      "scripts/smoke_physics_capture.py",
+      "tests/test_smoke_physics_capture.py"
+    ],
+    "readme_is_pre_existing_and_not_staged": true
+  }
+}

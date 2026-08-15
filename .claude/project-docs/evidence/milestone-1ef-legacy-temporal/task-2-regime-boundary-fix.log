@@ -1,0 +1,15 @@
+TODO 2 gate remediation: reject target-derived motion regimes at the training-input boundary.
+
+RED
+The independent gate reproduced that TemporalWindowCollator silently dropped
+provenance.motion_regime instead of rejecting future-target supervision.
+
+GREEN
+Added a typed ContractValueError guard and a focused regression test.
+python -m unittest -q tests.test_world_model_grid_data tests.test_world_model_model tests.test_world_model_training
+OBSERVABLE 122 tests passed.
+Repeated focused invocation: 122 tests passed.
+Regression: python -m unittest -q tests.test_world_model_model tests.test_world_model_training tests.test_world_model_data
+OBSERVABLE 218 tests passed.
+Fresh process probe: ContractValueError invalid motion_regime: target-derived motion regimes must not enter training batches.
+py_compile: exit 0.

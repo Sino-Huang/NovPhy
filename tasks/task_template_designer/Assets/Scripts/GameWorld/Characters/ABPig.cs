@@ -25,6 +25,7 @@ public class ABPig : ABCharacter {
 	public override void Die(bool withEffect = true)
 	{
 		ScoreHud.Instance.SpawnScorePoint(5000, transform.position);
+		PhysicalSnapshotRuntime.RecordPigRemovedCallback(PhysicalSnapshotRuntime.EntityIdForCallback(gameObject));
 		ABGameWorld.Instance.KillPig(this);
 
 		base.Die(withEffect);

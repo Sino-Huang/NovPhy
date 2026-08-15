@@ -1,0 +1,112 @@
+{
+  "finding_id": "sidecar-array-order-violates-the-frozen-contract",
+  "wave": "runtime-repin-gate-20260810",
+  "session": 3,
+  "date": "2026-08-11",
+  "severity": "blocker",
+  "status": "recorded, deliberately NOT fixed — outside this wave's authorized surface",
+  "discovered_by": "code-reviewer, second pass on the session-3 gameplay-wiring diff",
+  "independently_confirmed": true,
+  "confirmation_method": "structural read of the full emitter chain, plus an executable probe run against the production parser",
+  "introduced_by_this_diff": false,
+  "class": "producer_violates_its_own_frozen_contract",
+
+  "summary": "The Unity emitter writes raw_contacts and support_edges in an order the frozen physics_capture_v1 contract rejects. scripts/physics_capture_parsing.py requires each array globally sorted by a key that excludes fixed_step; the emitter sorts raw_contacts only within each fixed step and then concatenates steps, and appends support_edges in contact-pair order rather than supporter order. This is pre-existing and untouched by the session-3 diff.",
+
+  "why_it_has_never_been_observed": "No smoke run in this wave or the previous one has ever passed require_collision, so no run has ever reached scripts/smoke_physics_capture.py:1151 (phase validate-artifact), which is the only place the smoke invokes the Python parser. The session-3 gameplay wiring is what would make a run reach that phase for the first time.",
+
+  "F1": {
+    "title": "raw_contacts is emitted cumulative and step-major, not globally sorted",
+    "severity": "blocker",
+    "certainty": "certain — reproduced against the production parser",
+    "contract": {
+      "site": "scripts/physics_capture_parsing.py:281",
+      "requires": "raw_contacts sorted by (entity_a_id, entity_b_id, collider_a_id, collider_b_id, point.x, point.y, contact_id)",
+      "note": "fixed_step is not in the key, so a step-major array cannot satisfy it once two steps carry contacts that interleave under this key"
+    },
+    "emitter_chain": [
+      "PhysicsShotRecorder.RecordContacts:406-435 — builds stepContacts, sorts with CompareContacts:751-763 (the parser's key minus contact_id), then rawContacts.AddRange(stepContacts)",
+      "rawContacts is never cleared — no reset exists anywhere in PhysicsShotRecorder.cs",
+      "PhysicalSnapshotRuntime.FixedUpdate:104-112 calls RecordUnityContacts every fixed step over FindObjectsOfType<Collider2D>(), so every resting pair in the scene contributes contacts at every step",
+      "PhysicsShotRecorder.CreateFinalizedSnapshot:642 passes the cumulative rawContacts field",
+      "PhysicalShotRecorderSnapshot ctor:316-319 copies the whole list",
+      "PhysicsCaptureProtocol.BuildStateJson:141 writes recorder.RawContacts; BuildContactsJson:148-155 iterates in list order and never sorts"
+    ],
+    "consequence": "Any shot lasting more than one fixed step with more than one contacting pair emits a violating array. On the level the smoke plays — a bird plus a block tower — that is every shot, from the first step.",
+    "failure_site": {
+      "phase": "validate-artifact",
+      "command_site": "scripts/smoke_physics_capture.py:1151 → scripts/rollout_artifacts.validate_physics_shot_artifact → scripts/physics_artifact_validation.py:196 load_physics_capture → parse_physics_sidecars → _parse_state",
+      "expected_error": "deterministic_order at physics_state.jsonl:1: raw_contacts",
+      "note": "This corrects the reviewer's estimate of phase capture-physics-rollout. The real site is one phase later, which is worse: require_collision at :1131 has already passed, so the single non-retryable run is fully consumed before the failure appears."
+    },
+    "not_mitigated_by_max_frames": "capture_physics_rollout is called with max_frames=1, so only one state record is persisted — but that one record still carries every contact from every fixed step of the shot, because the snapshot is the cumulative finalized batch."
+  },
+
+  "F2": {
+    "title": "support_edges is appended in contact-pair order, not supporter order",
+    "severity": "major",
+    "certainty": "certain that the emitted order is not guaranteed; whether a given scene violates it depends on geometry",
+    "contract": {
+      "site": "scripts/physics_capture_parsing.py:283",
+      "requires": "support_edges sorted by (supporter_id, supported_id, support_id)"
+    },
+    "emitter_chain": [
+      "PhysicsShotRecorder.UpdateSupport:651-683 appends each edge in the iteration order of stepContacts, i.e. ordered by the contact's (EntityIdA, EntityIdB, …)",
+      "the edge's supporter_id is whichever body is lower in y (aBelowB at :673), which may be either member of the pair",
+      "an already-present pair is removed at :661 and re-appended, moving it to the end",
+      "supportEdges is pruned to the current step at :683, so unlike raw_contacts it is not cumulative"
+    ],
+    "consequence": "The emitted order coincides with the contract only when the geometry happens to make supporter order agree with pair order. It is not an invariant. A pair whose upper member is entity A, sampled before a higher-numbered pair whose lower member is entity A, produces a violating array.",
+    "expected_error": "deterministic_order at physics_state.jsonl:1: support_edges"
+  },
+
+  "probe": {
+    "script": ".claude/project-docs/evidence/runtime-repin-gate-20260810/probe_raw_contact_order.py",
+    "output": ".claude/project-docs/evidence/runtime-repin-gate-20260810/probe-raw-contact-order.json",
+    "parser_entry_point": "scripts.physics_capture_parsing._parse_state",
+    "design_note": "The probe does not re-implement the ordering predicate. It reconstructs the emitter's output shape and lets the production parser return the verdict.",
+    "cases": {
+      "single_step_only": "parsed — a single fixed step in isolation is always correctly ordered",
+      "emitter_shaped_cumulative_3_steps": "REJECTED — deterministic_order at physics_state.jsonl:1: raw_contacts",
+      "globally_sorted_same_set": "parsed — the identical contact set, reordered, is accepted",
+      "f2_emitter_shaped_support_edges": "REJECTED — deterministic_order at physics_state.jsonl:1: support_edges",
+      "f2_globally_sorted_support_edges": "parsed"
+    },
+    "verdicts": {"f1": "f1_confirmed", "f2": "f2_confirmed"},
+    "false_start_recorded": "The first F2 attempt used an invented support_id and both its cases died on invalid_value … support_id before the ordering check ran, proving nothing. _parse_support:260 requires support_id == f\"support:{supporter}->{supported}\"; the probe now derives it."
+  },
+
+  "why_not_fixed_here": {
+    "authorized_surface": "The session-3 authorization covers exactly two gameplay callbacks (ABBirdBlack.OnCollisionEnter2D, ABBlock.OnCollisionEnter2D) and the recorder's empty-evidence policy.",
+    "stop_condition_invoked": "The brief states verbatim: 'If the fix turns out to require changing the event model, the capture schema, the frozen contract, or anything the Python consumer reads — STOP, record the finding, and report back instead of improvising.'",
+    "why_it_applies": "The order of raw_contacts and support_edges is read and validated by the Python consumer. Changing the order the emitter writes changes exactly that. Whether or not the change is benign, deciding it is not this wave's call.",
+    "explicitly_not_a_case_of_weakening_the_contract": "The natural fix is to sort at the emitter so the producer conforms to the already-frozen contract. That is the opposite of relaxing the parser to accept a bad payload. It remains out of scope on surface grounds, not on merit."
+  },
+
+  "candidate_fixes_for_the_next_wave": [
+    {
+      "option": "sort once at finalization",
+      "site": "PhysicsShotRecorder.CreateFinalizedSnapshot:639-644",
+      "shape": "sort the cumulative rawContacts by CompareContacts extended with ContactId, and supportEdges by (SupporterEntityId, SupportedEntityId, SupportId), before constructing the snapshot",
+      "cost": "one sort per shot; the per-step ordering and PointIndex assignment stay untouched, so contact_ids do not change",
+      "preferred": true
+    },
+    {
+      "option": "sort at the emitter",
+      "site": "PhysicsCaptureProtocol.BuildContactsJson / BuildSupportJson",
+      "note": "equivalent output, but puts ordering policy in the serializer rather than in the recorder that owns the invariant"
+    }
+  ],
+  "required_regression_tests_for_that_fix": [
+    "an EditMode fixture recording contacts for two pairs across three fixed steps, asserting the finalized snapshot's RawContacts is globally sorted by the parser's key",
+    "an EditMode fixture with the F2 geometry (a pair whose upper member is entity A, sampled before a higher-numbered pair whose lower member is entity A), asserting SupportEdges is sorted by supporter",
+    "a Python test feeding the emitter-shaped array through _parse_state and asserting it parses — probe_raw_contact_order.py is that test in executable form already"
+  ],
+
+  "gate_impact": {
+    "blocks_phase_6_smoke": true,
+    "blocks_phase_5_determinism": false,
+    "reason": "Phase 5 compares build digests and never invokes the Python parser, so it is independent of this finding and was completed.",
+    "verdict_consequence": "still_blocked — the smoke was deliberately not spent, because it would have been consumed into a known-failing invariant with no information gained beyond what this probe already establishes at zero cost."
+  }
+}

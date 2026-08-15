@@ -20,9 +20,17 @@ train_target="${TRAIN_TARGET_PER_BUCKET:-100}"
 dev_target="${DEV_TARGET_PER_BUCKET:-20}"
 test_target="${TEST_TARGET_PER_BUCKET:-0}"
 seed="${PARTITION_SEED:-novphy-rollout-dataset-v1}"
+expected_buckets="${EXPECTED_BUCKETS:-80}"
+level_type_prefix="${LEVEL_TYPE_PREFIX:-type010}"
 proc_root="${NOVPHY_PROC_ROOT:-/proc}"
 x11_tmp_root="${NOVPHY_X11_TMP_ROOT:-/tmp}"
 include_test=0
+train_only=0
+physics_capture="${PHYSICS_CAPTURE_V1:-}"
+physics_player_dir="${PHYSICS_PLAYER_DIR:-}"
+physics_player_archive="${PHYSICS_PLAYER_ARCHIVE:-}"
+physics_smoke_marker="${PHYSICS_SMOKE_MARKER:-}"
+show_help=0
 
 usage() {
   cat <<'EOF'
@@ -31,6 +39,8 @@ Collect the full NovPhy selected-split rollout dataset.
 This script inventories an existing output root, publishes a capped deterministic
 train/dev collection plan by default, starts Xvnc, then runs only the generated
 script. Pass --include-test to additionally select test levels.
+Pass --train-only to select just the train split, for a scoped inventory too small to
+fund a leakage-free dev split (mutually exclusive with --include-test).
 Failed levels are logged to PLAN_DIR/failed_levels.tsv; collection continues to
 later levels, then exits nonzero if any level failed.
 
@@ -52,10 +62,29 @@ Environment overrides:
   TEST_TARGET_PER_BUCKET
                     Episodes per normal/novel bucket for test, default 0; used only with --include-test
   PARTITION_SEED    Deterministic planner seed, default novphy-rollout-dataset-v1
+  EXPECTED_BUCKETS  Declared level-inventory bucket count, default 80 (the production
+                    inventory). Lower it only for a deliberately scoped inventory such
+                    as the single-level staged physics player; the default fails closed
+                    on a truncated production inventory.
+  LEVEL_TYPE_PREFIX Level-type directory prefix to inventory, default type010 (the
+                    production naming). The staged physics player ships its level
+                    under type2.
   NOVPHY_ALLOW_NETWORK_LISTENERS=1
                      Required with WORKERS>1 after confirming the host is isolated/firewalled.
   XVNC_LOG          Xvnc log path, default /tmp/novphy_rollout_xvnc_${USER}_${DISPLAY_ID-without-colon}.log
   NOVPHY_YES=1      Skip the confirmation prompt
+  PHYSICS_CAPTURE_V1=1
+                    Opt into enriched physics_capture_v1 collection. Requires
+                    PHYSICS_PLAYER_DIR (containing player.tar and a smoke marker)
+                    or PHYSICS_PLAYER_ARCHIVE plus PHYSICS_SMOKE_MARKER, and a
+                    separate OUT_ROOT from the active cohort.
+  PHYSICS_PLAYER_DIR
+                    Explicit staged enriched-player directory; defaults to
+                    <dir>/player.tar and <dir>/physics_capture_v1_smoke.json
+  PHYSICS_PLAYER_ARCHIVE
+                    Explicit staged player archive when PHYSICS_PLAYER_DIR is unset
+  PHYSICS_SMOKE_MARKER
+                    Fresh successful physics_capture_v1 smoke JSON marker
 
 Example:
   source ~/cd_novphy && RESUME=1 OUT_ROOT=/absolute/path/to/existing/output/root NOVPHY_YES=1 scripts/collect_full_rollout_training_dataset.sh
@@ -68,9 +97,11 @@ while [[ "$#" -gt 0 ]]; do
     --include-test)
       include_test=1
       ;;
+    --train-only)
+      train_only=1
+      ;;
     --help|-h)
-      usage
-      exit 0
+      show_help=1
       ;;
     *)
       echo "Unknown launcher option: $1" >&2
@@ -79,6 +110,39 @@ while [[ "$#" -gt 0 ]]; do
   esac
   shift
 done
+
+if [[ "$train_only" == "1" && "$include_test" == "1" ]]; then
+  echo "--train-only and --include-test are mutually exclusive." >&2
+  exit 2
+fi
+
+if [[ "$show_help" == "1" ]]; then
+  if [[ "$physics_capture" == "1" ]]; then
+    if [[ -z "$out_root" ]]; then
+      echo "PHYSICS_CAPTURE_V1=1 requires OUT_ROOT, even for --help." >&2
+      exit 2
+    fi
+    active_root_canonical="$(realpath -m -- "$repo_root/data/novphy_rollouts_dataset_20260708_171531")"
+    help_root_canonical="$(realpath -m -- "$out_root")"
+    if [[ "$help_root_canonical" == "$active_root_canonical" ]]; then
+      echo "PHYSICS_CAPTURE_V1 cannot target the active cohort root: $help_root_canonical" >&2
+      exit 2
+    fi
+    if [[ -n "$physics_player_dir" ]]; then
+      [[ -z "$physics_player_archive" ]] || { echo "PHYSICS_PLAYER_DIR and PHYSICS_PLAYER_ARCHIVE are mutually exclusive." >&2; exit 2; }
+      [[ -f "$physics_player_dir/player.tar" ]] && physics_player_archive="$physics_player_dir/player.tar" || physics_player_archive="$physics_player_dir"
+      [[ -n "$physics_smoke_marker" ]] || physics_smoke_marker="$physics_player_dir/physics_capture_v1_smoke.json"
+    fi
+    if [[ -z "$physics_player_archive" || -z "$physics_smoke_marker" || ! -e "$physics_player_archive" || ! -f "$physics_smoke_marker" ]]; then
+      echo "PHYSICS_CAPTURE_V1 requires a staged player archive/directory and a valid smoke marker." >&2
+      exit 2
+    fi
+    echo "PHYSICS_CAPTURE_V1 staging is valid." >&2
+    exit 0
+  fi
+  usage
+  exit 0
+fi
 
 parse_port_base() {
   local name="$1" value="$2" normalized
@@ -166,6 +230,43 @@ if [[ "$workers" -gt 1 && "${NOVPHY_ALLOW_NETWORK_LISTENERS:-}" != "1" ]]; then
 fi
 
 out_root_canonical="$(realpath -m -- "$out_root")"
+
+physics_args=()
+if [[ "$physics_capture" == "1" ]]; then
+  active_root_canonical="$(realpath -m -- "$repo_root/data/novphy_rollouts_dataset_20260708_171531")"
+  if [[ "$out_root_canonical" == "$active_root_canonical" ]]; then
+    echo "PHYSICS_CAPTURE_V1 cannot target the active cohort root: $out_root_canonical" >&2
+    exit 2
+  fi
+  if [[ -n "$physics_player_dir" && -n "$physics_player_archive" ]]; then
+    echo "PHYSICS_PLAYER_DIR and PHYSICS_PLAYER_ARCHIVE are mutually exclusive." >&2
+    exit 2
+  fi
+  if [[ -n "$physics_player_dir" ]]; then
+    [[ -f "$physics_player_dir/player.tar" ]] && physics_player_archive="$physics_player_dir/player.tar" || physics_player_archive="$physics_player_dir"
+    [[ -n "$physics_smoke_marker" ]] || physics_smoke_marker="$physics_player_dir/physics_capture_v1_smoke.json"
+  fi
+  if [[ -z "$physics_player_archive" || -z "$physics_smoke_marker" || ! -e "$physics_player_archive" || ! -f "$physics_smoke_marker" ]]; then
+    echo "PHYSICS_CAPTURE_V1 requires PHYSICS_PLAYER_DIR or PHYSICS_PLAYER_ARCHIVE plus PHYSICS_SMOKE_MARKER." >&2
+    exit 2
+  fi
+  if ! physics_provenance_line="$(python - "$physics_player_archive" "$physics_smoke_marker" <<'PY'
+import sys
+from scripts.prepare_rollout_dataset import resolve_physics_capture_provenance
+provenance = resolve_physics_capture_provenance(__import__("pathlib").Path(sys.argv[1]), __import__("pathlib").Path(sys.argv[2]))
+print("\t".join((provenance.player_sha256, provenance.protocol_sha256, provenance.archive_sha256)))
+PY
+  )"; then
+    echo "PHYSICS_CAPTURE_V1 staged player smoke validation failed." >&2
+    exit 2
+  fi
+  IFS=$'\t' read -r physics_player_sha256 physics_protocol_sha256 physics_archive_sha256 <<<"$physics_provenance_line"
+  if [[ -n "$physics_player_dir" ]]; then
+    physics_args+=(--physics-capture-v1 --physics-player-dir "$physics_player_dir")
+  else
+    physics_args+=(--physics-capture-v1 --physics-player-archive "$physics_player_archive" --physics-smoke-marker "$physics_smoke_marker")
+  fi
+fi
 
 refuse_active_collector() {
   local proc_dir cmdline_path cmdline
@@ -267,10 +368,19 @@ plan_command=(
   --workers "$workers"
   --agent-port-base "$agent_port_base"
   --game-port-base "$game_port_base"
+  --expected-buckets "$expected_buckets"
+  --level-type-prefix "$level_type_prefix"
 )
+if [[ "$physics_capture" == "1" ]]; then
+  plan_command+=("${physics_args[@]}")
+fi
 selected_split_label="train/dev"
 collection_script="$plan_dir/collect_train_dev.sh"
-if [[ "$include_test" == "1" ]]; then
+if [[ "$train_only" == "1" ]]; then
+  plan_command+=(--train-only)
+  selected_split_label="train"
+  collection_script="$plan_dir/collect_train.sh"
+elif [[ "$include_test" == "1" ]]; then
   plan_command+=(--include-test --test-target "$test_target")
   selected_split_label="train/dev/test"
   collection_script="$plan_dir/collect_train_dev_test.sh"

@@ -26,7 +26,17 @@ from scripts.manual_agent import (  # noqa: E402
     prepare_for_play,
     start_engine,
 )
-from src.webui.bridge import PlayingMode  # noqa: E402
+from src.webui.bridge import PlayingMode, ScienceBirdsBridge  # noqa: E402
+from scripts.physics_rollout_contract import (  # noqa: E402
+    CaptureProvenance,
+    PhysicsPersistenceError,
+)
+from scripts.physics_rollout_persistence import (  # noqa: E402
+    install_physics_metadata,
+    persist_physics_rollout,
+    publish_physics_shot,
+)
+from scripts.rollout_validation_types import PhysicsArtifactError, PhysicsRecoveryResult  # noqa: E402
 
 
 DEFAULT_DESKTOP_GAME_CROP = (32, 64, 672, 544)
@@ -825,8 +835,10 @@ def _rollout_frame_evidence(frame_paths: list[Path], pre_shot_path: Path | None)
     }
 
 
-def validate_rollout_artifact(shot_dir: Path, *, gameplay_motion_threshold: int = 100) -> dict:
+def validate_rollout_artifact(shot_dir: Path, *, gameplay_motion_threshold: int = 100, capture_contract: str = "legacy_rgb_v1") -> dict:
     shot_dir = Path(shot_dir)
+    if capture_contract not in {"legacy_rgb_v1", "physics_capture_v1"}:
+        return _artifact_missing_result(shot_dir, f"unsupported capture contract: {capture_contract}")
     if not shot_dir.is_dir():
         return _artifact_missing_result(shot_dir, "missing shot directory")
     metadata_path = shot_dir / "metadata.json"
@@ -838,6 +850,14 @@ def validate_rollout_artifact(shot_dir: Path, *, gameplay_motion_threshold: int 
         return _artifact_missing_result(shot_dir, f"unreadable metadata.json: {exc}")
     if not isinstance(metadata, dict):
         return _artifact_missing_result(shot_dir, "metadata.json must contain an object")
+    if capture_contract == "physics_capture_v1":
+        try:
+            from scripts.rollout_artifacts import validate_physics_shot_artifact
+
+            summary = validate_physics_shot_artifact(shot_dir)
+        except (PhysicsArtifactError, OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
+            return {"accepted": False, "classification": "physics-capture-invalid", "invalid_reason": "physics_capture_invalid", "retryable": False, "retry_decision": "quarantine", "message": str(exc), "shot_dir": str(shot_dir)}
+        return {"accepted": True, "classification": "gameplay-valid", "invalid_reason": None, "retryable": False, "retry_decision": "accept", "message": "physics_capture_v1", "shot_dir": str(shot_dir), "physics_state_count": summary.state_count, "physics_event_count": summary.event_count}
 
     frames_dir_value = metadata.get("frames_dir")
     if not frames_dir_value:
@@ -919,6 +939,92 @@ def validate_rollout_artifact(shot_dir: Path, *, gameplay_motion_threshold: int 
     }
 
 
+def cleanup_incomplete_physics_attempts(output_dir: Path) -> tuple[str, ...]:
+    """Remove incomplete temporary enriched attempts before resuming."""
+    removed: list[str] = []
+    for path in sorted(output_dir.glob("shot_*.tmp")):
+        if path.is_symlink():
+            path.unlink()
+            removed.append(path.name)
+        elif path.is_dir():
+            shutil.rmtree(path)
+            removed.append(path.name)
+    return tuple(removed)
+
+
+def _quarantine_completed_physics_shot(output_dir: Path, shot_dir: Path) -> Path:
+    invalid_root = output_dir / "invalid_attempts"
+    invalid_root.mkdir(parents=True, exist_ok=True)
+    suffix = 1
+    target = invalid_root / f"{shot_dir.name}_recovered_{suffix:02d}"
+    while target.exists():
+        suffix += 1
+        target = invalid_root / f"{shot_dir.name}_recovered_{suffix:02d}"
+    shot_dir.replace(target)
+    return target
+
+
+def recover_physics_capture_attempts(output_dir: Path) -> PhysicsRecoveryResult:
+    removed = cleanup_incomplete_physics_attempts(output_dir)
+    quarantined: list[str] = []
+    from scripts.rollout_artifacts import validate_physics_shot_artifact
+
+    for shot_dir in sorted(output_dir.glob("shot_[0-9][0-9][0-9]")):
+        try:
+            validate_physics_shot_artifact(shot_dir)
+        except PhysicsArtifactError:
+            target = _quarantine_completed_physics_shot(output_dir, shot_dir)
+            quarantined.append(str(target.relative_to(output_dir)))
+    return PhysicsRecoveryResult(removed, tuple(quarantined))
+
+
+def capture_physics_rollout(
+    bridge,
+    output_dir: Path,
+    *,
+    target_fps: float,
+    duration_seconds: float,
+    max_frames: int | None = None,
+    state_header: dict | None = None,
+    clock=time.monotonic,
+    sleeper=time.sleep,
+    player_sha256: str | None = None,
+    protocol_sha256: str | None = None,
+    archive_sha256: str | None = None,
+) -> dict:
+    if not all(isinstance(value, str) for value in (player_sha256, protocol_sha256, archive_sha256)):
+        raise RolloutCollectionError("physics capture requires lowercase SHA-256 player, protocol, and archive provenance")
+    try:
+        return persist_physics_rollout(
+            bridge,
+            output_dir,
+            target_fps=target_fps,
+            duration_seconds=duration_seconds,
+            max_frames=max_frames,
+            state_header=state_header,
+            provenance=CaptureProvenance(player_sha256, protocol_sha256, archive_sha256),
+            clock=clock,
+            sleeper=sleeper,
+        )
+    except PhysicsPersistenceError as error:
+        raise RolloutCollectionError(str(error)) from error
+
+
+def _physics_contract_descriptor(player_sha256: str, protocol_sha256: str, archive_sha256: str) -> dict:
+    from world_model.data.types import PHYSICS_CAPTURE_V1
+
+    return {
+        "contract_name": PHYSICS_CAPTURE_V1.contract_name,
+        "contract_version": PHYSICS_CAPTURE_V1.contract_version,
+        "artifact_layout_version": PHYSICS_CAPTURE_V1.artifact_layout_version,
+        "player_sha256": player_sha256,
+        "protocol_sha256": protocol_sha256,
+        "archive_sha256": archive_sha256,
+        "declared_capabilities": list(PHYSICS_CAPTURE_V1.declared_capabilities),
+        "sidecar_paths": [{"relative_path": sidecar.relative_path, "capabilities": list(sidecar.capabilities)} for sidecar in PHYSICS_CAPTURE_V1.sidecar_paths],
+    }
+
+
 def _invalid_attempt_status(artifact_validation: dict, retryable_recovery_action: str) -> str:
     if artifact_validation.get("retryable") and retryable_recovery_action == "fresh_engine_retry":
         return "invalid_retryable"
@@ -995,7 +1101,8 @@ def _copy_invalid_attempt(shot_dir: Path, quarantined_path: Path) -> dict:
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     rewritten = _rewrite_quarantined_metadata(metadata, shot_dir, quarantined_path)
     _write_metadata(metadata_path, rewritten)
-    rewritten["artifact_validation"] = validate_rollout_artifact(quarantined_path)
+    contract = "physics_capture_v1" if rewritten.get("capture_contract") == "physics_capture_v1" else "legacy_rgb_v1"
+    rewritten["artifact_validation"] = validate_rollout_artifact(quarantined_path, capture_contract=contract)
     _write_metadata(metadata_path, rewritten)
     return rewritten
 
@@ -1108,9 +1215,12 @@ def _record_fresh_engine_attempt_metadata(
     *,
     attempt: int,
     slingshot_reference: dict[str, int] | None,
+    physics_capture_v1: bool,
 ) -> None:
     rollout["slingshot_reference"] = slingshot_reference
     rollout["fresh_engine_attempt"] = attempt
+    if physics_capture_v1 and rollout.get("accepted"):
+        return
     metadata_paths = [output_dir / rollout["name"] / "metadata.json", Path(rollout["metadata_path"])]
     for shot_metadata_path in dict.fromkeys(metadata_paths):
         if not shot_metadata_path.is_file():
@@ -1403,19 +1513,58 @@ def collect_rollouts(
     shoot_before_capture: bool = True,
     anchor_actions: bool = True,
     retry_attempt: int = 1,
+    fresh_engine_attempt: int | None = None,
     prior_invalid_attempts: list[dict] | None = None,
     retryable_recovery_action: str = "quarantine",
+    physics_capture_v1: bool = False,
+    physics_bridge=None,
+    physics_player_sha256: str | None = None,
+    physics_protocol_sha256: str | None = None,
+    physics_archive_sha256: str | None = None,
 ) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
+    if physics_capture_v1:
+        recover_physics_capture_attempts(output_dir)
+        capture_rollout = capture_physics_rollout
     prior_invalid_attempts = list(prior_invalid_attempts or [])
     if anchor_actions:
         actions = anchor_actions_to_current_slingshot(bridge, actions, frame_height)
     rollouts = []
     for index, action in enumerate(actions, start=start_index):
+        shot = action_to_shot(action, frame_height=frame_height)
+        final_shot_dir = output_dir / f"shot_{index:03d}"
+        shot_dir = output_dir / f"shot_{index:03d}.tmp" if physics_capture_v1 else final_shot_dir
+        if physics_capture_v1 and final_shot_dir.exists():
+            artifact_validation = validate_rollout_artifact(
+                final_shot_dir, capture_contract="physics_capture_v1"
+            )
+            if artifact_validation.get("accepted"):
+                metadata = json.loads((final_shot_dir / "metadata.json").read_text(encoding="utf-8"))
+                requested_provenance = {
+                    "player_sha256": physics_player_sha256,
+                    "protocol_sha256": physics_protocol_sha256,
+                    "archive_sha256": physics_archive_sha256,
+                }
+                if all(metadata.get(field) == value for field, value in requested_provenance.items()):
+                    metadata = dict(metadata)
+                    metadata["artifact_validation"] = artifact_validation
+                    metadata["accepted"] = True
+                    metadata.setdefault("attempt_status", "accepted")
+                    rollouts.append(
+                        _rollout_record_from_metadata(
+                            final_shot_dir,
+                            action=action,
+                            shot=shot,
+                            metadata=metadata,
+                            slingshot_reference=action.get("slingshot_reference"),
+                        )
+                    )
+                    continue
+                _quarantine_completed_physics_shot(output_dir, final_shot_dir)
+            else:
+                recover_physics_capture_attempts(output_dir)
         if reset_rollout is not None:
             reset_rollout(index, action)
-        shot = action_to_shot(action, frame_height=frame_height)
-        shot_dir = output_dir / f"shot_{index:03d}"
         if retry_attempt > 1 and shot_dir.exists():
             shutil.rmtree(shot_dir)
         shot_dir.mkdir(parents=True, exist_ok=True)
@@ -1463,6 +1612,13 @@ def collect_rollouts(
         pre_shot_sample = pre_shot_guard_result["pre_shot_sample"]
         pre_shot_guard = pre_shot_guard_result["pre_shot_guard"]
         def shoot_once():
+            if physics_capture_v1:
+                return bridge.shoot_and_record_ground_truth(
+                    shot["x"],
+                    shot["y"],
+                    tap_time=shot["tapTime"],
+                    release_time=shot["releaseTime"],
+                )
             return bridge.shoot(
                 shot["x"],
                 shot["y"],
@@ -1471,24 +1627,22 @@ def collect_rollouts(
                 release_time=shot["releaseTime"],
             )
 
-        capture_kwargs = {
-            "target_fps": target_fps,
-            "duration_seconds": duration_seconds,
-            "max_frames": max_frames,
-            "action": action,
-            "clock": clock,
-            "sleeper": sleeper,
-        }
-        if not shoot_before_capture:
+        capture_kwargs = {"target_fps": target_fps, "duration_seconds": duration_seconds, "max_frames": max_frames, "clock": clock, "sleeper": sleeper}
+        if physics_capture_v1:
+            capture_kwargs.update({"player_sha256": physics_player_sha256, "protocol_sha256": physics_protocol_sha256, "archive_sha256": physics_archive_sha256})
+        else:
+            capture_kwargs["action"] = action
+        effective_shoot_before_capture = shoot_before_capture or physics_capture_v1
+        if not effective_shoot_before_capture:
             capture_kwargs["shoot"] = shoot_once
-        if pre_shot_image is not None:
+        if not physics_capture_v1 and pre_shot_image is not None:
             capture_kwargs["pre_shot_image"] = pre_shot_image
-        if pre_shot_sample is not None:
+        if not physics_capture_v1 and pre_shot_sample is not None:
             capture_kwargs["pre_shot_sample"] = pre_shot_sample
         post_recovery_protocol_state = pre_shot_guard_result["post_recovery_protocol_state"]
         post_shoot_protocol_state = None
         response = None
-        if shoot_before_capture:
+        if effective_shoot_before_capture:
             response = shoot_once()
             post_shoot_protocol_state = _protocol_state_snapshot(bridge)
         else:
@@ -1499,7 +1653,8 @@ def collect_rollouts(
                 return result
 
             capture_kwargs["shoot"] = shoot_and_snapshot
-        metadata = capture_rollout(bridge, shot_dir, **capture_kwargs)
+        capture_bridge = physics_bridge if physics_capture_v1 and physics_bridge is not None else bridge
+        metadata = capture_rollout(capture_bridge, shot_dir, **capture_kwargs)
         if response is None:
             response = metadata.get("shoot_response")
         metadata["pre_shot_protocol_state"] = pre_shot_protocol_state
@@ -1553,8 +1708,11 @@ def collect_rollouts(
         slingshot_reference = action.get("slingshot_reference")
         if slingshot_reference is not None:
             metadata["slingshot_reference"] = slingshot_reference
-        _write_metadata(shot_dir / "metadata.json", metadata)
-        artifact_validation = validate_rollout_artifact(shot_dir)
+        if fresh_engine_attempt is not None:
+            metadata["fresh_engine_attempt"] = fresh_engine_attempt
+        if not physics_capture_v1:
+            _write_metadata(shot_dir / "metadata.json", metadata)
+        artifact_validation = validate_rollout_artifact(shot_dir, capture_contract="physics_capture_v1" if physics_capture_v1 else "legacy_rgb_v1")
         metadata = _finalize_attempt_metadata(
             output_dir=output_dir,
             shot_dir=shot_dir,
@@ -1565,7 +1723,37 @@ def collect_rollouts(
             retryable_recovery_action=retryable_recovery_action,
         )
         if metadata.get("accepted"):
-            _write_metadata(shot_dir / "metadata.json", metadata)
+            if physics_capture_v1:
+                metadata = _rewrite_quarantined_metadata(metadata, shot_dir, final_shot_dir)
+
+                def finalize_accepted_physics_shot(
+                    shot_descriptor: int,
+                    stable_shot_path: Path,
+                ) -> None:
+                    install_physics_metadata(shot_descriptor, metadata)
+                    final_validation = validate_rollout_artifact(
+                        stable_shot_path,
+                        capture_contract="physics_capture_v1",
+                    )
+                    if final_validation.get("accepted") is not True:
+                        raise RolloutCollectionError(
+                            "finalized physics shot failed validation before publication"
+                        )
+
+                try:
+                    publish_physics_shot(
+                        output_dir,
+                        shot_dir.name,
+                        final_shot_dir.name,
+                        finalize_accepted_physics_shot,
+                    )
+                except PhysicsPersistenceError as error:
+                    raise RolloutCollectionError(str(error)) from error
+                shot_dir = final_shot_dir
+            else:
+                _write_metadata(shot_dir / "metadata.json", metadata)
+        elif physics_capture_v1 and shot_dir.exists():
+            shutil.rmtree(shot_dir)
         rollouts.append(
             _rollout_record_from_metadata(
                 shot_dir,
@@ -1592,6 +1780,10 @@ def collect_rollouts(
         "accepted_rollouts": accepted_rollouts,
         "invalid_attempts": invalid_attempts,
     }
+    if physics_capture_v1:
+        if not all(isinstance(value, str) for value in (physics_player_sha256, physics_protocol_sha256, physics_archive_sha256)):
+            raise RolloutCollectionError("physics capture provenance is incomplete")
+        manifest.update({"capture_contract": _physics_contract_descriptor(physics_player_sha256, physics_protocol_sha256, physics_archive_sha256), "schema_version": "physics_capture_v1", "protocol_version": 1, "player_sha256": physics_player_sha256, "protocol_sha256": physics_protocol_sha256, "archive_sha256": physics_archive_sha256, "sidecar_paths": ["physics_state.jsonl", "physics_events.jsonl"], "physics_state_count": sum(int(item.get("frame_count", 0)) for item in accepted_rollouts), "physics_event_count": sum(int(item.get("physics_event_count", 0)) for item in accepted_rollouts)})
     manifest.update(write_action_logs(output_dir, rollouts))
     if write_manifest:
         (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -1632,6 +1824,12 @@ def collect_fresh_engine_rollouts(
     sleeper=time.sleep,
     shoot_before_capture: bool = True,
     anchor_actions: bool = True,
+    physics_capture_v1: bool = False,
+    physics_host: str = "127.0.0.1",
+    physics_port: int = 2004,
+    physics_player_sha256: str | None = None,
+    physics_protocol_sha256: str | None = None,
+    physics_archive_sha256: str | None = None,
 ) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     rollouts = []
@@ -1640,12 +1838,20 @@ def collect_fresh_engine_rollouts(
         prior_invalid_attempts: list[dict] = []
         for attempt in range(1, attempts_per_action + 1):
             slingshot_reference = None
+            engine_port_options = {}
+            if engine_agent_port is not None:
+                engine_port_options["agent_port"] = engine_agent_port
+            if engine_game_port is not None:
+                engine_port_options["game_port"] = engine_game_port
+            if physics_capture_v1:
+                engine_port_options["physics_port"] = physics_port
             try:
-                engine_process = start_engine_func(game_dir, headless, agent_port=engine_agent_port, game_port=engine_game_port)
+                engine_process = start_engine_func(game_dir, headless, **engine_port_options)
             except TypeError:
-                if engine_agent_port is not None or engine_game_port is not None:
+                if not physics_capture_v1:
                     raise
-                engine_process = start_engine_func(game_dir, headless)
+                engine_port_options.pop("physics_port")
+                engine_process = start_engine_func(game_dir, headless, **engine_port_options)
             attempt_label = f" for rollout {index}" if attempts_per_action == 1 else f" for rollout {index} attempt {attempt}/{attempts_per_action}"
             print(f"Started engine pid={engine_process.pid}{attempt_label}")
             if engine_settle_seconds > 0:
@@ -1689,8 +1895,14 @@ def collect_fresh_engine_rollouts(
                     shoot_before_capture=shoot_before_capture,
                     anchor_actions=anchor_actions,
                     retry_attempt=attempt,
+                    fresh_engine_attempt=attempt if physics_capture_v1 else None,
                     prior_invalid_attempts=prior_invalid_attempts,
                     retryable_recovery_action="fresh_engine_retry" if attempt < attempts_per_action else "fresh_engine_attempts_exhausted",
+                    physics_capture_v1=physics_capture_v1,
+                    physics_bridge=ScienceBirdsBridge(physics_host, physics_port, timeout=read_timeout) if physics_capture_v1 else None,
+                    physics_player_sha256=physics_player_sha256,
+                    physics_protocol_sha256=physics_protocol_sha256,
+                    physics_archive_sha256=physics_archive_sha256,
                 )
                 rollout = partial["rollouts"][0]
                 _record_fresh_engine_attempt_metadata(
@@ -1698,6 +1910,7 @@ def collect_fresh_engine_rollouts(
                     rollout,
                     attempt=attempt,
                     slingshot_reference=slingshot_reference,
+                    physics_capture_v1=physics_capture_v1,
                 )
 
                 rollouts.append(rollout)
@@ -1718,6 +1931,7 @@ def collect_fresh_engine_rollouts(
                         rollout,
                         attempt=attempt,
                         slingshot_reference=slingshot_reference,
+                        physics_capture_v1=physics_capture_v1,
                     )
                     rollouts.append(rollout)
                     prior_invalid_attempts.append(_invalid_attempt_reference(rollout))
@@ -1757,6 +1971,10 @@ def collect_fresh_engine_rollouts(
         "accepted_rollouts": accepted_rollouts,
         "invalid_attempts": invalid_attempts,
     }
+    if physics_capture_v1:
+        if not all(isinstance(value, str) for value in (physics_player_sha256, physics_protocol_sha256, physics_archive_sha256)):
+            raise RolloutCollectionError("physics capture provenance is incomplete")
+        manifest.update({"capture_contract": _physics_contract_descriptor(physics_player_sha256, physics_protocol_sha256, physics_archive_sha256), "schema_version": "physics_capture_v1", "protocol_version": 1, "player_sha256": physics_player_sha256, "protocol_sha256": physics_protocol_sha256, "archive_sha256": physics_archive_sha256, "sidecar_paths": ["physics_state.jsonl", "physics_events.jsonl"], "physics_state_count": sum(int(item.get("frame_count", 0)) for item in accepted_rollouts), "physics_event_count": sum(int(item.get("physics_event_count", 0)) for item in accepted_rollouts)})
     if ui_level is not None:
         manifest["ui_level"] = ui_level
     exhausted_attempts = [attempt for attempt in invalid_attempts if attempt.get("attempt_status") == "invalid_exhausted"]
@@ -1791,6 +2009,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--frame-height", type=int, default=480)
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=2004)
+    parser.add_argument("--physics-host", default="127.0.0.1")
+    parser.add_argument("--physics-port", type=int, default=2005)
     parser.add_argument("--game-dir", type=Path, default=ROOT / "sciencebirdsgames" / "Linux")
     parser.add_argument("--engine-agent-port", type=int)
     parser.add_argument("--engine-game-port", type=int)
@@ -1807,6 +2027,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--actions-from-log", type=Path, help="Replay exact actions loaded from a previous action_log.json")
     parser.add_argument("--bidirectional-launches", action="store_true", help="Alternate generated drag-release horizontal signs")
     parser.add_argument("--capture-source", choices=("protocol", "desktop"), default="protocol")
+    parser.add_argument("--physics-capture-v1", action="store_true", help="Persist synchronized request-70 physics sidecars")
+    parser.add_argument("--physics-player-sha256")
+    parser.add_argument("--physics-protocol-sha256")
+    parser.add_argument("--physics-archive-sha256")
     parser.add_argument("--fresh-engine-per-rollout", action="store_true")
     parser.add_argument("--ui-level", type=int, help="Visible level number to enter with xdotool for each fresh rollout")
     parser.add_argument("--ui-settle-seconds", type=float, default=5.0)
@@ -1824,7 +2048,14 @@ def connect_or_start_engine(args) -> tuple[object, object | None]:
         engine_agent_port = getattr(args, "engine_agent_port", None)
         engine_game_port = getattr(args, "engine_game_port", None)
         try:
-            engine_process = start_engine(game_dir, args.game_headless, agent_port=engine_agent_port, game_port=engine_game_port)
+            engine_port_options = {}
+            if engine_agent_port is not None:
+                engine_port_options["agent_port"] = engine_agent_port
+            if engine_game_port is not None:
+                engine_port_options["game_port"] = engine_game_port
+            if getattr(args, "physics_capture_v1", False):
+                engine_port_options["physics_port"] = getattr(args, "physics_port", None)
+            engine_process = start_engine(game_dir, args.game_headless, **engine_port_options)
         except (OSError, FileNotFoundError) as exc:
             message = (
                 f"Could not connect to Science Birds at {args.host}:{args.port}, and could not start the local engine.\n"
@@ -1897,6 +2128,12 @@ def main() -> None:
         raise SystemExit(2) from None
 
     capture_rollout = capture_desktop_rollout if args.capture_source == "desktop" else capture_pixel_rollout
+    physics_capture_v1 = bool(args.physics_capture_v1)
+    if physics_capture_v1:
+        capture_rollout = capture_physics_rollout
+        if not all((args.physics_player_sha256, args.physics_protocol_sha256, args.physics_archive_sha256)):
+            print("--physics-capture-v1 requires all three physics SHA-256 provenance options", file=sys.stderr)
+            raise SystemExit(2)
     pre_shot_grabber = None
     if args.capture_source == "desktop":
         from PIL import ImageGrab
@@ -1919,6 +2156,8 @@ def main() -> None:
             game_dir=args.game_dir,
             host=args.host,
             port=args.port,
+            physics_host=args.physics_host,
+            physics_port=args.physics_port,
             agent_id=args.agent_id,
             speed=args.speed,
             connect_timeout=args.connect_timeout,
@@ -1938,14 +2177,24 @@ def main() -> None:
             engine_game_port=args.engine_game_port,
             capture_rollout=capture_rollout,
             pre_shot_grabber=pre_shot_grabber,
-            shoot_before_capture=args.capture_source != "desktop",
+            shoot_before_capture=physics_capture_v1 or args.capture_source != "desktop",
             anchor_actions=not actions_from_log,
+            physics_capture_v1=physics_capture_v1,
+            physics_player_sha256=args.physics_player_sha256,
+            physics_protocol_sha256=args.physics_protocol_sha256,
+            physics_archive_sha256=args.physics_archive_sha256,
         )
         print(json.dumps({"manifest": str(args.output_dir / "manifest.json"), "rollout_count": manifest["rollout_count"]}, indent=2))
         return
 
     if args.start_engine:
-        engine_process = start_engine(args.game_dir, args.game_headless, agent_port=args.engine_agent_port, game_port=args.engine_game_port)
+        engine_process = start_engine(
+            args.game_dir,
+            args.game_headless,
+            agent_port=args.engine_agent_port,
+            game_port=args.engine_game_port,
+            physics_port=args.physics_port if physics_capture_v1 else None,
+        )
         print(f"Started engine pid={engine_process.pid}")
         try:
             bridge = connect_with_retry(args.host, args.port, timeout=args.read_timeout, deadline_seconds=args.connect_timeout)
@@ -1969,8 +2218,13 @@ def main() -> None:
             fast=not args.safe,
             capture_rollout=capture_rollout,
             pre_shot_grabber=pre_shot_grabber,
-            shoot_before_capture=args.capture_source != "desktop",
+            shoot_before_capture=physics_capture_v1 or args.capture_source != "desktop",
             anchor_actions=not actions_from_log,
+            physics_capture_v1=physics_capture_v1,
+            physics_bridge=ScienceBirdsBridge(args.physics_host, args.physics_port, timeout=args.read_timeout) if physics_capture_v1 else None,
+            physics_player_sha256=args.physics_player_sha256,
+            physics_protocol_sha256=args.physics_protocol_sha256,
+            physics_archive_sha256=args.physics_archive_sha256,
         )
         print(json.dumps({"manifest": str(args.output_dir / "manifest.json"), "rollout_count": manifest["rollout_count"]}, indent=2))
     finally:

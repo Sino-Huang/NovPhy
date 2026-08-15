@@ -1,0 +1,47 @@
+{
+  "wave": "runtime-repin-gate-20260810",
+  "phase": "phase-5-precondition-lock",
+  "captured_at_local": "2026-08-11T15:12+10:00",
+  "authority": "read with absolute /bin and /usr/bin paths; shell aliases shadow ps, df and ls on this host",
+  "source_identity": {
+    "worktree": "/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4",
+    "branch": "physics-unity-2019.4",
+    "head": "7f1e8727782c985370a4c1b482292a20e6787918",
+    "note": "the wave's own edits are still uncommitted at this point; scripts/build_physics_player.sh delegates to package_physics_player.py, whose git_revision gate refuses to package while tracked product source differs from HEAD, so the commit must land before either build"
+  },
+  "protected_roots": {
+    "sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz": {
+      "sha256": "429cac1d748bed417b917d2838dc203d090668977dc8e56f5bac9a80ea95f2de",
+      "bytes": 39794535,
+      "role": "staged pin as of 2026-08-06; overwritten only after a passing full smoke, per the wave's conditional authorization"
+    },
+    "sciencebirdsgames/physics-v1/archive.sha256": {"bytes": 107},
+    "sciencebirdsgames/physics-v1/unity-build.log": {"bytes": 84763},
+    "/mnt/array/sukaih/Project/NovPhy/sciencebirdsgames/Linux": {
+      "role": "production player; build_physics_player.sh line 17 refuses to write here",
+      "game_playing_interface.jar_sha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a",
+      "config.xml_sha256": "49756501c2d13bb6d7277000ef18e309a99b17bb36c23a0f4e6eccab7ccea25b"
+    }
+  },
+  "editor_input": {
+    "path": "/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity",
+    "sha256": "32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150",
+    "matches_pin_in_build_script_line_16": true
+  },
+  "compat_libraries_present": [
+    "/tmp/opencode/unity-2019.4-libssl1.1/root/usr/lib/x86_64-linux-gnu",
+    "/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib/x86_64-linux-gnu",
+    "/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib"
+  ],
+  "process_and_port_state": {
+    "port_2004": "free — no listener",
+    "unity_or_player_or_java_processes": "none",
+    "note": "an earlier wedged EditMode harness and its orphaned UnityPackageManager daemon were terminated before this lock was taken; see finding-editmode-harness-deadlock.json"
+  },
+  "capacity": {"/mnt/array": "14T available", "/": "1.3T available"},
+  "verified_before_this_lock": {
+    "focused_python_suite": "python3 -m unittest tests.test_smoke_physics_capture -> 75 tests, OK",
+    "mutation_harness": "mutation_check.py -> 8/8 RED, source restored byte-identically (2f6b25e08130cce359d66c0db0616633c3b7a48ef8486ce4c86dc315c7c9f144)",
+    "editmode_red_green": "collision-payload-redgreen.json -> red_then_green"
+  }
+}

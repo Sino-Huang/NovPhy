@@ -1,0 +1,162 @@
+# Milestone 0a fixture acceptance — command log
+
+All commands run from the worktree root
+`/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4`
+(branch `physics-unity-2019.4`, base HEAD `5a8c66737ce6158d58f2ff1fd692d5e67701fa5f`).
+Complete captured outputs: `/tmp/novphy-m0a-evidence/*.log` (ephemeral).
+
+## Baseline inventory (pre-implementation; not acceptance of M0a semantics)
+
+```
+python -m unittest -v tests.test_physics_label_derivation
+# exit 0 — Ran 32 tests, OK (pre-repin scaffolding suite, inventory only)
+```
+
+## Final verification (post-implementation)
+
+```
+python -m unittest -v tests.test_physics_macro_labels
+# exit 0 — Ran 66 tests, OK                       (log: /tmp/novphy-m0a-evidence/01-focused.log)
+
+python -m unittest -v tests.test_physics_capture_contract tests.test_world_model_data
+# exit 0 — Ran 129 tests, OK                      (log: /tmp/novphy-m0a-evidence/02-adjacent.log)
+
+python -m unittest -v tests.test_physics_label_derivation
+# exit 0 — Ran 32 tests, OK (legacy suite unchanged)  (log: /tmp/novphy-m0a-evidence/03-legacy.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a --json
+# exit 0 — shots_total 9, shots_ok 9, shots_failed 0  (log: /tmp/novphy-m0a-evidence/04-cli-a.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-b --json
+# exit 0 — shots_total 9, shots_ok 9, shots_failed 0  (log: /tmp/novphy-m0a-evidence/05-cli-b.log)
+
+diff -r /tmp/novphy-m0a-a /tmp/novphy-m0a-b
+# exit 0 — no differences                           (log: /tmp/novphy-m0a-evidence/06-byte-compare.log)
+
+# per-file sha256 comparison across both trees: 9 files each, identical digests
+# (see canonical-bytes.json)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a --validate-only --json
+# exit 0 — mode validate, failures []             (log: /tmp/novphy-m0a-evidence/07-validate-a.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-b --validate-only --json
+# exit 0 — mode validate, failures []             (log: /tmp/novphy-m0a-evidence/08-validate-b.log)
+
+git status --porcelain -- docs/data_contracts/physics_capture_v1.schema.json docs/data_contracts/physics_capture_v1.md scripts/physics_capture_contract.py scripts/physics_capture_parsing.py scripts/physics_capture_types.py scripts/physics_capture_validation.py scripts/physics_label_derivation.py scripts/derive_physics_labels.py tests/fixtures/physics_capture_v1 tests/test_physics_label_derivation.py
+# exit 0 — empty output: frozen and legacy paths byte-unchanged  (log: /tmp/novphy-m0a-evidence/09-frozen-unchanged.log)
+```
+
+Note: the first attempt at the combined digest-listing subcommand inside step 6
+failed with a shell quoting error (exit 1, no repository or artifact impact); the
+byte-identity check was then executed as `diff -r` plus a per-file sha256
+comparison, both recorded above and in `canonical-bytes.json`.
+
+## Post-review fixes (critics/2026-08-13-critic-3.md blocking findings)
+
+After the strict-reader ordering and CLI write-boundary fixes:
+
+```
+python -m unittest tests.test_physics_macro_labels
+# exit 0 — Ran 72 tests, OK
+
+python -m unittest tests.test_physics_capture_contract tests.test_world_model_data
+# exit 0 — Ran 129 tests, OK
+
+python -m unittest tests.test_physics_label_derivation
+# exit 0 — Ran 32 tests, OK
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a2 --json
+# exit 0 — 9/9 shots ok                              (log: /tmp/novphy-m0a-evidence/10-cli-a2.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-b2 --json
+# exit 0 — 9/9 shots ok                              (log: /tmp/novphy-m0a-evidence/11-cli-b2.log)
+
+diff -r /tmp/novphy-m0a-a2 /tmp/novphy-m0a-b2
+# exit 0 — byte-identical                            (log: /tmp/novphy-m0a-evidence/12-byte-compare2.log)
+
+diff -r /tmp/novphy-m0a-a2 /tmp/novphy-m0a-a
+# exit 0 — label bytes unchanged by the review fixes
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a2 --validate-only --json
+# exit 0                                             (log: /tmp/novphy-m0a-evidence/13-validate-a2.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-b2 --validate-only --json
+# exit 0                                             (log: /tmp/novphy-m0a-evidence/14-validate-b2.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro
+# exit 2 — write mode requires --output-dir (fixture-only boundary)
+```
+
+## Second post-review fix (critics/2026-08-13-critic-4.md nested-cohort bypass)
+
+After the positive write-authorization fix (temporary-root allowlist +
+capture-tree containment scan):
+
+```
+python -m unittest tests.test_physics_macro_labels
+# exit 0 — Ran 75 tests, OK
+
+python -m unittest tests.test_physics_capture_contract tests.test_world_model_data
+# exit 0 — Ran 129 tests, OK
+
+python -m unittest tests.test_physics_label_derivation
+# exit 0 — Ran 32 tests, OK
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a3 --json
+# exit 0 — 9/9 shots ok                              (log: /tmp/novphy-m0a-evidence/15-cli-a3.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-b3 --json
+# exit 0 — 9/9 shots ok                              (log: /tmp/novphy-m0a-evidence/16-cli-b3.log)
+
+diff -r /tmp/novphy-m0a-a3 /tmp/novphy-m0a-b3
+# exit 0 — byte-identical                            (log: /tmp/novphy-m0a-evidence/17-byte-compare3.log)
+
+diff -r /tmp/novphy-m0a-a3 /tmp/novphy-m0a-a
+# exit 0 — label bytes unchanged by both review fixes
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a3 --validate-only --json
+# exit 0                                             (log: /tmp/novphy-m0a-evidence/18-validate-a3.log)
+
+# nested-cohort bypass probe: --output-dir <tmp>/fake_cohort/macro-label-mirror with
+# sidecars staged only at <tmp>/fake_cohort/train/episode_001/shot_001/
+# exit 2 — refusing to write macro labels: destination tree contains physics capture records
+
+# outside-temporary-root probe: --output-dir /nonexistent-novphy-root/out
+# exit 2 — write destination must be the system temporary directory or a descendant of it
+```
+
+## Third post-review fix (critics/2026-08-13-critic-5.md depth-bound removal)
+
+After removing the scan depth bound for the destination's own ancestry:
+
+```
+python -m unittest tests.test_physics_macro_labels
+# exit 0 — Ran 76 tests, OK
+
+python -m unittest tests.test_physics_capture_contract tests.test_world_model_data
+# exit 0 — Ran 129 tests, OK
+
+python -m unittest tests.test_physics_label_derivation
+# exit 0 — Ran 32 tests, OK
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a4 --json
+# exit 0 — 9/9 shots ok                              (log: /tmp/novphy-m0a-evidence/19-cli-a4.log)
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-b4 --json
+# exit 0 — 9/9 shots ok                              (log: /tmp/novphy-m0a-evidence/20-cli-b4.log)
+
+diff -r /tmp/novphy-m0a-a4 /tmp/novphy-m0a-b4
+# exit 0 — byte-identical                            (log: /tmp/novphy-m0a-evidence/21-byte-compare4.log)
+
+diff -r /tmp/novphy-m0a-a4 /tmp/novphy-m0a-a
+# exit 0 — label bytes unchanged by all review fixes
+
+python scripts/derive_physics_macro_labels.py --target tests/fixtures/physics_capture_v1_macro --output-dir /tmp/novphy-m0a-a4 --validate-only --json
+# exit 0                                             (log: /tmp/novphy-m0a-evidence/22-validate-a4.log)
+
+# depth-4 nested-cohort probe: sidecars at <tmp>/real-cohort/region/train/episode_001/shot_001/,
+# --output-dir <tmp>/real-cohort/macro-label-mirror
+# exit 2 — refusing to write macro labels: destination tree contains physics capture records
+
+# timing sanity: full acceptance run completes in ordinary seconds (<1s wall)
+```

@@ -43,14 +43,16 @@ Every episode carries an immutable `CaptureContractDescriptor`: contract and
 layout versions, optional player/protocol provenance, declared capability
 names, and validated relative sidecar paths. Episodes without an explicit
 descriptor use `legacy_rgb_v1`. Explicit unknown contracts do not fall back to
-legacy behavior, and the reserved `physics_capture_v1` contract is rejected
-until a validating reader exists.
+legacy behavior. `physics_capture_v1` is accepted only through its validating
+reader and only when a caller explicitly selects that contract.
 
 Pass `required_capabilities` when building a catalog to negotiate supervision
 requirements. A capability absent from the selected contract fails closed
-before episode enumeration. Declared sidecar paths are provenance only in this
-pipeline: they are not opened, parsed, tensorized, or used by the dataset,
-curriculum, or ablation code.
+before episode enumeration. For `legacy_rgb_v1`, declared sidecar paths remain
+provenance only. A caller that selects `physics_capture_v1` can opt into its
+validating reader with `PhysicsSupervisionRequest`; it returns immutable
+frame-exact records and does not change the default RGB/action sample,
+curriculum, or ablation behavior.
 
 ## Sample Schema
 
@@ -138,7 +140,7 @@ Inspect completed train/dev data without creating a report under the rollout
 root:
 
 ```bash
-/home/sukai/miniconda3/bin/python -m world_model.data.inspect \
+python -m world_model.data.inspect \
   --root data/novphy_rollouts_dataset_20260708_171531 \
   --splits train dev \
   --json
@@ -170,8 +172,8 @@ disjointness separately for experimental split claims.
 ## Experimental Boundary
 
 This package supports temporal RGB/action experiments over validated snapshots.
-It does not read scene nodes, contacts, support relations, kinematics, macro
-events, symbolic predicates, or inferred physical labels. Those payload
-schemas, engine instrumentation, and validating readers are deferred to the
-separate physics-instrumentation plan. The existence of reserved capability
-names or sidecar paths is not evidence that such supervision is available.
+Its default path does not read scene nodes, contacts, support relations,
+kinematics, or macro events. The explicit `physics_capture_v1` reader is the
+exception: it exposes only schema-valid authoritative Unity-exported records
+from accepted enriched sidecars. It never retrofits labels to RGB-only episodes
+or infers physical labels from images.

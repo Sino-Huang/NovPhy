@@ -1,0 +1,37 @@
+{
+  "scope_receipt_version": "milestone_0a_scope_receipt_v1",
+  "date": "2026-08-13",
+  "session": "fixture-only Milestone 0a software implementation",
+  "not_performed": [
+    "no Unity editor or physics player launch",
+    "no rerun of the consumed accepted full smoke",
+    "no runtime publication or re-pin",
+    "no enriched-cohort collection",
+    "no label writes into any real cohort (CLI writes were restricted to /tmp output dirs and test temp dirs; the active-cohort refusal guard is preserved and test-pinned)",
+    "no real cohort health report and no training run",
+    "no mutation of the frozen physics_capture_v1 schema, event taxonomy, or sidecars",
+    "no mutation of legacy physics_derived_labels_v1 code or bytes",
+    "no mutation of protected rollout roots, the canonical Unity project, or unrelated untracked artifacts (.claude/, .omo/, sciencebirdsgames/physics-v1/ pre-existing untracked trees preserved)",
+    "no retroactive annotation of legacy RGB-only data",
+    "no oracle-gate, learned, or vision-derived values in physics_macro_labels_v1 (test-pinned vocabulary-exclusion walk over every emitted record)"
+  ],
+  "frozen_integrity_check": "git status --porcelain over the frozen and legacy paths returned empty (see commands.log step 9)",
+  "claims_not_made": [
+    "representative semantic acceptance (semantic_acceptance: pending_authorized_representative_shots)",
+    "physical-violation metrics",
+    "full oracle-symbol results",
+    "controller evidence",
+    "joint-alpha support"
+  ],
+  "write_footprint": [
+    "scripts/physics_macro_labels.py (new)",
+    "scripts/derive_physics_macro_labels.py (new)",
+    "docs/data_contracts/physics_macro_labels_v1.schema.json (new)",
+    "tests/fixtures/physics_capture_v1_macro/ (new, 9 shot dirs, 18 files)",
+    "tests/test_physics_macro_labels.py (new)",
+    "tests/test_world_model_data.py (extended: MacroLabelReaderTests)",
+    "world_model/data/supervision.py (extended: opt-in flag, fixed-step event bracketing)",
+    "world_model/data/__init__.py (extended: two symbol re-exports)",
+    ".claude/project-docs/evidence/milestone-0a-macro-outcome-labels/ (this evidence)"
+  ]
+}

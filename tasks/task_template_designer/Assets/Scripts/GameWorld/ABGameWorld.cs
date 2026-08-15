@@ -145,6 +145,7 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
         // If there are objects in the scene, use them to play
         if (blocksTransform.childCount > 0 || birdsTransform.childCount > 0)
         {
+            slingshotBaseTransform = GameObject.Find("slingshot_base").transform;
 
             foreach (Transform bird in birdsTransform)
                 AddBird(bird.GetComponent<ABBird>());
@@ -199,14 +200,15 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
                 }
 
                 DecodeLevel(currentLevel);
+                slingshotBaseTransform = GameObject.Find("slingshot_base").transform;
                 AdaptCameraWidthToLevel();
                 //UnityEngine.Debug.Log("Game level loaded!");
                 EvaluationHandler.Instance.RecordEvaluationScore("Level Loaded");
                 _levelTimesTried = 0;
 
-                slingshotBaseTransform = GameObject.Find("slingshot_base").transform;
             }
         }
+
     }
 
     public void DecodeLevel(ABLevel currentLevel)
@@ -601,6 +603,8 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
         }
         else
         { // Player lost the game
+            PhysicalSnapshotRuntime.RecordLevelFailCallback("no_playable_birds");
+            PhysicalSnapshotRuntime.FinalizeTerminalCallback();
             // avoid multiple invoking of the function adding multiple scores
             if (!BirdsScoreUpdated)
             {
@@ -646,6 +650,8 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
         }
         else
         { // Player won the game
+            PhysicalSnapshotRuntime.RecordLevelClearCallback(HUD.Instance.GetScore());
+            PhysicalSnapshotRuntime.FinalizeTerminalCallback();
 
             // avoid multiple invoking of the function adding multiple scores
             if (!BirdsScoreUpdated)
@@ -717,6 +723,7 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
 
         if (_birds.Count == 0)
         {
+            PhysicalSnapshotRuntime.RecordBirdExhaustionCallback();
             // Check if player lost the game
             if (!_isSimulation) {
                 Invoke("ShowLevelFailedBanner", _timeToResetLevel);

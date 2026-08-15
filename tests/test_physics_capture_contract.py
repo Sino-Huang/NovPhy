@@ -6,6 +6,7 @@ from pathlib import Path
 import tempfile
 from typing import TypeAlias
 import unittest
+from unittest.mock import patch
 
 from scripts.physics_capture_contract import (
     ContractErrorCode,
@@ -13,6 +14,7 @@ from scripts.physics_capture_contract import (
     load_physics_capture,
 )
 from scripts.physics_capture_types import EventType
+from scripts.physics_rollout_contract import MAX_TOTAL_BYTES
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -174,6 +176,14 @@ class PhysicsCaptureContractTests(unittest.TestCase):
         # When/Then: closed event payloads are parsed rather than passed through.
         self.assert_fixture_error(InvalidFixture(_read_jsonl("physics_state.jsonl"), events, ContractErrorCode.INVALID_EVENT))
 
+    def test_empty_collision_payload_is_rejected(self):
+        # Given: a collision record without its required contact evidence.
+        events = _read_jsonl("physics_events.jsonl")
+        events[1]["payload"] = {}
+
+        # When/Then: the consumer fails closed instead of accepting an evidence-free collision.
+        self.assert_fixture_error(InvalidFixture(_read_jsonl("physics_state.jsonl"), events, ContractErrorCode.INVALID_EVENT))
+
     def test_repeated_entity_lifecycle_event_is_rejected(self):
         # Given: a second destruction event for the same entity lifetime.
         events = _read_jsonl("physics_events.jsonl")
@@ -193,6 +203,20 @@ class PhysicsCaptureContractTests(unittest.TestCase):
 
         # When/Then: bounded capture cannot be accepted after overflowing bytes.
         self.assert_fixture_error(InvalidFixture(states, _read_jsonl("physics_events.jsonl"), ContractErrorCode.INVALID_VALUE))
+
+    def test_oversized_sidecar_is_rejected_before_whole_file_read(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            state_path = Path(temporary) / "physics_state.jsonl"
+            event_path = Path(temporary) / "physics_events.jsonl"
+            with state_path.open("wb") as state_file:
+                state_file.truncate(MAX_TOTAL_BYTES + 1)
+            event_path.touch()
+
+            with patch.object(Path, "read_text", side_effect=AssertionError("whole-file read attempted")):
+                with self.assertRaises(PhysicsContractError) as raised:
+                    load_physics_capture(state_path, event_path)
+
+        self.assertEqual(raised.exception.code, ContractErrorCode.INVALID_VALUE)
 
     def test_mutated_fixture_is_revalidated_without_stale_cache(self):
         # Given: a valid parse followed by a freshly copied malformed fixture.

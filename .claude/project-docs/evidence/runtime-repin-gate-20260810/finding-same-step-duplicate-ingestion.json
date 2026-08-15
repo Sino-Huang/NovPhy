@@ -1,0 +1,38 @@
+{
+  "finding_id": "same-step-duplicate-ingestion",
+  "wave": "runtime-repin-gate-20260810",
+  "session": 4,
+  "date": "2026-08-12",
+  "severity": "minor",
+  "status": "open — recorded for the next wave, deliberately not fixed",
+  "discovered_by": "implementer while making F3 exact-pair evidence resolve raw rows, and F7 retention",
+  "independently_confirmed_against_source": true,
+  "class": "redundant_ground_truth",
+  "certainty": "plausible — the mechanism is reachable whenever a collision callback and the fixed-step full sample are delivered within the same observed fixed step; Unity's fixed-step ordering relative to Clock.ObserveFixedStep decides whether that occurs, so it is not reproduced here",
+  "summary": "A collision callback partial ingest (RecordContacts with isFullStepSample=false) and the FixedUpdate full sample both add rows for the same collider pair at the same fixed step, and neither path dedupes against the other. Each batch assigns PointIndex independently from 0 within its own batch, so the same physical point can be emitted twice at one fixed step under different PointIndex and ContactId. F7 retention keeps both rows (they are inside the last-two-step window), F1 ordering sorts them deterministically by ContactId but does not remove them, and the collision event cites the callback rows while the sampler rows survive as extra raw_contacts.",
+  "mechanism": {
+    "ingest_site_a": "PhysicalSnapshotRuntime.RecordCollision(Collision2D) -> shotRecorder.RecordCollision(fixedStep, fixedTime, first, second, contacts, relativeSpeed) -> RecordContacts(fixedStep, fixedTime, evidence, false) — collision path, PointIndex assigned 0..k-1 within the callback batch",
+    "ingest_site_b": "PhysicalSnapshotRuntime.FixedUpdate -> shotRecorder.RecordUnityContacts -> RecordContacts(fixedStep, fixedTime, inputs, true) — full sample, PointIndex assigned 0..n-1 within the step batch",
+    "no_dedupe_across_batches": "RecordContacts dedupes only inside its own stepContacts batch (the exactKey test), then rawContacts.AddRange(stepContacts); nothing reconciles rows already present for the same (fixedStep, PairKey, point)",
+    "why_retention_does_not_help": "PruneRawContacts removes only rows older than fixedStep - 1; two duplicate rows at the same recent step both survive",
+    "why_f1_ordering_does_not_help": "CompareContactsWithContactId orders the two rows by ContactId but never removes either; identical rows (same point and same PointIndex by coincidence) serialize identically so the order is unobservable, but the redundant row is still carried"
+  },
+  "scope_reason": "This is redundant ground truth, not a schema violation: the parser accepts both rows (contact_id differs or the rows are byte-identical), the collision event remains evidence-bearing, and support derivation is unaffected. Closing it would mean changing ingest dedupe or PointIndex/ContactId assignment, which are inputs the F3 evidence resolution and the F1 finalized ordering just shipped — deciding that is not this wave's call.",
+  "candidate_fix": [
+    {
+      "option": "dedupe across batches",
+      "shape": "in RecordContacts, skip a stepContact row whose (fixedStep, PairKey, point) already exists in rawContacts before AddRange",
+      "cost": "a per-step lookup over rawContacts; contact ids of the retained row are unchanged, so no event evidence changes"
+    },
+    {
+      "option": "single ingest owner",
+      "shape": "have the collision path resolve-and-cite only (no ingest) and rely on the next full sample to carry the rows",
+      "cost": "contact ids for a step the sampler has not yet covered would be minted a step late; F3 resolution ordering would need re-verification"
+    }
+  ],
+  "required_regression": "an EditMode fixture that ingests the same collider pair's contacts at one fixed step through the collision path and again through a full sample, asserting one row per (step, pair, point) and that the collision event cites the canonical id set",
+  "gate_impact": {
+    "blocks_phase_6_smoke": false,
+    "reason": "The parser accepts the duplicate rows, require_collision validates the event payload, and support evidence resolves; the artifact is valid, just carrying redundant rows."
+  }
+}

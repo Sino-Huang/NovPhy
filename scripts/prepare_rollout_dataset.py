@@ -34,6 +34,16 @@ WORKER_PORT_STRIDE: Final = 10
 MAX_PORT: Final = 65535
 COLLECTION_SPLITS: Final = ("train", "dev", "test")
 DEFAULT_COLLECTION_SPLITS: Final = ("train", "dev")
+#: The production NovPhy level inventory is exactly 40 normal (novelty_level_0) plus
+#: 8 x 5 novel buckets.  A plan that discovers a different count has a truncated
+#: inventory, so the default is fail-closed; a caller with a deliberately scoped
+#: inventory must declare its bucket count explicitly.
+PRODUCTION_BUCKET_COUNT: Final = 80
+#: Production level types are named `type010101` .. `type010805`.
+PRODUCTION_LEVEL_TYPE_PREFIX: Final = "type010"
+PHYSICS_CAPTURE_CONTRACT: Final = "physics_capture_v1"
+PHYSICS_PLAYER_VERSION: Final = "2019.4.41f2-physics-v1"
+ACTIVE_COHORT_ROOT: Final = ROOT / "data" / "novphy_rollouts_dataset_20260708_171531"
 
 
 class JsonValue(TypedDict, total=False):
@@ -115,6 +125,68 @@ class WorkerSpec:
 
 
 @dataclass(frozen=True, slots=True)
+class PhysicsCaptureProvenance:
+    archive: Path
+    smoke_marker: Path
+    player_sha256: str
+    protocol_sha256: str
+    archive_sha256: str
+
+
+def _sha256_file(path: Path) -> str:
+    if path.is_dir():
+        digest = hashlib.sha256()
+        for child in sorted(item for item in path.rglob("*") if item.is_file() and item.name != "physics_capture_v1_smoke.json"):
+            digest.update(child.relative_to(path).as_posix().encode("utf-8"))
+            digest.update(b"\0")
+            with child.open("rb") as source:
+                for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                    digest.update(chunk)
+        return digest.hexdigest()
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _is_sha256(value: object) -> bool:
+    return isinstance(value, str) and len(value) == 64 and all(character in "0123456789abcdef" for character in value)
+
+
+def resolve_physics_capture_provenance(archive: Path, smoke_marker: Path) -> PhysicsCaptureProvenance:
+    if not archive.is_file() and not archive.is_dir():
+        raise ValueError(f"staged player archive is required: {archive}")
+    if not smoke_marker.is_file():
+        raise ValueError(f"physics smoke marker is required: {smoke_marker}")
+    archive_mtime = max((child.stat().st_mtime_ns for child in archive.rglob("*") if child.is_file() and child != smoke_marker), default=archive.stat().st_mtime_ns) if archive.is_dir() else archive.stat().st_mtime_ns
+    if smoke_marker.stat().st_mtime_ns < archive_mtime:
+        raise ValueError("physics smoke marker is stale relative to the staged player archive")
+    marker = _read_json(smoke_marker)
+    if marker is None:
+        raise ValueError("physics smoke marker must be a JSON object")
+    if marker.get("status") != "accepted":
+        raise ValueError("physics smoke marker must report status=accepted")
+    if marker.get("phase") != "complete":
+        raise ValueError("physics smoke marker must report phase=complete")
+    if marker.get("protected_unchanged") is not True:
+        raise ValueError("physics smoke marker must report protected_unchanged=true")
+    accepted_shot = marker.get("accepted_shot")
+    if not isinstance(accepted_shot, str) or not accepted_shot.strip():
+        raise ValueError("physics smoke marker must contain a nonempty accepted_shot")
+    provenance = marker.get("provenance")
+    if not isinstance(provenance, dict):
+        raise ValueError("physics smoke marker must contain a provenance object")
+    hashes = tuple(provenance.get(name) for name in ("player_sha256", "protocol_sha256", "archive_sha256"))
+    if not all(_is_sha256(value) for value in hashes):
+        raise ValueError("physics smoke marker archive_sha256/player_sha256/protocol_sha256 must be valid SHA-256 values")
+    archive_sha256 = _sha256_file(archive)
+    if provenance["archive_sha256"] != archive_sha256:
+        raise ValueError("physics smoke marker archive_sha256 does not match the staged player archive")
+    return PhysicsCaptureProvenance(archive.resolve(strict=True), smoke_marker.resolve(strict=True), provenance["player_sha256"], provenance["protocol_sha256"], archive_sha256)
+
+
+@dataclass(frozen=True, slots=True)
 class PlannedEpisode:
     split: str
     entry: LevelEntry
@@ -141,14 +213,23 @@ def _levels_root(engine_dir: Path) -> Path:
     return engine_dir / "9001_Data" / "StreamingAssets" / "Levels"
 
 
-def discover_level_entries(engine_dir: Path) -> list[LevelEntry]:
+def discover_level_entries(engine_dir: Path, level_type_prefix: str = PRODUCTION_LEVEL_TYPE_PREFIX) -> list[LevelEntry]:
+    """Inventory level XMLs under an engine directory.
+
+    `level_type_prefix` defaults to the production `type010*` naming.  A deliberately
+    scoped inventory (for example the staged physics player, whose single level lives
+    under `type2`) must name its prefix explicitly, so a foreign or truncated level
+    tree is never planned by accident.
+    """
+    if not level_type_prefix.strip():
+        raise ValueError("level_type_prefix must be nonempty")
     levels_root = _levels_root(engine_dir)
     if not levels_root.is_dir():
         raise FileNotFoundError(f"Levels directory not found: {levels_root}")
     entries = [
         LevelEntry(novelty_dir.name, type_dir.name, xml_path.relative_to(engine_dir).as_posix())
         for novelty_dir in sorted(path for path in levels_root.iterdir() if path.is_dir() and path.name.startswith("novelty_level_"))
-        for type_dir in sorted(path for path in novelty_dir.iterdir() if path.is_dir() and path.name.startswith("type010"))
+        for type_dir in sorted(path for path in novelty_dir.iterdir() if path.is_dir() and path.name.startswith(level_type_prefix))
         for xml_path in sorted((type_dir / "Levels").glob("*.xml"))
     ]
     if not entries:
@@ -281,10 +362,12 @@ def _is_canonically_complete_fresh_engine_episode(
     opts: CollectionOptions,
     *,
     level_five: bool = False,
+    capture_contract: str | None = None,
 ) -> bool:
     result = validate_rollout_episode(
         output_dir,
         EpisodeValidationContract(opts.count, opts.fps, opts.duration, level_five),
+        capture_contract=capture_contract,
     )
     return isinstance(result, EpisodeAccepted)
 
@@ -335,13 +418,14 @@ def _plan_bucket(
     opts: CollectionOptions,
     targets: CollectionTargets,
     seed: str,
+    capture_contract: str | None = None,
 ) -> list[PlannedEpisode]:
     selected: list[PlannedEpisode] = []
     ordered = sorted(entries, key=lambda entry: _stable_key(entry, seed))
     level_five = ordered[0].novelty_level == "novelty_level_5"
     for entry in ordered:
         output_dir = output_root / split / _safe_output_name(entry)
-        if _path_is_safe_existing(output_dir, output_root) and _is_canonically_complete_fresh_engine_episode(output_dir, opts, level_five=level_five):
+        if _path_is_safe_existing(output_dir, output_root) and _is_canonically_complete_fresh_engine_episode(output_dir, opts, level_five=level_five, capture_contract=capture_contract):
             selected.append(PlannedEpisode(split, entry, output_dir, "existing"))
             if len(selected) == targets.for_split(split):
                 return selected
@@ -363,18 +447,22 @@ def build_collection_plan(
     targets: CollectionTargets | None = None,
     selected_splits: tuple[str, ...] = DEFAULT_COLLECTION_SPLITS,
     seed: str = DEFAULT_SEED,
+    capture_contract: str | None = None,
+    expected_bucket_count: int = PRODUCTION_BUCKET_COUNT,
 ) -> tuple[list[PlannedEpisode], dict[str, dict[str, int]]]:
     opts = options or CollectionOptions()
     target = targets or CollectionTargets()
     splits = _selected_splits(selected_splits)
     _worker_specs(opts)
+    if type(expected_bucket_count) is not int or expected_bucket_count < 1:
+        raise ValueError("expected_bucket_count must be a positive integer")
     if not output_root.is_dir():
         raise FileNotFoundError(f"Existing output root is required: {output_root}")
     partitions = partition_levels(entries, seed=seed)
     buckets = _bucket_entries(entries)
     partition_buckets = {split: _bucket_entries(partitions[split]) for split in splits}
-    if len(buckets) != 80:
-        raise RuntimeError(f"Expected 80 normal and novel buckets, found {len(buckets)}")
+    if len(buckets) != expected_bucket_count:
+        raise RuntimeError(f"Expected {expected_bucket_count} normal and novel buckets, found {len(buckets)}")
     plan: list[PlannedEpisode] = []
     summary: dict[str, dict[str, int]] = {}
     for bucket in sorted(buckets):
@@ -382,7 +470,7 @@ def build_collection_plan(
             candidates = partition_buckets[split].get(bucket, [])
             if not candidates:
                 raise RuntimeError(f"Bucket {bucket} has no {split} partition capacity")
-            selected = _plan_bucket(candidates, split=split, output_root=output_root, opts=opts, targets=target, seed=seed)
+            selected = _plan_bucket(candidates, split=split, output_root=output_root, opts=opts, targets=target, seed=seed, capture_contract=capture_contract)
             plan.extend(selected)
             summary[f"{split}:{bucket}"] = {
                 "target": target.for_split(split),
@@ -410,7 +498,7 @@ def _interleave_schedule(episodes: Iterable[PlannedEpisode]) -> list[PlannedEpis
         index += 1
 
 
-def _collection_command_lines(episode: PlannedEpisode, opts: CollectionOptions, spec: WorkerSpec) -> list[str]:
+def _collection_command_lines(episode: PlannedEpisode, opts: CollectionOptions, spec: WorkerSpec, provenance: PhysicsCaptureProvenance | None = None) -> list[str]:
     args = [
         f"--output-dir {_quote(episode.output_dir)}",
         "--capture-source desktop",
@@ -431,6 +519,15 @@ def _collection_command_lines(episode: PlannedEpisode, opts: CollectionOptions, 
     ]
     if episode.entry.novelty_level == "novelty_level_5":
         args.append("--bidirectional-launches")
+    if provenance is not None:
+        args.extend([
+            "--physics-capture-v1",
+            "--physics-host 127.0.0.1",
+            f"--physics-port {spec.agent_port + 1}",
+            f"--physics-player-sha256 {provenance.player_sha256}",
+            f"--physics-protocol-sha256 {provenance.protocol_sha256}",
+            f"--physics-archive-sha256 {provenance.archive_sha256}",
+        ])
     lines = [
         '  DISPLAY="$display_id" LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH-}" \\',
         "    python scripts/collect_rollouts.py \\",
@@ -441,7 +538,7 @@ def _collection_command_lines(episode: PlannedEpisode, opts: CollectionOptions, 
     return lines
 
 
-def _append_scheduled_episode(lines: list[str], episode: PlannedEpisode, opts: CollectionOptions, spec: WorkerSpec) -> None:
+def _append_scheduled_episode(lines: list[str], episode: PlannedEpisode, opts: CollectionOptions, spec: WorkerSpec, provenance: PhysicsCaptureProvenance | None = None) -> None:
     output_dir = _quote(episode.output_dir)
     parent = _quote(episode.output_dir.parent)
     level_path = _quote(episode.entry.relative_path)
@@ -458,7 +555,7 @@ def _append_scheduled_episode(lines: list[str], episode: PlannedEpisode, opts: C
             f"  --split {split} \\",
             f"  --level-path {level_path} \\",
             "  --config-path \"$worker_engine_dir/config.xml\" && \\",
-            *_collection_command_lines(episode, opts, spec),
+            *_collection_command_lines(episode, opts, spec, provenance),
             "  then",
             "    :",
             "else",
@@ -478,6 +575,7 @@ def generate_collection_commands(
     output_root: Path,
     options: CollectionOptions | None = None,
     splits: tuple[str, ...] | None = None,
+    physics_provenance: PhysicsCaptureProvenance | None = None,
 ) -> str:
     opts = options or CollectionOptions()
     specs = _worker_specs(opts)
@@ -515,10 +613,18 @@ def generate_collection_commands(
     for index, episode in enumerate(_interleave_schedule(scheduled)):
         striped[index % len(specs)].append(episode)
     ledger = plan_path.parent / "failed_levels.tsv"
+    if physics_provenance is not None and output_root.resolve() == ACTIVE_COHORT_ROOT.resolve():
+        raise ValueError(f"physics capture cannot target active cohort root: {output_root}")
     lines = [
         "#!/usr/bin/env bash",
         "set -euo pipefail",
         "source ~/cd_novphy",
+        # The profile chdirs to its own checkout and points PYTHONPATH there, so
+        # re-enter the repo this plan was generated in before any relative path
+        # (scripts/, the plan artifact, data/) is resolved.  Launching from that same
+        # checkout is a no-op; launching from a worktree keeps the worktree's code.
+        f"cd -- {_quote(Path.cwd())}",
+        'export PYTHONPATH="$PWD"',
         f"plan_artifact={_quote(plan_path)}",
         f"failure_ledger={_quote(ledger)}",
         "failure_ledger_lock=\"${failure_ledger}.lock\"",
@@ -529,17 +635,39 @@ def generate_collection_commands(
         "}",
         "run_worker() {",
         "  local worker_index=\"$1\" display_id=\"$2\"",
-        "  local worker_root worker_engine_dir",
+            "  local worker_root worker_engine_dir worker_archive archive_sha256" if physics_provenance is not None else "  local worker_root worker_engine_dir",
         "  worker_root=\"$(mktemp -d \"${TMPDIR:-/tmp}/novphy_rollout_worker_${worker_index}_XXXXXX\")\"",
         "  trap 'rm -rf \"$worker_root\"' RETURN",
         "  worker_engine_dir=\"$worker_root/engine\"",
-        "  cp -a sciencebirdsgames/Linux \"$worker_engine_dir\"",
-        "  local failure_count=0",
     ]
+    if physics_provenance is None:
+        lines.append("  cp -a sciencebirdsgames/Linux \"$worker_engine_dir\"")
+    else:
+        if physics_provenance.archive.is_dir():
+            lines.extend([
+                f"  worker_archive=\"$worker_root/{physics_provenance.archive.name}\"",
+                f"  cp -a -- {_quote(physics_provenance.archive)} \"$worker_archive\"",
+                "  archive_sha256=\"$(python - \"$worker_archive\" <<'PY'\nfrom pathlib import Path\nfrom scripts.prepare_rollout_dataset import _sha256_file\nimport sys\nprint(_sha256_file(Path(sys.argv[1])))\nPY\n)\"",
+                f"  [[ \"$archive_sha256\" == {_quote(physics_provenance.archive_sha256)} ]] || {{ echo 'staged player archive digest mismatch' >&2; return 1; }}",
+                "  mkdir -- \"$worker_engine_dir\"",
+                "  cp -a -- \"$worker_archive/.\" \"$worker_engine_dir/\"",
+            ])
+        else:
+            lines.extend([
+                f"  worker_archive=\"$worker_root/{physics_provenance.archive.name}\"",
+                f"  cp -- {_quote(physics_provenance.archive)} \"$worker_archive\"",
+                f"  archive_sha256=\"$(sha256sum \"$worker_archive\" | awk '{{print $1}}')\"",
+                f"  [[ \"$archive_sha256\" == {_quote(physics_provenance.archive_sha256)} ]] || {{ echo 'staged player archive digest mismatch' >&2; return 1; }}",
+                "  mkdir -- \"$worker_engine_dir\"",
+                "  tar -xf \"$worker_archive\" -C \"$worker_engine_dir\"",
+            ])
+    lines.extend([
+            "  local failure_count=0",
+        ])
     for spec in specs:
         lines.append(f"  if [[ \"$worker_index\" == \"{spec.index}\" ]]; then")
         for episode in striped[spec.index]:
-            _append_scheduled_episode(lines, episode, opts, spec)
+            _append_scheduled_episode(lines, episode, opts, spec, physics_provenance)
         lines.append("  fi")
     lines.extend(
         [
@@ -594,14 +722,20 @@ def write_collection_plan(
     targets: CollectionTargets,
     seed: str,
     selected_splits: tuple[str, ...] = DEFAULT_COLLECTION_SPLITS,
+    physics_provenance: PhysicsCaptureProvenance | None = None,
 ) -> Path:
     episode_list = list(episodes)
     splits = _selected_splits(selected_splits)
+    if physics_provenance is not None and output_root.resolve() == ACTIVE_COHORT_ROOT.resolve():
+        raise ValueError(f"physics capture cannot target active cohort root: {output_root}")
+    contract = {"count": options.count, "fps": options.fps, "duration": options.duration, "workers": options.workers, "train_target": targets.train, "dev_target": targets.dev, "test_target": targets.test, "selected_splits": list(splits)}
+    if physics_provenance is not None:
+        contract.update({"capture_contract": PHYSICS_CAPTURE_CONTRACT, "player_sha256": physics_provenance.player_sha256, "protocol_sha256": physics_provenance.protocol_sha256, "archive_sha256": physics_provenance.archive_sha256, "smoke_marker": str(physics_provenance.smoke_marker)})
     payload = {
         "schema": PLAN_SCHEMA,
         "seed": seed,
         "output_root": str(output_root.resolve(strict=True)),
-        "contract": {"count": options.count, "fps": options.fps, "duration": options.duration, "workers": options.workers, "train_target": targets.train, "dev_target": targets.dev, "test_target": targets.test, "selected_splits": list(splits)},
+        "contract": contract,
         "selected_splits": list(splits),
         "summary": summary,
         "counts": {
@@ -681,6 +815,13 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--workers", type=int, default=6)
     plan.add_argument("--agent-port-base", type=_parse_port_base, default=DEFAULT_AGENT_PORT_BASE)
     plan.add_argument("--game-port-base", type=_parse_port_base, default=DEFAULT_GAME_PORT_BASE)
+    plan.add_argument("--physics-capture-v1", action="store_true")
+    plan.add_argument("--physics-player-dir", type=Path)
+    plan.add_argument("--physics-player-archive", type=Path)
+    plan.add_argument("--physics-smoke-marker", type=Path)
+    plan.add_argument("--expected-buckets", type=int, default=PRODUCTION_BUCKET_COUNT, help="Declared level-inventory bucket count; defaults to the production inventory and fails closed on a truncated one")
+    plan.add_argument("--level-type-prefix", default=PRODUCTION_LEVEL_TYPE_PREFIX, help="Level-type directory prefix to inventory; defaults to the production type010* naming")
+    plan.add_argument("--train-only", action="store_true", help="Select only the train split; for a scoped inventory too small to fund a leakage-free dev split")
     config = subparsers.add_parser("write-config", help="Write config.xml for a selected plan episode")
     config.add_argument("--manifest", type=Path, required=True)
     config.add_argument("--split", choices=COLLECTION_SPLITS, required=True)
@@ -694,6 +835,23 @@ def main() -> None:
     if args.command == "write-config":
         print(json.dumps({"config": str(write_config_for_manifest_level(args.manifest, args.split, args.level_path, args.config_path)), "level_path": args.level_path}, indent=2))
         return
+    physics_provenance = None
+    if args.physics_capture_v1:
+        if args.physics_player_dir is not None and args.physics_player_archive is not None:
+            raise ValueError("physics capture accepts a staged player directory or archive, not both")
+        if args.physics_player_dir is not None:
+            stage_dir = args.physics_player_dir.resolve(strict=True)
+            if not stage_dir.is_dir():
+                raise ValueError(f"staged player directory is required: {stage_dir}")
+            default_archive = stage_dir / "player.tar"
+            archive = args.physics_player_archive or (default_archive if default_archive.exists() else stage_dir)
+            marker = args.physics_smoke_marker or stage_dir / "physics_capture_v1_smoke.json"
+        else:
+            if args.physics_player_archive is None or args.physics_smoke_marker is None:
+                raise ValueError("physics capture requires --physics-player-dir or --physics-player-archive and --physics-smoke-marker")
+            archive = args.physics_player_archive
+            marker = args.physics_smoke_marker
+        physics_provenance = resolve_physics_capture_provenance(archive, marker)
     options = CollectionOptions(count=args.count, fps=args.fps, duration=args.duration, display=args.display, workers=args.workers, agent_port_base=args.agent_port_base, game_port_base=args.game_port_base)
     targets = CollectionTargets(train=args.train_target, dev=args.dev_target, test=args.test_target)
     if targets.train < 1 or targets.dev < 1:
@@ -702,13 +860,18 @@ def main() -> None:
         raise ValueError("test target must be non-negative")
     if args.include_test and targets.test < 1:
         raise ValueError("--include-test requires --test-target >= 1")
-    selected_splits = ("train", "dev", "test") if args.include_test else DEFAULT_COLLECTION_SPLITS
+    if args.train_only and args.include_test:
+        raise ValueError("--train-only and --include-test are mutually exclusive")
+    if args.train_only:
+        selected_splits = ("train",)
+    else:
+        selected_splits = ("train", "dev", "test") if args.include_test else DEFAULT_COLLECTION_SPLITS
     output_root = args.command_output_root.resolve(strict=True)
     engine_dir = args.engine_dir or engine_dir_for(ROOT, args.os)
-    episodes, summary = build_collection_plan(discover_level_entries(engine_dir), output_root=output_root, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed)
-    plan_path = write_collection_plan(args.output_dir, output_root=output_root, episodes=episodes, summary=summary, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed)
+    episodes, summary = build_collection_plan(discover_level_entries(engine_dir, args.level_type_prefix), output_root=output_root, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed, capture_contract=PHYSICS_CAPTURE_CONTRACT if physics_provenance is not None else None, expected_bucket_count=args.expected_buckets)
+    plan_path = write_collection_plan(args.output_dir, output_root=output_root, episodes=episodes, summary=summary, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed, physics_provenance=physics_provenance)
     commands_path = args.commands_path or _collection_commands_path(args.output_dir, selected_splits)
-    _atomic_write(commands_path, generate_collection_commands(plan_path, output_root=output_root, options=options), executable=True)
+    _atomic_write(commands_path, generate_collection_commands(plan_path, output_root=output_root, options=options, physics_provenance=physics_provenance), executable=True)
     _remove_opposite_collection_commands(args.output_dir, commands_path)
     counts = json.loads(plan_path.read_text(encoding="utf-8"))["counts"]
     print(json.dumps({"plan": str(plan_path), "commands": str(commands_path), "counts": counts, "bucket_summary": {"buckets": len(summary) // len(selected_splits), "train_target": targets.train, "dev_target": targets.dev, "test_target": targets.test, "selected_splits": selected_splits}}, indent=2, sort_keys=True))

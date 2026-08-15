@@ -36,6 +36,7 @@ from scripts.physics_capture_types import (
     Vector2,
     WorldPose,
 )
+from scripts.physics_rollout_contract import MAX_EVENT_RECORDS, MAX_STATE_RECORDS, MAX_TOTAL_BYTES
 
 
 JsonValue: TypeAlias = None | bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"]
@@ -47,17 +48,31 @@ EVENT_FIELDS = COMMON_FIELDS | frozenset(("record_type", "event_id", "event_type
 ENTITY_ID_PATTERN = re.compile(r"^(?:-?[0-9]+:[0-9]+|world:static:-?[0-9]+)$")
 
 
-def _read_jsonl(path: Path) -> tuple[JsonObject, ...]:
+def _read_jsonl(path: Path, *, max_records: int, allow_empty: bool = False) -> tuple[JsonObject, ...]:
+    if path.stat().st_size > MAX_TOTAL_BYTES:
+        raise contract_error(ContractErrorCode.INVALID_VALUE, str(path), "sidecar byte limit exceeded")
     records: list[JsonObject] = []
-    for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-        try:
-            value: JsonValue = json.loads(line)
-        except json.JSONDecodeError as error:
-            raise contract_error(ContractErrorCode.MALFORMED_JSON, f"{path}:{line_number}", error.msg) from error
-        if not isinstance(value, dict):
-            raise contract_error(ContractErrorCode.EXPECTED_OBJECT, f"{path}:{line_number}", "record must be an object")
-        records.append(value)
-    if not records:
+    try:
+        with path.open("rb") as sidecar:
+            line_number = 0
+            bytes_read = 0
+            while line := sidecar.readline(MAX_TOTAL_BYTES + 1):
+                line_number += 1
+                bytes_read += len(line)
+                if bytes_read > MAX_TOTAL_BYTES:
+                    raise contract_error(ContractErrorCode.INVALID_VALUE, str(path), "sidecar byte limit exceeded")
+                if line_number > max_records:
+                    raise contract_error(ContractErrorCode.INVALID_VALUE, str(path), "record limit exceeded")
+                try:
+                    value: JsonValue = json.loads(line.decode("utf-8"))
+                except json.JSONDecodeError as error:
+                    raise contract_error(ContractErrorCode.MALFORMED_JSON, f"{path}:{line_number}", error.msg) from error
+                if not isinstance(value, dict):
+                    raise contract_error(ContractErrorCode.EXPECTED_OBJECT, f"{path}:{line_number}", "record must be an object")
+                records.append(value)
+    except UnicodeDecodeError as error:
+        raise contract_error(ContractErrorCode.MALFORMED_JSON, str(path), "sidecar is not UTF-8") from error
+    if not records and not allow_empty:
         raise contract_error(ContractErrorCode.INVALID_VALUE, str(path), "sidecar must not be empty")
     return tuple(records)
 
@@ -290,6 +305,8 @@ def _parse_event(record: JsonObject, index: int) -> EventRecord:
 
 
 def parse_physics_sidecars(state_path: Path, event_path: Path) -> PhysicsCapture:
-    state_records = _read_jsonl(state_path)
-    event_records = _read_jsonl(event_path)
+    if state_path.stat().st_size + event_path.stat().st_size > MAX_TOTAL_BYTES:
+        raise contract_error(ContractErrorCode.INVALID_VALUE, "sidecars", "sidecar byte limit exceeded")
+    state_records = _read_jsonl(state_path, max_records=MAX_STATE_RECORDS)
+    event_records = _read_jsonl(event_path, max_records=MAX_EVENT_RECORDS, allow_empty=True)
     return PhysicsCapture(_parse_header(state_records[0]), tuple(_parse_state(record, index) for index, record in enumerate(state_records[1:], start=1)), tuple(_parse_event(record, index) for index, record in enumerate(event_records)))

@@ -1,0 +1,32 @@
+COMMAND: python -m unittest tests.test_world_model_grid_run tests.test_world_model_training tests.test_world_model_model tests.test_world_model_data
+..................................................................................................................................................................................................................................
+----------------------------------------------------------------------
+Ran 226 tests in 4.171s
+
+OK
+EXIT: 0
+COMMAND: python scripts/run_jepa_pair_grid.py all --device cpu --fixture --steps 18 --output-dir <temp>
+score step=18 count=72 mean_loss=0.10273711
+EXIT: 0
+ARTIFACT: checkpoint.pt 119387 bytes
+ARTIFACT: score.json 60 bytes
+ARTIFACT: sweep_manifest.json 564 bytes
+CLEANUP_PROBE: temp_root=/tmp/tmp.dhzttK46u6 remaining_files=3
+COMMAND: train then --resume same config
+train step=2 checkpoint=/tmp/tmp.koLxV1qbQ4/checkpoint.pt
+TRAIN_EXIT: 0
+train step=2 checkpoint=/tmp/tmp.koLxV1qbQ4/checkpoint.pt
+RESUME_EXIT: 0
+COMMAND: corrupt checkpoint then score
+score step=2 count=18 mean_loss=0.14367350
+CORRUPT_SCORE_EXIT: 0
+TEMP_ARTIFACT: checkpoint.pt 119515 bytes
+TEMP_ARTIFACT: score.json 58 bytes
+TEMP_ARTIFACT: sweep_manifest.json 562 bytes
+TEMP_CLEAN: PASS
+RECHECK: corruption against published sweep_manifest now fails closed
+COMMAND: fixture all, mutate checkpoint byte, score
+score step=2 count=18 mean_loss=0.14367350
+error: checkpoint digest mismatch
+CORRUPT_SCORE_EXIT: 2
+TEMP_CLEAN: PASS

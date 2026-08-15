@@ -125,6 +125,7 @@ public class ABBird : ABCharacter
 
     public override void OnCollisionEnter2D(Collision2D collision)
     {
+        base.OnCollisionEnter2D(collision);
         if (OutOfSlingShot && !IsDying)
         {
             IsFlying = false;
@@ -330,7 +331,8 @@ public class ABBird : ABCharacter
         Vector2 direction = difference.normalized;
 
         // The launch directly set the velocity of the bird, but not add a force.
-        _rigidBody.velocity = direction * difference.magnitude / _dragRadius * ABConstants.BIRD_MAX_LANUCH_SPEED;
+        Vector2 launchVelocity = direction * difference.magnitude / _dragRadius * ABConstants.BIRD_MAX_LANUCH_SPEED;
+        AssignLaunchVelocityAndRecord(launchVelocity);
 
         // Vector2 f = -deltaPosFromSlingshot * _launchForce;
         // _rigidBody.AddForce(f, ForceMode2D.Impulse);
@@ -342,5 +344,12 @@ public class ABBird : ABCharacter
 
         //ABGameWorld.Instance.KillBird(this);
         
+    }
+
+    protected void AssignLaunchVelocityAndRecord(Vector2 launchVelocity)
+    {
+        _rigidBody.velocity = launchVelocity;
+        PhysicalSnapshotRuntime.RecordLaunchCallback(
+            PhysicalSnapshotRuntime.EntityIdForCallback(gameObject), _rigidBody.velocity);
     }
 }

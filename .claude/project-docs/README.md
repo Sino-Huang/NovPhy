@@ -9,7 +9,7 @@ single source of truth for plans, knowledge, evidence, and the work ledger.
 | Path | Contents | Origin |
 |---|---|---|
 | `plans/` | Work plans: `world-model-physics-instrumentation.md` (14/14 complete, F1-F4 APPROVE), `world-model-data-pipeline.md` (14/14 complete), `rollout-menu-static-shot-bug.md` (historical) | `.omo/plans/` |
-| `knowledge/` | 21 durable knowledge files: Unity 2019.4 LTS resume + licensing history, physics capture contract boundary, curriculum policy, engine/rollout/level-gen gotchas | `.omo/knowledges/` (both branches, deduped) |
+| `knowledge/` | Five compact current guides plus 21 preserved source notes and `knowledge-compression-manifest.json`. Start with `00-current-gates-and-recovery.md`, then use `10` rollout, `20` physics/Unity, `30` world-model data, and `40` engineering/provenance. Original notes remain intact for source-level detail. | `.omo/knowledges/` (both branches, deduped), compressed index added 2026-08-10 |
 | `drafts/` | Original plan drafts (physics instrumentation, data pipeline) | `.omo/drafts/` |
 | `research/` | ULW research synthesis (protocol, binary parity, observation manifest, cause-disappearance, etc.) | `.omo/ulw-research/` |
 | `notepads/` | Per-work `decisions.md`, `learnings.md`, `issues.md`, `problems.md` (flattened as `<work>-<file>.md`) | `.omo/notepads/` |

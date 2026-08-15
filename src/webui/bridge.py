@@ -1,10 +1,19 @@
 from __future__ import annotations
+# noqa: SIZE_OK - legacy and request-70 wire surfaces must remain in this owned module.
 
 import json
 import socket
 import struct
 from dataclasses import dataclass
 from enum import IntEnum
+from types import MappingProxyType
+from typing import Final, Mapping, TypeAlias
+
+
+JsonScalar: TypeAlias = str | int | float | bool | None
+JsonValue: TypeAlias = JsonScalar | Mapping[str, "JsonValue"] | tuple["JsonValue", ...]
+PhysicsStateV1: TypeAlias = Mapping[str, JsonValue]
+PhysicsEventV1: TypeAlias = Mapping[str, JsonValue]
 
 
 class GameState(IntEnum):
@@ -47,13 +56,66 @@ class RequestCode(IntEnum):
     READY_FOR_NEW_SET = 68
     NOVELTY_INFO = 69
     GET_CURRENT_SCORE = 65
+    GET_PHYSICS_CAPTURE_V1 = 70
+    GT_SHOOT = 38
 
 
-@dataclass(frozen=True)
+class PhysicsCaptureV1ProtocolError(ConnectionError):
+    """The request-70 stream was malformed or could not be completed."""
+
+
+@dataclass(frozen=True, slots=True)
+class LegacyGroundTruthProtocolError(ConnectionError):
+    request_code: int
+    field: str
+    detail: str
+    value: int | None = None
+    limit: int | None = None
+
+    def __post_init__(self) -> None:
+        ConnectionError.__init__(self, str(self))
+
+    def __str__(self) -> str:
+        message = "request-%d %s: %s" % (self.request_code, self.field, self.detail)
+        if self.value is None:
+            return message
+        return "%s (value=%d, limit=%d)" % (message, self.value, self.limit)
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicsCaptureV1Failure(PhysicsCaptureV1ProtocolError):
+    code: int
+    message: str
+
+    def __post_init__(self) -> None:
+        PhysicsCaptureV1ProtocolError.__init__(
+            self, "physics capture failed (%d): %s" % (self.code, self.message)
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class Screenshot:
     width: int
     height: int
     rgb: bytes
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicsCaptureV1:
+    png: bytes
+    state: PhysicsStateV1
+    events: tuple[PhysicsEventV1, ...]
+
+
+_PHYSICS_MAGIC = b"SBPV"
+_PHYSICS_VERSION = 1
+_PHYSICS_FAILURE_FLAG = 1
+_PHYSICS_MAX_ENVELOPE = 64 * 1024 * 1024
+_PHYSICS_MAX_PNG = 32 * 1024 * 1024
+_PHYSICS_MAX_JSON = 16 * 1024 * 1024
+_LEGACY_MAX_GROUND_TRUTH_RECORDS: Final = 10_000
+_LEGACY_MAX_GROUND_TRUTH_PAYLOAD: Final = 16 * 1024 * 1024
+_LEGACY_GROUND_TRUTH_SUFFIX_BYTES: Final = 5
 
 
 class ScienceBirdsBridge:
@@ -122,7 +184,11 @@ class ScienceBirdsBridge:
 
     def get_symbolic_state_without_screenshot(self):
         self._send(RequestCode.GET_GROUND_TRUTH_WITHOUT_SCREENSHOT)
-        return self._read_ground_truth()
+        try:
+            return self._read_ground_truth(RequestCode.GET_GROUND_TRUTH_WITHOUT_SCREENSHOT)
+        except LegacyGroundTruthProtocolError:
+            self.disconnect()
+            raise
 
     def load_level(self, level: int) -> int:
         self._send(RequestCode.LOAD_LEVEL, "I", max(1, int(level)))
@@ -158,10 +224,68 @@ class ScienceBirdsBridge:
         rgb = self._read_exact(width * height * 3)
         return Screenshot(width=width, height=height, rgb=bytes(rgb))
 
+    def get_physics_capture_v1(self) -> PhysicsCaptureV1:
+        if not self.connected:
+            self.connect()
+        try:
+            self._send(RequestCode.GET_PHYSICS_CAPTURE_V1)
+            envelope_length = struct.unpack("!I", self._read_exact(4))[0]
+            if envelope_length < 16 or envelope_length > _PHYSICS_MAX_ENVELOPE:
+                raise PhysicsCaptureV1ProtocolError("invalid request-70 envelope length")
+            body = self._read_exact(envelope_length)
+            return _decode_physics_capture_v1(body)
+        except PhysicsCaptureV1ProtocolError:
+            self.disconnect()
+            raise
+        except (ConnectionError, OSError, ValueError, struct.error, UnicodeError, RecursionError) as exc:
+            raise PhysicsCaptureV1ProtocolError("invalid request-70 envelope") from exc
+        finally:
+            self.disconnect()
+
     def shoot(self, x: int, y: int, tap_time: int = 0, fast: bool = False, release_time: int = 0) -> int:
         code = RequestCode.FAST_SHOOT if fast else RequestCode.SHOOT
         self._send(code, "iiii", int(x), int(y), int(release_time), int(tap_time))
         return self._read("B")[0]
+
+    def shoot_and_record_ground_truth(
+        self,
+        x: int,
+        y: int,
+        tap_time: int = 0,
+        release_time: int = 0,
+        frequency: int = 1,
+    ) -> int:
+        """Execute the recorder-backed legacy request-38 action."""
+        self._send(
+            RequestCode.GT_SHOOT,
+            "iiiii",
+            int(x),
+            int(y),
+            int(release_time),
+            int(tap_time),
+            int(frequency),
+        )
+        try:
+            ground_truth_count = self._read("I")[0]
+            if ground_truth_count > _LEGACY_MAX_GROUND_TRUTH_RECORDS:
+                raise LegacyGroundTruthProtocolError(
+                    int(RequestCode.GT_SHOOT),
+                    "record_count",
+                    "exceeds maximum",
+                    ground_truth_count,
+                    _LEGACY_MAX_GROUND_TRUTH_RECORDS,
+                )
+            for _ in range(ground_truth_count):
+                self._read_ground_truth(RequestCode.GT_SHOOT)
+            return ground_truth_count
+        except LegacyGroundTruthProtocolError:
+            self.disconnect()
+            raise
+        except (ConnectionError, OSError, struct.error) as exc:
+            self.disconnect()
+            raise LegacyGroundTruthProtocolError(
+                int(RequestCode.GT_SHOOT), "record_count", "is truncated"
+            ) from exc
 
     def _send(self, code: RequestCode, fmt: str = "", *values: int) -> None:
         sock = self._require_socket()
@@ -170,10 +294,36 @@ class ScienceBirdsBridge:
     def _read(self, fmt: str):
         return struct.unpack("!" + fmt, self._read_exact(struct.calcsize("!" + fmt)))
 
-    def _read_ground_truth(self):
-        payload_length = self._read("I")[0]
-        payload = self._read_exact(payload_length)
-        return json.loads(payload.decode("utf-8")[:-5])
+    def _read_ground_truth(self, request_code: RequestCode):
+        try:
+            payload_length = self._read("I")[0]
+        except (ConnectionError, OSError, struct.error) as exc:
+            raise LegacyGroundTruthProtocolError(
+                int(request_code), "payload_length", "is truncated"
+            ) from exc
+        if payload_length > _LEGACY_MAX_GROUND_TRUTH_PAYLOAD:
+            raise LegacyGroundTruthProtocolError(
+                int(request_code),
+                "payload_length",
+                "exceeds maximum",
+                payload_length,
+                _LEGACY_MAX_GROUND_TRUTH_PAYLOAD,
+            )
+        if payload_length < _LEGACY_GROUND_TRUTH_SUFFIX_BYTES:
+            raise LegacyGroundTruthProtocolError(
+                int(request_code),
+                "payload_length",
+                "is smaller than the legacy suffix",
+                payload_length,
+                _LEGACY_GROUND_TRUTH_SUFFIX_BYTES,
+            )
+        try:
+            payload = self._read_exact(payload_length)
+            return json.loads(payload.decode("utf-8")[:-_LEGACY_GROUND_TRUTH_SUFFIX_BYTES])
+        except (ConnectionError, OSError, UnicodeError, ValueError, RecursionError) as exc:
+            raise LegacyGroundTruthProtocolError(
+                int(request_code), "payload", "is malformed or truncated"
+            ) from exc
 
     def _read_exact(self, size: int) -> bytes:
         sock = self._require_socket()
@@ -190,3 +340,89 @@ class ScienceBirdsBridge:
         if self._socket is None:
             raise ConnectionError("Science Birds bridge is not connected")
         return self._socket
+
+
+def encode_physics_capture_v1(png: bytes, state: dict, events: list[dict]) -> bytes:
+    """Build the canonical request-70 response, useful for protocol fixtures."""
+    png = bytes(png)
+    state_bytes = json.dumps(state, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    events_bytes = json.dumps(events, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    payload = struct.pack("!III", len(png), len(state_bytes), len(events_bytes))
+    payload += png + state_bytes + events_bytes
+    return _encode_envelope(0, 0, payload)
+
+
+def _encode_envelope(flags: int, failure_code: int, payload: bytes) -> bytes:
+    body = struct.pack("!4sBBHI", _PHYSICS_MAGIC, _PHYSICS_VERSION, flags,
+                       failure_code, len(payload)) + payload
+    return struct.pack("!I", len(body)) + body
+
+
+def _decode_physics_capture_v1(body: bytes) -> PhysicsCaptureV1:
+    if len(body) < 16:
+        raise PhysicsCaptureV1ProtocolError("request-70 envelope header is truncated")
+    magic, version, flags, failure_code, payload_length = struct.unpack("!4sBBHI", body[:12])
+    if magic != _PHYSICS_MAGIC:
+        raise PhysicsCaptureV1ProtocolError("request-70 magic mismatch")
+    if version != _PHYSICS_VERSION:
+        raise PhysicsCaptureV1ProtocolError("unsupported request-70 protocol version")
+    if payload_length != len(body) - 12:
+        raise PhysicsCaptureV1ProtocolError("request-70 payload length mismatch")
+    payload = body[12:]
+    if flags == _PHYSICS_FAILURE_FLAG:
+        if len(payload) < 4:
+            raise PhysicsCaptureV1ProtocolError("request-70 failure payload is truncated")
+        message_length = struct.unpack("!I", payload[:4])[0]
+        if message_length > _PHYSICS_MAX_JSON or message_length != len(payload) - 4:
+            raise PhysicsCaptureV1ProtocolError("request-70 failure message length mismatch")
+        try:
+            message = payload[4:].decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise PhysicsCaptureV1ProtocolError("request-70 failure message is not UTF-8") from exc
+        raise PhysicsCaptureV1Failure(failure_code, message)
+    if flags != 0 or failure_code != 0:
+        raise PhysicsCaptureV1ProtocolError("invalid request-70 success flags")
+    if len(payload) < 12:
+        raise PhysicsCaptureV1ProtocolError("request-70 success payload is truncated")
+    png_length, state_length, events_length = struct.unpack("!III", payload[:12])
+    if png_length > _PHYSICS_MAX_PNG or state_length > _PHYSICS_MAX_JSON or events_length > _PHYSICS_MAX_JSON:
+        raise PhysicsCaptureV1ProtocolError("request-70 payload exceeds bounds")
+    if png_length + state_length + events_length != len(payload) - 12:
+        raise PhysicsCaptureV1ProtocolError("request-70 record lengths mismatch")
+    offset = 12
+    png = payload[offset:offset + png_length]
+    offset += png_length
+    state = _parse_json_record(payload[offset:offset + state_length], dict, "state")
+    offset += state_length
+    events = _parse_json_record(payload[offset:offset + events_length], list, "events")
+    render_frame = state.get("render_frame")
+    if isinstance(render_frame, bool) or not isinstance(render_frame, int):
+        raise PhysicsCaptureV1ProtocolError("state render_frame is missing or invalid")
+    for event in events:
+        if not isinstance(event, dict) or event.get("render_frame") != render_frame:
+            raise PhysicsCaptureV1ProtocolError("state and event render_frame mismatch")
+    if not png.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise PhysicsCaptureV1ProtocolError("request-70 payload is not a PNG")
+    return PhysicsCaptureV1(bytes(png), _freeze(state), tuple(_freeze(event) for event in events))
+
+
+def _parse_json_record(data: bytes, expected_type: type, name: str):
+    try:
+        value = json.loads(data.decode("utf-8"), parse_constant=_reject_json_constant)
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+        raise PhysicsCaptureV1ProtocolError("request-70 %s JSON is invalid" % name) from exc
+    if not isinstance(value, expected_type):
+        raise PhysicsCaptureV1ProtocolError("request-70 %s JSON has the wrong type" % name)
+    return value
+
+
+def _reject_json_constant(value: str):
+    raise ValueError("non-finite JSON value: " + value)
+
+
+def _freeze(value):
+    if isinstance(value, dict):
+        return MappingProxyType({key: _freeze(item) for key, item in value.items()})
+    if isinstance(value, list):
+        return tuple(_freeze(item) for item in value)
+    return value

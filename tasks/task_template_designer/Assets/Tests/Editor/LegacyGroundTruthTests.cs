@@ -68,6 +68,38 @@ public class LegacyGroundTruthTests
         Debug.Log("LEGACY_GT_SHA256=" + hash);
     }
 
+    [Test]
+    public void GetGTJson_PigWithoutPolygonCollider_PreservesResponse()
+    {
+        GameObject pig = new GameObject("BasicSmall(Clone)");
+        pig.tag = "PigSmall";
+        pig.AddComponent<SpriteRenderer>().sprite = sprite;
+        pig.AddComponent<CircleCollider2D>();
+        pig.AddComponent<Rigidbody2D>();
+        pig.AddComponent<ABGameObject>();
+
+        string json = new SymbolicGameState(false).GetGTJson(false);
+
+        StringAssert.Contains("\"label\":\"Slingshot\"", json);
+        StringAssert.DoesNotContain(pig.GetInstanceID().ToString(), json);
+    }
+
+    [Test]
+    public void GetGTJson_BirdWithoutPolygonCollider_PreservesResponse()
+    {
+        GameObject bird = new GameObject("BirdBlack(Clone)");
+        bird.tag = "Bird";
+        bird.AddComponent<SpriteRenderer>().sprite = sprite;
+        bird.AddComponent<CircleCollider2D>();
+        bird.AddComponent<Rigidbody2D>();
+        bird.AddComponent<ABGameObject>();
+
+        string json = new SymbolicGameState(false).GetGTJson(false);
+
+        StringAssert.Contains("\"label\":\"Slingshot\"", json);
+        StringAssert.DoesNotContain(bird.GetInstanceID().ToString(), json);
+    }
+
     private static string Sha256(string value)
     {
         using (SHA256 algorithm = SHA256.Create())

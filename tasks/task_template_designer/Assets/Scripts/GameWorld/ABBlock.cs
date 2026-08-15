@@ -144,6 +144,18 @@ public class ABBlock : ABGameObject
 
     public override void OnCollisionEnter2D(Collision2D collision)
     {
+        // Hoisted above the branch: only the else branch reaches base, so before
+        // this a bird hitting a block — the whole point of a shot — was never
+        // recorded. Called directly rather than by hoisting base, because the base
+        // handler also runs ABGameObject's damage model and this branch runs the
+        // block's own. Non-bird collisions now reach the recorder twice, once here
+        // and once through base. They still produce exactly one event, and exactly
+        // one ingestion of the contacts, because the recorder's collision path
+        // checks its fixedStep:first:second key and returns before it ingests
+        // anything. That ordering is load-bearing: a dedupe placed after the
+        // ingestion would suppress the duplicate event but double the raw contacts.
+        PhysicalSnapshotRuntime.RecordCollisionCallback(collision);
+
         if (collision.gameObject.tag == "Bird")
         {
 

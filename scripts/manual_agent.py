@@ -66,7 +66,7 @@ def connect_with_retry(host: str, port: int, timeout: float, deadline_seconds: f
     raise RuntimeError(f"Could not connect to Science Birds at {host}:{port}: {last_error}")
 
 
-def start_engine(game_dir: Path, headless: bool, *, agent_port: int | None = None, game_port: int | None = None) -> subprocess.Popen:
+def start_engine(game_dir: Path, headless: bool, *, agent_port: int | None = None, game_port: int | None = None, physics_port: int | None = None) -> subprocess.Popen:
     jar_path = game_dir / "game_playing_interface.jar"
     if not jar_path.is_file():
         raise FileNotFoundError(f"Missing {jar_path}")
@@ -77,6 +77,8 @@ def start_engine(game_dir: Path, headless: bool, *, agent_port: int | None = Non
         command.extend(["--agent-port", str(agent_port)])
     if game_port is not None:
         command.extend(["--game-start-port", str(game_port)])
+    if physics_port is not None:
+        command.extend(["--physics-port", str(physics_port)])
     command.append("--dev")
     log_path = Path(f"/tmp/novphy_game_engine_{int(time.time() * 1000)}.log")
     log_file = log_path.open("ab")

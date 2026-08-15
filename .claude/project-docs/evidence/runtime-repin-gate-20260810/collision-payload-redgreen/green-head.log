@@ -1,0 +1,803 @@
+Unity Editor version:    2019.4.41f2 (6b23d448b533)
+Branch:                  HEAD
+Build type:              Debug
+Batch mode:              YES
+System name:             Linux
+Distro version:          #35~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 19:30:42 UTC 2
+Kernel version:          6.17.0-35-generic
+Architecture:            x86_64
+Available memory:        128159 MB
+[LicensingClient] ERROR Failed to connect to local IPC
+[Licensing::Module] Failed to connect to channel: LicenseClient-sukai
+[Licensing::Module] Successfully launched the LicensingClient
+Process terminated. Couldn't find a valid ICU package installed on the system. Set the configuration flag System.Globalization.Invariant to true if you want to run with no globalization support.
+   at System.Environment.FailFast(System.String)
+   at System.Globalization.GlobalizationMode.GetGlobalizationInvariantMode()
+   at System.Globalization.GlobalizationMode..cctor()
+   at System.Globalization.CultureData.CreateCultureWithInvariantData()
+   at System.Globalization.CultureData.get_Invariant()
+   at System.Globalization.CultureInfo..cctor()
+   at System.String.ToLowerInvariant()
+   at System.Text.EncodingHelper.GetCharset()
+   at System.Text.EncodingHelper.GetEncodingFromCharset()
+   at System.ConsolePal.GetConsoleEncoding()
+   at System.Console+<>c.<get_OutputEncoding>b__19_0()
+   at System.Threading.LazyInitializer.EnsureInitializedCore[[System.__Canon, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]](System.__Canon ByRef, System.Object ByRef, System.Func`1<System.__Canon>)
+   at System.Threading.LazyInitializer.EnsureInitialized[[System.__Canon, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]](System.__Canon ByRef, System.Object ByRef, System.Func`1<System.__Canon>)
+   at System.Console.get_OutputEncoding()
+   at System.Console.CreateOutputWriter(System.IO.Stream)
+   at System.Console+<>c.<get_Out>b__26_0()
+   at System.Threading.LazyInitializer.EnsureInitializedCore[[System.__Canon, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]](System.__Canon ByRef, System.Object ByRef, System.Func`1<System.__Canon>)
+   at System.Threading.LazyInitializer.EnsureInitialized[[System.__Canon, System.Private.CoreLib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]](System.__Canon ByRef, System.Object ByRef, System.Func`1<System.__Canon>)
+   at System.Console.get_Out()
+   at Unity.Licensing.Client.Program.Main(System.String[])
+[LicensingClient] Timed-out attempting to connect to the Licensing Client on pipe: LicenseClient-sukai.
+[LicensingClient] ERROR Failed to connect to local IPC
+[Licensing::Module] Failed to connect to channel: LicenseClient-sukai
+IPC channel to LicensingClient doesn't exist; falling back to Legacy licensing
+[LicensingClient] ERROR Failed to disconnect local IPC connection
+
+LICENSE SYSTEM [2026811 17:53:14] Next license update check is after 2026-08-08T14:59:07
+
+Pro License: NO
+
+LICENSE SYSTEM [2026811 17:53:14] Current license is already valid and activated. Skipping license activation process (Provided username/password will be ignored).
+[Package Manager] Server::Start -- Port 54839 was selected
+
+COMMAND LINE ARGUMENTS:
+/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity
+-batchmode
+-nographics
+-projectPath
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer
+-runTests
+-testPlatform
+EditMode
+-testFilter
+PhysicsCaptureProtocolTests
+-testResults
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.claude/project-docs/evidence/runtime-repin-gate-20260810/collision-payload-redgreen/green-head.xml
+-logFile
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.claude/project-docs/evidence/runtime-repin-gate-20260810/collision-payload-redgreen/green-head.log
+Successfully changed project path to: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer
+/mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer
+Using Asset Import Pipeline V2.
+DisplayProgressbar: Unity Package Manager
+Adding genesis user token [Package Manager] Done resolving packages in 0.36s seconds
+[Package Manager] Done checking package constraints in 0.00s seconds
+[Package Manager] 
+Registered 41 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.collab-proxy@1.14.18 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.collab-proxy@1.14.18)
+    com.unity.ide.rider@1.2.1 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.ide.rider@1.2.1)
+    com.unity.ide.visualstudio@2.0.15 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.ide.visualstudio@2.0.15)
+    com.unity.ide.vscode@1.2.5 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.ide.vscode@1.2.5)
+    com.unity.test-framework@1.1.31 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.test-framework@1.1.31)
+    com.unity.textmeshpro@2.1.6 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.textmeshpro@2.1.6)
+    com.unity.timeline@1.2.18 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.timeline@1.2.18)
+    com.unity.ext.nunit@1.0.6 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.ext.nunit@1.0.6)
+  Built-in packages:
+    com.unity.ugui@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.ugui@1.0.0)
+    com.unity.modules.ai@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.ai@1.0.0)
+    com.unity.modules.androidjni@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.androidjni@1.0.0)
+    com.unity.modules.animation@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.animation@1.0.0)
+    com.unity.modules.assetbundle@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.assetbundle@1.0.0)
+    com.unity.modules.audio@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.audio@1.0.0)
+    com.unity.modules.cloth@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.cloth@1.0.0)
+    com.unity.modules.director@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.director@1.0.0)
+    com.unity.modules.imageconversion@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.imageconversion@1.0.0)
+    com.unity.modules.imgui@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.imgui@1.0.0)
+    com.unity.modules.jsonserialize@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.jsonserialize@1.0.0)
+    com.unity.modules.particlesystem@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.particlesystem@1.0.0)
+    com.unity.modules.physics@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.physics@1.0.0)
+    com.unity.modules.physics2d@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.physics2d@1.0.0)
+    com.unity.modules.screencapture@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.screencapture@1.0.0)
+    com.unity.modules.terrain@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.terrain@1.0.0)
+    com.unity.modules.terrainphysics@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.terrainphysics@1.0.0)
+    com.unity.modules.tilemap@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.tilemap@1.0.0)
+    com.unity.modules.ui@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.ui@1.0.0)
+    com.unity.modules.uielements@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.uielements@1.0.0)
+    com.unity.modules.umbra@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.umbra@1.0.0)
+    com.unity.modules.unityanalytics@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.unityanalytics@1.0.0)
+    com.unity.modules.unitywebrequest@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.unitywebrequest@1.0.0)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.unitywebrequestassetbundle@1.0.0)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.unitywebrequestaudio@1.0.0)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.unitywebrequesttexture@1.0.0)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.unitywebrequestwww@1.0.0)
+    com.unity.modules.vehicles@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.vehicles@1.0.0)
+    com.unity.modules.video@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.video@1.0.0)
+    com.unity.modules.vr@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.vr@1.0.0)
+    com.unity.modules.wind@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.wind@1.0.0)
+    com.unity.modules.xr@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.xr@1.0.0)
+    com.unity.modules.subsystems@1.0.0 (location: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Library/PackageCache/com.unity.modules.subsystems@1.0.0)
+
+[Subsystems] No new subsystems found in resolved package list.
+[Package Manager] Done registering packages in 0.02s seconds
+Refreshing native plugins compatible for Editor in 20.14 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 2019.4.41f2 (6b23d448b533)
+[Subsystems] Discovering subsystems at path /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/tasks/task_template_designer/Assets
+Forcing GfxDevice: Null
+GfxDevice: creating device client; threaded=0
+NullGfxDevice:
+    Version:  NULL 1.0 [1.0]
+    Renderer: Null Device
+    Vendor:   Unity Technologies
+Initialize mono
+Mono path[0] = '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Managed'
+Mono path[1] = '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/MonoBleedingEdge/lib/mono/unityjit'
+Mono config path = '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56106
+ImportWorker Server TCP listen port: 34665
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/PlaybackEngines/LinuxStandaloneSupport/UnityEditor.LinuxStandalone.Extensions.dll
+Registered in 0.001074 seconds.
+Native extension for LinuxStandalone target not found
+Refreshing native plugins compatible for Editor in 18.51 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.561 seconds
+Domain Reload Profiling:
+	ReloadAssembly (574ms)
+		BeginReloadAssembly (18ms)
+			ExecutionOrderSort (0ms)
+			DisableScriptedObjects (0ms)
+			BackupInstance (0ms)
+			ReleaseScriptingObjects (0ms)
+			CreateAndSetChildDomain (1ms)
+		EndReloadAssembly (206ms)
+			LoadAssemblies (17ms)
+			RebuildTransferFunctionScriptingTraits (0ms)
+			SetupTypeCache (79ms)
+			ReleaseScriptCaches (0ms)
+			RebuildScriptCaches (21ms)
+			SetupLoadedEditorAssemblies (72ms)
+				LogAssemblyErrors (0ms)
+				InitializePlatformSupportModulesInManaged (3ms)
+				SetLoadedEditorAssemblies (0ms)
+				RefreshPlugins (19ms)
+				BeforeProcessingInitializeOnLoad (1ms)
+				ProcessInitializeOnLoadAttributes (44ms)
+				ProcessInitializeOnLoadMethodAttributes (4ms)
+				AfterProcessingInitializeOnLoad (0ms)
+				EditorAssembliesLoaded (0ms)
+			ExecutionOrderSort2 (0ms)
+			AwakeInstancesAfterBackupRestoration (0ms)
+Registering precompiled user dll's ...
+Registered in 0.089969 seconds.
+Platform modules already initialized, skipping
+Validating Project structure ... 0.006128 seconds.
+Shader import version has changed; will reimport all shaders...
+Upgrading shader files ...0.005360 seconds.
+Start importing Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs using Guid(6dd0a4accf6fb7c788af3c7aec039a9a) Importer(-1,00000000000000000000000000000000)
+Done importing asset: 'Assets/Scripts/GroundTruth/PhysicsShotRecorder.cs' (target hash: '5c5d49371c2b40bb54a609d9431747a9') in 0.035519 seconds
+Begin MonoManager ReloadAssembly
+Native extension for LinuxStandalone target not found
+Refreshing native plugins compatible for Editor in 0.38 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.522 seconds
+Domain Reload Profiling:
+	ReloadAssembly (543ms)
+		BeginReloadAssembly (35ms)
+			ExecutionOrderSort (0ms)
+			DisableScriptedObjects (1ms)
+			BackupInstance (0ms)
+			ReleaseScriptingObjects (0ms)
+			CreateAndSetChildDomain (16ms)
+		EndReloadAssembly (469ms)
+			LoadAssemblies (33ms)
+			RebuildTransferFunctionScriptingTraits (0ms)
+			SetupTypeCache (146ms)
+			ReleaseScriptCaches (0ms)
+			RebuildScriptCaches (33ms)
+			SetupLoadedEditorAssemblies (216ms)
+				LogAssemblyErrors (0ms)
+				InitializePlatformSupportModulesInManaged (6ms)
+				SetLoadedEditorAssemblies (0ms)
+				RefreshPlugins (1ms)
+				BeforeProcessingInitializeOnLoad (54ms)
+				ProcessInitializeOnLoadAttributes (150ms)
+				ProcessInitializeOnLoadMethodAttributes (2ms)
+				AfterProcessingInitializeOnLoad (2ms)
+				EditorAssembliesLoaded (0ms)
+			ExecutionOrderSort2 (0ms)
+			AwakeInstancesAfterBackupRestoration (1ms)
+Platform modules already initialized, skipping
+AssetDatabase: script compilation time: 0.012673s
+- Starting script compilation
+- Starting compile Library/ScriptAssemblies/Assembly-CSharp.dll
+- Finished compile Library/ScriptAssemblies/Assembly-CSharp.dll in 1.363105 seconds
+- Starting compile Library/ScriptAssemblies/Assembly-CSharp-Editor.dll
+- Finished compile Library/ScriptAssemblies/Assembly-CSharp-Editor.dll in 1.246357 seconds
+- Finished script compilation in 2.637733 seconds
+Assets/Scripts/GameWorld/ABSlingshot.cs(35,9): warning CS0618: 'LineRenderer.SetWidth(float, float)' is obsolete: 'Use startWidth, endWidth or widthCurve instead.'
+Assets/Scripts/GameWorld/Characters/Birds/ABBird.cs(145,13): warning CS0618: 'LineRenderer.SetVertexCount(int)' is obsolete: 'Use positionCount instead.'
+Assets/Scripts/GameWorld/Characters/Birds/ABBird.cs(271,9): warning CS0618: 'LineRenderer.SetColors(Color, Color)' is obsolete: 'Use startColor, endColor or colorGradient instead.'
+Assets/Scripts/GameWorld/Characters/Birds/ABBird.cs(273,9): warning CS0618: 'LineRenderer.SetVertexCount(int)' is obsolete: 'Use positionCount instead.'
+Reloading assemblies after forced synchronous recompile.
+Begin MonoManager ReloadAssembly
+Native extension for LinuxStandalone target not found
+Refreshing native plugins compatible for Editor in 0.39 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Mono: successfully reloaded assembly
+- Completed reload, in  0.590 seconds
+Domain Reload Profiling:
+	ReloadAssembly (610ms)
+		BeginReloadAssembly (47ms)
+			ExecutionOrderSort (0ms)
+			DisableScriptedObjects (0ms)
+			BackupInstance (0ms)
+			ReleaseScriptingObjects (0ms)
+			CreateAndSetChildDomain (28ms)
+		EndReloadAssembly (524ms)
+			LoadAssemblies (112ms)
+			RebuildTransferFunctionScriptingTraits (0ms)
+			SetupTypeCache (148ms)
+			ReleaseScriptCaches (1ms)
+			RebuildScriptCaches (32ms)
+			SetupLoadedEditorAssemblies (190ms)
+				LogAssemblyErrors (0ms)
+				InitializePlatformSupportModulesInManaged (5ms)
+				SetLoadedEditorAssemblies (0ms)
+				RefreshPlugins (1ms)
+				BeforeProcessingInitializeOnLoad (50ms)
+				ProcessInitializeOnLoadAttributes (130ms)
+				ProcessInitializeOnLoadMethodAttributes (2ms)
+				AfterProcessingInitializeOnLoad (2ms)
+				EditorAssembliesLoaded (0ms)
+			ExecutionOrderSort2 (0ms)
+			AwakeInstancesAfterBackupRestoration (1ms)
+Platform modules already initialized, skipping
+Refreshing native plugins compatible for Editor in 0.18 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+RefreshInfo: InitialScriptRefreshV2(NoUpdateAssetOptions)
+RefreshProfiler: Total: 4361.712ms
+	InvokeBeforeRefreshCallbacks: 0.302ms
+	ApplyChangesToAssetFolders: 0.052ms
+	WriteModifiedImportersToTextMetaFiles: 0.000ms
+	CleanLegacyArtifacts: 0.000ms
+	Scan: 138.460ms
+	OnSourceAssetsModified: 0.968ms
+	UnregisterDeletedAssets: 0.000ms
+	InitializeImportedAssetsSnapshot: 0.138ms
+	GetAllGuidsForCategorization: 0.094ms
+	CategorizeAssets: 19.291ms
+	ImportAndPostprocessOutOfDateAssets: 4193.016ms (1428.115ms without children)
+		ImportManagerImport: 36.623ms (0.277ms without children)
+			ImportInProcess: 36.333ms
+			ImportOutOfProcess: 0.000ms
+			UpdateCategorizedAssets: 0.014ms
+			RemoteAssetCacheGetArtifact: 0.000ms (0.000ms without children)
+				RemoteAssetCacheResolve: 0.000ms
+				RemoteAssetCacheDownloadFile: 0.000ms
+		CompileScripts: 2682.369ms
+		PostProcessAllAssets: 42.145ms
+		ReloadImportedAssets: 0.000ms
+		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.125ms
+		InitializingProgressBar: 0.001ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.105ms
+		OnDemandSchedulerStart: 0.000ms
+		RestoreLoadedAssetsState: 0.048ms
+	InvokeProjectHasChanged: 0.000ms
+	UpdateImportedAssetsSnapshot: 3.485ms
+	ReloadSourceAssets: 0.673ms
+	UnloadImportedAssets: 0.004ms
+	Hotreload: 0.605ms
+	FixTempGuids: 0.002ms
+	VerifyGuidPMRegistrations: 0.000ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.000ms
+	UnloadStreamsBegin: 0.254ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.086ms
+	GetLoadedSourceAssetsSnapshot: 0.418ms
+	PersistCurrentRevisions: 0.000ms
+	UnloadStreamsEnd: 7.179ms
+	GenerateScriptTypeHashes: 0.266ms
+	Untracked: 0.171ms
+Refreshing native plugins compatible for Editor in 0.16 ms, found 0 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Refresh completed in 0.188125 seconds.
+RefreshInfo: RefreshV2(ForceSynchronousImport)
+RefreshProfiler: Total: 188.119ms
+	InvokeBeforeRefreshCallbacks: 0.600ms
+	ApplyChangesToAssetFolders: 0.073ms
+	WriteModifiedImportersToTextMetaFiles: 0.000ms
+	CleanLegacyArtifacts: 0.000ms
+	Scan: 152.676ms
+	OnSourceAssetsModified: 0.001ms
+	UnregisterDeletedAssets: 0.000ms
+	InitializeImportedAssetsSnapshot: 1.265ms
+	GetAllGuidsForCategorization: 0.043ms
+	CategorizeAssets: 18.023ms
+	ImportAndPostprocessOutOfDateAssets: 13.104ms (1.444ms without children)
+		ImportManagerImport: 0.000ms (0.000ms without children)
+			ImportInProcess: 0.000ms
+			ImportOutOfProcess: 0.000ms
+			UpdateCategorizedAssets: 0.000ms
+			RemoteAssetCacheGetArtifact: 0.000ms (0.000ms without children)
+				RemoteAssetCacheResolve: 0.000ms
+				RemoteAssetCacheDownloadFile: 0.000ms
+		CompileScripts: 0.000ms
+		PostProcessAllAssets: 8.733ms
+		ReloadImportedAssets: 0.002ms
+		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.175ms
+		InitializingProgressBar: 0.000ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.084ms
+		OnDemandSchedulerStart: 0.418ms
+		RestoreLoadedAssetsState: 0.961ms
+	InvokeProjectHasChanged: 0.000ms
+	UpdateImportedAssetsSnapshot: 1.287ms
+	ReloadSourceAssets: 0.269ms
+	UnloadImportedAssets: 0.043ms
+	Hotreload: 0.298ms
+	FixTempGuids: 0.001ms
+	VerifyGuidPMRegistrations: 0.000ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.111ms
+	UnloadStreamsBegin: 0.004ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.185ms
+	GetLoadedSourceAssetsSnapshot: 1.527ms
+	PersistCurrentRevisions: 0.000ms
+	UnloadStreamsEnd: 0.274ms
+	GenerateScriptTypeHashes: 0.239ms
+	Untracked: -0.380ms
+RefreshInfo: StopAssetImportingV2(ForceSynchronousImport)
+RefreshProfiler: Total: 36.063ms
+	InvokeBeforeRefreshCallbacks: 0.266ms
+	ApplyChangesToAssetFolders: 0.062ms
+	WriteModifiedImportersToTextMetaFiles: 0.000ms
+	CleanLegacyArtifacts: 0.000ms
+	Scan: 33.612ms
+	OnSourceAssetsModified: 0.000ms
+	UnregisterDeletedAssets: 0.000ms
+	InitializeImportedAssetsSnapshot: 1.186ms
+	GetAllGuidsForCategorization: 0.000ms
+	CategorizeAssets: 0.000ms
+	ImportAndPostprocessOutOfDateAssets: 0.000ms (0.000ms without children)
+		ImportManagerImport: 0.000ms (0.000ms without children)
+			ImportInProcess: 0.000ms
+			ImportOutOfProcess: 0.000ms
+			UpdateCategorizedAssets: 0.000ms
+			RemoteAssetCacheGetArtifact: 0.000ms (0.000ms without children)
+				RemoteAssetCacheResolve: 0.000ms
+				RemoteAssetCacheDownloadFile: 0.000ms
+		CompileScripts: 0.000ms
+		PostProcessAllAssets: 0.000ms
+		ReloadImportedAssets: 0.000ms
+		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.000ms
+		InitializingProgressBar: 0.000ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.000ms
+		OnDemandSchedulerStart: 0.000ms
+		RestoreLoadedAssetsState: 0.000ms
+	InvokeProjectHasChanged: 0.000ms
+	UpdateImportedAssetsSnapshot: 0.000ms
+	ReloadSourceAssets: 0.000ms
+	UnloadImportedAssets: 0.000ms
+	Hotreload: 0.009ms
+	FixTempGuids: 0.002ms
+	VerifyGuidPMRegistrations: 0.000ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.096ms
+	UnloadStreamsBegin: 0.032ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.180ms
+	GetLoadedSourceAssetsSnapshot: 0.285ms
+	PersistCurrentRevisions: 0.000ms
+	UnloadStreamsEnd: 0.003ms
+	GenerateScriptTypeHashes: 0.000ms
+	Untracked: 0.331ms
+Refresh completed in 0.098237 seconds.
+RefreshInfo: RefreshV2(NoUpdateAssetOptions)
+RefreshProfiler: Total: 98.231ms
+	InvokeBeforeRefreshCallbacks: 0.001ms
+	ApplyChangesToAssetFolders: 0.060ms
+	WriteModifiedImportersToTextMetaFiles: 0.000ms
+	CleanLegacyArtifacts: 0.000ms
+	Scan: 75.912ms
+	OnSourceAssetsModified: 0.001ms
+	UnregisterDeletedAssets: 0.000ms
+	InitializeImportedAssetsSnapshot: 1.481ms
+	GetAllGuidsForCategorization: 0.069ms
+	CategorizeAssets: 17.703ms
+	ImportAndPostprocessOutOfDateAssets: 1.559ms (0.300ms without children)
+		ImportManagerImport: 0.000ms (0.000ms without children)
+			ImportInProcess: 0.000ms
+			ImportOutOfProcess: 0.000ms
+			UpdateCategorizedAssets: 0.000ms
+			RemoteAssetCacheGetArtifact: 0.000ms (0.000ms without children)
+				RemoteAssetCacheResolve: 0.000ms
+				RemoteAssetCacheDownloadFile: 0.000ms
+		CompileScripts: 0.000ms
+		PostProcessAllAssets: 0.000ms
+		ReloadImportedAssets: 0.000ms
+		VerifyAssetsAreUpToDateAndCorrect: 0.000ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 0.142ms
+		InitializingProgressBar: 0.000ms
+		PostProcessAllAssetNotificationsAddChangedAssets: 0.074ms
+		OnDemandSchedulerStart: 0.169ms
+		RestoreLoadedAssetsState: 0.872ms
+	InvokeProjectHasChanged: 0.000ms
+	UpdateImportedAssetsSnapshot: 0.000ms
+	ReloadSourceAssets: 0.292ms
+	UnloadImportedAssets: 0.045ms
+	Hotreload: 0.051ms
+	FixTempGuids: 0.002ms
+	VerifyGuidPMRegistrations: 0.000ms
+	GatherAllCurrentPrimaryArtifactRevisions: 0.112ms
+	UnloadStreamsBegin: 0.013ms
+	LoadedImportedAssetsSnapshotReleaseGCHandles: 0.234ms
+	GetLoadedSourceAssetsSnapshot: 1.195ms
+	PersistCurrentRevisions: 0.000ms
+	UnloadStreamsEnd: 0.005ms
+	GenerateScriptTypeHashes: 0.000ms
+	Untracked: -0.502ms
+Initializing Unity extensions:
+ '/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/UnityExtensions/Unity/UnityVR/Editor/UnityEditor.VR.dll'  GUID: 4ba2329b63d54f0187bcaa12486b1b0f
+UpdateMenuTitleForLanguage: 10
+Unloading 84 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 35.1 MB.
+System memory in use after: 34.3 MB.
+
+Unloading 141 unused Assets to reduce memory usage. Loaded Objects now: 1806.
+Total: 2.395785 ms (FindLiveObjects: 0.158778 ms CreateObjectMapping: 0.029394 ms MarkObjects: 1.626251 ms  DeleteObjects: 0.580621 ms)
+
+[Project] Loading completed in 11.529 seconds
+	Project init time: 				0.078 seconds
+		Template init time: 		0.000 seconds
+		Services packages init time: 	0.000 seconds
+		Package Manager init time: 		0.000 seconds
+		Asset Database init time: 		0.000 seconds
+		Global illumination init time: 	0.000 seconds
+		Assemblies load time: 			0.000 seconds
+		Unity extensions init time: 	0.001 seconds
+		Asset Database refresh time: 	0.000 seconds
+	Scene opening time: 			0.070 seconds
+Running tests for EditMode
+With test filter: PhysicsCaptureProtocolTests
+Executing tests with settings: test mode = EditMode
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:37)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+UnityEditor.TestTools.TestRunner.CommandLineTest.Executer:InitializeAndExecuteRun (string[]) (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEditor.TestRunner/CommandLineTest/Executer.cs:45)
+UnityEditor.TestTools.TestRunner.CommandLineTest.TestStarter:UpdateWatch () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEditor.TestRunner/CommandLineTest/TestStarter.cs:50)
+System.Reflection.MonoMethod:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+System.Delegate:DynamicInvokeImpl (object[])
+System.MulticastDelegate:DynamicInvokeImpl (object[])
+System.Delegate:DynamicInvoke (object[])
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions () (at /home/bokken/build/output/unity/unity/Editor/Mono/EditorApplication.cs:310)
+ 
+(Filename: /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs Line: 37)
+
+[MODES] Loading mode Default (0) for mode-current-id-Science Birds
+[UnityConnectServicesConfig] config is NOT valid, switching to default
+Created GICache directory at /tmp/GiCache. Took: 0.002s, timestamps: [11.534 - 11.536]
+gi::BakeBackendSwitch: switching bake backend from 3 to 1.
+Unloading 9 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 34.4 MB.
+System memory in use after: 34.5 MB.
+
+Unloading 6 unused Assets to reduce memory usage. Loaded Objects now: 1821.
+Total: 4.828246 ms (FindLiveObjects: 0.124887 ms CreateObjectMapping: 0.016365 ms MarkObjects: 4.657830 ms  DeleteObjects: 0.028623 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.7 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 4.335046 ms (FindLiveObjects: 0.108884 ms CreateObjectMapping: 0.026279 ms MarkObjects: 4.196588 ms  DeleteObjects: 0.002444 ms)
+
+adding novelty level 3
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:37)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+RepresentationNovelty:addNoveltyToJSONGroundTruthIfNeeded (string) (at Assets/Scripts/RepresentationNovelty.cs:13)
+SymbolicGameState:GetGTJson (bool) (at Assets/Scripts/GroundTruth/SymbolicGameState.cs:373)
+PhysicalSnapshotExporter:Capture (SymbolicGameState,PhysicalEntityRegistry,PhysicalSnapshotClock,int,single) (at Assets/Scripts/GroundTruth/PhysicalSnapshotExporter.cs:17)
+PhysicalSnapshotRuntime:CaptureCurrent (SymbolicGameState,int,single) (at Assets/Scripts/GroundTruth/PhysicalSnapshotRuntime.cs:81)
+PhysicalSnapshotRuntime/<CaptureAtEndOfRenderFrame>d__28:MoveNext () (at Assets/Scripts/GroundTruth/PhysicalSnapshotRuntime.cs:89)
+PhysicsCaptureProtocolTests:CaptureAtEndOfRenderFrameUsesWaitForEndOfFrameBeforeBatch () (at Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs:84)
+System.Reflection.MonoMethod:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
+NUnit.Framework.Internal.MethodWrapper:Invoke (object,object[])
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunNonAsyncTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext)
+UnityEngine.TestTools.UnityTestMethodCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext) (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Commands/UnityTestMethodCommand.cs:16)
+UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand/<>c__DisplayClass2_0:<Execute>b__0 () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:25)
+UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand:CaptureException (NUnit.Framework.Internal.TestResult,System.Action) (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:69)
+UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand:ExecuteAndCheckLog (UnityEngine.TestTools.Logging.LogScope,NUnit.Framework.Internal.TestResult,System.Action) (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:80)
+UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext) (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:25)
+UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand/<ExecuteEnumerable>d__3:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:36)
+UnityEngine.TestTools.BeforeAfterTestCommandBase`1/<ExecuteEnumerable>d__15<NUnit.Framework.ITestAction>:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Commands/BeforeAfterTestCommandBase.cs:178)
+UnityEngine.TestTools.BeforeAfterTestCommandBase`1/<ExecuteEnumerable>d__15<System.Reflection.MethodInfo>:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Commands/BeforeAfterTestCommandBase.cs:178)
+UnityEngine.TestTools.ImmediateEnumerableCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext) (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Commands/ImmediateEnumerableCommand.cs:19)
+UnityEngine.TestTools.BeforeAfterTestCommandBase`1/<ExecuteEnumerable>d__15<System.Reflection.MethodInfo>:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Commands/BeforeAfterTestCommandBase.cs:186)
+UnityEngine.TestTools.BeforeAfterTestCommandBase`1/<ExecuteEnumerable>d__15<UnityEngine.TestTools.IOuterUnityTestAction>:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Commands/BeforeAfterTestCommandBase.cs:178)
+UnityEngine.TestRunner.NUnitExtensions.Runner.DefaultTestWorkItem/<PerformWork>d__2:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/DefaultTestWorkItem.cs:54)
+UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<RunChildren>d__16:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:201)
+UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<PerformWork>d__12:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:77)
+UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<RunChildren>d__16:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:201)
+UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<PerformWork>d__12:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:77)
+UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<RunChildren>d__16:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:201)
+UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<PerformWork>d__12:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:77)
+UnityEditor.TestTools.TestRunner.EditModeRunner:MoveNextAndUpdateYieldObject () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEditor.TestRunner/TestRunner/EditModeRunner.cs:243)
+UnityEditor.TestTools.TestRunner.EditModeRunner:TestConsumer () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEditor.TestRunner/TestRunner/EditModeRunner.cs:276)
+System.Reflection.MonoMethod:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+System.Delegate:DynamicInvokeImpl (object[])
+System.MulticastDelegate:DynamicInvokeImpl (object[])
+System.Delegate:DynamicInvoke (object[])
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions () (at /home/bokken/build/output/unity/unity/Editor/Mono/EditorApplication.cs:310)
+ 
+(Filename: /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs Line: 37)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 4.582016 ms (FindLiveObjects: 0.132068 ms CreateObjectMapping: 0.026821 ms MarkObjects: 4.419692 ms  DeleteObjects: 0.002764 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.723227 ms (FindLiveObjects: 0.102915 ms CreateObjectMapping: 0.027131 ms MarkObjects: 3.589567 ms  DeleteObjects: 0.002964 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.463999 ms (FindLiveObjects: 0.062594 ms CreateObjectMapping: 0.016235 ms MarkObjects: 3.381915 ms  DeleteObjects: 0.002805 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.581335 ms (FindLiveObjects: 0.088954 ms CreateObjectMapping: 0.026500 ms MarkObjects: 3.462987 ms  DeleteObjects: 0.002344 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 4.094584 ms (FindLiveObjects: 0.099319 ms CreateObjectMapping: 0.026550 ms MarkObjects: 3.965641 ms  DeleteObjects: 0.002503 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.212251 ms (FindLiveObjects: 0.057276 ms CreateObjectMapping: 0.015753 ms MarkObjects: 3.136667 ms  DeleteObjects: 0.002213 ms)
+
+adding novelty level 3
+UnityEngine.StackTraceUtility:ExtractStackTrace () (at /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs:37)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+RepresentationNovelty:addNoveltyToJSONGroundTruthIfNeeded (string) (at Assets/Scripts/RepresentationNovelty.cs:13)
+SymbolicGameState:GetGTJson (bool) (at Assets/Scripts/GroundTruth/SymbolicGameState.cs:373)
+PhysicalSnapshotExporter:Capture (SymbolicGameState,PhysicalEntityRegistry,PhysicalSnapshotClock,int,single) (at Assets/Scripts/GroundTruth/PhysicalSnapshotExporter.cs:17)
+PhysicalSnapshotRuntime:CaptureCurrent (SymbolicGameState,int,single) (at Assets/Scripts/GroundTruth/PhysicalSnapshotRuntime.cs:81)
+PhysicsCaptureProtocolTests:Request70EnvelopeContainsActualPngAndSameRenderFrameBatch () (at Assets/Tests/Editor/PhysicsCaptureProtocolTests.cs:59)
+System.Reflection.MonoMethod:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+NUnit.Framework.Internal.Reflect:InvokeMethod (System.Reflection.MethodInfo,object,object[])
+NUnit.Framework.Internal.MethodWrapper:Invoke (object,object[])
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunNonAsyncTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:RunTestMethod (NUnit.Framework.Internal.ITestExecutionContext)
+NUnit.Framework.Internal.Commands.TestMethodCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext)
+UnityEngine.TestTools.UnityTestMethodCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext) (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Commands/UnityTestMethodCommand.cs:16)
+UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand/<>c__DisplayClass2_0:<Execute>b__0 () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:25)
+UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand:CaptureException (NUnit.Framework.Internal.TestResult,System.Action) (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:69)
+UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand:ExecuteAndCheckLog (UnityEngine.TestTools.Logging.LogScope,NUnit.Framework.Internal.TestResult,System.Action) (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:80)
+UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext) (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:25)
+UnityEngine.TestRunner.NUnitExtensions.Runner.UnityLogCheckDelegatingCommand/<ExecuteEnumerable>d__3:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/UnityLogCheckDelegatingCommand.cs:36)
+UnityEngine.TestTools.BeforeAfterTestCommandBase`1/<ExecuteEnumerable>d__15<NUnit.Framework.ITestAction>:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Commands/BeforeAfterTestCommandBase.cs:178)
+UnityEngine.TestTools.BeforeAfterTestCommandBase`1/<ExecuteEnumerable>d__15<System.Reflection.MethodInfo>:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Commands/BeforeAfterTestCommandBase.cs:178)
+UnityEngine.TestTools.ImmediateEnumerableCommand:Execute (NUnit.Framework.Internal.ITestExecutionContext) (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Commands/ImmediateEnumerableCommand.cs:19)
+UnityEngine.TestTools.BeforeAfterTestCommandBase`1/<ExecuteEnumerable>d__15<System.Reflection.MethodInfo>:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Commands/BeforeAfterTestCommandBase.cs:186)
+UnityEngine.TestTools.BeforeAfterTestCommandBase`1/<ExecuteEnumerable>d__15<UnityEngine.TestTools.IOuterUnityTestAction>:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Commands/BeforeAfterTestCommandBase.cs:178)
+UnityEngine.TestRunner.NUnitExtensions.Runner.DefaultTestWorkItem/<PerformWork>d__2:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/DefaultTestWorkItem.cs:54)
+UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<RunChildren>d__16:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:201)
+UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<PerformWork>d__12:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:77)
+UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<RunChildren>d__16:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:201)
+UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<PerformWork>d__12:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:77)
+UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<RunChildren>d__16:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:201)
+UnityEngine.TestRunner.NUnitExtensions.Runner.CompositeWorkItem/<PerformWork>d__12:MoveNext () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEngine.TestRunner/NUnitExtensions/Runner/CompositeWorkItem.cs:77)
+UnityEditor.TestTools.TestRunner.EditModeRunner:MoveNextAndUpdateYieldObject () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEditor.TestRunner/TestRunner/EditModeRunner.cs:243)
+UnityEditor.TestTools.TestRunner.EditModeRunner:TestConsumer () (at Library/PackageCache/com.unity.test-framework@1.1.31/UnityEditor.TestRunner/TestRunner/EditModeRunner.cs:276)
+System.Reflection.MonoMethod:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+System.Delegate:DynamicInvokeImpl (object[])
+System.MulticastDelegate:DynamicInvokeImpl (object[])
+System.Delegate:DynamicInvoke (object[])
+UnityEditor.EditorApplication:Internal_CallUpdateFunctions () (at /home/bokken/build/output/unity/unity/Editor/Mono/EditorApplication.cs:310)
+ 
+(Filename: /home/bokken/build/output/unity/unity/Runtime/Export/Scripting/StackTrace.cs Line: 37)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 4.116858 ms (FindLiveObjects: 0.064087 ms CreateObjectMapping: 0.016224 ms MarkObjects: 4.032902 ms  DeleteObjects: 0.003204 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.937079 ms (FindLiveObjects: 0.111527 ms CreateObjectMapping: 0.027842 ms MarkObjects: 3.794294 ms  DeleteObjects: 0.002885 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.519571 ms (FindLiveObjects: 0.093651 ms CreateObjectMapping: 0.027000 ms MarkObjects: 3.395796 ms  DeleteObjects: 0.002623 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.215416 ms (FindLiveObjects: 0.053550 ms CreateObjectMapping: 0.015774 ms MarkObjects: 3.143207 ms  DeleteObjects: 0.002494 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 4.784330 ms (FindLiveObjects: 0.130025 ms CreateObjectMapping: 0.018488 ms MarkObjects: 4.630048 ms  DeleteObjects: 0.005138 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.514364 ms (FindLiveObjects: 0.102744 ms CreateObjectMapping: 0.026901 ms MarkObjects: 3.381624 ms  DeleteObjects: 0.002694 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.218701 ms (FindLiveObjects: 0.057777 ms CreateObjectMapping: 0.016184 ms MarkObjects: 3.142015 ms  DeleteObjects: 0.002304 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.657579 ms (FindLiveObjects: 0.064466 ms CreateObjectMapping: 0.016275 ms MarkObjects: 3.571780 ms  DeleteObjects: 0.004647 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 4.731151 ms (FindLiveObjects: 0.126040 ms CreateObjectMapping: 0.026970 ms MarkObjects: 4.573193 ms  DeleteObjects: 0.004036 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 4.477479 ms (FindLiveObjects: 0.125668 ms CreateObjectMapping: 0.027432 ms MarkObjects: 4.319632 ms  DeleteObjects: 0.004006 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+Fallback handler could not load library /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Mono/lib/libKernel32
+Fallback handler could not load library /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Mono/lib/libKernel32.so
+Fallback handler could not load library /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Mono/lib/Kernel32
+Fallback handler could not load library /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Mono/lib/libKernel32
+Fallback handler could not load library /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Mono/lib/libKernel32.so
+Fallback handler could not load library /home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Data/Mono/lib/libKernel32
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 4.843779 ms (FindLiveObjects: 0.122274 ms CreateObjectMapping: 0.017626 ms MarkObjects: 4.698361 ms  DeleteObjects: 0.005008 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.946994 ms (FindLiveObjects: 0.106540 ms CreateObjectMapping: 0.027061 ms MarkObjects: 3.810208 ms  DeleteObjects: 0.002484 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 5.164390 ms (FindLiveObjects: 0.147632 ms CreateObjectMapping: 0.027411 ms MarkObjects: 4.985612 ms  DeleteObjects: 0.003075 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.894204 ms (FindLiveObjects: 0.100381 ms CreateObjectMapping: 0.026910 ms MarkObjects: 3.763768 ms  DeleteObjects: 0.002724 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.595065 ms (FindLiveObjects: 0.086480 ms CreateObjectMapping: 0.026260 ms MarkObjects: 3.479071 ms  DeleteObjects: 0.002754 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.723027 ms (FindLiveObjects: 0.108373 ms CreateObjectMapping: 0.027311 ms MarkObjects: 3.583658 ms  DeleteObjects: 0.003085 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.446542 ms (FindLiveObjects: 0.092819 ms CreateObjectMapping: 0.025548 ms MarkObjects: 3.325201 ms  DeleteObjects: 0.002293 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.582296 ms (FindLiveObjects: 0.091898 ms CreateObjectMapping: 0.027321 ms MarkObjects: 3.459943 ms  DeleteObjects: 0.002584 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 4.713373 ms (FindLiveObjects: 0.117446 ms CreateObjectMapping: 0.018017 ms MarkObjects: 4.574825 ms  DeleteObjects: 0.002574 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 5.081006 ms (FindLiveObjects: 0.157416 ms CreateObjectMapping: 0.036225 ms MarkObjects: 4.880764 ms  DeleteObjects: 0.005738 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 4.225181 ms (FindLiveObjects: 0.053119 ms CreateObjectMapping: 0.015844 ms MarkObjects: 4.149778 ms  DeleteObjects: 0.005739 ms)
+
+Unloading 0 Unused Serialized files (Serialized files now loaded: 0)
+System memory in use before: 33.8 MB.
+System memory in use after: 33.9 MB.
+
+Unloading 0 unused Assets to reduce memory usage. Loaded Objects now: 1827.
+Total: 3.889607 ms (FindLiveObjects: 0.069114 ms CreateObjectMapping: 0.027391 ms MarkObjects: 3.787824 ms  DeleteObjects: 0.004837 ms)
+
+Saving results to: /mnt/array/sukaih/Project/.novphy-worktrees/physics-unity-2019.4/.claude/project-docs/evidence/runtime-repin-gate-20260810/collision-payload-redgreen/green-head.xml
+[0811/175323:ERROR:browser_main_loop.cc(161)] Running without the SUID sandbox! See https://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment for more information on developing with the sandbox on.
+Caught fatal signal - signo:11 code:1 errno:0 addr:0x58
+Obtained 12 stack frames.
+#0  0x0071ed55245330 in __sigaction
+#1  0x0071ed5c6c365d in printing::PrintJobManager::Shutdown()
+#2  0x0071ed5c63bdd6 in CefContext::FinishShutdownOnUIThread(base::WaitableEvent*)
+#3  0x0071ed5c63c901 in CefContext::Shutdown()
+#4  0x0071ed5c63ca1c in CefShutdown()
+#5  0x005d933cd68bd7 in CefInstance::~CefInstance()
+#6  0x005d933cd68ca9 in CefInstance::~CefInstance()
+#7  0x005d933cd67343 in CefInstance::Destroy()
+#8  0x005d9339dd7213 in Application::Terminate(bool)
+#9  0x005d9339dcb04c in Application::Exit(int)
+#10 0x00000040502582 in (wrapper managed-to-native) UnityEditor.EditorApplication:Exit (int)
+#11 0x000000404bb768 in UnityEditor.TestTools.TestRunner.Api.CallbacksDelegator:RunFinished (NUnit.Framework.Interfaces.ITestResult)

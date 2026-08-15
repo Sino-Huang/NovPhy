@@ -149,8 +149,6 @@ def write_manifest(payload: Path, context: ManifestContext) -> Path:
     }
     if context.build_sources is not None:
         manifest["build_inputs"] = build_input_manifest(payload, context.worktree, context.build_sources, context.package_inputs)
-    else:
-        manifest["build_inputs"] = {"unity_package_inputs": {"files": context.package_inputs}}
     path = payload / "provenance.json"
     path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path

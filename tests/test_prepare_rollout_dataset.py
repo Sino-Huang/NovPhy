@@ -1,5 +1,7 @@
 import json
+import hashlib
 import os
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -9,22 +11,28 @@ from unittest.mock import patch
 
 from scripts.prepare_rollout_dataset import (
     PLAN_SCHEMA,
+    ACTIVE_COHORT_ROOT,
     SCHEMA,
     CollectionOptions,
     CollectionTargets,
     LevelEntry,
     PlannedEpisode,
+    PhysicsCaptureProvenance,
     _is_canonically_complete_fresh_engine_episode,
     _safe_output_name,
     build_collection_plan,
     discover_level_entries,
     generate_collection_commands,
+    resolve_physics_capture_provenance,
     load_partition_manifest,
     partition_levels,
     write_config_for_manifest_level,
     write_collection_plan,
     write_partition_manifest,
 )
+from scripts.rollout_artifacts import validate_rollout_episode
+from scripts.rollout_validation_types import EpisodeAccepted, EpisodeRejected, EpisodeValidationContract
+from world_model.data.types import PHYSICS_CAPTURE_V1
 
 
 def make_level(engine_dir: Path, novelty_level: str, level_type: str, name: str) -> None:
@@ -662,6 +670,170 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             script.write_text(commands, encoding="utf-8")
             subprocess.run(["bash", "-n", str(script)], check=True)
 
+    def test_generated_commands_reenter_the_generating_repo_root_after_sourcing_the_profile(self):
+        """`source ~/cd_novphy` chdirs to the NovPhy checkout and repoints PYTHONPATH.
+
+        Every later relative path (`scripts/collect_rollouts.py`, the plan artifact,
+        `data/...`) must still resolve against the repo the plan was generated in, or a
+        worktree launch silently runs the other checkout's collector.
+        """
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            out_root = root / "out"
+            out_root.mkdir()
+            entry = LevelEntry("novelty_level_1", "type010101", "levels/one.xml")
+            episode = PlannedEpisode("train", entry, out_root / "train" / _safe_output_name(entry), "scheduled")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="cwd")
+
+            commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(workers=1))
+
+            lines = commands.splitlines()
+            source_index = lines.index("source ~/cd_novphy")
+            repo_root = Path.cwd()
+            self.assertEqual(lines[source_index + 1], f"cd -- {shlex.quote(str(repo_root))}")
+            self.assertEqual(lines[source_index + 2], 'export PYTHONPATH="$PWD"')
+            self.assertLess(source_index, lines.index(f"plan_artifact={shlex.quote(str(plan_path))}"))
+            script = root / "collect.sh"
+            script.write_text(commands, encoding="utf-8")
+            subprocess.run(["bash", "-n", str(script)], check=True)
+
+    def test_generated_commands_resolve_relative_paths_from_the_generating_root(self):
+        """Executing the emitted prologue from an unrelated CWD must land in the repo root."""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            out_root = root / "out"
+            out_root.mkdir()
+            entry = LevelEntry("novelty_level_1", "type010101", "levels/one.xml")
+            episode = PlannedEpisode("train", entry, out_root / "train" / _safe_output_name(entry), "scheduled")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="cwd-exec")
+
+            commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(workers=1))
+
+            prologue = [
+                line
+                for line in commands.splitlines()[:6]
+                if line.startswith("cd -- ") or line.startswith("export PYTHONPATH=")
+            ]
+            probe = root / "probe.sh"
+            probe.write_text("\n".join(["set -euo pipefail", *prologue, 'printf "%s\\n" "$PWD" "$PYTHONPATH"']) + "\n", encoding="utf-8")
+            completed = subprocess.run(["bash", str(probe)], cwd=root, check=True, capture_output=True, text=True)
+            observed_cwd, observed_pythonpath = completed.stdout.split()
+            self.assertEqual(Path(observed_cwd), Path.cwd())
+            self.assertEqual(Path(observed_pythonpath), Path.cwd())
+
+    def test_scoped_inventory_plans_fewer_buckets_while_production_still_requires_eighty(self):
+        """A declared scope lets the single-level physics player be planned.
+
+        The 80-bucket invariant is what protects a production run from a truncated level
+        inventory, so it must still fire whenever no scope is declared.
+        """
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            engine_dir = root / "engine"
+            out_root = root / "out"
+            out_root.mkdir()
+            make_level(engine_dir, "novelty_level_0", "type010101", "only.xml")
+            entries = discover_level_entries(engine_dir)
+
+            with self.assertRaisesRegex(RuntimeError, "Expected 80 normal and novel buckets"):
+                build_collection_plan(entries, output_root=out_root, options=CollectionOptions(count=1, workers=1), targets=CollectionTargets(train=1, dev=1), selected_splits=("train",))
+
+            plan, summary = build_collection_plan(
+                entries,
+                output_root=out_root,
+                options=CollectionOptions(count=1, workers=1),
+                targets=CollectionTargets(train=1, dev=1),
+                selected_splits=("train",),
+                expected_bucket_count=1,
+            )
+
+            self.assertEqual(len(plan), 1)
+            self.assertEqual(plan[0].split, "train")
+            self.assertEqual(set(summary), {"train:novelty_level_0/type010101"})
+
+    def test_scoped_inventory_rejects_a_scope_that_disagrees_with_the_inventory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            engine_dir = root / "engine"
+            out_root = root / "out"
+            out_root.mkdir()
+            make_level(engine_dir, "novelty_level_0", "type010101", "only.xml")
+            entries = discover_level_entries(engine_dir)
+
+            with self.assertRaisesRegex(RuntimeError, "Expected 3 normal and novel buckets"):
+                build_collection_plan(entries, output_root=out_root, options=CollectionOptions(count=1, workers=1), targets=CollectionTargets(train=1, dev=1), selected_splits=("train",), expected_bucket_count=3)
+
+    def test_scoped_inventory_rejects_a_nonpositive_scope(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            engine_dir = root / "engine"
+            out_root = root / "out"
+            out_root.mkdir()
+            make_level(engine_dir, "novelty_level_0", "type010101", "only.xml")
+            entries = discover_level_entries(engine_dir)
+
+            with self.assertRaises(ValueError):
+                build_collection_plan(entries, output_root=out_root, options=CollectionOptions(count=1, workers=1), targets=CollectionTargets(train=1, dev=1), selected_splits=("train",), expected_bucket_count=0)
+
+    def test_discovery_can_target_a_declared_level_type_prefix(self):
+        """The staged physics player ships its level under `type2`, not `type010*`.
+
+        Discovery must stay pinned to the production prefix by default so a truncated
+        or foreign level tree can never be planned by accident.
+        """
+        with tempfile.TemporaryDirectory() as temporary:
+            engine_dir = Path(temporary) / "engine"
+            make_level(engine_dir, "novelty_level_0", "type2", "3_9_6_1.xml")
+            make_level(engine_dir, "novelty_level_0", "type010101", "production.xml")
+
+            default_entries = discover_level_entries(engine_dir)
+            self.assertEqual([entry.level_type for entry in default_entries], ["type010101"])
+
+            scoped = discover_level_entries(engine_dir, level_type_prefix="type2")
+            self.assertEqual([entry.level_type for entry in scoped], ["type2"])
+            self.assertEqual(scoped[0].bucket, "novelty_level_0/type2")
+            self.assertTrue(scoped[0].relative_path.endswith("type2/Levels/3_9_6_1.xml"))
+
+    def test_discovery_rejects_an_empty_level_type_prefix(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            engine_dir = Path(temporary) / "engine"
+            make_level(engine_dir, "novelty_level_0", "type2", "3_9_6_1.xml")
+
+            with self.assertRaises(ValueError):
+                discover_level_entries(engine_dir, level_type_prefix="  ")
+
+    def test_single_level_inventory_partitions_to_train_only(self):
+        """One level cannot fund a dev or test split without source-level leakage."""
+        with tempfile.TemporaryDirectory() as temporary:
+            engine_dir = Path(temporary) / "engine"
+            make_level(engine_dir, "novelty_level_0", "type2", "3_9_6_1.xml")
+            entries = discover_level_entries(engine_dir, level_type_prefix="type2")
+
+            partitions = partition_levels(entries)
+
+            self.assertEqual(len(partitions["train"]), 1)
+            self.assertEqual(partitions["dev"], [])
+            self.assertEqual(partitions["test"], [])
+
+    def test_train_only_plan_succeeds_where_train_dev_has_no_dev_capacity(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            engine_dir = root / "engine"
+            out_root = root / "out"
+            out_root.mkdir()
+            make_level(engine_dir, "novelty_level_0", "type2", "3_9_6_1.xml")
+            entries = discover_level_entries(engine_dir, level_type_prefix="type2")
+            options = CollectionOptions(count=1, workers=1)
+            targets = CollectionTargets(train=1, dev=1)
+
+            with self.assertRaisesRegex(RuntimeError, "no dev partition capacity"):
+                build_collection_plan(entries, output_root=out_root, options=options, targets=targets, selected_splits=("train", "dev"), expected_bucket_count=1)
+
+            plan, summary = build_collection_plan(entries, output_root=out_root, options=options, targets=targets, selected_splits=("train",), expected_bucket_count=1)
+
+            self.assertEqual([episode.split for episode in plan], ["train"])
+            self.assertEqual(set(summary), {"train:novelty_level_0/type2"})
+
     def test_generated_schedule_interleaves_normal_and_novelty_then_stripes_workers(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -710,5 +882,333 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             self.assertLess(result.stderr.index("prepare_rollout_dataset.py plan"), result.stderr.index("--train-target 7"))
 
 
+class PhysicsLauncherTests(unittest.TestCase):
+    def _provenance(self, root: Path) -> tuple[Path, Path, str]:
+        archive = root / "staged-player.tar"
+        archive.write_bytes(b"staged player archive")
+        archive_sha256 = hashlib.sha256(archive.read_bytes()).hexdigest()
+        marker = root / "physics_capture_v1_smoke.json"
+        marker.write_text(
+            json.dumps(
+                {
+                    "status": "accepted",
+                    "phase": "complete",
+                    "accepted_shot": "shot_001",
+                    "protected_unchanged": True,
+                    "provenance": {
+                        "player_sha256": "a" * 64,
+                        "protocol_sha256": "b" * 64,
+                        "archive_sha256": archive_sha256,
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        return archive, marker, archive_sha256
+
+    def test_physics_provenance_rejects_missing_or_stale_marker_before_plan_write(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            marker.unlink()
+            with self.assertRaisesRegex(ValueError, "smoke marker"):
+                resolve_physics_capture_provenance(archive, marker)
+            self.assertFalse((root / "plan").exists())
+
+    def test_physics_provenance_rejects_marker_digest_mismatch(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            marker.write_text(marker.read_text(encoding="utf-8").replace('"archive_sha256": "', '"archive_sha256": "0'), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "archive_sha256"):
+                resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_rejects_failed_and_stale_smoke_markers(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            failed = json.loads(marker.read_text(encoding="utf-8"))
+            failed["status"] = "failed"
+            marker.write_text(json.dumps(failed), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "status=accepted"):
+                resolve_physics_capture_provenance(archive, marker)
+            marker.write_text(json.dumps({**failed, "status": "accepted"}), encoding="utf-8")
+            marker_time = marker.stat().st_mtime_ns
+            os.utime(archive, ns=(marker_time + 1, marker_time + 1))
+            with self.assertRaisesRegex(ValueError, "stale"):
+                resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_rejects_failed_malformed_stale_and_wrong_version_markers(self):
+        mutations = {
+            "failed": lambda archive, marker: marker.write_text(marker.read_text(encoding="utf-8").replace('"accepted"', '"failed"'), encoding="utf-8"),
+            "malformed": lambda archive, marker: marker.write_text("{", encoding="utf-8"),
+            "uppercase digest": lambda archive, marker: marker.write_text(marker.read_text(encoding="utf-8").replace('"player_sha256": "a', '"player_sha256": "A'), encoding="utf-8"),
+            "stale": lambda archive, marker: os.utime(marker, ns=(archive.stat().st_atime_ns, archive.stat().st_mtime_ns - 1)),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
+                archive, marker, _ = self._provenance(Path(temporary))
+                mutate(archive, marker)
+
+                with self.assertRaisesRegex(ValueError, "physics smoke marker|stale"):
+                    resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_rejects_missing_phase(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            payload = json.loads(marker.read_text(encoding="utf-8"))
+            del payload["phase"]
+            marker.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "phase=complete"):
+                resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_rejects_missing_protected_unchanged(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            payload = json.loads(marker.read_text(encoding="utf-8"))
+            del payload["protected_unchanged"]
+            marker.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "protected_unchanged"):
+                resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_rejects_missing_or_empty_accepted_shot(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            payload = json.loads(marker.read_text(encoding="utf-8"))
+            del payload["accepted_shot"]
+            marker.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "accepted_shot"):
+                resolve_physics_capture_provenance(archive, marker)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            payload = json.loads(marker.read_text(encoding="utf-8"))
+            payload["accepted_shot"] = ""
+            marker.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "accepted_shot"):
+                resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_rejects_missing_provenance_object(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            payload = json.loads(marker.read_text(encoding="utf-8"))
+            del payload["provenance"]
+            marker.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "provenance object"):
+                resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_rejects_malformed_nested_hashes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            payload = json.loads(marker.read_text(encoding="utf-8"))
+            payload["provenance"]["player_sha256"] = "not-a-hash"
+            marker.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "SHA-256"):
+                resolve_physics_capture_provenance(archive, marker)
+
+    def test_physics_provenance_accepts_the_documented_smoke_report_shape(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            archive, marker, archive_sha256 = self._provenance(Path(temporary))
+
+            provenance = resolve_physics_capture_provenance(archive, marker)
+
+            self.assertEqual(provenance.archive_sha256, archive_sha256)
+            self.assertEqual(provenance.player_sha256, "a" * 64)
+            self.assertEqual(provenance.protocol_sha256, "b" * 64)
+
+    def test_physics_cli_rejects_non_directory_stage_before_plan_write(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output_root = root / "out"
+            output_root.mkdir()
+            stage_file = root / "not-a-stage"
+            stage_file.write_text("not a directory", encoding="utf-8")
+            plan_dir = root / "plan"
+            script = Path(__file__).resolve().parents[1] / "scripts" / "prepare_rollout_dataset.py"
+
+            result = subprocess.run(
+                [
+                    "python",
+                    str(script),
+                    "plan",
+                    "--command-output-root",
+                    str(output_root),
+                    "--output-dir",
+                    str(plan_dir),
+                    "--physics-capture-v1",
+                    "--physics-player-dir",
+                    str(stage_file),
+                ],
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("staged player directory", result.stderr)
+            self.assertFalse(plan_dir.exists())
+
+    def test_physics_plan_rejects_protected_active_root_before_plan_write(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            provenance = resolve_physics_capture_provenance(archive, marker)
+            protected_root = Path(__file__).resolve().parents[1] / "data" / "novphy_rollouts_dataset_20260708_171531"
+            plan_dir = root / "plan"
+            episode = PlannedEpisode("train", LevelEntry("novelty_level_1", "type010101", "levels/one.xml"), protected_root / "train" / "episode", "scheduled")
+
+            with self.assertRaisesRegex(ValueError, "active cohort"):
+                write_collection_plan(plan_dir, output_root=protected_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="protected", physics_provenance=provenance)
+
+            self.assertFalse(plan_dir.exists())
+
+    def test_enriched_commands_copy_verified_archive_and_propagate_one_digest(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            out_root = root / "out"
+            out_root.mkdir()
+            archive, marker, archive_sha256 = self._provenance(root)
+            provenance = resolve_physics_capture_provenance(archive, marker)
+            episode = PlannedEpisode("train", LevelEntry("novelty_level_1", "type010101", "levels/one.xml"), out_root / "train" / "episode", "scheduled")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=2), targets=CollectionTargets(train=1, dev=1), seed="physics", physics_provenance=provenance)
+            commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(workers=2), physics_provenance=provenance)
+            payload = json.loads(plan_path.read_text(encoding="utf-8"))
+
+            self.assertEqual(payload["contract"]["capture_contract"], "physics_capture_v1")
+            self.assertEqual(payload["contract"]["archive_sha256"], archive_sha256)
+            self.assertEqual(commands.count(archive_sha256), 2)
+            self.assertIn("--physics-capture-v1", commands)
+            self.assertIn("--physics-host 127.0.0.1", commands)
+            self.assertIn("--physics-port 2005", commands)
+            self.assertIn("--physics-archive-sha256", commands)
+            self.assertIn("sha256sum", commands)
+            self.assertIn("tar -xf", commands)
+
+    def test_enriched_plan_rejects_the_active_cohort_root(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, marker, _ = self._provenance(root)
+            provenance = resolve_physics_capture_provenance(archive, marker)
+            episode = PlannedEpisode("train", LevelEntry("novelty_level_1", "type010101", "levels/one.xml"), ACTIVE_COHORT_ROOT / "train" / "episode", "scheduled")
+
+            with self.assertRaisesRegex(ValueError, "active cohort"):
+                write_collection_plan(root / "plan", output_root=ACTIVE_COHORT_ROOT, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="active", physics_provenance=provenance)
+            self.assertFalse((root / "plan").exists())
+
+    def test_legacy_command_bytes_are_unchanged_when_physics_is_unset(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            out_root = root / "out"
+            out_root.mkdir()
+            episode = PlannedEpisode("train", LevelEntry("novelty_level_1", "type010101", "levels/one.xml"), out_root / "train" / "episode", "scheduled")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="legacy")
+            commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(workers=1))
+
+            # No physics staging, provenance, or capture flag may leak into a legacy
+            # script.  The bare word "physics" is not usable as the assertion because
+            # the repo root itself may legitimately contain it (the physics worktree).
+            for physics_token in (
+                "--physics-capture-v1",
+                "--physics-player-dir",
+                "--physics-player-archive",
+                "--physics-smoke-marker",
+                "--physics-host",
+                "--physics-port",
+                "--physics-player-sha256",
+                "--physics-protocol-sha256",
+                "--physics-archive-sha256",
+                "worker_archive",
+                "archive_sha256",
+            ):
+                self.assertNotIn(physics_token, commands)
+            self.assertIn('cp -a sciencebirdsgames/Linux "$worker_engine_dir"', commands)
+            # Normalize both the temporary tree and the generating repo root so the
+            # digest pins the script shape rather than the machine it ran on.
+            normalized = commands.replace(str(root), "<ROOT>").replace(str(Path.cwd()), "<REPO>")
+            self.assertEqual(hashlib.sha256(normalized.encode("utf-8")).hexdigest(), "c026cb7599b2bfae1499e5a40b49d2c62926ce74c5a45b751b68161d26642933")
+
+
 if __name__ == "__main__":
     unittest.main()
+
+class PhysicsCaptureValidationTests(unittest.TestCase):
+    def _make_physics_episode(self, root: Path) -> Path:
+        from PIL import Image
+
+        options = CollectionOptions(count=1, workers=1, fps=1, duration=1)
+        make_complete_episode(root, options)
+        shot = root / "shot_001"
+        states = [json.loads(line) for line in (Path(__file__).parent / "fixtures" / "physics_capture_v1" / "physics_state.jsonl").read_text(encoding="utf-8").splitlines()]
+        events = [json.loads(line) for line in (Path(__file__).parent / "fixtures" / "physics_capture_v1" / "physics_events.jsonl").read_text(encoding="utf-8").splitlines()]
+        for record in states + events:
+            record["shot_id"] = "shot_001"
+        shutil.rmtree(shot / "frames")
+        (shot / "frames").mkdir()
+        frame_checksums = []
+        for index, state in enumerate(states[1:]):
+            frame = shot / "frames" / f"frame_{index:06d}.png"
+            Image.new("RGB", (4, 3), (index + 1, 2, 3)).save(frame, format="PNG")
+            state["rgb_frame"].update({"relative_path": f"frames/{frame.name}", "width_pixels": 4, "height_pixels": 3})
+            frame_checksums.append({"relative_path": f"frames/{frame.name}", "sha256": hashlib.sha256(frame.read_bytes()).hexdigest()})
+        state_path = shot / "physics_state.jsonl"
+        event_path = shot / "physics_events.jsonl"
+        state_path.write_text("".join(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n" for record in states), encoding="utf-8")
+        event_path.write_text("".join(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n" for record in events), encoding="utf-8")
+        metadata = {"capture_contract": "physics_capture_v1", "schema_version": "physics_capture_v1", "protocol_version": 1, "player_sha256": "a" * 64, "protocol_sha256": "b" * 64, "archive_sha256": "c" * 64, "frame_count": 2, "frames_dir": "frames", "frames": [{"path": f"frames/frame_{index:06d}.png"} for index in range(2)], "frame_checksums": frame_checksums, "physics_state_path": "physics_state.jsonl", "physics_events_path": "physics_events.jsonl", "physics_state_count": 2, "physics_event_count": len(events), "physics_state_sha256": hashlib.sha256(state_path.read_bytes()).hexdigest(), "physics_events_sha256": hashlib.sha256(event_path.read_bytes()).hexdigest(), "sidecars_closed": True}
+        (shot / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+        manifest_path = root / "manifest.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        manifest["capture_source"] = "capture_physics_rollout"
+        manifest["capture_contract"] = {"contract_name": PHYSICS_CAPTURE_V1.contract_name, "contract_version": PHYSICS_CAPTURE_V1.contract_version, "artifact_layout_version": PHYSICS_CAPTURE_V1.artifact_layout_version, "player_sha256": "a" * 64, "protocol_sha256": "b" * 64, "archive_sha256": "c" * 64, "declared_capabilities": list(PHYSICS_CAPTURE_V1.declared_capabilities), "sidecar_paths": [{"relative_path": sidecar.relative_path, "capabilities": list(sidecar.capabilities)} for sidecar in PHYSICS_CAPTURE_V1.sidecar_paths]}
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        (shot / "pre_shot.png").unlink()
+        return root
+
+    def test_legacy_rgb_predicate_remains_default(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "legacy"
+            options = CollectionOptions(count=1, workers=1, fps=1, duration=1)
+            make_complete_episode(root, options)
+            self.assertTrue(_is_canonically_complete_fresh_engine_episode(root, options))
+
+    def test_valid_enriched_episode_requires_explicit_switch(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = self._make_physics_episode(Path(temporary) / "physics")
+            contract = EpisodeValidationContract(1, 1, 1)
+            self.assertIsInstance(validate_rollout_episode(root, contract), EpisodeRejected)
+            self.assertIsInstance(validate_rollout_episode(root, contract, capture_contract="physics_capture_v1"), EpisodeAccepted)
+
+    def test_corrupt_sidecar_and_frame_classes_fail_closed(self):
+        mutations = {
+            "missing": lambda shot: (shot / "physics_events.jsonl").unlink(),
+            "truncated": lambda shot: (shot / "physics_state.jsonl").write_text('{"schema_version":', encoding="utf-8"),
+            "extra_png": lambda shot: shutil.copy2(shot / "frames" / "frame_000000.png", shot / "frames" / "frame_999999.png"),
+            "stale_schema": lambda shot: self._rewrite_jsonl(shot / "physics_state.jsonl", 1, "schema_version", "physics_capture_v0"),
+            "duplicate_sequence": lambda shot: self._rewrite_jsonl(shot / "physics_state.jsonl", 2, "sequence", 1),
+            "out_of_order": lambda shot: self._rewrite_jsonl(shot / "physics_events.jsonl", 0, "sequence", 8),
+            "render_frame_mismatch": lambda shot: self._rewrite_nested_jsonl(shot / "physics_state.jsonl", 1, "rgb_frame", "render_frame", 999),
+            "extra_state": lambda shot: (shot / "physics_state.jsonl").write_text((shot / "physics_state.jsonl").read_text(encoding="utf-8") + (shot / "physics_state.jsonl").read_text(encoding="utf-8").splitlines()[-1] + "\n", encoding="utf-8"),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
+                root = self._make_physics_episode(Path(temporary) / "physics")
+                mutate(root / "shot_001")
+                result = validate_rollout_episode(root, EpisodeValidationContract(1, 1, 1), capture_contract="physics_capture_v1")
+                self.assertIsInstance(result, EpisodeRejected)
+
+    @staticmethod
+    def _rewrite_jsonl(path: Path, index: int, key: str, value) -> None:
+        records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+        records[index][key] = value
+        path.write_text("".join(json.dumps(record) + "\n" for record in records), encoding="utf-8")
+
+    @staticmethod
+    def _rewrite_nested_jsonl(path: Path, index: int, container: str, key: str, value) -> None:
+        records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+        records[index][container][key] = value
+        path.write_text("".join(json.dumps(record) + "\n" for record in records), encoding="utf-8")

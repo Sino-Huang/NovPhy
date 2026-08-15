@@ -1,0 +1,63 @@
+{
+  "wave": "runtime-repin-gate-20260810",
+  "phase": "todo-1-blocker",
+  "status": "SUPERSEDES the earlier 'near zero' bound in this file, which was wrong",
+  "authority": "read on 2026-08-11 from the level XML, the prefabs and the C# sources at HEAD 7f1e8727782c985370a4c1b482292a20e6787918; every claim below was re-verified directly after a code review raised it",
+  "conclusion": "No choice of shot parameters can reliably produce a recorded collision on the level the smoke plays. TODO-1 is not satisfiable by aim alone, and the single full smoke must not be spent against this configuration.",
+
+  "correction_of_earlier_claim": {
+    "what_this_file_previously_asserted": "that the risk was bounded to near zero because ABBird.OnCollisionEnter2D calls base.OnCollisionEnter2D unconditionally, so the bird's own ground impact would record a collision",
+    "why_it_was_wrong": "ABBird is not the class this level instantiates. The level declares a single Bird of type BirdBlack, and ABBirdBlack overrides OnCollisionEnter2D without calling base. The chain I recorded was real but applied to a class that never appears in this scene.",
+    "found_by": "code review of the exact wave diff, which checked the level's bird type against the prefab script guid rather than accepting the base-class reasoning"
+  },
+
+  "the_level": {
+    "path": "tasks/task_template_designer/Assets/StreamingAssets/Levels/novelty_level_0/type2/Levels/3_9_6_1.xml",
+    "selected_by": "scripts/build_physics_player.sh line 47 rewrites config.xml so ui_level 1 resolves to this file",
+    "slingshot": {"x": -12.0, "y": -2.5},
+    "contents": {"birds": ["BirdBlack"], "pigs": 2, "blocks": 2, "platforms": 8}
+  },
+
+  "which_objects_can_record_a_collision": [
+    {"object": "Bird (BirdBlack)", "records": false,
+     "why": "ABBirdBlack.cs:22 overrides OnCollisionEnter2D and never calls base, so PhysicalSnapshotRuntime.RecordCollisionCallback is never reached from the bird for any impact"},
+    {"object": "Platform (8 of them)", "records": false,
+     "why": "Assets/Resources/Prefabs/GameWorld/Platform.prefab contains zero m_Script entries — it carries no ABGameObject at all"},
+    {"object": "Ground", "records": false,
+     "why": "a plain GameObject with a BoxCollider2D (SymbolicGameState.cs:428), no ABGameObject"},
+    {"object": "Block (2 wood circles)", "records": "only against non-bird colliders",
+     "why": "ABBlock.cs:145 branches on collision.gameObject.tag == \"Bird\"; base.OnCollisionEnter2D is called only in the else branch, so a bird striking a block records nothing"},
+    {"object": "Pig (2 BasicSmall)", "records": true,
+     "why": "ABPig and ABCharacter declare no override, so both inherit ABGameObject.OnCollisionEnter2D:125-127"}
+  ],
+
+  "why_aim_cannot_fix_it": {
+    "claim": "the only object that records a bird impact is a pig, and both pigs are geometrically unreachable by a direct shot",
+    "left_pig": {"at": [-2.51, -2.23837],
+      "enclosed_by": ["vertical platform x=-3.4 rotation 90", "vertical platform x=-1.72 rotation 90", "floor platform y=-2.717", "roof platform y=-1.12"]},
+    "right_pig": {"at": [1.1601, -2.27837],
+      "enclosed_by": ["vertical platform x=0.08 rotation 90", "vertical platform x=2.16 rotation 90", "floor platform y=-2.757", "roof platform y=-1.16"]},
+    "consequence": "a projectile launched from x=-12 must cross the outer vertical platform before it can reach either pig, and that platform records nothing and stops the bird. Direct bird-on-pig contact is not merely unlikely, it is structurally unreachable.",
+    "residual_path": "a collision can still arise indirectly: BirdBlack explodes on impact (ABTNT.Explode, _explosionArea 3) and any pig or block displaced into a fresh contact would record. That is a plausible outcome, not a reliable one — it depends on the explosion separating an already-resting body far enough to generate a new OnCollisionEnter2D."
+  },
+
+  "corroboration": {
+    "prior_run": "the previously accepted smoke used release offset [-50, 40] on this same level and contained no collision at all",
+    "significance": "the zero-collision outcome is explained exactly by the table above, not by the aim. Changing the offset to [-80, 7] changes only launch elevation — both pulls saturate the drag clamp (_dragRadius 1 on BirdBlack.prefab:129, clamped at ABBird.cs:233-234), so launch speed is identical at BIRD_MAX_LANUCH_SPEED and only the angle moves, from about 39.7 degrees to about 5.0 degrees."
+  },
+
+  "why_this_was_not_fixed_in_this_wave": {
+    "mission_scope_rule": "the wave authorizes fixing the collision payload in the capture path, and requires stopping rather than improvising when the fix reaches beyond that",
+    "what_a_fix_would_require": "adding PhysicalSnapshotRuntime.RecordCollisionCallback(collision) to ABBirdBlack.OnCollisionEnter2D and to the bird branch of ABBlock.OnCollisionEnter2D — two gameplay classes, not the recorder",
+    "why_not_a_plain_base_call": "ABGameObject.OnCollisionEnter2D:125-141 does not only record; it also runs the base damage model. Hoisting base into those overrides would change gameplay, so any fix must call the recorder directly rather than base.",
+    "interacting_risk_that_must_be_resolved_first": "PhysicsShotRecorder.cs:531 throws ArgumentException when the contact evidence is empty, inside a Unity physics callback. Wiring more objects to the recorder widens exposure to that throw. If it fires inside ABBirdBlack.OnCollisionEnter2D, Unity aborts the remainder of the handler, the explosion never plays, the level never reaches a terminal event, and the smoke's 30 s finalize deadline expires with the run consumed.",
+    "decision": "record the finding and report, rather than edit two gameplay classes and a fail-closed throw path on a single non-retryable run budget"
+  },
+
+  "recommended_next_session_fix": {
+    "1": "call PhysicalSnapshotRuntime.RecordCollisionCallback(collision) directly (not base) at the top of ABBirdBlack.OnCollisionEnter2D and at the top of ABBlock.OnCollisionEnter2D, hoisted out of the else branch so both branches record",
+    "2": "decide the empty-evidence policy at PhysicsShotRecorder.cs:531 — a Debug.LogError plus early return is equally fail-closed at the wire, because no event is emitted and the smoke's require_collision still rejects, without aborting the physics handler",
+    "3": "add EditMode fixtures proving a BirdBlack impact and a bird-on-block impact each produce a recorded collision event, red before the change and green after",
+    "4": "only then re-point the shot and spend the smoke"
+  }
+}
