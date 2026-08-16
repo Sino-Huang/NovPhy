@@ -810,7 +810,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             partition_path = write_partition_manifest(root / "partition", partitions, seed="planner-seed")
             self.assertEqual(load_partition_manifest(partition_path), partitions)
 
-            episodes, summary = build_collection_plan(
+            planned_rollouts, summary = build_collection_plan(
                 entries,
                 output_root=output_root,
                 options=CollectionOptions(count=1, workers=1),
@@ -822,7 +822,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             plan_path = write_collection_plan(
                 root / "plan",
                 output_root=output_root,
-                episodes=episodes,
+                episodes=planned_rollouts,
                 summary=summary,
                 options=CollectionOptions(count=1, workers=1),
                 targets=CollectionTargets(train=1, dev=1),
@@ -868,7 +868,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
                     selected_splits=("train",),
                     expected_bucket_count=1,
                 )
-            episodes, summary = build_collection_plan(
+            planned_rollouts, summary = build_collection_plan(
                 entries,
                 output_root=output_root,
                 options=CollectionOptions(count=1, workers=1),
@@ -877,11 +877,11 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
                 expected_bucket_count=1,
                 collection_purpose="smoke",
             )
-            self.assertEqual(len(episodes), 1)
+            self.assertEqual(len(planned_rollouts), 1)
             plan_path = write_collection_plan(
                 root / "smoke-plan",
                 output_root=output_root,
-                episodes=episodes,
+                episodes=planned_rollouts,
                 summary=summary,
                 options=CollectionOptions(count=1, workers=1),
                 targets=CollectionTargets(train=1, dev=1),
