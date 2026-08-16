@@ -9,7 +9,7 @@ import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final, Iterable, TypedDict
+from typing import Final, Iterable, Literal, TypedDict
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +21,17 @@ from scripts.rollout_artifacts import (  # noqa: E402
     EpisodeAccepted,
     EpisodeValidationContract,
     validate_rollout_episode,
+)
+from scripts.scenario_manifest import (  # noqa: E402
+    BenchmarkCondition,
+    ELIGIBLE,
+    SMOKE_ONLY,
+    ScenarioManifest,
+    import_legacy_manifest,
+    load_manifest as load_scenario_manifest,
+    load_scenario_manifest_projection,
+    require_research_eligible,
+    scenario_manifest_projection,
 )
 
 
@@ -34,6 +45,9 @@ WORKER_PORT_STRIDE: Final = 10
 MAX_PORT: Final = 65535
 COLLECTION_SPLITS: Final = ("train", "dev", "test")
 DEFAULT_COLLECTION_SPLITS: Final = ("train", "dev")
+CollectionPurpose = Literal["research", "smoke"]
+RESEARCH_PURPOSE: Final[CollectionPurpose] = "research"
+SMOKE_PURPOSE: Final[CollectionPurpose] = "smoke"
 #: The production NovPhy level inventory is exactly 40 normal (novelty_level_0) plus
 #: 8 x 5 novel buckets.  A plan that discovers a different count has a truncated
 #: inventory, so the default is fail-closed; a caller with a deliberately scoped
@@ -55,6 +69,14 @@ class LevelEntry:
     novelty_level: str
     level_type: str
     relative_path: str
+    scenario_manifest: ScenarioManifest | None = None
+    scenario_manifest_reference: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.scenario_manifest is not None:
+            condition = self.scenario_manifest.benchmark_condition
+            if (condition.novelty_level, condition.novelty_type) != (self.novelty_level, self.level_type):
+                raise ValueError("Scenario manifest benchmark condition does not match level entry")
 
     @property
     def bucket(self) -> str:
@@ -64,20 +86,29 @@ class LevelEntry:
     def stem(self) -> str:
         return Path(self.relative_path).stem
 
-    def to_json(self) -> dict[str, str]:
-        return {
+    def to_json(self) -> dict[str, object]:
+        data: dict[str, object] = {
             "novelty_level": self.novelty_level,
             "level_type": self.level_type,
             "bucket": self.bucket,
             "relative_path": self.relative_path,
         }
+        if self.scenario_manifest is not None:
+            data.update(scenario_manifest_projection(self.scenario_manifest, self.scenario_manifest_reference))
+        return data
 
     @classmethod
-    def from_json(cls, data: dict[str, str]) -> LevelEntry:
+    def from_json(cls, data: dict[str, object], *, manifest_required: bool = False) -> LevelEntry:
+        for key in ("novelty_level", "level_type", "relative_path"):
+            if not isinstance(data.get(key), str):
+                raise ValueError(f"Level entry has invalid {key}")
+        manifest, reference = load_scenario_manifest_projection(data, required=manifest_required)
         return cls(
-            novelty_level=data["novelty_level"],
-            level_type=data["level_type"],
-            relative_path=data["relative_path"],
+            data["novelty_level"],
+            data["level_type"],
+            data["relative_path"],
+            manifest,
+            reference,
         )
 
 
@@ -193,13 +224,10 @@ class PlannedEpisode:
     output_dir: Path
     source: str
 
-    def to_json(self, output_root: Path) -> dict[str, str]:
+    def to_json(self, output_root: Path) -> dict[str, object]:
         return {
+            **self.entry.to_json(),
             "split": self.split,
-            "novelty_level": self.entry.novelty_level,
-            "level_type": self.entry.level_type,
-            "bucket": self.entry.bucket,
-            "relative_path": self.entry.relative_path,
             "output_path": self.output_dir.relative_to(output_root).as_posix(),
             "source": self.source,
         }
@@ -226,12 +254,30 @@ def discover_level_entries(engine_dir: Path, level_type_prefix: str = PRODUCTION
     levels_root = _levels_root(engine_dir)
     if not levels_root.is_dir():
         raise FileNotFoundError(f"Levels directory not found: {levels_root}")
-    entries = [
-        LevelEntry(novelty_dir.name, type_dir.name, xml_path.relative_to(engine_dir).as_posix())
-        for novelty_dir in sorted(path for path in levels_root.iterdir() if path.is_dir() and path.name.startswith("novelty_level_"))
-        for type_dir in sorted(path for path in novelty_dir.iterdir() if path.is_dir() and path.name.startswith(level_type_prefix))
-        for xml_path in sorted((type_dir / "Levels").glob("*.xml"))
-    ]
+    entries: list[LevelEntry] = []
+    for novelty_dir in sorted(path for path in levels_root.iterdir() if path.is_dir() and path.name.startswith("novelty_level_")):
+        for type_dir in sorted(path for path in novelty_dir.iterdir() if path.is_dir() and path.name.startswith(level_type_prefix)):
+            for xml_path in sorted((type_dir / "Levels").glob("*.xml")):
+                relative_path = xml_path.relative_to(engine_dir).as_posix()
+                manifest_path = xml_path.with_suffix(".scenario.json")
+                if manifest_path.is_file():
+                    manifest = load_scenario_manifest(manifest_path, xml_path)
+                    reference = manifest_path.relative_to(engine_dir).as_posix()
+                else:
+                    is_staged_type2 = type_dir.name == "type2"
+                    manifest = import_legacy_manifest(
+                        xml_path.read_bytes(),
+                        benchmark_condition=BenchmarkCondition(novelty_dir.name, type_dir.name),
+                        source_path=relative_path,
+                        eligibility=SMOKE_ONLY if is_staged_type2 else ELIGIBLE,
+                        eligibility_reason=(
+                            "Sidecar-less type2 content is approved only for bounded runtime and smoke collection."
+                            if is_staged_type2
+                            else None
+                        ),
+                    )
+                    reference = None
+                entries.append(LevelEntry(novelty_dir.name, type_dir.name, relative_path, manifest, reference))
     if not entries:
         raise RuntimeError(f"No NovPhy level XML files found under {levels_root}")
     return entries
@@ -298,9 +344,12 @@ def load_partition_manifest(path: Path) -> dict[str, list[LevelEntry]]:
             raise ValueError(f"Partition manifest must contain {split} entries")
         entries: list[LevelEntry] = []
         for value in values:
-            if not isinstance(value, dict) or not all(isinstance(value.get(key), str) for key in ("novelty_level", "level_type", "relative_path")):
+            if not isinstance(value, dict):
                 raise ValueError(f"Partition manifest contains malformed {split} entry")
-            entries.append(LevelEntry(value["novelty_level"], value["level_type"], value["relative_path"]))
+            try:
+                entries.append(LevelEntry.from_json(value))
+            except ValueError as exc:
+                raise ValueError(f"Partition manifest contains malformed {split} entry: {exc}") from exc
         result[split] = entries
     return result
 
@@ -410,6 +459,22 @@ def _selected_splits(selected_splits: tuple[str, ...]) -> tuple[str, ...]:
     return selected_splits
 
 
+def _validated_collection_purpose(value: object) -> CollectionPurpose:
+    if value == RESEARCH_PURPOSE:
+        return RESEARCH_PURPOSE
+    if value == SMOKE_PURPOSE:
+        return SMOKE_PURPOSE
+    raise ValueError("collection_purpose must be research or smoke")
+
+
+def _require_collection_admission(entry: LevelEntry, purpose: CollectionPurpose, use: str) -> None:
+    if purpose != RESEARCH_PURPOSE:
+        return
+    if entry.scenario_manifest is None:
+        raise ValueError(f"Level instance is missing a scenario manifest required for {use}")
+    require_research_eligible(entry.scenario_manifest, use)
+
+
 def _plan_bucket(
     entries: list[LevelEntry],
     *,
@@ -449,17 +514,22 @@ def build_collection_plan(
     seed: str = DEFAULT_SEED,
     capture_contract: str | None = None,
     expected_bucket_count: int = PRODUCTION_BUCKET_COUNT,
+    collection_purpose: CollectionPurpose = RESEARCH_PURPOSE,
 ) -> tuple[list[PlannedEpisode], dict[str, dict[str, int]]]:
     opts = options or CollectionOptions()
     target = targets or CollectionTargets()
     splits = _selected_splits(selected_splits)
     _worker_specs(opts)
+    purpose = _validated_collection_purpose(collection_purpose)
     if type(expected_bucket_count) is not int or expected_bucket_count < 1:
         raise ValueError("expected_bucket_count must be a positive integer")
     if not output_root.is_dir():
         raise FileNotFoundError(f"Existing output root is required: {output_root}")
-    partitions = partition_levels(entries, seed=seed)
-    buckets = _bucket_entries(entries)
+    entry_list = list(entries)
+    for entry in entry_list:
+        _require_collection_admission(entry, purpose, "research collection planning")
+    partitions = partition_levels(entry_list, seed=seed)
+    buckets = _bucket_entries(entry_list)
     partition_buckets = {split: _bucket_entries(partitions[split]) for split in splits}
     if len(buckets) != expected_bucket_count:
         raise RuntimeError(f"Expected {expected_bucket_count} normal and novel buckets, found {len(buckets)}")
@@ -588,6 +658,7 @@ def generate_collection_commands(
     plan_splits = _selected_splits(tuple(artifact_splits))
     if splits is not None and _selected_splits(splits) != plan_splits:
         raise ValueError("Requested command splits do not match the collection plan")
+    purpose = _validated_collection_purpose(artifact.get("collection_purpose", RESEARCH_PURPOSE))
     selected = artifact.get("selected")
     if not isinstance(selected, list):
         raise ValueError("Collection plan must contain selected episodes")
@@ -596,12 +667,14 @@ def generate_collection_commands(
         if not isinstance(value, dict) or value.get("source") != "scheduled" or value.get("split") not in plan_splits:
             continue
         output_path = value.get("output_path")
-        if not all(isinstance(value.get(key), str) for key in ("split", "novelty_level", "level_type", "relative_path")) or not isinstance(output_path, str):
+        if not isinstance(value.get("split"), str) or not isinstance(output_path, str):
             raise ValueError("Collection plan contains malformed scheduled episode")
+        entry = LevelEntry.from_json(value)
+        _require_collection_admission(entry, purpose, "research command generation")
         scheduled.append(
             PlannedEpisode(
                 value["split"],
-                LevelEntry(value["novelty_level"], value["level_type"], value["relative_path"]),
+                entry,
                 output_root / output_path,
                 "scheduled",
             )
@@ -723,17 +796,23 @@ def write_collection_plan(
     seed: str,
     selected_splits: tuple[str, ...] = DEFAULT_COLLECTION_SPLITS,
     physics_provenance: PhysicsCaptureProvenance | None = None,
+    collection_purpose: CollectionPurpose = RESEARCH_PURPOSE,
 ) -> Path:
     episode_list = list(episodes)
     splits = _selected_splits(selected_splits)
+    purpose = _validated_collection_purpose(collection_purpose)
     if physics_provenance is not None and output_root.resolve() == ACTIVE_COHORT_ROOT.resolve():
         raise ValueError(f"physics capture cannot target active cohort root: {output_root}")
-    contract = {"count": options.count, "fps": options.fps, "duration": options.duration, "workers": options.workers, "train_target": targets.train, "dev_target": targets.dev, "test_target": targets.test, "selected_splits": list(splits)}
+    for planned in episode_list:
+        _require_collection_admission(planned.entry, purpose, "research collection plan")
+    contract = {"count": options.count, "fps": options.fps, "duration": options.duration, "workers": options.workers, "train_target": targets.train, "dev_target": targets.dev, "test_target": targets.test, "selected_splits": list(splits), "collection_purpose": purpose}
     if physics_provenance is not None:
         contract.update({"capture_contract": PHYSICS_CAPTURE_CONTRACT, "player_sha256": physics_provenance.player_sha256, "protocol_sha256": physics_provenance.protocol_sha256, "archive_sha256": physics_provenance.archive_sha256, "smoke_marker": str(physics_provenance.smoke_marker)})
     payload = {
         "schema": PLAN_SCHEMA,
         "seed": seed,
+        "planner_seed": seed,
+        "collection_purpose": purpose,
         "output_root": str(output_root.resolve(strict=True)),
         "contract": contract,
         "selected_splits": list(splits),
@@ -746,7 +825,7 @@ def write_collection_plan(
             "novel": sum(item.entry.novelty_level != "novelty_level_0" for item in episode_list),
             "test": sum(item.split == "test" for item in episode_list),
         },
-        "selected": [episode.to_json(output_root) for episode in episode_list],
+        "selected": [planned.to_json(output_root) for planned in episode_list],
     }
     return _atomic_write(output_dir / "collection_plan.json", json.dumps(payload, indent=2, sort_keys=True) + "\n")
 
@@ -755,13 +834,16 @@ def load_plan_entries(path: Path, split: str) -> list[LevelEntry]:
     payload = _read_json(path)
     if payload is None or payload.get("schema") != PLAN_SCHEMA:
         raise ValueError(f"Unsupported collection plan schema: {None if payload is None else payload.get('schema')}")
+    purpose = _validated_collection_purpose(payload.get("collection_purpose", RESEARCH_PURPOSE))
     selected = payload.get("selected")
     if not isinstance(selected, list):
         raise ValueError("Collection plan must contain selected episodes")
     result: list[LevelEntry] = []
     for item in selected:
-        if isinstance(item, dict) and item.get("split") == split and all(isinstance(item.get(key), str) for key in ("novelty_level", "level_type", "relative_path")):
-            result.append(LevelEntry(item["novelty_level"], item["level_type"], item["relative_path"]))
+        if isinstance(item, dict) and item.get("split") == split:
+            entry = LevelEntry.from_json(item)
+            _require_collection_admission(entry, purpose, "collection plan reload")
+            result.append(entry)
     return result
 
 
@@ -803,7 +885,8 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     plan.add_argument("--command-output-root", type=Path, required=True)
     plan.add_argument("--commands-path", type=Path)
-    plan.add_argument("--seed", default=DEFAULT_SEED)
+    plan.add_argument("--seed", default=DEFAULT_SEED, help="Planner seed; distinct from each scenario's generation seed")
+    plan.add_argument("--collection-purpose", choices=("research", "smoke"), default="research")
     plan.add_argument("--train-target", type=int, default=100)
     plan.add_argument("--dev-target", type=int, default=20)
     plan.add_argument("--test-target", type=int, default=0)
@@ -868,8 +951,8 @@ def main() -> None:
         selected_splits = ("train", "dev", "test") if args.include_test else DEFAULT_COLLECTION_SPLITS
     output_root = args.command_output_root.resolve(strict=True)
     engine_dir = args.engine_dir or engine_dir_for(ROOT, args.os)
-    episodes, summary = build_collection_plan(discover_level_entries(engine_dir, args.level_type_prefix), output_root=output_root, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed, capture_contract=PHYSICS_CAPTURE_CONTRACT if physics_provenance is not None else None, expected_bucket_count=args.expected_buckets)
-    plan_path = write_collection_plan(args.output_dir, output_root=output_root, episodes=episodes, summary=summary, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed, physics_provenance=physics_provenance)
+    episodes, summary = build_collection_plan(discover_level_entries(engine_dir, args.level_type_prefix), output_root=output_root, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed, capture_contract=PHYSICS_CAPTURE_CONTRACT if physics_provenance is not None else None, expected_bucket_count=args.expected_buckets, collection_purpose=args.collection_purpose)
+    plan_path = write_collection_plan(args.output_dir, output_root=output_root, episodes=episodes, summary=summary, options=options, targets=targets, selected_splits=selected_splits, seed=args.seed, physics_provenance=physics_provenance, collection_purpose=args.collection_purpose)
     commands_path = args.commands_path or _collection_commands_path(args.output_dir, selected_splits)
     _atomic_write(commands_path, generate_collection_commands(plan_path, output_root=output_root, options=options, physics_provenance=physics_provenance), executable=True)
     _remove_opposite_collection_commands(args.output_dir, commands_path)

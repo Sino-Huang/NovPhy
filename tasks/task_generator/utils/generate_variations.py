@@ -3,11 +3,20 @@ import copy
 import math
 import sys
 
-from utils.constants import *
-from utils.data_classes import *
+try:
+	from .constants import *
+	from .data_classes import *
+except ImportError:  # Preserve direct execution from tasks/task_generator.
+	from utils.constants import *
+	from utils.data_classes import *
 
 
 class GenerateLevels:
+
+	def __init__(self, rng=None):
+		# Legacy callers keep using the module-global RNG. Canonical callers inject
+		# an operation-local random.Random instance.
+		self.rng = rng if rng is not None else random
 
 	# check if the block is slanted
 	def is_slanted_block(self, block):
@@ -57,8 +66,7 @@ class GenerateLevels:
 
 		block_rotation = self.get_adjusted_block_rotation(block_considered)
 
-		# if isinstance(block_considered, Block):
-		if '<class \'utils.data_classes.Block\'>' == str(type(block_considered)):
+		if isinstance(block_considered, Block):
 			vertical_span_of_the_block = abs(
 				(blocks[block_considered.type][0] * block_considered.scale_x) * math.sin(
 					math.radians(block_rotation))) + abs(
@@ -69,15 +77,14 @@ class GenerateLevels:
 					math.radians(block_rotation))) + abs(
 				(blocks[block_considered.type][1] * block_considered.scale_y) * math.sin(
 					math.radians(block_rotation)))
-		# elif isinstance(block_considered, Pig):
-		elif '<class \'utils.data_classes.Pig\'>' == str(type(block_considered)):
+		elif isinstance(block_considered, Pig):
 			vertical_span_of_the_block = abs(
 				(pigs[block_considered.type][0]) * math.sin(math.radians(block_rotation))) + abs(
 				(pigs[block_considered.type][1]) * math.cos(math.radians(block_rotation)))
 			horizontal_span_of_the_block = abs(
 				(pigs[block_considered.type][0]) * math.cos(math.radians(block_rotation))) + abs(
 				(pigs[block_considered.type][1]) * math.sin(math.radians(block_rotation))) - location_offset_x
-		elif '<class \'utils.data_classes.Tnt\'>' == str(type(block_considered)):
+		elif isinstance(block_considered, Tnt):
 			vertical_span_of_the_block = abs(
 				(tnts[block_considered.type][0]) * math.sin(math.radians(block_rotation))) + abs(
 				(tnts[block_considered.type][1]) * math.cos(math.radians(block_rotation)))
@@ -171,7 +178,7 @@ class GenerateLevels:
 			restricted_areas = []
 
 		# number of distraction objects
-		NUM_OF_RANDOM_BLOCKS_TO_PLACE = random.randrange(1, 6)
+		NUM_OF_RANDOM_BLOCKS_TO_PLACE = self.rng.randrange(1, 6)
 
 		# place random blocks in the level
 		for j in range(NUM_OF_RANDOM_BLOCKS_TO_PLACE):
@@ -184,8 +191,8 @@ class GenerateLevels:
 		no_of_tries = 0
 
 		while True:
-			random_block, random_block_size = random.choice(list(default_blocks.items()))
-			random_block_material = random.choice(['ice', 'wood', 'stone'])
+			random_block, random_block_size = self.rng.choice(list(default_blocks.items()))
+			random_block_material = self.rng.choice(['ice', 'wood', 'stone'])
 
 			if (random_block_material.lower() + ' ' + random_block.lower()) not in restricted_objects:
 				break  # found a non restricted block and a material
@@ -220,9 +227,9 @@ class GenerateLevels:
 
 		# randomly pick a x location that doesn't overlap with existing objects
 		no_of_tries = 0
-		x_coordinate = round(random.uniform(X_MIN_REACHABLE, X_MAX_REACHABLE), 5)
+		x_coordinate = round(self.rng.uniform(X_MIN_REACHABLE, X_MAX_REACHABLE), 5)
 		while self.does_coordinate_overlap_ranges(x_coordinate, occupied_x_spans):
-			x_coordinate = round(random.uniform(X_MIN_REACHABLE, X_MAX_REACHABLE), 5)
+			x_coordinate = round(self.rng.uniform(X_MIN_REACHABLE, X_MAX_REACHABLE), 5)
 			no_of_tries += 1
 			if no_of_tries > max_no_of_tries:
 				print('could not find a feasible location on ground to place a block')
@@ -249,7 +256,7 @@ class GenerateLevels:
 			x_max = x_max_theoretical
 
 		# get a random x location in the feasible range
-		random_x_location = round(random.uniform(x_min, x_max), 5)
+		random_x_location = round(self.rng.uniform(x_min, x_max), 5)
 
 		return random_x_location
 
@@ -258,7 +265,7 @@ class GenerateLevels:
 		random_x_location, random_y_location = 0, 0
 		while True:
 			# get a random x location
-			random_x_location = round(random.uniform(x_min, x_max), 5)
+			random_x_location = round(self.rng.uniform(x_min, x_max), 5)
 
 			# find the closest x location form the reachability line
 			x_coordinates = [row[0] for row in reachability_line]
@@ -279,7 +286,7 @@ class GenerateLevels:
 				print('y_locations are not feasible for the selected x location, retrying')
 				continue
 
-			random_y_location = round(random.uniform(y_min, updated_y_max), 5)
+			random_y_location = round(self.rng.uniform(y_min, updated_y_max), 5)
 			break
 
 		return random_x_location, random_y_location
@@ -287,7 +294,7 @@ class GenerateLevels:
 	def get_location_in_reachability_line(self):
 
 		# get a random x location
-		random_x_location = round(random.uniform(reachability_line[0][0], reachability_line[-1][0]), 5)
+		random_x_location = round(self.rng.uniform(reachability_line[0][0], reachability_line[-1][0]), 5)
 
 		# find the closest x location form the reachability line
 		x_coordinates = [row[0] for row in reachability_line]
@@ -304,50 +311,50 @@ class GenerateLevels:
 
 	def get_location_in_reachable_space(self, x_min, x_max, y_min, y_max):
 		# select a random y location
-		random_x_location = round(random.uniform(x_min, x_max), 5)
+		random_x_location = round(self.rng.uniform(x_min, x_max), 5)
 
 		# if x is larger than the middle point, reduce y_max to half
 		if random_x_location > (x_min + (x_max - x_min) / 2):
-			random_y_location = round(random.uniform(y_min, y_max), 5)
+			random_y_location = round(self.rng.uniform(y_min, y_max), 5)
 		else:
-			random_y_location = round(random.uniform(y_min, y_min + (y_max - y_min) / 2), 5)
+			random_y_location = round(self.rng.uniform(y_min, y_min + (y_max - y_min) / 2), 5)
 
 		return random_x_location, random_y_location
 
 	def get_location_in_reachable_space_2(self, x_min, x_max, y_min, y_max):
 		# select a random y location
-		random_x_location = round(random.uniform(x_min, x_max), 5)
+		random_x_location = round(self.rng.uniform(x_min, x_max), 5)
 
 		# if x is larger than the middle point, reduce y_max to half
 		if random_x_location > (x_min + (x_max - x_min) / 2):
-			random_y_location = round(random.uniform(y_min, y_min + (y_max - y_min) / 2), 5)
+			random_y_location = round(self.rng.uniform(y_min, y_min + (y_max - y_min) / 2), 5)
 		else:
-			random_y_location = round(random.uniform(y_min, y_max), 5)
+			random_y_location = round(self.rng.uniform(y_min, y_max), 5)
 
 		return random_x_location, random_y_location
 
 	def get_location_in_unreachable_space(self, x_min_unreachable, x_max_unreachable, y_min_reachable, y_max_reachable):
 		# select a random y location
-		random_y_location = round(random.uniform(y_min_reachable, y_max_reachable), 5)
+		random_y_location = round(self.rng.uniform(y_min_reachable, y_max_reachable), 5)
 
 		# if y is larger than the middle point, shift the x unreachable range
 		if random_y_location > (y_min_reachable + (y_max_reachable - y_min_reachable) / 2):
-			random_x_location = round(random.uniform(x_min_unreachable - 7, x_min_unreachable), 5)
+			random_x_location = round(self.rng.uniform(x_min_unreachable - 7, x_min_unreachable), 5)
 		else:
-			random_x_location = round(random.uniform(x_max_unreachable, x_min_unreachable), 5)
+			random_x_location = round(self.rng.uniform(x_max_unreachable, x_min_unreachable), 5)
 
 		return random_x_location, random_y_location
 
 	def get_location_in_unreachable_space_2(self, x_min_unreachable, x_max_unreachable, y_min_reachable,
 											y_max_reachable):
 		# select a random y location
-		random_y_location = round(random.uniform(y_min_reachable, y_max_reachable), 5)
+		random_y_location = round(self.rng.uniform(y_min_reachable, y_max_reachable), 5)
 
 		# if y is larger than the middle point, shift the x unreachable range
 		if random_y_location > (y_min_reachable + (y_max_reachable - y_min_reachable) / 2):
-			random_x_location = round(random.uniform(x_min_unreachable - 3, x_min_unreachable), 5)
+			random_x_location = round(self.rng.uniform(x_min_unreachable - 3, x_min_unreachable), 5)
 		else:
-			random_x_location = round(random.uniform(x_max_unreachable, x_min_unreachable), 5)
+			random_x_location = round(self.rng.uniform(x_max_unreachable, x_min_unreachable), 5)
 
 		return random_x_location, random_y_location
 
@@ -385,8 +392,8 @@ class GenerateLevels:
 
 		location_finding_retries = 0
 		while not location_found:
-			x_location = round(random.uniform(x_min, x_max), rounding_digits)
-			y_location = round(random.uniform(y_min, y_max), rounding_digits)
+			x_location = round(self.rng.uniform(x_min, x_max), rounding_digits)
+			y_location = round(self.rng.uniform(y_min, y_max), rounding_digits)
 
 			# get the objects cut the vertical x_location line and their vertical intervals
 			objects_vertical_intervals = self.find_blocks_which_cut_a_vertical_line(template_data, x_location)[1]
@@ -395,7 +402,7 @@ class GenerateLevels:
 			no_of_y_retries = 0
 			while self.is_location_overlap_intervals(y_location, height_of_object, objects_vertical_intervals):
 				no_of_y_retries += 1
-				y_location = round(random.uniform(y_min, y_max), rounding_digits)
+				y_location = round(self.rng.uniform(y_min, y_max), rounding_digits)
 
 				# if no location is found after 100 reties, exit
 				if no_of_y_retries > 100:
@@ -412,7 +419,7 @@ class GenerateLevels:
 			no_of_x_retries = 0
 			while self.is_location_overlap_intervals(x_location, width_of_object, objects_horizontal_intervals):
 				no_of_x_retries += 1
-				x_location = round(random.uniform(x_min, x_max), rounding_digits)
+				x_location = round(self.rng.uniform(x_min, x_max), rounding_digits)
 
 				# if no location is found after 100 reties, exit
 				if no_of_x_retries > 100:
@@ -461,13 +468,13 @@ class GenerateLevels:
 		# print('objects_cut_the_line', objects_cut_the_line)
 
 		# get a random x location for the new object
-		x_location = round(random.uniform(-5, 9), rounding_digits)
+		x_location = round(self.rng.uniform(-5, 9), rounding_digits)
 
 		# try placing the object skipping the used spaces
 		no_of_retries = 0
 		while self.is_location_overlap_intervals(x_location, width_of_object, objects_horizontal_intervals):
 			no_of_retries += 1
-			x_location = round(random.uniform(-5, 9), rounding_digits)
+			x_location = round(self.rng.uniform(-5, 9), rounding_digits)
 
 			# if no location is found after 100 reties, exit
 			if no_of_retries > 100:
@@ -496,16 +503,16 @@ class GenerateLevels:
 		max_x_occupied += 0.5
 
 		if min_x_occupied < min_x_level_space and max_x_occupied < max_x_level_space:  # rightmost is feasible
-			random_x_location = random.uniform(max_x_occupied, max_x_level_space)
+			random_x_location = self.rng.uniform(max_x_occupied, max_x_level_space)
 		elif min_x_occupied > min_x_level_space and max_x_occupied > max_x_level_space:  # leftmost is feasible
-			random_x_location = random.uniform(min_x_level_space, min_x_occupied)
+			random_x_location = self.rng.uniform(min_x_level_space, min_x_occupied)
 		elif min_x_occupied < min_x_level_space and max_x_occupied < max_x_level_space:  # no feasible locations
 			return [-100, -100]
 		else:  # both leftmost and rightmost are feasible - select randomly
-			if random.choice([True, False]):
-				random_x_location = random.uniform(min_x_level_space, min_x_occupied)
+			if self.rng.choice([True, False]):
+				random_x_location = self.rng.uniform(min_x_level_space, min_x_occupied)
 			else:
-				random_x_location = random.uniform(max_x_occupied, max_x_level_space)
+				random_x_location = self.rng.uniform(max_x_occupied, max_x_level_space)
 
 		return [random_x_location, y_location]
 
@@ -655,8 +662,8 @@ class GenerateLevels:
 			raise Exception("Error with the bounds: min is larger than the max!")
 
 		# get a random location x and y locations
-		random_x = round(random.uniform(min_coordinate[0], max_coordinate[0]), 2)
-		random_y = round(random.uniform(min_coordinate[1], max_coordinate[1]), 2)
+		random_x = round(self.rng.uniform(min_coordinate[0], max_coordinate[0]), 2)
+		random_y = round(self.rng.uniform(min_coordinate[1], max_coordinate[1]), 2)
 
 		# calculate the shift values needed for the
 		shift_x_value = ref_point[0] - random_x
@@ -680,15 +687,19 @@ class GenerateLevels:
 
 		return template_data
 
-	def generate_levels_from_template(self, template_name, template_data, config_data):
+	def generate_levels_from_template(self, template_name, template_data, config_data, variant_count=None):
 
 		print('template considered: ', template_name)
 		print('template data: ', template_data)
 		print('config data: ', config_data)
 
 		generated_levels = []
+		if variant_count is None:
+			variant_count = self.num_of_variants_to_generate()
+		if isinstance(variant_count, bool) or not isinstance(variant_count, int) or variant_count < 0:
+			raise ValueError("variant_count must be a non-negative integer")
 
-		for i in range(self.num_of_variants_to_generate()):
+		for i in range(variant_count):
 			print('generating task', i + 1)
 
 			generated_levels.append(

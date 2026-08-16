@@ -32,6 +32,7 @@ from scripts.prepare_rollout_dataset import (
 )
 from scripts.rollout_artifacts import validate_rollout_episode
 from scripts.rollout_validation_types import EpisodeAccepted, EpisodeRejected, EpisodeValidationContract
+from scripts.scenario_manifest import BenchmarkCondition, SMOKE_ONLY, import_legacy_manifest, write_manifest
 from world_model.data.types import PHYSICS_CAPTURE_V1
 
 
@@ -166,7 +167,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             out_root.mkdir()
             entry = LevelEntry("novelty_level_1", "type010101", "levels/one.xml")
             episode = PlannedEpisode("train", entry, out_root / "train" / _safe_output_name(entry), "scheduled")
-            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="commands")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="commands", collection_purpose="smoke")
 
             commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(workers=1))
 
@@ -641,7 +642,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             out_root = root / "out"
             out_root.mkdir()
             episode = PlannedEpisode("train", entry, out_root / "train" / _safe_output_name(entry), "scheduled")
-            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={"train:novelty_level_1/type010101": {"target": 1, "existing": 0, "scheduled": 1}}, options=CollectionOptions(count=12, workers=1), targets=CollectionTargets(train=1, dev=1), seed="artifact")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={"train:novelty_level_1/type010101": {"target": 1, "existing": 0, "scheduled": 1}}, options=CollectionOptions(count=12, workers=1), targets=CollectionTargets(train=1, dev=1), seed="artifact", collection_purpose="smoke")
 
             payload = json.loads(plan_path.read_text(encoding="utf-8"))
             self.assertEqual(payload["schema"], PLAN_SCHEMA)
@@ -656,7 +657,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             entry = LevelEntry("novelty_level_5", "type010501", "levels/one.xml")
             planned = PlannedEpisode("train", entry, out_root / "train" / _safe_output_name(entry), "scheduled")
             retained = PlannedEpisode("train", entry, out_root / "train" / "already-complete", "existing")
-            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[planned, retained], summary={}, options=CollectionOptions(count=12, workers=1), targets=CollectionTargets(train=1, dev=1), seed="commands")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[planned, retained], summary={}, options=CollectionOptions(count=12, workers=1), targets=CollectionTargets(train=1, dev=1), seed="commands", collection_purpose="smoke")
 
             commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(count=12, workers=1))
 
@@ -683,7 +684,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             out_root.mkdir()
             entry = LevelEntry("novelty_level_1", "type010101", "levels/one.xml")
             episode = PlannedEpisode("train", entry, out_root / "train" / _safe_output_name(entry), "scheduled")
-            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="cwd")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="cwd", collection_purpose="smoke")
 
             commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(workers=1))
 
@@ -705,7 +706,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             out_root.mkdir()
             entry = LevelEntry("novelty_level_1", "type010101", "levels/one.xml")
             episode = PlannedEpisode("train", entry, out_root / "train" / _safe_output_name(entry), "scheduled")
-            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="cwd-exec")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="cwd-exec", collection_purpose="smoke")
 
             commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(workers=1))
 
@@ -794,6 +795,182 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             self.assertEqual(scoped[0].bucket, "novelty_level_0/type2")
             self.assertTrue(scoped[0].relative_path.endswith("type2/Levels/3_9_6_1.xml"))
 
+    def test_manifest_lineage_survives_partition_and_collection_plan_round_trips(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            engine_dir = root / "engine"
+            output_root = root / "out"
+            output_root.mkdir()
+            make_level(engine_dir, "novelty_level_1", "type010101", "one.xml")
+            entries = discover_level_entries(engine_dir)
+
+            self.assertEqual(entries[0].scenario_manifest.generation.mode, "legacy_static")
+            self.assertIsNone(entries[0].scenario_manifest.generation.generation_seed)
+            partitions = partition_levels(entries, seed="planner-seed")
+            partition_path = write_partition_manifest(root / "partition", partitions, seed="planner-seed")
+            self.assertEqual(load_partition_manifest(partition_path), partitions)
+
+            episodes, summary = build_collection_plan(
+                entries,
+                output_root=output_root,
+                options=CollectionOptions(count=1, workers=1),
+                targets=CollectionTargets(train=1, dev=1),
+                selected_splits=("train",),
+                seed="planner-seed",
+                expected_bucket_count=1,
+            )
+            plan_path = write_collection_plan(
+                root / "plan",
+                output_root=output_root,
+                episodes=episodes,
+                summary=summary,
+                options=CollectionOptions(count=1, workers=1),
+                targets=CollectionTargets(train=1, dev=1),
+                seed="planner-seed",
+            )
+            payload = json.loads(plan_path.read_text(encoding="utf-8"))
+            selected = payload["selected"][0]
+            self.assertEqual(selected["scenario_lineage_identity"], entries[0].scenario_manifest.scenario_lineage.identity)
+            self.assertEqual(selected["generation_mode"], "legacy_static")
+            self.assertEqual(payload["planner_seed"], "planner-seed")
+            self.assertIsNone(selected["generation_seed"])
+            generate_collection_commands(plan_path, output_root=output_root, options=CollectionOptions(count=1, workers=1))
+
+            del selected["scenario_manifest"]
+            plan_path.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "scenario_manifest"):
+                generate_collection_commands(plan_path, output_root=output_root, options=CollectionOptions(count=1, workers=1))
+
+    def test_smoke_only_type2_is_rejected_for_research_but_can_be_smoke_planned(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            engine_dir = root / "engine"
+            output_root = root / "out"
+            output_root.mkdir()
+            make_level(engine_dir, "novelty_level_0", "type2", "3_9_6_1.xml")
+            xml_path = engine_dir / "9001_Data/StreamingAssets/Levels/novelty_level_0/type2/Levels/3_9_6_1.xml"
+            manifest = import_legacy_manifest(
+                xml_path.read_bytes(),
+                benchmark_condition=BenchmarkCondition("novelty_level_0", "type2"),
+                source_path=xml_path.relative_to(engine_dir).as_posix(),
+                eligibility=SMOKE_ONLY,
+                eligibility_reason="staged type2 runtime fixture",
+            )
+            write_manifest(manifest, xml_path.with_suffix(".scenario.json"))
+            entries = discover_level_entries(engine_dir, level_type_prefix="type2")
+
+            with self.assertRaisesRegex(ValueError, "smoke_only"):
+                build_collection_plan(
+                    entries,
+                    output_root=output_root,
+                    options=CollectionOptions(count=1, workers=1),
+                    targets=CollectionTargets(train=1, dev=1),
+                    selected_splits=("train",),
+                    expected_bucket_count=1,
+                )
+            episodes, summary = build_collection_plan(
+                entries,
+                output_root=output_root,
+                options=CollectionOptions(count=1, workers=1),
+                targets=CollectionTargets(train=1, dev=1),
+                selected_splits=("train",),
+                expected_bucket_count=1,
+                collection_purpose="smoke",
+            )
+            self.assertEqual(len(episodes), 1)
+            plan_path = write_collection_plan(
+                root / "smoke-plan",
+                output_root=output_root,
+                episodes=episodes,
+                summary=summary,
+                options=CollectionOptions(count=1, workers=1),
+                targets=CollectionTargets(train=1, dev=1),
+                selected_splits=("train",),
+                seed="smoke-planner-seed",
+                collection_purpose="smoke",
+            )
+            self.assertEqual(json.loads(plan_path.read_text(encoding="utf-8"))["collection_purpose"], "smoke")
+            generate_collection_commands(plan_path, output_root=output_root, options=CollectionOptions(count=1, workers=1))
+
+    def test_sidecarless_type2_is_smoke_only_and_rejected_for_research(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            engine_dir = root / "engine"
+            output_root = root / "out"
+            output_root.mkdir()
+            make_level(engine_dir, "novelty_level_0", "type2", "3_9_6_1.xml")
+            entries = discover_level_entries(engine_dir, level_type_prefix="type2")
+
+            self.assertEqual(entries[0].scenario_manifest.research_eligibility.status, SMOKE_ONLY)
+            with self.assertRaisesRegex(ValueError, "smoke_only"):
+                build_collection_plan(
+                    entries,
+                    output_root=output_root,
+                    options=CollectionOptions(count=1, workers=1),
+                    targets=CollectionTargets(train=1, dev=1),
+                    selected_splits=("train",),
+                    expected_bucket_count=1,
+                )
+            planned, _ = build_collection_plan(
+                entries,
+                output_root=output_root,
+                options=CollectionOptions(count=1, workers=1),
+                targets=CollectionTargets(train=1, dev=1),
+                selected_splits=("train",),
+                expected_bucket_count=1,
+                collection_purpose="smoke",
+            )
+            self.assertEqual(len(planned), 1)
+
+    def test_path_only_level_entry_is_rejected_for_research_at_every_planning_seam(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output_root = root / "out"
+            output_root.mkdir()
+            entry = LevelEntry("novelty_level_0", "type2", "levels/type2.xml")
+            options = CollectionOptions(count=1, workers=1)
+            targets = CollectionTargets(train=1, dev=1)
+
+            with self.assertRaisesRegex(ValueError, "scenario manifest"):
+                build_collection_plan(
+                    [entry],
+                    output_root=output_root,
+                    options=options,
+                    targets=targets,
+                    selected_splits=("train",),
+                    expected_bucket_count=1,
+                )
+
+            planned = PlannedEpisode("train", entry, output_root / "train" / "type2", "scheduled")
+            with self.assertRaisesRegex(ValueError, "scenario manifest"):
+                write_collection_plan(
+                    root / "research-plan",
+                    output_root=output_root,
+                    episodes=[planned],
+                    summary={},
+                    options=options,
+                    targets=targets,
+                    selected_splits=("train",),
+                    seed="planner-seed",
+                )
+
+            smoke_path = write_collection_plan(
+                root / "smoke-plan",
+                output_root=output_root,
+                episodes=[planned],
+                summary={},
+                options=options,
+                targets=targets,
+                selected_splits=("train",),
+                seed="planner-seed",
+                collection_purpose="smoke",
+            )
+            payload = json.loads(smoke_path.read_text(encoding="utf-8"))
+            payload["collection_purpose"] = "research"
+            smoke_path.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "scenario manifest"):
+                generate_collection_commands(smoke_path, output_root=output_root, options=options)
+
     def test_discovery_rejects_an_empty_level_type_prefix(self):
         with tempfile.TemporaryDirectory() as temporary:
             engine_dir = Path(temporary) / "engine"
@@ -827,9 +1004,9 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
             targets = CollectionTargets(train=1, dev=1)
 
             with self.assertRaisesRegex(RuntimeError, "no dev partition capacity"):
-                build_collection_plan(entries, output_root=out_root, options=options, targets=targets, selected_splits=("train", "dev"), expected_bucket_count=1)
+                build_collection_plan(entries, output_root=out_root, options=options, targets=targets, selected_splits=("train", "dev"), expected_bucket_count=1, collection_purpose="smoke")
 
-            plan, summary = build_collection_plan(entries, output_root=out_root, options=options, targets=targets, selected_splits=("train",), expected_bucket_count=1)
+            plan, summary = build_collection_plan(entries, output_root=out_root, options=options, targets=targets, selected_splits=("train",), expected_bucket_count=1, collection_purpose="smoke")
 
             self.assertEqual([episode.split for episode in plan], ["train"])
             self.assertEqual(set(summary), {"train:novelty_level_0/type2"})
@@ -843,7 +1020,7 @@ class PrepareRolloutDatasetTest(unittest.TestCase):
                 PlannedEpisode("train", LevelEntry(f"novelty_level_{novelty}", "type010101", f"levels/{novelty}.xml"), out_root / "train" / f"episode-{novelty}", "scheduled")
                 for novelty in (0, 1, 2, 3)
             ]
-            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=episodes, summary={}, options=CollectionOptions(count=12, workers=2), targets=CollectionTargets(train=1, dev=1), seed="stripe")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=episodes, summary={}, options=CollectionOptions(count=12, workers=2), targets=CollectionTargets(train=1, dev=1), seed="stripe", collection_purpose="smoke")
             commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(count=12, workers=2))
 
             worker_zero, worker_one = commands.split('if [[ "$worker_index" == "1" ]]; then', maxsplit=1)
@@ -1075,7 +1252,7 @@ class PhysicsLauncherTests(unittest.TestCase):
             archive, marker, archive_sha256 = self._provenance(root)
             provenance = resolve_physics_capture_provenance(archive, marker)
             episode = PlannedEpisode("train", LevelEntry("novelty_level_1", "type010101", "levels/one.xml"), out_root / "train" / "episode", "scheduled")
-            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=2), targets=CollectionTargets(train=1, dev=1), seed="physics", physics_provenance=provenance)
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=2), targets=CollectionTargets(train=1, dev=1), seed="physics", physics_provenance=provenance, collection_purpose="smoke")
             commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(workers=2), physics_provenance=provenance)
             payload = json.loads(plan_path.read_text(encoding="utf-8"))
 
@@ -1106,7 +1283,7 @@ class PhysicsLauncherTests(unittest.TestCase):
             out_root = root / "out"
             out_root.mkdir()
             episode = PlannedEpisode("train", LevelEntry("novelty_level_1", "type010101", "levels/one.xml"), out_root / "train" / "episode", "scheduled")
-            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="legacy")
+            plan_path = write_collection_plan(root / "plan", output_root=out_root, episodes=[episode], summary={}, options=CollectionOptions(workers=1), targets=CollectionTargets(train=1, dev=1), seed="legacy", collection_purpose="smoke")
             commands = generate_collection_commands(plan_path, output_root=out_root, options=CollectionOptions(workers=1))
 
             # No physics staging, provenance, or capture flag may leak into a legacy

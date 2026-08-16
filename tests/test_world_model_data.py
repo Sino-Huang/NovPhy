@@ -755,6 +755,7 @@ class EpisodeCatalogTests(unittest.TestCase):
                 targets=CollectionTargets(train=1, dev=1, test=0),
                 selected_splits=("train",),
                 seed="catalog-test",
+                collection_purpose="smoke",
             )
 
             catalog = EpisodeCatalog.build(
@@ -975,6 +976,7 @@ class EpisodeCatalogTests(unittest.TestCase):
                 targets=CollectionTargets(train=1, dev=1, test=0),
                 selected_splits=("train", "dev"),
                 seed="dup-test",
+                collection_purpose="smoke",
             )
 
             catalog_train = EpisodeCatalog.build(
@@ -2161,6 +2163,7 @@ class CurriculumPolicyTests(unittest.TestCase):
                 targets=CollectionTargets(train=1, dev=1, test=0),
                 selected_splits=("train",),
                 seed="curriculum-filter-test",
+                collection_purpose="smoke",
             )
             catalog = EpisodeCatalog.build(
                 output_root,
@@ -2630,6 +2633,7 @@ class WorldModelDataIntegrationTests(unittest.TestCase):
             targets=CollectionTargets(train=2, dev=1, test=1),
             selected_splits=("train", "dev", "test"),
             seed="integration-plan-v1",
+            collection_purpose="smoke",
         )
         return output_root, plan_path, entries, reserved_entry
 
