@@ -17,6 +17,11 @@ from scripts.physics_macro_labels import (
     MacroLabelError,
     validate_macro_labels,
 )
+from scripts.physics_relational_supervision import (
+    RelationalFrameLabel,
+    RelationalSupervisionError,
+    validate_relational_supervision,
+)
 from scripts.physics_capture_types import (
     CoordinateDeclaration,
     EntityId,
@@ -60,6 +65,11 @@ class PhysicsFrameSupervision:
     events: tuple[PhysicsEvent, ...]
     derived_labels: DerivedFrameLabel | None = None
     macro_labels: MacroFrameLabel | None = None
+    relational_labels: RelationalFrameLabel | None = None
+
+    @property
+    def relational_supervision(self) -> RelationalFrameLabel | None:
+        return self.relational_labels
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,6 +80,7 @@ class PhysicsSupervisionRequest:
     include_derived_labels: bool = False
     include_macro_labels: bool = False
     oracle_gate_spec: OracleGateSpec | None = None
+    include_relational_labels: bool = False
 
     def __post_init__(self) -> None:
         if type(self.required_capabilities) is not tuple:
@@ -83,6 +94,7 @@ class PhysicsSupervisionRequest:
             or type(self.include_events) is not bool
             or type(self.include_derived_labels) is not bool
             or type(self.include_macro_labels) is not bool
+            or type(self.include_relational_labels) is not bool
         ):
             raise ContractValueError("supervision flags", "must be booleans")
         if self.oracle_gate_spec is not None and not isinstance(self.oracle_gate_spec, OracleGateSpec):
@@ -195,6 +207,45 @@ def read_physics_shot(
             raise ContractValueError(
                 "physics macro labels", "frame labels do not match the accepted state identities"
             )
+    relational_by_identity: dict[tuple[str, str, int, int, int, str], RelationalFrameLabel] = {}
+    if request.include_relational_labels:
+        # A relational label must describe exactly the accepted source state before
+        # it is allowed into a supervision sample.
+        try:
+            relational = validate_relational_supervision(shot_dir)
+        except (OSError, RelationalSupervisionError, PhysicsContractError) as error:
+            raise ContractValueError("physics relational labels", str(error)) from error
+        for label in relational.frames:
+            identity = label.identity
+            identity_key = (
+                identity.capture_id,
+                identity.shot_id,
+                identity.state_sequence,
+                identity.render_frame,
+                identity.fixed_step,
+                identity.rgb_relative_path,
+            )
+            if identity_key in relational_by_identity:
+                raise ContractValueError(
+                    "physics relational labels", "duplicate frame-label identity"
+                )
+            relational_by_identity[identity_key] = label
+        state_identities = {
+            (
+                str(state.clock.capture_id),
+                str(state.clock.shot_id),
+                state.clock.sequence,
+                state.clock.render_frame,
+                state.clock.fixed_step,
+                state.rgb_frame.relative_path,
+            )
+            for state in capture.states
+        }
+        if set(relational_by_identity) != state_identities:
+            raise ContractValueError(
+                "physics relational labels",
+                "frame labels do not match the accepted state identities",
+            )
     result: list[PhysicsFrameSupervision] = []
     for frame_index, relative_path in enumerate(frame_paths):
         state = path_to_state.get(relative_path)
@@ -226,5 +277,6 @@ def read_physics_shot(
             events=events_by_state[key] if request.include_events else (),
             derived_labels=labels_by_frame.get(state.clock.render_frame) if request.include_derived_labels else None,
             macro_labels=macro_by_identity[identity_key] if request.include_macro_labels else None,
+            relational_labels=relational_by_identity[identity_key] if request.include_relational_labels else None,
         ))
     return tuple(result)
