@@ -154,6 +154,26 @@ def create_loaded_plan(root: Path, arguments: dict[str, object] | None = None):
     return load_collection_plan(path)
 
 
+def accepted_result(request, realized_coverage_strata: tuple[str, ...]) -> RuntimeResult:
+    return RuntimeResult(
+        "accepted",
+        realized_coverage_strata=realized_coverage_strata,
+        artifact_path=f"artifacts/{request.intervention_id}-attempt-{request.attempt_number}.json",
+    )
+
+
+def quarantined_result(request, status: str, reason: str, failure_code: str) -> RuntimeResult:
+    attempt_path = f"{request.intervention_id}-attempt-{request.attempt_number}"
+    return RuntimeResult(
+        status,
+        reason=reason,
+        failure_code=failure_code,
+        eligible=False,
+        quarantine_path=f"quarantine/{attempt_path}.json",
+        failure_manifest_path=f"failure-manifests/{attempt_path}.json",
+    )
+
+
 class CollectionPlanTests(unittest.TestCase):
     def test_round_trip_has_deterministic_identity_and_exact_frozen_bytes(self) -> None:
         arguments = plan_arguments()
@@ -325,7 +345,7 @@ class CollectionPlanTests(unittest.TestCase):
                 self.assertEqual((output / PLAN_COPY_FILENAME).read_bytes(), loaded.original_bytes)
                 requests.append(request)
                 realized = ("no-contact/miss",) if request.intervention_id == "collision-shot" else ("collision",)
-                return RuntimeResult("accepted", realized_coverage_strata=realized)
+                return accepted_result(request, realized)
 
             report = execute_collection_plan(loaded, runtime, output)
 
@@ -339,6 +359,37 @@ class CollectionPlanTests(unittest.TestCase):
             self.assertEqual((output / PLAN_COPY_FILENAME).read_bytes(), loaded.original_bytes)
             self.assertEqual(json.loads((output / REPORT_FILENAME).read_text(encoding="utf-8")), report)
 
+    def test_execution_fails_closed_without_required_runtime_audit_references(self) -> None:
+        cases = {
+            "accepted_without_artifact": (
+                RuntimeResult("accepted", realized_coverage_strata=("collision",)),
+                "artifact_path",
+            ),
+            "accepted_but_ineligible": (
+                RuntimeResult("accepted", realized_coverage_strata=("collision",), eligible=False),
+                "eligible=True",
+            ),
+            "rejected_without_audit_references": (
+                RuntimeResult("rejected", reason="artifact ineligible", eligible=False),
+                "failure_code",
+            ),
+            "failed_without_audit_references": (
+                RuntimeResult("failed", reason="transport unavailable", failure_code="transport_unavailable"),
+                "quarantine_path",
+            ),
+        }
+        for name, (result, message) in cases.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temp_dir:
+                root = Path(temp_dir)
+
+                def runtime(request):
+                    if request.intervention_id == "collision-shot":
+                        return result
+                    return accepted_result(request, ("no-contact/miss",))
+
+                with self.assertRaisesRegex(ValueError, message):
+                    execute_collection_plan(create_loaded_plan(root), runtime, root / "output")
+
     def test_transient_retry_preserves_action_and_uses_distinct_attempt_identity(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -348,9 +399,9 @@ class CollectionPlanTests(unittest.TestCase):
             def runtime(request):
                 requests.append(request)
                 if request.intervention_id == "collision-shot" and request.attempt_number == 1:
-                    return RuntimeResult("failed", reason="transport unavailable", failure_code="transport_unavailable")
+                    return quarantined_result(request, "failed", "transport unavailable", "transport_unavailable")
                 stratum = "collision" if request.intervention_id == "collision-shot" else "no-contact/miss"
-                return RuntimeResult("accepted", realized_coverage_strata=(stratum,))
+                return accepted_result(request, (stratum,))
 
             report = execute_collection_plan(loaded, runtime, root / "output")
             first, retry = requests[:2]
@@ -364,66 +415,96 @@ class CollectionPlanTests(unittest.TestCase):
             self.assertEqual(report["failed_count"], 1)
             self.assertEqual(report["accepted_count"], 2)
 
-    def test_attempt_ledger_records_machine_readable_disposition_and_reason(self) -> None:
+    def test_attempt_ledger_records_audit_disposition_and_quarantine_accounting(self) -> None:
         cases = {
             "accepted_and_rejected": (
                 lambda request: (
-                    RuntimeResult("accepted", realized_coverage_strata=("collision",))
+                    accepted_result(request, ("collision",))
                     if request.intervention_id == "collision-shot"
-                    else RuntimeResult("rejected", reason="artifact ineligible", eligible=False)
+                    else quarantined_result(request, "rejected", "artifact ineligible", "artifact_ineligible")
                 ),
-                [("accepted", "accept", "accepted"), ("rejected", "quarantine", "rejected")],
+                [
+                    ("accepted", "accepted", "none", "none", "accept", "accepted"),
+                    ("rejected", "quarantined", "stop", "permanent", "quarantine", "rejected"),
+                ],
+                1,
             ),
             "transient_retry": (
                 lambda request: (
-                    RuntimeResult("failed", reason="transport unavailable", failure_code="transport_unavailable")
+                    quarantined_result(request, "failed", "transport unavailable", "transport_unavailable")
                     if request.intervention_id == "collision-shot" and request.attempt_number == 1
-                    else RuntimeResult(
-                        "accepted",
-                        realized_coverage_strata=("collision" if request.intervention_id == "collision-shot" else "no-contact/miss",),
+                    else accepted_result(
+                        request,
+                        ("collision" if request.intervention_id == "collision-shot" else "no-contact/miss",),
                     )
                 ),
                 [
-                    ("failed", "retry", "transient_failure"),
-                    ("accepted", "accept", "accepted"),
-                    ("accepted", "accept", "accepted"),
+                    ("failed", "quarantined", "retry", "transient", "retry", "transient_failure"),
+                    ("accepted", "accepted", "none", "none", "accept", "accepted"),
+                    ("accepted", "accepted", "none", "none", "accept", "accepted"),
                 ],
+                1,
             ),
             "permanent_failure": (
                 lambda request: (
-                    RuntimeResult("failed", reason="schema defect", failure_code="permanent_schema_defect")
+                    quarantined_result(request, "failed", "schema defect", "permanent_schema_defect")
                     if request.intervention_id == "collision-shot"
-                    else RuntimeResult("accepted", realized_coverage_strata=("no-contact/miss",))
+                    else accepted_result(request, ("no-contact/miss",))
                 ),
                 [
-                    ("failed", "quarantine", "permanent_failure"),
-                    ("accepted", "accept", "accepted"),
+                    ("failed", "quarantined", "stop", "permanent", "quarantine", "permanent_failure"),
+                    ("accepted", "accepted", "none", "none", "accept", "accepted"),
                 ],
+                1,
             ),
             "exhausted_transient_failure": (
                 lambda request: (
-                    RuntimeResult("failed", reason="transport unavailable", failure_code="transport_unavailable")
+                    quarantined_result(request, "failed", "transport unavailable", "transport_unavailable")
                     if request.intervention_id == "collision-shot"
-                    else RuntimeResult("accepted", realized_coverage_strata=("no-contact/miss",))
+                    else accepted_result(request, ("no-contact/miss",))
                 ),
                 [
-                    ("failed", "retry", "transient_failure"),
-                    ("failed", "quarantine", "retry_exhausted"),
-                    ("accepted", "accept", "accepted"),
+                    ("failed", "quarantined", "retry", "transient", "retry", "transient_failure"),
+                    ("failed", "quarantined", "stop", "transient", "quarantine", "retry_exhausted"),
+                    ("accepted", "accepted", "none", "none", "accept", "accepted"),
                 ],
+                2,
             ),
         }
-        for name, (runtime, expected) in cases.items():
+        for name, (runtime, expected, expected_quarantined_count) in cases.items():
             with self.subTest(name=name), tempfile.TemporaryDirectory() as temp_dir:
                 root = Path(temp_dir)
                 report = execute_collection_plan(create_loaded_plan(root), runtime, root / "output")
                 persisted = json.loads((root / "output" / REPORT_FILENAME).read_text(encoding="utf-8"))
                 actual = [
-                    (entry["status"], entry["disposition"], entry["disposition_reason"])
+                    (
+                        entry["status"],
+                        entry["artifact_disposition"],
+                        entry["retry_decision"],
+                        entry["failure_class"],
+                        entry["disposition"],
+                        entry["disposition_reason"],
+                    )
                     for entry in report["attempt_ledger"]
                 ]
                 self.assertEqual(actual, expected)
                 self.assertEqual(persisted["attempt_ledger"], report["attempt_ledger"])
+                self.assertEqual(report["quarantined_count"], expected_quarantined_count)
+                self.assertEqual(
+                    report["quarantined_attempts"],
+                    [entry for entry in report["attempt_ledger"] if entry["artifact_disposition"] == "quarantined"],
+                )
+                self.assertEqual(persisted["quarantined_attempts"], report["quarantined_attempts"])
+                for entry in report["attempt_ledger"]:
+                    if entry["artifact_disposition"] == "accepted":
+                        self.assertTrue(entry["artifact_path"])
+                        self.assertIsNone(entry["quarantine_path"])
+                        self.assertIsNone(entry["failure_manifest_path"])
+                    else:
+                        self.assertTrue(entry["failure_code"])
+                        self.assertTrue(entry["reason"])
+                        self.assertTrue(entry["quarantine_path"])
+                        self.assertTrue(entry["failure_manifest_path"])
 
     def test_permanent_and_exhausted_failures_never_replace_planned_actions(self) -> None:
         cases = {
@@ -439,8 +520,8 @@ class CollectionPlanTests(unittest.TestCase):
                 def runtime(request):
                     intervention_ids.append(request.intervention_id)
                     if request.intervention_id == "collision-shot":
-                        return RuntimeResult("failed", reason=name, failure_code=failure_code)
-                    return RuntimeResult("rejected", reason="artifact ineligible", eligible=False)
+                        return quarantined_result(request, "failed", name, failure_code)
+                    return quarantined_result(request, "rejected", "artifact ineligible", "artifact_ineligible")
 
                 report = execute_collection_plan(loaded, runtime, root / "output")
                 self.assertEqual(intervention_ids.count("collision-shot"), expected_collision_attempts)
@@ -462,22 +543,23 @@ class CollectionPlanTests(unittest.TestCase):
                 with self.assertRaises(TypeError):
                     request.interface_action["drag_release"][0] = 9
                 stratum = "collision" if request.intervention_id == "collision-shot" else "no-contact/miss"
-                return RuntimeResult("accepted", realized_coverage_strata=(stratum,))
+                return accepted_result(request, (stratum,))
 
             execute_collection_plan(loaded, runtime, root / "output")
 
-    def test_accounting_uses_all_and_only_eligible_accepted_realized_coverage(self) -> None:
+    def test_accounting_uses_all_and_only_accepted_realized_coverage(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             loaded = create_loaded_plan(root)
 
             def runtime(request):
                 if request.intervention_id == "collision-shot":
-                    return RuntimeResult("accepted", realized_coverage_strata=("collision", "level clear"))
-                return RuntimeResult("accepted", realized_coverage_strata=("no-contact/miss",), eligible=False)
+                    return accepted_result(request, ("collision", "level clear"))
+                return quarantined_result(request, "rejected", "artifact ineligible", "artifact_ineligible")
 
             report = execute_collection_plan(loaded, runtime, root / "output")
-            self.assertEqual(report["accepted_count"], 2)
+            self.assertEqual(report["accepted_count"], 1)
+            self.assertEqual(report["rejected_count"], 1)
             self.assertEqual(report["realized_coverage_stratum_counts"]["collision"], 1)
             self.assertEqual(report["realized_coverage_stratum_counts"]["level clear"], 1)
             self.assertEqual(report["realized_coverage_stratum_counts"]["no-contact/miss"], 0)
@@ -495,7 +577,7 @@ class CollectionPlanTests(unittest.TestCase):
                     mutation_path = loaded.path if target == "source" else output / PLAN_COPY_FILENAME
                     mutation_path.write_bytes(b"mutated")
                     stratum = "collision" if request.intervention_id == "collision-shot" else "no-contact/miss"
-                    return RuntimeResult("accepted", realized_coverage_strata=(stratum,))
+                    return accepted_result(request, (stratum,))
 
                 message = "bytes changed" if target == "source" else "Copied collection plan bytes changed"
                 with self.assertRaisesRegex(ValueError, message):
@@ -511,7 +593,7 @@ class CollectionPlanTests(unittest.TestCase):
 
             def runtime(request):
                 stratum = "collision" if request.intervention_id == "collision-shot" else "no-contact/miss"
-                return RuntimeResult("accepted", realized_coverage_strata=(stratum,))
+                return accepted_result(request, (stratum,))
 
             first_report = execute_collection_plan(loaded, runtime, output)
             report_bytes = (output / REPORT_FILENAME).read_bytes()
@@ -540,7 +622,7 @@ class CollectionPlanTests(unittest.TestCase):
 
             def runtime(request):
                 stratum = "collision" if request.intervention_id == "collision-shot" else "no-contact/miss"
-                return RuntimeResult("accepted", realized_coverage_strata=(stratum,))
+                return accepted_result(request, (stratum,))
 
             report = execute_collection_plan(loaded, runtime, root / "output")
             attempt_ids = [entry["attempt_id"] for entry in report["attempt_ledger"]]

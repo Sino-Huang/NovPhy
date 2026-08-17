@@ -287,6 +287,18 @@ class RuntimeResult:
     failure_code: str | None = None
     realized_coverage_strata: tuple[str, ...] = ()
     eligible: bool = True
+    artifact_path: str | None = None
+    quarantine_path: str | None = None
+    failure_manifest_path: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class _AttemptDisposition:
+    artifact_disposition: Literal["accepted", "quarantined"]
+    retry_decision: Literal["none", "retry", "stop"]
+    failure_class: Literal["none", "transient", "permanent"]
+    disposition: Literal["accept", "retry", "quarantine"]
+    disposition_reason: str
 
 
 class CollectionPlanRuntime(Protocol):
@@ -663,34 +675,86 @@ def _result_from_runtime(value: RuntimeResult | Mapping[str, Any]) -> RuntimeRes
         result = value
     else:
         data = _require_object(value, "Runtime result")
-        _require_exact_keys(data, {"status", "reason", "failure_code", "realized_coverage_strata", "eligible"}, "Runtime result")
+        _require_exact_keys(
+            data,
+            {
+                "status",
+                "reason",
+                "failure_code",
+                "realized_coverage_strata",
+                "eligible",
+                "artifact_path",
+                "quarantine_path",
+                "failure_manifest_path",
+            },
+            "Runtime result",
+        )
         coverage = _require_list(data["realized_coverage_strata"], "Runtime result realized_coverage_strata")
-        result = RuntimeResult(data["status"], data["reason"], data["failure_code"], tuple(coverage), data["eligible"])
+        result = RuntimeResult(
+            data["status"],
+            data["reason"],
+            data["failure_code"],
+            tuple(coverage),
+            data["eligible"],
+            data["artifact_path"],
+            data["quarantine_path"],
+            data["failure_manifest_path"],
+        )
     if result.status not in {"accepted", "rejected", "failed"}:
         raise ValueError("Runtime result has unknown status")
     if not isinstance(result.eligible, bool):
         raise ValueError("Runtime result eligible must be a boolean")
+    for field, path in (
+        ("artifact_path", result.artifact_path),
+        ("quarantine_path", result.quarantine_path),
+        ("failure_manifest_path", result.failure_manifest_path),
+    ):
+        if path is not None and (not isinstance(path, str) or not path):
+            raise ValueError(f"Runtime result {field} must be a nonempty string when provided")
     coverage = result.realized_coverage_strata
     if not isinstance(coverage, tuple) or any(stratum not in REQUIRED_COVERAGE_STRATA for stratum in coverage) or len(coverage) != len(set(coverage)):
         raise ValueError("Runtime result realized_coverage_strata must be a unique subset of required strata")
     if result.status == "accepted":
         if result.reason is not None or result.failure_code is not None:
             raise ValueError("Accepted runtime result cannot report reason or failure code")
-    elif result.status == "rejected":
-        if not isinstance(result.reason, str) or not result.reason or result.failure_code is not None or coverage:
-            raise ValueError("Rejected runtime result requires a reason and no failure code or coverage")
-    elif not isinstance(result.reason, str) or not result.reason or not isinstance(result.failure_code, str) or not result.failure_code or coverage:
-        raise ValueError("Failed runtime result requires reason and failure code and cannot report coverage")
+        if not result.eligible:
+            raise ValueError("Accepted runtime result requires eligible=True")
+        if not isinstance(result.artifact_path, str) or not result.artifact_path:
+            raise ValueError("Accepted runtime result requires a nonempty artifact_path")
+    elif (
+        not isinstance(result.reason, str)
+        or not result.reason
+        or not isinstance(result.failure_code, str)
+        or not result.failure_code
+        or not isinstance(result.quarantine_path, str)
+        or not result.quarantine_path
+        or not isinstance(result.failure_manifest_path, str)
+        or not result.failure_manifest_path
+        or coverage
+    ):
+        raise ValueError(
+            "Rejected or failed runtime result requires nonempty reason, failure_code, "
+            "quarantine_path, and failure_manifest_path and no coverage"
+        )
     return result
 
 
 def _call_runtime(runtime: CollectionPlanRuntime, request: RuntimeInput) -> RuntimeResult:
-    try:
-        if not callable(runtime):
-            raise ValueError("Collection plan runtime must be callable")
-        return _result_from_runtime(runtime(request))
-    except Exception as exc:
-        return RuntimeResult("failed", str(exc) or exc.__class__.__name__, "runtime_exception")
+    if not callable(runtime):
+        raise ValueError("Collection plan runtime must be callable")
+    return _result_from_runtime(runtime(request))
+
+
+def _disposition_for_result(result: RuntimeResult, policy: RetryPolicy, attempt_number: int) -> _AttemptDisposition:
+    if result.status == "accepted":
+        return _AttemptDisposition("accepted", "none", "none", "accept", "accepted")
+    if result.status == "rejected":
+        return _AttemptDisposition("quarantined", "stop", "permanent", "quarantine", "rejected")
+    if result.failure_code in policy.transient_failure_codes:
+        if attempt_number < policy.max_attempts:
+            return _AttemptDisposition("quarantined", "retry", "transient", "retry", "transient_failure")
+        return _AttemptDisposition("quarantined", "stop", "transient", "quarantine", "retry_exhausted")
+    return _AttemptDisposition("quarantined", "stop", "permanent", "quarantine", "permanent_failure")
 
 
 def _write_report(report: dict[str, Any], path: Path) -> Path:
@@ -729,14 +793,17 @@ def execute_collection_plan(loaded: LoadedCollectionPlan, runtime: CollectionPla
     counts = {"accepted": 0, "rejected": 0, "failed": 0}
 
     def checkpoint_report() -> dict[str, Any]:
+        quarantined_attempts = [entry for entry in ledger if entry["artifact_disposition"] == "quarantined"]
         report = {
-            "schema": "collection_plan_execution_report_v1",
+            "schema": "collection_plan_execution_report_v2",
             "plan_identity": loaded.plan.identity,
             "plan_version": loaded.plan.plan_version,
             "attempt_ledger": ledger,
             "accepted_count": counts["accepted"],
             "rejected_count": counts["rejected"],
             "failed_count": counts["failed"],
+            "quarantined_attempts": quarantined_attempts,
+            "quarantined_count": len(quarantined_attempts),
             "planned_slots": planned_slots,
             "realized_coverage_stratum_counts": realized_counts,
             "unmet_slots": unmet_slots,
@@ -779,25 +846,10 @@ def execute_collection_plan(loaded: LoadedCollectionPlan, runtime: CollectionPla
                     slingshot_reference=intervention.slingshot_reference,
                 )
                 result = _call_runtime(runtime, request)
+                disposition = _disposition_for_result(result, scenario.retry_policy, attempt_number)
                 terminal_status = result.status
-                terminal_eligible = result.status == "accepted" and result.eligible
+                terminal_eligible = result.status == "accepted"
                 counts[result.status] += 1
-                if result.status == "accepted":
-                    disposition = "accept"
-                    disposition_reason = "accepted"
-                elif result.status == "rejected":
-                    disposition = "quarantine"
-                    disposition_reason = "rejected"
-                elif result.failure_code in scenario.retry_policy.transient_failure_codes:
-                    if attempt_number < scenario.retry_policy.max_attempts:
-                        disposition = "retry"
-                        disposition_reason = "transient_failure"
-                    else:
-                        disposition = "quarantine"
-                        disposition_reason = "retry_exhausted"
-                else:
-                    disposition = "quarantine"
-                    disposition_reason = "permanent_failure"
                 entry = {
                     "plan_identity": request.plan_identity,
                     "scenario_id": request.scenario_id,
@@ -810,27 +862,27 @@ def execute_collection_plan(loaded: LoadedCollectionPlan, runtime: CollectionPla
                     "status": result.status,
                     "eligible": result.eligible,
                     "reason": result.reason,
-                    "disposition": disposition,
-                    "disposition_reason": disposition_reason,
+                    "disposition": disposition.disposition,
+                    "disposition_reason": disposition.disposition_reason,
+                    "artifact_disposition": disposition.artifact_disposition,
+                    "retry_decision": disposition.retry_decision,
+                    "failure_class": disposition.failure_class,
                     "failure_code": result.failure_code,
+                    "artifact_path": result.artifact_path,
+                    "quarantine_path": result.quarantine_path,
+                    "failure_manifest_path": result.failure_manifest_path,
                     "realized_coverage_strata": list(result.realized_coverage_strata),
                 }
                 ledger.append(entry)
                 attempt_entries.append(entry)
                 if result.status == "accepted":
-                    if result.eligible:
-                        for stratum in result.realized_coverage_strata:
-                            realized_counts[stratum] += 1
-                            realized_on_slot.add(stratum)
-                    checkpoint_report()
-                    break
-                if result.status == "rejected":
-                    checkpoint_report()
-                    break
-                if result.failure_code not in scenario.retry_policy.transient_failure_codes:
-                    checkpoint_report()
-                    break
+                    for stratum in result.realized_coverage_strata:
+                        realized_counts[stratum] += 1
+                        realized_on_slot.add(stratum)
                 checkpoint_report()
+                if disposition.retry_decision == "retry":
+                    continue
+                break
 
             slot_disposition = terminal_status
             if terminal_status == "accepted":

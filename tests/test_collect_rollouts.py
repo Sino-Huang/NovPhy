@@ -31,6 +31,7 @@ from scripts.collect_rollouts import (
     capture_physics_rollout,
     cleanup_incomplete_physics_attempts,
     recover_physics_capture_attempts,
+    collect_fresh_engine_attempt,
     collect_fresh_engine_rollouts,
     collect_rollouts,
     build_parser,
@@ -3534,6 +3535,187 @@ class CollectRolloutsTest(unittest.TestCase):
 
         self.assertTrue(process.terminated)
         self.assertTrue(process.waited)
+
+    def test_collect_fresh_engine_attempt_atomically_publishes_accepted_attempt(self):
+        action = {"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0}
+        calls = []
+
+        def legacy_collect(stage, actions, *, fresh_engine_attempts, **_kwargs):
+            calls.append((stage, actions, fresh_engine_attempts))
+            shot = stage / "shot_001"
+            shot.mkdir(parents=True)
+            metadata = {
+                "capture_contract": "physics_capture_v1",
+                "initial_engine_state_identity": "initial-state",
+                "intervention_event_id": "event-1",
+                "termination_reason": "rollout_ceiling",
+                "termination_fixed_step": 3,
+                "termination_event_id": None,
+                "terminal_state_fixed_step": 3,
+            }
+            (shot / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+            manifest = {
+                "attempt_count": 1,
+                "rollouts": [
+                    {
+                        "name": "shot_001",
+                        "accepted": True,
+                        "artifact_validation": {"accepted": True},
+                    }
+                ],
+            }
+            (stage / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+            return manifest
+
+        with TemporaryDirectory() as temporary, patch(
+            "scripts.collect_rollouts.collect_fresh_engine_rollouts",
+            side_effect=legacy_collect,
+        ):
+            root = Path(temporary)
+            result = collect_fresh_engine_attempt(
+                root,
+                action,
+                attempt_id="attempt-accepted",
+                attempt_number=1,
+                expected_initial_engine_state_identity="initial-state",
+                game_dir=Path("game"),
+            )
+
+            accepted = root / "accepted" / "attempt-accepted"
+            self.assertEqual(calls, [(root / ".attempt-attempt-accepted.tmp", [action], 1)])
+            self.assertTrue(accepted.is_dir())
+            self.assertFalse((root / ".attempt-attempt-accepted.tmp").exists())
+            self.assertEqual(result["artifact_path"], str(accepted))
+            self.assertTrue(result["eligible"])
+            self.assertEqual(result["status"], "accepted")
+            self.assertFalse((root / "shot_001").exists())
+
+    def test_collect_fresh_engine_attempt_quarantines_startup_failure_without_retry(self):
+        starts = []
+
+        def start_engine_func(_game_dir, _headless):
+            starts.append("start")
+            raise OSError("engine unavailable")
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            result = collect_fresh_engine_attempt(
+                root,
+                {"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0},
+                attempt_id="attempt-startup-failure",
+                attempt_number=2,
+                expected_initial_engine_state_identity="initial-state",
+                game_dir=Path("game"),
+                host="127.0.0.1",
+                port=2004,
+                agent_id=28888,
+                speed=1,
+                connect_timeout=1,
+                read_timeout=1,
+                prepare_timeout=1,
+                frame_height=480,
+                fast=True,
+                headless=True,
+                target_fps=1,
+                duration_seconds=1,
+                ui_level=None,
+                ui_settle_seconds=0,
+                fresh_engine_attempts=9,
+                start_engine_func=start_engine_func,
+            )
+
+            quarantine = root / "quarantine" / "attempt-startup-failure"
+            failure_path = quarantine / "failure.json"
+            failure = json.loads(failure_path.read_text(encoding="utf-8"))
+            self.assertEqual(starts, ["start"])
+            self.assertEqual(result["status"], "failed")
+            self.assertEqual(result["quarantine_path"], str(quarantine))
+            self.assertEqual(result["failure_manifest_path"], str(failure_path))
+            self.assertTrue(quarantine.is_dir())
+            self.assertFalse((root / ".attempt-attempt-startup-failure.tmp").exists())
+            self.assertEqual(failure["attempt_id"], "attempt-startup-failure")
+            self.assertEqual(failure["attempt_number"], 2)
+            self.assertEqual(failure["quarantine_path"], str(quarantine))
+            self.assertEqual(failure["failure_code"], result["failure_code"])
+            self.assertTrue(failure["reason"])
+
+    def test_collect_fresh_engine_attempt_quarantines_unclassified_runtime_error_permanently(self):
+        with TemporaryDirectory() as temporary, patch(
+            "scripts.collect_rollouts.collect_fresh_engine_rollouts",
+            side_effect=RuntimeError("unexpected collector state"),
+        ):
+            root = Path(temporary)
+            result = collect_fresh_engine_attempt(
+                root,
+                {"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0},
+                attempt_id="attempt-runtime-error",
+                attempt_number=1,
+                expected_initial_engine_state_identity="initial-state",
+                game_dir=Path("game"),
+            )
+
+            quarantine = root / "quarantine" / "attempt-runtime-error"
+            failure_path = quarantine / "failure.json"
+            failure = json.loads(failure_path.read_text(encoding="utf-8"))
+            self.assertEqual(result["status"], "failed")
+            self.assertEqual(result["failure_code"], "collection_runtime_error")
+            self.assertEqual(result["quarantine_path"], str(quarantine))
+            self.assertEqual(result["failure_manifest_path"], str(failure_path))
+            self.assertTrue(quarantine.is_dir())
+            self.assertEqual(failure["failure_class"], "permanent")
+            self.assertFalse(failure["retryable"])
+            self.assertEqual(failure["retry_decision"], "stop")
+
+    def test_collect_fresh_engine_attempt_rejects_missing_physics_evidence_permanently(self):
+        def legacy_collect(stage, _actions, *, fresh_engine_attempts, **_kwargs):
+            self.assertEqual(fresh_engine_attempts, 1)
+            shot = stage / "shot_001"
+            shot.mkdir(parents=True)
+            metadata = {
+                "initial_engine_state_identity": "initial-state",
+                "intervention_event_id": "event-1",
+                "termination_reason": "rollout_ceiling",
+                "termination_fixed_step": 3,
+                "termination_event_id": None,
+                "terminal_state_fixed_step": 3,
+            }
+            (shot / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+            return {
+                "attempt_count": 1,
+                "rollouts": [
+                    {
+                        "name": "shot_001",
+                        "accepted": True,
+                        "artifact_validation": {"accepted": True},
+                    }
+                ],
+            }
+
+        with TemporaryDirectory() as temporary, patch(
+            "scripts.collect_rollouts.collect_fresh_engine_rollouts",
+            side_effect=legacy_collect,
+        ):
+            root = Path(temporary)
+            result = collect_fresh_engine_attempt(
+                root,
+                {"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0},
+                attempt_id="attempt-missing-evidence",
+                attempt_number=1,
+                expected_initial_engine_state_identity="initial-state",
+                game_dir=Path("game"),
+            )
+
+            failure = json.loads(
+                (root / "quarantine" / "attempt-missing-evidence" / "failure.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(result["status"], "rejected")
+            self.assertEqual(result["failure_code"], "missing_required_evidence")
+            self.assertFalse(result["eligible"])
+            self.assertEqual(failure["failure_class"], "permanent")
+            self.assertFalse(failure["retryable"])
+            self.assertEqual(failure["retry_decision"], "stop")
 
     def test_write_action_plan_dry_run_writes_actions_without_bridge(self):
         with TemporaryDirectory() as tmp:

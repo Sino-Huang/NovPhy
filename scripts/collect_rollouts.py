@@ -2100,6 +2100,271 @@ def collect_fresh_engine_rollouts(
     return manifest
 
 
+def _rewrite_staged_attempt_paths(value: Any, staging_dir: Path, destination: Path) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: _rewrite_staged_attempt_paths(item, staging_dir, destination)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_rewrite_staged_attempt_paths(item, staging_dir, destination) for item in value]
+    if isinstance(value, str):
+        try:
+            return str(destination / Path(value).relative_to(staging_dir))
+        except ValueError:
+            return value
+    return value
+
+
+def collect_fresh_engine_attempt(
+    output_root: Path,
+    action: dict,
+    *,
+    attempt_id: str,
+    attempt_number: int,
+    expected_initial_engine_state_identity: str,
+    **fresh_engine_options,
+) -> dict[str, Any]:
+    """Collect and atomically publish one fresh-engine attempt for a plan runtime."""
+    if not isinstance(attempt_id, str) or not attempt_id:
+        raise ValueError("attempt_id must be a nonempty string")
+    if isinstance(attempt_number, bool) or not isinstance(attempt_number, int) or attempt_number <= 0:
+        raise ValueError("attempt_number must be a positive integer")
+    if (
+        not isinstance(expected_initial_engine_state_identity, str)
+        or not expected_initial_engine_state_identity
+    ):
+        raise ValueError("expected_initial_engine_state_identity must be a nonempty string")
+
+    output_root = Path(output_root)
+    output_root.mkdir(parents=True, exist_ok=True)
+    staging_dir = output_root / f".attempt-{attempt_id}.tmp"
+    accepted_dir = output_root / "accepted" / attempt_id
+    quarantine_dir = output_root / "quarantine" / attempt_id
+    if staging_dir.exists() or accepted_dir.exists() or quarantine_dir.exists():
+        raise RuntimeError(f"collection attempt path already exists: {attempt_id}")
+    staging_dir.mkdir()
+
+    options = dict(fresh_engine_options)
+    options.pop("fresh_engine_attempts", None)
+    manifest: dict[str, Any] | None = None
+    collection_error: Exception | None = None
+    try:
+        candidate = collect_fresh_engine_rollouts(
+            staging_dir,
+            [action],
+            fresh_engine_attempts=1,
+            **options,
+        )
+        if isinstance(candidate, dict):
+            manifest = candidate
+    except Exception as exc:
+        collection_error = exc
+
+    manifest_path = staging_dir / "manifest.json"
+    if manifest is None and manifest_path.is_file():
+        try:
+            loaded_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            loaded_manifest = None
+        if isinstance(loaded_manifest, dict):
+            manifest = loaded_manifest
+    if manifest is not None and not manifest_path.exists():
+        manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+    rollout = None
+    if manifest is not None:
+        rollouts = manifest.get("rollouts")
+        if isinstance(rollouts, list) and len(rollouts) == 1 and isinstance(rollouts[0], dict):
+            rollout = rollouts[0]
+
+    status: str | None = None
+    reason: str | None = None
+    failure_code: str | None = None
+    artifact_validation: dict[str, Any] | None = None
+    if rollout is not None and isinstance(rollout.get("artifact_validation"), dict):
+        artifact_validation = rollout["artifact_validation"]
+
+    if rollout is None:
+        if collection_error is None:
+            status = "rejected"
+            reason = "collection manifest does not contain exactly one rollout"
+            failure_code = "missing_artifact"
+        else:
+            message = str(collection_error) or collection_error.__class__.__name__
+            lowered = message.lower()
+            evidence_terms = (
+                "collision",
+                "contact",
+                "terminal",
+                "initial engine state identity",
+                "lifecycle",
+                "bird_launched",
+            )
+            status = "failed"
+            reason = message
+            if any(term in lowered for term in evidence_terms):
+                failure_code = "missing_required_evidence"
+            elif isinstance(collection_error, TimeoutError):
+                failure_code = "engine_start_timeout"
+            elif isinstance(collection_error, ConnectionError) or any(
+                term in lowered
+                for term in ("connect", "connection", "transport", "socket", "network unreachable")
+            ):
+                failure_code = "transport_unavailable"
+            elif "malformed" in lowered or "invalid" in lowered:
+                failure_code = "capture_invalid"
+            elif any(
+                term in lowered
+                for term in ("temporary capture", "capture temporarily unavailable", "temporarily unavailable")
+            ):
+                failure_code = "capture_temporarily_unavailable"
+            else:
+                failure_code = "collection_runtime_error"
+    elif not rollout.get("accepted"):
+        status = "rejected"
+        if artifact_validation is not None:
+            failure_code = next(
+                (
+                    artifact_validation.get(field)
+                    for field in ("failure_code", "invalid_reason", "classification")
+                    if isinstance(artifact_validation.get(field), str) and artifact_validation[field]
+                ),
+                None,
+            )
+            reason = next(
+                (
+                    artifact_validation.get(field)
+                    for field in ("message", "invalid_reason", "classification")
+                    if isinstance(artifact_validation.get(field), str) and artifact_validation[field]
+                ),
+                None,
+            )
+        failure_code = failure_code or "artifact_rejected"
+        reason = reason or "rollout artifact was rejected"
+    elif collection_error is not None:
+        status = "failed"
+        reason = str(collection_error) or collection_error.__class__.__name__
+        failure_code = "capture_temporarily_unavailable"
+    else:
+        shot_name = rollout.get("name")
+        shot_dir = staging_dir / shot_name if isinstance(shot_name, str) and shot_name else None
+        metadata = None
+        if shot_dir is not None:
+            metadata_path = shot_dir / "metadata.json"
+            if metadata_path.is_file():
+                try:
+                    loaded_metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    loaded_metadata = None
+                if isinstance(loaded_metadata, dict):
+                    metadata = loaded_metadata
+
+        if artifact_validation is None or artifact_validation.get("accepted") is not True:
+            status = "rejected"
+            failure_code = "artifact_rejected"
+            reason = "accepted rollout is missing successful artifact validation"
+        elif metadata is None:
+            status = "rejected"
+            failure_code = "missing_required_evidence"
+            reason = "missing rollout metadata evidence"
+        elif metadata.get("capture_contract") != "physics_capture_v1":
+            status = "rejected"
+            failure_code = "missing_required_evidence"
+            reason = "missing collision, contact, and lifecycle evidence"
+        elif not _has_complete_strict_semantics(metadata):
+            status = "rejected"
+            failure_code = "missing_required_evidence"
+            reason = "missing terminal or identity rollout evidence"
+        elif metadata.get("initial_engine_state_identity") != expected_initial_engine_state_identity:
+            status = "rejected"
+            failure_code = "initial_engine_state_identity_mismatch"
+            reason = "observed initial engine state identity does not match the planned identity"
+        else:
+            accepted_dir.parent.mkdir(parents=True, exist_ok=True)
+            for path in staging_dir.rglob("*.json"):
+                try:
+                    payload = json.loads(path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    continue
+                path.write_text(
+                    json.dumps(
+                        _rewrite_staged_attempt_paths(payload, staging_dir, accepted_dir),
+                        indent=2,
+                    ),
+                    encoding="utf-8",
+                )
+            os.replace(staging_dir, accepted_dir)
+            return {
+                "status": "accepted",
+                "reason": None,
+                "failure_code": None,
+                "realized_coverage_strata": [],
+                "eligible": True,
+                "artifact_path": str(accepted_dir),
+                "quarantine_path": None,
+                "failure_manifest_path": None,
+            }
+
+    assert status is not None and reason is not None and failure_code is not None
+    permanent_codes = {
+        "missing_artifact",
+        "artifact_rejected",
+        "capture_invalid",
+        "missing_required_evidence",
+        "initial_engine_state_identity_mismatch",
+        "collection_runtime_error",
+    }
+    permanent = status == "rejected" or failure_code in permanent_codes
+    quarantine_dir.parent.mkdir(parents=True, exist_ok=True)
+    failure_manifest_path = quarantine_dir / "failure.json"
+    failure_manifest = {
+        "schema": "collection_attempt_failure_v1",
+        "attempt_id": attempt_id,
+        "attempt_number": attempt_number,
+        "expected_initial_engine_state_identity": expected_initial_engine_state_identity,
+        "action": action,
+        "status": status,
+        "reason": reason,
+        "failure_code": failure_code,
+        "failure_class": "permanent" if permanent else "transient",
+        "retryable": not permanent,
+        "retry_decision": "stop" if permanent else "collection_plan",
+        "quarantine_path": str(quarantine_dir),
+    }
+    if artifact_validation is not None:
+        failure_manifest["artifact_validation"] = artifact_validation
+    if collection_error is not None:
+        failure_manifest["exception_type"] = collection_error.__class__.__name__
+    (staging_dir / "failure.json").write_text(
+        json.dumps(failure_manifest, indent=2),
+        encoding="utf-8",
+    )
+    for path in staging_dir.rglob("*.json"):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        path.write_text(
+            json.dumps(
+                _rewrite_staged_attempt_paths(payload, staging_dir, quarantine_dir),
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+    os.replace(staging_dir, quarantine_dir)
+    return {
+        "status": status,
+        "reason": reason,
+        "failure_code": failure_code,
+        "realized_coverage_strata": [],
+        "eligible": False,
+        "artifact_path": None,
+        "quarantine_path": str(quarantine_dir),
+        "failure_manifest_path": str(failure_manifest_path),
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Collect diverse high-FPS Science Birds pixel rollouts")
     parser.add_argument("--output-dir", required=True, type=Path)
