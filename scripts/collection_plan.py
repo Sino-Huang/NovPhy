@@ -16,6 +16,7 @@ from hashlib import sha256
 import json
 import os
 from pathlib import Path
+import shutil
 import tempfile
 from types import MappingProxyType
 from typing import Any, Literal, Protocol
@@ -299,6 +300,10 @@ class _AttemptDisposition:
     failure_class: Literal["none", "transient", "permanent"]
     disposition: Literal["accept", "retry", "quarantine"]
     disposition_reason: str
+
+
+class _RuntimeCallbackError(Exception):
+    pass
 
 
 class CollectionPlanRuntime(Protocol):
@@ -742,7 +747,11 @@ def _result_from_runtime(value: RuntimeResult | Mapping[str, Any]) -> RuntimeRes
 def _call_runtime(runtime: CollectionPlanRuntime, request: RuntimeInput) -> RuntimeResult:
     if not callable(runtime):
         raise ValueError("Collection plan runtime must be callable")
-    return _result_from_runtime(runtime(request))
+    try:
+        value = runtime(request)
+    except Exception as exc:
+        raise _RuntimeCallbackError from exc
+    return _result_from_runtime(value)
 
 
 def _disposition_for_result(result: RuntimeResult, policy: RetryPolicy, attempt_number: int) -> _AttemptDisposition:
@@ -750,11 +759,106 @@ def _disposition_for_result(result: RuntimeResult, policy: RetryPolicy, attempt_
         return _AttemptDisposition("accepted", "none", "none", "accept", "accepted")
     if result.status == "rejected":
         return _AttemptDisposition("quarantined", "stop", "permanent", "quarantine", "rejected")
+    if result.failure_code == "runtime_exception":
+        return _AttemptDisposition("quarantined", "stop", "permanent", "quarantine", "runtime_exception")
     if result.failure_code in policy.transient_failure_codes:
         if attempt_number < policy.max_attempts:
             return _AttemptDisposition("quarantined", "retry", "transient", "retry", "transient_failure")
         return _AttemptDisposition("quarantined", "stop", "transient", "quarantine", "retry_exhausted")
     return _AttemptDisposition("quarantined", "stop", "permanent", "quarantine", "permanent_failure")
+
+
+def _failure_manifest_data(
+    request: RuntimeInput,
+    result: RuntimeResult,
+    disposition: _AttemptDisposition,
+) -> dict[str, Any]:
+    return {
+        "schema": "collection_plan_failure_manifest_v1",
+        "plan_identity": request.plan_identity,
+        "plan_version": request.plan_version,
+        "scenario_id": request.scenario_id,
+        "scenario_identity": request.scenario_identity,
+        "intervention_id": request.intervention_id,
+        "intervention_identity": request.intervention_identity,
+        "attempt_id": request.attempt_id,
+        "attempt_number": request.attempt_number,
+        "status": result.status,
+        "reason": result.reason,
+        "failure_code": result.failure_code,
+        "artifact_disposition": disposition.artifact_disposition,
+        "failure_class": disposition.failure_class,
+        "retry_decision": disposition.retry_decision,
+        "quarantine_path": result.quarantine_path,
+        "failure_manifest_path": result.failure_manifest_path,
+    }
+
+
+def _write_failure_manifest(path: Path, data: Mapping[str, Any]) -> None:
+    content = json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _write_bytes_atomic(path, content.encode("utf-8"))
+
+
+def _record_failure_manifest(
+    output_dir: Path,
+    request: RuntimeInput,
+    result: RuntimeResult,
+    disposition: _AttemptDisposition,
+) -> None:
+    assert isinstance(result.failure_manifest_path, str)
+    manifest_path = Path(result.failure_manifest_path)
+    if not manifest_path.is_absolute():
+        manifest_path = output_dir / manifest_path
+    try:
+        adapter_data: dict[str, Any] = {}
+        if manifest_path.exists():
+            if not manifest_path.is_file():
+                raise ValueError("Failure manifest path is not a file")
+            adapter_data = dict(_require_object(json.loads(manifest_path.read_text(encoding="utf-8")), "Failure manifest"))
+        adapter_data.update(_failure_manifest_data(request, result, disposition))
+        _write_failure_manifest(manifest_path, adapter_data)
+    except (OSError, UnicodeError, ValueError) as exc:
+        raise ValueError(f"Cannot record failure manifest {result.failure_manifest_path}") from exc
+
+
+def _runtime_exception_result(request: RuntimeInput, error: Exception) -> RuntimeResult:
+    quarantine_path = Path("quarantine") / request.attempt_id
+    failure_manifest_path = quarantine_path / "failure_manifest.json"
+    return RuntimeResult(
+        "failed",
+        reason=str(error) or error.__class__.__name__,
+        failure_code="runtime_exception",
+        eligible=False,
+        quarantine_path=str(quarantine_path),
+        failure_manifest_path=str(failure_manifest_path),
+    )
+
+
+def _record_fallback_failure_manifest(
+    output_dir: Path,
+    request: RuntimeInput,
+    result: RuntimeResult,
+    disposition: _AttemptDisposition,
+) -> None:
+    assert isinstance(result.quarantine_path, str)
+    assert isinstance(result.failure_manifest_path, str)
+    quarantine_path = output_dir / result.quarantine_path
+    manifest_path = output_dir / result.failure_manifest_path
+    if manifest_path.parent != quarantine_path or manifest_path.name != "failure_manifest.json":
+        raise ValueError("Fallback failure manifest must be inside its quarantine directory")
+    temporary: Path | None = None
+    try:
+        quarantine_path.parent.mkdir(parents=True, exist_ok=True)
+        if quarantine_path.exists():
+            raise ValueError("Fallback quarantine directory already exists")
+        temporary = Path(tempfile.mkdtemp(prefix=".fallback-", dir=quarantine_path.parent))
+        _write_failure_manifest(temporary / manifest_path.name, _failure_manifest_data(request, result, disposition))
+        os.replace(temporary, quarantine_path)
+    except (OSError, ValueError) as exc:
+        if temporary is not None and temporary.exists():
+            shutil.rmtree(temporary, ignore_errors=True)
+        raise ValueError(f"Cannot record fallback failure manifest {result.failure_manifest_path}") from exc
 
 
 def _write_report(report: dict[str, Any], path: Path) -> Path:
@@ -845,8 +949,20 @@ def execute_collection_plan(loaded: LoadedCollectionPlan, runtime: CollectionPla
                     mapping_version=intervention.mapping_version,
                     slingshot_reference=intervention.slingshot_reference,
                 )
-                result = _call_runtime(runtime, request)
+                try:
+                    result = _call_runtime(runtime, request)
+                except _RuntimeCallbackError as exc:
+                    error = exc.__cause__ if isinstance(exc.__cause__, Exception) else exc
+                    result = _runtime_exception_result(request, error)
+                    fallback_failure_manifest = True
+                else:
+                    fallback_failure_manifest = False
                 disposition = _disposition_for_result(result, scenario.retry_policy, attempt_number)
+                if result.status != "accepted":
+                    if fallback_failure_manifest:
+                        _record_fallback_failure_manifest(output_dir, request, result, disposition)
+                    else:
+                        _record_failure_manifest(output_dir, request, result, disposition)
                 terminal_status = result.status
                 terminal_eligible = result.status == "accepted"
                 counts[result.status] += 1

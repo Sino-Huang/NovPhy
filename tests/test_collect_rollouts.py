@@ -933,40 +933,7 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
             self.assertEqual((current["player_sha256"], current["protocol_sha256"], current["archive_sha256"]), ("d" * 64, "e" * 64, "f" * 64))
             self.assertEqual((stale["player_sha256"], stale["protocol_sha256"], stale["archive_sha256"]), ("a" * 64, "b" * 64, "c" * 64))
 
-    def test_generated_enriched_desktop_worker_runs_through_actual_collector(self):
-        from src.webui.bridge import PhysicsCaptureV1
-        from scripts.scenario_manifest import BenchmarkCondition, import_legacy_manifest, write_manifest
-
-        records, events = self._records()
-        png = self._png()
-        call_order = []
-
-        class Bridge(FakeBridge):
-            request_count = 0
-
-            def shoot(self, *args, **kwargs):
-                raise AssertionError("enriched generated command must not use legacy shoot")
-
-            def shoot_and_record_ground_truth(self, x, y, tap_time=0, release_time=0, frequency=1):
-                call_order.append(("recorder-action", x, y, tap_time, release_time, frequency))
-                return 1
-
-            def get_physics_capture_v1(self):
-                self.request_count += 1
-                call_order.append("initial-request-70" if self.request_count == 1 else "post-request-70")
-                return PhysicsCaptureV1(
-                    png,
-                    records[1] if self.request_count == 1 else records[2],
-                    () if self.request_count == 1 else tuple(events[:1]),
-                )
-
-        guard = {
-            "pre_shot_image": self._pre_shot(),
-            "pre_shot_sample": {"state": "PLAYING", "score": 0},
-            "post_recovery_protocol_state": {},
-            "recovery_action": None,
-            "pre_shot_guard": {"status": "accepted", "invalid_reason": None},
-        }
+    def test_generated_fresh_engine_worker_without_required_inputs_fails_closed(self):
         with TemporaryDirectory() as temporary:
             root = Path(temporary)
             episode = PlannedEpisode(
@@ -991,56 +958,12 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                     provenance,
                 )[2:]
             )
-            scenario_xml = root / "level.xml"
-            scenario_xml.write_text("<Level><Bird type=\"red\" /></Level>", encoding="utf-8")
-            scenario_manifest = write_manifest(
-                import_legacy_manifest(
-                    scenario_xml.read_bytes(),
-                    benchmark_condition=BenchmarkCondition("novelty_level_1", "type01001"),
-                    source_path="level.xml",
-                ),
-                root / "level.scenario.json",
-            )
-            argv = [
-                "collect_rollouts.py",
-                *shlex.split(command),
-                "--scenario-manifest",
-                str(scenario_manifest),
-                "--scenario-xml",
-                str(scenario_xml),
-            ]
-            bridge = Bridge()
-
-            def run_actual_collector(output_dir, actions, **kwargs):
-                return collect_rollouts(
-                    bridge,
-                    output_dir,
-                    actions,
-                    target_fps=kwargs["target_fps"],
-                    duration_seconds=kwargs["duration_seconds"],
-                    max_frames=2,
-                    capture_rollout=kwargs["capture_rollout"],
-                    shoot_before_capture=kwargs["shoot_before_capture"],
-                    anchor_actions=False,
-                    physics_capture_v1=kwargs["physics_capture_v1"],
-                    physics_player_sha256=kwargs["physics_player_sha256"],
-                    physics_protocol_sha256=kwargs["physics_protocol_sha256"],
-                    physics_archive_sha256=kwargs["physics_archive_sha256"],
-                )
-
-            with (
-                patch.object(sys, "argv", argv),
-                patch("scripts.collect_rollouts.collect_fresh_engine_rollouts", side_effect=run_actual_collector),
-                patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard),
-                patch("PIL.ImageGrab.grab"),
-            ):
+            stderr = io.StringIO()
+            with patch.object(sys, "argv", ["collect_rollouts.py", *shlex.split(command)]), redirect_stderr(stderr), self.assertRaises(SystemExit) as raised:
                 main()
 
-            self.assertTrue((episode.output_dir / "shot_001").is_dir())
-            self.assertFalse((episode.output_dir / "shot_001.tmp").exists())
-            self.assertEqual(call_order[0], "initial-request-70")
-            self.assertEqual(call_order[1][0], "recorder-action")
-            self.assertEqual(call_order[2], "post-request-70")
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("requires both --scenario-manifest and --scenario-xml", stderr.getvalue())
 
     def test_physics_capture_rejects_explicit_and_derived_frame_counts_above_contract(self):
         class Bridge:
@@ -1253,6 +1176,30 @@ class FakeBridge:
 
 
 class CollectRolloutsTest(unittest.TestCase):
+    def _assert_fresh_engine_retries_are_rejected(self):
+        with TemporaryDirectory() as temporary:
+            with self.assertRaisesRegex(ValueError, "frozen collection plan"):
+                collect_fresh_engine_rollouts(
+                    Path(temporary),
+                    [{"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0}],
+                    game_dir=Path("game"),
+                    host="127.0.0.1",
+                    port=2004,
+                    agent_id=28888,
+                    speed=1,
+                    connect_timeout=1,
+                    read_timeout=2,
+                    prepare_timeout=3,
+                    frame_height=480,
+                    fast=True,
+                    headless=False,
+                    target_fps=1,
+                    duration_seconds=1,
+                    ui_level=None,
+                    ui_settle_seconds=0,
+                    fresh_engine_attempts=2,
+                )
+
     def test_action_to_shot_matches_webui_game_coordinates_then_flips_once_for_bridge(self):
         action = {
             "coordinate_frame": "slingshot_relative",
@@ -2727,443 +2674,17 @@ class CollectRolloutsTest(unittest.TestCase):
         )
         self.assertTrue(sleeps)
 
-    def test_invalid_attempt_retries_and_quarantines_evidence(self):
-        actions = [{"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0}]
-        events = []
+    def test_invalid_attempt_retries_are_rejected_before_collection(self):
+        self._assert_fresh_engine_retries_are_rejected()
 
-        class FakeProcess:
-            def __init__(self, pid):
-                self.pid = pid
-                self.terminated = False
-                self.waited = False
+    def test_retry_overwrite_path_is_rejected_before_collection(self):
+        self._assert_fresh_engine_retries_are_rejected()
 
-            def poll(self):
-                return None
+    def test_retry_exhaustion_path_is_rejected_before_collection(self):
+        self._assert_fresh_engine_retries_are_rejected()
 
-            def terminate(self):
-                self.terminated = True
-
-            def wait(self, timeout=None):
-                self.waited = True
-
-        processes = []
-        bridges = [FakeBridge(), FakeBridge()]
-
-        def start_engine_func(game_dir, headless):
-            process = FakeProcess(5000 + len(processes))
-            processes.append(process)
-            events.append(("start", process.pid))
-            return process
-
-        def connect_func(host, port, timeout, deadline_seconds):
-            bridge = bridges.pop(0)
-            events.append(("connect", len(processes)))
-            return bridge
-
-        def capture_rollout(bridge, output_dir, **kwargs):
-            from PIL import Image
-
-            output_dir.mkdir(parents=True, exist_ok=True)
-            frames_dir = output_dir / "frames"
-            frames_dir.mkdir(parents=True, exist_ok=True)
-            first_frame = Image.new("RGB", (20, 20), (50, 60, 70))
-            second_frame = Image.new("RGB", (20, 20), (50, 60, 70))
-            if len(processes) == 1:
-                for x in range(2):
-                    for y in range(11):
-                        second_frame.putpixel((x, y), (51, 60, 70))
-            else:
-                second_frame = Image.new("RGB", (20, 20), (180, 20, 40))
-            first_frame.save(frames_dir / "frame_000000.png", format="PNG")
-            second_frame.save(frames_dir / "frame_000001.png", format="PNG")
-            metadata = {"frame_count": 2, "frames_dir": str(frames_dir)}
-            (output_dir / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
-            return metadata
-
-        with TemporaryDirectory() as tmp:
-            manifest = collect_fresh_engine_rollouts(
-                Path(tmp),
-                actions,
-                game_dir=Path("game"),
-                host="127.0.0.1",
-                port=2004,
-                agent_id=28888,
-                speed=1,
-                connect_timeout=1,
-                read_timeout=2,
-                prepare_timeout=3,
-                frame_height=480,
-                fast=True,
-                headless=False,
-                target_fps=1,
-                duration_seconds=1,
-                ui_level=None,
-                ui_settle_seconds=0,
-                fresh_engine_attempts=2,
-                start_engine_func=start_engine_func,
-                connect_func=connect_func,
-                prepare_func=lambda bridge, timeout, poll_delay: bridge.get_game_state(),
-                capture_rollout=capture_rollout,
-                video_runner=lambda command, check, stdout, stderr: Path(command[-1]).write_bytes(b"mp4"),
-            )
-            accepted_metadata = json.loads((Path(tmp) / "shot_001" / "metadata.json").read_text(encoding="utf-8"))
-            action_log = json.loads((Path(tmp) / "action_log.json").read_text(encoding="utf-8"))
-            invalid_attempt = manifest["invalid_attempts"][0]
-            quarantined_path = Path(invalid_attempt["quarantined_path"])
-            quarantined_path_exists = quarantined_path.is_dir()
-            quarantined_metadata = json.loads((quarantined_path / "metadata.json").read_text(encoding="utf-8"))
-
-        self.assertEqual(manifest["attempt_count"], 2)
-        self.assertEqual(manifest["accepted_rollout_count"], 1)
-        self.assertEqual(manifest["rollout_count"], 1)
-        self.assertEqual(len(manifest["invalid_attempts"]), 1)
-        self.assertEqual([rollout["accepted"] for rollout in manifest["rollouts"]], [False, True])
-        self.assertTrue(quarantined_path_exists)
-        self.assertEqual(quarantined_path.name, "shot_001_attempt_01")
-        self.assertEqual(invalid_attempt["attempt_status"], "invalid_retryable")
-        self.assertEqual(invalid_attempt["recovery_action"], "fresh_engine_retry")
-        self.assertEqual(invalid_attempt["retry_attempt"], 1)
-        self.assertEqual(quarantined_metadata["attempt_status"], "invalid_retryable")
-        self.assertEqual(accepted_metadata["attempt_status"], "accepted")
-        self.assertTrue(accepted_metadata["accepted"])
-        self.assertEqual(accepted_metadata["retry_attempt"], 2)
-        self.assertEqual(accepted_metadata["prior_invalid_attempts"][0]["quarantined_path"], str(quarantined_path))
-        self.assertEqual(action_log["attempt_count"], 2)
-        self.assertEqual(action_log["accepted_trial_count"], 1)
-        self.assertEqual([trial["accepted"] for trial in action_log["trials"]], [False, True])
-        self.assertEqual(action_log["trials"][0]["fresh_engine_attempt"], 1)
-        self.assertEqual(action_log["trials"][1]["fresh_engine_attempt"], 2)
-        self.assertEqual(len(processes), 2)
-        self.assertTrue(all(process.terminated and process.waited for process in processes))
-
-    def test_quarantined_invalid_attempt_metadata_is_self_contained_after_retry_overwrite(self):
-        actions = [{"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0}]
-
-        class FakeProcess:
-            def __init__(self, pid):
-                self.pid = pid
-                self.terminated = False
-                self.waited = False
-
-            def poll(self):
-                return None
-
-            def terminate(self):
-                self.terminated = True
-
-            def wait(self, timeout=None):
-                self.waited = True
-
-        processes = []
-        bridges = [FakeBridge(), FakeBridge()]
-
-        def start_engine_func(game_dir, headless):
-            process = FakeProcess(5500 + len(processes))
-            processes.append(process)
-            return process
-
-        def connect_func(host, port, timeout, deadline_seconds):
-            return bridges.pop(0)
-
-        def capture_rollout(bridge, output_dir, **kwargs):
-            from PIL import Image
-
-            output_dir.mkdir(parents=True, exist_ok=True)
-            frames_dir = output_dir / "frames"
-            frames_dir.mkdir(parents=True, exist_ok=True)
-            pre_shot_path = output_dir / "pre_shot.png"
-            Image.new("RGB", (20, 20), (50, 60, 70)).save(pre_shot_path, format="PNG")
-            first_frame = Image.new("RGB", (20, 20), (50, 60, 70))
-            second_frame = Image.new("RGB", (20, 20), (50, 60, 70))
-            if len(processes) == 1:
-                for x in range(2):
-                    for y in range(11):
-                        second_frame.putpixel((x, y), (51, 60, 70))
-            else:
-                second_frame = Image.new("RGB", (20, 20), (180, 20, 40))
-            frame_paths = [frames_dir / "frame_000000.png", frames_dir / "frame_000001.png"]
-            first_frame.save(frame_paths[0], format="PNG")
-            second_frame.save(frame_paths[1], format="PNG")
-            metadata = {
-                "frame_count": 2,
-                "frames_dir": str(frames_dir),
-                "frames": [{"path": str(frame_path)} for frame_path in frame_paths],
-                "metadata_path": str(output_dir / "metadata.json"),
-                "pre_shot_path": str(pre_shot_path),
-            }
-            (output_dir / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
-            return metadata
-
-        with TemporaryDirectory() as tmp:
-            output_dir = Path(tmp)
-            manifest = collect_fresh_engine_rollouts(
-                output_dir,
-                actions,
-                game_dir=Path("game"),
-                host="127.0.0.1",
-                port=2004,
-                agent_id=28888,
-                speed=1,
-                connect_timeout=1,
-                read_timeout=2,
-                prepare_timeout=3,
-                frame_height=480,
-                fast=True,
-                headless=False,
-                target_fps=1,
-                duration_seconds=1,
-                ui_level=None,
-                ui_settle_seconds=0,
-                fresh_engine_attempts=2,
-                start_engine_func=start_engine_func,
-                connect_func=connect_func,
-                prepare_func=lambda bridge, timeout, poll_delay: bridge.get_game_state(),
-                capture_rollout=capture_rollout,
-                video_runner=lambda command, check, stdout, stderr: Path(command[-1]).write_bytes(b"mp4"),
-            )
-            invalid_attempt = manifest["invalid_attempts"][0]
-            accepted_metadata = json.loads((output_dir / "shot_001" / "metadata.json").read_text(encoding="utf-8"))
-            action_log = json.loads((output_dir / "action_log.json").read_text(encoding="utf-8"))
-            quarantined_path = Path(invalid_attempt["quarantined_path"])
-            quarantined_metadata = json.loads((quarantined_path / "metadata.json").read_text(encoding="utf-8"))
-            quarantined_validation = validate_rollout_artifact(quarantined_path)
-            canonical_validation = validate_rollout_artifact(output_dir / "shot_001")
-
-        self.assertTrue(canonical_validation["accepted"])
-        self.assertFalse(quarantined_validation["accepted"])
-        self.assertEqual(quarantined_validation["invalid_reason"], "low_motion_suspicious")
-        self.assertEqual(quarantined_metadata["metadata_path"], str(quarantined_path / "metadata.json"))
-        self.assertEqual(quarantined_metadata["pre_shot_path"], str(quarantined_path / "pre_shot.png"))
-        self.assertEqual(quarantined_metadata["frames_dir"], str(quarantined_path / "frames"))
-        self.assertEqual(quarantined_metadata["video_path"], str(quarantined_path / "rollout.mp4"))
-        self.assertEqual(
-            [frame["path"] for frame in quarantined_metadata["frames"]],
-            [str(quarantined_path / "frames" / "frame_000000.png"), str(quarantined_path / "frames" / "frame_000001.png")],
-        )
-        self.assertEqual(quarantined_metadata["artifact_validation"]["shot_dir"], str(quarantined_path))
-        self.assertEqual(quarantined_metadata["artifact_validation"]["metadata_path"], str(quarantined_path / "metadata.json"))
-        self.assertEqual(quarantined_metadata["artifact_validation"]["frames_dir"], str(quarantined_path / "frames"))
-        self.assertEqual(invalid_attempt["metadata_path"], str(quarantined_path / "metadata.json"))
-        self.assertEqual(invalid_attempt["artifact_validation"]["metadata_path"], str(quarantined_path / "metadata.json"))
-        self.assertEqual(action_log["trials"][0]["artifact_validation"]["shot_dir"], str(quarantined_path))
-        self.assertEqual(accepted_metadata["prior_invalid_attempts"][0]["metadata_path"], str(quarantined_path / "metadata.json"))
-        self.assertEqual(accepted_metadata["prior_invalid_attempts"][0]["artifact_validation"]["frames_dir"], str(quarantined_path / "frames"))
-
-    def test_invalid_attempt_retry_exhaustion_fails_closed(self):
-        actions = [{"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0}]
-
-        class FakeProcess:
-            def __init__(self, pid):
-                self.pid = pid
-                self.terminated = False
-                self.waited = False
-
-            def poll(self):
-                return None
-
-            def terminate(self):
-                self.terminated = True
-
-            def wait(self, timeout=None):
-                self.waited = True
-
-        processes = []
-        bridges = [FakeBridge(), FakeBridge()]
-
-        def start_engine_func(game_dir, headless):
-            process = FakeProcess(6000 + len(processes))
-            processes.append(process)
-            return process
-
-        def connect_func(host, port, timeout, deadline_seconds):
-            return bridges.pop(0)
-
-        def capture_rollout(bridge, output_dir, **kwargs):
-            from PIL import Image
-
-            output_dir.mkdir(parents=True, exist_ok=True)
-            frames_dir = output_dir / "frames"
-            frames_dir.mkdir(parents=True, exist_ok=True)
-            first_frame = Image.new("RGB", (20, 20), (50, 60, 70))
-            second_frame = Image.new("RGB", (20, 20), (50, 60, 70))
-            for x in range(2):
-                for y in range(11):
-                    second_frame.putpixel((x, y), (51, 60, 70))
-            first_frame.save(frames_dir / "frame_000000.png", format="PNG")
-            second_frame.save(frames_dir / "frame_000001.png", format="PNG")
-            metadata = {"frame_count": 2, "frames_dir": str(frames_dir)}
-            (output_dir / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
-            return metadata
-
-        with TemporaryDirectory() as tmp:
-            output_dir = Path(tmp)
-            with self.assertRaisesRegex(
-                RolloutCollectionError,
-                "fresh-engine retries exhausted.*accepted 0/1.*2 attempts.*low_motion_suspicious",
-            ) as raised:
-                collect_fresh_engine_rollouts(
-                    output_dir,
-                    actions,
-                    game_dir=Path("game"),
-                    host="127.0.0.1",
-                    port=2004,
-                    agent_id=28888,
-                    speed=1,
-                    connect_timeout=1,
-                    read_timeout=2,
-                    prepare_timeout=3,
-                    frame_height=480,
-                    fast=True,
-                    headless=False,
-                    target_fps=1,
-                    duration_seconds=1,
-                    ui_level=None,
-                    ui_settle_seconds=0,
-                    fresh_engine_attempts=2,
-                    start_engine_func=start_engine_func,
-                    connect_func=connect_func,
-                    prepare_func=lambda bridge, timeout, poll_delay: bridge.get_game_state(),
-                    capture_rollout=capture_rollout,
-                    video_runner=lambda command, check, stdout, stderr: Path(command[-1]).write_bytes(b"mp4"),
-                )
-            self.assertIn(str(output_dir / "manifest.json"), str(raised.exception))
-            manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
-            final_metadata = json.loads((output_dir / "shot_001" / "metadata.json").read_text(encoding="utf-8"))
-            action_log = json.loads((output_dir / "action_log.json").read_text(encoding="utf-8"))
-            quarantine_paths = [Path(attempt["quarantined_path"]) for attempt in manifest["invalid_attempts"]]
-            quarantine_paths_exist = [path.is_dir() for path in quarantine_paths]
-
-        self.assertEqual(manifest["attempt_count"], 2)
-        self.assertEqual(manifest["accepted_rollout_count"], 0)
-        self.assertEqual(manifest["rollout_count"], 0)
-        self.assertEqual(manifest["collection_status"], "retry_exhausted")
-        self.assertEqual(manifest["collection_error"]["invalid_reasons"], ["low_motion_suspicious"])
-        self.assertEqual(len(manifest["invalid_attempts"]), 2)
-        self.assertEqual([attempt["attempt_status"] for attempt in manifest["invalid_attempts"]], ["invalid_retryable", "invalid_exhausted"])
-        self.assertEqual([attempt["retry_attempt"] for attempt in manifest["invalid_attempts"]], [1, 2])
-        self.assertEqual(final_metadata["attempt_status"], "invalid_exhausted")
-        self.assertFalse(final_metadata["accepted"])
-        self.assertEqual(final_metadata["invalid_reason"], "low_motion_suspicious")
-        self.assertEqual(final_metadata["retry_attempt"], 2)
-        self.assertEqual(final_metadata["recovery_action"], "fresh_engine_attempts_exhausted")
-        self.assertEqual(final_metadata["quarantined_path"], str(quarantine_paths[1]))
-        self.assertEqual(final_metadata["prior_invalid_attempts"][0]["quarantined_path"], str(quarantine_paths[0]))
-        self.assertTrue(all(quarantine_paths_exist))
-        self.assertEqual([path.name for path in quarantine_paths], ["shot_001_attempt_01", "shot_001_attempt_02"])
-        self.assertEqual(action_log["attempt_count"], 2)
-        self.assertEqual(action_log["accepted_trial_count"], 0)
-        self.assertEqual([trial["accepted"] for trial in action_log["trials"]], [False, False])
-        self.assertEqual(len(processes), 2)
-        self.assertTrue(all(process.terminated and process.waited for process in processes))
-
-    def test_pre_shot_guard_retry_exhaustion_writes_manifest_and_action_logs(self):
-        actions = [{"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0}]
-
-        class FakeProcess:
-            def __init__(self, pid):
-                self.pid = pid
-                self.terminated = False
-                self.waited = False
-
-            def poll(self):
-                return None
-
-            def terminate(self):
-                self.terminated = True
-
-            def wait(self, timeout=None):
-                self.waited = True
-
-        class GuardFailBridge(FakeBridge):
-            def __init__(self):
-                super().__init__()
-                self.next_calls = 0
-                self.novelty_calls = 0
-
-            def get_novelty_info(self):
-                self.novelty_calls += 1
-                return -1
-
-            def load_next_available_level(self):
-                self.next_calls += 1
-                return 1
-
-        processes = []
-        bridges = [GuardFailBridge(), GuardFailBridge()]
-
-        def start_engine_func(game_dir, headless):
-            process = FakeProcess(6500 + len(processes))
-            processes.append(process)
-            return process
-
-        def connect_func(host, port, timeout, deadline_seconds):
-            return bridges.pop(0)
-
-        def menu_pre_shot_grabber():
-            from PIL import Image
-
-            image = Image.new("RGB", (40, 30), (245, 245, 245))
-            image.putpixel((3, 3), (230, 40, 40))
-            image.putpixel((4, 3), (40, 130, 230))
-            return image
-
-        with TemporaryDirectory() as tmp:
-            output_dir = Path(tmp)
-            with self.assertRaisesRegex(
-                RolloutCollectionError,
-                "fresh-engine retries exhausted.*accepted 0/1.*2 attempts.*missing_artifact",
-            ) as raised:
-                collect_fresh_engine_rollouts(
-                    output_dir,
-                    actions,
-                    game_dir=Path("game"),
-                    host="127.0.0.1",
-                    port=2004,
-                    agent_id=28888,
-                    speed=1,
-                    connect_timeout=1,
-                    read_timeout=2,
-                    prepare_timeout=3,
-                    frame_height=480,
-                    fast=True,
-                    headless=False,
-                    target_fps=1,
-                    duration_seconds=1,
-                    ui_level=None,
-                    ui_settle_seconds=0,
-                    fresh_engine_attempts=2,
-                    start_engine_func=start_engine_func,
-                    connect_func=connect_func,
-                    prepare_func=lambda bridge, timeout, poll_delay: bridge.get_game_state(),
-                    pre_shot_grabber=menu_pre_shot_grabber,
-                    sleeper=lambda seconds: None,
-                )
-            self.assertIn(str(output_dir / "manifest.json"), str(raised.exception))
-            manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
-            action_log = json.loads((output_dir / "action_log.json").read_text(encoding="utf-8"))
-            jsonl_trials = [json.loads(line) for line in (output_dir / "action_log.jsonl").read_text(encoding="utf-8").splitlines()]
-            quarantine_paths = [Path(attempt["quarantined_path"]) for attempt in manifest["invalid_attempts"]]
-            quarantine_paths_exist = [path.is_dir() for path in quarantine_paths]
-            quarantine_metadata = [json.loads((path / "metadata.json").read_text(encoding="utf-8")) for path in quarantine_paths]
-
-        self.assertEqual(manifest["attempt_count"], 2)
-        self.assertEqual(manifest["accepted_rollout_count"], 0)
-        self.assertEqual(manifest["rollout_count"], 0)
-        self.assertEqual(manifest["collection_status"], "retry_exhausted")
-        self.assertEqual(manifest["collection_error"]["invalid_reasons"], ["missing_artifact"])
-        self.assertEqual([attempt["accepted"] for attempt in manifest["invalid_attempts"]], [False, False])
-        self.assertEqual([attempt["attempt_status"] for attempt in manifest["invalid_attempts"]], ["invalid_retryable", "invalid_exhausted"])
-        self.assertEqual([attempt["invalid_reason"] for attempt in manifest["invalid_attempts"]], ["missing_artifact", "missing_artifact"])
-        self.assertEqual([attempt["retry_attempt"] for attempt in manifest["invalid_attempts"]], [1, 2])
-        self.assertEqual([path.name for path in quarantine_paths], ["shot_001_attempt_01", "shot_001_attempt_02"])
-        self.assertTrue(all(quarantine_paths_exist))
-        self.assertEqual([metadata["pre_shot_guard"]["status"] for metadata in quarantine_metadata], ["recovery_failed", "recovery_failed"])
-        self.assertEqual(action_log["attempt_count"], 2)
-        self.assertEqual(action_log["accepted_trial_count"], 0)
-        self.assertEqual([trial["accepted"] for trial in action_log["trials"]], [False, False])
-        self.assertEqual([trial["attempt_status"] for trial in jsonl_trials], ["invalid_retryable", "invalid_exhausted"])
-        self.assertEqual(len(processes), 2)
-        self.assertTrue(all(process.terminated and process.waited for process in processes))
+    def test_pre_shot_guard_retry_path_is_rejected_before_collection(self):
+        self._assert_fresh_engine_retries_are_rejected()
 
     def test_collect_fresh_engine_rollouts_restarts_engine_per_action(self):
         actions = [
@@ -3304,88 +2825,8 @@ class CollectRolloutsTest(unittest.TestCase):
 
         self.assertEqual(events[:5], ["start", ("sleep", 7), "connect", ("sleep", 11), "prepare"])
 
-    def test_collect_fresh_engine_rollouts_retries_prepare_timeout_with_new_engine(self):
-        events = []
-        actions = [{"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0}]
-
-        class FakeProcess:
-            def __init__(self, pid):
-                self.pid = pid
-                self.terminated = False
-                self.waited = False
-
-            def poll(self):
-                return None
-
-            def terminate(self):
-                self.terminated = True
-                events.append(("terminate", self.pid))
-
-            def wait(self, timeout=None):
-                self.waited = True
-                events.append(("wait", self.pid))
-
-        processes = []
-        bridges = [FakeBridge(), FakeBridge()]
-
-        def start_engine_func(game_dir, headless):
-            process = FakeProcess(4000 + len(processes))
-            processes.append(process)
-            events.append(("start", process.pid))
-            return process
-
-        def connect_func(host, port, timeout, deadline_seconds):
-            bridge = bridges.pop(0)
-            events.append(("connect", len(processes)))
-            return bridge
-
-        prepare_calls = []
-
-        def prepare_func(bridge, timeout, poll_delay):
-            prepare_calls.append(bridge)
-            if len(prepare_calls) == 1:
-                raise TimeoutError("Science Birds did not reach PLAYING before timeout")
-            return bridge.get_game_state()
-
-        def capture_rollout(bridge, output_dir, **kwargs):
-            output_dir.mkdir(parents=True, exist_ok=True)
-            (output_dir / "metadata.json").write_text(json.dumps({"frame_count": 1}), encoding="utf-8")
-            return {"frame_count": 1}
-
-        with TemporaryDirectory() as tmp:
-            manifest = collect_fresh_engine_rollouts(
-                Path(tmp),
-                actions,
-                game_dir=Path("game"),
-                host="127.0.0.1",
-                port=2004,
-                agent_id=28888,
-                speed=1,
-                connect_timeout=1,
-                read_timeout=2,
-                prepare_timeout=3,
-                frame_height=480,
-                fast=True,
-                headless=False,
-                target_fps=1,
-                duration_seconds=1,
-                ui_level=None,
-                ui_settle_seconds=0,
-                fresh_engine_attempts=2,
-                start_engine_func=start_engine_func,
-                connect_func=connect_func,
-                prepare_func=prepare_func,
-                capture_rollout=capture_rollout,
-                video_runner=lambda command, check, stdout, stderr: Path(command[-1]).write_bytes(b"mp4"),
-            )
-
-        self.assertEqual(manifest["attempt_count"], 1)
-        self.assertEqual(manifest["accepted_rollout_count"], 0)
-        self.assertEqual(manifest["rollout_count"], 0)
-        self.assertEqual(len(processes), 2)
-        self.assertTrue(all(process.terminated and process.waited for process in processes))
-        self.assertIn(("start", 4000), events)
-        self.assertIn(("start", 4001), events)
+    def test_prepare_timeout_retry_path_is_rejected_before_collection(self):
+        self._assert_fresh_engine_retries_are_rejected()
 
     def test_collect_fresh_engine_rollouts_anchors_slingshot_relative_actions_from_symbolic_state(self):
         actions = [
@@ -3642,7 +3083,7 @@ class CollectRolloutsTest(unittest.TestCase):
     def test_collect_fresh_engine_attempt_quarantines_unclassified_runtime_error_permanently(self):
         with TemporaryDirectory() as temporary, patch(
             "scripts.collect_rollouts.collect_fresh_engine_rollouts",
-            side_effect=RuntimeError("unexpected collector state"),
+            side_effect=RuntimeError("connection reset while decoding invalid capture"),
         ):
             root = Path(temporary)
             result = collect_fresh_engine_attempt(
@@ -3847,35 +3288,92 @@ class CollectRolloutsTest(unittest.TestCase):
         self.assertFalse(collect.call_args.kwargs["anchor_actions"])
         generate_actions.assert_not_called()
 
-    def test_main_wires_desktop_fresh_engine_baseline_capture(self):
+    def test_main_requires_collection_plan_for_fresh_engine_collection(self):
         with TemporaryDirectory() as tmp:
             args = [
                 "collect_rollouts.py",
                 "--output-dir",
                 tmp,
-                "--count",
-                "1",
-                "--fps",
-                "1",
-                "--duration",
-                "0.01",
-                "--capture-source",
-                "desktop",
                 "--fresh-engine-per-rollout",
-                "--ui-level",
-                "1",
             ]
 
-            with patch("sys.argv", args), patch(
-                "scripts.collect_rollouts.collect_fresh_engine_rollouts", return_value={"rollout_count": 1}
-            ) as fresh:
+            stderr = io.StringIO()
+            with patch("sys.argv", args), redirect_stderr(stderr), self.assertRaises(SystemExit) as raised:
                 main()
 
-        self.assertEqual(fresh.call_count, 1)
-        self.assertIsNotNone(fresh.call_args.kwargs["pre_shot_grabber"])
-        self.assertEqual(fresh.call_args.kwargs["capture_rollout"].__name__, "capture_desktop_rollout")
-        self.assertEqual(fresh.call_args.kwargs["engine_settle_seconds"], 20.0)
-        self.assertEqual(fresh.call_args.kwargs["agent_settle_seconds"], 45.0)
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("--collection-plan", stderr.getvalue())
+
+    def test_main_executes_fresh_engine_collection_plan_through_atomic_runtime(self):
+        frozen_action = {
+            "coordinate_frame": "slingshot_relative",
+            "drag_start": [100, 200],
+            "drag_release": [20, 30],
+            "tapTime": 0,
+            "holdTime": 600,
+        }
+        request = type(
+            "RuntimeInput",
+            (),
+            {
+                "attempt_id": "attempt-plan-1",
+                "attempt_number": 2,
+                "expected_initial_engine_state_identity": "expected-initial-state",
+                "interface_action": frozen_action,
+            },
+        )()
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            plan_path = root / "collection-plan.json"
+            args = [
+                "collect_rollouts.py",
+                "--output-dir",
+                str(root / "output"),
+                "--fresh-engine-per-rollout",
+                "--collection-plan",
+                str(plan_path),
+            ]
+
+            def execute_plan(loaded, runtime, output_root):
+                self.assertEqual(loaded, "loaded-plan")
+                self.assertEqual(output_root, root / "output")
+                result = runtime(request)
+                self.assertEqual(result["status"], "accepted")
+                return {"accepted_count": 1, "failed_count": 0, "rejected_count": 0}
+
+            with (
+                patch("sys.argv", args),
+                patch("scripts.collection_plan.load_collection_plan", return_value="loaded-plan") as load_plan,
+                patch("scripts.collection_plan.execute_collection_plan", side_effect=execute_plan) as execute,
+                patch(
+                    "scripts.collect_rollouts.collect_fresh_engine_attempt",
+                    return_value={
+                        "status": "accepted",
+                        "reason": None,
+                        "failure_code": None,
+                        "realized_coverage_strata": [],
+                        "eligible": True,
+                        "artifact_path": "accepted/attempt-plan-1",
+                        "quarantine_path": None,
+                        "failure_manifest_path": None,
+                    },
+                ) as attempt,
+                patch("scripts.collect_rollouts.generate_diverse_drag_release_actions") as generate_actions,
+            ):
+                main()
+
+        load_plan.assert_called_once_with(plan_path)
+        execute.assert_called_once()
+        self.assertEqual(attempt.call_args.args[0], root / "output")
+        self.assertIs(attempt.call_args.args[1], frozen_action)
+        self.assertEqual(attempt.call_args.kwargs["attempt_id"], "attempt-plan-1")
+        self.assertEqual(attempt.call_args.kwargs["attempt_number"], 2)
+        self.assertEqual(
+            attempt.call_args.kwargs["expected_initial_engine_state_identity"],
+            "expected-initial-state",
+        )
+        generate_actions.assert_not_called()
 
     def test_connect_or_start_engine_auto_starts_engine_after_connection_refusal(self):
         class FakeProcess:

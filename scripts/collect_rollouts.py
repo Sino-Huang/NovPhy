@@ -605,6 +605,20 @@ class RolloutCollectionError(RuntimeError):
     pass
 
 
+class TemporaryCaptureError(RolloutCollectionError):
+    """An operational capture failure explicitly declared safe to retry."""
+
+
+def _collection_exception_failure_code(error: Exception) -> str:
+    if isinstance(error, TimeoutError):
+        return "engine_start_timeout"
+    if isinstance(error, (ConnectionError, OSError)):
+        return "transport_unavailable"
+    if isinstance(error, TemporaryCaptureError):
+        return "capture_temporarily_unavailable"
+    return "collection_runtime_error"
+
+
 def _has_complete_strict_semantics(metadata: dict[str, Any]) -> bool:
     (
         initial_identity,
@@ -1881,7 +1895,7 @@ def collect_fresh_engine_rollouts(
     ui_settle_seconds: float,
     engine_settle_seconds: float = 0.0,
     agent_settle_seconds: float = 0.0,
-    fresh_engine_attempts: int = 3,
+    fresh_engine_attempts: int = 1,
     engine_agent_port: int | None = None,
     engine_game_port: int | None = None,
     start_engine_func=start_engine,
@@ -1902,9 +1916,13 @@ def collect_fresh_engine_rollouts(
     physics_archive_sha256: str | None = None,
     scenario_manifest: ScenarioManifest | None = None,
 ) -> dict:
+    if fresh_engine_attempts != 1:
+        raise ValueError(
+            "fresh_engine_attempts must be 1; frozen collection plans own retry decisions"
+        )
     output_dir.mkdir(parents=True, exist_ok=True)
     rollouts = []
-    attempts_per_action = max(1, int(fresh_engine_attempts))
+    attempts_per_action = 1
     expected_initial_engine_state_identity: str | None = None
     scenario_context = None if scenario_manifest is None else {
         "scenario_manifest_schema": scenario_manifest.schema,
@@ -2191,36 +2209,9 @@ def collect_fresh_engine_attempt(
             reason = "collection manifest does not contain exactly one rollout"
             failure_code = "missing_artifact"
         else:
-            message = str(collection_error) or collection_error.__class__.__name__
-            lowered = message.lower()
-            evidence_terms = (
-                "collision",
-                "contact",
-                "terminal",
-                "initial engine state identity",
-                "lifecycle",
-                "bird_launched",
-            )
             status = "failed"
-            reason = message
-            if any(term in lowered for term in evidence_terms):
-                failure_code = "missing_required_evidence"
-            elif isinstance(collection_error, TimeoutError):
-                failure_code = "engine_start_timeout"
-            elif isinstance(collection_error, ConnectionError) or any(
-                term in lowered
-                for term in ("connect", "connection", "transport", "socket", "network unreachable")
-            ):
-                failure_code = "transport_unavailable"
-            elif "malformed" in lowered or "invalid" in lowered:
-                failure_code = "capture_invalid"
-            elif any(
-                term in lowered
-                for term in ("temporary capture", "capture temporarily unavailable", "temporarily unavailable")
-            ):
-                failure_code = "capture_temporarily_unavailable"
-            else:
-                failure_code = "collection_runtime_error"
+            reason = str(collection_error) or collection_error.__class__.__name__
+            failure_code = _collection_exception_failure_code(collection_error)
     elif not rollout.get("accepted"):
         status = "rejected"
         if artifact_validation is not None:
@@ -2245,7 +2236,7 @@ def collect_fresh_engine_attempt(
     elif collection_error is not None:
         status = "failed"
         reason = str(collection_error) or collection_error.__class__.__name__
-        failure_code = "capture_temporarily_unavailable"
+        failure_code = _collection_exception_failure_code(collection_error)
     else:
         shot_name = rollout.get("name")
         shot_dir = staging_dir / shot_name if isinstance(shot_name, str) and shot_name else None
@@ -2397,13 +2388,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--physics-protocol-sha256")
     parser.add_argument("--physics-archive-sha256")
     parser.add_argument("--fresh-engine-per-rollout", action="store_true")
+    parser.add_argument("--collection-plan", type=Path)
     parser.add_argument("--scenario-manifest", type=Path)
     parser.add_argument("--scenario-xml", type=Path)
     parser.add_argument("--ui-level", type=int, help="Visible level number to enter with xdotool for each fresh rollout")
     parser.add_argument("--ui-settle-seconds", type=float, default=5.0)
     parser.add_argument("--engine-settle-seconds", type=float, default=20.0)
     parser.add_argument("--agent-settle-seconds", type=float, default=45.0)
-    parser.add_argument("--fresh-engine-attempts", type=int, default=3)
+    parser.add_argument("--fresh-engine-attempts", type=int, default=1)
     return parser
 
 
@@ -2488,6 +2480,10 @@ def main() -> None:
         print(json.dumps({"action_plan": str(path)}, indent=2))
         return
 
+    if args.collection_plan is not None and not args.fresh_engine_per_rollout:
+        print("--collection-plan requires --fresh-engine-per-rollout", file=sys.stderr)
+        raise SystemExit(2)
+
     strict_physics_collection = args.physics_capture_v1 and args.fresh_engine_per_rollout
     has_scenario_manifest = args.scenario_manifest is not None
     has_scenario_xml = args.scenario_xml is not None
@@ -2510,6 +2506,15 @@ def main() -> None:
         except (OSError, ValueError) as error:
             print(f"Cannot load scenario manifest/XML: {error}", file=sys.stderr)
             raise SystemExit(2) from None
+    if args.fresh_engine_per_rollout and args.collection_plan is None:
+        print("--fresh-engine-per-rollout requires --collection-plan", file=sys.stderr)
+        raise SystemExit(2)
+    if args.fresh_engine_per_rollout and args.fresh_engine_attempts != 1:
+        print(
+            "--fresh-engine-attempts must be 1; frozen collection plans own retry decisions",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
     try:
         ensure_output_dir(args.output_dir)
     except OSError as exc:
@@ -2528,6 +2533,68 @@ def main() -> None:
         from PIL import ImageGrab
 
         pre_shot_grabber = ImageGrab.grab
+    if args.fresh_engine_per_rollout:
+        from scripts.collection_plan import execute_collection_plan, load_collection_plan
+
+        try:
+            loaded_plan = load_collection_plan(args.collection_plan)
+        except (OSError, ValueError) as error:
+            print(f"Cannot load frozen collection plan: {error}", file=sys.stderr)
+            raise SystemExit(2) from None
+
+        def runtime(request):
+            return collect_fresh_engine_attempt(
+                args.output_dir,
+                request.interface_action,
+                attempt_id=request.attempt_id,
+                attempt_number=request.attempt_number,
+                expected_initial_engine_state_identity=request.expected_initial_engine_state_identity,
+                game_dir=args.game_dir,
+                host=args.host,
+                port=args.port,
+                physics_host=args.physics_host,
+                physics_port=args.physics_port,
+                agent_id=args.agent_id,
+                speed=args.speed,
+                connect_timeout=args.connect_timeout,
+                read_timeout=args.read_timeout,
+                prepare_timeout=args.prepare_timeout,
+                frame_height=args.frame_height,
+                fast=not args.safe,
+                headless=args.game_headless,
+                target_fps=args.fps,
+                duration_seconds=args.duration,
+                ui_level=args.ui_level,
+                ui_settle_seconds=args.ui_settle_seconds,
+                engine_settle_seconds=args.engine_settle_seconds,
+                agent_settle_seconds=args.agent_settle_seconds,
+                engine_agent_port=args.engine_agent_port,
+                engine_game_port=args.engine_game_port,
+                capture_rollout=capture_rollout,
+                pre_shot_grabber=pre_shot_grabber,
+                shoot_before_capture=physics_capture_v1 or args.capture_source != "desktop",
+                anchor_actions=False,
+                physics_capture_v1=physics_capture_v1,
+                physics_player_sha256=args.physics_player_sha256,
+                physics_protocol_sha256=args.physics_protocol_sha256,
+                physics_archive_sha256=args.physics_archive_sha256,
+                scenario_manifest=scenario_manifest,
+            )
+
+        report = execute_collection_plan(loaded_plan, runtime, args.output_dir)
+        print(
+            json.dumps(
+                {
+                    "collection_plan": str(args.collection_plan),
+                    "accepted_count": report["accepted_count"],
+                    "rejected_count": report["rejected_count"],
+                    "failed_count": report["failed_count"],
+                },
+                indent=2,
+            )
+        )
+        return
+
     actions_from_log = args.actions_from_log is not None
     actions = (
         load_actions_from_action_log(args.actions_from_log)
@@ -2537,45 +2604,6 @@ def main() -> None:
             bidirectional_launches=args.bidirectional_launches,
         )
     )
-
-    if args.fresh_engine_per_rollout:
-        manifest = collect_fresh_engine_rollouts(
-            args.output_dir,
-            actions,
-            game_dir=args.game_dir,
-            host=args.host,
-            port=args.port,
-            physics_host=args.physics_host,
-            physics_port=args.physics_port,
-            agent_id=args.agent_id,
-            speed=args.speed,
-            connect_timeout=args.connect_timeout,
-            read_timeout=args.read_timeout,
-            prepare_timeout=args.prepare_timeout,
-            frame_height=args.frame_height,
-            fast=not args.safe,
-            headless=args.game_headless,
-            target_fps=args.fps,
-            duration_seconds=args.duration,
-            ui_level=args.ui_level,
-            ui_settle_seconds=args.ui_settle_seconds,
-            engine_settle_seconds=args.engine_settle_seconds,
-            agent_settle_seconds=args.agent_settle_seconds,
-            fresh_engine_attempts=args.fresh_engine_attempts,
-            engine_agent_port=args.engine_agent_port,
-            engine_game_port=args.engine_game_port,
-            capture_rollout=capture_rollout,
-            pre_shot_grabber=pre_shot_grabber,
-            shoot_before_capture=physics_capture_v1 or args.capture_source != "desktop",
-            anchor_actions=not actions_from_log,
-            physics_capture_v1=physics_capture_v1,
-            physics_player_sha256=args.physics_player_sha256,
-            physics_protocol_sha256=args.physics_protocol_sha256,
-            physics_archive_sha256=args.physics_archive_sha256,
-            scenario_manifest=scenario_manifest,
-        )
-        print(json.dumps({"manifest": str(args.output_dir / "manifest.json"), "rollout_count": manifest["rollout_count"]}, indent=2))
-        return
 
     if args.start_engine:
         engine_process = start_engine(

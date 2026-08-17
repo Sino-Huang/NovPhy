@@ -402,35 +402,28 @@ class SingleShotCollectionTests(unittest.TestCase):
         )
         self.assertTrue(all(process.terminated and process.waited for process in processes))
 
-    def test_fresh_engine_retries_later_initial_identity_mismatch_without_accepting_it(self) -> None:
-        calls: list[str] = []
-        physics_bridges = [
-            PacketBridge(_packets(), calls),
-            PacketBridge(_packets(different_initial=True), calls),
-            PacketBridge(_packets(), calls),
-        ]
-        gameplay_bridges = [GameplayBridge(calls), GameplayBridge(calls), GameplayBridge(calls)]
-        kwargs = self._fresh_kwargs(physics_bridges=physics_bridges, gameplay_bridges=gameplay_bridges)
-        physics_factory = kwargs.pop("_physics_bridge_factory")
-        processes = kwargs.pop("_processes")
-        with (
-            patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=GUARD),
-            patch("scripts.collect_rollouts.ScienceBirdsBridge", side_effect=physics_factory),
-        ):
-            manifest = collect_fresh_engine_rollouts(
+    def test_fresh_engine_rollouts_reject_unplanned_multi_attempt_identity_retry(self) -> None:
+        with self.assertRaisesRegex(ValueError, "frozen collection plans own retry decisions"):
+            collect_fresh_engine_rollouts(
                 self.temporary,
                 [ACTION, ACTION],
+                game_dir=Path("game"),
+                host="127.0.0.1",
+                port=2004,
+                agent_id=28888,
+                speed=1,
+                connect_timeout=1,
+                read_timeout=1,
+                prepare_timeout=1,
+                frame_height=480,
+                fast=True,
+                headless=True,
+                target_fps=2,
+                duration_seconds=1,
+                ui_level=None,
+                ui_settle_seconds=0,
                 fresh_engine_attempts=2,
-                **kwargs,
             )
-
-        identities = {rollout["initial_engine_state_identity"] for rollout in manifest["accepted_rollouts"]}
-        self.assertEqual(len(manifest["accepted_rollouts"]), 2)
-        self.assertEqual(len(identities), 1)
-        self.assertTrue(manifest["initial_engine_state_verified"])
-        self.assertEqual(len(processes), 3)
-        self.assertEqual(len(physics_bridges), 0)
-        self.assertTrue(all(process.terminated and process.waited for process in processes))
 
     def test_non_physics_collection_keeps_pre_capture_shoot(self) -> None:
         calls: list[str] = []
@@ -457,25 +450,60 @@ class SingleShotCollectionTests(unittest.TestCase):
 
     def test_main_loads_verified_scenario_for_fresh_physics_collection(self) -> None:
         manifest_path, xml_path, expected = _write_verified_scenario(self.temporary)
+        plan_path = self.temporary / "collection-plan.json"
         args = [
             "collect_rollouts.py",
             "--output-dir", str(self.temporary / "rollouts"),
             "--count", "1",
             "--physics-capture-v1",
             "--fresh-engine-per-rollout",
+            "--collection-plan", str(plan_path),
             "--physics-player-sha256", "a" * 64,
             "--physics-protocol-sha256", "b" * 64,
             "--physics-archive-sha256", "c" * 64,
             "--scenario-manifest", str(manifest_path),
             "--scenario-xml", str(xml_path),
         ]
+        request = type(
+            "RuntimeInput",
+            (),
+            {
+                "attempt_id": "attempt-1",
+                "attempt_number": 1,
+                "expected_initial_engine_state_identity": "expected-initial-state",
+                "interface_action": ACTION,
+            },
+        )()
+        loaded_plan = object()
+
+        def execute_plan(loaded, runtime, output_dir):
+            self.assertIs(loaded, loaded_plan)
+            self.assertEqual(output_dir, self.temporary / "rollouts")
+            runtime(request)
+            return {"accepted_count": 1, "rejected_count": 0, "failed_count": 0}
+
         with (
             patch("sys.argv", args),
-            patch("scripts.collect_rollouts.collect_fresh_engine_rollouts", return_value={"rollout_count": 1}) as collect,
+            patch("scripts.collection_plan.load_collection_plan", return_value=loaded_plan) as load_plan,
+            patch("scripts.collection_plan.execute_collection_plan", side_effect=execute_plan),
+            patch(
+                "scripts.collect_rollouts.collect_fresh_engine_attempt",
+                return_value={
+                    "status": "accepted",
+                    "reason": None,
+                    "failure_code": None,
+                    "realized_coverage_strata": [],
+                    "eligible": True,
+                    "artifact_path": "accepted/attempt-1",
+                    "quarantine_path": None,
+                    "failure_manifest_path": None,
+                },
+            ) as attempt,
         ):
             main()
 
-        supplied = collect.call_args.kwargs["scenario_manifest"]
+        load_plan.assert_called_once_with(plan_path)
+        supplied = attempt.call_args.kwargs["scenario_manifest"]
         self.assertIsInstance(supplied, ScenarioManifest)
         self.assertEqual(supplied.scenario_lineage.identity, expected.scenario_lineage.identity)
         self.assertEqual(

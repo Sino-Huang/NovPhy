@@ -415,6 +415,59 @@ class CollectionPlanTests(unittest.TestCase):
             self.assertEqual(report["failed_count"], 1)
             self.assertEqual(report["accepted_count"], 2)
 
+    def test_callback_crash_records_fallback_quarantine_and_unmet_slot(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output = root / "output"
+            requests = []
+
+            def runtime(request):
+                requests.append(request)
+                if request.intervention_id == "collision-shot":
+                    raise RuntimeError("engine crashed")
+                return accepted_result(request, ("no-contact/miss",))
+
+            report = execute_collection_plan(create_loaded_plan(root), runtime, output)
+            crashed = report["attempt_ledger"][0]
+            self.assertEqual([request.intervention_id for request in requests], ["collision-shot", "miss-shot"])
+            self.assertEqual(crashed["failure_code"], "runtime_exception")
+            self.assertEqual(crashed["failure_class"], "permanent")
+            self.assertEqual(crashed["retry_decision"], "stop")
+            self.assertEqual(crashed["quarantine_path"], f"quarantine/{crashed['attempt_id']}")
+            manifest_path = output / crashed["failure_manifest_path"]
+            self.assertTrue((output / crashed["quarantine_path"]).is_dir())
+            self.assertTrue(manifest_path.is_file())
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            self.assertEqual(manifest["failure_code"], "runtime_exception")
+            self.assertEqual(manifest["retry_decision"], "stop")
+            self.assertEqual(report["planned_slots"][0]["attempt_ids"], [crashed["attempt_id"]])
+            self.assertEqual(report["unmet_slots"][0]["intervention_id"], "collision-shot")
+
+    def test_transient_failure_manifests_record_retry_then_stop(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output = root / "output"
+
+            def runtime(request):
+                if request.intervention_id == "collision-shot":
+                    return quarantined_result(request, "failed", "transport unavailable", "transport_unavailable")
+                return accepted_result(request, ("no-contact/miss",))
+
+            report = execute_collection_plan(create_loaded_plan(root), runtime, output)
+            transient_attempts = [
+                entry
+                for entry in report["attempt_ledger"]
+                if entry["intervention_id"] == "collision-shot"
+            ]
+            self.assertEqual([entry["retry_decision"] for entry in transient_attempts], ["retry", "stop"])
+            self.assertEqual(
+                [
+                    json.loads((output / entry["failure_manifest_path"]).read_text(encoding="utf-8"))["retry_decision"]
+                    for entry in transient_attempts
+                ],
+                ["retry", "stop"],
+            )
+
     def test_attempt_ledger_records_audit_disposition_and_quarantine_accounting(self) -> None:
         cases = {
             "accepted_and_rejected": (
