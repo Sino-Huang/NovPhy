@@ -641,7 +641,7 @@ def derive_relational_supervision_for_shot(shot_dir: Path) -> RelationalSupervis
     )
 
 
-def write_relational_supervision_file(labels: RelationalSupervision, destination: Path) -> Path:
+def _write_relational_supervision_file(labels: RelationalSupervision, destination: Path) -> Path:
     for field, digest in (
         ("state_sha256", labels.state_sha256),
         ("events_sha256", labels.events_sha256),
@@ -666,7 +666,7 @@ def write_relational_supervision_file(labels: RelationalSupervision, destination
 
 def write_relational_supervision(shot_dir: Path) -> Path:
     labels = derive_relational_supervision_for_shot(shot_dir)
-    return write_relational_supervision_file(labels, shot_dir / RELATIONAL_SUPERVISION_SIDECAR)
+    return _write_relational_supervision_file(labels, shot_dir / RELATIONAL_SUPERVISION_SIDECAR)
 
 
 def _reject_constant(value: str) -> None:
@@ -925,4 +925,3 @@ derive_relational_labels_for_shot = derive_relational_supervision_for_shot
 read_relational_labels = read_relational_supervision
 validate_relational_labels = validate_relational_supervision
 write_relational_labels = write_relational_supervision
-write_relational_label_file = write_relational_supervision_file

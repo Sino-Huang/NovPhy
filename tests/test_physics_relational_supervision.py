@@ -18,7 +18,6 @@ from scripts.physics_relational_supervision import (
     read_relational_supervision,
     validate_relational_supervision,
     write_relational_supervision,
-    write_relational_supervision_file,
 )
 
 
@@ -406,20 +405,19 @@ class RelationalDerivationTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate_relational_supervision(shot)
 
-    def test_writer_rejects_unbound_labels_and_source_bound_output_round_trips(self) -> None:
+    def test_writer_is_source_bound_and_pure_labels_cannot_be_persisted(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            destination = Path(temporary) / RELATIONAL_SUPERVISION_SIDECAR
+            shot = Path(temporary) / "shot_001"
+            shot.mkdir()
+            for name in ("physics_state.jsonl", "physics_events.jsonl"):
+                (shot / name).write_bytes((FIXTURE / name).read_bytes())
 
-            with self.assertRaisesRegex(RelationalSupervisionError, "state_sha256"):
-                write_relational_supervision_file(
-                    derive_relational_supervision(_capture()),
-                    destination,
-                )
-            self.assertFalse(destination.exists())
+            path = write_relational_supervision(shot)
+            self.assertEqual(path.name, RELATIONAL_SUPERVISION_SIDECAR)
+            self.assertEqual(validate_relational_supervision(shot), read_relational_supervision(path))
 
-            source_bound = derive_relational_supervision_for_shot(FIXTURE)
-            write_relational_supervision_file(source_bound, destination)
-            self.assertEqual(read_relational_supervision(destination), source_bound)
+            with self.assertRaises(TypeError):
+                write_relational_supervision(derive_relational_supervision(_capture()))  # type: ignore[arg-type]
 
     def test_source_bound_shot_derivation_rejects_alternate_capture(self) -> None:
         with self.assertRaises(TypeError):
