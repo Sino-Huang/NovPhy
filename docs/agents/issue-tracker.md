@@ -12,7 +12,7 @@ The canonical project issue tracker is `Sino-Huang/NovPhy`. Every `gh` issue ope
 - Comment: `gh issue comment <number> --body "..."`
 - Label: `gh issue edit <number> --add-label "..."` or `--remove-label "..."`
 - Close: `gh issue close <number> --comment "..."`
-- Use `Sino-Huang/NovPhy` even when another remote, such as `upstream`, points to `phy-q/NovPhy`.
+- Use `Sino-Huang/NovPhy` even when another remote, such as `upstream`, points to `phy-q/NovPhy`./tdfasd
 - Pull requests are not part of the triage request surface by default.
 
 ## Skill operations
