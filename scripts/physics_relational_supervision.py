@@ -31,6 +31,7 @@ from scripts.physics_capture_types import (
     EntityId,
     PhysicsCapture,
     RawContact,
+    SceneNode,
     StateFrame,
     SupportEdge,
     EventType,
@@ -375,12 +376,22 @@ def _citation(capture: PhysicsCapture, state: StateFrame, contact: RawContact) -
         capture_id=str(capture.header.clock.capture_id),
         shot_id=str(capture.header.clock.shot_id),
         state_sequence=state.clock.sequence,
-        fixed_step=state.clock.fixed_step,
+        fixed_step=_contact_fixed_step(contact),
         contact_id=str(contact.contact_id),
     )
 
 
-def _contacts(state: StateFrame, pair: EntityPair | None = None) -> tuple[RawContact, ...]:
+def _contact_fixed_step(contact: RawContact) -> int:
+    match = re.match(r"^contact:(0|[1-9][0-9]*):", str(contact.contact_id))
+    if match is None:
+        raise RelationalSupervisionError(
+            str(contact.contact_id),
+            "contact id does not encode its fixed step",
+        )
+    return int(match.group(1))
+
+
+def _retained_contacts(state: StateFrame, pair: EntityPair | None = None) -> tuple[RawContact, ...]:
     values = tuple(
         contact
         for contact in state.raw_contacts
@@ -388,6 +399,14 @@ def _contacts(state: StateFrame, pair: EntityPair | None = None) -> tuple[RawCon
         and (pair is None or _pair(contact.entity_a_id, contact.entity_b_id) == pair)
     )
     return tuple(sorted(values, key=lambda contact: str(contact.contact_id)))
+
+
+def _contacts(state: StateFrame, pair: EntityPair | None = None) -> tuple[RawContact, ...]:
+    return tuple(
+        contact
+        for contact in _retained_contacts(state, pair)
+        if _contact_fixed_step(contact) == state.clock.fixed_step
+    )
 
 
 def _pairs(state: StateFrame) -> set[EntityPair]:
@@ -422,6 +441,21 @@ def _unavailable(pair: EntityPair, availability: RelationalAvailability) -> Supp
     return SupportLabel(pair, None, availability, ())
 
 
+def _vertical_ordering(
+    nodes: dict[str, SceneNode],
+    pair: EntityPair,
+    minimum_delta: float,
+) -> tuple[str, str] | None:
+    first_y = nodes[pair[0]].world_pose.position.y
+    second_y = nodes[pair[1]].world_pose.position.y
+    delta = second_y - first_y
+    if not all(math.isfinite(value) for value in (first_y, second_y, delta)):
+        return None
+    if abs(delta) < minimum_delta:
+        return None
+    return (pair[1], pair[0]) if delta < 0 else (pair[0], pair[1])
+
+
 def _support_label(
     capture: PhysicsCapture,
     index: int,
@@ -433,11 +467,11 @@ def _support_label(
     ]
     if current_edges:
         edge = current_edges[0]
-        by_step_and_id = {
-            (candidate_state.clock.fixed_step, str(contact.contact_id)): (candidate_state, contact)
-            for candidate_state in capture.states[: index + 1]
-            for contact in _contacts(candidate_state)
-        }
+        by_step_and_id: dict[tuple[int, str], tuple[StateFrame, RawContact]] = {}
+        for candidate_state in capture.states[: index + 1]:
+            for contact in _retained_contacts(candidate_state):
+                key = (_contact_fixed_step(contact), str(contact.contact_id))
+                by_step_and_id.setdefault(key, (candidate_state, contact))
         evidence: list[ContactCitation] = []
         for fixed_step, contact_id in zip(edge.evidence_fixed_steps, edge.evidence_contact_ids, strict=True):
             source = by_step_and_id.get((fixed_step, str(contact_id)))
@@ -478,13 +512,12 @@ def _support_label(
     ):
         return _unavailable(pair, RelationalAvailability.UNAVAILABLE_INSUFFICIENT_LIFECYCLE_EVIDENCE)
 
-    first_y = current_nodes[pair[0]].world_pose.position.y
-    second_y = current_nodes[pair[1]].world_pose.position.y
-    delta = second_y - first_y
     minimum_delta = capture.header.support_rule.minimum_vertical_center_delta
-    if not math.isfinite(delta) or abs(delta) < minimum_delta:
+    previous_ordering = _vertical_ordering(previous_nodes, pair, minimum_delta)
+    current_ordering = _vertical_ordering(current_nodes, pair, minimum_delta)
+    if previous_ordering is None or current_ordering is None:
         return _unavailable(pair, RelationalAvailability.UNAVAILABLE_INSUFFICIENT_GEOMETRY_EVIDENCE)
-    supporter, supported = (pair[1], pair[0]) if delta < 0 else (pair[0], pair[1])
+    supporter, supported = current_ordering
     evidence = tuple(
         [_citation(capture, previous, contact) for contact in previous_contacts]
         + [_citation(capture, state, contact) for contact in current_contacts]

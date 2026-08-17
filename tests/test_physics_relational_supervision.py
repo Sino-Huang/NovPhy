@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from contextlib import redirect_stderr, redirect_stdout
+import io
 import json
 from dataclasses import replace
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
 
@@ -69,6 +72,67 @@ class RelationalDerivationTests(unittest.TestCase):
         self.assertIs(false_label.availability, RelationalAvailability.AVAILABLE)
         self.assertEqual((false_label.supporter_id, false_label.supported_id), ("201:0", "101:0"))
         self.assertEqual(len(false_label.evidence), 2)
+
+    def test_retained_contacts_are_not_current_truth_or_negative_support_evidence(self) -> None:
+        capture = _capture()
+        old_contact = capture.states[0].raw_contacts[0]
+        current_contact = capture.states[1].raw_contacts[0]
+
+        retained_and_current = replace(
+            capture.states[1],
+            raw_contacts=(old_contact, current_contact),
+            support_edges=(),
+        )
+        frame = derive_relational_supervision_for_shot(
+            FIXTURE,
+            capture=_copy_capture(capture, states=(capture.states[0], retained_and_current)),
+        ).frames[1]
+        self.assertEqual(
+            tuple(citation.contact_id for citation in frame.contact_truth(("101:0", "201:0")).evidence),
+            (str(current_contact.contact_id),),
+        )
+
+        retained_only = replace(
+            capture.states[1],
+            raw_contacts=(old_contact,),
+            support_edges=(),
+        )
+        frame = derive_relational_supervision_for_shot(
+            FIXTURE,
+            capture=_copy_capture(capture, states=(capture.states[0], retained_only)),
+        ).frames[1]
+        self.assertEqual(frame.contacts, ())
+        label = frame.support_label(("101:0", "201:0"))
+        self.assertIsNone(label.value)
+        self.assertIs(
+            label.availability,
+            RelationalAvailability.UNAVAILABLE_INSUFFICIENT_CONTACT_EVIDENCE,
+        )
+
+    def test_true_support_can_cite_retained_rows_at_their_actual_fixed_steps(self) -> None:
+        capture = _capture()
+        states = (
+            replace(capture.states[0], raw_contacts=()),
+            replace(
+                capture.states[1],
+                raw_contacts=(*capture.states[0].raw_contacts, *capture.states[1].raw_contacts),
+            ),
+        )
+
+        label = derive_relational_supervision_for_shot(
+            FIXTURE,
+            capture=_copy_capture(capture, states=states),
+        ).frames[1].support_label(("101:0", "201:0"))
+
+        self.assertTrue(label.value)
+        self.assertEqual(tuple(citation.fixed_step for citation in label.evidence), (10, 11))
+        self.assertEqual(
+            tuple(citation.contact_id for citation in label.evidence),
+            (
+                "contact:10:101:0|1101:201:0|1201:0",
+                "contact:11:101:0|1101:201:0|1201:0",
+            ),
+        )
 
     def test_active_node_pair_without_contacts_is_retained_as_unavailable(self) -> None:
         frame = derive_relational_supervision_for_shot(FIXTURE).frames[1]
@@ -151,6 +215,78 @@ class RelationalDerivationTests(unittest.TestCase):
             RelationalAvailability.UNAVAILABLE_INSUFFICIENT_GEOMETRY_EVIDENCE,
         )
 
+    def test_negative_support_requires_prior_geometry_and_a_clear_lifecycle_interval(self) -> None:
+        capture = _capture()
+        without_support = tuple(replace(state, support_edges=()) for state in capture.states)
+
+        prior_same_height_nodes = tuple(
+            replace(
+                node,
+                world_pose=replace(
+                    node.world_pose,
+                    position=replace(node.world_pose.position, y=2.0),
+                ),
+            )
+            if str(node.entity_id) in ("101:0", "201:0")
+            else node
+            for node in without_support[0].nodes
+        )
+        prior_same_height = replace(without_support[0], nodes=prior_same_height_nodes)
+        frame = derive_relational_supervision_for_shot(
+            FIXTURE,
+            capture=_copy_capture(capture, states=(prior_same_height, without_support[1])),
+        ).frames[1]
+        self.assertIsNone(frame.support_label(("101:0", "201:0")).value)
+        self.assertIs(
+            frame.support_label(("101:0", "201:0")).availability,
+            RelationalAvailability.UNAVAILABLE_INSUFFICIENT_GEOMETRY_EVIDENCE,
+        )
+
+        interval_destruction = replace(
+            capture.events[3],
+            clock=replace(
+                capture.events[3].clock,
+                fixed_step=without_support[1].clock.fixed_step,
+                fixed_time=without_support[1].clock.fixed_time,
+            ),
+        )
+        lifecycle_capture = PhysicsCapture(
+            capture.header,
+            without_support,
+            (interval_destruction,),
+        )
+        frame = derive_relational_supervision_for_shot(
+            FIXTURE,
+            capture=lifecycle_capture,
+        ).frames[1]
+        label = frame.support_label(("101:0", "201:0"))
+        self.assertIsNone(label.value)
+        self.assertIs(
+            label.availability,
+            RelationalAvailability.UNAVAILABLE_INSUFFICIENT_LIFECYCLE_EVIDENCE,
+        )
+
+    def test_unrelated_lifecycle_event_does_not_block_negative_support(self) -> None:
+        capture = _capture()
+        without_support = tuple(replace(state, support_edges=()) for state in capture.states)
+        unrelated_explosion = replace(
+            capture.events[2],
+            clock=replace(
+                capture.events[2].clock,
+                fixed_step=without_support[1].clock.fixed_step,
+                fixed_time=without_support[1].clock.fixed_time,
+            ),
+        )
+        frame = derive_relational_supervision_for_shot(
+            FIXTURE,
+            capture=PhysicsCapture(capture.header, without_support, (unrelated_explosion,)),
+        ).frames[1]
+
+        label = frame.support_label(("101:0", "201:0"))
+        self.assertFalse(label.value)
+        self.assertIs(label.availability, RelationalAvailability.AVAILABLE)
+        self.assertEqual(tuple(citation.fixed_step for citation in label.evidence), (10, 11))
+
     def test_trigger_contacts_never_become_contact_truths_and_future_states_do_not_relabel_past(self) -> None:
         capture = _capture()
         triggered = tuple(
@@ -217,6 +353,105 @@ class RelationalDerivationTests(unittest.TestCase):
             (shot / "physics_state.jsonl").write_text("\n".join(states) + "\n", encoding="utf-8")
             with self.assertRaises(ValueError):
                 validate_relational_supervision(shot)
+
+
+class RelationalSupervisionCliTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = Path(tempfile.mkdtemp(prefix="novphy-relational-cli-"))
+        self.addCleanup(shutil.rmtree, self.temporary, ignore_errors=True)
+
+    @staticmethod
+    def _run(argv: list[str]) -> tuple[int, str, str]:
+        from scripts.derive_physics_relational_supervision import main
+
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            code = main(argv)
+        return code, stdout.getvalue(), stderr.getvalue()
+
+    @staticmethod
+    def _copy_shot(destination: Path) -> Path:
+        destination.mkdir(parents=True)
+        for name in ("physics_state.jsonl", "physics_events.jsonl"):
+            shutil.copy(FIXTURE / name, destination / name)
+        return destination
+
+    def test_write_mode_refuses_in_shot_and_non_temporary_destinations(self) -> None:
+        code, stdout, stderr = self._run(["--target", str(FIXTURE), "--json"])
+        self.assertEqual(code, 2)
+        self.assertEqual(stdout, "")
+        self.assertIn("requires --output-dir", stderr)
+        self.assertFalse((FIXTURE / RELATIONAL_SUPERVISION_SIDECAR).exists())
+
+        outside_temporary = ROOT / "relational-supervision-not-authorized"
+        code, stdout, stderr = self._run(
+            [
+                "--target",
+                str(FIXTURE),
+                "--output-dir",
+                str(outside_temporary),
+                "--json",
+            ]
+        )
+        self.assertEqual(code, 2)
+        self.assertEqual(stdout, "")
+        self.assertIn("temporary", stderr)
+        self.assertFalse(outside_temporary.exists())
+
+    def test_temporary_mirror_write_is_revalidated_and_validate_only_accepts_it(self) -> None:
+        output = self.temporary / "mirror"
+        argv = ["--target", str(FIXTURE), "--output-dir", str(output), "--json"]
+        code, stdout, stderr = self._run(argv)
+        self.assertEqual((code, stderr), (0, ""))
+        self.assertEqual(len(json.loads(stdout)["shots"]), 1)
+        sidecar = output / RELATIONAL_SUPERVISION_SIDECAR
+        before = sidecar.read_bytes()
+
+        code, stdout, stderr = self._run([*argv, "--validate-only"])
+        self.assertEqual((code, stderr), (0, ""))
+        self.assertEqual(len(json.loads(stdout)["shots"]), 1)
+        self.assertEqual(sidecar.read_bytes(), before)
+        self.assertFalse((FIXTURE / RELATIONAL_SUPERVISION_SIDECAR).exists())
+
+    def test_validate_only_may_read_in_shot_sidecar(self) -> None:
+        shot = self._copy_shot(self.temporary / "shot")
+        write_relational_supervision(shot)
+
+        code, stdout, stderr = self._run(
+            ["--target", str(shot), "--validate-only", "--json"]
+        )
+
+        self.assertEqual((code, stderr), (0, ""))
+        self.assertEqual(len(json.loads(stdout)["shots"]), 1)
+
+    def test_missing_and_malformed_targets_fail_without_writes(self) -> None:
+        missing = self.temporary / "missing"
+        code, stdout, stderr = self._run(
+            [
+                "--target",
+                str(missing),
+                "--output-dir",
+                str(self.temporary / "missing-output"),
+                "--json",
+            ]
+        )
+        self.assertEqual(code, 2)
+        self.assertEqual(stdout, "")
+        self.assertIn("does not exist", stderr)
+
+        malformed_root = Path(tempfile.mkdtemp(prefix="novphy-relational-malformed-"))
+        self.addCleanup(shutil.rmtree, malformed_root, ignore_errors=True)
+        malformed = self._copy_shot(malformed_root / "shot")
+        (malformed / "physics_state.jsonl").write_text("not-json\n", encoding="utf-8")
+        output = self.temporary / "malformed-output"
+        code, stdout, stderr = self._run(
+            ["--target", str(malformed), "--output-dir", str(output), "--json"]
+        )
+        self.assertEqual(code, 2)
+        self.assertEqual(stdout, "")
+        self.assertIn("invalid", stderr)
+        self.assertEqual(list(output.rglob(RELATIONAL_SUPERVISION_SIDECAR)), [])
 
 
 if __name__ == "__main__":
