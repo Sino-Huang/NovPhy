@@ -3066,7 +3066,7 @@ class CollectRolloutsTest(unittest.TestCase):
             side_effect=legacy_collect,
         ), patch(
             "scripts.collect_rollouts._rewrite_staged_attempt_paths",
-            side_effect=RuntimeError("publication rewrite failed"),
+            side_effect=OSError("publication rewrite failed"),
         ):
             root = Path(temporary)
             result = collect_fresh_engine_attempt(
@@ -3087,10 +3087,91 @@ class CollectRolloutsTest(unittest.TestCase):
             self.assertTrue((quarantine / "manifest.json").is_file())
             self.assertEqual(result["quarantine_path"], str(quarantine))
             self.assertEqual(result["failure_manifest_path"], str(failure_path))
-            self.assertEqual(result["failure_code"], "collection_runtime_error")
+            self.assertEqual(result["failure_code"], "attempt_publication_error")
             self.assertEqual(failure["failure_class"], "permanent")
             self.assertFalse(failure["retryable"])
             self.assertEqual(failure["retry_decision"], "stop")
+
+    def test_loaded_plan_does_not_retry_post_validation_publication_oserror(self):
+        from scripts.collection_plan import (
+            create_collection_plan,
+            execute_collection_plan,
+            load_collection_plan,
+            write_collection_plan,
+        )
+        from scripts.collect_rollouts import _json_compatible_action
+        from tests.test_collection_plan import plan_arguments
+
+        calls = []
+
+        def legacy_collect(stage, _actions, *, fresh_engine_attempts, **_kwargs):
+            self.assertEqual(fresh_engine_attempts, 1)
+            shot = stage / "shot_001"
+            shot.mkdir(parents=True)
+            metadata = {
+                "capture_contract": "physics_capture_v1",
+                "initial_engine_state_identity": "runtime-initial-state-v1:fixture",
+                "intervention_event_id": "event-1",
+                "termination_reason": "rollout_ceiling",
+                "termination_fixed_step": 3,
+                "termination_event_id": None,
+                "terminal_state_fixed_step": 3,
+            }
+            (shot / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+            manifest = {
+                "attempt_count": 1,
+                "rollouts": [
+                    {
+                        "name": "shot_001",
+                        "accepted": True,
+                        "artifact_validation": {"accepted": True},
+                    }
+                ],
+            }
+            (stage / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+            return manifest
+
+        with TemporaryDirectory() as temporary, patch(
+            "scripts.collect_rollouts.collect_fresh_engine_rollouts",
+            side_effect=legacy_collect,
+        ), patch(
+            "scripts.collect_rollouts._rewrite_staged_attempt_paths",
+            side_effect=OSError("publication rewrite failed"),
+        ):
+            root = Path(temporary)
+            plan_path = root / "collection-plan.json"
+            output_root = root / "output"
+            write_collection_plan(create_collection_plan(**plan_arguments()), plan_path)
+            loaded_plan = load_collection_plan(plan_path)
+
+            def runtime(request):
+                calls.append(request)
+                result = collect_fresh_engine_attempt(
+                    output_root,
+                    _json_compatible_action(request.interface_action),
+                    attempt_id=request.attempt_id,
+                    attempt_number=request.attempt_number,
+                    expected_initial_engine_state_identity=request.expected_initial_engine_state_identity,
+                    game_dir=Path("game"),
+                )
+                self.assertEqual(result["failure_code"], "attempt_publication_error")
+                return result
+
+            report = execute_collection_plan(loaded_plan, runtime, output_root)
+
+            self.assertEqual(len(calls), 2)
+            self.assertEqual([request.attempt_number for request in calls], [1, 1])
+            self.assertEqual(report["failed_count"], 2)
+            self.assertEqual(len(report["attempt_ledger"]), 2)
+            for entry in report["attempt_ledger"]:
+                failure = json.loads(
+                    (output_root / entry["failure_manifest_path"]).read_text(encoding="utf-8")
+                )
+                self.assertEqual(entry["failure_code"], "attempt_publication_error")
+                self.assertEqual(failure["failure_class"], "permanent")
+                self.assertFalse(failure["retryable"])
+                self.assertEqual(failure["retry_decision"], "stop")
+                self.assertTrue(Path(entry["quarantine_path"]).is_dir())
 
     def test_collect_fresh_engine_attempt_quarantines_startup_failure_without_retry(self):
         starts = []
@@ -3427,7 +3508,8 @@ class CollectRolloutsTest(unittest.TestCase):
         load_plan.assert_called_once_with(plan_path)
         execute.assert_called_once()
         self.assertEqual(attempt.call_args.args[0], root / "output")
-        self.assertIs(attempt.call_args.args[1], frozen_action)
+        self.assertEqual(attempt.call_args.args[1], frozen_action)
+        self.assertIsNot(attempt.call_args.args[1], frozen_action)
         self.assertEqual(attempt.call_args.kwargs["attempt_id"], "attempt-plan-1")
         self.assertEqual(attempt.call_args.kwargs["attempt_number"], 2)
         self.assertEqual(
@@ -3435,6 +3517,54 @@ class CollectRolloutsTest(unittest.TestCase):
             "expected-initial-state",
         )
         generate_actions.assert_not_called()
+
+    def test_loaded_plan_runtime_quarantines_failed_thawed_action_without_staging_orphan(self):
+        from scripts.collection_plan import (
+            create_collection_plan,
+            write_collection_plan,
+        )
+        from tests.test_collection_plan import plan_arguments
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            plan_path = root / "collection-plan.json"
+            write_collection_plan(create_collection_plan(**plan_arguments()), plan_path)
+            output_root = root / "output"
+            args = [
+                "collect_rollouts.py",
+                "--output-dir",
+                str(output_root),
+                "--fresh-engine-per-rollout",
+                "--collection-plan",
+                str(plan_path),
+            ]
+
+            with (
+                patch("sys.argv", args),
+                patch(
+                    "scripts.collect_rollouts.collect_fresh_engine_rollouts",
+                    side_effect=RuntimeError("synthetic collection failure"),
+                ),
+            ):
+                main()
+
+            report = json.loads(
+                (output_root / "collection_plan_report.json").read_text(encoding="utf-8")
+            )
+            self.assertTrue(report["attempt_ledger"])
+            self.assertTrue((output_root / "quarantine").is_dir())
+            for entry in report["attempt_ledger"]:
+                quarantine = Path(entry["quarantine_path"])
+                failure_path = Path(entry["failure_manifest_path"])
+                failure = json.loads(failure_path.read_text(encoding="utf-8"))
+                self.assertEqual(entry["status"], "failed")
+                self.assertEqual(entry["failure_code"], "collection_runtime_error")
+                self.assertEqual(failure["action"]["drag_start"], [100, 200])
+                self.assertEqual(failure["quarantine_path"], str(quarantine))
+                self.assertTrue(quarantine.is_dir())
+                self.assertFalse(
+                    (output_root / f".attempt-{entry['attempt_id']}.tmp").exists()
+                )
 
     def test_connect_or_start_engine_auto_starts_engine_after_connection_refusal(self):
         class FakeProcess:

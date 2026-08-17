@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Mapping
 import json
 import math
 import os
@@ -609,7 +610,11 @@ class TemporaryCaptureError(RolloutCollectionError):
     """An operational capture failure explicitly declared safe to retry."""
 
 
-def _collection_exception_failure_code(error: Exception) -> str:
+def _collection_exception_failure_code(
+    error: Exception, *, operation: str = "collection"
+) -> str:
+    if operation == "post_validation_publication":
+        return "attempt_publication_error"
     if isinstance(error, TimeoutError):
         return "engine_start_timeout"
     if isinstance(error, (ConnectionError, OSError)):
@@ -2134,6 +2139,14 @@ def _rewrite_staged_attempt_paths(value: Any, staging_dir: Path, destination: Pa
     return value
 
 
+def _json_compatible_action(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {key: _json_compatible_action(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_compatible_action(item) for item in value]
+    return value
+
+
 def collect_fresh_engine_attempt(
     output_root: Path,
     action: dict,
@@ -2291,7 +2304,10 @@ def collect_fresh_engine_attempt(
                 collection_error = exc
                 status = "failed"
                 reason = str(exc) or exc.__class__.__name__
-                failure_code = _collection_exception_failure_code(exc)
+                failure_code = _collection_exception_failure_code(
+                    exc,
+                    operation="post_validation_publication",
+                )
             else:
                 return {
                     "status": "accepted",
@@ -2312,6 +2328,7 @@ def collect_fresh_engine_attempt(
         "missing_required_evidence",
         "initial_engine_state_identity_mismatch",
         "collection_runtime_error",
+        "attempt_publication_error",
     }
     permanent = status == "rejected" or failure_code in permanent_codes
     quarantine_dir.parent.mkdir(parents=True, exist_ok=True)
@@ -2540,7 +2557,7 @@ def main() -> None:
         def runtime(request):
             return collect_fresh_engine_attempt(
                 args.output_dir,
-                request.interface_action,
+                _json_compatible_action(request.interface_action),
                 attempt_id=request.attempt_id,
                 attempt_number=request.attempt_number,
                 expected_initial_engine_state_identity=request.expected_initial_engine_state_identity,
