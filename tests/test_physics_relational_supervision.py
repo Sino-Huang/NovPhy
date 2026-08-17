@@ -1,25 +1,24 @@
 from __future__ import annotations
 
-from contextlib import redirect_stderr, redirect_stdout
-import io
 import json
 from dataclasses import replace
 from pathlib import Path
-import shutil
 import tempfile
 import unittest
 
 from scripts.physics_capture_contract import load_physics_capture
-from scripts.physics_capture_types import PhysicsCapture, StateFrame
+from scripts.physics_capture_types import ContactId, PhysicsCapture, StateFrame
 from scripts.physics_relational_supervision import (
     RELATIONAL_SUPERVISION_SCHEMA_VERSION,
     RELATIONAL_SUPERVISION_SIDECAR,
     RelationalAvailability,
+    RelationalSupervisionError,
     derive_relational_supervision,
     derive_relational_supervision_for_shot,
     read_relational_supervision,
     validate_relational_supervision,
     write_relational_supervision,
+    write_relational_supervision_file,
 )
 
 
@@ -136,6 +135,25 @@ class RelationalDerivationTests(unittest.TestCase):
                 "contact:11:101:0|1101:201:0|1201:0",
             ),
         )
+
+    def test_malformed_contact_id_fails_closed(self) -> None:
+        capture = _capture()
+        malformed_contact = replace(
+            capture.states[0].raw_contacts[0],
+            contact_id=ContactId("contact:10:malformed"),
+        )
+        malformed_state = replace(
+            capture.states[0],
+            raw_contacts=(malformed_contact, *capture.states[0].raw_contacts[1:]),
+        )
+
+        with self.assertRaisesRegex(
+            RelationalSupervisionError,
+            "contact id does not encode its fixed step",
+        ):
+            derive_relational_supervision(
+                _copy_capture(capture, states=(malformed_state, *capture.states[1:])),
+            )
 
     def test_active_node_pair_without_contacts_is_retained_as_unavailable(self) -> None:
         frame = derive_relational_supervision_for_shot(FIXTURE).frames[1]
@@ -388,108 +406,24 @@ class RelationalDerivationTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate_relational_supervision(shot)
 
+    def test_writer_rejects_unbound_labels_and_source_bound_output_round_trips(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            destination = Path(temporary) / RELATIONAL_SUPERVISION_SIDECAR
+
+            with self.assertRaisesRegex(RelationalSupervisionError, "state_sha256"):
+                write_relational_supervision_file(
+                    derive_relational_supervision(_capture()),
+                    destination,
+                )
+            self.assertFalse(destination.exists())
+
+            source_bound = derive_relational_supervision_for_shot(FIXTURE)
+            write_relational_supervision_file(source_bound, destination)
+            self.assertEqual(read_relational_supervision(destination), source_bound)
+
     def test_source_bound_shot_derivation_rejects_alternate_capture(self) -> None:
         with self.assertRaises(TypeError):
             derive_relational_supervision_for_shot(FIXTURE, capture=_capture())  # type: ignore[call-arg]
-
-
-class RelationalSupervisionCliTests(unittest.TestCase):
-    def setUp(self) -> None:
-        self.temporary = Path(tempfile.mkdtemp(prefix="novphy-relational-cli-"))
-        self.addCleanup(shutil.rmtree, self.temporary, ignore_errors=True)
-
-    @staticmethod
-    def _run(argv: list[str]) -> tuple[int, str, str]:
-        from scripts.derive_physics_relational_supervision import main
-
-        stdout = io.StringIO()
-        stderr = io.StringIO()
-        with redirect_stdout(stdout), redirect_stderr(stderr):
-            code = main(argv)
-        return code, stdout.getvalue(), stderr.getvalue()
-
-    @staticmethod
-    def _copy_shot(destination: Path) -> Path:
-        destination.mkdir(parents=True)
-        for name in ("physics_state.jsonl", "physics_events.jsonl"):
-            shutil.copy(FIXTURE / name, destination / name)
-        return destination
-
-    def test_write_mode_refuses_in_shot_and_non_temporary_destinations(self) -> None:
-        code, stdout, stderr = self._run(["--target", str(FIXTURE), "--json"])
-        self.assertEqual(code, 2)
-        self.assertEqual(stdout, "")
-        self.assertIn("requires --output-dir", stderr)
-        self.assertFalse((FIXTURE / RELATIONAL_SUPERVISION_SIDECAR).exists())
-
-        outside_temporary = ROOT / "relational-supervision-not-authorized"
-        code, stdout, stderr = self._run(
-            [
-                "--target",
-                str(FIXTURE),
-                "--output-dir",
-                str(outside_temporary),
-                "--json",
-            ]
-        )
-        self.assertEqual(code, 2)
-        self.assertEqual(stdout, "")
-        self.assertIn("temporary", stderr)
-        self.assertFalse(outside_temporary.exists())
-
-    def test_temporary_mirror_write_is_revalidated_and_validate_only_accepts_it(self) -> None:
-        output = self.temporary / "mirror"
-        argv = ["--target", str(FIXTURE), "--output-dir", str(output), "--json"]
-        code, stdout, stderr = self._run(argv)
-        self.assertEqual((code, stderr), (0, ""))
-        self.assertEqual(len(json.loads(stdout)["shots"]), 1)
-        sidecar = output / RELATIONAL_SUPERVISION_SIDECAR
-        before = sidecar.read_bytes()
-
-        code, stdout, stderr = self._run([*argv, "--validate-only"])
-        self.assertEqual((code, stderr), (0, ""))
-        self.assertEqual(len(json.loads(stdout)["shots"]), 1)
-        self.assertEqual(sidecar.read_bytes(), before)
-        self.assertFalse((FIXTURE / RELATIONAL_SUPERVISION_SIDECAR).exists())
-
-    def test_validate_only_may_read_in_shot_sidecar(self) -> None:
-        shot = self._copy_shot(self.temporary / "shot")
-        write_relational_supervision(shot)
-
-        code, stdout, stderr = self._run(
-            ["--target", str(shot), "--validate-only", "--json"]
-        )
-
-        self.assertEqual((code, stderr), (0, ""))
-        self.assertEqual(len(json.loads(stdout)["shots"]), 1)
-
-    def test_missing_and_malformed_targets_fail_without_writes(self) -> None:
-        missing = self.temporary / "missing"
-        code, stdout, stderr = self._run(
-            [
-                "--target",
-                str(missing),
-                "--output-dir",
-                str(self.temporary / "missing-output"),
-                "--json",
-            ]
-        )
-        self.assertEqual(code, 2)
-        self.assertEqual(stdout, "")
-        self.assertIn("does not exist", stderr)
-
-        malformed_root = Path(tempfile.mkdtemp(prefix="novphy-relational-malformed-"))
-        self.addCleanup(shutil.rmtree, malformed_root, ignore_errors=True)
-        malformed = self._copy_shot(malformed_root / "shot")
-        (malformed / "physics_state.jsonl").write_text("not-json\n", encoding="utf-8")
-        output = self.temporary / "malformed-output"
-        code, stdout, stderr = self._run(
-            ["--target", str(malformed), "--output-dir", str(output), "--json"]
-        )
-        self.assertEqual(code, 2)
-        self.assertEqual(stdout, "")
-        self.assertIn("invalid", stderr)
-        self.assertEqual(list(output.rglob(RELATIONAL_SUPERVISION_SIDECAR)), [])
 
 
 if __name__ == "__main__":

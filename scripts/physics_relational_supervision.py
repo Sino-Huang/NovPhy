@@ -385,7 +385,7 @@ def _citation(capture: PhysicsCapture, state: StateFrame, contact: RawContact) -
 
 
 def _contact_fixed_step(contact: RawContact) -> int:
-    match = re.match(r"^contact:(0|[1-9][0-9]*):", str(contact.contact_id))
+    match = re.fullmatch(r"contact:([0-9]+):.+:[0-9]+", str(contact.contact_id))
     if match is None:
         raise RelationalSupervisionError(
             str(contact.contact_id),
@@ -642,6 +642,15 @@ def derive_relational_supervision_for_shot(shot_dir: Path) -> RelationalSupervis
 
 
 def write_relational_supervision_file(labels: RelationalSupervision, destination: Path) -> Path:
+    for field, digest in (
+        ("state_sha256", labels.state_sha256),
+        ("events_sha256", labels.events_sha256),
+    ):
+        if not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+            raise RelationalSupervisionError(
+                str(destination),
+                f"{field} must be a lowercase SHA-256 digest",
+            )
     temporary = destination.parent / f".{RELATIONAL_SUPERVISION_SIDECAR}.{secrets.token_hex(8)}.tmp"
     try:
         with temporary.open("w", encoding="utf-8", newline="\n") as stream:
