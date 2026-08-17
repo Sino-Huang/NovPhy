@@ -15,6 +15,7 @@ from scripts.physics_relational_supervision import (
     RELATIONAL_SUPERVISION_SCHEMA_VERSION,
     RELATIONAL_SUPERVISION_SIDECAR,
     RelationalAvailability,
+    derive_relational_supervision,
     derive_relational_supervision_for_shot,
     read_relational_supervision,
     validate_relational_supervision,
@@ -49,15 +50,14 @@ class RelationalDerivationTests(unittest.TestCase):
             "contact:11:101:0|1101:201:0|1201:0",
         )
 
-    def test_support_is_true_with_source_evidence_and_false_only_with_complete_history(self) -> None:
+    def test_removed_support_edge_with_positive_raw_evidence_is_unavailable(self) -> None:
         capture = _capture()
         without_support = tuple(
             StateFrame(state.clock, state.rgb_frame, state.nodes, state.raw_contacts, ())
             for state in capture.states
         )
-        labels = derive_relational_supervision_for_shot(
-            FIXTURE,
-            capture=_copy_capture(capture, states=without_support),
+        labels = derive_relational_supervision(
+            _copy_capture(capture, states=without_support),
         )
         frame = labels.frames[1]
 
@@ -67,11 +67,17 @@ class RelationalDerivationTests(unittest.TestCase):
         self.assertTrue(true_label.value)
         self.assertEqual(len(true_label.evidence), 2)
 
-        false_label = frame.support_label(("101:0", "201:0"))
-        self.assertFalse(false_label.value)
-        self.assertIs(false_label.availability, RelationalAvailability.AVAILABLE)
-        self.assertEqual((false_label.supporter_id, false_label.supported_id), ("201:0", "101:0"))
-        self.assertEqual(len(false_label.evidence), 2)
+        missing_edge_label = frame.support_label(("101:0", "201:0"))
+        self.assertIsNone(missing_edge_label.value)
+        self.assertIs(
+            missing_edge_label.availability,
+            RelationalAvailability.UNAVAILABLE_MISSING_OR_INCONSISTENT_POSITIVE_SUPPORT_DERIVATION,
+        )
+        self.assertEqual(
+            (missing_edge_label.supporter_id, missing_edge_label.supported_id),
+            ("201:0", "101:0"),
+        )
+        self.assertEqual(len(missing_edge_label.evidence), 2)
 
     def test_retained_contacts_are_not_current_truth_or_negative_support_evidence(self) -> None:
         capture = _capture()
@@ -83,9 +89,8 @@ class RelationalDerivationTests(unittest.TestCase):
             raw_contacts=(old_contact, current_contact),
             support_edges=(),
         )
-        frame = derive_relational_supervision_for_shot(
-            FIXTURE,
-            capture=_copy_capture(capture, states=(capture.states[0], retained_and_current)),
+        frame = derive_relational_supervision(
+            _copy_capture(capture, states=(capture.states[0], retained_and_current)),
         ).frames[1]
         self.assertEqual(
             tuple(citation.contact_id for citation in frame.contact_truth(("101:0", "201:0")).evidence),
@@ -97,9 +102,8 @@ class RelationalDerivationTests(unittest.TestCase):
             raw_contacts=(old_contact,),
             support_edges=(),
         )
-        frame = derive_relational_supervision_for_shot(
-            FIXTURE,
-            capture=_copy_capture(capture, states=(capture.states[0], retained_only)),
+        frame = derive_relational_supervision(
+            _copy_capture(capture, states=(capture.states[0], retained_only)),
         ).frames[1]
         self.assertEqual(frame.contacts, ())
         label = frame.support_label(("101:0", "201:0"))
@@ -119,9 +123,8 @@ class RelationalDerivationTests(unittest.TestCase):
             ),
         )
 
-        label = derive_relational_supervision_for_shot(
-            FIXTURE,
-            capture=_copy_capture(capture, states=states),
+        label = derive_relational_supervision(
+            _copy_capture(capture, states=states),
         ).frames[1].support_label(("101:0", "201:0"))
 
         self.assertTrue(label.value)
@@ -159,8 +162,8 @@ class RelationalDerivationTests(unittest.TestCase):
             (),
             (),
         )
-        labels = derive_relational_supervision_for_shot(
-            FIXTURE, capture=_copy_capture(capture, states=(capture.states[0], missing_contacts))
+        labels = derive_relational_supervision(
+            _copy_capture(capture, states=(capture.states[0], missing_contacts))
         )
         self.assertIs(
             labels.frames[1].support_label(("101:0", "201:0")).availability,
@@ -174,12 +177,35 @@ class RelationalDerivationTests(unittest.TestCase):
             capture.states[1].raw_contacts,
             (),
         )
-        labels = derive_relational_supervision_for_shot(
-            FIXTURE, capture=_copy_capture(capture, states=(capture.states[0], no_nodes))
+        labels = derive_relational_supervision(
+            _copy_capture(capture, states=(capture.states[0], no_nodes))
         )
         self.assertIs(
             labels.frames[1].support_label(("101:0", "201:0")).availability,
-            RelationalAvailability.UNAVAILABLE_INSUFFICIENT_LIFECYCLE_EVIDENCE,
+            RelationalAvailability.UNAVAILABLE_INSUFFICIENT_GEOMETRY_EVIDENCE,
+        )
+
+        nonfinite_nodes = tuple(
+            replace(
+                node,
+                world_pose=replace(
+                    node.world_pose,
+                    position=replace(node.world_pose.position, y=float("nan")),
+                ),
+            )
+            if str(node.entity_id) == "101:0"
+            else node
+            for node in capture.states[1].nodes
+        )
+        nonfinite_geometry = replace(
+            capture.states[1], nodes=nonfinite_nodes, support_edges=()
+        )
+        labels = derive_relational_supervision(
+            _copy_capture(capture, states=(capture.states[0], nonfinite_geometry))
+        )
+        self.assertIs(
+            labels.frames[1].support_label(("101:0", "201:0")).availability,
+            RelationalAvailability.UNAVAILABLE_INSUFFICIENT_GEOMETRY_EVIDENCE,
         )
 
         skipped_clock = replace(
@@ -188,8 +214,8 @@ class RelationalDerivationTests(unittest.TestCase):
             fixed_time=capture.states[1].clock.fixed_time + 0.04,
         )
         skipped = replace(capture.states[1], clock=skipped_clock, support_edges=())
-        labels = derive_relational_supervision_for_shot(
-            FIXTURE, capture=_copy_capture(capture, states=(capture.states[0], skipped))
+        labels = derive_relational_supervision(
+            _copy_capture(capture, states=(capture.states[0], skipped))
         )
         self.assertIs(
             labels.frames[1].support_label(("101:0", "201:0")).availability,
@@ -207,12 +233,15 @@ class RelationalDerivationTests(unittest.TestCase):
             for node in capture.states[1].nodes
         )
         same_height = replace(capture.states[1], nodes=same_height_nodes, support_edges=())
-        labels = derive_relational_supervision_for_shot(
-            FIXTURE, capture=_copy_capture(capture, states=(capture.states[0], same_height))
+        labels = derive_relational_supervision(
+            _copy_capture(capture, states=(capture.states[0], same_height))
         )
-        self.assertIs(
-            labels.frames[1].support_label(("101:0", "201:0")).availability,
-            RelationalAvailability.UNAVAILABLE_INSUFFICIENT_GEOMETRY_EVIDENCE,
+        label = labels.frames[1].support_label(("101:0", "201:0"))
+        self.assertIs(label.value, False)
+        self.assertIs(label.availability, RelationalAvailability.AVAILABLE)
+        self.assertEqual(
+            (label.supporter_id, label.supported_id),
+            (None, None),
         )
 
     def test_negative_support_requires_prior_geometry_and_a_clear_lifecycle_interval(self) -> None:
@@ -232,15 +261,13 @@ class RelationalDerivationTests(unittest.TestCase):
             for node in without_support[0].nodes
         )
         prior_same_height = replace(without_support[0], nodes=prior_same_height_nodes)
-        frame = derive_relational_supervision_for_shot(
-            FIXTURE,
-            capture=_copy_capture(capture, states=(prior_same_height, without_support[1])),
+        frame = derive_relational_supervision(
+            _copy_capture(capture, states=(prior_same_height, without_support[1])),
         ).frames[1]
-        self.assertIsNone(frame.support_label(("101:0", "201:0")).value)
-        self.assertIs(
-            frame.support_label(("101:0", "201:0")).availability,
-            RelationalAvailability.UNAVAILABLE_INSUFFICIENT_GEOMETRY_EVIDENCE,
-        )
+        label = frame.support_label(("101:0", "201:0"))
+        self.assertIs(label.value, False)
+        self.assertIs(label.availability, RelationalAvailability.AVAILABLE)
+        self.assertEqual((label.supporter_id, label.supported_id), (None, None))
 
         interval_destruction = replace(
             capture.events[3],
@@ -255,10 +282,7 @@ class RelationalDerivationTests(unittest.TestCase):
             without_support,
             (interval_destruction,),
         )
-        frame = derive_relational_supervision_for_shot(
-            FIXTURE,
-            capture=lifecycle_capture,
-        ).frames[1]
+        frame = derive_relational_supervision(lifecycle_capture).frames[1]
         label = frame.support_label(("101:0", "201:0"))
         self.assertIsNone(label.value)
         self.assertIs(
@@ -269,17 +293,29 @@ class RelationalDerivationTests(unittest.TestCase):
     def test_unrelated_lifecycle_event_does_not_block_negative_support(self) -> None:
         capture = _capture()
         without_support = tuple(replace(state, support_edges=()) for state in capture.states)
+        current_with_disqualifying_normal = replace(
+            without_support[1],
+            raw_contacts=tuple(
+                replace(
+                    contact,
+                    normal_a_to_b=replace(contact.normal_a_to_b, y=0.0),
+                )
+                if {str(contact.entity_a_id), str(contact.entity_b_id)} == {"101:0", "201:0"}
+                else contact
+                for contact in without_support[1].raw_contacts
+            ),
+        )
+        states = (without_support[0], current_with_disqualifying_normal)
         unrelated_explosion = replace(
             capture.events[2],
             clock=replace(
                 capture.events[2].clock,
-                fixed_step=without_support[1].clock.fixed_step,
-                fixed_time=without_support[1].clock.fixed_time,
+                fixed_step=states[1].clock.fixed_step,
+                fixed_time=states[1].clock.fixed_time,
             ),
         )
-        frame = derive_relational_supervision_for_shot(
-            FIXTURE,
-            capture=PhysicsCapture(capture.header, without_support, (unrelated_explosion,)),
+        frame = derive_relational_supervision(
+            PhysicsCapture(capture.header, states, (unrelated_explosion,)),
         ).frames[1]
 
         label = frame.support_label(("101:0", "201:0"))
@@ -294,23 +330,21 @@ class RelationalDerivationTests(unittest.TestCase):
             for contact in capture.states[1].raw_contacts
         )
         trigger_state = replace(capture.states[1], raw_contacts=triggered, support_edges=())
-        labels = derive_relational_supervision_for_shot(
-            FIXTURE, capture=_copy_capture(capture, states=(capture.states[0], trigger_state))
+        labels = derive_relational_supervision(
+            _copy_capture(capture, states=(capture.states[0], trigger_state))
         )
         self.assertEqual(labels.frames[1].contacts, ())
 
         changed_future = replace(capture.states[1], support_edges=())
-        original_labels = derive_relational_supervision_for_shot(FIXTURE, capture=capture)
+        original_labels = derive_relational_supervision(capture)
         first_original = original_labels.frames[0]
-        first_changed = derive_relational_supervision_for_shot(
-            FIXTURE, capture=_copy_capture(capture, states=(capture.states[0], changed_future))
+        first_changed = derive_relational_supervision(
+            _copy_capture(capture, states=(capture.states[0], changed_future))
         ).frames[0]
         self.assertEqual(first_original.to_json(), first_changed.to_json())
 
         unrelated_events = PhysicsCapture(capture.header, capture.states, ())
-        without_events = derive_relational_supervision_for_shot(
-            FIXTURE, capture=unrelated_events
-        )
+        without_events = derive_relational_supervision(unrelated_events)
         self.assertEqual(
             tuple(frame.to_json() for frame in without_events.frames),
             tuple(frame.to_json() for frame in original_labels.frames),
@@ -353,6 +387,10 @@ class RelationalDerivationTests(unittest.TestCase):
             (shot / "physics_state.jsonl").write_text("\n".join(states) + "\n", encoding="utf-8")
             with self.assertRaises(ValueError):
                 validate_relational_supervision(shot)
+
+    def test_source_bound_shot_derivation_rejects_alternate_capture(self) -> None:
+        with self.assertRaises(TypeError):
+            derive_relational_supervision_for_shot(FIXTURE, capture=_capture())  # type: ignore[call-arg]
 
 
 class RelationalSupervisionCliTests(unittest.TestCase):

@@ -63,6 +63,9 @@ class RelationalAvailability(StrEnum):
     UNAVAILABLE_INSUFFICIENT_LIFECYCLE_EVIDENCE = "unavailable_insufficient_lifecycle_evidence"
     UNAVAILABLE_INSUFFICIENT_CONTACT_EVIDENCE = "unavailable_insufficient_contact_evidence"
     UNAVAILABLE_INSUFFICIENT_GEOMETRY_EVIDENCE = "unavailable_insufficient_geometry_evidence"
+    UNAVAILABLE_MISSING_OR_INCONSISTENT_POSITIVE_SUPPORT_DERIVATION = (
+        "unavailable_missing_or_inconsistent_positive_support_derivation"
+    )
     UNAVAILABLE_NO_DECLARED_PHYSICAL_REGIME_DERIVATION = "unavailable_no_declared_physical_regime_derivation"
     UNAVAILABLE_NOT_DERIVABLE = "unavailable_not_derivable"
 
@@ -445,15 +448,43 @@ def _vertical_ordering(
     nodes: dict[str, SceneNode],
     pair: EntityPair,
     minimum_delta: float,
-) -> tuple[str, str] | None:
-    first_y = nodes[pair[0]].world_pose.position.y
-    second_y = nodes[pair[1]].world_pose.position.y
-    delta = second_y - first_y
+) -> tuple[bool, tuple[str, str] | None]:
+    try:
+        first_y = nodes[pair[0]].world_pose.position.y
+        second_y = nodes[pair[1]].world_pose.position.y
+        delta = second_y - first_y
+    except (AttributeError, KeyError, TypeError):
+        return False, None
     if not all(math.isfinite(value) for value in (first_y, second_y, delta)):
-        return None
+        return False, None
     if abs(delta) < minimum_delta:
-        return None
-    return (pair[1], pair[0]) if delta < 0 else (pair[0], pair[1])
+        return True, None
+    return True, (pair[1], pair[0]) if delta < 0 else (pair[0], pair[1])
+
+
+def _has_support_v1_contact_normals(
+    previous_contacts: tuple[RawContact, ...],
+    current_contacts: tuple[RawContact, ...],
+    minimum_abs_normal_y: float,
+) -> bool:
+    previous_by_colliders: dict[tuple[int, int], list[RawContact]] = {}
+    current_by_colliders: dict[tuple[int, int], list[RawContact]] = {}
+    for contact in previous_contacts:
+        previous_by_colliders.setdefault(
+            (contact.collider_a_id, contact.collider_b_id), []
+        ).append(contact)
+    for contact in current_contacts:
+        current_by_colliders.setdefault(
+            (contact.collider_a_id, contact.collider_b_id), []
+        ).append(contact)
+
+    return any(
+        abs(previous_contact.normal_a_to_b.y) >= minimum_abs_normal_y
+        and abs(current_contact.normal_a_to_b.y) >= minimum_abs_normal_y
+        for colliders in previous_by_colliders.keys() & current_by_colliders.keys()
+        for previous_contact in previous_by_colliders[colliders]
+        for current_contact in current_by_colliders[colliders]
+    )
 
 
 def _support_label(
@@ -500,9 +531,6 @@ def _support_label(
 
     previous_nodes = {str(node.entity_id): node for node in previous.nodes}
     current_nodes = {str(node.entity_id): node for node in state.nodes}
-    if any(entity not in previous_nodes or entity not in current_nodes for entity in pair):
-        return _unavailable(pair, RelationalAvailability.UNAVAILABLE_INSUFFICIENT_LIFECYCLE_EVIDENCE)
-
     lifecycle_events = (EventType.ENTITY_DESTROYED, EventType.PIG_REMOVED, EventType.EXPLOSION)
     if any(
         event.event_type in lifecycle_events
@@ -513,22 +541,37 @@ def _support_label(
         return _unavailable(pair, RelationalAvailability.UNAVAILABLE_INSUFFICIENT_LIFECYCLE_EVIDENCE)
 
     minimum_delta = capture.header.support_rule.minimum_vertical_center_delta
-    previous_ordering = _vertical_ordering(previous_nodes, pair, minimum_delta)
-    current_ordering = _vertical_ordering(current_nodes, pair, minimum_delta)
-    if previous_ordering is None or current_ordering is None:
+    previous_geometry_available, previous_ordering = _vertical_ordering(
+        previous_nodes, pair, minimum_delta
+    )
+    current_geometry_available, current_ordering = _vertical_ordering(
+        current_nodes, pair, minimum_delta
+    )
+    if not previous_geometry_available or not current_geometry_available:
         return _unavailable(pair, RelationalAvailability.UNAVAILABLE_INSUFFICIENT_GEOMETRY_EVIDENCE)
-    supporter, supported = current_ordering
     evidence = tuple(
         [_citation(capture, previous, contact) for contact in previous_contacts]
         + [_citation(capture, state, contact) for contact in current_contacts]
     )
+    direction = current_ordering if previous_ordering == current_ordering else None
+    if direction is not None and _has_support_v1_contact_normals(
+        previous_contacts,
+        current_contacts,
+        capture.header.support_rule.minimum_abs_normal_y,
+    ):
+        return SupportLabel(
+            pair,
+            None,
+            RelationalAvailability.UNAVAILABLE_MISSING_OR_INCONSISTENT_POSITIVE_SUPPORT_DERIVATION,
+            evidence,
+            *direction,
+        )
     return SupportLabel(
         pair,
         False,
         RelationalAvailability.AVAILABLE,
         evidence,
-        supporter,
-        supported,
+        *(direction or (None, None)),
     )
 
 
@@ -582,17 +625,13 @@ def derive_relational_supervision(
     )
 
 
-def derive_relational_supervision_for_shot(
-    shot_dir: Path,
-    *,
-    capture: PhysicsCapture | None = None,
-) -> RelationalSupervision:
+def derive_relational_supervision_for_shot(shot_dir: Path) -> RelationalSupervision:
     state_path = shot_dir / STATE_SIDECAR
     event_path = shot_dir / EVENT_SIDECAR
     if not state_path.is_file() or not event_path.is_file():
         raise RelationalSupervisionError(str(shot_dir), "physics capture sidecars are missing")
     try:
-        loaded = capture if capture is not None else load_physics_capture(state_path, event_path)
+        loaded = load_physics_capture(state_path, event_path)
     except (OSError, PhysicsContractError) as error:
         raise RelationalSupervisionError(str(shot_dir), "physics capture sidecars are invalid") from error
     return derive_relational_supervision(
