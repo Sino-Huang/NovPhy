@@ -782,6 +782,22 @@ def execute_collection_plan(loaded: LoadedCollectionPlan, runtime: CollectionPla
                 terminal_status = result.status
                 terminal_eligible = result.status == "accepted" and result.eligible
                 counts[result.status] += 1
+                if result.status == "accepted":
+                    disposition = "accept"
+                    disposition_reason = "accepted"
+                elif result.status == "rejected":
+                    disposition = "quarantine"
+                    disposition_reason = "rejected"
+                elif result.failure_code in scenario.retry_policy.transient_failure_codes:
+                    if attempt_number < scenario.retry_policy.max_attempts:
+                        disposition = "retry"
+                        disposition_reason = "transient_failure"
+                    else:
+                        disposition = "quarantine"
+                        disposition_reason = "retry_exhausted"
+                else:
+                    disposition = "quarantine"
+                    disposition_reason = "permanent_failure"
                 entry = {
                     "plan_identity": request.plan_identity,
                     "scenario_id": request.scenario_id,
@@ -794,6 +810,8 @@ def execute_collection_plan(loaded: LoadedCollectionPlan, runtime: CollectionPla
                     "status": result.status,
                     "eligible": result.eligible,
                     "reason": result.reason,
+                    "disposition": disposition,
+                    "disposition_reason": disposition_reason,
                     "failure_code": result.failure_code,
                     "realized_coverage_strata": list(result.realized_coverage_strata),
                 }

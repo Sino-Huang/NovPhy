@@ -364,6 +364,67 @@ class CollectionPlanTests(unittest.TestCase):
             self.assertEqual(report["failed_count"], 1)
             self.assertEqual(report["accepted_count"], 2)
 
+    def test_attempt_ledger_records_machine_readable_disposition_and_reason(self) -> None:
+        cases = {
+            "accepted_and_rejected": (
+                lambda request: (
+                    RuntimeResult("accepted", realized_coverage_strata=("collision",))
+                    if request.intervention_id == "collision-shot"
+                    else RuntimeResult("rejected", reason="artifact ineligible", eligible=False)
+                ),
+                [("accepted", "accept", "accepted"), ("rejected", "quarantine", "rejected")],
+            ),
+            "transient_retry": (
+                lambda request: (
+                    RuntimeResult("failed", reason="transport unavailable", failure_code="transport_unavailable")
+                    if request.intervention_id == "collision-shot" and request.attempt_number == 1
+                    else RuntimeResult(
+                        "accepted",
+                        realized_coverage_strata=("collision" if request.intervention_id == "collision-shot" else "no-contact/miss",),
+                    )
+                ),
+                [
+                    ("failed", "retry", "transient_failure"),
+                    ("accepted", "accept", "accepted"),
+                    ("accepted", "accept", "accepted"),
+                ],
+            ),
+            "permanent_failure": (
+                lambda request: (
+                    RuntimeResult("failed", reason="schema defect", failure_code="permanent_schema_defect")
+                    if request.intervention_id == "collision-shot"
+                    else RuntimeResult("accepted", realized_coverage_strata=("no-contact/miss",))
+                ),
+                [
+                    ("failed", "quarantine", "permanent_failure"),
+                    ("accepted", "accept", "accepted"),
+                ],
+            ),
+            "exhausted_transient_failure": (
+                lambda request: (
+                    RuntimeResult("failed", reason="transport unavailable", failure_code="transport_unavailable")
+                    if request.intervention_id == "collision-shot"
+                    else RuntimeResult("accepted", realized_coverage_strata=("no-contact/miss",))
+                ),
+                [
+                    ("failed", "retry", "transient_failure"),
+                    ("failed", "quarantine", "retry_exhausted"),
+                    ("accepted", "accept", "accepted"),
+                ],
+            ),
+        }
+        for name, (runtime, expected) in cases.items():
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temp_dir:
+                root = Path(temp_dir)
+                report = execute_collection_plan(create_loaded_plan(root), runtime, root / "output")
+                persisted = json.loads((root / "output" / REPORT_FILENAME).read_text(encoding="utf-8"))
+                actual = [
+                    (entry["status"], entry["disposition"], entry["disposition_reason"])
+                    for entry in report["attempt_ledger"]
+                ]
+                self.assertEqual(actual, expected)
+                self.assertEqual(persisted["attempt_ledger"], report["attempt_ledger"])
+
     def test_permanent_and_exhausted_failures_never_replace_planned_actions(self) -> None:
         cases = {
             "permanent": ("permanent_schema_defect", 1),
