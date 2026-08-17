@@ -213,6 +213,8 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
         call_order = []
 
         class Bridge(FakeBridge):
+            request_count = 0
+
             def shoot(self, *args, **kwargs):
                 raise AssertionError("physics capture must not use legacy shoot")
 
@@ -221,16 +223,22 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 return 1
 
             def get_physics_capture_v1(self):
-                call_order.append("request-70")
-                return PhysicsCaptureV1(png, records[1], tuple(events))
+                self.request_count += 1
+                call_order.append("initial-request-70" if self.request_count == 1 else "post-request-70")
+                return PhysicsCaptureV1(
+                    png,
+                    records[1] if self.request_count == 1 else records[2],
+                    () if self.request_count == 1 else tuple(events[:1]),
+                )
 
         action = {"coordinate_frame": "absolute", "drag_start": [100, 200], "drag_release": [130, 150], "tapTime": 70, "holdTime": 600}
         guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
         with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
-            manifest = collect_rollouts(Bridge(), Path(temporary), [action], target_fps=1, duration_seconds=1, max_frames=1, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64)
+            manifest = collect_rollouts(Bridge(), Path(temporary), [action], target_fps=1, duration_seconds=1, max_frames=2, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64)
 
-        self.assertEqual(call_order[0][0], "recorder-action")
-        self.assertEqual(call_order[1], "request-70")
+        self.assertEqual(call_order[0], "initial-request-70")
+        self.assertEqual(call_order[1][0], "recorder-action")
+        self.assertEqual(call_order[2], "post-request-70")
         self.assertEqual(manifest["rollout_count"], 1)
 
     def test_missing_provenance_and_sidecar_fail_closed(self):
@@ -483,14 +491,21 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
         records, events = self._records()
         png = self._png()
         class Bridge(FakeBridge):
+            request_count = 0
+
             def get_physics_capture_v1(self):
-                return PhysicsCaptureV1(png, records[1], tuple(events))
+                self.request_count += 1
+                return PhysicsCaptureV1(
+                    png,
+                    records[1] if self.request_count == 1 else records[2],
+                    () if self.request_count == 1 else tuple(events[:1]),
+                )
         action = {"coordinate_frame": "absolute", "drag_start": [100, 200], "drag_release": [130, 150], "tapTime": 70, "holdTime": 600}
         with TemporaryDirectory() as temporary:
             root = Path(temporary)
             guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
             with patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
-                manifest = collect_rollouts(Bridge(), root, [action], target_fps=1, duration_seconds=1, max_frames=1, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64)
+                manifest = collect_rollouts(Bridge(), root, [action], target_fps=1, duration_seconds=1, max_frames=2, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64)
             self.assertTrue((root / "shot_001").is_dir(), manifest)
             self.assertFalse((root / "shot_001.tmp").exists())
             self.assertEqual(manifest["capture_contract"]["archive_sha256"], "c" * 64)
@@ -506,14 +521,18 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
 
             def get_physics_capture_v1(self):
                 self.request_count += 1
-                return PhysicsCaptureV1(png, records[1], tuple(events))
+                return PhysicsCaptureV1(
+                    png,
+                    records[1] if self.request_count % 2 == 1 else records[2],
+                    () if self.request_count % 2 == 1 else tuple(events[:1]),
+                )
 
         action = {"coordinate_frame": "absolute", "drag_start": [100, 200], "drag_release": [130, 150], "tapTime": 70, "holdTime": 600}
         guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
         with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
             root = Path(temporary)
             bridge = Bridge()
-            kwargs = dict(target_fps=1, duration_seconds=1, max_frames=1, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64)
+            kwargs = dict(target_fps=1, duration_seconds=1, max_frames=2, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64)
             collect_rollouts(bridge, root, [action], **kwargs)
             shot = root / "shot_001"
             first_metadata = (shot / "metadata.json").read_bytes()
@@ -543,7 +562,11 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
 
             def get_physics_capture_v1(self):
                 self.request_count += 1
-                return PhysicsCaptureV1(png, records[1], tuple(events))
+                return PhysicsCaptureV1(
+                    png,
+                    records[1] if self.request_count == 1 else records[2],
+                    () if self.request_count == 1 else tuple(events[:1]),
+                )
 
         guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
         with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
@@ -555,7 +578,7 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 [{"coordinate_frame": "absolute", "release": [130, 150], "tapTime": 70}],
                 target_fps=1,
                 duration_seconds=1,
-                max_frames=1,
+                max_frames=2,
                 anchor_actions=False,
                 video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0),
                 physics_capture_v1=True,
@@ -566,7 +589,7 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
             )
 
         self.assertEqual(len(gameplay.shots), 1)
-        self.assertEqual(physics.request_count, 1)
+        self.assertEqual(physics.request_count, 2)
 
     def test_temporary_shot_symlink_is_removed_before_any_external_write(self):
         from src.webui.bridge import PhysicsCaptureV1
@@ -575,8 +598,15 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
         png = self._png()
 
         class Bridge(FakeBridge):
+            request_count = 0
+
             def get_physics_capture_v1(self):
-                return PhysicsCaptureV1(png, records[1], tuple(events))
+                self.request_count += 1
+                return PhysicsCaptureV1(
+                    png,
+                    records[1] if self.request_count == 1 else records[2],
+                    () if self.request_count == 1 else tuple(events[:1]),
+                )
 
         guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
         with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
@@ -591,7 +621,7 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 [{"coordinate_frame": "absolute", "release": [130, 150], "tapTime": 70}],
                 target_fps=1,
                 duration_seconds=1,
-                max_frames=1,
+                max_frames=2,
                 anchor_actions=False,
                 video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0),
                 physics_capture_v1=True,
@@ -696,8 +726,15 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
         gameplay_bridge = FakeBridge()
 
         class PhysicsBridge:
+            request_count = 0
+
             def get_physics_capture_v1(self):
-                return PhysicsCaptureV1(png, records[1], tuple(events))
+                self.request_count += 1
+                return PhysicsCaptureV1(
+                    png,
+                    records[1] if self.request_count == 1 else records[2],
+                    () if self.request_count == 1 else tuple(events[:1]),
+                )
 
         class Process:
             pid = 7301
@@ -821,7 +858,7 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                     frame_height=480,
                     fast=True,
                     headless=False,
-                    target_fps=1,
+                    target_fps=2,
                     duration_seconds=1,
                     ui_level=None,
                     ui_settle_seconds=0,
@@ -873,32 +910,39 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
 
             def get_physics_capture_v1(self):
                 self.request_count += 1
-                return PhysicsCaptureV1(png, records[1], tuple(events))
+                return PhysicsCaptureV1(
+                    png,
+                    records[1] if self.request_count % 2 == 1 else records[2],
+                    () if self.request_count % 2 == 1 else tuple(events[:1]),
+                )
 
         action = {"coordinate_frame": "absolute", "release": [130, 150], "tapTime": 70}
         guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
         with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
             root = Path(temporary)
             bridge = Bridge()
-            common = dict(target_fps=1, duration_seconds=1, max_frames=1, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True)
+            common = dict(target_fps=1, duration_seconds=1, max_frames=2, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True)
             collect_rollouts(bridge, root, [action], physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64, **common)
 
             collect_rollouts(bridge, root, [action], physics_player_sha256="d" * 64, physics_protocol_sha256="e" * 64, physics_archive_sha256="f" * 64, **common)
 
             current = json.loads((root / "shot_001" / "metadata.json").read_text(encoding="utf-8"))
             stale = json.loads((root / "invalid_attempts" / "shot_001_recovered_01" / "metadata.json").read_text(encoding="utf-8"))
-            self.assertEqual(bridge.request_count, 2)
+            self.assertEqual(bridge.request_count, 4)
             self.assertEqual((current["player_sha256"], current["protocol_sha256"], current["archive_sha256"]), ("d" * 64, "e" * 64, "f" * 64))
             self.assertEqual((stale["player_sha256"], stale["protocol_sha256"], stale["archive_sha256"]), ("a" * 64, "b" * 64, "c" * 64))
 
     def test_generated_enriched_desktop_worker_runs_through_actual_collector(self):
         from src.webui.bridge import PhysicsCaptureV1
+        from scripts.scenario_manifest import BenchmarkCondition, import_legacy_manifest, write_manifest
 
         records, events = self._records()
         png = self._png()
         call_order = []
 
         class Bridge(FakeBridge):
+            request_count = 0
+
             def shoot(self, *args, **kwargs):
                 raise AssertionError("enriched generated command must not use legacy shoot")
 
@@ -907,8 +951,13 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 return 1
 
             def get_physics_capture_v1(self):
-                call_order.append("request-70")
-                return PhysicsCaptureV1(png, records[1], tuple(events))
+                self.request_count += 1
+                call_order.append("initial-request-70" if self.request_count == 1 else "post-request-70")
+                return PhysicsCaptureV1(
+                    png,
+                    records[1] if self.request_count == 1 else records[2],
+                    () if self.request_count == 1 else tuple(events[:1]),
+                )
 
         guard = {
             "pre_shot_image": self._pre_shot(),
@@ -941,7 +990,24 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                     provenance,
                 )[2:]
             )
-            argv = ["collect_rollouts.py", *shlex.split(command)]
+            scenario_xml = root / "level.xml"
+            scenario_xml.write_text("<Level><Bird type=\"red\" /></Level>", encoding="utf-8")
+            scenario_manifest = write_manifest(
+                import_legacy_manifest(
+                    scenario_xml.read_bytes(),
+                    benchmark_condition=BenchmarkCondition("novelty_level_1", "type01001"),
+                    source_path="level.xml",
+                ),
+                root / "level.scenario.json",
+            )
+            argv = [
+                "collect_rollouts.py",
+                *shlex.split(command),
+                "--scenario-manifest",
+                str(scenario_manifest),
+                "--scenario-xml",
+                str(scenario_xml),
+            ]
             bridge = Bridge()
 
             def run_actual_collector(output_dir, actions, **kwargs):
@@ -951,7 +1017,7 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                     actions,
                     target_fps=kwargs["target_fps"],
                     duration_seconds=kwargs["duration_seconds"],
-                    max_frames=1,
+                    max_frames=2,
                     capture_rollout=kwargs["capture_rollout"],
                     shoot_before_capture=kwargs["shoot_before_capture"],
                     anchor_actions=False,
@@ -971,8 +1037,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
 
             self.assertTrue((episode.output_dir / "shot_001").is_dir())
             self.assertFalse((episode.output_dir / "shot_001.tmp").exists())
-            self.assertEqual(call_order[0][0], "recorder-action")
-            self.assertEqual(call_order[1], "request-70")
+            self.assertEqual(call_order[0], "initial-request-70")
+            self.assertEqual(call_order[1][0], "recorder-action")
+            self.assertEqual(call_order[2], "post-request-70")
 
     def test_physics_capture_rejects_explicit_and_derived_frame_counts_above_contract(self):
         class Bridge:
@@ -3498,6 +3565,26 @@ class CollectRolloutsTest(unittest.TestCase):
             [action["drag_release"][0] > 0 for action in payload["actions"]],
             [False, True, False, True],
         )
+
+    def test_main_dry_run_does_not_require_collection_scenario_inputs(self):
+        with TemporaryDirectory() as tmp:
+            args = [
+                "collect_rollouts.py",
+                "--output-dir",
+                tmp,
+                "--count",
+                "1",
+                "--physics-capture-v1",
+                "--fresh-engine-per-rollout",
+                "--dry-run",
+            ]
+
+            with patch("sys.argv", args):
+                main()
+
+            payload = json.loads((Path(tmp) / "action_plan.json").read_text(encoding="utf-8"))
+
+        self.assertEqual(payload["action_count"], 1)
 
     def test_load_actions_from_action_log_returns_exact_logged_actions(self):
         logged_actions = [

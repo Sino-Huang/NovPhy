@@ -9,6 +9,11 @@ from pathlib import Path
 from typing import Final, TypeAlias
 
 from scripts.physics_rollout_contract import MAX_TOTAL_BYTES
+from scripts.physics_rollout_semantics import (
+    PhysicsRolloutSemanticsError,
+    SEMANTICS_METADATA_FIELDS,
+    validate_physics_rollout_semantics,
+)
 from scripts.rollout_validation_types import (
     EpisodeRejected,
     EpisodeRejectionCode,
@@ -239,4 +244,20 @@ def validate_physics_shot_artifact(shot_dir: Path) -> PhysicsArtifactSummary:
         event_hash = _sha256_descriptor(event_fd)
         if metadata.get("frame_checksums") != expected_checksums or metadata.get("physics_state_sha256") != state_hash or metadata.get("physics_events_sha256") != event_hash:
             raise PhysicsArtifactError(str(metadata_path), "recorded checksums differ from files")
+        if any(field in metadata for field in SEMANTICS_METADATA_FIELDS):
+            expected_identity = metadata.get("expected_initial_engine_state_identity")
+            if expected_identity is not None and not isinstance(expected_identity, str):
+                raise PhysicsArtifactError(str(metadata_path), "invalid expected initial engine state identity")
+            scenario_context = metadata.get("scenario_context")
+            if scenario_context is not None and not isinstance(scenario_context, dict):
+                raise PhysicsArtifactError(str(metadata_path), "scenario_context is not an object")
+            try:
+                semantics = validate_physics_rollout_semantics(
+                    capture,
+                    expected_initial_engine_state_identity=expected_identity,
+                )
+            except PhysicsRolloutSemanticsError as error:
+                raise PhysicsArtifactError(str(shot_dir), str(error)) from error
+            if any(metadata.get(field) != value for field, value in semantics.items()):
+                raise PhysicsArtifactError(str(metadata_path), "recorded rollout semantics differ from sidecars")
         return PhysicsArtifactSummary(len(capture.states), len(capture.events), tuple(frame_hashes), state_hash, event_hash)

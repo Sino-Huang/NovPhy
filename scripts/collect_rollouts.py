@@ -36,7 +36,9 @@ from scripts.physics_rollout_persistence import (  # noqa: E402
     persist_physics_rollout,
     publish_physics_shot,
 )
+from scripts.physics_rollout_semantics import REQUIRED_ROLLOUT_SEMANTICS_FIELDS  # noqa: E402
 from scripts.rollout_validation_types import PhysicsArtifactError, PhysicsRecoveryResult  # noqa: E402
+from scripts.scenario_manifest import ScenarioManifest, load_manifest  # noqa: E402
 
 
 DEFAULT_DESKTOP_GAME_CROP = (32, 64, 672, 544)
@@ -603,6 +605,33 @@ class RolloutCollectionError(RuntimeError):
     pass
 
 
+def _has_complete_strict_semantics(metadata: dict[str, Any]) -> bool:
+    (
+        initial_identity,
+        intervention_event_id,
+        termination_reason,
+        termination_fixed_step,
+        termination_event_id_field,
+        terminal_state_fixed_step,
+    ) = REQUIRED_ROLLOUT_SEMANTICS_FIELDS
+    string_values = (
+        metadata.get(initial_identity),
+        metadata.get(intervention_event_id),
+        metadata.get(termination_reason),
+    )
+    integer_values = (
+        metadata.get(termination_fixed_step),
+        metadata.get(terminal_state_fixed_step),
+    )
+    termination_event_id = metadata.get(termination_event_id_field)
+    return (
+        all(isinstance(value, str) and value for value in string_values)
+        and all(isinstance(value, int) and not isinstance(value, bool) for value in integer_values)
+        and termination_event_id_field in metadata
+        and (termination_event_id is None or isinstance(termination_event_id, str) and termination_event_id)
+    )
+
+
 class PreShotGuardError(RuntimeError):
     def __init__(self, metadata: dict[str, Any]):
         self.metadata = metadata
@@ -991,6 +1020,10 @@ def capture_physics_rollout(
     player_sha256: str | None = None,
     protocol_sha256: str | None = None,
     archive_sha256: str | None = None,
+    initial_capture=None,
+    shoot=None,
+    expected_initial_engine_state_identity: str | None = None,
+    scenario_context: dict[str, Any] | None = None,
 ) -> dict:
     if not all(isinstance(value, str) for value in (player_sha256, protocol_sha256, archive_sha256)):
         raise RolloutCollectionError("physics capture requires lowercase SHA-256 player, protocol, and archive provenance")
@@ -1005,6 +1038,10 @@ def capture_physics_rollout(
             provenance=CaptureProvenance(player_sha256, protocol_sha256, archive_sha256),
             clock=clock,
             sleeper=sleeper,
+            initial_capture=initial_capture,
+            shoot=shoot,
+            expected_initial_engine_state_identity=expected_initial_engine_state_identity,
+            scenario_context=scenario_context,
         )
     except PhysicsPersistenceError as error:
         raise RolloutCollectionError(str(error)) from error
@@ -1176,7 +1213,7 @@ def _rollout_record_from_metadata(
         "name": shot_dir.name,
         "action": action,
         "shot": shot,
-        "shoot_response": shoot_response,
+        "shoot_response": metadata.get("shoot_response") if shoot_response is None else shoot_response,
         "frame_count": metadata["frame_count"],
         "slingshot_reference": slingshot_reference,
         "metadata_path": str(Path(metadata["quarantined_path"]) / "metadata.json")
@@ -1195,6 +1232,14 @@ def _rollout_record_from_metadata(
         "retry_attempt": metadata.get("retry_attempt"),
         "quarantined_path": metadata.get("quarantined_path"),
         "prior_invalid_attempts": metadata.get("prior_invalid_attempts"),
+        "initial_engine_state_identity": metadata.get("initial_engine_state_identity"),
+        "intervention_event_id": metadata.get("intervention_event_id"),
+        "termination_reason": metadata.get("termination_reason"),
+        "termination_fixed_step": metadata.get("termination_fixed_step"),
+        "termination_event_id": metadata.get("termination_event_id"),
+        "terminal_state_fixed_step": metadata.get("terminal_state_fixed_step"),
+        "expected_initial_engine_state_identity": metadata.get("expected_initial_engine_state_identity"),
+        "scenario_context": metadata.get("scenario_context"),
         **({"pre_shot_path": metadata["pre_shot_path"]} if "pre_shot_path" in metadata else {}),
         **({"video_path": metadata["video_path"]} if "video_path" in metadata else {}),
     }
@@ -1521,6 +1566,8 @@ def collect_rollouts(
     physics_player_sha256: str | None = None,
     physics_protocol_sha256: str | None = None,
     physics_archive_sha256: str | None = None,
+    expected_initial_engine_state_identity: str | None = None,
+    scenario_context: dict[str, Any] | None = None,
 ) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     if physics_capture_v1:
@@ -1545,7 +1592,21 @@ def collect_rollouts(
                     "protocol_sha256": physics_protocol_sha256,
                     "archive_sha256": physics_archive_sha256,
                 }
-                if all(metadata.get(field) == value for field, value in requested_provenance.items()):
+                identity_matches = (
+                    expected_initial_engine_state_identity is None
+                    or metadata.get("initial_engine_state_identity")
+                    == expected_initial_engine_state_identity
+                )
+                scenario_matches = (
+                    scenario_context is None
+                    or metadata.get("scenario_context") == scenario_context
+                )
+                if (
+                    _has_complete_strict_semantics(metadata)
+                    and all(metadata.get(field) == value for field, value in requested_provenance.items())
+                    and identity_matches
+                    and scenario_matches
+                ):
                     metadata = dict(metadata)
                     metadata["artifact_validation"] = artifact_validation
                     metadata["accepted"] = True
@@ -1629,12 +1690,9 @@ def collect_rollouts(
 
         capture_kwargs = {"target_fps": target_fps, "duration_seconds": duration_seconds, "max_frames": max_frames, "clock": clock, "sleeper": sleeper}
         if physics_capture_v1:
-            capture_kwargs.update({"player_sha256": physics_player_sha256, "protocol_sha256": physics_protocol_sha256, "archive_sha256": physics_archive_sha256})
+            capture_kwargs.update({"player_sha256": physics_player_sha256, "protocol_sha256": physics_protocol_sha256, "archive_sha256": physics_archive_sha256, "expected_initial_engine_state_identity": expected_initial_engine_state_identity, "scenario_context": scenario_context})
         else:
             capture_kwargs["action"] = action
-        effective_shoot_before_capture = shoot_before_capture or physics_capture_v1
-        if not effective_shoot_before_capture:
-            capture_kwargs["shoot"] = shoot_once
         if not physics_capture_v1 and pre_shot_image is not None:
             capture_kwargs["pre_shot_image"] = pre_shot_image
         if not physics_capture_v1 and pre_shot_sample is not None:
@@ -1642,7 +1700,18 @@ def collect_rollouts(
         post_recovery_protocol_state = pre_shot_guard_result["post_recovery_protocol_state"]
         post_shoot_protocol_state = None
         response = None
-        if effective_shoot_before_capture:
+        capture_bridge = physics_bridge if physics_capture_v1 and physics_bridge is not None else bridge
+        if physics_capture_v1:
+            initial_capture = capture_bridge.get_physics_capture_v1()
+
+            def shoot_and_snapshot():
+                nonlocal post_shoot_protocol_state
+                result = shoot_once()
+                post_shoot_protocol_state = _protocol_state_snapshot(bridge)
+                return result
+
+            capture_kwargs.update({"initial_capture": initial_capture, "shoot": shoot_and_snapshot})
+        elif shoot_before_capture:
             response = shoot_once()
             post_shoot_protocol_state = _protocol_state_snapshot(bridge)
         else:
@@ -1653,7 +1722,6 @@ def collect_rollouts(
                 return result
 
             capture_kwargs["shoot"] = shoot_and_snapshot
-        capture_bridge = physics_bridge if physics_capture_v1 and physics_bridge is not None else bridge
         metadata = capture_rollout(capture_bridge, shot_dir, **capture_kwargs)
         if response is None:
             response = metadata.get("shoot_response")
@@ -1784,6 +1852,8 @@ def collect_rollouts(
         if not all(isinstance(value, str) for value in (physics_player_sha256, physics_protocol_sha256, physics_archive_sha256)):
             raise RolloutCollectionError("physics capture provenance is incomplete")
         manifest.update({"capture_contract": _physics_contract_descriptor(physics_player_sha256, physics_protocol_sha256, physics_archive_sha256), "schema_version": "physics_capture_v1", "protocol_version": 1, "player_sha256": physics_player_sha256, "protocol_sha256": physics_protocol_sha256, "archive_sha256": physics_archive_sha256, "sidecar_paths": ["physics_state.jsonl", "physics_events.jsonl"], "physics_state_count": sum(int(item.get("frame_count", 0)) for item in accepted_rollouts), "physics_event_count": sum(int(item.get("physics_event_count", 0)) for item in accepted_rollouts)})
+        if scenario_context is not None:
+            manifest["scenario_context"] = scenario_context
     manifest.update(write_action_logs(output_dir, rollouts))
     if write_manifest:
         (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -1830,10 +1900,17 @@ def collect_fresh_engine_rollouts(
     physics_player_sha256: str | None = None,
     physics_protocol_sha256: str | None = None,
     physics_archive_sha256: str | None = None,
+    scenario_manifest: ScenarioManifest | None = None,
 ) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     rollouts = []
     attempts_per_action = max(1, int(fresh_engine_attempts))
+    expected_initial_engine_state_identity: str | None = None
+    scenario_context = None if scenario_manifest is None else {
+        "scenario_manifest_schema": scenario_manifest.schema,
+        "scenario_lineage_identity": scenario_manifest.scenario_lineage.identity,
+        "declared_initial_engine_state_identity": scenario_manifest.declared_initial_engine_state.identity,
+    }
     for index, action in enumerate(actions, start=1):
         prior_invalid_attempts: list[dict] = []
         for attempt in range(1, attempts_per_action + 1):
@@ -1903,6 +1980,8 @@ def collect_fresh_engine_rollouts(
                     physics_player_sha256=physics_player_sha256,
                     physics_protocol_sha256=physics_protocol_sha256,
                     physics_archive_sha256=physics_archive_sha256,
+                    expected_initial_engine_state_identity=expected_initial_engine_state_identity,
+                    scenario_context=scenario_context,
                 )
                 rollout = partial["rollouts"][0]
                 _record_fresh_engine_attempt_metadata(
@@ -1915,6 +1994,9 @@ def collect_fresh_engine_rollouts(
 
                 rollouts.append(rollout)
                 if rollout.get("accepted"):
+                    observed_identity = rollout.get("initial_engine_state_identity")
+                    if expected_initial_engine_state_identity is None and isinstance(observed_identity, str) and observed_identity:
+                        expected_initial_engine_state_identity = observed_identity
                     break
                 prior_invalid_attempts.append(_invalid_attempt_reference(rollout))
                 artifact_validation = rollout.get("artifact_validation")
@@ -1975,6 +2057,24 @@ def collect_fresh_engine_rollouts(
         if not all(isinstance(value, str) for value in (physics_player_sha256, physics_protocol_sha256, physics_archive_sha256)):
             raise RolloutCollectionError("physics capture provenance is incomplete")
         manifest.update({"capture_contract": _physics_contract_descriptor(physics_player_sha256, physics_protocol_sha256, physics_archive_sha256), "schema_version": "physics_capture_v1", "protocol_version": 1, "player_sha256": physics_player_sha256, "protocol_sha256": physics_protocol_sha256, "archive_sha256": physics_archive_sha256, "sidecar_paths": ["physics_state.jsonl", "physics_events.jsonl"], "physics_state_count": sum(int(item.get("frame_count", 0)) for item in accepted_rollouts), "physics_event_count": sum(int(item.get("physics_event_count", 0)) for item in accepted_rollouts)})
+        accepted_initial_identities = [
+            rollout.get("initial_engine_state_identity") for rollout in accepted_rollouts
+        ]
+        verified_initial_identity = (
+            accepted_initial_identities[0]
+            if accepted_initial_identities
+            and all(
+                isinstance(identity, str)
+                and identity
+                and identity == accepted_initial_identities[0]
+                for identity in accepted_initial_identities
+            )
+            else None
+        )
+        manifest["initial_engine_state_identity"] = verified_initial_identity
+        manifest["initial_engine_state_verified"] = verified_initial_identity is not None
+        if scenario_context is not None:
+            manifest["scenario_context"] = scenario_context
     if ui_level is not None:
         manifest["ui_level"] = ui_level
     exhausted_attempts = [attempt for attempt in invalid_attempts if attempt.get("attempt_status") == "invalid_exhausted"]
@@ -2032,6 +2132,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--physics-protocol-sha256")
     parser.add_argument("--physics-archive-sha256")
     parser.add_argument("--fresh-engine-per-rollout", action="store_true")
+    parser.add_argument("--scenario-manifest", type=Path)
+    parser.add_argument("--scenario-xml", type=Path)
     parser.add_argument("--ui-level", type=int, help="Visible level number to enter with xdotool for each fresh rollout")
     parser.add_argument("--ui-settle-seconds", type=float, default=5.0)
     parser.add_argument("--engine-settle-seconds", type=float, default=20.0)
@@ -2121,6 +2223,28 @@ def main() -> None:
         print(json.dumps({"action_plan": str(path)}, indent=2))
         return
 
+    strict_physics_collection = args.physics_capture_v1 and args.fresh_engine_per_rollout
+    has_scenario_manifest = args.scenario_manifest is not None
+    has_scenario_xml = args.scenario_xml is not None
+    if strict_physics_collection and has_scenario_manifest != has_scenario_xml:
+        print(
+            "--physics-capture-v1 --fresh-engine-per-rollout requires both --scenario-manifest and --scenario-xml",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+    if strict_physics_collection and not has_scenario_manifest:
+        print(
+            "--physics-capture-v1 --fresh-engine-per-rollout requires both --scenario-manifest and --scenario-xml",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+    scenario_manifest = None
+    if has_scenario_manifest and has_scenario_xml:
+        try:
+            scenario_manifest = load_manifest(args.scenario_manifest, args.scenario_xml)
+        except (OSError, ValueError) as error:
+            print(f"Cannot load scenario manifest/XML: {error}", file=sys.stderr)
+            raise SystemExit(2) from None
     try:
         ensure_output_dir(args.output_dir)
     except OSError as exc:
@@ -2183,6 +2307,7 @@ def main() -> None:
             physics_player_sha256=args.physics_player_sha256,
             physics_protocol_sha256=args.physics_protocol_sha256,
             physics_archive_sha256=args.physics_archive_sha256,
+            scenario_manifest=scenario_manifest,
         )
         print(json.dumps({"manifest": str(args.output_dir / "manifest.json"), "rollout_count": manifest["rollout_count"]}, indent=2))
         return

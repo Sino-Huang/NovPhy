@@ -11,7 +11,7 @@ import time
 from contextlib import suppress
 from typing import BinaryIO, Mapping, Protocol
 
-from scripts.physics_capture_contract import PhysicsContractError
+from scripts.physics_capture_contract import PhysicsContractError, load_physics_capture
 from scripts.physics_capture_parsing import _parse_event, _parse_header, _parse_state
 from scripts.physics_capture_types import StateFrame
 from scripts.physics_rollout_contract import (
@@ -24,8 +24,13 @@ from scripts.physics_rollout_contract import (
     MAX_TOTAL_BYTES,
     PersistenceErrorCode,
     PhysicsCaptureBridge,
+    PhysicsCapturePacket,
     PhysicsPersistenceError,
     StreamProgress,
+)
+from scripts.physics_rollout_semantics import (
+    PhysicsRolloutSemanticsError,
+    validate_physics_rollout_semantics,
 )
 
 
@@ -286,9 +291,39 @@ def persist_physics_rollout(
     provenance: CaptureProvenance,
     clock: Callable[[], float] = time.monotonic,
     sleeper: Callable[[float], None] = time.sleep,
+    initial_capture: PhysicsCapturePacket | None = None,
+    shoot: Callable[[], object] | None = None,
+    expected_initial_engine_state_identity: str | None = None,
+    scenario_context: Mapping[str, JsonValue] | None = None,
 ) -> JsonObject:
     bounds = CaptureBounds.resolve(target_fps, duration_seconds, max_frames)
     provenance.validate()
+    if shoot is not None and initial_capture is None:
+        raise PhysicsPersistenceError(
+            PersistenceErrorCode.INVALID_CONFIGURATION,
+            "shoot requires an initial capture",
+        )
+    if initial_capture is not None:
+        if shoot is None:
+            raise PhysicsPersistenceError(
+                PersistenceErrorCode.INVALID_CONFIGURATION,
+                "an initial capture requires a shoot callback",
+            )
+        if bounds.frame_count < 2:
+            raise PhysicsPersistenceError(
+                PersistenceErrorCode.STATE_LIMIT,
+                "a shot needs at least two retained states",
+            )
+        if initial_capture.events:
+            raise PhysicsPersistenceError(
+                PersistenceErrorCode.MALFORMED_CAPTURE,
+                "initial capture must not contain events",
+            )
+    if scenario_context is not None and not isinstance(scenario_context, Mapping):
+        raise PhysicsPersistenceError(
+            PersistenceErrorCode.INVALID_CONFIGURATION,
+            "scenario_context must be a JSON object",
+        )
     if output_dir.is_symlink():
         raise PhysicsPersistenceError(
             PersistenceErrorCode.INVALID_CONFIGURATION,
@@ -341,14 +376,12 @@ def persist_physics_rollout(
     frame_checksums: list[JsonObject] = []
     progress = StreamProgress(0, 0, 0)
     started_at = clock()
+    shoot_response: JsonValue = None
 
     try:
         with os.fdopen(state_descriptor, "wb") as state_stream, os.fdopen(event_descriptor, "wb") as event_stream:
-            for index in range(bounds.frame_count):
-                delay = started_at + index / target_fps - clock()
-                if delay > 0:
-                    sleeper(delay)
-                capture = bridge.get_physics_capture_v1()
+            def write_capture(capture: PhysicsCapturePacket, index: int, *, allow_events: bool) -> None:
+                nonlocal progress
                 dimensions = _png_dimensions(capture.png)
                 state = _capture_record(capture.state, shot_id, index, dimensions)
                 parsed_state = _parse_state(state, index + 1)
@@ -379,6 +412,11 @@ def persist_physics_rollout(
                 )
                 progress = StreamProgress(progress.state_count + 1, progress.event_count, progress.total_bytes)
 
+                if not allow_events and capture.events:
+                    raise PhysicsPersistenceError(
+                        PersistenceErrorCode.MALFORMED_CAPTURE,
+                        "initial capture must not contain events",
+                    )
                 for raw_event in capture.events:
                     materialized_event = _materialize_json(raw_event)
                     if not isinstance(materialized_event, dict):
@@ -429,6 +467,21 @@ def persist_physics_rollout(
                     "sha256": hashlib.sha256(capture.png).hexdigest(),
                 })
 
+            if initial_capture is not None:
+                write_capture(initial_capture, 0, allow_events=False)
+                shoot_response = _materialize_json(shoot())
+                for index in range(1, bounds.frame_count):
+                    delay = started_at + (index - 1) / target_fps - clock()
+                    if delay > 0:
+                        sleeper(delay)
+                    write_capture(bridge.get_physics_capture_v1(), index, allow_events=True)
+            else:
+                for index in range(bounds.frame_count):
+                    delay = started_at + index / target_fps - clock()
+                    if delay > 0:
+                        sleeper(delay)
+                    write_capture(bridge.get_physics_capture_v1(), index, allow_events=True)
+
             state_stream.flush()
             event_stream.flush()
             os.fsync(state_stream.fileno())
@@ -453,8 +506,34 @@ def persist_physics_rollout(
             "physics_events_sha256": event_digest.hexdigest(),
             "sidecars_closed": True,
         }
+        strict_semantics = (
+            initial_capture is not None
+            or expected_initial_engine_state_identity is not None
+            or scenario_context is not None
+        )
+        if strict_semantics:
+            capture = load_physics_capture(
+                output_dir / "physics_state.jsonl",
+                output_dir / "physics_events.jsonl",
+            )
+            metadata.update(validate_physics_rollout_semantics(
+                capture,
+                expected_initial_engine_state_identity=expected_initial_engine_state_identity,
+            ))
+            if expected_initial_engine_state_identity is not None:
+                metadata["expected_initial_engine_state_identity"] = expected_initial_engine_state_identity
+            if scenario_context is not None:
+                materialized_context = _materialize_json(scenario_context)
+                if not isinstance(materialized_context, dict):
+                    raise PhysicsPersistenceError(
+                        PersistenceErrorCode.INVALID_CONFIGURATION,
+                        "scenario_context must be a JSON object",
+                    )
+                metadata["scenario_context"] = materialized_context
+        if shoot is not None:
+            metadata["shoot_response"] = shoot_response
         install_physics_metadata(output_descriptor, metadata)
-    except PhysicsContractError as error:
+    except (PhysicsContractError, PhysicsRolloutSemanticsError) as error:
         raise PhysicsPersistenceError(
             PersistenceErrorCode.MALFORMED_CAPTURE,
             str(error),
