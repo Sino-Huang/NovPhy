@@ -2272,30 +2272,37 @@ def collect_fresh_engine_attempt(
             failure_code = "initial_engine_state_identity_mismatch"
             reason = "observed initial engine state identity does not match the planned identity"
         else:
-            accepted_dir.parent.mkdir(parents=True, exist_ok=True)
-            for path in staging_dir.rglob("*.json"):
-                try:
-                    payload = json.loads(path.read_text(encoding="utf-8"))
-                except (OSError, json.JSONDecodeError):
-                    continue
-                path.write_text(
-                    json.dumps(
-                        _rewrite_staged_attempt_paths(payload, staging_dir, accepted_dir),
-                        indent=2,
-                    ),
-                    encoding="utf-8",
-                )
-            os.replace(staging_dir, accepted_dir)
-            return {
-                "status": "accepted",
-                "reason": None,
-                "failure_code": None,
-                "realized_coverage_strata": [],
-                "eligible": True,
-                "artifact_path": str(accepted_dir),
-                "quarantine_path": None,
-                "failure_manifest_path": None,
-            }
+            try:
+                accepted_dir.parent.mkdir(parents=True, exist_ok=True)
+                for path in staging_dir.rglob("*.json"):
+                    try:
+                        payload = json.loads(path.read_text(encoding="utf-8"))
+                    except (OSError, json.JSONDecodeError):
+                        continue
+                    path.write_text(
+                        json.dumps(
+                            _rewrite_staged_attempt_paths(payload, staging_dir, accepted_dir),
+                            indent=2,
+                        ),
+                        encoding="utf-8",
+                    )
+                os.replace(staging_dir, accepted_dir)
+            except Exception as exc:
+                collection_error = exc
+                status = "failed"
+                reason = str(exc) or exc.__class__.__name__
+                failure_code = _collection_exception_failure_code(exc)
+            else:
+                return {
+                    "status": "accepted",
+                    "reason": None,
+                    "failure_code": None,
+                    "realized_coverage_strata": [],
+                    "eligible": True,
+                    "artifact_path": str(accepted_dir),
+                    "quarantine_path": None,
+                    "failure_manifest_path": None,
+                }
 
     assert status is not None and reason is not None and failure_code is not None
     permanent_codes = {
@@ -2331,18 +2338,6 @@ def collect_fresh_engine_attempt(
         json.dumps(failure_manifest, indent=2),
         encoding="utf-8",
     )
-    for path in staging_dir.rglob("*.json"):
-        try:
-            payload = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError):
-            continue
-        path.write_text(
-            json.dumps(
-                _rewrite_staged_attempt_paths(payload, staging_dir, quarantine_dir),
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
     os.replace(staging_dir, quarantine_dir)
     return {
         "status": status,
