@@ -31,6 +31,12 @@ from scripts.physics_macro_labels import (
     derivation_spec_json,
     derive_macro_labels_for_shot,
 )
+from scripts.physics_material_damage import (
+    MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION,
+    MATERIAL_UNAVAILABLE_LABEL,
+    MAPPING_SOURCE_FACTS,
+    SUPPORTED_DAMAGE_LIFECYCLE_MAPPING,
+)
 from scripts.physics_rollout_contract import CaptureProvenance
 from scripts.physics_rollout_persistence import persist_physics_rollout
 from scripts.physics_rollout_semantics import initial_engine_state_identity
@@ -478,10 +484,10 @@ class RepresentativePilotTests(unittest.TestCase):
                 )
             )
 
-            self.assertEqual(persisted["schema"], "representative_pilot_report_v2")
-            self.assertEqual(persisted["report_version"], 2)
+            self.assertEqual(persisted["schema"], "representative_pilot_report_v3")
+            self.assertEqual(persisted["report_version"], 3)
             self.assertTrue(
-                persisted["identity"].startswith("representative-pilot-report-v2:sha256:")
+                persisted["identity"].startswith("representative-pilot-report-v3:sha256:")
             )
             semantics = persisted["macro_semantics"]
             self.assertEqual(semantics["schema"], "representative_macro_semantics_v1")
@@ -547,6 +553,93 @@ class RepresentativePilotTests(unittest.TestCase):
             self.assertNotIn("representative_macro_semantics", available)
             self.assertIn("representative_macro_semantics", unavailable)
 
+            material_damage = persisted["material_damage_semantics"]
+            self.assertEqual(material_damage["schema"], "representative_material_damage_semantics_v1")
+            self.assertTrue(material_damage["source_cohort_identity"].startswith("material-damage-source-cohort-v1:sha256:"))
+            self.assertEqual(
+                material_damage["material"],
+                {
+                    "availability": "unavailable_missing_engine_material_field",
+                    "label": MATERIAL_UNAVAILABLE_LABEL,
+                    "reason": "physics_capture_v1 does not export a material field",
+                    "status": "unavailable",
+                },
+            )
+            damage = material_damage["damage"]
+            self.assertEqual(damage["availability"], "available")
+            self.assertEqual(damage["mapping_schema_version"], MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION)
+            self.assertEqual(damage["mapping_version"], SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.mapping_version)
+            self.assertEqual(damage["mapping_digest"], SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.digest)
+            self.assertEqual(damage["source_facts"], list(MAPPING_SOURCE_FACTS))
+            self.assertEqual(damage["status"], SemanticStatus.ENGINE_VERIFIED.value)
+            self.assertEqual(
+                {row["attempt_id"] for row in damage["evidence"]},
+                set(validation_by_attempt),
+            )
+            evidence_fields = {
+                "attempt_id",
+                "capture_id",
+                "shot_id",
+                "physics_state_sha256",
+                "physics_events_sha256",
+                "derived_artifact_sha256",
+                "record_count",
+                "mapping_version",
+                "mapping_digest",
+                "source_cohort_identity",
+            }
+            for row in damage["evidence"]:
+                self.assertEqual(set(row), evidence_fields)
+                self.assertEqual(
+                    row,
+                    validation_by_attempt[row["attempt_id"]]["material_damage_evidence"],
+                )
+
+    def test_material_damage_semantics_rejects_identity_recomputed_tampering(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            baseline = self._run(Path(temporary)).to_dict()
+            mutations = []
+
+            promoted_material = json.loads(json.dumps(baseline))
+            promoted_material["material_damage_semantics"]["material"]["status"] = "engine_verified"
+            mutations.append(promoted_material)
+
+            stale_mapping = json.loads(json.dumps(baseline))
+            stale_mapping["material_damage_semantics"]["damage"]["mapping_digest"] = "f" * 64
+            mutations.append(stale_mapping)
+
+            missing_evidence = json.loads(json.dumps(baseline))
+            missing_evidence["material_damage_semantics"]["damage"]["evidence"].pop()
+            mutations.append(missing_evidence)
+
+            changed_cohort = json.loads(json.dumps(baseline))
+            changed_cohort["material_damage_semantics"]["source_cohort_identity"] = "changed-cohort"
+            mutations.append(changed_cohort)
+
+            changed_source = json.loads(json.dumps(baseline))
+            changed_source["material_damage_semantics"]["damage"]["evidence"][0][
+                "physics_events_sha256"
+            ] = "e" * 64
+            mutations.append(changed_source)
+
+            for payload in mutations:
+                identity_payload = {key: value for key, value in payload.items() if key != "identity"}
+                payload["identity"] = (
+                    "representative-pilot-report-v3:sha256:"
+                    + hashlib.sha256(
+                        json.dumps(
+                            identity_payload,
+                            allow_nan=False,
+                            ensure_ascii=True,
+                            separators=(",", ":"),
+                            sort_keys=True,
+                        ).encode("utf-8")
+                    ).hexdigest()
+                )
+                with self.subTest(mutation=payload["material_damage_semantics"]):
+                    with self.assertRaises(ValueError):
+                        PilotReport.from_dict(payload)
+
     def test_macro_semantics_strict_parsing_rejects_promotion_and_incomplete_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             report = self._run(Path(temporary))
@@ -582,7 +675,7 @@ class RepresentativePilotTests(unittest.TestCase):
                 with self.subTest(mutation=payload["macro_semantics"]):
                     identity_payload = {key: value for key, value in payload.items() if key != "identity"}
                     payload["identity"] = (
-                        "representative-pilot-report-v2:sha256:"
+                        "representative-pilot-report-v3:sha256:"
                         + hashlib.sha256(
                             json.dumps(
                                 identity_payload,
@@ -604,7 +697,7 @@ class RepresentativePilotTests(unittest.TestCase):
             ] = "f" * 64
             identity_payload = {key: value for key, value in payload.items() if key != "identity"}
             payload["identity"] = (
-                "representative-pilot-report-v2:sha256:"
+                "representative-pilot-report-v3:sha256:"
                 + hashlib.sha256(
                     json.dumps(
                         identity_payload,

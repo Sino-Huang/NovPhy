@@ -33,6 +33,14 @@ from scripts.physics_macro_labels import (
     derivation_spec_json,
     derive_macro_labels_for_shot,
 )
+from scripts.physics_material_damage import (
+    MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION,
+    MATERIAL_UNAVAILABLE_LABEL,
+    MAPPING_SOURCE_FACTS,
+    SUPPORTED_DAMAGE_LIFECYCLE_MAPPING,
+    Availability as MaterialDamageAvailability,
+    derive_material_damage,
+)
 from scripts.physics_relational_supervision import (
     validate_relational_supervision,
     write_relational_supervision,
@@ -40,11 +48,16 @@ from scripts.physics_relational_supervision import (
 from scripts.scenario_manifest import ScenarioManifest, load_manifest, verify_replay
 
 
-PILOT_REPORT_SCHEMA: Final = "representative_pilot_report_v2"
-PILOT_REPORT_VERSION: Final = 2
-PILOT_REPORT_IDENTITY_NAMESPACE: Final = "representative-pilot-report-v2"
+PILOT_REPORT_SCHEMA: Final = "representative_pilot_report_v3"
+PILOT_REPORT_VERSION: Final = 3
+PILOT_REPORT_IDENTITY_NAMESPACE: Final = "representative-pilot-report-v3"
 PILOT_REPORT_FILENAME: Final = "representative_pilot_report.json"
 MACRO_SEMANTICS_SCHEMA: Final = "representative_macro_semantics_v1"
+MATERIAL_DAMAGE_SEMANTICS_SCHEMA: Final = "representative_material_damage_semantics_v1"
+MATERIAL_MISSING_ENGINE_FIELD_REASON: Final = (
+    "physics_capture_v1 does not export a material field"
+)
+MATERIAL_DAMAGE_COHORT_NAMESPACE: Final = "material-damage-source-cohort-v1"
 TARGET_MACRO_PREDICATES: Final = (
     MacroPredicate.CASCADE_ACTIVE.value,
     MacroPredicate.COLLAPSED.value,
@@ -108,7 +121,10 @@ KNOWN_UNSUPPORTED_CAPABILITIES: Final = MappingProxyType({
     CAPABILITY_CANONICAL_OBSERVATIONS: "current validators do not establish access-separated canonical observations",
     CAPABILITY_FIXED_STEP_STRIDE_AUTHORITY: "no accepted fixed-step-stride authority is represented by physics_capture_v1",
     CAPABILITY_PHYSICAL_REGIME_GATE: "no accepted versioned engine-derived physical-regime gate exists",
-    CAPABILITY_MATERIAL_DAMAGE_MAPPING: "no accepted engine-verified material and damage mapping exists",
+    CAPABILITY_MATERIAL_DAMAGE_MAPPING: (
+        "material is unavailable because physics_capture_v1 exports no material field; "
+        "the engine-verified damage lifecycle mapping cannot satisfy the combined material/damage capability"
+    ),
     CAPABILITY_REPRESENTATIVE_MACRO_SEMANTICS: (
         "one or more target macro predicates is pending or lacks complete authorized "
         "representative evidence"
@@ -119,7 +135,6 @@ KNOWN_UNSUPPORTED_CAPABILITIES: Final = MappingProxyType({
 KNOWN_UNAVAILABLE_LABELS: Final = MappingProxyType({
     "illegal_contact": "the legal-contact ontology is unavailable",
     "material": "no accepted engine-verified material mapping exists",
-    "damage": "no accepted engine-verified damage mapping exists",
     "physical_regime_gate": "no accepted versioned engine-derived physical-regime gate exists",
     "micro_relation_usefulness": "frozen-model held-out evidence is unavailable",
 })
@@ -384,6 +399,262 @@ def _validated_macro_semantics(
     return _thaw(section)
 
 
+def _material_source_records(records: Sequence[Mapping[str, Any]]) -> list[dict[str, str]]:
+    source_records: list[dict[str, str]] = []
+    for raw_item in records:
+        item = _require_mapping(raw_item, "Pilot report atomic validation record")
+        if item.get("accepted") is not True:
+            continue
+        attempt_id = _require_nonempty_string(item.get("attempt_id"), "Pilot report material attempt_id")
+        capture_id = _require_nonempty_string(item.get("capture_id"), "Pilot report material capture_id")
+        shot_id = _require_nonempty_string(item.get("shot_id"), "Pilot report material shot_id")
+        deterministic = _require_mapping(
+            item.get("deterministic_artifact_semantics"),
+            f"Pilot report atomic validation {attempt_id} deterministic_artifact_semantics",
+        )
+        source_records.append({
+            "attempt_id": attempt_id,
+            "capture_id": capture_id,
+            "shot_id": shot_id,
+            "state_sha256": _require_digest(
+                deterministic.get("state_sha256"),
+                f"Pilot report material {attempt_id} state_sha256",
+            ),
+            "events_sha256": _require_digest(
+                deterministic.get("event_sha256"),
+                f"Pilot report material {attempt_id} event_sha256",
+            ),
+        })
+    source_records.sort(key=lambda item: item["attempt_id"])
+    if len({item["attempt_id"] for item in source_records}) != len(source_records):
+        raise ValueError("Pilot report material accepted attempt IDs must be unique")
+    return source_records
+
+
+def _material_damage_source_cohort_identity(
+    plan_identity: str,
+    version_envelope: Mapping[str, str],
+    source_records: Sequence[Mapping[str, str]],
+) -> str:
+    payload = {
+        "plan_identity": plan_identity,
+        "report_version": PILOT_REPORT_VERSION,
+        "source_records": [dict(record) for record in source_records],
+        "version_envelope": dict(version_envelope),
+    }
+    return (
+        f"{MATERIAL_DAMAGE_COHORT_NAMESPACE}:sha256:"
+        f"{sha256(_canonical_json(payload)).hexdigest()}"
+    )
+
+
+def _material_damage_evidence_row(
+    attempt_id: str,
+    derived: Any,
+    source_cohort_identity: str,
+) -> dict[str, Any]:
+    return {
+        "attempt_id": attempt_id,
+        "capture_id": derived.capture_id,
+        "shot_id": derived.shot_id,
+        "physics_state_sha256": derived.state_sha256,
+        "physics_events_sha256": derived.events_sha256,
+        "derived_artifact_sha256": sha256(derived.to_bytes()).hexdigest(),
+        "record_count": len(derived.records),
+        "mapping_version": derived.mapping_version,
+        "mapping_digest": derived.mapping_digest,
+        "source_cohort_identity": source_cohort_identity,
+    }
+
+
+def _material_damage_semantics(
+    plan_identity: str,
+    version_envelope: Mapping[str, str],
+    validation: list[dict[str, Any]],
+) -> dict[str, Any]:
+    source_records = _material_source_records(validation)
+    source_cohort_identity = _material_damage_source_cohort_identity(
+        plan_identity,
+        version_envelope,
+        source_records,
+    )
+    evidence: list[dict[str, Any]] = []
+    by_attempt = {record["attempt_id"]: record for record in source_records}
+    for item in validation:
+        if not item.get("accepted"):
+            continue
+        attempt_id = _require_nonempty_string(item.get("attempt_id"), "Pilot material attempt_id")
+        source = by_attempt[attempt_id]
+        derived = derive_material_damage(
+            Path(_require_nonempty_string(item.get("artifact_path"), "Pilot material artifact_path")),
+            source_cohort_identity=source_cohort_identity,
+        )
+        if (
+            derived.capture_id != source["capture_id"]
+            or derived.shot_id != source["shot_id"]
+            or derived.state_sha256 != source["state_sha256"]
+            or derived.events_sha256 != source["events_sha256"]
+        ):
+            raise ValueError(f"material/damage source provenance differs for accepted attempt {attempt_id}")
+        row = _material_damage_evidence_row(attempt_id, derived, source_cohort_identity)
+        item["material_damage_evidence"] = row
+        evidence.append(row)
+    evidence.sort(key=lambda row: row["attempt_id"])
+    return {
+        "schema": MATERIAL_DAMAGE_SEMANTICS_SCHEMA,
+        "source_cohort_identity": source_cohort_identity,
+        "material": {
+            "availability": MaterialDamageAvailability.UNAVAILABLE_MISSING_ENGINE_MATERIAL_FIELD.value,
+            "label": MATERIAL_UNAVAILABLE_LABEL,
+            "reason": MATERIAL_MISSING_ENGINE_FIELD_REASON,
+            "status": "unavailable",
+        },
+        "damage": {
+            "availability": MaterialDamageAvailability.AVAILABLE.value,
+            "mapping_schema_version": MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION,
+            "mapping_version": SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.mapping_version,
+            "mapping_digest": SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.digest,
+            "source_facts": list(MAPPING_SOURCE_FACTS),
+            "status": SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.representative_validation_status.value,
+            "evidence": evidence,
+        },
+    }
+
+
+def _validated_material_damage_semantics(
+    value: Any,
+    attempts: Mapping[str, Any],
+    plan_identity: str,
+    version_envelope: Mapping[str, str],
+) -> dict[str, Any]:
+    section = _require_mapping(value, "Pilot report material_damage_semantics")
+    if set(section) != {"schema", "source_cohort_identity", "material", "damage"}:
+        raise ValueError("Pilot report material_damage_semantics is incomplete or contains unknown fields")
+    if section["schema"] != MATERIAL_DAMAGE_SEMANTICS_SCHEMA:
+        raise ValueError("Unsupported pilot report material_damage_semantics schema")
+    source_cohort_identity = _require_nonempty_string(
+        section["source_cohort_identity"],
+        "Pilot report material source_cohort_identity",
+    )
+    atomic = attempts.get("atomic_validation")
+    if not isinstance(atomic, list):
+        raise ValueError("Pilot report attempts.atomic_validation must be a list")
+    source_records = _material_source_records(atomic)
+    expected_cohort = _material_damage_source_cohort_identity(
+        plan_identity,
+        version_envelope,
+        source_records,
+    )
+    if source_cohort_identity != expected_cohort:
+        raise ValueError("Pilot report material source-cohort identity is stale")
+
+    material = _require_mapping(section["material"], "Pilot report material semantics material")
+    if set(material) != {"availability", "label", "reason", "status"}:
+        raise ValueError("Pilot report material semantics material fields are invalid")
+    if material != {
+        "availability": MaterialDamageAvailability.UNAVAILABLE_MISSING_ENGINE_MATERIAL_FIELD.value,
+        "label": MATERIAL_UNAVAILABLE_LABEL,
+        "reason": MATERIAL_MISSING_ENGINE_FIELD_REASON,
+        "status": "unavailable",
+    }:
+        raise ValueError("Pilot report material semantics cannot promote unavailable material")
+
+    damage = _require_mapping(section["damage"], "Pilot report material semantics damage")
+    damage_fields = {
+        "availability",
+        "mapping_schema_version",
+        "mapping_version",
+        "mapping_digest",
+        "source_facts",
+        "status",
+        "evidence",
+    }
+    if set(damage) != damage_fields:
+        raise ValueError("Pilot report material semantics damage fields are invalid")
+    if damage["availability"] != MaterialDamageAvailability.AVAILABLE.value:
+        raise ValueError("Pilot report damage mapping must remain available")
+    if damage["mapping_schema_version"] != MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION:
+        raise ValueError("Pilot report damage mapping schema version is stale")
+    if damage["mapping_version"] != SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.mapping_version:
+        raise ValueError("Pilot report damage mapping version is stale")
+    if damage["mapping_digest"] != SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.digest:
+        raise ValueError("Pilot report damage mapping digest is stale")
+    if damage["source_facts"] != list(MAPPING_SOURCE_FACTS):
+        raise ValueError("Pilot report damage mapping source facts are stale")
+    if damage["status"] != SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.representative_validation_status.value:
+        raise ValueError("Pilot report damage mapping status is invalid")
+    evidence = damage["evidence"]
+    if not isinstance(evidence, list):
+        raise ValueError("Pilot report material damage evidence must be a list")
+    evidence_fields = {
+        "attempt_id",
+        "capture_id",
+        "shot_id",
+        "physics_state_sha256",
+        "physics_events_sha256",
+        "derived_artifact_sha256",
+        "record_count",
+        "mapping_version",
+        "mapping_digest",
+        "source_cohort_identity",
+    }
+    atomic_by_attempt = {
+        record["attempt_id"]: record
+        for record in atomic
+        if isinstance(record, Mapping) and record.get("accepted") is True
+    }
+    expected_attempts = set(atomic_by_attempt)
+    observed_attempts: set[str] = set()
+    for index, raw_row in enumerate(evidence):
+        row = _require_mapping(raw_row, f"Pilot report material damage evidence[{index}]")
+        if set(row) != evidence_fields:
+            raise ValueError("Pilot report material damage evidence fields are invalid")
+        attempt_id = _require_nonempty_string(row["attempt_id"], "Pilot material damage attempt_id")
+        if attempt_id in observed_attempts:
+            raise ValueError("Pilot report material damage evidence has duplicate attempts")
+        observed_attempts.add(attempt_id)
+        atomic_record = atomic_by_attempt.get(attempt_id)
+        if atomic_record is None:
+            raise ValueError("Pilot report material damage evidence lacks atomic validation")
+        for field in ("capture_id", "shot_id", "source_cohort_identity"):
+            _require_nonempty_string(row[field], f"Pilot material damage {field}")
+        for field in (
+            "physics_state_sha256",
+            "physics_events_sha256",
+            "derived_artifact_sha256",
+            "mapping_digest",
+        ):
+            _require_digest(row[field], f"Pilot material damage {field}")
+        if isinstance(row["record_count"], bool) or not isinstance(row["record_count"], int) or row["record_count"] < 0:
+            raise ValueError("Pilot material damage record_count must be nonnegative")
+        if row["mapping_version"] != SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.mapping_version:
+            raise ValueError("Pilot material damage mapping version is stale")
+        if row["mapping_digest"] != SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.digest:
+            raise ValueError("Pilot material damage mapping digest is stale")
+        if row["source_cohort_identity"] != source_cohort_identity:
+            raise ValueError("Pilot material damage evidence source cohort differs")
+        stored = _require_mapping(
+            atomic_record.get("material_damage_evidence"),
+            f"Pilot report atomic validation {attempt_id} material_damage_evidence",
+        )
+        if dict(stored) != dict(row):
+            raise ValueError("Pilot material damage evidence differs from atomic validation")
+        deterministic = _require_mapping(
+            atomic_record.get("deterministic_artifact_semantics"),
+            f"Pilot report atomic validation {attempt_id} deterministic_artifact_semantics",
+        )
+        if (
+            row["capture_id"] != atomic_record.get("capture_id")
+            or row["shot_id"] != atomic_record.get("shot_id")
+            or row["physics_state_sha256"] != deterministic.get("state_sha256")
+            or row["physics_events_sha256"] != deterministic.get("event_sha256")
+        ):
+            raise ValueError("Pilot material damage evidence source differs from atomic validation")
+    if observed_attempts != expected_attempts:
+        raise ValueError("Pilot material damage evidence does not bind every accepted atomic artifact")
+    return _thaw(section)
+
+
 @dataclass(frozen=True, slots=True)
 class ReplayInput:
     """One declared replay and its independently persisted artifact evidence."""
@@ -411,7 +682,7 @@ class PilotPartitionAudit:
 class PilotReport:
     """Immutable, identity-bound report for a representative pilot."""
 
-    schema: Literal["representative_pilot_report_v2"]
+    schema: Literal["representative_pilot_report_v3"]
     report_version: int
     identity: str
     version_envelope: Mapping[str, str]
@@ -425,6 +696,7 @@ class PilotReport:
     partition_audits: tuple[Mapping[str, Any], ...]
     supervision: tuple[Mapping[str, Any], ...]
     macro_semantics: Mapping[str, Any]
+    material_damage_semantics: Mapping[str, Any]
     available_capabilities: tuple[str, ...]
     unavailable_capabilities: tuple[Mapping[str, str], ...]
     unavailable_labels: Mapping[str, str]
@@ -448,6 +720,7 @@ class PilotReport:
             "partition_audits": _thaw(self.partition_audits),
             "supervision": _thaw(self.supervision),
             "macro_semantics": _thaw(self.macro_semantics),
+            "material_damage_semantics": _thaw(self.material_damage_semantics),
             "available_capabilities": list(self.available_capabilities),
             "unavailable_capabilities": _thaw(self.unavailable_capabilities),
             "unavailable_labels": _thaw(self.unavailable_labels),
@@ -473,6 +746,7 @@ class PilotReport:
             "partition_audits",
             "supervision",
             "macro_semantics",
+            "material_damage_semantics",
             "available_capabilities",
             "unavailable_capabilities",
             "unavailable_labels",
@@ -513,6 +787,12 @@ class PilotReport:
             _require_mapping(raw[field], f"Pilot report {field}")
         attempts = _require_mapping(raw["attempts"], "Pilot report attempts")
         macro_semantics = _validated_macro_semantics(raw["macro_semantics"], attempts)
+        material_damage_semantics = _validated_material_damage_semantics(
+            raw["material_damage_semantics"],
+            attempts,
+            plan_identity,
+            version_envelope,
+        )
         unavailable_capabilities: list[dict[str, str]] = []
         for index, item in enumerate(raw["unavailable_capabilities"]):
             unavailable = _require_mapping(item, f"Pilot report unavailable_capabilities[{index}]")
@@ -556,6 +836,7 @@ class PilotReport:
             tuple(_freeze(item) for item in raw["partition_audits"]),
             tuple(_freeze(item) for item in raw["supervision"]),
             _freeze(macro_semantics),
+            _freeze(material_damage_semantics),
             tuple(raw["available_capabilities"]),
             tuple(_freeze(item) for item in unavailable_capabilities),
             _freeze(unavailable_labels),
@@ -1585,7 +1866,12 @@ def assess_representative_pilot(
     required = tuple(sorted(set(DEFAULT_REQUIRED_CAPABILITIES) | set(requested)))
     explicit_unavailable = _require_string_mapping(unavailable_capabilities, "unavailable_capabilities")
     labels = dict(KNOWN_UNAVAILABLE_LABELS)
-    labels.update(_require_string_mapping(unavailable_labels, "unavailable_labels"))
+    supplied_labels = _require_string_mapping(unavailable_labels, "unavailable_labels")
+    if "material" in supplied_labels and supplied_labels["material"] != KNOWN_UNAVAILABLE_LABELS["material"]:
+        raise ValueError("material unavailable label cannot be overridden")
+    if "damage" in supplied_labels:
+        raise ValueError("damage is represented by the verified material_damage_semantics section")
+    labels.update(supplied_labels)
     systematic_defects = _normalize_string_sequence(systematic_exporter_defects, "systematic_exporter_defects")
     overrides: dict[str, Path] | None = None
     if artifact_paths is not None:
@@ -1609,6 +1895,11 @@ def assess_representative_pilot(
         versions,
     )
     macro_semantics = _macro_semantics(validation)
+    material_damage_semantics = _material_damage_semantics(
+        loaded_plan.plan.identity,
+        versions,
+        validation,
+    )
     coverage_audit = _audit_coverage(loaded_plan, report, validation)
     replays = _assess_replays(loaded_plan, versions, replay_inputs, validation)
     partitions = _assess_partitions(loaded_plan, partition_audits, validation)
@@ -1687,6 +1978,7 @@ def assess_representative_pilot(
         "partition_audits": partitions,
         "supervision": supervision,
         "macro_semantics": macro_semantics,
+        "material_damage_semantics": material_damage_semantics,
         "available_capabilities": sorted(available),
         "unavailable_capabilities": unavailable_records,
         "unavailable_labels": labels,
