@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from dataclasses import FrozenInstanceError, dataclass
 from pathlib import Path
+from unittest.mock import patch
 
 from PIL import Image
 
@@ -3109,14 +3110,38 @@ class MacroLabelReaderTests(unittest.TestCase):
             self.assertTrue(all(frame.macro_labels is None for frame in supervision))
             self.assertTrue(all(frame.derived_labels is None for frame in supervision))
 
-    def test_requested_macro_labels_join_on_exact_state_identity(self):
-        from scripts.physics_macro_labels import Availability, MacroPredicate
-
+    def test_requested_macro_labels_reject_pending_representative_validation(self):
         with tempfile.TemporaryDirectory() as temporary:
             catalog, episode = self._build_catalog(Path(temporary))
             self._write_labels(episode)
 
-            supervision = self._sample(catalog, include_macro_labels=True)
+            with self.assertRaisesRegex(
+                world_model_data.ContractValueError,
+                "pending predicates require representative validation: "
+                "cascade-active, collapsed, pigs-cleared",
+            ):
+                self._sample(catalog, include_macro_labels=True)
+
+    def test_requested_macro_labels_join_on_exact_state_identity(self):
+        from scripts.physics_macro_labels import (
+            Availability,
+            MacroPredicate,
+            SemanticStatus,
+        )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            catalog, episode = self._build_catalog(Path(temporary))
+            self._write_labels(episode)
+            engine_verified_statuses = tuple(
+                (predicate, SemanticStatus.ENGINE_VERIFIED)
+                for predicate in MacroPredicate
+            )
+
+            with patch(
+                "world_model.data.supervision.PREDICATE_SEMANTIC_STATUS",
+                engine_verified_statuses,
+            ):
+                supervision = self._sample(catalog, include_macro_labels=True)
 
             expected_rgb_paths = ("frames/frame_000000.png", "frames/frame_000001.png")
             expected_sequences = (1, 2)

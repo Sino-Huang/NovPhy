@@ -13,8 +13,10 @@ from scripts.physics_label_derivation import (
 )
 from scripts.physics_macro_labels import (
     MACRO_LABEL_SIDECAR,
+    PREDICATE_SEMANTIC_STATUS,
     MacroFrameLabel,
     MacroLabelError,
+    SemanticStatus,
     validate_macro_labels,
 )
 from scripts.physics_relational_supervision import (
@@ -179,6 +181,17 @@ def read_physics_shot(
             macro = validate_macro_labels(shot_dir)
         except (OSError, MacroLabelError, PhysicsContractError) as error:
             raise ContractValueError("physics macro labels", str(error)) from error
+        pending_predicates = tuple(
+            predicate.value
+            for predicate, status in PREDICATE_SEMANTIC_STATUS
+            if status == SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION
+        )
+        if pending_predicates:
+            raise ContractValueError(
+                "physics macro labels",
+                "pending predicates require representative validation: "
+                + ", ".join(pending_predicates),
+            )
         for label in macro.frames:
             identity = label.identity
             identity_key = (
