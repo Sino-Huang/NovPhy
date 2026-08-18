@@ -135,3 +135,30 @@ _Avoid_: Latest dataset, mutable collection directory
 **Exposure role**:
 The declared permission governing whether a scenario lineage may influence training, calibration, model selection, or final evaluation.
 _Avoid_: Folder split, informal train/test label
+
+**Representative pilot**:
+A bounded collection and assessment used to establish which research-data capabilities are demonstrated before any cohort release.
+
+**Pilot evidence**:
+Validated records and artifacts eligible to support a representative-pilot decision.
+
+**Pilot disposition**:
+The assessment outcome assigned to a collected artifact after pilot validation and evidence gating.
+
+**Deterministic artifact semantics**:
+The source-bound physical and termination meaning that must remain equal across original and replay evidence.
+
+**Bounded negative evidence**:
+Validated non-interaction evidence collected only through frozen negative interventions and within their declared cap.
+
+**Atomic rollout validation**:
+Validation that accepts or excludes a rollout as one complete artifact rather than accepting any partial component.
+
+**Legal-contact ontology**:
+A versioned research vocabulary for classifying physical contacts as permitted or prohibited.
+
+**Material mapping**:
+An engine-authoritative mapping from runtime materials to stable research labels.
+
+**Damage mapping**:
+An engine-authoritative mapping from runtime damage state and events to stable research labels.
