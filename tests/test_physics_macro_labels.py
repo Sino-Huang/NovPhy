@@ -33,6 +33,7 @@ from scripts.physics_macro_labels import (
     SemanticStatus,
     TerminalEquilibrium,
     derivation_spec_digest,
+    derivation_spec_json,
     derive_macro_labels_for_shot,
     read_macro_labels,
     validate_macro_labels,
@@ -152,7 +153,20 @@ class VocabularyAndSpecTests(unittest.TestCase):
     def test_artifact_constants(self) -> None:
         self.assertEqual(MACRO_LABEL_SCHEMA_VERSION, "physics_macro_labels_v1")
         self.assertEqual(MACRO_LABEL_SIDECAR, "physics_macro_labels.jsonl")
-        self.assertEqual(DERIVATION_SPEC_VERSION, "macro_labels_derivation_v1")
+        self.assertEqual(DERIVATION_SPEC_VERSION, "macro_labels_derivation_v2")
+
+    def test_derivation_spec_documents_predicate_contracts(self) -> None:
+        predicates = derivation_spec_json()["pending_predicates"]
+        self.assertEqual(set(predicates), {"cascade-active", "collapsed", "pigs-cleared"})
+        for name, contract in predicates.items():
+            with self.subTest(predicate=name):
+                self.assertEqual(
+                    set(contract),
+                    {"definition", "prerequisites", "unavailable_cases", "failure_cases"},
+                )
+                self.assertTrue(contract["definition"])
+                self.assertTrue(contract["prerequisites"])
+                self.assertTrue(contract["failure_cases"])
 
     def test_derivation_spec_digest_is_stable_lowercase_hex(self) -> None:
         digest = derivation_spec_digest()
@@ -672,7 +686,7 @@ class HeaderContractTests(unittest.TestCase):
         header = self.records[0]
         self.assertEqual(header["schema_version"], "physics_macro_labels_v1")
         self.assertEqual(header["capture_schema_version"], "physics_capture_v1")
-        self.assertEqual(header["derivation_spec_version"], "macro_labels_derivation_v1")
+        self.assertEqual(header["derivation_spec_version"], "macro_labels_derivation_v2")
         self.assertEqual(header["derivation_spec_digest"], derivation_spec_digest())
         self.assertEqual(
             header["event_clock"],

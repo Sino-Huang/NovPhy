@@ -2949,7 +2949,7 @@ class PhysicsSupervisionReaderTests(unittest.TestCase):
 
 
 class DerivedLabelReaderTests(unittest.TestCase):
-    """The derived-label join is opt-in and frame-exact, and fails closed."""
+    """The legacy combined derived-label artifact is never current supervision."""
 
     def _build_catalog(self, root: Path):
         episode = make_physics_rollout_episode(root / "train" / "episode_001")
@@ -2990,22 +2990,17 @@ class DerivedLabelReaderTests(unittest.TestCase):
 
             self.assertTrue(all(frame.derived_labels is None for frame in supervision))
 
-    def test_requested_labels_join_on_exact_render_frame(self):
+    def test_requested_legacy_labels_fail_closed_even_when_valid(self):
         with tempfile.TemporaryDirectory() as temporary:
             catalog, episode = self._build_catalog(Path(temporary))
             self._write_labels(episode)
 
-            supervision = self._sample(catalog, include_derived_labels=True)
-
-            self.assertEqual(tuple(frame.render_frame for frame in supervision), (100, 101))
-            for frame in supervision:
-                self.assertIsNotNone(frame.derived_labels)
-                self.assertEqual(frame.derived_labels.render_frame, frame.render_frame)
-                self.assertIsInstance(frame.derived_labels.oracle_gate, bool)
-                self.assertEqual(
-                    len(frame.derived_labels.to_vector()),
-                    len(world_model_data.DERIVED_LABEL_VECTOR_FIELDS),
-                )
+            with self.assertRaisesRegex(
+                world_model_data.ContractValueError,
+                "legacy physics_derived_labels_v1 cannot be used for BG-NS-JEPA "
+                "supervision because it contains pending macro predicates",
+            ):
+                self._sample(catalog, include_derived_labels=True)
 
     def test_missing_label_sidecar_fails_closed_when_requested(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -3458,6 +3453,27 @@ class PhysicsHealthReportTests(unittest.TestCase):
             self.assertEqual(train["frames_total"], train["frames_frame_exact"])
             self.assertGreater(train["frames_total"], 0)
             self.assertEqual(sum(train["outcome_counts"].values()), 1)
+
+    def test_report_exposes_only_engine_verified_macro_taxonomy_and_counts(self):
+        from world_model.data.physics_health import physics_coverage_report
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self._cohort(root, with_labels=True)
+
+            report = physics_coverage_report(root, ("train",))
+
+            expected = {"steady-state", "structure-unstable"}
+            self.assertEqual(set(report["macro_state_taxonomy"]), expected)
+            self.assertEqual(
+                set(report["splits"]["train"]["macro_state_frame_counts"]),
+                expected,
+            )
+            self.assertTrue(
+                {"cascade-active", "collapsed", "pigs-cleared"}.isdisjoint(
+                    report["macro_state_taxonomy"]
+                )
+            )
 
     def test_unlabelled_cohort_reports_zero_label_coverage_without_crashing(self):
         from world_model.data.physics_health import physics_coverage_report

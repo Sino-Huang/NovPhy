@@ -24,6 +24,15 @@ from scripts.collection_plan import (
 from scripts.cohort_partition import CohortPartitionManifest, audit_cohort_partition_manifest
 from scripts.physics_artifact_validation import validate_physics_shot_artifact
 from scripts.physics_capture_contract import load_physics_capture
+from scripts.physics_macro_labels import (
+    Availability,
+    DERIVATION_SPEC_VERSION,
+    MacroPredicate,
+    SemanticStatus,
+    derivation_spec_digest,
+    derivation_spec_json,
+    derive_macro_labels_for_shot,
+)
 from scripts.physics_relational_supervision import (
     validate_relational_supervision,
     write_relational_supervision,
@@ -31,10 +40,20 @@ from scripts.physics_relational_supervision import (
 from scripts.scenario_manifest import ScenarioManifest, load_manifest, verify_replay
 
 
-PILOT_REPORT_SCHEMA: Final = "representative_pilot_report_v1"
-PILOT_REPORT_VERSION: Final = 1
-PILOT_REPORT_IDENTITY_NAMESPACE: Final = "representative-pilot-report-v1"
+PILOT_REPORT_SCHEMA: Final = "representative_pilot_report_v2"
+PILOT_REPORT_VERSION: Final = 2
+PILOT_REPORT_IDENTITY_NAMESPACE: Final = "representative-pilot-report-v2"
 PILOT_REPORT_FILENAME: Final = "representative_pilot_report.json"
+MACRO_SEMANTICS_SCHEMA: Final = "representative_macro_semantics_v1"
+TARGET_MACRO_PREDICATES: Final = (
+    MacroPredicate.CASCADE_ACTIVE.value,
+    MacroPredicate.COLLAPSED.value,
+    MacroPredicate.PIGS_CLEARED.value,
+)
+MACRO_SEMANTICS_PENDING_REASON: Final = (
+    "no authorized non-fixture representative engine evidence is recorded; "
+    "fixture-derived labels are diagnostic only and do not validate semantics"
+)
 
 CAPABILITY_SCENARIO_LINEAGE: Final = "scenario_lineage"
 CAPABILITY_INTERVENTION_REPRESENTATION: Final = "intervention_representation"
@@ -90,7 +109,10 @@ KNOWN_UNSUPPORTED_CAPABILITIES: Final = MappingProxyType({
     CAPABILITY_FIXED_STEP_STRIDE_AUTHORITY: "no accepted fixed-step-stride authority is represented by physics_capture_v1",
     CAPABILITY_PHYSICAL_REGIME_GATE: "no accepted versioned engine-derived physical-regime gate exists",
     CAPABILITY_MATERIAL_DAMAGE_MAPPING: "no accepted engine-verified material and damage mapping exists",
-    CAPABILITY_REPRESENTATIVE_MACRO_SEMANTICS: "representative validation remains pending for required macro predicates",
+    CAPABILITY_REPRESENTATIVE_MACRO_SEMANTICS: (
+        "one or more target macro predicates is pending or lacks complete authorized "
+        "representative evidence"
+    ),
     CAPABILITY_COHORT_RELEASE: "representative pilot evidence is not an immutable cohort release",
 })
 
@@ -190,6 +212,178 @@ def _identity(payload: Mapping[str, Any]) -> str:
     return f"{PILOT_REPORT_IDENTITY_NAMESPACE}:sha256:{sha256(_canonical_json(identity_payload)).hexdigest()}"
 
 
+def _require_digest(value: Any, name: str) -> str:
+    digest = _require_nonempty_string(value, name)
+    if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
+        raise ValueError(f"{name} must be a lowercase SHA-256 digest")
+    return digest
+
+
+def _validated_macro_semantics(
+    value: Any,
+    attempts: Mapping[str, Any],
+) -> dict[str, Any]:
+    section = _require_mapping(value, "Pilot report macro_semantics")
+    required = {"schema", "derivation_spec_version", "derivation_spec_digest", "predicates"}
+    if set(section) != required:
+        raise ValueError("Pilot report macro_semantics is incomplete or contains unknown fields")
+    if section["schema"] != MACRO_SEMANTICS_SCHEMA:
+        raise ValueError("Unsupported pilot report macro_semantics schema")
+    if section["derivation_spec_version"] != DERIVATION_SPEC_VERSION:
+        raise ValueError("Pilot report macro_semantics derivation version is stale")
+    if section["derivation_spec_digest"] != derivation_spec_digest():
+        raise ValueError("Pilot report macro_semantics derivation digest is stale")
+
+    pilot_evidence = _require_mapping(
+        attempts.get("pilot_evidence"), "Pilot report attempts.pilot_evidence"
+    )
+    accepted_attempt_ids = pilot_evidence.get("accepted_attempt_ids")
+    if not isinstance(accepted_attempt_ids, list):
+        raise ValueError("Pilot report accepted_attempt_ids must be a list")
+    expected_attempt_ids = [
+        _require_nonempty_string(item, "Pilot report accepted attempt_id")
+        for item in accepted_attempt_ids
+    ]
+    if len(expected_attempt_ids) != len(set(expected_attempt_ids)):
+        raise ValueError("Pilot report accepted_attempt_ids must be unique")
+    if pilot_evidence.get("accepted_count") != len(expected_attempt_ids):
+        raise ValueError("Pilot report accepted_count does not match accepted_attempt_ids")
+    atomic = attempts.get("atomic_validation")
+    if not isinstance(atomic, list):
+        raise ValueError("Pilot report attempts.atomic_validation must be a list")
+    atomic_by_attempt: dict[str, Mapping[str, Any]] = {}
+    for raw_item in atomic:
+        item = _require_mapping(raw_item, "Pilot report atomic validation record")
+        if item.get("accepted") is not True:
+            continue
+        attempt_id = _require_nonempty_string(
+            item.get("attempt_id"), "Pilot report accepted attempt_id"
+        )
+        if attempt_id in atomic_by_attempt:
+            raise ValueError("Pilot report atomic validation accepted attempt IDs must be unique")
+        atomic_by_attempt[attempt_id] = item
+    if set(expected_attempt_ids) != set(atomic_by_attempt):
+        raise ValueError("Pilot report accepted_attempt_ids do not match atomic pilot acceptance")
+
+    predicates = _require_mapping(section["predicates"], "Pilot report macro_semantics predicates")
+    if set(predicates) != set(TARGET_MACRO_PREDICATES):
+        raise ValueError("Pilot report macro_semantics must contain exactly the target predicates")
+    spec_predicates = _require_mapping(
+        derivation_spec_json()["pending_predicates"],
+        "Canonical pending macro predicate specifications",
+    )
+    evidence_fields = {
+        "attempt_id",
+        "capture_id",
+        "shot_id",
+        "physics_state_sha256",
+        "physics_events_sha256",
+        "derivation_spec_version",
+        "derivation_spec_digest",
+        "macro_label_artifact_sha256",
+        "value_summary",
+        "availability_summary",
+    }
+    predicate_fields = {
+        "status",
+        "definition",
+        "prerequisites",
+        "unavailable_cases",
+        "failure_cases",
+        "pending_reason",
+        "evidence",
+    }
+    for name in TARGET_MACRO_PREDICATES:
+        predicate = _require_mapping(predicates[name], f"Pilot report macro_semantics predicate {name}")
+        if set(predicate) != predicate_fields:
+            raise ValueError(f"Pilot report macro_semantics predicate {name} has invalid fields")
+        if predicate["status"] != SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION.value:
+            raise ValueError(f"Pilot report macro_semantics predicate {name} must remain pending")
+        canonical = _require_mapping(spec_predicates[name], f"Canonical macro predicate {name}")
+        for field in ("definition", "prerequisites", "unavailable_cases", "failure_cases"):
+            if predicate[field] != canonical[field]:
+                raise ValueError(f"Pilot report macro_semantics predicate {name} {field} is stale")
+        if predicate["pending_reason"] != MACRO_SEMANTICS_PENDING_REASON:
+            raise ValueError(f"Pilot report macro_semantics predicate {name} pending reason is invalid")
+        evidence = predicate["evidence"]
+        if not isinstance(evidence, list):
+            raise ValueError(f"Pilot report macro_semantics predicate {name} evidence must be a list")
+        observed_attempt_ids: list[str] = []
+        for index, raw_row in enumerate(evidence):
+            row = _require_mapping(raw_row, f"Pilot report macro_semantics {name} evidence[{index}]")
+            if set(row) != evidence_fields:
+                raise ValueError(f"Pilot report macro_semantics {name} evidence has invalid fields")
+            attempt_id = _require_nonempty_string(
+                row["attempt_id"], f"Pilot report macro_semantics {name} attempt_id"
+            )
+            observed_attempt_ids.append(attempt_id)
+            _require_nonempty_string(row["capture_id"], f"Pilot report macro_semantics {name} capture_id")
+            _require_nonempty_string(row["shot_id"], f"Pilot report macro_semantics {name} shot_id")
+            for field in (
+                "physics_state_sha256",
+                "physics_events_sha256",
+                "derivation_spec_digest",
+                "macro_label_artifact_sha256",
+            ):
+                _require_digest(row[field], f"Pilot report macro_semantics {name} {field}")
+            if row["derivation_spec_version"] != DERIVATION_SPEC_VERSION:
+                raise ValueError(f"Pilot report macro_semantics {name} evidence derivation version is stale")
+            if row["derivation_spec_digest"] != derivation_spec_digest():
+                raise ValueError(f"Pilot report macro_semantics {name} evidence derivation digest is stale")
+            artifact = atomic_by_attempt.get(attempt_id)
+            if artifact is None:
+                raise ValueError(
+                    f"Pilot report macro_semantics {name} evidence lacks atomic validation"
+                )
+            stored_evidence = _require_mapping(
+                artifact.get("macro_semantics_evidence"),
+                f"Pilot report atomic validation {attempt_id} macro_semantics_evidence",
+            )
+            stored_row = _require_mapping(
+                stored_evidence.get(name),
+                f"Pilot report atomic validation {attempt_id} {name} evidence",
+            )
+            if row != stored_row:
+                raise ValueError(
+                    f"Pilot report macro_semantics {name} evidence differs from atomic validation"
+                )
+            deterministic = _require_mapping(
+                artifact.get("deterministic_artifact_semantics"),
+                f"Pilot report atomic validation {attempt_id} deterministic_artifact_semantics",
+            )
+            if (
+                row["physics_state_sha256"] != deterministic.get("state_sha256")
+                or row["physics_events_sha256"] != deterministic.get("event_sha256")
+            ):
+                raise ValueError(
+                    f"Pilot report macro_semantics {name} source digests differ from atomic validation"
+                )
+            if row["capture_id"] != artifact.get("capture_id") or row["shot_id"] != artifact.get("shot_id"):
+                raise ValueError(
+                    f"Pilot report macro_semantics {name} capture/shot differs from atomic validation"
+                )
+            value_summary = _require_mapping(row["value_summary"], "Macro value_summary")
+            availability_summary = _require_mapping(
+                row["availability_summary"], "Macro availability_summary"
+            )
+            if set(value_summary) != {"true", "false", "null"}:
+                raise ValueError("Macro value_summary must contain true, false, and null")
+            if set(availability_summary) != {availability.value for availability in Availability}:
+                raise ValueError("Macro availability_summary must contain every availability value")
+            counts = (*value_summary.values(), *availability_summary.values())
+            if any(isinstance(count, bool) or not isinstance(count, int) or count < 0 for count in counts):
+                raise ValueError("Macro summaries must contain nonnegative integer counts")
+            if sum(value_summary.values()) <= 0 or sum(value_summary.values()) != sum(availability_summary.values()):
+                raise ValueError("Macro summaries must describe the same nonempty frame-record inventory")
+        if len(observed_attempt_ids) != len(set(observed_attempt_ids)):
+            raise ValueError(f"Pilot report macro_semantics predicate {name} has duplicate evidence")
+        if set(observed_attempt_ids) != set(expected_attempt_ids):
+            raise ValueError(
+                f"Pilot report macro_semantics predicate {name} does not bind every pilot-accepted artifact"
+            )
+    return _thaw(section)
+
+
 @dataclass(frozen=True, slots=True)
 class ReplayInput:
     """One declared replay and its independently persisted artifact evidence."""
@@ -217,7 +411,7 @@ class PilotPartitionAudit:
 class PilotReport:
     """Immutable, identity-bound report for a representative pilot."""
 
-    schema: Literal["representative_pilot_report_v1"]
+    schema: Literal["representative_pilot_report_v2"]
     report_version: int
     identity: str
     version_envelope: Mapping[str, str]
@@ -230,6 +424,7 @@ class PilotReport:
     initial_state_identities: tuple[Mapping[str, Any], ...]
     partition_audits: tuple[Mapping[str, Any], ...]
     supervision: tuple[Mapping[str, Any], ...]
+    macro_semantics: Mapping[str, Any]
     available_capabilities: tuple[str, ...]
     unavailable_capabilities: tuple[Mapping[str, str], ...]
     unavailable_labels: Mapping[str, str]
@@ -252,6 +447,7 @@ class PilotReport:
             "initial_state_identities": _thaw(self.initial_state_identities),
             "partition_audits": _thaw(self.partition_audits),
             "supervision": _thaw(self.supervision),
+            "macro_semantics": _thaw(self.macro_semantics),
             "available_capabilities": list(self.available_capabilities),
             "unavailable_capabilities": _thaw(self.unavailable_capabilities),
             "unavailable_labels": _thaw(self.unavailable_labels),
@@ -276,6 +472,7 @@ class PilotReport:
             "initial_state_identities",
             "partition_audits",
             "supervision",
+            "macro_semantics",
             "available_capabilities",
             "unavailable_capabilities",
             "unavailable_labels",
@@ -314,6 +511,30 @@ class PilotReport:
             raise ValueError("Pilot report available_capabilities must be unique")
         for field in ("attempts", "coverage", "acceptance_decision"):
             _require_mapping(raw[field], f"Pilot report {field}")
+        attempts = _require_mapping(raw["attempts"], "Pilot report attempts")
+        macro_semantics = _validated_macro_semantics(raw["macro_semantics"], attempts)
+        unavailable_capabilities: list[dict[str, str]] = []
+        for index, item in enumerate(raw["unavailable_capabilities"]):
+            unavailable = _require_mapping(item, f"Pilot report unavailable_capabilities[{index}]")
+            if set(unavailable) != {"capability", "reason"}:
+                raise ValueError("Pilot report unavailable_capabilities record has invalid fields")
+            unavailable_capabilities.append({
+                "capability": _require_nonempty_string(
+                    unavailable["capability"], "Pilot report unavailable capability"
+                ),
+                "reason": _require_nonempty_string(
+                    unavailable["reason"], "Pilot report unavailable capability reason"
+                ),
+            })
+        unavailable_names = [item["capability"] for item in unavailable_capabilities]
+        if len(unavailable_names) != len(set(unavailable_names)):
+            raise ValueError("Pilot report unavailable_capabilities must be unique")
+        if set(raw["available_capabilities"]) & set(unavailable_names):
+            raise ValueError("Pilot report available and unavailable capabilities must be disjoint")
+        if CAPABILITY_REPRESENTATIVE_MACRO_SEMANTICS in raw["available_capabilities"]:
+            raise ValueError("Pilot report representative macro semantics cannot be available while pending")
+        if CAPABILITY_REPRESENTATIVE_MACRO_SEMANTICS not in unavailable_names:
+            raise ValueError("Pilot report representative macro semantics must be explicitly unavailable")
         unavailable_labels = _require_string_mapping(raw["unavailable_labels"], "Pilot report unavailable_labels")
         if raw["pilot_status"] not in {"accepted", "rejected"}:
             raise ValueError("Pilot report pilot_status is invalid")
@@ -334,8 +555,9 @@ class PilotReport:
             tuple(_freeze(item) for item in raw["initial_state_identities"]),
             tuple(_freeze(item) for item in raw["partition_audits"]),
             tuple(_freeze(item) for item in raw["supervision"]),
+            _freeze(macro_semantics),
             tuple(raw["available_capabilities"]),
-            tuple(_freeze(item) for item in raw["unavailable_capabilities"]),
+            tuple(_freeze(item) for item in unavailable_capabilities),
             _freeze(unavailable_labels),
             tuple(_freeze(item) for item in raw["permanent_or_systematic_exporter_defects"]),
             raw["pilot_status"],
@@ -553,6 +775,33 @@ def _exclude_artifact(
     record["failure_manifest_path"] = str(failure_manifest)
 
 
+def _macro_evidence_rows(labels: Any, attempt_id: str) -> dict[str, dict[str, Any]]:
+    artifact_digest = sha256(labels.to_jsonl().encode("utf-8")).hexdigest()
+    rows: dict[str, dict[str, Any]] = {}
+    for name in TARGET_MACRO_PREDICATES:
+        predicate = MacroPredicate(name)
+        value_summary = {"true": 0, "false": 0, "null": 0}
+        availability_summary = {availability.value: 0 for availability in Availability}
+        for frame_record in labels.frames:
+            label = frame_record.predicate(predicate)
+            value_key = "null" if label.value is None else str(label.value).lower()
+            value_summary[value_key] += 1
+            availability_summary[label.availability.value] += 1
+        rows[name] = {
+            "attempt_id": attempt_id,
+            "capture_id": labels.capture_id,
+            "shot_id": labels.shot_id,
+            "physics_state_sha256": labels.state_sha256,
+            "physics_events_sha256": labels.events_sha256,
+            "derivation_spec_version": DERIVATION_SPEC_VERSION,
+            "derivation_spec_digest": derivation_spec_digest(),
+            "macro_label_artifact_sha256": artifact_digest,
+            "value_summary": value_summary,
+            "availability_summary": availability_summary,
+        }
+    return rows
+
+
 def _assessment_artifacts(
     loaded: LoadedCollectionPlan,
     collection_report: Mapping[str, Any],
@@ -613,6 +862,42 @@ def _assessment_artifacts(
             "state_count": summary.state_count,
             "event_count": summary.event_count,
         })
+        macro_failure: str | None = None
+        try:
+            macro_labels = derive_macro_labels_for_shot(path)
+        except Exception as error:
+            macro_failure = f"macro label derivation failed: {str(error) or error.__class__.__name__}"
+        else:
+            if (
+                macro_labels.state_sha256 != summary.state_sha256
+                or macro_labels.events_sha256 != summary.event_sha256
+            ):
+                macro_failure = "macro label source digests differ from atomic validation"
+        if macro_failure is not None:
+            artifact_record["reason"] = macro_failure
+            initial_identities.append({
+                "attempt_id": attempt_id,
+                "planned": expected,
+                "observed": None,
+                "recorded_expected": None,
+                "matched": False,
+                "reason": "macro label derivation failed",
+            })
+            supervision.append({
+                "attempt_id": attempt_id,
+                "attempted": False,
+                "accepted": False,
+                "reason": "macro label derivation failed",
+            })
+            defects.append({
+                "scope": "attempt",
+                "code": "macro_label_source_validation_failed",
+                "attempt_id": attempt_id,
+                "detail": macro_failure,
+            })
+            _exclude_artifact(artifact_record, path, attempt_id, quarantine_root)
+            continue
+        macro_evidence = _macro_evidence_rows(macro_labels, attempt_id)
         try:
             metadata = json.loads((path / "metadata.json").read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
@@ -722,6 +1007,9 @@ def _assessment_artifacts(
         else:
             artifact_record["accepted"] = True
             artifact_record["pilot_disposition"] = "accepted"
+            artifact_record["capture_id"] = labels.capture_id
+            artifact_record["shot_id"] = labels.shot_id
+            artifact_record["macro_semantics_evidence"] = macro_evidence
             supervision_record = {
                 "attempt_id": attempt_id,
                 "attempted": True,
@@ -734,6 +1022,50 @@ def _assessment_artifacts(
             }
         supervision.append(supervision_record)
     return validation, initial_identities, supervision, defects
+
+
+def _macro_semantics(
+    validation: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Describe pending target semantics from assessment-time accepted evidence."""
+    rows_by_predicate: dict[str, list[dict[str, Any]]] = {
+        name: [] for name in TARGET_MACRO_PREDICATES
+    }
+    for artifact in validation:
+        if not artifact.get("accepted"):
+            continue
+        stored = _require_mapping(
+            artifact.get("macro_semantics_evidence"),
+            "Accepted artifact macro_semantics_evidence",
+        )
+        if set(stored) != set(TARGET_MACRO_PREDICATES):
+            raise ValueError("Accepted artifact macro semantics evidence is incomplete")
+        for name in TARGET_MACRO_PREDICATES:
+            rows_by_predicate[name].append(
+                _thaw(_require_mapping(stored[name], f"Accepted artifact {name} evidence"))
+            )
+
+    canonical_predicates = _require_mapping(
+        derivation_spec_json()["pending_predicates"],
+        "Canonical pending macro predicate specifications",
+    )
+    return {
+        "schema": MACRO_SEMANTICS_SCHEMA,
+        "derivation_spec_version": DERIVATION_SPEC_VERSION,
+        "derivation_spec_digest": derivation_spec_digest(),
+        "predicates": {
+            name: {
+                "status": SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION.value,
+                "definition": canonical_predicates[name]["definition"],
+                "prerequisites": canonical_predicates[name]["prerequisites"],
+                "unavailable_cases": canonical_predicates[name]["unavailable_cases"],
+                "failure_cases": canonical_predicates[name]["failure_cases"],
+                "pending_reason": MACRO_SEMANTICS_PENDING_REASON,
+                "evidence": rows_by_predicate[name],
+            }
+            for name in TARGET_MACRO_PREDICATES
+        },
+    }
 
 
 def _assess_replays(
@@ -1276,6 +1608,7 @@ def assess_representative_pilot(
         quarantine_root,
         versions,
     )
+    macro_semantics = _macro_semantics(validation)
     coverage_audit = _audit_coverage(loaded_plan, report, validation)
     replays = _assess_replays(loaded_plan, versions, replay_inputs, validation)
     partitions = _assess_partitions(loaded_plan, partition_audits, validation)
@@ -1292,6 +1625,7 @@ def assess_representative_pilot(
     available.difference_update(explicit_unavailable)
     unavailable = dict(KNOWN_UNSUPPORTED_CAPABILITIES)
     unavailable.update(explicit_unavailable)
+    available.difference_update(unavailable)
     for capability in required:
         if capability not in available and capability not in unavailable:
             unavailable[capability] = "the supplied pilot evidence does not demonstrate this capability"
@@ -1352,6 +1686,7 @@ def assess_representative_pilot(
         "initial_state_identities": identities,
         "partition_audits": partitions,
         "supervision": supervision,
+        "macro_semantics": macro_semantics,
         "available_capabilities": sorted(available),
         "unavailable_capabilities": unavailable_records,
         "unavailable_labels": labels,

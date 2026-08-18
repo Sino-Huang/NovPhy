@@ -60,7 +60,7 @@ JsonObject: TypeAlias = dict[str, JsonValue]
 MACRO_LABEL_SCHEMA_VERSION: Final = "physics_macro_labels_v1"
 CAPTURE_SCHEMA_VERSION: Final = "physics_capture_v1"
 MACRO_LABEL_SIDECAR: Final = "physics_macro_labels.jsonl"
-DERIVATION_SPEC_VERSION: Final = "macro_labels_derivation_v1"
+DERIVATION_SPEC_VERSION: Final = "macro_labels_derivation_v2"
 
 #: Versioned closed set of Unity tags the exporter uses for pigs.  Ordered and
 #: ASCII-sorted; any drift (missing, reordered, duplicated, different) is a hard
@@ -356,7 +356,7 @@ def _macro_vocabulary_json() -> list[JsonObject]:
 
 
 def derivation_spec_json() -> JsonObject:
-    """Return the fixed canonical description of `macro_labels_derivation_v1`.
+    """Return the fixed canonical description of `macro_labels_derivation_v2`.
 
     Deterministic module-level constant: no timestamps, no paths, no environment
     input, so identical module versions always produce identical bytes.
@@ -372,6 +372,65 @@ def derivation_spec_json() -> JsonObject:
         "cascade_termination": "min(first_later_stable_entered,last_causal_fixed_step+1)",
         "steady_pre_launch_rule": "state_fixed_step_before_bird_launched_is_steady",
         "projection_rule": "clusters_with_fixed_step_lte_state",
+        "pending_predicates": {
+            "cascade-active": {
+                "definition": (
+                    "True for a frame record whose state fixed step is inside the half-open "
+                    "interval beginning at the first causal fixed-step cluster at or after "
+                    "bird launch and ending at the earlier of the first later stable-entered "
+                    "event or one fixed step after the last causal cluster."
+                ),
+                "prerequisites": [
+                    "a validated physics_capture_v1 artifact",
+                    "a bird-launched event followed by a causal event cluster",
+                    "fixed-step event occurrence authority",
+                ],
+                "unavailable_cases": [],
+                "failure_cases": [
+                    "No bird-launched event or no causal cluster at or after launch yields false for every frame record.",
+                    "The termination rule is a hypothesis and can overstate or understate a physical cascade until representative validation.",
+                ],
+            },
+            "collapsed": {
+                "definition": (
+                    "An absorbing predicate that becomes true when a previously supported "
+                    "entity has lost all incoming support and has either been destroyed or "
+                    "removed according to the current frame record's state facts, or has "
+                    "disappeared from those state facts."
+                ),
+                "prerequisites": [
+                    "a validated physics_capture_v1 artifact",
+                    "at least two accepted frame records",
+                    "support edges and entity identities from state facts projected by fixed step",
+                ],
+                "unavailable_cases": [
+                    "A capture with fewer than two accepted frame records is unavailable_insufficient_state_evidence."
+                ],
+                "failure_cases": [
+                    "Support loss without destruction, removal, or disappearance does not establish collapse.",
+                    "Disappearance can establish collapse without an event citation, so an empty citation list is not proof of absence.",
+                ],
+            },
+            "pigs-cleared": {
+                "definition": (
+                    "An absorbing predicate that becomes true when the current frame record's "
+                    "state facts contain no pig node and every pig identity observed in an "
+                    "earlier accepted frame record has a pig-removed event by the "
+                    "current state fixed step."
+                ),
+                "prerequisites": [
+                    "a validated physics_capture_v1 artifact",
+                    "pig identities classified by the versioned pig_class_set",
+                    "pig-removed events projected by fixed step",
+                ],
+                "unavailable_cases": [],
+                "failure_cases": [
+                    "No previously observed pig identity yields false rather than vacuous truth.",
+                    "A remaining pig node or a missing pig-removed event for an observed pig keeps the predicate false.",
+                    "Pig classes outside the versioned pig_class_set are not evidence that the taxonomy is complete.",
+                ],
+            },
+        },
     }
 
 

@@ -7,9 +7,7 @@ from scripts.physics_capture_contract import PhysicsContractError, load_physics_
 from scripts.physics_label_derivation import (
     DERIVED_LABEL_VECTOR_FIELDS,
     DerivedFrameLabel,
-    DerivedLabelError,
     OracleGateSpec,
-    validate_derived_labels,
 )
 from scripts.physics_macro_labels import (
     MACRO_LABEL_SIDECAR,
@@ -124,6 +122,12 @@ def read_physics_shot(
     from scripts.rollout_artifacts import validate_physics_shot_artifact
     from scripts.rollout_validation_types import PhysicsArtifactError
 
+    if request.include_derived_labels:
+        raise ContractValueError(
+            "physics derived labels",
+            "legacy physics_derived_labels_v1 cannot be used for BG-NS-JEPA "
+            "supervision because it contains pending macro predicates",
+        )
     try:
         validate_physics_shot_artifact(shot_dir)
         capture: PhysicsCapture = load_physics_capture(
@@ -158,21 +162,6 @@ def read_physics_shot(
     if len(path_to_state) != len(capture.states):
         raise ContractValueError("physics rgb mapping", "duplicate state frame path")
     labels_by_frame: dict[int, DerivedFrameLabel] = {}
-    if request.include_derived_labels:
-        # Re-derives from the frozen sidecars and rejects a stale, mutated, or
-        # differently-thresholded label file, so a bad label can never reach training.
-        try:
-            derived = validate_derived_labels(shot_dir, request.oracle_gate_spec or OracleGateSpec())
-        except (OSError, DerivedLabelError, PhysicsContractError) as error:
-            raise ContractValueError("physics derived labels", str(error)) from error
-        for label in derived.frames:
-            if label.render_frame in labels_by_frame:
-                raise ContractValueError("physics derived labels", "duplicate label render_frame")
-            labels_by_frame[label.render_frame] = label
-        if set(labels_by_frame) != {state.clock.render_frame for state in capture.states}:
-            raise ContractValueError(
-                "physics derived labels", "label frames do not match the accepted state frames"
-            )
     macro_by_identity: dict[tuple[str, str, int, int, int, str], MacroFrameLabel] = {}
     if request.include_macro_labels:
         # validate_macro_labels re-derives from the frozen sidecars and byte-compares,

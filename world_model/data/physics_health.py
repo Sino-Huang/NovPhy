@@ -14,12 +14,12 @@ from pathlib import Path
 from typing import TypedDict
 
 from scripts.physics_label_derivation import (
-    MacroState,
     OracleGateSpec,
     ShotOutcomeClass,
     DerivedLabelError,
     validate_derived_labels,
 )
+from scripts.physics_macro_labels import PREDICATE_SEMANTIC_STATUS, SemanticStatus
 from scripts.rollout_artifacts import (
     EpisodeSummary,
     EpisodeValidationMode,
@@ -27,6 +27,13 @@ from scripts.rollout_artifacts import (
 )
 from world_model.data.catalog_plan import episode_contract_from_manifest
 from world_model.data.types import PHYSICS_CAPTURE_V1
+
+
+_REPORTABLE_MACRO_STATES = tuple(
+    predicate.value
+    for predicate, status in PREDICATE_SEMANTIC_STATUS
+    if status == SemanticStatus.ENGINE_VERIFIED
+)
 
 
 class PhysicsSplitHealth(TypedDict):
@@ -120,7 +127,8 @@ def _split_health(root: Path, split: str, spec: OracleGateSpec) -> PhysicsSplitH
                 if frame.oracle_gate:
                     gate_open += 1
                 for state in frame.macro_states:
-                    macro_counts[state.value] += 1
+                    if state.value in _REPORTABLE_MACRO_STATES:
+                        macro_counts[state.value] += 1
 
     return PhysicsSplitHealth(
         accepted_episodes=accepted_episodes,
@@ -134,7 +142,7 @@ def _split_health(root: Path, split: str, spec: OracleGateSpec) -> PhysicsSplitH
         oracle_gate_open_frames=gate_open,
         oracle_gate_open_rate=(gate_open / frames_total) if frames_total else None,
         macro_state_frame_counts={
-            state.value: macro_counts.get(state.value, 0) for state in MacroState
+            state: macro_counts.get(state, 0) for state in _REPORTABLE_MACRO_STATES
         },
         outcome_counts={
             outcome.value: outcome_counts.get(outcome.value, 0) for outcome in ShotOutcomeClass
@@ -156,7 +164,7 @@ def physics_coverage_report(
     return PhysicsCoverageReport(
         oracle_gate_spec=gate_spec.to_json(),
         oracle_gate_spec_digest=gate_spec.digest(),
-        macro_state_taxonomy=[state.value for state in MacroState],
+        macro_state_taxonomy=list(_REPORTABLE_MACRO_STATES),
         splits=reports,
         covered_buckets=covered,
         uncovered_regimes={

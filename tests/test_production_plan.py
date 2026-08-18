@@ -11,6 +11,13 @@ from scripts.collection_plan import (
     load_collection_plan,
     write_collection_plan,
 )
+from scripts.physics_macro_labels import (
+    Availability,
+    DERIVATION_SPEC_VERSION,
+    SemanticStatus,
+    derivation_spec_digest,
+    derivation_spec_json,
+)
 from scripts.production_plan import (
     ProductionPlan,
     create_production_plan,
@@ -182,9 +189,55 @@ def _collection_plan(
 
 
 def _pilot_report(collection_plan, *, accepted: bool = True, marker: str = "fixture") -> PilotReport:
+    def macro_evidence(attempt_id: str, role: str) -> dict[str, object]:
+        return {
+            "attempt_id": attempt_id,
+            "capture_id": f"fixture-{role}-capture",
+            "shot_id": f"fixture-{role}-shot",
+            "physics_state_sha256": "4" * 64,
+            "physics_events_sha256": "5" * 64,
+            "derivation_spec_version": DERIVATION_SPEC_VERSION,
+            "derivation_spec_digest": derivation_spec_digest(),
+            "macro_label_artifact_sha256": "6" * 64,
+            "value_summary": {"true": 0, "false": 1, "null": 0},
+            "availability_summary": {
+                Availability.AVAILABLE.value: 1,
+                Availability.UNAVAILABLE_NO_PREDECESSOR.value: 0,
+                Availability.UNAVAILABLE_INSUFFICIENT_STATE_EVIDENCE.value: 0,
+            },
+        }
+
+    macro_evidence_rows = [
+        macro_evidence("attempt-training", "training"),
+        macro_evidence("attempt-final", "final"),
+    ]
+    macro_evidence_by_attempt = {
+        str(row["attempt_id"]): row for row in macro_evidence_rows
+    }
+    canonical_predicates = derivation_spec_json()["pending_predicates"]
+    macro_semantics = {
+        "schema": "representative_macro_semantics_v1",
+        "derivation_spec_version": DERIVATION_SPEC_VERSION,
+        "derivation_spec_digest": derivation_spec_digest(),
+        "predicates": {
+            name: {
+                "status": SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION.value,
+                "definition": canonical_predicates[name]["definition"],
+                "prerequisites": canonical_predicates[name]["prerequisites"],
+                "unavailable_cases": canonical_predicates[name]["unavailable_cases"],
+                "failure_cases": canonical_predicates[name]["failure_cases"],
+                "pending_reason": (
+                    "no authorized non-fixture representative engine evidence is recorded; "
+                    "fixture-derived labels are diagnostic only and do not validate semantics"
+                ),
+                "evidence": [dict(row) for row in macro_evidence_rows],
+            }
+            for name in ("cascade-active", "collapsed", "pigs-cleared")
+        },
+    }
     payload = {
-        "schema": "representative_pilot_report_v1",
-        "report_version": 1,
+        "schema": "representative_pilot_report_v2",
+        "report_version": 2,
         "identity": "",
         "version_envelope": {
             "player_sha256": "1" * 64,
@@ -206,8 +259,25 @@ def _pilot_report(collection_plan, *, accepted: bool = True, marker: str = "fixt
                 "exclusions": [],
             },
             "atomic_validation": [
-                {"attempt_id": "attempt-training", "scenario_id": "training", "accepted": True},
-                {"attempt_id": "attempt-final", "scenario_id": "final", "accepted": True},
+                {
+                    "attempt_id": attempt_id,
+                    "scenario_id": scenario_id,
+                    "accepted": True,
+                    "capture_id": macro_evidence_by_attempt[attempt_id]["capture_id"],
+                    "shot_id": macro_evidence_by_attempt[attempt_id]["shot_id"],
+                    "deterministic_artifact_semantics": {
+                        "state_sha256": macro_evidence_by_attempt[attempt_id]["physics_state_sha256"],
+                        "event_sha256": macro_evidence_by_attempt[attempt_id]["physics_events_sha256"],
+                    },
+                    "macro_semantics_evidence": {
+                        name: dict(macro_evidence_by_attempt[attempt_id])
+                        for name in ("cascade-active", "collapsed", "pigs-cleared")
+                    },
+                }
+                for attempt_id, scenario_id in (
+                    ("attempt-training", "training"),
+                    ("attempt-final", "final"),
+                )
             ],
         },
         "coverage": {"fixture_marker": marker},
@@ -215,8 +285,12 @@ def _pilot_report(collection_plan, *, accepted: bool = True, marker: str = "fixt
         "initial_state_identities": [],
         "partition_audits": [],
         "supervision": [],
+        "macro_semantics": macro_semantics,
         "available_capabilities": [],
-        "unavailable_capabilities": [],
+        "unavailable_capabilities": [{
+            "capability": "representative_macro_semantics",
+            "reason": "fixture report keeps representative macro semantics unavailable",
+        }],
         "unavailable_labels": {},
         "permanent_or_systematic_exporter_defects": [],
         "pilot_status": "accepted" if accepted else "rejected",
@@ -229,7 +303,7 @@ def _pilot_report(collection_plan, *, accepted: bool = True, marker: str = "fixt
         separators=(",", ":"),
         sort_keys=True,
     ).encode("utf-8")
-    payload["identity"] = "representative-pilot-report-v1:sha256:" + hashlib.sha256(canonical).hexdigest()
+    payload["identity"] = "representative-pilot-report-v2:sha256:" + hashlib.sha256(canonical).hexdigest()
     return PilotReport.from_dict(payload)
 
 

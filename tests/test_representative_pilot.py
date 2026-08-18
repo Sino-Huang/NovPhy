@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 from io import BytesIO
 import json
 from pathlib import Path
@@ -20,6 +21,16 @@ from scripts.collection_plan import (
 )
 from scripts.cohort_partition import create_cohort_partition_manifest
 from scripts.physics_capture_contract import load_physics_capture
+from scripts.physics_artifact_validation import (
+    validate_physics_shot_artifact as validate_physics_shot_artifact_without_mock,
+)
+from scripts.physics_macro_labels import (
+    DERIVATION_SPEC_VERSION,
+    SemanticStatus,
+    derivation_spec_digest,
+    derivation_spec_json,
+    derive_macro_labels_for_shot,
+)
 from scripts.physics_rollout_contract import CaptureProvenance
 from scripts.physics_rollout_persistence import persist_physics_rollout
 from scripts.physics_rollout_semantics import initial_engine_state_identity
@@ -33,6 +44,7 @@ from scripts.representative_pilot import (
     CAPABILITY_PHYSICAL_REGIME_GATE,
     CAPABILITY_RELATIONAL_SUPERVISION,
     CAPABILITY_TEMPLATE_HELD_OUT_PARTITION,
+    PilotReport,
     PilotPartitionAudit,
     ReplayInput,
     build_parser,
@@ -456,6 +468,188 @@ class RepresentativePilotTests(unittest.TestCase):
             self.assertEqual(path.read_bytes(), first)
             self.assertEqual(report.identity, load_pilot_report(path).identity)
 
+    def test_persisted_report_records_pending_source_bound_macro_semantics(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            report = self._run(root)
+            persisted = json.loads(
+                (root / "collection" / "representative_pilot_report.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+
+            self.assertEqual(persisted["schema"], "representative_pilot_report_v2")
+            self.assertEqual(persisted["report_version"], 2)
+            self.assertTrue(
+                persisted["identity"].startswith("representative-pilot-report-v2:sha256:")
+            )
+            semantics = persisted["macro_semantics"]
+            self.assertEqual(semantics["schema"], "representative_macro_semantics_v1")
+            self.assertEqual(semantics["derivation_spec_version"], DERIVATION_SPEC_VERSION)
+            self.assertEqual(semantics["derivation_spec_digest"], derivation_spec_digest())
+            targets = {"cascade-active", "collapsed", "pigs-cleared"}
+            self.assertEqual(set(semantics["predicates"]), targets)
+
+            spec_predicates = derivation_spec_json()["pending_predicates"]
+            validation_by_attempt = {
+                item["attempt_id"]: item
+                for item in report.to_dict()["attempts"]["atomic_validation"]
+                if item["accepted"]
+            }
+            self.assertEqual(len(validation_by_attempt), 4)
+            for name in sorted(targets):
+                predicate = semantics["predicates"][name]
+                self.assertEqual(
+                    predicate["status"],
+                    SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION.value,
+                )
+                self.assertEqual(predicate["definition"], spec_predicates[name]["definition"])
+                self.assertEqual(predicate["failure_cases"], spec_predicates[name]["failure_cases"])
+                self.assertIn("non-fixture representative engine evidence", predicate["pending_reason"])
+                self.assertEqual(
+                    {row["attempt_id"] for row in predicate["evidence"]},
+                    set(validation_by_attempt),
+                )
+                for row in predicate["evidence"]:
+                    self.assertEqual(
+                        set(row),
+                        {
+                            "attempt_id",
+                            "capture_id",
+                            "shot_id",
+                            "physics_state_sha256",
+                            "physics_events_sha256",
+                            "derivation_spec_version",
+                            "derivation_spec_digest",
+                            "macro_label_artifact_sha256",
+                            "value_summary",
+                            "availability_summary",
+                        },
+                    )
+                    artifact = validation_by_attempt[row["attempt_id"]]
+                    labels = derive_macro_labels_for_shot(Path(artifact["artifact_path"]))
+                    self.assertEqual(row["capture_id"], labels.capture_id)
+                    self.assertEqual(row["shot_id"], labels.shot_id)
+                    self.assertEqual(row["physics_state_sha256"], labels.state_sha256)
+                    self.assertEqual(row["physics_events_sha256"], labels.events_sha256)
+                    self.assertEqual(row["derivation_spec_version"], DERIVATION_SPEC_VERSION)
+                    self.assertEqual(row["derivation_spec_digest"], derivation_spec_digest())
+                    self.assertEqual(
+                        row["macro_label_artifact_sha256"],
+                        hashlib.sha256(labels.to_jsonl().encode("utf-8")).hexdigest(),
+                    )
+
+            available = set(persisted["available_capabilities"])
+            unavailable = {
+                item["capability"] for item in persisted["unavailable_capabilities"]
+            }
+            self.assertTrue(available.isdisjoint(unavailable))
+            self.assertNotIn("representative_macro_semantics", available)
+            self.assertIn("representative_macro_semantics", unavailable)
+
+    def test_macro_semantics_strict_parsing_rejects_promotion_and_incomplete_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            report = self._run(Path(temporary))
+            baseline = report.to_dict()
+            mutations = []
+
+            promoted = json.loads(json.dumps(baseline))
+            promoted["macro_semantics"]["predicates"]["cascade-active"]["status"] = "engine_verified"
+            mutations.append(promoted)
+
+            incomplete = json.loads(json.dumps(baseline))
+            training_attempt_id = next(
+                item["attempt_id"]
+                for item in incomplete["attempts"]["atomic_validation"]
+                if item["accepted"] and item["scenario_id"] == "fixture-training"
+            )
+            incomplete["macro_semantics"]["predicates"]["collapsed"]["evidence"] = [
+                row
+                for row in incomplete["macro_semantics"]["predicates"]["collapsed"]["evidence"]
+                if row["attempt_id"] != training_attempt_id
+            ]
+            mutations.append(incomplete)
+
+            stale = json.loads(json.dumps(baseline))
+            stale["macro_semantics"]["derivation_spec_version"] = "macro_labels_derivation_v1"
+            mutations.append(stale)
+
+            overlapping = json.loads(json.dumps(baseline))
+            overlapping["available_capabilities"].append("representative_macro_semantics")
+            mutations.append(overlapping)
+
+            for payload in mutations:
+                with self.subTest(mutation=payload["macro_semantics"]):
+                    identity_payload = {key: value for key, value in payload.items() if key != "identity"}
+                    payload["identity"] = (
+                        "representative-pilot-report-v2:sha256:"
+                        + hashlib.sha256(
+                            json.dumps(
+                                identity_payload,
+                                allow_nan=False,
+                                ensure_ascii=True,
+                                separators=(",", ":"),
+                                sort_keys=True,
+                            ).encode("utf-8")
+                        ).hexdigest()
+                    )
+                    with self.assertRaises(ValueError):
+                        PilotReport.from_dict(payload)
+
+    def test_macro_semantics_rejects_identity_recomputed_source_digest_tampering(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            payload = self._run(Path(temporary)).to_dict()
+            payload["macro_semantics"]["predicates"]["cascade-active"]["evidence"][0][
+                "physics_state_sha256"
+            ] = "f" * 64
+            identity_payload = {key: value for key, value in payload.items() if key != "identity"}
+            payload["identity"] = (
+                "representative-pilot-report-v2:sha256:"
+                + hashlib.sha256(
+                    json.dumps(
+                        identity_payload,
+                        allow_nan=False,
+                        ensure_ascii=True,
+                        separators=(",", ":"),
+                        sort_keys=True,
+                    ).encode("utf-8")
+                ).hexdigest()
+            )
+
+            with self.assertRaisesRegex(ValueError, "atomic validation"):
+                PilotReport.from_dict(payload)
+
+    def test_source_drift_during_macro_derivation_excludes_artifact_without_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+
+            def validate_then_drift(path):
+                summary = validate_physics_shot_artifact_without_mock(path)
+                if Path(path).is_relative_to(root / "collection" / "artifacts"):
+                    state_path = Path(path) / "physics_state.jsonl"
+                    content = state_path.read_text(encoding="utf-8")
+                    state_path.write_text(content.replace("\n", " \n", 1), encoding="utf-8")
+                return summary
+
+            with mock.patch(
+                "scripts.representative_pilot.validate_physics_shot_artifact",
+                side_effect=validate_then_drift,
+            ):
+                report = self._run(root)
+
+            payload = report.to_dict()
+            evidence = payload["attempts"]["pilot_evidence"]
+            self.assertEqual(evidence["accepted_count"], 0)
+            self.assertEqual(evidence["excluded_count"], 4)
+            self.assertTrue(all(
+                "source digests differ from atomic validation" in item["reason"]
+                for item in evidence["exclusions"]
+            ))
+            self.assertTrue(all(
+                not predicate["evidence"]
+                for predicate in payload["macro_semantics"]["predicates"].values()
+            ))
+
     def test_source_and_persisted_frozen_plan_bytes_are_required(self) -> None:
         for mutation in ("missing-copy", "tampered-copy", "tampered-source"):
             with self.subTest(mutation=mutation):
@@ -555,6 +749,14 @@ class RepresentativePilotTests(unittest.TestCase):
                     self.assertEqual(attempts["accepted_count"], 0)
                     self.assertEqual(attempts["excluded_count"], 4)
                     self.assertTrue(all("envelope" in item["reason"] for item in attempts["exclusions"]))
+                    payload = report.to_dict()
+                    self.assertTrue(all(
+                        not predicate["evidence"]
+                        for predicate in payload["macro_semantics"]["predicates"].values()
+                    ))
+                    self.assertNotIn(
+                        "representative_macro_semantics", payload["available_capabilities"]
+                    )
 
     def test_duplicate_replay_bindings_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
