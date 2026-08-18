@@ -5,6 +5,7 @@ import hashlib
 from io import BytesIO
 import json
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
 from unittest import mock
@@ -354,6 +355,8 @@ class RepresentativePilotTests(unittest.TestCase):
         required_capabilities: tuple[str, ...] | None = None,
         systematic_exporter_defects: tuple[str, ...] = (),
         unavailable_labels: dict[str, str] | None = None,
+        pending_damage: bool = False,
+        collection_event_count: int = 1,
     ):
         actual_identity = _fixture_initial_identity()
         loaded, manifests = _loaded_plan(root, expected_identity or actual_identity)
@@ -408,7 +411,13 @@ class RepresentativePilotTests(unittest.TestCase):
                 shot,
                 actual_identity,
                 source_context,
+                event_count=collection_event_count,
             )
+            if pending_damage:
+                state_path = shot / "physics_state.jsonl"
+                state_path.write_bytes(state_path.read_bytes().replace(b'"life":99', b'"life":100', 1))
+                event_path = shot / "physics_events.jsonl"
+                event_path.write_bytes(event_path.read_bytes().replace(b'"reason":"damage"', b'"reason":"not_damage"'))
             if source_envelope_mode == "tampered-metadata":
                 metadata_path = shot / "metadata.json"
                 metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
@@ -555,7 +564,7 @@ class RepresentativePilotTests(unittest.TestCase):
 
             material_damage = persisted["material_damage_semantics"]
             self.assertEqual(material_damage["schema"], "representative_material_damage_semantics_v1")
-            self.assertTrue(material_damage["source_cohort_identity"].startswith("material-damage-source-cohort-v1:sha256:"))
+            self.assertTrue(material_damage["source_cohort_identity"].startswith("damage-source-cohort-v1:sha256:"))
             self.assertEqual(
                 material_damage["material"],
                 {
@@ -566,12 +575,19 @@ class RepresentativePilotTests(unittest.TestCase):
                 },
             )
             damage = material_damage["damage"]
-            self.assertEqual(damage["availability"], "available")
+            self.assertEqual(damage["availability"], "unavailable_insufficient_damage_lifecycle_evidence")
             self.assertEqual(damage["mapping_schema_version"], MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION)
             self.assertEqual(damage["mapping_version"], SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.mapping_version)
             self.assertEqual(damage["mapping_digest"], SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.digest)
             self.assertEqual(damage["source_facts"], list(MAPPING_SOURCE_FACTS))
-            self.assertEqual(damage["status"], SemanticStatus.ENGINE_VERIFIED.value)
+            self.assertEqual(
+                damage["status"],
+                SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION.value,
+            )
+            self.assertEqual(
+                persisted["unavailable_labels"]["damage"],
+                "no representative engine lifecycle evidence verifies the damage mapping",
+            )
             self.assertEqual(
                 {row["attempt_id"] for row in damage["evidence"]},
                 set(validation_by_attempt),
@@ -587,6 +603,9 @@ class RepresentativePilotTests(unittest.TestCase):
                 "mapping_version",
                 "mapping_digest",
                 "source_cohort_identity",
+                "receipt_status",
+                "receipt_cohort_context",
+                "receipt_source_records",
             }
             for row in damage["evidence"]:
                 self.assertEqual(set(row), evidence_fields)
@@ -639,6 +658,43 @@ class RepresentativePilotTests(unittest.TestCase):
                 with self.subTest(mutation=payload["material_damage_semantics"]):
                     with self.assertRaises(ValueError):
                         PilotReport.from_dict(payload)
+
+    def test_pilot_keeps_damage_unavailable_without_representative_lifecycle_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            payload = self._run(
+                Path(temporary), pending_damage=True, collection_event_count=4
+            ).to_dict()
+            damage = payload["material_damage_semantics"]["damage"]
+            self.assertEqual(
+                damage["status"],
+                SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION.value,
+            )
+            self.assertEqual(damage["availability"], "unavailable_insufficient_damage_lifecycle_evidence")
+            self.assertEqual(
+                payload["unavailable_labels"]["damage"],
+                "no representative engine lifecycle evidence verifies the damage mapping",
+            )
+            self.assertNotIn("damage", payload["available_capabilities"])
+            PilotReport.from_dict(payload)
+
+    def test_pilot_reports_verified_damage_only_with_both_runtime_witnesses(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            payload = self._run(Path(temporary), collection_event_count=4).to_dict()
+            damage = payload["material_damage_semantics"]["damage"]
+            self.assertEqual(damage["status"], SemanticStatus.ENGINE_VERIFIED.value)
+            self.assertEqual(damage["availability"], "available")
+            self.assertNotIn("damage", payload["unavailable_labels"])
+            self.assertTrue(all(row["receipt_status"] == SemanticStatus.ENGINE_VERIFIED.value for row in damage["evidence"]))
+
+    def test_report_reload_is_portable_after_source_artifacts_are_removed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self._run(root)
+            report_path = root / "collection" / "representative_pilot_report.json"
+            for artifact in (root / "collection" / "artifacts").glob("**/shot_001"):
+                shutil.rmtree(artifact)
+            loaded = load_pilot_report(report_path)
+            self.assertEqual(loaded, load_pilot_report(report_path))
 
     def test_macro_semantics_strict_parsing_rejects_promotion_and_incomplete_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

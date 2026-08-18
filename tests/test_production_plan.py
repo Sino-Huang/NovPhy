@@ -18,6 +18,14 @@ from scripts.physics_macro_labels import (
     derivation_spec_digest,
     derivation_spec_json,
 )
+from scripts.physics_material_damage import (
+    MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION,
+    MATERIAL_UNAVAILABLE_LABEL,
+    MAPPING_SOURCE_FACTS,
+    SUPPORTED_DAMAGE_LIFECYCLE_MAPPING,
+    DamageSourceRecord,
+    source_cohort_identity_for_records,
+)
 from scripts.production_plan import (
     ProductionPlan,
     create_production_plan,
@@ -235,16 +243,92 @@ def _pilot_report(collection_plan, *, accepted: bool = True, marker: str = "fixt
             for name in ("cascade-active", "collapsed", "pigs-cleared")
         },
     }
+    version_envelope = {
+        "player_sha256": "1" * 64,
+        "protocol_sha256": "2" * 64,
+        "archive_sha256": "3" * 64,
+        "generator_version": "v1",
+    }
+    source_records = (
+        DamageSourceRecord(
+            "fixture-training-capture",
+            "fixture-training-shot",
+            "4" * 64,
+            "5" * 64,
+            (),
+            (),
+        ),
+        DamageSourceRecord(
+            "fixture-final-capture",
+            "fixture-final-shot",
+            "4" * 64,
+            "5" * 64,
+            (),
+            (),
+        ),
+    )
+    cohort_context = {
+        "plan_identity": collection_plan.identity,
+        "report_version": "3",
+        "version_envelope": json.dumps(version_envelope, sort_keys=True, separators=(",", ":")),
+    }
+    source_cohort_identity = source_cohort_identity_for_records(
+        source_records,
+        cohort_context=cohort_context,
+    )
+    serialized_source_records = [
+        record.to_json()
+        for record in sorted(source_records, key=lambda item: (item.capture_id, item.shot_id))
+    ]
+    pending_status = SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION.value
+    damage_evidence_by_attempt = {
+        attempt_id: {
+            "attempt_id": attempt_id,
+            "capture_id": capture_id,
+            "shot_id": shot_id,
+            "physics_state_sha256": "4" * 64,
+            "physics_events_sha256": "5" * 64,
+            "derived_artifact_sha256": "6" * 64,
+            "record_count": 0,
+            "mapping_version": SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.mapping_version,
+            "mapping_digest": SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.digest,
+            "source_cohort_identity": source_cohort_identity,
+            "receipt_status": pending_status,
+            "receipt_cohort_context": dict(cohort_context),
+            "receipt_source_records": serialized_source_records,
+        }
+        for attempt_id, capture_id, shot_id in (
+            ("attempt-training", "fixture-training-capture", "fixture-training-shot"),
+            ("attempt-final", "fixture-final-capture", "fixture-final-shot"),
+        )
+    }
+    atomic_validation = [
+        {
+            "attempt_id": attempt_id,
+            "scenario_id": scenario_id,
+            "accepted": True,
+            "capture_id": damage_evidence_by_attempt[attempt_id]["capture_id"],
+            "shot_id": damage_evidence_by_attempt[attempt_id]["shot_id"],
+            "deterministic_artifact_semantics": {
+                "state_sha256": "4" * 64,
+                "event_sha256": "5" * 64,
+            },
+            "macro_semantics_evidence": {
+                name: dict(macro_evidence_by_attempt[attempt_id])
+                for name in ("cascade-active", "collapsed", "pigs-cleared")
+            },
+            "material_damage_evidence": damage_evidence_by_attempt[attempt_id],
+        }
+        for attempt_id, scenario_id in (
+            ("attempt-training", "training"),
+            ("attempt-final", "final"),
+        )
+    ]
     payload = {
-        "schema": "representative_pilot_report_v2",
-        "report_version": 2,
+        "schema": "representative_pilot_report_v3",
+        "report_version": 3,
         "identity": "",
-        "version_envelope": {
-            "player_sha256": "1" * 64,
-            "protocol_sha256": "2" * 64,
-            "archive_sha256": "3" * 64,
-            "generator_version": "v1",
-        },
+        "version_envelope": version_envelope,
         "plan_identity": collection_plan.identity,
         "plan_version": collection_plan.plan_version,
         "scenarios": [
@@ -258,27 +342,7 @@ def _pilot_report(collection_plan, *, accepted: bool = True, marker: str = "fixt
                 "accepted_attempt_ids": ["attempt-training", "attempt-final"],
                 "exclusions": [],
             },
-            "atomic_validation": [
-                {
-                    "attempt_id": attempt_id,
-                    "scenario_id": scenario_id,
-                    "accepted": True,
-                    "capture_id": macro_evidence_by_attempt[attempt_id]["capture_id"],
-                    "shot_id": macro_evidence_by_attempt[attempt_id]["shot_id"],
-                    "deterministic_artifact_semantics": {
-                        "state_sha256": macro_evidence_by_attempt[attempt_id]["physics_state_sha256"],
-                        "event_sha256": macro_evidence_by_attempt[attempt_id]["physics_events_sha256"],
-                    },
-                    "macro_semantics_evidence": {
-                        name: dict(macro_evidence_by_attempt[attempt_id])
-                        for name in ("cascade-active", "collapsed", "pigs-cleared")
-                    },
-                }
-                for attempt_id, scenario_id in (
-                    ("attempt-training", "training"),
-                    ("attempt-final", "final"),
-                )
-            ],
+            "atomic_validation": atomic_validation,
         },
         "coverage": {"fixture_marker": marker},
         "replays": [],
@@ -286,12 +350,37 @@ def _pilot_report(collection_plan, *, accepted: bool = True, marker: str = "fixt
         "partition_audits": [],
         "supervision": [],
         "macro_semantics": macro_semantics,
+        "material_damage_semantics": {
+            "schema": "representative_material_damage_semantics_v1",
+            "source_cohort_identity": source_cohort_identity,
+            "material": {
+                "availability": "unavailable_missing_engine_material_field",
+                "label": MATERIAL_UNAVAILABLE_LABEL,
+                "reason": "physics_capture_v1 does not export a material field",
+                "status": "unavailable",
+            },
+            "damage": {
+                "availability": "unavailable_insufficient_damage_lifecycle_evidence",
+                "mapping_schema_version": MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION,
+                "mapping_version": SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.mapping_version,
+                "mapping_digest": SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.digest,
+                "source_facts": list(MAPPING_SOURCE_FACTS),
+                "status": pending_status,
+                "source_cohort_identity": source_cohort_identity,
+                "cohort_context": cohort_context,
+                "source_records": serialized_source_records,
+                "evidence": list(damage_evidence_by_attempt.values()),
+            },
+        },
         "available_capabilities": [],
         "unavailable_capabilities": [{
             "capability": "representative_macro_semantics",
             "reason": "fixture report keeps representative macro semantics unavailable",
         }],
-        "unavailable_labels": {},
+        "unavailable_labels": {
+            "material": "no accepted engine-verified material mapping exists",
+            "damage": "no representative engine lifecycle evidence verifies the damage mapping",
+        },
         "permanent_or_systematic_exporter_defects": [],
         "pilot_status": "accepted" if accepted else "rejected",
         "acceptance_decision": {"accepted": accepted, "reasons": [] if accepted else ["fixture rejection"]},
@@ -303,7 +392,7 @@ def _pilot_report(collection_plan, *, accepted: bool = True, marker: str = "fixt
         separators=(",", ":"),
         sort_keys=True,
     ).encode("utf-8")
-    payload["identity"] = "representative-pilot-report-v2:sha256:" + hashlib.sha256(canonical).hexdigest()
+    payload["identity"] = "representative-pilot-report-v3:sha256:" + hashlib.sha256(canonical).hexdigest()
     return PilotReport.from_dict(payload)
 
 
