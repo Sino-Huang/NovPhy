@@ -356,8 +356,36 @@ class CollectionPlanTests(unittest.TestCase):
             self.assertEqual(report["realized_coverage_stratum_counts"]["no-contact/miss"], 1)
             self.assertEqual(report["unmet_slots"], [])
             self.assertEqual(len(report["realized_coverage_shortfalls"]), 2)
+            self.assertNotIn("execution_context", report)
             self.assertEqual((output / PLAN_COPY_FILENAME).read_bytes(), loaded.original_bytes)
             self.assertEqual(json.loads((output / REPORT_FILENAME).read_text(encoding="utf-8")), report)
+
+    def test_execution_context_is_frozen_on_runtime_inputs_and_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            loaded = create_loaded_plan(root)
+            supplied = {"production": {"identity": "production-plan:1", "parameters": [1, 2]}}
+            requests = []
+
+            def runtime(request):
+                requests.append(request)
+                with self.assertRaises(TypeError):
+                    request.execution_context["production"]["identity"] = "changed"
+                stratum = "collision" if request.intervention_id == "collision-shot" else "no-contact/miss"
+                return accepted_result(request, (stratum,))
+
+            report = execute_collection_plan(
+                loaded,
+                runtime,
+                root / "output",
+                execution_context=supplied,
+            )
+            supplied["production"]["parameters"].append(3)
+            self.assertEqual(
+                report["execution_context"],
+                {"production": {"identity": "production-plan:1", "parameters": [1, 2]}},
+            )
+            self.assertEqual(requests[0].execution_context["production"]["parameters"], (1, 2))
 
     def test_execution_fails_closed_without_required_runtime_audit_references(self) -> None:
         cases = {

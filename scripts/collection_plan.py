@@ -279,6 +279,7 @@ class RuntimeInput:
     engine_relative_action: Mapping[str, Any]
     mapping_version: str
     slingshot_reference: Mapping[str, Any]
+    execution_context: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -874,10 +875,22 @@ def _write_bytes_atomic(path: Path, content: bytes) -> Path:
     return path
 
 
-def execute_collection_plan(loaded: LoadedCollectionPlan, runtime: CollectionPlanRuntime, output_dir: Path) -> dict[str, Any]:
+def execute_collection_plan(
+    loaded: LoadedCollectionPlan,
+    runtime: CollectionPlanRuntime,
+    output_dir: Path,
+    *,
+    execution_context: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     """Execute every frozen intervention in artifact order and write an accounting report."""
     if not isinstance(loaded, LoadedCollectionPlan):
         raise ValueError("execute_collection_plan requires a LoadedCollectionPlan")
+    frozen_execution_context = None
+    if execution_context is not None:
+        frozen_execution_context = _json_value(
+            _require_object(execution_context, "Execution context"),
+            "Execution context",
+        )
     assert_plan_unchanged(loaded, loaded.path)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -913,6 +926,8 @@ def execute_collection_plan(loaded: LoadedCollectionPlan, runtime: CollectionPla
             "unmet_slots": unmet_slots,
             "realized_coverage_shortfalls": realized_coverage_shortfalls,
         }
+        if frozen_execution_context is not None:
+            report["execution_context"] = _thaw(frozen_execution_context)
         _write_report(report, report_path)
         return report
 
@@ -948,6 +963,7 @@ def execute_collection_plan(loaded: LoadedCollectionPlan, runtime: CollectionPla
                     engine_relative_action=intervention.engine_relative_action,
                     mapping_version=intervention.mapping_version,
                     slingshot_reference=intervention.slingshot_reference,
+                    execution_context=frozen_execution_context,
                 )
                 try:
                     result = _call_runtime(runtime, request)
