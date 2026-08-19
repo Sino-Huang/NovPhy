@@ -3600,7 +3600,12 @@ class CollectRolloutsTest(unittest.TestCase):
                 "RuntimeInput",
                 (),
                 {
+                    "plan_identity": "plan-identity",
+                    "plan_version": 1,
                     "scenario_id": scenario_id,
+                    "scenario_identity": f"scenario-identity-{scenario_id}",
+                    "intervention_id": f"intervention-{scenario_id}",
+                    "intervention_identity": f"intervention-identity-{scenario_id}",
                     "attempt_id": f"attempt-{scenario_id}",
                     "attempt_number": 1,
                     "expected_initial_engine_state_identity": f"initial-{scenario_id}",
@@ -3659,6 +3664,7 @@ class CollectRolloutsTest(unittest.TestCase):
             with (
                 patch("sys.argv", args),
                 patch("scripts.collect_rollouts.load_manifest", side_effect=("baseline-manifest", "novel-manifest")),
+                patch("scripts.collect_rollouts._scenario_generation_version", return_value="importer:1"),
                 patch("scripts.collection_plan.load_collection_plan", return_value=loaded_plan),
                 patch("scripts.collection_plan.execute_collection_plan", side_effect=execute_plan),
                 patch(
@@ -3683,12 +3689,53 @@ class CollectRolloutsTest(unittest.TestCase):
                     call.kwargs["game_dir"],
                     call.kwargs["ui_level"],
                     call.kwargs["scenario_manifest"],
+                    call.kwargs["scenario_context_override"],
                 )
                 for call in attempt.call_args_list
             ],
             [
-                (root / "baseline-runtime", None, "baseline-manifest"),
-                (root / "novel-runtime", None, "novel-manifest"),
+                (
+                    root / "baseline-runtime",
+                    None,
+                    "baseline-manifest",
+                    {
+                        "version_envelope": {
+                            "player_sha256": None,
+                            "protocol_sha256": None,
+                            "archive_sha256": None,
+                            "generator_version": "importer:1",
+                        },
+                        "plan_identity": "plan-identity",
+                        "plan_version": 1,
+                        "scenario_id": "baseline",
+                        "scenario_identity": "scenario-identity-baseline",
+                        "intervention_id": "intervention-baseline",
+                        "intervention_identity": "intervention-identity-baseline",
+                        "attempt_id": "attempt-baseline",
+                        "attempt_number": 1,
+                    },
+                ),
+                (
+                    root / "novel-runtime",
+                    None,
+                    "novel-manifest",
+                    {
+                        "version_envelope": {
+                            "player_sha256": None,
+                            "protocol_sha256": None,
+                            "archive_sha256": None,
+                            "generator_version": "importer:1",
+                        },
+                        "plan_identity": "plan-identity",
+                        "plan_version": 1,
+                        "scenario_id": "novel",
+                        "scenario_identity": "scenario-identity-novel",
+                        "intervention_id": "intervention-novel",
+                        "intervention_identity": "intervention-identity-novel",
+                        "attempt_id": "attempt-novel",
+                        "attempt_number": 1,
+                    },
+                ),
             ],
         )
 

@@ -1905,6 +1905,15 @@ def collect_rollouts(
     return manifest
 
 
+def _scenario_generation_version(manifest: ScenarioManifest) -> str:
+    generation = manifest.generation
+    if generation.mode == "generated" and generation.generator_version:
+        return generation.generator_version
+    if generation.mode == "legacy_static" and generation.importer_identity and generation.importer_version:
+        return f"{generation.importer_identity}:{generation.importer_version}"
+    raise ValueError("scenario manifest has no version-bounded generator or importer")
+
+
 def collect_fresh_engine_rollouts(
     output_dir: Path,
     actions: list[dict],
@@ -1946,6 +1955,7 @@ def collect_fresh_engine_rollouts(
     physics_protocol_sha256: str | None = None,
     physics_archive_sha256: str | None = None,
     scenario_manifest: ScenarioManifest | None = None,
+    scenario_context_override: Mapping[str, Any] | None = None,
 ) -> dict:
     if fresh_engine_attempts != 1:
         raise ValueError(
@@ -1960,6 +1970,10 @@ def collect_fresh_engine_rollouts(
         "scenario_lineage_identity": scenario_manifest.scenario_lineage.identity,
         "declared_initial_engine_state_identity": scenario_manifest.declared_initial_engine_state.identity,
     }
+    if scenario_context_override is not None:
+        if scenario_context is None:
+            raise ValueError("scenario_context_override requires scenario_manifest")
+        scenario_context.update(dict(scenario_context_override))
     for index, action in enumerate(actions, start=1):
         prior_invalid_attempts: list[dict] = []
         for attempt in range(1, attempts_per_action + 1):
@@ -2660,6 +2674,24 @@ def main() -> None:
             if scenario_inputs:
                 selected_manifest, selected_game_dir = scenario_inputs[request.scenario_id]
                 selected_ui_level = None
+            scenario_context_override = None
+            if selected_manifest is not None:
+                scenario_context_override = {
+                    "version_envelope": {
+                        "player_sha256": args.physics_player_sha256,
+                        "protocol_sha256": args.physics_protocol_sha256,
+                        "archive_sha256": args.physics_archive_sha256,
+                        "generator_version": _scenario_generation_version(selected_manifest),
+                    },
+                    "plan_identity": request.plan_identity,
+                    "plan_version": request.plan_version,
+                    "scenario_id": request.scenario_id,
+                    "scenario_identity": request.scenario_identity,
+                    "intervention_id": request.intervention_id,
+                    "intervention_identity": request.intervention_identity,
+                    "attempt_id": request.attempt_id,
+                    "attempt_number": request.attempt_number,
+                }
             return collect_fresh_engine_attempt(
                 args.output_dir,
                 _json_compatible_action(request.interface_action),
@@ -2696,6 +2728,7 @@ def main() -> None:
                 physics_protocol_sha256=args.physics_protocol_sha256,
                 physics_archive_sha256=args.physics_archive_sha256,
                 scenario_manifest=selected_manifest,
+                scenario_context_override=scenario_context_override,
             )
 
         report = execute_collection_plan(loaded_plan, runtime, args.output_dir)
