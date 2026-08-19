@@ -6,6 +6,7 @@ from pathlib import Path
 from scripts.cohort_partition import create_cohort_partition_manifest
 from scripts.final_evaluation_access import (
     audit_final_evaluation_access,
+    audit_ordinary_workflow_access,
     create_final_evaluation_access_manifest,
     load_final_evaluation_access_manifest,
     write_final_evaluation_access_manifest,
@@ -58,6 +59,70 @@ class FinalEvaluationAccessTests(unittest.TestCase):
             path = Path(temporary) / "final-access.json"
             write_final_evaluation_access_manifest(self.access, path)
             self.assertEqual(load_final_evaluation_access_manifest(path), self.access)
+
+    def test_ordinary_workflows_accept_only_declared_nonfinal_access(self):
+        training_lineage = str(self.training["scenario_lineage_identity"])
+        observed = [{
+            "artifact_identity": "artifact:training",
+            "source_scenario_lineage_identities": [training_lineage],
+        }]
+        for workflow_kind in (
+            "training",
+            "calibration",
+            "model_selection",
+            "pilot",
+        ):
+            with self.subTest(workflow_kind=workflow_kind):
+                audit = audit_ordinary_workflow_access(
+                    self.partition,
+                    workflow_kind=workflow_kind,
+                    observed_scenario_lineage_identities=[training_lineage],
+                    observed_artifact_accesses=observed,
+                )
+                self.assertTrue(audit["passed"])
+
+    def test_ordinary_workflows_reject_final_and_undeclared_access(self):
+        training_lineage = str(self.training["scenario_lineage_identity"])
+        cases = (
+            (
+                [self.final_lineage],
+                [],
+                "final_evaluation lineage",
+            ),
+            (
+                [training_lineage],
+                [{
+                    "artifact_identity": "artifact:final",
+                    "source_scenario_lineage_identities": [self.final_lineage],
+                }],
+                "final_evaluation data",
+            ),
+            (
+                [training_lineage],
+                [{
+                    "artifact_identity": "artifact:unknown",
+                    "source_scenario_lineage_identities": [training_lineage],
+                }],
+                "undeclared artifact",
+            ),
+            (
+                [training_lineage],
+                [{
+                    "artifact_identity": "artifact:training",
+                    "source_scenario_lineage_identities": [self.final_lineage],
+                }],
+                "source provenance differs",
+            ),
+        )
+        for lineages, artifacts, message in cases:
+            with self.subTest(message=message):
+                with self.assertRaisesRegex(ValueError, message):
+                    audit_ordinary_workflow_access(
+                        self.partition,
+                        workflow_kind="training",
+                        observed_scenario_lineage_identities=lineages,
+                        observed_artifact_accesses=artifacts,
+                    )
 
     def test_declared_final_workflow_access_passes(self):
         audit = audit_final_evaluation_access(

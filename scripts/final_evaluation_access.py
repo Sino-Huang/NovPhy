@@ -16,6 +16,12 @@ from scripts.cohort_partition import CohortPartitionManifest
 
 SCHEMA = "final_evaluation_access_manifest_v1"
 IDENTITY_NAMESPACE = "final-evaluation-access-manifest-v1"
+ORDINARY_WORKFLOW_KINDS = frozenset((
+    "training",
+    "calibration",
+    "model_selection",
+    "pilot",
+))
 
 
 def _canonical_json(value: Any) -> bytes:
@@ -205,6 +211,70 @@ def create_final_evaluation_access_manifest(
         raise ValueError("Final-evaluation access version must be positive")
     payload["identity"] = _identity(payload)
     return FinalEvaluationAccessManifest.from_dict(payload)
+
+
+def audit_ordinary_workflow_access(
+    partition: CohortPartitionManifest,
+    *,
+    workflow_kind: str,
+    observed_scenario_lineage_identities: Sequence[str],
+    observed_artifact_accesses: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Fail closed if an ordinary workflow reads final or undeclared data."""
+    if workflow_kind not in ORDINARY_WORKFLOW_KINDS:
+        raise ValueError("Ordinary workflow kind is unknown")
+    validated = CohortPartitionManifest.from_dict(partition.to_dict())
+    role_by_lineage = {
+        str(entry.scenario_manifest_projection["scenario_lineage_identity"]):
+        entry.exposure_role
+        for entry in validated.entries
+    }
+    observed_lineages = _strings(
+        observed_scenario_lineage_identities,
+        "observed_scenario_lineage_identities",
+    )
+    for lineage in observed_lineages:
+        role = role_by_lineage.get(lineage)
+        if role is None:
+            raise ValueError("Ordinary workflow referenced an undeclared lineage")
+        if role == "final_evaluation":
+            raise ValueError("Ordinary workflow has final_evaluation lineage access")
+
+    provenance_by_artifact = {
+        record.artifact_identity: record
+        for record in validated.provenance_records
+    }
+    observed_artifacts = []
+    for raw in observed_artifact_accesses:
+        fields = {
+            "artifact_identity",
+            "source_scenario_lineage_identities",
+        }
+        if not isinstance(raw, Mapping) or set(raw) != fields:
+            raise ValueError("Observed ordinary artifact access fields are invalid")
+        artifact_identity = _string(raw["artifact_identity"], "artifact_identity")
+        observed_artifacts.append(artifact_identity)
+        record = provenance_by_artifact.get(artifact_identity)
+        if record is None:
+            raise ValueError("Ordinary workflow referenced an undeclared artifact")
+        sources = _strings(
+            raw["source_scenario_lineage_identities"],
+            "source_scenario_lineage_identities",
+        )
+        if sources != record.source_scenario_lineage_identities:
+            raise ValueError("Ordinary workflow artifact source provenance differs")
+        if any(role_by_lineage[source] == "final_evaluation" for source in sources):
+            raise ValueError("Ordinary workflow artifact uses final_evaluation data")
+    if len(observed_artifacts) != len(set(observed_artifacts)):
+        raise ValueError("Observed ordinary artifact access is duplicated")
+    return {
+        "schema": "ordinary_workflow_access_audit_v1",
+        "partition_identity": validated.identity,
+        "workflow_kind": workflow_kind,
+        "observed_lineage_count": len(observed_lineages),
+        "observed_artifact_count": len(observed_artifacts),
+        "passed": True,
+    }
 
 
 def audit_final_evaluation_access(
