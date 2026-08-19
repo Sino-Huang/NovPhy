@@ -150,7 +150,11 @@ def _action(release_x: int, release_y: int) -> tuple[dict[str, object], dict[str
     return interface, engine
 
 
-def _loaded_plan(root: Path, expected_identity: str):
+def _loaded_plan(
+    root: Path,
+    expected_identity: str,
+    second_exposure_role: str = "calibration",
+):
     manifest = _manifest()
     final_manifest = _manifest(seed=42, template="scenario-template-v1:held-out")
     projection = scenario_manifest_projection(manifest, "fixtures/training.scenario.json")
@@ -217,7 +221,7 @@ def _loaded_plan(root: Path, expected_identity: str):
         plan_version=1,
         scenarios=[
             scenario("fixture-training", "training", projection),
-            scenario("fixture-final", "final_evaluation", final_projection),
+            scenario("fixture-final", second_exposure_role, final_projection),
         ],
     )
     path = root / "plan.json"
@@ -262,6 +266,7 @@ def _partition_audits(
     manifests,
     *,
     training_source: str = "fixtures/training.scenario.json",
+    second_exposure_role: str = "calibration",
 ) -> tuple[PilotPartitionAudit, PilotPartitionAudit]:
     training = scenario_manifest_projection(manifests[0], training_source)
     final = scenario_manifest_projection(manifests[1], "fixtures/final.scenario.json")
@@ -271,17 +276,17 @@ def _partition_audits(
         held_out_roles=[],
         entries=[
             {"dataset_partition": "train", "exposure_role": "training", **training},
-            {"dataset_partition": "final", "exposure_role": "final_evaluation", **final},
+            {"dataset_partition": "final", "exposure_role": second_exposure_role, **final},
         ],
         provenance_records=[],
     )
     template = create_cohort_partition_manifest(
         partition_version=1,
         split_regime="template_held_out",
-        held_out_roles=["final_evaluation"],
+        held_out_roles=[second_exposure_role],
         entries=[
             {"dataset_partition": "train", "exposure_role": "training", **training},
-            {"dataset_partition": "final", "exposure_role": "final_evaluation", **final},
+            {"dataset_partition": "final", "exposure_role": second_exposure_role, **final},
         ],
         provenance_records=[],
     )
@@ -357,9 +362,14 @@ class RepresentativePilotTests(unittest.TestCase):
         unavailable_labels: dict[str, str] | None = None,
         pending_damage: bool = False,
         collection_event_count: int = 1,
+        second_exposure_role: str = "calibration",
     ):
         actual_identity = _fixture_initial_identity()
-        loaded, manifests = _loaded_plan(root, expected_identity or actual_identity)
+        loaded, manifests = _loaded_plan(
+            root,
+            expected_identity or actual_identity,
+            second_exposure_role,
+        )
         output = root / "collection"
         envelope = {
             "player_sha256": PROVENANCE.player_sha256,
@@ -439,6 +449,7 @@ class RepresentativePilotTests(unittest.TestCase):
                 "fixtures/different-training.scenario.json"
                 if mismatched_partition_projection else "fixtures/training.scenario.json"
             ),
+            second_exposure_role=second_exposure_role,
         )
         if duplicate_partition_audit:
             audits = (*audits, audits[0])
@@ -470,6 +481,14 @@ class RepresentativePilotTests(unittest.TestCase):
             systematic_exporter_defects=systematic_exporter_defects,
             unavailable_labels=unavailable_labels or {},
         )
+
+    def test_final_evaluation_scenarios_cannot_enter_pilot(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            with self.assertRaisesRegex(ValueError, "final_evaluation"):
+                self._run(
+                    Path(temporary),
+                    second_exposure_role="final_evaluation",
+                )
 
     def test_report_round_trip_is_deterministic_and_identity_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

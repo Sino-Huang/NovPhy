@@ -2078,6 +2078,13 @@ def assess_representative_pilot(
     """Assess existing collection evidence without invoking a live engine."""
     if not isinstance(loaded_plan, LoadedCollectionPlan):
         raise ValueError("assess_representative_pilot requires a LoadedCollectionPlan")
+    if any(
+        scenario.exposure_role == "final_evaluation"
+        for scenario in loaded_plan.plan.scenarios
+    ):
+        raise ValueError(
+            "Representative pilot cannot contain final_evaluation scenarios"
+        )
     assert_plan_unchanged(loaded_plan, loaded_plan.path)
     frozen_copy = Path(frozen_plan_copy)
     try:
