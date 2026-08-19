@@ -1749,6 +1749,12 @@ def collect_rollouts(
                 post_shoot_protocol_state = _protocol_state_snapshot(bridge)
                 return result
 
+            capture_bridge = _FinalizedPhysicsBridge(
+                capture_bridge,
+                deadline_seconds=max(30.0, duration_seconds),
+                clock=clock,
+                sleeper=sleeper,
+            )
             capture_kwargs.update({"initial_capture": initial_capture, "shoot": shoot_and_snapshot})
         elif shoot_before_capture:
             response = shoot_once()
