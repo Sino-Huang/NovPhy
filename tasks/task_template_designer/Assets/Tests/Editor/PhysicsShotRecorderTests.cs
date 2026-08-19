@@ -174,6 +174,9 @@ public class PhysicsShotRecorderTests
         recorder.RecordCollision(2, 0.04f, "a:0", "z:0", contacts.Reverse().ToArray(), 3.5f);
 
         Assert.AreEqual(2, recorder.RawContacts.Count);
+        CollectionAssert.AreEqual(
+            new[] { "contact:2:a:0|1:z:0|2:0", "contact:2:a:0|1:z:0|2:1" },
+            recorder.RawContacts.Select(contact => contact.ContactId).ToArray());
         Assert.AreEqual(1, recorder.Events.Count);
         CollectionAssert.AreEqual(
             recorder.RawContacts.Select(contact => contact.ContactId).OrderBy(id => id).ToArray(),
@@ -680,8 +683,8 @@ public class PhysicsShotRecorderTests
                 Vector2.left, 1f, "b:0", 2, Vector2.zero, Vector2.one, false)
         });
         Assert.AreEqual(2, recorder.RawContacts.Count);
-        Assert.IsTrue(recorder.RawContacts.Any(c => c.PairKey == "a:0:1|b:0:2"));
-        Assert.IsTrue(recorder.RawContacts.Any(c => c.PairKey == "a:0:3|b:0:2"));
+        Assert.IsTrue(recorder.RawContacts.Any(c => c.PairKey == "a:0|1:b:0|2"));
+        Assert.IsTrue(recorder.RawContacts.Any(c => c.PairKey == "a:0|3:b:0|2"));
 
         recorder.RecordCollision(5, 0.1f, "a:0", "b:0", new[]
         {
@@ -691,7 +694,7 @@ public class PhysicsShotRecorderTests
 
         Assert.AreEqual(1, recorder.Events.Count);
         CollectionAssert.AreEqual(
-            new[] { "contact:5:a:0:1|b:0:2:0" },
+            new[] { "contact:5:a:0|1:b:0|2:0" },
             recorder.Events[0].Payload.ContactIds,
             "the event must cite only the collider pair the callback named");
     }
@@ -734,7 +737,7 @@ public class PhysicsShotRecorderTests
         Assert.IsNotNull(snapshot);
         Assert.IsTrue(snapshot.RawContacts.Any(c => c.ContactId == stepOneContactId),
             "the cited row must reach the finalized snapshot");
-        Assert.IsTrue(snapshot.SupportEdges.Any(edge => edge.PairKey == "a:0:1|b:0:2"),
+        Assert.IsTrue(snapshot.SupportEdges.Any(edge => edge.PairKey == "a:0|1:b:0|2"),
             "the support edge citing the retained steps must reach the finalized snapshot");
     }
 

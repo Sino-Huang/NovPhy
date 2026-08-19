@@ -184,7 +184,7 @@ public sealed class PhysicalRawContact
 
     public string PairKey
     {
-        get { return EntityIdA + ":" + ColliderIdA + "|" + EntityIdB + ":" + ColliderIdB; }
+        get { return EntityIdA + "|" + ColliderIdA + ":" + EntityIdB + "|" + ColliderIdB; }
     }
 
     public string ContactId

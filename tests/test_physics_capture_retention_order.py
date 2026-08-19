@@ -39,12 +39,12 @@ PAIR_HIGH = ("300:0", "400:0", 31, 41)
 def pair_key(pair: tuple[str, str, int, int]) -> str:
     """The emitter's canonical collider pair key.
 
-    PhysicalCaptureModels.PairKey is ``EntityIdA:ColliderIdA|EntityIdB:ColliderIdB``,
+    PhysicalCaptureModels.PairKey is ``EntityIdA|ColliderIdA:EntityIdB|ColliderIdB``,
     so the collider ids are part of the id a real shot carries; omitting them
     would mint ids the emitter can never produce.
     """
     entity_a, entity_b, collider_a, collider_b = pair
-    return f"{entity_a}:{collider_a}|{entity_b}:{collider_b}"
+    return f"{entity_a}|{collider_a}:{entity_b}|{collider_b}"
 
 
 def contact_id(pair: tuple[str, str, int, int], fixed_step: int, point_index: int) -> str:
