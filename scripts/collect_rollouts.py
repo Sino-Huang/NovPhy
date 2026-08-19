@@ -2391,7 +2391,7 @@ def collect_fresh_engine_attempt(
                     "failure_code": None,
                     "realized_coverage_strata": list(coverage_strata),
                     "eligible": True,
-                    "artifact_path": str(accepted_dir),
+                    "artifact_path": str(accepted_dir / str(shot_name)),
                     "quarantine_path": None,
                     "failure_manifest_path": None,
                 }

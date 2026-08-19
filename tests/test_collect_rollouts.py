@@ -3094,7 +3094,7 @@ class CollectRolloutsTest(unittest.TestCase):
             self.assertEqual(calls, [(root / ".attempt-attempt-accepted.tmp", [action], 1)])
             self.assertTrue(accepted.is_dir())
             self.assertFalse((root / ".attempt-attempt-accepted.tmp").exists())
-            self.assertEqual(result["artifact_path"], str(accepted))
+            self.assertEqual(result["artifact_path"], str(accepted / "shot_001"))
             self.assertEqual(result["realized_coverage_strata"], ["collision"])
             self.assertTrue(result["eligible"])
             self.assertEqual(result["status"], "accepted")
