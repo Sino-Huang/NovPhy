@@ -27,6 +27,15 @@ class EventType(StrEnum):
     LEVEL_FAILED = "level_failed"
 
 
+@unique
+class EvidenceIncompleteReason(StrEnum):
+    NO_FIXED_STEP_SAMPLES = "no_fixed_step_samples"
+    FIXED_STEP_GAP = "fixed_step_gap"
+    CONTACT_SAMPLE_OVERFLOW = "contact_sample_overflow"
+    ENTITY_SAMPLE_OVERFLOW = "entity_sample_overflow"
+    SAMPLING_FAILURE = "sampling_failure"
+
+
 @dataclass(frozen=True, slots=True)
 class Vector2:
     x: float
@@ -177,7 +186,81 @@ class EventRecord:
 
 
 @dataclass(frozen=True, slots=True)
+class EvidenceFixedStepCoverage:
+    first_fixed_step: int | None
+    last_fixed_step: int | None
+    sample_count: int
+    complete: bool
+    incomplete_reason: EvidenceIncompleteReason | None
+
+
+@dataclass(frozen=True, slots=True)
+class MinimumContactSeparation:
+    observed: bool
+    separation: float | None
+    contact_id: ContactId | None
+    fixed_step: int | None
+
+
+@dataclass(frozen=True, slots=True)
+class EvidenceSupportEdge:
+    support_id: SupportId
+    supporter_id: EntityId
+    evidence_contact_ids: tuple[ContactId, ContactId]
+    evidence_fixed_steps: tuple[int, int]
+
+
+@dataclass(frozen=True, slots=True)
+class EvidenceSupport:
+    present: bool
+    edges: tuple[EvidenceSupportEdge, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class EvidenceTraceEntity:
+    entity_id: EntityId
+    observed: bool
+    present: bool
+    world_position: Vector2 | None
+    body_type: str | None
+    simulated: bool | None
+    gravity_scale: float | None
+    support_v1: EvidenceSupport
+
+
+@dataclass(frozen=True, slots=True)
+class EvidenceTraceSample:
+    fixed_step: int
+    physics2d_gravity: Vector2
+    entities: tuple[EvidenceTraceEntity, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class EvidenceTerminalTrace:
+    max_fixed_steps: int
+    max_entities_per_step: int
+    first_fixed_step: int | None
+    last_fixed_step: int | None
+    truncated: bool
+    truncation_reason: str | None
+    failure_reason: EvidenceIncompleteReason | None
+    samples: tuple[EvidenceTraceSample, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class PhysicsViolationEngineEvidence:
+    schema_version: str
+    capture_id: CaptureId
+    shot_id: str
+    sequence: int
+    coverage: EvidenceFixedStepCoverage
+    minimum_contact_separation: MinimumContactSeparation
+    terminal_trace: EvidenceTerminalTrace
+
+
+@dataclass(frozen=True, slots=True)
 class PhysicsCapture:
     header: StateHeader
     states: tuple[StateFrame, ...]
     events: tuple[EventRecord, ...]
+    violation_evidence: tuple[PhysicsViolationEngineEvidence, ...] = ()

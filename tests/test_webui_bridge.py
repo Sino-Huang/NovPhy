@@ -146,6 +146,38 @@ class PhysicsCaptureV1Tests(unittest.TestCase):
         self.assertEqual(capture.events[0]["render_frame"], 42)
         self.assertEqual(bytes(fake.sent), b"\x46")
 
+    def test_request_70_round_trips_versioned_fourth_engine_evidence_component(self):
+        state = {
+            "schema_version": "physics_capture_v1",
+            "capture_id": "capture-1",
+            "sequence": 7,
+            "render_frame": 42,
+        }
+        evidence = {
+            "schema_version": "physics_violation_engine_evidence_v1",
+            "capture_id": "capture-1",
+            "shot_id": "engine-shot-1",
+            "sequence": 7,
+        }
+        bridge, _ = self.make_bridge(encode_physics_capture_v1(
+            b"\x89PNG\r\n\x1a\nframe", state, [], evidence
+        ))
+
+        capture = bridge.get_physics_capture_v1()
+
+        self.assertEqual(capture.evidence["shot_id"], "engine-shot-1")
+        with self.assertRaises(TypeError):
+            capture.evidence["shot_id"] = "caller-shot"
+
+    def test_legacy_request_70_packet_has_absent_evidence(self):
+        response = encode_physics_capture_v1(
+            b"\x89PNG\r\n\x1a\nframe",
+            {"schema_version": "physics_capture_v1", "render_frame": 42},
+            [],
+        )
+        capture = self.make_bridge(response)[0].get_physics_capture_v1()
+        self.assertIsNone(capture.evidence)
+
     def test_request_70_reconnects_for_each_one_response_direct_socket(self):
         response = encode_physics_capture_v1(
             b"\x89PNG\r\n\x1a\nframe",

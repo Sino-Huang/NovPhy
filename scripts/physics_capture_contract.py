@@ -11,6 +11,7 @@ from scripts.physics_capture_types import CoordinateDeclaration, PhysicsCapture
 SCHEMA_VERSION: Final = "physics_capture_v1"
 STATE_SIDECAR: Final = "physics_state.jsonl"
 EVENT_SIDECAR: Final = "physics_events.jsonl"
+VIOLATION_EVIDENCE_SIDECAR: Final = "physics_violation_engine_evidence_v1.jsonl"
 EXPECTED_COORDINATES: Final = CoordinateDeclaration(
     world_space="unity_world_2d",
     world_origin="scene_defined",
@@ -64,10 +65,21 @@ def contract_error(code: ContractErrorCode, location: str, detail: str) -> Physi
     return PhysicsContractError(code, location, detail)
 
 
-def load_physics_capture(state_path: Path, event_path: Path) -> PhysicsCapture:
+def load_physics_capture(
+    state_path: Path,
+    event_path: Path,
+    evidence_path: Path | None = None,
+) -> PhysicsCapture:
     from scripts.physics_capture_parsing import parse_physics_sidecars
     from scripts.physics_capture_validation import validate_physics_capture
 
-    capture = parse_physics_sidecars(state_path, event_path)
+    if evidence_path is None:
+        sibling = state_path.parent / VIOLATION_EVIDENCE_SIDECAR
+        if sibling.is_file():
+            evidence_path = sibling
+    capture = parse_physics_sidecars(state_path, event_path, evidence_path)
+    # The v1 header's max_total_bytes bound belongs to the retained state/event
+    # pair.  The independently bounded evidence sidecar must not consume that
+    # budget or change recorder retention semantics.
     validate_physics_capture(capture, state_path.stat().st_size + event_path.stat().st_size)
     return capture

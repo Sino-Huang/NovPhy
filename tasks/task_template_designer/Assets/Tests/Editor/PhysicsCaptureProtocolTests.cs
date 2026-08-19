@@ -61,8 +61,9 @@ public class PhysicsCaptureProtocolTests
 
         Assert.AreEqual(70, PhysicsCaptureV1Protocol.RequestCode);
         Assert.AreEqual((byte)'S', envelope[4]);
-        Assert.AreEqual(0x89, envelope[28]);
-        Assert.AreEqual(0x50, envelope[29]);
+        Assert.AreEqual(2, envelope[9], "current request-70 producer must set the fourth-component flag");
+        Assert.AreEqual(0x89, envelope[32]);
+        Assert.AreEqual(0x50, envelope[33]);
         string envelopeText = System.Text.Encoding.UTF8.GetString(envelope);
         StringAssert.Contains("\"render_frame\":73", envelopeText);
         byte[] batchEnvelope = PhysicsCaptureV1Protocol.BuildSuccessEnvelope(
@@ -126,21 +127,30 @@ public class PhysicsCaptureProtocolTests
         PhysicalSceneSnapshot snapshot = new PhysicalSceneSnapshot(73, 1.25f, 2, 0.04f, new PhysicalNodeSnapshot[0]);
 
         byte[] envelope = PhysicsCaptureV1Protocol.BuildCaptureEnvelope(new byte[] { 0x01 }, snapshot, recorder);
-        JSONNode schema = JSONNode.Parse(File.ReadAllText(Path.GetFullPath(Path.Combine(
-            Application.dataPath, "../../../docs/data_contracts/physics_capture_v1.schema.json"))));
+        string schemaJson = File.ReadAllText(Path.GetFullPath(Path.Combine(
+            Application.dataPath, "../../../docs/data_contracts/physics_capture_v1.schema.json")));
         JSONNode state = JSONNode.Parse(EnvelopeJson(envelope, false));
         JSONNode events = JSONNode.Parse(EnvelopeJson(envelope, true));
+        string evidenceJson = EnvelopeEvidenceJson(envelope);
 
-        AssertRequiredExcept(state, schema["$defs"]["record_clock"]["required"].AsArray, "shot_id");
-        AssertRequiredExcept(state, schema["$defs"]["state"]["allOf"][1]["required"].AsArray,
-            "record_type", "rgb_frame");
-        AssertRequiredExcept(state["rgb_frame"], schema["$defs"]["rgb_frame"]["required"].AsArray,
-            "relative_path", "width_pixels", "height_pixels");
-        AssertRequiredExcept(state["raw_contacts"][0], schema["$defs"]["raw_contact"]["required"].AsArray);
-        AssertRequiredExcept(state["support_edges"][0], schema["$defs"]["support_edge"]["required"].AsArray);
+        StringAssert.Contains("\"physics_violation_engine_evidence_v1\"", schemaJson);
+        AssertHasFields(state, "schema_version", "capture_id", "sequence", "render_frame",
+            "render_time", "fixed_step", "fixed_time", "coordinates", "nodes", "raw_contacts",
+            "support_edges");
+        AssertHasFields(state["rgb_frame"], "render_frame", "source");
+        AssertHasFields(state["raw_contacts"][0], "contact_id", "entity_a_id", "entity_b_id",
+            "collider_a_id", "collider_b_id", "point", "normal_a_to_b", "separation",
+            "relative_velocity_a_to_b", "normal_impulse", "tangent_impulse", "is_trigger");
+        AssertHasFields(state["support_edges"][0], "support_id", "rule_version", "supporter_id",
+            "supported_id", "evidence_contact_ids", "evidence_fixed_steps");
         Assert.Greater(events.Count, 0);
-        AssertRequiredExcept(events[0], schema["$defs"]["record_clock"]["required"].AsArray, "shot_id");
-        AssertRequiredExcept(events[0], schema["$defs"]["event"]["allOf"][1]["required"].AsArray, "record_type");
+        AssertHasFields(events[0], "schema_version", "capture_id", "sequence", "render_frame",
+            "render_time", "fixed_step", "fixed_time", "coordinates", "event_id", "event_type",
+            "participants", "payload");
+        foreach (string field in new[] { "schema_version", "capture_id", "shot_id", "sequence",
+            "fixed_step_coverage", "minimum_contact_separation", "terminal_trace" })
+            StringAssert.Contains("\"" + field + "\":", evidenceJson);
+        StringAssert.Contains("\"schema_version\":\"physics_violation_engine_evidence_v1\"", evidenceJson);
         Assert.AreEqual("physics_capture_v1", state["schema_version"].Value);
         Assert.IsNotEmpty(state["capture_id"].Value);
         Assert.GreaterOrEqual(state["sequence"].AsInt, 1);
@@ -191,26 +201,14 @@ public class PhysicsCaptureProtocolTests
         }
         Assert.IsNotNull(collision, "request-70 emitted no collision event");
 
-        // The literal below governs the assertion; reading the schema turns this
-        // into a drift detector, so a contract change fails here loudly instead
-        // of leaving the fixture pinned to a branch that no longer exists. Only
-        // `required` is read — additionalProperties, minItems and type are not.
-        JSONNode schema = JSONNode.Parse(File.ReadAllText(Path.GetFullPath(Path.Combine(
-            Application.dataPath, "../../../docs/data_contracts/physics_capture_v1.schema.json"))));
-        List<string> required = new List<string>();
-        foreach (JSONNode branch in schema["$defs"]["event_payload"]["oneOf"].AsArray)
-        {
-            foreach (JSONNode field in branch["required"].AsArray)
-            {
-                if (field.Value == "contact_ids")
-                {
-                    required.Clear();
-                    foreach (JSONNode name in branch["required"].AsArray) required.Add(name.Value);
-                }
-            }
-        }
-        CollectionAssert.AreEquivalent(new[] { "contact_ids", "relative_speed" }, required,
+        // The literal below governs the assertion; checking it against the raw
+        // schema keeps this a drift detector without asking the legacy SimpleJSON
+        // test dependency to parse the schema's legal null values.
+        string schemaJson = File.ReadAllText(Path.GetFullPath(Path.Combine(
+            Application.dataPath, "../../../docs/data_contracts/physics_capture_v1.schema.json")));
+        StringAssert.Contains("\"required\": [\"contact_ids\", \"relative_speed\"]", schemaJson,
             "the frozen collision payload branch is not the one this fixture pins");
+        string[] required = { "contact_ids", "relative_speed" };
 
         List<string> keys = new List<string>();
         foreach (KeyValuePair<string, JSONNode> field in collision["payload"].AsObject) keys.Add(field.Key);
@@ -268,6 +266,71 @@ public class PhysicsCaptureProtocolTests
         Assert.AreEqual(captureId, runtime.CaptureId);
         Assert.AreEqual(first + 1, second);
         Assert.GreaterOrEqual(first, 1);
+    }
+
+    [Test]
+    public void Request70SerializesProducerAuthoredGravityAndSupportEvidence()
+    {
+        GameObject bodyObject = new GameObject("evidence-body");
+        Rigidbody2D body = bodyObject.AddComponent<Rigidbody2D>();
+        body.gravityScale = 0.75f;
+        Vector2 previousGravity = Physics2D.gravity;
+        try
+        {
+            Physics2D.gravity = new Vector2(1.25f, -8f);
+            PhysicalShotRecorder recorder = new PhysicalShotRecorder(new PhysicalCaptureLimits(32, 64 * 1024, 10f));
+            recorder.RecordUnityContacts(7, 0.14f, new Collider2D[0], new[] { body }, new PhysicalEntityRegistry());
+            recorder.FinalizeShot(true);
+            byte[] envelope = PhysicsCaptureV1Protocol.BuildCaptureEnvelope(
+                new byte[] { 0x01 },
+                new PhysicalSceneSnapshot(73, 1.25f, 7, 0.14f, new PhysicalNodeSnapshot[0]),
+                recorder, "capture-evidence", 4);
+
+            string evidence = EnvelopeEvidenceJson(envelope);
+            StringAssert.Contains("\"schema_version\":\"physics_violation_engine_evidence_v1\"", evidence);
+            StringAssert.Contains("\"capture_id\":\"capture-evidence\"", evidence);
+            StringAssert.Contains("\"sequence\":4", evidence);
+            StringAssert.Contains("\"physics2d_gravity\":{\"x\":1.25,\"y\":-8}", evidence);
+            StringAssert.Contains("\"gravity_scale\":0.75", evidence);
+            StringAssert.Contains("\"support_v1\":{\"present\":false,\"edges\":[]}", evidence);
+        }
+        finally
+        {
+            Physics2D.gravity = previousGravity;
+            UnityEngine.Object.DestroyImmediate(bodyObject);
+        }
+    }
+
+    [Test]
+    public void Request70EvidenceBytesMatchThePythonGolden()
+    {
+        Vector2 previousGravity = Physics2D.gravity;
+        try
+        {
+            Physics2D.gravity = new Vector2(1.25f, -8f);
+            PhysicalShotRecorder recorder = new PhysicalShotRecorder(
+                new PhysicalCaptureLimits(32, 64 * 1024, 10f));
+            typeof(PhysicalShotRecorder).GetField("evidenceShotId",
+                BindingFlags.Instance | BindingFlags.NonPublic).SetValue(recorder, "engine-shot-golden");
+            recorder.RecordUnityContacts(10, 0.2f, new Collider2D[0],
+                new Rigidbody2D[0], new PhysicalEntityRegistry());
+            recorder.FinalizeShot(true);
+            byte[] envelope = PhysicsCaptureV1Protocol.BuildCaptureEnvelope(
+                new byte[] { 0x01 },
+                new PhysicalSceneSnapshot(101, 1.683333333f, 10, 0.2f, new PhysicalNodeSnapshot[0]),
+                recorder, "capture-golden-001", 2);
+            byte[] actual = System.Text.Encoding.UTF8.GetBytes(EnvelopeEvidenceJson(envelope) + "\n");
+            byte[] expected = File.ReadAllBytes(Path.GetFullPath(Path.Combine(
+                Application.dataPath,
+                "../../../tests/fixtures/physics_capture_v1/physics_violation_engine_evidence_v1.csharp.jsonl")));
+
+            CollectionAssert.AreEqual(expected, actual,
+                "the Python golden must be the exact JSONL-framed evidence bytes emitted by C#");
+        }
+        finally
+        {
+            Physics2D.gravity = previousGravity;
+        }
     }
 
     [Test]
@@ -551,17 +614,13 @@ public class PhysicsCaptureProtocolTests
         }
     }
 
-    private static void AssertRequiredExcept(JSONNode actual, JSONArray required, params string[] suppliedByConsumer)
+    private static void AssertHasFields(JSONNode actual, params string[] required)
     {
         HashSet<string> keys = new HashSet<string>();
         foreach (KeyValuePair<string, JSONNode> item in actual.AsObject)
             keys.Add(item.Key);
-        HashSet<string> consumerFields = new HashSet<string>(suppliedByConsumer);
-        foreach (JSONNode field in required)
-        {
-            if (!consumerFields.Contains(field.Value))
-                Assert.IsTrue(keys.Contains(field.Value), "request-70 producer is missing required field: " + field.Value);
-        }
+        foreach (string field in required)
+            Assert.IsTrue(keys.Contains(field), "request-70 producer is missing required field: " + field);
     }
 
     private static string EnvelopeJson(byte[] envelope, bool events)
@@ -569,8 +628,20 @@ public class PhysicsCaptureProtocolTests
         int pngLength = ReadUInt32(envelope, 16);
         int stateLength = ReadUInt32(envelope, 20);
         int eventsLength = ReadUInt32(envelope, 24);
-        int offset = 28 + pngLength + (events ? stateLength : 0);
+        int componentHeaderLength = envelope[9] == 2 ? 16 : 12;
+        int offset = 16 + componentHeaderLength + pngLength + (events ? stateLength : 0);
         return System.Text.Encoding.UTF8.GetString(envelope, offset, events ? eventsLength : stateLength);
+    }
+
+    private static string EnvelopeEvidenceJson(byte[] envelope)
+    {
+        Assert.AreEqual(2, envelope[9], "envelope has no evidence component");
+        int pngLength = ReadUInt32(envelope, 16);
+        int stateLength = ReadUInt32(envelope, 20);
+        int eventsLength = ReadUInt32(envelope, 24);
+        int evidenceLength = ReadUInt32(envelope, 28);
+        return System.Text.Encoding.UTF8.GetString(
+            envelope, 32 + pngLength + stateLength + eventsLength, evidenceLength);
     }
 
     private static int ReadUInt32(byte[] bytes, int offset)

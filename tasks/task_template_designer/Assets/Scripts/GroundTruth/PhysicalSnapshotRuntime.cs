@@ -106,7 +106,9 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
         Clock.ObserveFixedStep(Time.fixedTime);
         if (shotRecorder != null)
         {
-            shotRecorder.RecordUnityContacts(Clock.FixedStep, Time.fixedTime, FindObjectsOfType<Collider2D>(), Registry);
+            shotRecorder.RecordUnityContacts(
+                Clock.FixedStep, Time.fixedTime, FindObjectsOfType<Collider2D>(),
+                FindObjectsOfType<Rigidbody2D>(), Registry);
             ObserveStability();
         }
     }

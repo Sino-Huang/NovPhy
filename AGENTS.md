@@ -14,3 +14,7 @@ This repository uses a single-context domain-doc layout. See `docs/agents/domain
 
 ### Use of `gh` CLI
 when use `gh` cli, always explicitly specify the repo with `--repo Sino-Huang/NovPhy`.
+
+### Unity Editor
+
+Use `/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity` for Unity 2019.4.41f2 batch-mode commands.

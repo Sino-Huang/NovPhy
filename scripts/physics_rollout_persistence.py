@@ -11,8 +11,12 @@ import time
 from contextlib import suppress
 from typing import BinaryIO, Mapping, Protocol
 
-from scripts.physics_capture_contract import PhysicsContractError, load_physics_capture
-from scripts.physics_capture_parsing import _parse_event, _parse_header, _parse_state
+from scripts.physics_capture_contract import (
+    PhysicsContractError,
+    VIOLATION_EVIDENCE_SIDECAR,
+    load_physics_capture,
+)
+from scripts.physics_capture_parsing import _parse_event, _parse_evidence, _parse_header, _parse_state
 from scripts.physics_capture_types import StateFrame
 from scripts.physics_rollout_contract import (
     CaptureBounds,
@@ -342,6 +346,7 @@ def persist_physics_rollout(
         ) from error
     state_descriptor: int | None = None
     event_descriptor: int | None = None
+    evidence_descriptor: int | None = None
     frames_descriptor: int | None = None
     try:
         try:
@@ -360,8 +365,11 @@ def persist_physics_rollout(
         event_descriptor = os.open(
             "physics_events.jsonl", output_flags, 0o600, dir_fd=output_descriptor
         )
+        evidence_descriptor = os.open(
+            VIOLATION_EVIDENCE_SIDECAR, output_flags, 0o600, dir_fd=output_descriptor
+        )
     except OSError as error:
-        for descriptor in (state_descriptor, event_descriptor, frames_descriptor):
+        for descriptor in (state_descriptor, event_descriptor, evidence_descriptor, frames_descriptor):
             if descriptor is not None:
                 os.close(descriptor)
         os.close(output_descriptor)
@@ -372,6 +380,9 @@ def persist_physics_rollout(
     shot_id = output_dir.name.removesuffix(".tmp")
     state_digest = hashlib.sha256()
     event_digest = hashlib.sha256()
+    evidence_digest = hashlib.sha256()
+    evidence_count = 0
+    evidence_bytes = 0
     frame_entries: list[JsonObject] = []
     frame_checksums: list[JsonObject] = []
     progress = StreamProgress(0, 0, 0)
@@ -379,9 +390,9 @@ def persist_physics_rollout(
     shoot_response: JsonValue = None
 
     try:
-        with os.fdopen(state_descriptor, "wb") as state_stream, os.fdopen(event_descriptor, "wb") as event_stream:
+        with os.fdopen(state_descriptor, "wb") as state_stream, os.fdopen(event_descriptor, "wb") as event_stream, os.fdopen(evidence_descriptor, "wb") as evidence_stream:
             def write_capture(capture: PhysicsCapturePacket, index: int, *, allow_events: bool) -> None:
-                nonlocal progress
+                nonlocal progress, evidence_count, evidence_bytes
                 dimensions = _png_dimensions(capture.png)
                 state = _capture_record(capture.state, shot_id, index, dimensions)
                 parsed_state = _parse_state(state, index + 1)
@@ -444,6 +455,36 @@ def persist_physics_rollout(
                     )
                     progress = StreamProgress(progress.state_count, progress.event_count + 1, progress.total_bytes)
 
+                raw_evidence = getattr(capture, "evidence", None)
+                if raw_evidence is not None:
+                    materialized_evidence = _materialize_json(raw_evidence)
+                    if not isinstance(materialized_evidence, dict):
+                        raise PhysicsPersistenceError(
+                            PersistenceErrorCode.MALFORMED_CAPTURE,
+                            "request-70 violation evidence is not a JSON object",
+                        )
+                    parsed_evidence = _parse_evidence(materialized_evidence, evidence_count)
+                    if parsed_evidence.capture_id != parsed_state.clock.capture_id or parsed_evidence.sequence != parsed_state.clock.sequence:
+                        raise PhysicsPersistenceError(
+                            PersistenceErrorCode.MALFORMED_CAPTURE,
+                            "request-70 state and violation evidence identity mismatch",
+                        )
+                    if evidence_count >= MAX_STATE_RECORDS:
+                        raise PhysicsPersistenceError(
+                            PersistenceErrorCode.STATE_LIMIT,
+                            f"violation evidence record limit is {MAX_STATE_RECORDS}",
+                        )
+                    encoded_evidence = _encoded_record(materialized_evidence)
+                    evidence_bytes += len(encoded_evidence)
+                    if evidence_bytes > MAX_TOTAL_BYTES:
+                        raise PhysicsPersistenceError(
+                            PersistenceErrorCode.BYTE_LIMIT,
+                            f"violation evidence sidecar byte limit is {MAX_TOTAL_BYTES}",
+                        )
+                    evidence_stream.write(encoded_evidence)
+                    evidence_digest.update(encoded_evidence)
+                    evidence_count += 1
+
                 relative_path = f"frames/frame_{index:06d}.png"
                 try:
                     frame_descriptor = os.open(
@@ -484,8 +525,13 @@ def persist_physics_rollout(
 
             state_stream.flush()
             event_stream.flush()
+            evidence_stream.flush()
             os.fsync(state_stream.fileno())
             os.fsync(event_stream.fileno())
+            os.fsync(evidence_stream.fileno())
+
+        if evidence_count == 0:
+            os.unlink(VIOLATION_EVIDENCE_SIDECAR, dir_fd=output_descriptor)
 
         metadata: JsonObject = {
             "capture_contract": "physics_capture_v1",
@@ -506,6 +552,12 @@ def persist_physics_rollout(
             "physics_events_sha256": event_digest.hexdigest(),
             "sidecars_closed": True,
         }
+        if evidence_count:
+            metadata.update({
+                "physics_violation_engine_evidence_path": VIOLATION_EVIDENCE_SIDECAR,
+                "physics_violation_engine_evidence_count": evidence_count,
+                "physics_violation_engine_evidence_sha256": evidence_digest.hexdigest(),
+            })
         strict_semantics = (
             initial_capture is not None
             or expected_initial_engine_state_identity is not None
@@ -515,6 +567,7 @@ def persist_physics_rollout(
             capture = load_physics_capture(
                 output_dir / "physics_state.jsonl",
                 output_dir / "physics_events.jsonl",
+                output_dir / VIOLATION_EVIDENCE_SIDECAR if evidence_count else None,
             )
             metadata.update(validate_physics_rollout_semantics(
                 capture,

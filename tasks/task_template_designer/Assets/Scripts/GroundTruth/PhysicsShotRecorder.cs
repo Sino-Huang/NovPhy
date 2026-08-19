@@ -15,6 +15,9 @@ public class PhysicalShotRecorder
     private readonly List<PhysicalRawContact> rawContacts = new List<PhysicalRawContact>();
     private readonly List<PhysicalSupportEdge> supportEdges = new List<PhysicalSupportEdge>();
     private readonly List<PhysicalMacroEvent> events = new List<PhysicalMacroEvent>();
+    private readonly List<PhysicalEvidenceTraceSample> evidenceTrace = new List<PhysicalEvidenceTraceSample>();
+    private readonly HashSet<string> evidenceEntityIds = new HashSet<string>();
+    private readonly string evidenceShotId = "engine-shot-" + Guid.NewGuid().ToString("N");
     private int estimatedBytes;
     private float shotStartFixedTime;
     private bool hasShotStartFixedTime;
@@ -22,6 +25,15 @@ public class PhysicalShotRecorder
     private bool stable;
     private bool terminalRecorded;
     private bool finalized;
+    private long? evidenceFirstFixedStep;
+    private long? evidenceLastFixedStep;
+    private int evidenceSampleCount;
+    private string evidenceIncompleteReason;
+    private bool evidenceTraceTruncated;
+    private bool minimumSeparationObserved;
+    private float minimumSeparation;
+    private string minimumSeparationContactId;
+    private long? minimumSeparationFixedStep;
 
     public PhysicalCaptureFailure Failure { get; private set; }
     public IList<PhysicalRawContact> RawContacts { get { return rawContacts.AsReadOnly(); } }
@@ -80,6 +92,8 @@ public class PhysicalShotRecorder
             Fail(PhysicalCaptureFailureCode.CaptureTimeout, "elapsed fixed-time capture timeout");
             return;
         }
+        if (isFullStepSample)
+            ObserveEvidenceCoverage(fixedStep);
 
         List<PhysicalRawContact> stepContacts = new List<PhysicalRawContact>();
         foreach (PhysicalContactInput input in contacts ?? new PhysicalContactInput[0])
@@ -99,6 +113,24 @@ public class PhysicalShotRecorder
         stepContacts.Sort(CompareContacts);
         for (int index = 0; index < stepContacts.Count; index++)
             stepContacts[index].PointIndex = index;
+        // Partial collision callbacks mint retained contact IDs but are not full
+        // fixed-step coverage.  Only the full sampler can author the capture-wide
+        // minimum witness used as negative/positive violation evidence.
+        if (isFullStepSample)
+        {
+            foreach (PhysicalRawContact contact in stepContacts)
+            {
+                if (!minimumSeparationObserved || contact.Separation < minimumSeparation
+                    || contact.Separation == minimumSeparation
+                        && string.CompareOrdinal(contact.ContactId, minimumSeparationContactId) < 0)
+                {
+                    minimumSeparationObserved = true;
+                    minimumSeparation = contact.Separation;
+                    minimumSeparationContactId = contact.ContactId;
+                    minimumSeparationFixedStep = contact.FixedStep;
+                }
+            }
+        }
         if (rawContacts.Count + supportEdges.Count + events.Count + stepContacts.Count > limits.MaxRecords)
         {
             Fail(PhysicalCaptureFailureCode.RecordLimitExceeded, "raw contact record limit exceeded");
@@ -120,6 +152,15 @@ public class PhysicalShotRecorder
 
     public void RecordUnityContacts(long fixedStep, float fixedTime, Collider2D[] colliders, PhysicalEntityRegistry registry = null)
     {
+        Rigidbody2D[] bodies = (colliders ?? new Collider2D[0])
+            .Where(collider => collider != null && collider.attachedRigidbody != null)
+            .Select(collider => collider.attachedRigidbody).Distinct().ToArray();
+        RecordUnityContacts(fixedStep, fixedTime, colliders, bodies, registry);
+    }
+
+    public void RecordUnityContacts(long fixedStep, float fixedTime, Collider2D[] colliders,
+        Rigidbody2D[] bodies, PhysicalEntityRegistry registry)
+    {
         if (Failure != null || finalized)
             return;
         List<PhysicalContactInput> inputs = new List<PhysicalContactInput>();
@@ -131,6 +172,8 @@ public class PhysicalShotRecorder
             }
             ContactPoint2D[] points = new ContactPoint2D[64];
             int count = collider.GetContacts(points);
+            if (count == points.Length)
+                MarkEvidenceIncomplete("contact_sample_overflow");
             for (int index = 0; index < count; index++)
             {
                 ContactPoint2D point = points[index];
@@ -147,6 +190,17 @@ public class PhysicalShotRecorder
             }
         }
         RecordContacts(fixedStep, fixedTime, inputs.ToArray());
+        try
+        {
+            // Only the evidence-only entity/gravity snapshot is degradable.  The
+            // established contact/support recorder above retains its original
+            // exception and mutation behavior.
+            RecordEvidenceTrace(fixedStep, bodies, registry, Physics2D.gravity);
+        }
+        catch (Exception)
+        {
+            MarkEvidenceIncomplete("sampling_failure");
+        }
     }
 
     public static string RuntimeEntityId(Collider2D collider)
@@ -343,6 +397,18 @@ public class PhysicalShotRecorder
         return null;
     }
 
+    public PhysicalViolationEngineEvidenceSnapshot CreateFinalizedEvidenceSnapshot()
+    {
+        if (!finalized || Failure != null)
+            return null;
+        return new PhysicalViolationEngineEvidenceSnapshot(
+            evidenceShotId, evidenceFirstFixedStep, evidenceLastFixedStep, evidenceSampleCount,
+            evidenceIncompleteReason, minimumSeparationObserved,
+            minimumSeparationObserved ? (float?)minimumSeparation : null,
+            minimumSeparationContactId, minimumSeparationFixedStep,
+            evidenceTraceTruncated, evidenceTrace);
+    }
+
     public bool TryFinalize(bool terminal)
     {
         return FinalizeShot(terminal).Failure == null;
@@ -395,6 +461,73 @@ public class PhysicalShotRecorder
         int removed = rawContacts.RemoveAll(contact =>
             contact.FixedStep < fixedStep - 1 && !collisionCitedContactIds.Contains(contact.ContactId));
         estimatedBytes -= removed * 192;
+    }
+
+    private void ObserveEvidenceCoverage(long fixedStep)
+    {
+        if (!evidenceFirstFixedStep.HasValue)
+            evidenceFirstFixedStep = fixedStep;
+        if (evidenceLastFixedStep.HasValue && fixedStep != evidenceLastFixedStep.Value + 1)
+        {
+            MarkEvidenceIncomplete("fixed_step_gap");
+            evidenceTrace.Clear();
+            evidenceTraceTruncated = false;
+        }
+        evidenceLastFixedStep = fixedStep;
+        evidenceSampleCount++;
+    }
+
+    private void MarkEvidenceIncomplete(string reason)
+    {
+        if (evidenceIncompleteReason == null)
+            evidenceIncompleteReason = reason;
+    }
+
+    private void RecordEvidenceTrace(long fixedStep, Rigidbody2D[] bodies,
+        PhysicalEntityRegistry registry, Vector2 globalGravity)
+    {
+        Dictionary<string, Rigidbody2D> current = new Dictionary<string, Rigidbody2D>();
+        foreach (Rigidbody2D body in (bodies ?? new Rigidbody2D[0])
+            .Where(item => item != null).OrderBy(item => item.GetInstanceID()))
+        {
+            string entityId = registry == null
+                ? body.gameObject.GetInstanceID().ToString() + ":0"
+                : registry.RegisterObject(body.gameObject);
+            if (body.bodyType == RigidbodyType2D.Dynamic || evidenceEntityIds.Contains(entityId))
+            {
+                current[entityId] = body;
+                evidenceEntityIds.Add(entityId);
+            }
+        }
+        if (evidenceEntityIds.Count > PhysicalViolationEngineEvidenceSnapshot.MaxEntitiesPerStep)
+            MarkEvidenceIncomplete("entity_sample_overflow");
+
+        List<PhysicalEvidenceEntity> entities = new List<PhysicalEvidenceEntity>();
+        foreach (string entityId in evidenceEntityIds.OrderBy(item => item, StringComparer.Ordinal)
+            .Take(PhysicalViolationEngineEvidenceSnapshot.MaxEntitiesPerStep))
+        {
+            Rigidbody2D body;
+            current.TryGetValue(entityId, out body);
+            List<PhysicalEvidenceSupport> supports = supportEdges
+                .Where(edge => edge.SupportedEntityId == entityId)
+                .GroupBy(edge => SupportIdFor(edge))
+                .OrderBy(group => group.Key, StringComparer.Ordinal)
+                .Select(group => group
+                    .OrderBy(edge => edge.PairKey, StringComparer.Ordinal)
+                    .ThenBy(edge => edge.ContactIdA, StringComparer.Ordinal)
+                    .ThenBy(edge => edge.ContactIdB, StringComparer.Ordinal)
+                    .First())
+                .Select(edge => new PhysicalEvidenceSupport(edge)).ToList();
+            entities.Add(new PhysicalEvidenceEntity(entityId, body, supports));
+        }
+        if (evidenceTrace.Count > 0 && evidenceTrace[evidenceTrace.Count - 1].FixedStep == fixedStep)
+            evidenceTrace.RemoveAt(evidenceTrace.Count - 1);
+        evidenceTrace.Add(new PhysicalEvidenceTraceSample(fixedStep, globalGravity, entities));
+        if (evidenceTrace.Count > PhysicalViolationEngineEvidenceSnapshot.MaxTraceFixedSteps)
+        {
+            evidenceTrace.RemoveAt(0);
+            evidenceTraceTruncated = true;
+        }
     }
 
     private void AddEvent(long fixedStep, float fixedTime, PhysicalMacroEventKind kind, string subject,

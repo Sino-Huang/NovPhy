@@ -214,6 +214,30 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
         thawed = CapturedRequest(capture).get_physics_capture_v1()
         self.assertEqual(thawed.state, {"coordinates": {"world": "unity"}})
 
+    def test_engine_evidence_gate_requires_the_versioned_identity_bound_component(self) -> None:
+        state = MappingProxyType({"capture_id": "capture-1", "sequence": 2})
+        with self.assertRaisesRegex(Exception, "no engine violation evidence"):
+            smoke.require_engine_evidence(PhysicsCaptureV1(b"png", state, ()))
+
+        evidence = MappingProxyType({
+            "schema_version": "physics_violation_engine_evidence_v1",
+            "capture_id": "capture-1",
+            "shot_id": "engine-shot-1",
+            "sequence": 2,
+            "fixed_step_coverage": MappingProxyType({
+                "first_fixed_step": 1,
+                "last_fixed_step": 2,
+                "sample_count": 2,
+                "complete": True,
+                "incomplete_reason": None,
+            }),
+            "minimum_contact_separation": MappingProxyType({}),
+            "terminal_trace": MappingProxyType({}),
+        })
+        summary = smoke.require_engine_evidence(PhysicsCaptureV1(b"png", state, (), evidence))
+        self.assertEqual(summary["shot_id"], "engine-shot-1")
+        self.assertTrue(summary["complete"])
+
     @mock.patch("scripts.smoke_physics_capture.subprocess.Popen")
     @mock.patch("scripts.smoke_physics_capture.terminate", return_value="pid=4100:exit=143")
     @mock.patch("scripts.smoke_physics_capture.wait_for_listener", side_effect=ListenerBindingError("expected one port-2004 listener owner, found 0"))
@@ -1027,7 +1051,8 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
         for name, value in (
             ("connect_with_retry", mock.DEFAULT), ("prepare_for_play", mock.DEFAULT),
             ("perform_known_action", {"shot": "known"}), ("require_request_identity", ("a", "b")),
-            ("require_collision", {}), ("require_stable_binding", {}), ("require_action_events", ()),
+            ("require_collision", {}), ("require_engine_evidence", {}),
+            ("require_stable_binding", {}), ("require_action_events", ()),
             ("CapturedRequest", mock.DEFAULT),
         ):
             patcher = mock.patch.object(smoke, name) if value is mock.DEFAULT else mock.patch.object(smoke, name, return_value=value)
@@ -1037,7 +1062,8 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
         gates["validate_physics_shot_artifact"] = stack.enter_context(mock.patch.object(smoke, "validate_physics_shot_artifact", return_value=SimpleNamespace(state_count=2, event_count=1)))
         return gates
 
-    ACCEPT_GATES = ("require_request_identity", "require_collision", "require_stable_binding", "require_action_events", "validate_physics_shot_artifact")
+    ACCEPT_GATES = ("require_request_identity", "require_collision", "require_engine_evidence",
+                    "require_stable_binding", "require_action_events", "validate_physics_shot_artifact")
 
     @mock.patch("scripts.smoke_physics_capture.subprocess.Popen")
     @mock.patch("scripts.smoke_physics_capture.terminate", side_effect=OSError("killpg denied"))

@@ -14,6 +14,7 @@ JsonScalar: TypeAlias = str | int | float | bool | None
 JsonValue: TypeAlias = JsonScalar | Mapping[str, "JsonValue"] | tuple["JsonValue", ...]
 PhysicsStateV1: TypeAlias = Mapping[str, JsonValue]
 PhysicsEventV1: TypeAlias = Mapping[str, JsonValue]
+PhysicsViolationEngineEvidenceV1: TypeAlias = Mapping[str, JsonValue]
 
 
 class GameState(IntEnum):
@@ -105,6 +106,7 @@ class PhysicsCaptureV1:
     png: bytes
     state: PhysicsStateV1
     events: tuple[PhysicsEventV1, ...]
+    evidence: PhysicsViolationEngineEvidenceV1 | None = None
 
 
 _PHYSICS_MAGIC = b"SBPV"
@@ -342,14 +344,26 @@ class ScienceBirdsBridge:
         return self._socket
 
 
-def encode_physics_capture_v1(png: bytes, state: dict, events: list[dict]) -> bytes:
+def encode_physics_capture_v1(
+    png: bytes,
+    state: dict,
+    events: list[dict],
+    evidence: dict | None = None,
+) -> bytes:
     """Build the canonical request-70 response, useful for protocol fixtures."""
     png = bytes(png)
     state_bytes = json.dumps(state, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
     events_bytes = json.dumps(events, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
-    payload = struct.pack("!III", len(png), len(state_bytes), len(events_bytes))
-    payload += png + state_bytes + events_bytes
-    return _encode_envelope(0, 0, payload)
+    if evidence is None:
+        payload = struct.pack("!III", len(png), len(state_bytes), len(events_bytes))
+        payload += png + state_bytes + events_bytes
+        return _encode_envelope(0, 0, payload)
+    evidence_bytes = json.dumps(evidence, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
+    payload = struct.pack(
+        "!IIII", len(png), len(state_bytes), len(events_bytes), len(evidence_bytes)
+    )
+    payload += png + state_bytes + events_bytes + evidence_bytes
+    return _encode_envelope(2, 0, payload)
 
 
 def _encode_envelope(flags: int, failure_code: int, payload: bytes) -> bytes:
@@ -380,33 +394,53 @@ def _decode_physics_capture_v1(body: bytes) -> PhysicsCaptureV1:
         except UnicodeDecodeError as exc:
             raise PhysicsCaptureV1ProtocolError("request-70 failure message is not UTF-8") from exc
         raise PhysicsCaptureV1Failure(failure_code, message)
-    if flags != 0 or failure_code != 0:
+    if flags not in (0, 2) or failure_code != 0:
         raise PhysicsCaptureV1ProtocolError("invalid request-70 success flags")
-    if len(payload) < 12:
+    component_header_length = 16 if flags == 2 else 12
+    if len(payload) < component_header_length:
         raise PhysicsCaptureV1ProtocolError("request-70 success payload is truncated")
-    png_length, state_length, events_length = struct.unpack("!III", payload[:12])
-    if png_length > _PHYSICS_MAX_PNG or state_length > _PHYSICS_MAX_JSON or events_length > _PHYSICS_MAX_JSON:
+    if flags == 2:
+        png_length, state_length, events_length, evidence_length = struct.unpack("!IIII", payload[:16])
+    else:
+        png_length, state_length, events_length = struct.unpack("!III", payload[:12])
+        evidence_length = 0
+    if (png_length > _PHYSICS_MAX_PNG or state_length > _PHYSICS_MAX_JSON
+            or events_length > _PHYSICS_MAX_JSON or evidence_length > _PHYSICS_MAX_JSON):
         raise PhysicsCaptureV1ProtocolError("request-70 payload exceeds bounds")
-    if png_length + state_length + events_length != len(payload) - 12:
+    if png_length + state_length + events_length + evidence_length != len(payload) - component_header_length:
         raise PhysicsCaptureV1ProtocolError("request-70 record lengths mismatch")
-    offset = 12
+    offset = component_header_length
     png = payload[offset:offset + png_length]
     offset += png_length
     state = _parse_json_record(payload[offset:offset + state_length], dict, "state")
     offset += state_length
     events = _parse_json_record(payload[offset:offset + events_length], list, "events")
+    offset += events_length
+    evidence = None
+    if flags == 2:
+        evidence = _parse_json_record(payload[offset:offset + evidence_length], (dict, type(None)), "evidence")
     render_frame = state.get("render_frame")
     if isinstance(render_frame, bool) or not isinstance(render_frame, int):
         raise PhysicsCaptureV1ProtocolError("state render_frame is missing or invalid")
     for event in events:
         if not isinstance(event, dict) or event.get("render_frame") != render_frame:
             raise PhysicsCaptureV1ProtocolError("state and event render_frame mismatch")
+    if evidence is not None:
+        if evidence.get("schema_version") != "physics_violation_engine_evidence_v1":
+            raise PhysicsCaptureV1ProtocolError("request-70 evidence schema is unsupported")
+        if evidence.get("capture_id") != state.get("capture_id") or evidence.get("sequence") != state.get("sequence"):
+            raise PhysicsCaptureV1ProtocolError("state and evidence identity mismatch")
     if not png.startswith(b"\x89PNG\r\n\x1a\n"):
         raise PhysicsCaptureV1ProtocolError("request-70 payload is not a PNG")
-    return PhysicsCaptureV1(bytes(png), _freeze(state), tuple(_freeze(event) for event in events))
+    return PhysicsCaptureV1(
+        bytes(png),
+        _freeze(state),
+        tuple(_freeze(event) for event in events),
+        None if evidence is None else _freeze(evidence),
+    )
 
 
-def _parse_json_record(data: bytes, expected_type: type, name: str):
+def _parse_json_record(data: bytes, expected_type: type | tuple[type, ...], name: str):
     try:
         value = json.loads(data.decode("utf-8"), parse_constant=_reject_json_constant)
     except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:

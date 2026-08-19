@@ -18,11 +18,19 @@ from scripts.physics_capture_types import (
     ContactId,
     CoordinateDeclaration,
     EntityId,
+    EvidenceFixedStepCoverage,
+    EvidenceIncompleteReason,
+    EvidenceSupport,
+    EvidenceSupportEdge,
+    EvidenceTerminalTrace,
+    EvidenceTraceEntity,
+    EvidenceTraceSample,
     EventId,
     EventRecord,
     EventType,
     PhysicsBody,
     PhysicsCapture,
+    PhysicsViolationEngineEvidence,
     RawContact,
     RecordClock,
     RgbFrame,
@@ -33,6 +41,7 @@ from scripts.physics_capture_types import (
     SupportEdge,
     SupportId,
     SupportRule,
+    MinimumContactSeparation,
     Vector2,
     WorldPose,
 )
@@ -46,6 +55,13 @@ HEADER_FIELDS = COMMON_FIELDS | frozenset(("record_type", "capture_status", "sta
 STATE_FIELDS = COMMON_FIELDS | frozenset(("record_type", "rgb_frame", "nodes", "raw_contacts", "support_edges"))
 EVENT_FIELDS = COMMON_FIELDS | frozenset(("record_type", "event_id", "event_type", "participants", "payload"))
 ENTITY_ID_PATTERN = re.compile(r"^(?:-?[0-9]+:[0-9]+|world:static:-?[0-9]+)$")
+EVIDENCE_CONTACT_ID_PATTERN = re.compile(
+    r"^contact:([0-9]+):"
+    r"(?:-?[0-9]+:[0-9]+|world:static:-?[0-9]+):-?[0-9]+\|"
+    r"(?:-?[0-9]+:[0-9]+|world:static:-?[0-9]+):-?[0-9]+:[0-9]+$"
+)
+EVIDENCE_SCHEMA_VERSION = "physics_violation_engine_evidence_v1"
+EVIDENCE_FIELDS = frozenset(("schema_version", "capture_id", "shot_id", "sequence", "fixed_step_coverage", "minimum_contact_separation", "terminal_trace"))
 
 
 def _read_jsonl(path: Path, *, max_records: int, allow_empty: bool = False) -> tuple[JsonObject, ...]:
@@ -132,6 +148,24 @@ def _optional_number(record: JsonObject, field: str, location: str) -> float | N
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
         raise contract_error(ContractErrorCode.WRONG_TYPE, location, field)
     return float(value)
+
+
+def _optional_integer(record: JsonObject, field: str, location: str) -> int | None:
+    value = _value(record, field, location)
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise contract_error(ContractErrorCode.WRONG_TYPE, location, field)
+    return value
+
+
+def _optional_string(record: JsonObject, field: str, location: str) -> str | None:
+    value = _value(record, field, location)
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise contract_error(ContractErrorCode.WRONG_TYPE, location, field)
+    return value
 
 
 def _exact_fields(record: JsonObject, fields: frozenset[str], location: str) -> None:
@@ -304,9 +338,192 @@ def _parse_event(record: JsonObject, index: int) -> EventRecord:
     return EventRecord(_clock(record, location), EventId(_string(record, "event_id", location)), event_type, participants, json.dumps(payload, sort_keys=True, separators=(",", ":")))
 
 
-def parse_physics_sidecars(state_path: Path, event_path: Path) -> PhysicsCapture:
+def _evidence_reason(value: str | None, location: str) -> EvidenceIncompleteReason | None:
+    if value is None:
+        return None
+    try:
+        return EvidenceIncompleteReason(value)
+    except ValueError as error:
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "incomplete reason") from error
+
+
+def _evidence_contact_step(value: str, location: str) -> int:
+    match = EVIDENCE_CONTACT_ID_PATTERN.fullmatch(value)
+    if match is None:
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "contact_id")
+    return int(match.group(1))
+
+
+def _parse_evidence_support(value: JsonValue, location: str) -> EvidenceSupport:
+    if not isinstance(value, dict):
+        raise contract_error(ContractErrorCode.WRONG_TYPE, location, "support_v1")
+    _exact_fields(value, frozenset(("present", "edges")), location)
+    edges: list[EvidenceSupportEdge] = []
+    for index, raw in enumerate(_array(value, "edges", location)):
+        edge_location = f"{location}.edges[{index}]"
+        if not isinstance(raw, dict):
+            raise contract_error(ContractErrorCode.WRONG_TYPE, edge_location, "edge")
+        _exact_fields(raw, frozenset(("support_id", "supporter_id", "evidence_contact_ids", "evidence_fixed_steps")), edge_location)
+        contacts = _array(raw, "evidence_contact_ids", edge_location)
+        steps = _array(raw, "evidence_fixed_steps", edge_location)
+        if len(contacts) != 2 or not all(isinstance(item, str) and item for item in contacts):
+            raise contract_error(ContractErrorCode.WRONG_TYPE, edge_location, "evidence_contact_ids")
+        if len(steps) != 2 or not all(isinstance(item, int) and not isinstance(item, bool) and item >= 0 for item in steps):
+            raise contract_error(ContractErrorCode.WRONG_TYPE, edge_location, "evidence_fixed_steps")
+        if steps[1] != steps[0] + 1:
+            raise contract_error(ContractErrorCode.INVALID_VALUE, edge_location, "support evidence steps")
+        if tuple(_evidence_contact_step(item, edge_location) for item in contacts) != tuple(steps):
+            raise contract_error(ContractErrorCode.INVALID_VALUE, edge_location, "support contact steps")
+        supporter = _string(raw, "supporter_id", edge_location)
+        if ENTITY_ID_PATTERN.fullmatch(supporter) is None:
+            raise contract_error(ContractErrorCode.INVALID_VALUE, edge_location, "supporter_id")
+        support_id = _string(raw, "support_id", edge_location)
+        edges.append(EvidenceSupportEdge(SupportId(support_id), EntityId(supporter),
+            (ContactId(contacts[0]), ContactId(contacts[1])), (steps[0], steps[1])))
+    present = _boolean(value, "present", location)
+    if present != bool(edges):
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "support presence differs from evidence")
+    support_ids = tuple(edge.support_id for edge in edges)
+    if support_ids != tuple(sorted(set(support_ids))):
+        raise contract_error(ContractErrorCode.DETERMINISTIC_ORDER, location, "support edges")
+    return EvidenceSupport(present, tuple(edges))
+
+
+def _parse_evidence_entity(value: JsonValue, location: str) -> EvidenceTraceEntity:
+    if not isinstance(value, dict):
+        raise contract_error(ContractErrorCode.WRONG_TYPE, location, "entity")
+    _exact_fields(value, frozenset(("entity_id", "observed", "present", "world_position", "body_type", "simulated", "gravity_scale", "support_v1")), location)
+    entity_id = _string(value, "entity_id", location)
+    if ENTITY_ID_PATTERN.fullmatch(entity_id) is None:
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "entity_id")
+    observed = _boolean(value, "observed", location)
+    present = _boolean(value, "present", location)
+    position_raw = _value(value, "world_position", location)
+    position = None if position_raw is None else _vector_value(position_raw, f"{location}.world_position")
+    body_type = _optional_string(value, "body_type", location)
+    simulated_raw = _value(value, "simulated", location)
+    if simulated_raw is not None and not isinstance(simulated_raw, bool):
+        raise contract_error(ContractErrorCode.WRONG_TYPE, location, "simulated")
+    gravity_scale = _optional_number(value, "gravity_scale", location)
+    if not observed or present != all(item is not None for item in (position, body_type, simulated_raw, gravity_scale)):
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "observed/present body facts are inconsistent")
+    if body_type not in (None, "dynamic", "kinematic", "static"):
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "body_type")
+    support = _parse_evidence_support(
+        _value(value, "support_v1", location), f"{location}.support_v1"
+    )
+    if not present and support.present:
+        raise contract_error(
+            ContractErrorCode.INVALID_VALUE, location, "absent entity has support evidence"
+        )
+    return EvidenceTraceEntity(EntityId(entity_id), observed, present, position, body_type,
+        simulated_raw, gravity_scale, support)
+
+
+def _parse_evidence(record: JsonObject, index: int) -> PhysicsViolationEngineEvidence:
+    location = f"physics_violation_engine_evidence_v1.jsonl:{index + 1}"
+    _exact_fields(record, EVIDENCE_FIELDS, location)
+    version = _string(record, "schema_version", location)
+    if version != EVIDENCE_SCHEMA_VERSION:
+        raise contract_error(ContractErrorCode.UNSUPPORTED_SCHEMA, location, version)
+    capture_id = _string(record, "capture_id", location)
+    shot_id = _string(record, "shot_id", location)
+    sequence = _integer(record, "sequence", location)
+    if not capture_id or not shot_id or sequence < 0:
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "evidence identity")
+
+    coverage_raw = _object(record, "fixed_step_coverage", location)
+    _exact_fields(coverage_raw, frozenset(("first_fixed_step", "last_fixed_step", "sample_count", "complete", "incomplete_reason")), f"{location}.fixed_step_coverage")
+    first = _optional_integer(coverage_raw, "first_fixed_step", location)
+    last = _optional_integer(coverage_raw, "last_fixed_step", location)
+    sample_count = _integer(coverage_raw, "sample_count", location)
+    complete = _boolean(coverage_raw, "complete", location)
+    reason = _evidence_reason(_optional_string(coverage_raw, "incomplete_reason", location), location)
+    if sample_count < 0 or (sample_count == 0) != (first is None and last is None):
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "fixed-step coverage bounds")
+    if sample_count and (first is None or last is None or min(first, last) < 0 or first > last):
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "fixed-step coverage bounds")
+    if complete != (reason is None):
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "fixed-step completeness")
+    if sample_count == 0:
+        if reason is not EvidenceIncompleteReason.NO_FIXED_STEP_SAMPLES:
+            raise contract_error(ContractErrorCode.INVALID_VALUE, location, "empty fixed-step coverage reason")
+    else:
+        assert first is not None and last is not None
+        covered_span = last - first + 1
+        if sample_count > covered_span or (complete and sample_count != covered_span):
+            raise contract_error(ContractErrorCode.INVALID_VALUE, location, "fixed-step completeness")
+    coverage = EvidenceFixedStepCoverage(first, last, sample_count, complete, reason)
+
+    minimum_raw = _object(record, "minimum_contact_separation", location)
+    _exact_fields(minimum_raw, frozenset(("observed", "separation", "contact_id", "fixed_step")), f"{location}.minimum_contact_separation")
+    minimum_observed = _boolean(minimum_raw, "observed", location)
+    separation = _optional_number(minimum_raw, "separation", location)
+    contact_id = _optional_string(minimum_raw, "contact_id", location)
+    minimum_step = _optional_integer(minimum_raw, "fixed_step", location)
+    if minimum_observed != all(item is not None for item in (separation, contact_id, minimum_step)):
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "minimum contact presence")
+    if contact_id == "":
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "minimum contact_id")
+    if minimum_step is not None and minimum_step < 0:
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "minimum contact fixed_step")
+    if contact_id is not None and _evidence_contact_step(contact_id, location) != minimum_step:
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "minimum contact fixed_step")
+    minimum = MinimumContactSeparation(minimum_observed, separation,
+        None if contact_id is None else ContactId(contact_id), minimum_step)
+
+    trace_raw = _object(record, "terminal_trace", location)
+    _exact_fields(trace_raw, frozenset(("max_fixed_steps", "max_entities_per_step", "first_fixed_step", "last_fixed_step", "truncated", "truncation_reason", "failure_reason", "samples")), f"{location}.terminal_trace")
+    max_steps = _integer(trace_raw, "max_fixed_steps", location)
+    max_entities = _integer(trace_raw, "max_entities_per_step", location)
+    if (max_steps, max_entities) != (8, 128):
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "terminal trace bounds differ from v1")
+    samples: list[EvidenceTraceSample] = []
+    for sample_index, raw_sample in enumerate(_array(trace_raw, "samples", location)):
+        sample_location = f"{location}.terminal_trace.samples[{sample_index}]"
+        if not isinstance(raw_sample, dict):
+            raise contract_error(ContractErrorCode.WRONG_TYPE, sample_location, "sample")
+        _exact_fields(raw_sample, frozenset(("fixed_step", "physics2d_gravity", "entities")), sample_location)
+        entities = tuple(
+            _parse_evidence_entity(item, f"{sample_location}.entities[{entity_index}]")
+            for entity_index, item in enumerate(_array(raw_sample, "entities", sample_location))
+        )
+        entity_ids = tuple(item.entity_id for item in entities)
+        if len(entities) > max_entities or entity_ids != tuple(sorted(set(entity_ids))):
+            raise contract_error(ContractErrorCode.DETERMINISTIC_ORDER, sample_location, "entities")
+        step = _integer(raw_sample, "fixed_step", sample_location)
+        if step < 0:
+            raise contract_error(ContractErrorCode.INVALID_VALUE, sample_location, "fixed_step")
+        samples.append(EvidenceTraceSample(step, _vector(_object(raw_sample, "physics2d_gravity", sample_location), sample_location), entities))
+    if len(samples) > max_steps or any(current.fixed_step != previous.fixed_step + 1 for previous, current in zip(samples, samples[1:])):
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "terminal trace is not bounded consecutive history")
+    trace_first = _optional_integer(trace_raw, "first_fixed_step", location)
+    trace_last = _optional_integer(trace_raw, "last_fixed_step", location)
+    expected_bounds = (None, None) if not samples else (samples[0].fixed_step, samples[-1].fixed_step)
+    if (trace_first, trace_last) != expected_bounds:
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "terminal trace bounds")
+    truncated = _boolean(trace_raw, "truncated", location)
+    truncation_reason = _optional_string(trace_raw, "truncation_reason", location)
+    if (truncated, truncation_reason) not in ((False, None), (True, "terminal_trace_bound")):
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "terminal trace truncation")
+    failure_reason = _evidence_reason(_optional_string(trace_raw, "failure_reason", location), location)
+    if failure_reason != reason:
+        raise contract_error(ContractErrorCode.INVALID_VALUE, location, "trace failure differs from coverage")
+    trace = EvidenceTerminalTrace(max_steps, max_entities, trace_first, trace_last, truncated,
+        truncation_reason, failure_reason, tuple(samples))
+    return PhysicsViolationEngineEvidence(version, CaptureId(capture_id), shot_id, sequence, coverage, minimum, trace)
+
+
+def parse_physics_sidecars(
+    state_path: Path,
+    event_path: Path,
+    evidence_path: Path | None = None,
+) -> PhysicsCapture:
     if state_path.stat().st_size + event_path.stat().st_size > MAX_TOTAL_BYTES:
         raise contract_error(ContractErrorCode.INVALID_VALUE, "sidecars", "sidecar byte limit exceeded")
     state_records = _read_jsonl(state_path, max_records=MAX_STATE_RECORDS)
     event_records = _read_jsonl(event_path, max_records=MAX_EVENT_RECORDS, allow_empty=True)
-    return PhysicsCapture(_parse_header(state_records[0]), tuple(_parse_state(record, index) for index, record in enumerate(state_records[1:], start=1)), tuple(_parse_event(record, index) for index, record in enumerate(event_records)))
+    evidence_records = () if evidence_path is None else _read_jsonl(
+        evidence_path, max_records=MAX_STATE_RECORDS
+    )
+    return PhysicsCapture(_parse_header(state_records[0]), tuple(_parse_state(record, index) for index, record in enumerate(state_records[1:], start=1)), tuple(_parse_event(record, index) for index, record in enumerate(event_records)), tuple(_parse_evidence(record, index) for index, record in enumerate(evidence_records)))

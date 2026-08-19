@@ -735,6 +735,191 @@ public class PhysicsShotRecorderTests
             "the support edge citing the retained steps must reach the finalized snapshot");
     }
 
+    [Test]
+    public void ViolationEvidence_MinimumSurvivesOrdinaryContactPruning()
+    {
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(32, 64 * 1024);
+        PhysicalContactInput deep = new PhysicalContactInput(
+            "a:0", 1, Vector2.zero, Vector2.up, -2f, Vector2.zero, 0f,
+            "b:0", 2, Vector2.zero, Vector2.one, false);
+        PhysicalContactInput shallow = new PhysicalContactInput(
+            "a:0", 1, Vector2.zero, Vector2.up, -0.1f, Vector2.zero, 0f,
+            "b:0", 2, Vector2.zero, Vector2.one, false);
+
+        recorder.RecordContacts(1, new[] { deep });
+        string deepId = recorder.RawContacts[0].ContactId;
+        recorder.RecordContacts(2, new[] { shallow });
+        recorder.RecordContacts(3, new[] { shallow });
+        Assert.IsFalse(recorder.RawContacts.Any(contact => contact.ContactId == deepId),
+            "fixture did not prune the deep step-one contact");
+
+        recorder.FinalizeShot(true);
+        PhysicalViolationEngineEvidenceSnapshot evidence = recorder.CreateFinalizedEvidenceSnapshot();
+        Assert.IsTrue(evidence.MinimumObserved);
+        Assert.AreEqual(-2f, evidence.MinimumSeparation.Value);
+        Assert.AreEqual(deepId, evidence.MinimumContactId);
+        Assert.AreEqual(1L, evidence.MinimumFixedStep.Value);
+    }
+
+    [Test]
+    public void ViolationEvidence_EntityOverflowIsExplicitlyIncomplete()
+    {
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(512, 1024 * 1024);
+        PhysicalEntityRegistry registry = new PhysicalEntityRegistry();
+        List<GameObject> objects = new List<GameObject>();
+        try
+        {
+            for (int i = 0; i <= PhysicalViolationEngineEvidenceSnapshot.MaxEntitiesPerStep; i++)
+            {
+                GameObject item = new GameObject("evidence-body-" + i);
+                item.AddComponent<Rigidbody2D>().gravityScale = 0f;
+                objects.Add(item);
+            }
+            recorder.RecordUnityContacts(1, 0.02f, new Collider2D[0],
+                objects.Select(item => item.GetComponent<Rigidbody2D>()).ToArray(), registry);
+            recorder.FinalizeShot(true);
+
+            PhysicalViolationEngineEvidenceSnapshot evidence = recorder.CreateFinalizedEvidenceSnapshot();
+            Assert.IsFalse(evidence.Complete);
+            Assert.AreEqual("entity_sample_overflow", evidence.IncompleteReason);
+            Assert.AreEqual(PhysicalViolationEngineEvidenceSnapshot.MaxEntitiesPerStep,
+                evidence.Trace[0].Entities.Count);
+        }
+        finally
+        {
+            foreach (GameObject item in objects) UnityEngine.Object.DestroyImmediate(item);
+        }
+    }
+
+    [Test]
+    public void ViolationEvidence_TerminalTraceIsBoundedAndConsecutive()
+    {
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(64, 64 * 1024);
+        PhysicalEntityRegistry registry = new PhysicalEntityRegistry();
+        GameObject item = new GameObject("trace-body");
+        Rigidbody2D body = item.AddComponent<Rigidbody2D>();
+        body.gravityScale = 0.25f;
+        try
+        {
+            for (long step = 1; step <= 10; step++)
+                recorder.RecordUnityContacts(step, step * 0.02f, new Collider2D[0],
+                    new[] { body }, registry);
+            recorder.FinalizeShot(true);
+
+            PhysicalViolationEngineEvidenceSnapshot evidence = recorder.CreateFinalizedEvidenceSnapshot();
+            Assert.IsTrue(evidence.TraceTruncated);
+            Assert.AreEqual(8, evidence.Trace.Count);
+            CollectionAssert.AreEqual(Enumerable.Range(3, 8).Select(value => (long)value).ToArray(),
+                evidence.Trace.Select(sample => sample.FixedStep).ToArray());
+            Assert.AreEqual("dynamic", evidence.Trace[7].Entities[0].BodyType);
+            Assert.AreEqual(0.25f, evidence.Trace[7].Entities[0].GravityScale.Value);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(item);
+        }
+    }
+
+    [Test]
+    public void ViolationEvidence_NoSamplesAndFixedStepGapsAreExplicitlyIncomplete()
+    {
+        PhysicsShotRecorder empty = new PhysicsShotRecorder(16, 64 * 1024);
+        empty.FinalizeShot(true);
+        Assert.AreEqual("no_fixed_step_samples",
+            empty.CreateFinalizedEvidenceSnapshot().IncompleteReason);
+
+        PhysicsShotRecorder gapped = new PhysicsShotRecorder(16, 64 * 1024);
+        PhysicalEntityRegistry registry = new PhysicalEntityRegistry();
+        GameObject item = new GameObject("gapped-trace-body");
+        Rigidbody2D body = item.AddComponent<Rigidbody2D>();
+        try
+        {
+            gapped.RecordUnityContacts(1, 0.02f, new Collider2D[0], new[] { body }, registry);
+            gapped.RecordUnityContacts(3, 0.06f, new Collider2D[0], new[] { body }, registry);
+            gapped.FinalizeShot(true);
+            PhysicalViolationEngineEvidenceSnapshot evidence = gapped.CreateFinalizedEvidenceSnapshot();
+            Assert.IsFalse(evidence.Complete);
+            Assert.AreEqual("fixed_step_gap", evidence.IncompleteReason);
+            Assert.AreEqual(2, evidence.SampleCount);
+            CollectionAssert.AreEqual(new long[] { 3 },
+                evidence.Trace.Select(sample => sample.FixedStep).ToArray());
+            Assert.AreEqual(1, evidence.Trace[0].Entities.Count);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(item);
+        }
+    }
+
+    [Test]
+    public void ViolationEvidence_PartialCollisionDoesNotAuthorMinimumWitness()
+    {
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(32, 64 * 1024);
+        PhysicalContactInput partial = new PhysicalContactInput(
+            "a:0", 1, Vector2.zero, Vector2.up, -5f, Vector2.zero, 0f,
+            "b:0", 2, Vector2.zero, Vector2.one, false);
+        PhysicalContactInput full = new PhysicalContactInput(
+            "a:0", 1, Vector2.zero, Vector2.up, -0.25f, Vector2.zero, 0f,
+            "b:0", 2, Vector2.zero, Vector2.one, false);
+
+        recorder.RecordCollision(99, 1.98f, "a:0", "b:0", new[] { partial }, 1f);
+        recorder.RecordContacts(1, 0.02f, new[] { full });
+        string fullContactId = recorder.RawContacts.Single(contact => contact.FixedStep == 1).ContactId;
+        recorder.FinalizeShot(true);
+
+        PhysicalViolationEngineEvidenceSnapshot evidence = recorder.CreateFinalizedEvidenceSnapshot();
+        Assert.AreEqual(1L, evidence.FirstFixedStep.Value);
+        Assert.AreEqual(1L, evidence.LastFixedStep.Value);
+        Assert.AreEqual(-0.25f, evidence.MinimumSeparation.Value);
+        Assert.AreEqual(1L, evidence.MinimumFixedStep.Value);
+        Assert.AreEqual(fullContactId, evidence.MinimumContactId);
+    }
+
+    [Test]
+    public void ViolationEvidence_TraceCopiesAuthoritativeSupportFacts()
+    {
+        PhysicsShotRecorder recorder = new PhysicsShotRecorder(32, 64 * 1024);
+        PhysicalEntityRegistry registry = new PhysicalEntityRegistry();
+        GameObject bodyObject = new GameObject("supported-evidence-body");
+        Rigidbody2D body = bodyObject.AddComponent<Rigidbody2D>();
+        string supportedId = registry.RegisterObject(bodyObject);
+        string supporterId = "world:static:900";
+        PhysicalContactInput firstSupport = new PhysicalContactInput(
+            supporterId, 900, Vector2.zero, Vector2.up, 0f, Vector2.zero, 0f,
+            supportedId, 1000, Vector2.zero, Vector2.up, false);
+        PhysicalContactInput secondSupport = new PhysicalContactInput(
+            supporterId, 901, Vector2.right, Vector2.up, 0f, Vector2.zero, 0f,
+            supportedId, 1001, Vector2.zero, Vector2.up, false);
+        try
+        {
+            recorder.RecordContacts(1, new[] { secondSupport, firstSupport });
+            recorder.RecordContacts(2, new[] { secondSupport, firstSupport });
+            Assert.AreEqual(2, recorder.SupportEdges.Count,
+                "fixture must exercise compound-collider support witnesses");
+            PhysicalSupportEdge canonical = recorder.SupportEdges
+                .OrderBy(edge => edge.PairKey, StringComparer.Ordinal)
+                .ThenBy(edge => edge.ContactIdA, StringComparer.Ordinal).First();
+            typeof(PhysicalShotRecorder).GetMethod("RecordEvidenceTrace",
+                BindingFlags.Instance | BindingFlags.NonPublic).Invoke(
+                    recorder, new object[] { 2L, new[] { body }, registry, Physics2D.gravity });
+            recorder.FinalizeShot(true);
+
+            PhysicalEvidenceEntity entity = recorder.CreateFinalizedEvidenceSnapshot()
+                .Trace[0].Entities.Single(item => item.EntityId == supportedId);
+            Assert.AreEqual(1, entity.Supports.Count);
+            Assert.AreEqual("support:" + supporterId + "->" + supportedId,
+                entity.Supports[0].SupportId);
+            CollectionAssert.AreEqual(new long[] { 1, 2 }, new[] {
+                entity.Supports[0].FixedStepA, entity.Supports[0].FixedStepB });
+            Assert.AreEqual(canonical.ContactIdA, entity.Supports[0].ContactIdA);
+            Assert.AreEqual(canonical.ContactIdB, entity.Supports[0].ContactIdB);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(bodyObject);
+        }
+    }
+
     private static string SupportIdOf(PhysicalSupportEdge edge)
     {
         return "support:" + edge.SupporterEntityId + "->" + edge.SupportedEntityId;

@@ -159,7 +159,11 @@ def _capture_contract(manifest: JsonObject, requested_contract: str | None) -> C
 
 def validate_physics_shot_artifact(shot_dir: Path) -> PhysicsArtifactSummary:
     from PIL import Image
-    from scripts.physics_capture_contract import PhysicsContractError, load_physics_capture
+    from scripts.physics_capture_contract import (
+        PhysicsContractError,
+        VIOLATION_EVIDENCE_SIDECAR,
+        load_physics_capture,
+    )
 
     try:
         root_fd = os.open(shot_dir, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_DIRECTORY)
@@ -197,10 +201,31 @@ def validate_physics_shot_artifact(shot_dir: Path) -> PhysicsArtifactSummary:
         _confined_file(event_path, shot_dir)
         event_fd = _open_rooted(root_fd, "physics_events.jsonl", event_path)
         resources.callback(os.close, event_fd)
+        evidence_metadata_fields = (
+            "physics_violation_engine_evidence_path",
+            "physics_violation_engine_evidence_count",
+            "physics_violation_engine_evidence_sha256",
+        )
+        declared_evidence = any(field in metadata for field in evidence_metadata_fields)
+        evidence_fd: int | None = None
+        evidence_path = shot_dir / VIOLATION_EVIDENCE_SIDECAR
+        if declared_evidence:
+            if (metadata.get(evidence_metadata_fields[0]) != VIOLATION_EVIDENCE_SIDECAR
+                    or not isinstance(metadata.get(evidence_metadata_fields[1]), int)
+                    or isinstance(metadata.get(evidence_metadata_fields[1]), bool)
+                    or metadata.get(evidence_metadata_fields[1]) < 1
+                    or not isinstance(metadata.get(evidence_metadata_fields[2]), str)):
+                raise PhysicsArtifactError(str(metadata_path), "violation evidence metadata is malformed")
+            _confined_file(evidence_path, shot_dir)
+            evidence_fd = _open_rooted(root_fd, VIOLATION_EVIDENCE_SIDECAR, evidence_path)
+            resources.callback(os.close, evidence_fd)
+        elif evidence_path.exists() or evidence_path.is_symlink():
+            raise PhysicsArtifactError(str(evidence_path), "undeclared violation evidence sidecar")
         try:
             capture = load_physics_capture(
                 Path(f"/proc/self/fd/{state_fd}"),
                 Path(f"/proc/self/fd/{event_fd}"),
+                None if evidence_fd is None else Path(f"/proc/self/fd/{evidence_fd}"),
             )
         except (OSError, PhysicsContractError) as error:
             raise PhysicsArtifactError(str(shot_dir), str(error)) from error
@@ -244,6 +269,11 @@ def validate_physics_shot_artifact(shot_dir: Path) -> PhysicsArtifactSummary:
         event_hash = _sha256_descriptor(event_fd)
         if metadata.get("frame_checksums") != expected_checksums or metadata.get("physics_state_sha256") != state_hash or metadata.get("physics_events_sha256") != event_hash:
             raise PhysicsArtifactError(str(metadata_path), "recorded checksums differ from files")
+        if evidence_fd is not None:
+            evidence_hash = _sha256_descriptor(evidence_fd)
+            if (metadata.get("physics_violation_engine_evidence_count") != len(capture.violation_evidence)
+                    or metadata.get("physics_violation_engine_evidence_sha256") != evidence_hash):
+                raise PhysicsArtifactError(str(metadata_path), "violation evidence count or checksum differs")
         if any(field in metadata for field in SEMANTICS_METADATA_FIELDS):
             expected_identity = metadata.get("expected_initial_engine_state_identity")
             if expected_identity is not None and not isinstance(expected_identity, str):

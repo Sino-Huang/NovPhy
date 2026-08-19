@@ -24,6 +24,9 @@ class PhysicsCapturePacket(Protocol):
     @property
     def events(self) -> tuple[Mapping[str, JsonValue], ...]: ...
 
+    @property
+    def evidence(self) -> Mapping[str, JsonValue] | None: ...
+
 
 class PhysicsCaptureBridge(Protocol):
     def get_physics_capture_v1(self) -> PhysicsCapturePacket: ...

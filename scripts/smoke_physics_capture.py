@@ -91,6 +91,7 @@ ARTIFACT_NAMES: Final = ("shot_001.tmp", "shot_001")
 REFUSAL_LOG_PREFIX: Final = "physics_capture_v1: refusing"
 FRAME_HEIGHT_PIXELS: Final = 480
 WIRE_STATE_FIELDS: Final = frozenset(("schema_version", "capture_id", "sequence", "render_frame", "render_time", "fixed_step", "fixed_time", "coordinates", "nodes", "raw_contacts", "support_edges"))
+WIRE_EVIDENCE_FIELDS: Final = frozenset(("schema_version", "capture_id", "shot_id", "sequence", "fixed_step_coverage", "minimum_contact_separation", "terminal_trace"))
 JsonValue: TypeAlias = None | bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"]
 JsonObject: TypeAlias = dict[str, JsonValue]
 
@@ -606,7 +607,10 @@ class CapturedRequest:
     def get_physics_capture_v1(self) -> PhysicsCaptureV1:
         state = {key: mutable_json(value) for key, value in self.capture.state.items()}
         events = tuple({key: mutable_json(value) for key, value in event.items()} for event in self.capture.events)
-        return PhysicsCaptureV1(self.capture.png, state, events)
+        evidence = None if self.capture.evidence is None else {
+            key: mutable_json(value) for key, value in self.capture.evidence.items()
+        }
+        return PhysicsCaptureV1(self.capture.png, state, events, evidence)
 
 
 def mutable_json(value: BridgeJsonValue) -> JsonValue:
@@ -721,6 +725,30 @@ def require_action_events(events: tuple[Mapping[str, BridgeJsonValue], ...]) -> 
     if "bird_launched" not in event_types:
         raise SmokeError("request-70 capture missing authoritative bird_launched event")
     return event_types
+
+
+def require_engine_evidence(capture: PhysicsCaptureV1) -> dict[str, object]:
+    """Require the versioned engine-authored fourth request-70 component."""
+    evidence = getattr(capture, "evidence", None)
+    if not isinstance(evidence, Mapping):
+        raise SmokeError("request-70 capture contains no engine violation evidence")
+    if set(evidence) != WIRE_EVIDENCE_FIELDS:
+        raise SmokeError("request-70 engine violation evidence fields differ from v1")
+    if evidence.get("schema_version") != "physics_violation_engine_evidence_v1":
+        raise SmokeError("request-70 engine violation evidence schema differs from v1")
+    if evidence.get("capture_id") != capture.state.get("capture_id") or evidence.get("sequence") != capture.state.get("sequence"):
+        raise SmokeError("request-70 engine violation evidence identity mismatch")
+    coverage = evidence.get("fixed_step_coverage")
+    if not isinstance(coverage, Mapping) or set(coverage) != {
+        "first_fixed_step", "last_fixed_step", "sample_count", "complete", "incomplete_reason"
+    }:
+        raise SmokeError("request-70 engine fixed-step coverage fields differ from v1")
+    return {
+        "schema_version": evidence["schema_version"],
+        "shot_id": evidence.get("shot_id"),
+        "complete": coverage.get("complete"),
+        "incomplete_reason": coverage.get("incomplete_reason"),
+    }
 
 
 def archive_details(stage: Path, clone: Path) -> tuple[Path, str, str, str, str]:
@@ -1162,6 +1190,7 @@ def run_smoke(args: argparse.Namespace) -> tuple[JsonObject, int]:
                     report["wire_capture"] = wire_capture
                     wire_capture["request_identities"] = list(require_request_identity((first_capture, second_capture)))
                     wire_capture["collision"] = require_collision(second_capture.events)
+                    wire_capture["engine_evidence"] = require_engine_evidence(second_capture)
                     report["phase"] = "rebind-physics-listener"
                     rebinding = bind_candidate()
                     report["listener_rebinding"] = rebinding

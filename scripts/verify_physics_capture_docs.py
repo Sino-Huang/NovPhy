@@ -33,6 +33,8 @@ SCHEMA_REQUIREMENTS: Final = (
     ("support rule", ("$defs", "support_rule", "properties", "minimum_consecutive_fixed_steps", "const"), 2),
     ("support rule", ("$defs", "support_rule", "properties", "minimum_abs_normal_y", "const"), 0.5),
     ("support rule", ("$defs", "support_rule", "properties", "minimum_vertical_center_delta", "const"), 0.0001),
+    ("engine evidence schema", ("$defs", "physics_violation_engine_evidence_v1", "properties", "schema_version", "const"), "physics_violation_engine_evidence_v1"),
+    ("engine evidence trace bound", ("$defs", "physics_violation_engine_evidence_v1", "properties", "terminal_trace", "properties", "max_fixed_steps", "const"), 8),
 )
 COLLECTION_TOKENS: Final = ("PHYSICS_CAPTURE_V1=1", "PHYSICS_PLAYER_ARCHIVE=sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz", "PHYSICS_SMOKE_MARKER=.claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json", "OUT_ROOT=data/physics_capture_v1_cohort", "scripts/collect_full_rollout_training_dataset.sh")
 PROMOTION_TOKENS: Final = (

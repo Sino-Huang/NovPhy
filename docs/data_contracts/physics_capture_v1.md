@@ -1,12 +1,14 @@
 # `physics_capture_v1`
 
-Status: frozen. Schema version: `physics_capture_v1`. Artifact layout: two JSONL sidecars named `physics_state.jsonl` and `physics_events.jsonl` inside each accepted shot directory. `metadata.json` may reference their relative paths and counts in later collector work, but it never contains state or event records.
+Status: frozen state/event records with an additive engine-evidence component. Schema versions: `physics_capture_v1` and `physics_violation_engine_evidence_v1`. Artifact layout: the existing `physics_state.jsonl` and `physics_events.jsonl` plus, when the engine supplies it, `physics_violation_engine_evidence_v1.jsonl` inside each accepted shot directory. `metadata.json` references sidecar paths, counts, and checksums but never contains their records.
 
 ## Authority and alignment
 
 All physical facts originate in Unity. Every enriched PNG and its state snapshot are returned together by the synchronized endpoint. The PNG descriptor's `render_frame` must equal the state record's Unity `render_frame`; this same-response equality is the only exact RGB alignment guarantee. Desktop screenshots and ordinary screenshot requests are not exact and must not be labeled `physics_capture_v1`.
 
 Each state sidecar starts with one `state_header`, followed by `state` records. The event sidecar contains only `event` records. Every record repeats the full identity, clock, and coordinate declaration: `schema_version`, `capture_id`, `shot_id`, sidecar-local strictly increasing `sequence`, Unity render frame/time, monotonic fixed-step/fixed time, and the frozen coordinate/unit object. State records are sorted by `(render_frame, render_time, fixed_step, fixed_time)`. Event records are sorted by `(fixed_step, render_frame, event taxonomy rank, participants, event_id)` before sequence and event IDs are assigned.
+
+Request 70 retains protocol version 1. Legacy success packets have three length-prefixed components (PNG, state, events) and decode with `evidence=None`. New success packets set the evidence-component flag and carry a fourth length-prefixed JSON component atomically in the same envelope. The component is either `null` when no finalized recorder exists or a closed `physics_violation_engine_evidence_v1` object. A legacy packet never gains inferred violation evidence.
 
 `capture_id` identifies one endpoint capture. `shot_id` identifies the accepted shot. Dynamic `entity_id` is `<unity-instance-id>:<spawn-ordinal>` and remains stable for that lifetime. Static colliders use `world:static:<collider-id>`. Contact IDs are `contact:<fixed-step>:<entity-a>|<collider-a>:<entity-b>|<collider-b>:<point-index>`. Event IDs are `event:<eight-digit-sidecar-sequence>`. Support IDs are `support:<supporter-id>-><supported-id>`.
 
@@ -42,6 +44,14 @@ Taxonomy order is `bird_launched`, `collision`, `explosion`, `entity_destroyed`,
 ## Bounded failure
 
 The header records positive `max_state_records`, `max_event_records`, and `max_total_bytes`. Exceeding a record/byte bound, capture timeout, or truncated finalization returns a typed `capture_failure` envelope with one of `record_limit_exceeded`, `byte_limit_exceeded`, `capture_timeout`, or `truncated_finalization`. A failed envelope never makes a shot acceptable and must not be inserted into either JSONL sidecar. Complete sidecars contain no failure record.
+
+## `physics_violation_engine_evidence_v1`
+
+This sidecar is the sole availability source for later physics-violation derivation. Collectors may persist the engine object unchanged; they may not author completeness, gravity, support, or capability declarations. Its engine shot identity is distinct from the collector directory name, while `capture_id` and request `sequence` bind each cumulative evidence snapshot to its request-70 state.
+
+`fixed_step_coverage` records first/last observed step, sample count, and explicit completeness. The closed incomplete reasons are `no_fixed_step_samples`, `fixed_step_gap`, `contact_sample_overflow`, `entity_sample_overflow`, and `sampling_failure`. Overflow or sampling failure therefore cannot silently become negative evidence. `minimum_contact_separation` is the capture-wide minimum non-trigger separation, with its contact ID and fixed step; Unity accumulates it before ordinary raw-contact retention pruning.
+
+`terminal_trace` contains at most eight consecutive fixed steps and at most 128 tracked dynamic-entity lifetimes per step. Bounds, truncation, and failure reasons are explicit. Each entity row is producer-authored and includes `observed`, `present`, world position, Rigidbody2D `body_type`, `simulated`, and `gravity_scale`; each step records the contemporaneous global `Physics2D.gravity`. `support_v1` presence and its supporting IDs/contact IDs/fixed steps are copied from the recorder's authoritative support graph. Position remains a world-space position; velocity and angular-velocity units are not reused as displacement units.
 
 ## Compact failure envelope
 

@@ -10,7 +10,14 @@ from scripts.physics_capture_contract import (
     STATE_SIDECAR,
     contract_error,
 )
-from scripts.physics_capture_types import EventId, EventRecord, EventType, PhysicsCapture, StateFrame
+from scripts.physics_capture_types import (
+    EventId,
+    EventRecord,
+    EventType,
+    PhysicsCapture,
+    PhysicsViolationEngineEvidence,
+    StateFrame,
+)
 
 
 JsonValue: TypeAlias = None | bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"]
@@ -136,7 +143,58 @@ def _validate_events(events: tuple[EventRecord, ...]) -> None:
         raise contract_error(ContractErrorCode.INVALID_EVENT, "physics_events.jsonl", "stable transitions must alternate")
 
 
+def _validate_violation_evidence(
+    capture: PhysicsCapture,
+    evidence: tuple[PhysicsViolationEngineEvidence, ...],
+) -> None:
+    if not evidence:
+        return
+    state_sequences = {state.clock.sequence for state in capture.states}
+    capture_id = capture.header.clock.capture_id
+    identities = {(item.capture_id, item.shot_id) for item in evidence}
+    if len(identities) != 1 or next(iter(identities))[0] != capture_id:
+        raise contract_error(ContractErrorCode.CAPTURE_MISMATCH, "violation evidence", "engine evidence identity mismatch")
+    sequences = tuple(item.sequence for item in evidence)
+    if sequences != tuple(sorted(set(sequences))) or any(sequence not in state_sequences for sequence in sequences):
+        raise contract_error(ContractErrorCode.SEQUENCE_ORDER, "violation evidence", "evidence sequence must identify one retained state")
+    for item in evidence:
+        coverage = item.coverage
+        trace = item.terminal_trace
+        if trace.samples:
+            if coverage.first_fixed_step is None or coverage.last_fixed_step is None:
+                raise contract_error(ContractErrorCode.INVALID_VALUE, "violation evidence", "trace has no coverage")
+            if trace.samples[0].fixed_step < coverage.first_fixed_step or trace.samples[-1].fixed_step > coverage.last_fixed_step:
+                raise contract_error(ContractErrorCode.INVALID_VALUE, "violation evidence", "trace lies outside coverage")
+        minimum = item.minimum_contact_separation
+        if minimum.observed and (
+            coverage.first_fixed_step is None
+            or minimum.fixed_step is None
+            or not coverage.first_fixed_step <= minimum.fixed_step <= coverage.last_fixed_step
+        ):
+            raise contract_error(ContractErrorCode.INVALID_VALUE, "violation evidence", "minimum contact lies outside coverage")
+        for sample in trace.samples:
+            for entity in sample.entities:
+                for edge in entity.support_v1.edges:
+                    expected_id = f"support:{edge.supporter_id}->{entity.entity_id}"
+                    if edge.support_id != expected_id or edge.evidence_fixed_steps != (sample.fixed_step - 1, sample.fixed_step):
+                        raise contract_error(ContractErrorCode.NONPERSISTENT_SUPPORT, str(edge.support_id), "engine support_v1 evidence is not authoritative for the sample")
+    for previous, current in zip(evidence, evidence[1:]):
+        if current.coverage.sample_count < previous.coverage.sample_count:
+            raise contract_error(ContractErrorCode.CLOCK_ORDER, "violation evidence", "coverage regressed")
+        if previous.coverage.first_fixed_step != current.coverage.first_fixed_step:
+            raise contract_error(ContractErrorCode.CLOCK_ORDER, "violation evidence", "coverage start changed")
+        if (previous.coverage.last_fixed_step is not None and current.coverage.last_fixed_step is not None
+                and current.coverage.last_fixed_step < previous.coverage.last_fixed_step):
+            raise contract_error(ContractErrorCode.CLOCK_ORDER, "violation evidence", "coverage end regressed")
+        if previous.minimum_contact_separation.observed and (
+            not current.minimum_contact_separation.observed
+            or current.minimum_contact_separation.separation > previous.minimum_contact_separation.separation
+        ):
+            raise contract_error(ContractErrorCode.INVALID_VALUE, "violation evidence", "capture-wide minimum regressed")
+
+
 def validate_physics_capture(capture: PhysicsCapture, total_bytes: int) -> None:
     _validate_streams(capture, total_bytes)
     _validate_support(capture.states)
     _validate_events(capture.events)
+    _validate_violation_evidence(capture, capture.violation_evidence)

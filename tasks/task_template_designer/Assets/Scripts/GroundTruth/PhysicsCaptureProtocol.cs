@@ -22,6 +22,17 @@ public static class PhysicsCaptureV1Protocol
 
     public static byte[] BuildSuccessEnvelope(byte[] png, string stateJson, string eventsJson)
     {
+        return BuildSuccessEnvelopeInternal(png, stateJson, eventsJson, null, false);
+    }
+
+    public static byte[] BuildSuccessEnvelope(byte[] png, string stateJson, string eventsJson, string evidenceJson)
+    {
+        return BuildSuccessEnvelopeInternal(png, stateJson, eventsJson, evidenceJson ?? "null", true);
+    }
+
+    private static byte[] BuildSuccessEnvelopeInternal(byte[] png, string stateJson, string eventsJson,
+        string evidenceJson, bool carriesEvidenceComponent)
+    {
         if (png != null && png.Length > MaxPngBytes)
             return BuildLimitFailure("PNG exceeds request-70 bounds");
 
@@ -29,12 +40,13 @@ public static class PhysicsCaptureV1Protocol
         string eventsText = eventsJson ?? "[]";
         int stateByteCount = Encoding.UTF8.GetByteCount(stateText);
         int eventsByteCount = Encoding.UTF8.GetByteCount(eventsText);
+        int evidenceByteCount = carriesEvidenceComponent ? Encoding.UTF8.GetByteCount(evidenceJson) : 0;
         long payloadLength;
         long envelopeLength;
         try
         {
-            payloadLength = checked(12L + (png == null ? 0 : png.Length)
-                + stateByteCount + eventsByteCount);
+            payloadLength = checked((carriesEvidenceComponent ? 16L : 12L)
+                + (png == null ? 0 : png.Length) + stateByteCount + eventsByteCount + evidenceByteCount);
             envelopeLength = checked(16L + payloadLength);
         }
         catch (OverflowException)
@@ -42,20 +54,27 @@ public static class PhysicsCaptureV1Protocol
             return BuildLimitFailure("request-70 envelope exceeds bounds");
         }
         if (stateByteCount > MaxJsonBytes || eventsByteCount > MaxJsonBytes
+            || evidenceByteCount > MaxJsonBytes
             || envelopeLength > MaxEnvelopeBytes)
             return BuildLimitFailure("request-70 envelope exceeds bounds");
 
         byte[] image = Copy(png);
         byte[] state = Encoding.UTF8.GetBytes(stateText);
         byte[] events = Encoding.UTF8.GetBytes(eventsText);
+        byte[] evidence = carriesEvidenceComponent ? Encoding.UTF8.GetBytes(evidenceJson) : new byte[0];
         byte[] payload = new byte[(int)payloadLength];
         WriteUInt32(payload, 0, (uint)image.Length);
         WriteUInt32(payload, 4, (uint)state.Length);
         WriteUInt32(payload, 8, (uint)events.Length);
-        Buffer.BlockCopy(image, 0, payload, 12, image.Length);
-        Buffer.BlockCopy(state, 0, payload, 12 + image.Length, state.Length);
-        Buffer.BlockCopy(events, 0, payload, 12 + image.Length + state.Length, events.Length);
-        return BuildEnvelope(0, 0, payload);
+        int headerLength = carriesEvidenceComponent ? 16 : 12;
+        if (carriesEvidenceComponent) WriteUInt32(payload, 12, (uint)evidence.Length);
+        Buffer.BlockCopy(image, 0, payload, headerLength, image.Length);
+        Buffer.BlockCopy(state, 0, payload, headerLength + image.Length, state.Length);
+        Buffer.BlockCopy(events, 0, payload, headerLength + image.Length + state.Length, events.Length);
+        if (carriesEvidenceComponent)
+            Buffer.BlockCopy(evidence, 0, payload,
+                headerLength + image.Length + state.Length + events.Length, evidence.Length);
+        return BuildEnvelope(carriesEvidenceComponent ? (byte)2 : (byte)0, 0, payload);
     }
 
     public static byte[] BuildFailureEnvelope(PhysicalCaptureFailure failure)
@@ -99,7 +118,10 @@ public static class PhysicsCaptureV1Protocol
                 PhysicalCaptureFailureCode.TruncatedFinalization, "no finalized recorder batch"));
         string state = BuildStateJson(snapshot, frozen, captureId, sequence);
         string events = BuildEventsJson(snapshot, captureId, frozen == null ? null : frozen.Events);
-        return BuildSuccessEnvelope(png, state, events);
+        PhysicalViolationEngineEvidenceSnapshot evidence = recorder == null
+            ? null : recorder.CreateFinalizedEvidenceSnapshot();
+        string evidenceJson = evidence == null ? "null" : BuildEvidenceJson(evidence, captureId, sequence);
+        return BuildSuccessEnvelope(png, state, events, evidenceJson);
     }
 
     private static byte[] BuildLimitFailure(string message)
@@ -215,6 +237,94 @@ public static class PhysicsCaptureV1Protocol
             json.Append('}');
         }
         return json.Append(']').ToString();
+    }
+
+    private static string BuildEvidenceJson(PhysicalViolationEngineEvidenceSnapshot evidence,
+        string captureId, long sequence)
+    {
+        StringBuilder json = new StringBuilder("{\"schema_version\":\"")
+            .Append(PhysicalViolationEngineEvidenceSnapshot.SchemaVersion).Append("\",\"capture_id\":");
+        AppendString(json, captureId);
+        json.Append(",\"shot_id\":"); AppendString(json, evidence.ShotId);
+        json.Append(",\"sequence\":").Append(sequence.ToString(CultureInfo.InvariantCulture));
+        json.Append(",\"fixed_step_coverage\":{\"first_fixed_step\":");
+        AppendNullableLong(json, evidence.FirstFixedStep);
+        json.Append(",\"last_fixed_step\":"); AppendNullableLong(json, evidence.LastFixedStep);
+        json.Append(",\"sample_count\":").Append(evidence.SampleCount.ToString(CultureInfo.InvariantCulture));
+        json.Append(",\"complete\":").Append(evidence.Complete ? "true" : "false");
+        json.Append(",\"incomplete_reason\":"); AppendNullableString(json, evidence.IncompleteReason);
+        json.Append("},\"minimum_contact_separation\":{\"observed\":")
+            .Append(evidence.MinimumObserved ? "true" : "false");
+        json.Append(",\"separation\":");
+        if (evidence.MinimumSeparation.HasValue) AppendFloat(json, evidence.MinimumSeparation.Value); else json.Append("null");
+        json.Append(",\"contact_id\":"); AppendNullableString(json, evidence.MinimumContactId);
+        json.Append(",\"fixed_step\":"); AppendNullableLong(json, evidence.MinimumFixedStep);
+        json.Append("},\"terminal_trace\":{\"max_fixed_steps\":")
+            .Append(PhysicalViolationEngineEvidenceSnapshot.MaxTraceFixedSteps)
+            .Append(",\"max_entities_per_step\":")
+            .Append(PhysicalViolationEngineEvidenceSnapshot.MaxEntitiesPerStep)
+            .Append(",\"first_fixed_step\":");
+        AppendNullableLong(json, evidence.Trace.Count == 0 ? (long?)null : evidence.Trace[0].FixedStep);
+        json.Append(",\"last_fixed_step\":");
+        AppendNullableLong(json, evidence.Trace.Count == 0 ? (long?)null : evidence.Trace[evidence.Trace.Count - 1].FixedStep);
+        json.Append(",\"truncated\":").Append(evidence.TraceTruncated ? "true" : "false");
+        json.Append(",\"truncation_reason\":");
+        AppendNullableString(json, evidence.TraceTruncated ? "terminal_trace_bound" : null);
+        json.Append(",\"failure_reason\":"); AppendNullableString(json, evidence.IncompleteReason);
+        json.Append(",\"samples\":[");
+        for (int i = 0; i < evidence.Trace.Count; i++)
+        {
+            if (i > 0) json.Append(',');
+            PhysicalEvidenceTraceSample sample = evidence.Trace[i];
+            json.Append("{\"fixed_step\":").Append(sample.FixedStep.ToString(CultureInfo.InvariantCulture));
+            json.Append(",\"physics2d_gravity\":"); AppendVector(json, sample.Physics2DGravity);
+            json.Append(",\"entities\":[");
+            for (int e = 0; e < sample.Entities.Count; e++)
+            {
+                if (e > 0) json.Append(',');
+                AppendEvidenceEntity(json, sample.Entities[e]);
+            }
+            json.Append("]}");
+        }
+        return json.Append("]}}").ToString();
+    }
+
+    private static void AppendEvidenceEntity(StringBuilder json, PhysicalEvidenceEntity entity)
+    {
+        json.Append("{\"entity_id\":"); AppendString(json, entity.EntityId);
+        json.Append(",\"observed\":true,\"present\":").Append(entity.Present ? "true" : "false");
+        json.Append(",\"world_position\":");
+        if (entity.WorldPosition.HasValue) AppendVector(json, entity.WorldPosition.Value); else json.Append("null");
+        json.Append(",\"body_type\":"); AppendNullableString(json, entity.BodyType);
+        json.Append(",\"simulated\":").Append(entity.Simulated.HasValue ? (entity.Simulated.Value ? "true" : "false") : "null");
+        json.Append(",\"gravity_scale\":");
+        if (entity.GravityScale.HasValue) AppendFloat(json, entity.GravityScale.Value); else json.Append("null");
+        json.Append(",\"support_v1\":{\"present\":").Append(entity.Supports.Count > 0 ? "true" : "false");
+        json.Append(",\"edges\":[");
+        for (int i = 0; i < entity.Supports.Count; i++)
+        {
+            if (i > 0) json.Append(',');
+            PhysicalEvidenceSupport support = entity.Supports[i];
+            json.Append("{\"support_id\":"); AppendString(json, support.SupportId);
+            json.Append(",\"supporter_id\":"); AppendString(json, support.SupporterId);
+            json.Append(",\"evidence_contact_ids\":["); AppendString(json, support.ContactIdA);
+            json.Append(','); AppendString(json, support.ContactIdB);
+            json.Append("],\"evidence_fixed_steps\":[")
+                .Append(support.FixedStepA.ToString(CultureInfo.InvariantCulture)).Append(',')
+                .Append(support.FixedStepB.ToString(CultureInfo.InvariantCulture)).Append("]}");
+        }
+        json.Append("]}}");
+    }
+
+    private static void AppendNullableLong(StringBuilder json, long? value)
+    {
+        if (value.HasValue) json.Append(value.Value.ToString(CultureInfo.InvariantCulture));
+        else json.Append("null");
+    }
+
+    private static void AppendNullableString(StringBuilder json, string value)
+    {
+        if (value == null) json.Append("null"); else AppendString(json, value);
     }
 
     private static void AppendPayload(StringBuilder json, PhysicalMacroEventPayload payload)
