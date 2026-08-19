@@ -29,7 +29,7 @@ from scripts.manual_agent import (  # noqa: E402
 )
 from scripts.physics_capture_contract import load_physics_capture  # noqa: E402
 from scripts.physics_capture_types import EventType  # noqa: E402
-from src.webui.bridge import PlayingMode, ScienceBirdsBridge  # noqa: E402
+from src.webui.bridge import PhysicsCaptureV1Failure, PlayingMode, ScienceBirdsBridge  # noqa: E402
 from scripts.physics_rollout_contract import (  # noqa: E402
     CaptureProvenance,
     PhysicsPersistenceError,
@@ -1556,6 +1556,24 @@ def select_level_in_display(
     runner(["xdotool", "type", str(int(level))], check=True)
     sleeper(0.2)
     click(confirm_xy)
+
+
+class _FinalizedPhysicsBridge:
+    def __init__(self, bridge, *, deadline_seconds: float, clock, sleeper) -> None:
+        self._bridge = bridge
+        self._deadline_seconds = deadline_seconds
+        self._clock = clock
+        self._sleeper = sleeper
+
+    def get_physics_capture_v1(self):
+        deadline = self._clock() + self._deadline_seconds
+        while True:
+            try:
+                return self._bridge.get_physics_capture_v1()
+            except PhysicsCaptureV1Failure as error:
+                if error.code != 4 or self._clock() >= deadline:
+                    raise
+                self._sleeper(0.25)
 
 
 def collect_rollouts(

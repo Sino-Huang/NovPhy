@@ -24,6 +24,7 @@ from scripts.prepare_rollout_dataset import (
 
 from scripts.collect_rollouts import (
     PRE_DRAG_OVERLAY_TEXT,
+    _FinalizedPhysicsBridge,
     _action_guide_points,
     _launch_guide_points,
     action_to_shot,
@@ -50,6 +51,7 @@ from scripts.collect_rollouts import (
 from scripts.rollout_artifacts import validate_physics_shot_artifact
 from scripts.rollout_validation_types import PhysicsArtifactError
 from scripts.physics_capture_contract import PhysicsContractError, load_physics_capture
+from src.webui.bridge import PhysicsCaptureV1Failure
 from scripts.physics_rollout_contract import MAX_TOTAL_BYTES
 
 PHYSICS_FIXTURES = Path(__file__).parent / "fixtures" / "physics_capture_v1"
@@ -71,6 +73,41 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
         data = io.BytesIO()
         Image.new("RGB", (4, 3), (30, 20, 10)).save(data, format="PNG")
         return data.getvalue()
+
+    def test_finalized_physics_bridge_retries_only_pending_recorder_batches(self):
+        class Bridge:
+            calls = 0
+
+            def get_physics_capture_v1(self):
+                self.calls += 1
+                if self.calls == 1:
+                    raise PhysicsCaptureV1Failure(4, "no finalized recorder batch")
+                return "capture"
+
+        bridge = Bridge()
+        sleeps = []
+        finalized = _FinalizedPhysicsBridge(
+            bridge,
+            deadline_seconds=30,
+            clock=lambda: 0,
+            sleeper=sleeps.append,
+        )
+
+        self.assertEqual(finalized.get_physics_capture_v1(), "capture")
+        self.assertEqual(bridge.calls, 2)
+        self.assertEqual(sleeps, [0.25])
+
+        class PermanentFailure:
+            def get_physics_capture_v1(self):
+                raise PhysicsCaptureV1Failure(3, "capture failed")
+
+        with self.assertRaises(PhysicsCaptureV1Failure):
+            _FinalizedPhysicsBridge(
+                PermanentFailure(),
+                deadline_seconds=30,
+                clock=lambda: 0,
+                sleeper=lambda _: None,
+            ).get_physics_capture_v1()
 
     def test_persistence_error_supports_standard_exception_traceback_state(self):
         from scripts.physics_rollout_contract import PersistenceErrorCode, PhysicsPersistenceError
