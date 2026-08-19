@@ -1,0 +1,506 @@
+{
+  "capture_source": "capture_physics_rollout",
+  "replay_mode": "fresh-engine-per-rollout",
+  "target_fps": 2,
+  "duration_seconds": 3,
+  "fresh_engine_attempts": 1,
+  "attempt_count": 1,
+  "accepted_rollout_count": 1,
+  "rollout_count": 1,
+  "attempts": [
+    {
+      "name": "shot_001",
+      "action": {
+        "action_type": "drag_hold_release",
+        "coordinate_frame": "slingshot_relative",
+        "drag_release": [
+          -80,
+          7
+        ],
+        "drag_start": [
+          127,
+          223
+        ],
+        "frame_height": 480,
+        "releaseTime": 1000,
+        "socket_command": {
+          "releaseTime": 1000,
+          "tapTime": 0,
+          "x": 47,
+          "y": 263
+        },
+        "tapTime": 0
+      },
+      "shot": {
+        "x": 47,
+        "y": 263,
+        "gameX": 47,
+        "gameY": 216,
+        "tapTime": 0,
+        "releaseTime": 1000
+      },
+      "shoot_response": 1,
+      "frame_count": 6,
+      "slingshot_reference": null,
+      "metadata_path": "/mnt/array/sukaih/Project/NovPhy/.claude/project-docs/evidence/representative-pilot-20260820/collection-v3/accepted/collection-plan-attempt-v1:sha256:61ae864ab74b95bdb6b81b732041eb5ca91c0e741062590890e7ea67d7fb7d4a/shot_001/metadata.json",
+      "pre_shot_protocol_state": {
+        "game_state": "PLAYING",
+        "current_level": 1,
+        "score": 0
+      },
+      "post_shoot_protocol_state": {
+        "game_state": "PLAYING",
+        "current_level": 1,
+        "score": 500
+      },
+      "post_capture_protocol_state": {
+        "game_state": "PLAYING",
+        "current_level": 1,
+        "score": 500
+      },
+      "post_recovery_protocol_state": {
+        "game_state": "PLAYING",
+        "current_level": 1,
+        "score": 0
+      },
+      "recovery_action": null,
+      "pre_shot_guard": {
+        "status": "accepted",
+        "recovery_attempts": 0,
+        "invalid_reason": null,
+        "protocol_state": {
+          "game_state": "PLAYING",
+          "current_level": 1,
+          "score": 0
+        },
+        "post_guard_protocol_state": {
+          "game_state": "PLAYING",
+          "current_level": 1,
+          "score": 0
+        },
+        "visual_evidence": {
+          "available": false,
+          "valid": true,
+          "classification": "not-captured",
+          "invalid_reason": null
+        },
+        "attempts": [
+          {
+            "accepted": true,
+            "invalid_reason": null,
+            "protocol_playing": true,
+            "protocol_state": {
+              "game_state": "PLAYING",
+              "current_level": 1,
+              "score": 0
+            },
+            "visual_evidence": {
+              "available": false,
+              "valid": true,
+              "classification": "not-captured",
+              "invalid_reason": null
+            }
+          }
+        ],
+        "recoveries": []
+      },
+      "artifact_validation": {
+        "accepted": true,
+        "classification": "gameplay-valid",
+        "invalid_reason": null,
+        "retryable": false,
+        "retry_decision": "accept",
+        "message": "physics_capture_v1",
+        "shot_dir": "/mnt/array/sukaih/Project/NovPhy/.claude/project-docs/evidence/representative-pilot-20260820/collection-v3/accepted/collection-plan-attempt-v1:sha256:61ae864ab74b95bdb6b81b732041eb5ca91c0e741062590890e7ea67d7fb7d4a/shot_001",
+        "physics_state_count": 6,
+        "physics_event_count": 9
+      },
+      "attempt_status": "accepted",
+      "accepted": true,
+      "invalid_reason": null,
+      "retry_attempt": 1,
+      "quarantined_path": null,
+      "prior_invalid_attempts": null,
+      "initial_engine_state_identity": "f4b2664daa2648376d84ae0ff294019c92d447a83066cbb3bd2710007a15ea8f",
+      "intervention_event_id": "event:00000001",
+      "termination_reason": "level_failed",
+      "termination_fixed_step": 1890,
+      "termination_event_id": "event:00000008",
+      "terminal_state_fixed_step": 6618,
+      "expected_initial_engine_state_identity": null,
+      "scenario_context": {
+        "scenario_manifest_schema": "scenario_manifest_v1",
+        "scenario_lineage_identity": "scenario-lineage-v1:sha256:63035a53fec4accdd12e0e386799e643b75e5febc9c6a104ed66a1c545ba58cf",
+        "declared_initial_engine_state_identity": "declared-initial-engine-state-v1:sha256:6496ff2e1264715fa9064a30ef8265594c39b93c4959e2a0540d28a9976e4e52",
+        "version_envelope": {
+          "player_sha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+          "protocol_sha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a",
+          "archive_sha256": "301fe7dd8792ab4c8de318d7155133d00adb04a11a59a0601035f48638ff830c",
+          "generator_version": "novphy-legacy-xml-importer:1"
+        },
+        "plan_identity": "collection-plan-v1:sha256:69f8d0d36eddd6d4ee55635b461eae254eed2671327303d8c9fc376a5849501c",
+        "plan_version": 3,
+        "scenario_id": "baseline-type010101-level00026",
+        "scenario_identity": "collection-plan-scenario-v1:sha256:cf28bfd1b789ed8f52cbce25db470673345410d0f5f53286b6cd59586134c054",
+        "intervention_id": "targeted_rare-collision-baseline-type010101-level00026",
+        "intervention_identity": "collection-plan-intervention-v1:sha256:ca2545ff46cc561924e420aefdbdcc468069161c227b2b3007d5acff8263e815",
+        "attempt_id": "collection-plan-attempt-v1:sha256:61ae864ab74b95bdb6b81b732041eb5ca91c0e741062590890e7ea67d7fb7d4a",
+        "attempt_number": 1
+      },
+      "fresh_engine_attempt": 1
+    }
+  ],
+  "rollouts": [
+    {
+      "name": "shot_001",
+      "action": {
+        "action_type": "drag_hold_release",
+        "coordinate_frame": "slingshot_relative",
+        "drag_release": [
+          -80,
+          7
+        ],
+        "drag_start": [
+          127,
+          223
+        ],
+        "frame_height": 480,
+        "releaseTime": 1000,
+        "socket_command": {
+          "releaseTime": 1000,
+          "tapTime": 0,
+          "x": 47,
+          "y": 263
+        },
+        "tapTime": 0
+      },
+      "shot": {
+        "x": 47,
+        "y": 263,
+        "gameX": 47,
+        "gameY": 216,
+        "tapTime": 0,
+        "releaseTime": 1000
+      },
+      "shoot_response": 1,
+      "frame_count": 6,
+      "slingshot_reference": null,
+      "metadata_path": "/mnt/array/sukaih/Project/NovPhy/.claude/project-docs/evidence/representative-pilot-20260820/collection-v3/accepted/collection-plan-attempt-v1:sha256:61ae864ab74b95bdb6b81b732041eb5ca91c0e741062590890e7ea67d7fb7d4a/shot_001/metadata.json",
+      "pre_shot_protocol_state": {
+        "game_state": "PLAYING",
+        "current_level": 1,
+        "score": 0
+      },
+      "post_shoot_protocol_state": {
+        "game_state": "PLAYING",
+        "current_level": 1,
+        "score": 500
+      },
+      "post_capture_protocol_state": {
+        "game_state": "PLAYING",
+        "current_level": 1,
+        "score": 500
+      },
+      "post_recovery_protocol_state": {
+        "game_state": "PLAYING",
+        "current_level": 1,
+        "score": 0
+      },
+      "recovery_action": null,
+      "pre_shot_guard": {
+        "status": "accepted",
+        "recovery_attempts": 0,
+        "invalid_reason": null,
+        "protocol_state": {
+          "game_state": "PLAYING",
+          "current_level": 1,
+          "score": 0
+        },
+        "post_guard_protocol_state": {
+          "game_state": "PLAYING",
+          "current_level": 1,
+          "score": 0
+        },
+        "visual_evidence": {
+          "available": false,
+          "valid": true,
+          "classification": "not-captured",
+          "invalid_reason": null
+        },
+        "attempts": [
+          {
+            "accepted": true,
+            "invalid_reason": null,
+            "protocol_playing": true,
+            "protocol_state": {
+              "game_state": "PLAYING",
+              "current_level": 1,
+              "score": 0
+            },
+            "visual_evidence": {
+              "available": false,
+              "valid": true,
+              "classification": "not-captured",
+              "invalid_reason": null
+            }
+          }
+        ],
+        "recoveries": []
+      },
+      "artifact_validation": {
+        "accepted": true,
+        "classification": "gameplay-valid",
+        "invalid_reason": null,
+        "retryable": false,
+        "retry_decision": "accept",
+        "message": "physics_capture_v1",
+        "shot_dir": "/mnt/array/sukaih/Project/NovPhy/.claude/project-docs/evidence/representative-pilot-20260820/collection-v3/accepted/collection-plan-attempt-v1:sha256:61ae864ab74b95bdb6b81b732041eb5ca91c0e741062590890e7ea67d7fb7d4a/shot_001",
+        "physics_state_count": 6,
+        "physics_event_count": 9
+      },
+      "attempt_status": "accepted",
+      "accepted": true,
+      "invalid_reason": null,
+      "retry_attempt": 1,
+      "quarantined_path": null,
+      "prior_invalid_attempts": null,
+      "initial_engine_state_identity": "f4b2664daa2648376d84ae0ff294019c92d447a83066cbb3bd2710007a15ea8f",
+      "intervention_event_id": "event:00000001",
+      "termination_reason": "level_failed",
+      "termination_fixed_step": 1890,
+      "termination_event_id": "event:00000008",
+      "terminal_state_fixed_step": 6618,
+      "expected_initial_engine_state_identity": null,
+      "scenario_context": {
+        "scenario_manifest_schema": "scenario_manifest_v1",
+        "scenario_lineage_identity": "scenario-lineage-v1:sha256:63035a53fec4accdd12e0e386799e643b75e5febc9c6a104ed66a1c545ba58cf",
+        "declared_initial_engine_state_identity": "declared-initial-engine-state-v1:sha256:6496ff2e1264715fa9064a30ef8265594c39b93c4959e2a0540d28a9976e4e52",
+        "version_envelope": {
+          "player_sha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+          "protocol_sha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a",
+          "archive_sha256": "301fe7dd8792ab4c8de318d7155133d00adb04a11a59a0601035f48638ff830c",
+          "generator_version": "novphy-legacy-xml-importer:1"
+        },
+        "plan_identity": "collection-plan-v1:sha256:69f8d0d36eddd6d4ee55635b461eae254eed2671327303d8c9fc376a5849501c",
+        "plan_version": 3,
+        "scenario_id": "baseline-type010101-level00026",
+        "scenario_identity": "collection-plan-scenario-v1:sha256:cf28bfd1b789ed8f52cbce25db470673345410d0f5f53286b6cd59586134c054",
+        "intervention_id": "targeted_rare-collision-baseline-type010101-level00026",
+        "intervention_identity": "collection-plan-intervention-v1:sha256:ca2545ff46cc561924e420aefdbdcc468069161c227b2b3007d5acff8263e815",
+        "attempt_id": "collection-plan-attempt-v1:sha256:61ae864ab74b95bdb6b81b732041eb5ca91c0e741062590890e7ea67d7fb7d4a",
+        "attempt_number": 1
+      },
+      "fresh_engine_attempt": 1
+    }
+  ],
+  "accepted_rollouts": [
+    {
+      "name": "shot_001",
+      "action": {
+        "action_type": "drag_hold_release",
+        "coordinate_frame": "slingshot_relative",
+        "drag_release": [
+          -80,
+          7
+        ],
+        "drag_start": [
+          127,
+          223
+        ],
+        "frame_height": 480,
+        "releaseTime": 1000,
+        "socket_command": {
+          "releaseTime": 1000,
+          "tapTime": 0,
+          "x": 47,
+          "y": 263
+        },
+        "tapTime": 0
+      },
+      "shot": {
+        "x": 47,
+        "y": 263,
+        "gameX": 47,
+        "gameY": 216,
+        "tapTime": 0,
+        "releaseTime": 1000
+      },
+      "shoot_response": 1,
+      "frame_count": 6,
+      "slingshot_reference": null,
+      "metadata_path": "/mnt/array/sukaih/Project/NovPhy/.claude/project-docs/evidence/representative-pilot-20260820/collection-v3/accepted/collection-plan-attempt-v1:sha256:61ae864ab74b95bdb6b81b732041eb5ca91c0e741062590890e7ea67d7fb7d4a/shot_001/metadata.json",
+      "pre_shot_protocol_state": {
+        "game_state": "PLAYING",
+        "current_level": 1,
+        "score": 0
+      },
+      "post_shoot_protocol_state": {
+        "game_state": "PLAYING",
+        "current_level": 1,
+        "score": 500
+      },
+      "post_capture_protocol_state": {
+        "game_state": "PLAYING",
+        "current_level": 1,
+        "score": 500
+      },
+      "post_recovery_protocol_state": {
+        "game_state": "PLAYING",
+        "current_level": 1,
+        "score": 0
+      },
+      "recovery_action": null,
+      "pre_shot_guard": {
+        "status": "accepted",
+        "recovery_attempts": 0,
+        "invalid_reason": null,
+        "protocol_state": {
+          "game_state": "PLAYING",
+          "current_level": 1,
+          "score": 0
+        },
+        "post_guard_protocol_state": {
+          "game_state": "PLAYING",
+          "current_level": 1,
+          "score": 0
+        },
+        "visual_evidence": {
+          "available": false,
+          "valid": true,
+          "classification": "not-captured",
+          "invalid_reason": null
+        },
+        "attempts": [
+          {
+            "accepted": true,
+            "invalid_reason": null,
+            "protocol_playing": true,
+            "protocol_state": {
+              "game_state": "PLAYING",
+              "current_level": 1,
+              "score": 0
+            },
+            "visual_evidence": {
+              "available": false,
+              "valid": true,
+              "classification": "not-captured",
+              "invalid_reason": null
+            }
+          }
+        ],
+        "recoveries": []
+      },
+      "artifact_validation": {
+        "accepted": true,
+        "classification": "gameplay-valid",
+        "invalid_reason": null,
+        "retryable": false,
+        "retry_decision": "accept",
+        "message": "physics_capture_v1",
+        "shot_dir": "/mnt/array/sukaih/Project/NovPhy/.claude/project-docs/evidence/representative-pilot-20260820/collection-v3/accepted/collection-plan-attempt-v1:sha256:61ae864ab74b95bdb6b81b732041eb5ca91c0e741062590890e7ea67d7fb7d4a/shot_001",
+        "physics_state_count": 6,
+        "physics_event_count": 9
+      },
+      "attempt_status": "accepted",
+      "accepted": true,
+      "invalid_reason": null,
+      "retry_attempt": 1,
+      "quarantined_path": null,
+      "prior_invalid_attempts": null,
+      "initial_engine_state_identity": "f4b2664daa2648376d84ae0ff294019c92d447a83066cbb3bd2710007a15ea8f",
+      "intervention_event_id": "event:00000001",
+      "termination_reason": "level_failed",
+      "termination_fixed_step": 1890,
+      "termination_event_id": "event:00000008",
+      "terminal_state_fixed_step": 6618,
+      "expected_initial_engine_state_identity": null,
+      "scenario_context": {
+        "scenario_manifest_schema": "scenario_manifest_v1",
+        "scenario_lineage_identity": "scenario-lineage-v1:sha256:63035a53fec4accdd12e0e386799e643b75e5febc9c6a104ed66a1c545ba58cf",
+        "declared_initial_engine_state_identity": "declared-initial-engine-state-v1:sha256:6496ff2e1264715fa9064a30ef8265594c39b93c4959e2a0540d28a9976e4e52",
+        "version_envelope": {
+          "player_sha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+          "protocol_sha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a",
+          "archive_sha256": "301fe7dd8792ab4c8de318d7155133d00adb04a11a59a0601035f48638ff830c",
+          "generator_version": "novphy-legacy-xml-importer:1"
+        },
+        "plan_identity": "collection-plan-v1:sha256:69f8d0d36eddd6d4ee55635b461eae254eed2671327303d8c9fc376a5849501c",
+        "plan_version": 3,
+        "scenario_id": "baseline-type010101-level00026",
+        "scenario_identity": "collection-plan-scenario-v1:sha256:cf28bfd1b789ed8f52cbce25db470673345410d0f5f53286b6cd59586134c054",
+        "intervention_id": "targeted_rare-collision-baseline-type010101-level00026",
+        "intervention_identity": "collection-plan-intervention-v1:sha256:ca2545ff46cc561924e420aefdbdcc468069161c227b2b3007d5acff8263e815",
+        "attempt_id": "collection-plan-attempt-v1:sha256:61ae864ab74b95bdb6b81b732041eb5ca91c0e741062590890e7ea67d7fb7d4a",
+        "attempt_number": 1
+      },
+      "fresh_engine_attempt": 1
+    }
+  ],
+  "invalid_attempts": [],
+  "capture_contract": {
+    "contract_name": "physics_capture_v1",
+    "contract_version": "1",
+    "artifact_layout_version": "collector_v1",
+    "player_sha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+    "protocol_sha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a",
+    "archive_sha256": "301fe7dd8792ab4c8de318d7155133d00adb04a11a59a0601035f48638ff830c",
+    "declared_capabilities": [
+      "scene_nodes",
+      "raw_contacts",
+      "derived_support",
+      "kinematics",
+      "macro_events"
+    ],
+    "sidecar_paths": [
+      {
+        "relative_path": "physics_state.jsonl",
+        "capabilities": [
+          "scene_nodes",
+          "raw_contacts",
+          "derived_support",
+          "kinematics"
+        ]
+      },
+      {
+        "relative_path": "physics_events.jsonl",
+        "capabilities": [
+          "macro_events"
+        ]
+      }
+    ]
+  },
+  "schema_version": "physics_capture_v1",
+  "protocol_version": 1,
+  "player_sha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+  "protocol_sha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a",
+  "archive_sha256": "301fe7dd8792ab4c8de318d7155133d00adb04a11a59a0601035f48638ff830c",
+  "sidecar_paths": [
+    "physics_state.jsonl",
+    "physics_events.jsonl"
+  ],
+  "physics_state_count": 6,
+  "physics_event_count": 0,
+  "initial_engine_state_identity": "f4b2664daa2648376d84ae0ff294019c92d447a83066cbb3bd2710007a15ea8f",
+  "initial_engine_state_verified": true,
+  "scenario_context": {
+    "scenario_manifest_schema": "scenario_manifest_v1",
+    "scenario_lineage_identity": "scenario-lineage-v1:sha256:63035a53fec4accdd12e0e386799e643b75e5febc9c6a104ed66a1c545ba58cf",
+    "declared_initial_engine_state_identity": "declared-initial-engine-state-v1:sha256:6496ff2e1264715fa9064a30ef8265594c39b93c4959e2a0540d28a9976e4e52",
+    "version_envelope": {
+      "player_sha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+      "protocol_sha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a",
+      "archive_sha256": "301fe7dd8792ab4c8de318d7155133d00adb04a11a59a0601035f48638ff830c",
+      "generator_version": "novphy-legacy-xml-importer:1"
+    },
+    "plan_identity": "collection-plan-v1:sha256:69f8d0d36eddd6d4ee55635b461eae254eed2671327303d8c9fc376a5849501c",
+    "plan_version": 3,
+    "scenario_id": "baseline-type010101-level00026",
+    "scenario_identity": "collection-plan-scenario-v1:sha256:cf28bfd1b789ed8f52cbce25db470673345410d0f5f53286b6cd59586134c054",
+    "intervention_id": "targeted_rare-collision-baseline-type010101-level00026",
+    "intervention_identity": "collection-plan-intervention-v1:sha256:ca2545ff46cc561924e420aefdbdcc468069161c227b2b3007d5acff8263e815",
+    "attempt_id": "collection-plan-attempt-v1:sha256:61ae864ab74b95bdb6b81b732041eb5ca91c0e741062590890e7ea67d7fb7d4a",
+    "attempt_number": 1
+  },
+  "action_log_path": "/mnt/array/sukaih/Project/NovPhy/.claude/project-docs/evidence/representative-pilot-20260820/collection-v3/accepted/collection-plan-attempt-v1:sha256:61ae864ab74b95bdb6b81b732041eb5ca91c0e741062590890e7ea67d7fb7d4a/action_log.json",
+  "action_log_jsonl_path": "/mnt/array/sukaih/Project/NovPhy/.claude/project-docs/evidence/representative-pilot-20260820/collection-v3/accepted/collection-plan-attempt-v1:sha256:61ae864ab74b95bdb6b81b732041eb5ca91c0e741062590890e7ea67d7fb7d4a/action_log.jsonl"
+}
