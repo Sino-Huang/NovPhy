@@ -30,3 +30,9 @@ Authoritative files:
 The accepted pilot fixes production parameter plan v1 before any production collection begins. Its identity is `production-parameter-plan-v1:sha256:caf33ef3c05a92c8508473c99d91a1f30ff69dca087eff5323d1085e9b439f78`, published immutably at `production-plan/production_parameter_plan_548208af51a933eb8488df1fc103335b2f6ce74d80c632732255c9715a254609_v1.json`.
 
 The frozen values are fixed-step stride 1, stability window 2, rollout ceiling 4900, zero geometric/motion/numeric tolerance, collision quota 2 per scenario, bounded-negative cap 0, and an explicitly empty transient-retry map. Every numeric leaf names all accepted source attempts and records its observed range, rationale, and prospective derivation. The empty retry map exactly preserves plan v4's no-retry policy. A changed value must be issued as a new plan version; this file is not mutable cohort procedure.
+
+## Material and damage adjudication — issue #28
+
+`material-damage-adjudication-v1.json` records the source-bound empirical disposition `partially_unavailable` with identity `representative-material-damage-adjudication-v1:sha256:61d00fdd43b3b0d50ec95963974a6ce541b26169b52fce360e80536bc767b814`.
+
+Raw `life` is accepted only as an uninterpreted engine fact. Material identity is rejected/out of scope because `physics_capture_v1` exports no material field. Damage semantics are rejected for production because the four accepted shots contain no life-decrease or `reason=damage` positive witness. The report preserves the negative, boundary, unknown, null-life, and unavailable cases, including all eight exact `reason=destroyed` event citations. Both material and damage therefore remain unavailable labels and are excluded from the production capability declaration; neither is silently mapped to false.
