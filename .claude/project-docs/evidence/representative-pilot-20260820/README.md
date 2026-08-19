@@ -24,3 +24,9 @@ Authoritative files:
 - collection-v4/collection_plan_report.json
 - instance-held-out-partition-v1.json
 - player-build-provenance.json and player-archive.sha256
+
+## Production parameter plan — issue #26
+
+The accepted pilot fixes production parameter plan v1 before any production collection begins. Its identity is `production-parameter-plan-v1:sha256:caf33ef3c05a92c8508473c99d91a1f30ff69dca087eff5323d1085e9b439f78`, published immutably at `production-plan/production_parameter_plan_548208af51a933eb8488df1fc103335b2f6ce74d80c632732255c9715a254609_v1.json`.
+
+The frozen values are fixed-step stride 1, stability window 2, rollout ceiling 4900, zero geometric/motion/numeric tolerance, collision quota 2 per scenario, bounded-negative cap 0, and an explicitly empty transient-retry map. Every numeric leaf names all accepted source attempts and records its observed range, rationale, and prospective derivation. The empty retry map exactly preserves plan v4's no-retry policy. A changed value must be issued as a new plan version; this file is not mutable cohort procedure.

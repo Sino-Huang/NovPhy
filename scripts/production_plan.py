@@ -134,8 +134,6 @@ def _validated_parameters(value: Any) -> Mapping[str, Any]:
     }
 
     retries = _require_mapping(parameters["transient_retry_counts"], "Production transient_retry_counts")
-    if not retries:
-        raise ValueError("Production transient_retry_counts must be nonempty")
     normalized_retries = {
         _require_nonempty_string(key, "Production transient retry key"):
         _require_nonnegative_integer(item, f"Production transient retry count {key}")

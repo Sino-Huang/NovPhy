@@ -520,6 +520,28 @@ class ProductionPlanTests(unittest.TestCase):
                         evidence=evidence,
                     )
 
+    def test_accepts_explicitly_empty_retry_counts_when_pilot_declared_none(self) -> None:
+        collection_plan = _collection_plan(
+            training_max_attempts=1,
+            final_max_attempts=1,
+            training_codes=(),
+            final_codes=(),
+        )
+        parameters = _parameters()
+        parameters["transient_retry_counts"] = {}
+        evidence = _evidence()
+        evidence["transient_retry_counts"] = {}
+
+        plan = create_production_plan(
+            plan_version=1,
+            pilot_report=_pilot_report(collection_plan),
+            collection_plan=collection_plan,
+            parameters=parameters,
+            evidence=evidence,
+        )
+
+        self.assertEqual(dict(plan.parameters["transient_retry_counts"]), {})
+
     def test_rejects_final_evaluation_evidence(self) -> None:
         with self.assertRaisesRegex(ValueError, "final_evaluation"):
             create_production_plan(
