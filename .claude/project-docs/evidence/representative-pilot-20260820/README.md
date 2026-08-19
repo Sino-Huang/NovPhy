@@ -36,3 +36,9 @@ The frozen values are fixed-step stride 1, stability window 2, rollout ceiling 4
 `material-damage-adjudication-v1.json` records the source-bound empirical disposition `partially_unavailable` with identity `representative-material-damage-adjudication-v1:sha256:61d00fdd43b3b0d50ec95963974a6ce541b26169b52fce360e80536bc767b814`.
 
 Raw `life` is accepted only as an uninterpreted engine fact. Material identity is rejected/out of scope because `physics_capture_v1` exports no material field. Damage semantics are rejected for production because the four accepted shots contain no life-decrease or `reason=damage` positive witness. The report preserves the negative, boundary, unknown, null-life, and unavailable cases, including all eight exact `reason=destroyed` event citations. Both material and damage therefore remain unavailable labels and are excluded from the production capability declaration; neither is silently mapped to false.
+
+## Macro-predicate adjudication — issue #40
+
+`macro-semantics-adjudication-v1.json` records identity `representative-macro-semantics-adjudication-v1:sha256:231c70a640db29fa8a05a58bb3368890301ceea8c246e3bae4a5fe7ba44fd935`. The automated procedure re-derived every macro artifact byte-for-byte, aggregated all source-bound frame labels, and audited engine event/state boundaries with no adjudicator disagreement.
+
+All three target predicates are rejected/out of scope. Each has 24 available negative labels and zero positive labels. The four `cascade-active` intervals fall between retained frames; all eight destructions lack prior incoming-support facts required for `collapsed`; and pigs remain present in all 24 frames with no `pig_removed` event. No diagnostic false value is promoted. The production capability declaration and downstream experiment matrix include only the already engine-verified `steady-state` and `structure-unstable` predicates and explicitly exclude `cascade-active`, `collapsed`, and `pigs-cleared`.
