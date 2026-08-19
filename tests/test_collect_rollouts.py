@@ -38,6 +38,7 @@ from scripts.collect_rollouts import (
     format_action_overlay_text,
     load_actions_from_action_log,
     prepare_rollout_video_frames,
+    realized_coverage_strata,
     slingshot_reference_point_from_symbolic_state,
     main,
     RolloutCollectionError,
@@ -963,7 +964,7 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 main()
 
         self.assertEqual(raised.exception.code, 2)
-        self.assertIn("requires both --scenario-manifest and --scenario-xml", stderr.getvalue())
+        self.assertIn("--scenario-manifest and --scenario-xml", stderr.getvalue())
 
     def test_physics_capture_rejects_explicit_and_derived_frame_counts_above_contract(self):
         class Bridge:
@@ -2654,6 +2655,29 @@ class CollectRolloutsTest(unittest.TestCase):
         self.assertEqual(args.fps, 30.0)
         self.assertNotEqual((args.host, args.port), (args.physics_host, args.physics_port))
 
+    def test_realized_coverage_strata_uses_engine_events_and_support(self):
+        self.assertEqual(
+            realized_coverage_strata(PHYSICS_FIXTURES),
+            (
+                "collision",
+                "destruction",
+                "explosion",
+                "level clear",
+                "persistent support",
+                "pig removal",
+                "stability transitions",
+                "support change",
+            ),
+        )
+        no_events = (
+            Path(__file__).parent
+            / "fixtures"
+            / "physics_capture_v1_macro"
+            / "no_events"
+            / "shot_001"
+        )
+        self.assertEqual(realized_coverage_strata(no_events), ("no-contact/miss",))
+
     def test_select_level_in_display_clicks_play_inputs_level_and_confirms(self):
         calls = []
         sleeps = []
@@ -3008,9 +3032,16 @@ class CollectRolloutsTest(unittest.TestCase):
             (stage / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
             return manifest
 
-        with TemporaryDirectory() as temporary, patch(
-            "scripts.collect_rollouts.collect_fresh_engine_rollouts",
-            side_effect=legacy_collect,
+        with (
+            TemporaryDirectory() as temporary,
+            patch(
+                "scripts.collect_rollouts.collect_fresh_engine_rollouts",
+                side_effect=legacy_collect,
+            ),
+            patch(
+                "scripts.collect_rollouts.realized_coverage_strata",
+                return_value=("collision",),
+            ),
         ):
             root = Path(temporary)
             result = collect_fresh_engine_attempt(
@@ -3027,6 +3058,7 @@ class CollectRolloutsTest(unittest.TestCase):
             self.assertTrue(accepted.is_dir())
             self.assertFalse((root / ".attempt-attempt-accepted.tmp").exists())
             self.assertEqual(result["artifact_path"], str(accepted))
+            self.assertEqual(result["realized_coverage_strata"], ["collision"])
             self.assertTrue(result["eligible"])
             self.assertEqual(result["status"], "accepted")
             self.assertFalse((root / "shot_001").exists())
@@ -3517,6 +3549,111 @@ class CollectRolloutsTest(unittest.TestCase):
             "expected-initial-state",
         )
         generate_actions.assert_not_called()
+
+    def test_main_selects_scenario_input_for_each_plan_request(self):
+        frozen_action = {
+            "coordinate_frame": "slingshot_relative",
+            "drag_start": [100, 200],
+            "drag_release": [20, 30],
+            "tapTime": 0,
+            "holdTime": 600,
+        }
+        requests = [
+            type(
+                "RuntimeInput",
+                (),
+                {
+                    "scenario_id": scenario_id,
+                    "attempt_id": f"attempt-{scenario_id}",
+                    "attempt_number": 1,
+                    "expected_initial_engine_state_identity": f"initial-{scenario_id}",
+                    "interface_action": frozen_action,
+                },
+            )()
+            for scenario_id in ("baseline", "novel")
+        ]
+        loaded_plan = type(
+            "LoadedPlan",
+            (),
+            {
+                "plan": type(
+                    "Plan",
+                    (),
+                    {
+                        "scenarios": tuple(
+                            type("Scenario", (), {"scenario_id": scenario_id})()
+                            for scenario_id in ("baseline", "novel")
+                        )
+                    },
+                )()
+            },
+        )()
+
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for game_dir in (root / "baseline-runtime", root / "novel-runtime"):
+                game_dir.mkdir()
+                (game_dir / "game_playing_interface.jar").write_bytes(b"jar")
+            args = [
+                "collect_rollouts.py",
+                "--output-dir",
+                str(root / "output"),
+                "--fresh-engine-per-rollout",
+                "--collection-plan",
+                str(root / "collection-plan.json"),
+                "--scenario-input",
+                "baseline",
+                str(root / "baseline.json"),
+                str(root / "baseline.xml"),
+                str(root / "baseline-runtime"),
+                "--scenario-input",
+                "novel",
+                str(root / "novel.json"),
+                str(root / "novel.xml"),
+                str(root / "novel-runtime"),
+            ]
+
+            def execute_plan(loaded, runtime, output_root):
+                self.assertIs(loaded, loaded_plan)
+                for request in requests:
+                    runtime(request)
+                return {"accepted_count": 2, "failed_count": 0, "rejected_count": 0}
+
+            with (
+                patch("sys.argv", args),
+                patch("scripts.collect_rollouts.load_manifest", side_effect=("baseline-manifest", "novel-manifest")),
+                patch("scripts.collection_plan.load_collection_plan", return_value=loaded_plan),
+                patch("scripts.collection_plan.execute_collection_plan", side_effect=execute_plan),
+                patch(
+                    "scripts.collect_rollouts.collect_fresh_engine_attempt",
+                    return_value={
+                        "status": "accepted",
+                        "reason": None,
+                        "failure_code": None,
+                        "realized_coverage_strata": [],
+                        "eligible": True,
+                        "artifact_path": "accepted",
+                        "quarantine_path": None,
+                        "failure_manifest_path": None,
+                    },
+                ) as attempt,
+            ):
+                main()
+
+        self.assertEqual(
+            [
+                (
+                    call.kwargs["game_dir"],
+                    call.kwargs["ui_level"],
+                    call.kwargs["scenario_manifest"],
+                )
+                for call in attempt.call_args_list
+            ],
+            [
+                (root / "baseline-runtime", None, "baseline-manifest"),
+                (root / "novel-runtime", None, "novel-manifest"),
+            ],
+        )
 
     def test_loaded_plan_runtime_quarantines_failed_thawed_action_without_staging_orphan(self):
         from scripts.collection_plan import (

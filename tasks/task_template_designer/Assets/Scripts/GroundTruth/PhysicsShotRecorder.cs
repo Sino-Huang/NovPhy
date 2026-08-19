@@ -673,8 +673,6 @@ public class PhysicalShotRecorder
     {
         int result = left.FixedStep.CompareTo(right.FixedStep);
         if (result != 0) return result;
-        result = left.FixedTime.CompareTo(right.FixedTime);
-        if (result != 0) return result;
         result = EventRank(left.Kind).CompareTo(EventRank(right.Kind));
         if (result != 0) return result;
         return string.CompareOrdinal(left.Subject, right.Subject);

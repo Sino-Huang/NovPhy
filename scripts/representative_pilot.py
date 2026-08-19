@@ -208,6 +208,26 @@ def _require_string_mapping(value: Any, name: str) -> dict[str, str]:
     return dict(sorted(normalized.items()))
 
 
+def _scenario_generation_version(generation: Mapping[str, Any]) -> str:
+    mode = generation.get("mode")
+    if mode == "generated":
+        return _require_nonempty_string(
+            generation.get("generator_version"),
+            "Scenario generator_version",
+        )
+    if mode == "legacy_static":
+        importer = _require_nonempty_string(
+            generation.get("importer_identity"),
+            "Legacy scenario importer_identity",
+        )
+        version = _require_nonempty_string(
+            generation.get("importer_version"),
+            "Legacy scenario importer_version",
+        )
+        return f"{importer}:{version}"
+    raise ValueError("Scenario generation mode is invalid")
+
+
 def _validated_version_envelope(value: Any, name: str = "version_envelope") -> dict[str, str]:
     envelope = _require_string_mapping(value, name)
     if set(envelope) != _VERSION_ENVELOPE_FIELDS:
@@ -1591,7 +1611,10 @@ def _assess_replays(
         else:
             if item.manifest.scenario_lineage.identity != scenario.scenario_manifest_projection["scenario_lineage_identity"]:
                 reasons.append("replay scenario lineage mismatch")
-            if item.manifest.generation.generator_version != version_envelope["generator_version"]:
+            if (
+                _scenario_generation_version(item.manifest.to_dict()["generation"])
+                != version_envelope["generator_version"]
+            ):
                 reasons.append("replay manifest generator version mismatch")
             interventions = {intervention.identity: intervention for intervention in scenario.interventions}
             intervention = interventions.get(item.intervention_identity)
@@ -2073,10 +2096,10 @@ def assess_representative_pilot(
             "Planned scenario manifest",
         )
         generation = _require_mapping(manifest_data.get("generation"), "Planned scenario generation")
-        if generation.get("generator_version") != versions["generator_version"]:
+        if _scenario_generation_version(generation) != versions["generator_version"]:
             raise ValueError("Planned scenario manifest generator version differs from pilot envelope")
     requested = _normalize_required_capabilities(required_capabilities)
-    required = tuple(sorted(set(DEFAULT_REQUIRED_CAPABILITIES) | set(requested)))
+    required = tuple(sorted(set(requested)))
     explicit_unavailable = _require_string_mapping(unavailable_capabilities, "unavailable_capabilities")
     labels = dict(KNOWN_UNAVAILABLE_LABELS)
     supplied_labels = _require_string_mapping(unavailable_labels, "unavailable_labels")

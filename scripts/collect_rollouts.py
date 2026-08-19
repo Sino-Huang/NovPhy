@@ -27,6 +27,8 @@ from scripts.manual_agent import (  # noqa: E402
     prepare_for_play,
     start_engine,
 )
+from scripts.physics_capture_contract import load_physics_capture  # noqa: E402
+from scripts.physics_capture_types import EventType  # noqa: E402
 from src.webui.bridge import PlayingMode, ScienceBirdsBridge  # noqa: E402
 from scripts.physics_rollout_contract import (  # noqa: E402
     CaptureProvenance,
@@ -2147,6 +2149,41 @@ def _json_compatible_action(value: Any) -> Any:
     return value
 
 
+def realized_coverage_strata(shot_dir: Path) -> tuple[str, ...]:
+    """Classify a validated rollout from authoritative engine records."""
+    capture = load_physics_capture(
+        Path(shot_dir) / "physics_state.jsonl",
+        Path(shot_dir) / "physics_events.jsonl",
+    )
+    event_types = {event.event_type for event in capture.events}
+    strata = {
+        stratum
+        for event_type, stratum in (
+            (EventType.COLLISION, "collision"),
+            (EventType.EXPLOSION, "explosion"),
+            (EventType.ENTITY_DESTROYED, "destruction"),
+            (EventType.PIG_REMOVED, "pig removal"),
+            (EventType.LEVEL_CLEARED, "level clear"),
+            (EventType.LEVEL_FAILED, "level fail"),
+        )
+        if event_type in event_types
+    }
+    if EventType.COLLISION not in event_types:
+        strata.add("no-contact/miss")
+    if event_types & {EventType.STABLE_ENTERED, EventType.STABLE_EXITED}:
+        strata.add("stability transitions")
+
+    support_sets = [
+        {edge.support_id for edge in state.support_edges}
+        for state in capture.states
+    ]
+    if any(supports for supports in support_sets):
+        strata.add("persistent support")
+    if any(before != after for before, after in zip(support_sets, support_sets[1:])):
+        strata.add("support change")
+    return tuple(sorted(strata))
+
+
 def collect_fresh_engine_attempt(
     output_root: Path,
     action: dict,
@@ -2286,6 +2323,7 @@ def collect_fresh_engine_attempt(
             reason = "observed initial engine state identity does not match the planned identity"
         else:
             try:
+                coverage_strata = realized_coverage_strata(shot_dir)
                 accepted_dir.parent.mkdir(parents=True, exist_ok=True)
                 for path in staging_dir.rglob("*.json"):
                     try:
@@ -2313,7 +2351,7 @@ def collect_fresh_engine_attempt(
                     "status": "accepted",
                     "reason": None,
                     "failure_code": None,
-                    "realized_coverage_strata": [],
+                    "realized_coverage_strata": list(coverage_strata),
                     "eligible": True,
                     "artifact_path": str(accepted_dir),
                     "quarantine_path": None,
@@ -2403,6 +2441,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--collection-plan", type=Path)
     parser.add_argument("--scenario-manifest", type=Path)
     parser.add_argument("--scenario-xml", type=Path)
+    parser.add_argument(
+        "--scenario-input",
+        action="append",
+        nargs=4,
+        default=[],
+        metavar=("SCENARIO_ID", "MANIFEST", "XML", "GAME_DIR"),
+        help="Bind one collection-plan scenario to its manifest, XML, and single-level game directory",
+    )
     parser.add_argument("--ui-level", type=int, help="Visible level number to enter with xdotool for each fresh rollout")
     parser.add_argument("--ui-settle-seconds", type=float, default=5.0)
     parser.add_argument("--engine-settle-seconds", type=float, default=20.0)
@@ -2499,15 +2545,21 @@ def main() -> None:
     strict_physics_collection = args.physics_capture_v1 and args.fresh_engine_per_rollout
     has_scenario_manifest = args.scenario_manifest is not None
     has_scenario_xml = args.scenario_xml is not None
+    if args.scenario_input and (has_scenario_manifest or has_scenario_xml or args.ui_level is not None):
+        print(
+            "--scenario-input cannot be combined with --scenario-manifest, --scenario-xml, or --ui-level",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
     if strict_physics_collection and has_scenario_manifest != has_scenario_xml:
         print(
             "--physics-capture-v1 --fresh-engine-per-rollout requires both --scenario-manifest and --scenario-xml",
             file=sys.stderr,
         )
         raise SystemExit(2)
-    if strict_physics_collection and not has_scenario_manifest:
+    if strict_physics_collection and not has_scenario_manifest and not args.scenario_input:
         print(
-            "--physics-capture-v1 --fresh-engine-per-rollout requires both --scenario-manifest and --scenario-xml",
+            "--physics-capture-v1 --fresh-engine-per-rollout requires either --scenario-input or both --scenario-manifest and --scenario-xml",
             file=sys.stderr,
         )
         raise SystemExit(2)
@@ -2518,6 +2570,20 @@ def main() -> None:
         except (OSError, ValueError) as error:
             print(f"Cannot load scenario manifest/XML: {error}", file=sys.stderr)
             raise SystemExit(2) from None
+    scenario_inputs: dict[str, tuple[ScenarioManifest, Path]] = {}
+    for scenario_id, manifest_path, xml_path, game_dir in args.scenario_input:
+        if not scenario_id or scenario_id in scenario_inputs:
+            print("--scenario-input scenario IDs must be nonempty and unique", file=sys.stderr)
+            raise SystemExit(2)
+        try:
+            manifest = load_manifest(Path(manifest_path), Path(xml_path))
+            scenario_game_dir = Path(game_dir)
+            if not (scenario_game_dir / "game_playing_interface.jar").is_file():
+                raise ValueError("GAME_DIR does not contain game_playing_interface.jar")
+        except (OSError, ValueError) as error:
+            print(f"Cannot load --scenario-input {scenario_id}: {error}", file=sys.stderr)
+            raise SystemExit(2) from None
+        scenario_inputs[scenario_id] = (manifest, scenario_game_dir)
     if args.fresh_engine_per_rollout and args.collection_plan is None:
         print("--fresh-engine-per-rollout requires --collection-plan", file=sys.stderr)
         raise SystemExit(2)
@@ -2554,14 +2620,29 @@ def main() -> None:
             print(f"Cannot load frozen collection plan: {error}", file=sys.stderr)
             raise SystemExit(2) from None
 
+        if scenario_inputs:
+            planned_scenario_ids = {scenario.scenario_id for scenario in loaded_plan.plan.scenarios}
+            if set(scenario_inputs) != planned_scenario_ids:
+                print(
+                    "--scenario-input IDs must exactly match the frozen collection plan scenarios",
+                    file=sys.stderr,
+                )
+                raise SystemExit(2)
+
         def runtime(request):
+            selected_manifest = scenario_manifest
+            selected_game_dir = args.game_dir
+            selected_ui_level = args.ui_level
+            if scenario_inputs:
+                selected_manifest, selected_game_dir = scenario_inputs[request.scenario_id]
+                selected_ui_level = None
             return collect_fresh_engine_attempt(
                 args.output_dir,
                 _json_compatible_action(request.interface_action),
                 attempt_id=request.attempt_id,
                 attempt_number=request.attempt_number,
                 expected_initial_engine_state_identity=request.expected_initial_engine_state_identity,
-                game_dir=args.game_dir,
+                game_dir=selected_game_dir,
                 host=args.host,
                 port=args.port,
                 physics_host=args.physics_host,
@@ -2576,7 +2657,7 @@ def main() -> None:
                 headless=args.game_headless,
                 target_fps=args.fps,
                 duration_seconds=args.duration,
-                ui_level=args.ui_level,
+                ui_level=selected_ui_level,
                 ui_settle_seconds=args.ui_settle_seconds,
                 engine_settle_seconds=args.engine_settle_seconds,
                 agent_settle_seconds=args.agent_settle_seconds,
@@ -2590,7 +2671,7 @@ def main() -> None:
                 physics_player_sha256=args.physics_player_sha256,
                 physics_protocol_sha256=args.physics_protocol_sha256,
                 physics_archive_sha256=args.physics_archive_sha256,
-                scenario_manifest=scenario_manifest,
+                scenario_manifest=selected_manifest,
             )
 
         report = execute_collection_plan(loaded_plan, runtime, args.output_dir)

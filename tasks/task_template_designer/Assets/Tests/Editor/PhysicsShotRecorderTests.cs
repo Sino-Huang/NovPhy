@@ -349,7 +349,7 @@ public class PhysicsShotRecorderTests
     }
 
     [Test]
-    public void Events_SortByFullClockThenTaxonomyAndParticipantBeforeSequence()
+    public void Events_SortByFixedStepThenTaxonomyAndParticipantBeforeSequence()
     {
         PhysicsShotRecorder recorder = new PhysicsShotRecorder(8, 64 * 1024);
         recorder.RecordEvent(2, 0.05f, PhysicalMacroEventKind.Destroy, "b:0");
@@ -358,7 +358,10 @@ public class PhysicsShotRecorderTests
         recorder.RecordEvent(2, 0.05f, PhysicalMacroEventKind.Destroy, "a:0");
 
         CollectionAssert.AreEqual(
-            new[] { "z:0", "a:0", "a:0", "b:0" },
+            new[] { "bird_launched", "entity_destroyed", "entity_destroyed", "entity_destroyed" },
+            recorder.Events.Select(item => item.Taxonomy).ToArray());
+        CollectionAssert.AreEqual(
+            new[] { "a:0", "a:0", "b:0", "z:0" },
             recorder.Events.Select(item => item.Subject).ToArray());
         CollectionAssert.AreEqual(
             new long[] { 1, 2, 3, 4 },
