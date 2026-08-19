@@ -3043,7 +3043,14 @@ class CollectRolloutsTest(unittest.TestCase):
         calls = []
 
         def legacy_collect(stage, actions, *, fresh_engine_attempts, **_kwargs):
-            calls.append((stage, actions, fresh_engine_attempts))
+            calls.append(
+                (
+                    stage,
+                    actions,
+                    fresh_engine_attempts,
+                    _kwargs["expected_initial_engine_state_identity"],
+                )
+            )
             shot = stage / "shot_001"
             shot.mkdir(parents=True)
             metadata = {
@@ -3091,7 +3098,10 @@ class CollectRolloutsTest(unittest.TestCase):
             )
 
             accepted = root / "accepted" / "attempt-accepted"
-            self.assertEqual(calls, [(root / ".attempt-attempt-accepted.tmp", [action], 1)])
+            self.assertEqual(
+                calls,
+                [(root / ".attempt-attempt-accepted.tmp", [action], 1, "initial-state")],
+            )
             self.assertTrue(accepted.is_dir())
             self.assertFalse((root / ".attempt-attempt-accepted.tmp").exists())
             self.assertEqual(result["artifact_path"], str(accepted / "shot_001"))

@@ -1956,6 +1956,7 @@ def collect_fresh_engine_rollouts(
     physics_archive_sha256: str | None = None,
     scenario_manifest: ScenarioManifest | None = None,
     scenario_context_override: Mapping[str, Any] | None = None,
+    expected_initial_engine_state_identity: str | None = None,
 ) -> dict:
     if fresh_engine_attempts != 1:
         raise ValueError(
@@ -1964,7 +1965,6 @@ def collect_fresh_engine_rollouts(
     output_dir.mkdir(parents=True, exist_ok=True)
     rollouts = []
     attempts_per_action = 1
-    expected_initial_engine_state_identity: str | None = None
     scenario_context = None if scenario_manifest is None else {
         "scenario_manifest_schema": scenario_manifest.schema,
         "scenario_lineage_identity": scenario_manifest.scenario_lineage.identity,
@@ -2253,6 +2253,7 @@ def collect_fresh_engine_attempt(
 
     options = dict(fresh_engine_options)
     options.pop("fresh_engine_attempts", None)
+    options["expected_initial_engine_state_identity"] = expected_initial_engine_state_identity
     manifest: dict[str, Any] | None = None
     collection_error: Exception | None = None
     try:
