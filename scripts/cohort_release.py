@@ -854,15 +854,7 @@ def ingest_cohort_publication(
         for record in sample["supervision"]:
             if record.macro_labels is None or record.relational_labels is None:
                 raise ValueError("Experiment-facing dataset omitted authoritative labels")
-            identity = record.macro_labels.identity
-            key = (
-                identity.capture_id,
-                identity.shot_id,
-                identity.state_sequence,
-                identity.render_frame,
-                identity.fixed_step,
-                identity.rgb_relative_path,
-            )
+            key = _label_frame_record_identity(record.macro_labels)
             prior = experiment_records.setdefault(key, record)
             if prior != record:
                 raise ValueError("Experiment-facing dataset changed a frame record")
