@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
 
@@ -14,6 +16,12 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
     private long captureSequence;
     private bool stabilityCandidate;
     private int stabilityCandidateSteps;
+    private bool v2StabilityCandidate;
+    private int v2StabilityCandidateSteps;
+    private bool v2InterventionObserved;
+    private PhysicsCaptureV2FixedStepRecorder v2Recorder;
+    private Coroutine v2PostPhysicsLoop;
+    private readonly Dictionary<string, string> v2EntityIds = new Dictionary<string, string>();
 
     public PhysicalShotRecorder ShotRecorder { get { return shotRecorder; } }
     public string CaptureId { get { Initialize(); return captureId; } }
@@ -46,30 +54,63 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
     public void ResetLevel()
     {
         Initialize();
+        if (v2PostPhysicsLoop != null) StopCoroutine(v2PostPhysicsLoop);
+        v2PostPhysicsLoop = null;
         registry.ResetLevel();
         clock.ResetLevel();
         shotRecorder = null;
+        if (v2Recorder != null) v2Recorder.Deactivate();
+        v2Recorder = null;
+        v2EntityIds.Clear();
         captureId = "capture-" + Guid.NewGuid().ToString("N");
         captureSequence = 1;
         stabilityCandidateSteps = 0;
+        v2StabilityCandidateSteps = 0;
+        v2InterventionObserved = false;
     }
 
     public void BeginShot(int maxRecords, int maxBytes, float timeoutSeconds)
     {
         shotRecorder = new PhysicalShotRecorder(new PhysicalCaptureLimits(maxRecords, maxBytes, timeoutSeconds));
+        BeginV2Shot();
+    }
+
+    public void BeginV2Shot()
+    {
+        int configuredStride;
+        string stride = Environment.GetEnvironmentVariable(
+            PhysicsCaptureV2EngineProtocol.StrideEnvironmentVariable,
+            EnvironmentVariableTarget.Process);
+        if (!int.TryParse(stride, NumberStyles.None, CultureInfo.InvariantCulture,
+            out configuredStride) || configuredStride <= 0)
+        {
+            if (v2Recorder != null) v2Recorder.Deactivate();
+            v2Recorder = null;
+            return;
+        }
+        v2EntityIds.Clear();
+        v2StabilityCandidateSteps = 0;
+        v2InterventionObserved = false;
+        v2Recorder = GetComponent<PhysicsCaptureV2FixedStepRecorder>();
+        if (v2Recorder == null) v2Recorder = gameObject.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
+        v2Recorder.BeginPreInterventionFromUnity(Clock.FixedStep, V2CausalObjects());
+        v2PostPhysicsLoop = StartCoroutine(CaptureV2PostPhysicsSteps());
     }
 
     public PhysicalCaptureResult FinalizeShot(bool terminal)
     {
-        return shotRecorder == null
+        PhysicalCaptureResult result = shotRecorder == null
             ? new PhysicalCaptureResult(null)
             : shotRecorder.FinalizeShot(terminal);
+        if (terminal) FinalizeV2("terminal");
+        return result;
     }
 
     public void FinalizeTerminal()
     {
         if (shotRecorder != null)
             shotRecorder.FinalizeShot(true);
+        FinalizeV2("terminal");
     }
 
     public PhysicalSceneSnapshot CaptureCurrent(
@@ -130,12 +171,26 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
             .ToArray();
         shotRecorder.RecordCollision(Clock.FixedStep, Time.fixedTime, first, second,
             contacts, collision.relativeVelocity.magnitude);
+        if (v2Recorder != null && !v2Recorder.IsFinalized)
+        {
+            string v2First = V2Id(collision.collider);
+            string v2Second = V2Id(collision.otherCollider);
+            string[] participants = v2First == null || v2Second == null
+                ? new string[0] : new[] { v2First, v2Second };
+            v2Recorder.RecordMacroEvent("collision", participants,
+                "{\"relative_speed\":" + F(collision.relativeVelocity.magnitude) + "}");
+        }
     }
 
     public string EntityIdFor(GameObject gameObject)
     {
         Initialize();
-        return registry.RegisterObject(gameObject);
+        string entityId = registry.RegisterObject(gameObject);
+        ScenarioObjectIdentity identity = gameObject == null
+            ? null : gameObject.GetComponent<ScenarioObjectIdentity>();
+        if (identity != null && !string.IsNullOrEmpty(identity.ScenarioObjectId))
+            v2EntityIds[entityId] = "runtime:" + identity.ScenarioObjectId;
+        return entityId;
     }
 
     public static string EntityIdForCallback(GameObject gameObject)
@@ -143,15 +198,22 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
         return Active == null ? null : Active.EntityIdFor(gameObject);
     }
 
-    public void RecordLaunch(string entityId, Vector2 launchVelocity) { if (shotRecorder != null) shotRecorder.RecordLaunch(entityId, Clock.FixedStep, launchVelocity); }
-    public void RecordDeath(string entityId) { if (shotRecorder != null) shotRecorder.RecordDeath(entityId, Clock.FixedStep); }
-    public void RecordDestroyed(string entityId) { if (shotRecorder != null) shotRecorder.RecordDestroyed(entityId, Clock.FixedStep); }
-    public void RecordPigRemoved(string entityId) { if (shotRecorder != null) shotRecorder.RecordPigRemoved(entityId, Clock.FixedStep); }
-    public void RecordTntExplosion(string entityId, float radiusUnityUnits) { if (shotRecorder != null) shotRecorder.RecordTntExplosion(entityId, Clock.FixedStep, radiusUnityUnits); }
-    public void RecordBirdExhaustion() { if (shotRecorder != null) shotRecorder.RecordBirdExhaustion(Clock.FixedStep); }
-    public void RecordLevelClear(int score) { if (shotRecorder != null) shotRecorder.RecordLevelClear(Clock.FixedStep, score); }
-    public void RecordLevelFail(string reason) { if (shotRecorder != null) shotRecorder.RecordLevelFail(Clock.FixedStep, reason); }
-    public void RecordStability(bool stable) { if (shotRecorder != null) shotRecorder.RecordStability(Clock.FixedStep, stable); }
+    public void RecordLaunch(string entityId, Vector2 launchVelocity)
+    {
+        if (shotRecorder != null) shotRecorder.RecordLaunch(entityId, Clock.FixedStep, launchVelocity);
+        v2InterventionObserved = true;
+        v2StabilityCandidateSteps = 0;
+        RecordV2("bird_launched", entityId,
+            "{\"launch_velocity\":[" + F(launchVelocity.x) + "," + F(launchVelocity.y) + "]}");
+    }
+    public void RecordDeath(string entityId) { if (shotRecorder != null) shotRecorder.RecordDeath(entityId, Clock.FixedStep); RecordV2("entity_death", entityId, "{}"); }
+    public void RecordDestroyed(string entityId) { if (shotRecorder != null) shotRecorder.RecordDestroyed(entityId, Clock.FixedStep); RecordV2("entity_destroyed", entityId, "{}"); }
+    public void RecordPigRemoved(string entityId) { if (shotRecorder != null) shotRecorder.RecordPigRemoved(entityId, Clock.FixedStep); RecordV2("pig_removed", entityId, "{}"); }
+    public void RecordTntExplosion(string entityId, float radiusUnityUnits) { if (shotRecorder != null) shotRecorder.RecordTntExplosion(entityId, Clock.FixedStep, radiusUnityUnits); RecordV2("tnt_explosion", entityId, "{\"radius_unity_units\":" + F(radiusUnityUnits) + "}"); }
+    public void RecordBirdExhaustion() { if (shotRecorder != null) shotRecorder.RecordBirdExhaustion(Clock.FixedStep); RecordV2("bird_exhaustion", null, "{}"); }
+    public void RecordLevelClear(int score) { if (shotRecorder != null) shotRecorder.RecordLevelClear(Clock.FixedStep, score); RecordV2("level_clear", null, "{\"score\":" + score + "}"); FinalizeV2("level_clear"); }
+    public void RecordLevelFail(string reason) { if (shotRecorder != null) shotRecorder.RecordLevelFail(Clock.FixedStep, reason); RecordV2("level_fail", null, "{\"reason\":\"" + Escape(reason) + "\"}"); FinalizeV2("level_fail"); }
+    public void RecordStability(bool stable) { if (shotRecorder != null) shotRecorder.RecordStability(Clock.FixedStep, stable); RecordV2(stable ? "stable_entered" : "stable_exited", null, "{}"); if (stable) FinalizeV2("stable_entered"); }
 
     public static void RecordCollisionCallback(Collision2D collision)
     {
@@ -187,6 +249,7 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
         if (Active != null)
             Active.BeginShot(maxRecords, maxBytes, timeoutSeconds);
     }
+    public static void BeginV2ShotCallback() { if (Active != null) Active.BeginV2Shot(); }
     public static void FinalizeTerminalCallback() { if (Active != null) Active.FinalizeTerminal(); }
 
     private void Initialize()
@@ -234,6 +297,90 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
             stabilityCandidateSteps++;
         }
         if (stabilityCandidateSteps >= 2)
-            RecordStability(stabilityCandidate);
+            shotRecorder.RecordStability(Clock.FixedStep, stabilityCandidate);
     }
+
+    private IEnumerator CaptureV2PostPhysicsSteps()
+    {
+        WaitForFixedUpdate endOfPhysicsStep = new WaitForFixedUpdate();
+        while (v2Recorder != null && !v2Recorder.IsFinalized && v2Recorder.Failure == null)
+        {
+            yield return endOfPhysicsStep;
+            CaptureV2PostPhysicsStep();
+        }
+        v2PostPhysicsLoop = null;
+    }
+
+    private void CaptureV2PostPhysicsStep()
+    {
+        if (v2Recorder == null || v2Recorder.IsFinalized || v2Recorder.Failure != null) return;
+        v2Recorder.RecordUnityFixedStep(Clock.FixedStep, V2CausalObjects());
+        if (v2Recorder.Failure == null) ObserveV2Stability();
+    }
+
+    private void ObserveV2Stability()
+    {
+        if (!v2InterventionObserved) return;
+        bool candidate = true;
+        foreach (Rigidbody2D body in FindObjectsOfType<Rigidbody2D>())
+        {
+            if (body.bodyType == RigidbodyType2D.Dynamic
+                && (body.velocity.sqrMagnitude > 0.0001f || Mathf.Abs(body.angularVelocity) > 0.01f))
+            {
+                candidate = false;
+                break;
+            }
+        }
+        if (v2StabilityCandidateSteps == 0 || v2StabilityCandidate != candidate)
+        {
+            v2StabilityCandidate = candidate;
+            v2StabilityCandidateSteps = 1;
+        }
+        else
+        {
+            v2StabilityCandidateSteps++;
+        }
+        if (v2StabilityCandidateSteps == 2)
+        {
+            RecordV2(v2StabilityCandidate ? "stable_entered" : "stable_exited", null, "{}");
+            if (v2StabilityCandidate) FinalizeV2("stable_entered");
+        }
+    }
+
+    private GameObject[] V2CausalObjects()
+    {
+        return Resources.FindObjectsOfTypeAll<ScenarioObjectIdentity>()
+            .Where(identity => identity != null && identity.gameObject.scene.IsValid())
+            .OrderBy(identity => identity.ScenarioObjectId, StringComparer.Ordinal)
+            .Select(identity => identity.gameObject).ToArray();
+    }
+
+    private void RecordV2(string eventType, string v1EntityId, string payload)
+    {
+        if (v2Recorder == null || v2Recorder.IsFinalized) return;
+        string participant;
+        string[] participants = v1EntityId != null && v2EntityIds.TryGetValue(v1EntityId, out participant)
+            ? new[] { participant } : new string[0];
+        v2Recorder.RecordMacroEvent(eventType, participants, payload);
+    }
+
+    private static string V2Id(Collider2D collider)
+    {
+        ScenarioObjectIdentity identity = collider == null
+            ? null : collider.GetComponentInParent<ScenarioObjectIdentity>();
+        return identity == null || string.IsNullOrEmpty(identity.ScenarioObjectId)
+            ? null : "runtime:" + identity.ScenarioObjectId;
+    }
+
+    private void FinalizeV2(string reason)
+    {
+        if (v2Recorder != null && !v2Recorder.IsFinalized && v2Recorder.Failure == null
+            && v2Recorder.LastFixedStep < Clock.FixedStep)
+            CaptureV2PostPhysicsStep();
+        if (v2Recorder != null && !v2Recorder.IsFinalized && v2Recorder.Failure == null)
+            v2Recorder.FinalizeTerminal(Clock.FixedStep, reason);
+    }
+
+    private static string F(float value) { return value.ToString("R", CultureInfo.InvariantCulture); }
+    private static string Escape(string value) { return (value ?? "").Replace("\\", "\\\\").Replace("\"", "\\\""); }
 }

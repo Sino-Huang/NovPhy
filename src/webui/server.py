@@ -6,18 +6,26 @@ import json
 import mimetypes
 import os
 import signal
+import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 from xml.etree import ElementTree as ET
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
-from .bridge import GameState, PlayingMode, ScienceBirdsBridge
+from .bridge import (
+    GameState,
+    PhysicsCaptureV2Failure,
+    PlayingMode,
+    ScienceBirdsBridge,
+)
+from .physics_v2_review import PhysicsV2ReviewSession, REVIEW_GOAL_LEVELS
 
 
 SETUP_COMMAND = (
@@ -132,12 +140,35 @@ class AppState:
     bridge_lock: threading.Lock = field(default_factory=threading.Lock)
     game_process: subprocess.Popen | None = None
     frame_height: int = 480
+    physics_v2_review: bool = False
+    physics_host: str = "127.0.0.1"
+    physics_port: int = 2005
+    physics_bridge: ScienceBirdsBridge | None = None
+    review_output_root: Path | None = None
+    review_probe_plan_path: Path | None = None
+    review_session: PhysicsV2ReviewSession | None = None
+    review_capture_timeout: float = 60.0
+    review_stage: Path | None = None
+    review_runtime_dir: Path | None = None
+    review_archive_sha256: str | None = None
+    review_runtime_temporary: tempfile.TemporaryDirectory | None = None
+    engine_game_port: int = 29001
+    review_reset_callback: Any | None = None
 
     @property
     def game_dir(self) -> Path:
+        if self.review_runtime_dir is not None:
+            return self.review_runtime_dir
         return self.root / "sciencebirdsgames" / self.game_version
 
     def preflight_errors(self) -> list[str]:
+        if self.physics_v2_review and self.review_runtime_dir is None:
+            stage = self.review_stage or self.root / "sciencebirdsgames" / "physics-v2"
+            required_stage = [
+                stage / "archive.sha256",
+                stage / "novphy-physics-player-2019.4.41f2.tar.gz",
+            ]
+            return [f"Missing {path}" for path in required_stage if not path.exists()]
         required = [
             self.game_dir / "game_playing_interface.jar",
             self.game_dir / "9001.x86_64",
@@ -156,7 +187,167 @@ class AppState:
             "gameHost": self.game_host,
             "gamePort": self.game_port,
             "preflightErrors": self.preflight_errors(),
+            "physicsV2Review": self.physics_v2_review,
+            "physicsV2ReviewSession": None if self.review_session is None else self.review_session.snapshot(),
+            "physicsV2ArchiveSha256": self.review_archive_sha256,
         }
+
+    def prepare_physics_v2_review_runtime(self) -> Path:
+        if not self.physics_v2_review:
+            raise ValueError("physics-v2 review mode is not enabled")
+        if self.review_runtime_dir is not None:
+            return self.review_runtime_dir
+        from scripts.verify_physics_player import (
+            CAPTURE_SCHEMA_V2,
+            archive_from_stage,
+            safe_unpack,
+            verify_payload,
+        )
+
+        stage = self.review_stage or self.root / "sciencebirdsgames" / "physics-v2"
+        archive, archive_sha = archive_from_stage(stage)
+        temporary = tempfile.TemporaryDirectory(prefix="novphy_webui_physics_v2_")
+        runtime = Path(temporary.name)
+        try:
+            safe_unpack(archive, runtime)
+            verify_payload(runtime, CAPTURE_SCHEMA_V2)
+            self._install_public_review_levels(runtime)
+        except Exception:
+            temporary.cleanup()
+            raise
+        self.review_runtime_temporary = temporary
+        self.review_runtime_dir = runtime
+        self.review_archive_sha256 = archive_sha
+        return runtime
+
+    def _install_public_review_levels(self, runtime: Path) -> None:
+        evidence = self.root / ".claude/project-docs/evidence/issue-45-cohort-v2-lineage"
+        sources = (
+            evidence / "xml/training.xml",
+            evidence / "xml/calibration.xml",
+            evidence / "xml/model-selection.xml",
+        )
+        if any(not source.is_file() for source in sources):
+            raise FileNotFoundError("public #45 review XML artifacts are incomplete")
+        target_root = runtime / "review-levels"
+        target_root.mkdir(parents=True, exist_ok=True)
+        for source in sources:
+            shutil.copyfile(source, target_root / source.name)
+        evaluation = ET.Element("evaluation")
+        ET.SubElement(
+            evaluation,
+            "novelty_detection_measurement",
+            {"step": "1", "measure_in_training": "False", "measure_in_testing": "False"},
+        )
+        trials = ET.SubElement(evaluation, "trials")
+        trial = ET.SubElement(trials, "trial", {
+            "id": "0",
+            "number_of_executions": "1",
+            "checkpoint_time_limit": "9999999",
+            "checkpoint_interaction_limit": "9999999",
+            "notify_novelty": "False",
+        })
+        level_set = ET.SubElement(trial, "game_level_set", {
+            "mode": "training",
+            "time_limit": "9999999",
+            "total_interaction_limit": "9999999",
+            "attempt_limit_per_level": "20",
+            "allow_level_selection": "True",
+        })
+        for source in sources:
+            ET.SubElement(level_set, "game_levels", {"level_path": f"review-levels/{source.name}"})
+        ET.indent(evaluation, space="  ")
+        ET.ElementTree(evaluation).write(runtime / "config.xml", encoding="utf-8", xml_declaration=True)
+
+    def _review_root(self) -> Path:
+        return self.review_output_root or self.root / ".local-artifacts" / "issue-44-webui-review"
+
+    def _review_plan(self) -> Path:
+        return self.review_probe_plan_path or self.root / ".claude/project-docs/evidence/issue-44-physics-v2/probe-plan.json"
+
+    def stage_physics_v2_review(self, goal: str, action: dict[str, Any]) -> dict[str, Any]:
+        if not self.physics_v2_review:
+            raise ValueError("physics-v2 review mode is not enabled")
+        if self.review_session is not None and self.review_session.state in {"exploring", "replaying", "frozen"}:
+            raise ValueError("the current physics-v2 review session must finish before staging another action")
+        self.review_session = PhysicsV2ReviewSession(
+            self._review_root(),
+            probe_plan_path=self._review_plan(),
+        )
+        return self.review_session.stage(goal, action)
+
+    def load_physics_v2_review_goal(self, goal: str) -> int:
+        if not self.physics_v2_review:
+            raise ValueError("physics-v2 review mode is not enabled")
+        if goal not in REVIEW_GOAL_LEVELS:
+            raise ValueError(f"unknown physics-v2 review goal: {goal}")
+        level = REVIEW_GOAL_LEVELS[goal]
+        with self.bridge_lock:
+            if self.bridge is None or not self.bridge.connected:
+                raise RuntimeError("Not connected to Science Birds. Start or connect first.")
+            self.bridge.load_level(level)
+        return level
+
+    def freeze_physics_v2_review(self) -> dict[str, Any]:
+        if self.review_session is None:
+            raise ValueError("no physics-v2 review session is active")
+        return self.review_session.freeze_replay()
+
+    def _physics_v2_engine_record(self) -> Mapping[str, Any]:
+        deadline = time.monotonic() + self.review_capture_timeout
+        while True:
+            bridge = self.physics_bridge
+            if bridge is None:
+                bridge = ScienceBirdsBridge(self.physics_host, self.physics_port, timeout=10.0)
+            if not bridge.connected:
+                bridge.connect()
+            try:
+                capture = bridge.get_physics_capture_v2()
+                record = getattr(capture, "record", None)
+                if not isinstance(record, Mapping):
+                    raise RuntimeError("request 71 returned no engine capture record")
+                return record
+            except PhysicsCaptureV2Failure as error:
+                if error.code != 3 or time.monotonic() >= deadline:
+                    raise
+                time.sleep(0.25)
+
+    def run_physics_v2_review(self, *, replay: bool) -> dict[str, Any]:
+        if self.review_session is None:
+            raise ValueError("no physics-v2 review session is active")
+        transition = self.review_session.begin_replay() if replay else self.review_session.begin_exploration()
+        shot = transition["socket_command"]
+        try:
+            if replay:
+                if self.review_reset_callback is not None:
+                    self.review_reset_callback(self.review_session.goal)
+                else:
+                    self._reset_physics_v2_review_engine()
+            with self.bridge_lock:
+                if self.bridge is None or not self.bridge.connected:
+                    raise RuntimeError("Not connected to Science Birds. Start or connect first.")
+                self.bridge.shoot(
+                    shot["x"],
+                    shot["y"],
+                    tap_time=shot["tapTime"],
+                    fast=True,
+                    release_time=shot["releaseTime"],
+                )
+            record = self._physics_v2_engine_record()
+            if replay:
+                return self.review_session.complete_replay(record)
+            return self.review_session.complete_exploration(record)
+        except Exception as error:
+            self.review_session.fail_active_capture(error)
+            raise
+
+    def _reset_physics_v2_review_engine(self) -> None:
+        if self.review_session is None or self.review_session.goal is None:
+            raise ValueError("confirmatory replay has no bound review goal")
+        goal = self.review_session.goal
+        self.stop()
+        self.start_game()
+        self.load_physics_v2_review_goal(goal)
 
     def configured_level_count(self) -> int | None:
         config_path = self.game_dir / "config.xml"
@@ -210,6 +401,8 @@ class AppState:
         return None
 
     def start_game(self) -> dict[str, Any]:
+        if self.physics_v2_review:
+            self.prepare_physics_v2_review_runtime()
         errors = self.preflight_errors()
         if errors:
             raise RuntimeError("; ".join(errors) + f". Run: {SETUP_COMMAND}")
@@ -218,7 +411,16 @@ class AppState:
             command = ["java", "-jar", "./game_playing_interface.jar"]
             if self.game_headless:
                 command.append("--headless")
+            if self.physics_v2_review:
+                command.extend([
+                    "--agent-port", str(self.game_port),
+                    "--game-start-port", str(self.engine_game_port),
+                    "--physics-port", str(self.physics_port),
+                ])
             command.append("--dev")
+            environment = os.environ.copy()
+            if self.physics_v2_review:
+                environment["NOVPHY_PHYSICS_CAPTURE_V2_STRIDE"] = "1"
             self.game_process = subprocess.Popen(
                 command,
                 cwd=self.game_dir,
@@ -226,6 +428,7 @@ class AppState:
                 stderr=subprocess.DEVNULL,
                 text=True,
                 start_new_session=True,
+                env=environment,
             )
 
         deadline = time.time() + 15
@@ -287,6 +490,10 @@ class AppState:
             if self.bridge is not None:
                 self.bridge.disconnect()
                 self.bridge = None
+        if self.physics_bridge is not None:
+            if hasattr(self.physics_bridge, "disconnect"):
+                self.physics_bridge.disconnect()
+            self.physics_bridge = None
         if self.game_process is not None:
             try:
                 os.killpg(os.getpgid(self.game_process.pid), signal.SIGTERM)
@@ -298,6 +505,10 @@ class AppState:
                 os.killpg(os.getpgid(self.game_process.pid), signal.SIGKILL)
                 self.game_process.wait(timeout=5)
             self.game_process = None
+        if self.review_runtime_temporary is not None:
+            self.review_runtime_temporary.cleanup()
+            self.review_runtime_temporary = None
+            self.review_runtime_dir = None
         return self.status()
 
 
@@ -312,6 +523,19 @@ def create_handler(app: AppState):
                 return
             if path == "/api/frame":
                 self._handle_frame()
+                return
+            if path == "/api/physics-v2-review":
+                session = None if app.review_session is None else app.review_session.snapshot()
+                self._send_json({"ok": True, "enabled": app.physics_v2_review, "session": session})
+                return
+            if path == "/api/physics-v2-review/steps":
+                query = parse_qs(urlparse(self.path).query)
+                start = int(query.get("start", [0])[0])
+                count = int(query.get("count", [100])[0])
+                if app.review_session is None:
+                    self._send_json({"ok": True, "start": start, "count": 0, "total": 0, "steps": []})
+                else:
+                    self._send_json({"ok": True, **app.review_session.fixed_steps(start=start, count=count)})
                 return
             self._serve_static(path)
 
@@ -336,6 +560,25 @@ def create_handler(app: AppState):
                     self._bridge_action(lambda bridge: bridge.fully_zoom_out())
                 elif path == "/api/zoom-in":
                     self._bridge_action(lambda bridge: bridge.fully_zoom_in())
+                elif path == "/api/physics-v2-review/stage":
+                    payload = self._read_json()
+                    goal = payload.get("goal")
+                    action = payload.get("action")
+                    if not isinstance(goal, str) or not isinstance(action, dict):
+                        raise ValueError("physics-v2 review stage requires goal and action")
+                    self._send_json({"ok": True, "session": app.stage_physics_v2_review(goal, action)})
+                elif path == "/api/physics-v2-review/load-goal":
+                    payload = self._read_json()
+                    goal = payload.get("goal")
+                    if not isinstance(goal, str):
+                        raise ValueError("physics-v2 review goal is required")
+                    self._send_json({"ok": True, "level": app.load_physics_v2_review_goal(goal)})
+                elif path == "/api/physics-v2-review/explore":
+                    self._send_json({"ok": True, "session": app.run_physics_v2_review(replay=False)})
+                elif path == "/api/physics-v2-review/freeze":
+                    self._send_json({"ok": True, "session": app.freeze_physics_v2_review()})
+                elif path == "/api/physics-v2-review/replay":
+                    self._send_json({"ok": True, "session": app.run_physics_v2_review(replay=True)})
                 else:
                     self._send_json({"ok": False, "error": "Unknown API endpoint"}, status=404)
             except ValueError as exc:
@@ -564,17 +807,34 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--port", type=int, default=8766, help="Web server port")
     parser.add_argument("--game-host", default="127.0.0.1", help="Science Birds socket host")
     parser.add_argument("--game-port", type=int, default=2004, help="Science Birds socket port")
+    parser.add_argument("--physics-port", type=int, default=2005, help="Direct request-71 socket port")
     parser.add_argument("--speed", type=int, default=50, help="Simulation speed set after connect")
     parser.add_argument("--game-headless", action="store_true", default=os.environ.get("NOVPHY_WEBUI_GAME_HEADLESS") == "1")
+    parser.add_argument("--physics-v2-review", action="store_true", help="Enable guided diagnostic and confirmatory request-71 capture")
+    parser.add_argument("--review-output-dir", type=Path, help="Local physics-v2 review session directory")
+    parser.add_argument("--physics-v2-stage", type=Path, help="Verified packaged physics-v2 stage")
+    parser.add_argument("--engine-game-port", type=int, default=29001, help="Unity startup port used by the packaged interface")
     return parser
 
 
 def main() -> None:
     args = build_arg_parser().parse_args()
-    app = AppState(game_host=args.game_host, game_port=args.game_port, speed=args.speed, game_headless=args.game_headless)
+    app = AppState(
+        game_host=args.game_host,
+        game_port=args.game_port,
+        speed=args.speed,
+        game_headless=args.game_headless,
+        physics_v2_review=args.physics_v2_review,
+        physics_port=args.physics_port,
+        review_output_root=args.review_output_dir,
+        review_stage=args.physics_v2_stage,
+        engine_game_port=args.engine_game_port,
+    )
     server = ThreadingHTTPServer((args.host, args.port), create_handler(app))
     print(f"NovPhy WebUI: http://{args.host}:{args.port}/")
     print(f"Science Birds target: {app.game_host}:{app.game_port}")
+    if app.physics_v2_review:
+        print(f"Physics-v2 review: enabled (request 71 at {app.physics_host}:{app.physics_port})")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

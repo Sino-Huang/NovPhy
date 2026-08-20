@@ -12,8 +12,12 @@ from src.webui.bridge import (
     PhysicsCaptureV1,
     PhysicsCaptureV1Failure,
     PhysicsCaptureV1ProtocolError,
+    PhysicsCaptureV2Engine,
+    PhysicsCaptureV2Failure,
+    PhysicsCaptureV2ProtocolError,
     ScienceBirdsBridge,
     encode_physics_capture_v1,
+    encode_physics_capture_v2_engine,
 )
 
 
@@ -261,6 +265,99 @@ class PhysicsCaptureV1Tests(unittest.TestCase):
         self.assertEqual(bytes(fake.responses), b"")
 
 
+class PhysicsCaptureV2BridgeTests(unittest.TestCase):
+    def test_request_71_round_trips_an_immutable_engine_envelope(self):
+        engine_capture = {
+            "schema_version": "physics_capture_v2_engine_v1",
+            "capture_id": "capture-1",
+            "configured_fixed_step_capture_stride": 2,
+            "fixed_step_samples": [{"fixed_step": 10}],
+        }
+        fake = FakeSocket()
+        fake.responses.extend(encode_physics_capture_v2_engine(engine_capture))
+        bridge = ScienceBirdsBridge(socket_factory=lambda *args: fake)
+        bridge.connect()
+
+        capture = bridge.get_physics_capture_v2()
+
+        self.assertIsInstance(capture, PhysicsCaptureV2Engine)
+        self.assertEqual(capture.record["capture_id"], "capture-1")
+        self.assertEqual(capture.record["fixed_step_samples"][0]["fixed_step"], 10)
+        self.assertEqual(bytes(fake.sent), b"\x47")
+        with self.assertRaises(TypeError):
+            capture.record["fixed_step_samples"][0]["fixed_step"] = 11
+
+    def test_request_71_exposes_an_immutable_typed_engine_failure(self):
+        message = b"capture stride is not configured"
+        payload = struct.pack("!I", len(message)) + message
+        fake = FakeSocket()
+        fake.responses.extend(_v2_envelope(1, 4, payload))
+        bridge = ScienceBirdsBridge(socket_factory=lambda *args: fake)
+        bridge.connect()
+
+        with self.assertRaises(PhysicsCaptureV2Failure) as raised:
+            bridge.get_physics_capture_v2()
+
+        self.assertEqual(raised.exception.code, 4)
+        self.assertEqual(raised.exception.message, "capture stride is not configured")
+        self.assertFalse(bridge.connected)
+        with self.assertRaises(FrozenInstanceError):
+            raised.exception.code = 5
+
+    def test_request_71_rejects_declared_overflow_before_reading_the_body(self):
+        unread_body = b"unread-body"
+        fake = FakeSocket()
+        fake.responses.extend(struct.pack("!I", 64 * 1024 * 1024 + 1) + unread_body)
+        bridge = ScienceBirdsBridge(socket_factory=lambda *args: fake)
+        bridge.connect()
+
+        with self.assertRaises(PhysicsCaptureV2ProtocolError):
+            bridge.get_physics_capture_v2()
+
+        self.assertEqual(fake.recv_sizes, [4])
+        self.assertEqual(bytes(fake.responses), unread_body)
+        self.assertFalse(bridge.connected)
+
+    def test_request_71_rejects_invalid_engine_authority_fields(self):
+        invalid_records = (
+            b'{"schema_version":"physics_capture_v2","configured_fixed_step_capture_stride":1}',
+            b'{"schema_version":"physics_capture_v2_engine_v1"}',
+            b'{"schema_version":"physics_capture_v2_engine_v1","configured_fixed_step_capture_stride":0}',
+            b'{"schema_version":"physics_capture_v2_engine_v1","configured_fixed_step_capture_stride":1,"gravity":NaN}',
+        )
+        for payload in invalid_records:
+            with self.subTest(payload=payload):
+                fake = FakeSocket()
+                fake.responses.extend(_v2_envelope(0, 0, payload))
+                bridge = ScienceBirdsBridge(socket_factory=lambda *args: fake)
+                bridge.connect()
+
+                with self.assertRaises(PhysicsCaptureV2ProtocolError):
+                    bridge.get_physics_capture_v2()
+
+                self.assertFalse(bridge.connected)
+
+    def test_request_71_rejects_malformed_v2_framing(self):
+        payload = b'{"schema_version":"physics_capture_v2_engine_v1","configured_fixed_step_capture_stride":1}'
+        malformed = (
+            _envelope(b"NOPE", 1, 0, 0, payload),
+            _envelope(b"SBP2", 2, 0, 0, payload),
+            _envelope(b"SBP2", 1, 2, 0, payload),
+            _envelope(b"SBP2", 1, 1, 4, struct.pack("!I", 9) + b"short"),
+        )
+        for response in malformed:
+            with self.subTest(response=response[:16]):
+                fake = FakeSocket()
+                fake.responses.extend(response)
+                bridge = ScienceBirdsBridge(socket_factory=lambda *args: fake)
+                bridge.connect()
+
+                with self.assertRaises(PhysicsCaptureV2ProtocolError):
+                    bridge.get_physics_capture_v2()
+
+                self.assertFalse(bridge.connected)
+
+
 class LegacyGroundTruthProtocolTests(unittest.TestCase):
     def make_bridge(self, response):
         fake = FakeSocket()
@@ -391,6 +488,11 @@ class PhysicsCaptureV1MalformedEnvelopeTests(unittest.TestCase):
 
 def _envelope(magic, version, flags, failure_code, payload):
     body = struct.pack("!4sBBHI", magic, version, flags, failure_code, len(payload)) + payload
+    return struct.pack("!I", len(body)) + body
+
+
+def _v2_envelope(flags, failure_code, payload):
+    body = struct.pack("!4sBBHI", b"SBP2", 1, flags, failure_code, len(payload)) + payload
     return struct.pack("!I", len(body)) + body
 
 

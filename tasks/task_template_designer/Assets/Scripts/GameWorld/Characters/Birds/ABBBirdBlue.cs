@@ -39,6 +39,9 @@ public class ABBBirdBlue : ABBird
             GameObject obj = (GameObject)Instantiate(ABWorldAssets.BIRDS["BirdBlue"], transform.parent);
             obj.name = "BlueBird_Child" + i;
             obj.transform.position = transform.position;
+            ScenarioObjectIdentity parentIdentity = GetComponent<ScenarioObjectIdentity>();
+            if (parentIdentity != null)
+                ScenarioObjectIdentity.AssignSpawn(obj, parentIdentity, "blue-child", i);
 
             // Set layer to avoid collision.
             obj.layer = LayerMask.NameToLayer("Ghostspot");

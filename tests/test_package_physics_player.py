@@ -101,7 +101,30 @@ class PhysicsPlayerPackagerTests(unittest.TestCase):
                 manifest = json.loads(manifest_file.read())
             self.assertEqual(manifest["unity"]["version"], "2019.4.41f2")
             self.assertEqual(manifest["unity"]["changeset"], "6b23d448b533")
+            self.assertEqual(manifest["capture"], {"schema_version": "physics_capture_v1", "protocol_version": 1})
             self.assertEqual(manifest["files"], {"9001.x86_64": _sha256(player)})
+
+    def test_cli_writes_explicit_v2_engine_capture_provenance(self) -> None:
+        # Given: a committed source tree and a v2-capable player payload.
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            repository, payload, stage, migration = self._fixture(root)
+            (payload / "9001.x86_64").write_bytes(b"v2 player payload")
+
+            # When: the additive v2 engine protocol is selected for packaging.
+            result = self._package(
+                (repository, payload, stage, migration),
+                ("--capture-schema", "physics_capture_v2_engine_v1"),
+            )
+
+            # Then: the manifest identifies v2 without changing the stage schema or protocol version.
+            self.assertEqual(result.returncode, 0, result.stderr)
+            manifest = json.loads((payload / "provenance.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["schema_version"], "novphy_physics_player_stage_v1")
+            self.assertEqual(
+                manifest["capture"],
+                {"schema_version": "physics_capture_v2_engine_v1", "protocol_version": 1},
+            )
 
     def test_cli_is_stable_when_only_evidence_and_generated_artifacts_change(self) -> None:
         # Given: one committed source tree with an unchanged built payload.

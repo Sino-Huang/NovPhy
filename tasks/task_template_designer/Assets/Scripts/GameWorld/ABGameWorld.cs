@@ -252,6 +252,8 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
 
             GameObject landscape = (GameObject)Instantiate(ABWorldAssets.LANDSCAPE, landscapePos, Quaternion.identity);
             landscape.transform.parent = transform;
+            ScenarioObjectIdentity.Assign(landscape, "world:landscape:"
+                + i.ToString("D4", System.Globalization.CultureInfo.InvariantCulture));
 
             float screenRate = currentLevel.camera.maxWidth / LevelHeight;
             if (screenRate > 2f)
@@ -279,13 +281,14 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
         _slingshot = (GameObject)Instantiate(ABWorldAssets.SLINGSHOT, slingshotPos, Quaternion.identity);
         _slingshot.name = "Slingshot";
         _slingshot.transform.parent = transform;
+        ScenarioObjectIdentity.Assign(_slingshot, currentLevel.slingshot.scenarioObjectId);
 
         foreach (BirdData gameObj in currentLevel.birds)
         {
 
             if (!gameObj.type.Contains("novel"))
             {
-                AddBird(ABWorldAssets.BIRDS[gameObj.type], ABWorldAssets.BIRDS[gameObj.type].transform.rotation);
+                AddBird(ABWorldAssets.BIRDS[gameObj.type], ABWorldAssets.BIRDS[gameObj.type].transform.rotation, gameObj.scenarioObjectId);
             }
 
             else
@@ -293,7 +296,7 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
                 GameObject newBird = (GameObject)NOVELTIES.LoadAsset(gameObj.type);
                 string matrialName = "novel_material_" + gameObj.type.Split('_')[2];
                 newBird.GetComponent<PolygonCollider2D>().sharedMaterial = (PhysicsMaterial2D)NOVELTIES.LoadAsset(matrialName);
-                AddBird(newBird, newBird.transform.rotation);
+                AddBird(newBird, newBird.transform.rotation, gameObj.scenarioObjectId);
 
             }
 
@@ -308,7 +311,8 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
 
             if (!gameObj.type.Contains("novel"))
             {
-                AddPig(ABWorldAssets.PIGS[gameObj.type], pos, rotation);
+                GameObject pig = AddPig(ABWorldAssets.PIGS[gameObj.type], pos, rotation);
+                ScenarioObjectIdentity.Assign(pig, gameObj.scenarioObjectId);
             }
 
             else
@@ -316,7 +320,8 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
                 GameObject newPig = (GameObject)NOVELTIES.LoadAsset(gameObj.type);
                 string matrialName = "novel_material_" + gameObj.type.Split('_')[2];
                 newPig.GetComponent<PolygonCollider2D>().sharedMaterial = (PhysicsMaterial2D)NOVELTIES.LoadAsset(matrialName);
-                AddPig(newPig, pos, rotation);
+                GameObject pig = AddPig(newPig, pos, rotation);
+                ScenarioObjectIdentity.Assign(pig, gameObj.scenarioObjectId);
 
             }
 
@@ -331,6 +336,7 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
             if (!gameObj.type.Contains("novel"))
             {
                 GameObject block = AddBlock(ABWorldAssets.BLOCKS[gameObj.type], pos, rotation);
+                ScenarioObjectIdentity.Assign(block, gameObj.scenarioObjectId);
 
                 MATERIALS material = (MATERIALS)System.Enum.Parse(typeof(MATERIALS), gameObj.material);
 
@@ -342,6 +348,7 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
             {
                 GameObject newBlock = (GameObject)NOVELTIES.LoadAsset(gameObj.type);
                 GameObject block = AddBlock(newBlock, pos, rotation);
+                ScenarioObjectIdentity.Assign(block, gameObj.scenarioObjectId);
 
                 string matrialName = "novel_material_" + gameObj.type.Split('_')[2];
 
@@ -357,7 +364,8 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
             Vector2 pos = new Vector2(gameObj.x, gameObj.y);
             Quaternion rotation = Quaternion.Euler(0, 0, gameObj.rotation);
 
-            AddPlatform(ABWorldAssets.PLATFORM, pos, rotation, gameObj.scaleX, gameObj.scaleY);
+            GameObject platform = AddPlatform(ABWorldAssets.PLATFORM, pos, rotation, gameObj.scaleX, gameObj.scaleY);
+            ScenarioObjectIdentity.Assign(platform, gameObj.scenarioObjectId);
         }
 
         foreach (OBjData gameObj in currentLevel.tnts)
@@ -366,7 +374,8 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
             Vector2 pos = new Vector2(gameObj.x, gameObj.y);
             Quaternion rotation = Quaternion.Euler(0, 0, gameObj.rotation);
 
-            AddBlock(ABWorldAssets.TNT, pos, rotation);
+            GameObject tnt = AddBlock(ABWorldAssets.TNT, pos, rotation);
+            ScenarioObjectIdentity.Assign(tnt, gameObj.scenarioObjectId);
         }
 
 
@@ -510,7 +519,7 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
             _birds.Add(readyBird);
     }
 
-    public GameObject AddBird(GameObject original, Quaternion rotation)
+    public GameObject AddBird(GameObject original, Quaternion rotation, string scenarioObjectId = null)
     {
 
         Vector3 birdsPos = _slingshot.transform.position - ABConstants.SLING_SELECT_POS;
@@ -542,6 +551,7 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
 
         newGameObject.transform.parent = birdsTransform;
         newGameObject.name = "bird_" + _birds.Count;
+        ScenarioObjectIdentity.Assign(newGameObject, scenarioObjectId);
 
         ABBird bird = newGameObject.GetComponent<ABBird>();
         bird.SendMessage("InitSpecialPower", SendMessageOptions.DontRequireReceiver);

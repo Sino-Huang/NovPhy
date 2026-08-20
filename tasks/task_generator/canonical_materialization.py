@@ -71,7 +71,14 @@ def _read_template(xml_content: bytes) -> tuple[ET.Element, list[Block], list[Pi
     try:
         root = ET.fromstring(xml_content)
     except ET.ParseError as exc:
-        raise ValueError(f"Malformed scenario template XML: {exc}") from exc
+        normalized = xml_content.replace(b'encoding="utf-16"', b'encoding="utf-8"', 1)
+        normalized = normalized.replace(b"encoding='utf-16'", b"encoding='utf-8'", 1)
+        if normalized == xml_content:
+            raise ValueError(f"Malformed scenario template XML: {exc}") from exc
+        try:
+            root = ET.fromstring(normalized)
+        except ET.ParseError:
+            raise ValueError(f"Malformed scenario template XML: {exc}") from exc
     game_objects = root.find("GameObjects")
     if game_objects is None:
         raise ValueError("Scenario template must contain GameObjects")
@@ -137,6 +144,31 @@ def _append_generated_block(game_objects: ET.Element, block: Block) -> None:
     ET.SubElement(game_objects, tag, attributes)
 
 
+def _author_scenario_object_ids(root: ET.Element) -> None:
+    slingshot = root.find("Slingshot")
+    if slingshot is None:
+        raise ValueError("Scenario template must contain Slingshot")
+    slingshot.set("scenarioObjectId", "slingshot:0000")
+
+    birds = root.find("Birds")
+    if birds is None:
+        raise ValueError("Scenario template must contain Birds")
+    for index, bird in enumerate(birds):
+        bird.set("scenarioObjectId", f"bird:{index:04d}")
+
+    game_objects = root.find("GameObjects")
+    assert game_objects is not None
+    ordinals: dict[str, int] = {}
+    for node in game_objects:
+        kind = {
+            "ExternalAgent": "external-agent",
+            "Novelty": "novelty",
+        }.get(node.tag, node.tag.lower())
+        ordinal = ordinals.get(kind, 0)
+        node.set("scenarioObjectId", f"{kind}:{ordinal:04d}")
+        ordinals[kind] = ordinal + 1
+
+
 def _serialize_generated_tree(
     root: ET.Element,
     generated_blocks: list[Block],
@@ -158,6 +190,7 @@ def _serialize_generated_tree(
     for block in generated_blocks[len(block_nodes):]:
         _append_generated_block(game_objects, block)
 
+    _author_scenario_object_ids(root)
     ET.indent(root, space="  ")
     return ET.tostring(root, encoding="utf-8", xml_declaration=True, short_empty_elements=True) + b"\n"
 

@@ -30,6 +30,7 @@ from scripts.collect_rollouts import (
     action_to_shot,
     capture_desktop_rollout,
     capture_physics_rollout,
+    capture_physics_v2_rollout,
     cleanup_incomplete_physics_attempts,
     recover_physics_capture_attempts,
     collect_fresh_engine_attempt,
@@ -45,13 +46,14 @@ from scripts.collect_rollouts import (
     RolloutCollectionError,
     select_level_in_display,
     stop_owned_engine,
+    validate_scenario_game_dir_xml,
     validate_rollout_artifact,
     write_action_plan,
 )
 from scripts.rollout_artifacts import validate_physics_shot_artifact
 from scripts.rollout_validation_types import PhysicsArtifactError
 from scripts.physics_capture_contract import PhysicsContractError, load_physics_capture
-from src.webui.bridge import PhysicsCaptureV1Failure
+from src.webui.bridge import PhysicsCaptureV1Failure, PhysicsCaptureV2Failure
 from scripts.physics_rollout_contract import MAX_TOTAL_BYTES
 
 PHYSICS_FIXTURES = Path(__file__).parent / "fixtures" / "physics_capture_v1"
@@ -108,6 +110,229 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 clock=lambda: 0,
                 sleeper=lambda _: None,
             ).get_physics_capture_v1()
+
+    def test_physics_capture_cli_flags_are_mutually_exclusive(self):
+        parser = build_parser()
+        with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            parser.parse_args([
+                "--output-dir", "out",
+                "--physics-capture-v1",
+                "--physics-capture-v2",
+            ])
+        args = parser.parse_args(["--output-dir", "out", "--physics-capture-v2"])
+        self.assertTrue(args.physics_capture_v2)
+        self.assertFalse(args.physics_capture_v1)
+
+    def test_v2_game_directory_must_run_the_exact_configured_scenario_xml(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            game_dir = root / "game"
+            level = game_dir / "9001_Data/StreamingAssets/Levels/source.xml"
+            level.parent.mkdir(parents=True)
+            level.write_bytes(b"<Level width='1'/>")
+            (game_dir / "config.xml").write_text(
+                "<evaluation><game_levels level_path='9001_Data/StreamingAssets/Levels/source.xml'/></evaluation>",
+                encoding="utf-8",
+            )
+            authority = root / "authority.xml"
+            authority.write_bytes(level.read_bytes())
+
+            self.assertEqual(validate_scenario_game_dir_xml(game_dir, authority), level.resolve())
+            authority.write_bytes(b"<Level width='2'/>")
+            with self.assertRaisesRegex(ValueError, "differ from scenario XML authority"):
+                validate_scenario_game_dir_xml(game_dir, authority)
+
+    def test_v2_capture_collects_request_71_after_the_planned_shot_and_persists_bindings(self):
+        calls = []
+
+        class Bridge:
+            def get_physics_capture_v2(self):
+                calls.append("capture")
+                return type("EngineCapture", (), {"record": {"schema_version": "physics_capture_v2_engine_v1"}})()
+
+        def shoot():
+            calls.append("shoot")
+            return 1
+
+        with TemporaryDirectory() as temporary, patch(
+            "scripts.collect_rollouts.persist_physics_capture_v2",
+            return_value={"physics_capture_v2_path": "physics_capture_v2.json"},
+        ) as persist, patch(
+            "scripts.collect_rollouts.validate_physics_capture_v2_artifact",
+        ) as validate:
+            metadata = capture_physics_v2_rollout(
+                Bridge(),
+                Path(temporary),
+                shoot=shoot,
+                source_bindings={"scenario_lineage_id": "lineage-1"},
+                scenario_manifest_identity="manifest-1",
+            )
+
+        self.assertEqual(calls, ["shoot", "capture"])
+        self.assertEqual(metadata["shoot_response"], 1)
+        persist.assert_called_once_with(
+            Path(temporary),
+            {"schema_version": "physics_capture_v2_engine_v1"},
+            source_bindings={"scenario_lineage_id": "lineage-1"},
+            scenario_manifest_identity="manifest-1",
+        )
+        validate.assert_called_once_with(Path(temporary), metadata)
+
+    def test_v2_capture_polls_only_the_typed_pending_failure_until_terminal(self):
+        class Bridge:
+            calls = 0
+
+            def get_physics_capture_v2(self):
+                self.calls += 1
+                if self.calls == 1:
+                    raise PhysicsCaptureV2Failure(3, "capture is not finalized")
+                return type("EngineCapture", (), {"record": {"schema_version": "physics_capture_v2_engine_v1"}})()
+
+        bridge = Bridge()
+        sleeps = []
+        with TemporaryDirectory() as temporary, patch(
+            "scripts.collect_rollouts.persist_physics_capture_v2",
+            return_value={},
+        ), patch("scripts.collect_rollouts.validate_physics_capture_v2_artifact"):
+            capture_physics_v2_rollout(
+                bridge,
+                Path(temporary),
+                shoot=lambda: 1,
+                source_bindings={"scenario_lineage_id": "lineage-1"},
+                scenario_manifest_identity="manifest-1",
+                deadline_seconds=30,
+                clock=lambda: 0,
+                sleeper=sleeps.append,
+            )
+        self.assertEqual(bridge.calls, 2)
+        self.assertEqual(sleeps, [0.25])
+
+    def test_fresh_engine_attempt_atomically_publishes_valid_v2_sidecar(self):
+        from scripts.physics_capture_v2_persistence import (
+            persist_physics_capture_v2,
+            validate_physics_capture_v2_artifact,
+        )
+        from tests.test_physics_capture_v2 import capture
+
+        engine_record = capture()
+        source_bindings = engine_record.pop("source_bindings")
+        engine_record["schema_version"] = "physics_capture_v2_engine_v1"
+        manifest_identity = "cohort-v2-scenario-manifest-v1:sha256:" + "a" * 64
+
+        def collect(output_dir, _actions, **_options):
+            shot_dir = output_dir / "shot_001"
+            shot_dir.mkdir()
+            metadata = persist_physics_capture_v2(
+                shot_dir,
+                engine_record,
+                source_bindings=source_bindings,
+                scenario_manifest_identity=manifest_identity,
+            )
+            metadata.update({
+                "capture_contract": "physics_capture_v2",
+                "frame_count": metadata["frame_record_count"],
+                "artifact_validation": {
+                    "accepted": True,
+                    "classification": "physics-capture-v2-valid",
+                },
+                "accepted": True,
+            })
+            (shot_dir / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+            return {
+                "rollouts": [{
+                    "name": "shot_001",
+                    "accepted": True,
+                    "artifact_validation": metadata["artifact_validation"],
+                }]
+            }
+
+        with TemporaryDirectory() as temporary, patch(
+            "scripts.collect_rollouts.collect_fresh_engine_rollouts",
+            side_effect=collect,
+        ):
+            root = Path(temporary)
+            result = collect_fresh_engine_attempt(
+                root,
+                {"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0},
+                attempt_id="attempt-v2",
+                attempt_number=1,
+                expected_initial_engine_state_identity="initial-1",
+                physics_capture_v2=True,
+                physics_v2_source_bindings=source_bindings,
+                physics_v2_scenario_manifest_identity=manifest_identity,
+            )
+            accepted_shot = root / "accepted/attempt-v2/shot_001"
+            metadata = json.loads((accepted_shot / "metadata.json").read_text(encoding="utf-8"))
+
+            self.assertEqual(result["status"], "accepted")
+            self.assertFalse((root / ".attempt-attempt-v2.tmp").exists())
+            self.assertEqual(metadata["scenario_manifest_identity"], manifest_identity)
+            self.assertEqual(metadata["fixed_step_sample_count"], 2)
+            self.assertEqual(
+                validate_physics_capture_v2_artifact(accepted_shot, metadata).capture_id,
+                "capture-1",
+            )
+
+    def test_collect_rollouts_v2_persists_validated_metadata_after_planned_intervention(self):
+        from scripts.physics_capture_v2_persistence import validate_physics_capture_v2_artifact
+        from tests.test_physics_capture_v2 import capture
+
+        calls = []
+        engine_record = capture()
+        source_bindings = engine_record.pop("source_bindings")
+        engine_record["schema_version"] = "physics_capture_v2_engine_v1"
+
+        class ActionBridge:
+            def shoot(self, *_args, **_kwargs):
+                calls.append("shoot")
+                return 1
+
+        class PhysicsBridge:
+            def get_physics_capture_v2(self):
+                calls.append("request-71")
+                return type("EngineCapture", (), {"record": engine_record})()
+
+        guard = {
+            "pre_shot_image": None,
+            "pre_shot_sample": None,
+            "pre_shot_guard": {"status": "accepted"},
+            "post_recovery_protocol_state": {"game_state": "PLAYING"},
+            "recovery_action": "none",
+        }
+        with TemporaryDirectory() as temporary, patch(
+            "scripts.collect_rollouts._run_pre_shot_guard",
+            return_value=guard,
+        ), patch(
+            "scripts.collect_rollouts._protocol_state_snapshot",
+            return_value={"game_state": "PLAYING"},
+        ):
+            root = Path(temporary)
+            manifest = collect_rollouts(
+                ActionBridge(),
+                root,
+                [{"coordinate_frame": "absolute", "release": [250, 260], "tapTime": 0}],
+                target_fps=1,
+                duration_seconds=1,
+                anchor_actions=False,
+                fresh_engine_attempt=1,
+                physics_capture_v2=True,
+                physics_bridge=PhysicsBridge(),
+                physics_v2_source_bindings=source_bindings,
+                physics_v2_scenario_manifest_identity="manifest-v2-1",
+            )
+            shot_dir = root / "shot_001"
+            metadata = json.loads((shot_dir / "metadata.json").read_text(encoding="utf-8"))
+
+            self.assertEqual(calls, ["shoot", "request-71"])
+            self.assertTrue(manifest["rollouts"][0]["accepted"])
+            self.assertEqual(metadata["capture_contract"], "physics_capture_v2")
+            self.assertEqual(metadata["physics_capture_v2_path"], "physics_capture_v2.json")
+            self.assertEqual(metadata["physics_capture_v2_schema"], "physics_capture_v2")
+            self.assertEqual(metadata["fixed_step_sample_count"], 2)
+            self.assertEqual(metadata["frame_record_count"], 2)
+            self.assertEqual(metadata["event_count"], 1)
+            self.assertEqual(metadata["scenario_manifest_identity"], "manifest-v2-1")
+            validate_physics_capture_v2_artifact(shot_dir, metadata)
 
     def test_persistence_error_supports_standard_exception_traceback_state(self):
         from scripts.physics_rollout_contract import PersistenceErrorCode, PhysicsPersistenceError
@@ -3645,6 +3870,154 @@ class CollectRolloutsTest(unittest.TestCase):
             "expected-initial-state",
         )
         generate_actions.assert_not_called()
+
+    def test_main_wires_v2_plan_manifest_authorities_and_source_bindings(self):
+        frozen_action = {
+            "coordinate_frame": "slingshot_relative",
+            "drag_start": [100, 200],
+            "drag_release": [20, 30],
+            "tapTime": 0,
+            "holdTime": 600,
+        }
+        request = type("RuntimeInput", (), {
+            "plan_identity": "plan-identity",
+            "plan_version": 1,
+            "scenario_id": "scenario-1",
+            "scenario_identity": "collection-scenario-identity",
+            "intervention_id": "intervention-1",
+            "intervention_identity": "intervention-identity-1",
+            "attempt_id": "attempt-v2-1",
+            "attempt_number": 1,
+            "expected_initial_engine_state_identity": "initial-1",
+            "interface_action": frozen_action,
+        })()
+        collection_scenario = type("CollectionScenario", (), {
+            "scenario_id": "scenario-1",
+            "identity": "collection-scenario-identity",
+        })()
+        loaded_plan = type("LoadedPlan", (), {
+            "plan": type("Plan", (), {"scenarios": (collection_scenario,)})(),
+        })()
+        v1_manifest = type("ScenarioManifest", (), {
+            "generation": type("Generation", (), {
+                "mode": "generated",
+                "generator_version": "canonical_materialization_v1",
+            })(),
+        })()
+        v2_manifest = type("CohortV2ScenarioManifest", (), {
+            "identity": "cohort-v2-scenario-manifest-1",
+            "scenario_manifest": v1_manifest,
+            "template_record": type("TemplateRecord", (), {
+                "generation_constraints": "constraints",
+            })(),
+        })()
+        bindings = {
+            "scenario_template_id": "template-1",
+            "level_instance_id": "level-1",
+            "scenario_lineage_id": "lineage-1",
+            "rollout_id": "attempt-v2-1",
+            "intervention_id": "intervention-identity-1",
+        }
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            game_dir = root / "game"
+            game_dir.mkdir()
+            (game_dir / "game_playing_interface.jar").write_bytes(b"jar")
+            authorities = [root / name for name in (
+                "scenario-v2.json", "scenario.xml", "template.xml", "constraints.xlsx"
+            )]
+            for path in authorities:
+                path.write_bytes(b"authority")
+            configured_level = game_dir / "levels/scenario.xml"
+            configured_level.parent.mkdir()
+            configured_level.write_bytes(authorities[1].read_bytes())
+            (game_dir / "config.xml").write_text(
+                "<evaluation><game_levels level_path='levels/scenario.xml'/></evaluation>",
+                encoding="utf-8",
+            )
+            args = [
+                "collect_rollouts.py",
+                "--output-dir", str(root / "output"),
+                "--fresh-engine-per-rollout",
+                "--collection-plan", str(root / "collection-plan.json"),
+                "--physics-capture-v2",
+                "--scenario-v2-input",
+                "scenario-1",
+                *(str(path) for path in authorities),
+                str(game_dir),
+            ]
+
+            def execute_plan(loaded, runtime, output_root):
+                self.assertIs(loaded, loaded_plan)
+                self.assertEqual(runtime(request)["status"], "accepted")
+                return {"accepted_count": 1, "failed_count": 0, "rejected_count": 0}
+
+            with (
+                patch("sys.argv", args),
+                patch("scripts.collection_plan.load_collection_plan", return_value=loaded_plan),
+                patch("scripts.collection_plan.execute_collection_plan", side_effect=execute_plan),
+                patch(
+                    "scripts.collect_rollouts.load_cohort_v2_scenario_manifest",
+                    return_value=v2_manifest,
+                    create=True,
+                ) as load_v2,
+                patch(
+                    "scripts.collect_rollouts.validate_scenario_template_constraints_workbook",
+                    create=True,
+                ) as validate_workbook,
+                patch(
+                    "scripts.collect_rollouts.source_bindings_from_collection",
+                    return_value=bindings,
+                    create=True,
+                ) as source_bindings,
+                patch(
+                    "scripts.collect_rollouts.collect_fresh_engine_attempt",
+                    return_value={
+                        "status": "accepted", "reason": None, "failure_code": None,
+                        "realized_coverage_strata": [], "eligible": True,
+                        "artifact_path": "accepted/attempt-v2-1", "quarantine_path": None,
+                        "failure_manifest_path": None,
+                    },
+                ) as attempt,
+            ):
+                main()
+
+        load_v2.assert_called_once_with(
+            authorities[0],
+            xml_path=authorities[1],
+            template_source_path=authorities[2],
+        )
+        validate_workbook.assert_called_once_with("constraints", authorities[3])
+        source_bindings.assert_called_once_with(
+            v2_manifest,
+            collection_scenario,
+            request,
+            rollout_identity="attempt-v2-1",
+        )
+        self.assertTrue(attempt.call_args.kwargs["physics_capture_v2"])
+        self.assertEqual(attempt.call_args.kwargs["physics_v2_source_bindings"], bindings)
+        self.assertEqual(
+            attempt.call_args.kwargs["physics_v2_scenario_manifest_identity"],
+            "cohort-v2-scenario-manifest-1",
+        )
+        self.assertIs(attempt.call_args.kwargs["scenario_manifest"], v1_manifest)
+
+    def test_main_rejects_v2_collection_plan_without_source_authorities(self):
+        with TemporaryDirectory() as temporary:
+            args = [
+                "collect_rollouts.py",
+                "--output-dir", temporary,
+                "--fresh-engine-per-rollout",
+                "--collection-plan", str(Path(temporary) / "collection-plan.json"),
+                "--physics-capture-v2",
+            ]
+            stderr = io.StringIO()
+            with patch("sys.argv", args), redirect_stderr(stderr), self.assertRaises(SystemExit) as raised:
+                main()
+
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("source-bound scenario authorities", stderr.getvalue())
 
     def test_main_selects_scenario_input_for_each_plan_request(self):
         frozen_action = {

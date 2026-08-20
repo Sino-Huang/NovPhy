@@ -171,6 +171,7 @@ public class AIBirdsConnection : ABSingleton<AIBirdsConnection>
             UnityEngine.Debug.Log ("DRAG = " + deltaPos);
 
             RepresentationNovelty.addNoveltyToActionSpaceIfNeeded(dragX, dragY, dragDX, dragDY);
+            PhysicalSnapshotRuntime.BeginV2ShotCallback();
             HUD.Instance.shootDone = false;
             HUD.Instance.SimulateInputEvent = 1;
             HUD.Instance.SimulateInputPos = dragPos;
@@ -274,6 +275,7 @@ public class AIBirdsConnection : ABSingleton<AIBirdsConnection>
             UnityEngine.Debug.Log ("DRAG = " + deltaPos);
 
             RepresentationNovelty.addNoveltyToActionSpaceIfNeeded(dragX, dragY, dragDX, dragDY);
+            PhysicalSnapshotRuntime.BeginV2ShotCallback();
             HUD.Instance.shootDone = false;
             HUD.Instance.SimulateInputEvent = 1;
 

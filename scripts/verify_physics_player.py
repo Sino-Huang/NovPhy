@@ -20,6 +20,8 @@ if str(ROOT) not in sys.path:
 UNITY_VERSION: Final = "2019.4.41f2"
 UNITY_CHANGESET: Final = "6b23d448b533"
 STAGE_SCHEMA: Final = "novphy_physics_player_stage_v1"
+CAPTURE_SCHEMA_V1: Final = "physics_capture_v1"
+CAPTURE_SCHEMA_V2: Final = "physics_capture_v2_engine_v1"
 MAX_ARCHIVE_MEMBER_SIZE: Final = 512 * 1024 * 1024
 
 
@@ -123,7 +125,7 @@ def safe_unpack(archive: Path, output: Path) -> None:
         bundle.extractall(output_root, members=members, filter="data")
 
 
-def verify_payload(output: Path) -> None:
+def verify_payload(output: Path, capture_schema: str = CAPTURE_SCHEMA_V1) -> None:
     output_root = output.resolve()
     manifest = json.loads((output / "provenance.json").read_text(encoding="utf-8"))
     if manifest.get("schema_version") != STAGE_SCHEMA:
@@ -133,7 +135,7 @@ def verify_payload(output: Path) -> None:
     files = manifest.get("files")
     if not isinstance(unity, dict) or unity.get("version") != UNITY_VERSION or unity.get("changeset") != UNITY_CHANGESET:
         raise VerificationError("Unity revision mismatch")
-    if not isinstance(capture, dict) or capture.get("schema_version") != "physics_capture_v1" or capture.get("protocol_version") != 1:
+    if not isinstance(capture, dict) or capture.get("schema_version") != capture_schema or capture.get("protocol_version") != 1:
         raise VerificationError("capture protocol provenance mismatch")
     if not isinstance(files, dict):
         raise VerificationError("payload checksum manifest is malformed")
@@ -240,6 +242,7 @@ def main() -> int:
     parser.add_argument("--agent-port", type=int, default=22004)
     parser.add_argument("--game-port", type=int, default=29001)
     parser.add_argument("--physics-port", type=int, default=2004)
+    parser.add_argument("--physics-v2", action="store_true")
     args = parser.parse_args()
     try:
         archive, archive_sha = archive_from_stage(args.stage)
@@ -248,7 +251,7 @@ def main() -> int:
         with tempfile.TemporaryDirectory(prefix="novphy_physics_verify_") as temporary:
             output = Path(temporary)
             safe_unpack(archive, output)
-            verify_payload(output)
+            verify_payload(output, CAPTURE_SCHEMA_V2 if args.physics_v2 else CAPTURE_SCHEMA_V1)
             runtime = None if args.skip_runtime else verify_runtime(output, args.agent_port, args.game_port, args.physics_port)
         print(json.dumps({
             "archive_sha256": archive_sha,

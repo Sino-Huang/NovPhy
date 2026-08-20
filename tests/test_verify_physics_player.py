@@ -27,21 +27,26 @@ def _sha256(path: Path) -> str:
 
 class PhysicsPlayerVerifierTests(unittest.TestCase):
     @staticmethod
-    def _write_manifest(output: Path, relative: str, digest: str) -> None:
-        manifest = {"schema_version": "novphy_physics_player_stage_v1", "unity": {"version": "2019.4.41f2", "changeset": "6b23d448b533"}, "capture": {"schema_version": "physics_capture_v1", "protocol_version": 1}, "files": {relative: digest}}
+    def _write_manifest(
+        output: Path,
+        relative: str,
+        digest: str,
+        capture_schema: str = "physics_capture_v1",
+    ) -> None:
+        manifest = {"schema_version": "novphy_physics_player_stage_v1", "unity": {"version": "2019.4.41f2", "changeset": "6b23d448b533"}, "capture": {"schema_version": capture_schema, "protocol_version": 1}, "files": {relative: digest}}
         (output / "provenance.json").write_text(json.dumps(manifest), encoding="utf-8")
 
     @staticmethod
     def _write_receipt(stage: Path, archive: Path, receipt_name: str) -> None:
         (stage / "archive.sha256").write_text(f"{_sha256(archive)}  {receipt_name}\n", encoding="ascii")
 
-    def _make_stage(self, root: Path) -> Path:
+    def _make_stage(self, root: Path, capture_schema: str = "physics_capture_v1") -> Path:
         payload = root / "payload"
         payload.mkdir()
         player = payload / "9001.x86_64"
         player.write_bytes(b"player")
         player.chmod(0o755)
-        self._write_manifest(payload, player.name, _sha256(player))
+        self._write_manifest(payload, player.name, _sha256(player), capture_schema)
         archive = root / "novphy-physics-player.tar.gz"
         with tarfile.open(archive, "w:gz") as bundle:
             bundle.add(payload, arcname=".")
@@ -145,6 +150,19 @@ class PhysicsPlayerVerifierTests(unittest.TestCase):
             report = json.loads(result.stdout)
             self.assertTrue(report["archive_checksum_verified"])
             self.assertTrue(report["payload_checksums_verified"])
+
+    def test_cli_accepts_v2_engine_provenance_only_when_explicitly_selected(self) -> None:
+        # Given: a checksummed stage identifying the request-71 engine contract.
+        with tempfile.TemporaryDirectory() as temporary:
+            stage = self._make_stage(Path(temporary), "physics_capture_v2_engine_v1")
+
+            # When: it is verified with the default v1 profile and the explicit v2 profile.
+            default = self._run_cli(stage)
+            explicit_v2 = self._run_cli(stage, ("--physics-v2",))
+
+            # Then: v1 remains the default and only explicit v2 verification accepts the stage.
+            self._assert_rejected(default, "capture protocol provenance mismatch")
+            self.assertEqual(explicit_v2.returncode, 0, explicit_v2.stderr)
 
     def test_cli_rejects_wrong_expected_archive_sha(self) -> None:
         # Given: a valid staged archive.

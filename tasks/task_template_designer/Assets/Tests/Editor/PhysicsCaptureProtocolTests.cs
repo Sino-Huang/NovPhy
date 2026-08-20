@@ -20,10 +20,15 @@ public class PhysicsCaptureProtocolTests
 {
     private Texture2D texture;
     private Sprite sprite;
+    private string previousV2Stride;
 
     [SetUp]
     public void SetUp()
     {
+        previousV2Stride = Environment.GetEnvironmentVariable(
+            "NOVPHY_PHYSICS_CAPTURE_V2_STRIDE", EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable(
+            "NOVPHY_PHYSICS_CAPTURE_V2_STRIDE", null, EnvironmentVariableTarget.Process);
         EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         GameObject schema = new GameObject("LoadLevelSchema");
         schema.AddComponent<LoadLevelSchema>();
@@ -40,9 +45,126 @@ public class PhysicsCaptureProtocolTests
     [TearDown]
     public void TearDown()
     {
+        Environment.SetEnvironmentVariable(
+            "NOVPHY_PHYSICS_CAPTURE_V2_STRIDE", previousV2Stride, EnvironmentVariableTarget.Process);
         UnityEngine.Object.DestroyImmediate(sprite);
         UnityEngine.Object.DestroyImmediate(texture);
         EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+    }
+
+    [Test]
+    public void Request71SuccessEnvelopeCarriesThePositiveProcessStrideAuthority()
+    {
+        Environment.SetEnvironmentVariable(
+            "NOVPHY_PHYSICS_CAPTURE_V2_STRIDE", "3", EnvironmentVariableTarget.Process);
+        GameObject recorderObject = new GameObject("physics-capture-v2-recorder");
+        PhysicsCaptureV2FixedStepRecorder recorder =
+            recorderObject.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
+        recorder.BeginPreIntervention(10);
+        recorder.FinalizeTerminal(10);
+
+        byte[] envelope = PhysicsCaptureV2EngineProtocol.BuildCaptureEnvelope();
+
+        Assert.AreEqual(71, PhysicsCaptureV2EngineProtocol.RequestCode);
+        Assert.AreEqual(envelope.Length - 4, ReadUInt32(envelope, 0));
+        CollectionAssert.AreEqual(new byte[] { (byte)'S', (byte)'B', (byte)'P', (byte)'2' },
+            new ArraySegment<byte>(envelope, 4, 4));
+        Assert.AreEqual(1, envelope[8]);
+        Assert.AreEqual(0, envelope[9]);
+        Assert.AreEqual(0, envelope[10]);
+        Assert.AreEqual(0, envelope[11]);
+        int payloadLength = ReadUInt32(envelope, 12);
+        Assert.AreEqual(envelope.Length - 16, payloadLength);
+        JSONNode payload = JSONNode.Parse(
+            System.Text.Encoding.UTF8.GetString(envelope, 16, payloadLength)
+                .Replace(":null", ":\"null\""));
+        Assert.AreEqual("physics_capture_v2_engine_v1", payload["schema_version"].Value);
+        Assert.AreEqual(3, payload["configured_fixed_step_capture_stride"].AsInt);
+        UnityEngine.Object.DestroyImmediate(recorderObject);
+    }
+
+    [Test]
+    public void Request71MissingProcessStrideReturnsTypedFailureEnvelope()
+    {
+        byte[] envelope = PhysicsCaptureV2EngineProtocol.BuildCaptureEnvelope();
+
+        Assert.AreEqual(1, envelope[9]);
+        Assert.AreEqual(0, envelope[10]);
+        Assert.AreEqual(1, envelope[11]);
+        int payloadLength = ReadUInt32(envelope, 12);
+        int messageLength = ReadUInt32(envelope, 16);
+        Assert.AreEqual(payloadLength - 4, messageLength);
+        Assert.AreEqual("NOVPHY_PHYSICS_CAPTURE_V2_STRIDE is missing",
+            System.Text.Encoding.UTF8.GetString(envelope, 20, messageLength));
+    }
+
+    [TestCase("not-an-integer")]
+    [TestCase("0")]
+    [TestCase("-1")]
+    public void Request71InvalidProcessStrideReturnsTypedFailureEnvelope(string configuredStride)
+    {
+        Environment.SetEnvironmentVariable(
+            "NOVPHY_PHYSICS_CAPTURE_V2_STRIDE", configuredStride, EnvironmentVariableTarget.Process);
+
+        byte[] envelope = PhysicsCaptureV2EngineProtocol.BuildCaptureEnvelope();
+
+        Assert.AreEqual(1, envelope[9]);
+        Assert.AreEqual(0, envelope[10]);
+        Assert.AreEqual(2, envelope[11]);
+        int messageLength = ReadUInt32(envelope, 16);
+        Assert.AreEqual("NOVPHY_PHYSICS_CAPTURE_V2_STRIDE must be a positive integer",
+            System.Text.Encoding.UTF8.GetString(envelope, 20, messageLength));
+    }
+
+    [Test]
+    public void DirectSocketDispatchesRequest71ToTheV2EngineProtocol()
+    {
+        Environment.SetEnvironmentVariable(
+            "NOVPHY_PHYSICS_CAPTURE_V2_STRIDE", "2", EnvironmentVariableTarget.Process);
+        GameObject host = new GameObject("physics-capture-socket");
+        PhysicsCaptureDirectSocket socket = PhysicsCaptureDirectSocket.Attach(host, ReserveLoopbackPort());
+        PhysicsCaptureV2FixedStepRecorder recorder =
+            host.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
+        recorder.BeginPreIntervention(10);
+        recorder.FinalizeTerminal(10);
+        TcpClient client = new TcpClient();
+        TcpClient accepted = null;
+
+        try
+        {
+            client.ReceiveTimeout = 1000;
+            client.Connect(IPAddress.Loopback, ListeningPort(socket));
+            Assert.IsTrue(WaitUntil(delegate { return PendingClients(socket).Count == 1; }));
+            Queue<TcpClient> pending = PendingClients(socket);
+            lock (pending) accepted = pending.Dequeue();
+            client.GetStream().Write(new byte[] { PhysicsCaptureV2EngineProtocol.RequestCode }, 0, 1);
+            Assert.IsTrue(WaitUntil(delegate { return accepted.Available == 1; }));
+
+            IEnumerator request = (IEnumerator)typeof(PhysicsCaptureDirectSocket)
+                .GetMethod("Serve", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(socket, new object[] { accepted });
+            Stopwatch deadline = Stopwatch.StartNew();
+            while (request.MoveNext() && deadline.ElapsedMilliseconds < 1000) Thread.Sleep(1);
+            Assert.Less(deadline.ElapsedMilliseconds, 1000, "request-71 dispatch did not complete");
+
+            byte[] length = ReadExactly(client.GetStream(), 4);
+            byte[] body = ReadExactly(client.GetStream(), ReadUInt32(length, 0));
+            CollectionAssert.AreEqual(new byte[] { (byte)'S', (byte)'B', (byte)'P', (byte)'2' },
+                new ArraySegment<byte>(body, 0, 4));
+            Assert.AreEqual(1, body[4]);
+            Assert.AreEqual(0, body[5]);
+            int payloadLength = ReadUInt32(body, 8);
+            JSONNode payload = JSONNode.Parse(
+                System.Text.Encoding.UTF8.GetString(body, 12, payloadLength)
+                    .Replace(":null", ":\"null\""));
+            Assert.AreEqual(2, payload["configured_fixed_step_capture_stride"].AsInt);
+        }
+        finally
+        {
+            client.Close();
+            if (accepted != null) accepted.Close();
+            UnityEngine.Object.DestroyImmediate(host);
+        }
     }
 
     [Test]
@@ -647,6 +769,19 @@ public class PhysicsCaptureProtocolTests
     private static int ReadUInt32(byte[] bytes, int offset)
     {
         return bytes[offset] << 24 | bytes[offset + 1] << 16 | bytes[offset + 2] << 8 | bytes[offset + 3];
+    }
+
+    private static byte[] ReadExactly(NetworkStream stream, int length)
+    {
+        byte[] bytes = new byte[length];
+        int offset = 0;
+        while (offset < length)
+        {
+            int read = stream.Read(bytes, offset, length - offset);
+            if (read == 0) throw new EndOfStreamException("direct socket closed before its response completed");
+            offset += read;
+        }
+        return bytes;
     }
 
     private static int ReserveLoopbackPort()

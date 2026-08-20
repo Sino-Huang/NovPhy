@@ -15,6 +15,7 @@ JsonValue: TypeAlias = JsonScalar | Mapping[str, "JsonValue"] | tuple["JsonValue
 PhysicsStateV1: TypeAlias = Mapping[str, JsonValue]
 PhysicsEventV1: TypeAlias = Mapping[str, JsonValue]
 PhysicsViolationEngineEvidenceV1: TypeAlias = Mapping[str, JsonValue]
+PhysicsCaptureV2EngineRecord: TypeAlias = Mapping[str, JsonValue]
 
 
 class GameState(IntEnum):
@@ -58,11 +59,16 @@ class RequestCode(IntEnum):
     NOVELTY_INFO = 69
     GET_CURRENT_SCORE = 65
     GET_PHYSICS_CAPTURE_V1 = 70
+    GET_PHYSICS_CAPTURE_V2 = 71
     GT_SHOOT = 38
 
 
 class PhysicsCaptureV1ProtocolError(ConnectionError):
     """The request-70 stream was malformed or could not be completed."""
+
+
+class PhysicsCaptureV2ProtocolError(ConnectionError):
+    """The request-71 stream was malformed or could not be completed."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -95,6 +101,17 @@ class PhysicsCaptureV1Failure(PhysicsCaptureV1ProtocolError):
 
 
 @dataclass(frozen=True, slots=True)
+class PhysicsCaptureV2Failure(PhysicsCaptureV2ProtocolError):
+    code: int
+    message: str
+
+    def __post_init__(self) -> None:
+        PhysicsCaptureV2ProtocolError.__init__(
+            self, "physics capture v2 failed (%d): %s" % (self.code, self.message)
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class Screenshot:
     width: int
     height: int
@@ -109,12 +126,22 @@ class PhysicsCaptureV1:
     evidence: PhysicsViolationEngineEvidenceV1 | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class PhysicsCaptureV2Engine:
+    record: PhysicsCaptureV2EngineRecord
+
+
 _PHYSICS_MAGIC = b"SBPV"
 _PHYSICS_VERSION = 1
 _PHYSICS_FAILURE_FLAG = 1
 _PHYSICS_MAX_ENVELOPE = 64 * 1024 * 1024
 _PHYSICS_MAX_PNG = 32 * 1024 * 1024
 _PHYSICS_MAX_JSON = 16 * 1024 * 1024
+_PHYSICS_V2_MAGIC = b"SBP2"
+_PHYSICS_V2_VERSION = 1
+_PHYSICS_V2_FAILURE_FLAG = 1
+_PHYSICS_V2_MAX_ENVELOPE = 64 * 1024 * 1024
+_PHYSICS_V2_MAX_JSON = _PHYSICS_V2_MAX_ENVELOPE - 12
 _LEGACY_MAX_GROUND_TRUTH_RECORDS: Final = 10_000
 _LEGACY_MAX_GROUND_TRUTH_PAYLOAD: Final = 16 * 1024 * 1024
 _LEGACY_GROUND_TRUTH_SUFFIX_BYTES: Final = 5
@@ -244,6 +271,24 @@ class ScienceBirdsBridge:
         finally:
             self.disconnect()
 
+    def get_physics_capture_v2(self) -> PhysicsCaptureV2Engine:
+        if not self.connected:
+            self.connect()
+        try:
+            self._send(RequestCode.GET_PHYSICS_CAPTURE_V2)
+            envelope_length = struct.unpack("!I", self._read_exact(4))[0]
+            if envelope_length < 12 or envelope_length > _PHYSICS_V2_MAX_ENVELOPE:
+                raise PhysicsCaptureV2ProtocolError("invalid request-71 envelope length")
+            body = self._read_exact(envelope_length)
+            return _decode_physics_capture_v2_engine(body)
+        except PhysicsCaptureV2ProtocolError:
+            self.disconnect()
+            raise
+        except (ConnectionError, OSError, ValueError, struct.error, UnicodeError, RecursionError) as exc:
+            raise PhysicsCaptureV2ProtocolError("invalid request-71 envelope") from exc
+        finally:
+            self.disconnect()
+
     def shoot(self, x: int, y: int, tap_time: int = 0, fast: bool = False, release_time: int = 0) -> int:
         code = RequestCode.FAST_SHOOT if fast else RequestCode.SHOOT
         self._send(code, "iiii", int(x), int(y), int(release_time), int(tap_time))
@@ -366,6 +411,17 @@ def encode_physics_capture_v1(
     return _encode_envelope(2, 0, payload)
 
 
+def encode_physics_capture_v2_engine(record: Mapping[str, JsonValue]) -> bytes:
+    """Build the canonical request-71 engine response for protocol fixtures."""
+    payload = json.dumps(
+        record, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+    ).encode("utf-8")
+    body = struct.pack(
+        "!4sBBHI", _PHYSICS_V2_MAGIC, _PHYSICS_V2_VERSION, 0, 0, len(payload)
+    ) + payload
+    return struct.pack("!I", len(body)) + body
+
+
 def _encode_envelope(flags: int, failure_code: int, payload: bytes) -> bytes:
     body = struct.pack("!4sBBHI", _PHYSICS_MAGIC, _PHYSICS_VERSION, flags,
                        failure_code, len(payload)) + payload
@@ -438,6 +494,39 @@ def _decode_physics_capture_v1(body: bytes) -> PhysicsCaptureV1:
         tuple(_freeze(event) for event in events),
         None if evidence is None else _freeze(evidence),
     )
+
+
+def _decode_physics_capture_v2_engine(body: bytes) -> PhysicsCaptureV2Engine:
+    if len(body) < 12:
+        raise PhysicsCaptureV2ProtocolError("request-71 envelope header is truncated")
+    magic, version, flags, failure_code, payload_length = struct.unpack("!4sBBHI", body[:12])
+    if magic != _PHYSICS_V2_MAGIC:
+        raise PhysicsCaptureV2ProtocolError("request-71 magic mismatch")
+    if version != _PHYSICS_V2_VERSION:
+        raise PhysicsCaptureV2ProtocolError("unsupported request-71 protocol version")
+    payload = body[12:]
+    if payload_length > _PHYSICS_V2_MAX_JSON or payload_length != len(payload):
+        raise PhysicsCaptureV2ProtocolError("request-71 payload length is invalid")
+    if flags == _PHYSICS_V2_FAILURE_FLAG:
+        if len(payload) < 4:
+            raise PhysicsCaptureV2ProtocolError("request-71 failure payload is truncated")
+        message_length = struct.unpack("!I", payload[:4])[0]
+        if message_length != len(payload) - 4:
+            raise PhysicsCaptureV2ProtocolError("request-71 failure message length mismatch")
+        try:
+            message = payload[4:].decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise PhysicsCaptureV2ProtocolError("request-71 failure message is not UTF-8") from exc
+        raise PhysicsCaptureV2Failure(failure_code, message)
+    if flags != 0 or failure_code != 0:
+        raise PhysicsCaptureV2ProtocolError("invalid request-71 success envelope")
+    record = _parse_json_record(payload, dict, "request-71 engine capture")
+    if record.get("schema_version") != "physics_capture_v2_engine_v1":
+        raise PhysicsCaptureV2ProtocolError("request-71 engine schema is unsupported")
+    stride = record.get("configured_fixed_step_capture_stride")
+    if type(stride) is not int or stride <= 0:
+        raise PhysicsCaptureV2ProtocolError("request-71 capture stride is missing or invalid")
+    return PhysicsCaptureV2Engine(_freeze(record))
 
 
 def _parse_json_record(data: bytes, expected_type: type | tuple[type, ...], name: str):

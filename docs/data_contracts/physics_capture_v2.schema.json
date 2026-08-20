@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "physics_capture_v2.schema.json",
+  "title": "physics_capture_v2",
+  "type": "object",
+  "required": [
+    "schema_version", "capture_id", "shot_id", "source_bindings",
+    "configured_fixed_step_capture_stride", "pre_intervention_fixed_step", "coordinate_convention",
+    "causal_entities", "colliders", "fixed_step_samples",
+    "minimum_contact_separation", "frame_records", "events", "terminal_evidence"
+  ],
+  "properties": {
+    "schema_version": {"const": "physics_capture_v2"},
+    "capture_id": {"$ref": "#/$defs/nonemptyString"},
+    "shot_id": {"$ref": "#/$defs/nonemptyString"},
+    "source_bindings": {
+      "type": "object",
+      "required": ["scenario_template_id", "level_instance_id", "scenario_lineage_id", "rollout_id", "intervention_id"],
+      "properties": {
+        "scenario_template_id": {"$ref": "#/$defs/nonemptyString"},
+        "level_instance_id": {"$ref": "#/$defs/nonemptyString"},
+        "scenario_lineage_id": {"$ref": "#/$defs/nonemptyString"},
+        "rollout_id": {"$ref": "#/$defs/nonemptyString"},
+        "intervention_id": {"$ref": "#/$defs/nonemptyString"}
+      },
+      "additionalProperties": false
+    },
+    "configured_fixed_step_capture_stride": {"type": "integer", "minimum": 1},
+    "pre_intervention_fixed_step": {"type": "integer", "minimum": 0},
+    "coordinate_convention": {
+      "type": "object",
+      "required": ["world_space", "world_x_axis", "world_y_axis", "world_length_unit"],
+      "properties": {
+        "world_space": {"$ref": "#/$defs/nonemptyString"},
+        "world_x_axis": {"$ref": "#/$defs/nonemptyString"},
+        "world_y_axis": {"$ref": "#/$defs/nonemptyString"},
+        "world_length_unit": {"$ref": "#/$defs/nonemptyString"}
+      },
+      "additionalProperties": false
+    },
+    "causal_entities": {
+      "type": "array", "minItems": 1, "maxItems": 2048, "uniqueItems": true,
+      "items": {"$ref": "#/$defs/nonemptyString"}
+    },
+    "colliders": {"type": "array", "maxItems": 8192, "items": {"$ref": "#/$defs/colliderCatalog"}},
+    "fixed_step_samples": {"type": "array", "minItems": 1, "maxItems": 100000, "items": {"$ref": "#/$defs/fixedStepSample"}},
+    "minimum_contact_separation": {"$ref": "#/$defs/minimumContactSeparation"},
+    "frame_records": {"type": "array", "minItems": 2, "maxItems": 100000, "items": {"$ref": "#/$defs/frameRecord"}},
+    "events": {"type": "array", "maxItems": 100000, "items": {"$ref": "#/$defs/event"}},
+    "terminal_evidence": {"$ref": "#/$defs/terminalEvidence"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "nonemptyString": {"type": "string", "minLength": 1},
+    "vector2": {"type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}], "items": false},
+    "body": {
+      "type": "object",
+      "required": ["body_type", "simulated", "gravity_scale", "gravity_applicable", "position", "rotation_degrees", "velocity", "angular_velocity_degrees_per_second"],
+      "properties": {
+        "body_type": {"enum": ["dynamic", "kinematic", "static"]},
+        "simulated": {"type": "boolean"},
+        "gravity_scale": {"type": "number"},
+        "gravity_applicable": {"type": "boolean"},
+        "position": {"$ref": "#/$defs/vector2"},
+        "rotation_degrees": {"type": "number"},
+        "velocity": {"$ref": "#/$defs/vector2"},
+        "angular_velocity_degrees_per_second": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "entity": {
+      "type": "object",
+      "required": ["entity_id", "scenario_object_id", "lifecycle", "body_present", "body", "contact_ids", "supported_by_entity_ids", "supports_entity_ids"],
+      "properties": {
+        "entity_id": {"$ref": "#/$defs/nonemptyString"},
+        "scenario_object_id": {"$ref": "#/$defs/nonemptyString"},
+        "lifecycle": {"enum": ["active", "inactive", "destroyed"]},
+        "body_present": {"type": "boolean"},
+        "body": {"oneOf": [{"$ref": "#/$defs/body"}, {"type": "null"}]},
+        "contact_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonemptyString"}},
+        "supported_by_entity_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonemptyString"}},
+        "supports_entity_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonemptyString"}}
+      },
+      "additionalProperties": false
+    },
+    "circleShape": {
+      "type": "object", "required": ["kind", "center", "radius"],
+      "properties": {"kind": {"const": "circle"}, "center": {"$ref": "#/$defs/vector2"}, "radius": {"type": "number", "exclusiveMinimum": 0}},
+      "additionalProperties": false
+    },
+    "boxShape": {
+      "type": "object", "required": ["kind", "center", "size", "angle_degrees"],
+      "properties": {"kind": {"const": "box"}, "center": {"$ref": "#/$defs/vector2"}, "size": {"$ref": "#/$defs/vector2"}, "angle_degrees": {"type": "number"}},
+      "additionalProperties": false
+    },
+    "polygonShape": {
+      "type": "object", "required": ["kind", "paths"],
+      "properties": {"kind": {"const": "polygon"}, "paths": {"type": "array", "minItems": 1, "items": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/vector2"}}}},
+      "additionalProperties": false
+    },
+    "edgeShape": {
+      "type": "object", "required": ["kind", "points"],
+      "properties": {"kind": {"const": "edge"}, "points": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/vector2"}}},
+      "additionalProperties": false
+    },
+    "capsuleShape": {
+      "type": "object", "required": ["kind", "center", "size", "direction", "angle_degrees"],
+      "properties": {"kind": {"const": "capsule"}, "center": {"$ref": "#/$defs/vector2"}, "size": {"$ref": "#/$defs/vector2"}, "direction": {"enum": ["horizontal", "vertical"]}, "angle_degrees": {"type": "number"}},
+      "additionalProperties": false
+    },
+    "collider": {
+      "type": "object",
+      "required": ["collider_id", "entity_id", "geometry_source", "enabled", "is_trigger", "shape"],
+      "properties": {
+        "collider_id": {"$ref": "#/$defs/nonemptyString"},
+        "entity_id": {"$ref": "#/$defs/nonemptyString"},
+        "geometry_source": {"const": "unity_collider_2d"},
+        "enabled": {"type": "boolean"},
+        "is_trigger": {"type": "boolean"},
+        "shape": {"oneOf": [{"$ref": "#/$defs/circleShape"}, {"$ref": "#/$defs/boxShape"}, {"$ref": "#/$defs/polygonShape"}, {"$ref": "#/$defs/edgeShape"}, {"$ref": "#/$defs/capsuleShape"}]}
+      },
+      "additionalProperties": false
+    },
+    "colliderCatalog": {
+      "type": "object",
+      "required": ["collider_id", "entity_id", "geometry_source"],
+      "properties": {
+        "collider_id": {"$ref": "#/$defs/nonemptyString"},
+        "entity_id": {"$ref": "#/$defs/nonemptyString"},
+        "geometry_source": {"const": "unity_collider_2d"}
+      },
+      "additionalProperties": false
+    },
+    "contact": {
+      "type": "object",
+      "required": ["contact_id", "entity_a_id", "entity_b_id", "collider_a_id", "collider_b_id", "point", "normal_a_to_b", "separation"],
+      "properties": {
+        "contact_id": {"$ref": "#/$defs/nonemptyString"}, "entity_a_id": {"$ref": "#/$defs/nonemptyString"}, "entity_b_id": {"$ref": "#/$defs/nonemptyString"},
+        "collider_a_id": {"$ref": "#/$defs/nonemptyString"}, "collider_b_id": {"$ref": "#/$defs/nonemptyString"},
+        "point": {"$ref": "#/$defs/vector2"}, "normal_a_to_b": {"$ref": "#/$defs/vector2"}, "separation": {"type": "number"}
+      },
+      "additionalProperties": false
+    },
+    "support": {
+      "type": "object", "required": ["supporter_entity_id", "supported_entity_id", "contact_ids"],
+      "properties": {"supporter_entity_id": {"$ref": "#/$defs/nonemptyString"}, "supported_entity_id": {"$ref": "#/$defs/nonemptyString"}, "contact_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonemptyString"}}},
+      "additionalProperties": false
+    },
+    "fixedStepSample": {
+      "type": "object",
+      "required": ["fixed_step", "complete_raw_non_trigger_contacts", "world", "entities", "colliders", "contacts", "supports"],
+      "properties": {
+        "fixed_step": {"type": "integer", "minimum": 0},
+        "complete_raw_non_trigger_contacts": {"const": true},
+        "world": {"type": "object", "required": ["world_id", "gravity_vector"], "properties": {"world_id": {"$ref": "#/$defs/nonemptyString"}, "gravity_vector": {"$ref": "#/$defs/vector2"}}, "additionalProperties": false},
+        "entities": {"type": "array", "maxItems": 2048, "items": {"$ref": "#/$defs/entity"}},
+        "colliders": {"type": "array", "maxItems": 8192, "items": {"$ref": "#/$defs/collider"}},
+        "contacts": {"type": "array", "maxItems": 32768, "items": {"$ref": "#/$defs/contact"}},
+        "supports": {"type": "array", "maxItems": 32768, "items": {"$ref": "#/$defs/support"}}
+      },
+      "additionalProperties": false
+    },
+    "minimumContactSeparation": {
+      "type": "object", "required": ["observed", "separation", "contact_id", "fixed_step"],
+      "properties": {"observed": {"type": "boolean"}, "separation": {"type": ["number", "null"]}, "contact_id": {"type": ["string", "null"]}, "fixed_step": {"type": ["integer", "null"], "minimum": 0}},
+      "additionalProperties": false
+    },
+    "frameRecord": {
+      "type": "object", "required": ["fixed_step", "state_id", "forced_terminal"],
+      "properties": {"fixed_step": {"type": "integer", "minimum": 0}, "state_id": {"$ref": "#/$defs/nonemptyString"}, "forced_terminal": {"type": "boolean"}},
+      "additionalProperties": false
+    },
+    "event": {
+      "type": "object", "required": ["event_id", "event_type", "fixed_step", "participants", "payload"],
+      "properties": {"event_id": {"$ref": "#/$defs/nonemptyString"}, "event_type": {"enum": ["bird_launched", "collision", "entity_destroyed", "entity_death", "pig_removed", "tnt_explosion", "bird_exhaustion", "stable_entered", "stable_exited", "level_clear", "level_fail", "terminal"]}, "fixed_step": {"type": "integer", "minimum": 0}, "participants": {"type": "array", "items": {"$ref": "#/$defs/nonemptyString"}, "uniqueItems": true}, "payload": {"type": "object"}},
+      "additionalProperties": false
+    },
+    "terminalEvidence": {
+      "type": "object", "required": ["reason", "fixed_step", "event_id"],
+      "properties": {"reason": {"$ref": "#/$defs/nonemptyString"}, "fixed_step": {"type": "integer", "minimum": 0}, "event_id": {"$ref": "#/$defs/nonemptyString"}},
+      "additionalProperties": false
+    }
+  }
+}

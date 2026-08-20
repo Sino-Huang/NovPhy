@@ -11,9 +11,10 @@ import signal
 import subprocess
 import sys
 import time
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from tempfile import TemporaryDirectory
 from typing import Any
+import xml.etree.ElementTree as ET
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,7 +30,21 @@ from scripts.manual_agent import (  # noqa: E402
 )
 from scripts.physics_capture_contract import load_physics_capture  # noqa: E402
 from scripts.physics_capture_types import EventType  # noqa: E402
-from src.webui.bridge import PhysicsCaptureV1Failure, PlayingMode, ScienceBirdsBridge  # noqa: E402
+from scripts.physics_capture_v2_persistence import (  # noqa: E402
+    persist_physics_capture_v2,
+    source_bindings_from_collection,
+    validate_physics_capture_v2_artifact,
+)
+from scripts.cohort_v2_scenarios import (  # noqa: E402
+    load_cohort_v2_scenario_manifest,
+    validate_scenario_template_constraints_workbook,
+)
+from src.webui.bridge import (  # noqa: E402
+    PhysicsCaptureV1Failure,
+    PhysicsCaptureV2Failure,
+    PlayingMode,
+    ScienceBirdsBridge,
+)
 from scripts.physics_rollout_contract import (  # noqa: E402
     CaptureProvenance,
     PhysicsPersistenceError,
@@ -51,6 +66,37 @@ PRE_DRAG_OVERLAY_TEXT = "phase=pre_drag pre_shot_baseline"
 DEFAULT_PRE_SHOT_GUARD_RECOVERY_ATTEMPTS = 2
 PRE_SHOT_NEW_SET_STATES = {"NEWTRAININGSET", "RESUMETRAINING", "NEWTRIAL", "NEWTESTSET"}
 PRE_SHOT_MENU_STATES = {"MAIN_MENU", "EPISODE_MENU", "LEVEL_SELECTION", "WON", "LOST"}
+
+
+def validate_scenario_game_dir_xml(game_dir: Path, expected_xml_path: Path) -> Path:
+    """Resolve the configured single level and require its bytes to match the authority."""
+    game_dir = Path(game_dir)
+    try:
+        config_root = ET.fromstring((game_dir / "config.xml").read_bytes())
+        level_references = [
+            element.attrib["level_path"]
+            for element in config_root.iter("game_levels")
+            if "level_path" in element.attrib
+        ]
+        if len(level_references) != 1:
+            raise ValueError("GAME_DIR config must declare exactly one level_path")
+        reference = level_references[0]
+        relative = PurePosixPath(reference)
+        if (
+            not relative.parts
+            or relative.is_absolute()
+            or ".." in relative.parts
+            or relative.as_posix() != reference
+        ):
+            raise ValueError("GAME_DIR config level_path is unsafe")
+        root = game_dir.resolve(strict=True)
+        configured_xml = root.joinpath(*relative.parts).resolve(strict=True)
+        configured_xml.relative_to(root)
+        if configured_xml.read_bytes() != Path(expected_xml_path).read_bytes():
+            raise ValueError("GAME_DIR configured level bytes differ from scenario XML authority")
+    except (KeyError, OSError, ET.ParseError) as error:
+        raise ValueError(f"cannot resolve GAME_DIR configured scenario XML: {error}") from error
+    return configured_xml
 
 
 def _image_is_uniform(image) -> bool:
@@ -1068,6 +1114,44 @@ def capture_physics_rollout(
         raise RolloutCollectionError(str(error)) from error
 
 
+def capture_physics_v2_rollout(
+    bridge,
+    output_dir: Path,
+    *,
+    shoot,
+    source_bindings: Mapping[str, object],
+    scenario_manifest_identity: str,
+    deadline_seconds: float = 30.0,
+    clock=time.monotonic,
+    sleeper=time.sleep,
+) -> dict[str, object]:
+    """Execute one planned intervention and persist its request-71 sidecar."""
+    if shoot is None:
+        raise RolloutCollectionError("physics capture v2 requires a planned shoot callback")
+    shoot_response = shoot()
+    deadline = clock() + deadline_seconds
+    while True:
+        try:
+            engine_capture = bridge.get_physics_capture_v2()
+            break
+        except PhysicsCaptureV2Failure as error:
+            if error.code != 3 or clock() >= deadline:
+                raise
+            sleeper(0.25)
+    engine_record = getattr(engine_capture, "record", None)
+    if not isinstance(engine_record, Mapping):
+        raise RolloutCollectionError("request 71 returned no engine capture record")
+    metadata = persist_physics_capture_v2(
+        output_dir,
+        engine_record,
+        source_bindings=source_bindings,
+        scenario_manifest_identity=scenario_manifest_identity,
+    )
+    validate_physics_capture_v2_artifact(output_dir, metadata)
+    metadata["shoot_response"] = shoot_response
+    return metadata
+
+
 def _physics_contract_descriptor(player_sha256: str, protocol_sha256: str, archive_sha256: str) -> dict:
     from world_model.data.types import PHYSICS_CAPTURE_V1
 
@@ -1261,6 +1345,22 @@ def _rollout_record_from_metadata(
         "terminal_state_fixed_step": metadata.get("terminal_state_fixed_step"),
         "expected_initial_engine_state_identity": metadata.get("expected_initial_engine_state_identity"),
         "scenario_context": metadata.get("scenario_context"),
+        **{
+            field: metadata[field]
+            for field in (
+                "physics_capture_v2_path",
+                "physics_capture_v2_sha256",
+                "physics_capture_v2_schema",
+                "configured_fixed_step_capture_stride",
+                "causal_entity_count",
+                "collider_count",
+                "fixed_step_sample_count",
+                "frame_record_count",
+                "event_count",
+                "scenario_manifest_identity",
+            )
+            if field in metadata
+        },
         **({"pre_shot_path": metadata["pre_shot_path"]} if "pre_shot_path" in metadata else {}),
         **({"video_path": metadata["video_path"]} if "video_path" in metadata else {}),
     }
@@ -1601,17 +1701,32 @@ def collect_rollouts(
     prior_invalid_attempts: list[dict] | None = None,
     retryable_recovery_action: str = "quarantine",
     physics_capture_v1: bool = False,
+    physics_capture_v2: bool = False,
     physics_bridge=None,
     physics_player_sha256: str | None = None,
     physics_protocol_sha256: str | None = None,
     physics_archive_sha256: str | None = None,
     expected_initial_engine_state_identity: str | None = None,
     scenario_context: dict[str, Any] | None = None,
+    physics_v2_source_bindings: Mapping[str, object] | None = None,
+    physics_v2_scenario_manifest_identity: str | None = None,
 ) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
+    if physics_capture_v1 and physics_capture_v2:
+        raise RolloutCollectionError("physics capture v1 and v2 are mutually exclusive")
+    if physics_capture_v2 and fresh_engine_attempt is None:
+        raise RolloutCollectionError("physics capture v2 requires a frozen fresh-engine collection-plan attempt")
     if physics_capture_v1:
         recover_physics_capture_attempts(output_dir)
         capture_rollout = capture_physics_rollout
+    elif physics_capture_v2:
+        if (
+            physics_v2_source_bindings is None
+            or not isinstance(physics_v2_scenario_manifest_identity, str)
+            or not physics_v2_scenario_manifest_identity
+        ):
+            raise RolloutCollectionError("physics capture v2 source authorities are incomplete")
+        capture_rollout = capture_physics_v2_rollout
     prior_invalid_attempts = list(prior_invalid_attempts or [])
     if anchor_actions:
         actions = anchor_actions_to_current_slingshot(bridge, actions, frame_height)
@@ -1727,19 +1842,35 @@ def collect_rollouts(
                 release_time=shot["releaseTime"],
             )
 
-        capture_kwargs = {"target_fps": target_fps, "duration_seconds": duration_seconds, "max_frames": max_frames, "clock": clock, "sleeper": sleeper}
+        capture_kwargs = (
+            {
+                "source_bindings": physics_v2_source_bindings,
+                "scenario_manifest_identity": physics_v2_scenario_manifest_identity,
+                "deadline_seconds": max(30.0, duration_seconds),
+                "clock": clock,
+                "sleeper": sleeper,
+            }
+            if physics_capture_v2
+            else {
+                "target_fps": target_fps,
+                "duration_seconds": duration_seconds,
+                "max_frames": max_frames,
+                "clock": clock,
+                "sleeper": sleeper,
+            }
+        )
         if physics_capture_v1:
             capture_kwargs.update({"player_sha256": physics_player_sha256, "protocol_sha256": physics_protocol_sha256, "archive_sha256": physics_archive_sha256, "expected_initial_engine_state_identity": expected_initial_engine_state_identity, "scenario_context": scenario_context})
-        else:
+        elif not physics_capture_v2:
             capture_kwargs["action"] = action
-        if not physics_capture_v1 and pre_shot_image is not None:
+        if not physics_capture_v1 and not physics_capture_v2 and pre_shot_image is not None:
             capture_kwargs["pre_shot_image"] = pre_shot_image
-        if not physics_capture_v1 and pre_shot_sample is not None:
+        if not physics_capture_v1 and not physics_capture_v2 and pre_shot_sample is not None:
             capture_kwargs["pre_shot_sample"] = pre_shot_sample
         post_recovery_protocol_state = pre_shot_guard_result["post_recovery_protocol_state"]
         post_shoot_protocol_state = None
         response = None
-        capture_bridge = physics_bridge if physics_capture_v1 and physics_bridge is not None else bridge
+        capture_bridge = physics_bridge if (physics_capture_v1 or physics_capture_v2) and physics_bridge is not None else bridge
         if physics_capture_v1:
             initial_capture = capture_bridge.get_physics_capture_v1()
 
@@ -1756,6 +1887,14 @@ def collect_rollouts(
                 sleeper=sleeper,
             )
             capture_kwargs.update({"initial_capture": initial_capture, "shoot": shoot_and_snapshot})
+        elif physics_capture_v2:
+            def shoot_and_snapshot():
+                nonlocal post_shoot_protocol_state
+                result = shoot_once()
+                post_shoot_protocol_state = _protocol_state_snapshot(bridge)
+                return result
+
+            capture_kwargs["shoot"] = shoot_and_snapshot
         elif shoot_before_capture:
             response = shoot_once()
             post_shoot_protocol_state = _protocol_state_snapshot(bridge)
@@ -1768,6 +1907,10 @@ def collect_rollouts(
 
             capture_kwargs["shoot"] = shoot_and_snapshot
         metadata = capture_rollout(capture_bridge, shot_dir, **capture_kwargs)
+        if physics_capture_v2:
+            metadata["capture_contract"] = "physics_capture_v2"
+            metadata["frame_count"] = metadata["frame_record_count"]
+            metadata["physics_event_count"] = metadata["event_count"]
         if response is None:
             response = metadata.get("shoot_response")
         metadata["pre_shot_protocol_state"] = pre_shot_protocol_state
@@ -1825,7 +1968,16 @@ def collect_rollouts(
             metadata["fresh_engine_attempt"] = fresh_engine_attempt
         if not physics_capture_v1:
             _write_metadata(shot_dir / "metadata.json", metadata)
-        artifact_validation = validate_rollout_artifact(shot_dir, capture_contract="physics_capture_v1" if physics_capture_v1 else "legacy_rgb_v1")
+        if physics_capture_v2:
+            validate_physics_capture_v2_artifact(shot_dir, metadata)
+            artifact_validation = {
+                "accepted": True,
+                "classification": "physics-capture-v2-valid",
+                "capture_contract": "physics_capture_v2",
+                "retryable": False,
+            }
+        else:
+            artifact_validation = validate_rollout_artifact(shot_dir, capture_contract="physics_capture_v1" if physics_capture_v1 else "legacy_rgb_v1")
         metadata = _finalize_attempt_metadata(
             output_dir=output_dir,
             shot_dir=shot_dir,
@@ -1899,6 +2051,16 @@ def collect_rollouts(
         manifest.update({"capture_contract": _physics_contract_descriptor(physics_player_sha256, physics_protocol_sha256, physics_archive_sha256), "schema_version": "physics_capture_v1", "protocol_version": 1, "player_sha256": physics_player_sha256, "protocol_sha256": physics_protocol_sha256, "archive_sha256": physics_archive_sha256, "sidecar_paths": ["physics_state.jsonl", "physics_events.jsonl"], "physics_state_count": sum(int(item.get("frame_count", 0)) for item in accepted_rollouts), "physics_event_count": sum(int(item.get("physics_event_count", 0)) for item in accepted_rollouts)})
         if scenario_context is not None:
             manifest["scenario_context"] = scenario_context
+    elif physics_capture_v2:
+        manifest.update({
+            "capture_contract": "physics_capture_v2",
+            "schema_version": "physics_capture_v2",
+            "sidecar_paths": ["physics_capture_v2.json"],
+            "fixed_step_sample_count": sum(int(item.get("fixed_step_sample_count", 0)) for item in accepted_rollouts),
+            "frame_record_count": sum(int(item.get("frame_record_count", 0)) for item in accepted_rollouts),
+            "physics_event_count": sum(int(item.get("event_count", 0)) for item in accepted_rollouts),
+            "scenario_manifest_identity": physics_v2_scenario_manifest_identity,
+        })
     manifest.update(write_action_logs(output_dir, rollouts))
     if write_manifest:
         (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -1949,6 +2111,7 @@ def collect_fresh_engine_rollouts(
     shoot_before_capture: bool = True,
     anchor_actions: bool = True,
     physics_capture_v1: bool = False,
+    physics_capture_v2: bool = False,
     physics_host: str = "127.0.0.1",
     physics_port: int = 2004,
     physics_player_sha256: str | None = None,
@@ -1957,7 +2120,17 @@ def collect_fresh_engine_rollouts(
     scenario_manifest: ScenarioManifest | None = None,
     scenario_context_override: Mapping[str, Any] | None = None,
     expected_initial_engine_state_identity: str | None = None,
+    physics_v2_source_bindings: Mapping[str, object] | None = None,
+    physics_v2_scenario_manifest_identity: str | None = None,
 ) -> dict:
+    if physics_capture_v1 and physics_capture_v2:
+        raise ValueError("physics capture v1 and v2 are mutually exclusive")
+    if physics_capture_v2 and (
+        physics_v2_source_bindings is None
+        or not isinstance(physics_v2_scenario_manifest_identity, str)
+        or not physics_v2_scenario_manifest_identity
+    ):
+        raise ValueError("physics capture v2 source authorities are incomplete")
     if fresh_engine_attempts != 1:
         raise ValueError(
             "fresh_engine_attempts must be 1; frozen collection plans own retry decisions"
@@ -1983,12 +2156,12 @@ def collect_fresh_engine_rollouts(
                 engine_port_options["agent_port"] = engine_agent_port
             if engine_game_port is not None:
                 engine_port_options["game_port"] = engine_game_port
-            if physics_capture_v1:
+            if physics_capture_v1 or physics_capture_v2:
                 engine_port_options["physics_port"] = physics_port
             try:
                 engine_process = start_engine_func(game_dir, headless, **engine_port_options)
             except TypeError:
-                if not physics_capture_v1:
+                if not (physics_capture_v1 or physics_capture_v2):
                     raise
                 engine_port_options.pop("physics_port")
                 engine_process = start_engine_func(game_dir, headless, **engine_port_options)
@@ -2035,16 +2208,19 @@ def collect_fresh_engine_rollouts(
                     shoot_before_capture=shoot_before_capture,
                     anchor_actions=anchor_actions,
                     retry_attempt=attempt,
-                    fresh_engine_attempt=attempt if physics_capture_v1 else None,
+                    fresh_engine_attempt=attempt if (physics_capture_v1 or physics_capture_v2) else None,
                     prior_invalid_attempts=prior_invalid_attempts,
                     retryable_recovery_action="fresh_engine_retry" if attempt < attempts_per_action else "fresh_engine_attempts_exhausted",
                     physics_capture_v1=physics_capture_v1,
-                    physics_bridge=ScienceBirdsBridge(physics_host, physics_port, timeout=read_timeout) if physics_capture_v1 else None,
+                    physics_capture_v2=physics_capture_v2,
+                    physics_bridge=ScienceBirdsBridge(physics_host, physics_port, timeout=read_timeout) if (physics_capture_v1 or physics_capture_v2) else None,
                     physics_player_sha256=physics_player_sha256,
                     physics_protocol_sha256=physics_protocol_sha256,
                     physics_archive_sha256=physics_archive_sha256,
                     expected_initial_engine_state_identity=expected_initial_engine_state_identity,
                     scenario_context=scenario_context,
+                    physics_v2_source_bindings=physics_v2_source_bindings,
+                    physics_v2_scenario_manifest_identity=physics_v2_scenario_manifest_identity,
                 )
                 rollout = partial["rollouts"][0]
                 _record_fresh_engine_attempt_metadata(
@@ -2103,7 +2279,11 @@ def collect_fresh_engine_rollouts(
     accepted_rollouts = [rollout for rollout in rollouts if rollout.get("accepted")]
     invalid_attempts = [rollout for rollout in rollouts if not rollout.get("accepted")]
     manifest = {
-        "capture_source": getattr(capture_rollout, "__name__", "custom-capture"),
+        "capture_source": (
+            "capture_physics_v2_rollout"
+            if physics_capture_v2
+            else getattr(capture_rollout, "__name__", "custom-capture")
+        ),
         "replay_mode": "fresh-engine-per-rollout",
         "target_fps": target_fps,
         "duration_seconds": duration_seconds,
@@ -2138,6 +2318,16 @@ def collect_fresh_engine_rollouts(
         manifest["initial_engine_state_verified"] = verified_initial_identity is not None
         if scenario_context is not None:
             manifest["scenario_context"] = scenario_context
+    elif physics_capture_v2:
+        manifest.update({
+            "capture_contract": "physics_capture_v2",
+            "schema_version": "physics_capture_v2",
+            "sidecar_paths": ["physics_capture_v2.json"],
+            "fixed_step_sample_count": sum(int(item.get("fixed_step_sample_count", 0)) for item in accepted_rollouts),
+            "frame_record_count": sum(int(item.get("frame_record_count", 0)) for item in accepted_rollouts),
+            "physics_event_count": sum(int(item.get("event_count", 0)) for item in accepted_rollouts),
+            "scenario_manifest_identity": physics_v2_scenario_manifest_identity,
+        })
     if ui_level is not None:
         manifest["ui_level"] = ui_level
     exhausted_attempts = [attempt for attempt in invalid_attempts if attempt.get("attempt_status") == "invalid_exhausted"]
@@ -2254,6 +2444,7 @@ def collect_fresh_engine_attempt(
     options = dict(fresh_engine_options)
     options.pop("fresh_engine_attempts", None)
     options["expected_initial_engine_state_identity"] = expected_initial_engine_state_identity
+    physics_capture_v2 = bool(options.get("physics_capture_v2"))
     manifest: dict[str, Any] | None = None
     collection_error: Exception | None = None
     try:
@@ -2348,23 +2539,38 @@ def collect_fresh_engine_attempt(
             status = "rejected"
             failure_code = "missing_required_evidence"
             reason = "missing rollout metadata evidence"
-        elif metadata.get("capture_contract") != "physics_capture_v1":
+        elif metadata.get("capture_contract") != (
+            "physics_capture_v2" if physics_capture_v2 else "physics_capture_v1"
+        ):
             status = "rejected"
             failure_code = "missing_required_evidence"
             reason = "missing collision, contact, and lifecycle evidence"
-        elif not _has_complete_strict_semantics(metadata):
+        elif not physics_capture_v2 and not _has_complete_strict_semantics(metadata):
             status = "rejected"
             failure_code = "missing_required_evidence"
             reason = "missing terminal or identity rollout evidence"
-        elif metadata.get("initial_engine_state_identity") != expected_initial_engine_state_identity:
+        elif not physics_capture_v2 and metadata.get("initial_engine_state_identity") != expected_initial_engine_state_identity:
             status = "rejected"
             failure_code = "initial_engine_state_identity_mismatch"
             reason = "observed initial engine state identity does not match the planned identity"
         else:
             try:
-                coverage_strata = realized_coverage_strata(shot_dir)
+                if physics_capture_v2:
+                    validate_physics_capture_v2_artifact(shot_dir, metadata)
+                    if (
+                        metadata.get("scenario_manifest_identity")
+                        != options.get("physics_v2_scenario_manifest_identity")
+                    ):
+                        raise RolloutCollectionError(
+                            "physics capture v2 scenario manifest identity is stale"
+                        )
+                    coverage_strata = ()
+                else:
+                    coverage_strata = realized_coverage_strata(shot_dir)
                 accepted_dir.parent.mkdir(parents=True, exist_ok=True)
                 for path in staging_dir.rglob("*.json"):
+                    if physics_capture_v2 and path.name == "physics_capture_v2.json":
+                        continue
                     try:
                         payload = json.loads(path.read_text(encoding="utf-8"))
                     except (OSError, json.JSONDecodeError):
@@ -2376,6 +2582,11 @@ def collect_fresh_engine_attempt(
                         ),
                         encoding="utf-8",
                     )
+                if physics_capture_v2:
+                    rewritten_metadata = json.loads(
+                        (shot_dir / "metadata.json").read_text(encoding="utf-8")
+                    )
+                    validate_physics_capture_v2_artifact(shot_dir, rewritten_metadata)
                 os.replace(staging_dir, accepted_dir)
             except Exception as exc:
                 collection_error = exc
@@ -2472,7 +2683,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--actions-from-log", type=Path, help="Replay exact actions loaded from a previous action_log.json")
     parser.add_argument("--bidirectional-launches", action="store_true", help="Alternate generated drag-release horizontal signs")
     parser.add_argument("--capture-source", choices=("protocol", "desktop"), default="protocol")
-    parser.add_argument("--physics-capture-v1", action="store_true", help="Persist synchronized request-70 physics sidecars")
+    physics_capture = parser.add_mutually_exclusive_group()
+    physics_capture.add_argument("--physics-capture-v1", action="store_true", help="Persist synchronized request-70 physics sidecars")
+    physics_capture.add_argument("--physics-capture-v2", action="store_true", help="Persist the source-bound request-71 physics sidecar")
     parser.add_argument("--physics-player-sha256")
     parser.add_argument("--physics-protocol-sha256")
     parser.add_argument("--physics-archive-sha256")
@@ -2485,6 +2698,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--scenario-manifest", type=Path)
     parser.add_argument("--scenario-xml", type=Path)
+    parser.add_argument("--scenario-template", type=Path)
+    parser.add_argument("--scenario-constraints-workbook", type=Path)
     parser.add_argument(
         "--scenario-input",
         action="append",
@@ -2492,6 +2707,14 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         metavar=("SCENARIO_ID", "MANIFEST", "XML", "GAME_DIR"),
         help="Bind one collection-plan scenario to its manifest, XML, and single-level game directory",
+    )
+    parser.add_argument(
+        "--scenario-v2-input",
+        action="append",
+        nargs=6,
+        default=[],
+        metavar=("SCENARIO_ID", "V2_MANIFEST", "XML", "TEMPLATE", "WORKBOOK", "GAME_DIR"),
+        help="Bind one collection-plan scenario to source-bound v2 manifest authorities and its game directory",
     )
     parser.add_argument(
         "--attempt-input",
@@ -2594,16 +2817,40 @@ def main() -> None:
         print("--collection-plan requires --fresh-engine-per-rollout", file=sys.stderr)
         raise SystemExit(2)
 
+    if args.physics_capture_v2 and (
+        not args.fresh_engine_per_rollout or args.collection_plan is None
+    ):
+        print(
+            "--physics-capture-v2 requires --fresh-engine-per-rollout and --collection-plan",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+    if args.scenario_v2_input and not args.physics_capture_v2:
+        print("--scenario-v2-input requires --physics-capture-v2", file=sys.stderr)
+        raise SystemExit(2)
+
     if args.production_plan is not None and args.collection_plan is None:
         print("--production-plan requires --collection-plan", file=sys.stderr)
         raise SystemExit(2)
 
     strict_physics_collection = args.physics_capture_v1 and args.fresh_engine_per_rollout
+    physics_capture_v2 = bool(args.physics_capture_v2)
     has_scenario_manifest = args.scenario_manifest is not None
     has_scenario_xml = args.scenario_xml is not None
-    if args.scenario_input and (has_scenario_manifest or has_scenario_xml or args.ui_level is not None):
+    has_scenario_template = args.scenario_template is not None
+    has_constraints_workbook = args.scenario_constraints_workbook is not None
+    if args.scenario_input and args.scenario_v2_input:
+        print("--scenario-input and --scenario-v2-input are mutually exclusive", file=sys.stderr)
+        raise SystemExit(2)
+    if (args.scenario_input or args.scenario_v2_input) and (
+        has_scenario_manifest
+        or has_scenario_xml
+        or has_scenario_template
+        or has_constraints_workbook
+        or args.ui_level is not None
+    ):
         print(
-            "--scenario-input cannot be combined with --scenario-manifest, --scenario-xml, or --ui-level",
+            "scenario input mappings cannot be combined with singular scenario authorities or --ui-level",
             file=sys.stderr,
         )
         raise SystemExit(2)
@@ -2619,8 +2866,39 @@ def main() -> None:
             file=sys.stderr,
         )
         raise SystemExit(2)
+    singular_v2_authorities = (
+        has_scenario_manifest,
+        has_scenario_xml,
+        has_scenario_template,
+        has_constraints_workbook,
+    )
+    if physics_capture_v2 and not args.scenario_v2_input and not all(singular_v2_authorities):
+        print(
+            "--physics-capture-v2 requires source-bound scenario authorities via --scenario-v2-input or all singular scenario authority options",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
     scenario_manifest = None
-    if has_scenario_manifest and has_scenario_xml:
+    cohort_v2_scenario_manifest = None
+    if physics_capture_v2 and all(singular_v2_authorities):
+        try:
+            cohort_v2_scenario_manifest = load_cohort_v2_scenario_manifest(
+                args.scenario_manifest,
+                xml_path=args.scenario_xml,
+                template_source_path=args.scenario_template,
+            )
+            constraints = cohort_v2_scenario_manifest.template_record.generation_constraints
+            if constraints is None:
+                raise ValueError("v2 scenario template has no constraints-workbook authority")
+            validate_scenario_template_constraints_workbook(
+                constraints,
+                args.scenario_constraints_workbook,
+            )
+            scenario_manifest = cohort_v2_scenario_manifest.scenario_manifest
+        except (OSError, ValueError) as error:
+            print(f"Cannot load source-bound v2 scenario authorities: {error}", file=sys.stderr)
+            raise SystemExit(2) from None
+    elif has_scenario_manifest and has_scenario_xml:
         try:
             scenario_manifest = load_manifest(args.scenario_manifest, args.scenario_xml)
         except (OSError, ValueError) as error:
@@ -2640,6 +2918,29 @@ def main() -> None:
             print(f"Cannot load --scenario-input {scenario_id}: {error}", file=sys.stderr)
             raise SystemExit(2) from None
         scenario_inputs[scenario_id] = (manifest, scenario_game_dir)
+    scenario_v2_inputs: dict[str, tuple[Any, Path]] = {}
+    for scenario_id, manifest_path, xml_path, template_path, workbook_path, game_dir in args.scenario_v2_input:
+        if not scenario_id or scenario_id in scenario_v2_inputs:
+            print("--scenario-v2-input scenario IDs must be nonempty and unique", file=sys.stderr)
+            raise SystemExit(2)
+        try:
+            manifest = load_cohort_v2_scenario_manifest(
+                Path(manifest_path),
+                xml_path=Path(xml_path),
+                template_source_path=Path(template_path),
+            )
+            constraints = manifest.template_record.generation_constraints
+            if constraints is None:
+                raise ValueError("v2 scenario template has no constraints-workbook authority")
+            validate_scenario_template_constraints_workbook(constraints, Path(workbook_path))
+            scenario_game_dir = Path(game_dir)
+            if not (scenario_game_dir / "game_playing_interface.jar").is_file():
+                raise ValueError("GAME_DIR does not contain game_playing_interface.jar")
+            validate_scenario_game_dir_xml(scenario_game_dir, Path(xml_path))
+        except (OSError, ValueError) as error:
+            print(f"Cannot load --scenario-v2-input {scenario_id}: {error}", file=sys.stderr)
+            raise SystemExit(2) from None
+        scenario_v2_inputs[scenario_id] = (manifest, scenario_game_dir)
     attempt_inputs: dict[str, Path] = {}
     for attempt_id, game_dir in args.attempt_input:
         attempt_game_dir = Path(game_dir)
@@ -2686,21 +2987,37 @@ def main() -> None:
             print(f"Cannot load frozen collection plan: {error}", file=sys.stderr)
             raise SystemExit(2) from None
 
-        if scenario_inputs:
+        selected_scenario_inputs = scenario_v2_inputs if physics_capture_v2 else scenario_inputs
+        if (
+            physics_capture_v2
+            and not scenario_v2_inputs
+            and len(loaded_plan.plan.scenarios) != 1
+        ):
+            print(
+                "singular v2 scenario authorities require exactly one collection-plan scenario",
+                file=sys.stderr,
+            )
+            raise SystemExit(2)
+        if selected_scenario_inputs:
             planned_scenario_ids = {scenario.scenario_id for scenario in loaded_plan.plan.scenarios}
-            if set(scenario_inputs) != planned_scenario_ids:
+            if set(selected_scenario_inputs) != planned_scenario_ids:
                 print(
-                    "--scenario-input IDs must exactly match the frozen collection plan scenarios",
+                    "scenario input IDs must exactly match the frozen collection plan scenarios",
                     file=sys.stderr,
                 )
                 raise SystemExit(2)
 
         def runtime(request):
             selected_manifest = scenario_manifest
+            selected_v2_manifest = cohort_v2_scenario_manifest
             selected_game_dir = args.game_dir
             selected_ui_level = args.ui_level
             if scenario_inputs:
                 selected_manifest, selected_game_dir = scenario_inputs[request.scenario_id]
+                selected_ui_level = None
+            if scenario_v2_inputs:
+                selected_v2_manifest, selected_game_dir = scenario_v2_inputs[request.scenario_id]
+                selected_manifest = selected_v2_manifest.scenario_manifest
                 selected_ui_level = None
             if attempt_inputs:
                 try:
@@ -2725,6 +3042,28 @@ def main() -> None:
                     "attempt_id": request.attempt_id,
                     "attempt_number": request.attempt_number,
                 }
+            physics_v2_source_bindings = None
+            physics_v2_scenario_manifest_identity = None
+            if physics_capture_v2:
+                if selected_v2_manifest is None:
+                    raise ValueError("physics capture v2 source-bound scenario manifest is missing")
+                try:
+                    collection_scenario = next(
+                        scenario
+                        for scenario in loaded_plan.plan.scenarios
+                        if scenario.scenario_id == request.scenario_id
+                    )
+                except StopIteration as error:
+                    raise ValueError(
+                        f"No frozen collection-plan scenario for {request.scenario_id}"
+                    ) from error
+                physics_v2_source_bindings = source_bindings_from_collection(
+                    selected_v2_manifest,
+                    collection_scenario,
+                    request,
+                    rollout_identity=request.attempt_id,
+                )
+                physics_v2_scenario_manifest_identity = selected_v2_manifest.identity
             return collect_fresh_engine_attempt(
                 args.output_dir,
                 _json_compatible_action(request.interface_action),
@@ -2754,14 +3093,21 @@ def main() -> None:
                 engine_game_port=args.engine_game_port,
                 capture_rollout=capture_rollout,
                 pre_shot_grabber=pre_shot_grabber,
-                shoot_before_capture=physics_capture_v1 or args.capture_source != "desktop",
+                shoot_before_capture=(
+                    False
+                    if physics_capture_v2
+                    else physics_capture_v1 or args.capture_source != "desktop"
+                ),
                 anchor_actions=False,
                 physics_capture_v1=physics_capture_v1,
+                physics_capture_v2=physics_capture_v2,
                 physics_player_sha256=args.physics_player_sha256,
                 physics_protocol_sha256=args.physics_protocol_sha256,
                 physics_archive_sha256=args.physics_archive_sha256,
                 scenario_manifest=selected_manifest,
                 scenario_context_override=scenario_context_override,
+                physics_v2_source_bindings=physics_v2_source_bindings,
+                physics_v2_scenario_manifest_identity=physics_v2_scenario_manifest_identity,
             )
 
         if args.production_plan is None:

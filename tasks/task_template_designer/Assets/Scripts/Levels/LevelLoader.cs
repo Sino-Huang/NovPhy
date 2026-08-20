@@ -91,20 +91,18 @@ public class LevelLoader {
 				if (nodeName == "Birds")
 					break;
 
-				reader.MoveToAttribute("type");
-				string type = reader.Value;
+				string scenarioObjectId = reader.GetAttribute("scenarioObjectId");
+				string type = reader.GetAttribute("type");
 
-				level.birds.Add (new BirdData (type));
+				level.birds.Add (new BirdData (type, scenarioObjectId));
 				reader.Read ();
 			}
 
 			reader.ReadToFollowing("Slingshot");
 
-			reader.MoveToAttribute("x");
-			level.slingshot.x = (float)Convert.ToDouble (reader.Value);
-
-			reader.MoveToAttribute("y");
-			level.slingshot.y = (float)Convert.ToDouble (reader.Value);
+			level.slingshot.scenarioObjectId = reader.GetAttribute("scenarioObjectId");
+			level.slingshot.x = (float)Convert.ToDouble (reader.GetAttribute("x"));
+			level.slingshot.y = (float)Convert.ToDouble (reader.GetAttribute("y"));
             /* ### commented by Chathura to avoid issues with loading levels from level editor ### what does this code do?
 			if (reader.ReadToFollowing("assetBundle")){
 				if(reader.GetAttribute("path") != null){
@@ -122,61 +120,44 @@ public class LevelLoader {
 				if (nodeName == "GameObjects")
 					break;
 
-				reader.MoveToAttribute("type");
-				string type = reader.Value;
+				string scenarioObjectId = reader.GetAttribute("scenarioObjectId");
+				string type = reader.GetAttribute("type");
 
-				string material = "";
-				if (reader.GetAttribute ("material") != null) {
-
-					reader.MoveToAttribute("material");
-					material = reader.Value;
-				}
+				string material = reader.GetAttribute("material") ?? "";
 					
-				reader.MoveToAttribute("x");
-				float x = (float)Convert.ToDouble(reader.Value);
-
-				reader.MoveToAttribute("y");
-				float y = (float)Convert.ToDouble(reader.Value);
+				float x = (float)Convert.ToDouble(reader.GetAttribute("x"));
+				float y = (float)Convert.ToDouble(reader.GetAttribute("y"));
 
 				float rotation = 0f;
-				if (reader.GetAttribute ("rotation") != null) {
-				
-					reader.MoveToAttribute ("rotation");
-					rotation = (float)Convert.ToDouble (reader.Value);
-				}
+				if (reader.GetAttribute ("rotation") != null)
+					rotation = (float)Convert.ToDouble (reader.GetAttribute("rotation"));
 
 				if (nodeName == "Block") {
 
-					level.blocks.Add (new BlockData (type, rotation, x, y, material));
+					level.blocks.Add (new BlockData (type, rotation, x, y, material, scenarioObjectId));
 					reader.Read ();
 				} 
 				else if (nodeName == "Pig") {
 
-					level.pigs.Add (new OBjData (type, rotation, x, y));
+					level.pigs.Add (new OBjData (type, rotation, x, y, scenarioObjectId));
 					reader.Read ();
 				}
 				else if (nodeName == "TNT") {
 
-					level.tnts.Add (new OBjData (type, rotation, x, y));
+					level.tnts.Add (new OBjData (type, rotation, x, y, scenarioObjectId));
 					reader.Read ();
 				}
 				else if (nodeName == "Platform") {
 
 					float scaleX = 1f;
-					if (reader.GetAttribute ("scaleX") != null) {
-
-						reader.MoveToAttribute ("scaleX");
-						scaleX = (float)Convert.ToDouble (reader.Value);
-					}
+					if (reader.GetAttribute ("scaleX") != null)
+						scaleX = (float)Convert.ToDouble (reader.GetAttribute("scaleX"));
 
 					float scaleY = 1f;
-					if (reader.GetAttribute ("scaleY") != null) {
+					if (reader.GetAttribute ("scaleY") != null)
+						scaleY = (float)Convert.ToDouble (reader.GetAttribute("scaleY"));
 
-						reader.MoveToAttribute ("scaleY");
-						scaleY = (float)Convert.ToDouble (reader.Value);
-					}
-
-					level.platforms.Add (new PlatData (type, rotation, x, y, scaleX, scaleY));
+					level.platforms.Add (new PlatData (type, rotation, x, y, scaleX, scaleY, scenarioObjectId));
 					reader.Read ();
 				}
 			}

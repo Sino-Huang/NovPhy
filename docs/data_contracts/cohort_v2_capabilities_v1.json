@@ -1,0 +1,128 @@
+{
+  "authorities": {
+    "approved_profile": {
+      "path": ".claude/project-docs/research/20260820-cohort-v2-capability-profile/research-ready-cohort-v2-capability-profile-proposal.md",
+      "sha256": "676ce51194d0c0c1c8f9633910ed4c59123b053504306ab0578a8656d2fbcfae"
+    },
+    "github_issues": [
+      1,
+      18,
+      33,
+      42,
+      43
+    ],
+    "issue_33_audit": {
+      "path": ".claude/project-docs/evidence/issue-33-section-16-audit-20260820/README.md",
+      "sha256": "ed02915ae861f2268a830f61f5b9cfe1d6f16b8bc41afb6ca74caf46126d6841"
+    }
+  },
+  "capabilities": {
+    "optional": [
+      "intervention.benchmark_agent_action"
+    ],
+    "out_of_scope": [
+      "claim.cross_domain_evaluation",
+      "claim.gravity_shift_generalization",
+      "claim.planning",
+      "label.damage",
+      "macro.collapsed",
+      "macro.pigs-cleared",
+      "split.template_held_out",
+      "violation.illegal_contact"
+    ],
+    "required_central": {
+      "coverage_strata": [
+        "no-contact/miss",
+        "collision",
+        "persistent support",
+        "support change",
+        "destruction",
+        "stability transitions"
+      ],
+      "exposure_roles": [
+        "training",
+        "calibration",
+        "model_selection",
+        "final_evaluation"
+      ],
+      "ingestion": [
+        "public_fail_closed",
+        "identity_and_digest_binding",
+        "availability_preservation",
+        "temporal_alignment_preservation",
+        "exposure_restriction_enforcement"
+      ],
+      "macro_labels": [
+        "structure-unstable",
+        "steady-state"
+      ],
+      "micro_labels": [
+        "contact",
+        "supports"
+      ],
+      "observations": [
+        "agent",
+        "canonical_access_restricted"
+      ],
+      "provenance": [
+        "scenario_hierarchy",
+        "deterministic_realization",
+        "explicit_legacy_static",
+        "single_shot_rollout",
+        "frozen_outcome_independent_plan",
+        "engine_authoritative_fixed_step",
+        "positive_fixed_step_capture_stride",
+        "complete_raw_contact_intervals",
+        "atomic_rollout_validation",
+        "typed_failure_and_quarantine_accounting",
+        "transient_only_retries",
+        "immutable_cohort_release",
+        "source_bound_derivations",
+        "role_separated_final_evaluation"
+      ],
+      "replay": [
+        "version_bounded_deterministic"
+      ],
+      "splits": [
+        "instance_held_out"
+      ],
+      "violation_labels": [
+        "excess_penetration",
+        "unsupported_stationary_or_floating_body"
+      ]
+    },
+    "required_secondary": {
+      "evidence.bounded_negative": "spsg_contrastive_loss_ablation",
+      "label.material": "novel_material_generalization",
+      "macro.cascade-active": "extended_macro_event_prediction",
+      "observation.learned_symbol_parser": "learned_symbol_stress_test",
+      "supervision.micro_relation_usefulness": "reliability_gating",
+      "supervision.physical_regime_gate": "regime_alignment_diagnostic"
+    }
+  },
+  "declaration_version": 1,
+  "evidence_floor": {
+    "final_evaluation_evidence_allowed": false,
+    "minimum_boundary_windows": 2,
+    "minimum_level_instances": 2,
+    "minimum_negative_witnesses": 2,
+    "minimum_non_final_scenario_lineages": 2,
+    "minimum_positive_witnesses": 2,
+    "minimum_scenario_templates": 2,
+    "requires_unavailable_or_invalidation_check": true
+  },
+  "evidence_semantics": {
+    "availability_requires_accepted_source_evidence": true,
+    "prohibited_availability_inference": [
+      "filename",
+      "rgb_content",
+      "fixture",
+      "command_success",
+      "closed_issue_status"
+    ],
+    "unavailable_distinct_from_false": true
+  },
+  "identity": "cohort-v2-capabilities-v1:sha256:3c7a871087a38a84b14364d27f410a80d7d14f1b5796e4b9b420f2e376499940",
+  "schema": "cohort_v2_capabilities_v1",
+  "scope_name": "central_v2"
+}

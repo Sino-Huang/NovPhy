@@ -2,9 +2,29 @@
 set -euo pipefail
 
 worktree="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+physics_v2=false
+print_stage=false
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    --physics-v2) physics_v2=true ;;
+    --print-stage) print_stage=true ;;
+    *) echo "usage: $0 [--physics-v2] [--print-stage]" >&2; exit 2 ;;
+  esac
+  shift
+done
 editor="${UNITY_2019_4_41F2:-$HOME/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity}"
 project="${MIGRATED_UNITY_PROJECT:-$worktree/tasks/task_template_designer}"
-stage="${NOVPHY_PHYSICS_STAGE:-$worktree/sciencebirdsgames/physics-v1}"
+if [[ "$physics_v2" == true ]]; then
+  stage="$worktree/sciencebirdsgames/physics-v2"
+  capture_schema="physics_capture_v2_engine_v1"
+else
+  stage="${NOVPHY_PHYSICS_STAGE:-$worktree/sciencebirdsgames/physics-v1}"
+  capture_schema="physics_capture_v1"
+fi
+if [[ "$print_stage" == true ]]; then
+  printf '%s\n' "$stage"
+  exit 0
+fi
 compat="${UNITY_LTS_LIBS:-/tmp/opencode/unity-2019.4-libssl1.1/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib/x86_64-linux-gnu:/tmp/opencode/unity-2019.3.4f1-libs/root/usr/lib}"
 expected_editor_sha="32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150"
 expected_project="$worktree/tasks/task_template_designer"
@@ -18,7 +38,8 @@ serverbackup_source="/mnt/array/sukaih/Project/NovPhy/sciencebirdsgames/Linux/se
 package_inputs="$(mktemp "${TMPDIR:-/tmp}/novphy_physics_package_inputs_XXXXXX")"
 trap 'rm -f "$package_inputs"' EXIT
 python "$worktree/scripts/package_physics_player.py" --payload "$project" --stage "$stage" --worktree "$worktree" \
-  --migration-provenance "$worktree/.claude/project-docs/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json" --check-worktree-only --write-package-inputs "$package_inputs"
+  --migration-provenance "$worktree/.claude/project-docs/evidence/world-model-physics-instrumentation/task-2-migration-provenance.json" --check-worktree-only --write-package-inputs "$package_inputs" \
+  --capture-schema "$capture_schema"
 
 mkdir -p "$stage"
 build_root="$(mktemp -d "${TMPDIR:-/tmp}/novphy_physics_build_XXXXXX")"
@@ -56,4 +77,5 @@ python "$worktree/scripts/package_physics_player.py" \
   --interface-jar "$interface_jar" \
   --config-source "$config_source" \
   --serverbackup-source "$serverbackup_source" \
-  --package-inputs "$package_inputs"
+  --package-inputs "$package_inputs" \
+  --capture-schema "$capture_schema"

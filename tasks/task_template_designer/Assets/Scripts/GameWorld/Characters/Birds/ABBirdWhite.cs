@@ -9,9 +9,12 @@ public class ABBirdWhite : ABBird {
 
 	void InitSpecialPower() {
 
-		GameObject obj = (GameObject) Instantiate (ABWorldAssets.EGG, transform);
-		obj.transform.parent = transform.parent;
-		obj.name = "Egg";
+			GameObject obj = (GameObject) Instantiate (ABWorldAssets.EGG, transform);
+			obj.transform.parent = transform.parent;
+			obj.name = "Egg";
+			ScenarioObjectIdentity parentIdentity = GetComponent<ScenarioObjectIdentity>();
+			if (parentIdentity != null)
+				ScenarioObjectIdentity.AssignSpawn(obj, parentIdentity, "egg", 0);
 
 		_eggRigidBody = obj.GetComponent<Rigidbody2D> ();
 		_eggRigidBody.gameObject.SetActive(false);

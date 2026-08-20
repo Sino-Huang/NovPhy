@@ -74,6 +74,17 @@ class CanonicalTaskGenerationTests(unittest.TestCase):
             generated_objects = first.parameter_realization["declared_initial_engine_state"]["root"]["children"][-1]["children"]
             self.assertGreater(len(generated_objects), 2)
             self.assertTrue(any(node["attributes"].get("material") in {"ice", "wood", "stone"} for node in generated_objects))
+            root_projection = first.parameter_realization["declared_initial_engine_state"]["root"]
+            birds = next(node for node in root_projection["children"] if node["tag"] == "Birds")["children"]
+            slingshot = next(node for node in root_projection["children"] if node["tag"] == "Slingshot")
+            authored_ids = [node["attributes"]["scenarioObjectId"] for node in birds]
+            authored_ids.append(slingshot["attributes"]["scenarioObjectId"])
+            authored_ids.extend(node["attributes"]["scenarioObjectId"] for node in generated_objects)
+            self.assertEqual(len(authored_ids), len(set(authored_ids)))
+            self.assertEqual(authored_ids[0], "bird:0000")
+            self.assertEqual(slingshot["attributes"]["scenarioObjectId"], "slingshot:0000")
+            self.assertIn("pig:0000", authored_ids)
+            self.assertIn("block:0000", authored_ids)
             self.assertEqual(first.manifest, second.manifest)
             self.assertIn(b'custom="preserved"', first.xml_content)
             self.assertIn(b'customPig="kept"', first.xml_content)

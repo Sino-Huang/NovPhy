@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 import subprocess
 import tempfile
 import unittest
@@ -23,6 +24,49 @@ Build completed with a result of 'Succeeded'
 
 
 class PhysicsPlayerBuildScriptTests(unittest.TestCase):
+    @staticmethod
+    def _resolve_stage(*arguments: str, environment: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            ("bash", str(BUILD_SCRIPT), *arguments, "--print-stage"),
+            cwd=ROOT,
+            env=environment,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    def test_default_stage_and_existing_override_remain_physics_v1_compatible(self) -> None:
+        # Given: the build entrypoint is invoked without the additive v2 selector.
+        default = self._resolve_stage()
+        overridden_environment = os.environ.copy()
+        overridden_environment["NOVPHY_PHYSICS_STAGE"] = "/tmp/existing-physics-stage"
+
+        # When: the existing stage override is also resolved.
+        overridden = self._resolve_stage(environment=overridden_environment)
+
+        # Then: the default remains physics-v1 and the existing override keeps its meaning.
+        self.assertEqual(default.returncode, 0, default.stderr)
+        self.assertEqual(Path(default.stdout.strip()), ROOT / "sciencebirdsgames" / "physics-v1")
+        self.assertEqual(overridden.returncode, 0, overridden.stderr)
+        self.assertEqual(overridden.stdout.strip(), "/tmp/existing-physics-stage")
+
+    def test_explicit_v2_stage_resolves_only_to_physics_v2(self) -> None:
+        # Given: an unrelated legacy stage override is present.
+        environment = os.environ.copy()
+        environment["NOVPHY_PHYSICS_STAGE"] = "/tmp/must-not-receive-v2"
+
+        # When: the additive v2 build is explicitly selected.
+        resolved = self._resolve_stage("--physics-v2", environment=environment)
+
+        # Then: v2 has one repository-owned destination and cannot target the override or v1.
+        self.assertEqual(resolved.returncode, 0, resolved.stderr)
+        self.assertEqual(Path(resolved.stdout.strip()), ROOT / "sciencebirdsgames" / "physics-v2")
+        self.assertNotIn("physics-v1", resolved.stdout)
+        self.assertNotIn("must-not-receive-v2", resolved.stdout)
+        source = BUILD_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('capture_schema="physics_capture_v2_engine_v1"', source)
+        self.assertEqual(source.count('--capture-schema "$capture_schema"'), 2)
+
     def test_source_preflight_precedes_stage_creation_and_unity(self) -> None:
         # Given: the exact player build entrypoint.
         source = BUILD_SCRIPT.read_text(encoding="utf-8")

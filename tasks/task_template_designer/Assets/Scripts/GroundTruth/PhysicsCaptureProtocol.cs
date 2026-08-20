@@ -476,6 +476,15 @@ public sealed class PhysicsCaptureDirectSocket : MonoBehaviour
             if (client.Available == 0) yield break;
             byte[] request = new byte[1];
             int read = stream.Read(request, 0, 1);
+            if (read == 1 && request[0] == PhysicsCaptureV2EngineProtocol.RequestCode)
+            {
+                byte[] v2Response = PhysicsCaptureV2EngineProtocol.BuildCaptureEnvelope();
+                IEnumerator v2Transmission = TransmitResponse(
+                    client, v2Response, ResponseWriteTimeoutMilliseconds);
+                while (v2Transmission.MoveNext())
+                    yield return v2Transmission.Current;
+                yield break;
+            }
             if (read != 1 || request[0] != PhysicsCaptureV1Protocol.RequestCode)
             {
                 byte[] failure = PhysicsCaptureV1Protocol.BuildFailureEnvelope(null);

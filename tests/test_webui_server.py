@@ -8,10 +8,12 @@ from http.client import HTTPConnection
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from src.webui.bridge import GameState, Screenshot
-from src.webui.server import AppState, create_handler
+from src.webui.server import AppState, build_arg_parser, create_handler
+from tests.test_physics_v2_review import collision_capture
 
 
 class FakeBridge:
@@ -109,10 +111,25 @@ class FakeBridge:
         return 0
 
 
+class FakePhysicsV2Bridge:
+    connected = True
+
+    def __init__(self):
+        self.requests = 0
+
+    def connect(self):
+        self.connected = True
+
+    def get_physics_capture_v2(self):
+        self.requests += 1
+        return SimpleNamespace(record=collision_capture())
+
+
 class ServerTest(unittest.TestCase):
     def setUp(self):
         self.app = AppState(root=Path("/tmp/nonexistent-webui-root"))
         self.app.bridge = FakeBridge()
+        self.review_tmp = TemporaryDirectory()
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), create_handler(self.app))
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -122,6 +139,7 @@ class ServerTest(unittest.TestCase):
         self.server.shutdown()
         self.server.server_close()
         self.thread.join(timeout=2)
+        self.review_tmp.cleanup()
 
     def request(self, method, path, payload=None):
         connection = HTTPConnection("127.0.0.1", self.port, timeout=5)
@@ -132,6 +150,14 @@ class ServerTest(unittest.TestCase):
         connection.close()
         return response.status, data
 
+    def request_bytes(self, path):
+        connection = HTTPConnection("127.0.0.1", self.port, timeout=5)
+        connection.request("GET", path)
+        response = connection.getresponse()
+        data = response.read()
+        connection.close()
+        return response.status, data
+
     def test_status_reports_connected_fake_bridge(self):
         status, data = self.request("GET", "/api/status")
 
@@ -139,8 +165,79 @@ class ServerTest(unittest.TestCase):
         self.assertTrue(data["ok"])
         self.assertTrue(data["connected"])
 
+    def test_webui_exposes_guided_review_controls_and_world_space_playback(self):
+        status, content = self.request_bytes("/")
+
+        self.assertEqual(status, 200)
+        page = content.decode("utf-8")
+        self.assertIn('id="physicsReviewPanel"', page)
+        self.assertIn('id="reviewGoal"', page)
+        self.assertIn('id="worldCanvas"', page)
+        self.assertIn('id="reviewTimeline"', page)
+
+    def test_physics_v2_review_stages_explores_freezes_and_replays_exact_action(self):
+        self.app.physics_v2_review = True
+        self.app.review_output_root = Path(self.review_tmp.name)
+        self.app.review_probe_plan_path = Path(
+            ".claude/project-docs/evidence/issue-44-physics-v2/probe-plan.json"
+        )
+        self.app.physics_bridge = FakePhysicsV2Bridge()
+        resets = []
+        self.app.review_reset_callback = lambda goal: resets.append(goal)
+        action = {
+            "action_type": "drag_hold_release",
+            "coordinate_frame": "slingshot_relative",
+            "drag_start": [97, 227],
+            "drag_release": [-80, 8],
+            "tapTime": 0,
+            "holdTime": 1000,
+            "frame_height": 480,
+        }
+
+        status, loaded = self.request(
+            "POST", "/api/physics-v2-review/load-goal", {"goal": "collision"}
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(loaded["level"], 1)
+        self.assertEqual(self.app.bridge.loaded, [1])
+
+        status, staged = self.request(
+            "POST", "/api/physics-v2-review/stage", {"goal": "collision", "action": action}
+        )
+        self.assertEqual(status, 200)
+        self.assertEqual(staged["session"]["state"], "staged")
+
+        status, explored = self.request("POST", "/api/physics-v2-review/explore")
+        self.assertEqual(status, 200)
+        self.assertEqual(explored["session"]["state"], "explored")
+        self.assertEqual(self.app.bridge.shots[-1], (17, 260, 0, True, 1000))
+        self.assertFalse(explored["session"]["eligible_for_issue_44"])
+
+        self.assertEqual(
+            self.request("POST", "/api/physics-v2-review/freeze")[1]["session"]["state"],
+            "frozen",
+        )
+        status, replayed = self.request("POST", "/api/physics-v2-review/replay")
+        self.assertEqual(status, 200)
+        self.assertEqual(replayed["session"]["state"], "demonstrated")
+        self.assertTrue(replayed["session"]["eligible_for_issue_44_review"])
+        self.assertEqual(self.app.physics_bridge.requests, 2)
+        self.assertEqual(resets, ["collision"])
+        status, steps = self.request("GET", "/api/physics-v2-review/steps?start=1&count=1")
+        self.assertEqual(status, 200)
+        self.assertEqual(steps["total"], 2)
+        self.assertEqual([step["fixed_step"] for step in steps["steps"]], [1])
+
     def test_default_readiness_timeout_allows_slow_generated_levels(self):
         self.assertGreaterEqual(AppState().readiness_timeout, 60)
+
+    def test_physics_v2_review_is_an_explicit_cli_mode(self):
+        defaults = build_arg_parser().parse_args([])
+        review = build_arg_parser().parse_args(["--physics-v2-review", "--physics-port", "2015"])
+
+        self.assertFalse(defaults.physics_v2_review)
+        self.assertTrue(review.physics_v2_review)
+        self.assertEqual(review.physics_port, 2015)
 
     def test_frame_returns_base64_rgb_and_metadata(self):
         status, data = self.request("GET", "/api/frame")
@@ -465,6 +562,30 @@ class ServerTest(unittest.TestCase):
             self.assertTrue(popen.call_args.kwargs["start_new_session"])
             self.assertEqual(popen.call_args.kwargs["stdout"], subprocess.DEVNULL)
             self.assertEqual(popen.call_args.kwargs["stderr"], subprocess.DEVNULL)
+
+    def test_review_runtime_launches_with_positive_stride_and_separate_physics_port(self):
+        with TemporaryDirectory() as tmp:
+            game_dir = Path(tmp)
+            for name in ("game_playing_interface.jar", "9001.x86_64", "config.xml"):
+                (game_dir / name).write_text("ok", encoding="utf-8")
+            (game_dir / "9001_Data").mkdir()
+            app = AppState(
+                root=Path("/tmp/nonexistent-webui-root"),
+                physics_v2_review=True,
+                physics_port=2005,
+                engine_game_port=29001,
+                review_runtime_dir=game_dir,
+            )
+            app.connect_bridge = lambda configure=True: app.status()
+
+            with patch("src.webui.server.subprocess.Popen") as popen:
+                popen.return_value.poll.return_value = None
+                app.start_game()
+
+            command = popen.call_args.args[0]
+            self.assertIn("--physics-port", command)
+            self.assertEqual(command[command.index("--physics-port") + 1], "2005")
+            self.assertEqual(popen.call_args.kwargs["env"]["NOVPHY_PHYSICS_CAPTURE_V2_STRIDE"], "1")
 
     def test_stop_terminates_started_process_group(self):
         process = type("Process", (), {})()

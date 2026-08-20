@@ -17,9 +17,26 @@
           <div class="status-pill" id="connectionStatus">Disconnected</div>
         </header>
 
-        <div class="canvas-wrap">
-          <canvas id="gameCanvas" width="640" height="480" aria-label="Science Birds game frame"></canvas>
-          <div id="emptyState" class="empty-state">Start or connect, then refresh a frame.</div>
+        <div class="review-workspace">
+          <div class="canvas-wrap">
+            <canvas id="gameCanvas" width="640" height="480" aria-label="Science Birds game frame"></canvas>
+            <div id="emptyState" class="empty-state">Start or connect, then refresh a frame.</div>
+          </div>
+          <section id="worldPlayback" class="world-playback hidden" aria-label="Authoritative world-space playback">
+            <div class="playback-heading">
+              <div>
+                <p class="eyebrow">Authoritative engine trace</p>
+                <h2>World-space playback</h2>
+              </div>
+              <strong id="reviewStepLabel">No capture</strong>
+            </div>
+            <canvas id="worldCanvas" width="640" height="480" aria-label="Direct Unity collider geometry"></canvas>
+            <label>
+              Fixed step
+              <input id="reviewTimeline" type="range" min="0" max="0" value="0" />
+            </label>
+            <pre id="reviewStepFacts" class="step-facts">Record an exploratory shot to inspect fixed-step facts.</pre>
+          </section>
         </div>
 
         <div class="telemetry" aria-live="polite">
@@ -77,6 +94,32 @@
             Release immediately validates/transfers the agent action and sends the translated shot unless unchecked.
           </label>
           <button id="shootBtn" class="primary wide">Send shot</button>
+        </section>
+
+        <section id="physicsReviewPanel" class="hidden">
+          <div class="section-title-row">
+            <h2>Physics v2 review</h2>
+            <span id="reviewState" class="mini-pill">idle</span>
+          </div>
+          <label>
+            Coverage goal
+            <select id="reviewGoal">
+              <option value="collision">Collision</option>
+              <option value="persistent support">Persistent support</option>
+              <option value="support change">Support change</option>
+            </select>
+          </label>
+          <div id="reviewInstructions" class="review-instructions"></div>
+          <p id="reviewActionSummary" class="hint">Drag on the game frame to stage an exact diagnostic action.</p>
+          <div class="review-actions">
+            <button id="loadReviewGoalBtn" class="secondary">Load recommended scenario</button>
+            <button id="stageReviewBtn">1. Stage action</button>
+            <button id="exploreReviewBtn">2. Run exploratory shot</button>
+            <button id="freezeReviewBtn" class="secondary">3. Freeze exact replay</button>
+            <button id="replayReviewBtn" class="secondary">4. Replay frozen action</button>
+          </div>
+          <div id="reviewVerdict" class="review-verdict">No diagnostic capture yet.</div>
+          <p class="hint">The exploratory trace is always diagnostic-only. Only the separately frozen, one-attempt replay can be reviewed as #44 evidence.</p>
         </section>
 
         <section>

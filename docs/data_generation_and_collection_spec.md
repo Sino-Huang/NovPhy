@@ -7,6 +7,20 @@
 
 This specification complements the frozen `physics_capture_v1` contract in `docs/data_contracts/physics_capture_v1.md` and the BG-NS-JEPA method documents, especially `docs/research_proposal.md`, `docs/training_mechanism_and_architecture_specs.md`, and `docs/high_level_plans/bg_ns_jepa_research_execution.md`. Where this specification is stricter than an existing artifact validator, the stricter rule governs admission to a research cohort; it does not silently change the frozen artifact contract.
 
+### Approved central cohort-v2 scope
+
+An artifact that requests `central_v2` status MUST reference `docs/data_contracts/cohort_v2_capabilities_v1.json` by both exact declaration identity `cohort-v2-capabilities-v1:sha256:3c7a871087a38a84b14364d27f410a80d7d14f1b5796e4b9b420f2e376499940` and file SHA-256 `6b27038cb4175aa978f40543048b531fe8f20b16cd4c7d07333e07e0991aaa4c`. The declaration is bound to the approved profile SHA-256 `676ce51194d0c0c1c8f9633910ed4c59123b053504306ab0578a8656d2fbcfae` and the issue #33 audit SHA-256 `ed02915ae861f2268a830f61f5b9cfe1d6f16b8bc41afb6ca74caf46126d6841`.
+
+The declaration is the normative scope overlay for the central joint-controller cohort. It classifies every named capability as central, named-secondary, optional, or out of scope. Producers, collection plans, releases, derivations, and consumers MUST reject a `central_v2` request with an unknown capability, an omitted central capability, a promoted non-central capability, or the wrong declaration identity or digest. A release, derivation, or consumer MUST additionally reject central status while any required central capability is unavailable.
+
+The central label vocabulary is exactly micro `{contact, supports}`, macro `{structure-unstable, steady-state}`, and endpoint violations `{excess_penetration, unsupported_stationary_or_floating_body}`. Central collection also requires synchronized agent observation, access-restricted canonical observation, version-bounded deterministic replay, all four exposure roles, the instance-held-out split, the six prospective strata `no-contact/miss`, `collision`, `persistent support`, `support change`, `destruction`, and `stability transitions`, and the provenance/ingestion capabilities enumerated by the declaration.
+
+Template-held-out evaluation, a central physical-regime label, bounded negatives, material/damage supervision, gravity-shift generalization, `illegal_contact`, planning, and cross-domain claims are non-central with the exact dispositions in the declaration. Template identity, baseline gravity applicability, and raw `life` remain required source facts where the central provenance or violation contracts need them; they do not establish template-held-out, gravity-shift, or damage capabilities.
+
+The named-secondary capabilities are bounded-negative evidence, material labels, `cascade-active`, learned symbol parsing, micro-relation usefulness, and the physical-regime gate; each is required only for the experiment named in the declaration. Benchmark-agent intervention replay is optional. Template-held-out evaluation, damage labels, gravity-shift generalization, `collapsed`, `pigs-cleared`, `illegal_contact`, planning, and cross-domain evaluation are out of scope for central v2. None may gate, strengthen, or be reported as part of the central claim without a separately approved successor declaration.
+
+For each accepted central label, representative semantic evidence MUST contain at least two positive witnesses and two negative witnesses spanning at least two non-final scenario lineages, two level instances, and two scenario templates, plus at least two boundary windows and an unavailable/invalidation check. `unavailable` is not false. Availability MUST NOT be inferred from a filename, RGB content, a fixture, command success, or closed-issue status. Existing pilot, cohort, release, derivation, and audit artifacts remain immutable and do not acquire central-v2 status from this declaration.
+
 ## 1. Purpose and scientific claim boundary
 
 The purpose of this specification is to ensure that NovPhy data can support controlled research on BG-NS-JEPA's continuous, micro-relational, and macro-event descriptions without leakage, post-hoc sampling, ambiguous timing, or unsupported oracle claims.
@@ -155,6 +169,8 @@ The intervention plan MUST be hybrid and MUST combine:
 
 The plan MUST declare target coverage for `no-contact/miss`, `collision`, `persistent support`, `support change`, `destruction`, `pig removal`, `explosion` where applicable, `stability transitions`, `level clear`, and `level fail`. A target category MAY be marked unsupported only when the scenario specification or accepted engine capabilities make it inapplicable, and that reason MUST appear in the collection plan and production quality report.
 
+For `central_v2`, the declaration narrows this general enriched-cohort inventory. Geometry-aware feasible shots and targeted rare-interaction shots are required; benchmark-agent actions are optional and their absence MUST have an explicit unavailable source disposition. The required central target strata are exactly `no-contact/miss`, `collision`, `persistent support`, `support change`, `destruction`, and `stability transitions`. Pig removal, explosion, level clear, and level fail remain raw events or termination evidence when they occur, but are target quotas only for an approved named-secondary experiment.
+
 Each intervention MUST be represented in both:
 
 - interface terms: the command supplied through the benchmark interface, including all shot and tap/release fields needed to replay it; and
@@ -166,11 +182,13 @@ Coverage strata MUST be predeclared categories of intended interaction or non-in
 
 Physics-validated negatives MUST be generated or selected only under a frozen negative specification. Negatives MUST have explicit semantic or physical justification, MUST remain distinct from simulator or capture failures, and MUST be bounded by a declared negative cap. The collection MUST NOT keep generating negatives until a desired model result or class balance appears.
 
+Bounded negative evidence is required only for the named `spsg_contrastive_loss_ablation` secondary experiment. A central-v2 plan that does not run that secondary MUST declare bounded negatives non-central and MUST NOT treat their absence as a central capability failure.
+
 ### Acceptance criteria
 
 - The collection plan bytes and plan version are unchanged before and after execution.
 - Every rollout maps to one predeclared intervention and coverage stratum.
-- The frozen plan contains all three hybrid intervention sources and declares the disposition of every required target coverage category.
+- The frozen plan contains every intervention source required by its exact capability declaration and declares the disposition of every applicable target coverage category.
 - Accepted, rejected, and failed rollouts remain visible in outcome-independent accounting; realized outcomes do not control retention.
 - Rejected simulator/capture attempts do not become negative training examples.
 - Negative count never exceeds the declared cap and cannot be increased from observed outcomes without a new prospective collection plan.
@@ -261,6 +279,8 @@ Material and damage supervision MUST use versioned mappings verified against aut
 
 The physical-regime gate MUST be a versioned engine-derived label describing declared motion and contact conditions at a frame record. It MUST remain distinct from micro-relation usefulness, which is model-relative and can be established only by frozen-model out-of-sample comparison. Neither label MAY substitute for the other.
 
+For `central_v2`, neither the physical-regime gate nor micro-relation usefulness is a required controller input, target, gate, or central metric. The central physical-violation derivation MUST encode and cite its own per-label completeness and stability facts; it MUST NOT substitute a physical-regime label for missing geometry, gravity, lifecycle, motion, support/contact, or world-context evidence. Either secondary capability requires its separately named experiment and cannot be promoted by a central artifact.
+
 Engine state and observations are primary artifacts. Oracle labels, the physical-regime gate, micro-relation usefulness, parser targets, and latents are derivations. No derived latent or parser output MAY overwrite engine facts or canonical observations.
 
 ### Acceptance criteria
@@ -294,7 +314,7 @@ These labels MUST be derivation artifacts bound to an immutable cohort release. 
 
 Before production collection, a capability-complete representative pilot MUST be accepted. The pilot MUST exercise every capability required by the intended research cohort, every supported rollout termination class, the planned identity/alignment path, intervention representation, fixed-step capture stride, lifecycle, contact/event payloads, canonical and agent observations, failure/quarantine path, and all supervision evidence classes intended for production. It MUST also demonstrate deterministic, version-bounded replay: replay is assessed only under the same declared engine/player, protocol, generator, scenario specification, collection-plan, and intervention versions, and any change to those bounds requires a new pilot determination.
 
-The pilot MUST contain representative benchmark conditions, scenario templates, level instances, interventions, coverage strata, and physical regimes. Fixture suites and smoke rollouts MAY support software confidence but MUST NOT substitute for this pilot.
+The pilot MUST contain representative benchmark conditions, scenario templates, level instances, interventions, coverage strata, and the physical interaction windows needed by every declared central label. A separately named physical-regime label is required only when its secondary experiment is approved. Fixture suites and smoke rollouts MAY support software confidence but MUST NOT substitute for this pilot.
 
 Production quotas MUST be defined prospectively by benchmark condition, exposure role, split regime, scenario-template/level-instance coverage, intervention coverage stratum, and required capability coverage. Quotas MUST NOT be defined or backfilled by model score or desirable realized outcome. Permanent failures MUST remain visible alongside unmet quotas.
 
@@ -316,7 +336,7 @@ The following statements distinguish implemented foundations from required but u
 
 - **Implemented:** frozen `physics_capture_v1` sidecars and validation; synchronized RGB/state capture within that contract; fixed-step clocks; scene nodes, kinematics, raw contacts, `support_v1`, macro events, bounded failures; collector-side temporary publication, validation, quarantine, and retry metadata; deterministic path-based bucket partitioning and scoped inventory; fixture-only `physics_macro_labels_v1` derivation and validation.
 - **Implemented but insufficient:** the staged archive and accepted smoke evidence establish only their exercised bounded path. They do not establish representative collision-bearing collection, scenario hierarchy, exposure roles, fixed-step stride authority, production coverage, or a representative enriched cohort.
-- **Required but currently unsupported or unaccepted:** canonical deterministic scenario-generation records; `legacy_static` and generated lineage manifests; both exposure split regimes; frozen coverage-stratified intervention plans in canonical action forms; complete causal-property capture; verified material/damage mappings; representative macro-label semantics; accepted physical-regime gate; v1 physical-violation derivations; capability-complete pilot; production quotas; immutable cohort release workflow; role-separated final evaluation.
+- **Required but currently unsupported or unaccepted:** canonical deterministic scenario-generation records; `legacy_static` and generated lineage manifests; the capability-declared exposure split regime; frozen coverage-stratified intervention plans in canonical action forms; complete central causal-property capture; representative central macro-label semantics; accepted central physical-violation derivations; access-separated observations; capability-complete pilot; production quotas; immutable cohort release workflow; role-separated final evaluation.
 
 ## 16. Definition of done for GitHub issue #2
 
@@ -324,9 +344,9 @@ GitHub issue #2 is complete only when all of the following are true:
 
 1. An immutable, versioned representative cohort release exists with its frozen collection plan, partitions, exposure roles, provenance, failure manifest, and accepted derivation references.
 2. Every rollout admitted to that cohort release passes atomic whole-rollout validation under the required capture and provenance contracts; no partial or reconstructed rollout is admitted.
-3. The capability-complete representative pilot and the production quality report demonstrate the required benchmark-condition, scenario-template, level-instance, intervention, target coverage category, physical-regime, termination, lifecycle, contact/event, observation, and split-regime coverage. They MUST report accepted coverage together with every failure, rejection, unavailable capability, unavailable label, and unmet quota reason.
+3. The capability-complete representative pilot and the production quality report demonstrate the required benchmark-condition, scenario-template, level-instance, intervention, target coverage category, termination, lifecycle, contact/event, observation, and capability-declared split coverage. They MUST report accepted coverage together with every failure, rejection, unavailable capability, unavailable label, and unmet quota reason.
 4. Exposure isolation is demonstrated for both the declared dataset partitions and exposure roles, including the applicable instance-held-out and template-held-out audits and the role-separated final-evaluation boundary.
-5. Every authoritative derivation artifact required for the release's declared research use is published, source-bound to the immutable cohort release, semantically accepted, and valid. This includes applicable macro labels, support supervision, physical-regime gates, physical-violation labels, material/damage mappings, and any other declared oracle supervision. A `hypothesis_pending_representative_validation` predicate cannot satisfy this condition.
+5. Every authoritative derivation artifact required by the exact capability declaration for the release's declared research use is published, source-bound to the immutable cohort release, semantically accepted, and valid. This includes applicable macro labels, support supervision, physical-regime gates, physical-violation labels, material/damage mappings, and any other declared oracle supervision. A `hypothesis_pending_representative_validation` predicate cannot satisfy this condition. A capability classified as named-secondary, optional, or out of scope does not gate central-v2 completion and cannot be silently promoted into the central release.
 6. Downstream readers complete smoke ingestion of the released primary artifacts and every required derivation artifact through their public, fail-closed interfaces, preserving identity, temporal alignment, availability, and exposure restrictions.
 7. No known systematic engine-export defect remains in any required capability. In particular, collision-bearing rollouts MUST export complete contract-valid collision payload and raw-contact evidence without reconstruction.
 
@@ -358,9 +378,15 @@ This specification does not create or authorize ADR files.
 
 ## 19. Current known blockers
 
-1. **Incomplete staged collision payload defect:** the staged/runtime path has not yet supplied accepted representative collision-bearing evidence with the complete payload required by `physics_capture_v1`; missing collision facts remain a permanent collection defect and block representative enriched collection.
-2. **No immutable accepted representative cohort release:** fixture and smoke evidence do not constitute the capability-complete representative pilot, production quality report, authoritative derivation publication, or immutable cohort release required to close issue #2.
-3. **Pending representative validation for three macro predicates:** `cascade-active`, `collapsed`, and `pigs-cleared` remain `hypothesis_pending_representative_validation` despite implemented fixture-level `physics_macro_labels_v1` software.
-4. **Missing canonical material/damage mappings:** engine-verified, versioned mappings required for material- and damage-dependent supervision have not been accepted.
+The issue #33 audit remains the evidence baseline. Its immutable scoped release demonstrates a contract-valid collision path for its four admitted rollouts, but it is not a central-v2 release and MUST NOT be upgraded in place.
 
-Until these blockers are closed and the complete Section 16 release evidence exists, issue #2 MUST remain open; production collection and downstream claims that depend on the blocked capabilities MUST remain blocked or explicitly unavailable.
+The current central-v2 blockers are:
+
+1. **No capability-complete central-v2 pilot or immutable release:** the existing pilot records `coverage.audit.representative=false` and cannot satisfy the new declaration.
+2. **Missing central exporter and observation evidence:** fixed-step-stride authority, synchronized access-separated agent/canonical observations, and the complete source facts needed by both central physical-violation labels remain unavailable.
+3. **Missing central representative semantic evidence:** the two micro labels, two macro labels, and two endpoint-violation labels have not each met the declaration evidence floor on a new v2 release. Prior fixture, smoke, accepted-software, or rejected/unavailable evidence does not satisfy this gate.
+4. **Missing central lineage, exposure, replay, and ingestion evidence:** source-bound template/instance identities, real four-role instance-held-out partitions, version-bounded deterministic replay, frozen final access, and complete public central-v2 ingestion are not demonstrated together.
+
+Template-held-out evaluation, a physical-regime label, bounded negatives, material/damage mappings, gravity shifts, `cascade-active`, `collapsed`, `pigs-cleared`, `illegal_contact`, planning, and cross-domain evaluation are not central-v2 blockers. Their non-central disposition is not evidence that they are false or scientifically accepted.
+
+Until these blockers are closed and the complete Section 16 evidence exists for the exact declaration, issue #2 and the cohort-v2 umbrella MUST remain open; production collection and downstream central claims MUST remain blocked.

@@ -24,14 +24,16 @@ using System.Collections.Generic;
 public class OBjData {
 
 	public string type;
+	public string scenarioObjectId;
 	public float  rotation;
 	public float  x, y;
 
 	public OBjData () { }
 
-	public OBjData(string type, float rotation, float x, float y) {
+	public OBjData(string type, float rotation, float x, float y, string scenarioObjectId = null) {
 
 		this.type = type;
+		this.scenarioObjectId = scenarioObjectId;
 		this.rotation = rotation;
 		this.x = x;
 		this.y = y;
@@ -41,10 +43,12 @@ public class OBjData {
 public class BirdData {
 
 	public string type;
+	public string scenarioObjectId;
 
-	public BirdData(string type) {
+	public BirdData(string type, string scenarioObjectId = null) {
 
 		this.type = type;
+		this.scenarioObjectId = scenarioObjectId;
 	}
 }
 
@@ -52,9 +56,10 @@ public class BlockData: OBjData {
 
 	public string material;
 
-	public BlockData(string type, float rotation, float x, float y, string material) {
+	public BlockData(string type, float rotation, float x, float y, string material, string scenarioObjectId = null) {
 
 		this.type = type;
+		this.scenarioObjectId = scenarioObjectId;
 		this.rotation = rotation;
 		this.x = x;
 		this.y = y;
@@ -69,9 +74,10 @@ public class PlatData : OBjData {
 
 	public PlatData () { }
 
-	public PlatData(string type, float rotation, float x, float y, float scaleX, float scaleY) {
+	public PlatData(string type, float rotation, float x, float y, float scaleX, float scaleY, string scenarioObjectId = null) {
 
 		this.type = type;
+		this.scenarioObjectId = scenarioObjectId;
 		this.rotation = rotation;
 		this.x = x;
 		this.y = y;
@@ -98,11 +104,13 @@ public struct CameraData {
 public struct SlingData {
 
 	public float x, y;
+	public string scenarioObjectId;
 
-	public SlingData(float x, float y) {
+	public SlingData(float x, float y, string scenarioObjectId = null) {
 
 		this.x = x;
 		this.y = y;
+		this.scenarioObjectId = scenarioObjectId;
 	}
 }
 

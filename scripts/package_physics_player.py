@@ -18,6 +18,7 @@ STAGE_SCHEMA: Final = "novphy_physics_player_stage_v1"
 UNITY_VERSION: Final = "2019.4.41f2"
 UNITY_CHANGESET: Final = "6b23d448b533"
 CAPTURE_SCHEMA: Final = "physics_capture_v1"
+CAPTURE_SCHEMAS: Final = (CAPTURE_SCHEMA, "physics_capture_v2_engine_v1")
 PROTOCOL_VERSION: Final = 1
 ARCHIVE_NAME: Final = "novphy-physics-player-2019.4.41f2.tar.gz"
 WRAPPER_PATH: Final = "scripts/9001-player-wrapper.sh"
@@ -54,6 +55,7 @@ class ManifestContext:
     migration_provenance: Path
     build_sources: BuildSources | None
     package_inputs: dict[str, str]
+    capture_schema: str = CAPTURE_SCHEMA
 
 
 def sha256_file(path: Path) -> str:
@@ -142,7 +144,7 @@ def write_manifest(payload: Path, context: ManifestContext) -> Path:
         "schema_version": STAGE_SCHEMA,
         "unity": {"canonical_revision": "2019.3.4f1 (4f139db2fdbd)", "migrated_revision": f"{UNITY_VERSION} ({UNITY_CHANGESET})", "version": UNITY_VERSION, "changeset": UNITY_CHANGESET},
         "project": {"git_head": head, "git_tree": tree},
-        "capture": {"schema_version": CAPTURE_SCHEMA, "protocol_version": PROTOCOL_VERSION},
+        "capture": {"schema_version": context.capture_schema, "protocol_version": PROTOCOL_VERSION},
         "migration": {"provenance_file": context.migration_provenance.name, "provenance_sha256": sha256_file(context.migration_provenance)},
         "rollback_rule": "Build or verification failure never modifies canonical project, production player, or active data root.",
         "files": payload_hashes(payload),
@@ -305,6 +307,7 @@ def main() -> int:
     parser.add_argument("--check-worktree-only", action="store_true")
     parser.add_argument("--write-package-inputs", type=Path)
     parser.add_argument("--package-inputs", type=Path)
+    parser.add_argument("--capture-schema", choices=CAPTURE_SCHEMAS, default=CAPTURE_SCHEMA)
     args = parser.parse_args()
     if args.check_worktree_only:
         package_inputs = unity_package_input_digests(args.worktree)
@@ -326,7 +329,7 @@ def main() -> int:
         if not isinstance(raw_package_inputs, dict) or not all(isinstance(path, str) and isinstance(digest, str) for path, digest in raw_package_inputs.items()):
             raise PackagingError("Unity package input provenance is malformed")
         package_inputs = raw_package_inputs
-    context = ManifestContext(args.worktree, args.migration_provenance, sources, package_inputs)
+    context = ManifestContext(args.worktree, args.migration_provenance, sources, package_inputs, args.capture_schema)
     write_manifest(args.payload, context)
     args.stage.mkdir(parents=True, exist_ok=True)
     publish(args.payload, args.stage)
