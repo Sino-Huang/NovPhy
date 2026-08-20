@@ -4,13 +4,20 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.cohort_release import publish_cohort_release, verify_cohort_publication
+from scripts.cohort_release import _artifact, publish_cohort_release, verify_cohort_publication
 
 
 EVIDENCE = Path(".claude/project-docs/evidence/representative-pilot-20260820")
 
 
 class CohortReleaseTests(unittest.TestCase):
+    def test_artifact_accepts_collector_cwd_relative_paths(self) -> None:
+        with tempfile.TemporaryDirectory(dir=".") as temporary:
+            root = Path(temporary) / "production"
+            shot = root / "accepted" / "attempt" / "shot_001"
+            shot.mkdir(parents=True)
+            self.assertEqual(_artifact(root.resolve(), str(shot)), shot.resolve())
+
     def test_publish_binds_primary_evidence_quality_and_derivations(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "production"

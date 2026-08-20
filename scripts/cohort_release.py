@@ -87,7 +87,11 @@ def _artifact(root: Path, value: Any) -> Path:
     if not isinstance(value, str) or not value:
         raise ValueError("Attempt has no artifact path")
     source = Path(value)
-    resolved = (source if source.is_absolute() else root / source).resolve()
+    if source.is_absolute():
+        resolved = source.resolve()
+    else:
+        candidates = (root / source, source)
+        resolved = next((candidate.resolve() for candidate in candidates if candidate.exists()), candidates[0].resolve())
     if root != resolved and root not in resolved.parents:
         raise ValueError("Attempt artifact is outside production output")
     return resolved
