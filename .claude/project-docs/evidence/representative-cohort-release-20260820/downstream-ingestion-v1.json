@@ -1,0 +1,64 @@
+{
+  "authoritative_derivations": {
+    "identity": "authoritative-cohort-derivations-v1:sha256:64cff842534beb40ece23ec11673903dddc9a08881e4646779daae973434e187",
+    "version": 1
+  },
+  "available_capabilities": {
+    "macro.steady-state": "physics_macro_labels_v1",
+    "macro.structure-unstable": "physics_macro_labels_v1",
+    "physics_capture_v1": "1",
+    "physics_relational_supervision_v1": "1"
+  },
+  "cohort_release": {
+    "identity": "representative-cohort-release-v1:sha256:40b997354a256f889ef7dd007888b5ad8d84b5266883f3611500086f22b62ed2",
+    "version": 1
+  },
+  "counts": {
+    "events": 36,
+    "fixed_step_aligned_events": 36,
+    "frames": 24,
+    "identity_aligned_frames": 24,
+    "macro_frames": 24,
+    "relational_frames": 24,
+    "rollouts": 4,
+    "terminal_observations": 4,
+    "unavailable_relational_labels": 608
+  },
+  "partition": {
+    "identity": "cohort-partition-manifest-v1:sha256:d2ab1b531e27cb2028c3e51064dfb53648b11176334bd230417ffbd2ba11f111",
+    "version": 2
+  },
+  "publication_identity": "representative-cohort-publication-v1:sha256:a6daf82d47f7001e8731068c68a91e83487fd2c26926b35ab2974bc75a93ecf8",
+  "readers": [
+    "cohort_partition_manifest_v1",
+    "scenario_manifest_v1",
+    "physics_capture_v1",
+    "physics_macro_labels_v1",
+    "physics_relational_supervision_v1",
+    "world_model_physics_supervision"
+  ],
+  "required_capabilities": [
+    "physics_capture_v1",
+    "physics_relational_supervision_v1",
+    "macro.steady-state",
+    "macro.structure-unstable"
+  ],
+  "schema": "cohort_ingestion_evidence_v1",
+  "unavailable_capabilities": {
+    "agent_observations": "access-separated agent observations are not established",
+    "bounded_negative_evidence": "production negative cap is zero",
+    "canonical_observations": "access-separated canonical observations are not established",
+    "damage_semantics": "accepted evidence has no damage-positive witness",
+    "deterministic_replay": "no separate production replay was authorized",
+    "fixed_step_stride_authority": "physics_capture_v1 does not export an authoritative configured stride",
+    "illegal_contact": "no accepted legal-contact ontology exists",
+    "macro.cascade-active": "rejected from production by issue 40 adjudication",
+    "macro.collapsed": "rejected from production by issue 40 adjudication",
+    "macro.pigs-cleared": "rejected from production by issue 40 adjudication",
+    "material_identity": "physics_capture_v1 exports no material field",
+    "physical_regime_gate": "no accepted versioned physical-regime gate exists",
+    "physical_violation.excess_penetration": "insufficient representative evidence",
+    "physical_violation.unsupported_stationary_body": "insufficient representative evidence",
+    "template_held_out_partition": "legacy-static manifests have no template identities"
+  }
+}
