@@ -1,6 +1,0 @@
-DoneClaim: added a digest-bound allowlist for exactly tasks/task_template_designer/Packages/manifest.json and packages-lock.json, retaining rejection of all other ignored/untracked/modified build inputs; provenance now records package digests for every package publication.
-Product SHA-256:
-  scripts/package_physics_player.py e10b4618d14b5b5d8636a79a2aa57febf190744632d4a86a3b2e26a8d45cd03b
-  tests/test_package_physics_player.py 5dfbf90e85fb293dded1495e97129e8ed704955a85373951af11f3dfa1a146cd
-  tests/test_build_physics_player.py 6ab9395140eb327ffc39f6e354c3873d2730f173fbc2fd124549930b978de982
-Verification: package tests passed twice; build tests passed in the migration worktree; py_compile passed; diff check produced no diagnostics; direct --check-worktree-only passed for the migration worktree.

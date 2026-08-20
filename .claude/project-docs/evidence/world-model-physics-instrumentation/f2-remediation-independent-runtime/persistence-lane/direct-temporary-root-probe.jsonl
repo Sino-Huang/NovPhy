@@ -1,8 +1,0 @@
-{"case": "bounded_sidecar_memory", "error": "invalid_value at sidecars: sidecar byte limit exceeded", "limit": 1048576, "state_bytes": 1048577, "verdict": "PASS"}
-{"case": "root_confinement", "error": "invalid physics artifact /tmp/f2-persistence-probe-5te4oy9_/shot_001/physics_state.jsonl: symlink artifact is forbidden", "symlink": "/tmp/f2-persistence-probe-5te4oy9_/shot_001/physics_state.jsonl", "verdict": "PASS"}
-{"case": "valid_final_idempotent_resume", "first_requests": 1, "metadata_unchanged": true, "rollout_count": 1, "tmp_exists": false, "total_requests": 1, "verdict": "PASS"}
-{"case": "cancel_resume_stale", "repetitions": [{"exists_after": false, "removed": ["shot_000.tmp"]}, {"exists_after": false, "removed": ["shot_000.tmp"]}], "verdict": "PASS"}
-{"case": "invalid_completed_shot_quarantine", "original_exists": false, "quarantine_exists": true, "quarantined": ["invalid_attempts/shot_001_recovered_01"], "verdict": "PASS"}
-{"case": "malformed_input", "error": "malformed_json at /tmp/f2-persistence-probe-5te4oy9_/malformed/physics_state.jsonl:1: Expecting value", "verdict": "PASS"}
-{"case": "temporary_root_cleanup", "tmp_leftovers": [], "verdict": "PASS"}
-probe_exit=0

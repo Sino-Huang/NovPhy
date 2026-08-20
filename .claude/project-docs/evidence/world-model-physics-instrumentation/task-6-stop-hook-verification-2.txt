@@ -1,9 +1,0 @@
-task=todo-6-launcher
-direct_verification=second stop-hook audit
-focused_invocation=python -m unittest tests.test_prepare_rollout_dataset.PhysicsLauncherTests -v
-focused_observable=Ran 9 tests; OK
-focused_artifact=.omo/evidence/world-model-physics-instrumentation/task-6-stop-hook-2-focused.log
-syntax_invocation=bash -n scripts/collect_full_rollout_training_dataset.sh; python -m py_compile scripts/prepare_rollout_dataset.py; git diff --check
-syntax_observable=all exit 0
-artifacts=.omo/evidence/world-model-physics-instrumentation/task-6-stop-hook-2-bash-n.log,.omo/evidence/world-model-physics-instrumentation/task-6-stop-hook-2-pycompile.log,.omo/evidence/world-model-physics-instrumentation/task-6-stop-hook-2-diff-check.log
-cleanup_observable=absent:/tmp/task6-qa-OuybLr,/tmp/task6-legacy-prepare.py
