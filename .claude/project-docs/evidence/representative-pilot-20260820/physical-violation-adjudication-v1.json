@@ -1,0 +1,327 @@
+{
+  "accepted_authoritative_derivations": [],
+  "adjudication_procedure": {
+    "acceptance_rule": "Accept a v1 label only when source-bound representative evidence exercises positive, negative, boundary, and unavailable cases under the frozen production parameters and an accepted physical-regime derivation.",
+    "failure_handling": "A missing case, unavailable physical-regime gate, or source mismatch rejects the label; diagnostic candidates are never promoted to true or false supervision.",
+    "implementation": "scripts.physics_violation_labels.derive_physical_violation_labels_for_shot",
+    "kind": "automated_fail_closed_rederivation_and_engine_trace_audit",
+    "review_passes": [
+      "rederive physical_violation_derivation_v1 over every accepted shot",
+      "verify physics state, event, and engine-evidence digests against shot metadata",
+      "audit contact-separation and terminal gravity, motion, and support facts against production plan v1"
+    ]
+  },
+  "attempt_evidence": [
+    {
+      "attempt_id": "collection-plan-attempt-v1:sha256:16d43c5aa360a003b3e85744cb00a41b4a338dc9537764f3e1daf69a336a8684",
+      "capture_id": "capture-478a903feeed43bdb7d4db57cb5b88d1",
+      "current_unavailable_label_counts": {
+        "excess_penetration": 1,
+        "unsupported_stationary_or_floating_body": 4
+      },
+      "diagnostic_stationary_candidate_entity_ids": [
+        "-648:0",
+        "-680:0",
+        "-694:0"
+      ],
+      "engine_evidence_record_count": 5,
+      "engine_evidence_sequences": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "physics_events_sha256": "e10d649294611b78c541f0bc67c23b23230a9807dbe48940afa20fce84c04b26",
+      "physics_state_sha256": "29bdc44deb9aad2f8f371578f6b6ec1d41a697c6f55f408bb4a7cb5049d094e3",
+      "physics_violation_engine_evidence_sha256": "966ee3919ad29ca02d217d5cca9cf837216b535b1279878ca4ebecd3fb010b7c",
+      "scenario_id": "baseline-type010101-level00026",
+      "shot_id": "shot_001",
+      "terminal_trace": {
+        "all_candidates_dynamic_simulated_under_gravity": true,
+        "all_candidates_position_identical_and_without_support": true,
+        "first_fixed_step": 1913,
+        "last_fixed_step": 1920,
+        "sample_count": 8,
+        "truncated": true,
+        "unavailable_present_false_entity_ids": [
+          "-632:0",
+          "-666:0"
+        ]
+      },
+      "unique_retained_raw_contacts": [
+        {
+          "contact_id": "contact:1818:-632:0|-646:-666:0|-678:0",
+          "entity_a_id": "-632:0",
+          "entity_b_id": "-666:0",
+          "separation": -0.00727007445
+        }
+      ],
+      "whole_capture_minimum_contact_separation": {
+        "observed": false,
+        "separation": null
+      }
+    },
+    {
+      "attempt_id": "collection-plan-attempt-v1:sha256:7431b7ce718dc7cfc421b9c415bbe2d485a33cb2bbe0fe2755b61e470da7ecad",
+      "capture_id": "capture-f5f74150a2954b58a960c752ca56284d",
+      "current_unavailable_label_counts": {
+        "excess_penetration": 1,
+        "unsupported_stationary_or_floating_body": 5
+      },
+      "diagnostic_stationary_candidate_entity_ids": [
+        "-648:0",
+        "-666:0",
+        "-680:0",
+        "-696:0"
+      ],
+      "engine_evidence_record_count": 5,
+      "engine_evidence_sequences": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "physics_events_sha256": "3995d9a28dd4ddb1480e5c49321a3f5b3c5c58c3c1c6754a136996d760329901",
+      "physics_state_sha256": "f9861de049057b98ac2d8464740fde561985c8174556e61861ae4bf519304020",
+      "physics_violation_engine_evidence_sha256": "a59c93a9dd4170cbe6a189338d66102ac98bbe514fb0662653b13253add7c469",
+      "scenario_id": "baseline-type010101-level00001",
+      "shot_id": "shot_001",
+      "terminal_trace": {
+        "all_candidates_dynamic_simulated_under_gravity": true,
+        "all_candidates_position_identical_and_without_support": true,
+        "first_fixed_step": 1870,
+        "last_fixed_step": 1877,
+        "sample_count": 8,
+        "truncated": true,
+        "unavailable_present_false_entity_ids": [
+          "-632:0",
+          "-710:0"
+        ]
+      },
+      "unique_retained_raw_contacts": [
+        {
+          "contact_id": "contact:1776:-632:0|-646:-710:0|-722:0",
+          "entity_a_id": "-632:0",
+          "entity_b_id": "-710:0",
+          "separation": -0.0150003433
+        }
+      ],
+      "whole_capture_minimum_contact_separation": {
+        "observed": false,
+        "separation": null
+      }
+    },
+    {
+      "attempt_id": "collection-plan-attempt-v1:sha256:c95737d0c50464094433548624d2cd804ec3220719a6184c7d9a64ed2af3bdbb",
+      "capture_id": "capture-048a49257b14447dab34ecdade2a5910",
+      "current_unavailable_label_counts": {
+        "excess_penetration": 1,
+        "unsupported_stationary_or_floating_body": 5
+      },
+      "diagnostic_stationary_candidate_entity_ids": [
+        "-648:0",
+        "-666:0",
+        "-680:0",
+        "-696:0"
+      ],
+      "engine_evidence_record_count": 5,
+      "engine_evidence_sequences": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "physics_events_sha256": "70f04bdd9257b2534566fbe234fa0c9c85b3c64e3b738962b453491643ae0afa",
+      "physics_state_sha256": "479f1f034c680c720eaffce815b2b6fc20477b25a858a079835f545d128e398b",
+      "physics_violation_engine_evidence_sha256": "744afa224b0a78461173b0f1a03be479cb783979893cf08453d80c4a9bb03289",
+      "scenario_id": "baseline-type010101-level00001",
+      "shot_id": "shot_001",
+      "terminal_trace": {
+        "all_candidates_dynamic_simulated_under_gravity": true,
+        "all_candidates_position_identical_and_without_support": true,
+        "first_fixed_step": 1859,
+        "last_fixed_step": 1866,
+        "sample_count": 8,
+        "truncated": true,
+        "unavailable_present_false_entity_ids": [
+          "-632:0",
+          "-710:0"
+        ]
+      },
+      "unique_retained_raw_contacts": [
+        {
+          "contact_id": "contact:1764:-632:0|-646:-710:0|-722:0",
+          "entity_a_id": "-632:0",
+          "entity_b_id": "-710:0",
+          "separation": -0.0150003433
+        }
+      ],
+      "whole_capture_minimum_contact_separation": {
+        "observed": false,
+        "separation": null
+      }
+    },
+    {
+      "attempt_id": "collection-plan-attempt-v1:sha256:d8a9808a857249e20fde7550187b11ed402cc33ed652320d4bcd5f14a2a0f3e8",
+      "capture_id": "capture-c0614d22e62b49d8b10a0196c6c751cc",
+      "current_unavailable_label_counts": {
+        "excess_penetration": 1,
+        "unsupported_stationary_or_floating_body": 4
+      },
+      "diagnostic_stationary_candidate_entity_ids": [
+        "-648:0",
+        "-680:0",
+        "-694:0"
+      ],
+      "engine_evidence_record_count": 5,
+      "engine_evidence_sequences": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "physics_events_sha256": "05125c31953339661eb64f2540c11fe1d8410f349233c12103b7f10c938a833f",
+      "physics_state_sha256": "d50a22ea739a1f1ae207e2d67b38c63d2719665fd480f09eee2db8d3a413953e",
+      "physics_violation_engine_evidence_sha256": "309bf1ecc736ae9274076cb0f153b9dabf1c7ce8c35087447d468fcb1ed1b327",
+      "scenario_id": "baseline-type010101-level00026",
+      "shot_id": "shot_001",
+      "terminal_trace": {
+        "all_candidates_dynamic_simulated_under_gravity": true,
+        "all_candidates_position_identical_and_without_support": true,
+        "first_fixed_step": 1865,
+        "last_fixed_step": 1872,
+        "sample_count": 8,
+        "truncated": true,
+        "unavailable_present_false_entity_ids": [
+          "-632:0",
+          "-666:0"
+        ]
+      },
+      "unique_retained_raw_contacts": [
+        {
+          "contact_id": "contact:1770:-632:0|-646:-666:0|-678:0",
+          "entity_a_id": "-632:0",
+          "entity_b_id": "-666:0",
+          "separation": -0.00727007445
+        }
+      ],
+      "whole_capture_minimum_contact_separation": {
+        "observed": false,
+        "separation": null
+      }
+    }
+  ],
+  "excluded_labels": {
+    "illegal_contact": {
+      "disposition": "unavailable_no_accepted_legal_contact_ontology",
+      "production_capability": false,
+      "reason": "Issue #29 does not define or accept a legal-contact ontology; illegal_contact remains outside the v1 vocabulary."
+    }
+  },
+  "identity": "representative-physical-violation-adjudication-v1:sha256:42ec0e898476be42806eaf0a53677668d437d61d6c40d9e60621fb8d14cef639",
+  "labels": {
+    "excess_penetration": {
+      "case_coverage": {
+        "boundary": {
+          "observed_exact_threshold_count": 0,
+          "production_geometric_tolerance": 0,
+          "satisfied": false
+        },
+        "negative": {
+          "accepted_negative_rollout_count": 0,
+          "bounded_negative_cap": 0,
+          "satisfied": false
+        },
+        "positive": {
+          "authoritative_true_label_count": 0,
+          "diagnostic_negative_separation_contact_count": 4,
+          "observed_separation_range": [
+            -0.0150003433,
+            -0.00727007445
+          ],
+          "satisfied": false
+        },
+        "unavailable": {
+          "current_unavailable_label_count": 4,
+          "engine_evidence_records_with_unobserved_capture_minimum": 20,
+          "satisfied": true
+        }
+      },
+      "disposition": "rejected_insufficient_representative_evidence",
+      "downstream_policy": "retain tri-state unavailable labels; do not interpret a negative raw-contact separation as an accepted violation label",
+      "production_capability": false,
+      "reason": "All four accepted rollouts contain one diagnostic negative-separation collision contact, but the capture-wide engine minimum is unobserved in every evidence record and the pilot contains no accepted negative or exact-threshold case."
+    },
+    "unsupported_stationary_or_floating_body": {
+      "case_coverage": {
+        "boundary": {
+          "diagnostic_candidates_meeting_zero_motion_for_at_least_two_steps": 14,
+          "production_motion_tolerance": 0,
+          "production_stability_window": 2,
+          "satisfied": false
+        },
+        "negative": {
+          "accepted_supported_or_moving_candidate_count": 0,
+          "bounded_negative_cap": 0,
+          "satisfied": false
+        },
+        "positive": {
+          "authoritative_true_label_count": 0,
+          "diagnostic_stationary_unsupported_candidate_count": 14,
+          "satisfied": false
+        },
+        "unavailable": {
+          "current_unavailable_label_count": 18,
+          "pilot_physical_regime_gate_available": false,
+          "terminal_traces_truncated_count": 4,
+          "terminal_unavailable_present_false_label_count": 4,
+          "satisfied": true
+        }
+      },
+      "disposition": "rejected_insufficient_representative_evidence",
+      "downstream_policy": "retain tri-state unavailable labels; do not interpret terminal immobility without an accepted physical-regime gate",
+      "production_capability": false,
+      "reason": "Fourteen dynamic simulated entities under nonzero gravity are position-identical and have no support_v1 edge across eight terminal samples, but every trace is terminal and bounded, the pilot explicitly lacks a physical-regime gate, and no representative negative or threshold-boundary case exists."
+    }
+  },
+  "overall_disposition": "all_v1_labels_rejected_insufficient_representative_evidence",
+  "production_capability_declaration": {
+    "available_physical_violation_labels": [],
+    "enforcement": "physical_violation_derivation_v1 continues to emit null values with unavailable_no_declared_physical_regime_derivation; diagnostic engine facts remain capture context only.",
+    "excluded_physical_violation_labels": [
+      "excess_penetration",
+      "unsupported_stationary_or_floating_body",
+      "illegal_contact"
+    ]
+  },
+  "report_version": 1,
+  "schema": "representative_physical_violation_adjudication_v1",
+  "source_pilot_report": {
+    "identity": "representative-pilot-report-v3:sha256:3cadc97cbfc8dd4f8ca9f507e8080d9464564d952a1fe723a20df6c5e8750836",
+    "plan_identity": "collection-plan-v1:sha256:8e95f1085331ed47e6dff1d1d6319b39ca227d12983ef71fca89354fca847769",
+    "plan_version": 4,
+    "version_envelope": {
+      "archive_sha256": "301fe7dd8792ab4c8de318d7155133d00adb04a11a59a0601035f48638ff830c",
+      "generator_version": "novphy-legacy-xml-importer:1",
+      "player_sha256": "d74bf3f869525a6731b992e30e3beb62da14484c16a6e1ad7a0c73c30ff976fa",
+      "protocol_sha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a"
+    }
+  },
+  "source_production_plan": {
+    "identity": "production-parameter-plan-v1:sha256:caf33ef3c05a92c8508473c99d91a1f30ff69dca087eff5323d1085e9b439f78",
+    "parameters": {
+      "bounded_negative_cap": 0,
+      "capture_stride": 1,
+      "geometric_tolerance": 0,
+      "motion_tolerance": 0,
+      "numeric_tolerance": 0,
+      "rollout_ceiling": 4900,
+      "stability_window": 2
+    },
+    "plan_version": 1
+  }
+}
