@@ -3509,6 +3509,55 @@ class CollectRolloutsTest(unittest.TestCase):
         self.assertFalse(collect.call_args.kwargs["anchor_actions"])
         generate_actions.assert_not_called()
 
+    def test_main_requires_collection_plan_for_production_plan(self):
+        with TemporaryDirectory() as tmp:
+            args = [
+                "collect_rollouts.py",
+                "--output-dir",
+                tmp,
+                "--production-plan",
+                str(Path(tmp) / "production-plan.json"),
+            ]
+
+            stderr = io.StringIO()
+            with patch("sys.argv", args), redirect_stderr(stderr), self.assertRaises(SystemExit) as raised:
+                main()
+
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("--production-plan requires --collection-plan", stderr.getvalue())
+
+    def test_main_executes_collection_through_production_plan(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            plan_path = root / "collection-plan.json"
+            production_path = root / "production-plan.json"
+            output_path = root / "output"
+            args = [
+                "collect_rollouts.py",
+                "--output-dir",
+                str(output_path),
+                "--fresh-engine-per-rollout",
+                "--collection-plan",
+                str(plan_path),
+                "--production-plan",
+                str(production_path),
+            ]
+
+            with (
+                patch("sys.argv", args),
+                patch("scripts.collection_plan.load_collection_plan", return_value="loaded-plan"),
+                patch(
+                    "scripts.production_plan.execute_production_plan",
+                    return_value={"accepted_count": 1, "failed_count": 0, "rejected_count": 0},
+                ) as execute,
+            ):
+                main()
+
+        execute.assert_called_once()
+        self.assertEqual(execute.call_args.args[0], "loaded-plan")
+        self.assertEqual(execute.call_args.args[1], production_path)
+        self.assertEqual(execute.call_args.args[3], output_path)
+
     def test_main_requires_collection_plan_for_fresh_engine_collection(self):
         with TemporaryDirectory() as tmp:
             args = [

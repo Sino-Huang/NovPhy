@@ -2478,6 +2478,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--physics-archive-sha256")
     parser.add_argument("--fresh-engine-per-rollout", action="store_true")
     parser.add_argument("--collection-plan", type=Path)
+    parser.add_argument(
+        "--production-plan",
+        type=Path,
+        help="Require and bind the authoritative production parameter plan",
+    )
     parser.add_argument("--scenario-manifest", type=Path)
     parser.add_argument("--scenario-xml", type=Path)
     parser.add_argument(
@@ -2579,6 +2584,10 @@ def main() -> None:
 
     if args.collection_plan is not None and not args.fresh_engine_per_rollout:
         print("--collection-plan requires --fresh-engine-per-rollout", file=sys.stderr)
+        raise SystemExit(2)
+
+    if args.production_plan is not None and args.collection_plan is None:
+        print("--production-plan requires --collection-plan", file=sys.stderr)
         raise SystemExit(2)
 
     strict_physics_collection = args.physics_capture_v1 and args.fresh_engine_per_rollout
@@ -2732,7 +2741,17 @@ def main() -> None:
                 scenario_context_override=scenario_context_override,
             )
 
-        report = execute_collection_plan(loaded_plan, runtime, args.output_dir)
+        if args.production_plan is None:
+            report = execute_collection_plan(loaded_plan, runtime, args.output_dir)
+        else:
+            from scripts.production_plan import execute_production_plan
+
+            report = execute_production_plan(
+                loaded_plan,
+                args.production_plan,
+                runtime,
+                args.output_dir,
+            )
         print(
             json.dumps(
                 {
