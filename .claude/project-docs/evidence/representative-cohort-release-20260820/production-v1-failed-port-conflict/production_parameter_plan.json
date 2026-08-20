@@ -1,0 +1,118 @@
+{
+  "evidence": {
+    "bounded_negative_cap": {
+      "attempt_ids": [
+        "collection-plan-attempt-v1:sha256:16d43c5aa360a003b3e85744cb00a41b4a338dc9537764f3e1daf69a336a8684",
+        "collection-plan-attempt-v1:sha256:d8a9808a857249e20fde7550187b11ed402cc33ed652320d4bcd5f14a2a0f3e8",
+        "collection-plan-attempt-v1:sha256:7431b7ce718dc7cfc421b9c415bbe2d485a33cb2bbe0fe2755b61e470da7ecad",
+        "collection-plan-attempt-v1:sha256:c95737d0c50464094433548624d2cd804ec3220719a6184c7d9a64ed2af3bdbb"
+      ],
+      "derivation": "Carry forward the immutable pilot declaration exactly as bounded_negative_cap=0; no negative capability is claimed.",
+      "rationale": "Both accepted calibration scenarios prospectively declared negative cap 0, and the accepted pilot contains no negative intervention; observed plan range [0, 0]."
+    },
+    "capture": {
+      "capture_stride": {
+        "attempt_ids": [
+          "collection-plan-attempt-v1:sha256:16d43c5aa360a003b3e85744cb00a41b4a338dc9537764f3e1daf69a336a8684",
+          "collection-plan-attempt-v1:sha256:d8a9808a857249e20fde7550187b11ed402cc33ed652320d4bcd5f14a2a0f3e8",
+          "collection-plan-attempt-v1:sha256:7431b7ce718dc7cfc421b9c415bbe2d485a33cb2bbe0fe2755b61e470da7ecad",
+          "collection-plan-attempt-v1:sha256:c95737d0c50464094433548624d2cd804ec3220719a6184c7d9a64ed2af3bdbb"
+        ],
+        "derivation": "Freeze the smallest observed positive fixed-step separation, 1, as the prospective integer stride; production collection must enforce this declared stride rather than reproduce the pilot's FPS pacing.",
+        "rationale": "Across all four accepted shots, the state header and first retained state were one fixed step apart; later FPS-paced retained-state gaps ranged from 376 to 1251 fixed steps, so the pilot gives no support for safely skipping the adjacent step."
+      },
+      "rollout_ceiling": {
+        "attempt_ids": [
+          "collection-plan-attempt-v1:sha256:16d43c5aa360a003b3e85744cb00a41b4a338dc9537764f3e1daf69a336a8684",
+          "collection-plan-attempt-v1:sha256:d8a9808a857249e20fde7550187b11ed402cc33ed652320d4bcd5f14a2a0f3e8",
+          "collection-plan-attempt-v1:sha256:7431b7ce718dc7cfc421b9c415bbe2d485a33cb2bbe0fe2755b61e470da7ecad",
+          "collection-plan-attempt-v1:sha256:c95737d0c50464094433548624d2cd804ec3220719a6184c7d9a64ed2af3bdbb"
+        ],
+        "derivation": "Round the maximum accepted span 4880 upward to the next 100 fixed steps, yielding a prospective ceiling of 4900.",
+        "rationale": "Post-launch through terminal retained-state spans were 4852, 4867, 4880, and 4874 fixed steps; observed range [4852, 4880]."
+      },
+      "stability_window": {
+        "attempt_ids": [
+          "collection-plan-attempt-v1:sha256:16d43c5aa360a003b3e85744cb00a41b4a338dc9537764f3e1daf69a336a8684",
+          "collection-plan-attempt-v1:sha256:d8a9808a857249e20fde7550187b11ed402cc33ed652320d4bcd5f14a2a0f3e8",
+          "collection-plan-attempt-v1:sha256:7431b7ce718dc7cfc421b9c415bbe2d485a33cb2bbe0fe2755b61e470da7ecad",
+          "collection-plan-attempt-v1:sha256:c95737d0c50464094433548624d2cd804ec3220719a6184c7d9a64ed2af3bdbb"
+        ],
+        "derivation": "Freeze the sole observed engine debounce window, 2 fixed steps.",
+        "rationale": "Every stable_entered and stable_exited event in the four accepted shots declared debounce_fixed_steps=2; the observed range across twelve transitions was [2, 2]."
+      }
+    },
+    "prospective_quotas": {
+      "collision": {
+        "attempt_ids": [
+          "collection-plan-attempt-v1:sha256:16d43c5aa360a003b3e85744cb00a41b4a338dc9537764f3e1daf69a336a8684",
+          "collection-plan-attempt-v1:sha256:d8a9808a857249e20fde7550187b11ed402cc33ed652320d4bcd5f14a2a0f3e8",
+          "collection-plan-attempt-v1:sha256:7431b7ce718dc7cfc421b9c415bbe2d485a33cb2bbe0fe2755b61e470da7ecad",
+          "collection-plan-attempt-v1:sha256:c95737d0c50464094433548624d2cd804ec3220719a6184c7d9a64ed2af3bdbb"
+        ],
+        "derivation": "Freeze a prospective collision quota of 2 per scenario, preserving both accepted source paths.",
+        "rationale": "Each of the two calibration scenarios contributed two accepted collision interventions, one geometry_stratified and one targeted_rare; accepted per-scenario range [2, 2] with zero rejected attempts."
+      }
+    },
+    "tolerances": {
+      "geometric": {
+        "attempt_ids": [
+          "collection-plan-attempt-v1:sha256:16d43c5aa360a003b3e85744cb00a41b4a338dc9537764f3e1daf69a336a8684",
+          "collection-plan-attempt-v1:sha256:d8a9808a857249e20fde7550187b11ed402cc33ed652320d4bcd5f14a2a0f3e8",
+          "collection-plan-attempt-v1:sha256:7431b7ce718dc7cfc421b9c415bbe2d485a33cb2bbe0fe2755b61e470da7ecad",
+          "collection-plan-attempt-v1:sha256:c95737d0c50464094433548624d2cd804ec3220719a6184c7d9a64ed2af3bdbb"
+        ],
+        "derivation": "Freeze zero geometric slack because the accepted evidence establishes exact serialized geometry and does not justify a positive tolerance.",
+        "rationale": "All four accepted artifacts passed strict atomic geometry validation and checksum-bound derivation without an observed geometric discrepancy; observed accepted discrepancy range [0, 0]."
+      },
+      "motion": {
+        "attempt_ids": [
+          "collection-plan-attempt-v1:sha256:16d43c5aa360a003b3e85744cb00a41b4a338dc9537764f3e1daf69a336a8684",
+          "collection-plan-attempt-v1:sha256:d8a9808a857249e20fde7550187b11ed402cc33ed652320d4bcd5f14a2a0f3e8",
+          "collection-plan-attempt-v1:sha256:7431b7ce718dc7cfc421b9c415bbe2d485a33cb2bbe0fe2755b61e470da7ecad",
+          "collection-plan-attempt-v1:sha256:c95737d0c50464094433548624d2cd804ec3220719a6184c7d9a64ed2af3bdbb"
+        ],
+        "derivation": "Freeze zero motion slack because the accepted evidence establishes exact serialized kinematics and does not justify a positive tolerance.",
+        "rationale": "All four accepted artifacts passed strict motion/kinematics validation and checksum-bound derivation without an observed motion discrepancy; observed accepted discrepancy range [0, 0]."
+      },
+      "numeric": {
+        "attempt_ids": [
+          "collection-plan-attempt-v1:sha256:16d43c5aa360a003b3e85744cb00a41b4a338dc9537764f3e1daf69a336a8684",
+          "collection-plan-attempt-v1:sha256:d8a9808a857249e20fde7550187b11ed402cc33ed652320d4bcd5f14a2a0f3e8",
+          "collection-plan-attempt-v1:sha256:7431b7ce718dc7cfc421b9c415bbe2d485a33cb2bbe0fe2755b61e470da7ecad",
+          "collection-plan-attempt-v1:sha256:c95737d0c50464094433548624d2cd804ec3220719a6184c7d9a64ed2af3bdbb"
+        ],
+        "derivation": "Freeze zero generic numeric slack because no positive error bound is supported by the accepted evidence.",
+        "rationale": "All four accepted artifacts passed strict finite-number and identity-bound validation without an observed numeric mismatch; observed accepted mismatch range [0, 0]."
+      }
+    },
+    "transient_retry_counts": {}
+  },
+  "identity": "production-parameter-plan-v1:sha256:caf33ef3c05a92c8508473c99d91a1f30ff69dca087eff5323d1085e9b439f78",
+  "parameters": {
+    "bounded_negative_cap": 0,
+    "capture": {
+      "capture_stride": 1,
+      "rollout_ceiling": 4900,
+      "stability_window": 2
+    },
+    "prospective_quotas": {
+      "collision": 2
+    },
+    "tolerances": {
+      "geometric": 0,
+      "motion": 0,
+      "numeric": 0
+    },
+    "transient_retry_counts": {}
+  },
+  "plan_version": 1,
+  "schema": "production_parameter_plan_v1",
+  "source_collection_plan": {
+    "identity": "collection-plan-v1:sha256:8e95f1085331ed47e6dff1d1d6319b39ca227d12983ef71fca89354fca847769",
+    "plan_version": 4
+  },
+  "source_pilot_report": {
+    "identity": "representative-pilot-report-v3:sha256:3cadc97cbfc8dd4f8ca9f507e8080d9464564d952a1fe723a20df6c5e8750836"
+  }
+}

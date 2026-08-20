@@ -1,0 +1,35 @@
+{
+  "schema": "collection_attempt_failure_v1",
+  "attempt_id": "collection-plan-attempt-v1:sha256:c95737d0c50464094433548624d2cd804ec3220719a6184c7d9a64ed2af3bdbb",
+  "attempt_number": 1,
+  "expected_initial_engine_state_identity": "f51eff2fd8afd4d790502bd1a62b962cfc6b563db439d56c190a8715d4fd701b",
+  "action": {
+    "action_type": "drag_hold_release",
+    "coordinate_frame": "slingshot_relative",
+    "drag_release": [
+      -80,
+      7
+    ],
+    "drag_start": [
+      127,
+      223
+    ],
+    "frame_height": 480,
+    "releaseTime": 1000,
+    "socket_command": {
+      "releaseTime": 1000,
+      "tapTime": 0,
+      "x": 47,
+      "y": 263
+    },
+    "tapTime": 0
+  },
+  "status": "failed",
+  "reason": "[Errno 111] Connection refused",
+  "failure_code": "transport_unavailable",
+  "failure_class": "transient",
+  "retryable": true,
+  "retry_decision": "collection_plan",
+  "quarantine_path": ".claude/project-docs/evidence/representative-cohort-release-20260820/production-v1/quarantine/collection-plan-attempt-v1:sha256:c95737d0c50464094433548624d2cd804ec3220719a6184c7d9a64ed2af3bdbb",
+  "exception_type": "ConnectionRefusedError"
+}
