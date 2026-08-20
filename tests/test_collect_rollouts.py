@@ -3692,7 +3692,7 @@ class CollectRolloutsTest(unittest.TestCase):
 
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
-            for game_dir in (root / "baseline-runtime", root / "novel-runtime"):
+            for game_dir in (root / "baseline-runtime", root / "novel-runtime", root / "attempt-baseline-runtime", root / "attempt-novel-runtime"):
                 game_dir.mkdir()
                 (game_dir / "game_playing_interface.jar").write_bytes(b"jar")
             args = [
@@ -3712,6 +3712,12 @@ class CollectRolloutsTest(unittest.TestCase):
                 str(root / "novel.json"),
                 str(root / "novel.xml"),
                 str(root / "novel-runtime"),
+                "--attempt-input",
+                "attempt-baseline",
+                str(root / "attempt-baseline-runtime"),
+                "--attempt-input",
+                "attempt-novel",
+                str(root / "attempt-novel-runtime"),
             ]
 
             def execute_plan(loaded, runtime, output_root):
@@ -3754,7 +3760,7 @@ class CollectRolloutsTest(unittest.TestCase):
             ],
             [
                 (
-                    root / "baseline-runtime",
+                    root / "attempt-baseline-runtime",
                     None,
                     "baseline-manifest",
                     {
@@ -3775,7 +3781,7 @@ class CollectRolloutsTest(unittest.TestCase):
                     },
                 ),
                 (
-                    root / "novel-runtime",
+                    root / "attempt-novel-runtime",
                     None,
                     "novel-manifest",
                     {

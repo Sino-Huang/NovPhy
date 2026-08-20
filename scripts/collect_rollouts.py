@@ -2493,6 +2493,14 @@ def build_parser() -> argparse.ArgumentParser:
         metavar=("SCENARIO_ID", "MANIFEST", "XML", "GAME_DIR"),
         help="Bind one collection-plan scenario to its manifest, XML, and single-level game directory",
     )
+    parser.add_argument(
+        "--attempt-input",
+        action="append",
+        nargs=2,
+        default=[],
+        metavar=("ATTEMPT_ID", "GAME_DIR"),
+        help="Bind one collection-plan attempt to its disposable player directory",
+    )
     parser.add_argument("--ui-level", type=int, help="Visible level number to enter with xdotool for each fresh rollout")
     parser.add_argument("--ui-settle-seconds", type=float, default=5.0)
     parser.add_argument("--engine-settle-seconds", type=float, default=20.0)
@@ -2632,6 +2640,16 @@ def main() -> None:
             print(f"Cannot load --scenario-input {scenario_id}: {error}", file=sys.stderr)
             raise SystemExit(2) from None
         scenario_inputs[scenario_id] = (manifest, scenario_game_dir)
+    attempt_inputs: dict[str, Path] = {}
+    for attempt_id, game_dir in args.attempt_input:
+        attempt_game_dir = Path(game_dir)
+        if not attempt_id or attempt_id in attempt_inputs:
+            print("--attempt-input attempt IDs must be nonempty and unique", file=sys.stderr)
+            raise SystemExit(2)
+        if not (attempt_game_dir / "game_playing_interface.jar").is_file():
+            print(f"Cannot load --attempt-input {attempt_id}: GAME_DIR does not contain game_playing_interface.jar", file=sys.stderr)
+            raise SystemExit(2)
+        attempt_inputs[attempt_id] = attempt_game_dir
     if args.fresh_engine_per_rollout and args.collection_plan is None:
         print("--fresh-engine-per-rollout requires --collection-plan", file=sys.stderr)
         raise SystemExit(2)
@@ -2684,6 +2702,11 @@ def main() -> None:
             if scenario_inputs:
                 selected_manifest, selected_game_dir = scenario_inputs[request.scenario_id]
                 selected_ui_level = None
+            if attempt_inputs:
+                try:
+                    selected_game_dir = attempt_inputs[request.attempt_id]
+                except KeyError as error:
+                    raise ValueError(f"No --attempt-input for planned attempt {request.attempt_id}") from error
             scenario_context_override = None
             if selected_manifest is not None:
                 scenario_context_override = {
