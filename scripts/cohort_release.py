@@ -137,6 +137,25 @@ def _quality(root: Path, report: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def _prior_history(release_root: Path, sources: Mapping[str, Path]) -> list[dict[str, Any]]:
+    history = []
+    for name, source in sorted(sources.items()):
+        data = _load(Path(source), "prior execution report")
+        copied = _copy(Path(source), release_root / "prior_executions" / f"{name}.json")
+        history.append({
+            "name": name,
+            "schema": data.get("schema"),
+            "path": copied.relative_to(release_root).as_posix(),
+            "sha256": _digest(copied),
+            "attempt_count": len(data.get("attempt_ledger", [])),
+            "accepted_count": data.get("accepted_count", 0),
+            "rejected_count": data.get("rejected_count", 0),
+            "failed_count": data.get("failed_count", 1 if data.get("status") == "failed" else 0),
+            "quarantined_count": data.get("quarantined_count", 0),
+        })
+    return history
+
+
 def _derivations(root: Path, release_root: Path, release_id: str, rollouts: Sequence[Mapping[str, Any]], available: Mapping[str, str], unavailable: Mapping[str, str]) -> tuple[Path, dict[str, Any]]:
     artifacts = []
     for rollout in rollouts:
@@ -161,7 +180,7 @@ def _derivations(root: Path, release_root: Path, release_id: str, rollouts: Sequ
     return _write(path, payload), payload
 
 
-def publish_cohort_release(output_dir: Path, *, partition_manifest_path: Path, scenario_manifest_paths: Mapping[str, Path], release_version: int, code_revision: str, available_capabilities: Mapping[str, str], unavailable_capabilities: Mapping[str, str]) -> Path:
+def publish_cohort_release(output_dir: Path, *, partition_manifest_path: Path, scenario_manifest_paths: Mapping[str, Path], release_version: int, code_revision: str, available_capabilities: Mapping[str, str], unavailable_capabilities: Mapping[str, str], prior_execution_paths: Mapping[str, Path] | None = None) -> Path:
     if isinstance(release_version, bool) or not isinstance(release_version, int) or release_version <= 0 or not code_revision:
         raise ValueError("Release version and code revision are required")
     root = Path(output_dir).resolve()
@@ -187,6 +206,7 @@ def publish_cohort_release(output_dir: Path, *, partition_manifest_path: Path, s
         scenarios.append({"scenario_id": scenario.scenario_id, "scenario_lineage_identity": scenario.scenario_manifest_projection["scenario_lineage_identity"], "path": copied.relative_to(release_root).as_posix(), "sha256": _digest(copied)})
 
     quality = _quality(root, report)
+    quality["prior_executions"] = _prior_history(release_root, prior_execution_paths or {})
     quality_path = _write(release_root / "production_quality_report.json", quality)
     rollouts = []
     for entry in report["attempt_ledger"]:
@@ -250,9 +270,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--code-revision", required=True)
     parser.add_argument("--available-capability", action="append", default=[])
     parser.add_argument("--unavailable-capability", action="append", default=[])
+    parser.add_argument("--prior-execution", action="append", default=[], metavar="NAME=PATH")
     args = parser.parse_args(argv)
     try:
-        path = publish_cohort_release(args.output_dir, partition_manifest_path=args.partition_manifest, scenario_manifest_paths={key: Path(value) for key, value in _pairs(args.scenario_manifest, "--scenario-manifest").items()}, release_version=args.release_version, code_revision=args.code_revision, available_capabilities=_pairs(args.available_capability, "--available-capability"), unavailable_capabilities=_pairs(args.unavailable_capability, "--unavailable-capability"))
+        path = publish_cohort_release(args.output_dir, partition_manifest_path=args.partition_manifest, scenario_manifest_paths={key: Path(value) for key, value in _pairs(args.scenario_manifest, "--scenario-manifest").items()}, release_version=args.release_version, code_revision=args.code_revision, available_capabilities=_pairs(args.available_capability, "--available-capability"), unavailable_capabilities=_pairs(args.unavailable_capability, "--unavailable-capability"), prior_execution_paths={key: Path(value) for key, value in _pairs(args.prior_execution, "--prior-execution").items()})
         publication = verify_cohort_publication(path)
     except (OSError, ValueError) as error:
         print(str(error), file=os.sys.stderr)

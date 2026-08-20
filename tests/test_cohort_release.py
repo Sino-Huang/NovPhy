@@ -38,6 +38,7 @@ class CohortReleaseTests(unittest.TestCase):
                 code_revision="fixture-revision",
                 available_capabilities={"physics_capture_v1": "1", "support_v1": "1"},
                 unavailable_capabilities={"material_identity": "not exported"},
+                prior_execution_paths={"pilot-failure": EVIDENCE / "collection-v1-failed" / "collection_plan_report.json"},
             )
 
             publication = verify_cohort_publication(publication_path)
@@ -47,6 +48,7 @@ class CohortReleaseTests(unittest.TestCase):
 
             self.assertEqual(len(release["primary_rollouts"]), 4)
             self.assertEqual(quality["counts"], {"accepted": 4, "failed": 0, "quarantined": 0, "rejected": 0})
+            self.assertEqual(quality["prior_executions"][0]["attempt_count"], 4)
             self.assertEqual(derivations["source_cohort_release_identity"], release["identity"])
             self.assertEqual(len(derivations["artifacts"]), 8)
             self.assertEqual(derivations["unavailable_capabilities"]["material_identity"], "not exported")
