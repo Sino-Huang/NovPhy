@@ -2290,6 +2290,32 @@ class CurriculumPolicyTests(unittest.TestCase):
                     with self.assertRaises(CurriculumBindingMismatchError):
                         mismatched_policy.validate_resume(state)
 
+    def test_resume_rejects_catalog_identity_drift_and_accepts_matching_identity(self):
+        from world_model.data.curriculum import (  # noqa: PLC0415
+            CurriculumBindingMismatchError,
+            CurriculumPolicy,
+        )
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            cohort_a = _build_catalog_from_fixture(
+                root / "cohort-a", frame_count=9, shot_count=1
+            )
+            cohort_b = _build_catalog_from_fixture(
+                root / "cohort-b", frame_count=9, shot_count=1
+            )
+            schedule = self._schedule()
+            source_policy = CurriculumPolicy(cohort_a, schedule, sampler_seed=17)
+            matching_policy = CurriculumPolicy(cohort_a, schedule, sampler_seed=17)
+            drifted_policy = CurriculumPolicy(cohort_b, schedule, sampler_seed=17)
+            state = source_policy.state(global_step=3, total_steps=9)
+
+            matching_policy.validate_resume(state)
+            with self.assertRaisesRegex(
+                CurriculumBindingMismatchError, "catalog_identity"
+            ):
+                drifted_policy.validate_resume(state)
+
     def test_identical_resume_binding_yields_identical_candidate_ids(self):
         """Candidate ordering is reproducible from the catalog, schedule, and seed alone."""
         from world_model.data.curriculum import CurriculumPolicy  # noqa: PLC0415

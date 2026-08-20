@@ -1,58 +1,140 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://novphy.org/data-contracts/best_pair_labels_v1.schema.json",
-  "title": "NovPhy auditable best-pair sweep artifact",
+  "title": "NovPhy exhaustive_pair_scores_v1 manifest",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "artifact_type", "source_digest", "checkpoint_digest", "catalog_digest", "grid_digest", "score_digest", "partition_digest", "state_count", "shard_size", "evaluated_alpha", "excluded_abstractions", "shards"],
+  "$comment": "The runtime validator additionally requires state_ids to be sorted, to equal the exact state_id membership found in all shards, and to produce state_set_identity for the declared catalog and partition.",
+  "required": [
+    "catalog_identity",
+    "checkpoint_identity",
+    "checkpoint_path",
+    "config_identity",
+    "error_scale",
+    "label_partitions",
+    "partition_identity",
+    "schema_version",
+    "score_count",
+    "shard_size",
+    "shards",
+    "state_count",
+    "state_ids",
+    "state_set_identity"
+  ],
   "properties": {
-    "schema_version": {"const": "best_pair_labels_v1"},
-    "artifact_type": {"const": "best_pair_sweep"},
-    "source_digest": {"$ref": "#/$defs/digest"},
-    "checkpoint_digest": {"$ref": "#/$defs/digest"},
-    "catalog_digest": {"$ref": "#/$defs/digest"},
-    "grid_digest": {"$ref": "#/$defs/digest"},
-    "score_digest": {"$ref": "#/$defs/digest"},
-    "partition_digest": {"$ref": "#/$defs/digest"},
-    "state_count": {"type": "integer", "minimum": 4096, "multipleOf": 4096},
-    "shard_size": {"const": 4096},
-    "evaluated_alpha": {"const": "continuous"},
-    "excluded_abstractions": {"const": [{"alpha": "micro", "reason": "symbolic_supervision_unavailable"}, {"alpha": "macro", "reason": "symbolic_supervision_unavailable"}]},
-    "shards": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/shard"}}
+    "catalog_identity": { "$ref": "#/$defs/identity" },
+    "checkpoint_identity": { "$ref": "#/$defs/identity" },
+    "checkpoint_path": { "type": "string", "minLength": 1 },
+    "config_identity": { "$ref": "#/$defs/identity" },
+    "error_scale": { "type": "number", "exclusiveMinimum": 0 },
+    "label_partitions": { "const": ["controller-train", "evaluation"] },
+    "partition_identity": { "$ref": "#/$defs/identity" },
+    "schema_version": { "const": "exhaustive_pair_scores_v1" },
+    "score_count": { "type": "integer", "minimum": 1 },
+    "shard_size": { "type": "integer", "minimum": 1 },
+    "shards": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/shard" }
+    },
+    "state_count": { "type": "integer", "minimum": 1 },
+    "state_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/identity" }
+    },
+    "state_set_identity": { "$ref": "#/$defs/identity" }
   },
   "$defs": {
-    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "identity": {
+      "type": "string",
+      "minLength": 1
+    },
     "shard": {
-      "type": "object", "additionalProperties": false,
-      "required": ["name", "state_count", "sha256"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "state_count"],
       "properties": {
-        "name": {"type": "string", "pattern": "^shard-[0-9]{6}\\.jsonl$"},
-        "state_count": {"const": 4096},
-        "sha256": {"$ref": "#/$defs/digest"}
+        "name": {
+          "type": "string",
+          "pattern": "^label_shards/(calibration|controller-train|evaluation)/shard-[0-9]{6}\\.jsonl$"
+        },
+        "state_count": { "type": "integer", "minimum": 1 }
       }
     },
     "metric": {
-      "type": "object", "additionalProperties": false,
-      "required": ["alpha", "availability", "compute_cost", "delta", "effective_delta", "requested_delta", "weighted_error"],
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "alpha",
+        "compute_cost",
+        "delta",
+        "duration_weight",
+        "effective_delta",
+        "latent_mse",
+        "requested_delta",
+        "weighted_error"
+      ],
       "properties": {
-        "alpha": {"const": "continuous"}, "availability": {"enum": ["available", "unavailable"]},
-        "compute_cost": {"type": "number", "finite": true, "minimum": 0}, "delta": {"type": "integer", "minimum": 1},
-        "effective_delta": {"type": "integer", "minimum": 1}, "requested_delta": {"type": "integer", "minimum": 1},
-        "weighted_error": {"type": "number", "finite": true, "minimum": 0}
+        "alpha": { "const": "continuous" },
+        "compute_cost": { "type": "number", "minimum": 0 },
+        "delta": { "enum": [1, 5, 15] },
+        "duration_weight": { "type": "number", "minimum": 0 },
+        "effective_delta": { "type": "integer", "minimum": 1 },
+        "latent_mse": { "type": "number", "minimum": 0 },
+        "requested_delta": { "type": "integer", "minimum": 1 },
+        "weighted_error": { "type": "number", "minimum": 0 }
       }
     },
-    "state": {
-      "type": "object", "additionalProperties": false,
-      "required": ["record_type", "schema_version", "state_index", "temporal_ceiling", "metrics", "pareto_points", "selected"],
+    "sensitivity_selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lambda_cost", "selected_delta"],
       "properties": {
-        "record_type": {"const": "state"}, "schema_version": {"const": "best_pair_labels_v1"},
-        "state_index": {"type": "integer", "minimum": 0}, "temporal_ceiling": {"type": "integer", "minimum": 1},
-        "metrics": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/metric"}},
-        "pareto_points": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["compute_cost", "delta", "weighted_error"], "properties": {"compute_cost": {"type": "number", "minimum": 0}, "delta": {"type": "integer", "minimum": 1}, "weighted_error": {"type": "number", "minimum": 0}}}},
-        "selected": {"type": "object", "additionalProperties": false, "required": ["alpha", "delta"], "properties": {"alpha": {"const": "continuous"}, "delta": {"type": "integer", "minimum": 1}}}
+        "lambda_cost": { "enum": [0.0, 0.25, 1.0, 4.0] },
+        "selected_delta": { "enum": [1, 5, 15] }
       }
     },
-    "shard_header": {"type": "object", "additionalProperties": false, "required": ["record_type", "schema_version", "shard_size", "evaluated_alpha", "excluded_abstractions", "state_count"], "properties": {"record_type": {"const": "shard_header"}, "schema_version": {"const": "best_pair_labels_v1"}, "shard_size": {"const": 4096}, "evaluated_alpha": {"const": "continuous"}, "excluded_abstractions": {"const": [{"alpha": "micro", "reason": "symbolic_supervision_unavailable"}, {"alpha": "macro", "reason": "symbolic_supervision_unavailable"}]}, "state_count": {"const": 4096}}},
-    "shard_footer": {"type": "object", "additionalProperties": false, "required": ["record_type", "schema_version", "state_count", "state_digest"], "properties": {"record_type": {"const": "shard_footer"}, "schema_version": {"const": "best_pair_labels_v1"}, "state_count": {"const": 4096}, "state_digest": {"$ref": "#/$defs/digest"}}}
+    "state_score": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "context_position",
+        "frame_count",
+        "metrics",
+        "motion_regime",
+        "partition",
+        "primary_objective",
+        "record_type",
+        "schema_version",
+        "selected_delta",
+        "sensitivity",
+        "state_id"
+      ],
+      "properties": {
+        "context_position": { "type": "integer", "minimum": 0 },
+        "frame_count": { "type": "integer", "minimum": 2 },
+        "metrics": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/metric" }
+        },
+        "motion_regime": { "enum": ["quiescent", "transitional", "high_motion"] },
+        "partition": { "enum": ["calibration", "controller-train", "evaluation"] },
+        "primary_objective": { "type": "number" },
+        "record_type": { "const": "state_score" },
+        "schema_version": { "const": "exhaustive_pair_scores_v1" },
+        "selected_delta": { "enum": [1, 5, 15] },
+        "sensitivity": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": { "$ref": "#/$defs/sensitivity_selection" }
+        },
+        "state_id": { "$ref": "#/$defs/identity" }
+      }
+    }
   }
 }

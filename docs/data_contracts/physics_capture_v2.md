@@ -75,12 +75,13 @@ overflow is a typed whole-capture failure and never a truncation.
 ## Exporter capability report
 
 `physics_capture_v2_exporter_capability_report_v1` is a prospective report
-format for actual Unity exporter probes. It binds exact engine, player,
-protocol, and exporter-code SHA-256 identities to the captures it inspected.
+format for actual Unity exporter probes. Its provenance declares nonempty
+`engine_version`, `player_version`, `protocol_version`, and `exporter_version`
+strings for the captures it inspected.
 It requires non-fixture `unity_exporter_probe` records for no-contact,
 collision, support, support-change, and stable-terminal behavior, spanning at
 least two non-final scenario lineages, two level instances, and two scenario
-templates. Each required fact is either demonstrated by a cited capture digest
+templates. Each required fact is either demonstrated by a cited `capture_id`
 or explicitly unavailable. Report validation only verifies this accounting
 contract; it is not pilot acceptance and cannot make a semantic label
 accepted.

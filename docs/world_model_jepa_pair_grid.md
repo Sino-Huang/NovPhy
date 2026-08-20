@@ -9,11 +9,11 @@ symbol supervision.
 
 ## Data and partitions
 
-The dev catalog is built in a fresh process from the legacy RGB root. Its
-identity is catalog digest
-`8265809a528e41eaae646cb1cae9d577d7f34fd99b85b859bb14f07a479c6beb`, with 463
-accepted episodes, 5,556 shots, 562,515 frames, and 1,137 rejected
-`missing_artifact` episodes. Episodes are deterministically partitioned into
+The dev catalog is built in a fresh process from the legacy RGB root. Its plain
+`episode-catalog-v1` identity serializes the declared cohort, collection-plan,
+split, and capture-contract fields. The catalog has 463 accepted episodes, 5,556
+shots, 562,515 frames, and 1,137 rejected `missing_artifact` episodes. Episodes
+are deterministically partitioned into
 `controller-train`, `calibration`, and `evaluation`. Motion regimes are
 calibrated from target-aware delta-15 shot motion using deterministic P50/P90
 thresholds; the calibration metadata and exact assignments are serialized in
@@ -23,18 +23,16 @@ the sweep manifest.
 
 Both fresh CUDA runs use seed `20260807`, 3,600 updates, batch size 64, learning
 rate `3e-4`, weight decay `0.05`, warmup `0`, gradient clipping `1.0`, EMA base
-momentum `0.996`, device `cuda`, and the approved grid above. The matching
-experiment digests are:
-
-| Field | Digest |
-|---|---|
-| config | `de9197990222350d9e0413d83f7dbe0f8e263d071cb13707fd80a055a1e80e38` |
-| grid | `fa8035ba918f885c1e8e4e505b25086fd2e260673862c48ea9b98491747075dc` |
-| run identity | `6b1d5b18fd45175ad3a6a03f31d80b2ffdf4c624d1493ce14bc67dd05fd403b9` |
+momentum `0.996`, device `cuda`, and the approved grid above. Artifacts use plain
+declared identities: the config identity serializes those Phase-A fields and the
+grid identity; the grid identity serializes the grid version, approved deltas,
+continuous abstraction, and exclusions; and the real-run identity serializes
+the catalog, config, grid, and model-config identities.
 
 Each run records exactly 1,200 updates per delta and exactly 400 updates per
-`(delta,motion_regime)` key. Checkpoint bytes are hash-bound and the checkpoint
-metadata binds the catalog and run identity.
+`(delta,motion_regime)` key. The checkpoint identity is declared from the run
+identity and completed step; checkpoint metadata binds config, grid, catalog,
+run, and model-config identities.
 
 ## Scoring contract
 
@@ -50,9 +48,10 @@ occurred. Training windows remain strict and never use this scoring-only clamp.
 
 The score artifact root contains canonical atomic shards, `per_pair_metrics`, a
 temporal oracle ceiling, and `unavailable_metrics`. Fresh validation checks all
-partitions, state/score counts, canonical state digest, checkpoint/catalog/
-config provenance, terminal metadata, finite numeric values, and the explicit
-unavailability records before frontier publication.
+partitions, state/score counts, the state-set identity recomputed from sorted
+state identities, checkpoint/catalog/config/partition bindings, terminal
+metadata, finite numeric values, and the explicit unavailability records before
+frontier publication.
 
 ## Claim boundary
 

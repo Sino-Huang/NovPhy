@@ -208,7 +208,9 @@ class CurriculumPolicy:
     def validate_resume(self, state: CurriculumState) -> None:
         active_stage = self._schedule.active_stage(state.global_step, state.total_steps)
         bindings = (
+            ("catalog_identity", state.catalog_identity, self._catalog_identity),
             ("schedule_version", state.schedule_version, self._schedule.version),
+            ("schedule_identity", state.schedule_identity, self._schedule.identity),
             ("sampler_seed", state.sampler_seed, self._sampler_seed),
             ("active_stage_name", state.active_stage_name, active_stage.name),
         )

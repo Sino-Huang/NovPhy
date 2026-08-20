@@ -8,7 +8,7 @@ before scenario collection. The standard-library implementation is `scripts/scen
 
 ## Artifact pairing
 
-A canonical sidecar is adjacent to its XML and replaces `.xml` with `.scenario.json`. Loading a sidecar with `load_manifest(manifest_path, xml_path)` validates both its identity graph and the exact XML bytes. A stale identity, missing required field, malformed graph, or changed XML fails closed.
+A canonical sidecar is adjacent to its XML and replaces `.xml` with `.scenario.json`. Loading a sidecar with `load_manifest(manifest_path, xml_path)` validates the manifest's closed record shape, generation/import mode consistency, nonempty declared identities, research-eligibility fields, and XML parseability. Identities are carried as declared provenance strings; loading does not re-derive them from file bytes.
 
 Planner discovery validates an adjacent sidecar. XML without a sidecar is represented in memory through the legacy importer as `legacy_static`; it is never assigned a generator, generator version, generation seed, parameter realization, or available template identity that cannot be proven.
 
@@ -20,25 +20,25 @@ The manifest contains these immutable records:
 - `scenario_template`: an identity with `available` evidence, or an explicit `unavailable` state.
 - `generation`: `generated` or `legacy_static` provenance. Generated records include generator identity/version, generation seed, declared inputs, and deterministic parameter realization. Legacy records include importer identity/version and source path.
 - `level_instance`, `scenario_specification`, and `scenario_lineage`: the derived canonical identity hierarchy.
-- `declared_initial_engine_state`: the versioned identity of the complete XML tree the engine is instructed to load.
+- `declared_initial_engine_state`: the versioned identity declared from the level-instance identity; supplied XML is parse-validated only.
 - `research_eligibility`: `research_eligible` or `smoke_only`, with a required reason for `smoke_only`.
 
 ## Canonicalization and identities
 
-JSON identity inputs use UTF-8 JSON with sorted keys, no insignificant whitespace, and no non-finite numbers. XML declared-state projection preserves root and child order, every element tag, every attribute sorted by name, non-whitespace text, and unknown elements/attributes. Formatting-only indentation is not engine state.
+Structured identity keys use UTF-8 JSON with sorted keys, no insignificant whitespace, and no non-finite numbers. `_identity(namespace, *keys)` converts structured keys to that compact JSON, converts `None` to `none`, percent-quotes each value with `safe="-._~"`, and joins the namespace and keys with `:`. XML declared-state projection separately preserves root and child order, every element tag, every attribute sorted by name, non-whitespace text, and unknown elements/attributes. Formatting-only indentation is not engine state.
 
-The identities are SHA-256 namespaced values derived in order:
+Producers declare these semantic identity strings:
 
-1. benchmark condition from its declared pair;
-2. declaration from benchmark identity, template evidence, and all generation/import provenance;
-3. level instance from benchmark identity, template evidence, and declaration identity;
-4. scenario specification from level-instance identity plus exact XML-byte content identity;
-5. scenario lineage from scenario-specification identity;
-6. declared initial engine state from the versioned complete XML projection.
+1. `benchmark-condition-v1:<novelty-level>:<novelty-type>`;
+2. `scenario-declaration-v1:<benchmark-identity>:<template-identity-or-availability>:<mode>:<generator-or-importer>:<version>:<seed-or-none>:<declared-inputs-or-source-path>`;
+3. `level-instance-v1:<quoted-scenario-declaration-identity>`;
+4. `scenario-content-v1:<quoted-level-instance-identity>` and `scenario-specification-v1:<quoted-level-instance-identity>`;
+5. `scenario-lineage-v1:<quoted-scenario-specification-identity>`;
+6. `declared-initial-engine-state-v1:<quoted-level-instance-identity>`.
 
-The raw XML content identity and declared-state projection identity are intentionally distinct. Exact byte drift is detected even when the parsed tree would be equivalent. Conversely, changing a generator version, seed, template identity, benchmark condition, or declared input changes the declaration, level-instance, specification, and lineage identities even if the resulting XML bytes happen to match.
+The current `scenario-content-v1` identity is a declared binding to the level-instance identity; it is not an XML-byte fingerprint. XML bytes remain the level artifact and must be parseable when supplied to `load_manifest()` or `verify_replay()`, but consumers do not recompute an identity from those bytes. Generator/importer identity and version, seed, template evidence, benchmark condition, and declared inputs or legacy source path are the semantic keys used by the producer's declaration format.
 
-The staged legacy `type2` XML historically declares UTF-16 while containing UTF-8 bytes. Its exact bytes remain authoritative for content identity; only the declared-state parser normalizes that known declaration mismatch so the existing engine-tolerated tree can be projected.
+The staged legacy `type2` XML historically declares UTF-16 while containing UTF-8 bytes. The declared-state parser normalizes that known declaration mismatch so the existing engine-tolerated tree can be projected; the semantic identities remain those declared by the legacy importer provenance.
 
 ## Deterministic level-instance materialization and replay
 
@@ -46,7 +46,7 @@ The staged legacy `type2` XML historically declares UTF-16 while containing UTF-
 
 The `scenario_parameter_realization_v1` record contains the complete canonical declared initial engine state after generation. It therefore captures every realized distraction count, type, material, position, transformed object, and retained unknown XML field without depending on an incomplete log of random draws.
 
-A successful replay has the same XML bytes, complete parameter realization, level-instance identity, scenario-specification identity, scenario-lineage identity, and declared initial-engine-state identity for the same generator version, template, benchmark condition, seed, and declared inputs. `verify_replay()` checks replayed XML against an existing manifest. This contract covers the declared XML loaded by the engine; observed pre-intervention reset equality and runtime-state clearing belong to the rollout reset contract, not `scenario_manifest_v1`.
+A deterministic materialization is expected to reproduce the same XML bytes and parameter realization for the same generator version, template, benchmark condition, seed, and declared inputs. `verify_replay()` currently validates the existing manifest and confirms that the replayed XML is parseable; it does not recompute or compare the manifest's declared identities from those bytes. Observed pre-intervention reset equality and runtime-state clearing belong to the rollout reset contract, not `scenario_manifest_v1`.
 
 ## Planning and admission
 

@@ -103,7 +103,7 @@ plan-backed novelty level, scenario/type, or normalized start-frame range.
 Source filters fail closed when plan provenance is unavailable.
 
 `CurriculumState` records `global_step`, `total_steps`, `schedule_version`,
-`schedule_digest`, `catalog_digest`, `sampler_seed`, and `active_stage_name`.
+`schedule_identity`, `catalog_identity`, `sampler_seed`, and `active_stage_name`.
 Resume through `CurriculumPolicy.validate_resume(state)` before rebuilding the
 candidate view. Any catalog, schedule, seed, step binding, or stage drift is
 rejected instead of silently selecting different samples.
@@ -115,16 +115,15 @@ The named presets are `fixed_short`, `fixed_long`, `temporal_uniform`, and
 the representation remains continuous. A `TemporalAblationManifest` records:
 
 - `preset_name` and `preset_identity`;
-- `catalog_digest`, `schedule_version`, `schedule_digest`, and
+- `catalog_identity`, `schedule_version`, `schedule_identity`, and
   `active_stage_name`;
-- `sampling_seed`, `sampled_provenance_digest`, and `draw_count`;
+- `sampling_seed`, the declared `sampled_provenance` pairs, and `draw_count`;
 - `cost_rule_identity`;
 - `prediction_steps_distribution`, `stride_frames_distribution`, and
   `horizon_frames_distribution`;
 - `total_prediction_steps` and `effective_prediction_steps`;
 - `total_base_window_cost`, `total_predicted_frame_cost`,
-  `temporal_controller_cost`, and `computed_budget_total`;
-- the canonical manifest `digest`.
+  `temporal_controller_cost`, and `computed_budget_total`.
 
 The non-learned temporal policies report temporal-controller cost as zero.
 `sample_matched` means draw count and cost-rule identity are equal.

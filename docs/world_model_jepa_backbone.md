@@ -34,7 +34,7 @@ is the point — but a symbol decode is never *inside* a rollout step.
 
 | Module | What it is |
 |---|---|
-| `world_model/model/config.py` | Validated, digestable configuration; `Abstraction`, `PredictionPair`, `EncoderConfig`, `PredictorConfig`, `JepaConfig` |
+| `world_model/model/config.py` | Validated, identity-bearing configuration; `Abstraction`, `PredictionPair`, `EncoderConfig`, `PredictorConfig`, `JepaConfig` |
 | `world_model/model/encoder.py` | `ContextEncoder` + `build_encoder()` registry |
 | `world_model/model/ema.py` | `EmaTargetEncoder` — deep-copied, no-grad, cosine momentum ramp |
 | `world_model/model/predictor.py` | `PairConditioner`, `FiLMBlock`, `DualOutputPredictor`, `PredictorOutput` |
@@ -151,21 +151,21 @@ the action pathway is well trained.
 
 ## Reproducibility
 
-`RunManifest` is written to `<output-dir>/<run-id>/manifest.json`.  Its `digest`
-covers seed, git commit and dirty flag, torch/CUDA/device identity, dataset root
-and split, **catalog digest**, sampled-window-index digest, model-config digest,
-optimizer settings, and the final metrics.
+`RunManifest` is written to `<output-dir>/<run-id>/manifest.json`. Its `identity`
+is a plain namespaced serialization of the declared experiment fields: seed,
+git revision and dirty flag, torch/CUDA/device declarations, dataset root and
+split, `catalog_identity`, `sampled_index_identity`, `model_config_identity`,
+window selection, symbolic-loss status, and optimizer settings.
 
-The digest identifies the **experiment, not its outcome**. It deliberately
-excludes wall-clock timing, the timestamped `run_id`, and **the measured
-metrics**: CUDA float reductions are not bitwise reproducible across processes,
-so two runs of the same experiment differ around the 5th significant digit
-(measured: final loss 3.9308e-08 vs 3.9300e-08). A digest over outcomes could
-never match, which would defeat the purpose. Compare `digest` for experiment
-identity; compare the metrics numerically with a tolerance.
+The identity names the **experiment, not its outcome**. It deliberately excludes
+wall-clock timing, the timestamped `run_id`, and **the measured metrics**: CUDA
+float reductions are not bitwise reproducible across processes, so two runs of
+the same experiment differ around the 5th significant digit (measured: final
+loss 3.9308e-08 vs 3.9300e-08). Compare `identity` for exact experiment identity;
+compare the metrics numerically with a tolerance.
 
-`world_model.data.catalog_digest(catalog)` is the public entry point for the
-catalog's identity.
+`world_model.data.catalog_identity(catalog)` is the public entry point for the
+catalog's plain declared provenance identity.
 
 ## Overfit acceptance
 
@@ -239,9 +239,8 @@ retrieval_acc     1.000         (8/8)
 acceptance        pass
 ```
 
-Two runs at the same seed produced **identical manifest digests**
-(`6029c6e7…`), with zero differing configuration fields and metrics agreeing to
-~2e-04 relative.
+Two runs at the same seed produced **identical manifest identities**, with zero
+differing configuration fields and metrics agreeing to ~2e-04 relative.
 
 A 200-step `--mode train` smoke over 12,800 distinct dev windows ran without
 stalling: loss 0.356163 → 0.000134. That is a stability smoke, not a training
@@ -256,7 +255,7 @@ python scripts/train_jepa_backbone.py --mode overfit --split dev \
     --seed 20260807 --steps 1500 --window-count 8 --delta 4 \
     --candidate-count 4096 --output-dir runs
 
-# Reproducibility: same seed, second directory, digests must match
+# Reproducibility: same seed, second directory, identities must match
 python scripts/train_jepa_backbone.py --mode overfit --split dev \
     --seed 20260807 --steps 1500 --window-count 8 --delta 4 \
     --candidate-count 4096 --output-dir runs-repro
@@ -279,21 +278,21 @@ catalog validates 10,328 episodes and takes minutes; use `dev` while iterating.
 
 The approved legacy experiment trains the continuous carrier on
 `delta={1,5,15}` with `abstraction=continuous` only. The real dev catalog is
-read-only and is identified by catalog digest
-`8265809a528e41eaae646cb1cae9d577d7f34fd99b85b859bb14f07a479c6beb` (463
-episodes, 5,556 shots, 562,515 frames, and 1,137 `missing_artifact`
-rejections). The training identity is bound to the checkpoint, config, grid,
-catalog, and run-identity digests; the primary and reproduction runs use seed
-`20260807`, 3,600 steps, batch 64, learning rate `3e-4`, weight decay `0.05`,
-zero warmup, gradient clip `1.0`, and EMA base momentum `0.996`.
+read-only and has a plain `episode-catalog-v1` identity declared from its cohort,
+collection-plan, split, and capture-contract fields (463 episodes, 5,556 shots,
+562,515 frames, and 1,137 `missing_artifact` rejections). Training and scoring
+artifacts bind the checkpoint, config, grid, catalog, run, partition, and
+state-set identities. The primary and reproduction runs use seed `20260807`,
+3,600 steps, batch 64, learning rate `3e-4`, weight decay `0.05`, zero warmup,
+gradient clip `1.0`, and EMA base momentum `0.996`.
 
 Exhaustive scoring enumerates every nonterminal state in each deterministic
 episode partition and evaluates all three requested deltas. A state at a
 terminal edge uses `effective_delta=min(requested_delta, T-t)` for scoring only;
 the serialized label retains both requested and effective delta, plus explicit
-terminal-clamp metadata. Shards are atomic and validators recompute the
-canonical partition-order state digest, score count, per-pair aggregates, and
-provenance before frontier generation.
+terminal-clamp metadata. Shards are atomic and validators recompute the declared
+state-set identity from sorted state identities, score count, per-pair
+aggregates, and provenance before frontier generation.
 
 This is temporal-only evidence. `micro` and `macro` remain unavailable with
 the exact reason `symbolic_supervision_unavailable`; no symbolic, ADE/FDE,

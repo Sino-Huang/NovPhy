@@ -87,7 +87,7 @@ oracle-symbol scoring (full 1f) do not.
 | Budget | 1,200 updates per delta; 400 updates per `(delta, motion_regime)` key |
 | States scored | 556,959 |
 | Scores recorded | 1,670,877 |
-| Checkpoints | identical (hash-bound bytes, digest-bound metadata) |
+| Checkpoints | matching declared checkpoint identities; metadata binds config, grid, catalog, run, and model configuration identities |
 | Aggregate agreement | rtol ≤ 1e-2 |
 | Best-pair agreement | 1.0 |
 | Temporal-frontier verdict | `not_supported` for the continuous-only projection; this is **not** evidence for or against the joint $(\Delta,\alpha)$ controller |

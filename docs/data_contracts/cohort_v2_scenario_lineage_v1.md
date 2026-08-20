@@ -6,40 +6,44 @@ or derivation artifact.
 
 ## Scenario-template record
 
-`scenario_template_v1` binds one declared `source_reference`, its exact XML-byte
-content identity, and its declared benchmark conditions. Its identity is derived
-from all recorded source facts. A consumer that has the source file must load the
-record with `source_path`; different bytes fail validation. The source reference
-is declared provenance, never inferred from a directory or filename.
+`scenario_template_v1` records one declared `source_reference`, a
+`source_content_identity` declared from that reference under `xml-source-v1`, and
+the declared benchmark conditions. Its own `scenario-template-v1` identity is
+also declared from `source_reference`. Loading with `source_path` requires that
+the source be readable; neither identity is derived from the file bytes. The
+source reference is declared provenance, never inferred from a directory or
+filename.
 
 For generator-backed templates, the record also embeds
-`scenario_template_constraints_v1`: the exact constraints-workbook byte identity,
-declared workbook reference, sheet and row, canonical generator template name,
-and the explicit reference, minimum, and maximum coordinate pairs from columns
-C–H. Materialization validates the workbook bytes and requires its request to
-equal those recorded generator inputs. Legacy-static records have no generator
-constraint binding.
+`scenario_template_constraints_v1`: a source identity declared from the workbook
+reference, sheet, and row; the same declared source fields; the canonical
+generator template name; and the explicit reference, minimum, and maximum
+coordinate pairs from columns C–H. Materialization requires a readable workbook,
+resolves the declared row, and requires both the row and request to equal those
+recorded generator inputs. Legacy-static records have no generator constraint
+binding.
 
 The materialization boundary reports typed `ScenarioLineageError.reason` values
 for `missing_template_identity`, `unresolved_source_provenance`, and
 `content_drift`. These reasons cover absent identity, unresolved or inconsistent
-declared source inputs, and changed template/workbook bytes respectively.
+declared source inputs, and drift between recorded lineage projections or
+source-bound template records.
 
 ## Cohort-v2 scenario manifest
 
 `cohort_v2_scenario_manifest_v1` embeds a validated template record and an
 unchanged `scenario_manifest_v1`.
 
-- Generated content must use that template-record identity and declare the same
-  template-content identity in its generation inputs.
+- Generated content must use that template-record identity and a benchmark
+  condition declared by the record.
 - Imported content remains `legacy_static`; it must cite the record's actual
-  source reference and match its content identity. It never gains a seed or
-  generated provenance.
+  source reference. It never gains a seed or generated provenance.
 - `smoke_only` content is rejected from this wrapper. It cannot become eligible
   through a template record, inventory role, path, or command result.
 
-Creation requires the actual scenario XML. Loading can revalidate both XML and
-the template source by supplying `xml_path` and `template_source_path`.
+Creation requires the actual scenario XML for replay validation. Loading can
+revalidate the XML and require a readable template source by supplying
+`xml_path` and `template_source_path`.
 
 ## Deterministic receipts
 
@@ -53,10 +57,10 @@ mapping. A changed-input comparison fails with typed `content_drift` when its
 source-bound template records differ and `cross_lineage_reuse` when the changed
 authority reuses a scenario-specification or lineage identity.
 
-Those two receipt kinds establish deterministic content and declared-state
-behavior only. A third `unity_reset_reproduction` receipt binds two independent
-capture digests to the same source-bound scenario and requires their
-`normalized-initial-engine-state-v1` identities to match. Request, rollout, and
+Those two receipt kinds establish declared manifest and identity behavior only.
+A third `unity_reset_reproduction` receipt accepts two independent
+initial-engine-state identities for the same source-bound scenario, requires
+them to match, and records the shared normalized identity. Request, rollout, and
 capture IDs are excluded from that normalization; world, causal entities,
 per-step collider geometry, body state, contacts, and supports are included. A
 mismatch is `initial_state_mismatch`. The receipt is engine reproduction
@@ -70,11 +74,11 @@ calibration, and model selection entries are `planned_non_final`; final evaluati
 is `sealed_final`. It rejects reused level instances or scenario lineages and
 requires at least two source-bound non-final templates.
 
-Inventory entries contain public scenario identities and the digest of the
-canonical cohort-v2 scenario manifest artifact. Non-final entries contain an
-ordinary manifest reference that validation resolves beneath its declared
-manifest root, verifies by exact bytes, and compares with every public identity.
-The final-evaluation entry instead contains an opaque sealed reference. Ordinary
+Inventory entries contain the public scenario identities plus exactly one
+manifest-reference field. Non-final entries contain an ordinary reference that
+validation resolves beneath its declared manifest root, requires to be in
+canonical artifact form, and compares with every projected public identity. The
+final-evaluation entry instead contains an opaque sealed reference. Ordinary
 validation never resolves that reference, and the entry never contains an
 embedded manifest, generation seed, declared inputs, or parameter realization.
 

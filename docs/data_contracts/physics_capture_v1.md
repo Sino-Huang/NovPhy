@@ -1,6 +1,6 @@
 # `physics_capture_v1`
 
-Status: frozen state/event records with an additive engine-evidence component. Schema versions: `physics_capture_v1` and `physics_violation_engine_evidence_v1`. Artifact layout: the existing `physics_state.jsonl` and `physics_events.jsonl` plus, when the engine supplies it, `physics_violation_engine_evidence_v1.jsonl` inside each accepted shot directory. `metadata.json` references sidecar paths, counts, and checksums but never contains their records.
+Status: frozen state/event records with an additive engine-evidence component. Schema versions: `physics_capture_v1` and `physics_violation_engine_evidence_v1`. Artifact layout: the existing `physics_state.jsonl` and `physics_events.jsonl` plus, when the engine supplies it, `physics_violation_engine_evidence_v1.jsonl` inside each accepted shot directory. `metadata.json` records frame and sidecar paths and counts, declared capture/player/archive provenance, and, when applicable, semantic validation metadata, the expected initial-engine-state identity, scenario context, and optional evidence metadata; it never contains the sidecar records.
 
 ## Authority and alignment
 
@@ -61,11 +61,13 @@ This schema-valid example is a rejected capture result, not a sidecar record:
 {"schema_version":"physics_capture_v1","capture_id":"capture-example-001","shot_id":"shot_001","failure_code":"capture_timeout","message":"capture deadline reached","observed":30,"limit":30}
 ```
 
-Validate the published documentation and this example from the repository root:
+Run the current structural contract tests from the repository root:
 
 ```bash
-python scripts/verify_physics_capture_docs.py docs
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.test_physics_capture_contract
 ```
+
+For an emitted shot, `scripts.physics_capture_contract.load_physics_capture()` validates the state/event sidecar record contract, and `scripts.physics_artifact_validation.validate_physics_shot_artifact()` validates the complete confined shot layout and declared metadata.
 
 ## Cohorts, compatibility, and supervision
 
@@ -107,71 +109,66 @@ supervision = dataset[0]["supervision"]
 
 ## Staged provenance and operations
 
-The accepted staged player is the archive named in `sciencebirdsgames/physics-v1/archive.sha256`. That receipt is the source of the staged archive digest. Its generated live-smoke provenance report is `.claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json`; it must record the same archive digest, player/protocol digests, an accepted shot, and unchanged protected roots.
+**Revision note (2026-08-21):** the owner-directed integrity refactor removed content-pin operational procedures, archive receipt files, and byte-comparison procedures. This is an explicit operational revision to the frozen contract; the state/event schema and event taxonomy are unchanged. See repository history for the delivered refactor.
 
-Before collection, verify the stage and then rerun the smoke test. Promotion is permitted only after both commands succeed and their reports agree on the archive digest.
+The staged archive is `sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz`. Its `provenance.json` declares:
+
+- stage schema `novphy_physics_player_stage_v1`;
+- Unity/player version `2019.4.41f2` and changeset `6b23d448b533`;
+- capture schema `physics_capture_v1` and protocol version `1`;
+- the repository `git_head` and `git_tree` used for the build;
+- the regular-file inventory as relative path to size in bytes.
+
+These are declared provenance values. Consumers compare the declared versions, identities, paths, and inventory metadata required by their workflow; they do not derive content identities from archive bytes.
+
+Build the isolated v1 stage with the current packaging entry point:
 
 ```bash
-stage=sciencebirdsgames/physics-v1
-expected_sha="$(awk 'NF == 2 {print $1}' "$stage/archive.sha256")"
-python scripts/verify_physics_player.py --stage "$stage" --expect-sha "$expected_sha"
-
-python scripts/smoke_physics_capture.py \
-  --stage sciencebirdsgames/physics-v1 \
-  --output-dir "$(mktemp -d)/physics-smoke" \
-  --report .claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json
+scripts/build_physics_player.sh
 ```
 
-Collect a new cohort only after the staged selector has been promoted. This command is deliberately opt-in and uses a root distinct from the active legacy cohort:
+An operator may inspect the declared package provenance without modifying the stage:
+
+```bash physics_capture_v1_stage_preflight
+python3 - <<'PY'
+import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from scripts.verify_physics_player import safe_unpack
+
+archive = Path("sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz")
+with TemporaryDirectory(prefix="novphy-physics-v1-preflight-") as temporary:
+    root = Path(temporary)
+    safe_unpack(archive, root)
+    provenance = json.loads((root / "provenance.json").read_text(encoding="utf-8"))
+    assert provenance["schema_version"] == "novphy_physics_player_stage_v1"
+    assert provenance["unity"]["version"] == "2019.4.41f2"
+    assert provenance["capture"] == {"schema_version": "physics_capture_v1", "protocol_version": 1}
+    assert provenance["project"]["git_head"]
+    assert provenance["project"]["git_tree"]
+PY
+```
+
+Run the live smoke against that archive. The accepted marker records an accepted shot, unchanged protected roots, the declared player/protocol versions, and the supplied archive path:
+
+```bash physics_capture_v1_smoke
+smoke_root="$(mktemp -d)"
+smoke_marker="$smoke_root/physics_capture_v1_smoke.json"
+python scripts/smoke_physics_capture.py \
+  --stage sciencebirdsgames/physics-v1 \
+  --output-dir "$smoke_root/output" \
+  --report "$smoke_marker"
+```
+
+`resolve_physics_capture_provenance()` requires the accepted marker's declared `archive_path` to resolve to the archive supplied for collection. Collect a new cohort only after that semantic binding passes. Run the collection block in the same shell session as the smoke block above so `smoke_marker` remains defined. This command is deliberately opt-in and uses a root distinct from the active legacy cohort:
 
 ```bash physics_capture_v1_collection
 PHYSICS_CAPTURE_V1=1 \
 PHYSICS_PLAYER_ARCHIVE=sciencebirdsgames/physics-v1/novphy-physics-player-2019.4.41f2.tar.gz \
-PHYSICS_SMOKE_MARKER=.claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json \
+PHYSICS_SMOKE_MARKER="$smoke_marker" \
 RESUME=1 OUT_ROOT=data/physics_capture_v1_cohort NOVPHY_YES=1 \
 scripts/collect_full_rollout_training_dataset.sh
 ```
 
-Promotion selects the verified stage through an operator-owned symlink boundary. It requires a prior selector target, retains that target as `previous`, and atomically replaces only the selector. It never copies, renames, or overwrites `sciencebirdsgames/Linux`. Do not run this command during documentation validation.
-
-```bash physics_capture_v1_promotion
-set -eu
-stage=sciencebirdsgames/physics-v1
-selector=sciencebirdsgames/physics-selection
-expected_sha="$(awk 'NF == 2 {print $1}' "$stage/archive.sha256")"
-archive="$stage/novphy-physics-player-2019.4.41f2.tar.gz"
-test "$(sha256sum "$archive" | awk '{print $1}')" = "$expected_sha"
-test "$(awk '{print $1}' "$stage/archive.sha256")" = "$expected_sha"
-python scripts/verify_physics_player.py --stage "$stage" --expect-sha "$expected_sha"
-python - <<'PY'
-import json
-from pathlib import Path
-receipt = Path("sciencebirdsgames/physics-v1/archive.sha256").read_text(encoding="ascii").split()
-assert len(receipt) == 2
-expected_sha = receipt[0]
-report = json.loads(Path(".claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json").read_text(encoding="utf-8"))
-assert report["status"] == "accepted"
-assert report["protected_unchanged"] is True
-assert report["provenance"]["archive_sha256"] == expected_sha
-PY
-test -L "$selector/current"
-ln -s "$(readlink "$selector/current")" "$selector/previous.next"
-mv -Tf "$selector/previous.next" "$selector/previous"
-ln -s "../physics-v1" "$selector/next"
-mv -Tf "$selector/next" "$selector/current"
-test "$(readlink "$selector/current")" = "../physics-v1"
-```
-
-Rollback restores the retained selector target atomically. It does not invoke collection or modify the production player path:
-
-```bash physics_capture_v1_rollback
-set -eu
-selector=sciencebirdsgames/physics-selection
-test -L "$selector/previous"
-target="$(readlink "$selector/previous")"
-ln -s "$target" "$selector/rollback"
-mv -Tf "$selector/rollback" "$selector/current"
-test "$(readlink "$selector/current")" = "$target"
-```
-
-A failed build, verification, smoke report, or provenance digest comparison leaves the active cohort and production player untouched; retain the stage and failure report for diagnosis or rebuild a fresh stage with `scripts/build_physics_player.sh`.
+Packaging publishes the staged archive through a same-directory temporary file and atomic replacement. A failed build, archive creation, publication, declared-provenance preflight, or smoke run leaves the active cohort and production player untouched. Retain the stage and failure report for diagnosis or rebuild a fresh stage with `scripts/build_physics_player.sh`.

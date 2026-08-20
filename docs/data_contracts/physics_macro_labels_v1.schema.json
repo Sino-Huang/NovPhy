@@ -9,10 +9,6 @@
     { "$ref": "#/$defs/shot_outcome" }
   ],
   "$defs": {
-    "digest": {
-      "type": "string",
-      "pattern": "^[0-9a-f]{64}$"
-    },
     "macro_predicate": {
       "enum": ["cascade-active", "collapsed", "pigs-cleared", "steady-state", "structure-unstable"]
     },
@@ -79,26 +75,24 @@
     "sources": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["physics_state_path", "physics_state_sha256", "physics_events_path", "physics_events_sha256"],
+      "required": ["physics_state_path", "physics_events_path"],
       "properties": {
         "physics_state_path": { "const": "physics_state.jsonl" },
-        "physics_state_sha256": { "$ref": "#/$defs/digest" },
-        "physics_events_path": { "const": "physics_events.jsonl" },
-        "physics_events_sha256": { "$ref": "#/$defs/digest" }
+        "physics_events_path": { "const": "physics_events.jsonl" }
       }
     },
     "macro_label_header": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["record_type", "schema_version", "capture_schema_version", "capture_id", "shot_id", "derivation_spec_version", "derivation_spec_digest", "event_clock", "macro_vocabulary", "pig_class_set", "sources", "state_count", "event_count", "interval_count", "frame_label_count"],
+      "$comment": "Serialized headers carry derivation_spec_version. The non-serialized derivation_spec_identity() API returns the declared string macro-labels-derivation:macro_labels_derivation_v2.",
+      "required": ["record_type", "schema_version", "capture_schema_version", "capture_id", "shot_id", "derivation_spec_version", "event_clock", "macro_vocabulary", "pig_class_set", "sources", "state_count", "event_count", "interval_count", "frame_label_count"],
       "properties": {
         "record_type": { "const": "macro_label_header" },
         "schema_version": { "const": "physics_macro_labels_v1" },
         "capture_schema_version": { "const": "physics_capture_v1" },
         "capture_id": { "type": "string", "minLength": 1 },
         "shot_id": { "type": "string", "pattern": "^shot_[0-9]{3,}$" },
-        "derivation_spec_version": { "const": "macro_labels_derivation_v1" },
-        "derivation_spec_digest": { "$ref": "#/$defs/digest" },
+        "derivation_spec_version": { "const": "macro_labels_derivation_v2" },
         "event_clock": { "$ref": "#/$defs/event_clock" },
         "macro_vocabulary": {
           "type": "array",
@@ -109,11 +103,15 @@
             { "allOf": [{ "$ref": "#/$defs/macro_vocabulary_entry" }, { "type": "object", "properties": { "predicate": { "const": "steady-state" }, "absorbing": { "const": false }, "semantic_status": { "const": "engine_verified" } } }] },
             { "allOf": [{ "$ref": "#/$defs/macro_vocabulary_entry" }, { "type": "object", "properties": { "predicate": { "const": "structure-unstable" }, "absorbing": { "const": false }, "semantic_status": { "const": "engine_verified" } } }] }
           ],
+          "minItems": 5,
+          "maxItems": 5,
           "items": false
         },
         "pig_class_set": {
           "type": "array",
           "prefixItems": [{ "const": "PigBig" }, { "const": "PigMedium" }, { "const": "PigSmall" }],
+          "minItems": 3,
+          "maxItems": 3,
           "items": false
         },
         "sources": { "$ref": "#/$defs/sources" },
