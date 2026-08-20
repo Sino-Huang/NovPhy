@@ -133,6 +133,59 @@ class EpisodeCatalog:
         )
 
     @staticmethod
+    def from_records(
+        root: Path,
+        split: str,
+        episodes: tuple[EpisodeRecord, ...],
+        capture_contract: CaptureContractDescriptor,
+        required_capabilities: Collection[str] = (),
+    ) -> "EpisodeCatalog":
+        """Build a snapshot from validated immutable episode records."""
+        if type(episodes) is not tuple or not episodes:
+            raise ContractValueError("episodes", "must be a nonempty immutable tuple")
+        caps = tuple(required_capabilities)
+        declared = set(capture_contract.declared_capabilities)
+        missing = tuple(capability for capability in caps if capability not in declared)
+        if missing:
+            raise RequiredCapabilityError(
+                capability=missing[0],
+                contract_name=capture_contract.contract_name,
+            )
+
+        resolved_root = root.resolve()
+        names: set[str] = set()
+        relative_paths: set[str] = set()
+        for episode in episodes:
+            if type(episode) is not EpisodeRecord:
+                raise ContractValueError("episodes", "must contain EpisodeRecord values")
+            path = (resolved_root / episode.relative_path).resolve()
+            if (
+                str(episode.split) != split
+                or episode.capture_contract != capture_contract
+                or episode.name in names
+                or episode.relative_path in relative_paths
+                or resolved_root not in path.parents
+                or not path.is_dir()
+            ):
+                raise ContractValueError(
+                    "episodes", "records are duplicated, mismatched, or outside the catalog"
+                )
+            names.add(episode.name)
+            relative_paths.add(episode.relative_path)
+
+        return EpisodeCatalog(
+            root=resolved_root,
+            split=split,
+            capture_contract=capture_contract,
+            required_capabilities=caps,
+            plan_path=None,
+            episodes=episodes,
+            rejection_count=0,
+            rejection_code_counts={},
+            provenance_available=False,
+        )
+
+    @staticmethod
     def build(
         root: Path,
         split: str,

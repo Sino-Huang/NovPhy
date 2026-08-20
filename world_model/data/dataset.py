@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, NotRequired, Optional, Sequence
+from typing import Callable, Mapping, NotRequired, Optional, Sequence
 
 import torch
 from PIL import Image, UnidentifiedImageError
@@ -39,7 +39,12 @@ from world_model.data.types import (
     ShotRecord,
     TemporalWindowRequest,
 )
-from world_model.data.supervision import PhysicsFrameSupervision, PhysicsSupervisionRequest, read_physics_shot
+from world_model.data.supervision import (
+    AuthoritativePhysicsSidecars,
+    PhysicsFrameSupervision,
+    PhysicsSupervisionRequest,
+    read_physics_shot,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -179,6 +184,7 @@ class TemporalWindowDataset(torch.utils.data.Dataset):
         request: TemporalWindowRequest,
         transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
         supervision: PhysicsSupervisionRequest | None = None,
+        authoritative_sidecars: Mapping[Path, AuthoritativePhysicsSidecars] | None = None,
     ) -> None:
         super().__init__()
 
@@ -191,8 +197,26 @@ class TemporalWindowDataset(torch.utils.data.Dataset):
         # object.__getattribute__ bypass that the class itself uses.
         self._root: Path = object.__getattribute__(catalog, "_root")
         self._supervision: dict[tuple[str, str], tuple[PhysicsFrameSupervision, ...]] = {}
+        bindings: dict[Path, AuthoritativePhysicsSidecars] = {}
+        if authoritative_sidecars is not None:
+            if not isinstance(authoritative_sidecars, Mapping):
+                raise ContractValueError("authoritative_sidecars", "must be a path mapping")
+            for path, binding in authoritative_sidecars.items():
+                if not isinstance(path, Path) or type(binding) is not AuthoritativePhysicsSidecars:
+                    raise ContractValueError(
+                        "authoritative_sidecars",
+                        "must map Paths to AuthoritativePhysicsSidecars",
+                    )
+                resolved = path.resolve()
+                if resolved in bindings:
+                    raise ContractValueError("authoritative_sidecars", "paths must be unique")
+                bindings[resolved] = binding
+        if bindings and supervision is None:
+            raise ContractValueError(
+                "authoritative_sidecars", "requires a supervision request"
+            )
         if supervision is not None:
-            self._load_supervision(catalog, supervision)
+            self._load_supervision(catalog, supervision, bindings)
 
         # Build the flat deterministic index.
         self._index: tuple[_WindowEntry, ...] = self._build_index(catalog, request)
@@ -205,20 +229,45 @@ class TemporalWindowDataset(torch.utils.data.Dataset):
                 horizon_frames=request.horizon_frames,
             )
 
-    def _load_supervision(self, catalog: EpisodeCatalog, request: PhysicsSupervisionRequest) -> None:
+    def _load_supervision(
+        self,
+        catalog: EpisodeCatalog,
+        request: PhysicsSupervisionRequest,
+        authoritative_sidecars: Mapping[Path, AuthoritativePhysicsSidecars],
+    ) -> None:
         if catalog.capture_contract.contract_name != "physics_capture_v1":
             raise ContractValueError("supervision", "physics_capture_v1 is required")
         declared = set(catalog.capture_contract.declared_capabilities)
-        missing = tuple(capability for capability in request.required_capabilities if capability not in declared)
+        missing = tuple(
+            capability
+            for capability in request.required_capabilities
+            if capability not in declared
+        )
         if missing:
             raise ContractValueError("supervision capabilities", f"missing {missing!r}")
+        consumed: set[Path] = set()
         for episode in catalog.episodes:
             for shot in episode.shots:
                 shot_prefix = Path(shot.relative_path)
-                frame_paths = tuple(str(Path(frame.relative_path).relative_to(shot_prefix)) for frame in shot.frames)
-                self._supervision[(episode.name, shot.name)] = read_physics_shot(
-                    self._root / shot.relative_path, shot.name, frame_paths, request,
+                frame_paths = tuple(
+                    str(Path(frame.relative_path).relative_to(shot_prefix))
+                    for frame in shot.frames
                 )
+                shot_path = (self._root / shot.relative_path).resolve()
+                sidecars = authoritative_sidecars.get(shot_path)
+                if sidecars is not None:
+                    consumed.add(shot_path)
+                self._supervision[(episode.name, shot.name)] = read_physics_shot(
+                    shot_path,
+                    shot.name,
+                    frame_paths,
+                    request,
+                    authoritative_sidecars=sidecars,
+                )
+        if consumed != set(authoritative_sidecars):
+            raise ContractValueError(
+                "authoritative_sidecars", "contains a path outside the catalog"
+            )
 
     # ------------------------------------------------------------------
     # Index construction

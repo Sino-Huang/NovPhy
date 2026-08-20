@@ -15,14 +15,26 @@
   },
   "counts": {
     "events": 36,
+    "experiment_macro_label_records": 24,
+    "experiment_relational_label_records": 24,
     "fixed_step_aligned_events": 36,
-    "frames": 24,
-    "identity_aligned_frames": 24,
-    "macro_frames": 24,
-    "relational_frames": 24,
+    "frame_records": 24,
+    "identity_aligned_frame_records": 24,
+    "macro_label_records": 24,
+    "relational_label_records": 24,
     "rollouts": 4,
     "terminal_observations": 4,
     "unavailable_relational_labels": 608
+  },
+  "label_derivations": {
+    "physics_macro_labels_v1": {
+      "derivation_spec_digest": "cc78f62299d129df6967cf42ca104d6677395885bd09e4a3a6c8914b424ac447",
+      "derivation_spec_version": "macro_labels_derivation_v2"
+    },
+    "physics_relational_supervision_v1": {
+      "derivation_spec_digest": "b46036c99f71948f40ef911896048dabe97c772b4df10fd36a627e6d7252b9fe",
+      "derivation_spec_version": "relational_supervision_derivation_v1"
+    }
   },
   "partition": {
     "identity": "cohort-partition-manifest-v1:sha256:d2ab1b531e27cb2028c3e51064dfb53648b11176334bd230417ffbd2ba11f111",
@@ -43,7 +55,7 @@
     "macro.steady-state",
     "macro.structure-unstable"
   ],
-  "schema": "cohort_ingestion_evidence_v1",
+  "schema": "cohort_ingestion_evidence_v2",
   "unavailable_capabilities": {
     "agent_observations": "access-separated agent observations are not established",
     "bounded_negative_evidence": "production negative cap is zero",

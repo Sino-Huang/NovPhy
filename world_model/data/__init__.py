@@ -16,6 +16,7 @@ from world_model.data.types import (
 )
 from world_model.data.supervision import (
     DERIVED_LABEL_VECTOR_FIELDS,
+    AuthoritativePhysicsSidecars,
     MACRO_LABEL_SIDECAR,
     DerivedFrameLabel,
     MacroFrameLabel,
@@ -132,6 +133,7 @@ __all__ = [
     "WindowCostRule",
     "WindowSample",
     "PhysicsEvent",
+    "AuthoritativePhysicsSidecars",
     "PhysicsFrameSupervision",
     "PhysicsSupervisionRequest",
     "DERIVED_LABEL_VECTOR_FIELDS",

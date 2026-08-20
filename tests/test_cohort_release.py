@@ -1,9 +1,11 @@
+from collections.abc import Callable
 from hashlib import sha256
 import json
 import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from scripts.cohort_release import (
     _artifact,
@@ -23,6 +25,33 @@ PUBLICATION = (
     RELEASE
     / "cohort_publication_a6daf82d47f7001e8731068c68a91e83487fd2c26926b35ab2974bc75a93ecf8_v1.json"
 )
+
+
+def _rewrite_derivations(
+    publication_path: Path,
+    mutate: Callable[[dict[str, Any]], None],
+) -> Path:
+    publication = json.loads(publication_path.read_text(encoding="utf-8"))
+    derivation_path = publication_path.parent.parent / publication[
+        "authoritative_derivations"
+    ]["path"]
+    derivations = json.loads(derivation_path.read_text(encoding="utf-8"))
+    mutate(derivations)
+    derivations["identity"] = _identity(derivations)
+    derivation_path.write_text(
+        json.dumps(derivations, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    publication["authoritative_derivations"]["identity"] = derivations["identity"]
+    publication["authoritative_derivations"]["sha256"] = sha256(
+        derivation_path.read_bytes()
+    ).hexdigest()
+    publication["identity"] = _identity(publication)
+    publication_path.write_text(
+        json.dumps(publication, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return publication_path
 
 
 class CohortReleaseTests(unittest.TestCase):
@@ -68,19 +97,21 @@ class CohortReleaseTests(unittest.TestCase):
             "rejected from production by issue 40 adjudication",
         )
 
-    def test_ingestion_preserves_timing_identities_terminal_frames_and_unavailable_labels(self) -> None:
+    def test_ingestion_preserves_timing_identities_terminal_observations_and_unavailable_labels(self) -> None:
         evidence = ingest_cohort_publication(PUBLICATION)
 
         self.assertEqual(
             (
-                evidence.identity_aligned_frame_count,
+                evidence.identity_aligned_frame_record_count,
                 evidence.fixed_step_aligned_event_count,
+                evidence.experiment_macro_label_record_count,
+                evidence.experiment_relational_label_record_count,
                 evidence.terminal_observation_count,
-                evidence.macro_frame_count,
-                evidence.relational_frame_count,
+                evidence.macro_label_record_count,
+                evidence.relational_label_record_count,
                 evidence.unavailable_relational_label_count,
             ),
-            (24, 36, 4, 24, 24, 608),
+            (24, 36, 24, 24, 4, 24, 24, 608),
         )
 
     def test_ingestion_evidence_persists_exact_versions_capabilities_and_counts(self) -> None:
@@ -88,7 +119,7 @@ class CohortReleaseTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as temporary:
             path = write_cohort_ingestion_evidence(
-                evidence, Path(temporary) / "downstream-ingestion-v1.json"
+                evidence, Path(temporary) / "downstream-ingestion-v2.json"
             )
             payload = json.loads(path.read_text(encoding="utf-8"))
 
@@ -101,9 +132,10 @@ class CohortReleaseTests(unittest.TestCase):
                 "partition": payload["partition"],
                 "available_capabilities": payload["available_capabilities"],
                 "counts": payload["counts"],
+                "label_derivations": payload["label_derivations"],
             },
             {
-                "schema": "cohort_ingestion_evidence_v1",
+                "schema": "cohort_ingestion_evidence_v2",
                 "publication_identity": "representative-cohort-publication-v1:sha256:a6daf82d47f7001e8731068c68a91e83487fd2c26926b35ab2974bc75a93ecf8",
                 "cohort_release": {
                     "identity": "representative-cohort-release-v1:sha256:40b997354a256f889ef7dd007888b5ad8d84b5266883f3611500086f22b62ed2",
@@ -125,14 +157,26 @@ class CohortReleaseTests(unittest.TestCase):
                 },
                 "counts": {
                     "rollouts": 4,
-                    "frames": 24,
+                    "frame_records": 24,
                     "events": 36,
-                    "identity_aligned_frames": 24,
+                    "identity_aligned_frame_records": 24,
                     "fixed_step_aligned_events": 36,
                     "terminal_observations": 4,
-                    "macro_frames": 24,
-                    "relational_frames": 24,
+                    "macro_label_records": 24,
+                    "relational_label_records": 24,
                     "unavailable_relational_labels": 608,
+                    "experiment_macro_label_records": 24,
+                    "experiment_relational_label_records": 24,
+                },
+                "label_derivations": {
+                    "physics_macro_labels_v1": {
+                        "derivation_spec_version": "macro_labels_derivation_v2",
+                        "derivation_spec_digest": "cc78f62299d129df6967cf42ca104d6677395885bd09e4a3a6c8914b424ac447",
+                    },
+                    "physics_relational_supervision_v1": {
+                        "derivation_spec_version": "relational_supervision_derivation_v1",
+                        "derivation_spec_digest": "b46036c99f71948f40ef911896048dabe97c772b4df10fd36a627e6d7252b9fe",
+                    },
                 },
             },
         )
@@ -149,6 +193,35 @@ class CohortReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "scenario"):
                 ingest_cohort_publication(root / "release" / PUBLICATION.name)
 
+    def test_unknown_publication_field_and_empty_capability_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "production"
+            shutil.copytree(RELEASE.parent, root)
+            publication_path = root / "release" / PUBLICATION.name
+            publication = json.loads(publication_path.read_text(encoding="utf-8"))
+            publication["unexpected"] = True
+            publication["identity"] = _identity(publication)
+            publication_path.write_text(
+                json.dumps(publication, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(ValueError, "publication.*unknown"):
+                ingest_cohort_publication(publication_path)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "production"
+            shutil.copytree(RELEASE.parent, root)
+            publication_path = root / "release" / PUBLICATION.name
+
+            def empty_capability(derivations: dict[str, Any]) -> None:
+                derivations["available_capabilities"]["physics_capture_v1"] = ""
+
+            _rewrite_derivations(publication_path, empty_capability)
+            with self.assertRaisesRegex(ValueError, "capability declarations"):
+                ingest_cohort_publication(
+                    publication_path, required_capabilities=("physics_capture_v1",)
+                )
+
     def test_missing_capability_and_cross_release_derivations_fail_closed(self) -> None:
         with self.assertRaisesRegex(ValueError, "capabilities are unavailable"):
             ingest_cohort_publication(
@@ -159,27 +232,13 @@ class CohortReleaseTests(unittest.TestCase):
             root = Path(temporary) / "production"
             shutil.copytree(RELEASE.parent, root)
             publication_path = root / "release" / PUBLICATION.name
-            publication = json.loads(publication_path.read_text(encoding="utf-8"))
-            derivation_path = root / publication["authoritative_derivations"]["path"]
-            derivations = json.loads(derivation_path.read_text(encoding="utf-8"))
-            derivations["source_cohort_release_identity"] = (
-                "representative-cohort-release-v1:sha256:"
-                "0000000000000000000000000000000000000000000000000000000000000000"
-            )
-            derivations["identity"] = _identity(derivations)
-            derivation_path.write_text(
-                json.dumps(derivations, indent=2, sort_keys=True) + "\n",
-                encoding="utf-8",
-            )
-            publication["authoritative_derivations"]["identity"] = derivations["identity"]
-            publication["authoritative_derivations"]["sha256"] = sha256(
-                derivation_path.read_bytes()
-            ).hexdigest()
-            publication["identity"] = _identity(publication)
-            publication_path.write_text(
-                json.dumps(publication, indent=2, sort_keys=True) + "\n",
-                encoding="utf-8",
-            )
+            def bind_another_release(derivations: dict[str, Any]) -> None:
+                derivations["source_cohort_release_identity"] = (
+                    "representative-cohort-release-v1:sha256:"
+                    "0000000000000000000000000000000000000000000000000000000000000000"
+                )
+
+            _rewrite_derivations(publication_path, bind_another_release)
 
             with self.assertRaisesRegex(ValueError, "another cohort release"):
                 ingest_cohort_publication(publication_path)
@@ -189,24 +248,10 @@ class CohortReleaseTests(unittest.TestCase):
             root = Path(temporary) / "production"
             shutil.copytree(RELEASE.parent, root)
             publication_path = root / "release" / PUBLICATION.name
-            publication = json.loads(publication_path.read_text(encoding="utf-8"))
-            derivation_path = root / publication["authoritative_derivations"]["path"]
-            derivations = json.loads(derivation_path.read_text(encoding="utf-8"))
-            derivations["artifacts"][0]["unexpected"] = True
-            derivations["identity"] = _identity(derivations)
-            derivation_path.write_text(
-                json.dumps(derivations, indent=2, sort_keys=True) + "\n",
-                encoding="utf-8",
-            )
-            publication["authoritative_derivations"]["identity"] = derivations["identity"]
-            publication["authoritative_derivations"]["sha256"] = sha256(
-                derivation_path.read_bytes()
-            ).hexdigest()
-            publication["identity"] = _identity(publication)
-            publication_path.write_text(
-                json.dumps(publication, indent=2, sort_keys=True) + "\n",
-                encoding="utf-8",
-            )
+            def add_unknown_field(derivations: dict[str, Any]) -> None:
+                derivations["artifacts"][0]["unexpected"] = True
+
+            _rewrite_derivations(publication_path, add_unknown_field)
 
             with self.assertRaisesRegex(ValueError, "derivation reference"):
                 ingest_cohort_publication(publication_path)

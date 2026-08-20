@@ -12,6 +12,7 @@ from scripts.physics_label_derivation import (
 from scripts.physics_macro_labels import (
     MACRO_LABEL_SIDECAR,
     PREDICATE_SEMANTIC_STATUS,
+    MacroPredicate,
     MacroFrameLabel,
     MacroLabelError,
     SemanticStatus,
@@ -73,6 +74,38 @@ class PhysicsFrameSupervision:
 
 
 @dataclass(frozen=True, slots=True)
+class AuthoritativePhysicsSidecars:
+    macro_label_path: Path | None = None
+    relational_label_path: Path | None = None
+    accepted_macro_predicates: tuple[MacroPredicate, ...] = ()
+
+    def __post_init__(self) -> None:
+        if type(self.accepted_macro_predicates) is not tuple or len(
+            self.accepted_macro_predicates
+        ) != len(set(self.accepted_macro_predicates)) or not all(
+            isinstance(predicate, MacroPredicate) for predicate in self.accepted_macro_predicates
+        ):
+            raise ContractValueError(
+                "accepted_macro_predicates", "must be a unique immutable tuple"
+            )
+        if any(
+            path is not None and not isinstance(path, Path)
+            for path in (self.macro_label_path, self.relational_label_path)
+        ):
+            raise ContractValueError(
+                "authoritative sidecar paths", "must be Paths or None"
+            )
+        if self.macro_label_path is None and self.accepted_macro_predicates:
+            raise ContractValueError(
+                "accepted_macro_predicates", "requires an authoritative macro label path"
+            )
+        if self.macro_label_path is not None and not self.accepted_macro_predicates:
+            raise ContractValueError(
+                "accepted_macro_predicates", "must declare accepted published predicates"
+            )
+
+
+@dataclass(frozen=True, slots=True)
 class PhysicsSupervisionRequest:
     required_capabilities: tuple[str, ...] = ()
     include_raw_contacts: bool = False
@@ -118,6 +151,8 @@ def read_physics_shot(
     shot_name: str,
     frame_paths: tuple[str, ...],
     request: PhysicsSupervisionRequest,
+    *,
+    authoritative_sidecars: AuthoritativePhysicsSidecars | None = None,
 ) -> tuple[PhysicsFrameSupervision, ...]:
     from scripts.rollout_artifacts import validate_physics_shot_artifact
     from scripts.rollout_validation_types import PhysicsArtifactError
@@ -166,20 +201,38 @@ def read_physics_shot(
     if request.include_macro_labels:
         # validate_macro_labels re-derives from the frozen sidecars and byte-compares,
         # so a stale or tampered label file fails closed before any label reaches a sample.
+        macro_path = (
+            authoritative_sidecars.macro_label_path
+            if authoritative_sidecars is not None
+            else None
+        )
+        accepted_predicates = (
+            authoritative_sidecars.accepted_macro_predicates
+            if authoritative_sidecars is not None
+            else ()
+        )
         try:
-            macro = validate_macro_labels(shot_dir)
+            macro = validate_macro_labels(shot_dir, macro_path)
         except (OSError, MacroLabelError, PhysicsContractError) as error:
             raise ContractValueError("physics macro labels", str(error)) from error
-        pending_predicates = tuple(
-            predicate.value
-            for predicate, status in PREDICATE_SEMANTIC_STATUS
-            if status == SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION
-        )
-        if pending_predicates:
+        statuses = dict(PREDICATE_SEMANTIC_STATUS)
+        if accepted_predicates:
+            unsupported_predicates = tuple(
+                predicate.value
+                for predicate in accepted_predicates
+                if statuses[predicate] is not SemanticStatus.ENGINE_VERIFIED
+            )
+        else:
+            unsupported_predicates = tuple(
+                predicate.value
+                for predicate, status in PREDICATE_SEMANTIC_STATUS
+                if status == SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION
+            )
+        if unsupported_predicates:
             raise ContractValueError(
                 "physics macro labels",
                 "pending predicates require representative validation: "
-                + ", ".join(pending_predicates),
+                + ", ".join(unsupported_predicates),
             )
         for label in macro.frames:
             identity = label.identity
@@ -193,7 +246,13 @@ def read_physics_shot(
             )
             if identity_key in macro_by_identity:
                 raise ContractValueError("physics macro labels", "duplicate frame-label identity")
-            macro_by_identity[identity_key] = label
+            macro_by_identity[identity_key] = MacroFrameLabel(
+                identity=label.identity,
+                predicates=tuple(
+                    item for item in label.predicates
+                    if not accepted_predicates or item[0] in accepted_predicates
+                ),
+            )
         state_identities = {
             (
                 str(state.clock.capture_id),
@@ -214,7 +273,11 @@ def read_physics_shot(
         # A relational label must describe exactly the accepted source state before
         # it is allowed into a supervision sample.
         try:
-            relational = validate_relational_supervision(shot_dir)
+            relational = validate_relational_supervision(
+                shot_dir,
+                authoritative_sidecars.relational_label_path
+                if authoritative_sidecars is not None else None,
+            )
         except (OSError, RelationalSupervisionError, PhysicsContractError) as error:
             raise ContractValueError("physics relational labels", str(error)) from error
         for label in relational.frames:

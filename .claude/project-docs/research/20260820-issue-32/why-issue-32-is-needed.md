@@ -14,7 +14,7 @@ Issue #31 produced a frozen, named cohort release. Issue #32 must prove that eve
 - a label file is malformed or was made for another cohort release;
 - an event is joined to the wrong simulation step;
 - the final observation of a rollout is absent;
-- object, rollout, or frame identities do not match; or
+- object, rollout, or frame-record identities do not match; or
 - a label whose value is `unavailable` is silently treated as `false`.
 
 The project specification explicitly requires downstream smoke ingestion to preserve identity, timing, availability, and exposure restrictions ([data specification, lines 321–331](../../../../docs/data_generation_and_collection_spec.md#L321-L331)). It also says a successful command or smoke test alone is not enough to complete the research-data work ([lines 333–333](../../../../docs/data_generation_and_collection_spec.md#L333)).
@@ -29,7 +29,7 @@ But publication only proves that the package was assembled. The current publicat
 
 The experiments depend on several meanings surviving ingestion exactly:
 
-1. **Stage 1: oracle-symbol upper bound.** We train and score every time-horizon/description-level pair using engine truth, then use those scores as labels for the later controller ([research proposal, lines 280–286](../../../../docs/research_proposal.md#L280-L286)). If frames, identities, or macro events are joined incorrectly, the “best pair” teacher labels are wrong.
+1. **Stage 1: oracle-symbol upper bound.** We train and score every time-horizon/description-level pair using engine truth, then use those scores as labels for the later controller ([research proposal, lines 280–286](../../../../docs/research_proposal.md#L280-L286)). If frame records, identities, or macro events are joined incorrectly, the “best pair” teacher labels are wrong.
 
 2. **Stage 2: learned symbolic state.** The visual parser is measured against engine labels on held-out levels ([lines 288–296](../../../../docs/research_proposal.md#L288-L296)). If a held-out lineage leaks into training, or `unavailable` becomes `false`, predicate F1 and generalization results can look better or worse for the wrong reason.
 

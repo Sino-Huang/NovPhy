@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 import tempfile
 from types import MappingProxyType
-from typing import Any, Final, Mapping, Sequence
+from typing import Any, Final, Mapping, Sequence, TypeAlias
 
 from scripts.cohort_partition import (
     CohortPartitionManifest,
@@ -19,20 +19,44 @@ from scripts.cohort_partition import (
 )
 from scripts.collection_plan import PLAN_COPY_FILENAME, REPORT_FILENAME, load_collection_plan
 from scripts.physics_capture_contract import load_physics_capture
+from scripts.physics_capture_types import StateFrame
 from scripts.physics_macro_labels import (
     MACRO_LABEL_SIDECAR,
+    DERIVATION_SPEC_VERSION as MACRO_DERIVATION_SPEC_VERSION,
+    MacroPredicate,
+    MacroFrameLabel,
     derive_macro_labels_for_shot,
     validate_macro_labels,
+    derivation_spec_digest as macro_derivation_spec_digest,
     write_macro_label_file,
 )
 from scripts.physics_relational_supervision import (
+    DERIVATION_SPEC_VERSION as RELATIONAL_DERIVATION_SPEC_VERSION,
     RelationalAvailability,
+    RelationalFrameLabel,
+    derivation_spec_digest as relational_derivation_spec_digest,
     validate_relational_supervision,
 )
 from scripts.production_plan import PRODUCTION_PLAN_COPY_FILENAME, load_production_plan
 from scripts.rollout_artifacts import validate_physics_shot_artifact
 from scripts.scenario_manifest import ScenarioManifest
-from world_model.data.supervision import PhysicsSupervisionRequest, read_physics_shot
+from world_model.data.catalog import EpisodeCatalog
+from world_model.data.dataset import TemporalWindowDataset
+from world_model.data.supervision import (
+    AuthoritativePhysicsSidecars,
+    PhysicsSupervisionRequest,
+    read_physics_shot,
+)
+from world_model.data.types import (
+    PHYSICS_CAPTURE_V1,
+    PHYSICS_CAPTURE_V1_CAPABILITIES,
+    EpisodeRecord,
+    FrameRecord,
+    ShotAction,
+    ShotRecord,
+    SplitName,
+    TemporalWindowRequest,
+)
 
 RELEASE_SCHEMA: Final = "representative_cohort_release_v1"
 DERIVATION_SCHEMA: Final = "authoritative_cohort_derivations_v1"
@@ -52,6 +76,34 @@ INGESTION_READERS: Final = (
 )
 
 
+FrameRecordIdentity: TypeAlias = tuple[str, str, int, int, int, str]
+
+
+def _capture_frame_record_identity(record: StateFrame) -> FrameRecordIdentity:
+    return (
+        str(record.clock.capture_id),
+        str(record.clock.shot_id),
+        record.clock.sequence,
+        record.clock.render_frame,
+        record.clock.fixed_step,
+        record.rgb_frame.relative_path,
+    )
+
+
+def _label_frame_record_identity(
+    record: MacroFrameLabel | RelationalFrameLabel,
+) -> FrameRecordIdentity:
+    identity = record.identity
+    return (
+        identity.capture_id,
+        identity.shot_id,
+        identity.state_sequence,
+        identity.render_frame,
+        identity.fixed_step,
+        identity.rgb_relative_path,
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class CohortIngestionEvidence:
     publication_identity: str
@@ -65,19 +117,22 @@ class CohortIngestionEvidence:
     required_capabilities: tuple[str, ...]
     available_capabilities: Mapping[str, str]
     unavailable_capabilities: Mapping[str, str]
+    label_derivations: Mapping[str, Mapping[str, str]]
     rollout_count: int
-    frame_count: int
+    frame_record_count: int
     event_count: int
-    identity_aligned_frame_count: int
+    identity_aligned_frame_record_count: int
     fixed_step_aligned_event_count: int
     unavailable_relational_label_count: int
     terminal_observation_count: int
-    macro_frame_count: int
-    relational_frame_count: int
+    macro_label_record_count: int
+    relational_label_record_count: int
+    experiment_macro_label_record_count: int
+    experiment_relational_label_record_count: int
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema": "cohort_ingestion_evidence_v1",
+            "schema": "cohort_ingestion_evidence_v2",
             "publication_identity": self.publication_identity,
             "cohort_release": {
                 "identity": self.cohort_release_identity,
@@ -95,15 +150,21 @@ class CohortIngestionEvidence:
             "required_capabilities": list(self.required_capabilities),
             "available_capabilities": dict(self.available_capabilities),
             "unavailable_capabilities": dict(self.unavailable_capabilities),
+            "label_derivations": {
+                name: dict(specification)
+                for name, specification in self.label_derivations.items()
+            },
             "counts": {
                 "rollouts": self.rollout_count,
-                "frames": self.frame_count,
+                "frame_records": self.frame_record_count,
                 "events": self.event_count,
-                "identity_aligned_frames": self.identity_aligned_frame_count,
+                "identity_aligned_frame_records": self.identity_aligned_frame_record_count,
                 "fixed_step_aligned_events": self.fixed_step_aligned_event_count,
                 "terminal_observations": self.terminal_observation_count,
-                "macro_frames": self.macro_frame_count,
-                "relational_frames": self.relational_frame_count,
+                "macro_label_records": self.macro_label_record_count,
+                "relational_label_records": self.relational_label_record_count,
+                "experiment_macro_label_records": self.experiment_macro_label_record_count,
+                "experiment_relational_label_records": self.experiment_relational_label_record_count,
                 "unavailable_relational_labels": self.unavailable_relational_label_count,
             },
         }
@@ -131,6 +192,13 @@ def _load(path: Path, name: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"{name} must be an object")
     return value
+
+
+def _require_exact_fields(
+    value: Mapping[str, Any], fields: set[str], name: str
+) -> None:
+    if set(value) != fields:
+        raise ValueError(f"{name} is incomplete or contains unknown fields")
 
 
 def _write(path: Path, value: Any) -> Path:
@@ -324,16 +392,65 @@ def publish_cohort_release(output_dir: Path, *, partition_manifest_path: Path, s
 def verify_cohort_publication(path: Path) -> dict[str, Any]:
     publication_path = Path(path).resolve()
     publication = _load(publication_path, "cohort publication")
-    if publication.get("schema") != PUBLICATION_SCHEMA or publication.get("identity") != _identity(publication):
+    _require_exact_fields(
+        publication,
+        {"schema", "identity", "cohort_release", "authoritative_derivations"},
+        "Cohort publication",
+    )
+    if (
+        publication.get("schema") != PUBLICATION_SCHEMA
+        or publication.get("identity") != _identity(publication)
+    ):
         raise ValueError("Cohort publication identity is stale or unsupported")
-    root = publication_path.parent.parent
-    for field, schema in (("cohort_release", RELEASE_SCHEMA), ("authoritative_derivations", DERIVATION_SCHEMA)):
-        reference = publication.get(field)
-        artifact_path = root / str(reference.get("path")) if isinstance(reference, dict) else root
-        if not isinstance(reference, dict) or _digest(artifact_path) != reference.get("sha256"):
+    root = publication_path.parent.parent.resolve()
+    for field, schema in (
+        ("cohort_release", RELEASE_SCHEMA),
+        ("authoritative_derivations", DERIVATION_SCHEMA),
+    ):
+        reference = publication[field]
+        if not isinstance(reference, Mapping):
+            raise ValueError(f"Cohort publication {field} reference must be an object")
+        _require_exact_fields(
+            reference,
+            {"identity", "path", "sha256"},
+            f"Cohort publication {field} reference",
+        )
+        artifact_path = _published_file(root, reference.get("path"), field)
+        if _digest(artifact_path) != reference.get("sha256"):
             raise ValueError(f"Cohort publication {field} digest mismatch")
         artifact = _load(artifact_path, field)
-        if artifact.get("schema") != schema or artifact.get("identity") != _identity(artifact) or artifact.get("identity") != reference.get("identity"):
+        if schema == RELEASE_SCHEMA:
+            expected_fields = {
+                "schema",
+                "identity",
+                "release_version",
+                "code_revision",
+                "source_pilot_report_identity",
+                "production_plan",
+                "collection_plan",
+                "partition_manifest",
+                "scenario_manifests",
+                "primary_rollouts",
+                "quality_report",
+            }
+        else:
+            expected_fields = {
+                "schema",
+                "identity",
+                "derivation_version",
+                "source_cohort_release_identity",
+                "available_capabilities",
+                "unavailable_capabilities",
+                "artifacts",
+            }
+        _require_exact_fields(
+            artifact, expected_fields, field.replace("_", " ").title()
+        )
+        if (
+            artifact.get("schema") != schema
+            or artifact.get("identity") != _identity(artifact)
+            or artifact.get("identity") != reference.get("identity")
+        ):
             raise ValueError(f"Cohort publication {field} identity mismatch")
     return publication
 
@@ -395,14 +512,37 @@ def ingest_cohort_publication(
     if (
         not isinstance(available, dict)
         or not isinstance(unavailable, dict)
-        or not all(isinstance(key, str) and isinstance(value, str) for key, value in available.items())
-        or not all(isinstance(key, str) and isinstance(value, str) for key, value in unavailable.items())
+        or not all(
+            isinstance(key, str) and key and isinstance(value, str) and value
+            for key, value in available.items()
+        )
+        or not all(
+            isinstance(key, str) and key and isinstance(value, str) and value
+            for key, value in unavailable.items()
+        )
         or set(available) & set(unavailable)
     ):
         raise ValueError("Cohort capability declarations are malformed")
     missing = tuple(item for item in required_capabilities if item not in available)
     if missing:
         raise ValueError(f"Required cohort capabilities are unavailable: {missing!r}")
+
+    collection_reference = release.get("collection_plan")
+    collection_path = _verify_file_reference(
+        root, collection_reference, "collection plan"
+    )
+    loaded_collection = load_collection_plan(collection_path)
+    if (
+        not isinstance(collection_reference, Mapping)
+        or loaded_collection.plan.identity != collection_reference.get("identity")
+        or loaded_collection.plan.plan_version != collection_reference.get("version")
+    ):
+        raise ValueError("Collection plan identity or version mismatch")
+    interventions = {
+        intervention.id: intervention
+        for scenario in loaded_collection.plan.scenarios
+        for intervention in scenario.interventions
+    }
 
     partition_reference = release.get("partition_manifest")
     partition_path = _verify_file_reference(root, partition_reference, "cohort partition")
@@ -453,6 +593,7 @@ def ingest_cohort_publication(
     if not isinstance(rollouts, list) or not rollouts or not isinstance(artifacts, list):
         raise ValueError("Cohort release has no complete rollout and derivation inventories")
     derivation_by_attempt: dict[tuple[str, str], Path] = {}
+    accepted_macro_by_attempt: dict[str, tuple[MacroPredicate, ...]] = {}
     for reference in artifacts:
         if not isinstance(reference, Mapping):
             raise ValueError("Authoritative derivation reference must be an object")
@@ -469,6 +610,28 @@ def ingest_cohort_publication(
             raise ValueError(
                 "Authoritative derivation reference is incomplete or contains unknown fields"
             )
+        if kind == "physics_macro_labels_v1":
+            raw_accepted = reference["accepted_predicates"]
+            raw_excluded = reference["excluded_predicates"]
+            if not isinstance(raw_accepted, list) or not isinstance(raw_excluded, list):
+                raise ValueError("Authoritative macro predicate disposition is malformed")
+            try:
+                accepted_predicates = tuple(MacroPredicate(item) for item in raw_accepted)
+                excluded_predicates = tuple(MacroPredicate(item) for item in raw_excluded)
+            except (TypeError, ValueError) as error:
+                raise ValueError(
+                    "Authoritative macro predicate disposition is malformed"
+                ) from error
+            all_predicates = (*accepted_predicates, *excluded_predicates)
+            if (
+                not accepted_predicates
+                or len(set(all_predicates)) != len(all_predicates)
+                or set(all_predicates) != set(MacroPredicate)
+            ):
+                raise ValueError(
+                    "Authoritative macro predicate disposition is incomplete"
+                )
+            accepted_macro_by_attempt[attempt_id] = accepted_predicates
         key = (attempt_id, str(kind))
         if key in derivation_by_attempt:
             raise ValueError("Authoritative derivation references are duplicated")
@@ -476,9 +639,11 @@ def ingest_cohort_publication(
             derivation_path.parent, reference, f"{kind} for {attempt_id}"
         )
 
-    frame_count = event_count = terminal_count = macro_count = relational_count = 0
-    identity_count = aligned_event_count = unavailable_label_count = 0
+    frame_record_count = event_count = terminal_observation_count = macro_label_record_count = relational_label_record_count = 0
+    identity_aligned_frame_record_count = fixed_step_aligned_event_count = unavailable_relational_label_count = 0
     seen_attempts: set[str] = set()
+    sidecars_by_shot: dict[Path, AuthoritativePhysicsSidecars] = {}
+    episode_records: list[EpisodeRecord] = []
     for rollout in rollouts:
         if not isinstance(rollout, Mapping):
             raise ValueError("Primary rollout reference must be an object")
@@ -499,21 +664,89 @@ def ingest_cohort_publication(
                 root, reference, f"primary rollout file for {attempt_id}", check_size=True
             )
 
+        macro_path = derivation_by_attempt.get(
+            (attempt_id, "physics_macro_labels_v1")
+        )
+        relational_path = derivation_by_attempt.get(
+            (attempt_id, "physics_relational_supervision_v1")
+        )
+        accepted_predicates = accepted_macro_by_attempt.get(attempt_id)
+        if macro_path is None or relational_path is None or accepted_predicates is None:
+            raise ValueError(f"Primary rollout {attempt_id} lacks authoritative sidecars")
+        sidecars = AuthoritativePhysicsSidecars(
+            macro_label_path=macro_path,
+            relational_label_path=relational_path,
+            accepted_macro_predicates=accepted_predicates,
+        )
+        sidecars_by_shot[shot.resolve()] = sidecars
+
         capture = load_physics_capture(
             shot / "physics_state.jsonl", shot / "physics_events.jsonl"
         )
+        intervention = interventions.get(rollout.get("intervention_id"))
+        if intervention is None:
+            raise ValueError(f"Primary rollout {attempt_id} has an unknown intervention")
+        interface_action = intervention.interface_action
+        drag_start = interface_action.get("drag_start")
+        drag_release = interface_action.get("drag_release")
+        hold_time = interface_action.get("releaseTime")
+        action_values = (
+            *drag_start[:2],
+            *drag_release[:2],
+            hold_time,
+        ) if (
+            isinstance(drag_start, tuple)
+            and isinstance(drag_release, tuple)
+            and len(drag_start) >= 2
+            and len(drag_release) >= 2
+        ) else ()
+        if len(action_values) != 5 or not all(
+            type(value) in (int, float) for value in action_values
+        ):
+            raise ValueError(f"Primary rollout {attempt_id} has a malformed intervention")
+        episode_records.append(
+            EpisodeRecord(
+                name=attempt_id,
+                split=SplitName.TEST,
+                relative_path=shot.parent.relative_to(root).as_posix(),
+                shots=(
+                    ShotRecord(
+                        name=str(capture.states[0].clock.shot_id),
+                        relative_path=shot.relative_to(root).as_posix(),
+                        action=ShotAction(action_values),
+                        frames=tuple(
+                            FrameRecord(
+                                index=index,
+                                relative_path=(
+                                    shot / state.rgb_frame.relative_path
+                                ).relative_to(root).as_posix(),
+                                timestamp_seconds=state.clock.render_time,
+                            )
+                            for index, state in enumerate(capture.states)
+                        ),
+                    ),
+                ),
+                capture_contract=PHYSICS_CAPTURE_V1,
+            )
+        )
         frame_paths = tuple(state.rgb_frame.relative_path for state in capture.states)
-        frames = read_physics_shot(
+        frame_records = read_physics_shot(
             shot,
             str(capture.states[0].clock.shot_id),
             frame_paths,
-            PhysicsSupervisionRequest(include_raw_contacts=True, include_events=True),
+            PhysicsSupervisionRequest(
+                include_raw_contacts=True,
+                include_events=True,
+                include_macro_labels=True,
+                include_relational_labels=True,
+            ),
+            authoritative_sidecars=sidecars,
         )
         metadata = _load(shot / "metadata.json", f"metadata for {attempt_id}")
         if (
-            len(frames) != len(capture.states)
-            or not frames
-            or frames[-1].fixed_step != metadata.get("terminal_state_fixed_step")
+            len(frame_records) != len(capture.states)
+            or not frame_records
+            or frame_records[-1].fixed_step != metadata.get("terminal_state_fixed_step")
         ):
             raise ValueError(f"Primary rollout {attempt_id} lost its terminal observation")
 
@@ -523,82 +756,68 @@ def ingest_cohort_publication(
         relational = validate_relational_supervision(
             shot, derivation_by_attempt.get((attempt_id, "physics_relational_supervision_v1"))
         )
-        if len(macro.frames) != len(frames) or len(relational.frames) != len(frames):
+        if len(macro.frames) != len(frame_records) or len(relational.frames) != len(frame_records):
             raise ValueError(f"Authoritative sidecars do not align with rollout {attempt_id}")
-        source_identities = tuple(
-            (
-                str(state.clock.capture_id),
-                str(state.clock.shot_id),
-                state.clock.sequence,
-                state.clock.render_frame,
-                state.clock.fixed_step,
-                state.rgb_frame.relative_path,
-            )
-            for state in capture.states
+        for frame in frame_records:
+            if frame.macro_labels is None or frame.relational_labels is None:
+                raise ValueError(
+                    f"Experiment-facing labels are absent after ingestion for {attempt_id}"
+                )
+            if tuple(predicate for predicate, _ in frame.macro_labels.predicates) != accepted_predicates:
+                raise ValueError(
+                    f"Experiment-facing macro predicates disagree with release {attempt_id}"
+                )
+        source_record_identities = tuple(
+            _capture_frame_record_identity(record) for record in capture.states
         )
-        macro_identities = tuple(
-            (
-                label.identity.capture_id,
-                label.identity.shot_id,
-                label.identity.state_sequence,
-                label.identity.render_frame,
-                label.identity.fixed_step,
-                label.identity.rgb_relative_path,
-            )
-            for label in macro.frames
+        macro_record_identities = tuple(
+            _label_frame_record_identity(record) for record in macro.frames
         )
-        relational_identities = tuple(
-            (
-                label.identity.capture_id,
-                label.identity.shot_id,
-                label.identity.state_sequence,
-                label.identity.render_frame,
-                label.identity.fixed_step,
-                label.identity.rgb_relative_path,
-            )
-            for label in relational.frames
+        relational_record_identities = tuple(
+            _label_frame_record_identity(record) for record in relational.frames
         )
-        reader_identities = tuple(
-            (str(frame.shot_id), frame.render_frame, frame.fixed_step) for frame in frames
-        )
-        capture_reader_identities = tuple(
-            (str(state.clock.shot_id), state.clock.render_frame, state.clock.fixed_step)
-            for state in capture.states
+        reader_identities_match = len(frame_records) == len(capture.states) and all(
+            str(frame.shot_id) == str(state.clock.shot_id)
+            and frame.render_frame == state.clock.render_frame
+            and frame.fixed_step == state.clock.fixed_step
+            for frame, state in zip(frame_records, capture.states, strict=True)
         )
         if (
-            source_identities != macro_identities
-            or source_identities != relational_identities
-            or reader_identities != capture_reader_identities
+            source_record_identities != macro_record_identities
+            or source_record_identities != relational_record_identities
+            or not reader_identities_match
         ):
-            raise ValueError(f"Authoritative identities changed during ingestion for {attempt_id}")
+            raise ValueError(
+                f"Authoritative identities changed during ingestion for {attempt_id}"
+            )
 
         source_events = tuple(
             (str(event.event_id), event.clock.fixed_step) for event in capture.events
         )
         exposed_events = tuple(
             (str(event.event_id), event.fixed_step)
-            for frame in frames
+            for frame in frame_records
             for event in frame.events
         )
         if exposed_events != source_events:
             raise ValueError(f"Fixed-step event alignment changed during ingestion for {attempt_id}")
 
-        unavailable_label_count += sum(
+        unavailable_relational_label_count += sum(
             label.availability is not RelationalAvailability.AVAILABLE
-            for frame in relational.frames
+            for frame in frame_records
             for label in (
-                *frame.supports,
-                frame.physical_regime_eligibility,
-                frame.model_relative_micro_relation_usefulness,
+                *frame.relational_labels.supports,
+                frame.relational_labels.physical_regime_eligibility,
+                frame.relational_labels.model_relative_micro_relation_usefulness,
             )
         )
-        identity_count += len(source_identities)
-        aligned_event_count += len(source_events)
-        frame_count += len(frames)
+        identity_aligned_frame_record_count += len(source_record_identities)
+        fixed_step_aligned_event_count += len(source_events)
+        frame_record_count += len(frame_records)
         event_count += len(capture.events)
-        terminal_count += 1
-        macro_count += len(macro.frames)
-        relational_count += len(relational.frames)
+        terminal_observation_count += 1
+        macro_label_record_count += len(macro.frames)
+        relational_label_record_count += len(relational.frames)
 
     expected_keys = {
         (attempt_id, kind)
@@ -607,6 +826,54 @@ def ingest_cohort_publication(
     }
     if set(derivation_by_attempt) != expected_keys:
         raise ValueError("Authoritative derivation inventory does not match primary rollouts")
+
+    catalog = EpisodeCatalog.from_records(
+        root=root,
+        split="test",
+        episodes=tuple(episode_records),
+        capture_contract=PHYSICS_CAPTURE_V1,
+        required_capabilities=PHYSICS_CAPTURE_V1_CAPABILITIES,
+    )
+    if len(catalog.episodes) != len(rollouts) or catalog.rejection_count:
+        raise ValueError("Experiment-facing catalog did not admit every released rollout")
+    dataset = TemporalWindowDataset(
+        catalog,
+        TemporalWindowRequest(1, 1),
+        supervision=PhysicsSupervisionRequest(
+            required_capabilities=PHYSICS_CAPTURE_V1_CAPABILITIES,
+            include_raw_contacts=True,
+            include_events=True,
+            include_macro_labels=True,
+            include_relational_labels=True,
+        ),
+        authoritative_sidecars=sidecars_by_shot,
+    )
+    experiment_records = {}
+    for index in range(len(dataset)):
+        sample = dataset[index]
+        for record in sample["supervision"]:
+            if record.macro_labels is None or record.relational_labels is None:
+                raise ValueError("Experiment-facing dataset omitted authoritative labels")
+            identity = record.macro_labels.identity
+            key = (
+                identity.capture_id,
+                identity.shot_id,
+                identity.state_sequence,
+                identity.render_frame,
+                identity.fixed_step,
+                identity.rgb_relative_path,
+            )
+            prior = experiment_records.setdefault(key, record)
+            if prior != record:
+                raise ValueError("Experiment-facing dataset changed a frame record")
+    if len(experiment_records) != frame_record_count:
+        raise ValueError("Experiment-facing dataset did not expose every frame record")
+    experiment_macro_label_record_count = sum(
+        record.macro_labels is not None for record in experiment_records.values()
+    )
+    experiment_relational_label_record_count = sum(
+        record.relational_labels is not None for record in experiment_records.values()
+    )
 
     release_version = release.get("release_version")
     derivation_version = derivations.get("derivation_version")
@@ -628,16 +895,28 @@ def ingest_cohort_publication(
         readers=INGESTION_READERS,
         required_capabilities=required_capabilities,
         unavailable_capabilities=MappingProxyType(dict(sorted(unavailable.items()))),
+        label_derivations=MappingProxyType({
+            "physics_macro_labels_v1": MappingProxyType({
+                "derivation_spec_version": MACRO_DERIVATION_SPEC_VERSION,
+                "derivation_spec_digest": macro_derivation_spec_digest(),
+            }),
+            "physics_relational_supervision_v1": MappingProxyType({
+                "derivation_spec_version": RELATIONAL_DERIVATION_SPEC_VERSION,
+                "derivation_spec_digest": relational_derivation_spec_digest(),
+            }),
+        }),
         rollout_count=len(rollouts),
-        frame_count=frame_count,
+        frame_record_count=frame_record_count,
         event_count=event_count,
-        identity_aligned_frame_count=identity_count,
-        fixed_step_aligned_event_count=aligned_event_count,
+        identity_aligned_frame_record_count=identity_aligned_frame_record_count,
+        fixed_step_aligned_event_count=fixed_step_aligned_event_count,
         available_capabilities=MappingProxyType(dict(sorted(available.items()))),
-        unavailable_relational_label_count=unavailable_label_count,
-        terminal_observation_count=terminal_count,
-        macro_frame_count=macro_count,
-        relational_frame_count=relational_count,
+        unavailable_relational_label_count=unavailable_relational_label_count,
+        terminal_observation_count=terminal_observation_count,
+        macro_label_record_count=macro_label_record_count,
+        relational_label_record_count=relational_label_record_count,
+        experiment_macro_label_record_count=experiment_macro_label_record_count,
+        experiment_relational_label_record_count=experiment_relational_label_record_count,
     )
 
 

@@ -235,7 +235,8 @@ class EventInterval:
 
 @dataclass(frozen=True, slots=True)
 class MacroFrameLabel:
-    """All five macro predicates bound to one accepted state and its RGB frame."""
+    """Macro predicates bound to one accepted state; strict artifact reads carry all five,
+    while downstream release readers may project the accepted subset."""
 
     identity: StateIdentity
     predicates: tuple[tuple[MacroPredicate, PredicateLabel], ...]

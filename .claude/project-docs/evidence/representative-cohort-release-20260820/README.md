@@ -29,6 +29,6 @@ This release completes #31. It does not claim the broader #18 definition of done
 
 ## Downstream ingestion — issue #32
 
-The immutable publication and all required authoritative sidecars were smoke-ingested through the public partition, scenario-manifest, physics-capture, macro-label, relational-label, and world-model supervision readers. The proof preserves all 24 frame identities, all 36 fixed-step event assignments, all four terminal observations, and all 608 explicitly unavailable relational labels. Missing capabilities, malformed artifacts, unknown sidecar-reference fields, and derivations bound to another cohort release fail closed.
+The immutable publication and all required authoritative sidecars were smoke-ingested through the public partition, scenario-manifest, physics-capture, macro-label, relational-label, and world-model supervision readers. The proof preserves all 24 frame-record identities, all 36 fixed-step event assignments, all four terminal observations, and all 608 explicitly unavailable relational labels. Missing capabilities, malformed artifacts, unknown sidecar-reference fields, and derivations bound to another cohort release fail closed.
 
-Evidence: `downstream-ingestion-v1.json`
+Evidence: `downstream-ingestion-v2.json`
