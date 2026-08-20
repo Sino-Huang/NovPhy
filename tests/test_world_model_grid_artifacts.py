@@ -31,12 +31,12 @@ def _state(index: int) -> artifacts.BestPairState:
 
 def _manifest(count: int = 4096) -> artifacts.SweepManifest:
     return artifacts.SweepManifest(
-        source_digest="a" * 64,
-        checkpoint_digest="b" * 64,
-        catalog_digest="c" * 64,
-        grid_digest="d" * 64,
-        score_digest="e" * 64,
-        partition_digest="f" * 64,
+        source_identity="best-pair-source-v1:fixture",
+        checkpoint_path="checkpoint.pt",
+        catalog_identity="episode-catalog-v1:dev:legacy_rgb_v1:1:collector_v1",
+        grid_identity="pair-grid-v1:continuous",
+        score_identity="pair-score-spec-v1:fixture",
+        partition_identity="partition-v1:fixture",
         state_count=count,
         shard_size=4096,
     )
@@ -55,16 +55,16 @@ class GridArtifactTests(unittest.TestCase):
             first_bytes = {path.name: path.read_bytes() for path in root.iterdir()}
             self.assertEqual(len(first.shards), 2)
             second = artifacts.write_best_pair_artifacts(root, _manifest(8192), states, resume=True)
-            self.assertEqual(first.manifest_digest, second.manifest_digest)
+            self.assertEqual(first, second)
             self.assertEqual(first_bytes, {path.name: path.read_bytes() for path in root.iterdir()})
             self.assertEqual(artifacts.validate_best_pair_artifacts(root), second)
 
-    def test_tampered_source_and_order_fail_validation(self) -> None:
+    def test_changed_source_identity_and_order_fail_validation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "run"
             artifacts.write_best_pair_artifacts(root, _manifest(), tuple(_state(i) for i in range(4096)))
             payload = json.loads((root / "manifest.json").read_text())
-            payload["source_digest"] = "0" * 64
+            payload["source_identity"] = "best-pair-source-v1:changed"
             (root / "manifest.json").write_bytes(artifacts.canonical_json_bytes(payload))
             with self.assertRaises(artifacts.ArtifactValidationError):
                 artifacts.validate_best_pair_artifacts(root, _manifest())

@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -20,6 +19,7 @@ import shutil
 import tempfile
 from types import MappingProxyType
 from typing import Any, Literal, Protocol
+from urllib.parse import quote
 
 from scripts.scenario_manifest import (
     SCENARIO_MANIFEST_PROJECTION_FIELDS,
@@ -72,8 +72,13 @@ def _canonical_json(value: Any) -> bytes:
     return json.dumps(value, ensure_ascii=False, allow_nan=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 
-def _identity(namespace: str, value: Any) -> str:
-    return f"{namespace}:sha256:{sha256(_canonical_json(value)).hexdigest()}"
+def _identity(namespace: str, *keys: Any) -> str:
+    return ":".join(
+        (
+            namespace,
+            *(quote(str(key), safe="-._~") for key in keys),
+        )
+    )
 
 
 def _freeze(value: Any) -> Any:
@@ -171,7 +176,7 @@ class CollectionIntervention:
 
     @property
     def identity(self) -> str:
-        return _identity(INTERVENTION_IDENTITY_NAMESPACE, self.to_dict())
+        return _identity(INTERVENTION_IDENTITY_NAMESPACE, self.id, self.ordinal)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -201,7 +206,7 @@ class CollectionScenario:
 
     @property
     def identity(self) -> str:
-        return _identity(SCENARIO_IDENTITY_NAMESPACE, self.to_dict())
+        return _identity(SCENARIO_IDENTITY_NAMESPACE, self.scenario_id)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -248,11 +253,7 @@ class CollectionPlan:
         if len(scenario_ids) != len(set(scenario_ids)):
             raise ValueError("Collection plan scenario IDs must be unique")
         identity = _require_nonempty_string(data["identity"], "Collection plan identity")
-        plan = cls(SCHEMA, plan_version, identity, scenarios)
-        expected_identity = _plan_identity(plan_version, scenarios)
-        if identity != expected_identity:
-            raise ValueError("Collection plan identity is stale")
-        return plan
+        return cls(SCHEMA, plan_version, identity, scenarios)
 
 
 @dataclass(frozen=True, slots=True)
@@ -622,7 +623,8 @@ def _scenario_from_dict(data: Any) -> CollectionScenario:
 def _plan_identity(plan_version: int, scenarios: tuple[CollectionScenario, ...]) -> str:
     return _identity(
         PLAN_IDENTITY_NAMESPACE,
-        {"schema": SCHEMA, "plan_version": plan_version, "scenarios": [scenario.to_dict() for scenario in scenarios]},
+        plan_version,
+        *[scenario.scenario_id for scenario in scenarios],
     )
 
 
@@ -942,12 +944,10 @@ def execute_collection_plan(
             for attempt_number in range(1, scenario.retry_policy.max_attempts + 1):
                 attempt_id = _identity(
                     ATTEMPT_IDENTITY_NAMESPACE,
-                    {
-                        "plan_identity": loaded.plan.identity,
-                        "scenario_identity": scenario.identity,
-                        "intervention_identity": intervention.identity,
-                        "attempt_number": attempt_number,
-                    },
+                    loaded.plan.identity,
+                    scenario.scenario_id,
+                    intervention.id,
+                    attempt_number,
                 )
                 request = RuntimeInput(
                     plan_identity=loaded.plan.identity,

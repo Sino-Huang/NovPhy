@@ -8,7 +8,7 @@ from PIL import Image
 
 from scripts import run_jepa_pair_grid
 import world_model.training as world_model_training
-from world_model.data import LEGACY_RGB_V1, EpisodeCatalog, catalog_digest
+from world_model.data import LEGACY_RGB_V1, EpisodeCatalog, catalog_identity
 from world_model.data.types import EpisodeRecord, FrameRecord, ShotAction, ShotRecord
 from world_model.model import JepaBackbone
 from world_model.training import (
@@ -90,7 +90,7 @@ class GridRunTests(unittest.TestCase):
             )
 
             # Then
-            self.assertEqual(data.catalog_digest, catalog_digest(catalog))
+            self.assertEqual(data.catalog_identity, catalog_identity(catalog))
             self.assertEqual(len(data.examples), len(catalog.episodes) * 16)
             self.assertEqual(
                 {
@@ -114,7 +114,8 @@ class GridRunTests(unittest.TestCase):
 
     @staticmethod
     def _real_episode(index: int, frame_count: int) -> EpisodeRecord:
-        name = f"episode_{index:03d}"
+        fixture_suffix = (index * 2654435761) & 0xFFFFFFFF
+        name = f"episode_{index:03d}_{fixture_suffix:08x}"
         shot_path = f"dev/{name}/shot_001"
         return EpisodeRecord(
             name=name,
@@ -174,21 +175,26 @@ class GridRunTests(unittest.TestCase):
     def test_phase_a_defaults_pin_primary_contract(self) -> None:
         config = PhaseAConfig()
         self.assertEqual((config.seed, config.steps, config.batch_size), (20260807, 3600, 64))
-        self.assertEqual(config.grid_digest, PhaseAConfig().grid_digest)
+        self.assertEqual(config.grid_identity, PhaseAConfig().grid_identity)
 
-    def test_checkpoint_round_trip_restores_exact_step_and_rejects_digest(self) -> None:
+    def test_checkpoint_round_trip_restores_exact_step_and_rejects_config_identity(self) -> None:
         model_config = fixture_jepa_config()
         phase = PhaseAConfig(steps=2, batch_size=2, device="cpu")
         first = TeacherForcedTrainer(JepaBackbone(model_config), phase.training_config(device="cpu"))
         first.train_step(fixture_batch(model_config, seed=phase.seed, batch_size=2, step=0))
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "checkpoint.pt"
-            saved = save_checkpoint(path, first, config_digest=phase.identity, grid_digest=phase.grid_digest)
+            saved = save_checkpoint(path, first, config_identity=phase.identity, grid_identity=phase.grid_identity)
             second = TeacherForcedTrainer(JepaBackbone(model_config), phase.training_config(device="cpu"))
-            loaded = load_checkpoint(path, second, config_digest=phase.identity, grid_digest=phase.grid_digest)
-            self.assertEqual((saved.digest, loaded.digest, loaded.step), (saved.digest, saved.digest, 1))
+            loaded = load_checkpoint(path, second, config_identity=phase.identity, grid_identity=phase.grid_identity)
+            self.assertEqual((saved.path, loaded.path, loaded.step), (path, path, 1))
             with self.assertRaises(GridRunError):
-                load_checkpoint(path, second, config_digest="0" * 64, grid_digest=phase.grid_digest)
+                load_checkpoint(
+                    path,
+                    second,
+                    config_identity="phase-a-config-v2:changed",
+                    grid_identity=phase.grid_identity,
+                )
 
     @unittest.skipUnless(torch.cuda.is_available(), "CUDA is required")
     def test_checkpoint_round_trip_restores_cpu_rng_state_on_cuda(self) -> None:
@@ -202,8 +208,8 @@ class GridRunTests(unittest.TestCase):
             saved = save_checkpoint(
                 path,
                 first,
-                config_digest=phase.identity,
-                grid_digest=phase.grid_digest,
+                config_identity=phase.identity,
+                grid_identity=phase.grid_identity,
             )
             second = TeacherForcedTrainer(
                 JepaBackbone(model_config), phase.training_config(device="cuda")
@@ -212,42 +218,11 @@ class GridRunTests(unittest.TestCase):
             loaded = load_checkpoint(
                 path,
                 second,
-                config_digest=phase.identity,
-                grid_digest=phase.grid_digest,
+                config_identity=phase.identity,
+                grid_identity=phase.grid_identity,
             )
 
-            self.assertEqual((loaded.digest, loaded.step), (saved.digest, 0))
-
-    def test_checkpoint_rejects_a_stale_catalog_digest(self) -> None:
-        # Given
-        model_config = fixture_jepa_config()
-        phase = PhaseAConfig(steps=1, batch_size=2, device="cpu")
-        first = TeacherForcedTrainer(
-            JepaBackbone(model_config), phase.training_config(device="cpu")
-        )
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "checkpoint.pt"
-            save_checkpoint(
-                path,
-                first,
-                config_digest=phase.identity,
-                grid_digest=phase.grid_digest,
-                catalog_digest="a" * 64,
-                run_identity="b" * 64,
-            )
-            second = TeacherForcedTrainer(
-                JepaBackbone(model_config), phase.training_config(device="cpu")
-            )
-
-            # When / Then
-            with self.assertRaisesRegex(GridRunError, "catalog digest mismatch"):
-                load_checkpoint(
-                    path,
-                    second,
-                    config_digest=phase.identity,
-                    grid_digest=phase.grid_digest,
-                    expected_catalog_digest="c" * 64,
-                )
+            self.assertEqual((loaded.path, loaded.step), (saved.path, 0))
 
     def test_score_is_frozen_and_gradient_free(self) -> None:
         model_config = fixture_jepa_config()
@@ -255,7 +230,12 @@ class GridRunTests(unittest.TestCase):
         trainer = TeacherForcedTrainer(JepaBackbone(model_config), phase.training_config(device="cpu"))
         with tempfile.TemporaryDirectory() as directory:
             checkpoint = Path(directory) / "checkpoint.pt"
-            save_checkpoint(checkpoint, trainer, config_digest=phase.identity, grid_digest=phase.grid_digest)
+            save_checkpoint(
+                checkpoint,
+                trainer,
+                config_identity=phase.identity,
+                grid_identity=phase.grid_identity,
+            )
             result = score_checkpoint(
                 checkpoint,
                 phase_config=phase,

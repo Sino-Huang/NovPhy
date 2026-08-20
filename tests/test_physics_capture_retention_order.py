@@ -2,7 +2,7 @@ from __future__ import annotations
 
 """Promote the F1/F2 emitter-ordering probe to a tracked regression case.
 
-The probe (`.claude/project-docs/evidence/runtime-repin-gate-20260810/
+The GitHub issue #44 runtime probe
 probe_raw_contact_order.py`) proved that the emitter's cumulative, step-major
 `raw_contacts` array violates the frozen parser contract at
 `scripts/physics_capture_parsing.py:281`, and that the same set globally sorted

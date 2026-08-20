@@ -1,9 +1,9 @@
 """Read-only legacy-dev adapter for Phase-A training and exhaustive scoring."""
 from __future__ import annotations
 
-import json
 import os
 import random
+import zlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
@@ -13,9 +13,9 @@ import torch
 from PIL import Image, UnidentifiedImageError
 from torch.nn import functional
 
-from world_model.data import LEGACY_RGB_V1, EpisodeCatalog, catalog_digest
+from world_model.data import LEGACY_RGB_V1, EpisodeCatalog, catalog_identity
 from world_model.data.types import ShotRecord
-from world_model.model import JepaConfig, PredictionPair, digest
+from world_model.model import JepaConfig, PredictionPair, identity
 from world_model.training.frontier import FRONTIER_INPUT_SCHEMA
 from world_model.training.grid_artifacts import ALPHA_EXCLUSIONS, canonical_json_bytes
 from world_model.training.grid_data import (
@@ -32,6 +32,7 @@ from world_model.training.grid_run import CheckpointInfo, GridRunError, PhaseACo
 from world_model.training.scoring import Partition, ScoringExample
 from world_model.training.scoring_artifacts import (
     ScoreArtifactReceipt,
+    score_state_set_identity,
     validate_score_artifacts,
 )
 
@@ -85,7 +86,7 @@ class RealPhaseData:
     """Frozen catalog/index snapshot used by both training and scoring."""
 
     catalog: EpisodeCatalog
-    catalog_digest: str
+    catalog_identity: str
     partitions: EpisodePartitions
     calibration: MotionCalibration
     states: tuple[ScoringState, ...]
@@ -99,6 +100,18 @@ class RealPhaseData:
     _image_size: tuple[int, int]
     _seed: int
 
+    @property
+    def partition_identity(self) -> str:
+        return self.partitions.identity
+
+    @property
+    def state_set_identity(self) -> str:
+        return score_state_set_identity(
+            self.catalog_identity,
+            self.partition_identity,
+            tuple(example.state_id for example in self.examples),
+        )
+
     @classmethod
     def build(
         cls,
@@ -111,7 +124,7 @@ class RealPhaseData:
         catalog = EpisodeCatalog.build(dataset_root, "dev", LEGACY_RGB_V1)
         if not catalog.episodes:
             raise GridRunError("legacy dev catalog contains no accepted episodes")
-        catalog_id = catalog_digest(catalog)
+        catalog_id = catalog_identity(catalog)
         partitions = partition_episodes(catalog, seed=phase_config.seed)
         membership = {
             Partition.CONTROLLER_TRAIN: frozenset(item.relative_path for item in partitions.controller_train),
@@ -162,8 +175,8 @@ class RealPhaseData:
         empty = tuple(name for name, values in pools.items() if not values)
         if empty:
             raise GridRunError(f"real training has no eligible windows for keys: {empty}")
-        run_identity = digest(
-            ("phase-a-real-run-v1", catalog_id, phase_config.identity, phase_config.grid_digest, model_config.identity)
+        run_identity = identity(
+            ("phase-a-real-run-v1", catalog_id, phase_config.identity, phase_config.grid_identity, model_config.identity)
         )
         return cls(
             catalog, catalog_id, partitions, calibration, states, tuple(examples), run_identity,
@@ -214,7 +227,11 @@ class RealPhaseData:
         self, pair: PredictionPair, regime: MotionRegime, batch_size: int, step: int
     ) -> dict[str, object]:
         pool = self._train_pools[_key(pair, regime)]
-        selector_seed = int(digest(("real-grid-selector-v1", self._seed, step, pair.identity, regime.value)), 16)
+        selector_declaration = identity(
+            ("real-grid-selector-v1", self._seed, step, pair.identity, regime.value)
+        )
+        # Deterministic non-integrity derivation for the local PRNG seed.
+        selector_seed = zlib.crc32(selector_declaration.encode("utf-8"))
         selector = random.Random(selector_seed)
         selected = tuple(pool[selector.randrange(len(pool))] for _ in range(batch_size))
         triples = tuple(
@@ -249,18 +266,17 @@ def write_real_sweep_manifest(
 ) -> None:
     payload = {
         "schema_version": "phase_a_real_sweep_v1",
-        "catalog_digest": data.catalog_digest,
-        "checkpoint_digest": checkpoint.digest,
+        "catalog_identity": data.catalog_identity,
+        "checkpoint_path": str(checkpoint.path),
         "checkpoint_step": checkpoint.step,
-        "config_digest": phase_config.identity,
+        "config_identity": phase_config.identity,
         "excluded_abstractions": list(ALPHA_EXCLUSIONS),
-        "grid_digest": phase_config.grid_digest,
+        "grid_identity": phase_config.grid_identity,
         "key_counts": dict(checkpoint.key_counts),
         "motion_calibration": data.calibration.metadata,
         "partitions": data.partitions.membership,
         "run_identity": data.run_identity,
         "reproducibility": phase_config.reproducibility.canonical,
-        "score_manifest_digest": score.manifest_digest,
         "score_count": score.score_count,
         "state_count": score.state_count,
     }
@@ -268,18 +284,13 @@ def write_real_sweep_manifest(
 
 
 def write_frontier_input(score_root: Path, path: Path) -> None:
-    receipt = validate_score_artifacts(score_root)
-    manifest = json.loads((score_root / "manifest.json").read_bytes())
+    validate_score_artifacts(score_root)
     payload = {
-        "checkpoint_digest": manifest["checkpoint_digest"],
         "partition": "evaluation",
         "schema_version": FRONTIER_INPUT_SCHEMA,
         "score_artifact_root": Path(
             os.path.relpath(score_root.resolve(), start=path.parent.resolve())
         ).as_posix(),
-        "score_manifest_digest": receipt.manifest_digest,
-        "score_spec_digest": manifest["score_spec_digest"],
-        "state_digest": manifest["state_digest"],
     }
     _atomic_write(path, canonical_json_bytes(payload))
 

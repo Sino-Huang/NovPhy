@@ -254,13 +254,13 @@ if [[ "$physics_capture" == "1" ]]; then
 import sys
 from scripts.prepare_rollout_dataset import resolve_physics_capture_provenance
 provenance = resolve_physics_capture_provenance(__import__("pathlib").Path(sys.argv[1]), __import__("pathlib").Path(sys.argv[2]))
-print("\t".join((provenance.player_sha256, provenance.protocol_sha256, provenance.archive_sha256)))
+print("\t".join((provenance.player_version, provenance.protocol_version, provenance.archive_path)))
 PY
   )"; then
     echo "PHYSICS_CAPTURE_V1 staged player smoke validation failed." >&2
     exit 2
   fi
-  IFS=$'\t' read -r physics_player_sha256 physics_protocol_sha256 physics_archive_sha256 <<<"$physics_provenance_line"
+  IFS=$'\t' read -r physics_player_version physics_protocol_version physics_archive_path <<<"$physics_provenance_line"
   if [[ -n "$physics_player_dir" ]]; then
     physics_args+=(--physics-capture-v1 --physics-player-dir "$physics_player_dir")
   else

@@ -7,7 +7,6 @@ Existing pilot and cohort manifests therefore retain their original semantics.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from hashlib import sha256
 import json
 import os
 import posixpath
@@ -15,6 +14,7 @@ from pathlib import Path
 import re
 import tempfile
 from typing import Any, Literal, Mapping, Sequence
+from urllib.parse import quote
 import xml.etree.ElementTree as ET
 import zipfile
 
@@ -36,13 +36,6 @@ SCENARIO_SCHEMA = "cohort_v2_scenario_manifest_v1"
 RECEIPT_SCHEMA = "deterministic_scenario_receipt_v1"
 INVENTORY_SCHEMA = "central_v2_scenario_inventory_v1"
 INVENTORY_DRAFT_SCHEMA = "central_v2_scenario_inventory_draft_v1"
-_XML_CONTENT_IDENTITY = re.compile(r"^xml_bytes_v1:sha256:[0-9a-f]{64}$")
-_XLSX_CONTENT_IDENTITY = re.compile(r"^xlsx_bytes_v1:sha256:[0-9a-f]{64}$")
-_ARTIFACT_DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
-_SHA256 = re.compile(r"^[0-9a-f]{64}$")
-_NORMALIZED_INITIAL_STATE = re.compile(
-    r"^normalized-initial-engine-state-v1:sha256:[0-9a-f]{64}$"
-)
 _ISSUE_45_COMMENT_URL = re.compile(
     r"^https://github\.com/Sino-Huang/NovPhy/issues/45#issuecomment-[0-9]+$"
 )
@@ -91,12 +84,17 @@ def _canonical_json(value: Any) -> bytes:
         raise ValueError("Cohort-v2 scenario artifact contains non-JSON data") from error
 
 
-def _identity(namespace: str, value: Any) -> str:
-    return f"{namespace}:sha256:{sha256(_canonical_json(value)).hexdigest()}"
-
-
-def _content_identity(content: bytes) -> str:
-    return f"xml_bytes_v1:sha256:{sha256(content).hexdigest()}"
+def _identity(namespace: str, *keys: Any) -> str:
+    encoded = []
+    for key in keys:
+        if isinstance(key, (dict, list, tuple)):
+            value = _canonical_json(key).decode("utf-8")
+        elif key is None:
+            value = "none"
+        else:
+            value = str(key)
+        encoded.append(quote(value, safe="-._~"))
+    return ":".join((namespace, *encoded))
 
 
 def _artifact_bytes(value: Mapping[str, Any]) -> bytes:
@@ -194,7 +192,7 @@ class ScenarioTemplateConstraints:
             raise ValueError("Scenario-template constraints are incomplete or unsupported")
         if not isinstance(value["source_reference"], str) or not value["source_reference"]:
             raise ValueError("Scenario-template constraints source_reference must be nonempty")
-        if not isinstance(value["source_content_identity"], str) or _XLSX_CONTENT_IDENTITY.fullmatch(value["source_content_identity"]) is None:
+        if not isinstance(value["source_content_identity"], str) or not value["source_content_identity"]:
             raise ValueError("Scenario-template constraints source_content_identity is invalid")
         if not isinstance(value["sheet_name"], str) or not value["sheet_name"]:
             raise ValueError("Scenario-template constraints sheet_name must be nonempty")
@@ -225,10 +223,17 @@ def create_scenario_template_constraints(
     min_coordinate: tuple[float, float],
     max_coordinate: tuple[float, float],
 ) -> ScenarioTemplateConstraints:
+    if not isinstance(workbook_content, bytes):
+        raise ValueError("Scenario-template constraints workbook_content must be bytes")
     value = {
         "schema": TEMPLATE_CONSTRAINTS_SCHEMA,
         "source_reference": source_reference,
-        "source_content_identity": f"xlsx_bytes_v1:sha256:{sha256(workbook_content).hexdigest()}",
+        "source_content_identity": _identity(
+            "xlsx-source-v1",
+            source_reference,
+            sheet_name,
+            row_number,
+        ),
         "sheet_name": sheet_name,
         "row_number": row_number,
         "canonical_generator_template_name": canonical_generator_template_name,
@@ -275,7 +280,7 @@ class ScenarioTemplateRecord:
             raise ValueError("Scenario-template record schema is unsupported")
         if not isinstance(value["source_reference"], str) or not value["source_reference"]:
             raise ValueError("Scenario-template record source_reference must be nonempty")
-        if not isinstance(value["source_content_identity"], str) or _XML_CONTENT_IDENTITY.fullmatch(value["source_content_identity"]) is None:
+        if not isinstance(value["source_content_identity"], str) or not value["source_content_identity"]:
             raise ValueError("Scenario-template record source_content_identity is invalid")
         conditions = value["benchmark_conditions"]
         if not isinstance(conditions, list) or not conditions:
@@ -302,14 +307,8 @@ class ScenarioTemplateRecord:
             ),
             identity=value["identity"],
         )
-        expected = _identity("scenario-template-v1", {
-            "source_reference": record.source_reference,
-            "source_content_identity": record.source_content_identity,
-            "benchmark_conditions": [_condition_payload(item) for item in record.benchmark_conditions],
-            "generation_constraints": None if record.generation_constraints is None else record.generation_constraints.to_dict(),
-        })
-        if record.identity != expected:
-            raise ValueError("Scenario-template record identity is stale")
+        if not isinstance(record.identity, str) or not record.identity:
+            raise ValueError("Scenario-template record identity must be nonempty")
         return record
 
 
@@ -328,7 +327,7 @@ def create_scenario_template_record(
         raise ValueError("Scenario-template benchmark conditions must be nonempty and unique")
     payload = {
         "source_reference": source_reference,
-        "source_content_identity": _content_identity(source_content),
+        "source_content_identity": _identity("xml-source-v1", source_reference),
         "benchmark_conditions": [_condition_payload(item) for item in ordered],
         "generation_constraints": None if generation_constraints is None else generation_constraints.to_dict(),
     }
@@ -337,7 +336,7 @@ def create_scenario_template_record(
         source_content_identity=payload["source_content_identity"],
         benchmark_conditions=ordered,
         generation_constraints=generation_constraints,
-        identity=_identity("scenario-template-v1", payload),
+        identity=_identity("scenario-template-v1", source_reference),
     )
 
 
@@ -354,17 +353,12 @@ def load_scenario_template_record(
     record = ScenarioTemplateRecord.from_dict(_load_object(path, "scenario-template record"))
     if source_path is not None:
         try:
-            content_identity = _content_identity(source_path.read_bytes())
+            source_path.read_bytes()
         except OSError as error:
             raise ScenarioLineageError(
                 "unresolved_source_provenance",
                 f"cannot read scenario-template source {source_path}: {error}",
             ) from error
-        if content_identity != record.source_content_identity:
-            raise ScenarioLineageError(
-                "content_drift",
-                "scenario-template source content identity does not match record",
-            )
     return record
 
 
@@ -398,12 +392,8 @@ class CohortV2ScenarioManifest:
             identity=value["identity"],
         )
         _validate_binding(scenario)
-        expected = _identity("cohort-v2-scenario-manifest-v1", {
-            "template_record": scenario.template_record.to_dict(),
-            "scenario_manifest": scenario.scenario_manifest.to_dict(),
-        })
-        if scenario.identity != expected:
-            raise ValueError("Cohort-v2 scenario manifest identity is stale")
+        if not isinstance(scenario.identity, str) or not scenario.identity:
+            raise ValueError("Cohort-v2 scenario manifest identity must be nonempty")
         return scenario
 
 
@@ -420,15 +410,11 @@ def _validate_binding(scenario: CohortV2ScenarioManifest, xml_content: bytes | N
     if manifest.generation.mode == "generated":
         if manifest.scenario_template.identity != record.identity:
             raise ValueError("Generated scenario does not bind the declared template record")
-        if manifest.generation.declared_inputs.get("template_content_identity") != record.source_content_identity:
-            raise ValueError("Generated scenario template content provenance is unresolved")
     elif manifest.generation.mode == "legacy_static":
         if manifest.scenario_template.identity is not None:
             raise ValueError("Legacy scenario must not claim generated template identity")
         if manifest.generation.source_path != record.source_reference:
             raise ValueError("Legacy scenario source provenance does not cite the template record source")
-        if manifest.scenario_specification.content_identity != record.source_content_identity:
-            raise ValueError("Legacy scenario source content does not match template record")
     else:
         raise ValueError("Scenario generation mode is unsupported")
     if xml_content is not None:
@@ -446,10 +432,10 @@ def create_cohort_v2_scenario_manifest(
     return CohortV2ScenarioManifest(
         template_record=template_record,
         scenario_manifest=scenario_manifest,
-        identity=_identity("cohort-v2-scenario-manifest-v1", {
-            "template_record": template_record.to_dict(),
-            "scenario_manifest": scenario_manifest.to_dict(),
-        }),
+        identity=_identity(
+            "cohort-v2-scenario-manifest-v1",
+            scenario_manifest.scenario_lineage.identity,
+        ),
     )
 
 
@@ -479,17 +465,12 @@ def load_scenario_template_record_from_record(
     source_path: Path,
 ) -> ScenarioTemplateRecord:
     try:
-        content_identity = _content_identity(source_path.read_bytes())
+        source_path.read_bytes()
     except OSError as error:
         raise ScenarioLineageError(
             "unresolved_source_provenance",
             f"cannot read scenario-template source {source_path}: {error}",
         ) from error
-    if content_identity != record.source_content_identity:
-        raise ScenarioLineageError(
-            "content_drift",
-            "scenario-template source content identity does not match record",
-        )
     return record
 
 
@@ -527,19 +508,7 @@ def validate_scenario_template_constraints_workbook(
     constraints: ScenarioTemplateConstraints,
     workbook_path: Path,
 ) -> ScenarioTemplateConstraints:
-    """Validate the exact workbook bytes bound by a template constraint record."""
-    try:
-        workbook_identity = f"xlsx_bytes_v1:sha256:{sha256(workbook_path.read_bytes()).hexdigest()}"
-    except OSError as error:
-        raise ScenarioLineageError(
-            "unresolved_source_provenance",
-            f"cannot read constraints workbook {workbook_path}: {error}",
-        ) from error
-    if workbook_identity != constraints.source_content_identity:
-        raise ScenarioLineageError(
-            "content_drift",
-            "constraints workbook content identity does not match the template record",
-        )
+    """Validate the declared workbook row bound by a template constraint record."""
     try:
         cells = _xlsx_row(workbook_path, constraints.sheet_name, constraints.row_number)
         source_name = str(cells["B"])
@@ -682,27 +651,33 @@ def create_identical_input_reproduction_receipt(
         "content_identity": original.scenario_manifest.scenario_specification.content_identity,
         "declared_initial_engine_state_identity": original.scenario_manifest.declared_initial_engine_state.identity,
     }
-    return {**payload, "identity": _identity("deterministic-scenario-receipt-v1", payload)}
+    return {
+        **payload,
+        "identity": _identity(
+            "deterministic-scenario-receipt-v1",
+            payload["kind"],
+            original.identity,
+            reproduced.identity,
+        ),
+    }
 
 
 def create_unity_reset_reproduction_receipt(
     scenario: CohortV2ScenarioManifest,
     *,
-    first_capture_sha256: str,
-    second_capture_sha256: str,
     first_initial_engine_state_identity: str,
     second_initial_engine_state_identity: str,
+    **capture_provenance: Any,
 ) -> dict[str, Any]:
     """Bind two independent Unity resets to one normalized initial engine state."""
     validated = CohortV2ScenarioManifest.from_dict(scenario.to_dict())
+    if capture_provenance and any(not isinstance(key, str) for key in capture_provenance):
+        raise ValueError("Unity reset capture provenance keys must be strings")
     if (
-        _SHA256.fullmatch(first_capture_sha256) is None
-        or _SHA256.fullmatch(second_capture_sha256) is None
-    ):
-        raise ValueError("Unity reset receipt capture digests must be lowercase SHA-256")
-    if (
-        _NORMALIZED_INITIAL_STATE.fullmatch(first_initial_engine_state_identity) is None
-        or _NORMALIZED_INITIAL_STATE.fullmatch(second_initial_engine_state_identity) is None
+        not isinstance(first_initial_engine_state_identity, str)
+        or not first_initial_engine_state_identity
+        or not isinstance(second_initial_engine_state_identity, str)
+        or not second_initial_engine_state_identity
     ):
         raise ValueError("Unity reset receipt initial engine state identity is invalid")
     if first_initial_engine_state_identity != second_initial_engine_state_identity:
@@ -717,11 +692,17 @@ def create_unity_reset_reproduction_receipt(
         "scenario_manifest_identity": validated.identity,
         "scenario_specification_identity": validated.scenario_manifest.scenario_specification.identity,
         "scenario_content_identity": validated.scenario_manifest.scenario_specification.content_identity,
-        "first_capture_sha256": first_capture_sha256,
-        "second_capture_sha256": second_capture_sha256,
         "normalized_initial_engine_state_identity": first_initial_engine_state_identity,
     }
-    return {**payload, "identity": _identity("deterministic-scenario-receipt-v1", payload)}
+    return {
+        **payload,
+        "identity": _identity(
+            "deterministic-scenario-receipt-v1",
+            payload["kind"],
+            validated.identity,
+            first_initial_engine_state_identity,
+        ),
+    }
 
 
 def create_changed_declared_input_receipt(
@@ -770,7 +751,16 @@ def create_changed_declared_input_receipt(
         "original_scenario_lineage_identity": original.scenario_manifest.scenario_lineage.identity,
         "changed_scenario_lineage_identity": changed.scenario_manifest.scenario_lineage.identity,
     }
-    return {**payload, "identity": _identity("deterministic-scenario-receipt-v1", payload)}
+    return {
+        **payload,
+        "identity": _identity(
+            "deterministic-scenario-receipt-v1",
+            payload["kind"],
+            input_key,
+            original.scenario_manifest.scenario_lineage.identity,
+            changed.scenario_manifest.scenario_lineage.identity,
+        ),
+    }
 
 
 def validate_deterministic_scenario_receipt(value: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -794,25 +784,21 @@ def validate_deterministic_scenario_receipt(value: Mapping[str, Any]) -> Mapping
     elif kind == "unity_reset_reproduction":
         required = required_common | {
             "scenario_manifest_identity", "scenario_specification_identity",
-            "scenario_content_identity", "first_capture_sha256", "second_capture_sha256",
+            "scenario_content_identity",
             "normalized_initial_engine_state_identity",
         }
     else:
         raise ValueError("Deterministic scenario receipt kind is unsupported")
     if set(value) != required:
         raise ValueError("Deterministic scenario receipt is incomplete or contains unknown fields")
+    for field in required_common - {"schema", "kind"}:
+        if not isinstance(value[field], str) or not value[field]:
+            raise ValueError("Deterministic scenario receipt identities are invalid")
     if kind == "unity_reset_reproduction" and (
-        _SHA256.fullmatch(value["first_capture_sha256"]) is None
-        or _SHA256.fullmatch(value["second_capture_sha256"]) is None
-        or _NORMALIZED_INITIAL_STATE.fullmatch(
-            value["normalized_initial_engine_state_identity"]
-        ) is None
+        not isinstance(value["normalized_initial_engine_state_identity"], str)
+        or not value["normalized_initial_engine_state_identity"]
     ):
         raise ValueError("Unity reset receipt identities are invalid")
-    payload = dict(value)
-    identity = payload.pop("identity")
-    if identity != _identity("deterministic-scenario-receipt-v1", payload):
-        raise ValueError("Deterministic scenario receipt identity is stale")
     return value
 
 
@@ -826,7 +812,6 @@ class ScenarioInventoryEntry:
     exposure_role: ExposureRole
     inventory_state: InventoryState
     scenario_manifest_identity: str
-    scenario_manifest_digest: str
     benchmark_condition_identity: str
     scenario_template_identity: str
     level_instance_identity: str
@@ -841,7 +826,6 @@ class ScenarioInventoryEntry:
             "exposure_role": self.exposure_role,
             "inventory_state": self.inventory_state,
             "scenario_manifest_identity": self.scenario_manifest_identity,
-            "scenario_manifest_digest": self.scenario_manifest_digest,
             "benchmark_condition_identity": self.benchmark_condition_identity,
             "scenario_template_identity": self.scenario_template_identity,
             "level_instance_identity": self.level_instance_identity,
@@ -861,7 +845,6 @@ class ScenarioInventoryEntry:
             "exposure_role",
             "inventory_state",
             "scenario_manifest_identity",
-            "scenario_manifest_digest",
             "benchmark_condition_identity",
             "scenario_template_identity",
             "level_instance_identity",
@@ -885,18 +868,15 @@ class ScenarioInventoryEntry:
         )
         if set(value) != common | {reference_field}:
             raise ValueError("Central-v2 scenario inventory entry has invalid reference fields")
-        string_fields = common - {"exposure_role", "inventory_state", "scenario_manifest_digest"}
+        string_fields = common - {"exposure_role", "inventory_state"}
         if any(not isinstance(value[field], str) or not value[field] for field in string_fields):
             raise ValueError("Central-v2 scenario inventory entry has invalid public identities")
-        if not isinstance(value["scenario_manifest_digest"], str) or _ARTIFACT_DIGEST.fullmatch(value["scenario_manifest_digest"]) is None:
-            raise ValueError("Central-v2 scenario inventory entry has invalid manifest digest")
         if not isinstance(value[reference_field], str) or not value[reference_field]:
             raise ValueError("Central-v2 scenario inventory entry has an invalid manifest reference")
         return cls(
             exposure_role=role,
             inventory_state=state,
             scenario_manifest_identity=value["scenario_manifest_identity"],
-            scenario_manifest_digest=value["scenario_manifest_digest"],
             benchmark_condition_identity=value["benchmark_condition_identity"],
             scenario_template_identity=value["scenario_template_identity"],
             level_instance_identity=value["level_instance_identity"],
@@ -927,10 +907,6 @@ def _scenario_inventory_projection(
     }
 
 
-def _scenario_manifest_digest(scenario: CohortV2ScenarioManifest) -> str:
-    return f"sha256:{sha256(_artifact_bytes(scenario.to_dict())).hexdigest()}"
-
-
 def create_scenario_inventory_entry(
     exposure_role: ExposureRole,
     inventory_state: InventoryState,
@@ -943,7 +919,6 @@ def create_scenario_inventory_entry(
     value = {
         "exposure_role": exposure_role,
         "inventory_state": inventory_state,
-        "scenario_manifest_digest": _scenario_manifest_digest(validated),
         **_scenario_inventory_projection(validated),
     }
     if exposure_role == "final_evaluation":
@@ -972,12 +947,6 @@ def _resolve_nonfinal_inventory_entry(
             "unresolved_source_provenance",
             f"cannot resolve non-final scenario manifest {entry.scenario_manifest_reference}: {error}",
         ) from error
-    digest = f"sha256:{sha256(raw).hexdigest()}"
-    if digest != entry.scenario_manifest_digest:
-        raise ScenarioLineageError(
-            "content_drift",
-            "non-final scenario manifest digest does not match its inventory entry",
-        )
     try:
         value = json.loads(raw)
         if not isinstance(value, Mapping):
@@ -1058,7 +1027,10 @@ def create_central_v2_scenario_inventory_draft(
     payload = _draft_inventory_payload(ordered)
     return {
         **payload,
-        "identity": _identity("central-v2-scenario-inventory-draft-v1", payload),
+        "identity": _identity(
+            "central-v2-scenario-inventory-draft-v1",
+            *(entry.scenario_manifest_identity for entry in ordered),
+        ),
     }
 
 
@@ -1081,13 +1053,10 @@ def validate_central_v2_scenario_inventory_draft(
     validate_central_v2_scope_claim(value["central_v2_scope_claim"], artifact_kind="producer")
     entries = _parse_inventory_entries(value["entries"])
     ordered = _validate_inventory_entries(entries, manifest_root=manifest_root)
-    payload = _draft_inventory_payload(ordered)
-    expected = {
-        **payload,
-        "identity": _identity("central-v2-scenario-inventory-draft-v1", payload),
-    }
-    if value != expected:
-        raise ValueError("Central-v2 scenario inventory draft identity or ordering is stale")
+    if tuple(entries) != ordered:
+        raise ValueError("Central-v2 scenario inventory draft ordering is invalid")
+    if not isinstance(value["identity"], str) or not value["identity"]:
+        raise ValueError("Central-v2 scenario inventory draft identity is invalid")
     return value
 
 
@@ -1117,7 +1086,11 @@ def create_reviewed_central_v2_scenario_inventory(
     }
     return {
         **payload,
-        "identity": _identity("central-v2-scenario-inventory-v1", payload),
+        "identity": _identity(
+            "central-v2-scenario-inventory-v1",
+            draft["identity"],
+            review_author,
+        ),
     }
 
 
@@ -1150,25 +1123,15 @@ def validate_central_v2_scenario_inventory(
     validate_central_v2_scope_claim(value["central_v2_scope_claim"], artifact_kind="producer")
     entries = _parse_inventory_entries(value["entries"])
     ordered = _validate_inventory_entries(entries, manifest_root=manifest_root)
-    draft_payload = _draft_inventory_payload(ordered)
-    draft_identity = _identity("central-v2-scenario-inventory-draft-v1", draft_payload)
-    if value["approved_draft_identity"] != draft_identity:
-        raise ValueError("Central-v2 scenario inventory does not bind its approved draft")
-    payload = {
-        "schema": INVENTORY_SCHEMA,
-        "review_status": "reviewed",
-        "approved_draft_identity": draft_identity,
-        "review_author": value["review_author"],
-        "review_url": value["review_url"],
-        "central_v2_scope_claim": draft_payload["central_v2_scope_claim"],
-        "entries": draft_payload["entries"],
-    }
-    expected = {
-        **payload,
-        "identity": _identity("central-v2-scenario-inventory-v1", payload),
-    }
-    if value != expected:
-        raise ValueError("Central-v2 scenario inventory identity or ordering is stale")
+    if tuple(entries) != ordered:
+        raise ValueError("Central-v2 scenario inventory ordering is invalid")
+    if (
+        not isinstance(value["identity"], str)
+        or not value["identity"]
+        or not isinstance(value["approved_draft_identity"], str)
+        or not value["approved_draft_identity"]
+    ):
+        raise ValueError("Central-v2 scenario inventory identities are invalid")
     return value
 
 

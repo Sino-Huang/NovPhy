@@ -1,23 +1,17 @@
-"""Validated, digestable configuration for the BG-NS-JEPA backbone.
+"""Validated configuration identities for the BG-NS-JEPA backbone.
 
 Every configuration object is an immutable dataclass that validates in
-``__post_init__`` and exposes a stable ``identity`` digest, matching the
-conventions already used by ``world_model.data`` (see
-``world_model/data/ablations.py``).  The digests are what a reproducibility
-manifest records, so two runs can be compared without re-reading model code.
+``__post_init__`` and exposes a stable declared ``identity``.  Manifests record
+these semantic identities directly rather than deriving integrity values.
 """
 from __future__ import annotations
 
 import json
 from dataclasses import dataclass
 from enum import StrEnum, unique
-from hashlib import sha256
-from typing import Final, TypeAlias
+from typing import Final
 
 from world_model.data.types import ContractValueError
-
-JsonValue: TypeAlias = str | int | float | bool | None | tuple["JsonValue", ...]
-
 
 @unique
 class Abstraction(StrEnum):
@@ -48,12 +42,15 @@ def coerce_abstraction(value: object) -> Abstraction:
     raise ContractValueError("abstraction", "must be an Abstraction or a declared value")
 
 
-def digest(value: JsonValue) -> str:
-    """Return a canonical sha256 over a JSON-encodable identity tuple."""
-    encoded = json.dumps(
-        value, ensure_ascii=True, allow_nan=False, separators=(",", ":")
-    ).encode("utf-8")
-    return sha256(encoded).hexdigest()
+def identity(value: object) -> str:
+    """Return a plain namespaced identity from declared semantic fields."""
+    if type(value) is not tuple or not value or type(value[0]) is not str:
+        raise ContractValueError("identity", "must begin with a string namespace")
+    namespace, *fields = value
+    declared = json.dumps(
+        fields, ensure_ascii=True, allow_nan=False, separators=(",", ":")
+    )
+    return f"{namespace}:{declared}"
 
 
 def _require_positive_integer(value: int, field: str) -> None:
@@ -135,7 +132,7 @@ class EncoderConfig:
 
     @property
     def identity(self) -> str:
-        return digest(
+        return identity(
             (
                 "jepa-encoder-config-v1",
                 self.name,
@@ -179,7 +176,7 @@ class PredictorConfig:
 
     @property
     def identity(self) -> str:
-        return digest(
+        return identity(
             (
                 "jepa-predictor-config-v1",
                 self.latent_dim,
@@ -226,7 +223,7 @@ class JepaConfig:
 
     @property
     def identity(self) -> str:
-        return digest(
+        return identity(
             (
                 "jepa-config-v1",
                 self.encoder.identity,

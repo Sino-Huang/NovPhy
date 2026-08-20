@@ -1,5 +1,4 @@
 import importlib.util
-import hashlib
 import json
 import shutil
 import tempfile
@@ -154,16 +153,9 @@ def make_physics_rollout_episode(output_dir: Path) -> Path:
     ]
     shutil.rmtree(shot_dir / "frames")
     (shot_dir / "frames").mkdir()
-    frame_checksums = []
     for index, state in enumerate(states[1:]):
         frame_path = shot_dir / "frames" / f"frame_{index:06d}.png"
         Image.new("RGB", (640, 480), (index + 1, 2, 3)).save(frame_path, format="PNG")
-        frame_checksums.append(
-            {
-                "relative_path": f"frames/{frame_path.name}",
-                "sha256": hashlib.sha256(frame_path.read_bytes()).hexdigest(),
-            }
-        )
     state_path = shot_dir / "physics_state.jsonl"
     event_path = shot_dir / "physics_events.jsonl"
     state_path.write_text(
@@ -177,20 +169,17 @@ def make_physics_rollout_episode(output_dir: Path) -> Path:
     metadata = {
         "capture_contract": "physics_capture_v1",
         "schema_version": "physics_capture_v1",
+        "player_version": "2019.4.41f2",
         "protocol_version": 1,
-        "player_sha256": "a" * 64,
-        "protocol_sha256": "b" * 64,
-        "archive_sha256": "c" * 64,
+        "player_protocol_version": "physics-capture-v1",
+        "archive_path": "sciencebirdsgames/physics-v2/novphy-physics-player-2019.4.41f2.tar.gz",
         "frame_count": 2,
         "frames_dir": "frames",
         "frames": [{"path": f"frames/frame_{index:06d}.png"} for index in range(2)],
-        "frame_checksums": frame_checksums,
         "physics_state_path": "physics_state.jsonl",
         "physics_events_path": "physics_events.jsonl",
         "physics_state_count": 2,
         "physics_event_count": len(events),
-        "physics_state_sha256": hashlib.sha256(state_path.read_bytes()).hexdigest(),
-        "physics_events_sha256": hashlib.sha256(event_path.read_bytes()).hexdigest(),
         "sidecars_closed": True,
     }
     (shot_dir / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
@@ -203,9 +192,9 @@ def make_physics_rollout_episode(output_dir: Path) -> Path:
         "contract_name": world_model_data.PHYSICS_CAPTURE_V1.contract_name,
         "contract_version": world_model_data.PHYSICS_CAPTURE_V1.contract_version,
         "artifact_layout_version": world_model_data.PHYSICS_CAPTURE_V1.artifact_layout_version,
-        "player_sha256": "a" * 64,
-        "protocol_sha256": "b" * 64,
-        "archive_sha256": "c" * 64,
+        "player_version": "2019.4.41f2",
+        "player_protocol_version": "physics-capture-v1",
+        "archive_path": "sciencebirdsgames/physics-v2/novphy-physics-player-2019.4.41f2.tar.gz",
         "declared_capabilities": list(world_model_data.PHYSICS_CAPTURE_V1.declared_capabilities),
         "sidecar_paths": [
             {"relative_path": sidecar.relative_path, "capabilities": list(sidecar.capabilities)}
@@ -2079,7 +2068,7 @@ class CurriculumPolicyTests(unittest.TestCase):
                 start_frame_range=(False, 0.5),
             )
 
-    def test_schedule_digest_is_canonical_for_allowed_sets(self):
+    def test_schedule_identity_uses_declared_version_and_extent(self):
         first_request = world_model_data.TemporalWindowRequest(1, 1)
         second_request = world_model_data.TemporalWindowRequest(2, 1)
         first = world_model_data.CurriculumSchedule(
@@ -2107,7 +2096,7 @@ class CurriculumPolicyTests(unittest.TestCase):
             ),),
         )
 
-        self.assertEqual(first.digest, second.digest)
+        self.assertEqual(first.identity, second.identity)
 
     def test_one_frame_normalized_start_is_zero(self):
         from world_model.data.curriculum import _normalized_start_frame  # noqa: PLC0415
@@ -2250,7 +2239,7 @@ class CurriculumPolicyTests(unittest.TestCase):
 
             self.assertEqual(first_ids, second_ids)
 
-    def test_state_serializes_every_resume_binding(self):
+    def test_state_serializes_resume_fields_and_declared_provenance(self):
         with tempfile.TemporaryDirectory() as temporary:
             catalog = _build_catalog_from_fixture(Path(temporary), frame_count=9)
             policy = world_model_data.CurriculumPolicy(
@@ -2262,13 +2251,13 @@ class CurriculumPolicyTests(unittest.TestCase):
             self.assertEqual(payload["global_step"], 3)
             self.assertEqual(payload["total_steps"], 9)
             self.assertEqual(payload["schedule_version"], "curriculum-v1")
-            self.assertEqual(payload["schedule_digest"], self._schedule().digest)
-            self.assertEqual(payload["catalog_digest"], policy.catalog_digest)
+            self.assertEqual(payload["schedule_identity"], self._schedule().identity)
+            self.assertEqual(payload["catalog_identity"], policy.catalog_identity)
             self.assertEqual(payload["sampler_seed"], 17)
             self.assertEqual(payload["active_stage_name"], "medium")
 
-    def test_resume_rejects_schedule_catalog_or_seed_drift(self):
-        """A checkpoint only resumes under exactly the bound catalog, schedule, and seed."""
+    def test_resume_rejects_declared_schedule_version_or_seed_drift(self):
+        """Resume checks semantic schedule and sampler bindings without content-derived checks."""
         from world_model.data.curriculum import (  # noqa: PLC0415
             CurriculumBindingMismatchError,
             CurriculumPolicy,
@@ -2283,7 +2272,7 @@ class CurriculumPolicyTests(unittest.TestCase):
             policy = CurriculumPolicy(catalog, schedule, sampler_seed=17)
             state = policy.state(global_step=3, total_steps=9)
 
-            # When/Then: every binding drift is fail-closed.
+            # When/Then: semantic schedule or sampler drift is fail-closed.
             mismatched_policies = (
                 CurriculumPolicy(catalog, schedule, sampler_seed=18),
                 CurriculumPolicy(
@@ -2300,18 +2289,6 @@ class CurriculumPolicyTests(unittest.TestCase):
                 with self.subTest(policy=mismatched_policy):
                     with self.assertRaises(CurriculumBindingMismatchError):
                         mismatched_policy.validate_resume(state)
-
-            catalog_drift_state = type(state)(
-                global_step=state.global_step,
-                total_steps=state.total_steps,
-                schedule_version=state.schedule_version,
-                schedule_digest=state.schedule_digest,
-                catalog_digest="changed-catalog",
-                sampler_seed=state.sampler_seed,
-                active_stage_name=state.active_stage_name,
-            )
-            with self.assertRaises(CurriculumBindingMismatchError):
-                policy.validate_resume(catalog_drift_state)
 
     def test_identical_resume_binding_yields_identical_candidate_ids(self):
         """Candidate ordering is reproducible from the catalog, schedule, and seed alone."""
@@ -2462,7 +2439,6 @@ class TemporalAblationTests(unittest.TestCase):
             second = self._bound_manifest(policy, state, preset, 9, rule)
 
         self.assertEqual(first, second)
-        self.assertEqual(first.digest, second.digest)
         self.assertEqual(json.dumps(first.to_dict(), sort_keys=True),
                          json.dumps(second.to_dict(), sort_keys=True))
         self.assertEqual(sum(count for _, count in first.prediction_steps_distribution), 9)
@@ -2488,28 +2464,8 @@ class TemporalAblationTests(unittest.TestCase):
                 policy, state, preset, 6, rule, sampling_seed=32,
             )
 
-        self.assertEqual(first.sampled_provenance_digest,
-                         repeated.sampled_provenance_digest)
-        self.assertNotEqual(first.sampled_provenance_digest,
-                            changed.sampled_provenance_digest)
-
-    def test_stale_curriculum_state_is_rejected_instead_of_fabricating_samples(self):
-        rule = world_model_data.WindowCostRule("frame-units", 0, 1)
-        preset = world_model_data.get_temporal_ablation_preset("fixed_short")
-        with tempfile.TemporaryDirectory() as temporary:
-            policy, state = self._policy(Path(temporary), preset.temporal_choices)
-            stale = type(state)(
-                state.global_step, state.total_steps, state.schedule_version,
-                state.schedule_digest, "stale-catalog", state.sampler_seed,
-                state.active_stage_name,
-            )
-
-            with self.assertRaises(world_model_data.CurriculumBindingMismatchError):
-                world_model_data.build_temporal_ablation_manifest(
-                    policy,
-                    stale,
-                    world_model_data.AblationRunConfig(preset, 31, 2, rule),
-                )
+        self.assertEqual(first.sampled_provenance, repeated.sampled_provenance)
+        self.assertNotEqual(first.sampled_provenance, changed.sampled_provenance)
 
     def test_equal_cost_presets_are_compute_matched(self):
         rule = world_model_data.WindowCostRule("predicted-frames", 0, 1)
@@ -2772,10 +2728,10 @@ class WorldModelDataIntegrationTests(unittest.TestCase):
                 self.assertEqual(batch["action"].shape, (3, 5))
                 self.assertEqual(first_candidate_ids, resumed_candidate_ids)
                 self.assertEqual(
-                    first_manifest.sampled_provenance_digest,
-                    resumed_manifest.sampled_provenance_digest,
+                    first_manifest.sampled_provenance,
+                    resumed_manifest.sampled_provenance,
                 )
-                self.assertEqual(first_manifest.digest, resumed_manifest.digest)
+                self.assertEqual(first_manifest, resumed_manifest)
                 self.assertTrue(all(
                     sample["provenance"]["source_level_key"] == entries[split].relative_path
                     for sample in samples
@@ -3009,21 +2965,6 @@ class DerivedLabelReaderTests(unittest.TestCase):
             with self.assertRaises(world_model_data.ContractValueError):
                 self._sample(catalog, include_derived_labels=True)
 
-    def test_stale_label_sidecar_fails_closed(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            catalog, episode = self._build_catalog(root)
-            path = self._write_labels(episode)
-            records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
-            records[0]["source"]["physics_state_sha256"] = "0" * 64
-            path.write_text(
-                "".join(f"{json.dumps(record, sort_keys=True, separators=(',', ':'))}\n" for record in records),
-                encoding="utf-8",
-            )
-
-            with self.assertRaises(world_model_data.ContractValueError):
-                self._sample(catalog, include_derived_labels=True)
-
     def test_label_frames_that_do_not_match_states_fail_closed(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -3167,21 +3108,6 @@ class MacroLabelReaderTests(unittest.TestCase):
             with self.assertRaises(world_model_data.ContractValueError):
                 self._sample(catalog, include_macro_labels=True)
 
-    def test_stale_macro_sidecar_fails_closed(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            catalog, episode = self._build_catalog(root)
-            path = self._write_labels(episode)
-            records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
-            records[0]["sources"]["physics_state_sha256"] = "0" * 64
-            path.write_text(
-                "".join(f"{json.dumps(record, sort_keys=True, separators=(',', ':'))}\n" for record in records),
-                encoding="utf-8",
-            )
-
-            with self.assertRaises(world_model_data.ContractValueError):
-                self._sample(catalog, include_macro_labels=True)
-
     def test_frame_label_state_mismatch_fails_closed(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -3240,11 +3166,6 @@ class MacroLabelReaderTests(unittest.TestCase):
                 "".join(f"{json.dumps(record, sort_keys=True, separators=(',', ':'))}\n" for record in events),
                 encoding="utf-8",
             )
-            metadata_path = shot / "metadata.json"
-            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-            metadata["physics_events_sha256"] = hashlib.sha256(event_path.read_bytes()).hexdigest()
-            metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
-
             supervision = self._sample(catalog, include_macro_labels=False)
 
             self.assertEqual(supervision[0].fixed_step, 10)
@@ -3337,21 +3258,7 @@ class RelationalSupervisionReaderTests(unittest.TestCase):
                 with self.assertRaises(world_model_data.ContractValueError):
                     self._sample(catalog, include_relational_labels=True)
 
-    def test_stale_and_frame_nonaligned_relational_labels_fail_closed(self):
-        for field, value in (("physics_state_sha256", "0" * 64), ("physics_events_sha256", "1" * 64)):
-            with self.subTest(field=field), tempfile.TemporaryDirectory() as temporary:
-                root = Path(temporary)
-                catalog, episode = self._build_catalog(root)
-                path = self._write_labels(episode)
-                records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
-                records[0]["sources"][field] = value
-                path.write_text(
-                    "".join(f"{json.dumps(record, sort_keys=True, separators=(',', ':'))}\n" for record in records),
-                    encoding="utf-8",
-                )
-                with self.assertRaises(world_model_data.ContractValueError):
-                    self._sample(catalog, include_relational_labels=True)
-
+    def test_frame_nonaligned_relational_labels_fail_closed(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             catalog, episode = self._build_catalog(root)
@@ -3379,10 +3286,6 @@ class RelationalSupervisionReaderTests(unittest.TestCase):
                 "".join(f"{json.dumps(record, sort_keys=True, separators=(',', ':'))}\n" for record in events),
                 encoding="utf-8",
             )
-            metadata_path = shot / "metadata.json"
-            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-            metadata["physics_events_sha256"] = hashlib.sha256(event_path.read_bytes()).hexdigest()
-            metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
             self._write_labels(episode)
 
             supervision = self._sample(catalog, include_relational_labels=True, include_events=True)
@@ -3521,7 +3424,6 @@ class PhysicsHealthReportTests(unittest.TestCase):
             report = physics_coverage_report(root, ("train",))
 
             self.assertEqual(report["oracle_gate_spec"], OracleGateSpec().to_json())
-            self.assertEqual(report["oracle_gate_spec_digest"], OracleGateSpec().digest())
             # A cohort labelled under other thresholds must not silently validate.
             drifted = physics_coverage_report(root, ("train",), OracleGateSpec(kinetic_energy_threshold=0.5))
             self.assertEqual(drifted["splits"]["train"]["shots_with_valid_labels"], 0)

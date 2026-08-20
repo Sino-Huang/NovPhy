@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, field
-import hashlib
 import json
 import math
 import os
@@ -42,7 +41,6 @@ SUPPORTED_PHYSICAL_VIOLATION_LABELS: Final = (
     UNSUPPORTED_STATIONARY_BODY_LABEL,
 )
 
-_DIGEST_CHARACTERS: Final = frozenset("0123456789abcdef")
 @dataclass(frozen=True, slots=True)
 class PhysicalViolationError(ValueError):
     location: str
@@ -56,24 +54,6 @@ def _nonempty(value: object, field: str) -> str:
     if not isinstance(value, str) or not value:
         raise ValueError(f"{field} must be a nonempty string")
     return value
-
-
-def _digest(value: object, field: str) -> str:
-    if (
-        not isinstance(value, str)
-        or len(value) != 64
-        or any(character not in _DIGEST_CHARACTERS for character in value)
-    ):
-        raise ValueError(f"{field} must be a lowercase SHA-256 digest")
-    return value
-
-
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _canonical_record(record: JsonObject) -> bytes:
@@ -131,8 +111,6 @@ class PhysicalViolationLabel:
 class PhysicalViolationLabels:
     capture_id: str
     shot_id: str
-    state_sha256: str
-    events_sha256: str
     labels: tuple[PhysicalViolationLabel, ...]
     _labels_snapshot: tuple[PhysicalViolationLabel, ...] = field(init=False, repr=False, compare=False)
     _label_records: tuple[LabelRecord, ...] = field(init=False, repr=False, compare=False)
@@ -145,8 +123,6 @@ class PhysicalViolationLabels:
     def _validate(self) -> tuple[LabelRecord, ...]:
         _nonempty(self.capture_id, "capture_id")
         _nonempty(self.shot_id, "shot_id")
-        _digest(self.state_sha256, "state_sha256")
-        _digest(self.events_sha256, "events_sha256")
         if any(type(label) is not PhysicalViolationLabel for label in self.labels):
             raise ValueError("artifact labels must be exact PhysicalViolationLabel instances")
         for label in self.labels:
@@ -192,8 +168,6 @@ class PhysicalViolationLabels:
             "sources": {
                 "physics_state_path": STATE_SIDECAR,
                 "physics_events_path": EVENT_SIDECAR,
-                "physics_state_sha256": self.state_sha256,
-                "physics_events_sha256": self.events_sha256,
             },
         }
 
@@ -324,13 +298,8 @@ def derive_unsupported_stationary_body(
 
 def derive_physical_violation_labels(
     capture: PhysicsCapture,
-    *,
-    state_sha256: str,
-    events_sha256: str,
 ) -> PhysicalViolationLabels:
     """Derive the complete closed-vocabulary artifact from a loaded capture."""
-    _digest(state_sha256, "state_sha256")
-    _digest(events_sha256, "events_sha256")
     _validate_capture_values(capture)
     entities = sorted(
         {
@@ -349,8 +318,6 @@ def derive_physical_violation_labels(
     return PhysicalViolationLabels(
         capture_id,
         shot_id,
-        state_sha256,
-        events_sha256,
         tuple(sorted(labels, key=_label_key)),
     )
 
@@ -359,11 +326,7 @@ def derive_physical_violation_labels_for_shot(shot_dir: Path) -> PhysicalViolati
     state_path = Path(shot_dir) / STATE_SIDECAR
     event_path = Path(shot_dir) / EVENT_SIDECAR
     capture = load_physics_capture(state_path, event_path)
-    return derive_physical_violation_labels(
-        capture,
-        state_sha256=_sha256_file(state_path),
-        events_sha256=_sha256_file(event_path),
-    )
+    return derive_physical_violation_labels(capture)
 
 
 def _expect_fields(record: Mapping[str, Any], expected: set[str], location: str) -> None:
@@ -447,8 +410,6 @@ def read_physical_violation_labels(path: Path) -> PhysicalViolationLabels:
         {
             "physics_state_path",
             "physics_events_path",
-            "physics_state_sha256",
-            "physics_events_sha256",
         },
         f"{location}:1.sources",
     )
@@ -468,8 +429,6 @@ def read_physical_violation_labels(path: Path) -> PhysicalViolationLabels:
         artifact = PhysicalViolationLabels(
             capture_id=_nonempty(header["capture_id"], "capture_id"),
             shot_id=_nonempty(header["shot_id"], "shot_id"),
-            state_sha256=_digest(sources["physics_state_sha256"], "physics_state_sha256"),
-            events_sha256=_digest(sources["physics_events_sha256"], "physics_events_sha256"),
             labels=labels,
         )
     except ValueError as error:
@@ -510,8 +469,6 @@ def validate_physical_violation_labels(
     expected = derive_physical_violation_labels_for_shot(shot_dir)
     if stored.capture_id != expected.capture_id or stored.shot_id != expected.shot_id:
         raise PhysicalViolationError(str(path), "capture identity differs from source")
-    if stored.state_sha256 != expected.state_sha256 or stored.events_sha256 != expected.events_sha256:
-        raise PhysicalViolationError(str(path), "source sidecar digests are stale")
     if stored.to_bytes() != expected.to_bytes():
         raise PhysicalViolationError(str(path), "stored labels differ from canonical re-derivation")
     return stored

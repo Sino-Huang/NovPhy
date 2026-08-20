@@ -7,7 +7,6 @@ canonical bytes, fail-closed reading/validation, and the derivation CLI.
 """
 from __future__ import annotations
 
-import hashlib
 import io
 import json
 import re
@@ -32,7 +31,7 @@ from scripts.physics_macro_labels import (
     OutcomeClass,
     SemanticStatus,
     TerminalEquilibrium,
-    derivation_spec_digest,
+    derivation_spec_identity,
     derivation_spec_json,
     derive_macro_labels_for_shot,
     read_macro_labels,
@@ -168,10 +167,9 @@ class VocabularyAndSpecTests(unittest.TestCase):
                 self.assertTrue(contract["prerequisites"])
                 self.assertTrue(contract["failure_cases"])
 
-    def test_derivation_spec_digest_is_stable_lowercase_hex(self) -> None:
-        digest = derivation_spec_digest()
-        self.assertIsNotNone(re.fullmatch(r"[0-9a-f]{64}", digest))
-        self.assertEqual(digest, derivation_spec_digest())
+    def test_derivation_spec_identity_is_stable(self) -> None:
+        identity = derivation_spec_identity()
+        self.assertEqual(identity, "macro-labels-derivation:macro_labels_derivation_v2")
 
 
 class CanonicalMultistateTests(unittest.TestCase):
@@ -646,7 +644,7 @@ class PigTagsTests(unittest.TestCase):
 
 
 class HeaderContractTests(unittest.TestCase):
-    """M0a cross-cutting: header shape, record order, counts, digests, vocabulary."""
+    """M0a cross-cutting: header shape, record order, counts, and vocabulary."""
 
     def setUp(self) -> None:
         self.labels = derive("canonical_multistate")
@@ -670,7 +668,6 @@ class HeaderContractTests(unittest.TestCase):
                 "capture_id",
                 "shot_id",
                 "derivation_spec_version",
-                "derivation_spec_digest",
                 "event_clock",
                 "macro_vocabulary",
                 "pig_class_set",
@@ -682,12 +679,11 @@ class HeaderContractTests(unittest.TestCase):
             },
         )
 
-    def test_header_versions_clock_and_digest(self) -> None:
+    def test_header_versions_and_clock(self) -> None:
         header = self.records[0]
         self.assertEqual(header["schema_version"], "physics_macro_labels_v1")
         self.assertEqual(header["capture_schema_version"], "physics_capture_v1")
         self.assertEqual(header["derivation_spec_version"], "macro_labels_derivation_v2")
-        self.assertEqual(header["derivation_spec_digest"], derivation_spec_digest())
         self.assertEqual(
             header["event_clock"],
             {"occurrence_authority": "fixed_step", "render_frame_role": "provenance_only"},
@@ -705,19 +701,12 @@ class HeaderContractTests(unittest.TestCase):
         self.assertEqual(header["frame_label_count"], 6)
         self.assertEqual(header["frame_label_count"], len(frames))
 
-    def test_header_sources_bind_actual_fixture_digests(self) -> None:
+    def test_header_sources_record_fixture_paths(self) -> None:
         header = self.records[0]
         sources = header["sources"]
         self.assertEqual(sources["physics_state_path"], "physics_state.jsonl")
         self.assertEqual(sources["physics_events_path"], "physics_events.jsonl")
-        self.assertEqual(
-            sources["physics_state_sha256"],
-            hashlib.sha256((shot_dir("canonical_multistate") / "physics_state.jsonl").read_bytes()).hexdigest(),
-        )
-        self.assertEqual(
-            sources["physics_events_sha256"],
-            hashlib.sha256((shot_dir("canonical_multistate") / "physics_events.jsonl").read_bytes()).hexdigest(),
-        )
+        self.assertEqual(set(sources), {"physics_state_path", "physics_events_path"})
 
     def test_header_vocabulary_and_pig_class_set(self) -> None:
         header = self.records[0]
@@ -860,14 +849,6 @@ class FailClosedMutationTests(unittest.TestCase):
         records[0]["frame_label_count"] += 1
         self._rewrite(records)
         self._assert_read_and_validate_reject()
-
-    def test_stale_source_digest_is_rejected_by_validate_only(self) -> None:
-        records = self._records()
-        records[0]["sources"]["physics_state_sha256"] = "0" * 64
-        self._rewrite(records)
-        read_macro_labels(self.label_path)  # strict parse still accepts the shape
-        with self.assertRaises(MacroLabelError):
-            validate_macro_labels(self.shot)
 
     def test_flipped_predicate_value_is_rejected(self) -> None:
         records = self._records()
@@ -1035,9 +1016,9 @@ class DeriveCliTests(unittest.TestCase):
         return code, (json.loads(text) if text.strip() else None)
 
     @staticmethod
-    def _tree_digests(root: Path) -> dict[str, str]:
+    def _tree_contents(root: Path) -> dict[str, bytes]:
         return {
-            str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest()
+            str(path.relative_to(root)): path.read_bytes()
             for path in sorted(root.rglob("*"))
             if path.is_file()
         }
@@ -1050,7 +1031,7 @@ class DeriveCliTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(report["shots_ok"], 9)
         self.assertEqual(report["shots_failed"], 0)
-        tree_a = self._tree_digests(output_a)
+        tree_a = self._tree_contents(output_a)
         self.assertEqual(len(tree_a), 9)
         self.assertEqual(
             sorted(tree_a),
@@ -1061,7 +1042,7 @@ class DeriveCliTests(unittest.TestCase):
             ["--target", str(FIXTURE_ROOT), "--output-dir", str(output_b), "--json"]
         )
         self.assertEqual(code, 0)
-        self.assertEqual(tree_a, self._tree_digests(output_b))
+        self.assertEqual(tree_a, self._tree_contents(output_b))
 
     def test_validate_only_accepts_a_written_tree(self) -> None:
         output = self.temporary / "out"

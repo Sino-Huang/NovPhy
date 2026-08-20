@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import random
@@ -26,16 +25,6 @@ def _finite(value: Any, name: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
         raise FrontierError(f"{name} must be finite")
     return float(value)
-
-
-def _digest(value: bytes) -> str:
-    return hashlib.sha256(value).hexdigest()
-
-
-def _digest_field(value: Any, field: str) -> str:
-    if type(value) is not str or len(value) != 64 or any(char not in "0123456789abcdef" for char in value):
-        raise FrontierError(f"{field} must be a lowercase SHA-256 digest")
-    return value
 
 
 def _delta(value: Any, field: str) -> int:
@@ -190,29 +179,22 @@ def canonical_frontier_rows(source: bytes, source_path: Path) -> list[dict[str, 
         payload = json.loads(source)
     except json.JSONDecodeError as error:
         raise FrontierError("frontier input is not valid JSON") from error
-    required = {"checkpoint_digest", "partition", "schema_version", "score_artifact_root", "score_manifest_digest", "score_spec_digest", "state_digest"}
+    required = {"partition", "schema_version", "score_artifact_root"}
     if type(payload) is not dict or set(payload) != required or canonical_json_bytes(payload) != source:
         raise FrontierError("frontier input must use the closed canonical schema")
     if payload["schema_version"] != FRONTIER_INPUT_SCHEMA or payload["partition"] != "evaluation":
         raise FrontierError("frontier input schema or partition is unsupported")
     if type(payload["score_artifact_root"]) is not str or not payload["score_artifact_root"]:
         raise FrontierError("score_artifact_root must be a nonempty path")
-    expected = {field: _digest_field(payload[field], field) for field in ("checkpoint_digest", "score_manifest_digest", "score_spec_digest", "state_digest")}
     artifact_root = Path(payload["score_artifact_root"])
     if not artifact_root.is_absolute():
         artifact_root = source_path.parent / artifact_root
     artifact_root = artifact_root.resolve()
     try:
-        receipt = validate_score_artifacts(artifact_root)
-        manifest_raw = (artifact_root / "manifest.json").read_bytes()
-        manifest = json.loads(manifest_raw)
+        validate_score_artifacts(artifact_root)
+        manifest = json.loads((artifact_root / "manifest.json").read_bytes())
     except (OSError, ValueError, json.JSONDecodeError) as error:
         raise FrontierError("canonical score artifacts are invalid") from error
-    if receipt.manifest_digest != expected["score_manifest_digest"] or _digest(manifest_raw) != expected["score_manifest_digest"]:
-        raise FrontierError("score manifest digest mismatch")
-    for field in ("checkpoint_digest", "score_spec_digest", "state_digest"):
-        if manifest.get(field) != expected[field]:
-            raise FrontierError(f"{field} mismatch")
     rows = []
     for shard in manifest["shards"]:
         if Path(shard["name"]).parts[-2] != "evaluation":
@@ -224,8 +206,4 @@ def canonical_frontier_rows(source: bytes, source_path: Path) -> list[dict[str, 
     return rows
 
 
-def source_digest(data: bytes) -> str:
-    return _digest(data)
-
-
-__all__ = ["DELTAS", "FRONTIER_INPUT_SCHEMA", "FrontierError", "MIN_STATES", "UNAVAILABLE_SCOPE", "analyze_frontier", "canonical_frontier_rows", "pareto_frontier", "source_digest"]
+__all__ = ["DELTAS", "FRONTIER_INPUT_SCHEMA", "FrontierError", "MIN_STATES", "UNAVAILABLE_SCOPE", "analyze_frontier", "canonical_frontier_rows", "pareto_frontier"]

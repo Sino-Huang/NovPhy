@@ -13,7 +13,7 @@ from world_model.model.config import (
     PredictorConfig,
     abstraction_index,
     coerce_abstraction,
-    digest,
+    identity,
 )
 from world_model.model.ema import EmaTargetEncoder
 from world_model.model.encoder import ContextEncoder, EncoderOutput, build_encoder
@@ -52,6 +52,6 @@ __all__ = [
     "abstraction_index",
     "build_encoder",
     "coerce_abstraction",
-    "digest",
+    "identity",
     "mode_weight",
 ]

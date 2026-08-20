@@ -181,6 +181,7 @@ class CollectionPlanTests(unittest.TestCase):
         second = create_collection_plan(**arguments)
         self.assertEqual(first, second)
         self.assertEqual(first.identity, second.identity)
+        self.assertEqual(first.identity, "collection-plan-v1:1:scenario-a")
         self.assertNotEqual(
             first.scenarios[0].expected_initial_engine_state_identity,
             first.scenarios[0].scenario_manifest_projection["declared_initial_engine_state_identity"],
@@ -194,9 +195,9 @@ class CollectionPlanTests(unittest.TestCase):
             self.assertEqual(loaded.original_bytes, path.read_bytes())
 
             payload = json.loads(path.read_text(encoding="utf-8"))
-            payload["plan_version"] = 2
+            payload["identity"] = ""
             path.write_text(json.dumps(payload), encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "identity is stale"):
+            with self.assertRaisesRegex(ValueError, "identity must be a nonempty string"):
                 load_collection_plan(path)
             with self.assertRaisesRegex(ValueError, "bytes changed"):
                 assert_plan_unchanged(loaded, path)

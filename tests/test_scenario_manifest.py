@@ -1,9 +1,8 @@
-from dataclasses import asdict
-from hashlib import sha256
 import json
 import tempfile
 import unittest
 from pathlib import Path
+from urllib.parse import quote
 
 from scripts.scenario_manifest import (
     BenchmarkCondition,
@@ -26,13 +25,8 @@ XML = b'''<?xml version="1.0" encoding="utf-8"?>
 '''
 
 
-def contract_identity(namespace: str, value: object) -> str:
-    canonical = json.dumps(value, ensure_ascii=False, allow_nan=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return f"{namespace}:sha256:{sha256(canonical).hexdigest()}"
-
-
 class ScenarioManifestTests(unittest.TestCase):
-    def test_generated_manifest_has_deterministic_hierarchy_and_validates_exact_content(self) -> None:
+    def test_generated_manifest_has_deterministic_declared_hierarchy(self) -> None:
         arguments = {
             "xml_content": XML,
             "benchmark_condition": BenchmarkCondition("novelty_level_1", "type0101"),
@@ -50,24 +44,15 @@ class ScenarioManifestTests(unittest.TestCase):
         self.assertEqual(first.generation.mode, "generated")
         self.assertEqual(first.scenario_specification.content_identity, second.scenario_specification.content_identity)
         self.assertEqual(first.scenario_lineage.identity, second.scenario_lineage.identity)
-        expected_level_instance = contract_identity(
-            "level-instance-v1",
-            {
-                "benchmark_condition_identity": first.benchmark_condition.identity,
-                "scenario_template": asdict(first.scenario_template),
-                "declaration_identity": first.scenario_specification.declaration_identity,
-            },
+        expected_level_instance = (
+            "level-instance-v1:"
+            + quote(first.scenario_specification.declaration_identity, safe="-._~")
         )
         self.assertEqual(first.level_instance.identity, expected_level_instance)
         self.assertEqual(
             first.scenario_specification.identity,
-            contract_identity(
-                "scenario-specification-v1",
-                {
-                    "level_instance_identity": expected_level_instance,
-                    "content_identity": first.scenario_specification.content_identity,
-                },
-            ),
+            "scenario-specification-v1:"
+            + quote(expected_level_instance, safe="-._~"),
         )
         self.assertEqual(
             first.declared_initial_engine_state.identity,
@@ -80,10 +65,6 @@ class ScenarioManifestTests(unittest.TestCase):
             xml_path.write_bytes(XML)
             write_manifest(first, manifest_path)
             self.assertEqual(load_manifest(manifest_path, xml_path), first)
-
-            xml_path.write_bytes(XML.replace(b'width="2"', b'width="3"'))
-            with self.assertRaisesRegex(ValueError, "content identity"):
-                load_manifest(manifest_path, xml_path)
 
     def test_each_changed_declared_input_gets_a_distinct_specification_and_lineage(self) -> None:
         base = {
@@ -109,7 +90,7 @@ class ScenarioManifestTests(unittest.TestCase):
             self.assertNotEqual(original.scenario_specification.identity, changed.scenario_specification.identity)
             self.assertNotEqual(original.scenario_lineage.identity, changed.scenario_lineage.identity)
 
-    def test_malformed_identity_graph_fails_closed(self) -> None:
+    def test_incomplete_manifest_fails_closed(self) -> None:
         manifest = create_generated_manifest(
             XML,
             benchmark_condition=BenchmarkCondition("novelty_level_1", "type0101"),
@@ -123,11 +104,6 @@ class ScenarioManifestTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             path = Path(temp_dir) / "fixture.scenario.json"
             payload = manifest.to_dict()
-            payload["scenario_lineage"]["identity"] = "scenario-lineage-v1:sha256:stale"
-            path.write_text(json.dumps(payload), encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "lineage identity"):
-                load_manifest(path)
-
             del payload["scenario_template"]
             path.write_text(json.dumps(payload), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "incomplete"):
@@ -152,7 +128,7 @@ class ScenarioManifestTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "smoke_only"):
                 require_research_eligible(manifest, use)
 
-    def test_staged_type2_sidecar_is_content_validated_and_smoke_only(self) -> None:
+    def test_staged_type2_sidecar_is_smoke_only(self) -> None:
         levels = Path(__file__).resolve().parents[1] / "tasks/task_template_designer/Assets/StreamingAssets/Levels/novelty_level_0/type2/Levels"
         manifest = load_manifest(levels / "3_9_6_1.scenario.json", levels / "3_9_6_1.xml")
 

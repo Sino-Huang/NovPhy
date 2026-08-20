@@ -1,20 +1,12 @@
 {
   "authorities": {
-    "approved_profile": {
-      "path": ".claude/project-docs/research/20260820-cohort-v2-capability-profile/research-ready-cohort-v2-capability-profile-proposal.md",
-      "sha256": "676ce51194d0c0c1c8f9633910ed4c59123b053504306ab0578a8656d2fbcfae"
-    },
     "github_issues": [
       1,
       18,
       33,
       42,
       43
-    ],
-    "issue_33_audit": {
-      "path": ".claude/project-docs/evidence/issue-33-section-16-audit-20260820/README.md",
-      "sha256": "ed02915ae861f2268a830f61f5b9cfe1d6f16b8bc41afb6ca74caf46126d6841"
-    }
+    ]
   },
   "capabilities": {
     "optional": [
@@ -47,7 +39,7 @@
       ],
       "ingestion": [
         "public_fail_closed",
-        "identity_and_digest_binding",
+        "identity_binding",
         "availability_preservation",
         "temporal_alignment_preservation",
         "exposure_restriction_enforcement"
@@ -122,7 +114,7 @@
     ],
     "unavailable_distinct_from_false": true
   },
-  "identity": "cohort-v2-capabilities-v1:sha256:3c7a871087a38a84b14364d27f410a80d7d14f1b5796e4b9b420f2e376499940",
+  "identity": "cohort-v2-capabilities-v1",
   "schema": "cohort_v2_capabilities_v1",
   "scope_name": "central_v2"
 }

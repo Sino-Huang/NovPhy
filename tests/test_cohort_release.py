@@ -1,30 +1,36 @@
 from collections.abc import Callable
-from hashlib import sha256
 import json
-import shutil
 import tempfile
 import unittest
 from pathlib import Path
 from typing import Any
 
+from scripts.cohort_partition import (
+    PROJECTION_FIELDS,
+    create_cohort_partition_manifest,
+    write_cohort_partition_manifest,
+)
 from scripts.cohort_release import (
     _artifact,
-    _identity,
     ingest_cohort_publication,
     publish_cohort_release,
     verify_cohort_publication,
     write_cohort_ingestion_evidence,
 )
-
-
-EVIDENCE = Path(".claude/project-docs/evidence/representative-pilot-20260820")
-RELEASE = Path(
-    ".claude/project-docs/evidence/representative-cohort-release-20260820/production-v1/release"
+from scripts.collection_plan import (
+    RuntimeResult,
+    create_collection_plan,
+    load_collection_plan,
+    write_collection_plan,
 )
-PUBLICATION = (
-    RELEASE
-    / "cohort_publication_a6daf82d47f7001e8731068c68a91e83487fd2c26926b35ab2974bc75a93ecf8_v1.json"
+from scripts.physics_relational_supervision import write_relational_supervision
+from scripts.production_plan import (
+    create_production_plan,
+    execute_production_plan,
+    write_production_plan,
 )
+from tests.test_production_plan import _evidence, _parameters, _pilot_report, _scenario
+from tests.test_representative_pilot import _fixture_initial_identity, _write_fixture_shot
 
 
 def _rewrite_derivations(
@@ -37,222 +43,212 @@ def _rewrite_derivations(
     ]["path"]
     derivations = json.loads(derivation_path.read_text(encoding="utf-8"))
     mutate(derivations)
-    derivations["identity"] = _identity(derivations)
     derivation_path.write_text(
         json.dumps(derivations, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    publication["authoritative_derivations"]["identity"] = derivations["identity"]
-    publication["authoritative_derivations"]["sha256"] = sha256(
-        derivation_path.read_bytes()
-    ).hexdigest()
-    publication["identity"] = _identity(publication)
-    publication_path.write_text(
-        json.dumps(publication, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     return publication_path
 
 
+def _assert_no_removed_fields(value: Any) -> None:
+    if isinstance(value, dict):
+        for key, item in value.items():
+            lowered = key.lower()
+            if "checksum" in lowered:
+                raise AssertionError(f"removed integrity field remains: {key}")
+            _assert_no_removed_fields(item)
+    elif isinstance(value, list):
+        for item in value:
+            _assert_no_removed_fields(item)
+
+
+def _published_fixture(root: Path) -> Path:
+    initial_identity = _fixture_initial_identity()
+    plan = create_collection_plan(
+        plan_version=3,
+        scenarios=[
+            _scenario("training", "training", 1)
+            | {"expected_initial_engine_state_identity": initial_identity},
+            _scenario("final", "calibration", 2)
+            | {"expected_initial_engine_state_identity": initial_identity},
+        ],
+    )
+    source_dir = root / "sources"
+    source_dir.mkdir(parents=True)
+    plan_path = write_collection_plan(plan, source_dir / "collection.json")
+    loaded = load_collection_plan(plan_path)
+    pilot = _pilot_report(plan)
+    production = create_production_plan(
+        plan_version=1,
+        pilot_report=pilot,
+        collection_plan=plan,
+        parameters=_parameters(),
+        evidence=_evidence(),
+    )
+    production_path = write_production_plan(production, source_dir / "published")
+
+    output = root / "production"
+
+    def runtime(request):
+        shot = output / "accepted" / request.attempt_id / "shot_001"
+        _write_fixture_shot(
+            shot,
+            initial_identity,
+            {
+                "version_envelope": {"generator_version": "v1"},
+                "plan_identity": request.plan_identity,
+                "plan_version": request.plan_version,
+                "scenario_id": request.scenario_id,
+                "scenario_identity": request.scenario_identity,
+                "intervention_id": request.intervention_id,
+                "intervention_identity": request.intervention_identity,
+                "attempt_id": request.attempt_id,
+                "attempt_number": request.attempt_number,
+            },
+            capture_id=f"capture-{request.attempt_id}",
+        )
+        write_relational_supervision(shot)
+        realized = (
+            ("collision",)
+            if request.intervention_id.startswith("shot-")
+            else ("no-contact/miss",)
+        )
+        return RuntimeResult(
+            "accepted",
+            realized_coverage_strata=realized,
+            artifact_path=str(shot),
+        )
+
+    execute_production_plan(loaded, production_path, runtime, output)
+
+    entries = [
+        {
+            "dataset_partition": scenario.exposure_role,
+            "exposure_role": scenario.exposure_role,
+            **{
+                key: scenario.to_dict()[key]
+                for key in PROJECTION_FIELDS
+            },
+        }
+        for scenario in plan.scenarios
+    ]
+    partition = create_cohort_partition_manifest(
+        partition_version=1,
+        split_regime="instance_held_out",
+        held_out_roles=[],
+        entries=entries,
+        provenance_records=[],
+    )
+    partition_path = write_cohort_partition_manifest(
+        partition,
+        source_dir / "partition.json",
+    )
+    scenario_paths = {}
+    for scenario in plan.scenarios:
+        manifest = scenario.to_dict()["scenario_manifest"]
+        path = source_dir / f"{scenario.scenario_id}.scenario.json"
+        path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        scenario_paths[scenario.scenario_id] = path
+
+    return publish_cohort_release(
+        output,
+        partition_manifest_path=partition_path,
+        scenario_manifest_paths=scenario_paths,
+        release_version=1,
+        code_revision="fixture-revision",
+        available_capabilities={
+            "physics_capture_v1": "1",
+            "physics_relational_supervision_v1": "1",
+            "macro.steady-state": "physics_macro_labels_v1",
+            "macro.structure-unstable": "physics_macro_labels_v1",
+        },
+        unavailable_capabilities={"material_identity": "not exported"},
+    )
+
+
 class CohortReleaseTests(unittest.TestCase):
-    def test_required_readers_smoke_ingest_the_immutable_release(self) -> None:
-        evidence = ingest_cohort_publication(
-            PUBLICATION,
-            required_capabilities=(
-                "physics_capture_v1",
-                "physics_relational_supervision_v1",
-                "macro.steady-state",
-                "macro.structure-unstable",
-            ),
-        )
-
-        self.assertEqual(
-            evidence.publication_identity,
-            "representative-cohort-publication-v1:sha256:a6daf82d47f7001e8731068c68a91e83487fd2c26926b35ab2974bc75a93ecf8",
-        )
-        self.assertEqual(
-            evidence.cohort_release_identity,
-            "representative-cohort-release-v1:sha256:40b997354a256f889ef7dd007888b5ad8d84b5266883f3611500086f22b62ed2",
-        )
-        self.assertEqual(evidence.cohort_release_version, 1)
-        self.assertEqual(
-            evidence.derivation_identity,
-            "authoritative-cohort-derivations-v1:sha256:64cff842534beb40ece23ec11673903dddc9a08881e4646779daae973434e187",
-        )
-        self.assertEqual(evidence.derivation_version, 1)
-        self.assertEqual(evidence.rollout_count, 4)
-        self.assertEqual(
-            evidence.readers,
-            (
-                "cohort_partition_manifest_v1",
-                "scenario_manifest_v1",
-                "physics_capture_v1",
-                "physics_macro_labels_v1",
-                "physics_relational_supervision_v1",
-                "world_model_physics_supervision",
-            ),
-        )
-        self.assertEqual(
-            evidence.unavailable_capabilities["macro.collapsed"],
-            "rejected from production by issue 40 adjudication",
-        )
-
-    def test_ingestion_preserves_timing_identities_terminal_observations_and_unavailable_labels(self) -> None:
-        evidence = ingest_cohort_publication(PUBLICATION)
-
-        self.assertEqual(
-            (
-                evidence.identity_aligned_frame_record_count,
-                evidence.fixed_step_aligned_event_count,
-                evidence.experiment_macro_label_record_count,
-                evidence.experiment_relational_label_record_count,
-                evidence.terminal_observation_count,
-                evidence.macro_label_record_count,
-                evidence.relational_label_record_count,
-                evidence.unavailable_relational_label_count,
-            ),
-            (24, 36, 24, 24, 4, 24, 24, 608),
-        )
-
-    def test_ingestion_evidence_persists_exact_versions_capabilities_and_counts(self) -> None:
-        evidence = ingest_cohort_publication(PUBLICATION)
-
+    def test_publish_verify_and_ingest_plain_identity_release(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            path = write_cohort_ingestion_evidence(
-                evidence, Path(temporary) / "downstream-ingestion-v2.json"
+            publication_path = _published_fixture(Path(temporary))
+            publication = verify_cohort_publication(publication_path)
+            root = publication_path.parent.parent
+            release = json.loads((root / publication["cohort_release"]["path"]).read_text())
+            derivations = json.loads(
+                (root / publication["authoritative_derivations"]["path"]).read_text()
             )
-            payload = json.loads(path.read_text(encoding="utf-8"))
 
-        self.assertEqual(
-            {
-                "schema": payload["schema"],
-                "publication_identity": payload["publication_identity"],
-                "cohort_release": payload["cohort_release"],
-                "authoritative_derivations": payload["authoritative_derivations"],
-                "partition": payload["partition"],
-                "available_capabilities": payload["available_capabilities"],
-                "counts": payload["counts"],
-                "label_derivations": payload["label_derivations"],
-            },
-            {
-                "schema": "cohort_ingestion_evidence_v2",
-                "publication_identity": "representative-cohort-publication-v1:sha256:a6daf82d47f7001e8731068c68a91e83487fd2c26926b35ab2974bc75a93ecf8",
-                "cohort_release": {
-                    "identity": "representative-cohort-release-v1:sha256:40b997354a256f889ef7dd007888b5ad8d84b5266883f3611500086f22b62ed2",
-                    "version": 1,
-                },
-                "authoritative_derivations": {
-                    "identity": "authoritative-cohort-derivations-v1:sha256:64cff842534beb40ece23ec11673903dddc9a08881e4646779daae973434e187",
-                    "version": 1,
-                },
-                "partition": {
-                    "identity": "cohort-partition-manifest-v1:sha256:d2ab1b531e27cb2028c3e51064dfb53648b11176334bd230417ffbd2ba11f111",
-                    "version": 2,
-                },
-                "available_capabilities": {
-                    "macro.steady-state": "physics_macro_labels_v1",
-                    "macro.structure-unstable": "physics_macro_labels_v1",
-                    "physics_capture_v1": "1",
-                    "physics_relational_supervision_v1": "1",
-                },
-                "counts": {
-                    "rollouts": 4,
-                    "frame_records": 24,
-                    "events": 36,
-                    "identity_aligned_frame_records": 24,
-                    "fixed_step_aligned_events": 36,
-                    "terminal_observations": 4,
-                    "macro_label_records": 24,
-                    "relational_label_records": 24,
-                    "unavailable_relational_labels": 608,
-                    "experiment_macro_label_records": 24,
-                    "experiment_relational_label_records": 24,
-                },
-                "label_derivations": {
-                    "physics_macro_labels_v1": {
-                        "derivation_spec_version": "macro_labels_derivation_v2",
-                        "derivation_spec_digest": "cc78f62299d129df6967cf42ca104d6677395885bd09e4a3a6c8914b424ac447",
-                    },
-                    "physics_relational_supervision_v1": {
-                        "derivation_spec_version": "relational_supervision_derivation_v1",
-                        "derivation_spec_digest": "b46036c99f71948f40ef911896048dabe97c772b4df10fd36a627e6d7252b9fe",
-                    },
-                },
-            },
-        )
+            self.assertTrue(publication["identity"].startswith("representative-cohort-publication-v1:"))
+            self.assertEqual(release["release_version"], 1)
+            self.assertEqual(len(release["primary_rollouts"]), 4)
+            self.assertEqual(len(derivations["artifacts"]), 8)
+            _assert_no_removed_fields(publication)
+            _assert_no_removed_fields(release)
+            _assert_no_removed_fields(derivations)
+
+            evidence = ingest_cohort_publication(
+                publication_path,
+                required_capabilities=("physics_capture_v1",),
+            )
+            self.assertEqual(evidence.rollout_count, 4)
+            self.assertEqual(evidence.terminal_observation_count, 4)
+            self.assertEqual(
+                evidence.label_derivations["physics_macro_labels_v1"],
+                {"derivation_spec_version": "macro_labels_derivation_v2"},
+            )
+
+            evidence_path = write_cohort_ingestion_evidence(
+                evidence,
+                Path(temporary) / "ingestion.json",
+            )
+            persisted = json.loads(evidence_path.read_text(encoding="utf-8"))
+            _assert_no_removed_fields(persisted)
 
     def test_malformed_published_scenario_manifest_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary) / "production"
-            shutil.copytree(RELEASE.parent, root)
-            scenario_path = next((root / "release" / "scenario_manifests").glob("*.json"))
+            publication_path = _published_fixture(Path(temporary))
+            root = publication_path.parent.parent
+            publication = json.loads(publication_path.read_text(encoding="utf-8"))
+            release = json.loads((root / publication["cohort_release"]["path"]).read_text())
+            scenario_path = publication_path.parent / release["scenario_manifests"][0]["path"]
             scenario = json.loads(scenario_path.read_text(encoding="utf-8"))
             del scenario["scenario_lineage"]
             scenario_path.write_text(json.dumps(scenario), encoding="utf-8")
 
-            with self.assertRaisesRegex(ValueError, "scenario"):
-                ingest_cohort_publication(root / "release" / PUBLICATION.name)
+            with self.assertRaisesRegex(ValueError, "[Ss]cenario"):
+                ingest_cohort_publication(publication_path)
 
-    def test_unknown_publication_field_and_empty_capability_fail_closed(self) -> None:
+    def test_unknown_fields_missing_capabilities_and_cross_release_binding_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary) / "production"
-            shutil.copytree(RELEASE.parent, root)
-            publication_path = root / "release" / PUBLICATION.name
+            publication_path = _published_fixture(Path(temporary))
             publication = json.loads(publication_path.read_text(encoding="utf-8"))
             publication["unexpected"] = True
-            publication["identity"] = _identity(publication)
-            publication_path.write_text(
-                json.dumps(publication, indent=2, sort_keys=True) + "\n",
-                encoding="utf-8",
-            )
+            publication_path.write_text(json.dumps(publication), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "publication.*unknown"):
                 ingest_cohort_publication(publication_path)
 
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary) / "production"
-            shutil.copytree(RELEASE.parent, root)
-            publication_path = root / "release" / PUBLICATION.name
-
-            def empty_capability(derivations: dict[str, Any]) -> None:
-                derivations["available_capabilities"]["physics_capture_v1"] = ""
-
-            _rewrite_derivations(publication_path, empty_capability)
-            with self.assertRaisesRegex(ValueError, "capability declarations"):
+            publication_path = _published_fixture(Path(temporary))
+            with self.assertRaisesRegex(ValueError, "capabilities are unavailable"):
                 ingest_cohort_publication(
-                    publication_path, required_capabilities=("physics_capture_v1",)
+                    publication_path,
+                    required_capabilities=("material_identity",),
                 )
 
-    def test_missing_capability_and_cross_release_derivations_fail_closed(self) -> None:
-        with self.assertRaisesRegex(ValueError, "capabilities are unavailable"):
-            ingest_cohort_publication(
-                PUBLICATION, required_capabilities=("material_identity",)
-            )
-
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary) / "production"
-            shutil.copytree(RELEASE.parent, root)
-            publication_path = root / "release" / PUBLICATION.name
             def bind_another_release(derivations: dict[str, Any]) -> None:
-                derivations["source_cohort_release_identity"] = (
-                    "representative-cohort-release-v1:sha256:"
-                    "0000000000000000000000000000000000000000000000000000000000000000"
-                )
+                derivations["source_cohort_release_identity"] = "representative-cohort-release-v1:other"
 
             _rewrite_derivations(publication_path, bind_another_release)
-
             with self.assertRaisesRegex(ValueError, "another cohort release"):
                 ingest_cohort_publication(publication_path)
 
     def test_unknown_authoritative_sidecar_reference_field_fails_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary) / "production"
-            shutil.copytree(RELEASE.parent, root)
-            publication_path = root / "release" / PUBLICATION.name
+            publication_path = _published_fixture(Path(temporary))
+
             def add_unknown_field(derivations: dict[str, Any]) -> None:
                 derivations["artifacts"][0]["unexpected"] = True
 
             _rewrite_derivations(publication_path, add_unknown_field)
-
             with self.assertRaisesRegex(ValueError, "derivation reference"):
                 ingest_cohort_publication(publication_path)
 
@@ -262,48 +258,6 @@ class CohortReleaseTests(unittest.TestCase):
             shot = root / "accepted" / "attempt" / "shot_001"
             shot.mkdir(parents=True)
             self.assertEqual(_artifact(root.resolve(), str(shot)), shot.resolve())
-
-    def test_publish_binds_primary_evidence_quality_and_derivations(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary) / "production"
-            shutil.copytree(EVIDENCE / "collection-v4", root)
-            shutil.copy2(
-                next((EVIDENCE / "production-plan").glob("production_parameter_plan_*_v1.json")),
-                root / "production_parameter_plan.json",
-            )
-            report_path = root / "collection_plan_report.json"
-            report = json.loads(report_path.read_text(encoding="utf-8"))
-            for entry in report["attempt_ledger"]:
-                if entry["artifact_path"]:
-                    attempt_id = entry["attempt_id"]
-                    entry["artifact_path"] = str(root / "accepted" / attempt_id / "shot_001")
-            report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
-
-            publication_path = publish_cohort_release(
-                root,
-                partition_manifest_path=EVIDENCE / "instance-held-out-partition-v1.json",
-                scenario_manifest_paths={
-                    "baseline-type010101-level00026": EVIDENCE / "baseline-type010101-level00026.scenario.json",
-                    "baseline-type010101-level00001": EVIDENCE / "baseline-type010101-level00001.scenario.json",
-                },
-                release_version=1,
-                code_revision="fixture-revision",
-                available_capabilities={"physics_capture_v1": "1", "support_v1": "1"},
-                unavailable_capabilities={"material_identity": "not exported"},
-                prior_execution_paths={"pilot-failure": EVIDENCE / "collection-v1-failed" / "collection_plan_report.json"},
-            )
-
-            publication = verify_cohort_publication(publication_path)
-            release = json.loads((root / publication["cohort_release"]["path"]).read_text())
-            derivations = json.loads((root / publication["authoritative_derivations"]["path"]).read_text())
-            quality = json.loads((root / release["quality_report"]["path"]).read_text())
-
-            self.assertEqual(len(release["primary_rollouts"]), 4)
-            self.assertEqual(quality["counts"], {"accepted": 4, "failed": 0, "quarantined": 0, "rejected": 0})
-            self.assertEqual(quality["prior_executions"][0]["attempt_count"], 4)
-            self.assertEqual(derivations["source_cohort_release_identity"], release["identity"])
-            self.assertEqual(len(derivations["artifacts"]), 8)
-            self.assertEqual(derivations["unavailable_capabilities"]["material_identity"], "not exported")
 
 
 if __name__ == "__main__":

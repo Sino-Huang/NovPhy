@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-import hashlib
 import io
 import json
 import os
@@ -9,7 +8,7 @@ from pathlib import Path
 import secrets
 import time
 from contextlib import suppress
-from typing import BinaryIO, Mapping, Protocol
+from typing import BinaryIO, Mapping
 
 from scripts.physics_capture_contract import (
     PhysicsContractError,
@@ -36,10 +35,6 @@ from scripts.physics_rollout_semantics import (
     PhysicsRolloutSemanticsError,
     validate_physics_rollout_semantics,
 )
-
-
-class _Digest(Protocol):
-    def update(self, data: bytes) -> None: ...
 
 
 def install_physics_metadata(shot_descriptor: int, metadata: JsonObject) -> None:
@@ -172,7 +167,6 @@ def _encoded_record(record: JsonObject) -> bytes:
 
 def _write_bounded_record(
     stream: BinaryIO,
-    digest: _Digest,
     encoded: bytes,
     progress: StreamProgress,
 ) -> StreamProgress:
@@ -183,7 +177,6 @@ def _write_bounded_record(
             f"sidecar byte limit is {MAX_TOTAL_BYTES}",
         )
     stream.write(encoded)
-    digest.update(encoded)
     return StreamProgress(progress.state_count, progress.event_count, total_bytes)
 
 
@@ -378,13 +371,9 @@ def persist_physics_rollout(
             "physics capture child artifact is a symlink or is not confined",
         ) from error
     shot_id = output_dir.name.removesuffix(".tmp")
-    state_digest = hashlib.sha256()
-    event_digest = hashlib.sha256()
-    evidence_digest = hashlib.sha256()
     evidence_count = 0
     evidence_bytes = 0
     frame_entries: list[JsonObject] = []
-    frame_checksums: list[JsonObject] = []
     progress = StreamProgress(0, 0, 0)
     started_at = clock()
     shoot_response: JsonValue = None
@@ -414,12 +403,12 @@ def persist_physics_rollout(
                     })
                     _parse_header(header)
                     progress = _write_bounded_record(
-                        state_stream, state_digest, _encoded_record(header), progress
+                        state_stream, _encoded_record(header), progress
                     )
                     progress = StreamProgress(1, progress.event_count, progress.total_bytes)
 
                 progress = _write_bounded_record(
-                    state_stream, state_digest, _encoded_record(state), progress
+                    state_stream, _encoded_record(state), progress
                 )
                 progress = StreamProgress(progress.state_count + 1, progress.event_count, progress.total_bytes)
 
@@ -451,7 +440,7 @@ def persist_physics_rollout(
                             f"event record limit is {MAX_EVENT_RECORDS}",
                         )
                     progress = _write_bounded_record(
-                        event_stream, event_digest, _encoded_record(event), progress
+                        event_stream, _encoded_record(event), progress
                     )
                     progress = StreamProgress(progress.state_count, progress.event_count + 1, progress.total_bytes)
 
@@ -482,7 +471,6 @@ def persist_physics_rollout(
                             f"violation evidence sidecar byte limit is {MAX_TOTAL_BYTES}",
                         )
                     evidence_stream.write(encoded_evidence)
-                    evidence_digest.update(encoded_evidence)
                     evidence_count += 1
 
                 relative_path = f"frames/frame_{index:06d}.png"
@@ -503,10 +491,6 @@ def persist_physics_rollout(
                     frame_stream.flush()
                     os.fsync(frame_stream.fileno())
                 frame_entries.append({"path": relative_path})
-                frame_checksums.append({
-                    "relative_path": relative_path,
-                    "sha256": hashlib.sha256(capture.png).hexdigest(),
-                })
 
             if initial_capture is not None:
                 write_capture(initial_capture, 0, allow_events=False)
@@ -537,26 +521,22 @@ def persist_physics_rollout(
             "capture_contract": "physics_capture_v1",
             "schema_version": "physics_capture_v1",
             "protocol_version": 1,
-            "player_sha256": provenance.player_sha256,
-            "protocol_sha256": provenance.protocol_sha256,
-            "archive_sha256": provenance.archive_sha256,
+            "player_version": provenance.player_version,
+            "player_protocol_version": provenance.protocol_version,
+            "archive_path": provenance.archive_path,
             "frame_count": bounds.frame_count,
             "frames_dir": "frames",
             "frames": frame_entries,
-            "frame_checksums": frame_checksums,
             "physics_state_path": "physics_state.jsonl",
             "physics_events_path": "physics_events.jsonl",
             "physics_state_count": bounds.frame_count,
             "physics_event_count": progress.event_count,
-            "physics_state_sha256": state_digest.hexdigest(),
-            "physics_events_sha256": event_digest.hexdigest(),
             "sidecars_closed": True,
         }
         if evidence_count:
             metadata.update({
                 "physics_violation_engine_evidence_path": VIOLATION_EVIDENCE_SIDECAR,
                 "physics_violation_engine_evidence_count": evidence_count,
-                "physics_violation_engine_evidence_sha256": evidence_digest.hexdigest(),
             })
         strict_semantics = (
             initial_capture is not None

@@ -90,9 +90,6 @@ EpisodeValidationResult: TypeAlias = EpisodeAccepted | EpisodeSummary | EpisodeR
 class PhysicsArtifactSummary:
     state_count: int
     event_count: int
-    frame_sha256: tuple[str, ...]
-    state_sha256: str
-    event_sha256: str
 
 
 @dataclass(frozen=True, slots=True)

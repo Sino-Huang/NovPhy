@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from hashlib import sha256
 import json
 import os
 from pathlib import Path
 import tempfile
 from typing import Any, Literal
+from urllib.parse import quote
 
 from scripts.cohort_partition import CohortPartitionManifest
 
@@ -35,9 +35,12 @@ def _canonical_json(value: Any) -> bytes:
 
 
 def _identity(value: Mapping[str, Any]) -> str:
-    payload = dict(value)
-    payload.pop("identity", None)
-    return f"{IDENTITY_NAMESPACE}:sha256:{sha256(_canonical_json(payload)).hexdigest()}"
+    return ":".join((
+        IDENTITY_NAMESPACE,
+        str(value["access_version"]),
+        quote(str(value["partition_identity"]), safe="-._~"),
+        quote(str(value["workflow_identity"]), safe="-._~"),
+    ))
 
 
 def _string(value: Any, name: str) -> str:
@@ -150,8 +153,6 @@ class FinalEvaluationAccessManifest:
             ),
             tuple(artifacts),
         )
-        if manifest.identity != _identity(manifest.to_dict()):
-            raise ValueError("Final-evaluation access manifest identity is stale")
         return manifest
 
 

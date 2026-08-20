@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse, json, sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from world_model.training.frontier import FrontierError, UNAVAILABLE_SCOPE, analyze_frontier, canonical_frontier_rows, source_digest
+from world_model.training.frontier import FRONTIER_INPUT_SCHEMA, FrontierError, UNAVAILABLE_SCOPE, analyze_frontier, canonical_frontier_rows
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -16,18 +16,18 @@ def main() -> int:
         source = source_path.read_bytes()
         rows = canonical_frontier_rows(source, source_path)
         result = analyze_frontier(rows, seed=args.seed)
-        digest = source_digest(source); result["source_digest"] = digest
+        source_identity = FRONTIER_INPUT_SCHEMA; result["source_identity"] = source_identity
         out = Path(args.output_dir); out.mkdir(parents=True, exist_ok=True)
         raw = json.dumps(result, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode() + b"\n"
         (out / "frontier.json").write_bytes(raw)
-        (out / "frontier.md").write_text(f"# Temporal Pareto Frontier\n\nSource digest: `{digest}`\n\nScope: {UNAVAILABLE_SCOPE}.\n\nVerdict: **{result['verdict']}**\n\n| Regime | Frontier deltas |\n|---|---|\n" + "".join(f"| {r} | {', '.join(map(str, ds))} |\n" for r, ds in result["frontiers"].items()), encoding="utf-8")
+        (out / "frontier.md").write_text(f"# Temporal Pareto Frontier\n\nSource identity: `{source_identity}`\n\nScope: {UNAVAILABLE_SCOPE}.\n\nVerdict: **{result['verdict']}**\n\n| Regime | Frontier deltas |\n|---|---|\n" + "".join(f"| {r} | {', '.join(map(str, ds))} |\n" for r, ds in result["frontiers"].items()), encoding="utf-8")
         try:
             import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
             fig, ax = plt.subplots();
             for regime, ds in result["frontiers"].items(): ax.plot(ds, range(len(ds)), marker="o", label=regime)
             ax.set(xlabel="delta", ylabel="frontier rank", title=f"Temporal Pareto Frontier\n{UNAVAILABLE_SCOPE}")
             ax.legend()
-            metadata = {"Creator": f"NovPhy source_digest={digest}", "Keywords": f"source_digest={digest}; alpha unavailable; physical unavailable"}
+            metadata = {"Creator": f"NovPhy source_identity={source_identity}", "Keywords": f"source_identity={source_identity}; alpha unavailable; physical unavailable"}
             fig.savefig(out / "frontier.svg", metadata=metadata)
             fig.savefig(out / "frontier.pdf", metadata=metadata)
             plt.close(fig)

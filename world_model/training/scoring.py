@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import StrEnum, unique
 from typing import Protocol
 
-from world_model.model import Abstraction, PredictionPair, digest
+from world_model.model import Abstraction, PredictionPair, identity
 from world_model.training.grid_data import MotionRegime, ScoringState
 from world_model.training.pair_grid import BestPairLabel, PairMetric, ScoreSpec, build_pair_metric, select_best_pair
 from world_model.training.scoring_metrics import PairAggregate, TemporalOracleCeiling, aggregate_labels, oracle_ceiling
@@ -39,7 +39,7 @@ class ScoringExample:
         motion_regime: MotionRegime,
     ) -> ScoringExample:
         return cls(
-            state_id=digest(("exhaustive-score-state-v1", state.key)),
+            state_id=identity(("exhaustive-score-state-v1", state.key)),
             partition=partition,
             motion_regime=motion_regime,
             frame_count=state.shot_frame_count,
@@ -150,6 +150,11 @@ class ExhaustiveScorer:
         )
 
 
-from world_model.training.scoring_artifacts import ScoreArtifactReceipt, validate_score_artifacts, write_score_artifacts
+from world_model.training.scoring_artifacts import (
+    ScoreArtifactReceipt,
+    score_state_set_identity,
+    validate_score_artifacts,
+    write_score_artifacts,
+)
 
-__all__ = ["AdvancedMetricStatus", "ExhaustiveScoreResult", "ExhaustiveScorer", "Partition", "ScoreArtifactError", "ScoreArtifactReceipt", "ScoredState", "ScoringExample", "validate_score_artifacts", "write_score_artifacts"]
+__all__ = ["AdvancedMetricStatus", "ExhaustiveScoreResult", "ExhaustiveScorer", "Partition", "ScoreArtifactError", "ScoreArtifactReceipt", "ScoredState", "ScoringExample", "score_state_set_identity", "validate_score_artifacts", "write_score_artifacts"]

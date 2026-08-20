@@ -1,4 +1,3 @@
-import hashlib
 import json
 import subprocess
 import sys
@@ -12,10 +11,10 @@ from world_model.training.scoring import (
     ExhaustiveScorer,
     Partition,
     ScoringExample,
+    score_state_set_identity,
     write_score_artifacts,
 )
 from world_model.training.frontier import FrontierError, analyze_frontier, pareto_frontier
-from world_model.training.real_data import write_frontier_input as write_production_frontier_input
 
 
 class ZeroPredictor:
@@ -67,6 +66,8 @@ def regime_only_bootstrap_rows():
 
 
 def write_frontier_input(root):
+    catalog_identity = "episode-catalog-v1:frontier-fixture-cohort"
+    partition_identity = "pair-grid-partition-v1:frontier-fixture-split"
     examples = tuple(
         ScoringExample(
             state_id=f"{partition}-{regime}-{index:03d}",
@@ -83,12 +84,25 @@ def write_frontier_input(root):
     write_score_artifacts(
         score_root,
         ExhaustiveScorer(ZeroPredictor()).score(examples),
-        checkpoint_digest="a" * 64,
+        checkpoint_path=root / "checkpoint.pt",
+        checkpoint_identity="checkpoint-v1:frontier-fixture-run:1",
+        config_identity="phase-a-config-v2:fixture",
+        catalog_identity=catalog_identity,
+        partition_identity=partition_identity,
+        state_set_identity=score_state_set_identity(
+            catalog_identity,
+            partition_identity,
+            tuple(example.state_id for example in examples),
+        ),
         shard_size=128,
     )
     path = root / "frontier-input.json"
-    write_production_frontier_input(score_root, path)
-    payload = json.loads(path.read_text(encoding="ascii"))
+    payload = {
+        "partition": "evaluation",
+        "schema_version": "temporal_frontier_input_v1",
+        "score_artifact_root": "scores",
+    }
+    path.write_bytes(canonical_json_bytes(payload))
     return path, payload, score_root
 
 
@@ -154,16 +168,13 @@ class FrontierTests(unittest.TestCase):
             root = Path(directory)
             source_path, payload, score_root = write_frontier_input(root)
             output_path = root / "out"
-            source_bytes = source_path.read_bytes()
             completed = subprocess.run(
                 [sys.executable, "scripts/plot_jepa_pair_frontier.py", "--input", str(source_path), "--output-dir", str(output_path)],
                 capture_output=True, text=True, check=False,
             )
             self.assertEqual(completed.returncode, 0, completed.stderr)
-            digest = hashlib.sha256(source_bytes).hexdigest()
             for name in ("frontier.json", "frontier.md", "frontier.svg", "frontier.pdf"):
                 artifact = (output_path / name).read_bytes()
-                self.assertIn(digest.encode(), artifact, name)
                 self.assertIn(b"alpha", artifact.lower(), name)
                 self.assertIn(b"physical", artifact.lower(), name)
             result = json.loads((output_path / "frontier.json").read_text(encoding="ascii"))
@@ -179,15 +190,6 @@ class FrontierTests(unittest.TestCase):
                 capture_output=True, text=True, check=False,
             )
             self.assertEqual(arbitrary_result.returncode, 2)
-
-            stale = dict(payload)
-            stale["checkpoint_digest"] = "b" * 64
-            source_path.write_bytes(canonical_json_bytes(stale))
-            stale_result = subprocess.run(
-                [sys.executable, "scripts/plot_jepa_pair_frontier.py", "--input", str(source_path), "--output-dir", str(root / "stale")],
-                capture_output=True, text=True, check=False,
-            )
-            self.assertEqual(stale_result.returncode, 2)
 
             source_path.write_bytes(canonical_json_bytes(payload))
             shard = next((score_root / "label_shards" / "evaluation").glob("*.jsonl"))

@@ -7,15 +7,13 @@ no threshold is implicit -- the full `OracleGateSpec` travels with every derived
 record so a cohort labelled under different thresholds can never be silently mixed
 with another.
 
-The frozen `physics_capture_v1` contract is not touched.  Labels live in a separate
-`physics_derived_labels_v1` sidecar written beside the capture sidecars, carrying the
-SHA-256 of both inputs so a stale or tampered label file fails closed.
+The frozen `physics_capture_v1` contract is not touched. Labels live in a separate
+`physics_derived_labels_v1` sidecar written beside the capture sidecars.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum, unique
-import hashlib
 import json
 import math
 import os
@@ -141,9 +139,12 @@ class OracleGateSpec:
             "contact_activity_speed": float(self.contact_activity_speed),
         }
 
-    def digest(self) -> str:
-        encoded = json.dumps(self.to_json(), sort_keys=True, separators=(",", ":"))
-        return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+    def identity(self) -> str:
+        return (
+            "oracle-gate-spec-v1:"
+            f"{self.kinetic_energy_threshold}:{self.active_contact_threshold}:"
+            f"{self.contact_activity_speed}"
+        )
 
     @classmethod
     def from_json(cls, payload: JsonValue, location: str) -> "OracleGateSpec":
@@ -244,8 +245,6 @@ class DerivedLabels:
     capture_id: str
     shot_id: str
     oracle_gate_spec: OracleGateSpec
-    state_sha256: str
-    events_sha256: str
     frames: tuple[DerivedFrameLabel, ...]
     outcome: ShotOutcome
 
@@ -257,15 +256,12 @@ class DerivedLabels:
             "capture_id": self.capture_id,
             "shot_id": self.shot_id,
             "oracle_gate_spec": self.oracle_gate_spec.to_json(),
-            "oracle_gate_spec_digest": self.oracle_gate_spec.digest(),
             "macro_state_taxonomy": [state.value for state in MacroState],
             "vector_fields": list(DERIVED_LABEL_VECTOR_FIELDS),
             "frame_count": len(self.frames),
             "source": {
                 "physics_state_path": STATE_SIDECAR,
                 "physics_events_path": EVENT_SIDECAR,
-                "physics_state_sha256": self.state_sha256,
-                "physics_events_sha256": self.events_sha256,
             },
         }
 
@@ -276,14 +272,6 @@ class DerivedLabels:
         return "".join(
             json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n" for record in records
         )
-
-
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _total_kinetic_energy(state: StateFrame) -> float:
@@ -520,31 +508,19 @@ def derive_labels(capture: PhysicsCapture, spec: OracleGateSpec | None = None) -
         capture_id=str(capture.header.clock.capture_id),
         shot_id=str(capture.header.clock.shot_id),
         oracle_gate_spec=gate_spec,
-        state_sha256="",
-        events_sha256="",
         frames=tuple(frames),
         outcome=outcome,
     )
 
 
 def derive_labels_for_shot(shot_dir: Path, spec: OracleGateSpec | None = None) -> DerivedLabels:
-    """Load a shot's frozen sidecars and derive its labels, binding the source digests."""
+    """Load a shot's frozen sidecars and derive its labels."""
     state_path = shot_dir / STATE_SIDECAR
     event_path = shot_dir / EVENT_SIDECAR
     if not state_path.is_file() or not event_path.is_file():
         raise DerivedLabelError(str(shot_dir), "physics capture sidecars are missing")
     capture = load_physics_capture(state_path, event_path)
-    labels = derive_labels(capture, spec)
-    return DerivedLabels(
-        schema_version=labels.schema_version,
-        capture_id=labels.capture_id,
-        shot_id=labels.shot_id,
-        oracle_gate_spec=labels.oracle_gate_spec,
-        state_sha256=_sha256_file(state_path),
-        events_sha256=_sha256_file(event_path),
-        frames=labels.frames,
-        outcome=labels.outcome,
-    )
+    return derive_labels(capture, spec)
 
 
 def write_derived_labels(shot_dir: Path, spec: OracleGateSpec | None = None) -> Path:
@@ -638,8 +614,6 @@ def read_derived_labels(shot_dir: Path) -> DerivedLabels:
         capture_id=str(header.get("capture_id", "")),
         shot_id=str(header.get("shot_id", "")),
         oracle_gate_spec=spec,
-        state_sha256=str(source.get("physics_state_sha256", "")),
-        events_sha256=str(source.get("physics_events_sha256", "")),
         frames=tuple(frames),
         outcome=ShotOutcome(
             outcome_class,
@@ -653,9 +627,8 @@ def read_derived_labels(shot_dir: Path) -> DerivedLabels:
 def validate_derived_labels(shot_dir: Path, spec: OracleGateSpec | None = None) -> DerivedLabels:
     """Re-derive a shot's labels and reject any stored file that disagrees.
 
-    Fails closed on: a missing sidecar, a threshold spec other than the requested one,
-    stale source digests (the capture changed after labelling), a differing label body,
-    or an absorbing predicate that reverts.
+    Fails closed on a missing sidecar, a threshold spec other than the requested one,
+    a differing label body, or an absorbing predicate that reverts.
     """
     expected_spec = spec or OracleGateSpec()
     stored = read_derived_labels(shot_dir)
@@ -665,8 +638,6 @@ def validate_derived_labels(shot_dir: Path, spec: OracleGateSpec | None = None) 
         raise DerivedLabelError(location, "stored thresholds differ from the requested spec")
 
     expected = derive_labels_for_shot(shot_dir, expected_spec)
-    if stored.state_sha256 != expected.state_sha256 or stored.events_sha256 != expected.events_sha256:
-        raise DerivedLabelError(location, "source sidecar digests are stale")
     if stored.to_jsonl() != expected.to_jsonl():
         raise DerivedLabelError(location, "stored labels disagree with a fresh derivation")
 

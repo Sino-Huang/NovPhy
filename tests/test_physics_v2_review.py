@@ -46,6 +46,30 @@ def supported_capture() -> dict:
     return value
 
 
+def write_probe_plan(root: Path) -> Path:
+    root.mkdir(parents=True, exist_ok=True)
+    scenarios = []
+    for index in range(2):
+        manifest_path = root / f"scenario-{index}.json"
+        manifest_path.write_text(
+            json.dumps({"identity": f"scenario-manifest-v1:{index}"}),
+            encoding="utf-8",
+        )
+        scenarios.append({
+            "scenario_id": f"scenario-{index}",
+            "scenario_manifest_reference": str(manifest_path),
+            "scenario_template_identity": f"scenario-template-v1:{index}",
+            "level_instance_identity": f"level-instance-v1:{index}",
+            "scenario_lineage_identity": f"scenario-lineage-v1:{index}",
+        })
+    plan_path = root / "probe-plan.json"
+    plan_path.write_text(
+        json.dumps({"identity": "physics-v2-probe-plan-v1:review", "scenarios": scenarios}),
+        encoding="utf-8",
+    )
+    return plan_path
+
+
 class PhysicsV2CoverageVerdictTests(unittest.TestCase):
     def test_verdicts_use_authoritative_contacts_and_support_sets(self) -> None:
         self.assertFalse(coverage_verdict("collision", engine_capture())["demonstrated"])
@@ -60,7 +84,7 @@ class PhysicsV2ReviewSessionTests(unittest.TestCase):
         with TemporaryDirectory() as temporary:
             session = PhysicsV2ReviewSession(
                 Path(temporary),
-                probe_plan_path=Path(".claude/project-docs/evidence/issue-44-physics-v2/probe-plan.json"),
+                probe_plan_path=write_probe_plan(Path(temporary) / "stage"),
             )
             session.stage("collision", {
                 "action_type": "drag_hold_release",
@@ -81,7 +105,7 @@ class PhysicsV2ReviewSessionTests(unittest.TestCase):
         with TemporaryDirectory() as temporary:
             session = PhysicsV2ReviewSession(
                 Path(temporary),
-                probe_plan_path=Path(".claude/project-docs/evidence/issue-44-physics-v2/probe-plan.json"),
+                probe_plan_path=write_probe_plan(Path(temporary) / "stage"),
             )
             action = {
                 "action_type": "drag_hold_release",
@@ -113,6 +137,10 @@ class PhysicsV2ReviewSessionTests(unittest.TestCase):
             plan = json.loads(frozen_bytes)
             self.assertEqual(plan["action"], staged["action"])
             self.assertEqual(plan["max_attempts"], 1)
+            self.assertEqual(plan["selection_provenance"], {
+                "kind": "diagnostic_pilot",
+                "capture_path": "diagnostic/engine-envelope.json",
+            })
             self.assertFalse(plan["diagnostic_capture_eligible"])
             self.assertEqual(session.begin_replay()["socket_command"], staged["socket_command"])
 
@@ -129,7 +157,7 @@ class PhysicsV2ReviewSessionTests(unittest.TestCase):
         with TemporaryDirectory() as temporary:
             session = PhysicsV2ReviewSession(
                 Path(temporary),
-                probe_plan_path=Path(".claude/project-docs/evidence/issue-44-physics-v2/probe-plan.json"),
+                probe_plan_path=write_probe_plan(Path(temporary) / "stage"),
             )
             session.stage("collision", {
                 "action_type": "drag_hold_release",

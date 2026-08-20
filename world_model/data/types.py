@@ -188,13 +188,13 @@ class TemporalWindowRequest:
 
 @dataclass(frozen=True, slots=True)
 class ReproducibilityMetadata:
-    catalog_digest: str
+    catalog_identity: str
     seed: int
     epoch: int
     draw_count: int
 
     def __post_init__(self) -> None:
-        _require_nonempty(self.catalog_digest, "catalog_digest")
+        _require_nonempty(self.catalog_identity, "catalog_identity")
         if self.epoch < 0:
             raise ContractValueError("epoch", "must be nonnegative")
         if self.draw_count <= 0:

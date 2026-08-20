@@ -11,7 +11,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum, unique
-import hashlib
 import json
 import math
 import os
@@ -296,8 +295,6 @@ class RelationalFrameLabel:
 class RelationalSupervision:
     capture_id: str
     shot_id: str
-    state_sha256: str
-    events_sha256: str
     event_count: int
     frames: tuple[RelationalFrameLabel, ...]
     schema_version: str = RELATIONAL_SUPERVISION_SCHEMA_VERSION
@@ -310,13 +307,10 @@ class RelationalSupervision:
             "capture_id": self.capture_id,
             "shot_id": self.shot_id,
             "derivation_spec_version": DERIVATION_SPEC_VERSION,
-            "derivation_spec_digest": derivation_spec_digest(),
             "event_clock": dict(EVENT_CLOCK_JSON),
             "sources": {
                 "physics_state_path": STATE_SIDECAR,
-                "physics_state_sha256": self.state_sha256,
                 "physics_events_path": EVENT_SIDECAR,
-                "physics_events_sha256": self.events_sha256,
             },
             "state_count": len(self.frames),
             "event_count": self.event_count,
@@ -361,17 +355,9 @@ def derivation_spec_json() -> JsonObject:
     }
 
 
-def derivation_spec_digest() -> str:
-    encoded = json.dumps(derivation_spec_json(), sort_keys=True, separators=(",", ":"), allow_nan=False)
-    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
-
-
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def derivation_spec_identity() -> str:
+    """Return the declared relational derivation identity."""
+    return f"relational-supervision-derivation:{DERIVATION_SPEC_VERSION}"
 
 
 def _citation(capture: PhysicsCapture, state: StateFrame, contact: RawContact) -> ContactCitation:
@@ -577,9 +563,6 @@ def _support_label(
 
 def derive_relational_supervision(
     capture: PhysicsCapture,
-    *,
-    state_sha256: str = "",
-    events_sha256: str = "",
 ) -> RelationalSupervision:
     """Derive labels using only the current and immediately previous source states."""
     frames: list[RelationalFrameLabel] = []
@@ -618,8 +601,6 @@ def derive_relational_supervision(
     return RelationalSupervision(
         capture_id=str(capture.header.clock.capture_id),
         shot_id=str(capture.header.clock.shot_id),
-        state_sha256=state_sha256,
-        events_sha256=events_sha256,
         event_count=len(capture.events),
         frames=tuple(frames),
     )
@@ -634,23 +615,10 @@ def derive_relational_supervision_for_shot(shot_dir: Path) -> RelationalSupervis
         loaded = load_physics_capture(state_path, event_path)
     except (OSError, PhysicsContractError) as error:
         raise RelationalSupervisionError(str(shot_dir), "physics capture sidecars are invalid") from error
-    return derive_relational_supervision(
-        loaded,
-        state_sha256=_sha256_file(state_path),
-        events_sha256=_sha256_file(event_path),
-    )
+    return derive_relational_supervision(loaded)
 
 
 def _write_relational_supervision_file(labels: RelationalSupervision, destination: Path) -> Path:
-    for field, digest in (
-        ("state_sha256", labels.state_sha256),
-        ("events_sha256", labels.events_sha256),
-    ):
-        if not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
-            raise RelationalSupervisionError(
-                str(destination),
-                f"{field} must be a lowercase SHA-256 digest",
-            )
     temporary = destination.parent / f".{RELATIONAL_SUPERVISION_SIDECAR}.{secrets.token_hex(8)}.tmp"
     try:
         with temporary.open("w", encoding="utf-8", newline="\n") as stream:
@@ -708,21 +676,14 @@ def _integer(record: JsonObject, field: str, location: str) -> int:
     return value
 
 
-def _digest(record: JsonObject, field: str, location: str) -> str:
-    value = _string(record, field, location)
-    if re.fullmatch(r"[0-9a-f]{64}", value) is None:
-        raise RelationalSupervisionError(location, f"{field} must be a lowercase SHA-256 digest")
-    return value
-
-
 IDENTITY_FIELDS: Final = frozenset(("capture_id", "shot_id", "state_sequence", "render_frame", "fixed_step", "rgb_relative_path"))
 CITATION_FIELDS: Final = frozenset(("capture_id", "shot_id", "state_sequence", "fixed_step", "contact_id"))
 CONTACT_FIELDS: Final = frozenset(("entity_a_id", "entity_b_id", "evidence"))
 SUPPORT_FIELDS: Final = frozenset(("entity_a_id", "entity_b_id", "supporter_id", "supported_id", "value", "availability", "evidence"))
 ELIGIBILITY_FIELDS: Final = frozenset(("value", "availability", "evidence"))
 FRAME_FIELDS: Final = frozenset(("record_type", *IDENTITY_FIELDS, "contacts", "supports", "physical_regime_eligibility", "model_relative_micro_relation_usefulness"))
-HEADER_FIELDS: Final = frozenset(("record_type", "schema_version", "capture_schema_version", "capture_id", "shot_id", "derivation_spec_version", "derivation_spec_digest", "event_clock", "sources", "state_count", "event_count", "frame_label_count"))
-SOURCE_FIELDS: Final = frozenset(("physics_state_path", "physics_state_sha256", "physics_events_path", "physics_events_sha256"))
+HEADER_FIELDS: Final = frozenset(("record_type", "schema_version", "capture_schema_version", "capture_id", "shot_id", "derivation_spec_version", "event_clock", "sources", "state_count", "event_count", "frame_label_count"))
+SOURCE_FIELDS: Final = frozenset(("physics_state_path", "physics_events_path"))
 EVENT_CLOCK_FIELDS: Final = frozenset(("occurrence_authority", "render_frame_role"))
 
 
@@ -869,7 +830,7 @@ def read_relational_supervision(path: Path) -> RelationalSupervision:
         raise RelationalSupervisionError(f"{location}:1", "first record must be relational_supervision_header")
     if header["schema_version"] != RELATIONAL_SUPERVISION_SCHEMA_VERSION or header["capture_schema_version"] != CAPTURE_SCHEMA_VERSION:
         raise RelationalSupervisionError(f"{location}:1", "unsupported schema version")
-    if header["derivation_spec_version"] != DERIVATION_SPEC_VERSION or header["derivation_spec_digest"] != derivation_spec_digest():
+    if header["derivation_spec_version"] != DERIVATION_SPEC_VERSION:
         raise RelationalSupervisionError(f"{location}:1", "derivation specification differs from this module")
     clock = header["event_clock"]
     if not isinstance(clock, dict):
@@ -894,8 +855,6 @@ def read_relational_supervision(path: Path) -> RelationalSupervision:
     return RelationalSupervision(
         capture_id=_string(header, "capture_id", f"{location}:1"),
         shot_id=_string(header, "shot_id", f"{location}:1"),
-        state_sha256=_digest(sources, "physics_state_sha256", f"{location}:1.sources"),
-        events_sha256=_digest(sources, "physics_events_sha256", f"{location}:1.sources"),
         event_count=event_count,
         frames=frames,
     )
@@ -907,8 +866,6 @@ def validate_relational_supervision(shot_dir: Path, label_path: Path | None = No
     expected = derive_relational_supervision_for_shot(shot_dir)
     if stored.capture_id != expected.capture_id or stored.shot_id != expected.shot_id:
         raise RelationalSupervisionError(str(path), "capture identity differs from source")
-    if stored.state_sha256 != expected.state_sha256 or stored.events_sha256 != expected.events_sha256:
-        raise RelationalSupervisionError(str(path), "source sidecar digests are stale")
     try:
         actual = path.read_bytes()
     except OSError as error:

@@ -22,7 +22,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from world_model.data.catalog import EpisodeCatalog
-from world_model.data.curriculum import catalog_digest
+from world_model.data.curriculum import catalog_identity
 from world_model.data.dataset import TemporalWindowDataset
 from world_model.data.sampling import EpochSampler, TemporalWindowCollator
 from world_model.data.types import ContractValueError, TemporalWindowRequest
@@ -33,7 +33,7 @@ from world_model.model import (
     JepaConfig,
     PredictionPair,
     coerce_abstraction,
-    digest,
+    identity,
 )
 from world_model.training.grid_data import MotionRegime
 from world_model.training.pair_grid import APPROVED_PAIRS
@@ -275,14 +275,14 @@ def build_window_loader(
 ) -> tuple[torch.utils.data.DataLoader, int, str]:
     """Build a deterministic single-step loader over a catalog snapshot.
 
-    Returns ``(loader, window_count, sampled_index_digest)`` where
+    Returns ``(loader, window_count, sampled_index_identity)`` where
     ``window_count`` is the number of eligible ``(steps=1, stride=delta)``
-    windows in the catalog and ``sampled_index_digest`` fixes exactly which
+    windows in the catalog and ``sampled_index_identity`` declares exactly which
     indices the run draws (the reproducibility identity of the data).
 
     ``window_selection`` is ``"uniform"`` (seeded draw as-is) or ``"motion"``
     (the most dynamic windows from a seeded candidate pool, see
-    ``select_motion_windows``).  The digest always covers the final order, so
+    ``select_motion_windows``).  The identity records the final order, so
     the selection is reproducible regardless of mode.
     """
     if window_selection not in ("uniform", "motion", "diverse"):
@@ -319,7 +319,7 @@ def build_window_loader(
         collate_fn=TemporalWindowCollator(),
         num_workers=0,
     )
-    return loader, len(dataset), digest(("sampled-window-indices-v1", seed, order))
+    return loader, len(dataset), identity(("sampled-window-indices-v1", seed, order))
 
 
 class TeacherForcedTrainer:
@@ -565,7 +565,7 @@ def run_overfit(
     seed_all(training_config.seed)
     started_at_unix = time.time()
 
-    loader, window_count_actual, index_digest = build_window_loader(
+    loader, window_count_actual, index_identity = build_window_loader(
         catalog,
         encoder_config=jepa_config.encoder,
         delta=training_config.delta,
@@ -626,7 +626,7 @@ def run_overfit(
         device_name=environment["device_name"],
         dataset_root=str(_catalog_root(catalog)),
         split=catalog.split,
-        catalog_digest=catalog_digest(catalog),
+        catalog_identity=catalog_identity(catalog),
         accepted_episode_count=len(catalog.episodes),
         rejected_episode_count=catalog.rejection_count,
         window_count=window_count_actual,
@@ -640,8 +640,8 @@ def run_overfit(
         warmup_steps=training_config.warmup_steps,
         grad_clip=training_config.grad_clip,
         ema_base_momentum=training_config.ema_base_momentum,
-        model_config_digest=jepa_config.identity,
-        sampled_index_digest=index_digest,
+        model_config_identity=jepa_config.identity,
+        sampled_index_identity=index_identity,
         window_selection=window_selection,
         candidate_count=candidate_count,
         symbolic_loss_active=False,

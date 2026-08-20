@@ -17,7 +17,6 @@ mirror trees are writable.  This never touches the frozen sidecars, `frames/`, o
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 from pathlib import Path
 import sys
@@ -33,7 +32,6 @@ from scripts.physics_macro_labels import (  # noqa: E402
     MACRO_LABEL_SCHEMA_VERSION,
     MACRO_LABEL_SIDECAR,
     MacroLabelError,
-    derivation_spec_digest,
     derive_macro_labels_for_shot,
     validate_macro_labels,
     write_macro_label_file,
@@ -155,14 +153,6 @@ def _label_path(shot: Path, target: Path, output_dir: Path | None) -> Path:
     return output_dir / shot.relative_to(target) / MACRO_LABEL_SIDECAR
 
 
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", type=Path, required=True, help="A shot directory or a root containing shot directories")
@@ -236,7 +226,6 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "shot": str(shot),
                     "label_path": str(label_path),
-                    "sha256": _sha256_file(label_path),
                     "state_count": len(stored.frames),
                     "event_count": stored.event_count,
                     "interval_count": len(stored.intervals),
@@ -252,7 +241,6 @@ def main(argv: list[str] | None = None) -> int:
         "sidecar": MACRO_LABEL_SIDECAR,
         "schema_version": MACRO_LABEL_SCHEMA_VERSION,
         "derivation_spec_version": DERIVATION_SPEC_VERSION,
-        "derivation_spec_digest": derivation_spec_digest(),
         "mode": "validate" if args.validate_only else "write",
         "shots_total": len(shots),
         "shots_ok": len(entries),

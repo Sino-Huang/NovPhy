@@ -150,7 +150,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if report.acceptance == "pass" else 2
 
     # Train smoke: a short deterministic pass over sampled dev windows.
-    loader, window_count, index_digest = build_window_loader(
+    loader, window_count, index_identity = build_window_loader(
         catalog,
         encoder_config=jepa_config.encoder,
         delta=training_config.delta,
@@ -158,7 +158,7 @@ def main(argv: list[str] | None = None) -> int:
         seed=training_config.seed,
         draw_count=training_config.batch_size * training_config.steps,
     )
-    print(f"windows {window_count} sampled {len(loader.sampler)} digest {index_digest[:12]}…")
+    print(f"windows {window_count} sampled {len(loader.sampler)} identity {index_identity}")
     from world_model.model import JepaBackbone
     from world_model.training import seed_all
 

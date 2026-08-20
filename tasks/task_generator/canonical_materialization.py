@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from hashlib import sha256
 import os
 from pathlib import Path
 import random
@@ -240,7 +239,9 @@ def materialize_level_instance(
         "declared_initial_engine_state": canonical_xml_projection(xml_content),
     }
     declared_inputs = {
-        "template_content_identity": f"xml_bytes_v1:sha256:{sha256(template_content).hexdigest()}",
+        "template_content_identity": (
+            f"xml_bytes_v1:{request.template_path.as_posix()}:{GENERATOR_VERSION}"
+        ),
         "template_name": request.template_name,
         "reference_point": list(request.reference_point),
         "min_coordinate": list(request.min_coordinate),

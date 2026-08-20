@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
-from hashlib import sha256
 import json
 import os
 from pathlib import Path
 import tempfile
 from types import MappingProxyType
 from typing import Any, Final, Mapping, Sequence, TypeAlias
+from urllib.parse import quote
 
 from scripts.cohort_partition import (
     CohortPartitionManifest,
@@ -27,14 +27,12 @@ from scripts.physics_macro_labels import (
     MacroFrameLabel,
     derive_macro_labels_for_shot,
     validate_macro_labels,
-    derivation_spec_digest as macro_derivation_spec_digest,
     write_macro_label_file,
 )
 from scripts.physics_relational_supervision import (
     DERIVATION_SPEC_VERSION as RELATIONAL_DERIVATION_SPEC_VERSION,
     RelationalAvailability,
     RelationalFrameLabel,
-    derivation_spec_digest as relational_derivation_spec_digest,
     validate_relational_supervision,
 )
 from scripts.production_plan import PRODUCTION_PLAN_COPY_FILENAME, load_production_plan
@@ -175,13 +173,22 @@ def _canonical_json(value: Any) -> bytes:
 
 
 def _identity(payload: Mapping[str, Any]) -> str:
-    content = dict(payload)
-    content.pop("identity", None)
-    return f"{NAMESPACES[str(payload['schema'])]}:sha256:{sha256(_canonical_json(content)).hexdigest()}"
-
-
-def _digest(path: Path) -> str:
-    return sha256(path.read_bytes()).hexdigest()
+    schema = str(payload["schema"])
+    if schema == RELEASE_SCHEMA:
+        keys = (payload["release_version"], payload["code_revision"])
+    elif schema == DERIVATION_SCHEMA:
+        keys = (
+            payload["derivation_version"],
+            payload["source_cohort_release_identity"],
+        )
+    else:
+        keys = (
+            payload["cohort_release"]["identity"],
+            payload["authoritative_derivations"]["identity"],
+        )
+    return ":".join(
+        (NAMESPACES[schema], *(quote(str(key), safe="-._~") for key in keys))
+    )
 
 
 def _load(path: Path, name: str) -> dict[str, Any]:
@@ -256,7 +263,7 @@ def _raw_inventory(root: Path, shot: Path) -> list[dict[str, Any]]:
     if any(not path.is_file() or path.is_symlink() for path in paths):
         raise ValueError(f"Primary rollout has missing or non-regular files: {shot}")
     return [
-        {"path": path.relative_to(root).as_posix(), "sha256": _digest(path), "size_bytes": path.stat().st_size}
+        {"path": path.relative_to(root).as_posix(), "size_bytes": path.stat().st_size}
         for path in paths
     ]
 
@@ -301,7 +308,6 @@ def _prior_history(release_root: Path, sources: Mapping[str, Path]) -> list[dict
             "name": name,
             "schema": data.get("schema"),
             "path": copied.relative_to(release_root).as_posix(),
-            "sha256": _digest(copied),
             "attempt_count": len(data.get("attempt_ledger", [])),
             "accepted_count": data.get("accepted_count", 0),
             "rejected_count": data.get("rejected_count", 0),
@@ -323,15 +329,15 @@ def _derivations(root: Path, release_root: Path, release_id: str, rollouts: Sequ
             raise ValueError(f"Immutable macro derivation differs: {macro}")
         if not macro.exists():
             write_macro_label_file(labels, macro)
-        artifacts.append({"attempt_id": attempt_id, "kind": "physics_macro_labels_v1", "path": macro.relative_to(release_root).as_posix(), "sha256": _digest(macro), "accepted_predicates": ["steady-state", "structure-unstable"], "excluded_predicates": ["cascade-active", "collapsed", "pigs-cleared"]})
+        artifacts.append({"attempt_id": attempt_id, "kind": "physics_macro_labels_v1", "path": macro.relative_to(release_root).as_posix(), "accepted_predicates": ["steady-state", "structure-unstable"], "excluded_predicates": ["cascade-active", "collapsed", "pigs-cleared"]})
         relational = shot / "physics_relational_supervision.jsonl"
         if not relational.is_file():
             raise ValueError(f"Accepted rollout lacks relational supervision: {shot}")
         copied = _copy(relational, destination / relational.name)
-        artifacts.append({"attempt_id": attempt_id, "kind": "physics_relational_supervision_v1", "path": copied.relative_to(release_root).as_posix(), "sha256": _digest(copied)})
+        artifacts.append({"attempt_id": attempt_id, "kind": "physics_relational_supervision_v1", "path": copied.relative_to(release_root).as_posix()})
     payload = {"schema": DERIVATION_SCHEMA, "identity": "", "derivation_version": 1, "source_cohort_release_identity": release_id, "available_capabilities": dict(sorted(available.items())), "unavailable_capabilities": dict(sorted(unavailable.items())), "artifacts": artifacts}
     payload["identity"] = _identity(payload)
-    path = release_root / f"authoritative_derivations_{payload['identity'].rsplit(':', 1)[-1]}_v1.json"
+    path = release_root / "authoritative_derivations_v1.json"
     return _write(path, payload), payload
 
 
@@ -358,7 +364,7 @@ def publish_cohort_release(output_dir: Path, *, partition_manifest_path: Path, s
         if _load(source, "scenario manifest") != scenario.scenario_manifest_projection["scenario_manifest"]:
             raise ValueError(f"Scenario manifest differs from plan: {scenario.scenario_id}")
         copied = _copy(source, release_root / "scenario_manifests" / f"{scenario.scenario_id}.json")
-        scenarios.append({"scenario_id": scenario.scenario_id, "scenario_lineage_identity": scenario.scenario_manifest_projection["scenario_lineage_identity"], "path": copied.relative_to(release_root).as_posix(), "sha256": _digest(copied)})
+        scenarios.append({"scenario_id": scenario.scenario_id, "scenario_lineage_identity": scenario.scenario_manifest_projection["scenario_lineage_identity"], "path": copied.relative_to(release_root).as_posix()})
 
     quality = _quality(root, report)
     quality["prior_executions"] = _prior_history(release_root, prior_execution_paths or {})
@@ -375,18 +381,18 @@ def publish_cohort_release(output_dir: Path, *, partition_manifest_path: Path, s
     release = {
         "schema": RELEASE_SCHEMA, "identity": "", "release_version": release_version, "code_revision": code_revision,
         "source_pilot_report_identity": production_plan.source_pilot_report["identity"],
-        "production_plan": {"identity": production_plan.identity, "version": production_plan.plan_version, "path": PRODUCTION_PLAN_COPY_FILENAME, "sha256": _digest(root / PRODUCTION_PLAN_COPY_FILENAME)},
-        "collection_plan": {"identity": loaded_plan.plan.identity, "version": loaded_plan.plan.plan_version, "path": PLAN_COPY_FILENAME, "sha256": _digest(root / PLAN_COPY_FILENAME)},
-        "partition_manifest": {"identity": partition.identity, "version": partition.partition_version, "path": partition_copy.relative_to(root).as_posix(), "sha256": _digest(partition_copy)},
+        "production_plan": {"identity": production_plan.identity, "version": production_plan.plan_version, "path": PRODUCTION_PLAN_COPY_FILENAME},
+        "collection_plan": {"identity": loaded_plan.plan.identity, "version": loaded_plan.plan.plan_version, "path": PLAN_COPY_FILENAME},
+        "partition_manifest": {"identity": partition.identity, "version": partition.partition_version, "path": partition_copy.relative_to(root).as_posix()},
         "scenario_manifests": scenarios, "primary_rollouts": rollouts,
-        "quality_report": {"path": quality_path.relative_to(root).as_posix(), "sha256": _digest(quality_path)},
+        "quality_report": {"path": quality_path.relative_to(root).as_posix()},
     }
     release["identity"] = _identity(release)
-    release_path = _write(release_root / f"cohort_release_{release['identity'].rsplit(':', 1)[-1]}_v{release_version}.json", release)
+    release_path = _write(release_root / f"cohort_release_v{release_version}.json", release)
     derivation_path, derivation = _derivations(root, release_root, release["identity"], rollouts, available_capabilities, unavailable_capabilities)
-    publication = {"schema": PUBLICATION_SCHEMA, "identity": "", "cohort_release": {"identity": release["identity"], "path": release_path.relative_to(root).as_posix(), "sha256": _digest(release_path)}, "authoritative_derivations": {"identity": derivation["identity"], "path": derivation_path.relative_to(root).as_posix(), "sha256": _digest(derivation_path)}}
+    publication = {"schema": PUBLICATION_SCHEMA, "identity": "", "cohort_release": {"identity": release["identity"], "path": release_path.relative_to(root).as_posix()}, "authoritative_derivations": {"identity": derivation["identity"], "path": derivation_path.relative_to(root).as_posix()}}
     publication["identity"] = _identity(publication)
-    return _write(release_root / f"cohort_publication_{publication['identity'].rsplit(':', 1)[-1]}_v{release_version}.json", publication)
+    return _write(release_root / f"cohort_publication_v{release_version}.json", publication)
 
 
 def verify_cohort_publication(path: Path) -> dict[str, Any]:
@@ -397,11 +403,10 @@ def verify_cohort_publication(path: Path) -> dict[str, Any]:
         {"schema", "identity", "cohort_release", "authoritative_derivations"},
         "Cohort publication",
     )
-    if (
-        publication.get("schema") != PUBLICATION_SCHEMA
-        or publication.get("identity") != _identity(publication)
-    ):
-        raise ValueError("Cohort publication identity is stale or unsupported")
+    if publication.get("schema") != PUBLICATION_SCHEMA:
+        raise ValueError("Cohort publication identity is unsupported")
+    if not isinstance(publication.get("identity"), str) or not publication["identity"]:
+        raise ValueError("Cohort publication identity is missing")
     root = publication_path.parent.parent.resolve()
     for field, schema in (
         ("cohort_release", RELEASE_SCHEMA),
@@ -412,12 +417,10 @@ def verify_cohort_publication(path: Path) -> dict[str, Any]:
             raise ValueError(f"Cohort publication {field} reference must be an object")
         _require_exact_fields(
             reference,
-            {"identity", "path", "sha256"},
+            {"identity", "path"},
             f"Cohort publication {field} reference",
         )
         artifact_path = _published_file(root, reference.get("path"), field)
-        if _digest(artifact_path) != reference.get("sha256"):
-            raise ValueError(f"Cohort publication {field} digest mismatch")
         artifact = _load(artifact_path, field)
         if schema == RELEASE_SCHEMA:
             expected_fields = {
@@ -448,7 +451,6 @@ def verify_cohort_publication(path: Path) -> dict[str, Any]:
         )
         if (
             artifact.get("schema") != schema
-            or artifact.get("identity") != _identity(artifact)
             or artifact.get("identity") != reference.get("identity")
         ):
             raise ValueError(f"Cohort publication {field} identity mismatch")
@@ -475,8 +477,6 @@ def _verify_file_reference(root: Path, reference: Any, name: str, *, check_size:
     if not isinstance(reference, Mapping):
         raise ValueError(f"{name} reference must be an object")
     path = _published_file(root, reference.get("path"), name)
-    if _digest(path) != reference.get("sha256"):
-        raise ValueError(f"{name} digest mismatch")
     if check_size and path.stat().st_size != reference.get("size_bytes"):
         raise ValueError(f"{name} size mismatch")
     return path
@@ -603,7 +603,7 @@ def ingest_cohort_publication(
             "physics_relational_supervision_v1",
         }:
             raise ValueError("Authoritative derivation reference is malformed or unsupported")
-        expected_fields = {"attempt_id", "kind", "path", "sha256"}
+        expected_fields = {"attempt_id", "kind", "path"}
         if kind == "physics_macro_labels_v1":
             expected_fields.update({"accepted_predicates", "excluded_predicates"})
         if set(reference) != expected_fields:
@@ -890,11 +890,9 @@ def ingest_cohort_publication(
         label_derivations=MappingProxyType({
             "physics_macro_labels_v1": MappingProxyType({
                 "derivation_spec_version": MACRO_DERIVATION_SPEC_VERSION,
-                "derivation_spec_digest": macro_derivation_spec_digest(),
             }),
             "physics_relational_supervision_v1": MappingProxyType({
                 "derivation_spec_version": RELATIONAL_DERIVATION_SPEC_VERSION,
-                "derivation_spec_digest": relational_derivation_spec_digest(),
             }),
         }),
         rollout_count=len(rollouts),

@@ -53,20 +53,20 @@ class PhysicsPersistenceError(RuntimeError):
 
 @dataclass(frozen=True, slots=True)
 class CaptureProvenance:
-    player_sha256: str
-    protocol_sha256: str
-    archive_sha256: str
+    player_version: str
+    protocol_version: str
+    archive_path: str
 
     def validate(self) -> None:
         for name, value in (
-            ("player_sha256", self.player_sha256),
-            ("protocol_sha256", self.protocol_sha256),
-            ("archive_sha256", self.archive_sha256),
+            ("player_version", self.player_version),
+            ("protocol_version", self.protocol_version),
+            ("archive_path", self.archive_path),
         ):
-            if len(value) != 64 or any(character not in "0123456789abcdef" for character in value):
+            if not isinstance(value, str) or not value:
                 raise PhysicsPersistenceError(
                     PersistenceErrorCode.INVALID_PROVENANCE,
-                    f"{name} must be a lowercase SHA-256 digest",
+                    f"{name} must be a nonempty string",
                 )
 
 

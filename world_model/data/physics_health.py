@@ -54,7 +54,7 @@ class PhysicsSplitHealth(TypedDict):
 
 class PhysicsCoverageReport(TypedDict):
     oracle_gate_spec: dict[str, float | int]
-    oracle_gate_spec_digest: str
+    oracle_gate_spec_identity: str
     macro_state_taxonomy: list[str]
     splits: dict[str, PhysicsSplitHealth]
     covered_buckets: list[str]
@@ -159,11 +159,16 @@ def physics_coverage_report(
 ) -> PhysicsCoverageReport:
     """Build the physics/label section of the dataset-health report."""
     gate_spec = spec or OracleGateSpec()
+    gate_spec_identity = (
+        "oracle-gate-spec-v1:"
+        f"{gate_spec.kinetic_energy_threshold}:{gate_spec.active_contact_threshold}:"
+        f"{gate_spec.contact_activity_speed}"
+    )
     reports = {split: _split_health(root, split, gate_spec) for split in splits}
     covered = sorted({bucket for report in reports.values() for bucket in report["buckets"]})
     return PhysicsCoverageReport(
         oracle_gate_spec=gate_spec.to_json(),
-        oracle_gate_spec_digest=gate_spec.digest(),
+        oracle_gate_spec_identity=gate_spec_identity,
         macro_state_taxonomy=list(_REPORTABLE_MACRO_STATES),
         splits=reports,
         covered_buckets=covered,

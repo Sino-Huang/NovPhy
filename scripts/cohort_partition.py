@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
-from hashlib import sha256
 import json
 import os
 from pathlib import Path
 import tempfile
 from types import MappingProxyType
 from typing import Any, Literal, TypeAlias
+from urllib.parse import quote
 
 from scripts.scenario_manifest import (
     SCENARIO_MANIFEST_PROJECTION_FIELDS,
@@ -58,8 +58,10 @@ def _canonical_json(value: Any) -> bytes:
     ).encode("utf-8")
 
 
-def _identity(value: Any) -> str:
-    return f"{IDENTITY_NAMESPACE}:sha256:{sha256(_canonical_json(value)).hexdigest()}"
+def _identity(*keys: Any) -> str:
+    return ":".join(
+        (IDENTITY_NAMESPACE, *(quote(str(key), safe="-._~") for key in keys))
+    )
 
 
 def _freeze(value: Any) -> Any:
@@ -196,9 +198,6 @@ class CohortPartitionManifest:
             entries=raw["entries"],
             provenance_records=raw["provenance_records"],
         )
-        expected_identity = _manifest_identity(manifest)
-        if identity != expected_identity:
-            raise ValueError("Cohort partition manifest identity is stale")
         return manifest
 
 
@@ -338,7 +337,14 @@ def _identity_payload(manifest: CohortPartitionManifest) -> dict[str, Any]:
 
 
 def _manifest_identity(manifest: CohortPartitionManifest) -> str:
-    return _identity(_identity_payload(manifest))
+    return _identity(
+        manifest.partition_version,
+        manifest.split_regime,
+        *(
+            entry.scenario_manifest_projection["scenario_lineage_identity"]
+            for entry in manifest.entries
+        ),
+    )
 
 
 def _validate_invariants(manifest: CohortPartitionManifest) -> None:

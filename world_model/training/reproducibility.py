@@ -54,7 +54,7 @@ class ReproducibilityConfig:
 
     @property
     def identity_fields(self) -> tuple[str | bool, ...]:
-        """Return a stable tuple suitable for the existing digest contract."""
+        """Return stable declared fields for the reproducibility identity."""
         return tuple(self.canonical.values())
 
 

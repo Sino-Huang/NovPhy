@@ -37,9 +37,9 @@ from src.webui.bridge import GameState, PhysicsCaptureV1
 
 FIXTURE = Path(__file__).resolve().parent / "fixtures" / "physics_capture_v1"
 PROVENANCE = {
-    "physics_player_sha256": "a" * 64,
-    "physics_protocol_sha256": "b" * 64,
-    "physics_archive_sha256": "c" * 64,
+    "physics_player_version": "a" * 64,
+    "physics_protocol_version": "b" * 64,
+    "physics_archive_path": "c" * 64,
 }
 ACTION = {"coordinate_frame": "absolute", "release": [130, 150], "tapTime": 70}
 GUARD = {
@@ -223,9 +223,9 @@ class SingleShotCollectionTests(unittest.TestCase):
             target_fps=2,
             duration_seconds=1,
             max_frames=2,
-            player_sha256="a" * 64,
-            protocol_sha256="b" * 64,
-            archive_sha256="c" * 64,
+            player_version="a" * 64,
+            protocol_version="b" * 64,
+            archive_path="c" * 64,
             initial_capture=packets[0],
             shoot=lambda: {"ground_truth_count": 1},
             expected_initial_engine_state_identity=None,
@@ -458,9 +458,9 @@ class SingleShotCollectionTests(unittest.TestCase):
             "--physics-capture-v1",
             "--fresh-engine-per-rollout",
             "--collection-plan", str(plan_path),
-            "--physics-player-sha256", "a" * 64,
-            "--physics-protocol-sha256", "b" * 64,
-            "--physics-archive-sha256", "c" * 64,
+            "--physics-player-version", "a" * 64,
+            "--physics-protocol-version", "b" * 64,
+            "--physics-archive-path", "c" * 64,
             "--scenario-manifest", str(manifest_path),
             "--scenario-xml", str(xml_path),
         ]
@@ -470,6 +470,12 @@ class SingleShotCollectionTests(unittest.TestCase):
             {
                 "attempt_id": "attempt-1",
                 "attempt_number": 1,
+                "plan_identity": "collection-plan-v1:test-plan",
+                "plan_version": "collection_plan_v1",
+                "scenario_id": "scenario-1",
+                "scenario_identity": "scenario-v1:test-scenario",
+                "intervention_id": "intervention-1",
+                "intervention_identity": "intervention-v1:test-intervention",
                 "expected_initial_engine_state_identity": "expected-initial-state",
                 "interface_action": ACTION,
             },
@@ -517,9 +523,9 @@ class SingleShotCollectionTests(unittest.TestCase):
             "--output-dir", str(self.temporary / "rollouts"),
             "--physics-capture-v1",
             "--fresh-engine-per-rollout",
-            "--physics-player-sha256", "a" * 64,
-            "--physics-protocol-sha256", "b" * 64,
-            "--physics-archive-sha256", "c" * 64,
+            "--physics-player-version", "a" * 64,
+            "--physics-protocol-version", "b" * 64,
+            "--physics-archive-path", "c" * 64,
         ]
         missing_manifest, xml_path, _ = _write_verified_scenario(self.temporary / "missing")
         invalid_manifest = self.temporary / "invalid.scenario.json"

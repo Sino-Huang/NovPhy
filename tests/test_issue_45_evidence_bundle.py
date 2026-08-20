@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
 
 from scripts.build_issue_45_evidence import (
-    APPROVAL_TARGET_DRAFT_IDENTITY,
+    APPROVAL_ISSUE_REFERENCE,
     build_issue_45_evidence,
     validate_issue_45_evidence,
 )
@@ -44,8 +45,8 @@ class Issue45EvidenceBundleTests(unittest.TestCase):
 
             self.assertEqual(first, second)
             self.assertEqual(first_bytes, second_bytes)
-            self.assertEqual(first["draft_identity"], APPROVAL_TARGET_DRAFT_IDENTITY)
-            self.assertTrue(first["matches_approval_target"])
+            self.assertTrue(first["draft_identity"].startswith("central-v2-scenario-inventory-draft-v1:"))
+            self.assertEqual(first["approval_issue"], APPROVAL_ISSUE_REFERENCE)
             self.assertEqual(
                 validate_issue_45_evidence(
                     repository_root=REPOSITORY_ROOT,
@@ -63,6 +64,13 @@ class Issue45EvidenceBundleTests(unittest.TestCase):
             self.assertTrue((sealed_root / "final-evaluation.xml").is_file())
             self.assertTrue((sealed_root / "final-evaluation.cohort-v2-scenario.json").is_file())
             self.assertTrue((sealed_root / "final-evaluation.parameter-realization.json").is_file())
+            public_manifest = json.loads(
+                (public_root / "bundle-manifest.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(public_manifest["approval_issue"], APPROVAL_ISSUE_REFERENCE)
+            self.assertTrue(
+                all(set(artifact) == {"path", "identity"} for artifact in public_manifest["artifacts"])
+            )
 
 
 if __name__ == "__main__":

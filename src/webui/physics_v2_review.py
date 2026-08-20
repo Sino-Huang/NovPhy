@@ -1,7 +1,6 @@
 """Human-guided diagnostic and confirmatory physics-v2 review sessions."""
 from __future__ import annotations
 
-from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -43,7 +42,7 @@ def _canonical_bytes(value: Mapping[str, Any]) -> bytes:
 
 
 def _identity(namespace: str, value: Mapping[str, Any]) -> str:
-    return f"{namespace}:sha256:{sha256(_canonical_bytes(value)).hexdigest()}"
+    return f"{namespace}:{_canonical_bytes(value).decode('utf-8')}"
 
 
 def _support_sets(record: Mapping[str, Any]) -> list[set[tuple[str, str]]]:
@@ -235,7 +234,7 @@ class PhysicsV2ReviewSession:
             "expected_initial_engine_state_identity": self._initial_engine_state_identity,
             "selection_provenance": {
                 "kind": "diagnostic_pilot",
-                "capture_sha256": sha256(diagnostic_path.read_bytes()).hexdigest(),
+                "capture_path": diagnostic_path.relative_to(self.root).as_posix(),
             },
             "diagnostic_capture_eligible": False,
             "max_attempts": 1,

@@ -1,6 +1,3 @@
-using System;
-using System.Security.Cryptography;
-using System.Text;
 using NUnit.Framework;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -63,9 +60,8 @@ public class LegacyGroundTruthTests
         string actual = new SymbolicGameState(false).GetGTJson(false);
 
         Assert.AreEqual(expected, actual);
-        string hash = Sha256(actual);
-        Assert.AreEqual(Sha256(expected), hash);
-        Debug.Log("LEGACY_GT_SHA256=" + hash);
+        Debug.Log("LEGACY_GT_LENGTH=" + actual.Length + ";PREVIEW="
+            + actual.Substring(0, Mathf.Min(actual.Length, 80)));
     }
 
     [Test]
@@ -98,14 +94,5 @@ public class LegacyGroundTruthTests
 
         StringAssert.Contains("\"label\":\"Slingshot\"", json);
         StringAssert.DoesNotContain(bird.GetInstanceID().ToString(), json);
-    }
-
-    private static string Sha256(string value)
-    {
-        using (SHA256 algorithm = SHA256.Create())
-        {
-            byte[] digest = algorithm.ComputeHash(Encoding.UTF8.GetBytes(value));
-            return BitConverter.ToString(digest).Replace("-", string.Empty).ToLowerInvariant();
-        }
     }
 }

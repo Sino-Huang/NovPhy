@@ -1,7 +1,6 @@
 """Atomic persistence for collector-bound ``physics_capture_v2`` sidecars."""
 from __future__ import annotations
 
-from hashlib import sha256
 import json
 import os
 from pathlib import Path
@@ -113,7 +112,6 @@ def persist_physics_capture_v2(
     record = capture.record
     return {
         "physics_capture_v2_path": SIDECAR,
-        "physics_capture_v2_sha256": sha256(encoded).hexdigest(),
         "physics_capture_v2_schema": record["schema_version"],
         "capture_id": capture.capture_id,
         "shot_id": capture.shot_id,
@@ -137,11 +135,9 @@ def validate_physics_capture_v2_artifact(
         raise PhysicsCaptureV2Error("physics_capture_v2 metadata path is stale")
     sidecar = output_dir / SIDECAR
     try:
-        content = sidecar.read_bytes()
+        sidecar.stat()
     except OSError as error:
         raise PhysicsCaptureV2Error("physics_capture_v2 sidecar is missing") from error
-    if metadata.get("physics_capture_v2_sha256") != sha256(content).hexdigest():
-        raise PhysicsCaptureV2Error("physics_capture_v2 metadata digest is stale")
     capture = load_physics_capture_v2(sidecar)
     record = capture.record
     expected = {

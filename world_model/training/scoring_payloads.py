@@ -63,7 +63,6 @@ def ceiling_payload(ceiling) -> dict[str, JsonValue]:
                 "delta": item.delta,
                 "primary_mean": item.primary_mean,
                 "state_count": item.state_count,
-                "state_digest": item.state_digest,
             }
             for item in ceiling.fixed_pairs
         ],
@@ -71,7 +70,6 @@ def ceiling_payload(ceiling) -> dict[str, JsonValue]:
         "oracle_primary_mean": ceiling.oracle_primary_mean,
         "oracle_symbol_called": False,
         "state_count": ceiling.state_count,
-        "state_digest": ceiling.state_digest,
     }
 
 

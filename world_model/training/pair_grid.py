@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import StrEnum, unique
 from typing import Final, Self, assert_never
 
-from world_model.model import ABSTRACTION_ORDER, Abstraction, PredictionPair, digest
+from world_model.model import ABSTRACTION_ORDER, Abstraction, PredictionPair, identity
 
 ERROR_SCALE_FLOOR: Final = 1e-12
 TIE_REL_TOL: Final = 1e-6
@@ -77,7 +77,7 @@ class PairGridConfig:
 
     @property
     def identity(self) -> str:
-        return digest(
+        return identity(
             (
                 "pair-grid-config-v1",
                 tuple(pair.identity for pair in self.pairs),
@@ -193,7 +193,7 @@ class ScoreSpec:
 
     @property
     def identity(self) -> str:
-        return digest(("pair-score-spec-v1", self.error_scale, self.lambda_cost))
+        return identity(("pair-score-spec-v1", self.error_scale, self.lambda_cost))
 
 
 @dataclass(frozen=True, slots=True)

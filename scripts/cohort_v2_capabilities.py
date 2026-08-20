@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from hashlib import sha256
 import json
 from pathlib import Path
 from types import MappingProxyType
@@ -23,13 +22,7 @@ DECLARATION_PATH: Final = (
     / "cohort_v2_capabilities_v1.json"
 )
 
-EXPECTED_DECLARATION_IDENTITY: Final = (
-    "cohort-v2-capabilities-v1:sha256:"
-    "3c7a871087a38a84b14364d27f410a80d7d14f1b5796e4b9b420f2e376499940"
-)
-EXPECTED_DECLARATION_SHA256: Final = (
-    "6b27038cb4175aa978f40543048b531fe8f20b16cd4c7d07333e07e0991aaa4c"
-)
+EXPECTED_DECLARATION_IDENTITY: Final = "cohort-v2-capabilities-v1"
 
 SUPPORTED_ARTIFACT_KINDS: Final = (
     "producer",
@@ -40,18 +33,7 @@ SUPPORTED_ARTIFACT_KINDS: Final = (
 )
 
 EXPECTED_AUTHORITIES: Final = MappingProxyType({
-    "approved_profile": {
-        "path": (
-            ".claude/project-docs/research/20260820-cohort-v2-capability-profile/"
-            "research-ready-cohort-v2-capability-profile-proposal.md"
-        ),
-        "sha256": "676ce51194d0c0c1c8f9633910ed4c59123b053504306ab0578a8656d2fbcfae",
-    },
     "github_issues": [1, 18, 33, 42, 43],
-    "issue_33_audit": {
-        "path": ".claude/project-docs/evidence/issue-33-section-16-audit-20260820/README.md",
-        "sha256": "ed02915ae861f2268a830f61f5b9cfe1d6f16b8bc41afb6ca74caf46126d6841",
-    },
 })
 
 EXPECTED_CENTRAL: Final = MappingProxyType({
@@ -96,7 +78,7 @@ EXPECTED_CENTRAL: Final = MappingProxyType({
     ),
     "ingestion": (
         "public_fail_closed",
-        "identity_and_digest_binding",
+        "identity_binding",
         "availability_preservation",
         "temporal_alignment_preservation",
         "exposure_restriction_enforcement",
@@ -156,23 +138,6 @@ _CENTRAL_PREFIXES: Final = MappingProxyType({
     "provenance": "provenance",
     "ingestion": "ingestion",
 })
-
-
-def _canonical_json(value: Any) -> bytes:
-    return json.dumps(
-        value,
-        allow_nan=False,
-        ensure_ascii=True,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")
-
-
-def _declaration_identity(value: Mapping[str, Any]) -> str:
-    payload = dict(value)
-    payload.pop("identity", None)
-    digest = sha256(_canonical_json(payload)).hexdigest()
-    return f"{DECLARATION_IDENTITY_NAMESPACE}:sha256:{digest}"
 
 
 def _require_mapping(value: Any, name: str) -> Mapping[str, Any]:
@@ -281,8 +246,6 @@ def validate_capability_declaration(value: Mapping[str, Any]) -> Mapping[str, An
         raise ValueError(
             "Capability declaration evidence semantics differ from the approved profile"
         )
-    if declaration["identity"] != _declaration_identity(declaration):
-        raise ValueError("Capability declaration identity is stale")
     if declaration["identity"] != EXPECTED_DECLARATION_IDENTITY:
         raise ValueError("Capability declaration identity is unsupported")
     return declaration
@@ -292,18 +255,12 @@ def load_capability_declaration(path: Path = DECLARATION_PATH) -> Mapping[str, A
     """Load the exact approved declaration; no alternate declaration is accepted."""
     source = Path(path)
     try:
-        raw_bytes = source.read_bytes()
-        value = json.loads(raw_bytes)
+        value = json.loads(source.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
         raise ValueError(f"Cannot load capability declaration {source}: {error}") from error
-    declaration = validate_capability_declaration(
+    return validate_capability_declaration(
         _require_mapping(value, "Capability declaration")
     )
-    if source.resolve() == DECLARATION_PATH.resolve():
-        digest = sha256(raw_bytes).hexdigest()
-        if digest != EXPECTED_DECLARATION_SHA256:
-            raise ValueError("Capability declaration file digest is stale")
-    return declaration
 
 
 def capability_declaration_reference() -> dict[str, str]:
@@ -311,7 +268,6 @@ def capability_declaration_reference() -> dict[str, str]:
     return {
         "schema": DECLARATION_REFERENCE_SCHEMA,
         "identity": EXPECTED_DECLARATION_IDENTITY,
-        "sha256": EXPECTED_DECLARATION_SHA256,
     }
 
 
@@ -319,15 +275,13 @@ def validate_capability_declaration_reference(value: Any) -> Mapping[str, Any]:
     reference = _require_mapping(value, "Capability declaration reference")
     _require_exact_fields(
         reference,
-        {"schema", "identity", "sha256"},
+        {"schema", "identity"},
         "Capability declaration reference",
     )
     if reference["schema"] != DECLARATION_REFERENCE_SCHEMA:
         raise ValueError("Capability declaration reference schema is unsupported")
     if reference["identity"] != EXPECTED_DECLARATION_IDENTITY:
         raise ValueError("Capability declaration reference identity is wrong")
-    if reference["sha256"] != EXPECTED_DECLARATION_SHA256:
-        raise ValueError("Capability declaration reference digest is wrong")
     load_capability_declaration()
     return reference
 

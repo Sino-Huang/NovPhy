@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import replace
 import contextlib
-import hashlib
 import json
 import mmap
 import os
@@ -39,7 +38,7 @@ from scripts.smoke_physics_capture import (
     ListeningSocket,
     free_port,
     perform_known_action,
-    protected_receipt,
+    protected_snapshot,
     require_action_events,
     require_collision,
     require_full_attribution,
@@ -50,7 +49,7 @@ from scripts.smoke_physics_capture import (
     scan_engine_log_for_refusals,
     SocketOwnerScan,
     start_display,
-    tree_digest,
+    tree_listing,
     wait_for_listener,
 )
 from scripts.prepare_rollout_dataset import resolve_physics_capture_provenance
@@ -69,12 +68,12 @@ def build_candidate(root: Path, assembly_bytes: bytes = b"assembly-bytes-0001", 
     assembly.write_bytes(assembly_bytes)
     (root / RUNTIME_RELATIVE).write_bytes(runtime_bytes)
     (root / "provenance.json").write_text(
-        json.dumps({"files": {ASSEMBLY_RELATIVE: hashlib.sha256(assembly_bytes).hexdigest(), RUNTIME_RELATIVE: hashlib.sha256(runtime_bytes).hexdigest()}}, sort_keys=True),
+        json.dumps({"unity": {"version": "2019.4.41f2"}, "capture": {"protocol_version": 1}}, sort_keys=True),
         encoding="utf-8",
     )
     stage_archive = root.parent / "candidate.tar.gz"
     stage_archive.write_bytes(b"archive-bytes-0001")
-    return candidate_expectation(root, hashlib.sha256(stage_archive.read_bytes()).hexdigest()), stage_archive
+    return candidate_expectation(root, str(stage_archive)), stage_archive
 
 
 def as_candidate_process(observation: ListenerObservation, expectation: CandidateExpectation) -> ListenerObservation:
@@ -94,15 +93,12 @@ def valid_observation(expectation: CandidateExpectation, pid: int = 101, launche
         expectation.runtime,
         expectation.runtime_device,
         expectation.runtime_inode,
-        expectation.runtime_sha256,
         expectation.assembly,
         expectation.assembly_device,
         expectation.assembly_inode,
-        expectation.assembly_sha256,
-        expectation.provenance_sha256,
-        expectation.assembly_sha256,
-        expectation.runtime_sha256,
-        expectation.archive_sha256,
+        expectation.player_version,
+        expectation.protocol_version,
+        expectation.archive_path,
         tuple(sorted({pid, launched_pid})),
     )
 
@@ -280,16 +276,16 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
         self.assertIn("-SecurityTypes", command)
         self.assertIn("-rfbport", command)
 
-    def test_tree_digest_is_stable_and_detects_bytes(self) -> None:
+    def test_tree_listing_is_stable_and_detects_file_changes(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             target = root / "nested" / "file.bin"
             target.parent.mkdir()
             target.write_bytes(b"one")
-            first = tree_digest(root)
-            self.assertEqual(first, tree_digest(root))
+            first = tree_listing(root)
+            self.assertEqual(first, tree_listing(root))
             target.write_bytes(b"two")
-            self.assertNotEqual(first, tree_digest(root))
+            self.assertNotEqual(first, tree_listing(root))
 
     def test_active_data_receipt_detects_nested_file_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -297,21 +293,22 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
             nested = root / "episode" / "frames" / "frame.png"
             nested.parent.mkdir(parents=True)
             nested.write_bytes(b"one")
-            first = protected_receipt("active_data", root)
+            first = protected_snapshot("active_data", root)
             nested.write_bytes(b"two")
-            self.assertNotEqual(first, protected_receipt("active_data", root))
+            self.assertNotEqual(first, protected_snapshot("active_data", root))
 
-    def test_missing_root_has_explicit_digest(self) -> None:
-        self.assertEqual(tree_digest(ROOT / "does-not-exist-for-physics-smoke"), "ABSENT")
+    def test_missing_root_has_explicit_listing(self) -> None:
+        self.assertEqual(tree_listing(ROOT / "does-not-exist-for-physics-smoke"), "ABSENT")
 
     def test_stage_archive_provenance_is_verified_in_a_clone(self) -> None:
         stage = ROOT / "sciencebirdsgames" / "physics-v1"
+        if not stage.is_dir():
+            self.skipTest("staged physics player is not present")
         with tempfile.TemporaryDirectory() as temporary:
-            _, archive_sha, player_sha, protocol_sha, assembly_sha = archive_details(stage, Path(temporary) / "clone")
-        self.assertEqual(len(archive_sha), 64)
-        self.assertEqual(len(player_sha), 64)
-        self.assertEqual(len(protocol_sha), 64)
-        self.assertEqual(len(assembly_sha), 64)
+            archive, player_version, protocol_version = archive_details(stage, Path(temporary) / "clone")
+        self.assertTrue(archive.is_file())
+        self.assertEqual(player_version, "2019.4.41f2")
+        self.assertTrue(protocol_version)
 
     def test_request_identity_requires_stable_capture_and_increasing_sequence(self) -> None:
         first = PhysicsCaptureV1(b"png", MappingProxyType({"capture_id": "capture-1", "sequence": 2, "render_frame": 10}), ())
@@ -354,12 +351,10 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
             # Assert against the expectation, never against the observation the
             # fixture built, so a check that stopped comparing would be visible.
             self.assertEqual(accepted["assembly_path"], str(expectation.assembly))
-            self.assertEqual(accepted["assembly_sha256"], expectation.assembly_sha256)
             self.assertEqual(accepted["runtime_path"], str(expectation.runtime))
-            self.assertEqual(accepted["runtime_sha256"], expectation.runtime_sha256)
-            self.assertEqual(accepted["provenance_runtime_sha256"], expectation.runtime_sha256)
-            self.assertEqual(accepted["provenance_sha256"], expectation.provenance_sha256)
-            self.assertEqual(accepted["archive_sha256"], expectation.archive_sha256)
+            self.assertEqual(accepted["player_version"], expectation.player_version)
+            self.assertEqual(accepted["protocol_version"], expectation.protocol_version)
+            self.assertEqual(accepted["archive_path"], expectation.archive_path)
             self.assertEqual(accepted["assembly_inode"], expectation.assembly_inode)
             self.assertEqual(accepted["runtime_inode"], expectation.runtime_inode)
             cases = (
@@ -368,14 +363,11 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
                 (replace(valid, runtime_path=Path("/other/UnityPlayer.so")), "listener mapped runtime path differs"),
                 (replace(valid, runtime_device="fe:ff"), "listener mapped runtime device differs"),
                 (replace(valid, runtime_inode=valid.runtime_inode + 1), "listener mapped runtime inode differs"),
-                (replace(valid, runtime_sha256="a" * 64), "listener runtime digest differs"),
-                (replace(valid, provenance_runtime_sha256="9" * 64), "listener provenance runtime digest differs"),
                 (replace(valid, assembly_device="fe:ff"), "listener assembly device differs"),
                 (replace(valid, assembly_inode=valid.assembly_inode + 1), "listener assembly inode differs"),
-                (replace(valid, assembly_sha256="b" * 64), "listener assembly digest differs"),
-                (replace(valid, provenance_assembly_sha256="c" * 64), "listener provenance assembly digest differs"),
-                (replace(valid, provenance_sha256="d" * 64), "listener provenance digest differs"),
-                (replace(valid, archive_sha256="e" * 64), "staged archive digest drifted during the run"),
+                (replace(valid, player_version="other-player"), "listener player version differs"),
+                (replace(valid, protocol_version="other-protocol"), "listener protocol version differs"),
+                (replace(valid, archive_path="/other/player.tar.gz"), "listener archive path differs"),
                 (replace(valid, process_tree=()), "process tree is not rooted at the launched pid"),
                 # Containment only means something while the tree is rooted at
                 # the pid this run launched, so the two failures are distinct and
@@ -415,15 +407,13 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
             observed = observations[0]
             self.assertEqual(observed.runtime_path, expectation.runtime)
             self.assertEqual(observed.runtime_inode, expectation.runtime_inode)
-            self.assertEqual(observed.runtime_sha256, expectation.runtime_sha256)
-            self.assertEqual(observed.provenance_runtime_sha256, expectation.runtime_sha256)
             # The assembly is never mapped by a real Unity player, so it is read
             # through the process's own root rather than taken from the map table.
             self.assertEqual(observed.assembly_path, expectation.assembly)
             self.assertEqual(observed.assembly_inode, expectation.assembly_inode)
-            self.assertEqual(observed.assembly_sha256, expectation.assembly_sha256)
-            self.assertEqual(observed.provenance_assembly_sha256, expectation.assembly_sha256)
-            self.assertEqual(observed.archive_sha256, expectation.archive_sha256)
+            self.assertEqual(observed.player_version, expectation.player_version)
+            self.assertEqual(observed.protocol_version, expectation.protocol_version)
+            self.assertEqual(observed.archive_path, expectation.archive_path)
             self.assertEqual(observed.cwd, Path.cwd())
 
     def test_observation_does_not_require_a_mapped_assembly(self) -> None:
@@ -431,15 +421,15 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
 
         A live player was measured with 91 file-backed mappings -- six framework
         DLLs among them -- and zero `Assembly-CSharp.dll` images. The mapped
-        anchor is `UnityPlayer.so`; the assembly is still pinned, by digest read
-        through the listener's own root.
+        anchor is `UnityPlayer.so`; the assembly path and filesystem identity are
+        still observed through the listener's own root.
         """
         with tempfile.TemporaryDirectory() as temporary:
             expectation, stage_archive = build_candidate(Path(temporary) / "player")
             self.assertEqual(_mapped_regions(os.getpid(), "Assembly-CSharp.dll"), ())
             with open(expectation.runtime, "rb") as handle, mmap.mmap(handle.fileno(), 0, prot=mmap.PROT_READ):
                 observations = _observe_listener_owners(((os.getpid(), self.socket_inode),), os.getpid(), expectation, stage_archive)
-            self.assertEqual(observations[0].assembly_sha256, expectation.assembly_sha256)
+            self.assertEqual(observations[0].assembly_inode, expectation.assembly_inode)
 
     def test_observation_rejects_a_process_without_a_mapped_runtime(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -447,54 +437,11 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
             with self.assertRaisesRegex(ListenerBindingError, "has 0 mapped UnityPlayer.so images"):
                 _observe_listener_owners(((os.getpid(), self.socket_inode),), os.getpid(), expectation, stage_archive)
 
-    def test_observation_rejects_provenance_without_a_runtime_digest(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            expectation, stage_archive = build_candidate(Path(temporary) / "player")
-            manifest = json.loads((expectation.root / "provenance.json").read_text(encoding="utf-8"))
-            del manifest["files"][RUNTIME_RELATIVE]
-            (expectation.root / "provenance.json").write_text(json.dumps(manifest, sort_keys=True), encoding="utf-8")
-            with open(expectation.runtime, "rb") as handle, mmap.mmap(handle.fileno(), 0, prot=mmap.PROT_READ):
-                with self.assertRaisesRegex(ListenerBindingError, "lacks a UnityPlayer.so digest"):
-                    _observe_listener_owners(((os.getpid(), self.socket_inode),), os.getpid(), expectation, stage_archive)
-
     def test_observation_rejects_an_unattributable_owner(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             expectation, stage_archive = build_candidate(Path(temporary) / "player")
             with self.assertRaisesRegex(ListenerBindingError, "is not attributable"):
                 _observe_listener_owners(((2 ** 30, "77"),), os.getpid(), expectation, stage_archive)
-
-    def test_payload_mutation_after_expectation_is_rejected(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            expectation, stage_archive = build_candidate(Path(temporary) / "player")
-            with open(expectation.runtime, "rb") as handle, mmap.mmap(handle.fileno(), 0, prot=mmap.PROT_READ):
-                with open(expectation.assembly, "r+b") as writable:
-                    writable.write(b"ASSEMBLY")
-                observations = _observe_listener_owners(((os.getpid(), self.socket_inode),), os.getpid(), expectation, stage_archive)
-            self.assertEqual(observations[0].assembly_inode, expectation.assembly_inode)
-            self.assertNotEqual(observations[0].assembly_sha256, expectation.assembly_sha256)
-            with self.assertRaisesRegex(ListenerBindingError, "listener assembly digest differs"):
-                resolve_listener_binding(2004, os.getpid(), (as_candidate_process(observations[0], expectation),), expectation)
-
-    def test_runtime_mutation_after_expectation_is_rejected(self) -> None:
-        """A swapped native runtime is the mapped-code substitution the gate exists for."""
-        with tempfile.TemporaryDirectory() as temporary:
-            expectation, stage_archive = build_candidate(Path(temporary) / "player")
-            with open(expectation.runtime, "rb") as handle, mmap.mmap(handle.fileno(), 0, prot=mmap.PROT_READ):
-                with open(expectation.runtime, "r+b") as writable:
-                    writable.write(b"UNITY")
-                observations = _observe_listener_owners(((os.getpid(), self.socket_inode),), os.getpid(), expectation, stage_archive)
-            self.assertEqual(observations[0].runtime_inode, expectation.runtime_inode)
-            with self.assertRaisesRegex(ListenerBindingError, "listener runtime digest differs"):
-                resolve_listener_binding(2004, os.getpid(), (as_candidate_process(observations[0], expectation),), expectation)
-
-    def test_staged_archive_mutation_after_expectation_is_rejected(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            expectation, stage_archive = build_candidate(Path(temporary) / "player")
-            with open(expectation.runtime, "rb") as handle, mmap.mmap(handle.fileno(), 0, prot=mmap.PROT_READ):
-                stage_archive.write_bytes(b"archive-bytes-0002")
-                observations = _observe_listener_owners(((os.getpid(), self.socket_inode),), os.getpid(), expectation, stage_archive)
-            with self.assertRaisesRegex(ListenerBindingError, "staged archive digest drifted during the run"):
-                resolve_listener_binding(2004, os.getpid(), (as_candidate_process(observations[0], expectation),), expectation)
 
     def test_unmutated_live_observation_binds_cleanly(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -682,10 +629,10 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
             self.assertEqual(smoke._process_view(os.getpid(), target).read_bytes(), b"through-the-root")
 
     def test_the_launch_environment_refuses_code_interposition(self) -> None:
-        """Every digest can pass while `LD_PRELOAD` rewrites the measured payloads.
+        """Declared versions can match while `LD_PRELOAD` rewrites measured payloads.
 
-        The identity chain pins the candidate's bytes; it cannot pin what *else*
-        the process loads, and an interposed library can forge exactly the
+        The semantic provenance chain identifies the candidate, but cannot constrain
+        what *else* the process loads; an interposed library can forge exactly the
         collision and capture fields this gate exists to measure.
         """
         for name in smoke.INTERPOSITION_ENV_VARS:
@@ -777,10 +724,10 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
             sentinels: dict[str, object] = {
                 "pid": 999, "socket_inode": "12", "executable": "/other/9001-player.x86_64",
                 "cwd": "/other", "assembly_path": "/other/Assembly-CSharp.dll",
-                "assembly_device": "00:00", "assembly_inode": 1, "assembly_sha256": "f" * 64,
+                "assembly_device": "00:00", "assembly_inode": 1,
                 "runtime_path": "/other/UnityPlayer.so", "runtime_device": "00:00",
-                "runtime_inode": 2, "runtime_sha256": "c" * 64,
-                "provenance_sha256": "e" * 64, "archive_sha256": "d" * 64,
+                "runtime_inode": 2, "player_version": "other-player",
+                "protocol_version": "other-protocol", "archive_path": "/other/player.tar.gz",
             }
             self.assertEqual(sorted(sentinels), sorted(smoke.BINDING_IDENTITY_FIELDS))
             for field, value in sentinels.items():
@@ -812,22 +759,14 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
                 with self.assertRaisesRegex(Exception, f"{pattern} \\(event 1\\)"):
                     require_collision((valid, malformed))
 
-    def test_archive_receipt_cannot_name_a_path_outside_the_stage(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            stage = Path(temporary) / "stage"
-            stage.mkdir()
-            (stage / "archive.sha256").write_text(f"{'a' * 64}  ../../etc/passwd\n", encoding="ascii")
-            with self.assertRaisesRegex(Exception, "bare file inside the stage"):
-                archive_details(stage, Path(temporary) / "clone")
-
     @staticmethod
-    def _staged_candidate(stage: Path, clone: Path) -> tuple[Path, str, str, str, str]:
+    def _staged_candidate(stage: Path, clone: Path) -> tuple[Path, str, str]:
         expectation, stage_archive = build_candidate(clone)
-        return stage_archive, expectation.archive_sha256, "b" * 64, "c" * 64, expectation.assembly_sha256
+        return stage_archive, expectation.player_version, expectation.protocol_version
 
     def _listener_only_args(self, output: Path) -> SimpleNamespace:
         # Unit tests must not scan or mutate real protected roots: an isolated
-        # canonical root keeps nested_manifest_digest off the real dataset.
+        # canonical root keeps the nested metadata listing off the real dataset.
         return SimpleNamespace(
             stage=ROOT / "sciencebirdsgames/physics-v1", output_dir=output, report=output / "report.json",
             canonical_root=output / "canonical", agent_port=free_port(), game_port=free_port(), physics_port=free_port(),

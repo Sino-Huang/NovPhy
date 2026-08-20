@@ -65,6 +65,8 @@ class EpisodeCatalog:
         "_rejection_count",
         "_rejection_code_counts",
         "_provenance_available",
+        "_cohort_identity",
+        "_collection_plan_identity",
     )
 
     def __init__(
@@ -79,6 +81,8 @@ class EpisodeCatalog:
         rejection_count: int,
         rejection_code_counts: dict[str, int],
         provenance_available: bool,
+        cohort_identity: str | None = None,
+        collection_plan_identity: str | None = None,
     ) -> None:
         object.__setattr__(self, "_root", root)
         object.__setattr__(self, "_split", split)
@@ -89,6 +93,21 @@ class EpisodeCatalog:
         object.__setattr__(self, "_rejection_count", rejection_count)
         object.__setattr__(self, "_rejection_code_counts", dict(rejection_code_counts))
         object.__setattr__(self, "_provenance_available", provenance_available)
+        object.__setattr__(
+            self,
+            "_cohort_identity",
+            cohort_identity or f"rollout-cohort-v1:{root.name or 'root'}",
+        )
+        object.__setattr__(
+            self,
+            "_collection_plan_identity",
+            collection_plan_identity
+            or (
+                "collection-plan-v1:direct-catalog-source"
+                if plan_path is None
+                else f"collection-plan-v1:{plan_path.name}"
+            ),
+        )
 
     def __setattr__(self, name: str, value: _AttributeValue) -> None:
         raise AttributeError("EpisodeCatalog is immutable")
@@ -121,6 +140,25 @@ class EpisodeCatalog:
     @property
     def capture_contract(self) -> CaptureContractDescriptor:
         return object.__getattribute__(self, "_capture_contract")
+
+    @property
+    def cohort_identity(self) -> str:
+        return object.__getattribute__(self, "_cohort_identity")
+
+    @property
+    def collection_plan_identity(self) -> str:
+        return object.__getattribute__(self, "_collection_plan_identity")
+
+    @property
+    def dataset_root(self) -> Path:
+        """Absolute/declared filesystem provenance, excluded from semantic identity."""
+        return object.__getattribute__(self, "_root").resolve(strict=False)
+
+    @property
+    def collection_plan_path(self) -> Path | None:
+        """Filesystem provenance for the plan artifact, excluded from identity."""
+        path = object.__getattribute__(self, "_plan_path")
+        return None if path is None else path.resolve(strict=False)
 
     def refresh(self) -> "EpisodeCatalog":
         """Return a new catalog built from the current filesystem state."""
@@ -183,6 +221,8 @@ class EpisodeCatalog:
             rejection_count=0,
             rejection_code_counts={},
             provenance_available=False,
+            cohort_identity=f"rollout-cohort-v1:{resolved_root.name or 'root'}",
+            collection_plan_identity="collection-plan-v1:direct-catalog-source",
         )
 
     @staticmethod
@@ -235,11 +275,13 @@ class EpisodeCatalog:
         plan_source_keys: dict[str, str] | None = None
         plan_val_contract = None
         provenance_available = False
+        collection_plan_identity = "collection-plan-v1:direct-catalog-source"
 
         if collection_plan is not None:
             resolution = load_plan_resolution(collection_plan, split, root)
             if resolution is not None:
                 plan_source_keys = resolution.source_keys
+                collection_plan_identity = resolution.identity
                 plan_val_contract = make_validation_contract(
                     resolution.count,
                     resolution.fps,
@@ -258,6 +300,8 @@ class EpisodeCatalog:
                 rejection_count=rejection_count,
                 rejection_code_counts=rejection_code_counts,
                 provenance_available=provenance_available,
+                cohort_identity=f"rollout-cohort-v1:{root.name or 'root'}",
+                collection_plan_identity=collection_plan_identity,
             )
 
         # Enumerate direct, non-symlink subdirectories only.
@@ -333,4 +377,6 @@ class EpisodeCatalog:
             rejection_count=rejection_count,
             rejection_code_counts=rejection_code_counts,
             provenance_available=provenance_available,
+            cohort_identity=f"rollout-cohort-v1:{root.name or 'root'}",
+            collection_plan_identity=collection_plan_identity,
         )

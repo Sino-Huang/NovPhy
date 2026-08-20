@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import math
-from hashlib import sha256
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any, NoReturn
@@ -563,21 +562,13 @@ def normalized_initial_engine_state_identity(capture: PhysicsCaptureV2) -> str:
     initial_sample.pop("fixed_step")
     payload = {
         "schema": "normalized_initial_engine_state_v1",
-        "coordinate_convention": _materialize_json(
-            record["coordinate_convention"], "coordinate_convention"
-        ),
+        "coordinate_convention": _materialize_json(record["coordinate_convention"], "coordinate_convention"),
         "causal_entities": _materialize_json(record["causal_entities"], "causal_entities"),
         "collider_catalog": _materialize_json(record["colliders"], "collider_catalog"),
         "sample": initial_sample,
     }
-    encoded = json.dumps(
-        payload,
-        allow_nan=False,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    ).encode("utf-8")
-    return f"normalized-initial-engine-state-v1:sha256:{sha256(encoded).hexdigest()}"
+    semantic_keys = json.dumps(payload, allow_nan=False, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return f"normalized-initial-engine-state-v1:{semantic_keys}"
 
 
 def load_physics_capture_v2(path: Path) -> PhysicsCaptureV2:

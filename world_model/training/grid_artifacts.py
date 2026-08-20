@@ -1,7 +1,6 @@
 """Versioned, provenance-bound best-pair sweep artifacts."""
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import os
@@ -24,7 +23,7 @@ class ArtifactContractError(ValueError):
 
 
 class ArtifactValidationError(ArtifactContractError):
-    """Raised when persisted artifacts fail integrity validation."""
+    """Raised when persisted artifacts fail structural validation."""
 
 
 def canonical_json_bytes(value: JsonValue) -> bytes:
@@ -36,13 +35,9 @@ def canonical_json_bytes(value: JsonValue) -> bytes:
     return (text + "\n").encode("ascii")
 
 
-def _digest(value: bytes) -> str:
-    return hashlib.sha256(value).hexdigest()
-
-
-def _hex_digest(value: str, field: str) -> None:
-    if type(value) is not str or len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
-        raise ArtifactContractError(f"{field} must be a lowercase SHA-256 digest")
+def _identity(value: str, field: str) -> None:
+    if type(value) is not str or not value.strip():
+        raise ArtifactContractError(f"{field} must be a nonempty declared identity")
 
 
 def _finite(value: float, field: str) -> None:
@@ -101,32 +96,27 @@ class BestPairState:
 
 @dataclass(frozen=True, slots=True)
 class SweepManifest:
-    source_digest: str
-    checkpoint_digest: str
-    catalog_digest: str
-    grid_digest: str
-    score_digest: str
-    partition_digest: str
+    source_identity: str
+    checkpoint_path: str
+    catalog_identity: str
+    grid_identity: str
+    score_identity: str
+    partition_identity: str
     state_count: int
     shard_size: int = SHARD_SIZE
 
     def __post_init__(self) -> None:
-        for field in ("source_digest", "checkpoint_digest", "catalog_digest", "grid_digest", "score_digest", "partition_digest"):
-            _hex_digest(getattr(self, field), field)
+        for field in ("source_identity", "checkpoint_path", "catalog_identity", "grid_identity", "score_identity", "partition_identity"):
+            _identity(getattr(self, field), field)
         if self.state_count <= 0 or self.shard_size != SHARD_SIZE or self.state_count % self.shard_size:
             raise ArtifactContractError("state_count must use complete 4096-state shards")
 
     def to_dict(self, shards: tuple[dict[str, JsonValue], ...] = ()) -> dict[str, JsonValue]:
-        return {"schema_version": SCHEMA_VERSION, "artifact_type": "best_pair_sweep", "source_digest": self.source_digest, "checkpoint_digest": self.checkpoint_digest, "catalog_digest": self.catalog_digest, "grid_digest": self.grid_digest, "score_digest": self.score_digest, "partition_digest": self.partition_digest, "state_count": self.state_count, "shard_size": self.shard_size, "evaluated_alpha": "continuous", "excluded_abstractions": list(ALPHA_EXCLUSIONS), "shards": list(shards)}
-
-    @property
-    def digest(self) -> str:
-        return _digest(canonical_json_bytes(self.to_dict()))
+        return {"schema_version": SCHEMA_VERSION, "artifact_type": "best_pair_sweep", "source_identity": self.source_identity, "checkpoint_path": self.checkpoint_path, "catalog_identity": self.catalog_identity, "grid_identity": self.grid_identity, "score_identity": self.score_identity, "partition_identity": self.partition_identity, "state_count": self.state_count, "shard_size": self.shard_size, "evaluated_alpha": "continuous", "excluded_abstractions": list(ALPHA_EXCLUSIONS), "shards": list(shards)}
 
 
 @dataclass(frozen=True, slots=True)
 class ArtifactReceipt:
-    manifest_digest: str
     shards: tuple[str, ...]
 
 
@@ -148,7 +138,7 @@ def _atomic_write(path: Path, data: bytes) -> None:
 
 def _shard_bytes(states: tuple[BestPairState, ...]) -> bytes:
     header = {"record_type": "shard_header", "schema_version": SCHEMA_VERSION, "shard_size": SHARD_SIZE, "evaluated_alpha": "continuous", "excluded_abstractions": list(ALPHA_EXCLUSIONS), "state_count": len(states)}
-    footer = {"record_type": "shard_footer", "schema_version": SCHEMA_VERSION, "state_count": len(states), "state_digest": _digest(b"".join(canonical_json_bytes(s.to_dict()) for s in states))}
+    footer = {"record_type": "shard_footer", "schema_version": SCHEMA_VERSION, "state_count": len(states)}
     return b"".join((canonical_json_bytes(header), *(canonical_json_bytes(s.to_dict()) for s in states), canonical_json_bytes(footer)))
 
 
@@ -190,15 +180,15 @@ def write_best_pair_artifacts(root: Path, manifest: SweepManifest, states: tuple
             raise ArtifactValidationError(f"stale or tampered shard: {name}")
         if not path.exists():
             _atomic_write(path, data)
-        digest = _digest(data); names.append(name)
-        shard_entries.append({"name": name, "state_count": len(shard_states), "sha256": digest})
+        names.append(name)
+        shard_entries.append({"name": name, "state_count": len(shard_states)})
     payload = manifest.to_dict(tuple(shard_entries))
     _atomic_write(root / "manifest.json", canonical_json_bytes(payload))
-    return ArtifactReceipt(_digest(canonical_json_bytes(payload)), tuple(names))
+    return ArtifactReceipt(tuple(names))
 
 
 def validate_best_pair_artifacts(root: Path, expected: SweepManifest | None = None) -> ArtifactReceipt:
-    """Validate manifest, shard hashes, records, ordering, and counts."""
+    """Validate manifest, shard records, ordering, and counts."""
     manifest_path = root / "manifest.json"
     if not manifest_path.is_file():
         raise ArtifactValidationError("missing top-level manifest")
@@ -209,11 +199,11 @@ def validate_best_pair_artifacts(root: Path, expected: SweepManifest | None = No
         raise ArtifactValidationError("invalid manifest JSON") from error
     if canonical_json_bytes(payload) != raw:
         raise ArtifactValidationError("manifest is not canonical JSON")
-    required = {"schema_version", "artifact_type", "source_digest", "checkpoint_digest", "catalog_digest", "grid_digest", "score_digest", "partition_digest", "state_count", "shard_size", "evaluated_alpha", "excluded_abstractions", "shards"}
+    required = {"schema_version", "artifact_type", "source_identity", "checkpoint_path", "catalog_identity", "grid_identity", "score_identity", "partition_identity", "state_count", "shard_size", "evaluated_alpha", "excluded_abstractions", "shards"}
     if set(payload) != required or payload["schema_version"] != SCHEMA_VERSION or payload["evaluated_alpha"] != "continuous" or payload["excluded_abstractions"] != list(ALPHA_EXCLUSIONS):
         raise ArtifactValidationError("closed manifest schema violation")
     try:
-        manifest = SweepManifest(*(payload[field] for field in ("source_digest", "checkpoint_digest", "catalog_digest", "grid_digest", "score_digest", "partition_digest")), payload["state_count"], payload["shard_size"])
+        manifest = SweepManifest(*(payload[field] for field in ("source_identity", "checkpoint_path", "catalog_identity", "grid_identity", "score_identity", "partition_identity")), payload["state_count"], payload["shard_size"])
     except (ArtifactContractError, TypeError) as error:
         raise ArtifactValidationError("invalid manifest fields") from error
     if expected is not None and manifest != expected:
@@ -223,30 +213,29 @@ def validate_best_pair_artifacts(root: Path, expected: SweepManifest | None = No
         raise ArtifactValidationError("shard count mismatch")
     expected_index = 0; names: list[str] = []
     for entry in entries:
+        if type(entry) is not dict or set(entry) != {"name", "state_count"} or entry["state_count"] != SHARD_SIZE:
+            raise ArtifactValidationError("invalid shard entry")
         name = entry["name"]; data = (root / name).read_bytes() if (root / name).is_file() else b""
-        if _digest(data) != entry["sha256"]:
-            raise ArtifactValidationError(f"shard hash mismatch: {name}")
         lines = data.splitlines()
         if len(lines) != SHARD_SIZE + 2:
             raise ArtifactValidationError(f"shard count mismatch: {name}")
         header = json.loads(lines[0])
         if canonical_json_bytes(header) != lines[0] + b"\n" or header != {"record_type": "shard_header", "schema_version": SCHEMA_VERSION, "shard_size": SHARD_SIZE, "evaluated_alpha": "continuous", "excluded_abstractions": list(ALPHA_EXCLUSIONS), "state_count": SHARD_SIZE}:
             raise ArtifactValidationError("invalid shard header")
-        state_bytes = b""
         for line in lines[1:-1]:
             if canonical_json_bytes(json.loads(line)) != line + b"\n":
                 raise ArtifactValidationError("noncanonical state record")
             record = json.loads(line)
             _parse_state(record, expected_index)
             expected_index += 1
-            state_bytes += canonical_json_bytes(record)
         footer = json.loads(lines[-1])
-        if canonical_json_bytes(footer) != lines[-1] + b"\n" or footer.get("record_type") != "shard_footer" or footer.get("schema_version") != SCHEMA_VERSION or footer.get("state_count") != SHARD_SIZE or footer.get("state_digest") != _digest(state_bytes):
+        expected_footer = {"record_type": "shard_footer", "schema_version": SCHEMA_VERSION, "state_count": SHARD_SIZE}
+        if canonical_json_bytes(footer) != lines[-1] + b"\n" or footer != expected_footer:
             raise ArtifactValidationError("invalid shard footer")
         names.append(name)
     if expected_index != manifest.state_count:
         raise ArtifactValidationError("state count mismatch")
-    return ArtifactReceipt(_digest(raw), tuple(names))
+    return ArtifactReceipt(tuple(names))
 
 
 __all__ = ["ALPHA_EXCLUSIONS", "APPROVED_DELTAS", "ArtifactContractError", "ArtifactReceipt", "ArtifactValidationError", "BestPairState", "PairMetricArtifact", "SCHEMA_VERSION", "SHARD_SIZE", "SweepManifest", "canonical_json_bytes", "validate_best_pair_artifacts", "write_best_pair_artifacts"]

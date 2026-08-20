@@ -28,6 +28,11 @@ from scripts.prepare_rollout_dataset import ACTIVE_COHORT_ROOT  # noqa: E402
 STATE_SIDECAR = "physics_state.jsonl"
 
 
+def oracle_gate_spec_identity(spec: OracleGateSpec) -> str:
+    """Return the declared threshold identity carried by derivation reports."""
+    return spec.identity()
+
+
 def _is_shot(path: Path) -> bool:
     return (path / STATE_SIDECAR).is_file() and (path / "physics_events.jsonl").is_file()
 
@@ -112,7 +117,7 @@ def main(argv: list[str] | None = None) -> int:
         "target": str(args.target),
         "sidecar": DERIVED_LABEL_SIDECAR,
         "oracle_gate_spec": spec.to_json(),
-        "oracle_gate_spec_digest": spec.digest(),
+        "oracle_gate_spec_identity": oracle_gate_spec_identity(spec),
         "mode": "validate" if args.validate_only else "write",
         "shots_total": len(shots),
         "shots_ok": len(written),

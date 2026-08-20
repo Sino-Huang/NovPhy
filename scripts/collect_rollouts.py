@@ -1084,16 +1084,16 @@ def capture_physics_rollout(
     state_header: dict | None = None,
     clock=time.monotonic,
     sleeper=time.sleep,
-    player_sha256: str | None = None,
-    protocol_sha256: str | None = None,
-    archive_sha256: str | None = None,
+    player_version: str | None = None,
+    protocol_version: str | None = None,
+    archive_path: str | None = None,
     initial_capture=None,
     shoot=None,
     expected_initial_engine_state_identity: str | None = None,
     scenario_context: dict[str, Any] | None = None,
 ) -> dict:
-    if not all(isinstance(value, str) for value in (player_sha256, protocol_sha256, archive_sha256)):
-        raise RolloutCollectionError("physics capture requires lowercase SHA-256 player, protocol, and archive provenance")
+    if not all(isinstance(value, str) and value for value in (player_version, protocol_version, archive_path)):
+        raise RolloutCollectionError("physics capture requires player, protocol, and archive provenance")
     try:
         return persist_physics_rollout(
             bridge,
@@ -1102,7 +1102,7 @@ def capture_physics_rollout(
             duration_seconds=duration_seconds,
             max_frames=max_frames,
             state_header=state_header,
-            provenance=CaptureProvenance(player_sha256, protocol_sha256, archive_sha256),
+            provenance=CaptureProvenance(player_version, protocol_version, archive_path),
             clock=clock,
             sleeper=sleeper,
             initial_capture=initial_capture,
@@ -1152,16 +1152,16 @@ def capture_physics_v2_rollout(
     return metadata
 
 
-def _physics_contract_descriptor(player_sha256: str, protocol_sha256: str, archive_sha256: str) -> dict:
+def _physics_contract_descriptor(player_version: str, protocol_version: str, archive_path: str) -> dict:
     from world_model.data.types import PHYSICS_CAPTURE_V1
 
     return {
         "contract_name": PHYSICS_CAPTURE_V1.contract_name,
         "contract_version": PHYSICS_CAPTURE_V1.contract_version,
         "artifact_layout_version": PHYSICS_CAPTURE_V1.artifact_layout_version,
-        "player_sha256": player_sha256,
-        "protocol_sha256": protocol_sha256,
-        "archive_sha256": archive_sha256,
+        "player_version": player_version,
+        "player_protocol_version": protocol_version,
+        "archive_path": archive_path,
         "declared_capabilities": list(PHYSICS_CAPTURE_V1.declared_capabilities),
         "sidecar_paths": [{"relative_path": sidecar.relative_path, "capabilities": list(sidecar.capabilities)} for sidecar in PHYSICS_CAPTURE_V1.sidecar_paths],
     }
@@ -1349,7 +1349,6 @@ def _rollout_record_from_metadata(
             field: metadata[field]
             for field in (
                 "physics_capture_v2_path",
-                "physics_capture_v2_sha256",
                 "physics_capture_v2_schema",
                 "configured_fixed_step_capture_stride",
                 "causal_entity_count",
@@ -1703,9 +1702,9 @@ def collect_rollouts(
     physics_capture_v1: bool = False,
     physics_capture_v2: bool = False,
     physics_bridge=None,
-    physics_player_sha256: str | None = None,
-    physics_protocol_sha256: str | None = None,
-    physics_archive_sha256: str | None = None,
+    physics_player_version: str | None = None,
+    physics_protocol_version: str | None = None,
+    physics_archive_path: str | None = None,
     expected_initial_engine_state_identity: str | None = None,
     scenario_context: dict[str, Any] | None = None,
     physics_v2_source_bindings: Mapping[str, object] | None = None,
@@ -1742,11 +1741,15 @@ def collect_rollouts(
             if artifact_validation.get("accepted"):
                 metadata = json.loads((final_shot_dir / "metadata.json").read_text(encoding="utf-8"))
                 requested_provenance = {
-                    "player_sha256": physics_player_sha256,
-                    "protocol_sha256": physics_protocol_sha256,
-                    "archive_sha256": physics_archive_sha256,
+                    "player_version": physics_player_version,
+                    "player_protocol_version": physics_protocol_version,
+                    "archive_path": physics_archive_path,
                 }
-                identity_matches = (
+                provenance_matches = all(
+                    metadata.get(field) == value
+                    for field, value in requested_provenance.items()
+                )
+                initial_identity_matches = (
                     expected_initial_engine_state_identity is None
                     or metadata.get("initial_engine_state_identity")
                     == expected_initial_engine_state_identity
@@ -1757,8 +1760,8 @@ def collect_rollouts(
                 )
                 if (
                     _has_complete_strict_semantics(metadata)
-                    and all(metadata.get(field) == value for field, value in requested_provenance.items())
-                    and identity_matches
+                    and provenance_matches
+                    and initial_identity_matches
                     and scenario_matches
                 ):
                     metadata = dict(metadata)
@@ -1860,7 +1863,7 @@ def collect_rollouts(
             }
         )
         if physics_capture_v1:
-            capture_kwargs.update({"player_sha256": physics_player_sha256, "protocol_sha256": physics_protocol_sha256, "archive_sha256": physics_archive_sha256, "expected_initial_engine_state_identity": expected_initial_engine_state_identity, "scenario_context": scenario_context})
+            capture_kwargs.update({"player_version": physics_player_version, "protocol_version": physics_protocol_version, "archive_path": physics_archive_path, "expected_initial_engine_state_identity": expected_initial_engine_state_identity, "scenario_context": scenario_context})
         elif not physics_capture_v2:
             capture_kwargs["action"] = action
         if not physics_capture_v1 and not physics_capture_v2 and pre_shot_image is not None:
@@ -2046,9 +2049,9 @@ def collect_rollouts(
         "invalid_attempts": invalid_attempts,
     }
     if physics_capture_v1:
-        if not all(isinstance(value, str) for value in (physics_player_sha256, physics_protocol_sha256, physics_archive_sha256)):
+        if not all(isinstance(value, str) and value for value in (physics_player_version, physics_protocol_version, physics_archive_path)):
             raise RolloutCollectionError("physics capture provenance is incomplete")
-        manifest.update({"capture_contract": _physics_contract_descriptor(physics_player_sha256, physics_protocol_sha256, physics_archive_sha256), "schema_version": "physics_capture_v1", "protocol_version": 1, "player_sha256": physics_player_sha256, "protocol_sha256": physics_protocol_sha256, "archive_sha256": physics_archive_sha256, "sidecar_paths": ["physics_state.jsonl", "physics_events.jsonl"], "physics_state_count": sum(int(item.get("frame_count", 0)) for item in accepted_rollouts), "physics_event_count": sum(int(item.get("physics_event_count", 0)) for item in accepted_rollouts)})
+        manifest.update({"capture_contract": _physics_contract_descriptor(physics_player_version, physics_protocol_version, physics_archive_path), "schema_version": "physics_capture_v1", "protocol_version": 1, "player_version": physics_player_version, "archive_path": physics_archive_path, "sidecar_paths": ["physics_state.jsonl", "physics_events.jsonl"], "physics_state_count": sum(int(item.get("frame_count", 0)) for item in accepted_rollouts), "physics_event_count": sum(int(item.get("physics_event_count", 0)) for item in accepted_rollouts)})
         if scenario_context is not None:
             manifest["scenario_context"] = scenario_context
     elif physics_capture_v2:
@@ -2114,9 +2117,9 @@ def collect_fresh_engine_rollouts(
     physics_capture_v2: bool = False,
     physics_host: str = "127.0.0.1",
     physics_port: int = 2004,
-    physics_player_sha256: str | None = None,
-    physics_protocol_sha256: str | None = None,
-    physics_archive_sha256: str | None = None,
+    physics_player_version: str | None = None,
+    physics_protocol_version: str | None = None,
+    physics_archive_path: str | None = None,
     scenario_manifest: ScenarioManifest | None = None,
     scenario_context_override: Mapping[str, Any] | None = None,
     expected_initial_engine_state_identity: str | None = None,
@@ -2214,9 +2217,9 @@ def collect_fresh_engine_rollouts(
                     physics_capture_v1=physics_capture_v1,
                     physics_capture_v2=physics_capture_v2,
                     physics_bridge=ScienceBirdsBridge(physics_host, physics_port, timeout=read_timeout) if (physics_capture_v1 or physics_capture_v2) else None,
-                    physics_player_sha256=physics_player_sha256,
-                    physics_protocol_sha256=physics_protocol_sha256,
-                    physics_archive_sha256=physics_archive_sha256,
+                    physics_player_version=physics_player_version,
+                    physics_protocol_version=physics_protocol_version,
+                    physics_archive_path=physics_archive_path,
                     expected_initial_engine_state_identity=expected_initial_engine_state_identity,
                     scenario_context=scenario_context,
                     physics_v2_source_bindings=physics_v2_source_bindings,
@@ -2297,9 +2300,9 @@ def collect_fresh_engine_rollouts(
         "invalid_attempts": invalid_attempts,
     }
     if physics_capture_v1:
-        if not all(isinstance(value, str) for value in (physics_player_sha256, physics_protocol_sha256, physics_archive_sha256)):
+        if not all(isinstance(value, str) and value for value in (physics_player_version, physics_protocol_version, physics_archive_path)):
             raise RolloutCollectionError("physics capture provenance is incomplete")
-        manifest.update({"capture_contract": _physics_contract_descriptor(physics_player_sha256, physics_protocol_sha256, physics_archive_sha256), "schema_version": "physics_capture_v1", "protocol_version": 1, "player_sha256": physics_player_sha256, "protocol_sha256": physics_protocol_sha256, "archive_sha256": physics_archive_sha256, "sidecar_paths": ["physics_state.jsonl", "physics_events.jsonl"], "physics_state_count": sum(int(item.get("frame_count", 0)) for item in accepted_rollouts), "physics_event_count": sum(int(item.get("physics_event_count", 0)) for item in accepted_rollouts)})
+        manifest.update({"capture_contract": _physics_contract_descriptor(physics_player_version, physics_protocol_version, physics_archive_path), "schema_version": "physics_capture_v1", "protocol_version": 1, "player_version": physics_player_version, "archive_path": physics_archive_path, "sidecar_paths": ["physics_state.jsonl", "physics_events.jsonl"], "physics_state_count": sum(int(item.get("frame_count", 0)) for item in accepted_rollouts), "physics_event_count": sum(int(item.get("physics_event_count", 0)) for item in accepted_rollouts)})
         accepted_initial_identities = [
             rollout.get("initial_engine_state_identity") for rollout in accepted_rollouts
         ]
@@ -2686,9 +2689,9 @@ def build_parser() -> argparse.ArgumentParser:
     physics_capture = parser.add_mutually_exclusive_group()
     physics_capture.add_argument("--physics-capture-v1", action="store_true", help="Persist synchronized request-70 physics sidecars")
     physics_capture.add_argument("--physics-capture-v2", action="store_true", help="Persist the source-bound request-71 physics sidecar")
-    parser.add_argument("--physics-player-sha256")
-    parser.add_argument("--physics-protocol-sha256")
-    parser.add_argument("--physics-archive-sha256")
+    parser.add_argument("--physics-player-version")
+    parser.add_argument("--physics-protocol-version")
+    parser.add_argument("--physics-archive-path")
     parser.add_argument("--fresh-engine-per-rollout", action="store_true")
     parser.add_argument("--collection-plan", type=Path)
     parser.add_argument(
@@ -2970,8 +2973,8 @@ def main() -> None:
     physics_capture_v1 = bool(args.physics_capture_v1)
     if physics_capture_v1:
         capture_rollout = capture_physics_rollout
-        if not all((args.physics_player_sha256, args.physics_protocol_sha256, args.physics_archive_sha256)):
-            print("--physics-capture-v1 requires all three physics SHA-256 provenance options", file=sys.stderr)
+        if not all((args.physics_player_version, args.physics_protocol_version, args.physics_archive_path)):
+            print("--physics-capture-v1 requires all three physics provenance options", file=sys.stderr)
             raise SystemExit(2)
     pre_shot_grabber = None
     if args.capture_source == "desktop":
@@ -3028,9 +3031,9 @@ def main() -> None:
             if selected_manifest is not None:
                 scenario_context_override = {
                     "version_envelope": {
-                        "player_sha256": args.physics_player_sha256,
-                        "protocol_sha256": args.physics_protocol_sha256,
-                        "archive_sha256": args.physics_archive_sha256,
+                        "player_version": args.physics_player_version,
+                        "protocol_version": args.physics_protocol_version,
+                        "archive_path": args.physics_archive_path,
                         "generator_version": _scenario_generation_version(selected_manifest),
                     },
                     "plan_identity": request.plan_identity,
@@ -3101,9 +3104,9 @@ def main() -> None:
                 anchor_actions=False,
                 physics_capture_v1=physics_capture_v1,
                 physics_capture_v2=physics_capture_v2,
-                physics_player_sha256=args.physics_player_sha256,
-                physics_protocol_sha256=args.physics_protocol_sha256,
-                physics_archive_sha256=args.physics_archive_sha256,
+                physics_player_version=args.physics_player_version,
+                physics_protocol_version=args.physics_protocol_version,
+                physics_archive_path=args.physics_archive_path,
                 scenario_manifest=selected_manifest,
                 scenario_context_override=scenario_context_override,
                 physics_v2_source_bindings=physics_v2_source_bindings,
@@ -3179,9 +3182,9 @@ def main() -> None:
             anchor_actions=not actions_from_log,
             physics_capture_v1=physics_capture_v1,
             physics_bridge=ScienceBirdsBridge(args.physics_host, args.physics_port, timeout=args.read_timeout) if physics_capture_v1 else None,
-            physics_player_sha256=args.physics_player_sha256,
-            physics_protocol_sha256=args.physics_protocol_sha256,
-            physics_archive_sha256=args.physics_archive_sha256,
+            physics_player_version=args.physics_player_version,
+            physics_protocol_version=args.physics_protocol_version,
+            physics_archive_path=args.physics_archive_path,
         )
         print(json.dumps({"manifest": str(args.output_dir / "manifest.json"), "rollout_count": manifest["rollout_count"]}, indent=2))
     finally:

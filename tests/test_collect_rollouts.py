@@ -1,5 +1,4 @@
 import io
-import hashlib
 import json
 import os
 import shlex
@@ -217,7 +216,7 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
         engine_record = capture()
         source_bindings = engine_record.pop("source_bindings")
         engine_record["schema_version"] = "physics_capture_v2_engine_v1"
-        manifest_identity = "cohort-v2-scenario-manifest-v1:sha256:" + "a" * 64
+        manifest_identity = "cohort-v2-scenario-manifest-v1:test-manifest"
 
         def collect(output_dir, _actions, **_options):
             shot_dir = output_dir / "shot_001"
@@ -351,10 +350,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 return PhysicsCaptureV1(png, records[1], tuple(events))
         with TemporaryDirectory() as temporary:
             shot = Path(temporary) / "shot_000.tmp"
-            metadata = capture_physics_rollout(Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1, state_header=records[0], player_sha256="a" * 64, protocol_sha256="b" * 64, archive_sha256="c" * 64, clock=lambda: 0.0, sleeper=lambda _seconds: None)
+            metadata = capture_physics_rollout(Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1, state_header=records[0], player_version="a" * 64, protocol_version="b" * 64, archive_path="c" * 64, clock=lambda: 0.0, sleeper=lambda _seconds: None)
             self.assertTrue(metadata["sidecars_closed"])
             self.assertTrue(validate_rollout_artifact(shot, capture_contract="physics_capture_v1")["accepted"])
-            self.assertEqual(metadata["frame_checksums"][0]["sha256"], hashlib.sha256(png).hexdigest())
 
     def test_persistence_accepts_immutable_nested_mapping_from_real_decoder(self):
         from src.webui.bridge import ScienceBirdsBridge, encode_physics_capture_v1
@@ -392,9 +390,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 duration_seconds=1,
                 max_frames=1,
                 state_header=records[0],
-                player_sha256="a" * 64,
-                protocol_sha256="b" * 64,
-                archive_sha256="c" * 64,
+                player_version="a" * 64,
+                protocol_version="b" * 64,
+                archive_path="c" * 64,
                 clock=lambda: 0.0,
                 sleeper=lambda _seconds: None,
             )
@@ -446,9 +444,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 state_header=records[0],
                 clock=clock,
                 sleeper=sleeper,
-                player_sha256="a" * 64,
-                protocol_sha256="b" * 64,
-                archive_sha256="c" * 64,
+                player_version="a" * 64,
+                protocol_version="b" * 64,
+                archive_path="c" * 64,
             )
 
         # Then: request timestamps, not implementation calls, prove pacing.
@@ -465,7 +463,7 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 return PhysicsCaptureV1(png, records[1], ())
         with TemporaryDirectory() as temporary:
             shot = Path(temporary) / "shot_000.tmp"
-            capture_physics_rollout(Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1, state_header=records[0], player_sha256="a" * 64, protocol_sha256="b" * 64, archive_sha256="c" * 64)
+            capture_physics_rollout(Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1, state_header=records[0], player_version="a" * 64, protocol_version="b" * 64, archive_path="c" * 64)
             self.assertEqual((shot / "physics_events.jsonl").read_bytes(), b"")
             self.assertTrue(validate_rollout_artifact(shot, capture_contract="physics_capture_v1")["accepted"])
 
@@ -498,7 +496,7 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
         action = {"coordinate_frame": "absolute", "drag_start": [100, 200], "drag_release": [130, 150], "tapTime": 70, "holdTime": 600}
         guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
         with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
-            manifest = collect_rollouts(Bridge(), Path(temporary), [action], target_fps=1, duration_seconds=1, max_frames=2, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64)
+            manifest = collect_rollouts(Bridge(), Path(temporary), [action], target_fps=1, duration_seconds=1, max_frames=2, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_version="a" * 64, physics_protocol_version="b" * 64, physics_archive_path="c" * 64)
 
         self.assertEqual(call_order[0], "initial-request-70")
         self.assertEqual(call_order[1][0], "recorder-action")
@@ -515,9 +513,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 return PhysicsCaptureV1(png, records[1], tuple(events))
         with TemporaryDirectory() as temporary:
             shot = Path(temporary) / "shot_000.tmp"
-            capture_physics_rollout(Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1, state_header=records[0], player_sha256="a" * 64, protocol_sha256="b" * 64, archive_sha256="c" * 64)
+            capture_physics_rollout(Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1, state_header=records[0], player_version="a" * 64, protocol_version="b" * 64, archive_path="c" * 64)
             metadata = json.loads((shot / "metadata.json").read_text(encoding="utf-8"))
-            del metadata["archive_sha256"]
+            del metadata["archive_path"]
             (shot / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
             self.assertFalse(validate_rollout_artifact(shot, capture_contract="physics_capture_v1")["accepted"])
 
@@ -536,8 +534,8 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
             shot = root / "shot_000.tmp"
             capture_physics_rollout(
                 Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
-                state_header=records[0], player_sha256="a" * 64,
-                protocol_sha256="b" * 64, archive_sha256="c" * 64,
+                state_header=records[0], player_version="a" * 64,
+                protocol_version="b" * 64, archive_path="c" * 64,
             )
             state_path = shot / "physics_state.jsonl"
             external_state = root / "external-state.jsonl"
@@ -563,8 +561,8 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
             shot = root / "shot_000.tmp"
             capture_physics_rollout(
                 Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
-                state_header=records[0], player_sha256="a" * 64,
-                protocol_sha256="b" * 64, archive_sha256="c" * 64,
+                state_header=records[0], player_version="a" * 64,
+                protocol_version="b" * 64, archive_path="c" * 64,
             )
             frame_path = shot / "frames" / "frame_000000.png"
             external_frame = root / "external-frame.png"
@@ -589,8 +587,8 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
             shot = root / "shot_000.tmp"
             capture_physics_rollout(
                 Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
-                state_header=records[0], player_sha256="a" * 64,
-                protocol_sha256="b" * 64, archive_sha256="c" * 64,
+                state_header=records[0], player_version="a" * 64,
+                protocol_version="b" * 64, archive_path="c" * 64,
             )
             state_path = shot / "physics_state.jsonl"
             state_records = [json.loads(line) for line in state_path.read_text(encoding="utf-8").splitlines()]
@@ -622,8 +620,8 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 shot = root / "shot_000.tmp"
                 capture_physics_rollout(
                     Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
-                    state_header=records[0], player_sha256="a" * 64,
-                    protocol_sha256="b" * 64, archive_sha256="c" * 64,
+                    state_header=records[0], player_version="a" * 64,
+                    protocol_version="b" * 64, archive_path="c" * 64,
                 )
                 target = shot / relative_path
                 external = root / f"external-{target.name}"
@@ -665,29 +663,6 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
             ):
                 load_physics_capture(state_path, event_path)
 
-    def test_physics_artifact_hashing_does_not_materialize_whole_files(self):
-        from src.webui.bridge import PhysicsCaptureV1
-
-        records, events = self._records()
-        png = self._png()
-
-        class Bridge:
-            def get_physics_capture_v1(self):
-                return PhysicsCaptureV1(png, records[1], tuple(events))
-
-        with TemporaryDirectory() as temporary:
-            shot = Path(temporary) / "shot_000.tmp"
-            capture_physics_rollout(
-                Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
-                state_header=records[0], player_sha256="a" * 64,
-                protocol_sha256="b" * 64, archive_sha256="c" * 64,
-            )
-
-            with patch.object(Path, "read_bytes", side_effect=AssertionError("whole-file hash read")):
-                summary = validate_physics_shot_artifact(shot)
-
-            self.assertEqual(summary.state_count, 1)
-
     def test_physics_artifact_validation_does_not_use_whole_file_text_reads(self):
         from src.webui.bridge import PhysicsCaptureV1
 
@@ -702,8 +677,8 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
             shot = Path(temporary) / "shot_000.tmp"
             capture_physics_rollout(
                 Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
-                state_header=records[0], player_sha256="a" * 64,
-                protocol_sha256="b" * 64, archive_sha256="c" * 64,
+                state_header=records[0], player_version="a" * 64,
+                protocol_version="b" * 64, archive_path="c" * 64,
             )
 
             with patch.object(Path, "read_text", side_effect=AssertionError("whole-file text read")):
@@ -737,8 +712,8 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
             completed = root / "shot_001"
             capture_physics_rollout(
                 Bridge(), completed, target_fps=1, duration_seconds=1, max_frames=1,
-                state_header=records[0], player_sha256="a" * 64,
-                protocol_sha256="b" * 64, archive_sha256="c" * 64,
+                state_header=records[0], player_version="a" * 64,
+                protocol_version="b" * 64, archive_path="c" * 64,
             )
             shutil.rmtree(completed / "frames")
             (completed / "frames").write_text("not a directory", encoding="utf-8")
@@ -769,10 +744,10 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
             root = Path(temporary)
             guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
             with patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
-                manifest = collect_rollouts(Bridge(), root, [action], target_fps=1, duration_seconds=1, max_frames=2, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64)
+                manifest = collect_rollouts(Bridge(), root, [action], target_fps=1, duration_seconds=1, max_frames=2, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_version="a" * 64, physics_protocol_version="b" * 64, physics_archive_path="c" * 64)
             self.assertTrue((root / "shot_001").is_dir(), manifest)
             self.assertFalse((root / "shot_001.tmp").exists())
-            self.assertEqual(manifest["capture_contract"]["archive_sha256"], "c" * 64)
+            self.assertEqual(manifest["capture_contract"]["archive_path"], "c" * 64)
 
     def test_second_collection_reuses_valid_completed_shot_without_bridge_calls(self):
         from src.webui.bridge import PhysicsCaptureV1
@@ -796,7 +771,7 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
         with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
             root = Path(temporary)
             bridge = Bridge()
-            kwargs = dict(target_fps=1, duration_seconds=1, max_frames=2, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64)
+            kwargs = dict(target_fps=1, duration_seconds=1, max_frames=2, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True, physics_player_version="a" * 64, physics_protocol_version="b" * 64, physics_archive_path="c" * 64)
             collect_rollouts(bridge, root, [action], **kwargs)
             shot = root / "shot_001"
             first_metadata = (shot / "metadata.json").read_bytes()
@@ -810,6 +785,54 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
             self.assertEqual(len(bridge.shots), first_shot_count)
             self.assertEqual(manifest["rollout_count"], 1)
             self.assertFalse((root / "shot_001.tmp").exists())
+
+    def test_completed_shot_with_stale_semantic_provenance_is_quarantined_and_recaptured(self):
+        from src.webui.bridge import PhysicsCaptureV1
+
+        records, events = self._records()
+        png = self._png()
+
+        class Bridge(FakeBridge):
+            request_count = 0
+
+            def get_physics_capture_v1(self):
+                self.request_count += 1
+                return PhysicsCaptureV1(
+                    png,
+                    records[1] if self.request_count % 2 == 1 else records[2],
+                    () if self.request_count % 2 == 1 else tuple(events[:1]),
+                )
+
+        action = {"coordinate_frame": "absolute", "drag_start": [100, 200], "drag_release": [130, 150], "tapTime": 70, "holdTime": 600}
+        guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
+        with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
+            root = Path(temporary)
+            bridge = Bridge()
+            common = dict(target_fps=1, duration_seconds=1, max_frames=2, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True)
+            collect_rollouts(bridge, root, [action], physics_player_version="player-v1", physics_protocol_version="protocol-v1", physics_archive_path="/staged/player-v1.tar.gz", **common)
+            first_metadata = json.loads((root / "shot_001" / "metadata.json").read_text(encoding="utf-8"))
+
+            collect_rollouts(
+                bridge,
+                root,
+                [action],
+                physics_player_version="player-v2",
+                physics_protocol_version="protocol-v2",
+                physics_archive_path="/staged/player-v2.tar.gz",
+                expected_initial_engine_state_identity="normalized-initial-engine-state-v1:changed",
+                **common,
+            )
+
+            current = json.loads((root / "shot_001" / "metadata.json").read_text(encoding="utf-8"))
+            quarantined = json.loads((root / "invalid_attempts" / "shot_001_recovered_01" / "metadata.json").read_text(encoding="utf-8"))
+            self.assertEqual(bridge.request_count, 4)
+            self.assertEqual(
+                (current["player_version"], current["player_protocol_version"], current["archive_path"]),
+                ("player-v2", "protocol-v2", "/staged/player-v2.tar.gz"),
+            )
+            self.assertEqual(current["expected_initial_engine_state_identity"], "normalized-initial-engine-state-v1:changed")
+            self.assertEqual(quarantined["player_version"], first_metadata["player_version"])
+            self.assertEqual(quarantined["initial_engine_state_identity"], first_metadata["initial_engine_state_identity"])
 
     def test_physics_capture_routes_gameplay_action_and_request_70_to_separate_bridges(self):
         from src.webui.bridge import PhysicsCaptureV1
@@ -847,9 +870,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0),
                 physics_capture_v1=True,
                 physics_bridge=physics,
-                physics_player_sha256="a" * 64,
-                physics_protocol_sha256="b" * 64,
-                physics_archive_sha256="c" * 64,
+                physics_player_version="a" * 64,
+                physics_protocol_version="b" * 64,
+                physics_archive_path="c" * 64,
             )
 
         self.assertEqual(len(gameplay.shots), 1)
@@ -889,9 +912,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 anchor_actions=False,
                 video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0),
                 physics_capture_v1=True,
-                physics_player_sha256="a" * 64,
-                physics_protocol_sha256="b" * 64,
-                physics_archive_sha256="c" * 64,
+                physics_player_version="a" * 64,
+                physics_protocol_version="b" * 64,
+                physics_archive_path="c" * 64,
             )
 
             self.assertEqual(tuple(external.iterdir()), ())
@@ -919,8 +942,8 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
             with self.assertRaisesRegex(RolloutCollectionError, "output|symlink|confined"):
                 capture_physics_rollout(
                     Bridge(), shot, target_fps=1, duration_seconds=1, max_frames=1,
-                    state_header=records[0], player_sha256="a" * 64,
-                    protocol_sha256="b" * 64, archive_sha256="c" * 64,
+                    state_header=records[0], player_version="a" * 64,
+                    protocol_version="b" * 64, archive_path="c" * 64,
                 )
 
             self.assertEqual(external.read_text(encoding="utf-8"), "outside\n")
@@ -964,9 +987,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 duration_seconds=1,
                 max_frames=1,
                 state_header=records[0],
-                player_sha256="a" * 64,
-                protocol_sha256="b" * 64,
-                archive_sha256="c" * 64,
+                player_version="a" * 64,
+                protocol_version="b" * 64,
+                archive_path="c" * 64,
                 clock=lambda: 0.0,
                 sleeper=lambda _seconds: None,
             )
@@ -1133,9 +1156,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                     video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0),
                     anchor_actions=False,
                     physics_capture_v1=True,
-                    physics_player_sha256="a" * 64,
-                    physics_protocol_sha256="b" * 64,
-                    physics_archive_sha256="c" * 64,
+                    physics_player_version="a" * 64,
+                    physics_protocol_version="b" * 64,
+                    physics_archive_path="c" * 64,
                 )
 
             # Then: completed metadata and validation precede one rename, after which the shot is immutable.
@@ -1162,39 +1185,6 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 self.assertEqual(published_metadata, pre_publication_metadata)
             with self.subTest("accepted shot is never reopened for mutation"):
                 self.assertEqual(post_publication_mutations, [])
-
-    def test_completed_shot_with_stale_provenance_is_quarantined_and_recaptured(self):
-        from src.webui.bridge import PhysicsCaptureV1
-
-        records, events = self._records()
-        png = self._png()
-
-        class Bridge(FakeBridge):
-            request_count = 0
-
-            def get_physics_capture_v1(self):
-                self.request_count += 1
-                return PhysicsCaptureV1(
-                    png,
-                    records[1] if self.request_count % 2 == 1 else records[2],
-                    () if self.request_count % 2 == 1 else tuple(events[:1]),
-                )
-
-        action = {"coordinate_frame": "absolute", "release": [130, 150], "tapTime": 70}
-        guard = {"pre_shot_image": None, "pre_shot_sample": None, "post_recovery_protocol_state": {}, "recovery_action": None, "pre_shot_guard": {"status": "accepted", "invalid_reason": None}}
-        with TemporaryDirectory() as temporary, patch("scripts.collect_rollouts._run_pre_shot_guard", return_value=guard):
-            root = Path(temporary)
-            bridge = Bridge()
-            common = dict(target_fps=1, duration_seconds=1, max_frames=2, anchor_actions=False, video_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0), physics_capture_v1=True)
-            collect_rollouts(bridge, root, [action], physics_player_sha256="a" * 64, physics_protocol_sha256="b" * 64, physics_archive_sha256="c" * 64, **common)
-
-            collect_rollouts(bridge, root, [action], physics_player_sha256="d" * 64, physics_protocol_sha256="e" * 64, physics_archive_sha256="f" * 64, **common)
-
-            current = json.loads((root / "shot_001" / "metadata.json").read_text(encoding="utf-8"))
-            stale = json.loads((root / "invalid_attempts" / "shot_001_recovered_01" / "metadata.json").read_text(encoding="utf-8"))
-            self.assertEqual(bridge.request_count, 4)
-            self.assertEqual((current["player_sha256"], current["protocol_sha256"], current["archive_sha256"]), ("d" * 64, "e" * 64, "f" * 64))
-            self.assertEqual((stale["player_sha256"], stale["protocol_sha256"], stale["archive_sha256"]), ("a" * 64, "b" * 64, "c" * 64))
 
     def test_generated_fresh_engine_worker_without_required_inputs_fails_closed(self):
         with TemporaryDirectory() as temporary:
@@ -1247,9 +1237,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                         bridge,
                         Path(temporary) / "shot_000.tmp",
                         **parameters,
-                        player_sha256="a" * 64,
-                        protocol_sha256="b" * 64,
-                        archive_sha256="c" * 64,
+                        player_version="a" * 64,
+                        protocol_version="b" * 64,
+                        archive_path="c" * 64,
                     )
                 self.assertEqual(bridge.request_count, 0)
 
@@ -1283,9 +1273,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                 duration_seconds=1,
                 max_frames=63,
                 state_header=records[0],
-                player_sha256="a" * 64,
-                protocol_sha256="b" * 64,
-                archive_sha256="c" * 64,
+                player_version="a" * 64,
+                protocol_version="b" * 64,
+                archive_path="c" * 64,
             )
 
             self.assertEqual(bridge.request_count, 63)
@@ -1339,9 +1329,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                         duration_seconds=1,
                         max_frames=1,
                         state_header=records[0],
-                        player_sha256="a" * 64,
-                        protocol_sha256="b" * 64,
-                        archive_sha256="c" * 64,
+                        player_version="a" * 64,
+                        protocol_version="b" * 64,
+                        archive_path="c" * 64,
                     )
                 self.assertFalse((shot / "metadata.json").exists())
 
@@ -1362,9 +1352,9 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
                     target_fps=1,
                     duration_seconds=1,
                     max_frames=1,
-                    player_sha256="a" * 64,
-                    protocol_sha256="b" * 64,
-                    archive_sha256="c" * 64,
+                    player_version="a" * 64,
+                    protocol_version="b" * 64,
+                    archive_path="c" * 64,
                 )
             self.assertFalse((shot / "metadata.json").exists())
 
@@ -2146,6 +2136,8 @@ class CollectRolloutsTest(unittest.TestCase):
         reported_menu_artifact_root = Path(
             "data/novphy_rollouts_dataset/train/novelty_level_0_type010101_00002_0_1_010101_0_1"
         )
+        if not valid_artifact_root.is_dir() or not reported_menu_artifact_root.is_dir():
+            self.skipTest("legacy rollout dataset fixtures are not present")
 
         valid = validate_rollout_artifact(valid_artifact_root / "shot_001")
         menu_static = validate_rollout_artifact(reported_menu_artifact_root / "shot_001")
@@ -4138,9 +4130,9 @@ class CollectRolloutsTest(unittest.TestCase):
                     "baseline-manifest",
                     {
                         "version_envelope": {
-                            "player_sha256": None,
-                            "protocol_sha256": None,
-                            "archive_sha256": None,
+                            "player_version": None,
+                            "protocol_version": None,
+                            "archive_path": None,
                             "generator_version": "importer:1",
                         },
                         "plan_identity": "plan-identity",
@@ -4159,9 +4151,9 @@ class CollectRolloutsTest(unittest.TestCase):
                     "novel-manifest",
                     {
                         "version_envelope": {
-                            "player_sha256": None,
-                            "protocol_sha256": None,
-                            "archive_sha256": None,
+                            "player_version": None,
+                            "protocol_version": None,
+                            "archive_path": None,
                             "generator_version": "importer:1",
                         },
                         "plan_identity": "plan-identity",

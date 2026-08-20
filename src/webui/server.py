@@ -19,6 +19,8 @@ from typing import Any, Mapping
 from xml.etree import ElementTree as ET
 from urllib.parse import parse_qs, urlparse
 
+from scripts.verify_physics_player import safe_unpack
+
 from .bridge import (
     GameState,
     PhysicsCaptureV2Failure,
@@ -34,6 +36,16 @@ SETUP_COMMAND = (
 )
 TRAJECTORY_SLING_REFERENCE_X_OFFSET = 0.45
 TRAJECTORY_SLING_REFERENCE_Y_OFFSET = 0.35
+PHYSICS_PLAYER_STAGE_SCHEMA = "novphy_physics_player_stage_v1"
+PHYSICS_PLAYER_UNITY_VERSION = "2019.4.41f2"
+PHYSICS_V2_CAPTURE_SCHEMA = "physics_capture_v2_engine_v1"
+PHYSICS_CAPTURE_PROTOCOL_VERSION = 1
+PHYSICS_PLAYER_REQUIRED_FILES = (
+    "game_playing_interface.jar",
+    "9001.x86_64",
+    "9001-player.x86_64",
+    "config.xml",
+)
 
 
 def repo_root() -> Path:
@@ -150,7 +162,6 @@ class AppState:
     review_capture_timeout: float = 60.0
     review_stage: Path | None = None
     review_runtime_dir: Path | None = None
-    review_archive_sha256: str | None = None
     review_runtime_temporary: tempfile.TemporaryDirectory | None = None
     engine_game_port: int = 29001
     review_reset_callback: Any | None = None
@@ -165,7 +176,6 @@ class AppState:
         if self.physics_v2_review and self.review_runtime_dir is None:
             stage = self.review_stage or self.root / "sciencebirdsgames" / "physics-v2"
             required_stage = [
-                stage / "archive.sha256",
                 stage / "novphy-physics-player-2019.4.41f2.tar.gz",
             ]
             return [f"Missing {path}" for path in required_stage if not path.exists()]
@@ -189,7 +199,6 @@ class AppState:
             "preflightErrors": self.preflight_errors(),
             "physicsV2Review": self.physics_v2_review,
             "physicsV2ReviewSession": None if self.review_session is None else self.review_session.snapshot(),
-            "physicsV2ArchiveSha256": self.review_archive_sha256,
         }
 
     def prepare_physics_v2_review_runtime(self) -> Path:
@@ -197,35 +206,84 @@ class AppState:
             raise ValueError("physics-v2 review mode is not enabled")
         if self.review_runtime_dir is not None:
             return self.review_runtime_dir
-        from scripts.verify_physics_player import (
-            CAPTURE_SCHEMA_V2,
-            archive_from_stage,
-            safe_unpack,
-            verify_payload,
-        )
-
         stage = self.review_stage or self.root / "sciencebirdsgames" / "physics-v2"
-        archive, archive_sha = archive_from_stage(stage)
+        archive = stage / "novphy-physics-player-2019.4.41f2.tar.gz"
+        if not archive.is_file():
+            raise FileNotFoundError(f"Missing {archive}")
         temporary = tempfile.TemporaryDirectory(prefix="novphy_webui_physics_v2_")
         runtime = Path(temporary.name)
         try:
             safe_unpack(archive, runtime)
-            verify_payload(runtime, CAPTURE_SCHEMA_V2)
+            self._validate_physics_v2_review_runtime(runtime)
             self._install_public_review_levels(runtime)
         except Exception:
             temporary.cleanup()
             raise
         self.review_runtime_temporary = temporary
         self.review_runtime_dir = runtime
-        self.review_archive_sha256 = archive_sha
         return runtime
 
+    def _validate_physics_v2_review_runtime(self, runtime: Path) -> None:
+        provenance_path = runtime / "provenance.json"
+        try:
+            provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise ValueError("physics-v2 review archive provenance.json is missing or malformed") from error
+        if not isinstance(provenance, dict) or provenance.get("schema_version") != PHYSICS_PLAYER_STAGE_SCHEMA:
+            raise ValueError("physics-v2 review archive provenance schema is unsupported")
+        unity = provenance.get("unity")
+        capture = provenance.get("capture")
+        files = provenance.get("files")
+        if not isinstance(unity, dict) or unity.get("version") != PHYSICS_PLAYER_UNITY_VERSION:
+            raise ValueError("physics-v2 review archive Unity version is unsupported")
+        if (
+            not isinstance(capture, dict)
+            or capture.get("schema_version") != PHYSICS_V2_CAPTURE_SCHEMA
+            or capture.get("protocol_version") != PHYSICS_CAPTURE_PROTOCOL_VERSION
+        ):
+            raise ValueError("physics-v2 review archive capture provenance is unsupported")
+        if not isinstance(files, dict):
+            raise ValueError("physics-v2 review archive file inventory is malformed")
+        if any(
+            not isinstance(relative, str)
+            or not relative
+            or Path(relative).is_absolute()
+            or Path(relative).as_posix() != relative
+            or ".." in Path(relative).parts
+            or isinstance(size, bool)
+            or not isinstance(size, int)
+            or size < 0
+            for relative, size in files.items()
+        ):
+            raise ValueError("physics-v2 review archive file inventory is malformed")
+        actual_files: dict[str, int] = {}
+        for path in sorted(runtime.rglob("*")):
+            if path == provenance_path:
+                continue
+            if path.is_symlink():
+                raise ValueError("physics-v2 review archive contains a non-regular file")
+            if path.is_dir():
+                continue
+            if not path.is_file():
+                raise ValueError("physics-v2 review archive contains a non-regular file")
+            actual_files[path.relative_to(runtime).as_posix()] = path.stat().st_size
+        if files != actual_files:
+            raise ValueError("physics-v2 review archive file inventory does not match extracted files")
+        missing = [
+            relative
+            for relative in PHYSICS_PLAYER_REQUIRED_FILES
+            if relative not in actual_files
+        ]
+        if missing or not (runtime / "9001_Data").is_dir():
+            raise ValueError("physics-v2 review archive required files are incomplete")
+
     def _install_public_review_levels(self, runtime: Path) -> None:
-        evidence = self.root / ".claude/project-docs/evidence/issue-45-cohort-v2-lineage"
+        stage = self.review_stage or self.root / "sciencebirdsgames" / "physics-v2"
+        source_root = stage / "review-levels"
         sources = (
-            evidence / "xml/training.xml",
-            evidence / "xml/calibration.xml",
-            evidence / "xml/model-selection.xml",
+            source_root / "training.xml",
+            source_root / "calibration.xml",
+            source_root / "model-selection.xml",
         )
         if any(not source.is_file() for source in sources):
             raise FileNotFoundError("public #45 review XML artifacts are incomplete")
@@ -263,7 +321,8 @@ class AppState:
         return self.review_output_root or self.root / ".local-artifacts" / "issue-44-webui-review"
 
     def _review_plan(self) -> Path:
-        return self.review_probe_plan_path or self.root / ".claude/project-docs/evidence/issue-44-physics-v2/probe-plan.json"
+        stage = self.review_stage or self.root / "sciencebirdsgames" / "physics-v2"
+        return self.review_probe_plan_path or stage / "probe-plan.json"
 
     def stage_physics_v2_review(self, goal: str, action: dict[str, Any]) -> dict[str, Any]:
         if not self.physics_v2_review:

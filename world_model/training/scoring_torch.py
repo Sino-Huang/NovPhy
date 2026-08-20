@@ -1,23 +1,53 @@
 """Torch adapters for exhaustive scoring from a frozen checkpoint."""
 from __future__ import annotations
 
-import hashlib
+import zlib
 from pathlib import Path
 
 import torch
 
-from world_model.model import Abstraction, JepaBackbone, JepaConfig, PredictionPair
+from world_model.model import Abstraction, JepaBackbone, JepaConfig, PredictionPair, identity
 from world_model.training.grid_data import MotionRegime, ScoringState, ScoringTarget
 from world_model.training.grid_run import (
     CheckpointInfo,
     GridRunError,
     PhaseAConfig,
-    checkpoint_digest,
     load_checkpoint,
 )
 from world_model.training.loop import TeacherForcedTrainer
 from world_model.training.real_data import RealPhaseData
-from world_model.training.scoring import ExhaustiveScoreResult, ExhaustiveScorer, Partition, ScoringExample
+from world_model.training.scoring import (
+    ExhaustiveScoreResult,
+    ExhaustiveScorer,
+    Partition,
+    ScoringExample,
+    score_state_set_identity,
+)
+
+
+FIXTURE_CATALOG_IDENTITY = (
+    "episode-catalog-v1:fixture-cohort:fixture-dataset:fixture-source:dev:legacy_rgb_v1"
+)
+
+
+def fixture_partition_identity(phase_config: PhaseAConfig) -> str:
+    return identity(
+        (
+            "pair-grid-partition-v1",
+            FIXTURE_CATALOG_IDENTITY,
+            phase_config.seed,
+            "balanced-fixture-partitions",
+        )
+    )
+
+
+def fixture_state_set_identity(phase_config: PhaseAConfig) -> str:
+    examples = fixture_scoring_examples(phase_config.steps)
+    return score_state_set_identity(
+        FIXTURE_CATALOG_IDENTITY,
+        fixture_partition_identity(phase_config),
+        tuple(example.state_id for example in examples),
+    )
 
 
 class TorchFixturePredictor:
@@ -36,8 +66,9 @@ class TorchFixturePredictor:
         actions: list[torch.Tensor] = []
         shape = (3, self._config.encoder.input_height, self._config.encoder.input_width)
         for example in examples:
-            seed_bytes = hashlib.sha256(f"{example.state_id}:{effective_delta}".encode("ascii")).digest()[:8]
-            generator = torch.Generator().manual_seed(int.from_bytes(seed_bytes, "big"))
+            # deterministic non-cryptographic derivation, not an integrity check
+            seed = zlib.crc32(f"{example.state_id}:{effective_delta}".encode("ascii"))
+            generator = torch.Generator().manual_seed(seed)
             contexts.append(torch.rand(shape, generator=generator))
             targets.append(torch.rand(shape, generator=generator))
             actions.append(torch.rand((self._config.predictor.action_dim,), generator=generator))
@@ -160,7 +191,7 @@ def fixture_scoring_examples(steps: int) -> tuple[ScoringExample, ...]:
         for position in range(steps):
             terminal = steps
             state = ScoringState(
-                catalog_digest="f" * 64,
+                catalog_identity=FIXTURE_CATALOG_IDENTITY,
                 split="dev",
                 episode_relative_path=f"fixture/{partition}",
                 shot_relative_path=f"fixture/{partition}/shot",
@@ -185,14 +216,13 @@ def score_fixture_checkpoint(
     checkpoint: Path,
     phase_config: PhaseAConfig,
     model_config: JepaConfig,
-) -> tuple[ExhaustiveScoreResult, str]:
+) -> tuple[ExhaustiveScoreResult, CheckpointInfo]:
     trainer = TeacherForcedTrainer(JepaBackbone(model_config), phase_config.training_config(device="cpu"))
     loaded = load_checkpoint(
         checkpoint,
         trainer,
-        config_digest=phase_config.identity,
-        grid_digest=phase_config.grid_digest,
-        expected_digest=checkpoint_digest(checkpoint),
+        config_identity=phase_config.identity,
+        grid_identity=phase_config.grid_identity,
     )
     if loaded.step != phase_config.steps:
         raise GridRunError("exhaustive scoring requires a completed train-mode checkpoint")
@@ -200,7 +230,7 @@ def score_fixture_checkpoint(
     result = ExhaustiveScorer(TorchFixturePredictor(trainer.backbone, model_config)).score(
         fixture_scoring_examples(phase_config.steps)
     )
-    return result, loaded.digest
+    return result, loaded
 
 
 def score_real_checkpoint(
@@ -215,10 +245,9 @@ def score_real_checkpoint(
     loaded = load_checkpoint(
         checkpoint,
         trainer,
-        config_digest=phase_config.identity,
-        grid_digest=phase_config.grid_digest,
-        expected_digest=checkpoint_digest(checkpoint),
-        expected_catalog_digest=data.catalog_digest,
+        config_identity=phase_config.identity,
+        grid_identity=phase_config.grid_identity,
+        expected_catalog_identity=data.catalog_identity,
         expected_run_identity=data.run_identity,
     )
     if loaded.step != phase_config.steps:
@@ -231,9 +260,12 @@ def score_real_checkpoint(
 
 
 __all__ = [
+    "FIXTURE_CATALOG_IDENTITY",
     "TorchCatalogPredictor",
     "TorchFixturePredictor",
+    "fixture_partition_identity",
     "fixture_scoring_examples",
+    "fixture_state_set_identity",
     "score_fixture_checkpoint",
     "score_real_checkpoint",
 ]

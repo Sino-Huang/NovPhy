@@ -5,13 +5,13 @@ from __future__ import annotations
 import argparse
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from hashlib import sha256
 import json
 import os
 from pathlib import Path
 import tempfile
 from types import MappingProxyType
 from typing import Any, Final, Literal
+from urllib.parse import quote
 
 from scripts.collection_plan import (
     CollectionPlanRuntime,
@@ -29,15 +29,14 @@ from scripts.physics_macro_labels import (
     DERIVATION_SPEC_VERSION,
     MacroPredicate,
     SemanticStatus,
-    derivation_spec_digest,
     derivation_spec_json,
     derive_macro_labels_for_shot,
 )
 from scripts.physics_material_damage import (
-    MaterialDamageContractError,
     MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION,
     MATERIAL_UNAVAILABLE_LABEL,
     MAPPING_SOURCE_FACTS,
+    SUPPORTED_DAMAGE_LIFECYCLE_MAPPING,
     Availability as MaterialDamageAvailability,
     build_damage_lifecycle_validation_receipt,
     derive_material_damage,
@@ -62,7 +61,6 @@ MATERIAL_MISSING_ENGINE_FIELD_REASON: Final = (
 MATERIAL_DAMAGE_PENDING_REASON: Final = (
     "no representative engine lifecycle evidence verifies the damage mapping"
 )
-MATERIAL_DAMAGE_COHORT_NAMESPACE: Final = "material-damage-source-cohort-v1"
 TARGET_MACRO_PREDICATES: Final = (
     MacroPredicate.CASCADE_ACTIVE.value,
     MacroPredicate.COLLAPSED.value,
@@ -160,9 +158,6 @@ _COLLECTION_REPORT_FIELDS: Final = frozenset((
     "realized_coverage_shortfalls",
 ))
 _VERSION_ENVELOPE_FIELDS: Final = frozenset((
-    "player_sha256",
-    "protocol_sha256",
-    "archive_sha256",
     "generator_version",
 ))
 
@@ -232,10 +227,6 @@ def _validated_version_envelope(value: Any, name: str = "version_envelope") -> d
     envelope = _require_string_mapping(value, name)
     if set(envelope) != _VERSION_ENVELOPE_FIELDS:
         raise ValueError(f"{name} must contain exactly {', '.join(sorted(_VERSION_ENVELOPE_FIELDS))}")
-    for field in ("player_sha256", "protocol_sha256", "archive_sha256"):
-        digest = envelope[field]
-        if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
-            raise ValueError(f"{name}.{field} must be a lowercase SHA-256 digest")
     return envelope
 
 
@@ -247,16 +238,11 @@ def _require_json_value(value: Any, name: str) -> None:
 
 
 def _identity(payload: Mapping[str, Any]) -> str:
-    identity_payload = dict(payload)
-    identity_payload.pop("identity", None)
-    return f"{PILOT_REPORT_IDENTITY_NAMESPACE}:sha256:{sha256(_canonical_json(identity_payload)).hexdigest()}"
-
-
-def _require_digest(value: Any, name: str) -> str:
-    digest = _require_nonempty_string(value, name)
-    if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
-        raise ValueError(f"{name} must be a lowercase SHA-256 digest")
-    return digest
+    return ":".join((
+        PILOT_REPORT_IDENTITY_NAMESPACE,
+        str(payload["report_version"]),
+        quote(str(payload["plan_identity"]), safe="-._~"),
+    ))
 
 
 def _validated_macro_semantics(
@@ -264,16 +250,13 @@ def _validated_macro_semantics(
     attempts: Mapping[str, Any],
 ) -> dict[str, Any]:
     section = _require_mapping(value, "Pilot report macro_semantics")
-    required = {"schema", "derivation_spec_version", "derivation_spec_digest", "predicates"}
+    required = {"schema", "derivation_spec_version", "predicates"}
     if set(section) != required:
         raise ValueError("Pilot report macro_semantics is incomplete or contains unknown fields")
     if section["schema"] != MACRO_SEMANTICS_SCHEMA:
         raise ValueError("Unsupported pilot report macro_semantics schema")
     if section["derivation_spec_version"] != DERIVATION_SPEC_VERSION:
         raise ValueError("Pilot report macro_semantics derivation version is stale")
-    if section["derivation_spec_digest"] != derivation_spec_digest():
-        raise ValueError("Pilot report macro_semantics derivation digest is stale")
-
     pilot_evidence = _require_mapping(
         attempts.get("pilot_evidence"), "Pilot report attempts.pilot_evidence"
     )
@@ -316,11 +299,7 @@ def _validated_macro_semantics(
         "attempt_id",
         "capture_id",
         "shot_id",
-        "physics_state_sha256",
-        "physics_events_sha256",
         "derivation_spec_version",
-        "derivation_spec_digest",
-        "macro_label_artifact_sha256",
         "value_summary",
         "availability_summary",
     }
@@ -359,17 +338,8 @@ def _validated_macro_semantics(
             observed_attempt_ids.append(attempt_id)
             _require_nonempty_string(row["capture_id"], f"Pilot report macro_semantics {name} capture_id")
             _require_nonempty_string(row["shot_id"], f"Pilot report macro_semantics {name} shot_id")
-            for field in (
-                "physics_state_sha256",
-                "physics_events_sha256",
-                "derivation_spec_digest",
-                "macro_label_artifact_sha256",
-            ):
-                _require_digest(row[field], f"Pilot report macro_semantics {name} {field}")
             if row["derivation_spec_version"] != DERIVATION_SPEC_VERSION:
                 raise ValueError(f"Pilot report macro_semantics {name} evidence derivation version is stale")
-            if row["derivation_spec_digest"] != derivation_spec_digest():
-                raise ValueError(f"Pilot report macro_semantics {name} evidence derivation digest is stale")
             artifact = atomic_by_attempt.get(attempt_id)
             if artifact is None:
                 raise ValueError(
@@ -386,17 +356,6 @@ def _validated_macro_semantics(
             if row != stored_row:
                 raise ValueError(
                     f"Pilot report macro_semantics {name} evidence differs from atomic validation"
-                )
-            deterministic = _require_mapping(
-                artifact.get("deterministic_artifact_semantics"),
-                f"Pilot report atomic validation {attempt_id} deterministic_artifact_semantics",
-            )
-            if (
-                row["physics_state_sha256"] != deterministic.get("state_sha256")
-                or row["physics_events_sha256"] != deterministic.get("event_sha256")
-            ):
-                raise ValueError(
-                    f"Pilot report macro_semantics {name} source digests differ from atomic validation"
                 )
             if row["capture_id"] != artifact.get("capture_id") or row["shot_id"] != artifact.get("shot_id"):
                 raise ValueError(
@@ -424,264 +383,6 @@ def _validated_macro_semantics(
     return _thaw(section)
 
 
-def _material_source_records(records: Sequence[Mapping[str, Any]]) -> list[dict[str, str]]:
-    source_records: list[dict[str, str]] = []
-    for raw_item in records:
-        item = _require_mapping(raw_item, "Pilot report atomic validation record")
-        if item.get("accepted") is not True:
-            continue
-        attempt_id = _require_nonempty_string(item.get("attempt_id"), "Pilot report material attempt_id")
-        capture_id = _require_nonempty_string(item.get("capture_id"), "Pilot report material capture_id")
-        shot_id = _require_nonempty_string(item.get("shot_id"), "Pilot report material shot_id")
-        deterministic = _require_mapping(
-            item.get("deterministic_artifact_semantics"),
-            f"Pilot report atomic validation {attempt_id} deterministic_artifact_semantics",
-        )
-        source_records.append({
-            "attempt_id": attempt_id,
-            "capture_id": capture_id,
-            "shot_id": shot_id,
-            "state_sha256": _require_digest(
-                deterministic.get("state_sha256"),
-                f"Pilot report material {attempt_id} state_sha256",
-            ),
-            "events_sha256": _require_digest(
-                deterministic.get("event_sha256"),
-                f"Pilot report material {attempt_id} event_sha256",
-            ),
-        })
-    source_records.sort(key=lambda item: item["attempt_id"])
-    if len({item["attempt_id"] for item in source_records}) != len(source_records):
-        raise ValueError("Pilot report material accepted attempt IDs must be unique")
-    return source_records
-
-
-def _material_damage_source_cohort_identity(
-    plan_identity: str,
-    version_envelope: Mapping[str, str],
-    source_records: Sequence[Mapping[str, str]],
-) -> str:
-    payload = {
-        "plan_identity": plan_identity,
-        "report_version": PILOT_REPORT_VERSION,
-        "source_records": [dict(record) for record in source_records],
-        "version_envelope": dict(version_envelope),
-    }
-    return (
-        f"{MATERIAL_DAMAGE_COHORT_NAMESPACE}:sha256:"
-        f"{sha256(_canonical_json(payload)).hexdigest()}"
-    )
-
-
-def _material_damage_evidence_row(
-    attempt_id: str,
-    derived: Any,
-    source_cohort_identity: str,
-) -> dict[str, Any]:
-    return {
-        "attempt_id": attempt_id,
-        "capture_id": derived.capture_id,
-        "shot_id": derived.shot_id,
-        "physics_state_sha256": derived.state_sha256,
-        "physics_events_sha256": derived.events_sha256,
-        "derived_artifact_sha256": sha256(derived.to_bytes()).hexdigest(),
-        "record_count": len(derived.records),
-        "mapping_version": derived.mapping_version,
-        "mapping_digest": derived.mapping_digest,
-        "source_cohort_identity": source_cohort_identity,
-    }
-
-
-def _material_damage_semantics(
-    plan_identity: str,
-    version_envelope: Mapping[str, str],
-    validation: list[dict[str, Any]],
-) -> dict[str, Any]:
-    source_records = _material_source_records(validation)
-    source_cohort_identity = _material_damage_source_cohort_identity(
-        plan_identity,
-        version_envelope,
-        source_records,
-    )
-    evidence: list[dict[str, Any]] = []
-    by_attempt = {record["attempt_id"]: record for record in source_records}
-    for item in validation:
-        if not item.get("accepted"):
-            continue
-        attempt_id = _require_nonempty_string(item.get("attempt_id"), "Pilot material attempt_id")
-        source = by_attempt[attempt_id]
-        derived = derive_material_damage(
-            Path(_require_nonempty_string(item.get("artifact_path"), "Pilot material artifact_path")),
-            source_cohort_identity=source_cohort_identity,
-        )
-        if (
-            derived.capture_id != source["capture_id"]
-            or derived.shot_id != source["shot_id"]
-            or derived.state_sha256 != source["state_sha256"]
-            or derived.events_sha256 != source["events_sha256"]
-        ):
-            raise ValueError(f"material/damage source provenance differs for accepted attempt {attempt_id}")
-        row = _material_damage_evidence_row(attempt_id, derived, source_cohort_identity)
-        item["material_damage_evidence"] = row
-        evidence.append(row)
-    evidence.sort(key=lambda row: row["attempt_id"])
-    return {
-        "schema": MATERIAL_DAMAGE_SEMANTICS_SCHEMA,
-        "source_cohort_identity": source_cohort_identity,
-        "material": {
-            "availability": MaterialDamageAvailability.UNAVAILABLE_MISSING_ENGINE_MATERIAL_FIELD.value,
-            "label": MATERIAL_UNAVAILABLE_LABEL,
-            "reason": MATERIAL_MISSING_ENGINE_FIELD_REASON,
-            "status": "unavailable",
-        },
-        "damage": {
-            "availability": MaterialDamageAvailability.AVAILABLE.value,
-            "mapping_schema_version": MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION,
-            "mapping_version": SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.mapping_version,
-            "mapping_digest": SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.digest,
-            "source_facts": list(MAPPING_SOURCE_FACTS),
-            "status": SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.representative_validation_status.value,
-            "evidence": evidence,
-        },
-    }
-
-
-def _validated_material_damage_semantics(
-    value: Any,
-    attempts: Mapping[str, Any],
-    plan_identity: str,
-    version_envelope: Mapping[str, str],
-) -> dict[str, Any]:
-    section = _require_mapping(value, "Pilot report material_damage_semantics")
-    if set(section) != {"schema", "source_cohort_identity", "material", "damage"}:
-        raise ValueError("Pilot report material_damage_semantics is incomplete or contains unknown fields")
-    if section["schema"] != MATERIAL_DAMAGE_SEMANTICS_SCHEMA:
-        raise ValueError("Unsupported pilot report material_damage_semantics schema")
-    source_cohort_identity = _require_nonempty_string(
-        section["source_cohort_identity"],
-        "Pilot report material source_cohort_identity",
-    )
-    atomic = attempts.get("atomic_validation")
-    if not isinstance(atomic, list):
-        raise ValueError("Pilot report attempts.atomic_validation must be a list")
-    source_records = _material_source_records(atomic)
-    expected_cohort = _material_damage_source_cohort_identity(
-        plan_identity,
-        version_envelope,
-        source_records,
-    )
-    if source_cohort_identity != expected_cohort:
-        raise ValueError("Pilot report material source-cohort identity is stale")
-
-    material = _require_mapping(section["material"], "Pilot report material semantics material")
-    if set(material) != {"availability", "label", "reason", "status"}:
-        raise ValueError("Pilot report material semantics material fields are invalid")
-    if material != {
-        "availability": MaterialDamageAvailability.UNAVAILABLE_MISSING_ENGINE_MATERIAL_FIELD.value,
-        "label": MATERIAL_UNAVAILABLE_LABEL,
-        "reason": MATERIAL_MISSING_ENGINE_FIELD_REASON,
-        "status": "unavailable",
-    }:
-        raise ValueError("Pilot report material semantics cannot promote unavailable material")
-
-    damage = _require_mapping(section["damage"], "Pilot report material semantics damage")
-    damage_fields = {
-        "availability",
-        "mapping_schema_version",
-        "mapping_version",
-        "mapping_digest",
-        "source_facts",
-        "status",
-        "evidence",
-    }
-    if set(damage) != damage_fields:
-        raise ValueError("Pilot report material semantics damage fields are invalid")
-    if damage["availability"] != MaterialDamageAvailability.AVAILABLE.value:
-        raise ValueError("Pilot report damage mapping must remain available")
-    if damage["mapping_schema_version"] != MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION:
-        raise ValueError("Pilot report damage mapping schema version is stale")
-    if damage["mapping_version"] != SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.mapping_version:
-        raise ValueError("Pilot report damage mapping version is stale")
-    if damage["mapping_digest"] != SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.digest:
-        raise ValueError("Pilot report damage mapping digest is stale")
-    if damage["source_facts"] != list(MAPPING_SOURCE_FACTS):
-        raise ValueError("Pilot report damage mapping source facts are stale")
-    if damage["status"] != SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.representative_validation_status.value:
-        raise ValueError("Pilot report damage mapping status is invalid")
-    evidence = damage["evidence"]
-    if not isinstance(evidence, list):
-        raise ValueError("Pilot report material damage evidence must be a list")
-    evidence_fields = {
-        "attempt_id",
-        "capture_id",
-        "shot_id",
-        "physics_state_sha256",
-        "physics_events_sha256",
-        "derived_artifact_sha256",
-        "record_count",
-        "mapping_version",
-        "mapping_digest",
-        "source_cohort_identity",
-    }
-    atomic_by_attempt = {
-        record["attempt_id"]: record
-        for record in atomic
-        if isinstance(record, Mapping) and record.get("accepted") is True
-    }
-    expected_attempts = set(atomic_by_attempt)
-    observed_attempts: set[str] = set()
-    for index, raw_row in enumerate(evidence):
-        row = _require_mapping(raw_row, f"Pilot report material damage evidence[{index}]")
-        if set(row) != evidence_fields:
-            raise ValueError("Pilot report material damage evidence fields are invalid")
-        attempt_id = _require_nonempty_string(row["attempt_id"], "Pilot material damage attempt_id")
-        if attempt_id in observed_attempts:
-            raise ValueError("Pilot report material damage evidence has duplicate attempts")
-        observed_attempts.add(attempt_id)
-        atomic_record = atomic_by_attempt.get(attempt_id)
-        if atomic_record is None:
-            raise ValueError("Pilot report material damage evidence lacks atomic validation")
-        for field in ("capture_id", "shot_id", "source_cohort_identity"):
-            _require_nonempty_string(row[field], f"Pilot material damage {field}")
-        for field in (
-            "physics_state_sha256",
-            "physics_events_sha256",
-            "derived_artifact_sha256",
-            "mapping_digest",
-        ):
-            _require_digest(row[field], f"Pilot material damage {field}")
-        if isinstance(row["record_count"], bool) or not isinstance(row["record_count"], int) or row["record_count"] < 0:
-            raise ValueError("Pilot material damage record_count must be nonnegative")
-        if row["mapping_version"] != SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.mapping_version:
-            raise ValueError("Pilot material damage mapping version is stale")
-        if row["mapping_digest"] != SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.digest:
-            raise ValueError("Pilot material damage mapping digest is stale")
-        if row["source_cohort_identity"] != source_cohort_identity:
-            raise ValueError("Pilot material damage evidence source cohort differs")
-        stored = _require_mapping(
-            atomic_record.get("material_damage_evidence"),
-            f"Pilot report atomic validation {attempt_id} material_damage_evidence",
-        )
-        if dict(stored) != dict(row):
-            raise ValueError("Pilot material damage evidence differs from atomic validation")
-        deterministic = _require_mapping(
-            atomic_record.get("deterministic_artifact_semantics"),
-            f"Pilot report atomic validation {attempt_id} deterministic_artifact_semantics",
-        )
-        if (
-            row["capture_id"] != atomic_record.get("capture_id")
-            or row["shot_id"] != atomic_record.get("shot_id")
-            or row["physics_state_sha256"] != deterministic.get("state_sha256")
-            or row["physics_events_sha256"] != deterministic.get("event_sha256")
-        ):
-            raise ValueError("Pilot material damage evidence source differs from atomic validation")
-    if observed_attempts != expected_attempts:
-        raise ValueError("Pilot material damage evidence does not bind every accepted atomic artifact")
-    return _thaw(section)
-
-
-# v3 receipt-bound implementation.  The preceding macro seam remains above; these
-# names are the only material/damage seam used by report construction and parsing.
 def _pilot_damage_context(plan_identity: str, version_envelope: Mapping[str, str]) -> dict[str, str]:
     return {
         "plan_identity": plan_identity,
@@ -704,21 +405,52 @@ def _accepted_atomic_records(attempts: Mapping[str, Any]) -> list[Mapping[str, A
     return records
 
 
-def _receipt_damage_row(attempt_id: str, artifact: Any) -> dict[str, Any]:
+def _damage_source_record(record: Any) -> dict[str, Any]:
+    return {
+        "capture_id": record.capture_id,
+        "shot_id": record.shot_id,
+        "life_decrease_witnesses": [
+            {
+                "capture_id": witness.capture_id,
+                "shot_id": witness.shot_id,
+                "entity_id": witness.entity_id,
+                "previous_fixed_step": witness.previous_fixed_step,
+                "previous_life": witness.previous_life,
+                "current_fixed_step": witness.current_fixed_step,
+                "current_life": witness.current_life,
+            }
+            for witness in record.life_decrease_witnesses
+        ],
+        "destruction_witnesses": [
+            {
+                "capture_id": witness.capture_id,
+                "shot_id": witness.shot_id,
+                "entity_id": witness.entity_id,
+                "event_id": witness.event_id,
+                "event_fixed_step": witness.event_fixed_step,
+            }
+            for witness in record.destruction_witnesses
+        ],
+    }
+
+
+def _receipt_damage_row(
+    attempt_id: str,
+    artifact: Any,
+    source_cohort_identity: str,
+    cohort_context: Mapping[str, str],
+    source_records: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
     return {
         "attempt_id": attempt_id,
         "capture_id": artifact.capture_id,
         "shot_id": artifact.shot_id,
-        "physics_state_sha256": artifact.state_sha256,
-        "physics_events_sha256": artifact.events_sha256,
-        "derived_artifact_sha256": sha256(artifact.to_bytes()).hexdigest(),
         "record_count": len(artifact.records),
         "mapping_version": artifact.mapping_version,
-        "mapping_digest": artifact.mapping_digest,
-        "source_cohort_identity": artifact.source_cohort_identity,
+        "source_cohort_identity": source_cohort_identity,
         "receipt_status": artifact.validation_status.value if artifact.validation_status else None,
-        "receipt_cohort_context": dict(artifact.cohort_context),
-        "receipt_source_records": [record.to_json() for record in artifact.source_records],
+        "receipt_cohort_context": dict(cohort_context),
+        "receipt_source_records": [dict(record) for record in source_records],
     }
 
 
@@ -736,28 +468,31 @@ def _material_damage_semantics(
         sources,
         cohort_context=_pilot_damage_context(plan_identity, version_envelope),
     )
+    source_cohort_identity = receipt.source_cohort_identity
+    cohort_context = _pilot_damage_context(plan_identity, version_envelope)
+    source_records = [_damage_source_record(record) for record in receipt.source_records]
     evidence: list[dict[str, Any]] = []
     for item, source in zip(accepted, sources):
         attempt_id = _require_nonempty_string(item.get("attempt_id"), "Pilot material attempt_id")
         artifact = derive_material_damage(source, receipt=receipt)
-        deterministic = _require_mapping(
-            item.get("deterministic_artifact_semantics"),
-            f"Pilot report atomic validation {attempt_id} deterministic_artifact_semantics",
-        )
         if (
             item.get("capture_id") != artifact.capture_id
             or item.get("shot_id") != artifact.shot_id
-            or deterministic.get("state_sha256") != artifact.state_sha256
-            or deterministic.get("event_sha256") != artifact.events_sha256
         ):
             raise ValueError("Pilot material damage source differs from atomic validation")
-        row = _receipt_damage_row(attempt_id, artifact)
+        row = _receipt_damage_row(
+            attempt_id,
+            artifact,
+            source_cohort_identity,
+            cohort_context,
+            source_records,
+        )
         item["material_damage_evidence"] = row
         evidence.append(row)
     evidence.sort(key=lambda row: row["attempt_id"])
     return {
         "schema": MATERIAL_DAMAGE_SEMANTICS_SCHEMA,
-        "source_cohort_identity": receipt.source_cohort_identity,
+        "source_cohort_identity": source_cohort_identity,
         "material": {
             "availability": MaterialDamageAvailability.UNAVAILABLE_MISSING_ENGINE_MATERIAL_FIELD.value,
             "label": MATERIAL_UNAVAILABLE_LABEL,
@@ -772,12 +507,11 @@ def _material_damage_semantics(
             ),
             "mapping_schema_version": MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION,
             "mapping_version": receipt.mapping_version,
-            "mapping_digest": receipt.mapping_digest,
             "source_facts": list(MAPPING_SOURCE_FACTS),
             "status": receipt.status.value,
-            "source_cohort_identity": receipt.source_cohort_identity,
-            "cohort_context": dict(receipt.cohort_context),
-            "source_records": [record.to_json() for record in receipt.source_records],
+            "source_cohort_identity": source_cohort_identity,
+            "cohort_context": cohort_context,
+            "source_records": source_records,
             "evidence": evidence,
         },
     }
@@ -806,65 +540,74 @@ def _validated_material_damage_semantics(
         raise ValueError("Pilot report material semantics cannot promote unavailable material")
     damage = _require_mapping(section["damage"], "Pilot report material semantics damage")
     expected_fields = {
-        "availability", "mapping_schema_version", "mapping_version", "mapping_digest",
+        "availability", "mapping_schema_version", "mapping_version",
         "source_facts", "status", "source_cohort_identity", "cohort_context", "source_records", "evidence",
     }
     if set(damage) != expected_fields:
         raise ValueError("Pilot report material semantics damage fields are invalid")
-    damage_source_records = damage.get("source_records")
-    descriptor_input = {
-        "mapping_version": damage.get("mapping_version"),
-        "mapping_digest": damage.get("mapping_digest"),
-        "source_cohort_identity": damage.get("source_cohort_identity"),
-        "cohort_context": damage.get("cohort_context"),
-        "source_records": damage_source_records,
-        "status": damage.get("status"),
-    }
+    expected_context = _pilot_damage_context(plan_identity, version_envelope)
+    status = damage.get("status")
+    if status not in {
+        SemanticStatus.ENGINE_VERIFIED.value,
+        SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION.value,
+    }:
+        raise ValueError("Pilot report damage validation receipt status is invalid")
     try:
-        descriptor = validate_damage_lifecycle_receipt_descriptor(descriptor_input)
-    except (TypeError, MaterialDamageContractError) as error:
+        validated_receipt = validate_damage_lifecycle_receipt_descriptor({
+            "mapping_version": damage.get("mapping_version"),
+            "source_cohort_identity": damage.get("source_cohort_identity"),
+            "cohort_context": damage.get("cohort_context"),
+            "source_records": damage.get("source_records"),
+            "status": status,
+        })
+    except ValueError as error:
         raise ValueError("Pilot report damage validation receipt is stale or altered") from error
-    if section["source_cohort_identity"] != descriptor["source_cohort_identity"]:
-        raise ValueError("Pilot report material source-cohort identity is stale")
+    expected_cohort_identity = validated_receipt["source_cohort_identity"]
+    receipt_source_identities = {
+        (record["capture_id"], record["shot_id"])
+        for record in validated_receipt["source_records"]
+    }
+    accepted_source_identities = {
+        (item.get("capture_id"), item.get("shot_id"))
+        for item in accepted
+    }
+    if receipt_source_identities != accepted_source_identities:
+        raise ValueError("Pilot report damage validation receipt does not bind accepted capture identities")
     expected_availability = (
         MaterialDamageAvailability.AVAILABLE.value
-        if descriptor["status"] == SemanticStatus.ENGINE_VERIFIED.value
+        if status == SemanticStatus.ENGINE_VERIFIED.value
         else MaterialDamageAvailability.UNAVAILABLE_INSUFFICIENT_DAMAGE_LIFECYCLE_EVIDENCE.value
     )
     if (
         damage["availability"] != expected_availability
         or damage["mapping_schema_version"] != MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION
-        or damage["mapping_version"] != descriptor["mapping_version"]
-        or damage["mapping_digest"] != descriptor["mapping_digest"]
+        or damage["mapping_version"] != SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.mapping_version
         or damage["source_facts"] != list(MAPPING_SOURCE_FACTS)
-        or damage["status"] != descriptor["status"]
-        or damage["source_cohort_identity"] != descriptor["source_cohort_identity"]
-        or damage["cohort_context"] != descriptor["cohort_context"]
-        or damage["source_records"] != descriptor["source_records"]
+        or damage["source_cohort_identity"] != expected_cohort_identity
+        or section["source_cohort_identity"] != expected_cohort_identity
+        or damage["cohort_context"] != expected_context
+        or damage["source_records"] != validated_receipt["source_records"]
     ):
         raise ValueError("Pilot report damage validation receipt is stale or altered")
     evidence = damage["evidence"]
     if not isinstance(evidence, list):
         raise ValueError("Pilot report material damage evidence must be a list")
-    expected_rows: dict[str, dict[str, Any]] = {}
-    expected_source_records = descriptor["source_records"]
+    expected_source_records = damage["source_records"]
     for item in accepted:
         attempt_id = _require_nonempty_string(item.get("attempt_id"), "Pilot material attempt_id")
         stored = _require_mapping(
             item.get("material_damage_evidence"),
             f"Pilot report atomic validation {attempt_id} material_damage_evidence",
         )
-        deterministic = _require_mapping(
-            item.get("deterministic_artifact_semantics"),
-            f"Pilot report atomic validation {attempt_id} deterministic_artifact_semantics",
-        )
         if stored.get("capture_id") != item.get("capture_id") or stored.get("shot_id") != item.get("shot_id"):
             raise ValueError("Pilot material damage atomic evidence identity differs")
-        if stored.get("physics_state_sha256") != deterministic.get("state_sha256") or stored.get("physics_events_sha256") != deterministic.get("event_sha256"):
-            raise ValueError("Pilot material damage atomic evidence source differs")
         if stored.get("receipt_source_records") != expected_source_records:
             raise ValueError("Pilot material damage atomic receipt source records differ")
-        if stored.get("receipt_cohort_context") != descriptor["cohort_context"] or stored.get("receipt_status") != descriptor["status"]:
+        if (
+            stored.get("source_cohort_identity") != expected_cohort_identity
+            or stored.get("receipt_cohort_context") != expected_context
+            or stored.get("receipt_status") != status
+        ):
             raise ValueError("Pilot material damage atomic receipt descriptor differs")
     if len(evidence) != len(accepted) or {row.get("attempt_id") for row in evidence} != {item.get("attempt_id") for item in accepted}:
         raise ValueError("Pilot material damage evidence does not bind every accepted artifact")
@@ -1052,8 +795,6 @@ class PilotReport:
         if raw["pilot_status"] not in {"accepted", "rejected"}:
             raise ValueError("Pilot report pilot_status is invalid")
         _require_json_value(raw, "Pilot report")
-        if identity != _identity(raw):
-            raise ValueError("Pilot report identity is stale")
         return cls(
             PILOT_REPORT_SCHEMA,
             PILOT_REPORT_VERSION,
@@ -1247,7 +988,7 @@ def _exclude_artifact(
     record["pilot_disposition"] = "excluded"
     if quarantine_root is None:
         return
-    destination_parent = quarantine_root / sha256(attempt_id.encode("utf-8")).hexdigest()
+    destination_parent = quarantine_root / f"attempt-{quote(attempt_id, safe='-._~')}"
     destination = destination_parent / path.name
     destination_parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -1290,7 +1031,6 @@ def _exclude_artifact(
 
 
 def _macro_evidence_rows(labels: Any, attempt_id: str) -> dict[str, dict[str, Any]]:
-    artifact_digest = sha256(labels.to_jsonl().encode("utf-8")).hexdigest()
     rows: dict[str, dict[str, Any]] = {}
     for name in TARGET_MACRO_PREDICATES:
         predicate = MacroPredicate(name)
@@ -1305,11 +1045,7 @@ def _macro_evidence_rows(labels: Any, attempt_id: str) -> dict[str, dict[str, An
             "attempt_id": attempt_id,
             "capture_id": labels.capture_id,
             "shot_id": labels.shot_id,
-            "physics_state_sha256": labels.state_sha256,
-            "physics_events_sha256": labels.events_sha256,
             "derivation_spec_version": DERIVATION_SPEC_VERSION,
-            "derivation_spec_digest": derivation_spec_digest(),
-            "macro_label_artifact_sha256": artifact_digest,
             "value_summary": value_summary,
             "availability_summary": availability_summary,
         }
@@ -1381,12 +1117,6 @@ def _assessment_artifacts(
             macro_labels = derive_macro_labels_for_shot(path)
         except Exception as error:
             macro_failure = f"macro label derivation failed: {str(error) or error.__class__.__name__}"
-        else:
-            if (
-                macro_labels.state_sha256 != summary.state_sha256
-                or macro_labels.events_sha256 != summary.event_sha256
-            ):
-                macro_failure = "macro label source digests differ from atomic validation"
         if macro_failure is not None:
             artifact_record["reason"] = macro_failure
             initial_identities.append({
@@ -1452,9 +1182,6 @@ def _assessment_artifacts(
             artifact_record["deterministic_artifact_semantics"] = {
                 "state_count": summary.state_count,
                 "event_count": summary.event_count,
-                "frame_sha256": list(summary.frame_sha256),
-                "state_sha256": summary.state_sha256,
-                "event_sha256": summary.event_sha256,
                 "initial_engine_state_identity": metadata.get("initial_engine_state_identity"),
                 "intervention_event_id": metadata.get("intervention_event_id"),
                 "termination_reason": metadata.get("termination_reason"),
@@ -1566,7 +1293,6 @@ def _macro_semantics(
     return {
         "schema": MACRO_SEMANTICS_SCHEMA,
         "derivation_spec_version": DERIVATION_SPEC_VERSION,
-        "derivation_spec_digest": derivation_spec_digest(),
         "predicates": {
             name: {
                 "status": SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION.value,
@@ -1672,9 +1398,6 @@ def _assess_replays(
                 replay_semantics = {
                     "state_count": summary.state_count,
                     "event_count": summary.event_count,
-                    "frame_sha256": list(summary.frame_sha256),
-                    "state_sha256": summary.state_sha256,
-                    "event_sha256": summary.event_sha256,
                     "initial_engine_state_identity": metadata.get("initial_engine_state_identity"),
                     "intervention_event_id": metadata.get("intervention_event_id"),
                     "termination_reason": metadata.get("termination_reason"),

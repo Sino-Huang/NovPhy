@@ -15,12 +15,14 @@ if str(ROOT) not in sys.path:
 from world_model.model import JepaBackbone, JepaConfig
 from world_model.training import (
     CheckpointInfo,
+    FIXTURE_CATALOG_IDENTITY,
     GridRunError,
     PhaseAConfig,
     RealPhaseData,
-    checkpoint_digest,
     fixture_batch,
     fixture_jepa_config,
+    fixture_partition_identity,
+    fixture_state_set_identity,
     load_checkpoint,
     save_checkpoint,
     score_fixture_checkpoint,
@@ -105,9 +107,9 @@ def _train(
         loaded = load_checkpoint(
             checkpoint,
             trainer,
-            config_digest=config.identity,
-            grid_digest=config.grid_digest,
-            expected_catalog_digest=None if real_data is None else real_data.catalog_digest,
+            config_identity=config.identity,
+            grid_identity=config.grid_identity,
+            expected_catalog_identity=None if real_data is None else real_data.catalog_identity,
             expected_run_identity=None if real_data is None else real_data.run_identity,
         )
         start = loaded.step
@@ -131,21 +133,18 @@ def _train(
     info = save_checkpoint(
         checkpoint,
         trainer,
-        config_digest=config.identity,
-        grid_digest=config.grid_digest,
-        catalog_digest=None if real_data is None else real_data.catalog_digest,
+        config_identity=config.identity,
+        grid_identity=config.grid_identity,
+        catalog_identity=None if real_data is None else real_data.catalog_identity,
         run_identity=None if real_data is None else real_data.run_identity,
         key_counts=tuple(sorted(counts.items())),
     )
     return checkpoint, info
 
 
-def _run_real_frontier(args: argparse.Namespace, checkpoint: Path) -> None:
+def _run_real_frontier(args: argparse.Namespace) -> None:
     score_root = args.output_dir / "score_artifacts"
     validate_score_artifacts(score_root)
-    manifest = json.loads((score_root / "manifest.json").read_text(encoding="ascii"))
-    if manifest.get("checkpoint_digest") != checkpoint_digest(checkpoint):
-        raise GridRunError("frontier score/checkpoint digest mismatch")
     source = args.output_dir / "frontier_input.json"
     write_frontier_input(score_root, source)
     completed = subprocess.run(
@@ -173,25 +172,19 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "validate":
         receipt = validate_score_artifacts(args.output_dir / "score_artifacts")
         print(
-            f"validated states={receipt.state_count} scores={receipt.score_count} "
-            f"manifest={receipt.manifest_digest}",
+            f"validated states={receipt.state_count} scores={receipt.score_count}",
             flush=True,
         )
         return 0
     config = _config(args)
     model_config = _model_config(args)
     checkpoint = args.checkpoint or args.output_dir / "checkpoint.pt"
-    expected_digest = None
-    manifest_path = args.output_dir / "sweep_manifest.json"
-    if args.command in ("score", "frontier") and manifest_path.is_file():
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        expected_digest = manifest.get("checkpoint_digest")
     real_data = None
     if not args.fixture and args.command in ("train", "score", "all"):
         real_data = RealPhaseData.build(args.dataset_root, config, model_config)
         print(
             f"catalog dev: {len(real_data.catalog.episodes)} accepted, "
-            f"{real_data.catalog.rejection_count} rejected digest={real_data.catalog_digest}",
+            f"{real_data.catalog.rejection_count} rejected identity={real_data.catalog_identity}",
             flush=True,
         )
     if args.command in ("train", "all"):
@@ -199,27 +192,34 @@ def main(argv: list[str] | None = None) -> int:
     else:
         checkpoint_info = None
     if args.command in ("score", "frontier", "all"):
-        if expected_digest is not None:
-            if checkpoint_digest(checkpoint) != expected_digest:
-                raise GridRunError("checkpoint digest mismatch")
         if args.fixture:
             for partition in ("controller-train", "calibration", "evaluation"):
                 print(f"scoring partition={partition} states={config.steps}", flush=True)
-            exhaustive, exhaustive_checkpoint_digest = score_fixture_checkpoint(
+            exhaustive, scored_checkpoint = score_fixture_checkpoint(
                 checkpoint, config, model_config
             )
             receipt = write_score_artifacts(
                 args.output_dir / "score_artifacts",
                 exhaustive,
-                checkpoint_digest=exhaustive_checkpoint_digest,
+                checkpoint_path=scored_checkpoint.path,
+                checkpoint_identity=scored_checkpoint.identity,
+                config_identity=scored_checkpoint.config_identity,
+                catalog_identity=FIXTURE_CATALOG_IDENTITY,
+                partition_identity=fixture_partition_identity(config),
+                state_set_identity=fixture_state_set_identity(config),
                 resume=args.resume,
             )
-            validate_score_artifacts(args.output_dir / "score_artifacts")
+            validate_score_artifacts(
+                args.output_dir / "score_artifacts",
+                expected_checkpoint_identity=scored_checkpoint.identity,
+                expected_catalog_identity=FIXTURE_CATALOG_IDENTITY,
+                expected_partition_identity=fixture_partition_identity(config),
+                expected_state_set_identity=fixture_state_set_identity(config),
+            )
             (args.output_dir / "score.json").write_text(
                 json.dumps(
                     {
                         "error_scale": exhaustive.score_spec.error_scale,
-                        "manifest_digest": receipt.manifest_digest,
                         "score_count": receipt.score_count,
                         "state_count": receipt.state_count,
                     },
@@ -234,7 +234,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 0
         if args.command == "frontier":
-            _run_real_frontier(args, checkpoint)
+            _run_real_frontier(args)
             print(f"frontier source={args.output_dir / 'frontier_input.json'}")
             return 0
         if real_data is None:
@@ -245,10 +245,21 @@ def main(argv: list[str] | None = None) -> int:
         receipt = write_score_artifacts(
             args.output_dir / "score_artifacts",
             exhaustive,
-            checkpoint_digest=scored_checkpoint.digest,
+            checkpoint_path=scored_checkpoint.path,
+            checkpoint_identity=scored_checkpoint.identity,
+            config_identity=scored_checkpoint.config_identity,
+            catalog_identity=real_data.catalog_identity,
+            partition_identity=real_data.partition_identity,
+            state_set_identity=real_data.state_set_identity,
             resume=args.resume,
         )
-        validated = validate_score_artifacts(args.output_dir / "score_artifacts")
+        validated = validate_score_artifacts(
+            args.output_dir / "score_artifacts",
+            expected_checkpoint_identity=scored_checkpoint.identity,
+            expected_catalog_identity=real_data.catalog_identity,
+            expected_partition_identity=real_data.partition_identity,
+            expected_state_set_identity=real_data.state_set_identity,
+        )
         write_real_sweep_manifest(
             args.output_dir / "sweep_manifest.json",
             data=real_data,
@@ -260,7 +271,6 @@ def main(argv: list[str] | None = None) -> int:
             json.dumps(
                 {
                     "error_scale": exhaustive.score_spec.error_scale,
-                    "manifest_digest": receipt.manifest_digest,
                     "score_count": receipt.score_count,
                     "state_count": receipt.state_count,
                 },
@@ -275,7 +285,7 @@ def main(argv: list[str] | None = None) -> int:
             flush=True,
         )
         if args.command == "all":
-            _run_real_frontier(args, checkpoint)
+            _run_real_frontier(args)
         return 0
     elif checkpoint_info is not None:
         print(f"train step={checkpoint_info.step} checkpoint={checkpoint_info.path}")

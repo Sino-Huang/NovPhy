@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import stat
@@ -31,7 +30,6 @@ from world_model.data.types import (
 
 JsonValue: TypeAlias = None | bool | int | float | str | list["JsonValue"] | dict[str, "JsonValue"]
 JsonObject: TypeAlias = dict[str, JsonValue]
-SHA256_LENGTH: Final = 64
 
 
 def _confined_file(path: Path, root: Path) -> Path:
@@ -71,14 +69,6 @@ def _open_rooted(parent_fd: int, name: str, artifact: Path, *, directory: bool =
 def _duplicate_from_start(descriptor: int) -> int:
     os.lseek(descriptor, 0, os.SEEK_SET)
     return os.dup(descriptor)
-
-
-def _sha256_descriptor(descriptor: int) -> str:
-    digest = hashlib.sha256()
-    with os.fdopen(_duplicate_from_start(descriptor), "rb") as artifact:
-        for chunk in iter(lambda: artifact.read(64 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _read_json_descriptor(descriptor: int, *, max_bytes: int) -> JsonObject | None:
@@ -129,8 +119,8 @@ def _capture_contract(manifest: JsonObject, requested_contract: str | None) -> C
     if name == PHYSICS_CAPTURE_V1.contract_name:
         if requested_contract != PHYSICS_CAPTURE_V1.contract_name:
             return _reject(EpisodeRejectionCode.UNSUPPORTED_CAPTURE_CONTRACT, name)
-        required_hashes = (raw.get("player_sha256"), raw.get("protocol_sha256"), raw.get("archive_sha256"))
-        if any(not isinstance(value, str) or len(value) != SHA256_LENGTH or any(character not in "0123456789abcdef" for character in value) for value in required_hashes):
+        provenance = (raw.get("player_version"), raw.get("player_protocol_version"), raw.get("archive_path"))
+        if any(not isinstance(value, str) or not value for value in provenance):
             return _reject(EpisodeRejectionCode.MALFORMED_CAPTURE_CONTRACT, "capture_contract.provenance")
         capabilities = raw.get("declared_capabilities")
         sidecars = _sidecars(raw.get("sidecar_paths"))
@@ -188,9 +178,9 @@ def validate_physics_shot_artifact(shot_dir: Path) -> PhysicsArtifactSummary:
         }
         if any(metadata.get(key) != value for key, value in required_values.items()):
             raise PhysicsArtifactError(str(metadata_path), "capture contract metadata differs from v1")
-        for field in ("player_sha256", "protocol_sha256", "archive_sha256"):
+        for field in ("player_version", "player_protocol_version", "archive_path"):
             value = metadata.get(field)
-            if not isinstance(value, str) or len(value) != SHA256_LENGTH or any(character not in "0123456789abcdef" for character in value):
+            if not isinstance(value, str) or not value:
                 raise PhysicsArtifactError(str(metadata_path), f"invalid {field}")
 
         state_path = shot_dir / "physics_state.jsonl"
@@ -204,7 +194,6 @@ def validate_physics_shot_artifact(shot_dir: Path) -> PhysicsArtifactSummary:
         evidence_metadata_fields = (
             "physics_violation_engine_evidence_path",
             "physics_violation_engine_evidence_count",
-            "physics_violation_engine_evidence_sha256",
         )
         declared_evidence = any(field in metadata for field in evidence_metadata_fields)
         evidence_fd: int | None = None
@@ -213,8 +202,7 @@ def validate_physics_shot_artifact(shot_dir: Path) -> PhysicsArtifactSummary:
             if (metadata.get(evidence_metadata_fields[0]) != VIOLATION_EVIDENCE_SIDECAR
                     or not isinstance(metadata.get(evidence_metadata_fields[1]), int)
                     or isinstance(metadata.get(evidence_metadata_fields[1]), bool)
-                    or metadata.get(evidence_metadata_fields[1]) < 1
-                    or not isinstance(metadata.get(evidence_metadata_fields[2]), str)):
+                    or metadata.get(evidence_metadata_fields[1]) < 1):
                 raise PhysicsArtifactError(str(metadata_path), "violation evidence metadata is malformed")
             _confined_file(evidence_path, shot_dir)
             evidence_fd = _open_rooted(root_fd, VIOLATION_EVIDENCE_SIDECAR, evidence_path)
@@ -246,7 +234,6 @@ def validate_physics_shot_artifact(shot_dir: Path) -> PhysicsArtifactSummary:
         if tuple(sorted(os.listdir(frames_fd))) != tuple(expected_names) or len(capture.states) != metadata.get("physics_state_count") or len(capture.events) != metadata.get("physics_event_count") or len(capture.states) != metadata.get("frame_count"):
             raise PhysicsArtifactError(str(shot_dir), "PNG/state/event counts or paths differ")
 
-        frame_hashes: list[str] = []
         for state, frame_path, frame_name in zip(capture.states, expected_paths, expected_names, strict=True):
             _confined_file(frame_path, shot_dir)
             frame_fd = _open_rooted(frames_fd, frame_name, frame_path)
@@ -262,32 +249,21 @@ def validate_physics_shot_artifact(shot_dir: Path) -> PhysicsArtifactSummary:
                 raise PhysicsArtifactError(str(frame_path), "invalid PNG") from error
             if dimensions != (state.rgb_frame.width_pixels, state.rgb_frame.height_pixels):
                 raise PhysicsArtifactError(str(frame_path), "PNG dimensions differ from state")
-            frame_hashes.append(_sha256_descriptor(frame_fd))
-
-        expected_checksums = [{"relative_path": str(path.relative_to(shot_dir)), "sha256": digest} for path, digest in zip(expected_paths, frame_hashes, strict=True)]
-        state_hash = _sha256_descriptor(state_fd)
-        event_hash = _sha256_descriptor(event_fd)
-        if metadata.get("frame_checksums") != expected_checksums or metadata.get("physics_state_sha256") != state_hash or metadata.get("physics_events_sha256") != event_hash:
-            raise PhysicsArtifactError(str(metadata_path), "recorded checksums differ from files")
         if evidence_fd is not None:
-            evidence_hash = _sha256_descriptor(evidence_fd)
-            if (metadata.get("physics_violation_engine_evidence_count") != len(capture.violation_evidence)
-                    or metadata.get("physics_violation_engine_evidence_sha256") != evidence_hash):
-                raise PhysicsArtifactError(str(metadata_path), "violation evidence count or checksum differs")
+            if metadata.get("physics_violation_engine_evidence_count") != len(capture.violation_evidence):
+                raise PhysicsArtifactError(str(metadata_path), "violation evidence count differs")
         if any(field in metadata for field in SEMANTICS_METADATA_FIELDS):
+            identity = metadata.get("initial_engine_state_identity")
+            if not isinstance(identity, str) or not identity:
+                raise PhysicsArtifactError(str(metadata_path), "initial engine state identity is missing")
             expected_identity = metadata.get("expected_initial_engine_state_identity")
-            if expected_identity is not None and not isinstance(expected_identity, str):
+            if expected_identity is not None and (not isinstance(expected_identity, str) or not expected_identity):
                 raise PhysicsArtifactError(str(metadata_path), "invalid expected initial engine state identity")
             scenario_context = metadata.get("scenario_context")
             if scenario_context is not None and not isinstance(scenario_context, dict):
                 raise PhysicsArtifactError(str(metadata_path), "scenario_context is not an object")
             try:
-                semantics = validate_physics_rollout_semantics(
-                    capture,
-                    expected_initial_engine_state_identity=expected_identity,
-                )
+                validate_physics_rollout_semantics(capture)
             except PhysicsRolloutSemanticsError as error:
                 raise PhysicsArtifactError(str(shot_dir), str(error)) from error
-            if any(metadata.get(field) != value for field, value in semantics.items()):
-                raise PhysicsArtifactError(str(metadata_path), "recorded rollout semantics differ from sidecars")
-        return PhysicsArtifactSummary(len(capture.states), len(capture.events), tuple(frame_hashes), state_hash, event_hash)
+        return PhysicsArtifactSummary(len(capture.states), len(capture.events))

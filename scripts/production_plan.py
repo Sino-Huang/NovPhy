@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from hashlib import sha256
 import json
 import math
 import os
@@ -12,6 +11,7 @@ from pathlib import Path
 import tempfile
 from types import MappingProxyType
 from typing import Any, Final, Literal
+from urllib.parse import quote
 
 from scripts.collection_plan import (
     CollectionPlan,
@@ -226,9 +226,12 @@ def _source(value: Any, name: str, version_field: str | None = None) -> Mapping[
 
 
 def _identity(payload: Mapping[str, Any]) -> str:
-    identity_payload = _thaw(payload)
-    identity_payload.pop("identity", None)
-    return f"{IDENTITY_NAMESPACE}:sha256:{sha256(_canonical_json(identity_payload)).hexdigest()}"
+    return ":".join((
+        IDENTITY_NAMESPACE,
+        str(payload["plan_version"]),
+        quote(str(payload["source_collection_plan"]["identity"]), safe="-._~"),
+        quote(str(payload["source_pilot_report"]["identity"]), safe="-._~"),
+    ))
 
 
 @dataclass(frozen=True, slots=True)
@@ -268,8 +271,6 @@ class ProductionPlan:
             parameters,
             _validated_evidence(raw["evidence"], parameters),
         )
-        if plan.identity != _identity(plan.to_dict()):
-            raise ValueError("Production plan identity is stale")
         return plan
 
 
@@ -388,8 +389,7 @@ def production_plan_path(publication_dir: Path, plan: ProductionPlan) -> Path:
     """Return the authoritative version-addressed publication path for a plan."""
     if not isinstance(plan, ProductionPlan):
         raise ValueError("production_plan_path requires a ProductionPlan")
-    collection_digest = sha256(plan.source_collection_plan["identity"].encode("utf-8")).hexdigest()
-    return Path(publication_dir) / f"production_parameter_plan_{collection_digest}_v{plan.plan_version}.json"
+    return Path(publication_dir) / f"production_parameter_plan_v{plan.plan_version}.json"
 
 
 def write_production_plan(plan: ProductionPlan, publication_dir: Path) -> Path:

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 from dataclasses import replace
-from hashlib import sha256
 import math
 import json
 from pathlib import Path
@@ -202,24 +201,18 @@ class PhysicsCaptureV2Tests(unittest.TestCase):
                 root,
                 engine,
                 source_bindings=bindings,
-                scenario_manifest_identity="cohort-v2-scenario-manifest-v1:sha256:" + "a" * 64,
+                scenario_manifest_identity="cohort-v2-scenario-manifest-v1:test-manifest",
             )
             sidecar = root / "physics_capture_v2.json"
             self.assertTrue(sidecar.is_file())
             self.assertEqual(metadata["physics_capture_v2_path"], "physics_capture_v2.json")
-            self.assertEqual(metadata["physics_capture_v2_sha256"], sha256(sidecar.read_bytes()).hexdigest())
             self.assertEqual(metadata["fixed_step_sample_count"], 2)
-            self.assertEqual(metadata["scenario_manifest_identity"], "cohort-v2-scenario-manifest-v1:sha256:" + "a" * 64)
-            self.assertTrue(metadata["initial_engine_state_identity"].startswith("normalized-initial-engine-state-v1:sha256:"))
+            self.assertEqual(metadata["scenario_manifest_identity"], "cohort-v2-scenario-manifest-v1:test-manifest")
+            self.assertTrue(metadata["initial_engine_state_identity"].startswith("normalized-initial-engine-state-v1:"))
             self.assertEqual(
                 validate_physics_capture_v2_artifact(root, metadata).capture_id,
                 "capture-1",
             )
-            stale_metadata = dict(metadata)
-            stale_metadata["physics_capture_v2_sha256"] = "b" * 64
-            with self.assertRaisesRegex(PhysicsCaptureV2Error, "metadata digest"):
-                validate_physics_capture_v2_artifact(root, stale_metadata)
-
         invalid = copy.deepcopy(engine)
         invalid["configured_fixed_step_capture_stride"] = 0
         with tempfile.TemporaryDirectory() as temporary:

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import pickle
@@ -19,7 +18,7 @@ from world_model.model import (
     JepaConfig,
     PredictionPair,
     PredictorConfig,
-    digest,
+    identity,
 )
 from world_model.training.grid_artifacts import ALPHA_EXCLUSIONS, APPROVED_DELTAS
 from world_model.training.grid_data import MotionRegime
@@ -70,12 +69,12 @@ class PhaseAConfig:
             raise GridRunError("device must be nonempty")
 
     @property
-    def grid_digest(self) -> str:
-        return digest((GRID_VERSION, APPROVED_DELTAS, ("continuous",), ALPHA_EXCLUSIONS))
+    def grid_identity(self) -> str:
+        return identity((GRID_VERSION, APPROVED_DELTAS, ("continuous",), ALPHA_EXCLUSIONS))
 
     @property
     def identity(self) -> str:
-        return digest(
+        return identity(
             (
                 "phase-a-config-v2",
                 self.seed,
@@ -89,7 +88,7 @@ class PhaseAConfig:
                 self.split,
                 self.device,
                 self.reproducibility.identity_fields,
-                self.grid_digest,
+                self.grid_identity,
             )
         )
 
@@ -113,13 +112,19 @@ class PhaseAConfig:
 @dataclass(frozen=True, slots=True)
 class CheckpointInfo:
     path: Path
-    digest: str
     step: int
-    config_digest: str
-    catalog_digest: str | None = None
+    config_identity: str
+    catalog_identity: str | None = None
     run_identity: str | None = None
     key_counts: tuple[tuple[str, int], ...] = ()
     cuda_rng_restored: bool = False
+
+    @property
+    def identity(self) -> str:
+        run_identity = self.run_identity or identity(
+            ("phase-a-fixture-run-v1", self.config_identity)
+        )
+        return identity(("checkpoint-v1", run_identity, self.step))
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,7 +132,7 @@ class ScoreResult:
     step: int
     count: int
     mean_loss: float
-    config_digest: str
+    config_identity: str
 
 
 def fixture_jepa_config() -> JepaConfig:
@@ -157,38 +162,35 @@ def _atomic_torch_save(payload: dict[str, object], path: Path) -> None:
     os.replace(temporary, path)
 
 
-def checkpoint_digest(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
 def save_checkpoint(
     path: Path,
     trainer: TeacherForcedTrainer,
     *,
-    config_digest: str,
-    grid_digest: str,
-    catalog_digest: str | None = None,
+    config_identity: str,
+    grid_identity: str,
+    catalog_identity: str | None = None,
     run_identity: str | None = None,
     key_counts: tuple[tuple[str, int], ...] = (),
 ) -> CheckpointInfo:
     if trainer.config.grid_schedule is not True:
         raise GridRunError("Phase-A checkpoints require grid_schedule=True")
-    if (catalog_digest is None) != (run_identity is None):
-        raise GridRunError("catalog digest and run identity must be recorded together")
-    for name, value in (("catalog_digest", catalog_digest), ("run_identity", run_identity)):
-        if value is not None and (len(value) != 64 or any(char not in "0123456789abcdef" for char in value)):
-            raise GridRunError(f"{name} must be a lowercase SHA-256 digest")
+    if (catalog_identity is None) != (run_identity is None):
+        raise GridRunError("catalog identity and run identity must be recorded together")
+    for name, value in (("config_identity", config_identity), ("grid_identity", grid_identity),
+                        ("catalog_identity", catalog_identity), ("run_identity", run_identity)):
+        if value is not None and (type(value) is not str or not value.strip()):
+            raise GridRunError(f"{name} must be a nonempty declared identity")
     if any(type(key) is not str or not key or type(count) is not int or count < 0 for key, count in key_counts):
         raise GridRunError("key counts must contain named nonnegative counts")
     payload: dict[str, object] = {
         "version": CHECKPOINT_VERSION,
-        "config_digest": config_digest,
-        "grid_digest": grid_digest,
-        "catalog_digest": catalog_digest,
+        "config_identity": config_identity,
+        "grid_identity": grid_identity,
+        "catalog_identity": catalog_identity,
         "run_identity": run_identity,
         "key_counts": key_counts,
         "step": trainer._step_count,
-        "model_config_digest": trainer.backbone.config.identity,
+        "model_config_identity": trainer.backbone.config.identity,
         "online_encoder": trainer.backbone.encoder.state_dict(),
         "ema_target": trainer.backbone.target.state_dict(),
         "predictor": trainer.backbone.predictor.state_dict(),
@@ -203,17 +205,11 @@ def save_checkpoint(
         ),
     }
     _atomic_torch_save(payload, path)
-    actual_digest = checkpoint_digest(path)
-    digest_path = path.with_name(path.name + ".sha256")
-    temporary = digest_path.with_name(digest_path.name + ".tmp")
-    temporary.write_text(actual_digest + "\n", encoding="ascii")
-    os.replace(temporary, digest_path)
     return CheckpointInfo(
         path,
-        actual_digest,
         trainer._step_count,
-        config_digest,
-        catalog_digest,
+        config_identity,
+        catalog_identity,
         run_identity,
         key_counts,
     )
@@ -223,31 +219,32 @@ def load_checkpoint(
     path: Path,
     trainer: TeacherForcedTrainer,
     *,
-    config_digest: str,
-    grid_digest: str,
-    expected_digest: str | None = None,
-    expected_catalog_digest: str | None = None,
+    config_identity: str,
+    grid_identity: str,
+    expected_catalog_identity: str | None = None,
     expected_run_identity: str | None = None,
 ) -> CheckpointInfo:
     if not path.is_file() or path.name.endswith(".tmp"):
         raise GridRunError("checkpoint is missing or partial")
-    actual_digest = checkpoint_digest(path)
-    digest_path = path.with_name(path.name + ".sha256")
-    if digest_path.is_file() and digest_path.read_text(encoding="ascii").strip() != actual_digest:
-        raise GridRunError("checkpoint digest mismatch")
-    if expected_digest is not None and actual_digest != expected_digest:
-        raise GridRunError("checkpoint digest mismatch")
+    if any(type(value) is not str or not value.strip() for value in (config_identity, grid_identity)):
+        raise GridRunError("checkpoint config and grid identities must be nonempty")
     try:
         with torch.serialization.safe_globals(CHECKPOINT_SAFE_GLOBALS):
             payload = torch.load(path, map_location=trainer.device, weights_only=True)
         if payload.get("version") != CHECKPOINT_VERSION:
             raise GridRunError("unsupported checkpoint version")
-        if payload.get("config_digest") != config_digest or payload.get("grid_digest") != grid_digest:
-            raise GridRunError("checkpoint config or grid digest mismatch")
-        catalog_digest = payload.get("catalog_digest")
+        if payload.get("config_identity") != config_identity or payload.get("grid_identity") != grid_identity:
+            raise GridRunError("checkpoint config or grid identity mismatch")
+        catalog_identity = payload.get("catalog_identity")
         run_identity = payload.get("run_identity")
-        if expected_catalog_digest is not None and catalog_digest != expected_catalog_digest:
-            raise GridRunError("checkpoint catalog digest mismatch")
+        if (catalog_identity is None) != (run_identity is None) or any(
+            type(value) is not str or not value.strip()
+            for value in (catalog_identity, run_identity)
+            if value is not None
+        ):
+            raise GridRunError("checkpoint catalog and run identities are invalid")
+        if expected_catalog_identity is not None and catalog_identity != expected_catalog_identity:
+            raise GridRunError("checkpoint catalog identity mismatch")
         if expected_run_identity is not None and run_identity != expected_run_identity:
             raise GridRunError("checkpoint run identity mismatch")
         key_counts = payload.get("key_counts", ())
@@ -260,7 +257,7 @@ def load_checkpoint(
             for item in key_counts
         ):
             raise GridRunError("checkpoint key counts are invalid")
-        if payload.get("model_config_digest") != trainer.backbone.config.identity:
+        if payload.get("model_config_identity") != trainer.backbone.config.identity:
             raise GridRunError("checkpoint model config mismatch")
         trainer.backbone.encoder.load_state_dict(payload["online_encoder"])
         trainer.backbone.target.load_state_dict(payload["ema_target"])
@@ -288,10 +285,9 @@ def load_checkpoint(
         raise GridRunError("checkpoint payload is invalid") from error
     return CheckpointInfo(
         path,
-        actual_digest,
         trainer._step_count,
-        config_digest,
-        catalog_digest,
+        config_identity,
+        catalog_identity,
         run_identity,
         key_counts,
         cuda_rng_restored,
@@ -328,7 +324,12 @@ def score_checkpoint(
 ) -> ScoreResult:
     score_config = replace(phase_config.training_config(device="cpu"), grid_schedule=False)
     trainer = TeacherForcedTrainer(JepaBackbone(model_config), score_config)
-    loaded = load_checkpoint(checkpoint, trainer, config_digest=phase_config.identity, grid_digest=phase_config.grid_digest)
+    loaded = load_checkpoint(
+        checkpoint,
+        trainer,
+        config_identity=phase_config.identity,
+        grid_identity=phase_config.grid_identity,
+    )
     trainer.backbone.eval()
     total = 0.0
     count = 0
@@ -351,10 +352,10 @@ def score_checkpoint(
 def write_sweep_manifest(path: Path, *, checkpoint: CheckpointInfo, phase_config: PhaseAConfig, score: ScoreResult) -> None:
     payload = {
         "schema_version": "pair_sweep_manifest_v1",
-        "checkpoint_digest": checkpoint.digest,
+        "checkpoint_path": str(checkpoint.path),
         "checkpoint_step": checkpoint.step,
-        "config_digest": phase_config.identity,
-        "grid_digest": phase_config.grid_digest,
+        "config_identity": phase_config.identity,
+        "grid_identity": phase_config.grid_identity,
         "reproducibility": phase_config.reproducibility.canonical,
         "evaluated_alpha": "continuous",
         "excluded_abstractions": list(ALPHA_EXCLUSIONS),

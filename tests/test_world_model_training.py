@@ -55,7 +55,7 @@ def make_manifest(**overrides: object) -> RunManifest:
         "device_name": "NVIDIA GeForce RTX 5090",
         "dataset_root": "/data/novphy_rollouts_dataset_20260708_171531",
         "split": "dev",
-        "catalog_digest": "a" * 64,
+        "catalog_identity": "episode-catalog-v1:dev:legacy_rgb_v1:1:collector_v1",
         "accepted_episode_count": 463,
         "rejected_episode_count": 1137,
         "window_count": 8,
@@ -69,8 +69,8 @@ def make_manifest(**overrides: object) -> RunManifest:
         "warmup_steps": 100,
         "grad_clip": 1.0,
         "ema_base_momentum": 0.99,
-        "model_config_digest": "b" * 64,
-        "sampled_index_digest": "c" * 64,
+        "model_config_identity": "jepa-config-v1:fixture",
+        "sampled_index_identity": "sampled-window-indices-v1:fixture",
         "window_selection": "motion",
         "candidate_count": 256,
         "symbolic_loss_active": False,
@@ -151,26 +151,26 @@ class RunManifestTests(unittest.TestCase):
         encoded = json.dumps(payload, allow_nan=False, sort_keys=True)
         self.assertEqual(json.loads(encoded), dict(payload))
 
-    def test_the_payload_carries_the_digest(self) -> None:
+    def test_the_payload_carries_the_identity(self) -> None:
         manifest = make_manifest()
-        self.assertEqual(manifest.to_dict()["digest"], manifest.digest)
+        self.assertEqual(manifest.to_dict()["identity"], manifest.identity)
 
-    def test_identical_configurations_share_a_digest(self) -> None:
-        self.assertEqual(make_manifest().digest, make_manifest().digest)
+    def test_identical_configurations_share_an_identity(self) -> None:
+        self.assertEqual(make_manifest().identity, make_manifest().identity)
 
-    def test_the_digest_excludes_wall_clock_timing(self) -> None:
-        # Two seeded runs must be comparable by digest even though they never
+    def test_the_identity_excludes_wall_clock_timing(self) -> None:
+        # Two seeded runs must be comparable by identity even though they never
         # take the same amount of time.
         baseline = make_manifest()
         slower = make_manifest(wall_clock_seconds=305.75, started_at_unix=1786099999.0)
-        self.assertEqual(baseline.digest, slower.digest)
+        self.assertEqual(baseline.identity, slower.identity)
         self.assertNotEqual(baseline.to_dict()["wall_clock_seconds"],
                             slower.to_dict()["wall_clock_seconds"])
 
-    def test_the_digest_excludes_the_measured_metrics(self) -> None:
+    def test_the_identity_excludes_the_measured_metrics(self) -> None:
         # CUDA float reductions are not bitwise reproducible across processes,
         # so two runs of the same experiment differ in the ~5th significant
-        # digit.  A digest over outcomes could never match, which would defeat
+        # digit.  An identity over outcomes could never match, which would defeat
         # its purpose.  Metrics are compared numerically instead.
         baseline = make_manifest()
         jittered = make_manifest(
@@ -179,30 +179,34 @@ class RunManifestTests(unittest.TestCase):
             relative_spread=0.350002,
             effective_rank=6.200003,
         )
-        self.assertEqual(baseline.digest, jittered.digest)
+        self.assertEqual(baseline.identity, jittered.identity)
         self.assertNotEqual(
             baseline.to_dict()["final_loss"], jittered.to_dict()["final_loss"]
         )
 
-    def test_the_digest_excludes_the_timestamped_run_id(self) -> None:
+    def test_the_identity_excludes_the_timestamped_run_id(self) -> None:
         self.assertEqual(
-            make_manifest().digest, make_manifest(run_id="20260807T999999Z-x").digest
+            make_manifest().identity, make_manifest(run_id="20260807T999999Z-x").identity
         )
 
-    def test_the_digest_discriminates_the_seed(self) -> None:
-        self.assertNotEqual(make_manifest().digest, make_manifest(seed=1).digest)
+    def test_the_identity_discriminates_the_seed(self) -> None:
+        self.assertNotEqual(make_manifest().identity, make_manifest(seed=1).identity)
 
-    def test_the_digest_discriminates_the_catalog(self) -> None:
-        self.assertNotEqual(make_manifest().digest, make_manifest(catalog_digest="d" * 64).digest)
-
-    def test_the_digest_discriminates_the_model_configuration(self) -> None:
+    def test_the_identity_discriminates_the_catalog(self) -> None:
         self.assertNotEqual(
-            make_manifest().digest, make_manifest(model_config_digest="e" * 64).digest
+            make_manifest().identity,
+            make_manifest(catalog_identity="episode-catalog-v1:train:legacy_rgb_v1:1:collector_v1").identity,
         )
 
-    def test_the_manifest_rejects_an_empty_catalog_digest(self) -> None:
+    def test_the_identity_discriminates_the_model_configuration(self) -> None:
+        self.assertNotEqual(
+            make_manifest().identity,
+            make_manifest(model_config_identity="jepa-config-v1:changed").identity,
+        )
+
+    def test_the_manifest_rejects_an_empty_catalog_identity(self) -> None:
         with self.assertRaises(ContractValueError):
-            make_manifest(catalog_digest="  ")
+            make_manifest(catalog_identity="  ")
 
     def test_the_manifest_rejects_a_nonpositive_window_count(self) -> None:
         with self.assertRaises(ContractValueError):
@@ -495,7 +499,7 @@ class WindowLoaderIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             catalog = make_fixture_catalog(Path(temporary), episode_count=2, frame_count=5)
             self.assertGreater(len(catalog.episodes), 0)
-            loader, window_count, index_digest = build_window_loader(
+            loader, window_count, index_identity = build_window_loader(
                 catalog,
                 encoder_config=jepa_config.encoder,
                 delta=1,
@@ -504,7 +508,7 @@ class WindowLoaderIntegrationTests(unittest.TestCase):
                 draw_count=4,
             )
             self.assertGreater(window_count, 0)
-            self.assertEqual(len(index_digest), 64)
+            self.assertTrue(index_identity.startswith("sampled-window-indices-v1:"))
             batch = next(iter(loader))
             self.assertEqual(
                 batch["context_image"].shape,
@@ -681,10 +685,10 @@ class WindowLoaderIntegrationTests(unittest.TestCase):
 
     def test_the_manifest_records_the_window_selection_mode(self) -> None:
         # Two runs that select their windows differently are different
-        # experiments, so the digest must separate them.
+        # experiments, so the identity must separate them.
         uniform = make_manifest(window_selection="uniform")
         motion = make_manifest(window_selection="motion")
-        self.assertNotEqual(uniform.digest, motion.digest)
+        self.assertNotEqual(uniform.identity, motion.identity)
         self.assertEqual(motion.to_dict()["window_selection"], "motion")
 
     def test_an_overfit_run_trains_against_real_cataloged_windows(self) -> None:
@@ -703,15 +707,15 @@ class WindowLoaderIntegrationTests(unittest.TestCase):
             manifest_path = report.run_dir / "manifest.json"
             self.assertTrue(manifest_path.is_file())
             payload = json.loads(manifest_path.read_text(encoding="utf-8"))
-            self.assertEqual(payload["digest"], report.manifest.digest)
+            self.assertEqual(payload["identity"], report.manifest.identity)
             self.assertIs(payload["symbolic_loss_active"], False)
             self.assertIn(payload["acceptance"], ("pass", "fail"))
 
-    def test_two_seeded_overfit_runs_share_a_manifest_digest(self) -> None:
+    def test_two_seeded_overfit_runs_share_a_manifest_identity(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "cohort"
             catalog = make_fixture_catalog(root, episode_count=6, frame_count=6)
-            digests = []
+            identities = []
             for index in range(2):
                 report = run_overfit(
                     catalog,
@@ -720,8 +724,8 @@ class WindowLoaderIntegrationTests(unittest.TestCase):
                     window_count=4,
                     output_dir=Path(temporary) / f"runs{index}",
                 )
-                digests.append(report.manifest.digest)
-            self.assertEqual(digests[0], digests[1])
+                identities.append(report.manifest.identity)
+            self.assertEqual(identities[0], identities[1])
 
 
 if __name__ == "__main__":

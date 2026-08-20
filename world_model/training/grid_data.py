@@ -1,9 +1,9 @@
 """Deterministic episode partitions, scoring states, and motion diagnostics."""
 from __future__ import annotations
 
-import hashlib
 import json
 import math
+import zlib
 from dataclasses import dataclass
 from enum import StrEnum, unique
 from pathlib import Path
@@ -15,8 +15,9 @@ import numpy as np
 from PIL import Image, UnidentifiedImageError
 
 from world_model.data.catalog import EpisodeCatalog
-from world_model.data.curriculum import catalog_digest as compute_catalog_digest
+from world_model.data.curriculum import catalog_identity as declared_catalog_identity
 from world_model.data.types import ContractValueError, EpisodeRecord
+from world_model.model import identity
 
 
 DIAGNOSTIC_IMAGE_SIZE: Final[tuple[int, int]] = (240, 320)
@@ -63,7 +64,7 @@ class ScoringTarget:
 class ScoringState:
     """Canonical nonterminal state and its three continuous scoring targets."""
 
-    catalog_digest: str
+    catalog_identity: str
     split: str
     episode_relative_path: str
     shot_relative_path: str
@@ -72,8 +73,7 @@ class ScoringState:
     targets: tuple[ScoringTarget, ...]
 
     def __post_init__(self) -> None:
-        if not _is_digest(self.catalog_digest):
-            raise GridDataContractError("catalog_digest", "must be a lowercase SHA-256 hex digest")
+        _require_identity(self.catalog_identity, "catalog_identity")
         if not self.split or not self.episode_relative_path or not self.shot_relative_path:
             raise GridDataContractError("state identity", "paths and split must be nonempty")
         if type(self.shot_frame_count) is not int or self.shot_frame_count < 2:
@@ -94,7 +94,7 @@ class ScoringState:
     def key(self) -> tuple[str, str, str, str, int]:
         """Canonical state key used by score artifacts."""
         return (
-            self.catalog_digest,
+            self.catalog_identity,
             self.split,
             self.episode_relative_path,
             self.shot_relative_path,
@@ -122,11 +122,24 @@ class ScoringState:
 class EpisodePartitions:
     """Exact, deterministic episode membership for the three controller splits."""
 
-    catalog_digest: str
+    catalog_identity: str
     seed: int | str
     controller_train: tuple[EpisodeRecord, ...]
     calibration: tuple[EpisodeRecord, ...]
     evaluation: tuple[EpisodeRecord, ...]
+
+    @property
+    def identity(self) -> str:
+        return identity(
+            (
+                PARTITION_VERSION,
+                self.catalog_identity,
+                self.seed,
+                ("controller-train", 0.0, 0.8),
+                ("calibration", 0.8, 0.9),
+                ("evaluation", 0.9, 1.0),
+            )
+        )
 
     @property
     def membership(self) -> dict[str, tuple[str, ...]]:
@@ -182,60 +195,65 @@ class MotionCalibration:
         }
 
 
-def _is_digest(value: str) -> bool:
-    return type(value) is str and len(value) == 64 and all(char in "0123456789abcdef" for char in value)
+def _require_identity(value: str, field: str) -> None:
+    if type(value) is not str or not value.strip():
+        raise GridDataContractError(field, "must be a nonempty declared identity")
 
 
-def canonical_partition_payload(seed: int | str, catalog_digest: str, episode_relative_path: str) -> bytes:
+def canonical_partition_payload(seed: int | str, catalog_identity: str, episode_relative_path: str) -> bytes:
     """Encode the versioned partition tuple with canonical JSON bytes."""
-    if not _is_digest(catalog_digest):
-        raise GridDataContractError("catalog_digest", "must be a lowercase SHA-256 hex digest")
+    _require_identity(catalog_identity, "catalog_identity")
     if type(seed) not in (int, str):
         raise GridDataContractError("seed", "must be an integer or string")
     if type(episode_relative_path) is not str or not episode_relative_path:
         raise GridDataContractError("episode_relative_path", "must be nonempty")
     return json.dumps(
-        (PARTITION_VERSION, seed, catalog_digest, episode_relative_path),
+        (PARTITION_VERSION, seed, catalog_identity, episode_relative_path),
         ensure_ascii=True,
         separators=(",", ":"),
     ).encode("utf-8")
 
 
-def partition_digest(seed: int | str, catalog_digest: str, episode_relative_path: str) -> str:
-    return hashlib.sha256(canonical_partition_payload(seed, catalog_digest, episode_relative_path)).hexdigest()
+def partition_fraction(seed: int | str, catalog_identity: str, episode_relative_path: str) -> float:
+    payload = canonical_partition_payload(seed, catalog_identity, episode_relative_path)
+    # deterministic non-cryptographic derivation, not an integrity check
+    return zlib.crc32(payload) / 2**32
 
 
 def _resolve_episodes(
     catalog_or_episodes: EpisodeCatalog | tuple[EpisodeRecord, ...],
-    supplied_digest: str | None,
+    supplied_identity: str | None,
     supplied_split: str | None,
 ) -> tuple[tuple[EpisodeRecord, ...], str, str]:
     if isinstance(catalog_or_episodes, EpisodeCatalog):
-        actual_digest = compute_catalog_digest(catalog_or_episodes)
-        if supplied_digest is not None and supplied_digest != actual_digest:
-            raise GridDataContractError("catalog_digest", "does not match the catalog snapshot")
+        declared_identity = declared_catalog_identity(catalog_or_episodes)
         split = catalog_or_episodes.split
+        if supplied_identity is not None and supplied_identity != declared_identity:
+            raise GridDataContractError(
+                "catalog_identity", "does not match the catalog's declared identity"
+            )
         if supplied_split is not None and supplied_split != split:
             raise GridDataContractError("split", "does not match the catalog snapshot")
-        return catalog_or_episodes.episodes, actual_digest, split
+        return catalog_or_episodes.episodes, declared_identity, split
     if type(catalog_or_episodes) is not tuple or not catalog_or_episodes:
         raise GridDataContractError("episodes", "must be a nonempty immutable tuple")
-    if supplied_digest is None or not _is_digest(supplied_digest):
-        raise GridDataContractError("catalog_digest", "is required for episode tuples")
+    if supplied_identity is None:
+        raise GridDataContractError("catalog_identity", "is required for episode tuples")
+    _require_identity(supplied_identity, "catalog_identity")
     split = supplied_split or str(catalog_or_episodes[0].split)
     if any(str(episode.split) != split for episode in catalog_or_episodes):
         raise GridDataContractError("split", "episodes must belong to one split")
-    return catalog_or_episodes, supplied_digest, split
+    return catalog_or_episodes, supplied_identity, split
 
 
 def partition_episodes(
     catalog_or_episodes: EpisodeCatalog | tuple[EpisodeRecord, ...],
     *,
-    catalog_digest: str | None = None,
+    catalog_identity: str | None = None,
     seed: int | str,
 ) -> EpisodePartitions:
-    """Partition dev episodes using hash ranges 80/10/10 and stable ordering."""
-    episodes, digest_value, split = _resolve_episodes(catalog_or_episodes, catalog_digest, "dev")
+    """Partition dev episodes using deterministic 80/10/10 ranges and stable ordering."""
+    episodes, identity_value, split = _resolve_episodes(catalog_or_episodes, catalog_identity, "dev")
     if split != "dev":
         raise GridDataContractError("split", "only dev episodes can be partitioned")
     buckets: dict[str, list[EpisodeRecord]] = {
@@ -244,13 +262,13 @@ def partition_episodes(
         "evaluation": [],
     }
     for episode in episodes:
-        fraction = int(partition_digest(seed, digest_value, episode.relative_path), 16) / (1 << 256)
+        fraction = partition_fraction(seed, identity_value, episode.relative_path)
         bucket = "controller-train" if fraction < 0.8 else "calibration" if fraction < 0.9 else "evaluation"
         buckets[bucket].append(episode)
     for values in buckets.values():
         values.sort(key=lambda episode: episode.relative_path)
     return EpisodePartitions(
-        catalog_digest=digest_value,
+        catalog_identity=identity_value,
         seed=seed,
         controller_train=tuple(buckets["controller-train"]),
         calibration=tuple(buckets["calibration"]),
@@ -261,11 +279,11 @@ def partition_episodes(
 def enumerate_scoring_states(
     catalog_or_episodes: EpisodeCatalog | tuple[EpisodeRecord, ...],
     *,
-    catalog_digest: str | None = None,
+    catalog_identity: str | None = None,
     split: str | None = None,
 ) -> tuple[ScoringState, ...]:
     """Enumerate every nonterminal state with all three scoring-only targets."""
-    episodes, digest_value, split_value = _resolve_episodes(catalog_or_episodes, catalog_digest, split)
+    episodes, identity_value, split_value = _resolve_episodes(catalog_or_episodes, catalog_identity, split)
     states: list[ScoringState] = []
     for episode in episodes:
         for shot in episode.shots:
@@ -284,7 +302,7 @@ def enumerate_scoring_states(
                 )
                 states.append(
                     ScoringState(
-                        catalog_digest=digest_value,
+                        catalog_identity=identity_value,
                         split=split_value,
                         episode_relative_path=episode.relative_path,
                         shot_relative_path=shot.relative_path,
@@ -298,8 +316,10 @@ def enumerate_scoring_states(
 
 def diagnostic_motion_for_state(catalog: EpisodeCatalog, state: ScoringState) -> float:
     """Read one state and its reference-delta target from a catalog snapshot."""
-    actual_digest = compute_catalog_digest(catalog)
-    if state.catalog_digest != actual_digest or state.split != catalog.split:
+    if (
+        state.catalog_identity != declared_catalog_identity(catalog)
+        or state.split != catalog.split
+    ):
         raise GridDataContractError("state", "does not match the catalog snapshot")
     if state.targets[-1].requested_delta != REFERENCE_DELTA:
         raise GridDataContractError("state targets", "reference delta 15 is required")
@@ -411,7 +431,7 @@ __all__ = [
     "build_state_index",
     "state_index",
     "partition_dev_episodes",
-    "partition_digest",
+    "partition_fraction",
     "partition_episodes",
     "motion_score",
 ]

@@ -56,7 +56,7 @@ class ReproducibilityTests(unittest.TestCase):
             strict,
             reproducibility=replace(strict.reproducibility, cudnn_allow_tf32=True),
         )
-        checkpoint = CheckpointInfo(Path("checkpoint.pt"), "a" * 64, 1, strict.identity)
+        checkpoint = CheckpointInfo(Path("checkpoint.pt"), 1, strict.identity)
         score = ScoreResult(1, 2, 0.25, strict.identity)
 
         # When
@@ -131,8 +131,8 @@ class ReproducibilityTests(unittest.TestCase):
             save_checkpoint(
                 checkpoint,
                 trainer,
-                config_digest=phase.identity,
-                grid_digest=phase.grid_digest,
+                config_identity=phase.identity,
+                grid_identity=phase.grid_identity,
             )
             torch.cuda.manual_seed(phase.seed + 1)
             self.assertFalse(torch.equal(torch.cuda.get_rng_state(trainer.device), expected))
@@ -143,8 +143,8 @@ class ReproducibilityTests(unittest.TestCase):
             loaded = load_checkpoint(
                 checkpoint,
                 restored,
-                config_digest=phase.identity,
-                grid_digest=phase.grid_digest,
+                config_identity=phase.identity,
+                grid_identity=phase.grid_identity,
             )
 
         # Then
@@ -166,8 +166,8 @@ class ReproducibilityTests(unittest.TestCase):
             save_checkpoint(
                 checkpoint,
                 cpu_trainer,
-                config_digest=cpu_phase.identity,
-                grid_digest=cpu_phase.grid_digest,
+                config_identity=cpu_phase.identity,
+                grid_identity=cpu_phase.grid_identity,
             )
             cuda_trainer = TeacherForcedTrainer(
                 JepaBackbone(fixture_jepa_config()),
@@ -177,8 +177,8 @@ class ReproducibilityTests(unittest.TestCase):
                 load_checkpoint(
                     checkpoint,
                     cuda_trainer,
-                    config_digest=cpu_phase.identity,
-                    grid_digest=cpu_phase.grid_digest,
+                    config_identity=cpu_phase.identity,
+                    grid_identity=cpu_phase.grid_identity,
                 )
 
 

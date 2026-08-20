@@ -67,7 +67,6 @@ from world_model.training.grid_run import (
     GridRunError,
     PhaseAConfig,
     ScoreResult,
-    checkpoint_digest,
     fixture_batch,
     fixture_jepa_config,
     load_checkpoint,
@@ -83,17 +82,21 @@ from world_model.training.scoring import (
     ScoreArtifactReceipt,
     ScoredState,
     ScoringExample,
+    score_state_set_identity,
     validate_score_artifacts,
     write_score_artifacts,
 )
 from world_model.training.scoring_torch import (
+    FIXTURE_CATALOG_IDENTITY,
     TorchCatalogPredictor,
+    fixture_partition_identity,
     fixture_scoring_examples,
+    fixture_state_set_identity,
     score_fixture_checkpoint,
     score_real_checkpoint,
 )
 from world_model.training.real_data import RealPhaseData, write_frontier_input, write_real_sweep_manifest
-from world_model.training.frontier import FrontierError, analyze_frontier, pareto_frontier, source_digest
+from world_model.training.frontier import FrontierError, analyze_frontier, pareto_frontier
 
 __all__ = [
     "CollapseReport",
@@ -153,7 +156,6 @@ __all__ = [
     "GridRunError",
     "PhaseAConfig",
     "ScoreResult",
-    "checkpoint_digest",
     "fixture_batch",
     "fixture_jepa_config",
     "load_checkpoint",
@@ -167,7 +169,11 @@ __all__ = [
     "ScoreArtifactReceipt",
     "ScoredState",
     "ScoringExample",
+    "score_state_set_identity",
+    "FIXTURE_CATALOG_IDENTITY",
+    "fixture_partition_identity",
     "fixture_scoring_examples",
+    "fixture_state_set_identity",
     "score_fixture_checkpoint",
     "score_real_checkpoint",
     "TorchCatalogPredictor",
@@ -179,5 +185,4 @@ __all__ = [
     "FrontierError",
     "analyze_frontier",
     "pareto_frontier",
-    "source_digest",
 ]

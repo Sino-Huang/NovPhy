@@ -143,6 +143,11 @@ class CohortPartitionTests(unittest.TestCase):
 
         self.assertEqual(first, second)
         self.assertEqual(first.identity, second.identity)
+        self.assertTrue(
+            first.identity.startswith(
+                "cohort-partition-manifest-v1:1:template_held_out:"
+            )
+        )
         self.assertEqual(first.to_dict(), second.to_dict())
         with self.assertRaises(TypeError):
             first.entries[0].scenario_manifest_projection["scenario_lineage_identity"] = "changed"
@@ -159,9 +164,9 @@ class CohortPartitionTests(unittest.TestCase):
             self.assertEqual(path.read_bytes(), original_bytes)
 
             payload = json.loads(path.read_text(encoding="utf-8"))
-            payload["partition_version"] = 2
+            payload["identity"] = ""
             path.write_text(json.dumps(payload), encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "identity is stale"):
+            with self.assertRaisesRegex(ValueError, "identity must be a nonempty string"):
                 load_cohort_partition_manifest(path)
 
     def test_exact_keys_are_fail_closed_at_each_public_boundary(self) -> None:
@@ -254,15 +259,26 @@ class CohortPartitionTests(unittest.TestCase):
                 provenance_records=[],
             )
 
-        same_level_xml = XML.replace(b'width="2"', b'width="3"')
+        first_level = fixture_projection(seed=1)
+        second_lineage_same_level = fixture_projection(seed=2)
+        second_lineage_same_level["level_instance_identity"] = first_level[
+            "level_instance_identity"
+        ]
+        second_lineage_same_level["scenario_manifest"]["level_instance"][
+            "identity"
+        ] = first_level["level_instance_identity"]
         with self.assertRaisesRegex(ValueError, "level instance must not map"):
             create_cohort_partition_manifest(
                 partition_version=1,
                 split_regime="instance_held_out",
                 held_out_roles=[],
                 entries=[
-                    entry(fixture_projection(seed=1), "partition-a", "training"),
-                    entry(fixture_projection(seed=1, xml=same_level_xml), "partition-b", "final_evaluation"),
+                    entry(first_level, "partition-a", "training"),
+                    entry(
+                        second_lineage_same_level,
+                        "partition-b",
+                        "final_evaluation",
+                    ),
                 ],
                 provenance_records=[],
             )

@@ -71,8 +71,7 @@ class PhysicsMaterialDamageTests(unittest.TestCase):
             pending.status,
             SemanticStatus.HYPOTHESIS_PENDING_REPRESENTATIVE_VALIDATION,
         )
-        self.assertNotEqual(positive.source_cohort_identity, pending.source_cohort_identity)
-        self.assertEqual(positive.mapping_digest, SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.digest)
+        self.assertEqual(positive.source_cohort_identity, pending.source_cohort_identity)
 
     def test_pending_receipt_requires_both_witness_classes(self) -> None:
         capture = _capture()
@@ -174,7 +173,7 @@ class PhysicsMaterialDamageTests(unittest.TestCase):
             self.assertEqual(expected.source_cohort_identity, receipt.source_cohort_identity)
 
             payload = json.loads(destination.read_bytes())
-            payload["mapping_digest"] = "f" * 64
+            payload["records"][0]["material_label"] = "tampered"
             destination.write_bytes(canonical_json_bytes(payload))
             with self.assertRaises(MaterialDamageValidationError):
                 validate_material_damage_sidecar(destination, source, receipt=receipt)

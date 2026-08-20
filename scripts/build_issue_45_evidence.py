@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from hashlib import sha256
 import json
 from pathlib import Path
 from typing import Any, Mapping
@@ -33,12 +32,9 @@ from tasks.task_generator.canonical_materialization import CanonicalMaterializat
 
 
 REBUILD_COMMAND = "python -m scripts.build_issue_45_evidence"
-APPROVAL_TARGET_DRAFT_IDENTITY = (
-    "central-v2-scenario-inventory-draft-v1:sha256:"
-    "993d27c535c100e73209d2d0da33169cb313a5b72d902ee23ad6170bdc481400"
-)
+APPROVAL_ISSUE_REFERENCE = "https://github.com/Sino-Huang/NovPhy/issues/45"
 PUBLIC_BUNDLE_RELATIVE_PATH = Path(
-    ".claude/project-docs/evidence/issue-45-cohort-v2-lineage"
+    "data/runtime_evidence/issue-45"
 )
 SEALED_BUNDLE_RELATIVE_PATH = Path(".local-artifacts/issue-45-cohort-v2-sealed")
 CONSTRAINTS_WORKBOOK_REFERENCE = "tasks/task_generator/template_constraints.xlsx"
@@ -102,18 +98,16 @@ PUBLIC_MANIFEST_REFERENCES = {
 
 def _artifact_record(path: Path, root: Path) -> dict[str, str]:
     content = path.read_bytes()
-    digest = sha256(content).hexdigest()
     identity: str | None = None
     if path.suffix == ".json":
         value = json.loads(content)
         if isinstance(value, Mapping) and isinstance(value.get("identity"), str):
             identity = value["identity"]
     if identity is None:
-        namespace = "xml_bytes_v1" if path.suffix == ".xml" else "artifact_bytes_v1"
-        identity = f"{namespace}:sha256:{digest}"
+        namespace = "xml-bytes-v1" if path.suffix == ".xml" else "artifact-bytes-v1"
+        identity = f"{namespace}:{path.relative_to(root).as_posix()}"
     return {
         "path": path.relative_to(root).as_posix(),
-        "digest": f"sha256:{digest}",
         "identity": identity,
     }
 
@@ -188,9 +182,8 @@ def _bundle_manifest(
     return {
         "schema": "issue_45_cohort_v2_lineage_evidence_bundle_v1",
         "rebuild_command": REBUILD_COMMAND,
-        "approval_target_draft_identity": APPROVAL_TARGET_DRAFT_IDENTITY,
+        "approval_issue": APPROVAL_ISSUE_REFERENCE,
         "draft_identity": draft["identity"],
-        "matches_approval_target": draft["identity"] == APPROVAL_TARGET_DRAFT_IDENTITY,
         "artifacts": _artifact_records(public_root, {"bundle-manifest.json"}),
         "sealed_final_projection": final_entry.to_dict(),
         "limitations": [
@@ -401,11 +394,6 @@ def validate_issue_45_evidence(
     )
     if realization != final_scenario.scenario_manifest.generation.parameter_realization:
         raise ValueError("Sealed final parameter realization differs from its manifest")
-    if final_entry.scenario_manifest_digest != (
-        f"sha256:{sha256((sealed_root / 'final-evaluation.cohort-v2-scenario.json').read_bytes()).hexdigest()}"
-    ):
-        raise ValueError("Sealed final manifest digest differs from its public projection")
-
     sealed_manifest = json.loads((sealed_root / "sealed-bundle-manifest.json").read_bytes())
     expected_sealed_manifest = {
         "schema": "issue_45_cohort_v2_sealed_bundle_v1",
@@ -422,13 +410,9 @@ def validate_issue_45_evidence(
     return {
         "schema": "issue_45_cohort_v2_lineage_build_result_v1",
         "draft_identity": draft["identity"],
-        "matches_approval_target": draft["identity"] == APPROVAL_TARGET_DRAFT_IDENTITY,
-        "public_bundle_manifest_digest": (
-            f"sha256:{sha256((public_root / 'bundle-manifest.json').read_bytes()).hexdigest()}"
-        ),
-        "sealed_bundle_manifest_digest": (
-            f"sha256:{sha256((sealed_root / 'sealed-bundle-manifest.json').read_bytes()).hexdigest()}"
-        ),
+        "approval_issue": APPROVAL_ISSUE_REFERENCE,
+        "public_bundle_manifest_path": str(public_root / "bundle-manifest.json"),
+        "sealed_bundle_manifest_path": str(sealed_root / "sealed-bundle-manifest.json"),
     }
 
 

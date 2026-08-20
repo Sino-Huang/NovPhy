@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import json
+import zlib
 from collections import Counter
 from dataclasses import dataclass
-from hashlib import sha256
 from collections.abc import Mapping
-from typing import Final, Literal, TypeAlias, TypedDict
+from typing import Final, Literal, TypeAlias, TypedDict, cast
 
 from world_model.data.curriculum import (
     CurriculumCandidate,
@@ -45,11 +45,15 @@ def _declared_pairs(name: str) -> tuple[tuple[int, int], ...]:
     raise ContractValueError("preset name", f"unsupported temporal preset {name!r}")
 
 
-def _digest(value: JsonValue) -> str:
-    encoded = json.dumps(
-        value, ensure_ascii=True, allow_nan=False, separators=(",", ":")
-    ).encode("utf-8")
-    return sha256(encoded).hexdigest()
+def _identity(namespace: str, *fields: JsonValue) -> str:
+    declared = json.dumps(fields, ensure_ascii=True, allow_nan=False, separators=(",", ":"))
+    return f"{namespace}:{declared}"
+
+
+def _derivation(namespace: str, *fields: object) -> int:
+    payload = f"{namespace}:{json.dumps(fields, ensure_ascii=True, separators=(',', ':'))}"
+    # deterministic non-cryptographic derivation, not an integrity check
+    return zlib.crc32(payload.encode("utf-8"))
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,7 +78,7 @@ class TemporalAblationPreset:
     def identity(self) -> str:
         pairs = tuple((choice.prediction_steps, choice.stride_frames)
                       for choice in self.temporal_choices)
-        return _digest(("temporal-ablation-preset-v1", self.name, pairs))
+        return _identity("temporal-ablation-preset-v1", self.name, pairs)
 
 
 @dataclass(frozen=True, slots=True)
@@ -90,8 +94,8 @@ class WindowCostRule:
 
     @property
     def identity(self) -> str:
-        return _digest(("window-cost-rule-v1", self.name, self.base_window_cost,
-                        self.predicted_frame_cost))
+        return _identity("window-cost-rule-v1", self.name, self.base_window_cost,
+                         self.predicted_frame_cost)
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,12 +118,12 @@ class AblationRunConfig:
 class TemporalAblationManifestPayload(TypedDict):
     preset_name: str
     preset_identity: str
-    catalog_digest: str
+    catalog_identity: str
     schedule_version: str
-    schedule_digest: str
+    schedule_identity: str
     active_stage_name: str
     sampling_seed: int
-    sampled_provenance_digest: str
+    sampled_provenance: list[list[str | None]]
     draw_count: int
     cost_rule_identity: str
     prediction_steps_distribution: Mapping[str, int]
@@ -131,14 +135,14 @@ class TemporalAblationManifestPayload(TypedDict):
     total_predicted_frame_cost: int
     temporal_controller_cost: int
     computed_budget_total: int
-    digest: str
 
 
 @dataclass(frozen=True, slots=True)
 class TemporalAblationManifest:
     preset_name: PresetName; preset_identity: str
-    catalog_digest: str; schedule_version: str; schedule_digest: str
-    active_stage_name: str; sampling_seed: int; sampled_provenance_digest: str
+    catalog_identity: str; schedule_version: str; schedule_identity: str
+    active_stage_name: str; sampling_seed: int
+    sampled_provenance: tuple[tuple[str, str | None], ...]
     draw_count: int; cost_rule_identity: str
     prediction_steps_distribution: Distribution; stride_frames_distribution: Distribution
     horizon_frames_distribution: Distribution; total_prediction_steps: int
@@ -146,25 +150,13 @@ class TemporalAblationManifest:
     total_predicted_frame_cost: int; temporal_controller_cost: int
     computed_budget_total: int
 
-    @property
-    def digest(self) -> str:
-        return _digest(("temporal-ablation-manifest-v1", self.preset_name,
-                        self.preset_identity, self.catalog_digest, self.schedule_version,
-                        self.schedule_digest, self.active_stage_name, self.sampling_seed,
-                        self.sampled_provenance_digest, self.draw_count,
-                        self.cost_rule_identity, self.prediction_steps_distribution,
-                        self.stride_frames_distribution, self.horizon_frames_distribution,
-                        self.total_prediction_steps, self.effective_prediction_steps,
-                        self.total_base_window_cost, self.total_predicted_frame_cost,
-                        self.temporal_controller_cost, self.computed_budget_total))
-
     def to_dict(self) -> TemporalAblationManifestPayload:
         return TemporalAblationManifestPayload(
             preset_name=self.preset_name, preset_identity=self.preset_identity,
-            catalog_digest=self.catalog_digest, schedule_version=self.schedule_version,
-            schedule_digest=self.schedule_digest, active_stage_name=self.active_stage_name,
+            catalog_identity=self.catalog_identity, schedule_version=self.schedule_version,
+            schedule_identity=self.schedule_identity, active_stage_name=self.active_stage_name,
             sampling_seed=self.sampling_seed,
-            sampled_provenance_digest=self.sampled_provenance_digest,
+            sampled_provenance=[list(item) for item in self.sampled_provenance],
             draw_count=self.draw_count, cost_rule_identity=self.cost_rule_identity,
             prediction_steps_distribution=_distribution_payload(self.prediction_steps_distribution),
             stride_frames_distribution=_distribution_payload(self.stride_frames_distribution),
@@ -174,7 +166,7 @@ class TemporalAblationManifest:
             total_base_window_cost=self.total_base_window_cost,
             total_predicted_frame_cost=self.total_predicted_frame_cost,
             temporal_controller_cost=self.temporal_controller_cost,
-            computed_budget_total=self.computed_budget_total, digest=self.digest,
+            computed_budget_total=self.computed_budget_total,
         )
 
 
@@ -210,7 +202,10 @@ class ComputeBudgetMismatchError(ValueError):
 
 def get_temporal_ablation_preset(name: str) -> TemporalAblationPreset:
     pairs = _declared_pairs(name)
-    return TemporalAblationPreset(name, tuple(TemporalWindowRequest(*pair) for pair in pairs))
+    return TemporalAblationPreset(
+        cast(PresetName, name),
+        tuple(TemporalWindowRequest(*pair) for pair in pairs),
+    )
 
 
 def build_temporal_ablation_manifest(
@@ -236,9 +231,9 @@ def build_temporal_ablation_manifest(
     provenance = tuple((candidate.candidate_id, candidate.episode.source_level_key)
                        for candidate in selected)
     return TemporalAblationManifest(
-        config.preset.name, config.preset.identity, state.catalog_digest,
-        state.schedule_version, state.schedule_digest, state.active_stage_name,
-        config.sampling_seed, _digest(("sampled-provenance-v1", provenance)),
+        config.preset.name, config.preset.identity, state.catalog_identity,
+        state.schedule_version, state.schedule_identity, state.active_stage_name,
+        config.sampling_seed, provenance,
         config.draw_count, config.cost_rule.identity, _distribution(prediction_steps),
         _distribution(strides), _distribution(horizons), total_steps,
         total_steps / config.draw_count, base_cost, predicted_cost, 0,
@@ -280,8 +275,8 @@ def _select_candidates(
                      for group in (groups[_stable_index(config.sampling_seed, draw,
                                                         len(groups), "choice")],))
     ranked = tuple(sorted(candidates, key=lambda candidate:
-                          (_digest(("ablation-rank-v1", config.sampling_seed,
-                                    candidate.candidate_id)), candidate.candidate_id)))
+                          (_derivation("ablation-rank-v1", config.sampling_seed,
+                                       candidate.candidate_id), candidate.candidate_id)))
     if config.draw_count <= len(ranked):
         return ranked[:config.draw_count]
     return tuple(ranked[_stable_index(config.sampling_seed, draw, len(ranked), "candidate")]
@@ -289,7 +284,7 @@ def _select_candidates(
 
 
 def _stable_index(seed: int, draw: int, size: int, namespace: str) -> int:
-    return int(_digest(("ablation-draw-v1", namespace, seed, draw)), 16) % size
+    return _derivation("ablation-draw-v1", namespace, seed, draw) % size
 
 
 def _distribution(values: tuple[int, ...]) -> Distribution:

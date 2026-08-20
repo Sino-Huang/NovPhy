@@ -7,7 +7,6 @@ import unittest
 from scripts.cohort_v2_capabilities import (
     CENTRAL_CAPABILITIES,
     EXPECTED_DECLARATION_IDENTITY,
-    EXPECTED_DECLARATION_SHA256,
     SUPPORTED_ARTIFACT_KINDS,
     build_central_v2_scope_claim,
     capability_declaration_reference,
@@ -24,7 +23,13 @@ class CohortV2CapabilityTests(unittest.TestCase):
         declaration = load_capability_declaration()
 
         self.assertEqual(declaration["identity"], EXPECTED_DECLARATION_IDENTITY)
-        self.assertEqual(capability_declaration_reference()["sha256"], EXPECTED_DECLARATION_SHA256)
+        self.assertEqual(
+            capability_declaration_reference(),
+            {
+                "schema": "cohort_v2_capability_reference_v1",
+                "identity": EXPECTED_DECLARATION_IDENTITY,
+            },
+        )
         self.assertEqual(
             declaration["capabilities"]["required_central"]["micro_labels"],
             ["contact", "supports"],
@@ -92,16 +97,12 @@ class CohortV2CapabilityTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unsupported non-central capability promotion"):
             validate_capability_declaration(promoted)
 
-    def test_wrong_declaration_identity_or_digest_fails_closed(self) -> None:
+    def test_wrong_declaration_identity_fails_closed(self) -> None:
         reference = capability_declaration_reference()
 
-        wrong_identity = dict(reference, identity="cohort-v2-capabilities-v1:sha256:wrong")
+        wrong_identity = dict(reference, identity="cohort-v2-capabilities-v1:wrong")
         with self.assertRaisesRegex(ValueError, "identity is wrong"):
             validate_capability_declaration_reference(wrong_identity)
-
-        wrong_digest = dict(reference, sha256="0" * 64)
-        with self.assertRaisesRegex(ValueError, "digest is wrong"):
-            validate_capability_declaration_reference(wrong_digest)
 
     def test_negotiation_preserves_unavailable_and_requires_accepted_capabilities(self) -> None:
         claim = build_central_v2_scope_claim("consumer")

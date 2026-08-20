@@ -173,8 +173,14 @@ class FinalEvaluationAccessTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "tampered.json"
             path.write_text(__import__("json").dumps(payload), encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "identity is stale"):
-                load_final_evaluation_access_manifest(path)
+            changed_access = load_final_evaluation_access_manifest(path)
+            self.assertEqual(changed_access.workflow_identity, "changed")
+            with self.assertRaisesRegex(ValueError, "undeclared workflow"):
+                audit_final_evaluation_access(
+                    self.partition,
+                    changed_access,
+                    observed_accesses=self.observed,
+                )
 
         other = create_cohort_partition_manifest(
             partition_version=2,

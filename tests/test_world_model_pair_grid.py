@@ -50,7 +50,9 @@ class PairGridConfigTests(unittest.TestCase):
         # Then
         self.assertEqual(
             identity,
-            "0c12ab0e135a79e56da7c98e61e907f4850da057e317dbdd186b5b89f9e8b28d",
+            'pair-grid-config-v1:[[[1,"continuous"],[5,"continuous"],'
+            '[15,"continuous"]],[["micro","symbolic_supervision_unavailable"],'
+            '["macro","symbolic_supervision_unavailable"]]]',
         )
 
     def test_invalid_grids_fail_closed(self) -> None:

@@ -1,6 +1,8 @@
 import base64
+from io import BytesIO
 import json
 import subprocess
+import tarfile
 import threading
 import time
 import unittest
@@ -13,7 +15,7 @@ from unittest.mock import patch
 
 from src.webui.bridge import GameState, Screenshot
 from src.webui.server import AppState, build_arg_parser, create_handler
-from tests.test_physics_v2_review import collision_capture
+from tests.test_physics_v2_review import collision_capture, write_probe_plan
 
 
 class FakeBridge:
@@ -158,6 +160,40 @@ class ServerTest(unittest.TestCase):
         connection.close()
         return response.status, data
 
+    def write_review_archive(self, stage: Path, *, mutate=None, omitted: set[str] | None = None, extras: dict[str, bytes] | None = None) -> Path:
+        stage.mkdir(parents=True, exist_ok=True)
+        required = {
+            "game_playing_interface.jar": b"jar",
+            "9001.x86_64": b"wrapper",
+            "9001-player.x86_64": b"player",
+            "config.xml": b"<evaluation />",
+            "9001_Data/placeholder": b"data",
+        }
+        provenance = {
+            "schema_version": "novphy_physics_player_stage_v1",
+            "unity": {"version": "2019.4.41f2"},
+            "capture": {"schema_version": "physics_capture_v2_engine_v1", "protocol_version": 1},
+            "files": {name: len(content) for name, content in required.items()},
+        }
+        if mutate is not None:
+            mutate(provenance)
+        members = dict(required)
+        members.update(extras or {})
+        for name in omitted or set():
+            members.pop(name, None)
+        members["provenance.json"] = json.dumps(provenance).encode("utf-8")
+        archive = stage / "novphy-physics-player-2019.4.41f2.tar.gz"
+        with tarfile.open(archive, "w:gz") as bundle:
+            for name, content in members.items():
+                info = tarfile.TarInfo(name)
+                info.size = len(content)
+                bundle.addfile(info, BytesIO(content))
+        review_levels = stage / "review-levels"
+        review_levels.mkdir()
+        for name in ("training.xml", "calibration.xml", "model-selection.xml"):
+            (review_levels / name).write_text("<Level />", encoding="utf-8")
+        return archive
+
     def test_status_reports_connected_fake_bridge(self):
         status, data = self.request("GET", "/api/status")
 
@@ -178,8 +214,8 @@ class ServerTest(unittest.TestCase):
     def test_physics_v2_review_stages_explores_freezes_and_replays_exact_action(self):
         self.app.physics_v2_review = True
         self.app.review_output_root = Path(self.review_tmp.name)
-        self.app.review_probe_plan_path = Path(
-            ".claude/project-docs/evidence/issue-44-physics-v2/probe-plan.json"
+        self.app.review_probe_plan_path = write_probe_plan(
+            Path(self.review_tmp.name) / "stage"
         )
         self.app.physics_bridge = FakePhysicsV2Bridge()
         resets = []
@@ -238,6 +274,68 @@ class ServerTest(unittest.TestCase):
         self.assertFalse(defaults.physics_v2_review)
         self.assertTrue(review.physics_v2_review)
         self.assertEqual(review.physics_port, 2015)
+
+    def test_review_preflight_accepts_the_staged_archive_without_a_pin_file(self):
+        with TemporaryDirectory() as temporary:
+            stage = Path(temporary)
+            (stage / "novphy-physics-player-2019.4.41f2.tar.gz").write_bytes(b"archive")
+            app = AppState(physics_v2_review=True, review_stage=stage)
+
+            self.assertEqual(app.preflight_errors(), [])
+
+    def test_review_runtime_validates_declared_archive_provenance(self):
+        with TemporaryDirectory() as temporary:
+            stage = Path(temporary) / "stage"
+            self.write_review_archive(stage)
+            app = AppState(physics_v2_review=True, review_stage=stage)
+            runtime = app.prepare_physics_v2_review_runtime()
+            self.assertTrue((runtime / "game_playing_interface.jar").is_file())
+            self.assertTrue((runtime / "review-levels/training.xml").is_file())
+            app.review_runtime_temporary.cleanup()
+
+    def test_review_runtime_rejects_stale_or_incomplete_declared_provenance(self):
+        cases = {
+            "schema": lambda value: value.update(schema_version="unsupported"),
+            "unity": lambda value: value["unity"].update(version="2020.1"),
+            "capture": lambda value: value["capture"].update(schema_version="physics_capture_v1"),
+            "protocol": lambda value: value["capture"].update(protocol_version=2),
+            "inventory": lambda value: value["files"].pop("9001-player.x86_64"),
+        }
+        for name, mutate in cases.items():
+            with self.subTest(name=name), TemporaryDirectory() as temporary:
+                stage = Path(temporary) / "stage"
+                self.write_review_archive(stage, mutate=mutate)
+                app = AppState(physics_v2_review=True, review_stage=stage)
+                with self.assertRaisesRegex(ValueError, "provenance|unsupported|required files|inventory"):
+                    app.prepare_physics_v2_review_runtime()
+                self.assertIsNone(app.review_runtime_dir)
+
+        with TemporaryDirectory() as temporary:
+            stage = Path(temporary) / "stage"
+            self.write_review_archive(stage, omitted={"9001-player.x86_64"})
+            app = AppState(physics_v2_review=True, review_stage=stage)
+            with self.assertRaisesRegex(ValueError, "inventory does not match|required files"):
+                app.prepare_physics_v2_review_runtime()
+
+    def test_review_runtime_rejects_an_unexpected_extra_file(self):
+        with TemporaryDirectory() as temporary:
+            stage = Path(temporary) / "stage"
+            self.write_review_archive(stage, extras={"unexpected.txt": b"extra"})
+            app = AppState(physics_v2_review=True, review_stage=stage)
+            with self.assertRaisesRegex(ValueError, "inventory does not match"):
+                app.prepare_physics_v2_review_runtime()
+
+    def test_review_runtime_rejects_a_declared_size_mismatch(self):
+        with TemporaryDirectory() as temporary:
+            stage = Path(temporary) / "stage"
+
+            def wrong_size(provenance):
+                provenance["files"]["9001-player.x86_64"] += 1
+
+            self.write_review_archive(stage, mutate=wrong_size)
+            app = AppState(physics_v2_review=True, review_stage=stage)
+            with self.assertRaisesRegex(ValueError, "inventory does not match"):
+                app.prepare_physics_v2_review_runtime()
 
     def test_frame_returns_base64_rgb_and_metadata(self):
         status, data = self.request("GET", "/api/frame")

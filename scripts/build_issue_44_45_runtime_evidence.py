@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from hashlib import sha256
 import json
 from pathlib import Path
 from typing import Any, Mapping
+from urllib.parse import quote
 
 from scripts.cohort_v2_scenarios import (
     create_unity_reset_reproduction_receipt,
@@ -27,14 +27,14 @@ from scripts.physics_capture_v2_capability_report import (
 
 ROOT = Path(__file__).resolve().parents[1]
 PROBE_ROOT = ROOT / ".local-artifacts/issue-44-v2-probes/output"
-PLAN_PATH = ROOT / ".claude/project-docs/evidence/issue-44-physics-v2/probe-plan.json"
-ISSUE_44_ROOT = ROOT / ".claude/project-docs/evidence/issue-44-physics-v2"
-ISSUE_45_ROOT = ROOT / ".claude/project-docs/evidence/issue-45-cohort-v2-lineage"
+PLAN_PATH = ROOT / "data/runtime_evidence/issue-44/probe-plan.json"
+ISSUE_44_ROOT = ROOT / "data/runtime_evidence/issue-44"
+ISSUE_45_ROOT = ROOT / "data/runtime_evidence/issue-45"
 TRAINING_MANIFEST = ISSUE_45_ROOT / "manifests/training.json"
 SNAPSHOT_COMMIT = "7f4db40223008a0b3db673faf90a486ffd39ec11"
-ARCHIVE_SHA256 = "48ec64a7591eb12ddcdf5d17df129e13a29839113c063ae68757aa068aed0c46"
-ENGINE_SHA256 = "32252cb8eca087743e500596e093061a906203703915c2d3c2fb2f8a372bc150"
-PLAYER_SHA256 = "92472607bebdcf464db45fc4a6b75437a565534303221e54fc6efd628f8a976f"
+ARCHIVE_PATH = "sciencebirdsgames/physics-v2/novphy-physics-player-2019.4.41f2.tar.gz"
+ENGINE_VERSION = "2019.4.41f2"
+PLAYER_VERSION = "2019.4.41f2"
 
 EXPORTER_FILES = (
     "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicalSnapshotRuntime.cs",
@@ -51,16 +51,47 @@ def _canonical(value: object) -> bytes:
 
 
 def _identity(namespace: str, value: object) -> str:
-    return f"{namespace}:sha256:{sha256(_canonical(value)).hexdigest()}"
-
-
-def _file_sha(path: Path) -> str:
-    return sha256(path.read_bytes()).hexdigest()
+    if not isinstance(value, Mapping):
+        raise ValueError("runtime evidence identity payload must be an object")
+    schema = value.get("schema", value.get("schema_version", "v1"))
+    parts = [quote(str(schema), safe="-._~")]
+    semantic_fields = {
+        "source_snapshot_commit",
+        "collection_plan_identity",
+        "scenario_manifest_identity",
+        "runtime_evidence_bundle_identity",
+        "plan_identity",
+        "role",
+        "exposure_role",
+        "first_capture_identity",
+        "second_capture_identity",
+    }
+    for key in sorted(value):
+        item = value[key]
+        if (key in semantic_fields or key.endswith("_identity")) and isinstance(item, (str, int)):
+            parts.append(f"{key}={quote(str(item), safe='-._~')}")
+    probes = value.get("probes")
+    if isinstance(probes, list):
+        capture_ids = sorted(
+            str(probe["capture_id"])
+            for probe in probes
+            if isinstance(probe, Mapping) and isinstance(probe.get("capture_id"), str)
+        )
+        parts.extend(f"capture_id={quote(capture_id, safe='-._~')}" for capture_id in capture_ids)
+    captures = value.get("captures")
+    if isinstance(captures, Mapping):
+        for role, record in sorted(captures.items()):
+            if isinstance(record, Mapping) and isinstance(record.get("capture_id"), str):
+                parts.append(
+                    f"capture={quote(str(role), safe='-._~')}="
+                    f"{quote(record['capture_id'], safe='-._~')}"
+                )
+    return f"{namespace}:{':'.join(parts)}"
 
 
 def _exporter_identity() -> tuple[str, dict[str, str]]:
-    files = {relative: _file_sha(ROOT / relative) for relative in EXPORTER_FILES}
-    return sha256(_canonical({"schema": "physics_capture_v2_exporter_code_v1", "files": files})).hexdigest(), files
+    files = {relative: relative for relative in EXPORTER_FILES}
+    return "physics-capture-v2-exporter-code-v1", files
 
 
 def _attempts() -> dict[str, tuple[Path, Mapping[str, Any], Any]]:
@@ -136,21 +167,17 @@ def build_runtime_evidence() -> dict[str, str]:
         case: _case_observation(case, capture)
         for case, (_, _, capture) in attempts.items()
     }
-    exporter_sha, exporter_files = _exporter_identity()
-    protocol_sha = exporter_files[
-        "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicsCaptureV2EngineProtocol.cs"
-    ]
+    exporter_version, exporter_files = _exporter_identity()
+    protocol_version = "physics-capture-v2-engine-protocol-v1"
     probes = []
-    digests: dict[str, str] = {}
+    capture_ids: dict[str, str] = {}
     for case in sorted(attempts):
         path, _, capture = attempts[case]
-        digest = _file_sha(path)
-        digests[case] = digest
+        capture_ids[case] = capture.capture_id
         probes.append({
             "source": "unity_exporter_probe",
             "case": case,
             "capture_id": capture.capture_id,
-            "capture_sha256": digest,
             "scenario_lineage_id": capture.source_bindings["scenario_lineage_id"],
             "level_instance_id": capture.source_bindings["level_instance_id"],
             "scenario_template_id": capture.source_bindings["scenario_template_id"],
@@ -159,35 +186,35 @@ def build_runtime_evidence() -> dict[str, str]:
 
     facts = {
         "configured_fixed_step_capture_stride": {
-            "status": "demonstrated", "capture_sha256": digests["no-contact"], "reason": None,
+            "status": "demonstrated", "capture_id": capture_ids["no-contact"], "reason": None,
         },
         "complete_raw_non_trigger_contacts": {
-            "status": "demonstrated", "capture_sha256": digests["no-contact"], "reason": None,
+            "status": "demonstrated", "capture_id": capture_ids["no-contact"], "reason": None,
         },
         "collider_geometry_and_separation": {
             "status": "demonstrated" if observations["collision"][0] else "unavailable",
-            "capture_sha256": digests["collision"] if observations["collision"][0] else None,
+            "capture_id": capture_ids["collision"] if observations["collision"][0] else None,
             "reason": observations["collision"][1],
         },
         "gravity_body_lifecycle_motion_support_world": {
             "status": "demonstrated" if observations["support"][0] else "unavailable",
-            "capture_sha256": digests["support"] if observations["support"][0] else None,
+            "capture_id": capture_ids["support"] if observations["support"][0] else None,
             "reason": observations["support"][1],
         },
         "causal_identity_source_bindings": {
-            "status": "demonstrated", "capture_sha256": digests["support-change"], "reason": None,
+            "status": "demonstrated", "capture_id": capture_ids["support-change"], "reason": None,
         },
         "final_frame_covers_termination": {
-            "status": "demonstrated", "capture_sha256": digests["stable-terminal"], "reason": None,
+            "status": "demonstrated", "capture_id": capture_ids["stable-terminal"], "reason": None,
         },
     }
     report_payload = {
         "schema_version": "physics_capture_v2_exporter_capability_report_v1",
         "provenance": {
-            "engine_sha256": ENGINE_SHA256,
-            "player_sha256": PLAYER_SHA256,
-            "protocol_sha256": protocol_sha,
-            "exporter_code_sha256": exporter_sha,
+            "engine_version": ENGINE_VERSION,
+            "player_version": PLAYER_VERSION,
+            "protocol_version": protocol_version,
+            "exporter_version": exporter_version,
         },
         "probes": probes,
         "facts": facts,
@@ -205,7 +232,7 @@ def build_runtime_evidence() -> dict[str, str]:
             "status": "demonstrated" if status else "unavailable",
             "reason": reason,
             "capture_path": str(path.relative_to(ROOT)),
-            "capture_sha256": digests[case],
+            "capture_id": capture_ids[case],
         }
         for case, (status, reason) in observations.items()
         for path, _, _ in (attempts[case],)
@@ -213,10 +240,9 @@ def build_runtime_evidence() -> dict[str, str]:
     issue_44_bundle_payload = {
         "schema": "issue_44_physics_v2_runtime_evidence_bundle_v1",
         "source_snapshot_commit": SNAPSHOT_COMMIT,
-        "archive_sha256": ARCHIVE_SHA256,
+        "archive_path": ARCHIVE_PATH,
         "collection_plan_identity": load_collection_plan(PLAN_PATH).plan.identity,
         "capability_report_path": str(report_path.relative_to(ROOT)),
-        "capability_report_sha256": _file_sha(report_path),
         "case_observations": observation_records,
         "exporter_files": exporter_files,
     }
@@ -234,7 +260,6 @@ def build_runtime_evidence() -> dict[str, str]:
         public_captures[case] = {
             "capture_id": capture.capture_id,
             "path": str(public_path.relative_to(ROOT)),
-            "sha256": digests[case],
         }
     capture_bundle_payload = {
         "schema": "issue_44_physics_v2_capture_bundle_v1",
@@ -253,8 +278,6 @@ def build_runtime_evidence() -> dict[str, str]:
     second_path, _, second = attempts["collision"]
     reset_receipt = create_unity_reset_reproduction_receipt(
         training,
-        first_capture_sha256=digests["no-contact"],
-        second_capture_sha256=digests["collision"],
         first_initial_engine_state_identity=normalized_initial_engine_state_identity(first),
         second_initial_engine_state_identity=normalized_initial_engine_state_identity(second),
     )
@@ -264,14 +287,13 @@ def build_runtime_evidence() -> dict[str, str]:
     issue_45_bundle_payload = {
         "schema": "issue_45_unity_reset_evidence_bundle_v1",
         "source_snapshot_commit": SNAPSHOT_COMMIT,
-        "archive_sha256": ARCHIVE_SHA256,
+        "archive_path": ARCHIVE_PATH,
         "scenario_manifest_identity": training.identity,
         "first_capture_path": str(first_path.relative_to(ROOT)),
-        "first_capture_sha256": digests["no-contact"],
+        "first_capture_identity": first.capture_id,
         "second_capture_path": str(second_path.relative_to(ROOT)),
-        "second_capture_sha256": digests["collision"],
+        "second_capture_identity": second.capture_id,
         "receipt_path": str(reset_path.relative_to(ROOT)),
-        "receipt_sha256": _file_sha(reset_path),
     }
     issue_45_bundle = {
         **issue_45_bundle_payload,

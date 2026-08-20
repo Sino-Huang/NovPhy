@@ -20,10 +20,65 @@ from world_model.training.scoring import (
     Partition,
     ScoreArtifactError,
     ScoringExample,
-    validate_score_artifacts,
-    write_score_artifacts,
+    score_state_set_identity,
+    validate_score_artifacts as _validate_score_artifacts,
+    write_score_artifacts as _write_score_artifacts,
 )
 from world_model.training.scoring_torch import TorchCatalogPredictor, score_fixture_checkpoint
+
+
+CHECKPOINT_IDENTITY = "checkpoint-v1:fixture-run:12"
+CATALOG_IDENTITY = "episode-catalog-v1:fixture-cohort:fixture-dataset:fixture-source"
+PARTITION_IDENTITY = "pair-grid-partition-v1:fixture-cohort:seed-7"
+STATE_IDS = tuple(
+    f"{prefix}-{index:02d}"
+    for prefix in ("train", "cal", "eval")
+    for index in range(6)
+)
+STATE_SET_IDENTITY = score_state_set_identity(
+    CATALOG_IDENTITY, PARTITION_IDENTITY, STATE_IDS
+)
+
+
+def write_score_artifacts(
+    root,
+    result,
+    *,
+    checkpoint_path="checkpoint.pt",
+    checkpoint_identity=CHECKPOINT_IDENTITY,
+    config_identity="phase-a-config-v2:fixture",
+    catalog_identity=CATALOG_IDENTITY,
+    partition_identity=PARTITION_IDENTITY,
+    state_set_identity=None,
+    **kwargs,
+):
+    return _write_score_artifacts(
+        root,
+        result,
+        checkpoint_path=checkpoint_path,
+        checkpoint_identity=checkpoint_identity,
+        config_identity=config_identity,
+        catalog_identity=catalog_identity,
+        partition_identity=partition_identity,
+        state_set_identity=(
+            score_state_set_identity(
+                catalog_identity,
+                partition_identity,
+                tuple(item.example.state_id for item in result.scored_states),
+            )
+            if state_set_identity is None
+            else state_set_identity
+        ),
+        **kwargs,
+    )
+
+
+def validate_score_artifacts(root, **kwargs):
+    kwargs.setdefault("expected_checkpoint_identity", CHECKPOINT_IDENTITY)
+    kwargs.setdefault("expected_catalog_identity", CATALOG_IDENTITY)
+    kwargs.setdefault("expected_partition_identity", PARTITION_IDENTITY)
+    kwargs.setdefault("expected_state_set_identity", STATE_SET_IDENTITY)
+    return _validate_score_artifacts(root, **kwargs)
 
 
 class RegimePredictor:
@@ -127,7 +182,7 @@ class ExhaustiveScoringTests(unittest.TestCase):
         # Given
         states = tuple(
             ScoringState(
-                catalog_digest="a" * 64,
+                catalog_identity="episode-catalog-v1:dev:legacy_rgb_v1:1:collector_v1",
                 split="dev",
                 episode_relative_path="dev/synthetic",
                 shot_relative_path="dev/synthetic/shot_001",
@@ -243,7 +298,10 @@ class ExhaustiveScoringTests(unittest.TestCase):
         # When
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "scores"
-            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            write_score_artifacts(
+                root, result, checkpoint_path="checkpoint.pt",
+                config_identity="phase-a-config-v2:fixture", shard_size=4,
+            )
             payload = json.loads((root / "per_pair_metrics.json").read_text(encoding="ascii"))
 
         # Then
@@ -273,7 +331,10 @@ class ExhaustiveScoringTests(unittest.TestCase):
         result = ExhaustiveScorer(RegimePredictor()).score(_examples())
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "scores"
-            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            write_score_artifacts(
+                root, result, checkpoint_path="checkpoint.pt",
+                config_identity="phase-a-config-v2:fixture", shard_size=4,
+            )
             metrics_path = root / "per_pair_metrics.json"
             payload = json.loads(metrics_path.read_text(encoding="ascii"))
             payload[0]["truncation_rate"] = 0.5 if payload[0]["truncation_rate"] == 0.0 else 0.0
@@ -290,7 +351,7 @@ class ExhaustiveScoringTests(unittest.TestCase):
         # Then
         ceiling = result.temporal_oracle_ceiling
         self.assertEqual(ceiling.state_count, 6)
-        self.assertTrue(all(item.state_digest == ceiling.state_digest for item in ceiling.fixed_pairs))
+        self.assertTrue(all(item.state_count == ceiling.state_count for item in ceiling.fixed_pairs))
         self.assertLessEqual(ceiling.oracle_primary_mean, min(item.primary_mean for item in ceiling.fixed_pairs))
 
     def test_artifacts_round_trip_and_resume_recompute_from_shards(self) -> None:
@@ -300,13 +361,54 @@ class ExhaustiveScoringTests(unittest.TestCase):
         # When
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "scores"
-            first = write_score_artifacts(root, result, checkpoint_digest="a" * 64, resume=False, shard_size=4)
-            second = write_score_artifacts(root, result, checkpoint_digest="a" * 64, resume=True, shard_size=4)
+            first = write_score_artifacts(
+                root, result, checkpoint_path="checkpoint.pt",
+                config_identity="phase-a-config-v2:fixture", resume=False, shard_size=4,
+            )
+            second = write_score_artifacts(
+                root, result, checkpoint_path="checkpoint.pt",
+                config_identity="phase-a-config-v2:fixture", resume=True, shard_size=4,
+            )
             validated = validate_score_artifacts(root)
 
         # Then
         self.assertEqual(first, second)
         self.assertEqual(validated, first)
+
+    def test_manifest_load_binds_checkpoint_catalog_partition_and_state_set_identities(self) -> None:
+        result = ExhaustiveScorer(RegimePredictor()).score(_examples())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "scores"
+            receipt = write_score_artifacts(root, result, shard_size=4)
+            manifest = json.loads((root / "manifest.json").read_bytes())
+
+            self.assertEqual(manifest["checkpoint_identity"], receipt.checkpoint_identity)
+            self.assertEqual(manifest["catalog_identity"], receipt.catalog_identity)
+            self.assertEqual(manifest["partition_identity"], receipt.partition_identity)
+            self.assertEqual(manifest["state_set_identity"], receipt.state_set_identity)
+            mismatches = {
+                "expected_checkpoint_identity": "checkpoint-v1:other-run:12",
+                "expected_catalog_identity": "episode-catalog-v1:other-cohort",
+                "expected_partition_identity": "pair-grid-partition-v1:other-split",
+                "expected_state_set_identity": "score-states-v1:other-scope",
+            }
+            for argument, value in mismatches.items():
+                with self.subTest(argument=argument):
+                    with self.assertRaisesRegex(ScoreArtifactError, "binding mismatch"):
+                        validate_score_artifacts(root, **{argument: value})
+
+    def test_finish_rejects_manifest_state_set_identity_outside_declared_scope(self) -> None:
+        result = ExhaustiveScorer(RegimePredictor()).score(_examples())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "scores"
+            write_score_artifacts(root, result, shard_size=4)
+            manifest_path = root / "manifest.json"
+            manifest = json.loads(manifest_path.read_bytes())
+            manifest["state_set_identity"] = "score-states-v1:unrelated-declared-scope"
+            manifest_path.write_bytes(canonical_json_bytes(manifest))
+
+            with self.assertRaisesRegex(ScoreArtifactError, "state-set identity mismatch"):
+                _validate_score_artifacts(root)
 
     def test_interleaved_partition_results_validate_in_canonical_shard_order(self) -> None:
         # Given
@@ -321,7 +423,10 @@ class ExhaustiveScoringTests(unittest.TestCase):
         # When / Then
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "scores"
-            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            write_score_artifacts(
+                root, result, checkpoint_path="checkpoint.pt",
+                config_identity="phase-a-config-v2:fixture", shard_size=4,
+            )
             self.assertEqual(validate_score_artifacts(root).state_count, len(interleaved))
 
     def test_publication_aborts_for_partial_mixed_nonfinite_or_changed_scale(self) -> None:
@@ -354,7 +459,10 @@ class ExhaustiveScoringTests(unittest.TestCase):
             with self.subTest(candidate=candidate):
                 with tempfile.TemporaryDirectory() as directory:
                     with self.assertRaises(ScoreArtifactError):
-                        write_score_artifacts(Path(directory), candidate, checkpoint_digest="a" * 64)
+                        write_score_artifacts(
+                            Path(directory), candidate, checkpoint_path="checkpoint.pt",
+                            config_identity="phase-a-config-v2:fixture",
+                        )
 
     def test_nonfinite_prediction_aborts_scoring(self) -> None:
         # Given
@@ -384,7 +492,10 @@ class ExhaustiveScoringTests(unittest.TestCase):
         trainer = TeacherForcedTrainer(JepaBackbone(model_config), phase.training_config(device="cpu"))
         with tempfile.TemporaryDirectory() as directory:
             checkpoint = Path(directory) / "checkpoint.pt"
-            save_checkpoint(checkpoint, trainer, config_digest=phase.identity, grid_digest=phase.grid_digest)
+            save_checkpoint(
+                checkpoint, trainer, config_identity=phase.identity,
+                grid_identity=phase.grid_identity,
+            )
 
             # When / Then
             with self.assertRaisesRegex(ValueError, "completed train-mode checkpoint"):
@@ -395,30 +506,65 @@ class ExhaustiveScoringTests(unittest.TestCase):
         result = ExhaustiveScorer(RegimePredictor()).score(_examples())
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "scores"
-            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            write_score_artifacts(
+                root, result, checkpoint_path="checkpoint.pt",
+                config_identity="phase-a-config-v2:fixture", shard_size=4,
+            )
 
             # When / Then
             with self.assertRaisesRegex(ScoreArtifactError, "binding mismatch"):
                 write_score_artifacts(
                     root,
                     result,
-                    checkpoint_digest="b" * 64,
+                    checkpoint_identity="checkpoint-v1:other-run:12",
+                    config_identity="phase-a-config-v2:fixture",
                     resume=True,
                     shard_size=4,
                 )
+
+    def test_resume_rejects_changed_catalog_partition_and_state_set_bindings(self) -> None:
+        result = ExhaustiveScorer(RegimePredictor()).score(_examples())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "scores"
+            write_score_artifacts(root, result, shard_size=4)
+            cases = (
+                {
+                    "catalog_identity": "episode-catalog-v1:other-cohort",
+                    "partition_identity": PARTITION_IDENTITY,
+                },
+                {
+                    "catalog_identity": CATALOG_IDENTITY,
+                    "partition_identity": "pair-grid-partition-v1:other-split",
+                },
+                {
+                    "state_set_identity": "score-states-v1:unrelated-declared-scope",
+                },
+            )
+            for overrides in cases:
+                with self.subTest(overrides=overrides):
+                    with self.assertRaises(ScoreArtifactError):
+                        write_score_artifacts(
+                            root, result, resume=True, shard_size=4, **overrides
+                        )
 
     def test_resume_rejects_changed_shard_size_when_payloads_match(self) -> None:
         # Given
         result = ExhaustiveScorer(RegimePredictor()).score(_examples())
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "scores"
-            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=7)
+            write_score_artifacts(
+                root, result, checkpoint_path="checkpoint.pt",
+                config_identity="phase-a-config-v2:fixture", shard_size=7,
+            )
             manifest_path = root / "manifest.json"
             before = manifest_path.read_bytes()
 
             # When / Then
             with self.assertRaisesRegex(ScoreArtifactError, "topology"):
-                write_score_artifacts(root, result, checkpoint_digest="a" * 64, resume=True, shard_size=8)
+                write_score_artifacts(
+                    root, result, checkpoint_path="checkpoint.pt",
+                    config_identity="phase-a-config-v2:fixture", resume=True, shard_size=8,
+                )
             self.assertEqual(manifest_path.read_bytes(), before)
 
     def test_resume_rejects_an_unlisted_stale_shard(self) -> None:
@@ -426,7 +572,10 @@ class ExhaustiveScoringTests(unittest.TestCase):
         result = ExhaustiveScorer(RegimePredictor()).score(_examples())
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "scores"
-            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            write_score_artifacts(
+                root, result, checkpoint_path="checkpoint.pt",
+                config_identity="phase-a-config-v2:fixture", shard_size=4,
+            )
             manifest_path = root / "manifest.json"
             before = manifest_path.read_bytes()
             stale = root / "label_shards" / "controller-train" / "shard-999999.jsonl"
@@ -434,7 +583,10 @@ class ExhaustiveScoringTests(unittest.TestCase):
 
             # When / Then
             with self.assertRaisesRegex(ScoreArtifactError, "topology"):
-                write_score_artifacts(root, result, checkpoint_digest="a" * 64, resume=True, shard_size=4)
+                write_score_artifacts(
+                    root, result, checkpoint_path="checkpoint.pt",
+                    config_identity="phase-a-config-v2:fixture", resume=True, shard_size=4,
+                )
             self.assertEqual(manifest_path.read_bytes(), before)
             self.assertTrue(stale.is_file())
 
@@ -443,7 +595,10 @@ class ExhaustiveScoringTests(unittest.TestCase):
         result = ExhaustiveScorer(RegimePredictor()).score(_examples())
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "scores"
-            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            write_score_artifacts(
+                root, result, checkpoint_path="checkpoint.pt",
+                config_identity="phase-a-config-v2:fixture", shard_size=4,
+            )
             manifest_path = root / "manifest.json"
             manifest = json.loads(manifest_path.read_bytes())
             manifest["shards"] = list(reversed(manifest["shards"]))
@@ -452,7 +607,10 @@ class ExhaustiveScoringTests(unittest.TestCase):
 
             # When / Then
             with self.assertRaisesRegex(ScoreArtifactError, "topology"):
-                write_score_artifacts(root, result, checkpoint_digest="a" * 64, resume=True, shard_size=4)
+                write_score_artifacts(
+                    root, result, checkpoint_path="checkpoint.pt",
+                    config_identity="phase-a-config-v2:fixture", resume=True, shard_size=4,
+                )
             self.assertEqual(manifest_path.read_bytes(), before)
 
     def test_resume_rejects_incomplete_manifest_shards(self) -> None:
@@ -460,7 +618,10 @@ class ExhaustiveScoringTests(unittest.TestCase):
         result = ExhaustiveScorer(RegimePredictor()).score(_examples())
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "scores"
-            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            write_score_artifacts(
+                root, result, checkpoint_path="checkpoint.pt",
+                config_identity="phase-a-config-v2:fixture", shard_size=4,
+            )
             manifest_path = root / "manifest.json"
             manifest = json.loads(manifest_path.read_bytes())
             manifest["shards"] = manifest["shards"][:-1]
@@ -469,7 +630,10 @@ class ExhaustiveScoringTests(unittest.TestCase):
 
             # When / Then
             with self.assertRaisesRegex(ScoreArtifactError, "topology"):
-                write_score_artifacts(root, result, checkpoint_digest="a" * 64, resume=True, shard_size=4)
+                write_score_artifacts(
+                    root, result, checkpoint_path="checkpoint.pt",
+                    config_identity="phase-a-config-v2:fixture", resume=True, shard_size=4,
+                )
             self.assertEqual(manifest_path.read_bytes(), before)
 
     def test_validator_rejects_a_corrupted_shard(self) -> None:
@@ -477,12 +641,30 @@ class ExhaustiveScoringTests(unittest.TestCase):
         result = ExhaustiveScorer(RegimePredictor()).score(_examples())
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "scores"
-            write_score_artifacts(root, result, checkpoint_digest="a" * 64, shard_size=4)
+            write_score_artifacts(
+                root, result, checkpoint_path="checkpoint.pt",
+                config_identity="phase-a-config-v2:fixture", shard_size=4,
+            )
             shard = next((root / "label_shards").rglob("*.jsonl"))
             shard.write_bytes(shard.read_bytes() + b"{}\n")
 
             # When / Then
-            with self.assertRaisesRegex(ScoreArtifactError, "digest mismatch"):
+            with self.assertRaisesRegex(ScoreArtifactError, "partial score shard"):
+                validate_score_artifacts(root)
+
+    def test_validator_rejects_unique_state_id_substitution(self) -> None:
+        result = ExhaustiveScorer(RegimePredictor()).score(_examples())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "scores"
+            write_score_artifacts(root, result, shard_size=4)
+            shard = next((root / "label_shards").rglob("*.jsonl"))
+            lines = shard.read_bytes().splitlines()
+            record = json.loads(lines[0])
+            record["state_id"] = "exhaustive-score-state-v1:unrelated-unique-state"
+            lines[0] = canonical_json_bytes(record).rstrip(b"\n")
+            shard.write_bytes(b"\n".join(lines) + b"\n")
+
+            with self.assertRaisesRegex(ScoreArtifactError, "state membership mismatch"):
                 validate_score_artifacts(root)
 
 

@@ -9,7 +9,6 @@ from __future__ import annotations
 import argparse
 from collections.abc import Mapping
 from dataclasses import dataclass, fields
-import hashlib
 import json
 import math
 import os
@@ -39,11 +38,11 @@ from scripts.rollout_validation_types import PhysicsArtifactError
 from scripts.smoke_protection import (
     ProtectionError,
     canonical_root_from_git,
-    protected_receipt,
+    protected_snapshot,
     protected_roots,
-    tree_digest,
+    tree_listing,
 )
-from scripts.verify_physics_player import safe_unpack, verify_payload
+from scripts.verify_physics_player import safe_unpack
 from src.webui.bridge import JsonValue as BridgeJsonValue, PhysicsCaptureV1, PhysicsCaptureV1Failure, PlayingMode, RequestCode, ScienceBirdsBridge
 
 CAPTURE_READ_TIMEOUT_SECONDS: Final = 120.0
@@ -53,11 +52,11 @@ ASSEMBLY_RELATIVE_PATH: Final = "9001_Data/Managed/Assembly-CSharp.dll"
 # file-backed mapping: a live player was measured with 91 file-backed mappings,
 # six of them framework DLLs, and zero `Assembly-CSharp.dll` images. Requiring
 # one was an invariant no candidate could satisfy. `UnityPlayer.so` is mapped
-# from the candidate root, carries a provenance digest, and is the code that
+# from the candidate root and is the code that
 # actually owns the socket, so it anchors the mapping identity; the assembly is
-# still pinned by digest, read through the observed process's own root view.
+# still checked by filesystem identity through the observed process's own root view.
 RUNTIME_RELATIVE_PATH: Final = "UnityPlayer.so"
-BINDING_IDENTITY_FIELDS: Final = ("pid", "socket_inode", "executable", "cwd", "runtime_path", "runtime_device", "runtime_inode", "runtime_sha256", "assembly_path", "assembly_device", "assembly_inode", "assembly_sha256", "provenance_sha256", "archive_sha256")
+BINDING_IDENTITY_FIELDS: Final = ("pid", "socket_inode", "executable", "cwd", "runtime_path", "runtime_device", "runtime_inode", "assembly_path", "assembly_device", "assembly_inode", "player_version", "protocol_version", "archive_path")
 # Observation fields `resolve_listener_binding` deliberately does not compare, so
 # that adding a field without deciding its fate is a hard failure rather than a
 # silent gap. `socket_inode`, `parent_pid`, `process_group` and `session_id` are
@@ -65,7 +64,7 @@ BINDING_IDENTITY_FIELDS: Final = ("pid", "socket_inode", "executable", "cwd", "r
 # by construction (see the comment beside the assembly checks).
 UNCHECKED_OBSERVATION_FIELDS: Final = ("assembly_path", "parent_pid", "process_group", "session_id", "socket_inode")
 # Environment variables that decide what *else* a process loads. The identity
-# chain pins every byte of the candidate, and proves the pinned assembly exists
+# chain proves the declared candidate paths exist
 # in the listener's own root -- it cannot prove the listener loaded that and
 # nothing besides. So these are refused at launch rather than recorded.
 INTERPOSITION_ENV_VARS: Final = ("LD_PRELOAD", "LD_AUDIT", "MONO_PATH", "MONO_GAC_PREFIX", "MONO_CONFIG", "DOTNET_STARTUP_HOOKS")
@@ -83,8 +82,8 @@ LOOPBACK_BIND_ADDRESSES: Final = frozenset({
     "00000000000000000000000001000000",  # ::1
     "0000000000000000FFFF00000100007F",  # ::ffff:127.0.0.1
 })
-DEFAULT_SMOKE_REPORT: Final = ROOT / ".claude/project-docs/evidence/world-model-physics-instrumentation/task-8-smoke.json"
-DEFAULT_DIAGNOSTIC_REPORT: Final = ROOT / ".claude/project-docs/evidence/world-model-physics-instrumentation/listener-diagnostic.json"
+DEFAULT_SMOKE_REPORT: Final = ROOT / "data/runtime_evidence/issue-44/task-8-smoke.json"
+DEFAULT_DIAGNOSTIC_REPORT: Final = ROOT / "data/runtime_evidence/issue-44/listener-diagnostic.json"
 ARTIFACT_NAMES: Final = ("shot_001.tmp", "shot_001")
 # Every recorder refusal is logged with this stable prefix, so the post-run engine
 # log scan and the smoke fixtures can match on it without depending on wording.
@@ -121,14 +120,13 @@ class CandidateExpectation:
     """Exact identity the port listener must prove before any gameplay."""
 
     root: Path
-    archive_sha256: str
-    assembly_sha256: str
+    archive_path: str
     assembly_device: str
     assembly_inode: int
-    runtime_sha256: str
     runtime_device: str
     runtime_inode: int
-    provenance_sha256: str
+    player_version: str
+    protocol_version: str
 
     @property
     def executables(self) -> frozenset[Path]:
@@ -155,15 +153,12 @@ class ListenerObservation:
     runtime_path: Path
     runtime_device: str
     runtime_inode: int
-    runtime_sha256: str
     assembly_path: Path
     assembly_device: str
     assembly_inode: int
-    assembly_sha256: str
-    provenance_sha256: str
-    provenance_assembly_sha256: str
-    provenance_runtime_sha256: str
-    archive_sha256: str
+    player_version: str
+    protocol_version: str
+    archive_path: str
     process_tree: tuple[int, ...]
 
 
@@ -188,7 +183,7 @@ class ListenerBindingError(SmokeError):
     pass
 
 
-def candidate_expectation(root: Path, archive_sha256: str) -> CandidateExpectation:
+def candidate_expectation(root: Path, archive_path: str) -> CandidateExpectation:
     """Derive the exact on-disk identity the listener must match.
 
     The root is symlink-resolved because `/proc/<pid>/exe` and `/proc/<pid>/cwd`
@@ -200,17 +195,20 @@ def candidate_expectation(root: Path, archive_sha256: str) -> CandidateExpectati
     status = assembly.stat()
     runtime = root / RUNTIME_RELATIVE_PATH
     runtime_status = runtime.stat()
-    provenance = root / "provenance.json"
+    manifest = json.loads((root / "provenance.json").read_text(encoding="utf-8"))
+    unity = manifest.get("unity") if isinstance(manifest, dict) else None
+    capture = manifest.get("capture") if isinstance(manifest, dict) else None
+    if not isinstance(unity, dict) or not isinstance(capture, dict):
+        raise SmokeError("candidate provenance is malformed")
     return CandidateExpectation(
         root,
-        archive_sha256,
-        hashlib.sha256(assembly.read_bytes()).hexdigest(),
+        archive_path,
         f"{os.major(status.st_dev):02x}:{os.minor(status.st_dev):02x}",
         status.st_ino,
-        hashlib.sha256(runtime.read_bytes()).hexdigest(),
         f"{os.major(runtime_status.st_dev):02x}:{os.minor(runtime_status.st_dev):02x}",
         runtime_status.st_ino,
-        hashlib.sha256(provenance.read_bytes()).hexdigest(),
+        str(unity.get("version", "")),
+        str(capture.get("protocol_version", "")),
     )
 
 
@@ -397,7 +395,6 @@ def _observe_listener_owners(
 ) -> tuple[ListenerObservation, ...]:
     """Read every socket owner from `/proc`; an unreadable owner is a rejection."""
     tree = _process_tree(launched_pid)
-    archive_sha = hashlib.sha256(stage_archive.read_bytes()).hexdigest()
     observations: list[ListenerObservation] = []
     for pid, socket_inode in owners:
         proc = Path("/proc") / str(pid)
@@ -416,13 +413,11 @@ def _observe_listener_owners(
             raise ListenerBindingError(f"port listener owner pid={pid} has {len(regions)} mapped {RUNTIME_RELATIVE_PATH} images")
         region = regions[0]
         try:
-            runtime_sha = hashlib.sha256(_process_view(pid, region.path).read_bytes()).hexdigest()
             # The assembly is read through the observed process's own root rather
             # than from this process's view, so a candidate in a different mount
             # namespace cannot pass by pointing the gate at our copy of the file.
             assembly_view = _process_view(pid, expectation.assembly)
             assembly_status = assembly_view.stat()
-            assembly_sha = hashlib.sha256(assembly_view.read_bytes()).hexdigest()
         except OSError as error:
             raise ListenerBindingError(f"port listener owner pid={pid} runtime or assembly image is unreadable: {error}") from error
         manifest = json.loads(provenance_bytes.decode("utf-8"))
@@ -433,11 +428,10 @@ def _observe_listener_owners(
         # which this repo's frozen dataclasses raise, is an `AttributeError`.
         if not isinstance(manifest, dict):
             raise ListenerBindingError(f"port listener owner pid={pid} candidate provenance is {type(manifest).__name__}, not an object")
-        files = manifest.get("files")
-        if not isinstance(files, dict) or not isinstance(files.get(ASSEMBLY_RELATIVE_PATH), str):
-            raise ListenerBindingError(f"port listener owner pid={pid} candidate provenance lacks an assembly digest")
-        if not isinstance(files.get(RUNTIME_RELATIVE_PATH), str):
-            raise ListenerBindingError(f"port listener owner pid={pid} candidate provenance lacks a {RUNTIME_RELATIVE_PATH} digest")
+        unity = manifest.get("unity")
+        capture = manifest.get("capture")
+        if not isinstance(unity, dict) or not isinstance(capture, dict):
+            raise ListenerBindingError(f"port listener owner pid={pid} candidate provenance is incomplete")
         # Close the splice between the owner scan and these reads. `starttime` is
         # kernel-written and unique per incarnation, so an unchanged value means
         # no exit-and-recycle happened across the identity reads; re-reading the
@@ -465,15 +459,12 @@ def _observe_listener_owners(
                 region.path,
                 region.device,
                 region.inode,
-                runtime_sha,
                 expectation.assembly,
                 f"{os.major(assembly_status.st_dev):02x}:{os.minor(assembly_status.st_dev):02x}",
                 assembly_status.st_ino,
-                assembly_sha,
-                hashlib.sha256(provenance_bytes).hexdigest(),
-                files[ASSEMBLY_RELATIVE_PATH],
-                files[RUNTIME_RELATIVE_PATH],
-                archive_sha,
+                str(unity.get("version", "")),
+                str(capture.get("protocol_version", "")),
+                str(stage_archive),
                 tree,
             )
         )
@@ -533,18 +524,15 @@ def resolve_listener_binding(
         ("runtime_path", observation.runtime_path == expectation.runtime, "listener mapped runtime path differs"),
         ("runtime_device", observation.runtime_device == expectation.runtime_device, "listener mapped runtime device differs"),
         ("runtime_inode", observation.runtime_inode == expectation.runtime_inode, "listener mapped runtime inode differs"),
-        ("runtime_sha256", observation.runtime_sha256 == expectation.runtime_sha256, "listener runtime digest differs"),
-        ("provenance_runtime_sha256", observation.provenance_runtime_sha256 == expectation.runtime_sha256, "listener provenance runtime digest differs"),
         # `assembly_path` is fixed by construction (the reader resolves exactly
         # this path through the process root), so it is recorded for drift
         # detection rather than checked here. The substance is the device, inode,
-        # and digest actually observed at that path in the listener's own root.
+        # actually observed at that path in the listener's own root.
         ("assembly_device", observation.assembly_device == expectation.assembly_device, "listener assembly device differs"),
         ("assembly_inode", observation.assembly_inode == expectation.assembly_inode, "listener assembly inode differs"),
-        ("assembly_sha256", observation.assembly_sha256 == expectation.assembly_sha256, "listener assembly digest differs"),
-        ("provenance_assembly_sha256", observation.provenance_assembly_sha256 == expectation.assembly_sha256, "listener provenance assembly digest differs"),
-        ("provenance_sha256", observation.provenance_sha256 == expectation.provenance_sha256, "listener provenance digest differs"),
-        ("archive_sha256", observation.archive_sha256 == expectation.archive_sha256, "staged archive digest drifted during the run"),
+        ("player_version", observation.player_version == expectation.player_version, "listener player version differs"),
+        ("protocol_version", observation.protocol_version == expectation.protocol_version, "listener protocol version differs"),
+        ("archive_path", observation.archive_path == expectation.archive_path, "listener archive path differs"),
         # Containment is only a guarantee while the tree is rooted at the pid this
         # run actually launched. A tree that does not contain `launched_pid` was
         # not derived from it, so membership in it proves nothing -- and that is
@@ -574,15 +562,12 @@ def resolve_listener_binding(
         "runtime_path": str(observation.runtime_path),
         "runtime_device": observation.runtime_device,
         "runtime_inode": observation.runtime_inode,
-        "runtime_sha256": observation.runtime_sha256,
         "assembly_path": str(observation.assembly_path),
         "assembly_device": observation.assembly_device,
         "assembly_inode": observation.assembly_inode,
-        "assembly_sha256": observation.assembly_sha256,
-        "provenance_sha256": observation.provenance_sha256,
-        "provenance_assembly_sha256": observation.provenance_assembly_sha256,
-        "provenance_runtime_sha256": observation.provenance_runtime_sha256,
-        "archive_sha256": observation.archive_sha256,
+        "player_version": observation.player_version,
+        "protocol_version": observation.protocol_version,
+        "archive_path": observation.archive_path,
         "process_tree": list(observation.process_tree),
         "launched_pid": launched_pid,
     }
@@ -643,8 +628,7 @@ def perform_known_action(bridge: ScienceBirdsBridge) -> JsonObject:
     # pigs sit enclosed behind platform walls, so no aim reaches the one object
     # type that does record. Changing this offset changes only launch elevation —
     # both pulls saturate the drag clamp. See
-    # .claude/project-docs/evidence/runtime-repin-gate-20260810/
-    # finding-smoke-level-geometry-risk.json before spending the run.
+    # GitHub issue #44 before spending the run.
     action = anchor_action_to_slingshot_reference(
         {"coordinate_frame": "slingshot_relative", "drag_start": [97, 227], "drag_release": [-80, 7], "tapTime": 0, "holdTime": 1000},
         reference,
@@ -751,24 +735,15 @@ def require_engine_evidence(capture: PhysicsCaptureV1) -> dict[str, object]:
     }
 
 
-def archive_details(stage: Path, clone: Path) -> tuple[Path, str, str, str, str]:
-    """Unpack and verify a staged archive, returning archive and payload hashes."""
-    receipt = (stage / "archive.sha256").read_text(encoding="ascii").strip().split()
-    if len(receipt) != 2:
-        raise SmokeError("malformed archive.sha256")
-    if receipt[1] != PurePosixPath(receipt[1]).name or receipt[1] in ("", ".", ".."):
-        raise SmokeError("archive.sha256 must name a bare file inside the stage")
-    archive = stage / receipt[1]
-    archive_sha = hashlib.sha256(archive.read_bytes()).hexdigest()
-    if archive_sha != receipt[0]:
-        raise SmokeError("archive SHA-256 mismatch")
+def archive_details(stage: Path, clone: Path) -> tuple[Path, str, str]:
+    """Unpack a staged archive and return its declared versions."""
+    archives = tuple(sorted(stage.glob("*.tar.gz")))
+    if len(archives) != 1:
+        raise SmokeError("stage must contain exactly one player archive")
+    archive = archives[0]
     safe_unpack(archive, clone)
-    verify_payload(clone)
     manifest = json.loads((clone / "provenance.json").read_text(encoding="utf-8"))
-    player_sha = manifest["files"]["9001-player.x86_64"]
-    protocol_sha = hashlib.sha256((clone / "game_playing_interface.jar").read_bytes()).hexdigest()
-    assembly_sha = hashlib.sha256((clone / "9001_Data" / "Managed" / "Assembly-CSharp.dll").read_bytes()).hexdigest()
-    return archive, archive_sha, player_sha, protocol_sha, assembly_sha
+    return archive, str(manifest["unity"]["version"]), str(manifest["capture"]["protocol_version"])
 
 
 def free_port() -> int:
@@ -877,11 +852,8 @@ def launch_environment(display: str, environ: Mapping[str, str]) -> tuple[dict[s
     """Return the child environment and the variables dropped from it.
 
     Refuses code-interposition variables outright and drops the loader search
-    path. Without this the launch environment is the one input to the gate that
-    nothing pins: `LD_PRELOAD=/tmp/patch.so` loads native code that is in none
-    of the candidate digests and can rewrite the very collision and capture
-    payloads this smoke exists to measure, while every digest, the archive, and
-    tree membership all still pass.
+    path. `LD_PRELOAD=/tmp/patch.so` can rewrite the collision and capture
+    payloads this smoke exists to measure, so interposition remains forbidden.
     """
     present = sorted(name for name in INTERPOSITION_ENV_VARS if environ.get(name))
     if present:
@@ -1080,7 +1052,7 @@ def run_smoke(args: argparse.Namespace) -> tuple[JsonObject, int]:
     args.output_dir.mkdir(parents=True, exist_ok=True)
     args.report.parent.mkdir(parents=True, exist_ok=True)
     protected = protected_roots(args.canonical_root)
-    before = {name: protected_receipt(name, path) for name, path in protected.items()}
+    before = {name: protected_snapshot(name, path) for name, path in protected.items()}
     # An artifact already present belongs to an earlier run; this run may neither
     # quarantine it nor be credited with it. Identity is captured rather than the
     # bare name, and a name that could not be probed is carried as blind so it
@@ -1089,7 +1061,7 @@ def run_smoke(args: argparse.Namespace) -> tuple[JsonObject, int]:
     # `run` is audit evidence only. No consumer gates on it, exactly as with
     # `host_uninspectable_pid_count`; staleness is closed by displacing the prior
     # receipt below, not by asking a reader to compare identities.
-    report: JsonObject = {"status": "rejected", "accepted_shot": None, "run": {"pid": os.getpid(), "started_unix_ns": time.time_ns()}, "canonical_root": str(args.canonical_root), "protected_before": before, "preexisting_artifacts": sorted(preexisting), "unprobeable_artifacts": list(blind), "protected_receipt_mode": {"canonical_project": "content_sha256", "production_player": "content_sha256", "active_data": "complete_nested_find_manifest_sha256"}}
+    report: JsonObject = {"status": "rejected", "accepted_shot": None, "run": {"pid": os.getpid(), "started_unix_ns": time.time_ns()}, "canonical_root": str(args.canonical_root), "protected_before": before, "preexisting_artifacts": sorted(preexisting), "unprobeable_artifacts": list(blind), "protected_receipt_mode": {"canonical_project": "filesystem_metadata", "production_player": "filesystem_metadata", "active_data": "complete_nested_filesystem_metadata"}}
     engine: subprocess.Popen[bytes] | None = None
     xvfb: subprocess.Popen[bytes] | None = None
     agent_teardown = "not-started"
@@ -1112,9 +1084,9 @@ def run_smoke(args: argparse.Namespace) -> tuple[JsonObject, int]:
             temporary_path = temporary
             clone = Path(temporary) / "player"
             report["phase"] = "verify-stage"
-            stage_archive, archive_sha, player_sha, protocol_sha, assembly_sha = archive_details(args.stage, clone)
-            expectation = candidate_expectation(clone, archive_sha)
-            report["stage_provenance"] = {"archive_sha256": archive_sha, "player_sha256": player_sha, "protocol_sha256": protocol_sha, "assembly_csharp_sha256": assembly_sha, "candidate_root": str(clone), "provenance_sha256": expectation.provenance_sha256, "assembly_device": expectation.assembly_device, "assembly_inode": expectation.assembly_inode}
+            stage_archive, player_version, protocol_version = archive_details(args.stage, clone)
+            expectation = candidate_expectation(clone, str(stage_archive))
+            report["stage_provenance"] = {"archive_path": str(stage_archive), "player_version": player_version, "protocol_version": protocol_version, "candidate_root": str(clone), "assembly_device": expectation.assembly_device, "assembly_inode": expectation.assembly_inode}
             report["phase"] = "start-display"
             display, xvfb = start_display(args.output_dir / "xvfb.log")
             agent_port = args.agent_port or free_port()
@@ -1125,7 +1097,7 @@ def run_smoke(args: argparse.Namespace) -> tuple[JsonObject, int]:
             report["launch_environment"] = {
                 "interposition_vars_refused": list(INTERPOSITION_ENV_VARS),
                 "vars_stripped": list(stripped_env),
-                "sha256": hashlib.sha256("\n".join(f"{name}={child_env[name]}" for name in sorted(child_env)).encode("utf-8")).hexdigest(),
+                "variable_names": sorted(child_env),
             }
             with engine_log_path.open("wb") as engine_stream:
                 engine = subprocess.Popen(
@@ -1199,7 +1171,7 @@ def run_smoke(args: argparse.Namespace) -> tuple[JsonObject, int]:
                     require_action_events(second_capture.events)
                     if missing_fields:
                         raise SmokeError("request-70 state missing contract fields: " + ", ".join(missing_fields))
-                    capture_physics_rollout(CapturedRequest(second_capture), shot, target_fps=1.0, duration_seconds=1.0, max_frames=1, player_sha256=player_sha, protocol_sha256=protocol_sha, archive_sha256=archive_sha)
+                    capture_physics_rollout(CapturedRequest(second_capture), shot, target_fps=1.0, duration_seconds=1.0, max_frames=1, player_version=player_version, protocol_version=protocol_version, archive_path=str(stage_archive))
                     if args.inject_frame_mismatch:
                         state_path = shot / "physics_state.jsonl"
                         lines = state_path.read_text(encoding="utf-8").splitlines()
@@ -1213,7 +1185,7 @@ def run_smoke(args: argparse.Namespace) -> tuple[JsonObject, int]:
                     summary = validate_physics_shot_artifact(shot)
                     final_shot = args.output_dir / "shot_001"
                     shot.replace(final_shot)
-                    report.update({"status": "accepted", "phase": "complete", "accepted_shot": str(final_shot), "artifact": {"states": summary.state_count, "events": summary.event_count}, "provenance": {"archive_sha256": archive_sha, "player_sha256": player_sha, "protocol_sha256": protocol_sha, "assembly_csharp_sha256": assembly_sha}})
+                    report.update({"status": "accepted", "phase": "complete", "accepted_shot": str(final_shot), "artifact": {"states": summary.state_count, "events": summary.event_count}, "provenance": {"archive_path": str(stage_archive), "player_version": player_version, "protocol_version": protocol_version}})
                     result_code = 0
             finally:
                 # Covers the listener-only path too, which now holds a bridge.
@@ -1297,7 +1269,7 @@ def run_smoke(args: argparse.Namespace) -> tuple[JsonObject, int]:
             cleanup["physics_listener_scan_error"] = str(error)
             failures.append(f"listener cleanup check failed: {error}")
         try:
-            after = {name: protected_receipt(name, path) for name, path in protected.items()}
+            after = {name: protected_snapshot(name, path) for name, path in protected.items()}
             report["protected_after"] = after
             report["protected_unchanged"] = before == after
             if before != after:

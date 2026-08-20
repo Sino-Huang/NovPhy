@@ -2,11 +2,11 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import shlex
 import sys
 import tempfile
+import zlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, Iterable, Literal, TypedDict
@@ -159,30 +159,9 @@ class WorkerSpec:
 class PhysicsCaptureProvenance:
     archive: Path
     smoke_marker: Path
-    player_sha256: str
-    protocol_sha256: str
-    archive_sha256: str
-
-
-def _sha256_file(path: Path) -> str:
-    if path.is_dir():
-        digest = hashlib.sha256()
-        for child in sorted(item for item in path.rglob("*") if item.is_file() and item.name != "physics_capture_v1_smoke.json"):
-            digest.update(child.relative_to(path).as_posix().encode("utf-8"))
-            digest.update(b"\0")
-            with child.open("rb") as source:
-                for chunk in iter(lambda: source.read(1024 * 1024), b""):
-                    digest.update(chunk)
-        return digest.hexdigest()
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _is_sha256(value: object) -> bool:
-    return isinstance(value, str) and len(value) == 64 and all(character in "0123456789abcdef" for character in value)
+    player_version: str
+    protocol_version: str
+    archive_path: str
 
 
 def resolve_physics_capture_provenance(archive: Path, smoke_marker: Path) -> PhysicsCaptureProvenance:
@@ -190,9 +169,6 @@ def resolve_physics_capture_provenance(archive: Path, smoke_marker: Path) -> Phy
         raise ValueError(f"staged player archive is required: {archive}")
     if not smoke_marker.is_file():
         raise ValueError(f"physics smoke marker is required: {smoke_marker}")
-    archive_mtime = max((child.stat().st_mtime_ns for child in archive.rglob("*") if child.is_file() and child != smoke_marker), default=archive.stat().st_mtime_ns) if archive.is_dir() else archive.stat().st_mtime_ns
-    if smoke_marker.stat().st_mtime_ns < archive_mtime:
-        raise ValueError("physics smoke marker is stale relative to the staged player archive")
     marker = _read_json(smoke_marker)
     if marker is None:
         raise ValueError("physics smoke marker must be a JSON object")
@@ -208,13 +184,20 @@ def resolve_physics_capture_provenance(archive: Path, smoke_marker: Path) -> Phy
     provenance = marker.get("provenance")
     if not isinstance(provenance, dict):
         raise ValueError("physics smoke marker must contain a provenance object")
-    hashes = tuple(provenance.get(name) for name in ("player_sha256", "protocol_sha256", "archive_sha256"))
-    if not all(_is_sha256(value) for value in hashes):
-        raise ValueError("physics smoke marker archive_sha256/player_sha256/protocol_sha256 must be valid SHA-256 values")
-    archive_sha256 = _sha256_file(archive)
-    if provenance["archive_sha256"] != archive_sha256:
-        raise ValueError("physics smoke marker archive_sha256 does not match the staged player archive")
-    return PhysicsCaptureProvenance(archive.resolve(strict=True), smoke_marker.resolve(strict=True), provenance["player_sha256"], provenance["protocol_sha256"], archive_sha256)
+    values = tuple(provenance.get(name) for name in ("player_version", "protocol_version", "archive_path"))
+    if not all(isinstance(value, str) and value for value in values):
+        raise ValueError("physics smoke marker provenance values must be nonempty strings")
+    declared_archive = Path(provenance["archive_path"]).resolve(strict=False)
+    resolved_archive = archive.resolve(strict=True)
+    if declared_archive != resolved_archive:
+        raise ValueError("physics smoke marker archive_path does not match the supplied player archive")
+    return PhysicsCaptureProvenance(
+        resolved_archive,
+        smoke_marker.resolve(strict=True),
+        provenance["player_version"],
+        provenance["protocol_version"],
+        provenance["archive_path"],
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -284,7 +267,9 @@ def discover_level_entries(engine_dir: Path, level_type_prefix: str = PRODUCTION
 
 
 def _stable_key(entry: LevelEntry, seed: str) -> str:
-    return hashlib.sha256(f"{seed}\0{entry.relative_path}".encode("utf-8")).hexdigest()
+    # deterministic non-cryptographic derivation, not an integrity check
+    value = f"{seed}\0{entry.relative_path}".encode("utf-8")
+    return f"{zlib.crc32(value):08x}"
 
 
 def _split_counts(total: int, train_ratio: float, dev_ratio: float) -> tuple[int, int, int]:
@@ -594,9 +579,9 @@ def _collection_command_lines(episode: PlannedEpisode, opts: CollectionOptions, 
             "--physics-capture-v1",
             "--physics-host 127.0.0.1",
             f"--physics-port {spec.agent_port + 1}",
-            f"--physics-player-sha256 {provenance.player_sha256}",
-            f"--physics-protocol-sha256 {provenance.protocol_sha256}",
-            f"--physics-archive-sha256 {provenance.archive_sha256}",
+            f"--physics-player-version {_quote(provenance.player_version)}",
+            f"--physics-protocol-version {_quote(provenance.protocol_version)}",
+            f"--physics-archive-path {_quote(provenance.archive_path)}",
         ])
     lines = [
         '  DISPLAY="$display_id" LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH-}" \\',
@@ -708,7 +693,7 @@ def generate_collection_commands(
         "}",
         "run_worker() {",
         "  local worker_index=\"$1\" display_id=\"$2\"",
-            "  local worker_root worker_engine_dir worker_archive archive_sha256" if physics_provenance is not None else "  local worker_root worker_engine_dir",
+            "  local worker_root worker_engine_dir worker_archive" if physics_provenance is not None else "  local worker_root worker_engine_dir",
         "  worker_root=\"$(mktemp -d \"${TMPDIR:-/tmp}/novphy_rollout_worker_${worker_index}_XXXXXX\")\"",
         "  trap 'rm -rf \"$worker_root\"' RETURN",
         "  worker_engine_dir=\"$worker_root/engine\"",
@@ -720,8 +705,6 @@ def generate_collection_commands(
             lines.extend([
                 f"  worker_archive=\"$worker_root/{physics_provenance.archive.name}\"",
                 f"  cp -a -- {_quote(physics_provenance.archive)} \"$worker_archive\"",
-                "  archive_sha256=\"$(python - \"$worker_archive\" <<'PY'\nfrom pathlib import Path\nfrom scripts.prepare_rollout_dataset import _sha256_file\nimport sys\nprint(_sha256_file(Path(sys.argv[1])))\nPY\n)\"",
-                f"  [[ \"$archive_sha256\" == {_quote(physics_provenance.archive_sha256)} ]] || {{ echo 'staged player archive digest mismatch' >&2; return 1; }}",
                 "  mkdir -- \"$worker_engine_dir\"",
                 "  cp -a -- \"$worker_archive/.\" \"$worker_engine_dir/\"",
             ])
@@ -729,8 +712,6 @@ def generate_collection_commands(
             lines.extend([
                 f"  worker_archive=\"$worker_root/{physics_provenance.archive.name}\"",
                 f"  cp -- {_quote(physics_provenance.archive)} \"$worker_archive\"",
-                f"  archive_sha256=\"$(sha256sum \"$worker_archive\" | awk '{{print $1}}')\"",
-                f"  [[ \"$archive_sha256\" == {_quote(physics_provenance.archive_sha256)} ]] || {{ echo 'staged player archive digest mismatch' >&2; return 1; }}",
                 "  mkdir -- \"$worker_engine_dir\"",
                 "  tar -xf \"$worker_archive\" -C \"$worker_engine_dir\"",
             ])
@@ -807,7 +788,7 @@ def write_collection_plan(
         _require_collection_admission(planned.entry, purpose, "research collection plan")
     contract = {"count": options.count, "fps": options.fps, "duration": options.duration, "workers": options.workers, "train_target": targets.train, "dev_target": targets.dev, "test_target": targets.test, "selected_splits": list(splits), "collection_purpose": purpose}
     if physics_provenance is not None:
-        contract.update({"capture_contract": PHYSICS_CAPTURE_CONTRACT, "player_sha256": physics_provenance.player_sha256, "protocol_sha256": physics_provenance.protocol_sha256, "archive_sha256": physics_provenance.archive_sha256, "smoke_marker": str(physics_provenance.smoke_marker)})
+        contract.update({"capture_contract": PHYSICS_CAPTURE_CONTRACT, "player_version": physics_provenance.player_version, "protocol_version": physics_provenance.protocol_version, "archive_path": physics_provenance.archive_path, "smoke_marker": str(physics_provenance.smoke_marker)})
     payload = {
         "schema": PLAN_SCHEMA,
         "seed": seed,

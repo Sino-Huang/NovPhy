@@ -19,7 +19,7 @@ from scripts.cohort_v2_scenarios import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_EVIDENCE = ROOT / ".claude/project-docs/evidence/issue-45-cohort-v2-lineage"
+DEFAULT_EVIDENCE = ROOT / "data/runtime_evidence/issue-45"
 DEFAULT_OUTPUT = ROOT / ".local-artifacts/issue-45-review"
 
 
@@ -124,7 +124,7 @@ footer{{display:grid;grid-template-columns:1fr 1.4fr;gap:18px;margin-top:18px}} 
 <header><div><div class="eyebrow">NovPhy · Issue #45 review</div><h1>Cohort-v2 lineage approval board</h1><p class="subtitle">Public non-final roles, source-bound identities, deterministic Unity reset evidence, and an opaque final-evaluation projection.</p></div>
 <div class="draft"><strong>Draft inventory identity</strong><code>{escape(draft['identity'])}</code></div></header>
 <section class="roles">{cards}</section>
-<footer><section class="fact"><h3>Unity reset reproduction <span class="pass">PASS</span></h3><p>Two independent captures resolve the same normalized initial engine state.</p><code>{escape(receipt['normalized_initial_engine_state_identity'])}</code><p>Capture byte digests remain distinct and independently recorded.</p></section>
+<footer><section class="fact"><h3>Unity reset reproduction <span class="pass">PASS</span></h3><p>Two independent captures resolve the same normalized initial engine state.</p><code>{escape(receipt['normalized_initial_engine_state_identity'])}</code><p>Each capture retains its declared capture identity and source provenance.</p></section>
 <section class="fact approval"><h3>Approval action</h3><p>After checking the roles, sealed projection, and reset evidence, post this exact comment on GitHub issue #45:</p><code>{escape(approval)}</code></section></footer>
 <div class="notice">Layout thumbnails are source-layout review aids. Artifact identities and Unity engine receipts remain the evidence authority.</div>
 </main></body></html>"""

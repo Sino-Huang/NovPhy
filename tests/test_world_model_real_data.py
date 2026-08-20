@@ -18,6 +18,7 @@ from world_model.training import (
     enumerate_scoring_states,
     fixture_jepa_config,
     partition_episodes,
+    score_state_set_identity,
     write_score_artifacts,
 )
 from world_model.training.grid_data import MotionRegime
@@ -48,10 +49,21 @@ class RealDataAdapterTests(unittest.TestCase):
                 for index in range(100)
             )
             score_root = root / "scores"
+            catalog_identity = "episode-catalog-v1:real-data-fixture-cohort"
+            partition_identity = "pair-grid-partition-v1:real-data-fixture-split"
             write_score_artifacts(
                 score_root,
                 ExhaustiveScorer(_ZeroPredictor()).score(examples),
-                checkpoint_digest="a" * 64,
+                checkpoint_path="checkpoint.pt",
+                checkpoint_identity="checkpoint-v1:real-data-fixture-run:1",
+                config_identity="phase-a-config-v2:fixture",
+                catalog_identity=catalog_identity,
+                partition_identity=partition_identity,
+                state_set_identity=score_state_set_identity(
+                    catalog_identity,
+                    partition_identity,
+                    tuple(example.state_id for example in examples),
+                ),
             )
             path = root / "frontier-input.json"
 
@@ -62,13 +74,9 @@ class RealDataAdapterTests(unittest.TestCase):
             source = path.read_bytes()
             payload = json.loads(source)
             self.assertEqual(set(payload), {
-                "checkpoint_digest",
                 "partition",
                 "schema_version",
                 "score_artifact_root",
-                "score_manifest_digest",
-                "score_spec_digest",
-                "state_digest",
             })
             self.assertEqual(payload["score_artifact_root"], "scores")
             self.assertLess(len(source), 1024)
@@ -155,7 +163,8 @@ class RealDataAdapterTests(unittest.TestCase):
 
     @staticmethod
     def _episode(index: int) -> EpisodeRecord:
-        name = f"episode_{index:03d}"
+        fixture_suffix = (index * 2654435761) & 0xFFFFFFFF
+        name = f"episode_{index:03d}_{fixture_suffix:08x}"
         shot_path = f"dev/{name}/shot_001"
         return EpisodeRecord(
             name=name,

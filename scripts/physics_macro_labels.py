@@ -24,8 +24,7 @@ representative validation.
 An unavailable predicate keeps `value: null` with an explicit availability reason;
 it is never silently converted to false for training.
 
-The artifact binds the SHA-256 of both frozen source sidecars, serializes to
-canonical JSONL (ASCII-sorted keys, compact separators, finite numbers only, LF line
+The artifact serializes to canonical JSONL (ASCII-sorted keys, compact separators, finite numbers only, LF line
 endings, exactly one trailing newline), writes atomically, and validates fail-closed
 by strict parsing plus re-derivation byte comparison.  The frozen capture contract
 is not touched.
@@ -35,11 +34,9 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import StrEnum, unique
-import hashlib
 import json
 import os
 from pathlib import Path
-import re
 import secrets
 from typing import Final, TypeAlias
 
@@ -303,8 +300,6 @@ class MacroLabels:
 
     capture_id: str
     shot_id: str
-    state_sha256: str
-    events_sha256: str
     event_count: int
     intervals: tuple[EventInterval, ...]
     frames: tuple[MacroFrameLabel, ...]
@@ -318,15 +313,12 @@ class MacroLabels:
             "capture_id": self.capture_id,
             "shot_id": self.shot_id,
             "derivation_spec_version": DERIVATION_SPEC_VERSION,
-            "derivation_spec_digest": derivation_spec_digest(),
             "event_clock": {**EVENT_CLOCK_JSON},
             "macro_vocabulary": _macro_vocabulary_json(),
             "pig_class_set": list(PIG_CLASS_SET),
             "sources": {
                 "physics_state_path": STATE_SIDECAR,
-                "physics_state_sha256": self.state_sha256,
                 "physics_events_path": EVENT_SIDECAR,
-                "physics_events_sha256": self.events_sha256,
             },
             "state_count": len(self.frames),
             "event_count": self.event_count,
@@ -435,18 +427,9 @@ def derivation_spec_json() -> JsonObject:
     }
 
 
-def derivation_spec_digest() -> str:
-    """SHA-256 of the canonical JSON of `derivation_spec_json()`."""
-    encoded = json.dumps(derivation_spec_json(), sort_keys=True, separators=(",", ":"), allow_nan=False)
-    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
-
-
-def _sha256_file(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for chunk in iter(lambda: source.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def derivation_spec_identity() -> str:
+    """Return the declared derivation specification identity."""
+    return f"macro-labels-derivation:{DERIVATION_SPEC_VERSION}"
 
 
 def _citation(event: EventRecord) -> EventCitation:
@@ -572,10 +555,10 @@ def _cascade_interval(
     )
 
 
-def derive_macro_labels(capture: PhysicsCapture, *, state_sha256: str, events_sha256: str) -> MacroLabels:
+def derive_macro_labels(capture: PhysicsCapture) -> MacroLabels:
     """Derive macro/outcome labels from a parsed, frozen-validator-accepted capture.
 
-    Pure: the same capture and digests always produce identical records and bytes.
+    Pure: the same capture always produces identical records and bytes.
     The caller is responsible for having validated the capture (`load_physics_capture`
     does); derivation consumes only documented frozen fields.
     """
@@ -729,8 +712,6 @@ def derive_macro_labels(capture: PhysicsCapture, *, state_sha256: str, events_sh
     return MacroLabels(
         capture_id=capture_id,
         shot_id=shot_id,
-        state_sha256=state_sha256,
-        events_sha256=events_sha256,
         event_count=len(events),
         intervals=intervals,
         frames=tuple(frames),
@@ -797,17 +778,13 @@ def _derive_outcome(
 
 
 def derive_macro_labels_for_shot(shot_dir: Path) -> MacroLabels:
-    """Load a shot's frozen sidecars and derive its labels, binding the source digests."""
+    """Load a shot's frozen sidecars and derive its labels."""
     state_path = shot_dir / STATE_SIDECAR
     event_path = shot_dir / EVENT_SIDECAR
     if not state_path.is_file() or not event_path.is_file():
         raise MacroLabelError(str(shot_dir), "physics capture sidecars are missing")
     capture = load_physics_capture(state_path, event_path)
-    return derive_macro_labels(
-        capture,
-        state_sha256=_sha256_file(state_path),
-        events_sha256=_sha256_file(event_path),
-    )
+    return derive_macro_labels(capture)
 
 
 def write_macro_label_file(labels: MacroLabels, destination: Path) -> Path:
@@ -843,7 +820,6 @@ HEADER_FIELDS: Final = frozenset((
     "capture_id",
     "shot_id",
     "derivation_spec_version",
-    "derivation_spec_digest",
     "event_clock",
     "macro_vocabulary",
     "pig_class_set",
@@ -857,9 +833,7 @@ EVENT_CLOCK_FIELDS: Final = frozenset(("occurrence_authority", "render_frame_rol
 VOCABULARY_FIELDS: Final = frozenset(("predicate", "absorbing", "semantic_status"))
 SOURCE_FIELDS: Final = frozenset((
     "physics_state_path",
-    "physics_state_sha256",
     "physics_events_path",
-    "physics_events_sha256",
 ))
 CITATION_FIELDS: Final = frozenset(("capture_id", "shot_id", "event_sequence", "event_id", "fixed_step"))
 STATE_IDENTITY_FIELDS: Final = frozenset((
@@ -901,15 +875,10 @@ OUTCOME_FIELDS: Final = frozenset((
     "semantic_status",
 ))
 
-_DIGEST_PATTERN: Final = re.compile(r"[0-9a-f]{64}")
-
-
 @dataclass(frozen=True, slots=True)
 class _ParsedHeader:
     capture_id: str
     shot_id: str
-    state_sha256: str
-    events_sha256: str
     state_count: int
     event_count: int
     interval_count: int
@@ -936,13 +905,6 @@ def _expect_count(record: JsonObject, field: str, location: str) -> int:
     value = record[field]
     if isinstance(value, bool) or not isinstance(value, int) or value < 0:
         raise MacroLabelError(location, f"{field} must be a nonnegative integer")
-    return value
-
-
-def _expect_digest(record: JsonObject, field: str, location: str) -> str:
-    value = record[field]
-    if not isinstance(value, str) or _DIGEST_PATTERN.fullmatch(value) is None:
-        raise MacroLabelError(location, f"{field} must be 64 lowercase hex characters")
     return value
 
 
@@ -1049,8 +1011,6 @@ def _parse_header(record: JsonObject, location: str) -> _ParsedHeader:
     shot_id = _expect_string(record, "shot_id", location)
     if record["derivation_spec_version"] != DERIVATION_SPEC_VERSION:
         raise MacroLabelError(location, "unsupported derivation spec version")
-    if _expect_digest(record, "derivation_spec_digest", location) != derivation_spec_digest():
-        raise MacroLabelError(location, "derivation spec digest differs from this module")
     clock = record["event_clock"]
     if not isinstance(clock, dict):
         raise MacroLabelError(location, "event_clock must be an object")
@@ -1071,8 +1031,6 @@ def _parse_header(record: JsonObject, location: str) -> _ParsedHeader:
     return _ParsedHeader(
         capture_id=capture_id,
         shot_id=shot_id,
-        state_sha256=_expect_digest(sources, "physics_state_sha256", location),
-        events_sha256=_expect_digest(sources, "physics_events_sha256", location),
         state_count=_expect_count(record, "state_count", location),
         event_count=_expect_count(record, "event_count", location),
         interval_count=_expect_count(record, "interval_count", location),
@@ -1299,8 +1257,6 @@ def read_macro_labels(path: Path) -> MacroLabels:
     return MacroLabels(
         capture_id=header.capture_id,
         shot_id=header.shot_id,
-        state_sha256=header.state_sha256,
-        events_sha256=header.events_sha256,
         event_count=header.event_count,
         intervals=intervals,
         frames=frames,
@@ -1311,8 +1267,7 @@ def read_macro_labels(path: Path) -> MacroLabels:
 def validate_macro_labels(shot_dir: Path, label_path: Path | None = None) -> MacroLabels:
     """Re-derive a shot's labels and reject any stored file that disagrees.
 
-    Fails closed on: a missing or malformed sidecar (via `read_macro_labels`), stale
-    source digests (the capture changed after labelling), or any byte that differs
+    Fails closed on a missing or malformed sidecar (via `read_macro_labels`) or any byte that differs
     from a fresh derivation (noncanonical order/bytes included).
     """
     path = label_path if label_path is not None else shot_dir / MACRO_LABEL_SIDECAR
@@ -1321,8 +1276,6 @@ def validate_macro_labels(shot_dir: Path, label_path: Path | None = None) -> Mac
         raise MacroLabelError(location, "macro label sidecar is missing")
     stored = read_macro_labels(path)
     expected = derive_macro_labels_for_shot(shot_dir)
-    if stored.state_sha256 != expected.state_sha256 or stored.events_sha256 != expected.events_sha256:
-        raise MacroLabelError(location, "source sidecar digests are stale")
     if path.read_bytes() != expected.to_jsonl().encode("utf-8"):
         raise MacroLabelError(location, "stored labels disagree with a fresh derivation")
     return stored

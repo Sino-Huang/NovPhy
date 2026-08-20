@@ -1,10 +1,7 @@
 """Bounded validation accumulators for exhaustive score shards."""
 from __future__ import annotations
 
-import hashlib
-import json
 from dataclasses import dataclass
-from pathlib import Path
 
 from world_model.model import Abstraction, PredictionPair
 from world_model.training.grid_data import MotionRegime
@@ -83,7 +80,6 @@ class StreamValidationResult:
 
     state_count: int
     score_count: int
-    state_digest: str
     metrics: tuple[PairAggregate, ...]
     ceiling: TemporalOracleCeiling
 
@@ -91,13 +87,24 @@ class StreamValidationResult:
 class ScoreShardStream:
     """Validate shard records without retaining every decoded label."""
 
-    def __init__(self, spec: ScoreSpec) -> None:
+    def __init__(
+        self,
+        spec: ScoreSpec,
+        expected_state_set_identity: str,
+        expected_state_ids: frozenset[str],
+    ) -> None:
         self._spec = spec
+        if type(expected_state_set_identity) is not str or not expected_state_set_identity.strip():
+            raise ScoreArtifactError("expected state-set identity must be nonempty")
+        if (
+            type(expected_state_ids) is not frozenset
+            or not expected_state_ids
+            or any(type(state_id) is not str or not state_id for state_id in expected_state_ids)
+        ):
+            raise ScoreArtifactError("expected state membership must be nonempty")
+        self._expected_state_set_identity = expected_state_set_identity
+        self._expected_state_ids = expected_state_ids
         self._seen: set[str] = set()
-        self._all_hash = hashlib.sha256(b"[")
-        self._eval_hash = hashlib.sha256(b"[")
-        self._all_first = True
-        self._eval_first = True
         self._state_count = 0
         self._eval_count = 0
         self._partitions: set[Partition] = set()
@@ -105,13 +112,6 @@ class ScoreShardStream:
         self._accumulators: dict[tuple[str, MotionRegime | None, int], _MetricAccumulator] = {}
         self._fixed_sums = {delta: 0.0 for delta in (1, 5, 15)}
         self._oracle_sum = 0.0
-
-    @staticmethod
-    def _append_hash(hasher: hashlib._Hash, first: bool, value: str) -> bool:
-        if not first:
-            hasher.update(b",")
-        hasher.update(json.dumps(value, ensure_ascii=True, separators=(",", ":")).encode("ascii"))
-        return False
 
     def _accumulate(self, partition: str, regime: MotionRegime, metric: PairMetric, label: dict[str, object]) -> None:
         selected_delta = label["selected_delta"]
@@ -136,7 +136,6 @@ class ScoreShardStream:
         if type(state_id) is not str or state_id in self._seen:
             raise ScoreArtifactError("state identities are duplicated or malformed")
         self._seen.add(state_id)
-        self._all_first = self._append_hash(self._all_hash, self._all_first, state_id)
         self._state_count += 1
         example = ScoringExample(
             state_id, Partition(partition_path), regime, record["frame_count"], record["context_position"]
@@ -174,22 +173,25 @@ class ScoreShardStream:
         for metric in metrics:
             self._accumulate(str(example.partition), regime, metric, record)
         if example.partition is Partition.EVALUATION:
-            self._eval_first = self._append_hash(self._eval_hash, self._eval_first, state_id)
             self._eval_count += 1
             for metric in metrics:
                 self._fixed_sums[metric.pair.delta] += metric.weighted_prediction_error / self._spec.error_scale + metric.compute_cost
             self._oracle_sum += expected.primary_objective
 
-    def finish(self, expected_state_count: int, expected_score_count: int, expected_digest: str) -> StreamValidationResult:
+    def finish(
+        self,
+        expected_state_count: int,
+        expected_score_count: int,
+        declared_state_set_identity: str,
+    ) -> StreamValidationResult:
         if self._state_count != expected_state_count or self._state_count * 3 != expected_score_count:
             raise ScoreArtifactError("manifest state or score count mismatch")
+        if declared_state_set_identity != self._expected_state_set_identity:
+            raise ScoreArtifactError("manifest state-set identity mismatch")
+        if self._seen != self._expected_state_ids:
+            raise ScoreArtifactError("manifest state membership mismatch")
         if self._partitions != set(Partition):
             raise ScoreArtifactError("state identities or partitions are incomplete")
-        self._all_hash.update(b"]")
-        self._eval_hash.update(b"]")
-        all_digest = self._all_hash.hexdigest()
-        if all_digest != expected_digest:
-            raise ScoreArtifactError("manifest state digest mismatch")
         calibration_spec = ScoreSpec.from_calibration(tuple(self._calibration_errors))
         if calibration_spec != self._spec:
             raise ScoreArtifactError("frozen error_scale does not match calibration")
@@ -200,15 +202,14 @@ class ScoreShardStream:
             for delta in (1, 5, 15)
             if (accumulator := self._accumulators.get((partition, regime, delta))) is not None
         )
-        eval_digest = self._eval_hash.hexdigest()
         fixed = tuple(
-            FixedPairCeiling(delta, self._eval_count, eval_digest, self._fixed_sums[delta] / self._eval_count)
+            FixedPairCeiling(delta, self._eval_count, self._fixed_sums[delta] / self._eval_count)
             for delta in (1, 5, 15)
         )
         ceiling = TemporalOracleCeiling(
-            self._eval_count, eval_digest, self._oracle_sum / self._eval_count, fixed
+            self._eval_count, self._oracle_sum / self._eval_count, fixed
         )
-        return StreamValidationResult(self._state_count, expected_score_count, all_digest, metrics, ceiling)
+        return StreamValidationResult(self._state_count, expected_score_count, metrics, ceiling)
 
 
 __all__ = ["ScoreShardStream", "StreamValidationResult"]

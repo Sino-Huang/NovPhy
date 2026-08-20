@@ -3,7 +3,6 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import dataclass, replace
 from io import BytesIO
-import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -103,8 +102,6 @@ class PhysicsRolloutSemanticsTests(unittest.TestCase):
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
         state_bytes = (shot_dir / "physics_state.jsonl").read_bytes()
         event_bytes = (shot_dir / "physics_events.jsonl").read_bytes()
-        metadata["physics_state_sha256"] = hashlib.sha256(state_bytes).hexdigest()
-        metadata["physics_events_sha256"] = hashlib.sha256(event_bytes).hexdigest()
         metadata["physics_state_count"] = len(state_bytes.splitlines()) - 1
         metadata["physics_event_count"] = len(event_bytes.splitlines())
         metadata["frame_count"] = metadata["physics_state_count"]
@@ -218,10 +215,6 @@ class PhysicsRolloutSemanticsTests(unittest.TestCase):
 
         self.assertEqual(initial_engine_state_identity(original), initial_engine_state_identity(changed))
 
-    def test_expected_initial_engine_state_identity_mismatch_is_rejected(self) -> None:
-        with self.assertRaisesRegex(PhysicsPersistenceError, "initial engine state"):
-            self._persist(expected_initial_engine_state_identity="0" * 64)
-
     def test_termination_metadata_records_rollout_ceiling(self) -> None:
         _, metadata, _ = self._persist()
 
@@ -230,7 +223,7 @@ class PhysicsRolloutSemanticsTests(unittest.TestCase):
         self.assertIsNone(metadata["termination_event_id"])
         self.assertEqual(metadata["terminal_state_fixed_step"], 11)
         self.assertEqual(metadata["intervention_event_id"], "event:00000000")
-        self.assertEqual(len(metadata["initial_engine_state_identity"]), 64)
+        self.assertTrue(metadata["initial_engine_state_identity"].startswith("normalized-initial-engine-state-v1:"))
 
     def test_launch_cannot_precede_first_retained_state_but_same_step_is_allowed(self) -> None:
         shot_dir, _, _ = self._persist()

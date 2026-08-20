@@ -1,8 +1,6 @@
 """Aggregate metrics and temporal oracle ceiling for exhaustive pair scores."""
 from __future__ import annotations
 
-import hashlib
-import json
 import math
 from dataclasses import dataclass
 
@@ -31,14 +29,12 @@ class PairAggregate:
 class FixedPairCeiling:
     delta: int
     state_count: int
-    state_digest: str
     primary_mean: float
 
 
 @dataclass(frozen=True, slots=True)
 class TemporalOracleCeiling:
     state_count: int
-    state_digest: str
     oracle_primary_mean: float
     fixed_pairs: tuple[FixedPairCeiling, ...]
 
@@ -49,11 +45,6 @@ def percentile(values: tuple[float, ...], probability: float) -> float:
     lower = math.floor(rank)
     upper = math.ceil(rank)
     return ordered[lower] + (ordered[upper] - ordered[lower]) * (rank - lower)
-
-
-def state_digest(state_ids: tuple[str, ...]) -> str:
-    payload = json.dumps(state_ids, ensure_ascii=True, separators=(",", ":")).encode("ascii")
-    return hashlib.sha256(payload).hexdigest()
 
 
 def aggregate_labels(
@@ -107,21 +98,18 @@ def oracle_ceiling(
     error_scale: float,
 ) -> TemporalOracleCeiling:
     evaluation = tuple((state_id, label) for partition, _regime, state_id, label in labels if partition == "evaluation")
-    ids = tuple(state_id for state_id, _label in evaluation)
-    digest_value = state_digest(ids)
     fixed: list[FixedPairCeiling] = []
     for delta in (1, 5, 15):
         objectives = tuple(
             metric.weighted_prediction_error / error_scale + metric.compute_cost
             for _state_id, label in evaluation for metric in label.metrics if metric.pair.delta == delta
         )
-        fixed.append(FixedPairCeiling(delta, len(evaluation), digest_value, sum(objectives) / len(objectives)))
+        fixed.append(FixedPairCeiling(delta, len(evaluation), sum(objectives) / len(objectives)))
     return TemporalOracleCeiling(
         state_count=len(evaluation),
-        state_digest=digest_value,
         oracle_primary_mean=sum(label.primary_objective for _state_id, label in evaluation) / len(evaluation),
         fixed_pairs=tuple(fixed),
     )
 
 
-__all__ = ["FixedPairCeiling", "PairAggregate", "TemporalOracleCeiling", "aggregate_labels", "oracle_ceiling", "percentile", "state_digest"]
+__all__ = ["FixedPairCeiling", "PairAggregate", "TemporalOracleCeiling", "aggregate_labels", "oracle_ceiling", "percentile"]

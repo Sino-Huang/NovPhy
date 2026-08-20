@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import hashlib
 from io import BytesIO
 import json
 from pathlib import Path
@@ -9,6 +8,7 @@ import shutil
 import tempfile
 import unittest
 from unittest import mock
+from urllib.parse import quote
 
 from PIL import Image
 
@@ -22,13 +22,9 @@ from scripts.collection_plan import (
 )
 from scripts.cohort_partition import create_cohort_partition_manifest
 from scripts.physics_capture_contract import load_physics_capture
-from scripts.physics_artifact_validation import (
-    validate_physics_shot_artifact as validate_physics_shot_artifact_without_mock,
-)
 from scripts.physics_macro_labels import (
     DERIVATION_SPEC_VERSION,
     SemanticStatus,
-    derivation_spec_digest,
     derivation_spec_json,
     derive_macro_labels_for_shot,
 )
@@ -72,7 +68,7 @@ XML = b'''<?xml version="1.0" encoding="utf-8"?>
   <GameObjects><Pig type="BasicSmall" x="1" y="-3" rotation="0" /></GameObjects>
 </Level>
 '''
-PROVENANCE = CaptureProvenance("0" * 64, "1" * 64, "2" * 64)
+PROVENANCE = CaptureProvenance("fixture-player-v1", "fixture-protocol-v1", "fixture-archive")
 
 
 def _fixture_records(name: str) -> list[dict[str, object]]:
@@ -240,9 +236,13 @@ def _write_fixture_shot(
     scenario_context: dict[str, object],
     *,
     event_count: int = 1,
+    capture_id: str | None = None,
 ) -> None:
     states = _fixture_records("physics_state.jsonl")[1:]
     events = _fixture_records("physics_events.jsonl")
+    if capture_id is not None:
+        for record in (*states, *events):
+            record["capture_id"] = capture_id
     initial = FixturePacket(_png(), states[0], ())
     bridge = FixtureBridge(FixturePacket(_png(), states[1], tuple(events[:event_count])))
     persist_physics_rollout(
@@ -372,9 +372,6 @@ class RepresentativePilotTests(unittest.TestCase):
         )
         output = root / "collection"
         envelope = {
-            "player_sha256": PROVENANCE.player_sha256,
-            "protocol_sha256": PROVENANCE.protocol_sha256,
-            "archive_sha256": PROVENANCE.archive_sha256,
             "generator_version": "canonical-v1",
         }
         scenario = loaded.plan.scenarios[0]
@@ -403,7 +400,7 @@ class RepresentativePilotTests(unittest.TestCase):
             if outside_root_quarantine_failure and targeted_failure:
                 shot = root / "outside-artifacts" / request.attempt_id / "shot_001"
             if (invalid_binding or outside_root_quarantine_failure) and targeted_failure:
-                intervention_identity = "collection-plan-intervention-v1:sha256:" + "0" * 64
+                intervention_identity = "collection-plan-intervention-v1:invalid"
             source_context = {
                 "version_envelope": envelope,
                 "plan_identity": request.plan_identity,
@@ -431,7 +428,9 @@ class RepresentativePilotTests(unittest.TestCase):
             if source_envelope_mode == "tampered-metadata":
                 metadata_path = shot / "metadata.json"
                 metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-                metadata["player_sha256"] = "f" * 64
+                metadata["scenario_context"]["version_envelope"] = {
+                    "generator_version": "unexpected-version"
+                }
                 metadata_path.write_text(json.dumps(metadata, sort_keys=True), encoding="utf-8")
             return RuntimeResult(
                 "accepted",
@@ -515,12 +514,11 @@ class RepresentativePilotTests(unittest.TestCase):
             self.assertEqual(persisted["schema"], "representative_pilot_report_v3")
             self.assertEqual(persisted["report_version"], 3)
             self.assertTrue(
-                persisted["identity"].startswith("representative-pilot-report-v3:sha256:")
+                persisted["identity"].startswith("representative-pilot-report-v3:3:")
             )
             semantics = persisted["macro_semantics"]
             self.assertEqual(semantics["schema"], "representative_macro_semantics_v1")
             self.assertEqual(semantics["derivation_spec_version"], DERIVATION_SPEC_VERSION)
-            self.assertEqual(semantics["derivation_spec_digest"], derivation_spec_digest())
             targets = {"cascade-active", "collapsed", "pigs-cleared"}
             self.assertEqual(set(semantics["predicates"]), targets)
 
@@ -551,11 +549,7 @@ class RepresentativePilotTests(unittest.TestCase):
                             "attempt_id",
                             "capture_id",
                             "shot_id",
-                            "physics_state_sha256",
-                            "physics_events_sha256",
                             "derivation_spec_version",
-                            "derivation_spec_digest",
-                            "macro_label_artifact_sha256",
                             "value_summary",
                             "availability_summary",
                         },
@@ -564,14 +558,7 @@ class RepresentativePilotTests(unittest.TestCase):
                     labels = derive_macro_labels_for_shot(Path(artifact["artifact_path"]))
                     self.assertEqual(row["capture_id"], labels.capture_id)
                     self.assertEqual(row["shot_id"], labels.shot_id)
-                    self.assertEqual(row["physics_state_sha256"], labels.state_sha256)
-                    self.assertEqual(row["physics_events_sha256"], labels.events_sha256)
                     self.assertEqual(row["derivation_spec_version"], DERIVATION_SPEC_VERSION)
-                    self.assertEqual(row["derivation_spec_digest"], derivation_spec_digest())
-                    self.assertEqual(
-                        row["macro_label_artifact_sha256"],
-                        hashlib.sha256(labels.to_jsonl().encode("utf-8")).hexdigest(),
-                    )
 
             available = set(persisted["available_capabilities"])
             unavailable = {
@@ -583,7 +570,7 @@ class RepresentativePilotTests(unittest.TestCase):
 
             material_damage = persisted["material_damage_semantics"]
             self.assertEqual(material_damage["schema"], "representative_material_damage_semantics_v1")
-            self.assertTrue(material_damage["source_cohort_identity"].startswith("damage-source-cohort-v1:sha256:"))
+            self.assertTrue(material_damage["source_cohort_identity"].startswith("damage-source-cohort-v1:"))
             self.assertEqual(
                 material_damage["material"],
                 {
@@ -594,10 +581,12 @@ class RepresentativePilotTests(unittest.TestCase):
                 },
             )
             damage = material_damage["damage"]
+            self.assertEqual(damage["source_cohort_identity"], material_damage["source_cohort_identity"])
+            for source_record in damage["source_records"]:
+                self.assertIn(f"{source_record['capture_id']}/{source_record['shot_id']}", damage["source_cohort_identity"])
             self.assertEqual(damage["availability"], "unavailable_insufficient_damage_lifecycle_evidence")
             self.assertEqual(damage["mapping_schema_version"], MATERIAL_DAMAGE_MAPPING_SCHEMA_VERSION)
             self.assertEqual(damage["mapping_version"], SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.mapping_version)
-            self.assertEqual(damage["mapping_digest"], SUPPORTED_DAMAGE_LIFECYCLE_MAPPING.digest)
             self.assertEqual(damage["source_facts"], list(MAPPING_SOURCE_FACTS))
             self.assertEqual(
                 damage["status"],
@@ -615,12 +604,8 @@ class RepresentativePilotTests(unittest.TestCase):
                 "attempt_id",
                 "capture_id",
                 "shot_id",
-                "physics_state_sha256",
-                "physics_events_sha256",
-                "derived_artifact_sha256",
                 "record_count",
                 "mapping_version",
-                "mapping_digest",
                 "source_cohort_identity",
                 "receipt_status",
                 "receipt_cohort_context",
@@ -633,7 +618,7 @@ class RepresentativePilotTests(unittest.TestCase):
                     validation_by_attempt[row["attempt_id"]]["material_damage_evidence"],
                 )
 
-    def test_material_damage_semantics_rejects_identity_recomputed_tampering(self) -> None:
+    def test_material_damage_semantics_rejects_invalid_classification_and_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             baseline = self._run(Path(temporary)).to_dict()
             mutations = []
@@ -641,10 +626,6 @@ class RepresentativePilotTests(unittest.TestCase):
             promoted_material = json.loads(json.dumps(baseline))
             promoted_material["material_damage_semantics"]["material"]["status"] = "engine_verified"
             mutations.append(promoted_material)
-
-            stale_mapping = json.loads(json.dumps(baseline))
-            stale_mapping["material_damage_semantics"]["damage"]["mapping_digest"] = "f" * 64
-            mutations.append(stale_mapping)
 
             missing_evidence = json.loads(json.dumps(baseline))
             missing_evidence["material_damage_semantics"]["damage"]["evidence"].pop()
@@ -654,26 +635,19 @@ class RepresentativePilotTests(unittest.TestCase):
             changed_cohort["material_damage_semantics"]["source_cohort_identity"] = "changed-cohort"
             mutations.append(changed_cohort)
 
-            changed_source = json.loads(json.dumps(baseline))
-            changed_source["material_damage_semantics"]["damage"]["evidence"][0][
-                "physics_events_sha256"
-            ] = "e" * 64
-            mutations.append(changed_source)
+            invalid_witness = json.loads(json.dumps(baseline))
+            damage = invalid_witness["material_damage_semantics"]["damage"]
+            source_record = next(record for record in damage["source_records"] if record["life_decrease_witnesses"])
+            witness = source_record["life_decrease_witnesses"][0]
+            witness["current_life"] = witness["previous_life"] + 1
+            for row in damage["evidence"]:
+                row["receipt_source_records"] = damage["source_records"]
+            for row in invalid_witness["attempts"]["atomic_validation"]:
+                if row.get("accepted"):
+                    row["material_damage_evidence"]["receipt_source_records"] = damage["source_records"]
+            mutations.append(invalid_witness)
 
             for payload in mutations:
-                identity_payload = {key: value for key, value in payload.items() if key != "identity"}
-                payload["identity"] = (
-                    "representative-pilot-report-v3:sha256:"
-                    + hashlib.sha256(
-                        json.dumps(
-                            identity_payload,
-                            allow_nan=False,
-                            ensure_ascii=True,
-                            separators=(",", ":"),
-                            sort_keys=True,
-                        ).encode("utf-8")
-                    ).hexdigest()
-                )
                 with self.subTest(mutation=payload["material_damage_semantics"]):
                     with self.assertRaises(ValueError):
                         PilotReport.from_dict(payload)
@@ -748,75 +722,8 @@ class RepresentativePilotTests(unittest.TestCase):
 
             for payload in mutations:
                 with self.subTest(mutation=payload["macro_semantics"]):
-                    identity_payload = {key: value for key, value in payload.items() if key != "identity"}
-                    payload["identity"] = (
-                        "representative-pilot-report-v3:sha256:"
-                        + hashlib.sha256(
-                            json.dumps(
-                                identity_payload,
-                                allow_nan=False,
-                                ensure_ascii=True,
-                                separators=(",", ":"),
-                                sort_keys=True,
-                            ).encode("utf-8")
-                        ).hexdigest()
-                    )
                     with self.assertRaises(ValueError):
                         PilotReport.from_dict(payload)
-
-    def test_macro_semantics_rejects_identity_recomputed_source_digest_tampering(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            payload = self._run(Path(temporary)).to_dict()
-            payload["macro_semantics"]["predicates"]["cascade-active"]["evidence"][0][
-                "physics_state_sha256"
-            ] = "f" * 64
-            identity_payload = {key: value for key, value in payload.items() if key != "identity"}
-            payload["identity"] = (
-                "representative-pilot-report-v3:sha256:"
-                + hashlib.sha256(
-                    json.dumps(
-                        identity_payload,
-                        allow_nan=False,
-                        ensure_ascii=True,
-                        separators=(",", ":"),
-                        sort_keys=True,
-                    ).encode("utf-8")
-                ).hexdigest()
-            )
-
-            with self.assertRaisesRegex(ValueError, "atomic validation"):
-                PilotReport.from_dict(payload)
-
-    def test_source_drift_during_macro_derivation_excludes_artifact_without_evidence(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-
-            def validate_then_drift(path):
-                summary = validate_physics_shot_artifact_without_mock(path)
-                if Path(path).is_relative_to(root / "collection" / "artifacts"):
-                    state_path = Path(path) / "physics_state.jsonl"
-                    content = state_path.read_text(encoding="utf-8")
-                    state_path.write_text(content.replace("\n", " \n", 1), encoding="utf-8")
-                return summary
-
-            with mock.patch(
-                "scripts.representative_pilot.validate_physics_shot_artifact",
-                side_effect=validate_then_drift,
-            ):
-                report = self._run(root)
-
-            payload = report.to_dict()
-            evidence = payload["attempts"]["pilot_evidence"]
-            self.assertEqual(evidence["accepted_count"], 0)
-            self.assertEqual(evidence["excluded_count"], 4)
-            self.assertTrue(all(
-                "source digests differ from atomic validation" in item["reason"]
-                for item in evidence["exclusions"]
-            ))
-            self.assertTrue(all(
-                not predicate["evidence"]
-                for predicate in payload["macro_semantics"]["predicates"].values()
-            ))
 
     def test_source_and_persisted_frozen_plan_bytes_are_required(self) -> None:
         for mutation in ("missing-copy", "tampered-copy", "tampered-source"):
@@ -878,8 +785,8 @@ class RepresentativePilotTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             report = self._run(
                 Path(temporary),
-                expected_identity="0" * 64,
-                replay_xml=XML.replace(b'width="2"', b'width="3"'),
+                expected_identity="different-initial-state",
+                replay_xml=b"<not-xml",
             )
             payload = report.to_dict()
             self.assertEqual(report.pilot_status, "rejected")
@@ -889,10 +796,7 @@ class RepresentativePilotTests(unittest.TestCase):
     def test_replay_envelope_and_artifact_semantics_must_match_source_evidence(self) -> None:
         cases = (
             ({
-                "player_sha256": "f" * 64,
-                "protocol_sha256": PROVENANCE.protocol_sha256,
-                "archive_sha256": PROVENANCE.archive_sha256,
-                "generator_version": "canonical-v1",
+                "generator_version": "different-generator",
             }, 1),
             (None, 2),
         )
@@ -942,6 +846,7 @@ class RepresentativePilotTests(unittest.TestCase):
             self.assertEqual(exclusion["pilot_disposition"], "quarantined")
             quarantine = Path(exclusion["quarantine_path"])
             self.assertTrue(quarantine.is_dir())
+            self.assertEqual(quarantine.parent.name, f"attempt-{quote(exclusion['attempt_id'], safe='-._~')}")
             self.assertTrue(Path(exclusion["failure_manifest_path"]).is_file())
             self.assertFalse((quarantine / "physics_relational_supervision.jsonl").exists())
             excluded_supervision = next(

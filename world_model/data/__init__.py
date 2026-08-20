@@ -61,7 +61,7 @@ from world_model.data.curriculum import (
     CurriculumSchedule,
     CurriculumStage,
     CurriculumState,
-    catalog_digest,
+    catalog_identity,
 )
 from world_model.data.ablations import (
     AblationRunConfig,
@@ -168,5 +168,5 @@ __all__ = [
     "get_temporal_ablation_preset",
     "infer_capture_contract",
     "EpochSampler",
-    "catalog_digest",
+    "catalog_identity",
 ]

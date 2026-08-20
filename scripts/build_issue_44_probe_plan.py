@@ -17,8 +17,8 @@ from scripts.scenario_manifest import scenario_manifest_projection
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EVIDENCE_ROOT = ROOT / ".claude/project-docs/evidence/issue-45-cohort-v2-lineage"
-DEFAULT_OUTPUT = ROOT / ".claude/project-docs/evidence/issue-44-physics-v2/probe-plan.json"
+EVIDENCE_ROOT = ROOT / "data/runtime_evidence/issue-45"
+DEFAULT_OUTPUT = ROOT / "data/runtime_evidence/issue-44/probe-plan.json"
 SLINGSHOT = (97, 227)
 FRAME_HEIGHT = 480
 RELEASE_TIME_MS = 1000

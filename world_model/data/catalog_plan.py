@@ -21,6 +21,24 @@ class PlanResolution:
     count: int
     fps: float
     duration_seconds: float
+    identity: str
+
+
+def _declared_plan_identity(payload: dict[str, object]) -> str:
+    for field in ("identity", "plan_identity", "collection_plan_identity"):
+        value = payload.get(field)
+        if type(value) is str and value.strip():
+            return value
+    declared_fields = (
+        payload.get("schema", "collection-plan-v1"),
+        payload.get("plan_version", "unversioned"),
+        payload.get("planner_seed", payload.get("seed", "unnamed")),
+        payload.get("collection_purpose", "unspecified"),
+    )
+    encoded = json.dumps(
+        declared_fields, ensure_ascii=True, allow_nan=False, separators=(",", ":")
+    )
+    return f"collection-plan-v1:{encoded}"
 
 
 def make_validation_contract(
@@ -110,4 +128,6 @@ def load_plan_resolution(
             continue
         source_keys[str(candidate)] = relative_path
 
-    return PlanResolution(source_keys, count, fps, duration)
+    return PlanResolution(
+        source_keys, count, fps, duration, _declared_plan_identity(payload)
+    )

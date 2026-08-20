@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import json
+import zlib
 from dataclasses import dataclass
-from hashlib import sha256
-from typing import TypeAlias, TypedDict
+from typing import TypedDict
 
 from world_model.data.catalog import EpisodeCatalog
 from world_model.data.types import (
@@ -13,9 +13,6 @@ from world_model.data.types import (
     ShotRecord,
     TemporalWindowRequest,
 )
-
-JsonValue: TypeAlias = str | int | float | bool | None | tuple["JsonValue", ...]
-
 
 def _require_nonempty_string(value: str, field: str) -> None:
     if type(value) is not str or not value.strip():
@@ -112,8 +109,8 @@ class CurriculumSchedule:
         raise ContractValueError("global_step", "is not covered by the schedule")
 
     @property
-    def digest(self) -> str:
-        return _schedule_digest(self)
+    def identity(self) -> str:
+        return f"curriculum-schedule-v1:{self.version}:{self.total_steps}"
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,7 +129,7 @@ class CurriculumCandidateView:
 
 CurriculumStatePayload = TypedDict("CurriculumStatePayload", {
     "global_step": int, "total_steps": int, "schedule_version": str,
-    "schedule_digest": str, "catalog_digest": str, "sampler_seed": int,
+    "schedule_identity": str, "catalog_identity": str, "sampler_seed": int,
     "active_stage_name": str,
 })
 
@@ -140,7 +137,7 @@ CurriculumStatePayload = TypedDict("CurriculumStatePayload", {
 @dataclass(frozen=True, slots=True)
 class CurriculumState:
     global_step: int; total_steps: int
-    schedule_version: str; schedule_digest: str; catalog_digest: str
+    schedule_version: str; schedule_identity: str; catalog_identity: str
     sampler_seed: int
     active_stage_name: str
 
@@ -148,8 +145,8 @@ class CurriculumState:
         _require_integer(self.global_step, "global_step", 0)
         _require_integer(self.total_steps, "total_steps", 1)
         _require_nonempty_string(self.schedule_version, "schedule_version")
-        _require_nonempty_string(self.schedule_digest, "schedule_digest")
-        _require_nonempty_string(self.catalog_digest, "catalog_digest")
+        _require_nonempty_string(self.schedule_identity, "schedule_identity")
+        _require_nonempty_string(self.catalog_identity, "catalog_identity")
         if type(self.sampler_seed) is not int:
             raise ContractValueError("sampler_seed", "must be an integer")
         _require_nonempty_string(self.active_stage_name, "active_stage_name")
@@ -157,8 +154,8 @@ class CurriculumState:
     def to_dict(self) -> CurriculumStatePayload:
         return CurriculumStatePayload(global_step=self.global_step, total_steps=self.total_steps,
                                       schedule_version=self.schedule_version,
-                                      schedule_digest=self.schedule_digest,
-                                      catalog_digest=self.catalog_digest, sampler_seed=self.sampler_seed,
+                                      schedule_identity=self.schedule_identity,
+                                      catalog_identity=self.catalog_identity, sampler_seed=self.sampler_seed,
                                       active_stage_name=self.active_stage_name)
 
 
@@ -183,11 +180,11 @@ class CurriculumPolicy:
         self._catalog = catalog
         self._schedule = schedule
         self._sampler_seed = sampler_seed
-        self._catalog_digest = _catalog_digest(catalog)
+        self._catalog_identity = catalog_identity(catalog)
 
     @property
-    def catalog_digest(self) -> str:
-        return self._catalog_digest
+    def catalog_identity(self) -> str:
+        return self._catalog_identity
 
     def candidate_view(self, global_step: int, total_steps: int) -> CurriculumCandidateView:
         stage = self._schedule.active_stage(global_step, total_steps)
@@ -205,15 +202,13 @@ class CurriculumPolicy:
     def state(self, global_step: int, total_steps: int) -> CurriculumState:
         active_stage = self._schedule.active_stage(global_step, total_steps)
         return CurriculumState(global_step, total_steps, self._schedule.version,
-                               self._schedule.digest, self._catalog_digest,
+                               self._schedule.identity, self._catalog_identity,
                                self._sampler_seed, active_stage.name)
 
     def validate_resume(self, state: CurriculumState) -> None:
         active_stage = self._schedule.active_stage(state.global_step, state.total_steps)
         bindings = (
             ("schedule_version", state.schedule_version, self._schedule.version),
-            ("schedule_digest", state.schedule_digest, self._schedule.digest),
-            ("catalog_digest", state.catalog_digest, self._catalog_digest),
             ("sampler_seed", state.sampler_seed, self._sampler_seed),
             ("active_stage_name", state.active_stage_name, active_stage.name),
         )
@@ -260,52 +255,24 @@ def _normalized_start_frame(start_frame: int, frame_count: int) -> float:
     return 0.0 if frame_count == 1 else start_frame / (frame_count - 1)
 
 
-def _candidate_order_key(seed: int, candidate: CurriculumCandidate) -> tuple[str, str]:
-    identity = _canonical_digest(("curriculum-candidate-order-v1", seed, candidate.candidate_id))
-    return identity, candidate.candidate_id
+def _candidate_order_key(seed: int, candidate: CurriculumCandidate) -> tuple[int, str]:
+    # deterministic non-cryptographic derivation, not an integrity check
+    order = zlib.crc32(f"{seed}:{candidate.candidate_id}".encode("utf-8"))
+    return order, candidate.candidate_id
 
 
-def _schedule_digest(schedule: CurriculumSchedule) -> str:
-    stages = tuple((stage.name, stage.start_step, stage.end_step,
-                    tuple(sorted((request.prediction_steps, request.stride_frames)
-                                 for request in stage.temporal_choices)),
-                    tuple(sorted(stage.novelty_levels)) if stage.novelty_levels is not None else None,
-                    tuple(sorted(stage.scenario_types)) if stage.scenario_types is not None else None,
-                    tuple(float(bound) for bound in stage.start_frame_range)
-                    if stage.start_frame_range is not None else None)
-                   for stage in schedule.stages)
-    return _canonical_digest(("curriculum-schedule-v1", schedule.version, schedule.total_steps, stages))
-
-
-def catalog_digest(catalog: EpisodeCatalog) -> str:
-    """Return the canonical digest of a catalog snapshot.
-
-    This is the reproducibility identity of the data a run consumes: contract
-    identity plus every episode, shot, action, and frame in order.  Two runs
-    that read the same catalog compare equal; any change to the snapshot (or a
-    different split) changes the digest.
-    """
-    return _catalog_digest(catalog)
-
-
-def _catalog_digest(catalog: EpisodeCatalog) -> str:
+def catalog_identity(catalog: EpisodeCatalog) -> str:
+    """Return the catalog's plain declared provenance identity."""
     contract = catalog.capture_contract
-    contract_identity = (contract.contract_name, contract.contract_version,
-                         contract.artifact_layout_version, contract.player_provenance,
-                         contract.protocol_provenance, tuple(sorted(contract.declared_capabilities)),
-                         tuple(sorted((sidecar.relative_path, tuple(sorted(sidecar.capabilities)))
-                                      for sidecar in contract.sidecar_paths)))
-    episodes = tuple((episode.name, str(episode.split), episode.relative_path,
-                      episode.source_level_key,
-                      tuple((shot.name, shot.relative_path,
-                             tuple(float(value) for value in shot.action.values),
-                             tuple((frame.index, frame.relative_path, frame.timestamp_seconds)
-                                   for frame in shot.frames)) for shot in episode.shots))
-                     for episode in catalog.episodes)
-    return _canonical_digest(("episode-catalog-v1", catalog.split, contract_identity, episodes))
-
-
-def _canonical_digest(value: JsonValue) -> str:
-    encoded = json.dumps(value, ensure_ascii=True, allow_nan=False, sort_keys=True,
-                         separators=(",", ":")).encode("utf-8")
-    return sha256(encoded).hexdigest()
+    declared_fields = (
+        catalog.cohort_identity,
+        catalog.collection_plan_identity,
+        catalog.split,
+        contract.contract_name,
+        contract.contract_version,
+        contract.artifact_layout_version,
+    )
+    encoded = json.dumps(
+        declared_fields, ensure_ascii=True, allow_nan=False, separators=(",", ":")
+    )
+    return f"episode-catalog-v1:{encoded}"

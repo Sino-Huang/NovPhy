@@ -55,11 +55,13 @@ class OracleGateSpecTests(unittest.TestCase):
             with self.subTest(**kwargs), self.assertRaises(ValueError):
                 OracleGateSpec(**kwargs)
 
-    def test_spec_digest_changes_with_any_threshold(self) -> None:
-        baseline = OracleGateSpec().digest()
-        self.assertNotEqual(baseline, OracleGateSpec(kinetic_energy_threshold=0.02).digest())
-        self.assertNotEqual(baseline, OracleGateSpec(active_contact_threshold=2).digest())
-        self.assertNotEqual(baseline, OracleGateSpec(contact_activity_speed=0.02).digest())
+    def test_report_identity_changes_with_any_threshold(self) -> None:
+        from scripts.derive_physics_labels import oracle_gate_spec_identity
+
+        baseline = oracle_gate_spec_identity(OracleGateSpec())
+        self.assertNotEqual(baseline, oracle_gate_spec_identity(OracleGateSpec(kinetic_energy_threshold=0.02)))
+        self.assertNotEqual(baseline, oracle_gate_spec_identity(OracleGateSpec(active_contact_threshold=2)))
+        self.assertNotEqual(baseline, oracle_gate_spec_identity(OracleGateSpec(contact_activity_speed=0.02)))
 
 
 class ScalarEvidenceTests(unittest.TestCase):
@@ -265,14 +267,16 @@ class DerivedSidecarTests(unittest.TestCase):
         labels = validate_derived_labels(self.temporary, OracleGateSpec())
         self.assertEqual(len(labels.frames), len(load_fixture_capture().states))
 
-    def test_header_records_source_digests_and_thresholds(self) -> None:
+    def test_header_records_source_paths_and_thresholds(self) -> None:
         path = self._write()
         header = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
         self.assertEqual(header["schema_version"], DERIVED_LABEL_SCHEMA_VERSION)
         self.assertEqual(header["record_type"], "derived_label_header")
         self.assertEqual(header["oracle_gate_spec"]["kinetic_energy_threshold"], 0.01)
-        self.assertEqual(len(header["source"]["physics_state_sha256"]), 64)
-        self.assertEqual(len(header["source"]["physics_events_sha256"]), 64)
+        self.assertEqual(
+            header["source"],
+            {"physics_state_path": "physics_state.jsonl", "physics_events_path": "physics_events.jsonl"},
+        )
 
     def test_mutated_state_sidecar_invalidates_labels(self) -> None:
         from scripts.physics_label_derivation import (

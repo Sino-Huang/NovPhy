@@ -1,10 +1,11 @@
-import hashlib
 import unittest
+import zlib
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import torch
 
+from world_model.data import catalog_identity
 from world_model.data.types import (
     CaptureContractDescriptor,
     ContractValueError,
@@ -44,10 +45,70 @@ def _episode(name: str, frame_count: int = 5) -> EpisodeRecord:
 
 
 class GridDataTests(unittest.TestCase):
+    def test_catalog_identity_names_the_cohort_and_mismatches_are_rejected(self):
+        from tests.test_world_model_data import _build_catalog_from_fixture
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first = _build_catalog_from_fixture(root / "cohort-a", split="dev")
+            second = _build_catalog_from_fixture(root / "cohort-b", split="dev")
+            first_identity = catalog_identity(first)
+            second_identity = catalog_identity(second)
+
+            self.assertNotEqual(first_identity, second_identity)
+            self.assertIn("rollout-cohort-v1:cohort-a", first_identity)
+            self.assertIn("collection-plan-v1:direct-catalog-source", first_identity)
+            with self.assertRaisesRegex(
+                grid_data.GridDataContractError, "declared identity"
+            ):
+                grid_data.enumerate_scoring_states(
+                    first, catalog_identity=second_identity
+                )
+
+    def test_catalog_identity_is_portable_across_mount_roots(self):
+        from world_model.data import LEGACY_RGB_V1, EpisodeCatalog
+
+        with TemporaryDirectory() as temporary:
+            temporary_root = Path(temporary)
+            catalogs = []
+            for mount in ("mount-a", "mount-b"):
+                dataset_root = temporary_root / mount / "release-2026-08"
+                dataset_root.mkdir(parents=True)
+                plan_path = temporary_root / mount / "plans" / "collection.json"
+                plan_path.parent.mkdir(parents=True)
+                plan_path.write_text(
+                    '{"collection_purpose":"research","contract":{},'
+                    '"planner_seed":"portable-fixture","schema":'
+                    '"novphy-rollout-collection-plan-v2","selected":[]}',
+                    encoding="utf-8",
+                )
+                catalogs.append(
+                    EpisodeCatalog.build(
+                        dataset_root,
+                        "dev",
+                        LEGACY_RGB_V1,
+                        collection_plan=plan_path,
+                    )
+                )
+
+            portable_identity = catalog_identity(catalogs[0])
+            self.assertEqual(portable_identity, catalog_identity(catalogs[1]))
+            self.assertNotIn(str(temporary_root), portable_identity)
+            self.assertEqual(catalogs[0].cohort_identity, catalogs[1].cohort_identity)
+            self.assertEqual(
+                catalogs[0].collection_plan_identity,
+                catalogs[1].collection_plan_identity,
+            )
+            self.assertNotEqual(catalogs[0].dataset_root, catalogs[1].dataset_root)
+            self.assertNotEqual(
+                catalogs[0].collection_plan_path,
+                catalogs[1].collection_plan_path,
+            )
+
     def test_five_frame_shot_enumerates_four_states_and_three_targets(self):
         states = grid_data.enumerate_scoring_states(
             (_episode("episode_001"),),
-            catalog_digest="a" * 64,
+            catalog_identity="episode-catalog-v1:fixture:legacy_rgb_v1:1:collector_v1",
             split="dev",
         )
         self.assertEqual(len(states), 4)
@@ -61,26 +122,27 @@ class GridDataTests(unittest.TestCase):
         with self.assertRaises(grid_data.GridDataContractError):
             grid_data.enumerate_scoring_states(
                 (_episode("episode_001", frame_count=1),),
-                catalog_digest="a" * 64,
+                catalog_identity="episode-catalog-v1:fixture:legacy_rgb_v1:1:collector_v1",
                 split="dev",
             )
 
     def test_partition_is_deterministic_disjoint_and_complete(self):
         episodes = tuple(_episode(f"episode_{index:03d}") for index in range(50))
-        first = grid_data.partition_episodes(episodes, catalog_digest="b" * 64, seed=7)
-        second = grid_data.partition_episodes(episodes, catalog_digest="b" * 64, seed=7)
+        identity = "episode-catalog-v1:fixture:legacy_rgb_v1:1:collector_v1"
+        first = grid_data.partition_episodes(episodes, catalog_identity=identity, seed=7)
+        second = grid_data.partition_episodes(episodes, catalog_identity=identity, seed=7)
         self.assertEqual(first, second)
         sets = [set(first.controller_train), set(first.calibration), set(first.evaluation)]
         self.assertEqual(sum(map(len, sets)), len(episodes))
         self.assertEqual(set().union(*sets), set(episodes))
         self.assertEqual(sum(len(left & right) for left in sets for right in sets if left is not right), 0)
 
-    def test_partition_digest_uses_contract_tuple(self):
+    def test_partition_fraction_uses_contract_tuple(self):
         episode = _episode("episode_001")
-        expected = hashlib.sha256(
-            grid_data.canonical_partition_payload(7, "c" * 64, episode.relative_path)
-        ).hexdigest()
-        self.assertEqual(grid_data.partition_digest(7, "c" * 64, episode.relative_path), expected)
+        identity = "episode-catalog-v1:fixture:legacy_rgb_v1:1:collector_v1"
+        payload = grid_data.canonical_partition_payload(7, identity, episode.relative_path)
+        expected = zlib.crc32(payload) / 2**32
+        self.assertEqual(grid_data.partition_fraction(7, identity, episode.relative_path), expected)
 
     def test_regime_boundary_ties_are_deterministic(self):
         calibration = grid_data.calibrate_motion_regimes((0.1, 0.2, 0.3, 0.4, 0.5))
@@ -142,7 +204,7 @@ class GridDataTests(unittest.TestCase):
             )
             state = grid_data.enumerate_scoring_states(catalog)[0]
             stale_state = grid_data.ScoringState(
-                catalog_digest=state.catalog_digest,
+                catalog_identity=state.catalog_identity,
                 split=state.split,
                 episode_relative_path=state.episode_relative_path,
                 shot_relative_path=state.shot_relative_path,

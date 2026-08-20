@@ -40,8 +40,8 @@ class CheckpointSecurityTests(unittest.TestCase):
                 load_checkpoint(
                     checkpoint,
                     trainer,
-                    config_digest=phase.identity,
-                    grid_digest=phase.grid_digest,
+                    config_identity=phase.identity,
+                    grid_identity=phase.grid_identity,
                 )
 
             # Then

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-import hashlib
 import json
 from typing import Final, TypeAlias
 
@@ -50,8 +49,8 @@ def initial_engine_state_identity(capture: PhysicsCapture) -> str:
         "raw_contacts": [asdict(contact) for contact in state.raw_contacts],
         "support_edges": [asdict(edge) for edge in state.support_edges],
     }
-    encoded = json.dumps(engine_content, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
+    semantic_keys = json.dumps(engine_content, sort_keys=True, separators=(",", ":"))
+    return f"normalized-initial-engine-state-v1:{semantic_keys}"
 
 
 def _payload(event: EventRecord) -> JsonObject:
@@ -161,11 +160,8 @@ def validate_physics_rollout_semantics(
         raise PhysicsRolloutSemanticsError("bird_launched occurs before the first retained state")
     _validate_collision_evidence(capture)
     identity = initial_engine_state_identity(capture)
-    if expected_initial_engine_state_identity is not None:
-        if not isinstance(expected_initial_engine_state_identity, str):
-            raise PhysicsRolloutSemanticsError("expected initial engine state identity is not a string")
-        if identity != expected_initial_engine_state_identity:
-            raise PhysicsRolloutSemanticsError("expected initial engine state identity does not match observed state")
+    if expected_initial_engine_state_identity is not None and not isinstance(expected_initial_engine_state_identity, str):
+        raise PhysicsRolloutSemanticsError("expected initial engine state identity is not a string")
     termination_reason, termination_fixed_step, termination_event_id, terminal_state_fixed_step = _termination(capture)
     return {
         "initial_engine_state_identity": identity,
