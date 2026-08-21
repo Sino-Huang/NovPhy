@@ -26,6 +26,12 @@ UNITY_PACKAGE_INPUT_PATHS: Final = (
     "tasks/task_template_designer/Packages/manifest.json",
     "tasks/task_template_designer/Packages/packages-lock.json",
 )
+PRODUCT_SOURCE_PATHS: Final = (
+    "scripts",
+    "tasks/task_template_designer/Assets",
+    "tasks/task_template_designer/Packages",
+    "tasks/task_template_designer/ProjectSettings",
+)
 @dataclass(frozen=True, slots=True)
 class PackagingError(RuntimeError):
     reason: str
@@ -72,7 +78,11 @@ def unity_package_input_inventory(worktree: Path) -> dict[str, str]:
 def git_revision(worktree: Path, package_inputs: dict[str, str] | None = None, require_package_inputs: bool = False) -> tuple[str, str]:
     head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=worktree, text=True, capture_output=True, check=True).stdout.strip()
     tree = subprocess.run(["git", "rev-parse", "HEAD^{tree}"], cwd=worktree, text=True, capture_output=True, check=True).stdout.strip()
-    source_diff = subprocess.run(["git", "diff", "--quiet", "HEAD", "--", "."], cwd=worktree, check=False)
+    source_diff = subprocess.run(
+        ["git", "diff", "--quiet", "HEAD", "--", *PRODUCT_SOURCE_PATHS],
+        cwd=worktree,
+        check=False,
+    )
     if source_diff.returncode == 1:
         raise PackagingError("tracked product source differs from HEAD")
     source_diff.check_returncode()
@@ -86,7 +96,7 @@ def git_revision(worktree: Path, package_inputs: dict[str, str] | None = None, r
         package_inputs = actual_package_inputs
     if package_inputs is not None and package_inputs != actual_package_inputs:
         raise PackagingError("Unity package inputs differ from preflight provenance")
-    untracked_scope = [":(glob)scripts/*.py", ":(glob)scripts/*.sh", "tasks/task_template_designer/Assets", "tasks/task_template_designer/Packages", "tasks/task_template_designer/ProjectSettings"]
+    untracked_scope = [":(glob)scripts/*.py", ":(glob)scripts/*.sh", *PRODUCT_SOURCE_PATHS[1:]]
     untracked = subprocess.run(["git", "status", "--porcelain=v1", "--untracked-files=all", "--ignored=matching", "--", *untracked_scope], cwd=worktree, text=True, capture_output=True, check=True).stdout.splitlines()
     allowed = {f"!! {relative_path}" for relative_path in UNITY_PACKAGE_INPUT_PATHS}
     rejected = [entry for entry in untracked if entry not in allowed]

@@ -31,6 +31,7 @@ class PackagePhysicsPlayerTests(unittest.TestCase):
         (repository / "scripts/9001-player-wrapper.sh").write_text("#!/bin/sh\nexec ./9001-player.x86_64\n", encoding="utf-8")
         (repository / "tasks/task_template_designer/Packages/manifest.json").write_text("{}\n", encoding="utf-8")
         (repository / "tasks/task_template_designer/Packages/packages-lock.json").write_text("{}\n", encoding="utf-8")
+        (repository / "README.md").write_text("fixture\n", encoding="utf-8")
         subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
         subprocess.run(["git", "add", "."], cwd=repository, check=True)
         subprocess.run(
@@ -67,6 +68,17 @@ class PackagePhysicsPlayerTests(unittest.TestCase):
             (repository / "scripts/9001-player-wrapper.sh").write_text("changed\n", encoding="utf-8")
             with self.assertRaisesRegex(PackagingError, "differs from HEAD"):
                 git_revision(repository, inputs, require_package_inputs=True)
+
+    def test_git_revision_ignores_tracked_build_outputs_outside_product_source(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = self.repository(Path(temporary))
+            inputs = unity_package_input_inventory(repository)
+            (repository / "README.md").write_text("build output changed\n", encoding="utf-8")
+
+            head, tree = git_revision(repository, inputs, require_package_inputs=True)
+
+            self.assertTrue(head)
+            self.assertTrue(tree)
 
     def test_manifest_records_versions_paths_and_file_inventory(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
