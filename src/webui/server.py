@@ -884,6 +884,16 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_arg_parser().parse_args()
+    if args.physics_v2_review:
+        # The packaged physics-v2 player binds its physics-capture listener on
+        # its compiled-in default port 2004: the jar accepts --physics-port but
+        # does not relay it to the player it spawns (AIBirdsConnection falls
+        # back to 2004 when no --physics-port CLI arg reaches the player).
+        # Keep the jar's agent listener off 2004 and aim the request-71 bridge
+        # at the port the player actually binds.
+        if args.game_port == 2004:
+            args.game_port = 29002
+        args.physics_port = 2004
     app = AppState(
         game_host=args.game_host,
         game_port=args.game_port,
