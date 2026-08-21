@@ -194,12 +194,12 @@ class ServerTest(unittest.TestCase):
                 bundle.addfile(info, BytesIO(content))
         review_levels = stage / "review-levels"
         review_levels.mkdir()
-        for name in ("training.xml", "calibration.xml", "model-selection.xml"):
+        for name in ("training.xml", "support-ready.xml"):
             (review_levels / name).write_text("<Level />", encoding="utf-8")
         review_manifests = stage / "review-manifests"
         review_manifests.mkdir()
         scenarios = []
-        for index, name in enumerate(("training", "calibration", "model-selection")):
+        for index, name in enumerate(("training", "support-ready")):
             manifest_path = review_manifests / f"{name}.json"
             manifest_path.write_text(
                 json.dumps({"identity": f"scenario-manifest-v1:{index}"}),
@@ -354,8 +354,7 @@ class ServerTest(unittest.TestCase):
             ]
             self.assertEqual(configured_paths, [
                 "9001_Data/StreamingAssets/Levels/novelty_level_0/type2/Levels/training.xml",
-                "9001_Data/StreamingAssets/Levels/novelty_level_0/type2/Levels/calibration.xml",
-                "9001_Data/StreamingAssets/Levels/novelty_level_0/type2/Levels/model-selection.xml",
+                "9001_Data/StreamingAssets/Levels/novelty_level_0/type2/Levels/support-ready.xml",
             ])
             app.review_runtime_temporary.cleanup()
 
@@ -376,7 +375,7 @@ class ServerTest(unittest.TestCase):
             ]
 
             self.assertEqual(resets, ["support change"])
-            self.assertTrue(configured_paths[0].endswith("/calibration.xml"))
+            self.assertTrue(configured_paths[0].endswith("/support-ready.xml"))
             app.review_runtime_temporary.cleanup()
 
     def test_review_runtime_rejects_stale_or_incomplete_declared_provenance(self):

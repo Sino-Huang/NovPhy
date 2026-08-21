@@ -156,7 +156,12 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
 
     public void RecordCollision(Collision2D collision)
     {
-        if (shotRecorder == null || collision == null || collision.collider == null || collision.otherCollider == null)
+        if (collision == null || collision.collider == null || collision.otherCollider == null)
+            return;
+        if (v2Recorder != null && !v2Recorder.IsFinalized)
+            ((IPhysicsCaptureV2UnityCollisionRecorder)v2Recorder).RecordUnityCollision(
+                Clock.FixedStep, collision, V2CausalObjects());
+        if (shotRecorder == null)
             return;
         string first = registry.RegisterCollider(collision.collider);
         string second = registry.RegisterCollider(collision.otherCollider);
@@ -171,15 +176,6 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
             .ToArray();
         shotRecorder.RecordCollision(Clock.FixedStep, Time.fixedTime, first, second,
             contacts, collision.relativeVelocity.magnitude);
-        if (v2Recorder != null && !v2Recorder.IsFinalized)
-        {
-            string v2First = V2Id(collision.collider);
-            string v2Second = V2Id(collision.otherCollider);
-            string[] participants = v2First == null || v2Second == null
-                ? new string[0] : new[] { v2First, v2Second };
-            v2Recorder.RecordMacroEvent("collision", participants,
-                "{\"relative_speed\":" + F(collision.relativeVelocity.magnitude) + "}");
-        }
     }
 
     public string EntityIdFor(GameObject gameObject)
@@ -361,7 +357,7 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
         string participant;
         string[] participants = v1EntityId != null && v2EntityIds.TryGetValue(v1EntityId, out participant)
             ? new[] { participant } : new string[0];
-        v2Recorder.RecordMacroEvent(eventType, participants, payload);
+        v2Recorder.RecordMacroEvent(Clock.FixedStep, eventType, participants, payload);
     }
 
     private static string V2Id(Collider2D collider)

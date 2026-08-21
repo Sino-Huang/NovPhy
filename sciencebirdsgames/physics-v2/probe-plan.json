@@ -1,9 +1,9 @@
 {
-  "identity": "collection-plan-v1:sha256:c6073b197fdd6f7d460545d600f74441c69b668f4b2f44a62a5ef3829d385dcb",
+  "identity": "collection-plan-v1:1:type010101-training-seed4401:issue44-support-ready-type010101-seed4401",
   "plan_version": 1,
   "scenarios": [
     {
-      "benchmark_condition_identity": "benchmark-condition-v1:sha256:f8fb2ae6e0724bd88b459ce8f3752ea2ac7a9b9e647f5465e9c425dba6e75a90",
+      "benchmark_condition_identity": "benchmark-condition-v1:novelty_level_0:type010101",
       "coverage_strata": {
         "collision": {
           "intervention_ids": [
@@ -12,19 +12,19 @@
           "status": "targeted"
         },
         "destruction": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         },
         "explosion": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         },
         "level clear": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         },
         "level fail": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         },
         "no-contact/miss": {
@@ -34,26 +34,26 @@
           "status": "targeted"
         },
         "persistent support": {
-          "intervention_ids": [
-            "support"
-          ],
-          "status": "targeted"
+          "rationale": "outside the five bounded physics-capture-v2 probes",
+          "status": "inapplicable"
         },
         "pig removal": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         },
         "stability transitions": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
-          "status": "inapplicable"
+          "intervention_ids": [
+            "stable-terminal"
+          ],
+          "status": "targeted"
         },
         "support change": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         }
       },
-      "declared_initial_engine_state_identity": "declared-initial-engine-state-v1:sha256:a69457156ab39d807fee9bd5306f832d588de2758ece504523dd10695ae90b53",
-      "expected_initial_engine_state_identity": "declared-initial-engine-state-v1:sha256:a69457156ab39d807fee9bd5306f832d588de2758ece504523dd10695ae90b53",
+      "declared_initial_engine_state_identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+      "expected_initial_engine_state_identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
       "exposure_role": "training",
       "generation_mode": "generated",
       "generation_seed": 4401,
@@ -103,7 +103,7 @@
           },
           "source": "targeted_rare",
           "source_provenance": {
-            "selection_rule": "empty-space-engine-target-v1:[8.0,6.0];opposite-vector-pull-length-80-v1",
+            "selection_rule": "issue-44-empty-space-action-v1:[-74,-31]",
             "target_stratum": "no-contact/miss"
           }
         },
@@ -111,12 +111,12 @@
           "engine_relative_action": {
             "coordinate_frame": "slingshot_relative",
             "release_offset": [
-              -80,
-              8
+              -77,
+              21
             ],
             "release_point": [
-              17,
-              219
+              20,
+              206
             ],
             "release_time_ms": 1000,
             "tap_time_ms": 0
@@ -127,8 +127,8 @@
             "action_type": "drag_hold_release",
             "coordinate_frame": "slingshot_relative",
             "drag_release": [
-              -80,
-              8
+              -77,
+              21
             ],
             "drag_start": [
               97,
@@ -139,8 +139,8 @@
             "socket_command": {
               "releaseTime": 1000,
               "tapTime": 0,
-              "x": 17,
-              "y": 260
+              "x": 20,
+              "y": 273
             },
             "tapTime": 0
           },
@@ -152,9 +152,9 @@
           },
           "source": "geometry_stratified",
           "source_provenance": {
-            "feasibility_rule": "opposite-vector-pull-length-80-v1",
-            "scenario_geometry_identity": "xml_bytes_v1:sha256:b8eb530bf51e628065f705905a53990aa8ea38bcd2b357421cec4857ca336433",
-            "stratum": "nearest-active-target-center:block:0002@[-6.1118,-3.09]"
+            "feasibility_rule": "issue-44-pig-hit-observation-v1",
+            "scenario_geometry_identity": "scenario-content-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+            "stratum": "empirically-validated-pig-hit-direction:640px:[-77,21]"
           }
         },
         {
@@ -171,8 +171,8 @@
             "release_time_ms": 1000,
             "tap_time_ms": 0
           },
-          "id": "support",
-          "intended_coverage_stratum": "persistent support",
+          "id": "stable-terminal",
+          "intended_coverage_stratum": "stability transitions",
           "interface_action": {
             "action_type": "drag_hold_release",
             "coordinate_frame": "slingshot_relative",
@@ -202,18 +202,18 @@
           },
           "source": "targeted_rare",
           "source_provenance": {
-            "selection_rule": "initial-persistent-support-window;empty-space-engine-target-v1:[8.0,6.0];opposite-vector-pull-length-80-v1",
-            "target_stratum": "persistent support"
+            "selection_rule": "issue-44-empty-space-action-v1:[-74,-31]",
+            "target_stratum": "stability transitions"
           }
         }
       ],
-      "level_instance_identity": "level-instance-v1:sha256:185fb4d8c69738382c11770b45e03b11234cf1809f3b49585eb5087c227916d7",
+      "level_instance_identity": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
       "negative_specification": {
         "cap": 1,
         "intervention_ids": [
           "no-contact"
         ],
-        "semantic_justification": "prospective transport probe only; acceptance requires observed Unity contact evidence"
+        "semantic_justification": "bounded issue-44 exporter evidence; this test level is not a #45 inventory amendment"
       },
       "research_eligibility": "research_eligible",
       "retry_policy": {
@@ -222,15 +222,15 @@
         "transient_failure_codes": []
       },
       "scenario_id": "type010101-training-seed4401",
-      "scenario_lineage_identity": "scenario-lineage-v1:sha256:ef31cc858b84d09d853dbf5957e163e34f7154509db9bfbfbf84a1edd3c4ccba",
+      "scenario_lineage_identity": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
       "scenario_manifest": {
         "benchmark_condition": {
-          "identity": "benchmark-condition-v1:sha256:f8fb2ae6e0724bd88b459ce8f3752ea2ac7a9b9e647f5465e9c425dba6e75a90",
+          "identity": "benchmark-condition-v1:novelty_level_0:type010101",
           "novelty_level": "novelty_level_0",
           "novelty_type": "type010101"
         },
         "declared_initial_engine_state": {
-          "identity": "declared-initial-engine-state-v1:sha256:a69457156ab39d807fee9bd5306f832d588de2758ece504523dd10695ae90b53",
+          "identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
           "schema": "declared_initial_engine_state_v1"
         },
         "generation": {
@@ -248,7 +248,7 @@
               -2.1274
             ],
             "restricted_objects": [],
-            "template_content_identity": "xml_bytes_v1:sha256:ede3a16435534ebbb3b37dccfeb7652ce2a56c50a1f5b826abede79692ba9220",
+            "template_content_identity": "xml_bytes_v1:tasks/task_templates/novelty_level_0/type010101/Levels/00001_0_1_010101_0_1.xml:canonical_materialization_v1",
             "template_name": "0_1_010101_0_1"
           },
           "generation_seed": 4401,
@@ -380,32 +380,32 @@
           "source_path": null
         },
         "level_instance": {
-          "identity": "level-instance-v1:sha256:185fb4d8c69738382c11770b45e03b11234cf1809f3b49585eb5087c227916d7"
+          "identity": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D"
         },
         "research_eligibility": {
           "reason": null,
           "status": "research_eligible"
         },
         "scenario_lineage": {
-          "identity": "scenario-lineage-v1:sha256:ef31cc858b84d09d853dbf5957e163e34f7154509db9bfbfbf84a1edd3c4ccba"
+          "identity": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D"
         },
         "scenario_specification": {
-          "content_identity": "xml_bytes_v1:sha256:b8eb530bf51e628065f705905a53990aa8ea38bcd2b357421cec4857ca336433",
-          "declaration_identity": "scenario-declaration-v1:sha256:23d3dd0cb97a43974c7be725da997fc74d6d9a4675c9214e3be4dbc431556b98",
-          "identity": "scenario-specification-v1:sha256:368f8f79b8ff1bf0cebca0e953cb02aef0602cd1661e1d5f2881db876b40f949"
+          "content_identity": "scenario-content-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+          "declaration_identity": "scenario-declaration-v1:benchmark-condition-v1%3Anovelty_level_0%3Atype010101:scenario-template-v1%3Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml:generated:novphy-task-generator:canonical_materialization_v1:4401:%7B%22max_coordinate%22%3A%5B1.229969%2C1.809741%5D%2C%22min_coordinate%22%3A%5B-7.88%2C-2.39049%5D%2C%22reference_point%22%3A%5B1.00798%2C-2.1274%5D%2C%22restricted_objects%22%3A%5B%5D%2C%22template_content_identity%22%3A%22xml_bytes_v1%3Atasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml%3Acanonical_materialization_v1%22%2C%22template_name%22%3A%220_1_010101_0_1%22%7D",
+          "identity": "scenario-specification-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D"
         },
         "scenario_template": {
           "availability": "available",
-          "identity": "scenario-template-v1:sha256:9195fdd49158feb385a9764ee2064f3a3d71efdc6c23144b14fb28bcacbf77e1"
+          "identity": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml"
         },
         "schema": "scenario_manifest_v1"
       },
-      "scenario_manifest_reference": ".claude/project-docs/evidence/issue-45-cohort-v2-lineage/manifests/training.json",
-      "scenario_specification_identity": "scenario-specification-v1:sha256:368f8f79b8ff1bf0cebca0e953cb02aef0602cd1661e1d5f2881db876b40f949",
-      "scenario_template_identity": "scenario-template-v1:sha256:9195fdd49158feb385a9764ee2064f3a3d71efdc6c23144b14fb28bcacbf77e1",
+      "scenario_manifest_reference": "sciencebirdsgames/physics-v2/review-manifests/training.json",
+      "scenario_specification_identity": "scenario-specification-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+      "scenario_template_identity": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml",
       "source_dispositions": {
         "benchmark_agent_replay": {
-          "rationale": "no benchmark-agent trace is approved for these source-bound instances",
+          "rationale": "no benchmark-agent trace is approved for these source-bound tests",
           "status": "unavailable"
         },
         "geometry_stratified": {
@@ -417,45 +417,45 @@
       }
     },
     {
-      "benchmark_condition_identity": "benchmark-condition-v1:sha256:991cef5dcdfd9305d7ea38f7f89bba7b7e25ae4a84237749e7869fca0a1d1e30",
+      "benchmark_condition_identity": "benchmark-condition-v1:novelty_level_0:type010101",
       "coverage_strata": {
         "collision": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         },
         "destruction": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         },
         "explosion": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         },
         "level clear": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         },
         "level fail": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         },
         "no-contact/miss": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         },
         "persistent support": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
-          "status": "inapplicable"
+          "intervention_ids": [
+            "support"
+          ],
+          "status": "targeted"
         },
         "pig removal": {
-          "rationale": "outside the five bounded physics-capture-v2 transport probes",
+          "rationale": "outside the five bounded physics-capture-v2 probes",
           "status": "inapplicable"
         },
         "stability transitions": {
-          "intervention_ids": [
-            "stable-terminal"
-          ],
-          "status": "targeted"
+          "rationale": "outside the five bounded physics-capture-v2 probes",
+          "status": "inapplicable"
         },
         "support change": {
           "intervention_ids": [
@@ -464,62 +464,12 @@
           "status": "targeted"
         }
       },
-      "declared_initial_engine_state_identity": "declared-initial-engine-state-v1:sha256:c9b1eacbf13f04726c285ed27895a97822958278c247b8456bdef515768a4663",
-      "expected_initial_engine_state_identity": "declared-initial-engine-state-v1:sha256:c9b1eacbf13f04726c285ed27895a97822958278c247b8456bdef515768a4663",
-      "exposure_role": "calibration",
+      "declared_initial_engine_state_identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+      "expected_initial_engine_state_identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+      "exposure_role": "training",
       "generation_mode": "generated",
-      "generation_seed": 4501,
+      "generation_seed": 4401,
       "interventions": [
-        {
-          "engine_relative_action": {
-            "coordinate_frame": "slingshot_relative",
-            "release_offset": [
-              -80,
-              3
-            ],
-            "release_point": [
-              17,
-              224
-            ],
-            "release_time_ms": 1000,
-            "tap_time_ms": 0
-          },
-          "id": "support-change",
-          "intended_coverage_stratum": "support change",
-          "interface_action": {
-            "action_type": "drag_hold_release",
-            "coordinate_frame": "slingshot_relative",
-            "drag_release": [
-              -80,
-              3
-            ],
-            "drag_start": [
-              97,
-              227
-            ],
-            "frame_height": 480,
-            "releaseTime": 1000,
-            "socket_command": {
-              "releaseTime": 1000,
-              "tapTime": 0,
-              "x": 17,
-              "y": 255
-            },
-            "tapTime": 0
-          },
-          "mapping_version": "science-birds-slingshot-relative-v1",
-          "ordinal": 1,
-          "slingshot_reference": {
-            "gameX": 97,
-            "gameY": 227
-          },
-          "source": "geometry_stratified",
-          "source_provenance": {
-            "feasibility_rule": "opposite-vector-pull-length-80-v1",
-            "scenario_geometry_identity": "xml_bytes_v1:sha256:704e750449dcb8cefe28cedf74021e18188a48025b681e785974bc8f0f8ae3e6",
-            "stratum": "lowest-id-supported-entity:block:0000@[5.4977,-3.1];must-resolve-in-pre-intervention-v2-sample"
-          }
-        },
         {
           "engine_relative_action": {
             "coordinate_frame": "slingshot_relative",
@@ -534,8 +484,8 @@
             "release_time_ms": 1000,
             "tap_time_ms": 0
           },
-          "id": "stable-terminal",
-          "intended_coverage_stratum": "stability transitions",
+          "id": "support",
+          "intended_coverage_stratum": "persistent support",
           "interface_action": {
             "action_type": "drag_hold_release",
             "coordinate_frame": "slingshot_relative",
@@ -558,23 +508,73 @@
             "tapTime": 0
           },
           "mapping_version": "science-birds-slingshot-relative-v1",
-          "ordinal": 2,
+          "ordinal": 1,
           "slingshot_reference": {
             "gameX": 97,
             "gameY": 227
           },
           "source": "targeted_rare",
           "source_provenance": {
-            "selection_rule": "no-contact-until-stable-entered;empty-space-engine-target-v1:[8.0,6.0];opposite-vector-pull-length-80-v1",
-            "target_stratum": "stability transitions"
+            "selection_rule": "issue-44-empty-space-action-v1:[-74,-31]",
+            "target_stratum": "persistent support"
+          }
+        },
+        {
+          "engine_relative_action": {
+            "coordinate_frame": "slingshot_relative",
+            "release_offset": [
+              -77,
+              21
+            ],
+            "release_point": [
+              20,
+              206
+            ],
+            "release_time_ms": 1000,
+            "tap_time_ms": 0
+          },
+          "id": "support-change",
+          "intended_coverage_stratum": "support change",
+          "interface_action": {
+            "action_type": "drag_hold_release",
+            "coordinate_frame": "slingshot_relative",
+            "drag_release": [
+              -77,
+              21
+            ],
+            "drag_start": [
+              97,
+              227
+            ],
+            "frame_height": 480,
+            "releaseTime": 1000,
+            "socket_command": {
+              "releaseTime": 1000,
+              "tapTime": 0,
+              "x": 20,
+              "y": 273
+            },
+            "tapTime": 0
+          },
+          "mapping_version": "science-birds-slingshot-relative-v1",
+          "ordinal": 2,
+          "slingshot_reference": {
+            "gameX": 97,
+            "gameY": 227
+          },
+          "source": "geometry_stratified",
+          "source_provenance": {
+            "feasibility_rule": "issue-44-pig-hit-observation-v1",
+            "scenario_geometry_identity": "scenario-content-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+            "stratum": "empirically-validated-pig-hit-direction:640px:[-77,21]"
           }
         }
       ],
-      "level_instance_identity": "level-instance-v1:sha256:a9165daaa3b595efb43113a615990af0eb35c05d60d4a51fa79181ff86e6b252",
+      "level_instance_identity": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-44%252Fsupport-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
       "negative_specification": {
         "cap": 0,
         "intervention_ids": [],
-        "semantic_justification": "prospective transport probe only; acceptance requires observed Unity contact evidence"
+        "semantic_justification": "bounded issue-44 exporter evidence; this test level is not a #45 inventory amendment"
       },
       "research_eligibility": "research_eligible",
       "retry_policy": {
@@ -582,37 +582,37 @@
         "stopping_rule": "execute_all_interventions",
         "transient_failure_codes": []
       },
-      "scenario_id": "type010102-calibration-seed4501",
-      "scenario_lineage_identity": "scenario-lineage-v1:sha256:bf2958206198a505ef9cb729f8eba00bb6131b9dc5bae3f7b84b29b72fb309c6",
+      "scenario_id": "issue44-support-ready-type010101-seed4401",
+      "scenario_lineage_identity": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-44%252525252Fsupport-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
       "scenario_manifest": {
         "benchmark_condition": {
-          "identity": "benchmark-condition-v1:sha256:991cef5dcdfd9305d7ea38f7f89bba7b7e25ae4a84237749e7869fca0a1d1e30",
+          "identity": "benchmark-condition-v1:novelty_level_0:type010101",
           "novelty_level": "novelty_level_0",
-          "novelty_type": "type010102"
+          "novelty_type": "type010101"
         },
         "declared_initial_engine_state": {
-          "identity": "declared-initial-engine-state-v1:sha256:c9b1eacbf13f04726c285ed27895a97822958278c247b8456bdef515768a4663",
+          "identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
           "schema": "declared_initial_engine_state_v1"
         },
         "generation": {
           "declared_inputs": {
             "max_coordinate": [
-              1.444081,
-              1.53147
+              1.229969,
+              1.809741
             ],
             "min_coordinate": [
-              -7.235919,
-              -1.95804
+              -7.88,
+              -2.39049
             ],
             "reference_point": [
-              1.02408,
-              -1.84657
+              1.00798,
+              -2.1274
             ],
             "restricted_objects": [],
-            "template_content_identity": "xml_bytes_v1:sha256:36627b24c7c3b84799f876da79dc6cd554c0fa8fd2b4c0f3c5afb2a049376b37",
-            "template_name": "0_1_010102_0_2"
+            "template_content_identity": "xml_bytes_v1:sciencebirdsgames/physics-v2/issue-44/support-template.xml:canonical_materialization_v1",
+            "template_name": "0_1_010101_0_1"
           },
-          "generation_seed": 4501,
+          "generation_seed": 4401,
           "generator_identity": "novphy-task-generator",
           "generator_version": "canonical_materialization_v1",
           "importer_identity": null,
@@ -652,22 +652,6 @@
                         },
                         "children": [],
                         "tag": "Bird"
-                      },
-                      {
-                        "attributes": {
-                          "scenarioObjectId": "bird:0001",
-                          "type": "BirdRed"
-                        },
-                        "children": [],
-                        "tag": "Bird"
-                      },
-                      {
-                        "attributes": {
-                          "scenarioObjectId": "bird:0002",
-                          "type": "BirdRed"
-                        },
-                        "children": [],
-                        "tag": "Bird"
                       }
                     ],
                     "tag": "Birds"
@@ -686,11 +670,11 @@
                     "children": [
                       {
                         "attributes": {
-                          "rotation": "0.0257",
+                          "rotation": "0.5426",
                           "scenarioObjectId": "pig:0000",
-                          "type": "BasicBig",
-                          "x": "0.05",
-                          "y": "1.04"
+                          "type": "BasicSmall",
+                          "x": "-3.52",
+                          "y": "-1.79"
                         },
                         "children": [],
                         "tag": "Pig"
@@ -702,45 +686,31 @@
                           "scaleY": "1.0",
                           "scenarioObjectId": "platform:0000",
                           "type": "Platform",
-                          "x": "0.0109",
-                          "y": "0.2166"
+                          "x": "-3.543",
+                          "y": "-2.3026"
                         },
                         "children": [],
                         "tag": "Platform"
                       },
                       {
                         "attributes": {
-                          "rotation": "0.0",
-                          "scaleX": "1.0",
-                          "scaleY": "1.6395",
-                          "scenarioObjectId": "platform:0001",
-                          "type": "Platform",
-                          "x": "-0.8641",
-                          "y": "0.4166"
-                        },
-                        "children": [],
-                        "tag": "Platform"
-                      },
-                      {
-                        "attributes": {
-                          "rotation": "0.0",
-                          "scaleX": "1.0",
-                          "scaleY": "1.6395",
-                          "scenarioObjectId": "platform:0002",
-                          "type": "Platform",
-                          "x": "1.0159",
-                          "y": "0.4166"
-                        },
-                        "children": [],
-                        "tag": "Platform"
-                      },
-                      {
-                        "attributes": {
-                          "material": "ice",
+                          "material": "stone",
                           "rotation": "0",
                           "scenarioObjectId": "block:0000",
+                          "type": "Triangle",
+                          "x": "8.8469",
+                          "y": "-3.09"
+                        },
+                        "children": [],
+                        "tag": "Block"
+                      },
+                      {
+                        "attributes": {
+                          "material": "stone",
+                          "rotation": "0",
+                          "scenarioObjectId": "block:0001",
                           "type": "Circle",
-                          "x": "5.4977",
+                          "x": "3.0876",
                           "y": "-3.1"
                         },
                         "children": [],
@@ -750,10 +720,10 @@
                         "attributes": {
                           "material": "wood",
                           "rotation": "0",
-                          "scenarioObjectId": "block:0001",
-                          "type": "RectMedium",
-                          "x": "0.0677",
-                          "y": "-3.39"
+                          "scenarioObjectId": "block:0002",
+                          "type": "Triangle",
+                          "x": "-6.1118",
+                          "y": "-3.09"
                         },
                         "children": [],
                         "tag": "Block"
@@ -771,32 +741,32 @@
           "source_path": null
         },
         "level_instance": {
-          "identity": "level-instance-v1:sha256:a9165daaa3b595efb43113a615990af0eb35c05d60d4a51fa79181ff86e6b252"
+          "identity": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-44%252Fsupport-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D"
         },
         "research_eligibility": {
           "reason": null,
           "status": "research_eligible"
         },
         "scenario_lineage": {
-          "identity": "scenario-lineage-v1:sha256:bf2958206198a505ef9cb729f8eba00bb6131b9dc5bae3f7b84b29b72fb309c6"
+          "identity": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-44%252525252Fsupport-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D"
         },
         "scenario_specification": {
-          "content_identity": "xml_bytes_v1:sha256:704e750449dcb8cefe28cedf74021e18188a48025b681e785974bc8f0f8ae3e6",
-          "declaration_identity": "scenario-declaration-v1:sha256:58632b4938bc9476a4c6a80a650b419d40e29c5870436b72aa0c4fd9e5e38b2e",
-          "identity": "scenario-specification-v1:sha256:2ea463cbe50309d2a203557e849d11e1d7f33a7338c20ca0903856df8733e6cd"
+          "content_identity": "scenario-content-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+          "declaration_identity": "scenario-declaration-v1:benchmark-condition-v1%3Anovelty_level_0%3Atype010101:scenario-template-v1%3Asciencebirdsgames%252Fphysics-v2%252Fissue-44%252Fsupport-template.xml:generated:novphy-task-generator:canonical_materialization_v1:4401:%7B%22max_coordinate%22%3A%5B1.229969%2C1.809741%5D%2C%22min_coordinate%22%3A%5B-7.88%2C-2.39049%5D%2C%22reference_point%22%3A%5B1.00798%2C-2.1274%5D%2C%22restricted_objects%22%3A%5B%5D%2C%22template_content_identity%22%3A%22xml_bytes_v1%3Asciencebirdsgames%2Fphysics-v2%2Fissue-44%2Fsupport-template.xml%3Acanonical_materialization_v1%22%2C%22template_name%22%3A%220_1_010101_0_1%22%7D",
+          "identity": "scenario-specification-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D"
         },
         "scenario_template": {
           "availability": "available",
-          "identity": "scenario-template-v1:sha256:051e5f57564fb415f154f16a355250cc1df602601d2e2c0abd622801d0a980e8"
+          "identity": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-44%2Fsupport-template.xml"
         },
         "schema": "scenario_manifest_v1"
       },
-      "scenario_manifest_reference": ".claude/project-docs/evidence/issue-45-cohort-v2-lineage/manifests/calibration.json",
-      "scenario_specification_identity": "scenario-specification-v1:sha256:2ea463cbe50309d2a203557e849d11e1d7f33a7338c20ca0903856df8733e6cd",
-      "scenario_template_identity": "scenario-template-v1:sha256:051e5f57564fb415f154f16a355250cc1df602601d2e2c0abd622801d0a980e8",
+      "scenario_manifest_reference": "sciencebirdsgames/physics-v2/review-manifests/support-ready.json",
+      "scenario_specification_identity": "scenario-specification-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+      "scenario_template_identity": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-44%2Fsupport-template.xml",
       "source_dispositions": {
         "benchmark_agent_replay": {
-          "rationale": "no benchmark-agent trace is approved for these source-bound instances",
+          "rationale": "no benchmark-agent trace is approved for these source-bound tests",
           "status": "unavailable"
         },
         "geometry_stratified": {

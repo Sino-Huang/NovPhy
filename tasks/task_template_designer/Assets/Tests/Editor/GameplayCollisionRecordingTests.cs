@@ -37,6 +37,190 @@ public class GameplayCollisionRecordingTests
     private const float BirdOnBlockLifeAfterBlockFormula = 10000f - 0.685f;
 
     [Test]
+    public void V2OnlyRuntimeRecordsCollisionWhileV1ShotRecorderIsNull()
+    {
+        string previousStride = V2Stride();
+        GameObject first = CausalCollisionObject("v2-only-first");
+        GameObject second = CausalCollisionObject("v2-only-second");
+        GameObject runtimeObject = null;
+        try
+        {
+            SetV2Stride("1");
+            runtimeObject = NewV2OnlyRuntime();
+            PhysicalSnapshotRuntime runtime =
+                runtimeObject.GetComponent<PhysicalSnapshotRuntime>();
+            Collision2D collision = NewCollision(first.GetComponent<BoxCollider2D>(),
+                second.GetComponent<BoxCollider2D>(), new Vector2(2f, 0f), 2);
+
+            PhysicalSnapshotRuntime.RecordCollisionCallback(collision);
+            runtime.FinalizeTerminal();
+
+            Assert.IsNull(runtime.ShotRecorder);
+            PhysicsCaptureV2EngineSnapshot snapshot =
+                PhysicsCaptureV2FixedStepRecorder.Active.CreateFinalizedSnapshot();
+            Assert.AreEqual(1, snapshot.Events.Count(item => item.EventType == "collision"));
+            PhysicsCaptureV2EventSnapshot collisionEvent =
+                snapshot.Events.Single(item => item.EventType == "collision");
+            PhysicsCaptureV2FixedStepSample sample = snapshot.FixedStepSamples.Single(
+                item => item.FixedStep == collisionEvent.FixedStep);
+            Assert.AreEqual(2, sample.Contacts.Count);
+            CollectionAssert.AreEquivalent(collisionEvent.Participants,
+                new[] { sample.Contacts[0].EntityAId, sample.Contacts[0].EntityBId });
+        }
+        finally
+        {
+            if (runtimeObject != null) UnityEngine.Object.DestroyImmediate(runtimeObject);
+            UnityEngine.Object.DestroyImmediate(second);
+            UnityEngine.Object.DestroyImmediate(first);
+            SetV2Stride(previousStride);
+        }
+    }
+
+    [Test]
+    public void LethalPigCallbackFreezesSameStepContactBeforeColliderDisablement()
+    {
+        string previousStride = V2Stride();
+        GameObject recorderHost = new GameObject("lethal-pig-v2-recorder");
+        GameObject bird = CausalCollisionObject("bird:lethal");
+        GameObject pig = CausalCollisionObject("pig:lethal");
+        try
+        {
+            SetV2Stride("1");
+            PhysicsCaptureV2FixedStepRecorder recorder =
+                recorderHost.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
+            GameObject[] causalObjects = { bird, pig };
+            recorder.BeginPreIntervention(10, causalObjects);
+            Collision2D collision = NewCollision(bird.GetComponent<BoxCollider2D>(),
+                pig.GetComponent<BoxCollider2D>(), new Vector2(6f, 0f), 2);
+
+            ((IPhysicsCaptureV2UnityCollisionRecorder)recorder).RecordUnityCollision(
+                11, collision, causalObjects);
+            pig.GetComponent<BoxCollider2D>().enabled = false;
+            recorder.RecordFixedStep(11, causalObjects,
+                new PhysicsCaptureV2ContactInput[0], true);
+            recorder.FinalizeTerminal(11);
+
+            PhysicsCaptureV2EngineSnapshot snapshot = recorder.CreateFinalizedSnapshot();
+            PhysicsCaptureV2EventSnapshot collisionEvent =
+                snapshot.Events.Single(item => item.EventType == "collision");
+            Assert.AreEqual(11, collisionEvent.FixedStep);
+            PhysicsCaptureV2FixedStepSample collisionSample =
+                snapshot.FixedStepSamples.Single(item => item.FixedStep == 11);
+            Assert.AreEqual(2, collisionSample.Contacts.Count,
+                "the callback contacts must survive the lethal collider disablement");
+            Assert.IsFalse(collisionSample.Colliders.Single(
+                item => item.EntityId == "runtime:pig:lethal").Enabled);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(pig);
+            UnityEngine.Object.DestroyImmediate(bird);
+            UnityEngine.Object.DestroyImmediate(recorderHost);
+            SetV2Stride(previousStride);
+        }
+    }
+
+    [Test]
+    public void V2DuplicateBodyCallbacksProduceOneEventAndUniqueContactPoints()
+    {
+        string previousStride = V2Stride();
+        GameObject recorderHost = new GameObject("duplicate-callback-v2-recorder");
+        GameObject first = CausalCollisionObject("duplicate:first");
+        GameObject second = CausalCollisionObject("duplicate:second");
+        try
+        {
+            SetV2Stride("1");
+            PhysicsCaptureV2FixedStepRecorder recorder =
+                recorderHost.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
+            GameObject[] causalObjects = { first, second };
+            recorder.BeginPreIntervention(10, causalObjects);
+            Collision2D collision = NewCollision(first.GetComponent<BoxCollider2D>(),
+                second.GetComponent<BoxCollider2D>(), new Vector2(2f, 0f), 2);
+            IPhysicsCaptureV2UnityCollisionRecorder callbackRecorder = recorder;
+
+            callbackRecorder.RecordUnityCollision(11, collision, causalObjects);
+            callbackRecorder.RecordUnityCollision(11, collision, causalObjects);
+            recorder.RecordFixedStep(11, causalObjects,
+                new PhysicsCaptureV2ContactInput[0], true);
+            recorder.FinalizeTerminal(11);
+
+            PhysicsCaptureV2EngineSnapshot snapshot = recorder.CreateFinalizedSnapshot();
+            Assert.AreEqual(1, snapshot.Events.Count(item => item.EventType == "collision"));
+            Assert.AreEqual(2, snapshot.FixedStepSamples.Single(
+                item => item.FixedStep == 11).Contacts.Count);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(second);
+            UnityEngine.Object.DestroyImmediate(first);
+            UnityEngine.Object.DestroyImmediate(recorderHost);
+            SetV2Stride(previousStride);
+        }
+    }
+
+    [Test]
+    public void V2CollisionCallbacksFailClosedForTriggersUnresolvedIdentitiesAndLimits()
+    {
+        string previousStride = V2Stride();
+        GameObject first = CausalCollisionObject("callback-limit:first");
+        GameObject second = CausalCollisionObject("callback-limit:second");
+        GameObject outsider = new GameObject("callback-unresolved");
+        GameObject triggerHost = new GameObject("callback-trigger-recorder");
+        GameObject unresolvedHost = new GameObject("callback-unresolved-recorder");
+        GameObject limitHost = new GameObject("callback-limit-recorder");
+        try
+        {
+            SetV2Stride("1");
+            outsider.AddComponent<BoxCollider2D>();
+            GameObject[] causalObjects = { first, second };
+
+            PhysicsCaptureV2FixedStepRecorder trigger =
+                triggerHost.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
+            trigger.BeginPreIntervention(10, causalObjects);
+            first.GetComponent<BoxCollider2D>().isTrigger = true;
+            ((IPhysicsCaptureV2UnityCollisionRecorder)trigger).RecordUnityCollision(10,
+                NewCollision(first.GetComponent<BoxCollider2D>(),
+                    second.GetComponent<BoxCollider2D>(), Vector2.right, 1), causalObjects);
+            trigger.FinalizeTerminal(10);
+            Assert.AreEqual(0, trigger.CreateFinalizedSnapshot().Events.Count(
+                item => item.EventType == "collision"));
+            first.GetComponent<BoxCollider2D>().isTrigger = false;
+
+            PhysicsCaptureV2FixedStepRecorder unresolved =
+                unresolvedHost.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
+            unresolved.BeginPreIntervention(10, causalObjects);
+            ((IPhysicsCaptureV2UnityCollisionRecorder)unresolved).RecordUnityCollision(10,
+                NewCollision(outsider.GetComponent<BoxCollider2D>(),
+                    second.GetComponent<BoxCollider2D>(), Vector2.right, 1), causalObjects);
+            Assert.AreEqual(PhysicsCaptureV2EngineFailureCode.UnresolvedContactIdentity,
+                unresolved.Failure.Code);
+
+            PhysicsCaptureV2FixedStepRecorder limited =
+                limitHost.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
+            limited.BeginPreIntervention(10, causalObjects,
+                new PhysicsCaptureV2ContactInput[0], true,
+                new PhysicsCaptureV2CaptureLimits(10, 10, 1));
+            ((IPhysicsCaptureV2UnityCollisionRecorder)limited).RecordUnityCollision(10,
+                NewCollision(first.GetComponent<BoxCollider2D>(),
+                    second.GetComponent<BoxCollider2D>(), Vector2.right, 2), causalObjects);
+            Assert.AreEqual(PhysicsCaptureV2EngineFailureCode.ContactLimitExceeded,
+                limited.Failure.Code);
+            Assert.IsNull(limited.CreateFinalizedSnapshot(),
+                "a callback limit failure must not yield a finalized wire record");
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(limitHost);
+            UnityEngine.Object.DestroyImmediate(unresolvedHost);
+            UnityEngine.Object.DestroyImmediate(triggerHost);
+            UnityEngine.Object.DestroyImmediate(outsider);
+            UnityEngine.Object.DestroyImmediate(second);
+            UnityEngine.Object.DestroyImmediate(first);
+            SetV2Stride(previousStride);
+        }
+    }
+
+    [Test]
     public void BirdBlackImpactRecordsACollisionEventWithContractGradeEvidence()
     {
         GameObject runtimeObject = NewRuntime();
@@ -346,6 +530,38 @@ public class GameplayCollisionRecordingTests
         AwakeComponent(runtime);
         runtime.BeginShot(32, 64 * 1024, 30f);
         return runtimeObject;
+    }
+
+    private static GameObject NewV2OnlyRuntime()
+    {
+        GameObject runtimeObject = new GameObject("gameplay-collision-v2-only-runtime");
+        PhysicalSnapshotRuntime runtime = runtimeObject.AddComponent<PhysicalSnapshotRuntime>();
+        AwakeComponent(runtime);
+        runtime.BeginV2Shot();
+        return runtimeObject;
+    }
+
+    private static GameObject CausalCollisionObject(string scenarioObjectId)
+    {
+        GameObject value = new GameObject(scenarioObjectId);
+        ScenarioObjectIdentity.Assign(value, scenarioObjectId);
+        value.AddComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
+        value.AddComponent<BoxCollider2D>();
+        return value;
+    }
+
+    private static string V2Stride()
+    {
+        return Environment.GetEnvironmentVariable(
+            PhysicsCaptureV2EngineProtocol.StrideEnvironmentVariable,
+            EnvironmentVariableTarget.Process);
+    }
+
+    private static void SetV2Stride(string value)
+    {
+        Environment.SetEnvironmentVariable(
+            PhysicsCaptureV2EngineProtocol.StrideEnvironmentVariable,
+            value, EnvironmentVariableTarget.Process);
     }
 
     private static ABBirdBlack NewBirdBlack(GameObject host)

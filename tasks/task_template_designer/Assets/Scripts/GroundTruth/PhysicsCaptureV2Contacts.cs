@@ -22,6 +22,36 @@ public sealed class PhysicsCaptureV2ContactInput
     }
 }
 
+public sealed class PhysicsCaptureV2FrozenContact
+{
+    public string EntityAId { get; private set; }
+    public string EntityBId { get; private set; }
+    public string ColliderAId { get; private set; }
+    public string ColliderBId { get; private set; }
+    public Vector2 Point { get; private set; }
+    public Vector2 NormalAToB { get; private set; }
+    public float Separation { get; private set; }
+
+    public PhysicsCaptureV2FrozenContact(string entityAId, string entityBId,
+        string colliderAId, string colliderBId, Vector2 point, Vector2 normalAToB,
+        float separation)
+    {
+        EntityAId = entityAId;
+        EntityBId = entityBId;
+        ColliderAId = colliderAId;
+        ColliderBId = colliderBId;
+        Point = point;
+        NormalAToB = normalAToB;
+        Separation = separation;
+    }
+
+    public PhysicsCaptureV2FrozenContact(PhysicsCaptureV2ContactSnapshot contact)
+        : this(contact.EntityAId, contact.EntityBId, contact.ColliderAId,
+            contact.ColliderBId, contact.Point, contact.NormalAToB, contact.Separation)
+    {
+    }
+}
+
 public sealed class PhysicsCaptureV2ContactSnapshot
 {
     public string ContactId { get; private set; }
@@ -73,6 +103,21 @@ public static class PhysicsCaptureV2ContactExporter
         out List<PhysicsCaptureV2EntitySnapshot> contextualEntities,
         out PhysicsCaptureV2RecorderFailure failure)
     {
+        return TryCapture(fixedStep, causalObjects, inputs,
+            new PhysicsCaptureV2FrozenContact[0], complete, limits, entities, colliders,
+            out contacts, out supports, out contextualEntities, out failure);
+    }
+
+    public static bool TryCapture(long fixedStep, GameObject[] causalObjects,
+        PhysicsCaptureV2ContactInput[] inputs,
+        IList<PhysicsCaptureV2FrozenContact> frozenInputs, bool complete,
+        PhysicsCaptureV2CaptureLimits limits, List<PhysicsCaptureV2EntitySnapshot> entities,
+        List<PhysicsCaptureV2ColliderSnapshot> colliders,
+        out List<PhysicsCaptureV2ContactSnapshot> contacts,
+        out List<PhysicsCaptureV2SupportSnapshot> supports,
+        out List<PhysicsCaptureV2EntitySnapshot> contextualEntities,
+        out PhysicsCaptureV2RecorderFailure failure)
+    {
         contacts = new List<PhysicsCaptureV2ContactSnapshot>();
         supports = new List<PhysicsCaptureV2SupportSnapshot>();
         contextualEntities = entities;
@@ -80,8 +125,23 @@ public static class PhysicsCaptureV2ContactExporter
         if (!complete)
             return Fail(PhysicsCaptureV2EngineFailureCode.IncompleteContactEnumeration,
                 "physics capture v2 contact enumeration is incomplete", out failure);
+        List<PhysicsCaptureV2FrozenContact> frozen;
+        if (!TryFreeze(inputs, causalObjects, limits, colliders, out frozen, out failure))
+            return false;
+        if (frozenInputs != null) frozen.AddRange(frozenInputs);
+        return TryCaptureFrozen(fixedStep, frozen, limits, entities, colliders,
+            out contacts, out supports, out contextualEntities, out failure);
+    }
+
+    public static bool TryFreeze(PhysicsCaptureV2ContactInput[] inputs,
+        GameObject[] causalObjects, PhysicsCaptureV2CaptureLimits limits,
+        List<PhysicsCaptureV2ColliderSnapshot> colliders,
+        out List<PhysicsCaptureV2FrozenContact> frozen,
+        out PhysicsCaptureV2RecorderFailure failure)
+    {
+        frozen = new List<PhysicsCaptureV2FrozenContact>();
+        failure = null;
         inputs = inputs ?? new PhysicsCaptureV2ContactInput[0];
-        List<PhysicsCaptureV2ContactSnapshot> unordered = new List<PhysicsCaptureV2ContactSnapshot>();
         for (int i = 0; i < inputs.Length; i++)
         {
             PhysicsCaptureV2ContactInput input = inputs[i];
@@ -107,16 +167,57 @@ public static class PhysicsCaptureV2ContactExporter
             {
                 Swap(ref entityA, ref entityB); Swap(ref colliderA, ref colliderB); normal = -normal;
             }
-            unordered.Add(new PhysicsCaptureV2ContactSnapshot(null, entityA, entityB,
+            frozen.Add(new PhysicsCaptureV2FrozenContact(entityA, entityB,
                 colliderA, colliderB, input.Point, normal, input.Separation));
         }
-        if (unordered.Count > limits.MaxContactsPerStep)
+        Canonicalize(frozen);
+        if (frozen.Count > limits.MaxContactsPerStep)
             return Fail(PhysicsCaptureV2EngineFailureCode.ContactLimitExceeded,
                 "physics capture v2 per-step contact bound exceeded", out failure);
-        unordered.Sort(CompareContacts);
-        for (int i = 0; i < unordered.Count; i++)
+        return true;
+    }
+
+    public static bool TryCaptureFrozen(long fixedStep,
+        IList<PhysicsCaptureV2FrozenContact> frozenInputs,
+        PhysicsCaptureV2CaptureLimits limits, List<PhysicsCaptureV2EntitySnapshot> entities,
+        List<PhysicsCaptureV2ColliderSnapshot> colliders,
+        out List<PhysicsCaptureV2ContactSnapshot> contacts,
+        out List<PhysicsCaptureV2SupportSnapshot> supports,
+        out List<PhysicsCaptureV2EntitySnapshot> contextualEntities,
+        out PhysicsCaptureV2RecorderFailure failure)
+    {
+        contacts = new List<PhysicsCaptureV2ContactSnapshot>();
+        supports = new List<PhysicsCaptureV2SupportSnapshot>();
+        contextualEntities = entities;
+        failure = null;
+        List<PhysicsCaptureV2FrozenContact> frozen =
+            new List<PhysicsCaptureV2FrozenContact>(
+                frozenInputs ?? new PhysicsCaptureV2FrozenContact[0]);
+        HashSet<string> entityIds = new HashSet<string>(StringComparer.Ordinal);
+        HashSet<string> colliderIds = new HashSet<string>(StringComparer.Ordinal);
+        for (int i = 0; i < entities.Count; i++) entityIds.Add(entities[i].EntityId);
+        for (int i = 0; i < colliders.Count; i++) colliderIds.Add(colliders[i].ColliderId);
+        for (int i = 0; i < frozen.Count; i++)
         {
-            PhysicsCaptureV2ContactSnapshot contact = unordered[i];
+            PhysicsCaptureV2FrozenContact contact = frozen[i];
+            if (contact == null
+                || !entityIds.Contains(contact.EntityAId) || !entityIds.Contains(contact.EntityBId)
+                || !colliderIds.Contains(contact.ColliderAId) || !colliderIds.Contains(contact.ColliderBId))
+                return Fail(PhysicsCaptureV2EngineFailureCode.UnresolvedContactIdentity,
+                    "physics capture v2 frozen contact does not resolve to retained identity and geometry",
+                    out failure);
+            if (!Finite(contact.Point) || !Finite(contact.NormalAToB)
+                || !Finite(contact.Separation))
+                return Fail(PhysicsCaptureV2EngineFailureCode.NonFiniteValue,
+                    "physics capture v2 frozen contact contains a non-finite value", out failure);
+        }
+        Canonicalize(frozen);
+        if (frozen.Count > limits.MaxContactsPerStep)
+            return Fail(PhysicsCaptureV2EngineFailureCode.ContactLimitExceeded,
+                "physics capture v2 per-step contact bound exceeded", out failure);
+        for (int i = 0; i < frozen.Count; i++)
+        {
+            PhysicsCaptureV2FrozenContact contact = frozen[i];
             contacts.Add(new PhysicsCaptureV2ContactSnapshot(
                 "contact:" + fixedStep + ":" + i.ToString("D4"),
                 contact.EntityAId, contact.EntityBId, contact.ColliderAId, contact.ColliderBId,
@@ -124,6 +225,14 @@ public static class PhysicsCaptureV2ContactExporter
         }
         BuildSupportAndContext(contacts, entities, out supports, out contextualEntities);
         return true;
+    }
+
+    private static void Canonicalize(List<PhysicsCaptureV2FrozenContact> contacts)
+    {
+        contacts.Sort(CompareContacts);
+        for (int index = contacts.Count - 1; index > 0; index--)
+            if (CompareContacts(contacts[index - 1], contacts[index]) == 0)
+                contacts.RemoveAt(index);
     }
 
     private static void BuildSupportAndContext(List<PhysicsCaptureV2ContactSnapshot> contacts,
@@ -204,8 +313,8 @@ public static class PhysicsCaptureV2ContactExporter
         return false;
     }
 
-    private static int CompareContacts(PhysicsCaptureV2ContactSnapshot left,
-        PhysicsCaptureV2ContactSnapshot right)
+    private static int CompareContacts(PhysicsCaptureV2FrozenContact left,
+        PhysicsCaptureV2FrozenContact right)
     {
         int value = string.CompareOrdinal(left.ColliderAId, right.ColliderAId);
         if (value != 0) return value;
@@ -213,7 +322,9 @@ public static class PhysicsCaptureV2ContactExporter
         if (value != 0) return value;
         value = left.Point.x.CompareTo(right.Point.x); if (value != 0) return value;
         value = left.Point.y.CompareTo(right.Point.y); if (value != 0) return value;
-        return left.Separation.CompareTo(right.Separation);
+        value = left.Separation.CompareTo(right.Separation); if (value != 0) return value;
+        value = left.NormalAToB.x.CompareTo(right.NormalAToB.x); if (value != 0) return value;
+        return left.NormalAToB.y.CompareTo(right.NormalAToB.y);
     }
 
     private static void Swap(ref string left, ref string right)

@@ -193,11 +193,9 @@ class AppState:
                 stage / "novphy-physics-player-2019.4.41f2.tar.gz",
                 stage / "probe-plan.json",
                 stage / "review-levels" / "training.xml",
-                stage / "review-levels" / "calibration.xml",
-                stage / "review-levels" / "model-selection.xml",
+                stage / "review-levels" / "support-ready.xml",
                 stage / "review-manifests" / "training.json",
-                stage / "review-manifests" / "calibration.json",
-                stage / "review-manifests" / "model-selection.json",
+                stage / "review-manifests" / "support-ready.json",
             ]
             return [f"Missing {path}" for path in required_stage if not path.exists()]
         required = [
@@ -303,11 +301,10 @@ class AppState:
         source_root = stage / "review-levels"
         sources = (
             source_root / "training.xml",
-            source_root / "calibration.xml",
-            source_root / "model-selection.xml",
+            source_root / "support-ready.xml",
         )
         if any(not source.is_file() for source in sources):
-            raise FileNotFoundError("public #45 review XML artifacts are incomplete")
+            raise FileNotFoundError("source-bound #44 review XML artifacts are incomplete")
         selected_index = REVIEW_GOAL_LEVELS.get(self.review_goal or "", 1) - 1
         sources = (
             (sources[selected_index],)

@@ -25,10 +25,14 @@ from scripts.physics_capture_v2_persistence import (
 REVIEW_GOALS = ("collision", "persistent support", "support change")
 _GOAL_SCENARIO_INDEX = {
     "collision": 0,
-    "persistent support": 0,
+    "persistent support": 1,
     "support change": 1,
 }
-REVIEW_GOAL_LEVELS = {goal: index + 1 for goal, index in _GOAL_SCENARIO_INDEX.items()}
+REVIEW_GOAL_LEVELS = {
+    "collision": 1,
+    "persistent support": 2,
+    "support change": 2,
+}
 
 
 def _canonical_bytes(value: Mapping[str, Any]) -> bytes:

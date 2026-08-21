@@ -1,13 +1,13 @@
 {
-  "identity": "cohort-v2-scenario-manifest-v1:sha256:06b0f712e27400f2c777487ff036b5aefa058c87c32233a813373427f31d916d",
+  "identity": "cohort-v2-scenario-manifest-v1:scenario-lineage-v1%3Ascenario-specification-v1%253Alevel-instance-v1%25253Ascenario-declaration-v1%2525253Abenchmark-condition-v1%252525253Anovelty_level_0%252525253Atype010101%2525253Ascenario-template-v1%252525253Atasks%25252525252Ftask_templates%25252525252Fnovelty_level_0%25252525252Ftype010101%25252525252FLevels%25252525252F00001_0_1_010101_0_1.xml%2525253Agenerated%2525253Anovphy-task-generator%2525253Acanonical_materialization_v1%2525253A4401%2525253A%252525257B%2525252522max_coordinate%2525252522%252525253A%252525255B1.229969%252525252C1.809741%252525255D%252525252C%2525252522min_coordinate%2525252522%252525253A%252525255B-7.88%252525252C-2.39049%252525255D%252525252C%2525252522reference_point%2525252522%252525253A%252525255B1.00798%252525252C-2.1274%252525255D%252525252C%2525252522restricted_objects%2525252522%252525253A%252525255B%252525255D%252525252C%2525252522template_content_identity%2525252522%252525253A%2525252522xml_bytes_v1%252525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%252525253Acanonical_materialization_v1%2525252522%252525252C%2525252522template_name%2525252522%252525253A%25252525220_1_010101_0_1%2525252522%252525257D",
   "scenario_manifest": {
     "benchmark_condition": {
-      "identity": "benchmark-condition-v1:sha256:f8fb2ae6e0724bd88b459ce8f3752ea2ac7a9b9e647f5465e9c425dba6e75a90",
+      "identity": "benchmark-condition-v1:novelty_level_0:type010101",
       "novelty_level": "novelty_level_0",
       "novelty_type": "type010101"
     },
     "declared_initial_engine_state": {
-      "identity": "declared-initial-engine-state-v1:sha256:a69457156ab39d807fee9bd5306f832d588de2758ece504523dd10695ae90b53",
+      "identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
       "schema": "declared_initial_engine_state_v1"
     },
     "generation": {
@@ -25,7 +25,7 @@
           -2.1274
         ],
         "restricted_objects": [],
-        "template_content_identity": "xml_bytes_v1:sha256:ede3a16435534ebbb3b37dccfeb7652ce2a56c50a1f5b826abede79692ba9220",
+        "template_content_identity": "xml_bytes_v1:tasks/task_templates/novelty_level_0/type010101/Levels/00001_0_1_010101_0_1.xml:canonical_materialization_v1",
         "template_name": "0_1_010101_0_1"
       },
       "generation_seed": 4401,
@@ -157,23 +157,23 @@
       "source_path": null
     },
     "level_instance": {
-      "identity": "level-instance-v1:sha256:185fb4d8c69738382c11770b45e03b11234cf1809f3b49585eb5087c227916d7"
+      "identity": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D"
     },
     "research_eligibility": {
       "reason": null,
       "status": "research_eligible"
     },
     "scenario_lineage": {
-      "identity": "scenario-lineage-v1:sha256:ef31cc858b84d09d853dbf5957e163e34f7154509db9bfbfbf84a1edd3c4ccba"
+      "identity": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D"
     },
     "scenario_specification": {
-      "content_identity": "xml_bytes_v1:sha256:b8eb530bf51e628065f705905a53990aa8ea38bcd2b357421cec4857ca336433",
-      "declaration_identity": "scenario-declaration-v1:sha256:23d3dd0cb97a43974c7be725da997fc74d6d9a4675c9214e3be4dbc431556b98",
-      "identity": "scenario-specification-v1:sha256:368f8f79b8ff1bf0cebca0e953cb02aef0602cd1661e1d5f2881db876b40f949"
+      "content_identity": "scenario-content-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+      "declaration_identity": "scenario-declaration-v1:benchmark-condition-v1%3Anovelty_level_0%3Atype010101:scenario-template-v1%3Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml:generated:novphy-task-generator:canonical_materialization_v1:4401:%7B%22max_coordinate%22%3A%5B1.229969%2C1.809741%5D%2C%22min_coordinate%22%3A%5B-7.88%2C-2.39049%5D%2C%22reference_point%22%3A%5B1.00798%2C-2.1274%5D%2C%22restricted_objects%22%3A%5B%5D%2C%22template_content_identity%22%3A%22xml_bytes_v1%3Atasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml%3Acanonical_materialization_v1%22%2C%22template_name%22%3A%220_1_010101_0_1%22%7D",
+      "identity": "scenario-specification-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D"
     },
     "scenario_template": {
       "availability": "available",
-      "identity": "scenario-template-v1:sha256:9195fdd49158feb385a9764ee2064f3a3d71efdc6c23144b14fb28bcacbf77e1"
+      "identity": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml"
     },
     "schema": "scenario_manifest_v1"
   },
@@ -181,7 +181,7 @@
   "template_record": {
     "benchmark_conditions": [
       {
-        "identity": "benchmark-condition-v1:sha256:f8fb2ae6e0724bd88b459ce8f3752ea2ac7a9b9e647f5465e9c425dba6e75a90",
+        "identity": "benchmark-condition-v1:novelty_level_0:type010101",
         "novelty_level": "novelty_level_0",
         "novelty_type": "type010101"
       }
@@ -203,12 +203,12 @@
       "row_number": 3,
       "schema": "scenario_template_constraints_v1",
       "sheet_name": "Task Variations",
-      "source_content_identity": "xlsx_bytes_v1:sha256:4635c9c072eb36481815ac17cfd1cdd958773fc400d99ac579e0561ba045bff1",
+      "source_content_identity": "xlsx-source-v1:tasks%2Ftask_generator%2Ftemplate_constraints.xlsx:Task%20Variations:3",
       "source_reference": "tasks/task_generator/template_constraints.xlsx"
     },
-    "identity": "scenario-template-v1:sha256:9195fdd49158feb385a9764ee2064f3a3d71efdc6c23144b14fb28bcacbf77e1",
+    "identity": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml",
     "schema": "scenario_template_v1",
-    "source_content_identity": "xml_bytes_v1:sha256:ede3a16435534ebbb3b37dccfeb7652ce2a56c50a1f5b826abede79692ba9220",
+    "source_content_identity": "xml-source-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml",
     "source_reference": "tasks/task_templates/novelty_level_0/type010101/Levels/00001_0_1_010101_0_1.xml"
   }
 }

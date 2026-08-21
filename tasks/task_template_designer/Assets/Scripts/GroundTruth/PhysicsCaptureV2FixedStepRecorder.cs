@@ -4,6 +4,11 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using UnityEngine;
 
+public interface IPhysicsCaptureV2UnityCollisionRecorder
+{
+    void RecordUnityCollision(long fixedStep, Collision2D collision, GameObject[] causalObjects);
+}
+
 public sealed class PhysicsCaptureV2FixedStepSample
 {
     public long FixedStep { get; private set; }
@@ -33,6 +38,17 @@ public sealed class PhysicsCaptureV2FixedStepSample
         Colliders = new List<PhysicsCaptureV2ColliderSnapshot>(colliders).AsReadOnly();
         Contacts = new List<PhysicsCaptureV2ContactSnapshot>(contacts).AsReadOnly();
         Supports = new List<PhysicsCaptureV2SupportSnapshot>(supports).AsReadOnly();
+    }
+
+    public PhysicsCaptureV2FixedStepSample WithContacts(
+        IList<PhysicsCaptureV2EntitySnapshot> entities,
+        IList<PhysicsCaptureV2ContactSnapshot> contacts,
+        IList<PhysicsCaptureV2SupportSnapshot> supports)
+    {
+        PhysicsCaptureV2FixedStepSample value = new PhysicsCaptureV2FixedStepSample(
+            FixedStep, entities, Colliders, contacts, supports);
+        value.WorldGravity = WorldGravity;
+        return value;
     }
 }
 
@@ -99,7 +115,8 @@ public sealed class PhysicsCaptureV2EngineSnapshot
     }
 }
 
-public sealed class PhysicsCaptureV2FixedStepRecorder : MonoBehaviour
+public sealed class PhysicsCaptureV2FixedStepRecorder : MonoBehaviour,
+    IPhysicsCaptureV2UnityCollisionRecorder
 {
     private readonly List<PhysicsCaptureV2FixedStepSample> fixedStepSamples =
         new List<PhysicsCaptureV2FixedStepSample>();
@@ -111,6 +128,10 @@ public sealed class PhysicsCaptureV2FixedStepRecorder : MonoBehaviour
         new Dictionary<string, PhysicsCaptureV2EntitySnapshot>(StringComparer.Ordinal);
     private readonly Dictionary<string, PhysicsCaptureV2ColliderSnapshot> retainedColliders =
         new Dictionary<string, PhysicsCaptureV2ColliderSnapshot>(StringComparer.Ordinal);
+    private readonly Dictionary<long, List<PhysicsCaptureV2FrozenContact>> callbackContacts =
+        new Dictionary<long, List<PhysicsCaptureV2FrozenContact>>();
+    private readonly HashSet<string> collisionEventKeys =
+        new HashSet<string>(StringComparer.Ordinal);
     private int stride;
     private long preInterventionFixedStep;
     private long lastFixedStep;
@@ -187,6 +208,8 @@ public sealed class PhysicsCaptureV2FixedStepRecorder : MonoBehaviour
         events.Clear();
         retainedEntities.Clear();
         retainedColliders.Clear();
+        callbackContacts.Clear();
+        collisionEventKeys.Clear();
         terminalReason = null;
         terminalEventId = null;
         preInterventionFixedStep = fixedStep;
@@ -260,12 +283,104 @@ public sealed class PhysicsCaptureV2FixedStepRecorder : MonoBehaviour
 
     public string RecordMacroEvent(string eventType, string[] participants, string payloadJson)
     {
+        return RecordMacroEvent(lastFixedStep, eventType, participants, payloadJson);
+    }
+
+    public string RecordMacroEvent(long fixedStep, string eventType,
+        string[] participants, string payloadJson)
+    {
         if (!recording || finalized) return null;
+        if (fixedStep < preInterventionFixedStep || fixedStep > lastFixedStep + 1)
+        {
+            Failure = new PhysicsCaptureV2RecorderFailure(
+                PhysicsCaptureV2EngineFailureCode.FixedStepGap,
+                "physics capture v2 event is outside recorded fixed-step coverage");
+            return null;
+        }
         int ordinal = events.Count;
-        string eventId = "event:" + lastFixedStep + ":" + eventType + ":" + ordinal.ToString("D4");
-        events.Add(new PhysicsCaptureV2EventSnapshot(eventId, eventType, lastFixedStep,
+        string eventId = "event:" + fixedStep + ":" + eventType + ":" + ordinal.ToString("D4");
+        events.Add(new PhysicsCaptureV2EventSnapshot(eventId, eventType, fixedStep,
             participants, payloadJson));
         return eventId;
+    }
+
+    public void RecordUnityCollision(long fixedStep, Collision2D collision,
+        GameObject[] causalObjects)
+    {
+        if (!recording || finalized || Failure != null || collision == null
+            || collision.collider == null || collision.otherCollider == null)
+            return;
+        if (fixedStep < preInterventionFixedStep || fixedStep > lastFixedStep + 1)
+        {
+            Failure = new PhysicsCaptureV2RecorderFailure(
+                PhysicsCaptureV2EngineFailureCode.FixedStepGap,
+                "physics capture v2 collision is outside recorded fixed-step coverage");
+            return;
+        }
+        float relativeSpeed = collision.relativeVelocity.magnitude;
+        if (float.IsNaN(relativeSpeed) || float.IsInfinity(relativeSpeed))
+        {
+            Failure = new PhysicsCaptureV2RecorderFailure(
+                PhysicsCaptureV2EngineFailureCode.NonFiniteValue,
+                "physics capture v2 collision relative speed is non-finite");
+            return;
+        }
+        List<PhysicsCaptureV2EntitySnapshot> entities;
+        List<PhysicsCaptureV2ColliderSnapshot> colliders;
+        PhysicsCaptureV2RecorderFailure failure;
+        if (!PhysicsCaptureV2EntityGeometryExporter.TryCapture(causalObjects, limits,
+            out entities, out colliders, out failure))
+        {
+            Failure = failure;
+            return;
+        }
+        PhysicsCaptureV2ContactInput[] inputs = Array.FindAll(
+            Array.ConvertAll(collision.contacts, delegate(ContactPoint2D point)
+            {
+                return point.collider == null || point.otherCollider == null
+                    || point.collider.isTrigger || point.otherCollider.isTrigger
+                    ? null
+                    : new PhysicsCaptureV2ContactInput(point.collider, point.otherCollider,
+                        point.point, -point.normal, point.separation);
+            }), delegate(PhysicsCaptureV2ContactInput input) { return input != null; });
+        List<PhysicsCaptureV2FrozenContact> frozen;
+        if (!PhysicsCaptureV2ContactExporter.TryFreeze(inputs, causalObjects, limits,
+            colliders, out frozen, out failure))
+        {
+            Failure = failure;
+            return;
+        }
+        if (frozen.Count == 0) return;
+        List<PhysicsCaptureV2FrozenContact> accumulated;
+        if (!callbackContacts.TryGetValue(fixedStep, out accumulated))
+        {
+            accumulated = new List<PhysicsCaptureV2FrozenContact>();
+            callbackContacts.Add(fixedStep, accumulated);
+        }
+        accumulated.AddRange(frozen);
+        List<PhysicsCaptureV2ContactSnapshot> checkedContacts;
+        List<PhysicsCaptureV2SupportSnapshot> checkedSupports;
+        List<PhysicsCaptureV2EntitySnapshot> checkedEntities;
+        if (!PhysicsCaptureV2ContactExporter.TryCaptureFrozen(fixedStep, accumulated,
+            limits, entities, colliders, out checkedContacts, out checkedSupports,
+            out checkedEntities, out failure))
+        {
+            Failure = failure;
+            return;
+        }
+        MergeCallbackContactsIntoRecordedSample(fixedStep);
+        if (Failure != null) return;
+        string first = frozen[0].EntityAId;
+        string second = frozen[0].EntityBId;
+        if (string.CompareOrdinal(first, second) > 0)
+        {
+            string value = first; first = second; second = value;
+        }
+        string key = fixedStep + "\n" + first + "\n" + second;
+        if (collisionEventKeys.Add(key))
+            RecordMacroEvent(fixedStep, "collision", new[] { first, second },
+                "{\"relative_speed\":"
+                + relativeSpeed.ToString("R", CultureInfo.InvariantCulture) + "}");
     }
 
     public void Deactivate()
@@ -317,15 +432,45 @@ public sealed class PhysicsCaptureV2FixedStepRecorder : MonoBehaviour
         List<PhysicsCaptureV2ContactSnapshot> contacts;
         List<PhysicsCaptureV2SupportSnapshot> supports;
         List<PhysicsCaptureV2EntitySnapshot> contextualEntities;
+        List<PhysicsCaptureV2FrozenContact> frozen;
+        callbackContacts.TryGetValue(fixedStep, out frozen);
         if (!PhysicsCaptureV2ContactExporter.TryCapture(fixedStep, causalObjects, contactInputs,
-            completeContactEnumeration, limits, entities, colliders, out contacts, out supports,
-            out contextualEntities, out failure))
+            frozen, completeContactEnumeration, limits, entities, colliders,
+            out contacts, out supports, out contextualEntities, out failure))
         {
             Failure = failure;
             return;
         }
         fixedStepSamples.Add(new PhysicsCaptureV2FixedStepSample(fixedStep, contextualEntities,
             colliders, contacts, supports));
+    }
+
+    private void MergeCallbackContactsIntoRecordedSample(long fixedStep)
+    {
+        int sampleIndex = fixedStepSamples.FindIndex(
+            delegate(PhysicsCaptureV2FixedStepSample candidate)
+            { return candidate.FixedStep == fixedStep; });
+        if (sampleIndex < 0) return;
+        PhysicsCaptureV2FixedStepSample sample = fixedStepSamples[sampleIndex];
+        List<PhysicsCaptureV2FrozenContact> merged =
+            new List<PhysicsCaptureV2FrozenContact>();
+        for (int i = 0; i < sample.Contacts.Count; i++)
+            merged.Add(new PhysicsCaptureV2FrozenContact(sample.Contacts[i]));
+        List<PhysicsCaptureV2FrozenContact> frozen;
+        if (callbackContacts.TryGetValue(fixedStep, out frozen)) merged.AddRange(frozen);
+        List<PhysicsCaptureV2ContactSnapshot> contacts;
+        List<PhysicsCaptureV2SupportSnapshot> supports;
+        List<PhysicsCaptureV2EntitySnapshot> entities;
+        PhysicsCaptureV2RecorderFailure failure;
+        if (!PhysicsCaptureV2ContactExporter.TryCaptureFrozen(fixedStep, merged, limits,
+            new List<PhysicsCaptureV2EntitySnapshot>(sample.Entities),
+            new List<PhysicsCaptureV2ColliderSnapshot>(sample.Colliders),
+            out contacts, out supports, out entities, out failure))
+        {
+            Failure = failure;
+            return;
+        }
+        fixedStepSamples[sampleIndex] = sample.WithContacts(entities, contacts, supports);
     }
 
     private static PhysicsCaptureV2ContactInput[] CaptureUnityContacts(

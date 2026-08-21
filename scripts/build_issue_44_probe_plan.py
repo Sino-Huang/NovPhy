@@ -1,29 +1,103 @@
-"""Build the frozen non-final Unity probe plan used by issue #44 evidence."""
+"""Build issue #44's source-bound test levels and frozen five-probe plan."""
 
 from __future__ import annotations
 
-import math
 from pathlib import Path
 from typing import Any
-import xml.etree.ElementTree as ET
 
 from scripts.cohort_v2_scenarios import (
     CohortV2ScenarioManifest,
-    load_cohort_v2_scenario_manifest,
+    create_scenario_template_constraints,
+    create_scenario_template_record,
+    materialize_template_bound_level_instance,
     validate_scenario_template_constraints_workbook,
+    write_cohort_v2_scenario_manifest,
+    write_immutable_cohort_v2_bytes,
 )
 from scripts.collection_plan import create_collection_plan, write_collection_plan
-from scripts.scenario_manifest import scenario_manifest_projection
+from scripts.scenario_manifest import BenchmarkCondition, scenario_manifest_projection
+from tasks.task_generator.canonical_materialization import CanonicalMaterializationRequest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EVIDENCE_ROOT = ROOT / "data/runtime_evidence/issue-45"
-DEFAULT_OUTPUT = ROOT / "data/runtime_evidence/issue-44/probe-plan.json"
+STAGE_ROOT = ROOT / "sciencebirdsgames/physics-v2"
+DEFAULT_OUTPUT = STAGE_ROOT / "probe-plan.json"
+WORKBOOK_REFERENCE = "tasks/task_generator/template_constraints.xlsx"
+TRAINING_TEMPLATE_REFERENCE = (
+    "tasks/task_templates/novelty_level_0/type010101/Levels/"
+    "00001_0_1_010101_0_1.xml"
+)
+SUPPORT_TEMPLATE_REFERENCE = "sciencebirdsgames/physics-v2/issue-44/support-template.xml"
+TRAINING_XML = STAGE_ROOT / "review-levels/training.xml"
+SUPPORT_XML = STAGE_ROOT / "review-levels/support-ready.xml"
+TRAINING_MANIFEST = STAGE_ROOT / "review-manifests/training.json"
+SUPPORT_MANIFEST = STAGE_ROOT / "review-manifests/support-ready.json"
 SLINGSHOT = (97, 227)
 FRAME_HEIGHT = 480
 RELEASE_TIME_MS = 1000
-EMPTY_SPACE_TARGET = (8.0, 6.0)
-PULL_LENGTH = 80
+EMPTY_SPACE_OFFSET = (-74, -31)
+PIG_HIT_OFFSET_640 = (-77, 21)
+
+
+def _constraints(workbook_content: bytes):
+    return create_scenario_template_constraints(
+        workbook_content,
+        source_reference=WORKBOOK_REFERENCE,
+        sheet_name="Task Variations",
+        row_number=3,
+        canonical_generator_template_name="0_1_010101_0_1",
+        reference_point=(1.00798, -2.1274),
+        min_coordinate=(-7.88, -2.39049),
+        max_coordinate=(1.229969, 1.809741),
+    )
+
+
+def _materialize(reference: str, manifest_path: Path) -> tuple[bytes, CohortV2ScenarioManifest]:
+    workbook_path = ROOT / WORKBOOK_REFERENCE
+    constraints = _constraints(workbook_path.read_bytes())
+    validate_scenario_template_constraints_workbook(constraints, workbook_path)
+    source_path = Path(reference)
+    if not source_path.is_file():
+        raise ValueError("issue #44 authorities must be built from the repository root")
+    condition = BenchmarkCondition("novelty_level_0", "type010101")
+    record = create_scenario_template_record(
+        source_path.read_bytes(),
+        source_reference=reference,
+        benchmark_conditions=[condition],
+        generation_constraints=constraints,
+    )
+    request = CanonicalMaterializationRequest(
+        template_path=source_path,
+        output_xml_path=manifest_path.with_suffix(".xml"),
+        output_manifest_path=manifest_path,
+        template_name=constraints.canonical_generator_template_name,
+        benchmark_condition=condition,
+        template_identity=record.identity,
+        generation_seed=4401,
+        reference_point=constraints.reference_point,
+        min_coordinate=constraints.min_coordinate,
+        max_coordinate=constraints.max_coordinate,
+        restricted_objects=(),
+    )
+    materialized, scenario = materialize_template_bound_level_instance(
+        request,
+        record,
+        constraints_workbook_path=workbook_path,
+        publish=False,
+    )
+    return materialized.xml_content, scenario
+
+
+def build_issue_44_scenario_authorities() -> dict[str, CohortV2ScenarioManifest]:
+    """Materialize only the two #44 authorities; the #45 inventory is untouched."""
+    training_bytes, training = _materialize(TRAINING_TEMPLATE_REFERENCE, TRAINING_MANIFEST)
+    if training_bytes != TRAINING_XML.read_bytes():
+        raise ValueError("the existing reviewed training level no longer reproduces from seed 4401")
+    support_bytes, support = _materialize(SUPPORT_TEMPLATE_REFERENCE, SUPPORT_MANIFEST)
+    write_cohort_v2_scenario_manifest(training, TRAINING_MANIFEST)
+    write_immutable_cohort_v2_bytes(support_bytes, SUPPORT_XML)
+    write_cohort_v2_scenario_manifest(support, SUPPORT_MANIFEST)
+    return {"training": training, "support-ready": support}
 
 
 def _action(offset: tuple[int, int]) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -60,21 +134,21 @@ def _intervention(
     stratum: str,
     source: str,
     offset: tuple[int, int],
-    scenario_geometry_identity: str,
-    selection: str,
+    geometry_identity: str,
 ) -> dict[str, Any]:
     interface, engine = _action(offset)
-    if source == "geometry_stratified":
-        provenance = {
-            "scenario_geometry_identity": scenario_geometry_identity,
-            "stratum": selection,
-            "feasibility_rule": "opposite-vector-pull-length-80-v1",
+    provenance = (
+        {
+            "scenario_geometry_identity": geometry_identity,
+            "stratum": "empirically-validated-pig-hit-direction:640px:[-77,21]",
+            "feasibility_rule": "issue-44-pig-hit-observation-v1",
         }
-    else:
-        provenance = {
+        if source == "geometry_stratified"
+        else {
             "target_stratum": stratum,
-            "selection_rule": selection,
+            "selection_rule": "issue-44-empty-space-action-v1:[-74,-31]",
         }
+    )
     return {
         "id": identifier,
         "ordinal": ordinal,
@@ -103,14 +177,16 @@ def _coverage(interventions: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     )
     by_stratum: dict[str, list[str]] = {}
     for intervention in interventions:
-        by_stratum.setdefault(intervention["intended_coverage_stratum"], []).append(intervention["id"])
+        by_stratum.setdefault(intervention["intended_coverage_stratum"], []).append(
+            intervention["id"]
+        )
     return {
         stratum: (
             {"status": "targeted", "intervention_ids": by_stratum[stratum]}
             if stratum in by_stratum
             else {
                 "status": "inapplicable",
-                "rationale": "outside the five bounded physics-capture-v2 transport probes",
+                "rationale": "outside the five bounded physics-capture-v2 probes",
             }
         )
         for stratum in required
@@ -120,22 +196,11 @@ def _coverage(interventions: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
 def _scenario(
     *,
     scenario_id: str,
-    exposure_role: str,
-    manifest_name: str,
+    scenario: CohortV2ScenarioManifest,
+    manifest_path: Path,
     interventions: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    manifest_path = EVIDENCE_ROOT / "manifests" / manifest_name
-    xml_path = EVIDENCE_ROOT / "xml" / manifest_name.replace(".json", ".xml")
-    unchecked = load_cohort_v2_scenario_manifest(manifest_path)
-    template_path = ROOT / unchecked.template_record.source_reference
-    wrapper = load_cohort_v2_scenario_manifest(
-        manifest_path, xml_path=xml_path, template_source_path=template_path,
-    )
-    constraints = wrapper.template_record.generation_constraints
-    if constraints is None:
-        raise ValueError("issue #44 probe scenarios require reviewed generation constraints")
-    validate_scenario_template_constraints_workbook(constraints, ROOT / constraints.source_reference)
-    manifest = wrapper.scenario_manifest
+    manifest = scenario.scenario_manifest
     negative_ids = [
         intervention["id"]
         for intervention in interventions
@@ -143,7 +208,7 @@ def _scenario(
     ]
     return {
         "scenario_id": scenario_id,
-        "exposure_role": exposure_role,
+        "exposure_role": "training",
         **scenario_manifest_projection(manifest, manifest_path.relative_to(ROOT).as_posix()),
         "expected_initial_engine_state_identity": manifest.declared_initial_engine_state.identity,
         "retry_policy": {
@@ -155,7 +220,7 @@ def _scenario(
             "cap": len(negative_ids),
             "intervention_ids": negative_ids,
             "semantic_justification": (
-                "prospective transport probe only; acceptance requires observed Unity contact evidence"
+                "bounded issue-44 exporter evidence; this test level is not a #45 inventory amendment"
             ),
         },
         "interventions": interventions,
@@ -164,139 +229,70 @@ def _scenario(
             "targeted_rare": {"status": "included"},
             "benchmark_agent_replay": {
                 "status": "unavailable",
-                "rationale": "no benchmark-agent trace is approved for these source-bound instances",
+                "rationale": "no benchmark-agent trace is approved for these source-bound tests",
             },
         },
         "coverage_strata": _coverage(interventions),
     }
 
 
-def _load_probe_source(manifest_name: str) -> tuple[CohortV2ScenarioManifest, ET.Element]:
-    manifest_path = EVIDENCE_ROOT / "manifests" / manifest_name
-    xml_path = EVIDENCE_ROOT / "xml" / manifest_name.replace(".json", ".xml")
-    wrapper = load_cohort_v2_scenario_manifest(
-        manifest_path,
-        xml_path=xml_path,
-        template_source_path=ROOT / load_cohort_v2_scenario_manifest(manifest_path).template_record.source_reference,
-    )
-    constraints = wrapper.template_record.generation_constraints
-    if constraints is None:
-        raise ValueError("issue #44 probe scenarios require reviewed generation constraints")
-    validate_scenario_template_constraints_workbook(constraints, ROOT / constraints.source_reference)
-    return wrapper, ET.fromstring(xml_path.read_bytes())
-
-
-def _position(element: ET.Element) -> tuple[float, float]:
-    return float(element.attrib["x"]), float(element.attrib["y"])
-
-
-def _slingshot(root: ET.Element) -> tuple[float, float]:
-    sling = root.find("Slingshot")
-    if sling is None or sling.attrib.get("scenarioObjectId") != "slingshot:0000":
-        raise ValueError("probe source is missing its authored slingshot identity")
-    return _position(sling)
-
-
-def _targetable_objects(root: ET.Element) -> list[ET.Element]:
-    game_objects = root.find("GameObjects")
-    if game_objects is None:
-        raise ValueError("probe source has no authored game objects")
-    values = [item for item in game_objects if item.tag in {"Pig", "Block", "TNT"}]
-    if any(not item.attrib.get("scenarioObjectId") for item in values):
-        raise ValueError("probe target is missing scenarioObjectId")
-    return values
-
-
-def _nearest_target(root: ET.Element) -> ET.Element:
-    sling_x, sling_y = _slingshot(root)
-    return min(
-        _targetable_objects(root),
-        key=lambda item: (
-            (_position(item)[0] - sling_x) ** 2 + (_position(item)[1] - sling_y) ** 2,
-            item.attrib["scenarioObjectId"],
-        ),
-    )
-
-
-def _release_offset(root: ET.Element, target: tuple[float, float]) -> tuple[int, int]:
-    sling_x, sling_y = _slingshot(root)
-    target_x, target_y = target
-    distance = math.hypot(target_x - sling_x, target_y - sling_y)
-    if distance == 0:
-        raise ValueError("probe target cannot equal the slingshot center")
-    return (
-        round(-PULL_LENGTH * (target_x - sling_x) / distance),
-        round(-PULL_LENGTH * (target_y - sling_y) / distance),
-    )
-
-
-def _point_text(point: tuple[float, float]) -> str:
-    return f"[{point[0]},{point[1]}]"
-
-
 def build_issue_44_probe_plan(output: Path = DEFAULT_OUTPUT) -> dict[str, Any]:
-    """Write the canonical five-case plan and return its public identity summary."""
-    training_wrapper, training_root = _load_probe_source("training.json")
-    calibration_wrapper, calibration_root = _load_probe_source("calibration.json")
-    training_geometry = training_wrapper.scenario_manifest.scenario_specification.content_identity
-    calibration_geometry = calibration_wrapper.scenario_manifest.scenario_specification.content_identity
-    training_nearest = _nearest_target(training_root)
-    training_nearest_point = _position(training_nearest)
-    calibration_by_id = {
-        item.attrib["scenarioObjectId"]: item for item in _targetable_objects(calibration_root)
-    }
-    supported_target = calibration_by_id["block:0000"]
-    supported_target_point = _position(supported_target)
-    empty_rule = (
-        f"empty-space-engine-target-v1:{_point_text(EMPTY_SPACE_TARGET)};"
-        "opposite-vector-pull-length-80-v1"
-    )
-    training = [
+    """Write the canonical five-case plan and return its authority identities."""
+    authorities = build_issue_44_scenario_authorities()
+    training = authorities["training"]
+    support = authorities["support-ready"]
+    training_geometry = training.scenario_manifest.scenario_specification.content_identity
+    support_geometry = support.scenario_manifest.scenario_specification.content_identity
+    training_interventions = [
         _intervention("no-contact", 1, "no-contact/miss", "targeted_rare",
-            _release_offset(training_root, EMPTY_SPACE_TARGET), training_geometry, empty_rule),
+            EMPTY_SPACE_OFFSET, training_geometry),
         _intervention("collision", 2, "collision", "geometry_stratified",
-            _release_offset(training_root, training_nearest_point), training_geometry,
-            "nearest-active-target-center:"
-            + training_nearest.attrib["scenarioObjectId"] + "@" + _point_text(training_nearest_point)),
-        _intervention("support", 3, "persistent support", "targeted_rare",
-            _release_offset(training_root, EMPTY_SPACE_TARGET), training_geometry,
-            "initial-persistent-support-window;" + empty_rule),
+            PIG_HIT_OFFSET_640, training_geometry),
+        _intervention("stable-terminal", 3, "stability transitions", "targeted_rare",
+            EMPTY_SPACE_OFFSET, training_geometry),
     ]
-    calibration = [
-        _intervention("support-change", 1, "support change", "geometry_stratified",
-            _release_offset(calibration_root, supported_target_point), calibration_geometry,
-            "lowest-id-supported-entity:"
-            + supported_target.attrib["scenarioObjectId"] + "@" + _point_text(supported_target_point)
-            + ";must-resolve-in-pre-intervention-v2-sample"),
-        _intervention("stable-terminal", 2, "stability transitions", "targeted_rare",
-            _release_offset(calibration_root, EMPTY_SPACE_TARGET), calibration_geometry,
-            "no-contact-until-stable-entered;" + empty_rule),
+    support_interventions = [
+        _intervention("support", 1, "persistent support", "targeted_rare",
+            EMPTY_SPACE_OFFSET, support_geometry),
+        _intervention("support-change", 2, "support change", "geometry_stratified",
+            PIG_HIT_OFFSET_640, support_geometry),
     ]
     plan = create_collection_plan(
         plan_version=1,
         scenarios=[
             _scenario(
                 scenario_id="type010101-training-seed4401",
-                exposure_role="training",
-                manifest_name="training.json",
-                interventions=training,
+                scenario=training,
+                manifest_path=TRAINING_MANIFEST,
+                interventions=training_interventions,
             ),
             _scenario(
-                scenario_id="type010102-calibration-seed4501",
-                exposure_role="calibration",
-                manifest_name="calibration.json",
-                interventions=calibration,
+                scenario_id="issue44-support-ready-type010101-seed4401",
+                scenario=support,
+                manifest_path=SUPPORT_MANIFEST,
+                interventions=support_interventions,
             ),
         ],
     )
     write_collection_plan(plan, Path(output))
-    cases = sorted(intervention.id for scenario in plan.scenarios for intervention in scenario.interventions)
-    return {"plan_identity": plan.identity, "probe_cases": cases, "path": str(Path(output))}
+    cases = sorted(
+        intervention.id
+        for scenario in plan.scenarios
+        for intervention in scenario.interventions
+    )
+    return {
+        "plan_identity": plan.identity,
+        "probe_cases": cases,
+        "path": str(Path(output)),
+        "support_ready_level_identity": support.scenario_manifest.level_instance.identity,
+        "support_ready_scenario_manifest_identity": support.identity,
+    }
 
 
 def main() -> None:
     result = build_issue_44_probe_plan()
     print(result["plan_identity"])
+    print(result["support_ready_level_identity"])
 
 
 if __name__ == "__main__":
