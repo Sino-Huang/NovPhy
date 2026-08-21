@@ -113,6 +113,11 @@ class PhysicsV2ReviewSessionTests(unittest.TestCase):
                 (session.root / "diagnostic" / "engine-envelope.json").read_text(encoding="utf-8")
             )
             self.assertEqual(persisted["schema_version"], "physics_capture_v2_engine_v1")
+            steps = session.fixed_steps(start=1, count=1)
+            self.assertIn(
+                "collision",
+                [event["event_type"] for event in steps["steps"][0]["events"]],
+            )
 
     def test_unavailable_diagnostic_cannot_be_frozen_as_confirmatory_evidence(self) -> None:
         with TemporaryDirectory() as temporary:

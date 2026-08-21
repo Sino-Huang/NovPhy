@@ -357,5 +357,12 @@ class PhysicsV2ReviewSession:
             return {"start": start, "count": 0, "total": 0, "steps": []}
         record = json.loads(path.read_text(encoding="utf-8"))
         steps = record["fixed_step_samples"]
-        selected = steps[start : start + count]
+        selected = []
+        for step in steps[start : start + count]:
+            value = dict(step)
+            value["events"] = [
+                event for event in record["events"]
+                if event["fixed_step"] == step["fixed_step"]
+            ]
+            selected.append(value)
         return {"start": start, "count": len(selected), "total": len(steps), "steps": selected}

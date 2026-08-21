@@ -62,12 +62,12 @@ const reviewGuidance = {
     text: 'Load public training level 1. Pull backward from the slingshot until the predicted arc crosses a visible block or pig; do not aim into empty sky.',
   },
   'persistent support': {
-    level: 1,
-    text: 'This requires a support-ready non-final scenario before the shot. Aim into empty space so the initial supporter pair remains present in both first fixed-step samples. If the verdict says the prerequisite is absent, no different shot can repair that scenario.',
+    level: 2,
+    text: 'Load the issue-44 support-ready level 2. Aim into empty space so the platform/pig supporter pair remains present in both first fixed-step samples. If the verdict says the prerequisite is absent, no different shot can repair that scenario.',
   },
   'support change': {
     level: 2,
-    text: 'Load public calibration level 2. Aim at the lowest supported body or its base so the impact removes or changes at least one supporter pair.',
+    text: 'Load the issue-44 support-ready level 2. Aim at the supported body or its platform so the impact adds, removes, or changes at least one supporter pair.',
   },
 };
 
@@ -422,6 +422,7 @@ function drawWorldStep(step) {
   document.getElementById('reviewStepLabel').textContent = `fixed step ${step.fixed_step}`;
   document.getElementById('reviewStepFacts').textContent = JSON.stringify({
     gravity: step.world.gravity_vector,
+    events: step.events,
     contacts: step.contacts,
     supports: step.supports,
     entities: step.entities.map((entity) => ({

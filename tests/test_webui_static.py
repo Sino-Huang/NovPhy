@@ -44,6 +44,8 @@ class WebUIStaticTests(unittest.TestCase):
         self.assertIn("function previewSlingCenterPoint", app)
         self.assertIn("function cappedReleasePoint", app)
         self.assertIn("function buildTrajectoryPreviewPoints", app)
+        self.assertIn("events: step.events", app)
+        self.assertIn("issue-44 support-ready level 2", app)
         self.assertIn("position = { ...release }", app)
         self.assertIn("9.81 * WEB_TRAJECTORY_LAUNCH_GRAVITY", app)
         self.assertIn("velocityY += gravityY * timeStep", app)
