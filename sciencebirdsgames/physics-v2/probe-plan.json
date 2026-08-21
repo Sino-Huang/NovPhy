@@ -1,6 +1,6 @@
 {
-  "identity": "collection-plan-v1:1:type010101-training-seed4401:issue44-support-ready-type010101-seed4401",
-  "plan_version": 1,
+  "identity": "collection-plan-v1:2:type010101-training-seed4401:issue44-support-ready-type010101-seed4401",
+  "plan_version": 2,
   "scenarios": [
     {
       "benchmark_condition_identity": "benchmark-condition-v1:novelty_level_0:type010101",
@@ -62,12 +62,12 @@
           "engine_relative_action": {
             "coordinate_frame": "slingshot_relative",
             "release_offset": [
-              -74,
-              -31
+              77,
+              29
             ],
             "release_point": [
-              23,
-              258
+              174,
+              198
             ],
             "release_time_ms": 1000,
             "tap_time_ms": 0
@@ -78,8 +78,8 @@
             "action_type": "drag_hold_release",
             "coordinate_frame": "slingshot_relative",
             "drag_release": [
-              -74,
-              -31
+              77,
+              29
             ],
             "drag_start": [
               97,
@@ -90,8 +90,8 @@
             "socket_command": {
               "releaseTime": 1000,
               "tapTime": 0,
-              "x": 23,
-              "y": 221
+              "x": 174,
+              "y": 281
             },
             "tapTime": 0
           },
@@ -103,7 +103,7 @@
           },
           "source": "targeted_rare",
           "source_provenance": {
-            "selection_rule": "issue-44-empty-space-action-v1:[-74,-31]",
+            "selection_rule": "issue-44-backward-miss-action-v2:[77,29]",
             "target_stratum": "no-contact/miss"
           }
         },
@@ -112,11 +112,11 @@
             "coordinate_frame": "slingshot_relative",
             "release_offset": [
               -77,
-              21
+              29
             ],
             "release_point": [
               20,
-              206
+              198
             ],
             "release_time_ms": 1000,
             "tap_time_ms": 0
@@ -128,7 +128,7 @@
             "coordinate_frame": "slingshot_relative",
             "drag_release": [
               -77,
-              21
+              29
             ],
             "drag_start": [
               97,
@@ -140,7 +140,7 @@
               "releaseTime": 1000,
               "tapTime": 0,
               "x": 20,
-              "y": 273
+              "y": 281
             },
             "tapTime": 0
           },
@@ -152,9 +152,9 @@
           },
           "source": "geometry_stratified",
           "source_provenance": {
-            "feasibility_rule": "issue-44-pig-hit-observation-v1",
+            "feasibility_rule": "issue-44-pig-hit-ballistic-calibration-v2",
             "scenario_geometry_identity": "scenario-content-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
-            "stratum": "empirically-validated-pig-hit-direction:640px:[-77,21]"
+            "stratum": "failed-trace-calibrated-pig-hit-direction:640px:[-77,29]"
           }
         },
         {
@@ -202,7 +202,7 @@
           },
           "source": "targeted_rare",
           "source_provenance": {
-            "selection_rule": "issue-44-empty-space-action-v1:[-74,-31]",
+            "selection_rule": "issue-44-stable-terminal-action-v1:[-74,-31]",
             "target_stratum": "stability transitions"
           }
         }
@@ -474,12 +474,12 @@
           "engine_relative_action": {
             "coordinate_frame": "slingshot_relative",
             "release_offset": [
-              -74,
-              -31
+              77,
+              29
             ],
             "release_point": [
-              23,
-              258
+              174,
+              198
             ],
             "release_time_ms": 1000,
             "tap_time_ms": 0
@@ -490,8 +490,8 @@
             "action_type": "drag_hold_release",
             "coordinate_frame": "slingshot_relative",
             "drag_release": [
-              -74,
-              -31
+              77,
+              29
             ],
             "drag_start": [
               97,
@@ -502,8 +502,8 @@
             "socket_command": {
               "releaseTime": 1000,
               "tapTime": 0,
-              "x": 23,
-              "y": 221
+              "x": 174,
+              "y": 281
             },
             "tapTime": 0
           },
@@ -515,7 +515,7 @@
           },
           "source": "targeted_rare",
           "source_provenance": {
-            "selection_rule": "issue-44-empty-space-action-v1:[-74,-31]",
+            "selection_rule": "issue-44-backward-miss-action-v2:[77,29]",
             "target_stratum": "persistent support"
           }
         },
@@ -524,11 +524,11 @@
             "coordinate_frame": "slingshot_relative",
             "release_offset": [
               -77,
-              21
+              29
             ],
             "release_point": [
               20,
-              206
+              198
             ],
             "release_time_ms": 1000,
             "tap_time_ms": 0
@@ -540,7 +540,7 @@
             "coordinate_frame": "slingshot_relative",
             "drag_release": [
               -77,
-              21
+              29
             ],
             "drag_start": [
               97,
@@ -552,7 +552,7 @@
               "releaseTime": 1000,
               "tapTime": 0,
               "x": 20,
-              "y": 273
+              "y": 281
             },
             "tapTime": 0
           },
@@ -564,9 +564,9 @@
           },
           "source": "geometry_stratified",
           "source_provenance": {
-            "feasibility_rule": "issue-44-pig-hit-observation-v1",
+            "feasibility_rule": "issue-44-pig-hit-ballistic-calibration-v2",
             "scenario_geometry_identity": "scenario-content-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
-            "stratum": "empirically-validated-pig-hit-direction:640px:[-77,21]"
+            "stratum": "failed-trace-calibrated-pig-hit-direction:640px:[-77,29]"
           }
         }
       ],

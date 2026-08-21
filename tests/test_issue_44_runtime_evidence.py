@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 import unittest
 
-from scripts.build_issue_44_runtime_evidence import _identity
+from scripts.build_issue_44_runtime_evidence import _case_observation, _identity
 from scripts.physics_capture_v2 import load_physics_capture_v2
 from scripts.physics_capture_v2_capability_report import (
     load_physics_capture_v2_capability_report,
@@ -41,6 +42,30 @@ class RuntimeEvidenceIdentityTests(unittest.TestCase):
         self.assertIn("collection_plan_identity=plan-a", first)
         self.assertIn("source_snapshot_commit=commit-a", first)
         self.assertIn("capture=probe=capture-a", first)
+
+    def test_no_contact_means_the_launched_bird_has_no_raw_contact(self) -> None:
+        capture = SimpleNamespace(record={
+            "events": [{
+                "event_type": "bird_launched",
+                "participants": ["runtime:bird:0000"],
+            }],
+            "fixed_step_samples": [{
+                "contacts": [{
+                    "entity_a_id": "runtime:block:0000",
+                    "entity_b_id": "runtime:world:landscape:0000",
+                }],
+            }],
+        })
+        self.assertEqual(_case_observation("no-contact", capture), (True, None))
+
+        capture.record["fixed_step_samples"][0]["contacts"].append({
+            "entity_a_id": "runtime:bird:0000",
+            "entity_b_id": "runtime:world:landscape:0000",
+        })
+
+        self.assertEqual(_case_observation("no-contact", capture), (
+            False, "the launched bird produced a raw contact",
+        ))
 
     def test_issue_44_builder_has_no_closed_issue_45_output_surface(self) -> None:
         source = (ROOT / "scripts/build_issue_44_runtime_evidence.py").read_text(encoding="utf-8")

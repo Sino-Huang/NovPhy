@@ -27,6 +27,7 @@ class Issue44ProbePlanTests(unittest.TestCase):
             output = Path(temporary) / "probe-plan.json"
             result = build_issue_44_probe_plan(output)
             loaded = load_collection_plan(output)
+            self.assertEqual(loaded.plan.plan_version, 2)
             scenarios = {scenario.scenario_id: scenario for scenario in loaded.plan.scenarios}
             self.assertEqual(set(scenarios), {
                 "type010101-training-seed4401",
@@ -40,10 +41,11 @@ class Issue44ProbePlanTests(unittest.TestCase):
             self.assertEqual(set(by_case), {
                 "no-contact", "collision", "support", "support-change", "stable-terminal",
             })
-            self.assertEqual(by_case["collision"].interface_action["drag_release"], (-77, 21))
-            self.assertEqual(by_case["support-change"].interface_action["drag_release"], (-77, 21))
-            for case in ("no-contact", "support", "stable-terminal"):
-                self.assertEqual(by_case[case].interface_action["drag_release"], (-74, -31))
+            self.assertEqual(by_case["collision"].interface_action["drag_release"], (-77, 29))
+            self.assertEqual(by_case["support-change"].interface_action["drag_release"], (-77, 29))
+            self.assertEqual(by_case["no-contact"].interface_action["drag_release"], (77, 29))
+            self.assertEqual(by_case["support"].interface_action["drag_release"], (77, 29))
+            self.assertEqual(by_case["stable-terminal"].interface_action["drag_release"], (-74, -31))
             for intervention in by_case.values():
                 self.assertEqual(intervention.interface_action["releaseTime"], 1000)
                 self.assertEqual(intervention.interface_action["tapTime"], 0)

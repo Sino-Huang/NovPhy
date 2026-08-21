@@ -35,8 +35,9 @@ SUPPORT_MANIFEST = STAGE_ROOT / "review-manifests/support-ready.json"
 SLINGSHOT = (97, 227)
 FRAME_HEIGHT = 480
 RELEASE_TIME_MS = 1000
-EMPTY_SPACE_OFFSET = (-74, -31)
-PIG_HIT_OFFSET_640 = (-77, 21)
+BACKWARD_MISS_OFFSET_640 = (77, 29)
+PIG_HIT_OFFSET_640 = (-77, 29)
+STABLE_TERMINAL_OFFSET_640 = (-74, -31)
 
 
 def _constraints(workbook_content: bytes):
@@ -140,13 +141,17 @@ def _intervention(
     provenance = (
         {
             "scenario_geometry_identity": geometry_identity,
-            "stratum": "empirically-validated-pig-hit-direction:640px:[-77,21]",
-            "feasibility_rule": "issue-44-pig-hit-observation-v1",
+            "stratum": "failed-trace-calibrated-pig-hit-direction:640px:[-77,29]",
+            "feasibility_rule": "issue-44-pig-hit-ballistic-calibration-v2",
         }
         if source == "geometry_stratified"
         else {
             "target_stratum": stratum,
-            "selection_rule": "issue-44-empty-space-action-v1:[-74,-31]",
+            "selection_rule": (
+                "issue-44-stable-terminal-action-v1:[-74,-31]"
+                if identifier == "stable-terminal"
+                else "issue-44-backward-miss-action-v2:[77,29]"
+            ),
         }
     )
     return {
@@ -245,20 +250,20 @@ def build_issue_44_probe_plan(output: Path = DEFAULT_OUTPUT) -> dict[str, Any]:
     support_geometry = support.scenario_manifest.scenario_specification.content_identity
     training_interventions = [
         _intervention("no-contact", 1, "no-contact/miss", "targeted_rare",
-            EMPTY_SPACE_OFFSET, training_geometry),
+            BACKWARD_MISS_OFFSET_640, training_geometry),
         _intervention("collision", 2, "collision", "geometry_stratified",
             PIG_HIT_OFFSET_640, training_geometry),
         _intervention("stable-terminal", 3, "stability transitions", "targeted_rare",
-            EMPTY_SPACE_OFFSET, training_geometry),
+            STABLE_TERMINAL_OFFSET_640, training_geometry),
     ]
     support_interventions = [
         _intervention("support", 1, "persistent support", "targeted_rare",
-            EMPTY_SPACE_OFFSET, support_geometry),
+            BACKWARD_MISS_OFFSET_640, support_geometry),
         _intervention("support-change", 2, "support change", "geometry_stratified",
             PIG_HIT_OFFSET_640, support_geometry),
     ]
     plan = create_collection_plan(
-        plan_version=1,
+        plan_version=2,
         scenarios=[
             _scenario(
                 scenario_id="type010101-training-seed4401",

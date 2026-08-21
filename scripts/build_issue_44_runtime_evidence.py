@@ -75,12 +75,16 @@ def _identity(namespace: str, value: object) -> str:
 
 def _attempts() -> dict[str, tuple[Path, Mapping[str, Any], Any]]:
     report = json.loads((PROBE_ROOT / "collection_plan_report.json").read_text(encoding="utf-8"))
+    plan = load_collection_plan(PLAN_PATH).plan
+    if (report.get("plan_identity"), report.get("plan_version")) != (
+        plan.identity, plan.plan_version,
+    ):
+        raise ValueError("runtime evidence report is stale against the frozen plan")
     if (report.get("accepted_count"), report.get("rejected_count"), report.get("failed_count")) != (5, 0, 0):
         raise ValueError("runtime evidence requires 5 accepted, 0 rejected, and 0 failed attempts")
     ledger = report.get("attempt_ledger")
     if not isinstance(ledger, list) or len(ledger) != 5:
         raise ValueError("runtime evidence requires exactly five fresh attempt rows")
-    plan = load_collection_plan(PLAN_PATH).plan
     interventions = {
         item.id: item
         for scenario in plan.scenarios
@@ -114,8 +118,22 @@ def _support_sets(capture: Any) -> list[set[tuple[str, str]]]:
 def _case_observation(case: str, capture: Any) -> tuple[bool, str | None]:
     samples = capture.record["fixed_step_samples"]
     if case == "no-contact":
-        demonstrated = all(not sample["contacts"] for sample in samples)
-        return demonstrated, None if demonstrated else "the empty-space intervention produced a contact"
+        launched = {
+            participant
+            for event in capture.record["events"]
+            if event["event_type"] == "bird_launched"
+            for participant in event["participants"]
+        }
+        demonstrated = bool(launched) and all(
+            contact["entity_a_id"] not in launched and contact["entity_b_id"] not in launched
+            for sample in samples
+            for contact in sample["contacts"]
+        )
+        reason = (
+            "the launched bird produced a raw contact"
+            if launched else "the capture has no launched-bird identity"
+        )
+        return demonstrated, None if demonstrated else reason
     if case == "collision":
         contacts_by_step = {
             sample["fixed_step"]: {
