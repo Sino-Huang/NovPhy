@@ -80,6 +80,20 @@ class PackagePhysicsPlayerTests(unittest.TestCase):
             self.assertTrue(head)
             self.assertTrue(tree)
 
+    def test_git_revision_ignores_generated_python_bytecode_cache(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            repository = self.repository(Path(temporary))
+            inputs = unity_package_input_inventory(repository)
+            (repository / ".gitignore").write_text("__pycache__/\n", encoding="utf-8")
+            cache = repository / "scripts/__pycache__"
+            cache.mkdir()
+            (cache / "package_physics_player.pyc").write_bytes(b"generated")
+
+            head, tree = git_revision(repository, inputs, require_package_inputs=True)
+
+            self.assertTrue(head)
+            self.assertTrue(tree)
+
     def test_manifest_records_versions_paths_and_file_inventory(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

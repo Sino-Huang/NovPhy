@@ -99,7 +99,10 @@ def git_revision(worktree: Path, package_inputs: dict[str, str] | None = None, r
     untracked_scope = [":(glob)scripts/*.py", ":(glob)scripts/*.sh", *PRODUCT_SOURCE_PATHS[1:]]
     untracked = subprocess.run(["git", "status", "--porcelain=v1", "--untracked-files=all", "--ignored=matching", "--", *untracked_scope], cwd=worktree, text=True, capture_output=True, check=True).stdout.splitlines()
     allowed = {f"!! {relative_path}" for relative_path in UNITY_PACKAGE_INPUT_PATHS}
-    rejected = [entry for entry in untracked if entry not in allowed]
+    rejected = [
+        entry for entry in untracked
+        if entry not in allowed and not entry.startswith("!! scripts/__pycache__/")
+    ]
     if rejected:
         raise PackagingError("untracked product source: " + rejected[0])
     return head, tree
