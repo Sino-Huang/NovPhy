@@ -287,7 +287,11 @@ class AppState:
         )
         if any(not source.is_file() for source in sources):
             raise FileNotFoundError("public #45 review XML artifacts are incomplete")
-        target_root = runtime / "review-levels"
+        # Unity derives the per-level asset-bundle path from the level path via
+        # LastIndexOf("Levels") (GameLevelSetInfo.getLevelSetXmlData), so review
+        # levels must live under a capital-"Levels" directory like the shipped
+        # game levels, or the player throws at level-set load and never starts.
+        target_root = runtime / "review-levels" / "Levels"
         target_root.mkdir(parents=True, exist_ok=True)
         for source in sources:
             shutil.copyfile(source, target_root / source.name)
@@ -313,7 +317,7 @@ class AppState:
             "allow_level_selection": "True",
         })
         for source in sources:
-            ET.SubElement(level_set, "game_levels", {"level_path": f"review-levels/{source.name}"})
+            ET.SubElement(level_set, "game_levels", {"level_path": f"review-levels/Levels/{source.name}"})
         ET.indent(evaluation, space="  ")
         ET.ElementTree(evaluation).write(runtime / "config.xml", encoding="utf-8", xml_declaration=True)
 
@@ -490,7 +494,9 @@ class AppState:
                 env=environment,
             )
 
-        deadline = time.time() + 15
+        # Review mode boots the packaged Unity player, which can take tens of
+        # seconds on a remote/software-GL display before the jar ACKs configure.
+        deadline = time.time() + (60 if self.physics_v2_review else 15)
         last_error: Exception | None = None
         while time.time() < deadline:
             try:

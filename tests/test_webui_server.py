@@ -290,7 +290,7 @@ class ServerTest(unittest.TestCase):
             app = AppState(physics_v2_review=True, review_stage=stage)
             runtime = app.prepare_physics_v2_review_runtime()
             self.assertTrue((runtime / "game_playing_interface.jar").is_file())
-            self.assertTrue((runtime / "review-levels/training.xml").is_file())
+            self.assertTrue((runtime / "review-levels/Levels/training.xml").is_file())
             app.review_runtime_temporary.cleanup()
 
     def test_review_runtime_rejects_stale_or_incomplete_declared_provenance(self):
