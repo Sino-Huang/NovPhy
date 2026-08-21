@@ -41,6 +41,14 @@ def _canonical_bytes(value: Mapping[str, Any]) -> bytes:
     ).encode("utf-8")
 
 
+def _json_value(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {key: _json_value(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_value(item) for item in value]
+    return value
+
+
 def _identity(namespace: str, value: Mapping[str, Any]) -> str:
     return f"{namespace}:{_canonical_bytes(value).decode('utf-8')}"
 
@@ -137,7 +145,13 @@ class PhysicsV2ReviewSession:
             raise ValueError(f"probe plan has no scenario authority for {goal}") from error
         manifest_reference = Path(scenario["scenario_manifest_reference"])
         if not manifest_reference.is_absolute():
-            manifest_reference = Path.cwd() / manifest_reference
+            repository_reference = Path.cwd() / manifest_reference
+            packaged_reference = (
+                self.probe_plan_path.parent / "review-manifests" / manifest_reference.name
+            )
+            manifest_reference = (
+                packaged_reference if packaged_reference.is_file() else repository_reference
+            )
         manifest = json.loads(manifest_reference.read_text(encoding="utf-8"))
         return {
             "source_probe_plan_identity": plan["identity"],
@@ -207,7 +221,7 @@ class PhysicsV2ReviewSession:
             raise ValueError("no diagnostic exploration is active")
         capture = bind_physics_capture_v2_engine(engine_record, self._source_bindings(replay=False))
         diagnostic = self.root / "diagnostic"
-        write_immutable_cohort_v2_json(dict(engine_record), diagnostic / "engine-envelope.json")
+        write_immutable_cohort_v2_json(_json_value(engine_record), diagnostic / "engine-envelope.json")
         self.exploration_verdict = coverage_verdict(self.goal, capture.record)
         write_immutable_cohort_v2_json(self.exploration_verdict, diagnostic / "verdict.json")
         self._initial_engine_state_identity = normalized_initial_engine_state_identity(capture)

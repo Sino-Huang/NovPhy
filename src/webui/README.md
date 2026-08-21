@@ -28,6 +28,8 @@ http://127.0.0.1:8766/
 
 Click **Start game** to launch `game_playing_interface.jar` and connect to it. If you already started the game interface separately, click **Connect** instead.
 
+`bash scripts/webui.sh --physics-v2-review` defaults the existing `--speed` option to `1` so issue-44 shots are observable. A later explicit option, such as `--speed 5`, overrides that review default.
+
 ## Manual controls
 
 - **Refresh frame** fetches a `640 x 480` RGB screenshot from the Java interface.
@@ -35,7 +37,7 @@ Click **Start game** to launch `game_playing_interface.jar` and connect to it. I
 - **Restart** reloads through the same next-available-level protocol path. The Unity `RestartLevel` / explicit selection path can hang in this build after loading NovPhy levels.
 - **Zoom out / Zoom in** call the game interface zoom commands.
 - Drag on the canvas to preview aim with a browser-local guide line and trajectory dots; release fills the shot `x` and `y` fields. The UI converts browser top-left coordinates into Science Birds bottom-left coordinates.
-- On release, the WebUI caps the release point and trajectory preview from the real slingshot reference point when symbolic state is available, so browser drag strength stays aligned with the engine even if pointer-down starts a little off-center. The generated `drag_hold_release` action dictionary uses that same slingshot-centered anchor and preserves the shared `holdTime` / `tapTime` fields.
+- On release, the WebUI caps the release point and trajectory preview from the runtime slingshot reference and camera scale when symbolic state is available. The preview uses the authoritative Physics2D gravity and fixed-step integration, so browser drag strength and flight stay aligned with the engine trace even if pointer-down starts a little off-center. The generated `drag_hold_release` action dictionary uses that same slingshot-centered anchor and preserves the shared `holdTime` / `tapTime` fields.
 - `/api/agent-action` validates that shared action contract and returns the equivalent `/api/shot` payload. It does not call an external environment wrapper instance; a separate consumer is still required for that.
 - The browser validates/transfers the agent action through `/api/agent-action` immediately after release. Auto-execution is enabled by default: the translated shot is scheduled through `/api/shot` without waiting for the engine acknowledgement. Uncheck the auto-execute control to validate/transfer only.
 - **Send shot** sends the final Cartesian shot coordinates through `/api/shot`, using the Hold time field as `/api/shot` `releaseTime` and Tap time as `tapTime`. **Fast shot** is enabled by default for responsive drag/release execution and uses protocol message `41`; uncheck it to use safe-shot protocol message `31`, which can wait for the engine's static-state acknowledgement. There is no live TCP drag command in this WebUI path; the browser preview stays local and only the final shot is synchronized.

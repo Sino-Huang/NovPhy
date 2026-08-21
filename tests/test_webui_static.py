@@ -36,18 +36,24 @@ class WebUIStaticTests(unittest.TestCase):
         self.assertIn("WEB_TRAJECTORY_LAUNCH_GRAVITY = 0.48", app)
         self.assertIn("WEB_TRAJECTORY_DRAG_RADIUS_WORLD = 1", app)
         self.assertIn("let trajectoryWorldWidth = 17.5", app)
+        self.assertIn("let trajectoryPixelsPerWorldUnit = null", app)
         self.assertIn("trajectoryWorldWidth = Number(frame.trajectoryWorldWidth)", app)
         self.assertIn("trajectorySlingCenter = frame.trajectorySlingCenter || null", app)
+        self.assertIn("trajectorySlingCenter?.pixelsPerWorldUnit", app)
         self.assertIn("canvas.width / trajectoryWorldWidth", app)
         self.assertIn("function previewSlingCenterPoint", app)
         self.assertIn("function cappedReleasePoint", app)
         self.assertIn("function buildTrajectoryPreviewPoints", app)
         self.assertIn("position = { ...release }", app)
-        self.assertIn("0.5 * gravityY * timeStep * timeStep", app)
+        self.assertIn("9.81 * WEB_TRAJECTORY_LAUNCH_GRAVITY", app)
         self.assertIn("velocityY += gravityY * timeStep", app)
+        self.assertIn("canvasY: position.canvasY + velocityY * timeStep", app)
+        self.assertNotIn("0.5 * gravityY * timeStep * timeStep", app)
         self.assertIn("const releasePoint = cappedReleasePoint(slingCenter, aimCurrentPoint)", app)
         self.assertIn("buildAgentActionFromDrag(slingCenter, releasePoint)", app)
         self.assertIn("fillShotFields(releasePoint)", app)
+        self.assertIn("const diffY = slingCenter.canvasY - rawRelease.canvasY", app)
+        self.assertNotIn("WEB_TRAJECTORY_CANVAS_Y_OFFSET", app)
         self.assertNotIn("velocityX * time * 0.18", app)
         self.assertNotIn("time * time * 5", app)
 
@@ -69,7 +75,7 @@ class WebUIStaticTests(unittest.TestCase):
             }};
             const elements = new Map();
             function element(id) {{
-              if (!elements.has(id)) elements.set(id, {{ textContent: '', value: '0', checked: false, classList: {{ add() {{}}, remove() {{}}, toggle() {{}} }}, addEventListener() {{}} }});
+              if (!elements.has(id)) elements.set(id, {{ textContent: '', value: id === 'reviewGoal' ? 'collision' : '0', checked: false, classList: {{ add() {{}}, remove() {{}}, toggle() {{}} }}, addEventListener() {{}} }});
               return elements.get(id);
             }}
             const context = {{
@@ -103,11 +109,11 @@ class WebUIStaticTests(unittest.TestCase):
 
         self.assertEqual(result["length"], 500)
         self.assertAlmostEqual(result["release"]["canvasX"], 240.0)
-        self.assertAlmostEqual(result["release"]["canvasY"], 299.0)
+        self.assertAlmostEqual(result["release"]["canvasY"], 300.0)
         self.assertAlmostEqual(result["first"]["canvasX"], 240.0)
-        self.assertAlmostEqual(result["first"]["canvasY"], 299.0)
+        self.assertAlmostEqual(result["first"]["canvasY"], 300.0)
         self.assertAlmostEqual(result["second"]["canvasX"], 244.0)
-        self.assertAlmostEqual(result["second"]["canvasY"], 299.018816)
+        self.assertAlmostEqual(result["second"]["canvasY"], 300.0376704)
         self.assertEqual(result["action"]["drag_start"], [260, 179])
         self.assertEqual(result["action"]["drag_release"], [-20, 0])
 
@@ -129,7 +135,7 @@ class WebUIStaticTests(unittest.TestCase):
             }};
             const elements = new Map();
             function element(id) {{
-              if (!elements.has(id)) elements.set(id, {{ textContent: '', value: '0', checked: false, classList: {{ add() {{}}, remove() {{}}, toggle() {{}} }}, addEventListener() {{}} }});
+              if (!elements.has(id)) elements.set(id, {{ textContent: '', value: id === 'reviewGoal' ? 'collision' : '0', checked: false, classList: {{ add() {{}}, remove() {{}}, toggle() {{}} }}, addEventListener() {{}} }});
               return elements.get(id);
             }}
             const context = {{
@@ -147,7 +153,7 @@ class WebUIStaticTests(unittest.TestCase):
               height: 480,
               rgbBase64: "${{rgbBase64}}",
               trajectoryWorldWidth: 30,
-              trajectorySlingCenter: {{ canvasX: 260, canvasY: 300 }},
+              trajectorySlingCenter: {{ canvasX: 260, canvasY: 300, pixelsPerWorldUnit: 24 }},
               state: {{ name: 'PLAYING' }},
               currentLevel: 1,
               numberOfLevels: 20,
@@ -167,7 +173,7 @@ class WebUIStaticTests(unittest.TestCase):
         result = json.loads(completed.stdout)
 
         self.assertEqual(result["drag_start"], [260, 179])
-        self.assertAlmostEqual(result["drag_release"][0], -21.333333333333343)
+        self.assertAlmostEqual(result["drag_release"][0], -24.0)
         self.assertEqual(result["drag_release"][1], 0)
 
     def test_app_has_shared_coordinate_conversion_and_game_y_mapping(self) -> None:
@@ -218,7 +224,7 @@ class WebUIStaticTests(unittest.TestCase):
             }};
             const elements = new Map();
             function element(id) {{
-              if (!elements.has(id)) elements.set(id, {{ textContent: '', value: '0', checked: false, classList: {{ add() {{}}, remove() {{}}, toggle() {{}} }}, addEventListener() {{}} }});
+              if (!elements.has(id)) elements.set(id, {{ textContent: '', value: id === 'reviewGoal' ? 'collision' : '0', checked: false, classList: {{ add() {{}}, remove() {{}}, toggle() {{}} }}, addEventListener() {{}} }});
               return elements.get(id);
             }}
             element('tapTime').value = '70';
@@ -277,7 +283,7 @@ class WebUIStaticTests(unittest.TestCase):
             const elements = new Map();
             function element(id) {{
               if (!elements.has(id)) elements.set(id, {{
-                textContent: '', value: '0', checked: false,
+                textContent: '', value: id === 'reviewGoal' ? 'collision' : '0', checked: false,
                 classList: {{ add() {{}}, remove() {{}}, toggle() {{}} }},
                 addEventListener(type, callback) {{ listeners.set(id + ':' + type, callback); }},
               }});
@@ -335,6 +341,12 @@ class WebUIStaticTests(unittest.TestCase):
 
         self.assertIn("canvas.aiming", styles)
         self.assertIn("touch-action: none", styles)
+
+    def test_physics_v2_review_launcher_defaults_to_slow_speed(self) -> None:
+        launcher = (ROOT / "scripts" / "webui.sh").read_text(encoding="utf-8")
+
+        self.assertIn('physics_review_args=(--speed 1)', launcher)
+        self.assertIn('"${physics_review_args[@]}" "$@"', launcher)
 
     def test_readme_documents_local_preview_and_final_shot(self) -> None:
         readme = (ROOT / "src" / "webui" / "README.md").read_text(encoding="utf-8")

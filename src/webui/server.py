@@ -34,8 +34,11 @@ SETUP_COMMAND = (
     "python3 sciencebirdsagents/Utils/PrepareTestConfig.py --os Linux "
     "--novelty-level novelty_level_0 --level-type type010101 --max-levels 20"
 )
-TRAJECTORY_SLING_REFERENCE_X_OFFSET = 0.45
-TRAJECTORY_SLING_REFERENCE_Y_OFFSET = 0.35
+# World-space dimensions and launch anchor within the combined front/back
+# renderer bounds declared by the packaged Slingshot prefab.
+TRAJECTORY_SLINGSHOT_HEIGHT_WORLD = 2.055
+TRAJECTORY_SLING_REFERENCE_X_FROM_MIN_WORLD = 0.335
+TRAJECTORY_SLING_REFERENCE_Y_FROM_TOP_WORLD = 0.25
 PHYSICS_PLAYER_STAGE_SCHEMA = "novphy_physics_player_stage_v1"
 PHYSICS_PLAYER_UNITY_VERSION = "2019.4.41f2"
 PHYSICS_V2_CAPTURE_SCHEMA = "physics_capture_v2_engine_v1"
@@ -98,7 +101,10 @@ def _slingshot_vertices_from_ground_truth_item(item: Any) -> list[dict[str, floa
     return None
 
 
-def _slingshot_reference_point_from_ground_truth(ground_truth: Any, frame_height: int) -> dict[str, int] | None:
+def _slingshot_reference_point_from_ground_truth(
+    ground_truth: Any,
+    frame_height: int,
+) -> dict[str, float] | None:
     if not isinstance(ground_truth, list):
         return None
     for item in ground_truth:
@@ -123,15 +129,22 @@ def _slingshot_reference_point_from_ground_truth(ground_truth: Any, frame_height
         min_y = min(y_values)
         max_y = max(y_values)
         sling_width = max_x - min_x
-        if sling_width <= 0:
+        sling_height = max_y - min_y
+        if sling_width <= 0 or sling_height <= 0:
             return None
-        canvas_x = int(min_x + TRAJECTORY_SLING_REFERENCE_X_OFFSET * sling_width)
-        canvas_y = int(min_y + TRAJECTORY_SLING_REFERENCE_Y_OFFSET * sling_width)
+        pixels_per_world_unit = sling_height / TRAJECTORY_SLINGSHOT_HEIGHT_WORLD
+        canvas_x = (
+            min_x + TRAJECTORY_SLING_REFERENCE_X_FROM_MIN_WORLD * pixels_per_world_unit
+        )
+        canvas_y = (
+            min_y + TRAJECTORY_SLING_REFERENCE_Y_FROM_TOP_WORLD * pixels_per_world_unit
+        )
         return {
             "gameX": canvas_x,
-            "gameY": max(0, frame_height - 1 - canvas_y),
+            "gameY": max(0.0, frame_height - canvas_y),
             "canvasX": canvas_x,
             "canvasY": canvas_y,
+            "pixelsPerWorldUnit": pixels_per_world_unit,
         }
     return None
 
@@ -165,6 +178,7 @@ class AppState:
     review_runtime_temporary: tempfile.TemporaryDirectory | None = None
     engine_game_port: int = 29001
     review_reset_callback: Any | None = None
+    review_goal: str | None = None
 
     @property
     def game_dir(self) -> Path:
@@ -177,6 +191,13 @@ class AppState:
             stage = self.review_stage or self.root / "sciencebirdsgames" / "physics-v2"
             required_stage = [
                 stage / "novphy-physics-player-2019.4.41f2.tar.gz",
+                stage / "probe-plan.json",
+                stage / "review-levels" / "training.xml",
+                stage / "review-levels" / "calibration.xml",
+                stage / "review-levels" / "model-selection.xml",
+                stage / "review-manifests" / "training.json",
+                stage / "review-manifests" / "calibration.json",
+                stage / "review-manifests" / "model-selection.json",
             ]
             return [f"Missing {path}" for path in required_stage if not path.exists()]
         required = [
@@ -287,14 +308,27 @@ class AppState:
         )
         if any(not source.is_file() for source in sources):
             raise FileNotFoundError("public #45 review XML artifacts are incomplete")
-        # Unity derives the per-level asset-bundle path from the level path via
-        # LastIndexOf("Levels") (GameLevelSetInfo.getLevelSetXmlData), so review
-        # levels must live under a capital-"Levels" directory like the shipped
-        # game levels, or the player throws at level-set load and never starts.
-        target_root = runtime / "review-levels" / "Levels"
+        selected_index = REVIEW_GOAL_LEVELS.get(self.review_goal or "", 1) - 1
+        sources = (
+            (sources[selected_index],)
+            + sources[:selected_index]
+            + sources[selected_index + 1:]
+        )
+        # Unity both derives the asset-bundle path from "Levels" and indexes the
+        # level path recorded by its StreamingAssets scanner during selection.
+        target_root = (
+            runtime
+            / "9001_Data"
+            / "StreamingAssets"
+            / "Levels"
+            / "novelty_level_0"
+            / "type2"
+            / "Levels"
+        )
         target_root.mkdir(parents=True, exist_ok=True)
         for source in sources:
             shutil.copyfile(source, target_root / source.name)
+        configured_root = target_root.relative_to(runtime).as_posix()
         evaluation = ET.Element("evaluation")
         ET.SubElement(
             evaluation,
@@ -317,7 +351,7 @@ class AppState:
             "allow_level_selection": "True",
         })
         for source in sources:
-            ET.SubElement(level_set, "game_levels", {"level_path": f"review-levels/Levels/{source.name}"})
+            ET.SubElement(level_set, "game_levels", {"level_path": f"{configured_root}/{source.name}"})
         ET.indent(evaluation, space="  ")
         ET.ElementTree(evaluation).write(runtime / "config.xml", encoding="utf-8", xml_declaration=True)
 
@@ -348,7 +382,7 @@ class AppState:
         with self.bridge_lock:
             if self.bridge is None or not self.bridge.connected:
                 raise RuntimeError("Not connected to Science Birds. Start or connect first.")
-            self.bridge.load_level(level)
+        self._restart_physics_v2_review_engine(goal)
         return level
 
     def freeze_physics_v2_review(self) -> dict[str, Any]:
@@ -407,10 +441,15 @@ class AppState:
     def _reset_physics_v2_review_engine(self) -> None:
         if self.review_session is None or self.review_session.goal is None:
             raise ValueError("confirmatory replay has no bound review goal")
-        goal = self.review_session.goal
+        self._restart_physics_v2_review_engine(self.review_session.goal)
+
+    def _restart_physics_v2_review_engine(self, goal: str) -> None:
+        self.review_goal = goal
+        if self.review_reset_callback is not None:
+            self.review_reset_callback(goal)
+            return
         self.stop()
         self.start_game()
-        self.load_physics_v2_review_goal(goal)
 
     def configured_level_count(self) -> int | None:
         config_path = self.game_dir / "config.xml"

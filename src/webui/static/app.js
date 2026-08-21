@@ -8,6 +8,7 @@ let aimCurrentPoint = null;
 let latestFrameImage = null;
 let trajectoryWorldWidth = 17.5;
 let trajectorySlingCenter = null;
+let trajectoryPixelsPerWorldUnit = null;
 let autoTimer = null;
 let physicsReviewEnabled = false;
 let pendingReviewAction = null;
@@ -18,7 +19,6 @@ const WEB_TRAJECTORY_MAX_LAUNCH_SPEED = 10;
 const WEB_TRAJECTORY_LAUNCH_GRAVITY = 0.48;
 const WEB_TRAJECTORY_TIME_STEP = 0.02;
 const WEB_TRAJECTORY_STEPS = 500;
-const WEB_TRAJECTORY_CANVAS_Y_OFFSET = -1;
 
 function log(message) {
   const stamp = new Date().toLocaleTimeString();
@@ -97,6 +97,8 @@ function updateTelemetry(frame) {
   const state = frame.state?.name || '-';
   if (Number(frame.trajectoryWorldWidth) > 0) trajectoryWorldWidth = Number(frame.trajectoryWorldWidth);
   trajectorySlingCenter = frame.trajectorySlingCenter || null;
+  const runtimePixelsPerWorldUnit = Number(trajectorySlingCenter?.pixelsPerWorldUnit);
+  trajectoryPixelsPerWorldUnit = runtimePixelsPerWorldUnit > 0 ? runtimePixelsPerWorldUnit : null;
   document.getElementById('gameState').textContent = state;
   document.getElementById('currentLevel').textContent = frame.currentLevel ?? '-';
   document.getElementById('numberOfLevels').textContent = frame.numberOfLevels ?? '-';
@@ -144,7 +146,7 @@ function previewSlingCenterPoint(fallbackPoint = null) {
 }
 
 function canvasPixelsPerWorldUnit() {
-  return canvas.width / trajectoryWorldWidth;
+  return trajectoryPixelsPerWorldUnit || canvas.width / trajectoryWorldWidth;
 }
 
 function rawCappedReleasePoint(startPoint, releasePoint) {
@@ -164,7 +166,7 @@ function cappedReleasePoint(startPoint, releasePoint) {
   const rawRelease = rawCappedReleasePoint(startPoint, releasePoint);
   return {
     canvasX: rawRelease.canvasX,
-    canvasY: rawRelease.canvasY + WEB_TRAJECTORY_CANVAS_Y_OFFSET,
+    canvasY: rawRelease.canvasY,
     rawCanvasY: rawRelease.canvasY,
   };
 }
@@ -186,7 +188,7 @@ function buildTrajectoryPreviewPoints(startPoint, releasePoint) {
     x: (diffX / pullDistance) * velocityMagnitude,
     y: (diffY / pullDistance) * velocityMagnitude,
   };
-  const gravityY = 9.8 * WEB_TRAJECTORY_LAUNCH_GRAVITY * pixelsPerWorldUnit;
+  const gravityY = 9.81 * WEB_TRAJECTORY_LAUNCH_GRAVITY * pixelsPerWorldUnit;
   const timeStep = WEB_TRAJECTORY_TIME_STEP;
   const points = [];
   let position = { ...release };
@@ -194,11 +196,11 @@ function buildTrajectoryPreviewPoints(startPoint, releasePoint) {
 
   for (let i = 0; i < WEB_TRAJECTORY_STEPS; i += 1) {
     points.push({ canvasX: position.canvasX, canvasY: position.canvasY });
+    velocityY += gravityY * timeStep;
     position = {
       canvasX: position.canvasX + velocity.x * timeStep,
-      canvasY: position.canvasY + velocityY * timeStep + 0.5 * gravityY * timeStep * timeStep,
+      canvasY: position.canvasY + velocityY * timeStep,
     };
-    velocityY += gravityY * timeStep;
   }
   return points;
 }

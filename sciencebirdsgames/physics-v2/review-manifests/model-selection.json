@@ -1,0 +1,238 @@
+{
+  "identity": "cohort-v2-scenario-manifest-v1:sha256:20731651cb92aebb698b6256780ebbba11c47f618f54031eb9ccb5986f652146",
+  "scenario_manifest": {
+    "benchmark_condition": {
+      "identity": "benchmark-condition-v1:sha256:f8fb2ae6e0724bd88b459ce8f3752ea2ac7a9b9e647f5465e9c425dba6e75a90",
+      "novelty_level": "novelty_level_0",
+      "novelty_type": "type010101"
+    },
+    "declared_initial_engine_state": {
+      "identity": "declared-initial-engine-state-v1:sha256:9bec70925fda7100bdd014898a8172b2ff7f86ad896696610353b59e5ece48ad",
+      "schema": "declared_initial_engine_state_v1"
+    },
+    "generation": {
+      "declared_inputs": {
+        "max_coordinate": [
+          1.229969,
+          1.809741
+        ],
+        "min_coordinate": [
+          -7.88,
+          -2.39049
+        ],
+        "reference_point": [
+          1.00798,
+          -2.1274
+        ],
+        "restricted_objects": [],
+        "template_content_identity": "xml_bytes_v1:sha256:ede3a16435534ebbb3b37dccfeb7652ce2a56c50a1f5b826abede79692ba9220",
+        "template_name": "0_1_010101_0_1"
+      },
+      "generation_seed": 4402,
+      "generator_identity": "novphy-task-generator",
+      "generator_version": "canonical_materialization_v1",
+      "importer_identity": null,
+      "importer_version": null,
+      "mode": "generated",
+      "parameter_realization": {
+        "declared_initial_engine_state": {
+          "root": {
+            "attributes": {
+              "width": "2"
+            },
+            "children": [
+              {
+                "attributes": {
+                  "maxWidth": "35",
+                  "minWidth": "25",
+                  "x": "0",
+                  "y": "-1"
+                },
+                "children": [],
+                "tag": "Camera"
+              },
+              {
+                "attributes": {
+                  "highScore": "0"
+                },
+                "children": [],
+                "tag": "Score"
+              },
+              {
+                "attributes": {},
+                "children": [
+                  {
+                    "attributes": {
+                      "scenarioObjectId": "bird:0000",
+                      "type": "BirdRed"
+                    },
+                    "children": [],
+                    "tag": "Bird"
+                  }
+                ],
+                "tag": "Birds"
+              },
+              {
+                "attributes": {
+                  "scenarioObjectId": "slingshot:0000",
+                  "x": "-12.0",
+                  "y": "-2.5"
+                },
+                "children": [],
+                "tag": "Slingshot"
+              },
+              {
+                "attributes": {},
+                "children": [
+                  {
+                    "attributes": {
+                      "rotation": "0.5426",
+                      "scenarioObjectId": "pig:0000",
+                      "type": "BasicSmall",
+                      "x": "-6.39",
+                      "y": "0.29"
+                    },
+                    "children": [],
+                    "tag": "Pig"
+                  },
+                  {
+                    "attributes": {
+                      "rotation": "0.0",
+                      "scaleX": "3.1915",
+                      "scaleY": "1.0",
+                      "scenarioObjectId": "platform:0000",
+                      "type": "Platform",
+                      "x": "-6.413",
+                      "y": "-0.2526"
+                    },
+                    "children": [],
+                    "tag": "Platform"
+                  },
+                  {
+                    "attributes": {
+                      "material": "stone",
+                      "rotation": "0",
+                      "scenarioObjectId": "block:0000",
+                      "type": "RectBig",
+                      "x": "4.8798",
+                      "y": "-3.39"
+                    },
+                    "children": [],
+                    "tag": "Block"
+                  },
+                  {
+                    "attributes": {
+                      "material": "stone",
+                      "rotation": "0",
+                      "scenarioObjectId": "block:0001",
+                      "type": "RectBig",
+                      "x": "-5.007",
+                      "y": "-3.39"
+                    },
+                    "children": [],
+                    "tag": "Block"
+                  },
+                  {
+                    "attributes": {
+                      "material": "wood",
+                      "rotation": "0",
+                      "scenarioObjectId": "block:0002",
+                      "type": "RectMedium",
+                      "x": "-0.3102",
+                      "y": "-3.39"
+                    },
+                    "children": [],
+                    "tag": "Block"
+                  },
+                  {
+                    "attributes": {
+                      "material": "wood",
+                      "rotation": "0",
+                      "scenarioObjectId": "block:0003",
+                      "type": "RectMedium",
+                      "x": "1.6884",
+                      "y": "-3.39"
+                    },
+                    "children": [],
+                    "tag": "Block"
+                  },
+                  {
+                    "attributes": {
+                      "material": "ice",
+                      "rotation": "0",
+                      "scenarioObjectId": "block:0004",
+                      "type": "RectBig",
+                      "x": "7.6821",
+                      "y": "-3.39"
+                    },
+                    "children": [],
+                    "tag": "Block"
+                  }
+                ],
+                "tag": "GameObjects"
+              }
+            ],
+            "tag": "Level"
+          },
+          "schema": "declared_initial_engine_state_v1"
+        },
+        "schema": "scenario_parameter_realization_v1"
+      },
+      "source_path": null
+    },
+    "level_instance": {
+      "identity": "level-instance-v1:sha256:5b81e18d11d941dad9dc978b07947f46a26c86b1a197be73364ed9c5b80757e5"
+    },
+    "research_eligibility": {
+      "reason": null,
+      "status": "research_eligible"
+    },
+    "scenario_lineage": {
+      "identity": "scenario-lineage-v1:sha256:ededd8ccfbd654a7ef43607581d64ddf7c6a76b927988ba433f3907ba33958d4"
+    },
+    "scenario_specification": {
+      "content_identity": "xml_bytes_v1:sha256:dd72ca1e8807d031502692649e1c1525a61382aa15cbfeb053bc70a48985f5cd",
+      "declaration_identity": "scenario-declaration-v1:sha256:c5ea9b2c4655c665909a233630ba2efdf21e35f8ed23fddee49da7d6981613c5",
+      "identity": "scenario-specification-v1:sha256:63587fd1a5de19107830118d27c61bb6ebc66a88686dd4996306b9b65ab587e1"
+    },
+    "scenario_template": {
+      "availability": "available",
+      "identity": "scenario-template-v1:sha256:9195fdd49158feb385a9764ee2064f3a3d71efdc6c23144b14fb28bcacbf77e1"
+    },
+    "schema": "scenario_manifest_v1"
+  },
+  "schema": "cohort_v2_scenario_manifest_v1",
+  "template_record": {
+    "benchmark_conditions": [
+      {
+        "identity": "benchmark-condition-v1:sha256:f8fb2ae6e0724bd88b459ce8f3752ea2ac7a9b9e647f5465e9c425dba6e75a90",
+        "novelty_level": "novelty_level_0",
+        "novelty_type": "type010101"
+      }
+    ],
+    "generation_constraints": {
+      "canonical_generator_template_name": "0_1_010101_0_1",
+      "max_coordinate": [
+        1.229969,
+        1.809741
+      ],
+      "min_coordinate": [
+        -7.88,
+        -2.39049
+      ],
+      "reference_point": [
+        1.00798,
+        -2.1274
+      ],
+      "row_number": 3,
+      "schema": "scenario_template_constraints_v1",
+      "sheet_name": "Task Variations",
+      "source_content_identity": "xlsx_bytes_v1:sha256:4635c9c072eb36481815ac17cfd1cdd958773fc400d99ac579e0561ba045bff1",
+      "source_reference": "tasks/task_generator/template_constraints.xlsx"
+    },
+    "identity": "scenario-template-v1:sha256:9195fdd49158feb385a9764ee2064f3a3d71efdc6c23144b14fb28bcacbf77e1",
+    "schema": "scenario_template_v1",
+    "source_content_identity": "xml_bytes_v1:sha256:ede3a16435534ebbb3b37dccfeb7652ce2a56c50a1f5b826abede79692ba9220",
+    "source_reference": "tasks/task_templates/novelty_level_0/type010101/Levels/00001_0_1_010101_0_1.xml"
+  }
+}

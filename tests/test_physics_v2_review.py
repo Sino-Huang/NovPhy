@@ -4,6 +4,7 @@ import copy
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from types import MappingProxyType
 import unittest
 
 from src.webui.physics_v2_review import (
@@ -70,6 +71,14 @@ def write_probe_plan(root: Path) -> Path:
     return plan_path
 
 
+def freeze_json(value):
+    if isinstance(value, dict):
+        return MappingProxyType({key: freeze_json(item) for key, item in value.items()})
+    if isinstance(value, list):
+        return tuple(freeze_json(item) for item in value)
+    return value
+
+
 class PhysicsV2CoverageVerdictTests(unittest.TestCase):
     def test_verdicts_use_authoritative_contacts_and_support_sets(self) -> None:
         self.assertFalse(coverage_verdict("collision", engine_capture())["demonstrated"])
@@ -80,6 +89,31 @@ class PhysicsV2CoverageVerdictTests(unittest.TestCase):
 
 
 class PhysicsV2ReviewSessionTests(unittest.TestCase):
+    def test_exploration_persists_the_immutable_request_71_record(self) -> None:
+        with TemporaryDirectory() as temporary:
+            session = PhysicsV2ReviewSession(
+                Path(temporary),
+                probe_plan_path=write_probe_plan(Path(temporary) / "stage"),
+            )
+            session.stage("collision", {
+                "action_type": "drag_hold_release",
+                "coordinate_frame": "slingshot_relative",
+                "drag_start": [97, 227],
+                "drag_release": [-80, 8],
+                "tapTime": 0,
+                "holdTime": 1000,
+                "frame_height": 480,
+            })
+            session.begin_exploration()
+
+            explored = session.complete_exploration(freeze_json(collision_capture()))
+
+            self.assertEqual(explored["state"], "explored")
+            persisted = json.loads(
+                (session.root / "diagnostic" / "engine-envelope.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(persisted["schema_version"], "physics_capture_v2_engine_v1")
+
     def test_unavailable_diagnostic_cannot_be_frozen_as_confirmatory_evidence(self) -> None:
         with TemporaryDirectory() as temporary:
             session = PhysicsV2ReviewSession(

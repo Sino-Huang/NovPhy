@@ -12,10 +12,14 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
+from xml.etree import ElementTree as ET
 
 from src.webui.bridge import GameState, Screenshot
 from src.webui.server import AppState, build_arg_parser, create_handler
 from tests.test_physics_v2_review import collision_capture, write_probe_plan
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class FakeBridge:
@@ -43,7 +47,7 @@ class FakeBridge:
                     },
                     {
                         "geometry": {
-                            "coordinates": [[[210.0, 33.0], [210.0, 99.0], [232.0, 99.0], [232.0, 33.0]]],
+                            "coordinates": [[[210.0, 33.0], [210.0, 100.0], [232.0, 100.0], [232.0, 33.0]]],
                             "type": "Polygon",
                         },
                         "type": "Feature",
@@ -192,6 +196,26 @@ class ServerTest(unittest.TestCase):
         review_levels.mkdir()
         for name in ("training.xml", "calibration.xml", "model-selection.xml"):
             (review_levels / name).write_text("<Level />", encoding="utf-8")
+        review_manifests = stage / "review-manifests"
+        review_manifests.mkdir()
+        scenarios = []
+        for index, name in enumerate(("training", "calibration", "model-selection")):
+            manifest_path = review_manifests / f"{name}.json"
+            manifest_path.write_text(
+                json.dumps({"identity": f"scenario-manifest-v1:{index}"}),
+                encoding="utf-8",
+            )
+            scenarios.append({
+                "scenario_id": f"scenario-{index}",
+                "scenario_manifest_reference": f"removed-evidence/manifests/{name}.json",
+                "scenario_template_identity": f"scenario-template-v1:{index}",
+                "level_instance_identity": f"level-instance-v1:{index}",
+                "scenario_lineage_identity": f"scenario-lineage-v1:{index}",
+            })
+        (stage / "probe-plan.json").write_text(
+            json.dumps({"identity": "physics-v2-probe-plan-v1:review", "scenarios": scenarios}),
+            encoding="utf-8",
+        )
         return archive
 
     def test_status_reports_connected_fake_bridge(self):
@@ -235,7 +259,7 @@ class ServerTest(unittest.TestCase):
         )
         self.assertEqual(status, 200)
         self.assertEqual(loaded["level"], 1)
-        self.assertEqual(self.app.bridge.loaded, [1])
+        self.assertEqual(resets, ["collision"])
 
         status, staged = self.request(
             "POST", "/api/physics-v2-review/stage", {"goal": "collision", "action": action}
@@ -258,11 +282,32 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(replayed["session"]["state"], "demonstrated")
         self.assertTrue(replayed["session"]["eligible_for_issue_44_review"])
         self.assertEqual(self.app.physics_bridge.requests, 2)
-        self.assertEqual(resets, ["collision"])
+        self.assertEqual(resets, ["collision", "collision"])
         status, steps = self.request("GET", "/api/physics-v2-review/steps?start=1&count=1")
         self.assertEqual(status, 200)
         self.assertEqual(steps["total"], 2)
         self.assertEqual([step["fixed_step"] for step in steps["steps"]], [1])
+
+    def test_packaged_physics_v2_review_action_can_be_staged(self):
+        self.app.root = ROOT
+        self.app.physics_v2_review = True
+        self.app.review_output_root = Path(self.review_tmp.name)
+        action = {
+            "action_type": "drag_hold_release",
+            "coordinate_frame": "slingshot_relative",
+            "drag_start": [127, 223],
+            "drag_release": [-5, 23],
+            "tapTime": 0,
+            "holdTime": 600,
+            "frame_height": 480,
+        }
+
+        status, staged = self.request(
+            "POST", "/api/physics-v2-review/stage", {"goal": "collision", "action": action}
+        )
+
+        self.assertEqual(status, 200, staged)
+        self.assertEqual(staged["session"]["state"], "staged")
 
     def test_default_readiness_timeout_allows_slow_generated_levels(self):
         self.assertGreaterEqual(AppState().readiness_timeout, 60)
@@ -278,10 +323,21 @@ class ServerTest(unittest.TestCase):
     def test_review_preflight_accepts_the_staged_archive_without_a_pin_file(self):
         with TemporaryDirectory() as temporary:
             stage = Path(temporary)
-            (stage / "novphy-physics-player-2019.4.41f2.tar.gz").write_bytes(b"archive")
+            self.write_review_archive(stage)
             app = AppState(physics_v2_review=True, review_stage=stage)
 
             self.assertEqual(app.preflight_errors(), [])
+
+    def test_review_preflight_reports_missing_source_bound_review_inputs(self):
+        with TemporaryDirectory() as temporary:
+            stage = Path(temporary)
+            (stage / "novphy-physics-player-2019.4.41f2.tar.gz").write_bytes(b"archive")
+            app = AppState(physics_v2_review=True, review_stage=stage)
+
+            errors = app.preflight_errors()
+
+            self.assertTrue(any("probe-plan.json" in error for error in errors))
+            self.assertTrue(any("review-manifests/training.json" in error for error in errors))
 
     def test_review_runtime_validates_declared_archive_provenance(self):
         with TemporaryDirectory() as temporary:
@@ -290,7 +346,37 @@ class ServerTest(unittest.TestCase):
             app = AppState(physics_v2_review=True, review_stage=stage)
             runtime = app.prepare_physics_v2_review_runtime()
             self.assertTrue((runtime / "game_playing_interface.jar").is_file())
-            self.assertTrue((runtime / "review-levels/Levels/training.xml").is_file())
+            level_root = runtime / "9001_Data/StreamingAssets/Levels/novelty_level_0/type2/Levels"
+            self.assertTrue((level_root / "training.xml").is_file())
+            config = ET.parse(runtime / "config.xml")
+            configured_paths = [
+                node.attrib["level_path"] for node in config.findall(".//game_levels")
+            ]
+            self.assertEqual(configured_paths, [
+                "9001_Data/StreamingAssets/Levels/novelty_level_0/type2/Levels/training.xml",
+                "9001_Data/StreamingAssets/Levels/novelty_level_0/type2/Levels/calibration.xml",
+                "9001_Data/StreamingAssets/Levels/novelty_level_0/type2/Levels/model-selection.xml",
+            ])
+            app.review_runtime_temporary.cleanup()
+
+    def test_review_goal_restart_places_the_bound_scenario_first(self):
+        with TemporaryDirectory() as temporary:
+            stage = Path(temporary) / "stage"
+            self.write_review_archive(stage)
+            resets = []
+            app = AppState(physics_v2_review=True, review_stage=stage)
+            app.bridge = FakeBridge()
+            app.review_reset_callback = lambda goal: resets.append(goal)
+
+            app.load_physics_v2_review_goal("support change")
+            runtime = app.prepare_physics_v2_review_runtime()
+            config = ET.parse(runtime / "config.xml")
+            configured_paths = [
+                node.attrib["level_path"] for node in config.findall(".//game_levels")
+            ]
+
+            self.assertEqual(resets, ["support change"])
+            self.assertTrue(configured_paths[0].endswith("/calibration.xml"))
             app.review_runtime_temporary.cleanup()
 
     def test_review_runtime_rejects_stale_or_incomplete_declared_provenance(self):
@@ -347,7 +433,13 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(data["state"]["name"], "PLAYING")
         self.assertEqual(data["score"], 123)
         self.assertEqual(data["numberOfLevels"], 20)
-        self.assertEqual(data["trajectorySlingCenter"], {"gameX": 219, "gameY": 439, "canvasX": 219, "canvasY": 40})
+        center = data["trajectorySlingCenter"]
+        expected_pixels_per_world_unit = 67 / 2.055
+        self.assertAlmostEqual(center["canvasX"], 210 + 0.335 * expected_pixels_per_world_unit)
+        self.assertAlmostEqual(center["canvasY"], 33 + 0.25 * expected_pixels_per_world_unit)
+        self.assertAlmostEqual(center["gameX"], center["canvasX"])
+        self.assertAlmostEqual(center["gameY"], 480 - center["canvasY"])
+        self.assertAlmostEqual(center["pixelsPerWorldUnit"], expected_pixels_per_world_unit)
 
     def test_frame_exposes_configured_level_camera_width_for_trajectory(self):
         with TemporaryDirectory() as tmp:
