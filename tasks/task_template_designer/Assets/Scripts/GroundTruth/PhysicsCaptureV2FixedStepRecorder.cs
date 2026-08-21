@@ -341,7 +341,7 @@ public sealed class PhysicsCaptureV2FixedStepRecorder : MonoBehaviour,
                     || point.collider.isTrigger || point.otherCollider.isTrigger
                     ? null
                     : new PhysicsCaptureV2ContactInput(point.collider, point.otherCollider,
-                        point.point, -point.normal, point.separation);
+                        point.point, point.normal, point.separation);
             }), delegate(PhysicsCaptureV2ContactInput input) { return input != null; });
         List<PhysicsCaptureV2FrozenContact> frozen;
         if (!PhysicsCaptureV2ContactExporter.TryFreeze(inputs, causalObjects, limits,
@@ -493,13 +493,15 @@ public sealed class PhysicsCaptureV2FixedStepRecorder : MonoBehaviour,
             for (int pointIndex = 0; pointIndex < count; pointIndex++)
             {
                 ContactPoint2D point = points[pointIndex];
-                Collider2D other = point.otherCollider;
-                if (other == null || other.isTrigger || !other.enabled
-                    || !other.gameObject.activeInHierarchy
-                    || collider.GetInstanceID() >= other.GetInstanceID())
+                Collider2D first = point.collider;
+                Collider2D second = point.otherCollider;
+                if (first == null || second == null || first.isTrigger || second.isTrigger
+                    || !first.enabled || !second.enabled
+                    || !first.gameObject.activeInHierarchy || !second.gameObject.activeInHierarchy
+                    || first.GetInstanceID() >= second.GetInstanceID())
                     continue;
-                inputs.Add(new PhysicsCaptureV2ContactInput(collider, other, point.point,
-                    -point.normal, point.separation));
+                inputs.Add(new PhysicsCaptureV2ContactInput(first, second, point.point,
+                    point.normal, point.separation));
             }
         }
         return inputs.ToArray();

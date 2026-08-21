@@ -207,6 +207,44 @@ public sealed class PhysicsCaptureV2ContactTests
         }
     }
 
+    [Test]
+    public void UnityFixedStepEnumerationUsesTheAuthoritativeContactPointColliderPair()
+    {
+        bool previousAutoSimulation = Physics2D.autoSimulation;
+        BoxCollider2D lowerCollider = lower.GetComponent<BoxCollider2D>();
+        Rigidbody2D upperBody = upper.GetComponent<Rigidbody2D>();
+        try
+        {
+            lowerCollider.size = new Vector2(4f, 1f);
+            upper.transform.position = new Vector2(0f, 0.9f);
+            upperBody.bodyType = RigidbodyType2D.Dynamic;
+            upperBody.gravityScale = 0f;
+            upperBody.constraints = RigidbodyConstraints2D.FreezeAll;
+            Physics2D.autoSimulation = false;
+            Physics2D.SyncTransforms();
+            Physics2D.Simulate(0.02f);
+            Physics2D.Simulate(0.02f);
+            Assert.Greater(upper.GetComponent<BoxCollider2D>().GetContacts(
+                new ContactPoint2D[4]), 0,
+                "the Unity fixture did not produce an authoritative resting contact");
+            PhysicsCaptureV2FixedStepRecorder recorder = NewRecorder();
+
+            recorder.BeginPreInterventionFromUnity(10, new[] { lower, upper });
+            recorder.FinalizeTerminal(10);
+
+            PhysicsCaptureV2FixedStepSample sample =
+                recorder.CreateFinalizedSnapshot().FixedStepSamples[0];
+            Assert.GreaterOrEqual(sample.Contacts.Count, 1);
+            Assert.AreEqual(1, sample.Supports.Count);
+            Assert.AreEqual("runtime:lower:0001", sample.Supports[0].SupporterEntityId);
+            Assert.AreEqual("runtime:upper:0001", sample.Supports[0].SupportedEntityId);
+        }
+        finally
+        {
+            Physics2D.autoSimulation = previousAutoSimulation;
+        }
+    }
+
     private PhysicsCaptureV2FixedStepRecorder NewRecorder()
     {
         return recorderHost.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
