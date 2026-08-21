@@ -139,6 +139,53 @@ public class PhysicsCaptureV2RecorderTests
         CollectionAssert.AreEqual(firstRead, repeatedRead);
     }
 
+    [Test]
+    public void CanonicalizesPigHitEventsWithoutRenumberingOrBreakingTerminalBinding()
+    {
+        PhysicsCaptureV2FixedStepRecorder recorder =
+            host.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
+        recorder.BeginPreIntervention(100);
+        recorder.RecordFixedStep(101);
+
+        string pigRemovedEventId = recorder.RecordMacroEvent(
+            "pig_removed", new[] { "runtime:pig:0000" }, "{}");
+        string entityDeathEventId = recorder.RecordMacroEvent(
+            "entity_death", new[] { "runtime:pig:0000" }, "{}");
+        string birdExhaustionEventId = recorder.RecordMacroEvent(
+            "bird_exhaustion", new string[0], "{}");
+        recorder.FinalizeTerminal(101, "bird_exhaustion");
+
+        Assert.AreEqual("event:101:pig_removed:0000", pigRemovedEventId);
+        Assert.AreEqual("event:101:entity_death:0001", entityDeathEventId);
+        Assert.AreEqual("event:101:bird_exhaustion:0002", birdExhaustionEventId);
+
+        PhysicsCaptureV2EngineSnapshot snapshot = recorder.CreateFinalizedSnapshot();
+        CollectionAssert.AreEqual(new[]
+        {
+            birdExhaustionEventId,
+            entityDeathEventId,
+            pigRemovedEventId,
+        }, snapshot.Events.Select(item => item.EventId).ToArray());
+        Assert.AreEqual(birdExhaustionEventId, snapshot.TerminalEventId);
+
+        byte[] envelope = PhysicsCaptureV2EngineProtocol.BuildCaptureEnvelope(snapshot);
+        int payloadLength = ReadUInt32(envelope, 12);
+        string json = Encoding.UTF8.GetString(envelope, 16, payloadLength);
+        int birdExhaustionIndex = json.IndexOf(
+            "\"event_id\":\"" + birdExhaustionEventId + "\"", StringComparison.Ordinal);
+        int entityDeathIndex = json.IndexOf(
+            "\"event_id\":\"" + entityDeathEventId + "\"", StringComparison.Ordinal);
+        int pigRemovedIndex = json.IndexOf(
+            "\"event_id\":\"" + pigRemovedEventId + "\"", StringComparison.Ordinal);
+        Assert.That(birdExhaustionIndex, Is.GreaterThanOrEqualTo(0));
+        Assert.That(entityDeathIndex, Is.GreaterThan(birdExhaustionIndex));
+        Assert.That(pigRemovedIndex, Is.GreaterThan(entityDeathIndex));
+        StringAssert.Contains(
+            "\"terminal_evidence\":{\"reason\":\"bird_exhaustion\",\"fixed_step\":101,"
+                + "\"event_id\":\"" + birdExhaustionEventId + "\"}",
+            json);
+    }
+
     private static int ReadUInt32(byte[] bytes, int offset)
     {
         return bytes[offset] << 24 | bytes[offset + 1] << 16

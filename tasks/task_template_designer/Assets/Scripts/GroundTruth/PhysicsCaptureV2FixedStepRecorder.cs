@@ -83,7 +83,17 @@ public sealed class PhysicsCaptureV2EngineSnapshot
         TerminalFixedStep = terminalFixedStep;
         FixedStepSamples = new List<PhysicsCaptureV2FixedStepSample>(fixedStepSamples).AsReadOnly();
         FrameRecords = new List<PhysicsCaptureV2FrameRecord>(frameRecords).AsReadOnly();
-        Events = new List<PhysicsCaptureV2EventSnapshot>(events).AsReadOnly();
+        List<PhysicsCaptureV2EventSnapshot> sortedEvents =
+            new List<PhysicsCaptureV2EventSnapshot>(events);
+        sortedEvents.Sort(delegate(PhysicsCaptureV2EventSnapshot left,
+            PhysicsCaptureV2EventSnapshot right)
+        {
+            int fixedStepComparison = left.FixedStep.CompareTo(right.FixedStep);
+            return fixedStepComparison != 0
+                ? fixedStepComparison
+                : string.CompareOrdinal(left.EventId, right.EventId);
+        });
+        Events = sortedEvents.AsReadOnly();
         TerminalReason = terminalReason;
         TerminalEventId = terminalEventId;
     }
