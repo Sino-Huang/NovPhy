@@ -15,6 +15,7 @@ UNITY_VERSION: Final = "2019.4.41f2"
 PROTOCOL_VERSION: Final = 1
 V1_CAPTURE_SCHEMA: Final = "physics_capture_v1"
 V2_CAPTURE_SCHEMA: Final = "physics_capture_v2_engine_v1"
+OBSERVATION_CAPTURE_SCHEMA: Final = "observation_capture_engine_v1"
 REQUIRED_FILES: Final = (
     "9001.x86_64",
     "9001-player.x86_64",
@@ -88,7 +89,12 @@ def _inventory(root: Path) -> dict[str, int]:
     }
 
 
-def verify_physics_player_archive(stage: Path, *, physics_v2: bool) -> dict[str, Any]:
+def verify_physics_player_archive(
+    stage: Path,
+    *,
+    physics_v2: bool,
+    observation_v1: bool = False,
+) -> dict[str, Any]:
     """Validate the hash-free package contract without launching the player."""
     stage = Path(stage)
     archive = stage / ARCHIVE_NAME
@@ -104,7 +110,13 @@ def verify_physics_player_archive(stage: Path, *, physics_v2: bool) -> dict[str,
         if unity.get("version") != UNITY_VERSION:
             raise VerificationError("archive Unity provenance is unsupported")
         capture = _mapping(provenance.get("capture"), "capture")
-        expected_capture = V2_CAPTURE_SCHEMA if physics_v2 else V1_CAPTURE_SCHEMA
+        if physics_v2 and observation_v1:
+            raise VerificationError("archive capture profile is ambiguous")
+        expected_capture = (
+            OBSERVATION_CAPTURE_SCHEMA
+            if observation_v1
+            else V2_CAPTURE_SCHEMA if physics_v2 else V1_CAPTURE_SCHEMA
+        )
         if capture.get("schema_version") != expected_capture:
             raise VerificationError("archive capture provenance is unsupported")
         if capture.get("protocol_version") != PROTOCOL_VERSION:
@@ -149,12 +161,17 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=Path, required=True)
     parser.add_argument("--physics-v2", action="store_true")
+    parser.add_argument("--observation-v1", action="store_true")
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
-    result = verify_physics_player_archive(args.stage, physics_v2=args.physics_v2)
+    result = verify_physics_player_archive(
+        args.stage,
+        physics_v2=args.physics_v2,
+        observation_v1=args.observation_v1,
+    )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 

@@ -59,7 +59,7 @@ class Issue46EvidenceTests(unittest.TestCase):
         repository = Path(__file__).parents[1]
         root = repository / "data" / "runtime_evidence" / "issue-46"
         archive = (
-            repository / "sciencebirdsgames" / "physics-v2"
+            repository / "sciencebirdsgames" / "observation-v1"
             / "novphy-physics-player-2019.4.41f2.tar.gz"
         )
 

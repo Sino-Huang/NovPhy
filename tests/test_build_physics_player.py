@@ -67,6 +67,22 @@ class PhysicsPlayerBuildScriptTests(unittest.TestCase):
         self.assertIn('capture_schema="physics_capture_v2_engine_v1"', source)
         self.assertEqual(source.count('--capture-schema "$capture_schema"'), 2)
 
+    def test_observation_stage_is_separate_from_immutable_physics_v2_stage(self) -> None:
+        resolved = self._resolve_stage("--observation-v1")
+
+        self.assertEqual(resolved.returncode, 0, resolved.stderr)
+        self.assertEqual(
+            Path(resolved.stdout.strip()),
+            ROOT / "sciencebirdsgames" / "observation-v1",
+        )
+        self.assertNotEqual(
+            Path(resolved.stdout.strip()),
+            ROOT / "sciencebirdsgames" / "physics-v2",
+        )
+        source = BUILD_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('capture_schema="observation_capture_engine_v1"', source)
+
+
     def test_source_preflight_precedes_stage_creation_and_unity(self) -> None:
         # Given: the exact player build entrypoint.
         source = BUILD_SCRIPT.read_text(encoding="utf-8")

@@ -17,7 +17,11 @@ STAGE_SCHEMA: Final = "novphy_physics_player_stage_v1"
 UNITY_VERSION: Final = "2019.4.41f2"
 UNITY_CHANGESET: Final = "6b23d448b533"
 CAPTURE_SCHEMA: Final = "physics_capture_v1"
-CAPTURE_SCHEMAS: Final = (CAPTURE_SCHEMA, "physics_capture_v2_engine_v1")
+CAPTURE_SCHEMAS: Final = (
+    CAPTURE_SCHEMA,
+    "physics_capture_v2_engine_v1",
+    "observation_capture_engine_v1",
+)
 PROTOCOL_VERSION: Final = 1
 ARCHIVE_NAME: Final = "novphy-physics-player-2019.4.41f2.tar.gz"
 WRAPPER_PATH: Final = "scripts/9001-player-wrapper.sh"

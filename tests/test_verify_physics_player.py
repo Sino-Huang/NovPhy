@@ -106,6 +106,23 @@ class ArchiveVerificationTests(unittest.TestCase):
             self.assertEqual(result["capture_schema"], "physics_capture_v2_engine_v1")
             self.assertEqual(result["declared_file_count"], len(REQUIRED_FILES))
 
+    def test_verifies_observation_capture_archive_provenance(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            stage = self.write_stage(
+                Path(temporary),
+                mutate=lambda value: value["capture"].update(
+                    schema_version="observation_capture_engine_v1"
+                ),
+            )
+
+            result = verify_physics_player_archive(
+                stage, physics_v2=False, observation_v1=True
+            )
+
+            self.assertEqual(
+                result["capture_schema"], "observation_capture_engine_v1"
+            )
+
     def test_rejects_wrong_or_missing_provenance(self) -> None:
         cases = {
             "stage schema": lambda value: value.update(schema_version="old"),

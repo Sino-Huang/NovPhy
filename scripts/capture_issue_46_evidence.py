@@ -26,7 +26,8 @@ from src.webui.bridge import ObservationCaptureEngine, PlayingMode
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_STAGE = ROOT / "sciencebirdsgames" / "physics-v2"
+DEFAULT_STAGE = ROOT / "sciencebirdsgames" / "observation-v1"
+DEFAULT_SOURCE_STAGE = ROOT / "sciencebirdsgames" / "physics-v2"
 DEFAULT_OUTPUT = ROOT / "data" / "runtime_evidence" / "issue-46"
 
 
@@ -44,8 +45,8 @@ def _capture_record(capture: ObservationCaptureEngine) -> dict:
     return record
 
 
-def _install_level(runtime: Path, stage: Path, level_name: str) -> None:
-    level_source = stage / "review-levels" / f"{level_name}.xml"
+def _install_level(runtime: Path, source_stage: Path, level_name: str) -> None:
+    level_source = source_stage / "review-levels" / f"{level_name}.xml"
     if not level_source.is_file():
         raise ValueError("issue #46 source-bound review level is missing")
     target_root = (
@@ -116,6 +117,7 @@ def _probe(
 
 def _capture_one(
     stage: Path,
+    source_stage: Path,
     level_name: str,
 ) -> tuple[ObservationCaptureEngine, str, str]:
     engine = None
@@ -126,7 +128,7 @@ def _capture_one(
         temporary_root = Path(temporary)
         runtime = temporary_root / "player"
         archive, _, _ = archive_details(stage, runtime)
-        _install_level(runtime, stage, level_name)
+        _install_level(runtime, source_stage, level_name)
         provenance = json.loads((runtime / "provenance.json").read_text(encoding="utf-8"))
         source_commit = provenance["project"]["git_head"]
         archive_identity = (
@@ -174,21 +176,21 @@ def _capture_one(
             terminate(display_process)
 
 
-def collect(stage: Path, output: Path) -> dict:
+def collect(stage: Path, source_stage: Path, output: Path) -> dict:
     if output.exists():
         raise ValueError("issue #46 output already exists")
     training_capture, source_commit, archive_identity = _capture_one(
-        stage, "training"
+        stage, source_stage, "training"
     )
     calibration_capture, calibration_commit, calibration_archive = _capture_one(
-        stage, "calibration"
+        stage, source_stage, "calibration"
     )
     if calibration_commit != source_commit or calibration_archive != archive_identity:
         raise ValueError("issue #46 probes used different player authorities")
     probes = [
         _probe(
             training_capture,
-            stage / "review-manifests" / "training.json",
+            source_stage / "review-manifests" / "training.json",
             probe_identity="training-native",
             configuration="agent_rgb8_native_v1",
             exposure_role="training",
@@ -197,7 +199,7 @@ def collect(stage: Path, output: Path) -> dict:
         ),
         _probe(
             calibration_capture,
-            stage / "review-manifests" / "calibration.json",
+            source_stage / "review-manifests" / "calibration.json",
             probe_identity="calibration-resized",
             configuration="agent_rgb8_nearest_320x240_v1",
             exposure_role="calibration",
@@ -211,9 +213,10 @@ def collect(stage: Path, output: Path) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=Path, default=DEFAULT_STAGE)
+    parser.add_argument("--source-stage", type=Path, default=DEFAULT_SOURCE_STAGE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
-    bundle = collect(args.stage, args.output)
+    bundle = collect(args.stage, args.source_stage, args.output)
     print(json.dumps({"identity": bundle["identity"], "passed": True}, sort_keys=True))
     return 0
 
