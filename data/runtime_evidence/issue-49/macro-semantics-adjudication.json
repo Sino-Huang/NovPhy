@@ -1,0 +1,660 @@
+{
+  "coverage": {
+    "mutation_check_count": 3,
+    "steady-state": {
+      "boundary_window_count": 2,
+      "negative": {
+        "level_instance_count": 2,
+        "passed": true,
+        "scenario_lineage_count": 2,
+        "scenario_template_count": 2,
+        "witness_count": 2
+      },
+      "positive": {
+        "level_instance_count": 2,
+        "passed": true,
+        "scenario_lineage_count": 2,
+        "scenario_template_count": 2,
+        "witness_count": 2
+      }
+    },
+    "structure-unstable": {
+      "boundary_window_count": 2,
+      "negative": {
+        "level_instance_count": 2,
+        "passed": true,
+        "scenario_lineage_count": 2,
+        "scenario_template_count": 2,
+        "witness_count": 2
+      },
+      "positive": {
+        "level_instance_count": 2,
+        "passed": true,
+        "scenario_lineage_count": 2,
+        "scenario_template_count": 2,
+        "witness_count": 2
+      }
+    },
+    "unavailable_passed": true
+  },
+  "derivation_spec_identity": "cohort-v2-macro-derivation-spec-v1:steady-state+structure-unstable",
+  "exclusions": {
+    "cascade-active": "excluded_not_emitted_not_false",
+    "collapsed": "excluded_not_emitted_not_false",
+    "pigs-cleared": "excluded_not_emitted_not_false"
+  },
+  "failure_cases": [
+    "A missing fixed-step predecessor makes structure-unstable unavailable.",
+    "An incomplete initial debounce window makes steady-state unavailable.",
+    "A missing or inconsistent engine stability transition rejects the derivation.",
+    "A fixed-step gap, stale source binding, unavailable source fact, or cross-release source mismatch rejects the derivation bundle."
+  ],
+  "identity": "issue-49-v2-macro-semantics-adjudication-v1:accepted-determination-1",
+  "mutation_checks": [
+    {
+      "expected": "rejected",
+      "mutation": "remove_required_stability_transition_event",
+      "observed": "rejected",
+      "reason": "capture-v2:7d5300c031374d33b1413962495b0ba0 fixed step 1716: derived stable_exited does not match a same-step engine event"
+    },
+    {
+      "expected": "rejected",
+      "mutation": "remove_fixed_step_history",
+      "observed": "rejected",
+      "reason": "capture.fixed_step_samples: fixed-step contact coverage has a gap"
+    },
+    {
+      "expected": "rejected",
+      "mutation": "change_source_lineage_binding",
+      "observed": "rejected",
+      "reason": "collision-mutation: capability probe binding is stale"
+    }
+  ],
+  "passed": true,
+  "plan_identity": "issue-49-v2-macro-adjudication-plan-v1:determination-1",
+  "predicate_dispositions": {
+    "steady-state": "accepted_authoritative",
+    "structure-unstable": "accepted_authoritative"
+  },
+  "procedure": {
+    "disagreements": [],
+    "primary": "deterministic automated fixed-step derivation",
+    "verification": "independent exact artifact re-derivation during validation"
+  },
+  "schema": "issue_49_v2_macro_semantics_adjudication_v1",
+  "source_capture_bundle_identity": "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23",
+  "witnesses": {
+    "steady-state": {
+      "boundary_windows": [
+        {
+          "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+          "case": "collision",
+          "fixed_steps": [
+            1715,
+            1716,
+            1717
+          ],
+          "source_intervals": [
+            {
+              "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+              "current_fixed_step": 1715,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1714,
+              "projected_event_ids": [],
+              "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+            },
+            {
+              "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+              "current_fixed_step": 1716,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1715,
+              "projected_event_ids": [
+                "event:1716:stable_exited:0001"
+              ],
+              "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+            },
+            {
+              "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+              "current_fixed_step": 1717,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1716,
+              "projected_event_ids": [],
+              "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+            }
+          ],
+          "values": [
+            true,
+            false,
+            false
+          ]
+        },
+        {
+          "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "case": "support-change",
+          "fixed_steps": [
+            1706,
+            1707,
+            1708
+          ],
+          "source_intervals": [
+            {
+              "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "current_fixed_step": 1706,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1705,
+              "projected_event_ids": [],
+              "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+            },
+            {
+              "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "current_fixed_step": 1707,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1706,
+              "projected_event_ids": [
+                "event:1707:stable_exited:0001"
+              ],
+              "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+            },
+            {
+              "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "current_fixed_step": 1708,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1707,
+              "projected_event_ids": [],
+              "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+            }
+          ],
+          "values": [
+            true,
+            false,
+            false
+          ]
+        }
+      ],
+      "negative": [
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+          "case": "collision",
+          "evidence": {
+            "candidate_run_length": 44,
+            "candidate_run_start_fixed_step": 1715,
+            "candidate_stable": false,
+            "last_transition_event_id": "event:1716:stable_exited:0001",
+            "maximum_absolute_angular_speed_degrees_per_second": 1775.49561,
+            "maximum_linear_speed_squared": 3.2649156060131324,
+            "prior_debounced_value": false,
+            "transition_event_id": null
+          },
+          "fixed_step": 1758,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml",
+          "source_interval": {
+            "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+            "current_fixed_step": 1758,
+            "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+            "previous_fixed_step": 1757,
+            "projected_event_ids": [
+              "event:1758:bird_exhaustion:0003",
+              "event:1758:collision:0002",
+              "event:1758:entity_death:0004"
+            ],
+            "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+            "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+          },
+          "value": false
+        },
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "case": "support-change",
+          "evidence": {
+            "candidate_run_length": 44,
+            "candidate_run_start_fixed_step": 1706,
+            "candidate_stable": false,
+            "last_transition_event_id": "event:1707:stable_exited:0001",
+            "maximum_absolute_angular_speed_degrees_per_second": 1309.94434,
+            "maximum_linear_speed_squared": 1.777207338009862,
+            "prior_debounced_value": false,
+            "transition_event_id": null
+          },
+          "fixed_step": 1749,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-44%252Fsupport-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-44%252525252Fsupport-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-44%2Fsupport-template.xml",
+          "source_interval": {
+            "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+            "current_fixed_step": 1749,
+            "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+            "previous_fixed_step": 1748,
+            "projected_event_ids": [
+              "event:1749:bird_exhaustion:0003",
+              "event:1749:collision:0002",
+              "event:1749:entity_death:0004"
+            ],
+            "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+            "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+          },
+          "value": false
+        }
+      ],
+      "positive": [
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+          "case": "collision",
+          "evidence": {
+            "candidate_run_length": 2,
+            "candidate_run_start_fixed_step": 1811,
+            "candidate_stable": true,
+            "last_transition_event_id": "event:1812:stable_entered:0006",
+            "maximum_absolute_angular_speed_degrees_per_second": 0.0,
+            "maximum_linear_speed_squared": 0.0,
+            "prior_debounced_value": false,
+            "transition_event_id": "event:1812:stable_entered:0006"
+          },
+          "fixed_step": 1812,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml",
+          "source_interval": {
+            "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+            "current_fixed_step": 1812,
+            "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+            "previous_fixed_step": 1811,
+            "projected_event_ids": [
+              "event:1812:stable_entered:0006"
+            ],
+            "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+            "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+          },
+          "value": true
+        },
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "case": "support-change",
+          "evidence": {
+            "candidate_run_length": 2,
+            "candidate_run_start_fixed_step": 1802,
+            "candidate_stable": true,
+            "last_transition_event_id": "event:1803:stable_entered:0006",
+            "maximum_absolute_angular_speed_degrees_per_second": 0.0,
+            "maximum_linear_speed_squared": 0.0,
+            "prior_debounced_value": false,
+            "transition_event_id": "event:1803:stable_entered:0006"
+          },
+          "fixed_step": 1803,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-44%252Fsupport-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-44%252525252Fsupport-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-44%2Fsupport-template.xml",
+          "source_interval": {
+            "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+            "current_fixed_step": 1803,
+            "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+            "previous_fixed_step": 1802,
+            "projected_event_ids": [
+              "event:1803:stable_entered:0006"
+            ],
+            "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+            "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+          },
+          "value": true
+        }
+      ]
+    },
+    "structure-unstable": {
+      "boundary_windows": [
+        {
+          "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+          "case": "collision",
+          "fixed_steps": [
+            1757,
+            1758,
+            1759,
+            1760
+          ],
+          "source_intervals": [
+            {
+              "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+              "current_fixed_step": 1757,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1756,
+              "projected_event_ids": [],
+              "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+            },
+            {
+              "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+              "current_fixed_step": 1758,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1757,
+              "projected_event_ids": [
+                "event:1758:bird_exhaustion:0003",
+                "event:1758:collision:0002",
+                "event:1758:entity_death:0004"
+              ],
+              "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+            },
+            {
+              "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+              "current_fixed_step": 1759,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1758,
+              "projected_event_ids": [],
+              "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+            },
+            {
+              "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+              "current_fixed_step": 1760,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1759,
+              "projected_event_ids": [],
+              "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+            }
+          ],
+          "values": [
+            false,
+            true,
+            true,
+            false
+          ]
+        },
+        {
+          "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "case": "support-change",
+          "fixed_steps": [
+            1748,
+            1749,
+            1750,
+            1751
+          ],
+          "source_intervals": [
+            {
+              "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "current_fixed_step": 1748,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1747,
+              "projected_event_ids": [],
+              "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+            },
+            {
+              "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "current_fixed_step": 1749,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1748,
+              "projected_event_ids": [
+                "event:1749:bird_exhaustion:0003",
+                "event:1749:collision:0002",
+                "event:1749:entity_death:0004"
+              ],
+              "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+            },
+            {
+              "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "current_fixed_step": 1750,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1749,
+              "projected_event_ids": [],
+              "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+            },
+            {
+              "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "current_fixed_step": 1751,
+              "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+              "previous_fixed_step": 1750,
+              "projected_event_ids": [],
+              "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+            }
+          ],
+          "values": [
+            false,
+            true,
+            true,
+            false
+          ]
+        }
+      ],
+      "negative": [
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+          "case": "collision",
+          "evidence": {
+            "added_support_relations": [],
+            "removed_support_relations": [],
+            "steady_state_value": false
+          },
+          "fixed_step": 1760,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml",
+          "source_interval": {
+            "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+            "current_fixed_step": 1760,
+            "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+            "previous_fixed_step": 1759,
+            "projected_event_ids": [],
+            "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+            "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+          },
+          "value": false
+        },
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "case": "support-change",
+          "evidence": {
+            "added_support_relations": [],
+            "removed_support_relations": [],
+            "steady_state_value": false
+          },
+          "fixed_step": 1751,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-44%252Fsupport-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-44%252525252Fsupport-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-44%2Fsupport-template.xml",
+          "source_interval": {
+            "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+            "current_fixed_step": 1751,
+            "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+            "previous_fixed_step": 1750,
+            "projected_event_ids": [],
+            "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+            "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+          },
+          "value": false
+        }
+      ],
+      "positive": [
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+          "case": "collision",
+          "evidence": {
+            "added_support_relations": [
+              [
+                "runtime:platform:0000",
+                "runtime:bird:0000"
+              ]
+            ],
+            "removed_support_relations": [],
+            "steady_state_value": false
+          },
+          "fixed_step": 1758,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml",
+          "source_interval": {
+            "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+            "current_fixed_step": 1758,
+            "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+            "previous_fixed_step": 1757,
+            "projected_event_ids": [
+              "event:1758:bird_exhaustion:0003",
+              "event:1758:collision:0002",
+              "event:1758:entity_death:0004"
+            ],
+            "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+            "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+          },
+          "value": true
+        },
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "case": "support-change",
+          "evidence": {
+            "added_support_relations": [
+              [
+                "runtime:platform:0000",
+                "runtime:bird:0000"
+              ]
+            ],
+            "removed_support_relations": [],
+            "steady_state_value": false
+          },
+          "fixed_step": 1749,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-44%252Fsupport-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-44%252525252Fsupport-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-44%2Fsupport-template.xml",
+          "source_interval": {
+            "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+            "current_fixed_step": 1749,
+            "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+            "previous_fixed_step": 1748,
+            "projected_event_ids": [
+              "event:1749:bird_exhaustion:0003",
+              "event:1749:collision:0002",
+              "event:1749:entity_death:0004"
+            ],
+            "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+            "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+          },
+          "value": true
+        }
+      ]
+    },
+    "unavailable": [
+      {
+        "availability": "unavailable_incomplete_debounce_window",
+        "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+        "case": "collision",
+        "evidence": {
+          "candidate_run_length": 1,
+          "candidate_run_start_fixed_step": 1564,
+          "candidate_stable": true,
+          "last_transition_event_id": null,
+          "maximum_absolute_angular_speed_degrees_per_second": 0.0,
+          "maximum_linear_speed_squared": 0.0,
+          "prior_debounced_value": null,
+          "transition_event_id": null
+        },
+        "fixed_step": 1564,
+        "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+        "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+        "scenario_template_id": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml",
+        "source_interval": {
+          "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+          "current_fixed_step": 1564,
+          "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+          "previous_fixed_step": null,
+          "projected_event_ids": [],
+          "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+          "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+        },
+        "value": null
+      },
+      {
+        "availability": "unavailable_no_predecessor",
+        "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+        "case": "collision",
+        "evidence": {
+          "added_support_relations": [],
+          "removed_support_relations": [],
+          "steady_state_value": null
+        },
+        "fixed_step": 1564,
+        "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+        "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+        "scenario_template_id": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml",
+        "source_interval": {
+          "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+          "current_fixed_step": 1564,
+          "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+          "previous_fixed_step": null,
+          "projected_event_ids": [],
+          "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+          "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+        },
+        "value": null
+      },
+      {
+        "availability": "unavailable_incomplete_debounce_window",
+        "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+        "case": "support-change",
+        "evidence": {
+          "candidate_run_length": 1,
+          "candidate_run_start_fixed_step": 1555,
+          "candidate_stable": true,
+          "last_transition_event_id": null,
+          "maximum_absolute_angular_speed_degrees_per_second": 0.0,
+          "maximum_linear_speed_squared": 0.0,
+          "prior_debounced_value": null,
+          "transition_event_id": null
+        },
+        "fixed_step": 1555,
+        "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-44%252Fsupport-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+        "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-44%252525252Fsupport-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+        "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-44%2Fsupport-template.xml",
+        "source_interval": {
+          "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "current_fixed_step": 1555,
+          "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+          "previous_fixed_step": null,
+          "projected_event_ids": [],
+          "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+        },
+        "value": null
+      },
+      {
+        "availability": "unavailable_no_predecessor",
+        "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+        "case": "support-change",
+        "evidence": {
+          "added_support_relations": [],
+          "removed_support_relations": [],
+          "steady_state_value": null
+        },
+        "fixed_step": 1555,
+        "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-44%252Fsupport-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+        "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-44%252525252Fsupport-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+        "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-44%2Fsupport-template.xml",
+        "source_interval": {
+          "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "current_fixed_step": 1555,
+          "derivation_spec_version": "cohort_v2_macro_derivation_v1",
+          "previous_fixed_step": null,
+          "projected_event_ids": [],
+          "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+        },
+        "value": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "derivation_spec_identity": "cohort-v2-macro-derivation-spec-v1:steady-state+structure-unstable",
+  "identity": "issue-49-v2-macro-adjudication-plan-v1:determination-1",
+  "minimum_floor": {
+    "boundary_windows": 2,
+    "level_instances": 2,
+    "negative_witnesses": 2,
+    "non_final_scenario_lineages": 2,
+    "positive_witnesses": 2,
+    "scenario_templates": 2,
+    "unavailable_or_rejection_checks": 1
+  },
+  "predicates": [
+    "steady-state",
+    "structure-unstable"
+  ],
+  "schema": "issue_49_v2_macro_adjudication_plan_v1",
+  "selected_cases": [
+    "collision",
+    "support-change"
+  ],
+  "selection_rules": {
+    "steady_boundary": "stable_exited fixed_step minus one, at event, plus one",
+    "steady_negative": "same-step collision label",
+    "steady_positive": "same-step stable_entered label",
+    "structure_boundary": "collision fixed_step minus one through plus two",
+    "structure_negative": "second fixed step after the selected collision",
+    "structure_positive": "same-step collision support-set change",
+    "unavailable": "first retained fixed-step label"
+  },
+  "source_capture_bundle_identity": "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23"
+}

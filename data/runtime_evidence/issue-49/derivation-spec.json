@@ -1,0 +1,36 @@
+{
+  "accepted_predicates": [
+    "steady-state",
+    "structure-unstable"
+  ],
+  "availability": {
+    "steady-state": "unavailable_incomplete_debounce_window until two consecutive candidate samples establish the initial state",
+    "structure-unstable": "unavailable_no_predecessor without an immediately preceding complete sample; unavailable_steady_state when its steady-state prerequisite is unavailable"
+  },
+  "capture_schema_version": "physics_capture_v2",
+  "event_clock": {
+    "occurrence_authority": "fixed_step",
+    "projection_rule": "previous_state_fixed_step_lt_event_lte_current_state_fixed_step"
+  },
+  "excluded_predicates": {
+    "cascade-active": "excluded_not_emitted_not_false",
+    "collapsed": "excluded_not_emitted_not_false",
+    "pigs-cleared": "excluded_not_emitted_not_false"
+  },
+  "identity": "cohort-v2-macro-derivation-spec-v1:steady-state+structure-unstable",
+  "numeric_inputs": {
+    "angular_speed_threshold_degrees_per_second": 0.01,
+    "debounce_fixed_steps": 2,
+    "linear_speed_squared_threshold": 0.0001
+  },
+  "rules": {
+    "steady-state": "A debounced state over complete consecutive fixed-step samples. A candidate is stable exactly when every dynamic body has squared linear speed at most 0.0001 and absolute angular speed at most 0.01 degrees/second. The candidate must persist for two fixed steps before the state is established or changes; every post-initial change must match a same-step engine stability event.",
+    "structure-unstable": "Available only with an immediately preceding complete fixed-step sample and an available steady-state label; true exactly when steady-state is false and the directed engine support-relation set differs from the predecessor."
+  },
+  "schema": "cohort_v2_macro_derivation_spec_v1",
+  "source_authority": {
+    "runtime_bundle_identity": "issue-44-physics-v2-runtime-evidence-bundle-v1:issue_44_physics_v2_runtime_evidence_bundle_v1:collection_plan_identity=collection-plan-v1%3A2%3Atype010101-training-seed4401%3Aissue44-support-ready-type010101-seed4401:source_snapshot_commit=72d1acea04d9c5b5f99058aa723c5554ec555341",
+    "source_snapshot_commit": "72d1acea04d9c5b5f99058aa723c5554ec555341"
+  },
+  "version": "cohort_v2_macro_derivation_v1"
+}
