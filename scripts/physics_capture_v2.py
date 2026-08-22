@@ -560,6 +560,22 @@ def normalized_initial_engine_state_identity(capture: PhysicsCaptureV2) -> str:
     record = capture.record
     initial_sample = _materialize_json(record["fixed_step_samples"][0], "initial_sample")
     initial_sample.pop("fixed_step")
+    contact_identities = {
+        contact["contact_id"]: f"initial-contact:{index:04d}"
+        for index, contact in enumerate(initial_sample["contacts"])
+    }
+    for contact in initial_sample["contacts"]:
+        contact["contact_id"] = contact_identities[contact["contact_id"]]
+    for entity in initial_sample["entities"]:
+        entity["contact_ids"] = [
+            contact_identities[contact_id]
+            for contact_id in entity["contact_ids"]
+        ]
+    for support in initial_sample["supports"]:
+        support["contact_ids"] = [
+            contact_identities[contact_id]
+            for contact_id in support["contact_ids"]
+        ]
     payload = {
         "schema": "normalized_initial_engine_state_v1",
         "coordinate_convention": _materialize_json(record["coordinate_convention"], "coordinate_convention"),

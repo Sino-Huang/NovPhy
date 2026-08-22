@@ -90,6 +90,62 @@ class PhysicsCaptureV2Tests(unittest.TestCase):
             normalized_initial_engine_state_identity(changed),
         )
 
+    def test_normalized_initial_engine_state_excludes_fixed_step_contact_ids(self) -> None:
+        first_record = capture()
+        first_sample = first_record["fixed_step_samples"][0]
+        contacted_sample = first_record["fixed_step_samples"][1]
+        first_sample["entities"] = copy.deepcopy(contacted_sample["entities"])
+        first_sample["contacts"] = copy.deepcopy(contacted_sample["contacts"])
+        first_sample["contacts"][0]["contact_id"] = "contact:0:0000"
+        for entity in first_sample["entities"]:
+            entity["contact_ids"] = ["contact:0:0000" for _ in entity["contact_ids"]]
+        first_sample["supports"] = copy.deepcopy(contacted_sample["supports"])
+        first_sample["supports"][0]["contact_ids"] = ["contact:0:0000"]
+        contacted_sample["contacts"][0]["contact_id"] = "contact:1:0000"
+        for entity in contacted_sample["entities"]:
+            entity["contact_ids"] = ["contact:1:0000" for _ in entity["contact_ids"]]
+        contacted_sample["supports"][0]["contact_ids"] = ["contact:1:0000"]
+        first_record["minimum_contact_separation"].update({
+            "contact_id": "contact:0:0000",
+            "fixed_step": 0,
+        })
+
+        repeated_record = copy.deepcopy(first_record)
+        repeated_record["pre_intervention_fixed_step"] = 100
+        for sample in repeated_record["fixed_step_samples"]:
+            original_step = sample["fixed_step"]
+            sample["fixed_step"] += 100
+            old_contact_id = f"contact:{original_step}:0000"
+            new_contact_id = f"contact:{sample['fixed_step']}:0000"
+            for contact in sample["contacts"]:
+                contact["contact_id"] = new_contact_id
+            for entity in sample["entities"]:
+                entity["contact_ids"] = [
+                    new_contact_id if contact_id == old_contact_id else contact_id
+                    for contact_id in entity["contact_ids"]
+                ]
+            for support in sample["supports"]:
+                support["contact_ids"] = [
+                    new_contact_id if contact_id == old_contact_id else contact_id
+                    for contact_id in support["contact_ids"]
+                ]
+        repeated_record["minimum_contact_separation"].update({
+            "contact_id": "contact:100:0000",
+            "fixed_step": 100,
+        })
+        for frame in repeated_record["frame_records"]:
+            frame["fixed_step"] += 100
+        for event in repeated_record["events"]:
+            event["fixed_step"] += 100
+        repeated_record["terminal_evidence"]["fixed_step"] += 100
+
+        first = parse_physics_capture_v2(first_record)
+        repeated = parse_physics_capture_v2(repeated_record)
+        self.assertEqual(
+            normalized_initial_engine_state_identity(first),
+            normalized_initial_engine_state_identity(repeated),
+        )
+
     def test_published_schema_declares_the_validated_record_surfaces(self) -> None:
         schema = json.loads(
             (Path(__file__).parents[1] / "docs/data_contracts/physics_capture_v2.schema.json").read_text(encoding="utf-8")
