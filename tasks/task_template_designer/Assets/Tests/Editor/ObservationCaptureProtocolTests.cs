@@ -91,6 +91,35 @@ public sealed class ObservationCaptureProtocolTests
         UnityEngine.Object.DestroyImmediate(cameraObject);
     }
 
+    [Test]
+    public void Request72WorldToObservationMatrixUsesInsetCameraPixelRect()
+    {
+        GameObject cameraObject = new GameObject("Main Camera");
+        Camera camera = cameraObject.AddComponent<Camera>();
+        camera.orthographic = true;
+        camera.pixelRect = new Rect(10f, 20f, 100f, 50f);
+        PhysicalSceneSnapshot snapshot = new PhysicalSceneSnapshot(
+            3, 0.2f, 4, 0.08f, new PhysicalNodeSnapshot[0]);
+        byte[] png = new byte[] {
+            0x89, (byte)'P', (byte)'N', (byte)'G', 0x0d, 0x0a, 0x1a, 0x0a, 1
+        };
+
+        byte[] envelope = ObservationCaptureProtocol.BuildCaptureEnvelope(
+            png, snapshot, camera, "capture-inset", 1, 200, 100);
+        int pngLength = ReadUInt32(envelope, 16);
+        int metadataLength = ReadUInt32(envelope, 20);
+        JSONNode metadata = JSONNode.Parse(System.Text.Encoding.UTF8.GetString(
+            envelope, 24 + pngLength, metadataLength).Replace(":null", ":\"null\""));
+        JSONNode matrix = metadata["world_to_observation_transform"]
+            ["ndc_to_observation_matrix"];
+
+        Assert.AreEqual(50f, matrix[0].AsFloat);
+        Assert.AreEqual(60f, matrix[2].AsFloat);
+        Assert.AreEqual(-25f, matrix[4].AsFloat);
+        Assert.AreEqual(55f, matrix[5].AsFloat);
+        UnityEngine.Object.DestroyImmediate(cameraObject);
+    }
+
     private static int ReadUInt16(byte[] buffer, int offset)
     {
         return (buffer[offset] << 8) | buffer[offset + 1];

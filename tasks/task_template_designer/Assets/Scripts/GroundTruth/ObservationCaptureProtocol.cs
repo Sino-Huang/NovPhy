@@ -151,9 +151,11 @@ public static class ObservationCaptureProtocol
         json.Append(",\"camera_to_clip_matrix\":"); AppendMatrix(json, cameraToClip);
         json.Append(",\"clip_to_ndc\":\"homogeneous_divide\",");
         json.Append("\"ndc_to_observation_matrix\":[");
-        AppendFloat(json, width / 2f); json.Append(",0,"); AppendFloat(json, width / 2f);
-        json.Append(",0,"); AppendFloat(json, -height / 2f); json.Append(',');
-        AppendFloat(json, height / 2f); json.Append(",0,0,1]}}");
+        AppendFloat(json, pixelRect.width / 2f); json.Append(",0,");
+        AppendFloat(json, pixelRect.x + pixelRect.width / 2f);
+        json.Append(",0,"); AppendFloat(json, -pixelRect.height / 2f); json.Append(',');
+        AppendFloat(json, height - pixelRect.y - pixelRect.height / 2f);
+        json.Append(",0,0,1]}}");
         return json.ToString();
     }
 

@@ -19,26 +19,13 @@ MANIFEST_NAME = "observation_trace_manifest.json"
 EXPOSURE_ROLES = frozenset({
     "training", "calibration", "model_selection", "final_evaluation",
 })
-TRANSFORMS: dict[str, dict[str, Any]] = {
-    "agent_rgb8_native_v1": {
-        "method": "identity",
-        "output_width_pixels": None,
-        "output_height_pixels": None,
-        "resampling": "none",
-    },
-    "agent_rgb8_nearest_2x2_v1": {
-        "method": "resize",
-        "output_width_pixels": 2,
-        "output_height_pixels": 2,
-        "resampling": "nearest",
-    },
-    "agent_rgb8_nearest_320x240_v1": {
-        "method": "resize",
-        "output_width_pixels": 320,
-        "output_height_pixels": 240,
-        "resampling": "nearest",
-    },
-}
+_TRANSFORM_REGISTRY_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "docs" / "data_contracts" / "observation_transforms_v1.json"
+)
+TRANSFORMS: dict[str, dict[str, Any]] = json.loads(
+    _TRANSFORM_REGISTRY_PATH.read_text(encoding="utf-8")
+)["transforms"]
 
 
 class ObservationTraceError(ValueError):
@@ -217,8 +204,8 @@ def _validate_engine_capture(capture: Mapping[str, Any], canonical_png: bytes) -
     ):
         raise ObservationTraceError("world-to-observation transform is inconsistent")
     expected_ndc = [
-        width / 2.0, 0.0, width / 2.0,
-        0.0, -height / 2.0, height / 2.0,
+        rect[2] / 2.0, 0.0, rect[0] + rect[2] / 2.0,
+        0.0, -rect[3] / 2.0, height - rect[1] - rect[3] / 2.0,
         0.0, 0.0, 1.0,
     ]
     if _vector(
@@ -641,8 +628,11 @@ def _authorize_observation_access(
     observation_role: str,
     workflow_kind: str,
     purpose: str,
+    manifest_exposure_role: str,
 ) -> None:
     if observation_role == "agent":
+        if workflow_kind != manifest_exposure_role:
+            raise ObservationTraceError("agent observation has cross exposure access")
         if workflow_kind in EXPOSURE_ROLES and purpose in {
             "model_input", "reported_model_input", "comparator_selection",
         }:
@@ -687,6 +677,7 @@ def audit_observation_access(
                 attempt["observation_role"],
                 attempt["workflow_kind"],
                 attempt["purpose"],
+                manifest["exposure_role"],
             )
         except ObservationTraceError as error:
             allowed = False
@@ -720,7 +711,12 @@ def load_observation_bytes(
 ) -> bytes:
     """Read an observation only after validating artifact and access policy."""
     manifest = validate_observation_trace(root)
-    _authorize_observation_access(observation_role, workflow_kind, purpose)
+    _authorize_observation_access(
+        observation_role,
+        workflow_kind,
+        purpose,
+        manifest["exposure_role"],
+    )
     frame = next(
         (item for item in manifest["frame_records"] if item["identity"] == frame_record_identity),
         None,

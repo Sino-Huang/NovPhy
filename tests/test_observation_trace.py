@@ -210,6 +210,30 @@ class ObservationTraceTests(unittest.TestCase):
                         exposure_role="training",
                     )
 
+    def test_world_to_observation_transform_uses_camera_viewport_offset_and_extent(self) -> None:
+        capture = engine_capture()
+        capture["viewport"]["camera_pixel_rect"] = [1.0, 0.5, 2.0, 1.0]
+        capture["world_to_observation_transform"]["ndc_to_observation_matrix"] = [
+            1.0, 0.0, 2.0,
+            0.0, -0.5, 2.0,
+            0.0, 0.0, 1.0,
+        ]
+
+        with tempfile.TemporaryDirectory() as temporary:
+            manifest = persist_observation_trace(
+                Path(temporary) / "trace",
+                [capture],
+                observation_configuration="agent_rgb8_native_v1",
+                source_bindings=source_bindings(),
+                exposure_role="training",
+            )
+
+            self.assertEqual(
+                manifest["frame_records"][0]["capture_metadata"]
+                ["world_to_observation_transform"]["ndc_to_observation_matrix"],
+                capture["world_to_observation_transform"]["ndc_to_observation_matrix"],
+            )
+
     def test_canonical_bytes_are_available_only_to_diagnostics_and_audited(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary) / "trace"
@@ -271,6 +295,27 @@ class ObservationTraceTests(unittest.TestCase):
                 [decision["allowed"] for decision in report["decisions"]],
                 [True, False],
             )
+
+    def test_agent_ingestion_cannot_cross_the_manifest_exposure_role(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "trace"
+            manifest = persist_observation_trace(
+                root,
+                [engine_capture()],
+                observation_configuration="agent_rgb8_native_v1",
+                source_bindings=source_bindings(),
+                exposure_role="training",
+            )
+            frame = manifest["frame_records"][0]
+
+            with self.assertRaisesRegex(ObservationTraceError, "cross exposure"):
+                load_observation_bytes(
+                    root,
+                    frame_record_identity=frame["identity"],
+                    observation_role="agent",
+                    workflow_kind="calibration",
+                    purpose="model_input",
+                )
 
     def test_missing_duplicated_misaligned_and_cross_role_observations_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
