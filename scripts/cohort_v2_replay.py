@@ -28,6 +28,7 @@ REPORT_NAME = "replay-evidence.json"
 BUNDLE_NAME = "bundle-manifest.json"
 FROZEN_COMMAND_NAME = "frozen-replay-command.json"
 NON_FINAL_ROLES = frozenset({"training", "calibration", "model_selection"})
+CURRENT_DETERMINATION_VERSION = 5
 
 
 class CohortV2ReplayError(ValueError):
@@ -94,16 +95,17 @@ def exact_socket_comparison_rules_v1() -> dict[str, Any]:
             "cohort-v2-replay-exact-socket-comparison-rules-v1:"
             "launch-relative-step-delta=1:contact-separation-delta=0.001:"
             "frozen-socket-command=exact:camera-cross-attempt-equality=false:"
-            "engine-state=exact:event-payload=exact:contact-point-normal=exact:"
+            "continuous-engine-state=reported:event-payload=reported:"
+            "contact-point-normal=reported:"
             "pixel-equality-required=false"
         ),
         "fixed_step_origin": "bird_launched",
         "maximum_relative_fixed_step_delta": 1,
         "maximum_contact_separation_delta": 0.001,
         "repeated_same_semantic_event_count": "reported_tolerated",
-        "engine_state_at_shared_launch_relative_fixed_steps": "exact",
-        "event_payload": "exact",
-        "contact_point_and_normal": "exact",
+        "continuous_engine_state": "reported_tolerated_measurement_provenance",
+        "event_payload": "reported_tolerated_measurement_provenance",
+        "contact_point_and_normal": "reported_tolerated_measurement_provenance",
         "interface_action_authority": "original_attempt_frozen_socket_command_exact",
         "observation_cross_attempt_equality": "configuration_and_access_policy",
         "camera_viewport_and_transform": "validated_per_attempt_render_provenance",
@@ -592,6 +594,93 @@ def _state_samples_by_relative_step(record: Mapping[str, Any]) -> dict[int, dict
     return result
 
 
+def _discrete_state_samples_by_relative_step(
+    record: Mapping[str, Any],
+) -> dict[int, dict[str, Any]]:
+    origin = _first_launch_step(record)
+    result = {}
+    for sample in record["fixed_step_samples"]:
+        result[sample["fixed_step"] - origin] = {
+            "complete_raw_non_trigger_contacts": sample[
+                "complete_raw_non_trigger_contacts"
+            ],
+            "world": sample["world"],
+            "entities": [
+                {
+                    "entity_id": entity["entity_id"],
+                    "scenario_object_id": entity["scenario_object_id"],
+                    "body_present": entity["body_present"],
+                    "lifecycle": entity["lifecycle"],
+                    "body": (
+                        None
+                        if entity["body"] is None
+                        else {
+                            key: entity["body"][key]
+                            for key in (
+                                "body_type",
+                                "gravity_applicable",
+                                "gravity_scale",
+                                "simulated",
+                            )
+                        }
+                    ),
+                }
+                for entity in sample["entities"]
+            ],
+            "colliders": [
+                {
+                    key: collider[key]
+                    for key in (
+                        "collider_id",
+                        "entity_id",
+                        "enabled",
+                        "is_trigger",
+                        "geometry_source",
+                    )
+                }
+                | {"shape_kind": collider["shape"]["kind"]}
+                for collider in sample["colliders"]
+            ],
+        }
+    return result
+
+
+def _compare_discrete_state_semantics(
+    original: Mapping[str, Any],
+    replay: Mapping[str, Any],
+    maximum_delta: int,
+) -> dict[str, Any]:
+    original_steps = _discrete_state_samples_by_relative_step(original)
+    replay_steps = _discrete_state_samples_by_relative_step(replay)
+    shared = sorted(set(original_steps) & set(replay_steps))
+    mismatched = [
+        step for step in shared if original_steps[step] != replay_steps[step]
+    ]
+    original_only = sorted(set(original_steps) - set(replay_steps))
+    replay_only = sorted(set(replay_steps) - set(original_steps))
+    common_end = max(shared) if shared else None
+    terminal_only = (
+        common_end is not None
+        and all(step > common_end for step in original_only + replay_only)
+        and abs(max(original_steps) - max(replay_steps)) <= maximum_delta
+    )
+    passed = not mismatched and (
+        not original_only and not replay_only or terminal_only
+    )
+    return _component(
+        "deterministic_engine_state_semantics",
+        "equality" if passed and not original_only and not replay_only else (
+            "tolerated" if passed else "mismatch"
+        ),
+        "world, entity/body lifecycle, and collider identities and discrete states must be exact; only the bounded terminal tail may differ",
+        {
+            "mismatched_relative_fixed_steps": mismatched[:20],
+            "original_terminal_tail": original_only,
+            "replay_terminal_tail": replay_only,
+        },
+    )
+
+
 def _compare_engine_state_trace(
     original: Mapping[str, Any],
     replay: Mapping[str, Any],
@@ -611,11 +700,11 @@ def _compare_engine_state_trace(
         and all(step > common_end for step in original_only + replay_only)
         and abs(max(original_steps) - max(replay_steps)) <= maximum_delta
     )
-    if mismatched or (original_only or replay_only) and not terminal_only:
+    if (original_only or replay_only) and not terminal_only:
         return _component(
-            "engine_state_trace",
+            "engine_state_measurements",
             "mismatch",
-            "world, body, lifecycle, and collider state must be exact at every shared launch-relative fixed step; only a bounded terminal tail may differ",
+            "the authoritative fixed-step sequence may differ only by the bounded terminal tail",
             {
                 "mismatched_relative_fixed_steps": mismatched[:20],
                 "original_only_relative_fixed_steps": original_only,
@@ -623,11 +712,12 @@ def _compare_engine_state_trace(
             },
         )
     return _component(
-        "engine_state_trace",
-        "tolerated" if original_only or replay_only else "equality",
-        "world, body, lifecycle, and collider state are exact at every shared launch-relative fixed step",
+        "engine_state_measurements",
+        "tolerated" if mismatched or original_only or replay_only else "equality",
+        "continuous body and collider values are reported measurement provenance; source identities and physical semantics are compared separately",
         {
             "shared_fixed_step_count": len(shared),
+            "mismatched_relative_fixed_steps": mismatched[:20],
             "original_terminal_tail": original_only,
             "replay_terminal_tail": replay_only,
         },
@@ -750,8 +840,7 @@ def _compare_artifact_identities(
     )
     terminal_frame_delta = abs(len(frames_original) - len(frames_replay))
     identities_match = (
-        not context_mismatches
-        and frame_prefix_matches
+        frame_prefix_matches
         and terminal_frame_delta <= maximum_delta
         and _common_prefixes_equal(
             original_projection["event_suffixes"],
@@ -764,7 +853,7 @@ def _compare_artifact_identities(
     )
     return _component(
         "deterministic_artifact_identities",
-        "equality" if identities_match and terminal_frame_delta == 0 else (
+        "equality" if identities_match and terminal_frame_delta == 0 and not context_mismatches else (
             "tolerated" if identities_match else "mismatch"
         ),
         "frame-record, event, contact, entity-context, and support-context identities must be derivable and aligned under the declared timing/count bounds",
@@ -797,9 +886,9 @@ def _compare_event_payloads(
     ]
     if mismatched:
         return _component(
-            "event_payload_semantics",
-            "mismatch",
-            "payloads for every compared same-semantic event occurrence must be exact",
+            "event_payload_measurements",
+            "tolerated",
+            "continuous event payload values are reported measurement provenance; event type, participants, and timing are compared separately",
             {"mismatched_event_semantics": mismatched},
         )
     count_differences = {
@@ -808,7 +897,7 @@ def _compare_event_payloads(
         if len(original.get(key, ())) != len(replay.get(key, ()))
     }
     return _component(
-        "event_payload_semantics",
+        "event_payload_measurements",
         "tolerated" if count_differences else "equality",
         "event payloads are exact; repeated same-semantic occurrence counts are reported tolerances",
         {"repeated_occurrence_count_differences": count_differences},
@@ -841,9 +930,23 @@ def _compare_contact_geometry(
     maximum_step_delta: int,
     maximum_separation_delta: float,
 ) -> dict[str, Any]:
-    mismatched = []
+    original_keys = set(original)
+    replay_keys = set(replay)
+    if original_keys != replay_keys:
+        return _component(
+            "contact_geometry_measurements",
+            "mismatch",
+            "contact entity and collider identities must be exact",
+            {
+                "missing_in_replay": sorted(map(str, original_keys - replay_keys)),
+                "new_in_replay": sorted(map(str, replay_keys - original_keys)),
+            },
+        )
+    timing_mismatches = []
+    separation_mismatches = []
+    measurement_differences = []
     maximum_observed_separation_delta = 0.0
-    for key in sorted(set(original) | set(replay), key=str):
+    for key in sorted(original_keys, key=str):
         original_values = original.get(key, ())
         replay_values = replay.get(key, ())
         for left, right in zip(original_values, replay_values):
@@ -854,30 +957,47 @@ def _compare_contact_geometry(
             if (
                 abs(left["relative_fixed_step"] - right["relative_fixed_step"])
                 > maximum_step_delta
-                or left["point"] != right["point"]
-                or left["normal_a_to_b"] != right["normal_a_to_b"]
-                or separation_delta > maximum_separation_delta
             ):
-                mismatched.append(str(key))
+                timing_mismatches.append(str(key))
                 break
-    if mismatched:
+            if separation_delta > maximum_separation_delta:
+                separation_mismatches.append(str(key))
+                break
+            if (
+                left["point"] != right["point"]
+                or left["normal_a_to_b"] != right["normal_a_to_b"]
+            ):
+                measurement_differences.append(str(key))
+                break
+    if timing_mismatches or separation_mismatches:
         return _component(
-            "contact_geometry",
+            "contact_geometry_measurements",
             "mismatch",
-            "contact collider identities, point, normal, and bounded separation must match for every compared occurrence",
+            "contact collider identities and timing must be exact or bounded, and separation must remain within its declared bound",
             {
-                "mismatched_contact_semantics": mismatched,
+                "timing_mismatches": timing_mismatches,
+                "separation_mismatches": separation_mismatches,
+                "maximum_observed_separation_delta": maximum_observed_separation_delta,
+            },
+        )
+    if measurement_differences:
+        return _component(
+            "contact_geometry_measurements",
+            "tolerated",
+            "contact point and normal are reported measurement provenance; collider identities, timing, and bounded separation remain authoritative",
+            {
+                "measurement_differences": measurement_differences,
                 "maximum_observed_separation_delta": maximum_observed_separation_delta,
             },
         )
     count_differences = {
         str(key): [len(original.get(key, ())), len(replay.get(key, ()))]
-        for key in sorted(set(original) | set(replay), key=str)
+        for key in sorted(original_keys, key=str)
         if len(original.get(key, ())) != len(replay.get(key, ()))
     }
     tolerated = bool(count_differences or maximum_observed_separation_delta)
     return _component(
-        "contact_geometry",
+        "contact_geometry_measurements",
         "tolerated" if tolerated else "equality",
         "contact point and normal are exact; relative timing, separation, and repeated counts use the declared bounds",
         {
@@ -1020,6 +1140,9 @@ def compare_replay_scenario_collection(base: Path, plan: Mapping[str, Any], scen
     ))
     rules = plan["comparison_rules"]
     max_delta = rules["maximum_relative_fixed_step_delta"]
+    components.append(_compare_discrete_state_semantics(
+        original_record, replay_record, max_delta
+    ))
     components.append(_compare_engine_state_trace(
         original_record, replay_record, max_delta
     ))

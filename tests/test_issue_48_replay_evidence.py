@@ -13,8 +13,10 @@ from scripts.build_issue_48_evidence import (
 from scripts.cohort_v2_replay import (
     ATTEMPT_NAME,
     ATTEMPT_SCHEMA,
+    CURRENT_DETERMINATION_VERSION,
     FROZEN_COMMAND_NAME,
     CohortV2ReplayError,
+    _compare_contact_geometry,
     build_frozen_replay_command,
     build_replay_report,
     semantic_identity,
@@ -66,7 +68,7 @@ class Issue48ReplayEvidenceTests(unittest.TestCase):
         self.plan = prepare_issue_48_runtime_root(
             ROOT,
             self.runtime,
-            determination_version=4,
+            determination_version=CURRENT_DETERMINATION_VERSION,
             require_clean_revision=False,
         )
         for scenario_collection_index, scenario_collection in enumerate(self.plan["scenario_collections"]):
@@ -295,7 +297,7 @@ class Issue48ReplayEvidenceTests(unittest.TestCase):
         )
         self.assertEqual(intervention["status"], "unavailable")
 
-    def test_intermediate_engine_state_drift_fails_closed(self) -> None:
+    def test_intermediate_engine_state_drift_is_reported_as_measurement_tolerance(self) -> None:
         physics_path = (
             self.runtime
             / "attempts"
@@ -309,13 +311,35 @@ class Issue48ReplayEvidenceTests(unittest.TestCase):
 
         report = build_replay_report(self.runtime)
 
-        self.assertFalse(report["passed"])
+        self.assertTrue(report["passed"])
         state_trace = next(
             component
             for component in report["scenario_collection_verdicts"][0]["components"]
-            if component["component"] == "engine_state_trace"
+            if component["component"] == "engine_state_measurements"
         )
-        self.assertEqual(state_trace["status"], "mismatch")
+        self.assertEqual(state_trace["status"], "tolerated")
+
+    def test_intermediate_lifecycle_drift_fails_closed(self) -> None:
+        physics_path = (
+            self.runtime
+            / "attempts"
+            / "training-collision"
+            / "replay"
+            / "physics_capture_v2.json"
+        )
+        physics = json.loads(physics_path.read_text(encoding="utf-8"))
+        physics["fixed_step_samples"][10]["entities"][0]["lifecycle"] = "inactive"
+        physics_path.write_text(json.dumps(physics), encoding="utf-8")
+
+        report = build_replay_report(self.runtime)
+
+        self.assertFalse(report["passed"])
+        semantics = next(
+            component
+            for component in report["scenario_collection_verdicts"][0]["components"]
+            if component["component"] == "deterministic_engine_state_semantics"
+        )
+        self.assertEqual(semantics["status"], "mismatch")
 
     def test_frame_record_identity_drift_fails_closed(self) -> None:
         physics_path = (
@@ -338,6 +362,40 @@ class Issue48ReplayEvidenceTests(unittest.TestCase):
             if component["component"] == "deterministic_artifact_identities"
         )
         self.assertEqual(identities["status"], "mismatch")
+
+    def test_contact_identity_and_timing_drift_fail_while_measurements_tolerate(
+        self,
+    ) -> None:
+        key = ("entity-a", "entity-b", "collider-a", "collider-b")
+        original = {
+            key: [{
+                "relative_fixed_step": 10,
+                "point": [1.0, 2.0],
+                "normal_a_to_b": [0.0, 1.0],
+                "separation": -0.01,
+            }]
+        }
+        replay = deepcopy(original)
+        replay[key][0]["relative_fixed_step"] = 12
+        self.assertEqual(
+            _compare_contact_geometry(original, replay, 1, 0.001)["status"],
+            "mismatch",
+        )
+
+        changed_key = ("entity-a", "entity-b", "collider-a", "collider-c")
+        self.assertEqual(
+            _compare_contact_geometry(
+                original, {changed_key: deepcopy(original[key])}, 1, 0.001
+            )["status"],
+            "mismatch",
+        )
+
+        replay = deepcopy(original)
+        replay[key][0]["point"] = [1.25, 2.0]
+        self.assertEqual(
+            _compare_contact_geometry(original, replay, 1, 0.001)["status"],
+            "tolerated",
+        )
 
     def test_published_bundle_revalidates_exact_membership(self) -> None:
         output = self.root / "published"

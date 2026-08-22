@@ -22,6 +22,7 @@ from scripts.build_issue_48_evidence import (
 from scripts.cohort_v2_replay import (
     ATTEMPT_NAME,
     ATTEMPT_SCHEMA,
+    CURRENT_DETERMINATION_VERSION,
     FROZEN_COMMAND_NAME,
     build_frozen_replay_command,
     semantic_identity,
@@ -31,7 +32,7 @@ from scripts.collect_rollouts import (
     action_to_shot,
     anchor_action_to_slingshot_reference,
     capture_physics_v2_rollout,
-    current_slingshot_reference,
+    precise_slingshot_reference_point_from_symbolic_state,
 )
 from scripts.manual_agent import connect_with_retry, prepare_for_play
 from scripts.observation_trace import persist_observation_trace
@@ -104,11 +105,13 @@ def _install_level(runtime: Path, xml_path: Path) -> None:
     )
 
 
-def _stable_slingshot(agent, *, timeout: float = 60.0) -> dict[str, int]:
+def _stable_slingshot(agent, *, timeout: float = 60.0) -> dict[str, float]:
     deadline = time.monotonic() + timeout
     previous = None
     while time.monotonic() < deadline:
-        current = current_slingshot_reference(agent, 480)
+        current = precise_slingshot_reference_point_from_symbolic_state(
+            agent.get_symbolic_state_without_screenshot(), 480
+        )
         if current is not None and current == previous:
             return current
         previous = current
@@ -205,13 +208,21 @@ def _capture_attempt(
                 "127.0.0.1", agent_port, timeout=300.0, deadline_seconds=90.0
             )
             agent.configure(agent_id=28748, mode=PlayingMode.TRAINING)
+            agent.set_speed(50)
             prepare_for_play(agent, timeout=120.0, poll_delay=0.5)
             physics = connect_with_retry(
                 "127.0.0.1", physics_port, timeout=120.0, deadline_seconds=90.0
             )
-            _progress(f"{scenario_collection['scenario_collection_id']} {role}: waiting for a stable camera and slingshot")
+            _progress(
+                f"{scenario_collection['scenario_collection_id']} {role}: "
+                "waiting for a stable camera and slingshot"
+            )
             observation_capture = _stable_observation(physics)
             slingshot = _stable_slingshot(agent)
+            _progress(
+                f"{scenario_collection['scenario_collection_id']} {role}: "
+                f"stable slingshot {json.dumps(slingshot, sort_keys=True)}"
+            )
             if role == "original":
                 if frozen_command is not None:
                     raise ValueError("original attempt cannot use a frozen replay command")
@@ -328,7 +339,7 @@ def collect(
     runtime_root: Path,
     output: Path,
     *,
-    determination_version: int = 4,
+    determination_version: int = CURRENT_DETERMINATION_VERSION,
 ) -> dict:
     _progress("freezing and validating source manifests, partition, plan, and version envelope")
     plan = prepare_issue_48_runtime_root(
@@ -419,7 +430,12 @@ def collect(
         raise
 
 
-def dry_run(repository_root: Path, stage: Path, *, determination_version: int = 4) -> dict:
+def dry_run(
+    repository_root: Path,
+    stage: Path,
+    *,
+    determination_version: int = CURRENT_DETERMINATION_VERSION,
+) -> dict:
     _progress("dry-run: validating the player archive and all source authorities")
     with tempfile.TemporaryDirectory(prefix="novphy-issue48-dry-run-") as temporary:
         plan = prepare_issue_48_runtime_root(
@@ -455,7 +471,9 @@ def main() -> int:
     parser.add_argument("--stage", type=Path, default=DEFAULT_STAGE)
     parser.add_argument("--runtime-root", type=Path, default=DEFAULT_RUNTIME_ROOT)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    parser.add_argument("--determination-version", type=int, default=4)
+    parser.add_argument(
+        "--determination-version", type=int, default=CURRENT_DETERMINATION_VERSION
+    )
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     if args.dry_run:

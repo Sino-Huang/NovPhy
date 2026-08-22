@@ -17,6 +17,7 @@ from scripts.build_issue_46_evidence import validate_issue_46_evidence
 from scripts.cohort_v2_partition import CohortV2PartitionExposureManifest
 from scripts.cohort_v2_replay import (
     BUNDLE_NAME,
+    CURRENT_DETERMINATION_VERSION,
     PLAN_NAME,
     PLAN_SCHEMA,
     REPORT_NAME,
@@ -167,7 +168,7 @@ def prepare_issue_48_runtime_root(
     runtime_root: Path,
     *,
     stage: Path = DEFAULT_STAGE,
-    determination_version: int = 4,
+    determination_version: int = CURRENT_DETERMINATION_VERSION,
     require_clean_revision: bool = True,
 ) -> dict[str, Any]:
     """Freeze the two-scenario-collection replay plan and all source authorities."""
@@ -224,14 +225,14 @@ def prepare_issue_48_runtime_root(
                 {
                     "action_type": "drag_hold_release",
                     "coordinate_frame": "slingshot_relative",
-                    "drag_release": [-28, 7],
+                    "drag_release": [-77, 29],
                     "tapTime": 0,
                     "releaseTime": 1000,
                     "frame_height": 480,
                 },
                 {
                     "schema": "slingshot_relative_intervention_v1",
-                    "drag_delta_canvas_pixels": [-28, 7],
+                    "drag_delta_canvas_pixels": [-77, 29],
                     "tap_time_milliseconds": 0,
                     "hold_milliseconds": 1000,
                 },

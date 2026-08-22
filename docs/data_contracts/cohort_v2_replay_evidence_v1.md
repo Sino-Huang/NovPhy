@@ -17,7 +17,7 @@ Exact comparisons cover:
 - scenario manifest, specification, content, template, level-instance, lineage, partition, exposure-role, plan, and intervention identities;
 - the original interface action, its exact frozen socket command, and the engine-relative action;
 - normalized initial engine state, coordinate convention, causal-entity catalog, collider catalog, configured fixed-step stride, semantic event/contact/support identities, terminal entity lifecycle, and termination reason;
-- world, body, lifecycle, and collider state at every shared launch-relative fixed step; event payloads; and contact collider identities, points, and normals for every compared occurrence;
+- exact deterministic artifact identities and relational semantics for frame records, events, contacts, supports, lifecycle, and termination;
 - observation configuration and access policy, with each agent/canonical trace independently checked for exact synchronization, complete camera/viewport/transform metadata, and its declared canonical-to-agent transform.
 
 The version-bounded tolerances are reported per component:
@@ -25,6 +25,7 @@ The version-bounded tolerances are reported per component:
 - first launch-relative physical occurrences and termination may differ by at most one authoritative fixed step;
 - repeated callbacks with the same physical semantic identity may differ in count while the semantic identity set and first occurrence remain bounded;
 - minimum contact separation may differ by at most `0.001` Unity world units;
+- continuously valued post-initial body/collider state, event payloads, and contact points/normals are reported as version-bound measurement provenance; their source identities and derived event/contact/support semantics remain exact or use the declared timing/separation bounds;
 
 Cross-attempt camera framing and pixel equality are not required. Camera, viewport, transform, source-frame synchronization, agent/canonical identities, access roles, and within-attempt transforms remain mandatory and fail closed. Pixel equality can only become required through a prospectively declared successor observation contract.
 

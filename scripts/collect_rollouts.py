@@ -18,6 +18,9 @@ import xml.etree.ElementTree as ET
 
 
 ROOT = Path(__file__).resolve().parents[1]
+TRAJECTORY_SLINGSHOT_HEIGHT_WORLD = 2.055
+TRAJECTORY_SLING_REFERENCE_X_FROM_MIN_WORLD = 0.335
+TRAJECTORY_SLING_REFERENCE_Y_FROM_TOP_WORLD = 0.25
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -490,7 +493,9 @@ def _point_xy(point: Any) -> tuple[float, float] | None:
     return None
 
 
-def slingshot_reference_point_from_symbolic_state(symbolic_state: Any, frame_height: int) -> dict[str, int] | None:
+def _slingshot_bounds(
+    symbolic_state: Any,
+) -> tuple[float, float, float, float] | None:
     if not isinstance(symbolic_state, list):
         return None
 
@@ -531,23 +536,60 @@ def slingshot_reference_point_from_symbolic_state(symbolic_state: Any, frame_hei
         min_x = min(x_values)
         max_x = max(x_values)
         min_y = min(y_values)
-        sling_width = max_x - min_x
-        if sling_width <= 0:
+        max_y = max(y_values)
+        if max_x <= min_x or max_y <= min_y:
             return None
-
-        canvas_x = int(min_x + 0.45 * sling_width)
-        canvas_y = int(min_y + 0.35 * sling_width)
-        return {
-            "gameX": canvas_x,
-            "gameY": max(0, frame_height - 1 - canvas_y),
-            "canvasX": canvas_x,
-            "canvasY": canvas_y,
-        }
+        return min_x, max_x, min_y, max_y
 
     return None
 
 
-def anchor_action_to_slingshot_reference(action: dict, slingshot_reference: dict[str, int]) -> dict:
+def slingshot_reference_point_from_symbolic_state(symbolic_state: Any, frame_height: int) -> dict[str, int] | None:
+    bounds = _slingshot_bounds(symbolic_state)
+    if bounds is None:
+        return None
+    min_x, max_x, min_y, _ = bounds
+    sling_width = max_x - min_x
+
+    canvas_x = int(min_x + 0.45 * sling_width)
+    canvas_y = int(min_y + 0.35 * sling_width)
+    return {
+        "gameX": canvas_x,
+        "gameY": max(0, frame_height - 1 - canvas_y),
+        "canvasX": canvas_x,
+        "canvasY": canvas_y,
+    }
+
+
+def precise_slingshot_reference_point_from_symbolic_state(
+    symbolic_state: Any,
+    frame_height: int,
+) -> dict[str, float] | None:
+    """Return the #44 review launch anchor and scale from request-62 geometry."""
+    bounds = _slingshot_bounds(symbolic_state)
+    if bounds is None:
+        return None
+    min_x, _, min_y, max_y = bounds
+    pixels_per_world_unit = (max_y - min_y) / TRAJECTORY_SLINGSHOT_HEIGHT_WORLD
+    canvas_x = (
+        min_x + TRAJECTORY_SLING_REFERENCE_X_FROM_MIN_WORLD * pixels_per_world_unit
+    )
+    canvas_y = (
+        min_y + TRAJECTORY_SLING_REFERENCE_Y_FROM_TOP_WORLD * pixels_per_world_unit
+    )
+    return {
+        "gameX": canvas_x,
+        "gameY": max(0.0, frame_height - canvas_y),
+        "canvasX": canvas_x,
+        "canvasY": canvas_y,
+        "pixelsPerWorldUnit": pixels_per_world_unit,
+    }
+
+
+def anchor_action_to_slingshot_reference(
+    action: dict,
+    slingshot_reference: Mapping[str, int | float],
+) -> dict:
     anchored = dict(action)
     if anchored.get("coordinate_frame", "slingshot_relative") == "slingshot_relative":
         anchored["drag_start"] = [int(slingshot_reference["gameX"]), int(slingshot_reference["gameY"])]

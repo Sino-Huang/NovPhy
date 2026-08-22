@@ -19,6 +19,7 @@ from typing import Any, Mapping
 from xml.etree import ElementTree as ET
 from urllib.parse import parse_qs, urlparse
 
+from scripts.collect_rollouts import precise_slingshot_reference_point_from_symbolic_state
 from scripts.verify_physics_player import safe_unpack
 
 from .bridge import (
@@ -34,11 +35,6 @@ SETUP_COMMAND = (
     "python3 sciencebirdsagents/Utils/PrepareTestConfig.py --os Linux "
     "--novelty-level novelty_level_0 --level-type type010101 --max-levels 20"
 )
-# World-space dimensions and launch anchor within the combined front/back
-# renderer bounds declared by the packaged Slingshot prefab.
-TRAJECTORY_SLINGSHOT_HEIGHT_WORLD = 2.055
-TRAJECTORY_SLING_REFERENCE_X_FROM_MIN_WORLD = 0.335
-TRAJECTORY_SLING_REFERENCE_Y_FROM_TOP_WORLD = 0.25
 PHYSICS_PLAYER_STAGE_SCHEMA = "novphy_physics_player_stage_v1"
 PHYSICS_PLAYER_UNITY_VERSION = "2019.4.41f2"
 PHYSICS_V2_CAPTURE_SCHEMA = "physics_capture_v2_engine_v1"
@@ -57,96 +53,6 @@ def repo_root() -> Path:
 
 def static_dir() -> Path:
     return Path(__file__).resolve().parent / "static"
-
-
-def _slingshot_vertices_from_ground_truth_item(item: Any) -> list[dict[str, float]] | None:
-    if not isinstance(item, dict):
-        return None
-
-    if item.get("type") == "Slingshot":
-        vertices = item.get("vertices")
-        if isinstance(vertices, list) and vertices:
-            return vertices
-
-    features = item.get("features")
-    if not isinstance(features, list):
-        return None
-
-    for feature in features:
-        if not isinstance(feature, dict):
-            continue
-        properties = feature.get("properties")
-        geometry = feature.get("geometry")
-        if not isinstance(properties, dict) or not isinstance(geometry, dict):
-            continue
-        if properties.get("label") != "Slingshot" or geometry.get("type") != "Polygon":
-            continue
-        coordinates = geometry.get("coordinates")
-        if not isinstance(coordinates, list) or not coordinates:
-            return None
-        polygon = coordinates[0]
-        if not isinstance(polygon, list) or not polygon:
-            return None
-        vertices = []
-        for point in polygon:
-            if not isinstance(point, list | tuple) or len(point) < 2:
-                continue
-            x, y = point[0], point[1]
-            if not isinstance(x, int | float) or not isinstance(y, int | float):
-                continue
-            vertices.append({"x": float(x), "y": float(y)})
-        if vertices:
-            return vertices
-
-    return None
-
-
-def _slingshot_reference_point_from_ground_truth(
-    ground_truth: Any,
-    frame_height: int,
-) -> dict[str, float] | None:
-    if not isinstance(ground_truth, list):
-        return None
-    for item in ground_truth:
-        vertices = _slingshot_vertices_from_ground_truth_item(item)
-        if not vertices:
-            continue
-        x_values = []
-        y_values = []
-        for vertex in vertices:
-            if not isinstance(vertex, dict):
-                continue
-            x = vertex.get("x")
-            y = vertex.get("y")
-            if not isinstance(x, int | float) or not isinstance(y, int | float):
-                continue
-            x_values.append(float(x))
-            y_values.append(float(y))
-        if not x_values or not y_values:
-            return None
-        min_x = min(x_values)
-        max_x = max(x_values)
-        min_y = min(y_values)
-        max_y = max(y_values)
-        sling_width = max_x - min_x
-        sling_height = max_y - min_y
-        if sling_width <= 0 or sling_height <= 0:
-            return None
-        pixels_per_world_unit = sling_height / TRAJECTORY_SLINGSHOT_HEIGHT_WORLD
-        canvas_x = (
-            min_x + TRAJECTORY_SLING_REFERENCE_X_FROM_MIN_WORLD * pixels_per_world_unit
-        )
-        canvas_y = (
-            min_y + TRAJECTORY_SLING_REFERENCE_Y_FROM_TOP_WORLD * pixels_per_world_unit
-        )
-        return {
-            "gameX": canvas_x,
-            "gameY": max(0.0, frame_height - canvas_y),
-            "canvasX": canvas_x,
-            "canvasY": canvas_y,
-            "pixelsPerWorldUnit": pixels_per_world_unit,
-        }
-    return None
 
 
 @dataclass
@@ -442,7 +348,7 @@ class AppState:
         while time.monotonic() < deadline:
             current = None
             if bridge.get_game_state() == GameState.PLAYING:
-                reference = _slingshot_reference_point_from_ground_truth(
+                reference = precise_slingshot_reference_point_from_symbolic_state(
                     bridge.get_symbolic_state_without_screenshot(),
                     self.frame_height,
                 )
@@ -729,8 +635,15 @@ def create_handler(app: AppState):
                     "score": self._safe_call(lambda: bridge.get_current_score()),
                     "currentLevel": current_level,
                     "numberOfLevels": number_of_levels,
-                    "trajectoryWorldWidth": app.trajectory_world_width(current_level if isinstance(current_level, int) else None),
-                    "trajectorySlingCenter": self._safe_call(lambda: _slingshot_reference_point_from_ground_truth(bridge.get_symbolic_state_without_screenshot(), screenshot.height)),
+                    "trajectoryWorldWidth": app.trajectory_world_width(
+                        current_level if isinstance(current_level, int) else None
+                    ),
+                    "trajectorySlingCenter": self._safe_call(
+                        lambda: precise_slingshot_reference_point_from_symbolic_state(
+                            bridge.get_symbolic_state_without_screenshot(),
+                            screenshot.height,
+                        )
+                    ),
                 }
             self._send_json(payload)
 
