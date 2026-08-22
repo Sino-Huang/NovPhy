@@ -9,6 +9,7 @@ from typing import Any, get_type_hints
 from src.webui.bridge import (
     GameState,
     LegacyGroundTruthProtocolError,
+    ObservationCaptureEngine,
     PhysicsCaptureV1,
     PhysicsCaptureV1Failure,
     PhysicsCaptureV1ProtocolError,
@@ -18,6 +19,7 @@ from src.webui.bridge import (
     ScienceBirdsBridge,
     encode_physics_capture_v1,
     encode_physics_capture_v2_engine,
+    encode_observation_capture_engine,
 )
 
 
@@ -356,6 +358,33 @@ class PhysicsCaptureV2BridgeTests(unittest.TestCase):
                     bridge.get_physics_capture_v2()
 
                 self.assertFalse(bridge.connected)
+
+
+class ObservationCaptureBridgeTests(unittest.TestCase):
+    def test_request_72_round_trips_canonical_png_and_engine_metadata(self):
+        metadata = {
+            "schema_version": "observation_capture_engine_v1",
+            "capture_id": "capture-1",
+            "sequence": 2,
+            "source_frame_identity": "source-frame-v1:capture-1:2:30:40",
+            "render_frame": 30,
+            "fixed_step": 40,
+            "source": "synchronized_observation_endpoint",
+        }
+        png = b"\x89PNG\r\n\x1a\ncanonical"
+        fake = FakeSocket()
+        fake.responses.extend(encode_observation_capture_engine(png, metadata))
+        bridge = ScienceBirdsBridge(socket_factory=lambda *args: fake)
+        bridge.connect()
+
+        capture = bridge.get_observation_capture()
+
+        self.assertIsInstance(capture, ObservationCaptureEngine)
+        self.assertEqual(capture.canonical_png, png)
+        self.assertEqual(capture.metadata["source_frame_identity"], metadata["source_frame_identity"])
+        self.assertEqual(bytes(fake.sent), b"\x48")
+        with self.assertRaises(TypeError):
+            capture.metadata["capture_id"] = "changed"
 
 
 class LegacyGroundTruthProtocolTests(unittest.TestCase):

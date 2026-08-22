@@ -1,0 +1,23 @@
+{
+  "schema": "observation_transform_registry_v1",
+  "transforms": {
+    "agent_rgb8_native_v1": {
+      "method": "identity",
+      "output_height_pixels": null,
+      "output_width_pixels": null,
+      "resampling": "none"
+    },
+    "agent_rgb8_nearest_2x2_v1": {
+      "method": "resize",
+      "output_height_pixels": 2,
+      "output_width_pixels": 2,
+      "resampling": "nearest"
+    },
+    "agent_rgb8_nearest_320x240_v1": {
+      "method": "resize",
+      "output_height_pixels": 240,
+      "output_width_pixels": 320,
+      "resampling": "nearest"
+    }
+  }
+}

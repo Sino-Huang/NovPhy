@@ -16,6 +16,7 @@ PhysicsStateV1: TypeAlias = Mapping[str, JsonValue]
 PhysicsEventV1: TypeAlias = Mapping[str, JsonValue]
 PhysicsViolationEngineEvidenceV1: TypeAlias = Mapping[str, JsonValue]
 PhysicsCaptureV2EngineRecord: TypeAlias = Mapping[str, JsonValue]
+ObservationCaptureMetadata: TypeAlias = Mapping[str, JsonValue]
 
 
 class GameState(IntEnum):
@@ -60,6 +61,7 @@ class RequestCode(IntEnum):
     GET_CURRENT_SCORE = 65
     GET_PHYSICS_CAPTURE_V1 = 70
     GET_PHYSICS_CAPTURE_V2 = 71
+    GET_OBSERVATION_CAPTURE = 72
     GT_SHOOT = 38
 
 
@@ -69,6 +71,10 @@ class PhysicsCaptureV1ProtocolError(ConnectionError):
 
 class PhysicsCaptureV2ProtocolError(ConnectionError):
     """The request-71 stream was malformed or could not be completed."""
+
+
+class ObservationCaptureProtocolError(ConnectionError):
+    """The request-72 synchronized observation stream is malformed."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,6 +118,17 @@ class PhysicsCaptureV2Failure(PhysicsCaptureV2ProtocolError):
 
 
 @dataclass(frozen=True, slots=True)
+class ObservationCaptureFailure(ObservationCaptureProtocolError):
+    code: int
+    message: str
+
+    def __post_init__(self) -> None:
+        ObservationCaptureProtocolError.__init__(
+            self, "observation capture failed (%d): %s" % (self.code, self.message)
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class Screenshot:
     width: int
     height: int
@@ -131,6 +148,12 @@ class PhysicsCaptureV2Engine:
     record: PhysicsCaptureV2EngineRecord
 
 
+@dataclass(frozen=True, slots=True)
+class ObservationCaptureEngine:
+    canonical_png: bytes
+    metadata: ObservationCaptureMetadata
+
+
 _PHYSICS_MAGIC = b"SBPV"
 _PHYSICS_VERSION = 1
 _PHYSICS_FAILURE_FLAG = 1
@@ -142,6 +165,12 @@ _PHYSICS_V2_VERSION = 1
 _PHYSICS_V2_FAILURE_FLAG = 1
 _PHYSICS_V2_MAX_ENVELOPE = 64 * 1024 * 1024
 _PHYSICS_V2_MAX_JSON = _PHYSICS_V2_MAX_ENVELOPE - 12
+_OBSERVATION_MAGIC = b"SBO1"
+_OBSERVATION_VERSION = 1
+_OBSERVATION_FAILURE_FLAG = 1
+_OBSERVATION_MAX_ENVELOPE = 64 * 1024 * 1024
+_OBSERVATION_MAX_PNG = 32 * 1024 * 1024
+_OBSERVATION_MAX_JSON = 16 * 1024 * 1024
 _LEGACY_MAX_GROUND_TRUTH_RECORDS: Final = 10_000
 _LEGACY_MAX_GROUND_TRUTH_PAYLOAD: Final = 16 * 1024 * 1024
 _LEGACY_GROUND_TRUTH_SUFFIX_BYTES: Final = 5
@@ -289,6 +318,26 @@ class ScienceBirdsBridge:
         finally:
             self.disconnect()
 
+    def get_observation_capture(self) -> ObservationCaptureEngine:
+        if not self.connected:
+            self.connect()
+        try:
+            self._send(RequestCode.GET_OBSERVATION_CAPTURE)
+            envelope_length = struct.unpack("!I", self._read_exact(4))[0]
+            if envelope_length < 12 or envelope_length > _OBSERVATION_MAX_ENVELOPE:
+                raise ObservationCaptureProtocolError(
+                    "invalid request-72 envelope length"
+                )
+            body = self._read_exact(envelope_length)
+            return _decode_observation_capture_engine(body)
+        except ObservationCaptureProtocolError:
+            self.disconnect()
+            raise
+        except (ConnectionError, OSError, ValueError, struct.error, UnicodeError, RecursionError) as exc:
+            raise ObservationCaptureProtocolError("invalid request-72 envelope") from exc
+        finally:
+            self.disconnect()
+
     def shoot(self, x: int, y: int, tap_time: int = 0, fast: bool = False, release_time: int = 0) -> int:
         code = RequestCode.FAST_SHOOT if fast else RequestCode.SHOOT
         self._send(code, "iiii", int(x), int(y), int(release_time), int(tap_time))
@@ -422,6 +471,22 @@ def encode_physics_capture_v2_engine(record: Mapping[str, JsonValue]) -> bytes:
     return struct.pack("!I", len(body)) + body
 
 
+def encode_observation_capture_engine(
+    canonical_png: bytes,
+    metadata: Mapping[str, JsonValue],
+) -> bytes:
+    """Build a request-72 response for protocol fixtures."""
+    png = bytes(canonical_png)
+    metadata_bytes = json.dumps(
+        metadata, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+    ).encode("utf-8")
+    payload = struct.pack("!II", len(png), len(metadata_bytes)) + png + metadata_bytes
+    body = struct.pack(
+        "!4sBBHI", _OBSERVATION_MAGIC, _OBSERVATION_VERSION, 0, 0, len(payload)
+    ) + payload
+    return struct.pack("!I", len(body)) + body
+
+
 def _encode_envelope(flags: int, failure_code: int, payload: bytes) -> bytes:
     body = struct.pack("!4sBBHI", _PHYSICS_MAGIC, _PHYSICS_VERSION, flags,
                        failure_code, len(payload)) + payload
@@ -527,6 +592,57 @@ def _decode_physics_capture_v2_engine(body: bytes) -> PhysicsCaptureV2Engine:
     if type(stride) is not int or stride <= 0:
         raise PhysicsCaptureV2ProtocolError("request-71 capture stride is missing or invalid")
     return PhysicsCaptureV2Engine(_freeze(record))
+
+
+def _decode_observation_capture_engine(body: bytes) -> ObservationCaptureEngine:
+    if len(body) < 12:
+        raise ObservationCaptureProtocolError("request-72 envelope header is truncated")
+    magic, version, flags, failure_code, payload_length = struct.unpack(
+        "!4sBBHI", body[:12]
+    )
+    if magic != _OBSERVATION_MAGIC:
+        raise ObservationCaptureProtocolError("request-72 magic mismatch")
+    if version != _OBSERVATION_VERSION:
+        raise ObservationCaptureProtocolError("unsupported request-72 protocol version")
+    payload = body[12:]
+    if payload_length != len(payload):
+        raise ObservationCaptureProtocolError("request-72 payload length mismatch")
+    if flags == _OBSERVATION_FAILURE_FLAG:
+        if len(payload) < 4:
+            raise ObservationCaptureProtocolError("request-72 failure payload is truncated")
+        message_length = struct.unpack("!I", payload[:4])[0]
+        if message_length > _OBSERVATION_MAX_JSON or message_length != len(payload) - 4:
+            raise ObservationCaptureProtocolError("request-72 failure message length mismatch")
+        try:
+            message = payload[4:].decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ObservationCaptureProtocolError(
+                "request-72 failure message is not UTF-8"
+            ) from exc
+        raise ObservationCaptureFailure(failure_code, message)
+    if flags != 0 or failure_code != 0 or len(payload) < 8:
+        raise ObservationCaptureProtocolError("invalid request-72 success envelope")
+    png_length, metadata_length = struct.unpack("!II", payload[:8])
+    if png_length > _OBSERVATION_MAX_PNG or metadata_length > _OBSERVATION_MAX_JSON:
+        raise ObservationCaptureProtocolError("request-72 component exceeds bounds")
+    if png_length + metadata_length != len(payload) - 8:
+        raise ObservationCaptureProtocolError("request-72 component lengths mismatch")
+    canonical_png = payload[8:8 + png_length]
+    metadata = _parse_json_record(
+        payload[8 + png_length:], dict, "request-72 metadata"
+    )
+    if not canonical_png.startswith(b"\x89PNG\r\n\x1a\n"):
+        raise ObservationCaptureProtocolError("request-72 payload is not a PNG")
+    if (
+        metadata.get("schema_version") != "observation_capture_engine_v1"
+        or metadata.get("source") != "synchronized_observation_endpoint"
+        or not isinstance(metadata.get("source_frame_identity"), str)
+        or not metadata["source_frame_identity"]
+    ):
+        raise ObservationCaptureProtocolError(
+            "request-72 engine metadata authority is invalid"
+        )
+    return ObservationCaptureEngine(bytes(canonical_png), _freeze(metadata))
 
 
 def _parse_json_record(data: bytes, expected_type: type | tuple[type, ...], name: str):

@@ -476,6 +476,38 @@ public sealed class PhysicsCaptureDirectSocket : MonoBehaviour
             if (client.Available == 0) yield break;
             byte[] request = new byte[1];
             int read = stream.Read(request, 0, 1);
+            if (read == 1 && request[0] == ObservationCaptureProtocol.RequestCode)
+            {
+                yield return new WaitForEndOfFrame();
+                PhysicalSnapshotRuntime observationRuntime = PhysicalSnapshotRuntime.Active;
+                byte[] observationResponse;
+                if (observationRuntime == null)
+                {
+                    observationResponse = ObservationCaptureProtocol.BuildFailureEnvelope(
+                        ObservationCaptureFailureCode.SynchronizedStateMissing,
+                        "synchronized physical state runtime is unavailable");
+                }
+                else
+                {
+                    PhysicalSceneSnapshot observationSnapshot = observationRuntime.CaptureCurrent(
+                        new SymbolicGameState(false), Time.frameCount, Time.time);
+                    Texture2D observationTexture = ScreenCapture.CaptureScreenshotAsTexture();
+                    byte[] canonicalPng = observationTexture == null
+                        ? null : observationTexture.EncodeToPNG();
+                    int observationWidth = observationTexture == null ? 0 : observationTexture.width;
+                    int observationHeight = observationTexture == null ? 0 : observationTexture.height;
+                    if (observationTexture != null) Destroy(observationTexture);
+                    observationResponse = ObservationCaptureProtocol.BuildCaptureEnvelope(
+                        canonicalPng, observationSnapshot, Camera.main,
+                        observationRuntime.CaptureId, observationRuntime.NextCaptureSequence,
+                        observationWidth, observationHeight);
+                }
+                IEnumerator observationTransmission = TransmitResponse(
+                    client, observationResponse, ResponseWriteTimeoutMilliseconds);
+                while (observationTransmission.MoveNext())
+                    yield return observationTransmission.Current;
+                yield break;
+            }
             if (read == 1 && request[0] == PhysicsCaptureV2EngineProtocol.RequestCode)
             {
                 byte[] v2Response = PhysicsCaptureV2EngineProtocol.BuildCaptureEnvelope();
