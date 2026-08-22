@@ -18,4 +18,4 @@ if [[ -n "${NOVPHY_PHYSICS_CAPTURE_PORT:-}" ]]; then
     || { echo "NOVPHY_PHYSICS_CAPTURE_PORT must be a TCP port" >&2; exit 2; }
   physics_args=(--physics-port "$NOVPHY_PHYSICS_CAPTURE_PORT")
 fi
-exec "$self" -force-glcore -screen-fullscreen 0 -screen-width 840 -screen-height 480 "${physics_args[@]}" "$@"
+"$self" -force-glcore -screen-fullscreen 0 -screen-width 840 -screen-height 480 "${physics_args[@]}" "$@"
