@@ -9,19 +9,23 @@ revisions, partition and replay authorities, and accepted derivation identities.
 
 ## Prospective plan
 
-The plan identity is
-`representative-cohort-v2-pilot-plan-v1:cohort-v2-capabilities-v1:issues-44-through-51`.
+After the first supplementary run correctly failed its level-clear quota, the
+active plan identity is
+`representative-cohort-v2-pilot-plan-v2:cohort-v2-capabilities-v1:issues-44-through-51:determination-2`.
 Its quotas come directly from the capability declaration and issue #51 rather
 than realized outcomes. It requires all six central strata and all supported
 central v2 terminal reasons: `level_clear`, `level_fail`, and `stable_entered`.
 The exact component evidence identities and supplementary collection-plan
 identity are frozen in the plan before the supplementary Unity attempts begin.
 
-The issue-44 through issue-50 bundles remain immutable. Their actual
+The failed determination-1 plan, attempts, captures, and realized shortfall
+remain visible in determination-2 accounting and are not rewritten. The
+issue-44 through issue-50 bundles remain immutable. Their actual
 non-fixture Unity captures supply the exporter, observation, partition, replay,
 macro-semantics, and physical-violation evidence. Issue #51 collects only the
 missing `level_clear` terminal evidence under a separately source-bound
-two-attempt plan.
+two-attempt plan. Determination 2 uses byte-identical `legacy_static` XML so the
+target geometry cannot be changed by generator materialization.
 
 ## Representative audit
 
@@ -65,7 +69,8 @@ The full progress-reporting command is:
 
 ```sh
 python -u -m scripts.capture_issue_51_evidence \
-  --runtime-root .local-artifacts/issue-51-pilot-run \
+  --runtime-root .local-artifacts/issue-51-pilot-run-determination-2 \
+  --prior-runtime-root .local-artifacts/issue-51-pilot-run \
   --output data/runtime_evidence/issue-51
 ```
 

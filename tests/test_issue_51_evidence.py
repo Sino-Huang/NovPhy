@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 from scripts.build_issue_51_evidence import (
     Issue51EvidenceError,
+    PRIOR_DETERMINATION_IDENTITY,
     _derived_artifacts,
     _load_issue_44,
     _micro_audit,
@@ -23,8 +24,13 @@ from scripts.build_issue_51_pilot_plan import (
     TEMPLATE_REFERENCE,
     build_issue_51_supplementary_plan,
 )
-from scripts.collection_plan import load_collection_plan
-from scripts.collect_rollouts import classify_physics_capture_v2_coverage
+from scripts.cohort_v2_scenarios import load_cohort_v2_scenario_manifest
+from scripts.collection_plan import RuntimeInput, load_collection_plan
+from scripts.collect_rollouts import (
+    classify_physics_capture_v2_coverage,
+    validate_cohort_v2_constraints_authority,
+)
+from scripts.physics_capture_v2_persistence import source_bindings_from_collection
 from scripts.physics_capture_v2 import parse_physics_capture_v2
 
 
@@ -65,7 +71,7 @@ def _supplementary(root: Path, *, level_clear: bool = True) -> Path:
         record["capture_id"] = f"capture-v2:issue51-test-{index}"
         record["shot_id"] = f"shot-v2:issue51-test-{index}"
         record["source_bindings"] = {
-            "scenario_template_id": manifest["scenario_template"]["identity"],
+            "scenario_template_id": scenario["template_record"]["identity"],
             "level_instance_id": manifest["level_instance"]["identity"],
             "scenario_lineage_id": manifest["scenario_lineage"]["identity"],
             "rollout_id": f"issue51-test-rollout-{index}",
@@ -120,10 +126,130 @@ def _supplementary(root: Path, *, level_clear: bool = True) -> Path:
         "attempts": attempts,
     }
     _write_json(supplement / "runtime-authority.json", runtime)
+    (supplement / "prior-captures").mkdir()
+    shutil.copyfile(
+        supplement / "collection-plan.json",
+        supplement / "prior-captures/collection-plan.json",
+    )
+    prior_attempts = []
+    for index, (intervention_id, intervention_identity) in enumerate(
+        sorted(interventions.items())
+    ):
+        record = deepcopy(source)
+        record["capture_id"] = f"capture-v2:issue51-prior-test-{index}"
+        record["shot_id"] = f"shot-v2:issue51-prior-test-{index}"
+        record["source_bindings"] = {
+            "scenario_template_id": scenario["template_record"]["identity"],
+            "level_instance_id": manifest["level_instance"]["identity"],
+            "scenario_lineage_id": manifest["scenario_lineage"]["identity"],
+            "rollout_id": f"issue51-prior-test-rollout-{index}",
+            "intervention_id": intervention_identity,
+        }
+        capture = parse_physics_capture_v2(record)
+        capture_path = f"prior-captures/{intervention_id}.json"
+        _write_json(supplement / capture_path, record)
+        prior_attempts.append({
+            "attempt_identity": f"issue51-prior-test-attempt-{index}",
+            "intervention_id": intervention_id,
+            "intervention_identity": intervention_identity,
+            "status": "accepted",
+            "capture_id": capture.capture_id,
+            "capture_path": capture_path,
+            "terminal_reason": capture.record["terminal_evidence"]["reason"],
+            "realized_coverage_strata": list(
+                classify_physics_capture_v2_coverage(capture)
+            ),
+        })
+    prior = {
+        "schema": "issue_51_prior_failed_pilot_determination_v1",
+        "identity": PRIOR_DETERMINATION_IDENTITY,
+        "disposition": "failed",
+        "failure_reason": "unmet_level_clear",
+        "collection_plan_identity": authority["plan_identity"],
+        "collection_plan_path": "prior-captures/collection-plan.json",
+        "counts": {
+            "accepted": 2,
+            "rejected": 0,
+            "failed": 0,
+            "quarantined": 0,
+            "retried": 0,
+        },
+        "realized_coverage_shortfalls": [{
+            "scenario_id": authority["scenario_id"],
+            "intervention_id": "level-clear-targeted",
+            "intended_coverage_stratum": "level clear",
+            "realized_coverage_strata": next(
+                attempt["realized_coverage_strata"]
+                for attempt in prior_attempts
+                if attempt["intervention_id"] == "level-clear-targeted"
+            ),
+        }],
+        "attempts": prior_attempts,
+    }
+    _write_json(supplement / "prior-determination.json", prior)
     return root
 
 
 class Issue51PilotPlanTests(unittest.TestCase):
+    def test_supplementary_level_preserves_exact_legacy_static_geometry(self):
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            value = build_issue_51_supplementary_plan(Path(temporary))
+            scenario = load_cohort_v2_scenario_manifest(
+                Path(value["manifest_path"]),
+                xml_path=Path(value["xml_path"]),
+                template_source_path=Path(value["template_path"]),
+            )
+            self.assertEqual(scenario.scenario_manifest.generation.mode, "legacy_static")
+            self.assertIsNone(scenario.template_record.generation_constraints)
+            self.assertEqual(
+                Path(value["xml_path"]).read_bytes(),
+                Path(value["template_path"]).read_bytes(),
+            )
+
+    def test_legacy_static_authority_binds_without_generator_constraints(self):
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
+            value = build_issue_51_supplementary_plan(Path(temporary))
+            scenario = load_cohort_v2_scenario_manifest(
+                Path(value["manifest_path"]),
+                xml_path=Path(value["xml_path"]),
+                template_source_path=Path(value["template_path"]),
+            )
+            loaded = load_collection_plan(Path(value["plan_path"]))
+            collection_scenario = loaded.plan.scenarios[0]
+            intervention = collection_scenario.interventions[0]
+            request = RuntimeInput(
+                plan_identity=loaded.plan.identity,
+                plan_version=loaded.plan.plan_version,
+                scenario_id=collection_scenario.scenario_id,
+                scenario_identity=collection_scenario.identity,
+                intervention_id=intervention.id,
+                intervention_identity=intervention.identity,
+                attempt_id="issue51-legacy-static-test-attempt",
+                attempt_number=1,
+                expected_initial_engine_state_identity=(
+                    collection_scenario.expected_initial_engine_state_identity
+                ),
+                interface_action=intervention.interface_action,
+                engine_relative_action=intervention.engine_relative_action,
+                mapping_version=intervention.mapping_version,
+                slingshot_reference=intervention.slingshot_reference,
+            )
+            with patch(
+                "scripts.collect_rollouts.validate_scenario_template_constraints_workbook"
+            ) as validate_workbook:
+                validate_cohort_v2_constraints_authority(
+                    scenario, Path(value["workbook_path"])
+                )
+            bindings = source_bindings_from_collection(
+                scenario,
+                collection_scenario,
+                request,
+                rollout_identity=request.attempt_id,
+            )
+        validate_workbook.assert_not_called()
+        self.assertEqual(bindings["scenario_template_id"], scenario.template_record.identity)
+        self.assertEqual(bindings["scenario_lineage_id"], value["scenario_lineage_id"])
+
     def test_supplementary_plan_prospectively_targets_level_clear(self):
         with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()):
             value = build_issue_51_supplementary_plan(Path(temporary))
@@ -223,6 +349,17 @@ class Issue51EvidenceTests(unittest.TestCase):
         self.assertEqual(accounting["counts"]["retried"], 0)
         self.assertEqual(accounting["unavailable"], [])
         self.assertEqual(accounting["unmet"], [])
+        self.assertEqual(
+            accounting["prior_determinations"][0]["identity"],
+            PRIOR_DETERMINATION_IDENTITY,
+        )
+        self.assertEqual(
+            sum(
+                attempt["source"] == "issue-51-determination-1"
+                for attempt in accounting["attempts"]
+            ),
+            2,
+        )
 
     def test_publication_round_trips_through_exact_revalidation(self):
         with (

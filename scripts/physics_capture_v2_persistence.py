@@ -62,8 +62,17 @@ def source_bindings_from_collection(
     if intervention is None:
         raise PhysicsCaptureV2Error("stale source binding: intervention differs from collection plan")
     manifest = scenario_manifest.scenario_manifest
-    if manifest.scenario_template.identity != scenario_manifest.template_record.identity:
-        raise PhysicsCaptureV2Error("stale source binding: scenario template identity differs")
+    generation = getattr(manifest, "generation", None)
+    generation_mode = getattr(generation, "mode", "generated")
+    if generation_mode == "generated":
+        if manifest.scenario_template.identity != scenario_manifest.template_record.identity:
+            raise PhysicsCaptureV2Error("stale source binding: scenario template identity differs")
+    elif (
+        generation_mode != "legacy_static"
+        or manifest.scenario_template.identity is not None
+        or generation.source_path != scenario_manifest.template_record.source_reference
+    ):
+        raise PhysicsCaptureV2Error("stale source binding: legacy source identity differs")
     return {
         "scenario_template_id": scenario_manifest.template_record.identity,
         "level_instance_id": manifest.level_instance.identity,

@@ -103,6 +103,18 @@ def validate_scenario_game_dir_xml(game_dir: Path, expected_xml_path: Path) -> P
     return configured_xml
 
 
+def validate_cohort_v2_constraints_authority(manifest, workbook_path: Path) -> None:
+    constraints = manifest.template_record.generation_constraints
+    generation_mode = manifest.scenario_manifest.generation.mode
+    if generation_mode == "legacy_static":
+        if constraints is not None:
+            raise ValueError("legacy-static v2 scenario must not claim generator constraints")
+        return
+    if constraints is None:
+        raise ValueError("v2 scenario template has no constraints-workbook authority")
+    validate_scenario_template_constraints_workbook(constraints, workbook_path)
+
+
 def _image_is_uniform(image) -> bool:
     extrema = image.getextrema()
     return all(channel_min == channel_max for channel_min, channel_max in extrema)
@@ -2985,11 +2997,8 @@ def main() -> None:
                 xml_path=args.scenario_xml,
                 template_source_path=args.scenario_template,
             )
-            constraints = cohort_v2_scenario_manifest.template_record.generation_constraints
-            if constraints is None:
-                raise ValueError("v2 scenario template has no constraints-workbook authority")
-            validate_scenario_template_constraints_workbook(
-                constraints,
+            validate_cohort_v2_constraints_authority(
+                cohort_v2_scenario_manifest,
                 args.scenario_constraints_workbook,
             )
             scenario_manifest = cohort_v2_scenario_manifest.scenario_manifest
@@ -3027,10 +3036,7 @@ def main() -> None:
                 xml_path=Path(xml_path),
                 template_source_path=Path(template_path),
             )
-            constraints = manifest.template_record.generation_constraints
-            if constraints is None:
-                raise ValueError("v2 scenario template has no constraints-workbook authority")
-            validate_scenario_template_constraints_workbook(constraints, Path(workbook_path))
+            validate_cohort_v2_constraints_authority(manifest, Path(workbook_path))
             scenario_game_dir = Path(game_dir)
             if not (scenario_game_dir / "game_playing_interface.jar").is_file():
                 raise ValueError("GAME_DIR does not contain game_playing_interface.jar")

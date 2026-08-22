@@ -46,13 +46,16 @@ ISSUE_ROOTS = {
     for issue in range(44, 51)
 }
 PILOT_PLAN_IDENTITY = (
-    "representative-cohort-v2-pilot-plan-v1:cohort-v2-capabilities-v1:"
-    "issues-44-through-51"
+    "representative-cohort-v2-pilot-plan-v2:cohort-v2-capabilities-v1:"
+    "issues-44-through-51:determination-2"
 )
 PILOT_REPORT_IDENTITY = (
     "representative-cohort-v2-pilot-report-v1:accepted-determination-1"
 )
 BUNDLE_IDENTITY = "issue-51-representative-cohort-v2-pilot-bundle-v1:accepted-1"
+PRIOR_DETERMINATION_IDENTITY = (
+    "issue-51-representative-pilot-determination-1:failed-level-clear"
+)
 SUPPORTED_TERMINATIONS = ("level_clear", "level_fail", "stable_entered")
 IMPLEMENTATION_PATHS = (
     "scripts/build_issue_51_evidence.py",
@@ -228,6 +231,7 @@ def build_pilot_plan(
             termination: 1 for termination in SUPPORTED_TERMINATIONS
         },
         "component_evidence_identities": dict(sorted(component_identities.items())),
+        "prior_failed_determination_identity": PRIOR_DETERMINATION_IDENTITY,
         "supplementary_level_clear_plan_identity": supplementary_plan_identity,
         "attempt_policy": {
             "outcome_independent_retention": True,
@@ -514,6 +518,83 @@ def _supplementary_sources(root: Path) -> dict[str, Any]:
     )
     scenario = scenario_value.to_dict()
     runtime = _load_json(base / "runtime-authority.json")
+    prior = _load_json(base / "prior-determination.json")
+    if (
+        prior.get("identity") != PRIOR_DETERMINATION_IDENTITY
+        or prior.get("disposition") != "failed"
+        or prior.get("failure_reason") != "unmet_level_clear"
+        or prior.get("counts")
+        != {
+            "accepted": 2,
+            "rejected": 0,
+            "failed": 0,
+            "quarantined": 0,
+            "retried": 0,
+        }
+    ):
+        raise Issue51EvidenceError("prior failed determination accounting is incomplete")
+    prior_attempts = prior.get("attempts")
+    if not isinstance(prior_attempts, list) or len(prior_attempts) != 2:
+        raise Issue51EvidenceError("prior determination attempt accounting is incomplete")
+    prior_plan_relative = prior.get("collection_plan_path")
+    if (
+        not isinstance(prior_plan_relative, str)
+        or Path(prior_plan_relative).is_absolute()
+        or ".." in Path(prior_plan_relative).parts
+    ):
+        raise Issue51EvidenceError("prior determination plan path is invalid")
+    prior_plan = load_collection_plan(base / prior_plan_relative).plan
+    if prior.get("collection_plan_identity") != prior_plan.identity:
+        raise Issue51EvidenceError("prior determination plan identity is stale")
+    prior_interventions = {
+        intervention.id: intervention.identity
+        for collection_scenario in prior_plan.scenarios
+        for intervention in collection_scenario.interventions
+    }
+    prior_captures = {}
+    for attempt in prior_attempts:
+        relative = attempt.get("capture_path")
+        if (
+            not isinstance(relative, str)
+            or Path(relative).is_absolute()
+            or ".." in Path(relative).parts
+        ):
+            raise Issue51EvidenceError("prior determination capture path is invalid")
+        capture = parse_physics_capture_v2(_load_json(base / relative))
+        if (
+            attempt.get("status") != "accepted"
+            or attempt.get("capture_id") != capture.capture_id
+            or attempt.get("terminal_reason")
+            != capture.record["terminal_evidence"]["reason"]
+            or attempt.get("realized_coverage_strata")
+            != list(classify_physics_capture_v2_coverage(capture))
+            or attempt.get("intervention_identity")
+            != prior_interventions.get(attempt.get("intervention_id"))
+            or capture.source_bindings["intervention_id"]
+            != attempt.get("intervention_identity")
+        ):
+            raise Issue51EvidenceError("prior determination attempt is stale")
+        prior_captures[attempt["intervention_id"]] = capture
+    if any(
+        capture.record["terminal_evidence"]["reason"] == "level_clear"
+        for capture in prior_captures.values()
+    ):
+        raise Issue51EvidenceError("prior failed determination unexpectedly contains level_clear")
+    prior_shortfalls = prior.get("realized_coverage_shortfalls")
+    targeted_prior = next(
+        attempt
+        for attempt in prior_attempts
+        if attempt["intervention_id"] == "level-clear-targeted"
+    )
+    if (
+        not isinstance(prior_shortfalls, list)
+        or len(prior_shortfalls) != 1
+        or prior_shortfalls[0].get("intervention_id") != "level-clear-targeted"
+        or prior_shortfalls[0].get("intended_coverage_stratum") != "level clear"
+        or prior_shortfalls[0].get("realized_coverage_strata")
+        != targeted_prior["realized_coverage_strata"]
+    ):
+        raise Issue51EvidenceError("prior determination shortfall accounting is stale")
     if runtime.get("evidence_source") != "unity_runtime_non_fixture":
         raise Issue51EvidenceError("supplementary termination evidence is not actual Unity evidence")
     if runtime.get("collection_plan_identity") != plan.identity:
@@ -574,7 +655,7 @@ def _supplementary_sources(root: Path) -> dict[str, Any]:
         if any(
             bindings[field] != expected
             for field, expected in {
-                "scenario_template_id": wrappers["scenario_template"]["identity"],
+                "scenario_template_id": scenario["template_record"]["identity"],
                 "level_instance_id": wrappers["level_instance"]["identity"],
                 "scenario_lineage_id": wrappers["scenario_lineage"]["identity"],
             }.items()
@@ -600,6 +681,8 @@ def _supplementary_sources(root: Path) -> dict[str, Any]:
         "captures": captures,
         "scenario": scenario,
         "runtime": runtime,
+        "prior": prior,
+        "prior_captures": prior_captures,
     }
 
 
@@ -656,6 +739,15 @@ def _attempt_accounting(
             "realized_coverage_strata": attempt["realized_coverage_strata"],
             "eligible": attempt["status"] == "accepted",
         })
+    for attempt in supplementary["prior"]["attempts"]:
+        attempts.append({
+            "attempt_identity": attempt["attempt_identity"],
+            "source": "issue-51-determination-1",
+            "status": attempt["status"],
+            "capture_id": attempt["capture_id"],
+            "realized_coverage_strata": attempt["realized_coverage_strata"],
+            "eligible": False,
+        })
     attempts.append({
         "attempt_identity": quarantine["attempt_id"],
         "source": "issue-51-invalidation-audit",
@@ -677,6 +769,7 @@ def _attempt_accounting(
         "unavailable": [],
         "unmet": [],
         "systematic_exporter_defects": [],
+        "prior_determinations": [supplementary["prior"]],
         "outcome_independent_retention": True,
         "passed": True,
     }
@@ -734,8 +827,7 @@ def _capability_audit(
                 elif value == "role_separated_final_evaluation":
                     evidence = [identities["scenario_and_partition_bundle"]]
                 elif value == "explicit_legacy_static":
-                    status = "passed_not_applicable"
-                    evidence = [identities["scenario_and_partition_bundle"]]
+                    evidence = [BUNDLE_IDENTITY]
                 elif value == "immutable_cohort_release":
                     evidence = [BUNDLE_IDENTITY]
                 else:
@@ -743,8 +835,8 @@ def _capability_audit(
             entry = {"status": status, "evidence_identities": evidence}
             if value == "explicit_legacy_static":
                 entry["rationale"] = (
-                    "the frozen central-v2 pilot inventory uses generated scenarios only; "
-                    "no imported source is relabeled or inferred as generated"
+                    "the determination-2 supplementary terminal probe preserves exact "
+                    "legacy-static XML and importer/source provenance"
                 )
             entries[value] = entry
         audit[group] = entries
@@ -901,6 +993,7 @@ def _report(
             "consumed": False,
         },
         "quarantine_audit_identity": quarantine["identity"],
+        "prior_failed_determination_identity": supplementary["prior"]["identity"],
         "systematic_exporter_defects": [],
         "passed": True,
     }
@@ -1015,6 +1108,7 @@ def build_issue_51_evidence(
         raise Issue51EvidenceError(f"immutable issue-51 output already exists: {output}")
     required = {
         "collection-plan.json",
+        "prior-determination.json",
         "scenario-manifest.json",
         "scenario.xml",
         "template.xml",
@@ -1023,6 +1117,7 @@ def build_issue_51_evidence(
     if (
         {path.name for path in supplementary_root.iterdir() if path.is_file()} != required
         or not (supplementary_root / "captures").is_dir()
+        or not (supplementary_root / "prior-captures").is_dir()
     ):
         raise Issue51EvidenceError("supplementary issue-51 source membership is incomplete")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -1033,6 +1128,9 @@ def build_issue_51_evidence(
         for name in sorted(required):
             shutil.copyfile(supplementary_root / name, supplement / name)
         shutil.copytree(supplementary_root / "captures", supplement / "captures")
+        shutil.copytree(
+            supplementary_root / "prior-captures", supplement / "prior-captures"
+        )
         _log("revalidating all issue-44 through issue-50 component authorities")
         artifacts = _derived_artifacts(
             staging, repository_root, implementation_revision, execution_revision
