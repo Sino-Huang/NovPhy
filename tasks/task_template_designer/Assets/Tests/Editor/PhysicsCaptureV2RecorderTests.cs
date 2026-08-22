@@ -186,6 +186,41 @@ public class PhysicsCaptureV2RecorderTests
             json);
     }
 
+    [Test]
+    public void FixedStepGapFailureIdentifiesTheMacroEventAndCoverageBounds()
+    {
+        PhysicsCaptureV2FixedStepRecorder recorder =
+            host.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
+        recorder.BeginPreIntervention(100);
+
+        recorder.RecordMacroEvent(102, "pig_removed", new string[0], "{}");
+
+        Assert.AreEqual(PhysicsCaptureV2EngineFailureCode.FixedStepGap,
+            recorder.Failure.Code);
+        StringAssert.Contains("event_type=pig_removed", recorder.Failure.Message);
+        StringAssert.Contains("event_fixed_step=102", recorder.Failure.Message);
+        StringAssert.Contains("pre_intervention_fixed_step=100", recorder.Failure.Message);
+        StringAssert.Contains("last_recorded_fixed_step=100", recorder.Failure.Message);
+    }
+
+    [Test]
+    public void MacroEventDoesNotReplaceTheFailureThatStoppedFixedStepRecording()
+    {
+        PhysicsCaptureV2FixedStepRecorder recorder =
+            host.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
+        recorder.BeginPreIntervention(100);
+        recorder.RecordFixedStep(102);
+        PhysicsCaptureV2RecorderFailure original = recorder.Failure;
+
+        recorder.RecordMacroEvent(103, "bird_launched", new string[0], "{}");
+
+        Assert.AreSame(original, recorder.Failure);
+        StringAssert.Contains("fixed-step contact coverage has a gap",
+            recorder.Failure.Message);
+        StringAssert.Contains("requested_fixed_step=102", recorder.Failure.Message);
+        StringAssert.Contains("last_recorded_fixed_step=100", recorder.Failure.Message);
+    }
+
     private static int ReadUInt32(byte[] bytes, int offset)
     {
         return bytes[offset] << 24 | bytes[offset + 1] << 16

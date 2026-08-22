@@ -27,13 +27,13 @@ from scripts.scenario_manifest import (
 ROOT = Path(__file__).resolve().parents[1]
 WORKBOOK_REFERENCE = "tasks/task_generator/template_constraints.xlsx"
 TEMPLATE_REFERENCE = "sciencebirdsgames/physics-v2/issue-51/level-clear-static-v2.xml"
-DEFAULT_OUTPUT_ROOT = ROOT / ".local-artifacts/issue-51-pilot-authorities-v3"
-SCENARIO_ID = "issue51-level-clear-static-determination3"
+DEFAULT_OUTPUT_ROOT = ROOT / ".local-artifacts/issue-51-pilot-authorities-v6"
+SCENARIO_ID = "issue51-level-clear-static-determination6"
 TARGETED_INTERVENTION_ID = "level-clear-targeted"
 GEOMETRY_INTERVENTION_ID = "level-clear-geometry"
 SLINGSHOT = (97, 227)
 FRAME_HEIGHT = 480
-LEVEL_CLEAR_OFFSET = (-77, 0)
+LEVEL_CLEAR_OFFSET = (-77, 30)
 
 
 def _import_static(output_root: Path) -> tuple[Path, Path, CohortV2ScenarioManifest]:
@@ -100,7 +100,7 @@ def build_issue_51_supplementary_plan(
     xml_path, manifest_path, scenario = _import_static(output_root)
     manifest = scenario.scenario_manifest
     targeted_interface, targeted_engine = _action(LEVEL_CLEAR_OFFSET)
-    geometry_interface, geometry_engine = _action((-77, -5))
+    geometry_interface, geometry_engine = _action((-77, 25))
     interventions = [{
         "id": TARGETED_INTERVENTION_ID,
         "ordinal": 1,
@@ -113,8 +113,8 @@ def build_issue_51_supplementary_plan(
         "source_provenance": {
             "target_stratum": "level clear",
             "selection_rule": (
-                "issue-51-frozen-direct-tnt-level-clear-v3; outcome-independent "
-                "static determination 3 supplement to the accepted issue-44 through "
+                "issue-51-frozen-direct-tnt-level-clear-v6; outcome-independent "
+                "static determination 6 supplement to the accepted issue-44 through "
                 "issue-50 evidence"
             ),
         },

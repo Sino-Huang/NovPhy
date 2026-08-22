@@ -143,6 +143,14 @@ public sealed class PhysicsCaptureV2ContactTests
             unresolvedRecorder.BeginPreIntervention(10, new[] { lower, upper },
                 new[] { unresolved }, true);
             Assert.AreEqual(13, ActiveFailureCode());
+            StringAssert.Contains("collider_a=lower:0001",
+                unresolvedRecorder.Failure.Message);
+            StringAssert.Contains("collider_b=outsider:0001",
+                unresolvedRecorder.Failure.Message);
+            StringAssert.Contains("resolved_a=true",
+                unresolvedRecorder.Failure.Message);
+            StringAssert.Contains("resolved_b=false",
+                unresolvedRecorder.Failure.Message);
         }
         finally
         {

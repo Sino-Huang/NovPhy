@@ -204,6 +204,44 @@ public sealed class PhysicsCaptureV2RuntimeIntegrationTests
             PhysicsCaptureV2FixedStepRecorder.Active.CreateFinalizedSnapshot().TerminalReason);
     }
 
+    [Test]
+    public void PendingLevelClearTakesPriorityOverStableTerminal()
+    {
+        Environment.SetEnvironmentVariable(
+            PhysicsCaptureV2EngineProtocol.StrideEnvironmentVariable, "1",
+            EnvironmentVariableTarget.Process);
+        GameObject worldHost = new GameObject("pending-level-clear-world");
+        worldHost.SetActive(false);
+        ABGameWorld world = worldHost.AddComponent<ABGameWorld>();
+        FieldInfo cleared = typeof(ABGameWorld).GetField(
+            "_levelCleared", BindingFlags.Instance | BindingFlags.NonPublic);
+        FieldInfo singleton = typeof(ABSingleton<ABGameWorld>).GetField(
+            "_instance", BindingFlags.Static | BindingFlags.NonPublic);
+        cleared.SetValue(world, true);
+        singleton.SetValue(null, world);
+        try
+        {
+            PhysicalSnapshotRuntime runtime = PhysicalSnapshotRuntime.Attach(host);
+            causal.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            runtime.BeginShot(32, 64 * 1024, 10f);
+            runtime.RecordLaunch(runtime.EntityIdFor(causal), Vector2.zero);
+
+            InvokeFixedUpdate(runtime);
+            InvokeFixedUpdate(runtime);
+
+            Assert.IsFalse(PhysicsCaptureV2FixedStepRecorder.Active.IsFinalized,
+                "stable_entered must not preempt an already pending level_clear");
+            runtime.RecordLevelClear(123);
+            Assert.AreEqual("level_clear", PhysicsCaptureV2FixedStepRecorder.Active
+                .CreateFinalizedSnapshot().TerminalReason);
+        }
+        finally
+        {
+            singleton.SetValue(null, null);
+            UnityEngine.Object.DestroyImmediate(worldHost);
+        }
+    }
+
     private static void InvokeFixedUpdate(PhysicalSnapshotRuntime runtime)
     {
         InvokeRuntimeFixedUpdate(runtime);

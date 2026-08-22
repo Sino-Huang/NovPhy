@@ -342,7 +342,11 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
         if (v2StabilityCandidateSteps == 2)
         {
             RecordV2(v2StabilityCandidate ? "stable_entered" : "stable_exited", null, "{}");
-            if (v2StabilityCandidate) FinalizeV2("stable_entered");
+            bool levelClearPending = Resources.FindObjectsOfTypeAll<ABGameWorld>()
+                .Any(world => world != null && world.gameObject.scene.IsValid()
+                    && world.IsLevelClearPending());
+            if (v2StabilityCandidate && !levelClearPending)
+                FinalizeV2("stable_entered");
         }
     }
 

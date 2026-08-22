@@ -76,8 +76,13 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
     public bool LevelCleared() {
         if(_levelClearedBanner==null){
             return false;
-        } 
+        }
         return _levelClearedBanner.activeSelf; 
+    }
+
+    public bool IsLevelClearPending()
+    {
+        return _levelCleared;
     }
 
     private int _pigsAtStart;

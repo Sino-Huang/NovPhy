@@ -154,10 +154,17 @@ public static class PhysicsCaptureV2ContactExporter
                 || !input.ColliderB.gameObject.activeInHierarchy)
                 continue;
             string entityA; string colliderA; string entityB; string colliderB;
-            if (!Resolve(input.ColliderA, causalObjects, colliders, out entityA, out colliderA)
-                || !Resolve(input.ColliderB, causalObjects, colliders, out entityB, out colliderB))
+            bool resolvedA = Resolve(
+                input.ColliderA, causalObjects, colliders, out entityA, out colliderA);
+            bool resolvedB = Resolve(
+                input.ColliderB, causalObjects, colliders, out entityB, out colliderB);
+            if (!resolvedA || !resolvedB)
                 return Fail(PhysicsCaptureV2EngineFailureCode.UnresolvedContactIdentity,
-                    "physics capture v2 contact does not resolve to retained identity and geometry",
+                    "physics capture v2 contact does not resolve to retained identity and geometry: "
+                    + "collider_a=" + input.ColliderA.gameObject.name
+                    + ", collider_b=" + input.ColliderB.gameObject.name
+                    + ", resolved_a=" + (resolvedA ? "true" : "false")
+                    + ", resolved_b=" + (resolvedB ? "true" : "false"),
                     out failure);
             if (!Finite(input.Point) || !Finite(input.NormalAToB) || !Finite(input.Separation))
                 return Fail(PhysicsCaptureV2EngineFailureCode.NonFiniteValue,

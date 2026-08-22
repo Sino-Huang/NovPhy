@@ -241,7 +241,13 @@ public sealed class PhysicsCaptureV2FixedStepRecorder : MonoBehaviour,
         {
             Failure = new PhysicsCaptureV2RecorderFailure(
                 PhysicsCaptureV2EngineFailureCode.FixedStepGap,
-                "physics capture v2 fixed-step contact coverage has a gap");
+                "physics capture v2 fixed-step contact coverage has a gap: "
+                + "requested_fixed_step="
+                + fixedStep.ToString(CultureInfo.InvariantCulture)
+                + ", pre_intervention_fixed_step="
+                + preInterventionFixedStep.ToString(CultureInfo.InvariantCulture)
+                + ", last_recorded_fixed_step="
+                + lastFixedStep.ToString(CultureInfo.InvariantCulture));
             return;
         }
         AddSample(fixedStep, causalObjects, contacts, completeContactEnumeration);
@@ -289,12 +295,18 @@ public sealed class PhysicsCaptureV2FixedStepRecorder : MonoBehaviour,
     public string RecordMacroEvent(long fixedStep, string eventType,
         string[] participants, string payloadJson)
     {
-        if (!recording || finalized) return null;
+        if (!recording || finalized || Failure != null) return null;
         if (fixedStep < preInterventionFixedStep || fixedStep > lastFixedStep + 1)
         {
             Failure = new PhysicsCaptureV2RecorderFailure(
                 PhysicsCaptureV2EngineFailureCode.FixedStepGap,
-                "physics capture v2 event is outside recorded fixed-step coverage");
+                "physics capture v2 event is outside recorded fixed-step coverage: "
+                + "event_type=" + eventType
+                + ", event_fixed_step=" + fixedStep.ToString(CultureInfo.InvariantCulture)
+                + ", pre_intervention_fixed_step="
+                + preInterventionFixedStep.ToString(CultureInfo.InvariantCulture)
+                + ", last_recorded_fixed_step="
+                + lastFixedStep.ToString(CultureInfo.InvariantCulture));
             return null;
         }
         int ordinal = events.Count;

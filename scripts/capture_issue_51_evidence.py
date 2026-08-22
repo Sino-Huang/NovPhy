@@ -19,6 +19,7 @@ import xml.etree.ElementTree as ET
 
 from scripts.build_issue_51_evidence import (
     DEFAULT_OUTPUT,
+    FAILED_RUNTIME_DETERMINATION_3_IDENTITY,
     FAILED_RUNTIME_DETERMINATION_IDENTITY,
     PRIOR_DETERMINATION_IDENTITY,
     ROOT,
@@ -40,17 +41,19 @@ from scripts.smoke_physics_capture import archive_details, free_port, start_disp
 from scripts.verify_physics_player import verify_physics_player_archive
 
 
-DEFAULT_RUNTIME_ROOT = ROOT / ".local-artifacts/issue-51-pilot-run-determination-3"
+DEFAULT_RUNTIME_ROOT = ROOT / ".local-artifacts/issue-51-pilot-run-determination-6"
 DEFAULT_PRIOR_RUNTIME_ROOT = ROOT / ".local-artifacts/issue-51-pilot-run"
-DEFAULT_FAILED_RUNTIME_ROOT = (
-    ROOT / ".local-artifacts/issue-51-pilot-run-determination-2"
+DEFAULT_FAILED_RUNTIME_ROOTS = (
+    ROOT / ".local-artifacts/issue-51-pilot-run-determination-2",
+    ROOT / ".local-artifacts/issue-51-pilot-run-determination-3",
 )
 STAGE_ROOT = ROOT / "sciencebirdsgames/physics-v2"
 ACTUAL_COMMAND = (
     "python -u -m scripts.capture_issue_51_evidence "
-    "--runtime-root .local-artifacts/issue-51-pilot-run-determination-3 "
+    "--runtime-root .local-artifacts/issue-51-pilot-run-determination-6 "
     "--prior-runtime-root .local-artifacts/issue-51-pilot-run "
     "--failed-runtime-root .local-artifacts/issue-51-pilot-run-determination-2 "
+    "--failed-runtime-root .local-artifacts/issue-51-pilot-run-determination-3 "
     "--output data/runtime_evidence/issue-51"
 )
 
@@ -243,7 +246,16 @@ def _prior_determination_data(
 
 def _failed_runtime_determination_data(
     failed_runtime_root: Path,
+    determination: int,
 ) -> tuple[dict[str, Any], dict[str, dict[str, Any]], Path, Path]:
+    identities = {
+        2: FAILED_RUNTIME_DETERMINATION_IDENTITY,
+        3: FAILED_RUNTIME_DETERMINATION_3_IDENTITY,
+    }
+    try:
+        identity = identities[determination]
+    except KeyError as error:
+        raise ValueError(f"unsupported failed issue-51 determination: {determination}") from error
     report_path = failed_runtime_root / "collection/collection_plan_report.json"
     report = json.loads(report_path.read_text(encoding="utf-8"))
     ledger = report.get("attempt_ledger")
@@ -256,11 +268,19 @@ def _failed_runtime_determination_data(
         or len(ledger) != 2
         or report.get("realized_coverage_shortfalls")
     ):
-        raise ValueError("the failed issue-51 runtime is not the determination-2 run")
+        raise ValueError(
+            f"the failed issue-51 runtime is not the determination-{determination} run"
+        )
     plan_path = failed_runtime_root / "authorities/collection-plan.json"
     plan = load_collection_plan(plan_path).plan
     if plan.identity != report.get("plan_identity"):
-        raise ValueError("the failed determination-2 collection plan is stale")
+        raise ValueError(
+            f"the failed determination-{determination} collection plan is stale"
+        )
+    if not plan.identity.endswith(f"determination{determination}"):
+        raise ValueError(
+            f"the failed runtime does not contain determination {determination}"
+        )
     interventions = {
         intervention.id: intervention.identity
         for scenario in plan.scenarios
@@ -287,8 +307,13 @@ def _failed_runtime_determination_data(
             or failure.get("status") != "failed"
             or failure.get("reason") != reason
         ):
-            raise ValueError("the failed determination-2 attempt accounting is stale")
-        relative = f"prior-failures/{entry['intervention_id']}-failure.json"
+            raise ValueError(
+                f"the failed determination-{determination} attempt accounting is stale"
+            )
+        relative = (
+            f"prior-failures/determination-{determination}/"
+            f"{entry['intervention_id']}-failure.json"
+        )
         records[relative] = failure
         attempts.append({
             "attempt_identity": entry["attempt_id"],
@@ -304,12 +329,16 @@ def _failed_runtime_determination_data(
         })
     summary = {
         "schema": "issue_51_prior_failed_pilot_determination_v1",
-        "identity": FAILED_RUNTIME_DETERMINATION_IDENTITY,
+        "identity": identity,
         "disposition": "failed",
         "failure_reason": "fixed_step_capture_gap",
         "collection_plan_identity": report["plan_identity"],
-        "collection_plan_path": "prior-failures/collection-plan.json",
-        "collection_report_path": "prior-failures/collection-plan-report.json",
+        "collection_plan_path": (
+            f"prior-failures/determination-{determination}/collection-plan.json"
+        ),
+        "collection_report_path": (
+            f"prior-failures/determination-{determination}/collection-plan-report.json"
+        ),
         "counts": {
             "accepted": 0,
             "rejected": 0,
@@ -325,7 +354,7 @@ def _failed_runtime_determination_data(
 
 def dry_run(
     prior_runtime_root: Path = DEFAULT_PRIOR_RUNTIME_ROOT,
-    failed_runtime_root: Path = DEFAULT_FAILED_RUNTIME_ROOT,
+    failed_runtime_roots: tuple[Path, ...] = DEFAULT_FAILED_RUNTIME_ROOTS,
 ) -> dict[str, object]:
     _log("dry-run: revalidating the accepted issue-44 through issue-50 authorities")
     sources = _validate_component_sources(ROOT)
@@ -333,7 +362,10 @@ def dry_run(
     _log("dry-run: verifying the provenance-bound physics-v2 player archive")
     provenance = _verify_implementation_player()
     prior, _, _ = _prior_determination_data(prior_runtime_root)
-    failed, _, _, _ = _failed_runtime_determination_data(failed_runtime_root)
+    failed = [
+        _failed_runtime_determination_data(root, determination)[0]
+        for determination, root in enumerate(failed_runtime_roots, start=2)
+    ]
     with tempfile.TemporaryDirectory(prefix="novphy-issue51-dry-run-") as temporary:
         with redirect_stdout(io.StringIO()):
             authorities = build_issue_51_supplementary_plan(
@@ -353,7 +385,10 @@ def dry_run(
         "pilot_plan_identity": plan["identity"],
         "supplementary_plan_identity": authorities["plan_identity"],
         "component_evidence_count": len(identities),
-        "prior_failed_determination_identities": [prior["identity"], failed["identity"]],
+        "prior_failed_determination_identities": [
+            prior["identity"],
+            *(item["identity"] for item in failed),
+        ],
         "would_launch_unity_attempts": 2,
         "unity_version": provenance["unity_version"],
         "actual_command": ACTUAL_COMMAND,
@@ -369,7 +404,7 @@ def _publish_supplementary(
     runtime_root: Path,
     provenance: dict[str, object],
     prior_runtime_root: Path,
-    failed_runtime_root: Path,
+    failed_runtime_roots: tuple[Path, ...],
 ) -> Path:
     report = json.loads(
         (runtime_root / "collection/collection_plan_report.json").read_text(encoding="utf-8")
@@ -404,25 +439,35 @@ def _publish_supplementary(
         json.dumps(prior, allow_nan=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    failed, failed_records, failed_plan_path, failed_report_path = (
-        _failed_runtime_determination_data(failed_runtime_root)
-    )
-    for relative, record in failed_records.items():
-        path = supplement / relative
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            json.dumps(record, allow_nan=False, indent=2, sort_keys=True) + "\n",
-            encoding="utf-8",
+    failed = []
+    for determination, failed_runtime_root in enumerate(
+        failed_runtime_roots, start=2
+    ):
+        summary, failed_records, failed_plan_path, failed_report_path = (
+            _failed_runtime_determination_data(failed_runtime_root, determination)
         )
-    shutil.copyfile(
-        failed_plan_path, supplement / "prior-failures/collection-plan.json"
-    )
-    shutil.copyfile(
-        failed_report_path,
-        supplement / "prior-failures/collection-plan-report.json",
-    )
-    (supplement / "failed-determination.json").write_text(
-        json.dumps(failed, allow_nan=False, indent=2, sort_keys=True) + "\n",
+        failed.append(summary)
+        for relative, record in failed_records.items():
+            path = supplement / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(
+                json.dumps(record, allow_nan=False, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+        base = supplement / f"prior-failures/determination-{determination}"
+        shutil.copyfile(failed_plan_path, base / "collection-plan.json")
+        shutil.copyfile(failed_report_path, base / "collection-plan-report.json")
+    (supplement / "failed-determinations.json").write_text(
+        json.dumps(
+            {
+                "schema": "issue_51_prior_failed_pilot_determinations_v1",
+                "determinations": failed,
+            },
+            allow_nan=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
         encoding="utf-8",
     )
     attempts = []
@@ -488,7 +533,7 @@ def run(
     runtime_root: Path,
     output: Path,
     prior_runtime_root: Path,
-    failed_runtime_root: Path,
+    failed_runtime_roots: tuple[Path, ...],
 ) -> dict[str, Any]:
     _require_clean_tracked_worktree(ROOT)
     _implementation_revision(ROOT)
@@ -497,7 +542,8 @@ def run(
     if output.exists():
         raise ValueError(f"immutable output already exists: {output}")
     _prior_determination_data(prior_runtime_root)
-    _failed_runtime_determination_data(failed_runtime_root)
+    for determination, failed_runtime_root in enumerate(failed_runtime_roots, start=2):
+        _failed_runtime_determination_data(failed_runtime_root, determination)
     runtime_root.mkdir(parents=True)
 
     _log("freezing the prospective issue-51 pilot and supplementary terminal plans")
@@ -536,7 +582,7 @@ def run(
         runtime_root,
         provenance,
         prior_runtime_root,
-        failed_runtime_root,
+        failed_runtime_roots,
     )
     _log("auditing central capabilities, atomic quarantine, and exact accounting")
     return build_issue_51_evidence(output, supplement, repository_root=ROOT)
@@ -552,7 +598,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--prior-runtime-root", type=Path, default=DEFAULT_PRIOR_RUNTIME_ROOT
     )
     parser.add_argument(
-        "--failed-runtime-root", type=Path, default=DEFAULT_FAILED_RUNTIME_ROOT
+        "--failed-runtime-root", type=Path, action="append", default=None
     )
     parser.add_argument("--dry-run", action="store_true")
     return parser
@@ -560,14 +606,19 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_parser().parse_args()
+    failed_runtime_roots = tuple(
+        args.failed_runtime_root or DEFAULT_FAILED_RUNTIME_ROOTS
+    )
+    if len(failed_runtime_roots) != 2:
+        raise ValueError("issue-51 requires failed runtime roots for determinations 2 and 3")
     result = (
-        dry_run(args.prior_runtime_root, args.failed_runtime_root)
+        dry_run(args.prior_runtime_root, failed_runtime_roots)
         if args.dry_run
         else run(
             args.runtime_root,
             args.output,
             args.prior_runtime_root,
-            args.failed_runtime_root,
+            failed_runtime_roots,
         )
     )
     print(json.dumps(result, indent=2, sort_keys=True), flush=True)
