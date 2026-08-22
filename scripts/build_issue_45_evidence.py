@@ -165,6 +165,7 @@ def _materialize(
         min_coordinate=constraints.min_coordinate,
         max_coordinate=constraints.max_coordinate,
         restricted_objects=(),
+        template_source_reference=role.family.source_reference,
     )
     return materialize_template_bound_level_instance(
         request,

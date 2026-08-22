@@ -105,6 +105,7 @@ class CanonicalTaskGenerationTests(unittest.TestCase):
                 min_coordinate=(-1.0, -3.0),
                 max_coordinate=(1.0, -1.0),
                 restricted_objects=(),
+                template_source_reference="templates/template.xml",
             )
             first = materialize_level_instance(CanonicalMaterializationRequest(
                 output_xml_path=root / "first.xml",
@@ -121,6 +122,42 @@ class CanonicalTaskGenerationTests(unittest.TestCase):
 
             self.assertNotEqual(first.manifest.scenario_specification.identity, second.manifest.scenario_specification.identity)
             self.assertNotEqual(first.manifest.scenario_lineage.identity, second.manifest.scenario_lineage.identity)
+
+    def test_materialization_identity_is_independent_of_template_checkout_path(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            first_template = root / "first-checkout" / "template.xml"
+            second_template = root / "second-checkout" / "template.xml"
+            first_template.parent.mkdir()
+            second_template.parent.mkdir()
+            first_template.write_text(TEMPLATE, encoding="utf-8")
+            second_template.write_text(TEMPLATE, encoding="utf-8")
+            common = dict(
+                template_name="0_1_0101_1_5",
+                benchmark_condition=BenchmarkCondition("novelty_level_1", "type0101"),
+                template_identity="scenario-template-v1:test-template",
+                generation_seed=1729,
+                reference_point=(1.0, -3.0),
+                min_coordinate=(-1.0, -3.0),
+                max_coordinate=(1.0, -1.0),
+                restricted_objects=(),
+                template_source_reference="templates/template.xml",
+            )
+            first = materialize_level_instance(CanonicalMaterializationRequest(
+                template_path=first_template,
+                output_xml_path=root / "first.xml",
+                output_manifest_path=root / "first.scenario.json",
+                **common,
+            ), publish=False)
+            second = materialize_level_instance(CanonicalMaterializationRequest(
+                template_path=second_template,
+                output_xml_path=root / "second.xml",
+                output_manifest_path=root / "second.scenario.json",
+                **common,
+            ), publish=False)
+
+            self.assertEqual(first.xml_content, second.xml_content)
+            self.assertEqual(first.manifest, second.manifest)
 
 
 if __name__ == "__main__":

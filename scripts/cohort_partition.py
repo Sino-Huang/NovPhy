@@ -28,7 +28,15 @@ ExposureRole: TypeAlias = Literal[
     "final_evaluation",
 ]
 SplitRegime: TypeAlias = Literal["instance_held_out", "template_held_out"]
-ArtifactKind: TypeAlias = Literal["derivation_artifact", "replay"]
+ArtifactKind: TypeAlias = Literal[
+    "derivation_artifact",
+    "generation_seed",
+    "intervention",
+    "observation_configuration",
+    "observation_variant",
+    "replay",
+    "rerun",
+]
 
 EXPOSURE_ROLES: tuple[ExposureRole, ...] = (
     "training",
@@ -45,7 +53,15 @@ PROVENANCE_FIELDS = {
     "consumer_scenario_lineage_identity",
     "source_scenario_lineage_identities",
 }
-ARTIFACT_KINDS: tuple[ArtifactKind, ...] = ("derivation_artifact", "replay")
+ARTIFACT_KINDS: tuple[ArtifactKind, ...] = (
+    "derivation_artifact",
+    "generation_seed",
+    "intervention",
+    "observation_configuration",
+    "observation_variant",
+    "replay",
+    "rerun",
+)
 
 
 def _canonical_json(value: Any) -> bytes:

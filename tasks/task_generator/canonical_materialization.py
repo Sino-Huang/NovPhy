@@ -53,6 +53,7 @@ class CanonicalMaterializationRequest:
     restricted_objects: tuple[str, ...]
     eligibility: str = ELIGIBLE
     eligibility_reason: str | None = None
+    template_source_reference: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -238,9 +239,12 @@ def materialize_level_instance(
         "schema": "scenario_parameter_realization_v1",
         "declared_initial_engine_state": canonical_xml_projection(xml_content),
     }
+    template_source_reference = (
+        request.template_source_reference or request.template_path.as_posix()
+    )
     declared_inputs = {
         "template_content_identity": (
-            f"xml_bytes_v1:{request.template_path.as_posix()}:{GENERATOR_VERSION}"
+            f"xml_bytes_v1:{template_source_reference}:{GENERATOR_VERSION}"
         ),
         "template_name": request.template_name,
         "reference_point": list(request.reference_point),

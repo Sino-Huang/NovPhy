@@ -4,14 +4,21 @@ import unittest
 from pathlib import Path
 
 from scripts.cohort_partition import create_cohort_partition_manifest
+from scripts.cohort_v2_partition import create_cohort_v2_partition_exposure_manifest
 from scripts.final_evaluation_access import (
+    FinalEvaluationWorkflowAccessRejected,
+    FinalEvaluationWorkflowAccessManifest,
+    audit_final_evaluation_workflow_access,
     audit_final_evaluation_access,
     audit_ordinary_workflow_access,
+    authorize_final_evaluation_workflow_access,
+    create_final_evaluation_workflow_access_manifest,
     create_final_evaluation_access_manifest,
     load_final_evaluation_access_manifest,
     write_final_evaluation_access_manifest,
 )
 from tests.test_cohort_partition import entry, fixture_projection, provenance
+from tests.test_cohort_v2_partition import ROLES, inventory_entries, partition_manifest
 
 
 class FinalEvaluationAccessTests(unittest.TestCase):
@@ -196,6 +203,145 @@ class FinalEvaluationAccessTests(unittest.TestCase):
             audit_final_evaluation_access(
                 other,
                 self.access,
+                observed_accesses=[],
+            )
+
+
+class FinalEvaluationWorkflowAccessTests(unittest.TestCase):
+    def setUp(self):
+        self.partition = partition_manifest()
+        final = next(
+            entry
+            for entry in self.partition.entries
+            if entry.exposure_role == "final_evaluation"
+        )
+        self.workflow = create_final_evaluation_workflow_access_manifest(
+            self.partition,
+            workflow_version=1,
+            workflow_identity="central-v2-final-evaluation-workflow-v1",
+            operator_identity="novphy-operator-v1:final-evaluation-custodian",
+            frozen_at="2026-08-22T01:00:00Z",
+            authorized_artifacts=[{
+                "artifact_kind": "scenario_manifest",
+                "artifact_identity": final.scenario_manifest_identity,
+                "source_scenario_lineage_identities": [
+                    final.scenario_lineage_identity
+                ],
+            }],
+        )
+        self.record = {
+            "workflow_identity": self.workflow.workflow_identity,
+            "operator_identity": self.workflow.operator_identity,
+            "artifact_identity": final.scenario_manifest_identity,
+            "source_scenario_lineage_identities": [final.scenario_lineage_identity],
+            "accessed_at": "2026-08-22T03:00:00Z",
+            "authorization_identity": "github-issue-authorization-v1:47:release",
+            "consumer_exposure_role": "final_evaluation",
+        }
+
+    def test_pending_workflow_rejects_access_then_exact_authorized_record_passes(self):
+        self.assertEqual(
+            FinalEvaluationWorkflowAccessManifest.from_dict(self.workflow.to_dict()),
+            self.workflow,
+        )
+        self.assertEqual(self.workflow.authorization_state, "pending")
+        with self.assertRaisesRegex(ValueError, "not authorized") as rejected:
+            audit_final_evaluation_workflow_access(
+                self.partition,
+                self.workflow,
+                observed_accesses=[self.record],
+            )
+        self.assertIsInstance(rejected.exception, FinalEvaluationWorkflowAccessRejected)
+        self.assertEqual(
+            rejected.exception.audit_record["artifact_identity"],
+            self.record["artifact_identity"],
+        )
+        self.assertEqual(
+            rejected.exception.audit_record["authorization_identity"],
+            self.record["authorization_identity"],
+        )
+        self.assertFalse(rejected.exception.audit_record["passed"])
+
+        authorized = authorize_final_evaluation_workflow_access(
+            self.workflow,
+            authorization_identity="github-issue-authorization-v1:47:release",
+            authorized_at="2026-08-22T02:00:00Z",
+        )
+        report = audit_final_evaluation_workflow_access(
+            self.partition,
+            authorized,
+            observed_accesses=[self.record],
+        )
+
+        self.assertTrue(report["passed"])
+        self.assertEqual(report["observed_access_count"], 1)
+
+        tampered = self.workflow.to_dict()
+        tampered["operator_identity"] = "novphy-operator-v1:forged"
+        with self.assertRaisesRegex(ValueError, "identity"):
+            FinalEvaluationWorkflowAccessManifest.from_dict(tampered)
+
+    def test_workflow_rejects_artifact_absent_from_the_frozen_final_partition(self):
+        final = next(
+            entry for entry in self.partition.entries
+            if entry.exposure_role == "final_evaluation"
+        )
+        with self.assertRaisesRegex(ValueError, "frozen final partition"):
+            create_final_evaluation_workflow_access_manifest(
+                self.partition,
+                workflow_version=1,
+                workflow_identity="central-v2-final-evaluation-workflow-v1",
+                operator_identity="novphy-operator-v1:final-evaluation-custodian",
+                frozen_at="2026-08-22T01:00:00Z",
+                authorized_artifacts=[{
+                    "artifact_kind": "derivation_artifact",
+                    "artifact_identity": "derivation:forged",
+                    "source_scenario_lineage_identities": [
+                        final.scenario_lineage_identity
+                    ],
+                }],
+            )
+
+    def test_workflow_operator_artifact_source_time_and_authorization_fail_closed(self):
+        authorized = authorize_final_evaluation_workflow_access(
+            self.workflow,
+            authorization_identity="github-issue-authorization-v1:47:release",
+            authorized_at="2026-08-22T02:00:00Z",
+        )
+        cases = (
+            ("workflow_identity", "other", "wrong workflow"),
+            ("operator_identity", "other", "wrong operator"),
+            ("artifact_identity", "other", "undeclared artifact"),
+            (
+                "source_scenario_lineage_identities",
+                ["scenario-lineage:training"],
+                "source provenance",
+            ),
+            ("accessed_at", "2026-08-22T01:30:00Z", "predates authorization"),
+            ("authorization_identity", "other", "wrong authorization"),
+            ("consumer_exposure_role", "training", "non-final workflow"),
+        )
+        for field, value, message in cases:
+            with self.subTest(field=field), self.assertRaisesRegex(ValueError, message):
+                record = copy.deepcopy(self.record)
+                record[field] = value
+                audit_final_evaluation_workflow_access(
+                    self.partition,
+                    authorized,
+                    observed_accesses=[record],
+                )
+
+        other_partition = create_cohort_v2_partition_exposure_manifest(
+            partition_version=2,
+            source_inventory_identity=self.partition.source_inventory_identity,
+            source_inventory_review_url=self.partition.source_inventory_review_url,
+            inventory_entries=inventory_entries(),
+            lineage_quotas={role: 1 for role in ROLES},
+        )
+        with self.assertRaisesRegex(ValueError, "different partition"):
+            audit_final_evaluation_workflow_access(
+                other_partition,
+                authorized,
                 observed_accesses=[],
             )
 

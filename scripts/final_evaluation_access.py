@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
 import tempfile
-from typing import Any, Literal
+from typing import Any, Literal, NoReturn
 from urllib.parse import quote
 
 from scripts.cohort_partition import CohortPartitionManifest
+from scripts.cohort_v2_partition import CohortV2PartitionExposureManifest
 
 
 SCHEMA = "final_evaluation_access_manifest_v1"
@@ -74,6 +76,33 @@ class AuthorizedFinalArtifact:
         }
 
 
+def _parse_authorized_final_artifacts(
+    value: Any,
+) -> tuple[AuthorizedFinalArtifact, ...]:
+    if not isinstance(value, list):
+        raise ValueError("authorized_artifacts must be a list")
+    artifacts = []
+    for item in value:
+        if not isinstance(item, Mapping) or set(item) != {
+            "artifact_kind",
+            "artifact_identity",
+            "source_scenario_lineage_identities",
+        }:
+            raise ValueError("Authorized final artifact fields are invalid")
+        artifacts.append(AuthorizedFinalArtifact(
+            _string(item["artifact_kind"], "artifact_kind"),
+            _string(item["artifact_identity"], "artifact_identity"),
+            _strings(
+                item["source_scenario_lineage_identities"],
+                "source_scenario_lineage_identities",
+            ),
+        ))
+    artifacts.sort(key=lambda item: _canonical_json(item.to_dict()))
+    if len({item.artifact_identity for item in artifacts}) != len(artifacts):
+        raise ValueError("Authorized final artifact identities must be unique")
+    return tuple(artifacts)
+
+
 @dataclass(frozen=True, slots=True)
 class FinalEvaluationAccessManifest:
     schema: Literal["final_evaluation_access_manifest_v1"]
@@ -117,30 +146,7 @@ class FinalEvaluationAccessManifest:
         version = data["access_version"]
         if isinstance(version, bool) or not isinstance(version, int) or version <= 0:
             raise ValueError("Final-evaluation access version must be positive")
-        raw_artifacts = data["authorized_artifacts"]
-        if not isinstance(raw_artifacts, list):
-            raise ValueError("authorized_artifacts must be a list")
-        artifacts = []
-        for item in raw_artifacts:
-            if not isinstance(item, Mapping) or set(item) != {
-                "artifact_kind",
-                "artifact_identity",
-                "source_scenario_lineage_identities",
-            }:
-                raise ValueError("Authorized final artifact fields are invalid")
-            artifacts.append(
-                AuthorizedFinalArtifact(
-                    _string(item["artifact_kind"], "artifact_kind"),
-                    _string(item["artifact_identity"], "artifact_identity"),
-                    _strings(
-                        item["source_scenario_lineage_identities"],
-                        "source_scenario_lineage_identities",
-                    ),
-                )
-            )
-        artifacts.sort(key=lambda item: _canonical_json(item.to_dict()))
-        if len({item.artifact_identity for item in artifacts}) != len(artifacts):
-            raise ValueError("Authorized final artifact identities must be unique")
+        artifacts = _parse_authorized_final_artifacts(data["authorized_artifacts"])
         manifest = cls(
             SCHEMA,
             version,
@@ -151,7 +157,7 @@ class FinalEvaluationAccessManifest:
                 data["final_evaluation_lineage_identities"],
                 "final_evaluation_lineage_identities",
             ),
-            tuple(artifacts),
+            artifacts,
         )
         return manifest
 
@@ -370,3 +376,419 @@ def load_final_evaluation_access_manifest(path: Path) -> FinalEvaluationAccessMa
     if not isinstance(data, Mapping):
         raise ValueError("Final-evaluation access manifest root must be an object")
     return FinalEvaluationAccessManifest.from_dict(data)
+
+
+WORKFLOW_SCHEMA = "final_evaluation_workflow_access_manifest_v1"
+WORKFLOW_IDENTITY_NAMESPACE = "final-evaluation-workflow-access-manifest-v1"
+
+
+def _utc_timestamp(value: Any, name: str) -> datetime:
+    text = _string(value, name)
+    if not text.endswith("Z"):
+        raise ValueError(f"{name} must be a UTC timestamp ending in Z")
+    try:
+        parsed = datetime.fromisoformat(text[:-1] + "+00:00")
+    except ValueError as error:
+        raise ValueError(f"{name} must be an ISO-8601 UTC timestamp") from error
+    if parsed.tzinfo != timezone.utc:
+        raise ValueError(f"{name} must be a UTC timestamp")
+    return parsed
+
+
+def _workflow_manifest_identity(
+    *,
+    workflow_version: int,
+    partition_identity: str,
+    workflow_identity: str,
+    operator_identity: str,
+    frozen_at: str,
+    final_lineages: Sequence[str],
+    authorized_artifacts: Sequence[AuthorizedFinalArtifact],
+) -> str:
+    return ":".join((
+        WORKFLOW_IDENTITY_NAMESPACE,
+        str(workflow_version),
+        quote(partition_identity, safe="-._~"),
+        quote(workflow_identity, safe="-._~"),
+        quote(operator_identity, safe="-._~"),
+        quote(frozen_at, safe="-._~"),
+        *(quote(lineage, safe="-._~") for lineage in final_lineages),
+        *(
+            quote(
+                "|".join((
+                    artifact.artifact_kind,
+                    artifact.artifact_identity,
+                    ",".join(artifact.source_scenario_lineage_identities),
+                )),
+                safe="-._~",
+            )
+            for artifact in authorized_artifacts
+        ),
+    ))
+
+
+@dataclass(frozen=True, slots=True)
+class FinalEvaluationWorkflowAccessManifest:
+    schema: Literal["final_evaluation_workflow_access_manifest_v1"]
+    workflow_version: int
+    identity: str
+    partition_identity: str
+    workflow_identity: str
+    operator_identity: str
+    frozen_at: str
+    authorization_state: Literal["pending", "authorized"]
+    authorization_identity: str | None
+    authorized_at: str | None
+    final_evaluation_lineage_identities: tuple[str, ...]
+    authorized_artifacts: tuple[AuthorizedFinalArtifact, ...]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema": self.schema,
+            "workflow_version": self.workflow_version,
+            "identity": self.identity,
+            "partition_identity": self.partition_identity,
+            "workflow_identity": self.workflow_identity,
+            "operator_identity": self.operator_identity,
+            "frozen_at": self.frozen_at,
+            "authorization_state": self.authorization_state,
+            "authorization_identity": self.authorization_identity,
+            "authorized_at": self.authorized_at,
+            "final_evaluation_lineage_identities": list(
+                self.final_evaluation_lineage_identities
+            ),
+            "authorized_artifacts": [
+                artifact.to_dict() for artifact in self.authorized_artifacts
+            ],
+        }
+
+    @classmethod
+    def from_dict(
+        cls,
+        data: Mapping[str, Any],
+    ) -> "FinalEvaluationWorkflowAccessManifest":
+        fields = {
+            "schema",
+            "workflow_version",
+            "identity",
+            "partition_identity",
+            "workflow_identity",
+            "operator_identity",
+            "frozen_at",
+            "authorization_state",
+            "authorization_identity",
+            "authorized_at",
+            "final_evaluation_lineage_identities",
+            "authorized_artifacts",
+        }
+        if not isinstance(data, Mapping) or set(data) != fields:
+            raise ValueError("Final-evaluation workflow manifest fields are invalid")
+        if data["schema"] != WORKFLOW_SCHEMA:
+            raise ValueError("Unsupported final-evaluation workflow manifest schema")
+        version = data["workflow_version"]
+        if isinstance(version, bool) or not isinstance(version, int) or version <= 0:
+            raise ValueError("Final-evaluation workflow version must be positive")
+        frozen_at = _string(data["frozen_at"], "frozen_at")
+        frozen_time = _utc_timestamp(frozen_at, "frozen_at")
+        state = data["authorization_state"]
+        if state == "pending":
+            if data["authorization_identity"] is not None or data["authorized_at"] is not None:
+                raise ValueError("Pending final-evaluation workflow cannot claim authorization")
+            authorization_identity = None
+            authorized_at = None
+        elif state == "authorized":
+            authorization_identity = _string(
+                data["authorization_identity"], "authorization_identity"
+            )
+            authorized_at = _string(data["authorized_at"], "authorized_at")
+            if _utc_timestamp(authorized_at, "authorized_at") < frozen_time:
+                raise ValueError("Final-evaluation authorization predates workflow freeze")
+        else:
+            raise ValueError("Final-evaluation workflow authorization state is unknown")
+        final_lineages = _strings(
+            data["final_evaluation_lineage_identities"],
+            "final_evaluation_lineage_identities",
+        )
+        if not final_lineages:
+            raise ValueError("Final-evaluation workflow has no final lineages")
+        raw_artifacts = data["authorized_artifacts"]
+        if not isinstance(raw_artifacts, list) or not raw_artifacts:
+            raise ValueError("Final-evaluation workflow authorized_artifacts must be nonempty")
+        artifacts = _parse_authorized_final_artifacts(raw_artifacts)
+        for artifact in artifacts:
+            if (
+                not artifact.source_scenario_lineage_identities
+                or not set(artifact.source_scenario_lineage_identities)
+                <= set(final_lineages)
+            ):
+                raise ValueError("Authorized final workflow artifact sources are not final")
+        partition_identity = _string(data["partition_identity"], "partition_identity")
+        workflow_identity = _string(data["workflow_identity"], "workflow_identity")
+        operator_identity = _string(data["operator_identity"], "operator_identity")
+        expected_identity = _workflow_manifest_identity(
+            workflow_version=version,
+            partition_identity=partition_identity,
+            workflow_identity=workflow_identity,
+            operator_identity=operator_identity,
+            frozen_at=frozen_at,
+            final_lineages=final_lineages,
+            authorized_artifacts=artifacts,
+        )
+        if data["identity"] != expected_identity:
+            raise ValueError("Final-evaluation workflow manifest identity is stale")
+        return cls(
+            schema=WORKFLOW_SCHEMA,
+            workflow_version=version,
+            identity=expected_identity,
+            partition_identity=partition_identity,
+            workflow_identity=workflow_identity,
+            operator_identity=operator_identity,
+            frozen_at=frozen_at,
+            authorization_state=state,
+            authorization_identity=authorization_identity,
+            authorized_at=authorized_at,
+            final_evaluation_lineage_identities=final_lineages,
+            authorized_artifacts=artifacts,
+        )
+
+
+def _validate_workflow_artifacts_against_partition(
+    partition: CohortV2PartitionExposureManifest,
+    artifacts: Sequence[AuthorizedFinalArtifact],
+) -> None:
+    final_by_manifest = {
+        entry.scenario_manifest_identity: entry
+        for entry in partition.entries
+        if entry.exposure_role == "final_evaluation"
+    }
+    for artifact in artifacts:
+        entry = final_by_manifest.get(artifact.artifact_identity)
+        if (
+            artifact.artifact_kind != "scenario_manifest"
+            or entry is None
+            or artifact.source_scenario_lineage_identities
+            != (entry.scenario_lineage_identity,)
+        ):
+            raise ValueError(
+                "Authorized artifact is absent from the frozen final partition"
+            )
+
+
+def create_final_evaluation_workflow_access_manifest(
+    partition: CohortV2PartitionExposureManifest,
+    *,
+    workflow_version: int,
+    workflow_identity: str,
+    operator_identity: str,
+    frozen_at: str,
+    authorized_artifacts: Sequence[Mapping[str, Any]],
+) -> FinalEvaluationWorkflowAccessManifest:
+    validated_partition = CohortV2PartitionExposureManifest.from_dict(
+        partition.to_dict()
+    )
+    final_lineages = sorted(
+        entry.scenario_lineage_identity
+        for entry in validated_partition.entries
+        if entry.exposure_role == "final_evaluation"
+    )
+    artifacts = _parse_authorized_final_artifacts(list(authorized_artifacts))
+    _validate_workflow_artifacts_against_partition(validated_partition, artifacts)
+    normalized_workflow_identity = _string(workflow_identity, "workflow_identity")
+    normalized_operator_identity = _string(operator_identity, "operator_identity")
+    normalized_frozen_at = _string(frozen_at, "frozen_at")
+    _utc_timestamp(normalized_frozen_at, "frozen_at")
+    payload = {
+        "schema": WORKFLOW_SCHEMA,
+        "workflow_version": workflow_version,
+        "identity": _workflow_manifest_identity(
+            workflow_version=workflow_version,
+            partition_identity=validated_partition.identity,
+            workflow_identity=normalized_workflow_identity,
+            operator_identity=normalized_operator_identity,
+            frozen_at=normalized_frozen_at,
+            final_lineages=final_lineages,
+            authorized_artifacts=artifacts,
+        ),
+        "partition_identity": validated_partition.identity,
+        "workflow_identity": normalized_workflow_identity,
+        "operator_identity": normalized_operator_identity,
+        "frozen_at": normalized_frozen_at,
+        "authorization_state": "pending",
+        "authorization_identity": None,
+        "authorized_at": None,
+        "final_evaluation_lineage_identities": final_lineages,
+        "authorized_artifacts": [artifact.to_dict() for artifact in artifacts],
+    }
+    return FinalEvaluationWorkflowAccessManifest.from_dict(payload)
+
+
+def authorize_final_evaluation_workflow_access(
+    manifest: FinalEvaluationWorkflowAccessManifest,
+    *,
+    authorization_identity: str,
+    authorized_at: str,
+) -> FinalEvaluationWorkflowAccessManifest:
+    validated = FinalEvaluationWorkflowAccessManifest.from_dict(manifest.to_dict())
+    if validated.authorization_state != "pending":
+        raise ValueError("Final-evaluation workflow is already authorized")
+    return FinalEvaluationWorkflowAccessManifest.from_dict(
+        replace(
+            validated,
+            authorization_state="authorized",
+            authorization_identity=authorization_identity,
+            authorized_at=authorized_at,
+        ).to_dict()
+    )
+
+
+class FinalEvaluationWorkflowAccessRejected(ValueError):
+    """A rejected final-data access together with its auditable record."""
+
+    def __init__(self, reason: str, audit_record: Mapping[str, Any]) -> None:
+        self.audit_record = dict(audit_record)
+        super().__init__(reason)
+
+
+def _reject_final_evaluation_access(
+    manifest: FinalEvaluationWorkflowAccessManifest,
+    record: Any,
+    reason: str,
+) -> NoReturn:
+    observed = record if isinstance(record, Mapping) else {}
+    raise FinalEvaluationWorkflowAccessRejected(reason, {
+        "schema": "final_evaluation_workflow_access_rejection_v1",
+        "workflow_manifest_identity": manifest.identity,
+        "partition_identity": manifest.partition_identity,
+        "workflow_identity": observed.get("workflow_identity"),
+        "operator_identity": observed.get("operator_identity"),
+        "artifact_identity": observed.get("artifact_identity"),
+        "source_scenario_lineage_identities": observed.get(
+            "source_scenario_lineage_identities"
+        ),
+        "accessed_at": observed.get("accessed_at"),
+        "authorization_identity": observed.get("authorization_identity"),
+        "consumer_exposure_role": observed.get("consumer_exposure_role"),
+        "reason": reason,
+        "passed": False,
+    })
+
+
+def audit_final_evaluation_workflow_access(
+    partition: CohortV2PartitionExposureManifest,
+    manifest: FinalEvaluationWorkflowAccessManifest,
+    *,
+    observed_accesses: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    validated_partition = CohortV2PartitionExposureManifest.from_dict(
+        partition.to_dict()
+    )
+    validated = FinalEvaluationWorkflowAccessManifest.from_dict(manifest.to_dict())
+    if validated.partition_identity != validated_partition.identity:
+        raise ValueError("Final-evaluation workflow manifest targets a different partition")
+    final_lineages = {
+        entry.scenario_lineage_identity
+        for entry in validated_partition.entries
+        if entry.exposure_role == "final_evaluation"
+    }
+    if set(validated.final_evaluation_lineage_identities) != final_lineages:
+        raise ValueError("Final-evaluation workflow lineage inventory is stale")
+    _validate_workflow_artifacts_against_partition(
+        validated_partition,
+        validated.authorized_artifacts,
+    )
+    if observed_accesses and validated.authorization_state != "authorized":
+        _reject_final_evaluation_access(
+            validated,
+            observed_accesses[0],
+            "Final-evaluation workflow is not authorized",
+        )
+    authorized = {
+        artifact.artifact_identity: artifact
+        for artifact in validated.authorized_artifacts
+    }
+    fields = {
+        "workflow_identity",
+        "operator_identity",
+        "artifact_identity",
+        "source_scenario_lineage_identities",
+        "accessed_at",
+        "authorization_identity",
+        "consumer_exposure_role",
+    }
+    for record in observed_accesses:
+        if not isinstance(record, Mapping) or set(record) != fields:
+            _reject_final_evaluation_access(
+                validated,
+                record,
+                "Final-evaluation access record fields are invalid",
+            )
+        if record["consumer_exposure_role"] != "final_evaluation":
+            _reject_final_evaluation_access(
+                validated,
+                record,
+                "Final-evaluation data reached a non-final workflow",
+            )
+        if record["workflow_identity"] != validated.workflow_identity:
+            _reject_final_evaluation_access(
+                validated,
+                record,
+                "Final-evaluation access record has the wrong workflow",
+            )
+        if record["operator_identity"] != validated.operator_identity:
+            _reject_final_evaluation_access(
+                validated,
+                record,
+                "Final-evaluation access record has the wrong operator",
+            )
+        if record["authorization_identity"] != validated.authorization_identity:
+            _reject_final_evaluation_access(
+                validated,
+                record,
+                "Final-evaluation access record has the wrong authorization",
+            )
+        try:
+            accessed_at = _utc_timestamp(record["accessed_at"], "accessed_at")
+        except ValueError as error:
+            _reject_final_evaluation_access(validated, record, str(error))
+        assert validated.authorized_at is not None
+        if accessed_at < _utc_timestamp(validated.authorized_at, "authorized_at"):
+            _reject_final_evaluation_access(
+                validated,
+                record,
+                "Final-evaluation access record predates authorization",
+            )
+        try:
+            artifact_identity = _string(record["artifact_identity"], "artifact_identity")
+        except ValueError as error:
+            _reject_final_evaluation_access(validated, record, str(error))
+        artifact = authorized.get(artifact_identity)
+        if artifact is None:
+            _reject_final_evaluation_access(
+                validated,
+                record,
+                "Final-evaluation access record names an undeclared artifact",
+            )
+        try:
+            sources = _strings(
+                record["source_scenario_lineage_identities"],
+                "source_scenario_lineage_identities",
+            )
+        except ValueError as error:
+            _reject_final_evaluation_access(validated, record, str(error))
+        if sources != artifact.source_scenario_lineage_identities:
+            _reject_final_evaluation_access(
+                validated,
+                record,
+                "Final-evaluation access record source provenance differs",
+            )
+    return {
+        "schema": "final_evaluation_workflow_access_audit_v1",
+        "workflow_manifest_identity": validated.identity,
+        "partition_identity": validated.partition_identity,
+        "workflow_identity": validated.workflow_identity,
+        "operator_identity": validated.operator_identity,
+        "authorization_state": validated.authorization_state,
+        "authorization_identity": validated.authorization_identity,
+        "observed_access_count": len(observed_accesses),
+        "passed": True,
+    }

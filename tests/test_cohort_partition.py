@@ -361,7 +361,7 @@ class CohortPartitionTests(unittest.TestCase):
                 provenance_records=[],
             )
 
-    def test_provenance_rules_apply_to_derivation_and_replay_records(self) -> None:
+    def test_provenance_rules_apply_to_derivation_replay_and_observation_records(self) -> None:
         training_a = fixture_projection(seed=1)
         training_b = fixture_projection(seed=2)
         final = fixture_projection(seed=3)
@@ -384,7 +384,7 @@ class CohortPartitionTests(unittest.TestCase):
                     provenance_records=[provenance(training_a, kind=invalid_kind)],
                 )
 
-        for kind in ("derivation_artifact", "replay"):
+        for kind in ("derivation_artifact", "replay", "observation_variant"):
             valid = create_cohort_partition_manifest(
                 partition_version=1,
                 split_regime="instance_held_out",
