@@ -144,6 +144,9 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (v2Recorder != null && !v2Recorder.IsFinalized && v2Recorder.Failure == null
+            && v2Recorder.LastFixedStep < Clock.FixedStep)
+            CaptureV2PostPhysicsStep();
         Clock.ObserveFixedStep(Time.fixedTime);
         if (shotRecorder != null)
         {

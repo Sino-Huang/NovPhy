@@ -19,6 +19,7 @@ import xml.etree.ElementTree as ET
 
 from scripts.build_issue_51_evidence import (
     DEFAULT_OUTPUT,
+    FAILED_RUNTIME_DETERMINATION_IDENTITY,
     PRIOR_DETERMINATION_IDENTITY,
     ROOT,
     _component_identities,
@@ -28,6 +29,7 @@ from scripts.build_issue_51_evidence import (
     build_issue_51_evidence,
     build_pilot_plan,
 )
+from scripts.collection_plan import load_collection_plan
 from scripts.build_issue_51_pilot_plan import (
     build_issue_51_supplementary_plan,
 )
@@ -38,19 +40,33 @@ from scripts.smoke_physics_capture import archive_details, free_port, start_disp
 from scripts.verify_physics_player import verify_physics_player_archive
 
 
-DEFAULT_RUNTIME_ROOT = ROOT / ".local-artifacts/issue-51-pilot-run-determination-2"
+DEFAULT_RUNTIME_ROOT = ROOT / ".local-artifacts/issue-51-pilot-run-determination-3"
 DEFAULT_PRIOR_RUNTIME_ROOT = ROOT / ".local-artifacts/issue-51-pilot-run"
+DEFAULT_FAILED_RUNTIME_ROOT = (
+    ROOT / ".local-artifacts/issue-51-pilot-run-determination-2"
+)
 STAGE_ROOT = ROOT / "sciencebirdsgames/physics-v2"
 ACTUAL_COMMAND = (
     "python -u -m scripts.capture_issue_51_evidence "
-    "--runtime-root .local-artifacts/issue-51-pilot-run-determination-2 "
+    "--runtime-root .local-artifacts/issue-51-pilot-run-determination-3 "
     "--prior-runtime-root .local-artifacts/issue-51-pilot-run "
+    "--failed-runtime-root .local-artifacts/issue-51-pilot-run-determination-2 "
     "--output data/runtime_evidence/issue-51"
 )
 
 
 def _log(message: str) -> None:
     print(f"[issue-51] {message}", flush=True)
+
+
+def _verify_implementation_player() -> dict[str, Any]:
+    provenance = verify_physics_player_archive(STAGE_ROOT, physics_v2=True)
+    if provenance.get("source_snapshot_commit") != _implementation_revision(ROOT):
+        raise ValueError(
+            "the physics-v2 player is not built from the issue-51 implementation revision; "
+            "run scripts/build_physics_player.sh --physics-v2 after committing"
+        )
+    return provenance
 
 
 def _run_with_heartbeat(command: list[str], environment: dict[str, str]) -> None:
@@ -225,13 +241,99 @@ def _prior_determination_data(
     return summary, records, plan_path
 
 
-def dry_run(prior_runtime_root: Path = DEFAULT_PRIOR_RUNTIME_ROOT) -> dict[str, object]:
+def _failed_runtime_determination_data(
+    failed_runtime_root: Path,
+) -> tuple[dict[str, Any], dict[str, dict[str, Any]], Path, Path]:
+    report_path = failed_runtime_root / "collection/collection_plan_report.json"
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    ledger = report.get("attempt_ledger")
+    if (
+        report.get("accepted_count") != 0
+        or report.get("rejected_count") != 0
+        or report.get("failed_count") != 2
+        or report.get("quarantined_count") != 2
+        or not isinstance(ledger, list)
+        or len(ledger) != 2
+        or report.get("realized_coverage_shortfalls")
+    ):
+        raise ValueError("the failed issue-51 runtime is not the determination-2 run")
+    plan_path = failed_runtime_root / "authorities/collection-plan.json"
+    plan = load_collection_plan(plan_path).plan
+    if plan.identity != report.get("plan_identity"):
+        raise ValueError("the failed determination-2 collection plan is stale")
+    interventions = {
+        intervention.id: intervention.identity
+        for scenario in plan.scenarios
+        for intervention in scenario.interventions
+    }
+    records = {}
+    attempts = []
+    for entry in ledger:
+        failure_path = Path(entry.get("failure_manifest_path", ""))
+        if not failure_path.is_absolute():
+            failure_path = ROOT / failure_path
+        failure = json.loads(failure_path.read_text(encoding="utf-8"))
+        reason = entry.get("reason")
+        if (
+            entry.get("status") != "failed"
+            or entry.get("disposition") != "quarantine"
+            or entry.get("artifact_path") is not None
+            or entry.get("intervention_identity")
+            != interventions.get(entry.get("intervention_id"))
+            or not isinstance(reason, str)
+            or "event is outside recorded fixed-step coverage" not in reason
+            or failure.get("schema") != "collection_attempt_failure_v1"
+            or failure.get("attempt_id") != entry.get("attempt_id")
+            or failure.get("status") != "failed"
+            or failure.get("reason") != reason
+        ):
+            raise ValueError("the failed determination-2 attempt accounting is stale")
+        relative = f"prior-failures/{entry['intervention_id']}-failure.json"
+        records[relative] = failure
+        attempts.append({
+            "attempt_identity": entry["attempt_id"],
+            "intervention_id": entry["intervention_id"],
+            "intervention_identity": entry["intervention_identity"],
+            "status": "failed",
+            "failure_code": entry["failure_code"],
+            "failure_class": entry["failure_class"],
+            "reason": reason,
+            "failure_manifest_path": relative,
+            "disposition": "quarantined",
+            "eligible": False,
+        })
+    summary = {
+        "schema": "issue_51_prior_failed_pilot_determination_v1",
+        "identity": FAILED_RUNTIME_DETERMINATION_IDENTITY,
+        "disposition": "failed",
+        "failure_reason": "fixed_step_capture_gap",
+        "collection_plan_identity": report["plan_identity"],
+        "collection_plan_path": "prior-failures/collection-plan.json",
+        "collection_report_path": "prior-failures/collection-plan-report.json",
+        "counts": {
+            "accepted": 0,
+            "rejected": 0,
+            "failed": 2,
+            "quarantined": 2,
+            "retried": 0,
+        },
+        "unmet_slots": report.get("unmet_slots", []),
+        "attempts": attempts,
+    }
+    return summary, records, plan_path, report_path
+
+
+def dry_run(
+    prior_runtime_root: Path = DEFAULT_PRIOR_RUNTIME_ROOT,
+    failed_runtime_root: Path = DEFAULT_FAILED_RUNTIME_ROOT,
+) -> dict[str, object]:
     _log("dry-run: revalidating the accepted issue-44 through issue-50 authorities")
     sources = _validate_component_sources(ROOT)
     identities = _component_identities(ROOT, sources)
     _log("dry-run: verifying the provenance-bound physics-v2 player archive")
-    provenance = verify_physics_player_archive(STAGE_ROOT, physics_v2=True)
+    provenance = _verify_implementation_player()
     prior, _, _ = _prior_determination_data(prior_runtime_root)
+    failed, _, _, _ = _failed_runtime_determination_data(failed_runtime_root)
     with tempfile.TemporaryDirectory(prefix="novphy-issue51-dry-run-") as temporary:
         with redirect_stdout(io.StringIO()):
             authorities = build_issue_51_supplementary_plan(
@@ -251,7 +353,7 @@ def dry_run(prior_runtime_root: Path = DEFAULT_PRIOR_RUNTIME_ROOT) -> dict[str, 
         "pilot_plan_identity": plan["identity"],
         "supplementary_plan_identity": authorities["plan_identity"],
         "component_evidence_count": len(identities),
-        "prior_failed_determination_identity": prior["identity"],
+        "prior_failed_determination_identities": [prior["identity"], failed["identity"]],
         "would_launch_unity_attempts": 2,
         "unity_version": provenance["unity_version"],
         "actual_command": ACTUAL_COMMAND,
@@ -267,6 +369,7 @@ def _publish_supplementary(
     runtime_root: Path,
     provenance: dict[str, object],
     prior_runtime_root: Path,
+    failed_runtime_root: Path,
 ) -> Path:
     report = json.loads(
         (runtime_root / "collection/collection_plan_report.json").read_text(encoding="utf-8")
@@ -299,6 +402,27 @@ def _publish_supplementary(
     )
     (supplement / "prior-determination.json").write_text(
         json.dumps(prior, allow_nan=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    failed, failed_records, failed_plan_path, failed_report_path = (
+        _failed_runtime_determination_data(failed_runtime_root)
+    )
+    for relative, record in failed_records.items():
+        path = supplement / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(record, allow_nan=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    shutil.copyfile(
+        failed_plan_path, supplement / "prior-failures/collection-plan.json"
+    )
+    shutil.copyfile(
+        failed_report_path,
+        supplement / "prior-failures/collection-plan-report.json",
+    )
+    (supplement / "failed-determination.json").write_text(
+        json.dumps(failed, allow_nan=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     attempts = []
@@ -360,7 +484,12 @@ def _publish_supplementary(
     return supplement
 
 
-def run(runtime_root: Path, output: Path, prior_runtime_root: Path) -> dict[str, Any]:
+def run(
+    runtime_root: Path,
+    output: Path,
+    prior_runtime_root: Path,
+    failed_runtime_root: Path,
+) -> dict[str, Any]:
     _require_clean_tracked_worktree(ROOT)
     _implementation_revision(ROOT)
     if runtime_root.exists():
@@ -368,6 +497,7 @@ def run(runtime_root: Path, output: Path, prior_runtime_root: Path) -> dict[str,
     if output.exists():
         raise ValueError(f"immutable output already exists: {output}")
     _prior_determination_data(prior_runtime_root)
+    _failed_runtime_determination_data(failed_runtime_root)
     runtime_root.mkdir(parents=True)
 
     _log("freezing the prospective issue-51 pilot and supplementary terminal plans")
@@ -382,7 +512,7 @@ def run(runtime_root: Path, output: Path, prior_runtime_root: Path) -> dict[str,
     )
 
     _log("verifying the provenance-bound physics-v2 Unity player")
-    provenance = verify_physics_player_archive(STAGE_ROOT, physics_v2=True)
+    provenance = _verify_implementation_player()
     game = runtime_root / "game"
     archive_details(STAGE_ROOT, game)
     _install_level(game, Path(authorities["xml_path"]))
@@ -402,7 +532,11 @@ def run(runtime_root: Path, output: Path, prior_runtime_root: Path) -> dict[str,
 
     _log("binding all supplementary attempts and checking level_clear")
     supplement = _publish_supplementary(
-        authorities, runtime_root, provenance, prior_runtime_root
+        authorities,
+        runtime_root,
+        provenance,
+        prior_runtime_root,
+        failed_runtime_root,
     )
     _log("auditing central capabilities, atomic quarantine, and exact accounting")
     return build_issue_51_evidence(output, supplement, repository_root=ROOT)
@@ -417,6 +551,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--prior-runtime-root", type=Path, default=DEFAULT_PRIOR_RUNTIME_ROOT
     )
+    parser.add_argument(
+        "--failed-runtime-root", type=Path, default=DEFAULT_FAILED_RUNTIME_ROOT
+    )
     parser.add_argument("--dry-run", action="store_true")
     return parser
 
@@ -424,9 +561,14 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     args = build_parser().parse_args()
     result = (
-        dry_run(args.prior_runtime_root)
+        dry_run(args.prior_runtime_root, args.failed_runtime_root)
         if args.dry_run
-        else run(args.runtime_root, args.output, args.prior_runtime_root)
+        else run(
+            args.runtime_root,
+            args.output,
+            args.prior_runtime_root,
+            args.failed_runtime_root,
+        )
     )
     print(json.dumps(result, indent=2, sort_keys=True), flush=True)
 

@@ -47,20 +47,24 @@ ISSUE_ROOTS = {
 }
 PILOT_PLAN_IDENTITY = (
     "representative-cohort-v2-pilot-plan-v2:cohort-v2-capabilities-v1:"
-    "issues-44-through-51:determination-2"
+    "issues-44-through-51:determination-3"
 )
 PILOT_REPORT_IDENTITY = (
-    "representative-cohort-v2-pilot-report-v1:accepted-determination-1"
+    "representative-cohort-v2-pilot-report-v1:accepted-determination-3"
 )
-BUNDLE_IDENTITY = "issue-51-representative-cohort-v2-pilot-bundle-v1:accepted-1"
+BUNDLE_IDENTITY = "issue-51-representative-cohort-v2-pilot-bundle-v1:accepted-3"
 PRIOR_DETERMINATION_IDENTITY = (
     "issue-51-representative-pilot-determination-1:failed-level-clear"
+)
+FAILED_RUNTIME_DETERMINATION_IDENTITY = (
+    "issue-51-representative-pilot-determination-2:failed-fixed-step-coverage"
 )
 SUPPORTED_TERMINATIONS = ("level_clear", "level_fail", "stable_entered")
 IMPLEMENTATION_PATHS = (
     "scripts/build_issue_51_evidence.py",
     "scripts/build_issue_51_pilot_plan.py",
     "scripts/capture_issue_51_evidence.py",
+    "tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicalSnapshotRuntime.cs",
 )
 
 
@@ -231,7 +235,10 @@ def build_pilot_plan(
             termination: 1 for termination in SUPPORTED_TERMINATIONS
         },
         "component_evidence_identities": dict(sorted(component_identities.items())),
-        "prior_failed_determination_identity": PRIOR_DETERMINATION_IDENTITY,
+        "prior_failed_determination_identities": [
+            PRIOR_DETERMINATION_IDENTITY,
+            FAILED_RUNTIME_DETERMINATION_IDENTITY,
+        ],
         "supplementary_level_clear_plan_identity": supplementary_plan_identity,
         "attempt_policy": {
             "outcome_independent_retention": True,
@@ -508,6 +515,104 @@ def source_bound_quarantine_audit(capture_record: Mapping[str, Any]) -> dict[str
     }
 
 
+def _failed_runtime_determination(base: Path) -> dict[str, Any]:
+    failed = _load_json(base / "failed-determination.json")
+    if (
+        failed.get("identity") != FAILED_RUNTIME_DETERMINATION_IDENTITY
+        or failed.get("disposition") != "failed"
+        or failed.get("failure_reason") != "fixed_step_capture_gap"
+        or failed.get("counts")
+        != {
+            "accepted": 0,
+            "rejected": 0,
+            "failed": 2,
+            "quarantined": 2,
+            "retried": 0,
+        }
+    ):
+        raise Issue51EvidenceError("failed determination-2 accounting is incomplete")
+    plan_relative = failed.get("collection_plan_path")
+    report_relative = failed.get("collection_report_path")
+    if any(
+        not isinstance(relative, str)
+        or Path(relative).is_absolute()
+        or ".." in Path(relative).parts
+        for relative in (plan_relative, report_relative)
+    ):
+        raise Issue51EvidenceError("failed determination-2 authority path is invalid")
+    plan = load_collection_plan(base / plan_relative).plan
+    report = _load_json(base / report_relative)
+    counts = failed["counts"]
+    if (
+        failed.get("collection_plan_identity") != plan.identity
+        or report.get("plan_identity") != plan.identity
+        or report.get("accepted_count") != counts["accepted"]
+        or report.get("rejected_count") != counts["rejected"]
+        or report.get("failed_count") != counts["failed"]
+        or report.get("quarantined_count") != counts["quarantined"]
+        or report.get("retried_count", 0) != counts["retried"]
+        or report.get("unmet_slots") != failed.get("unmet_slots")
+        or report.get("realized_coverage_shortfalls")
+    ):
+        raise Issue51EvidenceError("failed determination-2 collection report is stale")
+    attempts = failed.get("attempts")
+    ledger = report.get("attempt_ledger")
+    if (
+        not isinstance(attempts, list)
+        or len(attempts) != 2
+        or not isinstance(ledger, list)
+        or len(ledger) != 2
+    ):
+        raise Issue51EvidenceError("failed determination-2 attempts are incomplete")
+    ledger_by_id = {entry.get("attempt_id"): entry for entry in ledger}
+    interventions = {
+        intervention.id: intervention.identity
+        for scenario in plan.scenarios
+        for intervention in scenario.interventions
+    }
+    for attempt in attempts:
+        relative = attempt.get("failure_manifest_path")
+        if (
+            not isinstance(relative, str)
+            or Path(relative).is_absolute()
+            or ".." in Path(relative).parts
+        ):
+            raise Issue51EvidenceError(
+                "failed determination-2 failure manifest path is invalid"
+            )
+        failure = _load_json(base / relative)
+        ledger_entry = ledger_by_id.get(attempt.get("attempt_identity"))
+        if (
+            ledger_entry is None
+            or attempt.get("status") != "failed"
+            or attempt.get("disposition") != "quarantined"
+            or attempt.get("eligible") is not False
+            or attempt.get("intervention_identity")
+            != interventions.get(attempt.get("intervention_id"))
+            or ledger_entry.get("intervention_id") != attempt.get("intervention_id")
+            or ledger_entry.get("intervention_identity")
+            != attempt.get("intervention_identity")
+            or ledger_entry.get("status") != attempt.get("status")
+            or ledger_entry.get("disposition") != "quarantine"
+            or ledger_entry.get("failure_code") != attempt.get("failure_code")
+            or ledger_entry.get("failure_class") != attempt.get("failure_class")
+            or ledger_entry.get("reason") != attempt.get("reason")
+            or failure.get("schema") != "collection_attempt_failure_v1"
+            or failure.get("attempt_id") != attempt.get("attempt_identity")
+            or failure.get("status") != attempt.get("status")
+            or failure.get("failure_code") != attempt.get("failure_code")
+            or failure.get("reason") != attempt.get("reason")
+            or "event is outside recorded fixed-step coverage"
+            not in attempt.get("reason", "")
+        ):
+            raise Issue51EvidenceError("failed determination-2 attempt is stale")
+    if set(ledger_by_id) != {
+        attempt["attempt_identity"] for attempt in attempts
+    }:
+        raise Issue51EvidenceError("failed determination-2 attempt identities are stale")
+    return {"authority": failed, "plan": plan, "report": report}
+
+
 def _supplementary_sources(root: Path) -> dict[str, Any]:
     base = Path(root) / "supplementary"
     plan = load_collection_plan(base / "collection-plan.json").plan
@@ -519,6 +624,7 @@ def _supplementary_sources(root: Path) -> dict[str, Any]:
     scenario = scenario_value.to_dict()
     runtime = _load_json(base / "runtime-authority.json")
     prior = _load_json(base / "prior-determination.json")
+    failed_runtime = _failed_runtime_determination(base)
     if (
         prior.get("identity") != PRIOR_DETERMINATION_IDENTITY
         or prior.get("disposition") != "failed"
@@ -683,6 +789,7 @@ def _supplementary_sources(root: Path) -> dict[str, Any]:
         "runtime": runtime,
         "prior": prior,
         "prior_captures": prior_captures,
+        "failed_runtime": failed_runtime,
     }
 
 
@@ -748,11 +855,23 @@ def _attempt_accounting(
             "realized_coverage_strata": attempt["realized_coverage_strata"],
             "eligible": False,
         })
+    for attempt in supplementary["failed_runtime"]["authority"]["attempts"]:
+        attempts.append({
+            "attempt_identity": attempt["attempt_identity"],
+            "source": "issue-51-determination-2",
+            "status": attempt["status"],
+            "failure_code": attempt["failure_code"],
+            "failure_class": attempt["failure_class"],
+            "reason": attempt["reason"],
+            "disposition": attempt["disposition"],
+            "eligible": False,
+        })
     attempts.append({
         "attempt_identity": quarantine["attempt_id"],
         "source": "issue-51-invalidation-audit",
         "status": quarantine["status"],
         "failure_code": quarantine["failure_code"],
+        "disposition": quarantine["disposition"],
         "eligible": False,
     })
     statuses = ("planned", "accepted", "rejected", "failed", "quarantined", "retried")
@@ -760,16 +879,21 @@ def _attempt_accounting(
     counts["planned"] = len(attempts)
     for attempt in attempts:
         counts[attempt["status"]] += 1
-    counts["quarantined"] = 1
+    counts["quarantined"] = sum(
+        attempt.get("disposition") == "quarantined" for attempt in attempts
+    )
     return {
         "schema": "representative_cohort_v2_pilot_attempt_accounting_v1",
-        "identity": "representative-cohort-v2-pilot-attempt-accounting-v1:determination-1",
+        "identity": "representative-cohort-v2-pilot-attempt-accounting-v1:determination-3",
         "attempts": attempts,
         "counts": counts,
         "unavailable": [],
         "unmet": [],
         "systematic_exporter_defects": [],
-        "prior_determinations": [supplementary["prior"]],
+        "prior_determinations": [
+            supplementary["prior"],
+            supplementary["failed_runtime"]["authority"],
+        ],
         "outcome_independent_retention": True,
         "passed": True,
     }
@@ -835,7 +959,7 @@ def _capability_audit(
             entry = {"status": status, "evidence_identities": evidence}
             if value == "explicit_legacy_static":
                 entry["rationale"] = (
-                    "the determination-2 supplementary terminal probe preserves exact "
+                    "the determination-3 supplementary terminal probe preserves exact "
                     "legacy-static XML and importer/source provenance"
                 )
             entries[value] = entry
@@ -977,6 +1101,7 @@ def _report(
             "pilot_implementation_revision": implementation_revision,
             "execution_revision": execution_revision,
             "issue_44_source_snapshot_commit": sources["issue44"]["runtime"]["source_snapshot_commit"],
+            "supplementary_source_snapshot_commit": supplementary["runtime"]["source_snapshot_commit"],
         },
         "coverage_strata": strata,
         "micro_label_evidence": micro,
@@ -993,7 +1118,10 @@ def _report(
             "consumed": False,
         },
         "quarantine_audit_identity": quarantine["identity"],
-        "prior_failed_determination_identity": supplementary["prior"]["identity"],
+        "prior_failed_determination_identities": [
+            supplementary["prior"]["identity"],
+            supplementary["failed_runtime"]["authority"]["identity"],
+        ],
         "systematic_exporter_defects": [],
         "passed": True,
     }
@@ -1007,16 +1135,12 @@ def _derived_artifacts(
 ) -> dict[str, dict[str, Any]]:
     sources = _validate_component_sources(repository_root)
     supplementary = _supplementary_sources(evidence_root)
-    issue50_runtime = _load_json(
-        repository_root
-        / "data/runtime_evidence/issue-50/source-probes/runtime-bundle-manifest.json"
-    )
     if (
         supplementary["runtime"].get("source_snapshot_commit")
-        != issue50_runtime.get("source_snapshot_commit")
+        != implementation_revision
     ):
         raise Issue51EvidenceError(
-            "supplementary Unity player differs from the accepted physics-v2 source envelope"
+            "supplementary Unity player is not built from the issue-51 implementation revision"
         )
     quarantine = source_bound_quarantine_audit(supplementary["capture"].record)
     identities = _component_identities(repository_root, sources)
@@ -1108,6 +1232,7 @@ def build_issue_51_evidence(
         raise Issue51EvidenceError(f"immutable issue-51 output already exists: {output}")
     required = {
         "collection-plan.json",
+        "failed-determination.json",
         "prior-determination.json",
         "scenario-manifest.json",
         "scenario.xml",
@@ -1118,6 +1243,7 @@ def build_issue_51_evidence(
         {path.name for path in supplementary_root.iterdir() if path.is_file()} != required
         or not (supplementary_root / "captures").is_dir()
         or not (supplementary_root / "prior-captures").is_dir()
+        or not (supplementary_root / "prior-failures").is_dir()
     ):
         raise Issue51EvidenceError("supplementary issue-51 source membership is incomplete")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -1130,6 +1256,9 @@ def build_issue_51_evidence(
         shutil.copytree(supplementary_root / "captures", supplement / "captures")
         shutil.copytree(
             supplementary_root / "prior-captures", supplement / "prior-captures"
+        )
+        shutil.copytree(
+            supplementary_root / "prior-failures", supplement / "prior-failures"
         )
         _log("revalidating all issue-44 through issue-50 component authorities")
         artifacts = _derived_artifacts(

@@ -160,6 +160,28 @@ public sealed class PhysicsCaptureV2RuntimeIntegrationTests
     }
 
     [Test]
+    public void BatchedFixedUpdatesRetainCoverageBeforeLevelClearCallback()
+    {
+        Environment.SetEnvironmentVariable(
+            PhysicsCaptureV2EngineProtocol.StrideEnvironmentVariable, "1",
+            EnvironmentVariableTarget.Process);
+        PhysicalSnapshotRuntime runtime = PhysicalSnapshotRuntime.Attach(host);
+        runtime.BeginShot(32, 64 * 1024, 10f);
+
+        InvokeRuntimeFixedUpdate(runtime);
+        InvokeRuntimeFixedUpdate(runtime);
+        runtime.RecordLevelClear(123);
+
+        PhysicsCaptureV2FixedStepRecorder recorder = PhysicsCaptureV2FixedStepRecorder.Active;
+        Assert.IsNull(recorder.Failure,
+            "batched fixed steps must not leave a level-clear event outside recorded coverage");
+        PhysicsCaptureV2EngineSnapshot snapshot = recorder.CreateFinalizedSnapshot();
+        Assert.IsNotNull(snapshot);
+        Assert.AreEqual(3, snapshot.FixedStepSamples.Count);
+        Assert.AreEqual("level_clear", snapshot.TerminalReason);
+    }
+
+    [Test]
     public void StableTerminalRequiresTheInterventionLaunchToHaveOccurred()
     {
         Environment.SetEnvironmentVariable(
@@ -184,11 +206,16 @@ public sealed class PhysicsCaptureV2RuntimeIntegrationTests
 
     private static void InvokeFixedUpdate(PhysicalSnapshotRuntime runtime)
     {
-        typeof(PhysicalSnapshotRuntime).GetMethod(
-            "FixedUpdate", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(runtime, null);
+        InvokeRuntimeFixedUpdate(runtime);
         typeof(PhysicalSnapshotRuntime).GetMethod(
             "CaptureV2PostPhysicsStep", BindingFlags.Instance | BindingFlags.NonPublic)
             .Invoke(runtime, null);
+    }
+
+    private static void InvokeRuntimeFixedUpdate(PhysicalSnapshotRuntime runtime)
+    {
+        typeof(PhysicalSnapshotRuntime).GetMethod(
+            "FixedUpdate", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(runtime, null);
     }
 
     private static string Payload(byte[] envelope)

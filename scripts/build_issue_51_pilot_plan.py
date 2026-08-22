@@ -27,8 +27,8 @@ from scripts.scenario_manifest import (
 ROOT = Path(__file__).resolve().parents[1]
 WORKBOOK_REFERENCE = "tasks/task_generator/template_constraints.xlsx"
 TEMPLATE_REFERENCE = "sciencebirdsgames/physics-v2/issue-51/level-clear-static-v2.xml"
-DEFAULT_OUTPUT_ROOT = ROOT / ".local-artifacts/issue-51-pilot-authorities-v2"
-SCENARIO_ID = "issue51-level-clear-static-determination2"
+DEFAULT_OUTPUT_ROOT = ROOT / ".local-artifacts/issue-51-pilot-authorities-v3"
+SCENARIO_ID = "issue51-level-clear-static-determination3"
 TARGETED_INTERVENTION_ID = "level-clear-targeted"
 GEOMETRY_INTERVENTION_ID = "level-clear-geometry"
 SLINGSHOT = (97, 227)
@@ -113,8 +113,8 @@ def build_issue_51_supplementary_plan(
         "source_provenance": {
             "target_stratum": "level clear",
             "selection_rule": (
-                "issue-51-frozen-direct-tnt-level-clear-v2; outcome-independent "
-                "static determination 2 supplement to the accepted issue-44 through "
+                "issue-51-frozen-direct-tnt-level-clear-v3; outcome-independent "
+                "static determination 3 supplement to the accepted issue-44 through "
                 "issue-50 evidence"
             ),
         },

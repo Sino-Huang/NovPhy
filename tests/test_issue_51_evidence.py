@@ -11,6 +11,7 @@ import unittest
 from unittest.mock import patch
 
 from scripts.build_issue_51_evidence import (
+    FAILED_RUNTIME_DETERMINATION_IDENTITY,
     Issue51EvidenceError,
     PRIOR_DETERMINATION_IDENTITY,
     _derived_artifacts,
@@ -103,13 +104,7 @@ def _supplementary(root: Path, *, level_clear: bool = True) -> Path:
             "terminal_reason": terminal_reason,
             "realized_coverage_strata": realized,
         })
-    issue50_runtime = json.loads(
-        (
-            ROOT
-            / "data/runtime_evidence/issue-50/source-probes/runtime-bundle-manifest.json"
-        ).read_text(encoding="utf-8")
-    )
-    source_commit = issue50_runtime["source_snapshot_commit"]
+    source_commit = "issue51-test-implementation"
     runtime = {
         "schema": "issue_51_supplementary_runtime_authority_v1",
         "identity": (
@@ -187,6 +182,103 @@ def _supplementary(root: Path, *, level_clear: bool = True) -> Path:
         "attempts": prior_attempts,
     }
     _write_json(supplement / "prior-determination.json", prior)
+    (supplement / "prior-failures").mkdir()
+    shutil.copyfile(
+        supplement / "collection-plan.json",
+        supplement / "prior-failures/collection-plan.json",
+    )
+    failed_attempts = []
+    failed_ledger = []
+    unmet_slots = []
+    failure_reason = (
+        "physics capture v2 failed (14): physics capture v2 event is outside "
+        "recorded fixed-step coverage"
+    )
+    for index, (intervention_id, intervention_identity) in enumerate(
+        sorted(interventions.items())
+    ):
+        attempt_identity = f"issue51-failed-test-attempt-{index}"
+        failure_path = f"prior-failures/{intervention_id}-failure.json"
+        failure = {
+            "schema": "collection_attempt_failure_v1",
+            "attempt_id": attempt_identity,
+            "attempt_number": 1,
+            "status": "failed",
+            "reason": failure_reason,
+            "failure_code": "transport_unavailable",
+            "failure_class": "permanent",
+            "retryable": False,
+            "retry_decision": "stop",
+            "quarantine_path": f"prior-failures/{intervention_id}",
+            "exception_type": "PhysicsCaptureV2Failure",
+        }
+        _write_json(supplement / failure_path, failure)
+        failed_attempts.append({
+            "attempt_identity": attempt_identity,
+            "intervention_id": intervention_id,
+            "intervention_identity": intervention_identity,
+            "status": "failed",
+            "failure_code": "transport_unavailable",
+            "failure_class": "permanent",
+            "reason": failure_reason,
+            "failure_manifest_path": failure_path,
+            "disposition": "quarantined",
+            "eligible": False,
+        })
+        failed_ledger.append({
+            "attempt_id": attempt_identity,
+            "intervention_id": intervention_id,
+            "intervention_identity": intervention_identity,
+            "status": "failed",
+            "disposition": "quarantine",
+            "failure_code": "transport_unavailable",
+            "failure_class": "permanent",
+            "reason": failure_reason,
+        })
+        intended = next(
+            intervention.intended_coverage_stratum
+            for collection_scenario in plan.scenarios
+            for intervention in collection_scenario.interventions
+            if intervention.id == intervention_id
+        )
+        unmet_slots.append({
+            "disposition": "failed",
+            "intended_coverage_stratum": intended,
+            "intervention_id": intervention_id,
+            "scenario_id": authority["scenario_id"],
+        })
+    failed_report = {
+        "plan_identity": authority["plan_identity"],
+        "accepted_count": 0,
+        "rejected_count": 0,
+        "failed_count": 2,
+        "quarantined_count": 2,
+        "unmet_slots": unmet_slots,
+        "realized_coverage_shortfalls": [],
+        "attempt_ledger": failed_ledger,
+    }
+    _write_json(
+        supplement / "prior-failures/collection-plan-report.json", failed_report
+    )
+    failed = {
+        "schema": "issue_51_prior_failed_pilot_determination_v1",
+        "identity": FAILED_RUNTIME_DETERMINATION_IDENTITY,
+        "disposition": "failed",
+        "failure_reason": "fixed_step_capture_gap",
+        "collection_plan_identity": authority["plan_identity"],
+        "collection_plan_path": "prior-failures/collection-plan.json",
+        "collection_report_path": "prior-failures/collection-plan-report.json",
+        "counts": {
+            "accepted": 0,
+            "rejected": 0,
+            "failed": 2,
+            "quarantined": 2,
+            "retried": 0,
+        },
+        "unmet_slots": unmet_slots,
+        "attempts": failed_attempts,
+    }
+    _write_json(supplement / "failed-determination.json", failed)
     return root
 
 
@@ -344,8 +436,8 @@ class Issue51EvidenceTests(unittest.TestCase):
             {"planned", "accepted", "rejected", "failed", "quarantined", "retried"},
         )
         self.assertEqual(accounting["counts"]["rejected"], 0)
-        self.assertEqual(accounting["counts"]["quarantined"], 1)
-        self.assertEqual(accounting["counts"]["failed"], 1)
+        self.assertEqual(accounting["counts"]["quarantined"], 3)
+        self.assertEqual(accounting["counts"]["failed"], 3)
         self.assertEqual(accounting["counts"]["retried"], 0)
         self.assertEqual(accounting["unavailable"], [])
         self.assertEqual(accounting["unmet"], [])
@@ -354,8 +446,19 @@ class Issue51EvidenceTests(unittest.TestCase):
             PRIOR_DETERMINATION_IDENTITY,
         )
         self.assertEqual(
+            accounting["prior_determinations"][1]["identity"],
+            FAILED_RUNTIME_DETERMINATION_IDENTITY,
+        )
+        self.assertEqual(
             sum(
                 attempt["source"] == "issue-51-determination-1"
+                for attempt in accounting["attempts"]
+            ),
+            2,
+        )
+        self.assertEqual(
+            sum(
+                attempt["source"] == "issue-51-determination-2"
                 for attempt in accounting["attempts"]
             ),
             2,
@@ -400,6 +503,21 @@ class Issue51EvidenceTests(unittest.TestCase):
             runtime["attempts"][0]["intervention_identity"] = "stale-intervention"
             _write_json(runtime_path, runtime)
             with self.assertRaisesRegex(Issue51EvidenceError, "attempt record is stale"):
+                _supplementary_sources(root)
+
+    def test_supplementary_sources_reject_rewritten_failed_attempt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = _supplementary(Path(temporary))
+            failure_path = (
+                root
+                / "supplementary/prior-failures/level-clear-targeted-failure.json"
+            )
+            failure = json.loads(failure_path.read_text(encoding="utf-8"))
+            failure["reason"] = "rewritten failure"
+            _write_json(failure_path, failure)
+            with self.assertRaisesRegex(
+                Issue51EvidenceError, "failed determination-2 attempt is stale"
+            ):
                 _supplementary_sources(root)
 
 
