@@ -10,6 +10,7 @@ from scripts.build_issue_49_evidence import (
     DEFAULT_SOURCE_ROOT,
     Issue49EvidenceError,
     _expected_artifacts,
+    _implementation_revision,
     build_issue_49_evidence,
     validate_issue_49_evidence,
 )
@@ -25,6 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CAPTURE_BUNDLE_IDENTITY = json.loads(
     (DEFAULT_SOURCE_ROOT / "capture-bundle-manifest.json").read_text(encoding="utf-8")
 )["identity"]
+IMPLEMENTATION_REVISION = _implementation_revision(ROOT)
 
 
 def derive(case: str):
@@ -105,7 +107,7 @@ class Issue49BundleTests(unittest.TestCase):
             output = Path(temporary) / "issue-49"
             result = build_issue_49_evidence(
                 output,
-                implementation_revision="test-revision",
+                implementation_revision=IMPLEMENTATION_REVISION,
                 dry_run=True,
             )
 
@@ -113,7 +115,11 @@ class Issue49BundleTests(unittest.TestCase):
             self.assertFalse(output.exists())
 
     def test_expected_bundle_passes_exact_rederivation(self) -> None:
-        artifacts = _expected_artifacts(ROOT, DEFAULT_SOURCE_ROOT, "test-revision")
+        artifacts = _expected_artifacts(
+            ROOT,
+            DEFAULT_SOURCE_ROOT,
+            IMPLEMENTATION_REVISION,
+        )
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "issue-49"
             for relative_path, value in artifacts.items():
@@ -126,7 +132,11 @@ class Issue49BundleTests(unittest.TestCase):
         self.assertEqual(result["label_count"], 1228)
 
     def test_changed_label_rejects_bundle(self) -> None:
-        artifacts = _expected_artifacts(ROOT, DEFAULT_SOURCE_ROOT, "test-revision")
+        artifacts = _expected_artifacts(
+            ROOT,
+            DEFAULT_SOURCE_ROOT,
+            IMPLEMENTATION_REVISION,
+        )
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "issue-49"
             for relative_path, value in artifacts.items():
@@ -137,6 +147,24 @@ class Issue49BundleTests(unittest.TestCase):
             path.write_text(json.dumps(changed), encoding="utf-8")
 
             with self.assertRaisesRegex(Issue49EvidenceError, "exact re-derivation"):
+                validate_issue_49_evidence(output)
+
+    def test_changed_implementation_revision_rejects_bundle(self) -> None:
+        artifacts = _expected_artifacts(
+            ROOT,
+            DEFAULT_SOURCE_ROOT,
+            IMPLEMENTATION_REVISION,
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "issue-49"
+            for relative_path, value in artifacts.items():
+                write_immutable_cohort_v2_json(value, output / relative_path)
+            path = output / "bundle-manifest.json"
+            changed = json.loads(path.read_text(encoding="utf-8"))
+            changed["implementation_revision"] = "stale-cross-release-revision"
+            path.write_text(json.dumps(changed), encoding="utf-8")
+
+            with self.assertRaisesRegex(Issue49EvidenceError, "implementation revision"):
                 validate_issue_49_evidence(output)
 
 

@@ -14,6 +14,7 @@ from scripts.cohort_v2_macro_semantics import (
     ACCEPTED_PREDICATES,
     CohortV2MacroSemanticsError,
     DERIVATION_SPEC_IDENTITY,
+    EXCLUDED_PREDICATES,
     derive_capture_macro_labels,
     derivation_spec,
     finite_json_tree,
@@ -31,6 +32,21 @@ DEFAULT_SOURCE_ROOT = ROOT / "data/runtime_evidence/issue-44"
 DEFAULT_OUTPUT = ROOT / "data/runtime_evidence/issue-49"
 CASES = ("collision", "no-contact", "stable-terminal", "support", "support-change")
 ADJUDICATION_CASES = ("collision", "support-change")
+IMPLEMENTATION_PATHS = (
+    "scripts/build_issue_49_evidence.py",
+    "scripts/cohort_v2_macro_semantics.py",
+)
+MINIMUM_WITNESS_COUNT = 2
+MINIMUM_BOUNDARY_WINDOW_COUNT = 2
+STEADY_POSITIVE_EVENT = "stable_entered"
+STEADY_NEGATIVE_EVENT = "collision"
+STEADY_BOUNDARY_EVENT = "stable_exited"
+STEADY_BOUNDARY_OFFSETS = (-1, 0, 1)
+STEADY_BOUNDARY_VALUES = (True, False, False)
+UNSTABLE_POSITIVE_EVENT = "collision"
+UNSTABLE_NEGATIVE_OFFSET = 2
+UNSTABLE_BOUNDARY_OFFSETS = (-1, 0, 1, 2)
+UNSTABLE_BOUNDARY_VALUES = (False, True, True, False)
 BUNDLE_IDENTITY = "issue-49-v2-macro-semantics-bundle-v1:accepted-determination-1"
 PLAN_IDENTITY = "issue-49-v2-macro-adjudication-plan-v1:determination-1"
 ADJUDICATION_IDENTITY = (
@@ -122,21 +138,41 @@ def adjudication_plan(source_capture_bundle_identity: str) -> dict[str, Any]:
         "predicates": list(ACCEPTED_PREDICATES),
         "selected_cases": list(ADJUDICATION_CASES),
         "selection_rules": {
-            "steady_positive": "same-step stable_entered label",
-            "steady_negative": "same-step collision label",
-            "steady_boundary": "stable_exited fixed_step minus one, at event, plus one",
-            "structure_positive": "same-step collision support-set change",
-            "structure_negative": "second fixed step after the selected collision",
-            "structure_boundary": "collision fixed_step minus one through plus two",
+            "steady_positive": {
+                "anchor_event": STEADY_POSITIVE_EVENT,
+                "relative_fixed_step": 0,
+            },
+            "steady_negative": {
+                "anchor_event": STEADY_NEGATIVE_EVENT,
+                "relative_fixed_step": 0,
+            },
+            "steady_boundary": {
+                "anchor_event": STEADY_BOUNDARY_EVENT,
+                "relative_fixed_steps": list(STEADY_BOUNDARY_OFFSETS),
+                "expected_values": list(STEADY_BOUNDARY_VALUES),
+            },
+            "structure_positive": {
+                "anchor_event": UNSTABLE_POSITIVE_EVENT,
+                "relative_fixed_step": 0,
+            },
+            "structure_negative": {
+                "anchor_event": UNSTABLE_POSITIVE_EVENT,
+                "relative_fixed_step": UNSTABLE_NEGATIVE_OFFSET,
+            },
+            "structure_boundary": {
+                "anchor_event": UNSTABLE_POSITIVE_EVENT,
+                "relative_fixed_steps": list(UNSTABLE_BOUNDARY_OFFSETS),
+                "expected_values": list(UNSTABLE_BOUNDARY_VALUES),
+            },
             "unavailable": "first retained fixed-step label",
         },
         "minimum_floor": {
-            "positive_witnesses": 2,
-            "negative_witnesses": 2,
-            "boundary_windows": 2,
-            "non_final_scenario_lineages": 2,
-            "level_instances": 2,
-            "scenario_templates": 2,
+            "positive_witnesses": MINIMUM_WITNESS_COUNT,
+            "negative_witnesses": MINIMUM_WITNESS_COUNT,
+            "boundary_windows": MINIMUM_BOUNDARY_WINDOW_COUNT,
+            "non_final_scenario_lineages": MINIMUM_WITNESS_COUNT,
+            "level_instances": MINIMUM_WITNESS_COUNT,
+            "scenario_templates": MINIMUM_WITNESS_COUNT,
             "unavailable_or_rejection_checks": 1,
         },
     }
@@ -194,7 +230,7 @@ def _coverage(witnesses: list[Mapping[str, Any]], expected_value: bool) -> dict[
         "level_instance_count": len({item["level_instance_id"] for item in eligible}),
         "scenario_template_count": len({item["scenario_template_id"] for item in eligible}),
     }
-    result["passed"] = min(result.values()) >= 2
+    result["passed"] = min(result.values()) >= MINIMUM_WITNESS_COUNT
     return result
 
 
@@ -306,14 +342,15 @@ def _adjudication(
     for case in ADJUDICATION_CASES:
         capture = sources["captures"][case]
         derived = derivations[case]
-        stable_entered = _event(capture, "stable_entered")["fixed_step"]
-        stable_exited = _event(capture, "stable_exited")["fixed_step"]
-        collision = _event(capture, "collision")["fixed_step"]
+        stable_entered = _event(capture, STEADY_POSITIVE_EVENT)["fixed_step"]
+        stable_exited = _event(capture, STEADY_BOUNDARY_EVENT)["fixed_step"]
+        steady_negative_step = _event(capture, STEADY_NEGATIVE_EVENT)["fixed_step"]
+        unstable_anchor = _event(capture, UNSTABLE_POSITIVE_EVENT)["fixed_step"]
         steady_positive.append(
             _witness(case, capture, derived, "steady-state", stable_entered)
         )
         steady_negative.append(
-            _witness(case, capture, derived, "steady-state", collision)
+            _witness(case, capture, derived, "steady-state", steady_negative_step)
         )
         steady_boundaries.append(
             _window(
@@ -321,15 +358,21 @@ def _adjudication(
                 capture,
                 derived,
                 "steady-state",
-                [stable_exited - 1, stable_exited, stable_exited + 1],
-                [True, False, False],
+                [stable_exited + offset for offset in STEADY_BOUNDARY_OFFSETS],
+                list(STEADY_BOUNDARY_VALUES),
             )
         )
         unstable_positive.append(
-            _witness(case, capture, derived, "structure-unstable", collision)
+            _witness(case, capture, derived, "structure-unstable", unstable_anchor)
         )
         unstable_negative.append(
-            _witness(case, capture, derived, "structure-unstable", collision + 2)
+            _witness(
+                case,
+                capture,
+                derived,
+                "structure-unstable",
+                unstable_anchor + UNSTABLE_NEGATIVE_OFFSET,
+            )
         )
         unstable_boundaries.append(
             _window(
@@ -337,8 +380,8 @@ def _adjudication(
                 capture,
                 derived,
                 "structure-unstable",
-                [collision - 1, collision, collision + 1, collision + 2],
-                [False, True, True, False],
+                [unstable_anchor + offset for offset in UNSTABLE_BOUNDARY_OFFSETS],
+                list(UNSTABLE_BOUNDARY_VALUES),
             )
         )
         first_step = derived["labels"][0]["fixed_step"]
@@ -366,9 +409,9 @@ def _adjudication(
     mutations = _mutation_checks(sources)
     passed = (
         all(steady_coverage[name]["passed"] for name in ("positive", "negative"))
-        and steady_coverage["boundary_window_count"] >= 2
+        and steady_coverage["boundary_window_count"] >= MINIMUM_BOUNDARY_WINDOW_COUNT
         and all(unstable_coverage[name]["passed"] for name in ("positive", "negative"))
-        and unstable_coverage["boundary_window_count"] >= 2
+        and unstable_coverage["boundary_window_count"] >= MINIMUM_BOUNDARY_WINDOW_COUNT
         and unavailable_passed
         and all(item["observed"] == item["expected"] for item in mutations)
     )
@@ -407,8 +450,7 @@ def _adjudication(
         },
         "mutation_checks": mutations,
         "exclusions": {
-            predicate: "excluded_not_emitted_not_false"
-            for predicate in ("cascade-active", "collapsed", "pigs-cleared")
+            predicate: "excluded_not_emitted_not_false" for predicate in EXCLUDED_PREDICATES
         },
         "failure_cases": [
             "A missing fixed-step predecessor makes structure-unstable unavailable.",
@@ -499,7 +541,12 @@ def validate_issue_49_evidence(
     implementation_revision = bundle.get("implementation_revision")
     if not isinstance(implementation_revision, str) or not implementation_revision:
         raise Issue49EvidenceError("bundle implementation revision is missing")
-    expected = _expected_artifacts(repository_root, source_root, implementation_revision)
+    expected_revision = _implementation_revision(repository_root)
+    if implementation_revision != expected_revision:
+        raise Issue49EvidenceError(
+            "bundle implementation revision differs from the committed issue-49 implementation"
+        )
+    expected = _expected_artifacts(repository_root, source_root, expected_revision)
     actual_paths = {
         path.relative_to(evidence_root).as_posix()
         for path in evidence_root.rglob("*.json")
@@ -524,14 +571,17 @@ def validate_issue_49_evidence(
     }
 
 
-def _head_revision(repository_root: Path) -> str:
-    return subprocess.run(
-        ["git", "rev-parse", "HEAD"],
+def _implementation_revision(repository_root: Path) -> str:
+    revision = subprocess.run(
+        ["git", "log", "-1", "--format=%H", "--", *IMPLEMENTATION_PATHS],
         cwd=repository_root,
         check=True,
         capture_output=True,
         text=True,
     ).stdout.strip()
+    if not revision:
+        raise Issue49EvidenceError("cannot resolve the committed issue-49 implementation")
+    return revision
 
 
 def _require_clean_tracked_worktree(repository_root: Path) -> None:
@@ -556,7 +606,11 @@ def build_issue_49_evidence(
     implementation_revision: str | None = None,
     dry_run: bool = False,
 ) -> dict[str, Any]:
-    revision = implementation_revision or _head_revision(repository_root)
+    revision = _implementation_revision(repository_root)
+    if implementation_revision is not None and implementation_revision != revision:
+        raise Issue49EvidenceError(
+            "requested implementation revision differs from the committed issue-49 implementation"
+        )
     _log("validating the immutable issue-44 Unity source bundle")
     artifacts = _expected_artifacts(repository_root, source_root, revision)
     adjudication = artifacts["macro-semantics-adjudication.json"]
@@ -565,9 +619,16 @@ def build_issue_49_evidence(
         f"{sum(artifacts[f'derivations/{case}.json']['label_count'] for case in CASES)} "
         "fixed-step label records"
     )
+    coverage = adjudication["coverage"]
     _log(
-        "witness floor passed: 2 positive, 2 negative, and 2 boundary windows "
-        "for each accepted predicate"
+        "witness floor passed: "
+        + "; ".join(
+            f"{predicate}="
+            f"{coverage[predicate]['positive']['witness_count']} positive/"
+            f"{coverage[predicate]['negative']['witness_count']} negative/"
+            f"{coverage[predicate]['boundary_window_count']} boundary windows"
+            for predicate in ACCEPTED_PREDICATES
+        )
     )
     _log(
         f"fail-closed checks passed: {adjudication['coverage']['mutation_check_count']} mutations"
