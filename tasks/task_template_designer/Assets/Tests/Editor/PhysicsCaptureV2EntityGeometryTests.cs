@@ -8,6 +8,7 @@ using UnityEngine;
 public sealed class PhysicsCaptureV2EntityGeometryTests
 {
     private string previousStride;
+    private string previousIssue50Probe;
     private GameObject recorderHost;
 
     [SetUp]
@@ -15,6 +16,9 @@ public sealed class PhysicsCaptureV2EntityGeometryTests
     {
         previousStride = Environment.GetEnvironmentVariable(
             PhysicsCaptureV2EngineProtocol.StrideEnvironmentVariable,
+            EnvironmentVariableTarget.Process);
+        previousIssue50Probe = Environment.GetEnvironmentVariable(
+            PhysicalViolationCapabilityProbe.EnvironmentVariable,
             EnvironmentVariableTarget.Process);
         Environment.SetEnvironmentVariable(
             PhysicsCaptureV2EngineProtocol.StrideEnvironmentVariable, "1",
@@ -29,6 +33,59 @@ public sealed class PhysicsCaptureV2EntityGeometryTests
         Environment.SetEnvironmentVariable(
             PhysicsCaptureV2EngineProtocol.StrideEnvironmentVariable, previousStride,
             EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable(
+            PhysicalViolationCapabilityProbe.EnvironmentVariable, previousIssue50Probe,
+            EnvironmentVariableTarget.Process);
+    }
+
+    [Test]
+    public void Issue50ProbeFreezesOnlyAnExplicitGravityApplicableBody()
+    {
+        ABLevel level = LevelLoader.LoadXmlLevel(
+            "<Level width=\"2\">\n"
+            + "  <Camera x=\"0\" y=\"0\" minWidth=\"25\" maxWidth=\"35\" />\n"
+            + "  <Score highScore=\"0\" />\n"
+            + "  <Birds>\n    <Bird type=\"BirdRed\" />\n  </Birds>\n"
+            + "  <Slingshot x=\"-12\" y=\"-2.5\" />\n"
+            + "  <GameObjects>\n"
+            + "    <Block type=\"Circle\" material=\"stone\" x=\"0\" y=\"1\" "
+            + "physicsViolationProbe=\"unsupported_stationary_v1\" />\n"
+            + "  </GameObjects>\n</Level>\n");
+        Assert.AreEqual(
+            PhysicalViolationCapabilityProbe.UnsupportedStationary,
+            level.blocks[0].physicsViolationProbe);
+        GameObject target = new GameObject("issue-50-unsupported-stationary-probe");
+        try
+        {
+            Rigidbody2D body = target.AddComponent<Rigidbody2D>();
+            body.bodyType = RigidbodyType2D.Dynamic;
+            body.simulated = true;
+            body.gravityScale = 0.75f;
+            body.velocity = new Vector2(2f, -3f);
+            body.angularVelocity = 9f;
+
+            Environment.SetEnvironmentVariable(
+                PhysicalViolationCapabilityProbe.EnvironmentVariable, null,
+                EnvironmentVariableTarget.Process);
+            Assert.Throws<InvalidOperationException>(() =>
+                PhysicalViolationCapabilityProbe.Apply(
+                    target, level.blocks[0].physicsViolationProbe));
+            Environment.SetEnvironmentVariable(
+                PhysicalViolationCapabilityProbe.EnvironmentVariable,
+                PhysicalViolationCapabilityProbe.EnvironmentValue,
+                EnvironmentVariableTarget.Process);
+            PhysicalViolationCapabilityProbe.Apply(
+                target, level.blocks[0].physicsViolationProbe);
+
+            Assert.AreEqual(RigidbodyConstraints2D.FreezeAll, body.constraints);
+            Assert.AreEqual(Vector2.zero, body.velocity);
+            Assert.AreEqual(0f, body.angularVelocity);
+            Assert.AreEqual(0.75f, body.gravityScale);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(target);
+        }
     }
 
     [Test]

@@ -332,10 +332,11 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
 
             Vector2 pos = new Vector2(gameObj.x, gameObj.y);
             Quaternion rotation = Quaternion.Euler(0, 0, gameObj.rotation);
+            GameObject block;
 
             if (!gameObj.type.Contains("novel"))
             {
-                GameObject block = AddBlock(ABWorldAssets.BLOCKS[gameObj.type], pos, rotation);
+                block = AddBlock(ABWorldAssets.BLOCKS[gameObj.type], pos, rotation);
                 ScenarioObjectIdentity.Assign(block, gameObj.scenarioObjectId);
 
                 MATERIALS material = (MATERIALS)System.Enum.Parse(typeof(MATERIALS), gameObj.material);
@@ -347,7 +348,7 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
             else
             {
                 GameObject newBlock = (GameObject)NOVELTIES.LoadAsset(gameObj.type);
-                GameObject block = AddBlock(newBlock, pos, rotation);
+                block = AddBlock(newBlock, pos, rotation);
                 ScenarioObjectIdentity.Assign(block, gameObj.scenarioObjectId);
 
                 string matrialName = "novel_material_" + gameObj.type.Split('_')[2];
@@ -355,7 +356,7 @@ public class ABGameWorld : ABSingleton<ABGameWorld>
                 block.GetComponent<ABBlock>().SetMaterial(MATERIALS.novelty, matrialName);
             }
 
-
+            PhysicalViolationCapabilityProbe.Apply(block, gameObj.physicsViolationProbe);
         }
 
         foreach (PlatData gameObj in currentLevel.platforms)

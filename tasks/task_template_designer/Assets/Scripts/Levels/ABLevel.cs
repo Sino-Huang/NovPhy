@@ -18,6 +18,7 @@
 //
 
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -55,8 +56,10 @@ public class BirdData {
 public class BlockData: OBjData {
 
 	public string material;
+	public string physicsViolationProbe;
 
-	public BlockData(string type, float rotation, float x, float y, string material, string scenarioObjectId = null) {
+	public BlockData(string type, float rotation, float x, float y, string material,
+		string scenarioObjectId = null, string physicsViolationProbe = null) {
 
 		this.type = type;
 		this.scenarioObjectId = scenarioObjectId;
@@ -64,6 +67,34 @@ public class BlockData: OBjData {
 		this.x = x;
 		this.y = y;
 		this.material = material;
+		this.physicsViolationProbe = physicsViolationProbe;
+	}
+}
+
+public static class PhysicalViolationCapabilityProbe
+{
+	public const string EnvironmentVariable = "NOVPHY_ISSUE_50_CAPABILITY_PROBE";
+	public const string EnvironmentValue = "unsupported-stationary-v1";
+	public const string UnsupportedStationary = "unsupported_stationary_v1";
+
+	public static void Apply(GameObject target, string probe)
+	{
+		if (String.IsNullOrEmpty(probe))
+			return;
+		if (probe != UnsupportedStationary)
+			throw new InvalidOperationException("Unknown physical-violation capability probe: " + probe);
+		if (Environment.GetEnvironmentVariable(EnvironmentVariable,
+			EnvironmentVariableTarget.Process) != EnvironmentValue)
+			throw new InvalidOperationException("Issue #50 capability-probe mode is not enabled.");
+
+		Rigidbody2D body = target == null ? null : target.GetComponent<Rigidbody2D>();
+		if (body == null || body.bodyType != RigidbodyType2D.Dynamic
+			|| !body.simulated || body.gravityScale == 0f)
+			throw new InvalidOperationException(
+				"Unsupported-stationary probe requires a simulated dynamic body under gravity.");
+		body.velocity = Vector2.zero;
+		body.angularVelocity = 0f;
+		body.constraints = RigidbodyConstraints2D.FreezeAll;
 	}
 }
 

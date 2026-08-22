@@ -134,7 +134,8 @@ public class LevelLoader {
 
 				if (nodeName == "Block") {
 
-					level.blocks.Add (new BlockData (type, rotation, x, y, material, scenarioObjectId));
+					level.blocks.Add (new BlockData (type, rotation, x, y, material,
+						scenarioObjectId, reader.GetAttribute("physicsViolationProbe")));
 					reader.Read ();
 				} 
 				else if (nodeName == "Pig") {
