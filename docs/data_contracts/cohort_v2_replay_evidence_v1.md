@@ -33,6 +33,8 @@ Cross-attempt camera framing and pixel equality are not required. Camera, viewpo
 
 The canonical publication target is `data/runtime_evidence/issue-48`. It contains two scenario collections and interventions across the frozen training and calibration roles, two non-final scenario lineages, two level instances, and two scenario templates. The training pair must demonstrate the collision and raw-contact strata. The calibration pair must demonstrate the stable stratum and retain matched persistent support relations.
 
+Determination 5 is accepted at that target and binds implementation revision `14afe6d`. All four original/replay attempts were accepted with zero retries. Both scenario collections passed every required replay component; cross-attempt camera framing and pixel equality were correctly recorded as not required. The excluded determinations are catalogued only under `data/runtime_evidence/issue-48-audit`.
+
 Earlier determinations are audit history only. They are never rewritten or used to pass the canonical determination. No attempt may be retried within a plan, and benchmark-agent action provenance is not used or required.
 
 ## Commands

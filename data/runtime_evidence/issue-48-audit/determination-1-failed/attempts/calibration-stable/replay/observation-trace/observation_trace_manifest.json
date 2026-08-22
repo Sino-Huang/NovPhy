@@ -1,0 +1,219 @@
+{
+  "access_policy": {
+    "agent": "central_model_workflows",
+    "canonical": "alignment_or_capture_diagnosis_only"
+  },
+  "exposure_role": "calibration",
+  "frame_records": [
+    {
+      "agent_observation": {
+        "content_identity": "rgb-png-v1:sha256:fd723c2ef13c756b3f0aad047eeaa77d4f08469d01e433c351b1efc927517859",
+        "height_pixels": 240,
+        "identity": "agent-observation-v1:sha256:1cd0451b73398438cb4536b27c2f29eb156c1f99314eccd20cc5826b630bbdbc",
+        "media_type": "image/png",
+        "observation_configuration_identity": "observation-configuration-v1:sha256:568288546b7bbd02cde253c5554a8737ce34ddd2fc28551684b8e1a2c9c93731",
+        "pixel_format": "rgb8_srgb",
+        "relative_path": "observations/agent/frame_000000.png",
+        "role": "agent",
+        "stage": "post_transform",
+        "synchronization_identity": "observation-synchronization-v1:sha256:9d1995c0bfe851ada92c3309330e4d1e99c665d186cbe57874e753cc01f93a6d",
+        "width_pixels": 320
+      },
+      "canonical_observation": {
+        "content_identity": "rgb-png-v1:sha256:bc5921e95ceb99a4f619098787d2000c816dfaec66cec77a8205bd17d4b7bc70",
+        "height_pixels": 480,
+        "identity": "canonical-observation-v1:sha256:a449f44a1f5ab8c17451bf4885d93f5d38e2b761913dd5c7de4816dad0d1ce89",
+        "media_type": "image/png",
+        "observation_configuration_identity": "observation-configuration-v1:sha256:568288546b7bbd02cde253c5554a8737ce34ddd2fc28551684b8e1a2c9c93731",
+        "pixel_format": "rgb8_srgb",
+        "relative_path": "observations/canonical/frame_000000.png",
+        "role": "canonical",
+        "stage": "pre_transform",
+        "synchronization_identity": "observation-synchronization-v1:sha256:9d1995c0bfe851ada92c3309330e4d1e99c665d186cbe57874e753cc01f93a6d",
+        "width_pixels": 840
+      },
+      "capture_metadata": {
+        "camera": {
+          "aspect_ratio": 1.75,
+          "camera_identity": "unity-main-camera",
+          "camera_to_clip_matrix": [
+            0.0761172846,
+            0,
+            0,
+            0,
+            0,
+            0.13320525,
+            0,
+            0,
+            0,
+            0,
+            -0.0020006,
+            -1.0006001,
+            0,
+            0,
+            0,
+            1
+          ],
+          "far_clip_world_units": 1000,
+          "near_clip_world_units": 0.3,
+          "orthographic_size_world_units": 7.507211,
+          "position_world": [
+            -4.3623786,
+            -1,
+            -10
+          ],
+          "projection_kind": "orthographic",
+          "rotation_xyzw": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "vertical_field_of_view_degrees": null,
+          "world_to_camera_matrix": [
+            1,
+            0,
+            0,
+            4.3623786,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            -1,
+            -10,
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "capture_id": "capture-9f7e03d76c824eddb55f4b426dacddf8",
+        "coordinates": {
+          "channel_order": "RGB",
+          "color_space": "sRGB",
+          "observation_origin": "top_left",
+          "observation_space": "rgb_pixel",
+          "observation_units": "pixel",
+          "observation_x_axis": "right",
+          "observation_y_axis": "down",
+          "sample_type": "uint8",
+          "world_space": "unity_world_2d",
+          "world_units": "unity_unit"
+        },
+        "fixed_step": 277,
+        "fixed_time_seconds": 6.33999968,
+        "render_frame": 6553,
+        "render_time_seconds": 6.34171,
+        "schema_version": "observation_capture_engine_v1",
+        "sequence": 1,
+        "source": "synchronized_observation_endpoint",
+        "source_frame_identity": "source-frame-v1:capture-9f7e03d76c824eddb55f4b426dacddf8:1:6553:277",
+        "viewport": {
+          "camera_pixel_rect": [
+            0,
+            0,
+            840,
+            480
+          ],
+          "height_pixels": 480,
+          "pixel_origin": "bottom_left",
+          "screen_height_pixels": 480,
+          "screen_width_pixels": 840,
+          "width_pixels": 840
+        },
+        "world_to_observation_transform": {
+          "camera_to_clip_matrix": [
+            0.0761172846,
+            0,
+            0,
+            0,
+            0,
+            0.13320525,
+            0,
+            0,
+            0,
+            0,
+            -0.0020006,
+            -1.0006001,
+            0,
+            0,
+            0,
+            1
+          ],
+          "clip_to_ndc": "homogeneous_divide",
+          "method": "unity_world_to_clip_to_top_left_pixel_v1",
+          "ndc_to_observation_matrix": [
+            420,
+            0,
+            420,
+            0,
+            -240,
+            240,
+            0,
+            0,
+            1
+          ],
+          "world_to_camera_matrix": [
+            1,
+            0,
+            0,
+            4.3623786,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            -1,
+            -10,
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      },
+      "fixed_step": 277,
+      "fixed_time_seconds": 6.33999968,
+      "identity": "observation-frame-record-v1:sha256:a9481d4a293fe29dda99af58d0a7398f6ee0960537ad9c8c4956a78b36a20ffc",
+      "render_frame": 6553,
+      "render_time_seconds": 6.34171,
+      "source_frame_identity": "source-frame-v1:capture-9f7e03d76c824eddb55f4b426dacddf8:1:6553:277",
+      "synchronization_identity": "observation-synchronization-v1:sha256:9d1995c0bfe851ada92c3309330e4d1e99c665d186cbe57874e753cc01f93a6d"
+    }
+  ],
+  "identity": "observation-trace-manifest-v1:sha256:cb352cf9ab4518b5dfb049f63585a74118ceeafb3ccca543e09553d9a49e3839",
+  "observation_configuration": {
+    "agent_representation": {
+      "media_type": "image/png",
+      "pixel_format": "rgb8_srgb",
+      "role": "agent",
+      "stage": "post_transform",
+      "transform": {
+        "method": "resize",
+        "output_height_pixels": 240,
+        "output_width_pixels": 320,
+        "resampling": "nearest"
+      }
+    },
+    "canonical_representation": {
+      "media_type": "image/png",
+      "pixel_format": "rgb8_srgb",
+      "role": "canonical",
+      "stage": "pre_transform"
+    },
+    "identity": "observation-configuration-v1:sha256:568288546b7bbd02cde253c5554a8737ce34ddd2fc28551684b8e1a2c9c93731",
+    "name": "agent_rgb8_nearest_320x240_v1",
+    "schema": "observation_configuration_v1"
+  },
+  "scenario_lineage_identity": "scenario-lineage-observation-v1:sha256:217b214abd38afa795238283fb0a6ee5d1dbae8ab9dafce3c9e9429771ea7840",
+  "schema": "observation_trace_manifest_v1",
+  "source_bindings": {
+    "level_instance_identity": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010102%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010102%25252FLevels%25252F00001_0_1_010102_0_2.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4501%3A%257B%2522max_coordinate%2522%253A%255B1.444081%252C1.53147%255D%252C%2522min_coordinate%2522%253A%255B-7.235919%252C-1.95804%255D%252C%2522reference_point%2522%253A%255B1.02408%252C-1.84657%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010102%252FLevels%252F00001_0_1_010102_0_2.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010102_0_2%2522%257D",
+    "rollout_identity": "cohort-v2-replay-attempt-v1:cohort-v2-replay-plan-v1%3A1%3Acohort-v2-replay-version-envelope-v1%253A2019.4.41f2%253Aobservation-v1%253A2d2f4605371eae8f77ff6d1e158b5f6ae8f02fd7%253Affa5a12cdc867de3b611ca2e201f97e57334637d%253A1%253A1%253Aphysics_capture_v2%253Aobservation_capture_engine_v1%253Acanonical_materialization_v1%253A2d2f4605371eae8f77ff6d1e158b5f6ae8f02fd7%3Atraining-collision%3Acalibration-stable:calibration-stable:replay",
+    "scenario_template_identity": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010102%2FLevels%2F00001_0_1_010102_0_2.xml",
+    "source_scenario_lineage_identity": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010102%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010102%252525252FLevels%252525252F00001_0_1_010102_0_2.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4501%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.444081%2525252C1.53147%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.235919%2525252C-1.95804%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.02408%2525252C-1.84657%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010102%2525252FLevels%2525252F00001_0_1_010102_0_2.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010102_0_2%25252522%2525257D"
+  }
+}
