@@ -493,7 +493,8 @@ public sealed class PhysicsCaptureDirectSocket : MonoBehaviour
                         new SymbolicGameState(false), Time.frameCount, Time.time);
                     Texture2D observationTexture = ScreenCapture.CaptureScreenshotAsTexture();
                     byte[] canonicalPng = observationTexture == null
-                        ? null : observationTexture.EncodeToPNG();
+                        ? null : ObservationCaptureProtocol.EncodeCanonicalRgbPng(
+                            observationTexture);
                     int observationWidth = observationTexture == null ? 0 : observationTexture.width;
                     int observationHeight = observationTexture == null ? 0 : observationTexture.height;
                     if (observationTexture != null) Destroy(observationTexture);

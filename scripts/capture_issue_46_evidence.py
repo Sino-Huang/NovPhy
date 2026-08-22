@@ -44,20 +44,16 @@ def _capture_record(capture: ObservationCaptureEngine) -> dict:
     return record
 
 
-def _install_levels(runtime: Path, stage: Path) -> None:
-    level_sources = (
-        stage / "review-levels" / "training.xml",
-        stage / "review-levels" / "calibration.xml",
-    )
-    if any(not path.is_file() for path in level_sources):
-        raise ValueError("issue #46 source-bound review levels are missing")
+def _install_level(runtime: Path, stage: Path, level_name: str) -> None:
+    level_source = stage / "review-levels" / f"{level_name}.xml"
+    if not level_source.is_file():
+        raise ValueError("issue #46 source-bound review level is missing")
     target_root = (
         runtime / "9001_Data" / "StreamingAssets" / "Levels"
         / "novelty_level_0" / "type2" / "Levels"
     )
     target_root.mkdir(parents=True, exist_ok=True)
-    for source in level_sources:
-        shutil.copyfile(source, target_root / source.name)
+    shutil.copyfile(level_source, target_root / level_source.name)
 
     evaluation = ET.Element("evaluation")
     ET.SubElement(
@@ -78,11 +74,10 @@ def _install_levels(runtime: Path, stage: Path) -> None:
         "attempt_limit_per_level": "5", "allow_level_selection": "True",
     })
     relative_root = target_root.relative_to(runtime).as_posix()
-    for source in level_sources:
-        ET.SubElement(
-            level_set, "game_levels",
-            {"level_path": f"{relative_root}/{source.name}"},
-        )
+    ET.SubElement(
+        level_set, "game_levels",
+        {"level_path": f"{relative_root}/{level_source.name}"},
+    )
     ET.indent(evaluation, space="  ")
     ET.ElementTree(evaluation).write(
         runtime / "config.xml", encoding="utf-8", xml_declaration=True
@@ -119,9 +114,10 @@ def _probe(
     }
 
 
-def collect(stage: Path, output: Path) -> dict:
-    if output.exists():
-        raise ValueError("issue #46 output already exists")
+def _capture_one(
+    stage: Path,
+    level_name: str,
+) -> tuple[ObservationCaptureEngine, str, str]:
     engine = None
     display_process = None
     agent = None
@@ -130,7 +126,7 @@ def collect(stage: Path, output: Path) -> dict:
         temporary_root = Path(temporary)
         runtime = temporary_root / "player"
         archive, _, _ = archive_details(stage, runtime)
-        _install_levels(runtime, stage)
+        _install_level(runtime, stage, level_name)
         provenance = json.loads((runtime / "provenance.json").read_text(encoding="utf-8"))
         source_commit = provenance["project"]["git_head"]
         archive_identity = (
@@ -168,33 +164,7 @@ def collect(stage: Path, output: Path) -> dict:
             physics = connect_with_retry(
                 "127.0.0.1", physics_port, timeout=120.0, deadline_seconds=90.0
             )
-            training_capture = physics.get_observation_capture()
-
-            agent.load_level(2)
-            prepare_for_play(agent, timeout=120.0, poll_delay=0.5)
-            calibration_capture = physics.get_observation_capture()
-
-            probes = [
-                _probe(
-                    training_capture,
-                    stage / "review-manifests" / "training.json",
-                    probe_identity="training-native",
-                    configuration="agent_rgb8_native_v1",
-                    exposure_role="training",
-                    source_snapshot_commit=source_commit,
-                    player_archive_identity=archive_identity,
-                ),
-                _probe(
-                    calibration_capture,
-                    stage / "review-manifests" / "calibration.json",
-                    probe_identity="calibration-resized",
-                    configuration="agent_rgb8_nearest_320x240_v1",
-                    exposure_role="calibration",
-                    source_snapshot_commit=source_commit,
-                    player_archive_identity=archive_identity,
-                ),
-            ]
-            return build_issue_46_evidence(output, probes)
+            return physics.get_observation_capture(), source_commit, archive_identity
         finally:
             if physics is not None:
                 physics.disconnect()
@@ -202,6 +172,40 @@ def collect(stage: Path, output: Path) -> dict:
                 agent.disconnect()
             terminate(engine)
             terminate(display_process)
+
+
+def collect(stage: Path, output: Path) -> dict:
+    if output.exists():
+        raise ValueError("issue #46 output already exists")
+    training_capture, source_commit, archive_identity = _capture_one(
+        stage, "training"
+    )
+    calibration_capture, calibration_commit, calibration_archive = _capture_one(
+        stage, "calibration"
+    )
+    if calibration_commit != source_commit or calibration_archive != archive_identity:
+        raise ValueError("issue #46 probes used different player authorities")
+    probes = [
+        _probe(
+            training_capture,
+            stage / "review-manifests" / "training.json",
+            probe_identity="training-native",
+            configuration="agent_rgb8_native_v1",
+            exposure_role="training",
+            source_snapshot_commit=source_commit,
+            player_archive_identity=archive_identity,
+        ),
+        _probe(
+            calibration_capture,
+            stage / "review-manifests" / "calibration.json",
+            probe_identity="calibration-resized",
+            configuration="agent_rgb8_nearest_320x240_v1",
+            exposure_role="calibration",
+            source_snapshot_commit=source_commit,
+            player_archive_identity=archive_identity,
+        ),
+    ]
+    return build_issue_46_evidence(output, probes)
 
 
 def main() -> int:

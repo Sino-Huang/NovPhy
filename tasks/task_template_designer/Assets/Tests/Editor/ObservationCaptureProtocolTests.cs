@@ -6,6 +6,22 @@ using UnityEngine;
 public sealed class ObservationCaptureProtocolTests
 {
     [Test]
+    public void CanonicalEncoderPublishesRgbPixelsWithoutAnAlphaChannel()
+    {
+        Texture2D source = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+        source.SetPixels(new Color[] {
+            new Color(1f, 0f, 0f, 0.25f), new Color(0f, 1f, 0f, 0.5f),
+            new Color(0f, 0f, 1f, 0.75f), new Color(1f, 1f, 1f, 1f)
+        });
+        source.Apply();
+
+        byte[] png = ObservationCaptureProtocol.EncodeCanonicalRgbPng(source);
+
+        Assert.AreEqual(2, png[25]);
+        UnityEngine.Object.DestroyImmediate(source);
+    }
+
+    [Test]
     public void Request72BindsCanonicalPngToCameraViewportAndSourceFrame()
     {
         GameObject cameraObject = new GameObject("Main Camera");

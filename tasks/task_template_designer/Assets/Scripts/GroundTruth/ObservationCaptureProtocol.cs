@@ -22,6 +22,24 @@ public static class ObservationCaptureProtocol
         (byte)'S', (byte)'B', (byte)'O', (byte)'1'
     };
 
+    public static byte[] EncodeCanonicalRgbPng(Texture2D source)
+    {
+        if (source == null) return null;
+        Texture2D rgb = new Texture2D(
+            source.width, source.height, TextureFormat.RGB24, false);
+        try
+        {
+            rgb.SetPixels32(source.GetPixels32());
+            rgb.Apply(false, false);
+            return rgb.EncodeToPNG();
+        }
+        finally
+        {
+            if (Application.isPlaying) UnityEngine.Object.Destroy(rgb);
+            else UnityEngine.Object.DestroyImmediate(rgb);
+        }
+    }
+
     public static byte[] BuildCaptureEnvelope(byte[] canonicalPng,
         PhysicalSceneSnapshot snapshot, Camera camera, string captureId,
         long sequence, int width, int height)
