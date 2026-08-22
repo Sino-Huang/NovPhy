@@ -80,7 +80,7 @@ Artifact boundaries are normative:
 
 The simulation engine is authoritative for physical state changes, object lifecycle, contacts, events, and fixed-step time. The engine trace MUST be the source of truth for physical supervision. The observation trace MUST be treated as synchronized sensor evidence, not physical truth.
 
-Each frame record MUST describe the complete post-step engine state and synchronized observations at one fixed step. Exact RGB alignment MUST use the synchronized state-and-observation response guaranteed by `physics_capture_v1`; desktop screenshots and ordinary screenshot requests MUST NOT be represented as exact canonical observations.
+Each frame record MUST describe the complete post-step engine state and synchronized observations at one fixed step. Exact agent/canonical RGB alignment MUST use the request-72 `synchronized_observation_endpoint` and `observation_trace_manifest_v1`; desktop screenshots and ordinary screenshot requests MUST NOT be represented as exact canonical observations. The frozen `physics_capture_v1` synchronized RGB/state response remains valid only within its declared v1 scope.
 
 Event occurrence MUST be located by fixed step and fixed time. Event render frame and render time MAY be retained as provenance, but MUST NOT be used as event occurrence authority or as an event-to-state join key. Events MUST be projected to frame records by fixed-step bracketing.
 
@@ -208,6 +208,8 @@ Each accepted enriched rollout MUST capture, without image-based reconstruction:
 
 The `physics_capture_v1` sidecars currently provide synchronized scene nodes, kinematics, raw contacts, derived `support_v1`, macro events, coordinates, and exact RGB references within their frozen scope. They do not currently establish all scenario-lineage, exposure-role, camera/transform, material, damage, world-property, scenario object ID, or final-terminal-frame requirements above. Missing required fields MUST be reported as unsupported, not inferred from path conventions or RGB.
 
+`observation_trace_manifest_v1` provides the central-v2 observation boundary: separately identified pre-transform canonical and post-transform agent PNGs, complete engine-authored camera/viewport/coordinate/unit/world-to-observation metadata, exact source-frame synchronization, observation-configuration-bound lineage identity, exposure-boundary validation, and diagnostic-only canonical access. Its representative issue #46 evidence is under `data/runtime_evidence/issue-46`; this capability evidence does not by itself create a cohort release.
+
 ### Acceptance criteria
 
 - Entity enumeration reconciles authored entities, spawned entities, lifecycle events, and every contact/event participant.
@@ -334,9 +336,9 @@ Final evaluation MUST use a role-separated workflow. The final-evaluation manife
 
 The following statements distinguish implemented foundations from required but unsupported research behavior:
 
-- **Implemented:** frozen `physics_capture_v1` sidecars and validation; synchronized RGB/state capture within that contract; fixed-step clocks; scene nodes, kinematics, raw contacts, `support_v1`, macro events, bounded failures; collector-side temporary publication, validation, quarantine, and retry metadata; deterministic path-based bucket partitioning and scoped inventory; fixture-only `physics_macro_labels_v1` derivation and validation.
-- **Implemented but insufficient:** the staged archive and accepted smoke evidence establish only their exercised bounded path. They do not establish representative collision-bearing collection, scenario hierarchy, exposure roles, fixed-step stride authority, production coverage, or a representative enriched cohort.
-- **Required but currently unsupported or unaccepted:** canonical deterministic scenario-generation records; `legacy_static` and generated lineage manifests; the capability-declared exposure split regime; frozen coverage-stratified intervention plans in canonical action forms; complete central causal-property capture; representative central macro-label semantics; accepted central physical-violation derivations; access-separated observations; capability-complete pilot; production quotas; immutable cohort release workflow; role-separated final evaluation.
+- **Implemented:** frozen `physics_capture_v1` sidecars and validation; synchronized RGB/state capture within that contract; `physics_capture_v2` fixed-step-stride authority and physical evidence; source-bound deterministic generated scenario manifests; request-72 synchronized agent/canonical observation traces and access audits; fixed-step clocks; scene nodes, kinematics, raw contacts, `support_v1`, macro events, bounded failures; collector-side temporary publication, validation, quarantine, and retry metadata; deterministic path-based bucket partitioning and scoped inventory; fixture-only `physics_macro_labels_v1` derivation and validation.
+- **Implemented but insufficient:** the issue-specific #44–#46 representative evidence establishes only its exercised non-final capabilities and identities. It does not create a capability-complete central-v2 pilot, real four-role partition, production coverage, or representative enriched cohort release.
+- **Required but currently unsupported or unaccepted:** explicit `legacy_static` inventory evidence where applicable; the capability-declared exposure split regime; frozen coverage-stratified intervention plans in canonical action forms; complete central causal-property capture; representative central macro-label semantics; accepted central physical-violation derivations; capability-complete pilot; production quotas; immutable cohort release workflow; role-separated final evaluation.
 
 ## 16. Definition of done for GitHub issue #2
 
@@ -383,9 +385,9 @@ The issue #33 audit remains the evidence baseline. Its immutable scoped release 
 The current central-v2 blockers are:
 
 1. **No capability-complete central-v2 pilot or immutable release:** the existing pilot records `coverage.audit.representative=false` and cannot satisfy the new declaration.
-2. **Missing central exporter and observation evidence:** fixed-step-stride authority, synchronized access-separated agent/canonical observations, and the complete source facts needed by both central physical-violation labels remain unavailable.
+2. **Missing remaining central exporter evidence:** the complete source facts needed by both central physical-violation labels have not yet been demonstrated within a capability-complete central-v2 pilot and release. Fixed-step-stride authority and synchronized access-separated agent/canonical observations now have separate representative capability evidence, but are not cohort-release evidence.
 3. **Missing central representative semantic evidence:** the two micro labels, two macro labels, and two endpoint-violation labels have not each met the declaration evidence floor on a new v2 release. Prior fixture, smoke, accepted-software, or rejected/unavailable evidence does not satisfy this gate.
-4. **Missing central lineage, exposure, replay, and ingestion evidence:** source-bound template/instance identities, real four-role instance-held-out partitions, version-bounded deterministic replay, frozen final access, and complete public central-v2 ingestion are not demonstrated together.
+4. **Missing central exposure, replay, and ingestion evidence:** real four-role instance-held-out partitions, version-bounded deterministic replay, frozen final access, and complete public central-v2 ingestion are not demonstrated together. Source-bound template/instance identities now have separate reviewed capability evidence, but are not a release-wide exposure audit.
 
 Template-held-out evaluation, a physical-regime label, bounded negatives, material/damage mappings, gravity shifts, `cascade-active`, `collapsed`, `pigs-cleared`, `illegal_contact`, planning, and cross-domain evaluation are not central-v2 blockers. Their non-central disposition is not evidence that they are false or scientifically accepted.
 

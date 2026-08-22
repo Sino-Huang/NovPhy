@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import copy
+import hashlib
+import json
+import tarfile
 import tempfile
 import unittest
 from pathlib import Path
@@ -52,6 +55,32 @@ def probe(
 
 
 class Issue46EvidenceTests(unittest.TestCase):
+    def test_published_runtime_bundle_is_bound_to_the_current_player_archive(self):
+        repository = Path(__file__).parents[1]
+        root = repository / "data" / "runtime_evidence" / "issue-46"
+        archive = (
+            repository / "sciencebirdsgames" / "physics-v2"
+            / "novphy-physics-player-2019.4.41f2.tar.gz"
+        )
+
+        bundle = validate_issue_46_evidence(root)
+        archive_identity = (
+            "physics-v2-player-archive-v1:sha256:"
+            + hashlib.sha256(archive.read_bytes()).hexdigest()
+        )
+        with tarfile.open(archive, "r:gz") as packaged:
+            stream = packaged.extractfile("provenance.json")
+            self.assertIsNotNone(stream)
+            provenance = json.load(stream)
+        self.assertEqual(
+            {entry["player_archive_identity"] for entry in bundle["probes"]},
+            {archive_identity},
+        )
+        self.assertEqual(
+            {entry["source_snapshot_commit"] for entry in bundle["probes"]},
+            {provenance["project"]["git_head"]},
+        )
+
     def test_bundle_requires_two_real_nonfinal_lineages_templates_levels_and_transforms(self):
         probes = [
             probe(
