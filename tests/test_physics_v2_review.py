@@ -36,6 +36,59 @@ def collision_capture() -> dict:
     return value
 
 
+def collision_capture_for_target(target_id: str) -> dict:
+    value = engine_capture()
+    pig_id = "pig:1"
+    value["causal_entities"].insert(1, pig_id)
+    value["colliders"].append({
+        "collider_id": "collider:pig",
+        "entity_id": pig_id,
+        "geometry_source": "unity_collider_2d",
+    })
+    value["colliders"].sort(key=lambda collider: collider["collider_id"])
+    for sample in value["fixed_step_samples"]:
+        pig = copy.deepcopy(sample["entities"][0])
+        pig.update({
+            "entity_id": pig_id,
+            "scenario_object_id": "pig",
+            "contact_ids": [],
+            "supported_by_entity_ids": [],
+            "supports_entity_ids": [],
+        })
+        pig["body"]["position"] = [3, 1]
+        pig_collider = copy.deepcopy(sample["colliders"][0])
+        pig_collider.update({
+            "collider_id": "collider:pig",
+            "entity_id": pig_id,
+        })
+        pig_collider["shape"]["center"] = [3, 1]
+        sample["entities"].append(pig)
+        sample["entities"].sort(key=lambda entity: entity["entity_id"])
+        sample["colliders"].append(pig_collider)
+        sample["colliders"].sort(key=lambda collider: collider["collider_id"])
+
+    final_sample = value["fixed_step_samples"][1]
+    final_sample["supports"] = []
+    for entity in final_sample["entities"]:
+        entity["contact_ids"] = []
+        entity["supported_by_entity_ids"] = []
+        entity["supports_entity_ids"] = []
+    contact = final_sample["contacts"][0]
+    contact["entity_b_id"] = target_id
+    contact["collider_b_id"] = "collider:pig" if target_id == pig_id else "collider:ground"
+    for entity in final_sample["entities"]:
+        if entity["entity_id"] in {"bird:1", target_id}:
+            entity["contact_ids"] = [contact["contact_id"]]
+    value["events"].insert(0, {
+        "event_id": "collision-1",
+        "event_type": "collision",
+        "fixed_step": 1,
+        "participants": sorted(("bird:1", target_id)),
+        "payload": {"relative_speed": 1.0},
+    })
+    return value
+
+
 def supported_capture() -> dict:
     value = engine_capture()
     second = value["fixed_step_samples"][1]
@@ -217,6 +270,33 @@ class PhysicsV2ReviewSessionTests(unittest.TestCase):
             self.assertEqual(result["state"], "unavailable")
             self.assertFalse(result["eligible_for_issue_44_review"])
             self.assertTrue((Path(temporary) / session.session_id / "quarantine" / "physics_capture_v2.json").is_file())
+
+    def test_replay_rejects_different_collision_participants(self) -> None:
+        with TemporaryDirectory() as temporary:
+            session = PhysicsV2ReviewSession(
+                Path(temporary),
+                probe_plan_path=write_probe_plan(Path(temporary) / "stage"),
+            )
+            session.stage("collision", {
+                "action_type": "drag_hold_release",
+                "coordinate_frame": "slingshot_relative",
+                "drag_start": [97, 227],
+                "drag_release": [-80, 8],
+                "tapTime": 0,
+                "holdTime": 1000,
+                "frame_height": 480,
+            })
+            session.begin_exploration()
+            session.complete_exploration(collision_capture_for_target("pig:1"))
+            session.freeze_replay()
+            session.begin_replay()
+
+            result = session.complete_replay(collision_capture_for_target("world:static:1"))
+
+            self.assertEqual(result["state"], "failed")
+            self.assertFalse(result["eligible_for_issue_44_review"])
+            self.assertFalse(result["verdict"]["goal_evidence_matches_diagnostic"])
+            self.assertIn("differs from the diagnostic pilot", result["verdict"]["reason"])
 
 
 if __name__ == "__main__":

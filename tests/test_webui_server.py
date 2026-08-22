@@ -288,6 +288,60 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(steps["total"], 2)
         self.assertEqual([step["fixed_step"] for step in steps["steps"]], [1])
 
+    def test_physics_v2_review_waits_for_stable_slingshot_before_shooting(self):
+        class MovingSlingshotBridge(FakeBridge):
+            def __init__(self):
+                super().__init__()
+                self.positions = [250.0, 225.0, 210.0, 210.0]
+                self.position_observations = 0
+                self.observations_at_shot = None
+
+            def get_symbolic_state_without_screenshot(self):
+                index = min(self.position_observations, len(self.positions) - 1)
+                min_x = self.positions[index]
+                self.position_observations += 1
+                return [{
+                    "features": [{
+                        "geometry": {
+                            "coordinates": [[
+                                [min_x, 33.0],
+                                [min_x, 100.0],
+                                [min_x + 22.0, 100.0],
+                                [min_x + 22.0, 33.0],
+                            ]],
+                            "type": "Polygon",
+                        },
+                        "type": "Feature",
+                        "properties": {"label": "Slingshot"},
+                    }],
+                }]
+
+            def shoot(self, x, y, tap_time=0, fast=False, release_time=0):
+                self.observations_at_shot = self.position_observations
+                return super().shoot(x, y, tap_time, fast, release_time)
+
+        self.app.physics_v2_review = True
+        self.app.review_output_root = Path(self.review_tmp.name)
+        self.app.review_probe_plan_path = write_probe_plan(
+            Path(self.review_tmp.name) / "stage"
+        )
+        self.app.physics_bridge = FakePhysicsV2Bridge()
+        self.app.bridge = MovingSlingshotBridge()
+        self.app.readiness_poll_delay = 0
+        self.app.stage_physics_v2_review("collision", {
+            "action_type": "drag_hold_release",
+            "coordinate_frame": "slingshot_relative",
+            "drag_start": [97, 227],
+            "drag_release": [-80, 8],
+            "tapTime": 0,
+            "holdTime": 1000,
+            "frame_height": 480,
+        })
+
+        self.app.run_physics_v2_review(replay=False)
+
+        self.assertEqual(self.app.bridge.observations_at_shot, 4)
+
     def test_packaged_physics_v2_review_action_can_be_staged(self):
         self.app.root = ROOT
         self.app.physics_v2_review = True

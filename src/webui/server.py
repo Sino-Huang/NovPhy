@@ -420,6 +420,7 @@ class AppState:
             with self.bridge_lock:
                 if self.bridge is None or not self.bridge.connected:
                     raise RuntimeError("Not connected to Science Birds. Start or connect first.")
+                self._wait_for_stable_review_slingshot(self.bridge)
                 self.bridge.shoot(
                     shot["x"],
                     shot["y"],
@@ -434,6 +435,28 @@ class AppState:
         except Exception as error:
             self.review_session.fail_active_capture(error)
             raise
+
+    def _wait_for_stable_review_slingshot(self, bridge: ScienceBirdsBridge) -> None:
+        deadline = time.monotonic() + self.readiness_timeout
+        previous: tuple[float, float, float] | None = None
+        while time.monotonic() < deadline:
+            current = None
+            if bridge.get_game_state() == GameState.PLAYING:
+                reference = _slingshot_reference_point_from_ground_truth(
+                    bridge.get_symbolic_state_without_screenshot(),
+                    self.frame_height,
+                )
+                if reference is not None:
+                    current = (
+                        reference["canvasX"],
+                        reference["canvasY"],
+                        reference["pixelsPerWorldUnit"],
+                    )
+            if current is not None and current == previous:
+                return
+            previous = current
+            time.sleep(self.readiness_poll_delay)
+        raise TimeoutError("Science Birds slingshot did not settle before the review shot")
 
     def _reset_physics_v2_review_engine(self) -> None:
         if self.review_session is None or self.review_session.goal is None:

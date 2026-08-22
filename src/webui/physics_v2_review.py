@@ -67,33 +67,45 @@ def _support_sets(record: Mapping[str, Any]) -> list[set[tuple[str, str]]]:
     ]
 
 
-def coverage_verdict(goal: str, record: Mapping[str, Any]) -> dict[str, Any]:
-    """Evaluate only the issue-44 observation rule for one guided goal."""
-    if goal not in REVIEW_GOALS:
-        raise ValueError(f"unknown physics-v2 review goal: {goal}")
-    samples = record["fixed_step_samples"]
+def _goal_evidence_facts(goal: str, record: Mapping[str, Any]) -> set[tuple[str, ...]]:
     if goal == "collision":
         contacts_by_step = {
             sample["fixed_step"]: {
                 frozenset((contact["entity_a_id"], contact["entity_b_id"]))
                 for contact in sample["contacts"]
             }
-            for sample in samples
+            for sample in record["fixed_step_samples"]
         }
-        demonstrated = any(
-            event["event_type"] == "collision"
-            and frozenset(event["participants"]) in contacts_by_step.get(event["fixed_step"], set())
+        return {
+            ("collision", *sorted(event["participants"]))
             for event in record["events"]
-        )
+            if event["event_type"] == "collision"
+            and frozenset(event["participants"]) in contacts_by_step.get(event["fixed_step"], set())
+        }
+
+    supports = _support_sets(record)
+    if goal == "persistent support":
+        persistent = supports[0] & supports[1] if len(supports) >= 2 else set()
+        return {("persistent_support", *pair) for pair in persistent}
+
+    changes: set[tuple[str, ...]] = set()
+    for previous, current in zip(supports, supports[1:]):
+        changes.update(("support_added", *pair) for pair in current - previous)
+        changes.update(("support_removed", *pair) for pair in previous - current)
+    return changes
+
+
+def coverage_verdict(goal: str, record: Mapping[str, Any]) -> dict[str, Any]:
+    """Evaluate only the issue-44 observation rule for one guided goal."""
+    if goal not in REVIEW_GOALS:
+        raise ValueError(f"unknown physics-v2 review goal: {goal}")
+    demonstrated = bool(_goal_evidence_facts(goal, record))
+    if goal == "collision":
         reason = None if demonstrated else "no collision event matched a same-step raw contact pair"
+    elif goal == "persistent support":
+        reason = None if demonstrated else "the first two fixed-step samples share no support relation"
     else:
-        supports = _support_sets(record)
-        if goal == "persistent support":
-            demonstrated = len(supports) >= 2 and bool(supports[0] & supports[1])
-            reason = None if demonstrated else "the first two fixed-step samples share no support relation"
-        else:
-            demonstrated = any(current != previous for previous, current in zip(supports, supports[1:]))
-            reason = None if demonstrated else "no adjacent fixed-step samples change the support set"
+        reason = None if demonstrated else "no adjacent fixed-step samples change the support set"
     return {
         "goal": goal,
         "status": "demonstrated" if demonstrated else "unavailable",
@@ -129,6 +141,7 @@ class PhysicsV2ReviewSession:
         self.exploration_verdict: dict[str, Any] | None = None
         self.replay_verdict: dict[str, Any] | None = None
         self._initial_engine_state_identity: str | None = None
+        self._diagnostic_goal_evidence: set[tuple[str, ...]] | None = None
         self._plan_path: Path | None = None
         self._plan_bytes: bytes | None = None
         self._replay_attempts = 0
@@ -229,6 +242,7 @@ class PhysicsV2ReviewSession:
         self.exploration_verdict = coverage_verdict(self.goal, capture.record)
         write_immutable_cohort_v2_json(self.exploration_verdict, diagnostic / "verdict.json")
         self._initial_engine_state_identity = normalized_initial_engine_state_identity(capture)
+        self._diagnostic_goal_evidence = _goal_evidence_facts(self.goal, capture.record)
         self.state = "explored"
         self._write_session_status()
         return self.snapshot()
@@ -299,11 +313,24 @@ class PhysicsV2ReviewSession:
         observed_initial = normalized_initial_engine_state_identity(capture)
         initial_matches = observed_initial == self._initial_engine_state_identity
         self.replay_verdict = coverage_verdict(self.goal, capture.record)
+        replay_goal_evidence = _goal_evidence_facts(self.goal, capture.record)
+        goal_evidence_matches = bool(
+            self._diagnostic_goal_evidence
+            and self._diagnostic_goal_evidence & replay_goal_evidence
+        )
         self.replay_verdict["initial_engine_state_matches_diagnostic"] = initial_matches
-        demonstrated = bool(self.replay_verdict["demonstrated"] and initial_matches)
+        self.replay_verdict["goal_evidence_matches_diagnostic"] = goal_evidence_matches
+        demonstrated = bool(
+            self.replay_verdict["demonstrated"]
+            and initial_matches
+            and goal_evidence_matches
+        )
         if not initial_matches:
             self.replay_verdict["status"] = "failed"
             self.replay_verdict["reason"] = "confirmatory initial engine state differs from the diagnostic pilot"
+        elif self.replay_verdict["demonstrated"] and not goal_evidence_matches:
+            self.replay_verdict["status"] = "failed"
+            self.replay_verdict["reason"] = "confirmatory goal evidence differs from the diagnostic pilot"
         metadata["review_goal"] = self.goal
         metadata["replay_plan_identity"] = json.loads(self._plan_bytes)["identity"]
         metadata["eligible_for_issue_44_review"] = demonstrated
@@ -311,7 +338,10 @@ class PhysicsV2ReviewSession:
         write_immutable_cohort_v2_json(self.replay_verdict, staging / "verdict.json")
         destination = self.root / ("accepted" if demonstrated else "quarantine")
         os.replace(staging, destination)
-        self.state = "demonstrated" if demonstrated else ("failed" if not initial_matches else "unavailable")
+        replay_failed = not initial_matches or (
+            self.replay_verdict["demonstrated"] and not goal_evidence_matches
+        )
+        self.state = "demonstrated" if demonstrated else ("failed" if replay_failed else "unavailable")
         self._write_session_status()
         return self.snapshot()
 
