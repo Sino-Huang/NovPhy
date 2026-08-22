@@ -33,6 +33,7 @@ from scripts.manual_agent import (  # noqa: E402
 )
 from scripts.physics_capture_contract import load_physics_capture  # noqa: E402
 from scripts.physics_capture_types import EventType  # noqa: E402
+from scripts.physics_capture_v2 import load_physics_capture_v2  # noqa: E402
 from scripts.physics_capture_v2_persistence import (  # noqa: E402
     persist_physics_capture_v2,
     source_bindings_from_collection,
@@ -2457,6 +2458,56 @@ def realized_coverage_strata(shot_dir: Path) -> tuple[str, ...]:
     return tuple(sorted(strata))
 
 
+def classify_physics_capture_v2_coverage(capture) -> tuple[str, ...]:
+    """Classify authoritative v2 fixed-step contacts, supports, and events."""
+    record = capture.record
+    event_types = {event["event_type"] for event in record["events"]}
+    strata = {
+        stratum
+        for event_type, stratum in (
+            ("collision", "collision"),
+            ("tnt_explosion", "explosion"),
+            ("entity_destroyed", "destruction"),
+            ("pig_removed", "pig removal"),
+            ("level_clear", "level clear"),
+            ("level_fail", "level fail"),
+        )
+        if event_type in event_types
+    }
+    launched_entities = {
+        participant
+        for event in record["events"]
+        if event["event_type"] == "bird_launched"
+        for participant in event["participants"]
+    }
+    if launched_entities and all(
+        contact["entity_a_id"] not in launched_entities
+        and contact["entity_b_id"] not in launched_entities
+        for sample in record["fixed_step_samples"]
+        for contact in sample["contacts"]
+    ):
+        strata.add("no-contact/miss")
+    if event_types & {"stable_entered", "stable_exited"}:
+        strata.add("stability transitions")
+    support_sets = [
+        {
+            (support["supporter_entity_id"], support["supported_entity_id"])
+            for support in sample["supports"]
+        }
+        for sample in record["fixed_step_samples"]
+    ]
+    if any(before & after for before, after in zip(support_sets, support_sets[1:])):
+        strata.add("persistent support")
+    if any(before != after for before, after in zip(support_sets, support_sets[1:])):
+        strata.add("support change")
+    return tuple(sorted(strata))
+
+
+def realized_coverage_strata_v2(shot_dir: Path) -> tuple[str, ...]:
+    capture = load_physics_capture_v2(Path(shot_dir) / "physics_capture_v2.json")
+    return classify_physics_capture_v2_coverage(capture)
+
+
 def collect_fresh_engine_attempt(
     output_root: Path,
     action: dict,
@@ -2464,6 +2515,7 @@ def collect_fresh_engine_attempt(
     attempt_id: str,
     attempt_number: int,
     expected_initial_engine_state_identity: str,
+    collector=None,
     **fresh_engine_options,
 ) -> dict[str, Any]:
     """Collect and atomically publish one fresh-engine attempt for a plan runtime."""
@@ -2493,7 +2545,8 @@ def collect_fresh_engine_attempt(
     manifest: dict[str, Any] | None = None
     collection_error: Exception | None = None
     try:
-        candidate = collect_fresh_engine_rollouts(
+        collect = collector or collect_fresh_engine_rollouts
+        candidate = collect(
             staging_dir,
             [action],
             fresh_engine_attempts=1,
@@ -2609,7 +2662,7 @@ def collect_fresh_engine_attempt(
                         raise RolloutCollectionError(
                             "physics capture v2 scenario manifest identity is stale"
                         )
-                    coverage_strata = ()
+                    coverage_strata = realized_coverage_strata_v2(shot_dir)
                 else:
                     coverage_strata = realized_coverage_strata(shot_dir)
                 accepted_dir.parent.mkdir(parents=True, exist_ok=True)

@@ -1,0 +1,328 @@
+#!/usr/bin/env python3
+"""Run issue #51's missing terminal probes and publish the pilot report."""
+
+from __future__ import annotations
+
+import argparse
+from contextlib import redirect_stdout
+import io
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+from typing import Any
+import xml.etree.ElementTree as ET
+
+from scripts.build_issue_51_evidence import (
+    DEFAULT_OUTPUT,
+    ROOT,
+    _component_identities,
+    _implementation_revision,
+    _require_clean_tracked_worktree,
+    _validate_component_sources,
+    build_issue_51_evidence,
+    build_pilot_plan,
+)
+from scripts.build_issue_51_pilot_plan import (
+    build_issue_51_supplementary_plan,
+)
+from scripts.physics_capture_v2 import parse_physics_capture_v2
+from scripts.smoke_physics_capture import archive_details, free_port, start_display, terminate
+from scripts.verify_physics_player import verify_physics_player_archive
+
+
+DEFAULT_RUNTIME_ROOT = ROOT / ".local-artifacts/issue-51-pilot-run"
+STAGE_ROOT = ROOT / "sciencebirdsgames/physics-v2"
+ACTUAL_COMMAND = (
+    "python -u -m scripts.capture_issue_51_evidence "
+    "--runtime-root .local-artifacts/issue-51-pilot-run "
+    "--output data/runtime_evidence/issue-51"
+)
+
+
+def _log(message: str) -> None:
+    print(f"[issue-51] {message}", flush=True)
+
+
+def _run_with_heartbeat(command: list[str], environment: dict[str, str]) -> None:
+    process = subprocess.Popen(command, cwd=ROOT, env=environment)
+    started = time.monotonic()
+    while process.poll() is None:
+        try:
+            process.wait(timeout=15)
+        except subprocess.TimeoutExpired:
+            _log(
+                f"still running after {int(time.monotonic() - started)} seconds: "
+                f"{Path(command[0]).name}"
+            )
+    if process.returncode:
+        raise subprocess.CalledProcessError(process.returncode, command)
+
+
+def _install_level(runtime: Path, xml_path: Path) -> None:
+    target_root = runtime / "9001_Data/StreamingAssets/Levels/novelty_level_0/type2/Levels"
+    target_root.mkdir(parents=True, exist_ok=True)
+    target = target_root / "issue-51-level-clear.xml"
+    shutil.copyfile(xml_path, target)
+
+    evaluation = ET.Element("evaluation")
+    ET.SubElement(
+        evaluation,
+        "novelty_detection_measurement",
+        {"step": "1", "measure_in_training": "False", "measure_in_testing": "False"},
+    )
+    trials = ET.SubElement(evaluation, "trials")
+    trial = ET.SubElement(
+        trials,
+        "trial",
+        {
+            "id": "0",
+            "number_of_executions": "1",
+            "checkpoint_time_limit": "9999999",
+            "checkpoint_interaction_limit": "9999999",
+            "notify_novelty": "False",
+        },
+    )
+    level_set = ET.SubElement(
+        trial,
+        "game_level_set",
+        {
+            "mode": "training",
+            "time_limit": "9999999",
+            "total_interaction_limit": "9999999",
+            "attempt_limit_per_level": "5",
+            "allow_level_selection": "True",
+        },
+    )
+    ET.SubElement(
+        level_set,
+        "game_levels",
+        {"level_path": target.relative_to(runtime).as_posix()},
+    )
+    ET.indent(evaluation, space="  ")
+    ET.ElementTree(evaluation).write(
+        runtime / "config.xml", encoding="utf-8", xml_declaration=True
+    )
+
+
+def _collection_command(
+    authorities: dict[str, object],
+    game: Path,
+    runtime_root: Path,
+) -> tuple[list[str], int]:
+    agent_port = free_port()
+    game_port = free_port()
+    physics_port = free_port()
+    return ([
+        sys.executable,
+        "-u",
+        "-m",
+        "scripts.collect_rollouts",
+        "--output-dir",
+        str(runtime_root / "collection"),
+        "--fresh-engine-per-rollout",
+        "--collection-plan",
+        str(authorities["plan_path"]),
+        "--physics-capture-v2",
+        "--port",
+        str(agent_port),
+        "--physics-port",
+        str(physics_port),
+        "--engine-agent-port",
+        str(agent_port),
+        "--engine-game-port",
+        str(game_port),
+        "--engine-settle-seconds",
+        "1",
+        "--agent-settle-seconds",
+        "1",
+        "--fps",
+        "1",
+        "--duration",
+        "1",
+        "--scenario-v2-input",
+        str(authorities["scenario_id"]),
+        str(authorities["manifest_path"]),
+        str(authorities["xml_path"]),
+        str(authorities["template_path"]),
+        str(authorities["workbook_path"]),
+        str(game),
+    ], physics_port)
+
+
+def dry_run() -> dict[str, object]:
+    _log("dry-run: revalidating the accepted issue-44 through issue-50 authorities")
+    sources = _validate_component_sources(ROOT)
+    identities = _component_identities(ROOT, sources)
+    _log("dry-run: verifying the provenance-bound physics-v2 player archive")
+    provenance = verify_physics_player_archive(STAGE_ROOT, physics_v2=True)
+    with tempfile.TemporaryDirectory(prefix="novphy-issue51-dry-run-") as temporary:
+        with redirect_stdout(io.StringIO()):
+            authorities = build_issue_51_supplementary_plan(
+                Path(temporary) / "authorities"
+            )
+        plan = build_pilot_plan(ROOT, identities, authorities["plan_identity"])
+    result = {
+        "schema": "issue_51_representative_pilot_dry_run_v1",
+        "pilot_plan_identity": plan["identity"],
+        "supplementary_plan_identity": authorities["plan_identity"],
+        "component_evidence_count": len(identities),
+        "would_launch_unity_attempts": 2,
+        "unity_version": provenance["unity_version"],
+        "actual_command": ACTUAL_COMMAND,
+        "files_written": False,
+        "passed": True,
+    }
+    _log("dry-run complete: source bindings, two-attempt plan, player, and command passed")
+    return result
+
+
+def _publish_supplementary(
+    authorities: dict[str, object],
+    runtime_root: Path,
+    provenance: dict[str, object],
+) -> Path:
+    report = json.loads(
+        (runtime_root / "collection/collection_plan_report.json").read_text(encoding="utf-8")
+    )
+    if (
+        report.get("accepted_count") != 2
+        or report.get("rejected_count") != 0
+        or report.get("failed_count") != 0
+        or report.get("quarantined_count") != 0
+        or report.get("unmet_slots")
+        or report.get("realized_coverage_shortfalls")
+    ):
+        raise ValueError(
+            "issue-51 supplementary plan requires two accepted attempts and no "
+            "failure, quarantine, unmet slot, or realized coverage shortfall"
+        )
+    supplement = runtime_root / "supplementary"
+    captures = supplement / "captures"
+    captures.mkdir(parents=True)
+    attempts = []
+    level_clear_count = 0
+    for entry in report["attempt_ledger"]:
+        artifact = Path(entry["artifact_path"])
+        if not artifact.is_absolute():
+            artifact = ROOT / artifact
+        record = json.loads((artifact / "physics_capture_v2.json").read_text(encoding="utf-8"))
+        capture = parse_physics_capture_v2(record)
+        terminal = capture.record["terminal_evidence"]["reason"]
+        level_clear_count += terminal == "level_clear"
+        capture_name = f"{entry['intervention_id']}.json"
+        (captures / capture_name).write_text(
+            json.dumps(record, allow_nan=False, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        attempts.append({
+            "attempt_identity": entry["attempt_id"],
+            "intervention_id": entry["intervention_id"],
+            "intervention_identity": entry["intervention_identity"],
+            "status": entry["status"],
+            "capture_id": capture.capture_id,
+            "capture_path": f"captures/{capture_name}",
+            "terminal_reason": terminal,
+            "realized_coverage_strata": entry["realized_coverage_strata"],
+        })
+    targeted = next(
+        attempt for attempt in attempts if attempt["intervention_id"] == "level-clear-targeted"
+    )
+    if level_clear_count < 1 or targeted["terminal_reason"] != "level_clear":
+        observed = {attempt["intervention_id"]: attempt["terminal_reason"] for attempt in attempts}
+        raise ValueError(f"issue-51 level-clear probe missed its target: {observed}")
+
+    shutil.copyfile(authorities["plan_path"], supplement / "collection-plan.json")
+    shutil.copyfile(authorities["manifest_path"], supplement / "scenario-manifest.json")
+    shutil.copyfile(authorities["xml_path"], supplement / "scenario.xml")
+    shutil.copyfile(authorities["template_path"], supplement / "template.xml")
+    runtime_identity = (
+        "issue-51-supplementary-runtime-v1:"
+        f"{authorities['plan_identity']}:{provenance['source_snapshot_commit']}"
+    )
+    runtime_authority = {
+        "schema": "issue_51_supplementary_runtime_authority_v1",
+        "identity": runtime_identity,
+        "evidence_source": "unity_runtime_non_fixture",
+        "collection_plan_identity": authorities["plan_identity"],
+        "scenario_manifest_identity": authorities["scenario_manifest_identity"],
+        "source_snapshot_commit": provenance["source_snapshot_commit"],
+        "unity_version": provenance["unity_version"],
+        "physics_protocol_version": 1,
+        "configured_fixed_step_capture_stride": 1,
+        "attempts": attempts,
+    }
+    (supplement / "runtime-authority.json").write_text(
+        json.dumps(runtime_authority, allow_nan=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return supplement
+
+
+def run(runtime_root: Path, output: Path) -> dict[str, Any]:
+    _require_clean_tracked_worktree(ROOT)
+    _implementation_revision(ROOT)
+    if runtime_root.exists():
+        raise ValueError(f"runtime root already exists: {runtime_root}")
+    if output.exists():
+        raise ValueError(f"immutable output already exists: {output}")
+    runtime_root.mkdir(parents=True)
+
+    _log("freezing the prospective issue-51 pilot and supplementary terminal plans")
+    sources = _validate_component_sources(ROOT)
+    identities = _component_identities(ROOT, sources)
+    with redirect_stdout(io.StringIO()):
+        authorities = build_issue_51_supplementary_plan(runtime_root / "authorities")
+    pilot_plan = build_pilot_plan(ROOT, identities, authorities["plan_identity"])
+    (runtime_root / "prospective-pilot-plan.json").write_text(
+        json.dumps(pilot_plan, allow_nan=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    _log("verifying the provenance-bound physics-v2 Unity player")
+    provenance = verify_physics_player_archive(STAGE_ROOT, physics_v2=True)
+    game = runtime_root / "game"
+    archive_details(STAGE_ROOT, game)
+    _install_level(game, Path(authorities["xml_path"]))
+    environment = dict(os.environ)
+    display_process = None
+    try:
+        display, display_process = start_display(runtime_root / "display.log")
+        environment["DISPLAY"] = display
+        environment["NOVPHY_PHYSICS_CAPTURE_V2_STRIDE"] = "1"
+        command, physics_port = _collection_command(authorities, game, runtime_root)
+        environment["NOVPHY_PHYSICS_CAPTURE_PORT"] = str(physics_port)
+        _log("starting two fresh-engine level-clear probes; collector output follows")
+        _run_with_heartbeat(command, environment)
+    finally:
+        receipt = terminate(display_process)
+        _log(f"display shutdown: {receipt}")
+
+    _log("binding all supplementary attempts and checking level_clear")
+    supplement = _publish_supplementary(authorities, runtime_root, provenance)
+    _log("auditing central capabilities, atomic quarantine, and exact accounting")
+    return build_issue_51_evidence(output, supplement, repository_root=ROOT)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Run and accept issue #51's representative cohort-v2 pilot"
+    )
+    parser.add_argument("--runtime-root", type=Path, default=DEFAULT_RUNTIME_ROOT)
+    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--dry-run", action="store_true")
+    return parser
+
+
+def main() -> None:
+    args = build_parser().parse_args()
+    result = dry_run() if args.dry_run else run(args.runtime_root, args.output)
+    print(json.dumps(result, indent=2, sort_keys=True), flush=True)
+
+
+if __name__ == "__main__":
+    main()

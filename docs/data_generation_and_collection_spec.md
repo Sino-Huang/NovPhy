@@ -316,6 +316,12 @@ These labels MUST be derivation artifacts bound to an immutable cohort release. 
 
 Before production collection, a capability-complete representative pilot MUST be accepted. The pilot MUST exercise every capability required by the intended research cohort, every supported rollout termination class, the planned identity/alignment path, intervention representation, fixed-step capture stride, lifecycle, contact/event payloads, canonical and agent observations, failure/quarantine path, and all supervision evidence classes intended for production. It MUST also demonstrate deterministic, version-bounded replay: replay is assessed only under the same declared engine/player, protocol, generator, scenario specification, collection-plan, and intervention versions, and any change to those bounds requires a new pilot determination. The versioned replay evidence and comparison semantics are defined by [`cohort_v2_replay_evidence_v1`](data_contracts/cohort_v2_replay_evidence_v1.md).
 
+The central-v2 pilot plan, report, outcome-independent accounting, and publication
+rules are defined by
+[`representative_cohort_v2_pilot_report_v1`](data_contracts/representative_cohort_v2_pilot_v1.md).
+The supported central v2 terminal reasons are `level_clear`, `level_fail`, and
+`stable_entered`; all three require actual Unity evidence in the accepted pilot.
+
 The pilot MUST contain representative benchmark conditions, scenario templates, level instances, interventions, coverage strata, and the physical interaction windows needed by every declared central label. A separately named physical-regime label is required only when its secondary experiment is approved. Fixture suites and smoke rollouts MAY support software confidence but MUST NOT substitute for this pilot.
 
 Production quotas MUST be defined prospectively by benchmark condition, exposure role, split regime, scenario-template/level-instance coverage, intervention coverage stratum, and required capability coverage. Quotas MUST NOT be defined or backfilled by model score or desirable realized outcome. Permanent failures MUST remain visible alongside unmet quotas.
