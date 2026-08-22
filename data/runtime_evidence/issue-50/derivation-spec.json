@@ -1,0 +1,41 @@
+{
+  "accepted_predicates": [
+    "excess_penetration",
+    "unsupported_stationary_or_floating_body"
+  ],
+  "aggregate_predicate": "any(violation)",
+  "availability": {
+    "any(violation)": "unavailable_component unless a true component dominates",
+    "excess_penetration": "available only after whole-capture validation proves collider geometry, coordinate convention, separation, and fixed-step contact completeness",
+    "unsupported_stationary_or_floating_body": "unavailable_incomplete_stability_window until two consecutive active present-body records exist; unavailable_inactive_or_absent_body when the concept is undefined at the endpoint"
+  },
+  "capture_schema_version": "physics_capture_v2",
+  "excluded_predicates": {
+    "illegal_contact": "excluded_not_emitted_not_false"
+  },
+  "identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+  "numeric_inputs": {
+    "angular_speed_threshold_degrees_per_second": 0.01,
+    "linear_speed_squared_threshold": 0.0001,
+    "penetration_tolerance_unity_units": 0.006,
+    "stability_window_fixed_steps": 2
+  },
+  "physical_regime_label_used": false,
+  "rules": {
+    "any(violation)": "Kleene any over excess penetration and the active-present body domain: any true component is true; all available false components are false; otherwise the aggregate is unavailable. Concept-undefined inactive or absent entity labels remain separately unavailable and are outside the aggregate domain; no unavailable input is converted to zero.",
+    "excess_penetration": "At a retained fixed step, true exactly when at least one complete Unity-authored non-trigger contact has separation strictly less than -0.006 Unity units. Complete enumeration with no such contact is false.",
+    "unsupported_stationary_or_floating_body": "For each causal entity, true exactly when two consecutive complete fixed-step records show an active present body under applicable nonzero world gravity, squared linear speed at most 0.0001, absolute angular speed at most 0.01 degrees/second, and no support relation anywhere in the two-step window. Complete support or nonstationarity is false."
+  },
+  "schema": "cohort_v2_physical_violation_derivation_spec_v1",
+  "source_authorities": [
+    {
+      "runtime_bundle_identity": "issue-44-physics-v2-runtime-evidence-bundle-v1:issue_44_physics_v2_runtime_evidence_bundle_v1:collection_plan_identity=collection-plan-v1%3A2%3Atype010101-training-seed4401%3Aissue44-support-ready-type010101-seed4401:source_snapshot_commit=72d1acea04d9c5b5f99058aa723c5554ec555341",
+      "source_snapshot_commit": "72d1acea04d9c5b5f99058aa723c5554ec555341"
+    },
+    {
+      "runtime_bundle_identity": "issue-50-physical-violation-probe-runtime-bundle-v1:collection-plan-v1:1:issue50-floating-a-seed5001:issue50-floating-b-seed5002:9548bd508920e5700c417460102ebaa2166f825b",
+      "source_snapshot_commit": "9548bd508920e5700c417460102ebaa2166f825b"
+    }
+  ],
+  "version": "cohort_v2_physical_violation_derivation_v1"
+}

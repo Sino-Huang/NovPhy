@@ -1,0 +1,48 @@
+{
+  "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+  "identity": "issue-50-v2-physical-violation-adjudication-plan-v1:determination-1",
+  "minimum_floor": {
+    "boundary_windows": 2,
+    "level_instances": 2,
+    "negative_witnesses": 2,
+    "non_final_scenario_lineages": 2,
+    "positive_witnesses": 2,
+    "scenario_templates": 2,
+    "unavailable_or_invalidation_checks": 1
+  },
+  "outcome_conditioned_retention": false,
+  "physical_regime_label_used": false,
+  "predicates": [
+    "excess_penetration",
+    "unsupported_stationary_or_floating_body"
+  ],
+  "schema": "issue_50_v2_physical_violation_adjudication_plan_v1",
+  "selection_rules": {
+    "aggregate": "verify true dominance and unavailable preservation",
+    "excess_penetration": {
+      "boundary": "previous/collision/next fixed-step window",
+      "cases": [
+        "collision",
+        "support-change"
+      ],
+      "negative": "immediately preceding complete fixed step",
+      "positive": "same-step collision event"
+    },
+    "unavailable": "first authored-body fixed-step endpoint",
+    "unsupported_stationary_or_floating_body": {
+      "cases": [
+        "floating-a-stationary",
+        "floating-b-stationary"
+      ],
+      "motion_boundary": "first two authored-body fixed steps",
+      "negative": "same-lineage stationary gravity-applicable supported body",
+      "positive": "earliest available true label for authored block:0000",
+      "support_boundary": "same-step authored unsupported and supported bodies"
+    }
+  },
+  "source_capture_bundle_identities": [
+    "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23",
+    "issue-50-physical-violation-probe-capture-bundle-v1:collection-plan-v1:1:issue50-floating-a-seed5001:issue50-floating-b-seed5002"
+  ],
+  "spsg_negative_training_examples": false
+}

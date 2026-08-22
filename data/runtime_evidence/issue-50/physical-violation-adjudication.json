@@ -1,0 +1,1159 @@
+{
+  "aggregate": {
+    "checks": [
+      {
+        "case": "floating-a-stationary",
+        "first_availability": "unavailable_component",
+        "first_fixed_step": 1556,
+        "first_value": null,
+        "passed": true,
+        "second_availability": "available",
+        "second_fixed_step": 1557,
+        "second_value": true
+      },
+      {
+        "case": "floating-b-stationary",
+        "first_availability": "unavailable_component",
+        "first_fixed_step": 1564,
+        "first_value": null,
+        "passed": true,
+        "second_availability": "available",
+        "second_fixed_step": 1565,
+        "second_value": true
+      }
+    ],
+    "predicate": "any(violation)",
+    "semantics": "unavailable-preserving Kleene any"
+  },
+  "coverage": {
+    "excess_penetration": {
+      "boundary_window_count": 2,
+      "negative": {
+        "level_instance_count": 2,
+        "passed": true,
+        "scenario_lineage_count": 2,
+        "scenario_template_count": 2,
+        "witness_count": 2
+      },
+      "positive": {
+        "level_instance_count": 2,
+        "passed": true,
+        "scenario_lineage_count": 2,
+        "scenario_template_count": 2,
+        "witness_count": 2
+      }
+    },
+    "unsupported_stationary_or_floating_body": {
+      "boundary_window_count": 2,
+      "negative": {
+        "level_instance_count": 2,
+        "passed": true,
+        "scenario_lineage_count": 2,
+        "scenario_template_count": 2,
+        "witness_count": 2
+      },
+      "positive": {
+        "level_instance_count": 2,
+        "passed": true,
+        "scenario_lineage_count": 2,
+        "scenario_template_count": 2,
+        "witness_count": 2
+      }
+    }
+  },
+  "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+  "exclusions": {
+    "illegal_contact": "excluded_not_emitted_not_false"
+  },
+  "identity": "issue-50-v2-physical-violation-adjudication-v1:accepted-determination-1",
+  "mutation_checks": [
+    {
+      "expected": "whole_rollout_rejected",
+      "mutation": "remove_collider_geometry",
+      "observed": "whole_rollout_rejected",
+      "reason": "capture.fixed_step_samples[0].colliders[0]: missing fields: shape"
+    },
+    {
+      "expected": "whole_rollout_rejected",
+      "mutation": "mark_contact_enumeration_incomplete",
+      "observed": "whole_rollout_rejected",
+      "reason": "capture.fixed_step_samples[0].complete_raw_non_trigger_contacts: contact enumeration is incomplete"
+    },
+    {
+      "expected": "whole_rollout_rejected",
+      "mutation": "make_contact_separation_nonfinite",
+      "observed": "whole_rollout_rejected",
+      "reason": "capture.fixed_step_samples[0].contacts[0].separation: expected finite number"
+    },
+    {
+      "expected": "whole_rollout_rejected",
+      "mutation": "remove_gravity_applicability",
+      "observed": "whole_rollout_rejected",
+      "reason": "capture.fixed_step_samples[0].entities[0].body: missing fields: gravity_applicable"
+    },
+    {
+      "expected": "whole_rollout_rejected",
+      "mutation": "truncate_entity_lifecycle",
+      "observed": "whole_rollout_rejected",
+      "reason": "capture.fixed_step_samples[0].entities: causal-entity lifecycle evidence is incomplete"
+    },
+    {
+      "expected": "whole_derivation_rejected",
+      "mutation": "change_source_capture_bundle_binding",
+      "observed": "whole_derivation_rejected",
+      "reason": "capture-v2:7d5300c031374d33b1413962495b0ba0: physical-violation derivation differs from exact re-derivation"
+    }
+  ],
+  "passed": true,
+  "physical_regime_label_used": false,
+  "plan_identity": "issue-50-v2-physical-violation-adjudication-plan-v1:determination-1",
+  "predicate_dispositions": {
+    "excess_penetration": "accepted_authoritative",
+    "unsupported_stationary_or_floating_body": "accepted_authoritative"
+  },
+  "schema": "issue_50_v2_physical_violation_adjudication_v1",
+  "witnesses": {
+    "excess_penetration": {
+      "boundary_windows": [
+        {
+          "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+          "case": "collision",
+          "fixed_steps": [
+            1757,
+            1758,
+            1759
+          ],
+          "source_records": [
+            {
+              "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+              "collider_ids": [
+                "runtime:pig:0000:collider:0001",
+                "runtime:platform:0000:collider:0000"
+              ],
+              "contact_ids": [
+                "contact:1757:0006"
+              ],
+              "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+              "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+              "entity_id": null,
+              "fixed_steps": [
+                1757
+              ],
+              "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+              "source_capture_bundle_identity": "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+            },
+            {
+              "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+              "collider_ids": [
+                "runtime:bird:0000:collider:0000",
+                "runtime:platform:0000:collider:0000"
+              ],
+              "contact_ids": [
+                "contact:1758:0000"
+              ],
+              "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+              "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+              "entity_id": null,
+              "fixed_steps": [
+                1758
+              ],
+              "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+              "source_capture_bundle_identity": "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+            },
+            {
+              "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+              "collider_ids": [
+                "runtime:pig:0000:collider:0001",
+                "runtime:platform:0000:collider:0000"
+              ],
+              "contact_ids": [
+                "contact:1759:0006"
+              ],
+              "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+              "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+              "entity_id": null,
+              "fixed_steps": [
+                1759
+              ],
+              "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+              "source_capture_bundle_identity": "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+            }
+          ],
+          "values": [
+            false,
+            true,
+            false
+          ]
+        },
+        {
+          "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "case": "support-change",
+          "fixed_steps": [
+            1748,
+            1749,
+            1750
+          ],
+          "source_records": [
+            {
+              "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "collider_ids": [
+                "runtime:pig:0000:collider:0001",
+                "runtime:platform:0000:collider:0000"
+              ],
+              "contact_ids": [
+                "contact:1748:0007"
+              ],
+              "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+              "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+              "entity_id": null,
+              "fixed_steps": [
+                1748
+              ],
+              "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_bundle_identity": "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+            },
+            {
+              "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "collider_ids": [
+                "runtime:bird:0000:collider:0000",
+                "runtime:platform:0000:collider:0000"
+              ],
+              "contact_ids": [
+                "contact:1749:0000"
+              ],
+              "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+              "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+              "entity_id": null,
+              "fixed_steps": [
+                1749
+              ],
+              "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_bundle_identity": "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+            },
+            {
+              "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "collider_ids": [
+                "runtime:pig:0000:collider:0001",
+                "runtime:platform:0000:collider:0000"
+              ],
+              "contact_ids": [
+                "contact:1750:0007"
+              ],
+              "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+              "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+              "entity_id": null,
+              "fixed_steps": [
+                1750
+              ],
+              "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_bundle_identity": "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23",
+              "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+            }
+          ],
+          "values": [
+            false,
+            true,
+            false
+          ]
+        }
+      ],
+      "negative": [
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+          "case": "collision",
+          "entity_id": null,
+          "evidence": {
+            "collider_geometry_complete": true,
+            "coordinate_convention": {
+              "world_length_unit": "unity_unit",
+              "world_space": "unity_world_2d",
+              "world_x_axis": "right",
+              "world_y_axis": "up"
+            },
+            "minimum_contact_separation": -0.00500011444,
+            "penetration_tolerance_unity_units": 0.006,
+            "raw_non_trigger_contact_enumeration_complete": true,
+            "violating_contact_ids": []
+          },
+          "fixed_step": 1757,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml",
+          "source_records": {
+            "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+            "collider_ids": [
+              "runtime:pig:0000:collider:0001",
+              "runtime:platform:0000:collider:0000"
+            ],
+            "contact_ids": [
+              "contact:1757:0006"
+            ],
+            "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+            "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+            "entity_id": null,
+            "fixed_steps": [
+              1757
+            ],
+            "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+            "source_capture_bundle_identity": "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23",
+            "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+          },
+          "value": false
+        },
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "case": "support-change",
+          "entity_id": null,
+          "evidence": {
+            "collider_geometry_complete": true,
+            "coordinate_convention": {
+              "world_length_unit": "unity_unit",
+              "world_space": "unity_world_2d",
+              "world_x_axis": "right",
+              "world_y_axis": "up"
+            },
+            "minimum_contact_separation": -0.004999995,
+            "penetration_tolerance_unity_units": 0.006,
+            "raw_non_trigger_contact_enumeration_complete": true,
+            "violating_contact_ids": []
+          },
+          "fixed_step": 1748,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-44%252Fsupport-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-44%252525252Fsupport-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-44%2Fsupport-template.xml",
+          "source_records": {
+            "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+            "collider_ids": [
+              "runtime:pig:0000:collider:0001",
+              "runtime:platform:0000:collider:0000"
+            ],
+            "contact_ids": [
+              "contact:1748:0007"
+            ],
+            "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+            "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+            "entity_id": null,
+            "fixed_steps": [
+              1748
+            ],
+            "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+            "source_capture_bundle_identity": "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23",
+            "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+          },
+          "value": false
+        }
+      ],
+      "positive": [
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+          "case": "collision",
+          "entity_id": null,
+          "evidence": {
+            "collider_geometry_complete": true,
+            "coordinate_convention": {
+              "world_length_unit": "unity_unit",
+              "world_space": "unity_world_2d",
+              "world_x_axis": "right",
+              "world_y_axis": "up"
+            },
+            "minimum_contact_separation": -0.0149747189,
+            "penetration_tolerance_unity_units": 0.006,
+            "raw_non_trigger_contact_enumeration_complete": true,
+            "violating_contact_ids": [
+              "contact:1758:0000"
+            ]
+          },
+          "fixed_step": 1758,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml",
+          "source_records": {
+            "capture_id": "capture-v2:7d5300c031374d33b1413962495b0ba0",
+            "collider_ids": [
+              "runtime:bird:0000:collider:0000",
+              "runtime:platform:0000:collider:0000"
+            ],
+            "contact_ids": [
+              "contact:1758:0000"
+            ],
+            "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+            "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+            "entity_id": null,
+            "fixed_steps": [
+              1758
+            ],
+            "shot_id": "shot-v2:7d5300c031374d33b1413962495b0ba0",
+            "source_capture_bundle_identity": "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23",
+            "source_capture_reference": "data/runtime_evidence/issue-44/captures/collision.json"
+          },
+          "value": true
+        },
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+          "case": "support-change",
+          "entity_id": null,
+          "evidence": {
+            "collider_geometry_complete": true,
+            "coordinate_convention": {
+              "world_length_unit": "unity_unit",
+              "world_space": "unity_world_2d",
+              "world_x_axis": "right",
+              "world_y_axis": "up"
+            },
+            "minimum_contact_separation": -0.00665240549,
+            "penetration_tolerance_unity_units": 0.006,
+            "raw_non_trigger_contact_enumeration_complete": true,
+            "violating_contact_ids": [
+              "contact:1749:0000"
+            ]
+          },
+          "fixed_step": 1749,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-44%25252Fsupport-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-44%252Fsupport-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-44%252525252Fsupport-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-44%2525252Fsupport-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-44%2Fsupport-template.xml",
+          "source_records": {
+            "capture_id": "capture-v2:c1a8da10b3394f7397fcefd3fb188e23",
+            "collider_ids": [
+              "runtime:bird:0000:collider:0000",
+              "runtime:platform:0000:collider:0000"
+            ],
+            "contact_ids": [
+              "contact:1749:0000"
+            ],
+            "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+            "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+            "entity_id": null,
+            "fixed_steps": [
+              1749
+            ],
+            "shot_id": "shot-v2:c1a8da10b3394f7397fcefd3fb188e23",
+            "source_capture_bundle_identity": "issue-44-physics-v2-capture-bundle-v1:issue_44_physics_v2_capture_bundle_v1:runtime_evidence_bundle_identity=issue-44-physics-v2-runtime-evidence-bundle-v1%3Aissue_44_physics_v2_runtime_evidence_bundle_v1%3Acollection_plan_identity%3Dcollection-plan-v1%253A2%253Atype010101-training-seed4401%253Aissue44-support-ready-type010101-seed4401%3Asource_snapshot_commit%3D72d1acea04d9c5b5f99058aa723c5554ec555341:capture=collision=capture-v2%3A7d5300c031374d33b1413962495b0ba0:capture=no-contact=capture-v2%3A4725e8a38f1043e793bd951329831976:capture=stable-terminal=capture-v2%3Aab12b4ec063043a4aec7128b321b6813:capture=support=capture-v2%3Aa0faf560d56842d6afc07cfa3db439d2:capture=support-change=capture-v2%3Ac1a8da10b3394f7397fcefd3fb188e23",
+            "source_capture_reference": "data/runtime_evidence/issue-44/captures/support-change.json"
+          },
+          "value": true
+        }
+      ]
+    },
+    "unavailable": [
+      {
+        "availability": "unavailable_incomplete_stability_window",
+        "capture_id": "capture-v2:8752da5fe8264cbbbd5aa39e873c1440",
+        "case": "floating-a-stationary",
+        "entity_id": "runtime:block:0000",
+        "evidence": {
+          "active_present_body_window_complete": false,
+          "observed_fixed_step_count": 1,
+          "required_fixed_step_count": 2
+        },
+        "fixed_step": 1556,
+        "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-50%25252Ffloating-a-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A5001%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-50%252Ffloating-a-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+        "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-50%252525252Ffloating-a-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A5001%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-50%2525252Ffloating-a-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+        "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-50%2Ffloating-a-template.xml",
+        "source_records": {
+          "capture_id": "capture-v2:8752da5fe8264cbbbd5aa39e873c1440",
+          "collider_ids": [],
+          "contact_ids": [],
+          "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+          "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+          "entity_id": "runtime:block:0000",
+          "fixed_steps": [
+            1556
+          ],
+          "shot_id": "shot-v2:8752da5fe8264cbbbd5aa39e873c1440",
+          "source_capture_bundle_identity": "issue-50-physical-violation-probe-capture-bundle-v1:collection-plan-v1:1:issue50-floating-a-seed5001:issue50-floating-b-seed5002",
+          "source_capture_reference": "data/runtime_evidence/issue-50/source-probes/captures/floating-a-stationary.json"
+        },
+        "value": null
+      },
+      {
+        "availability": "unavailable_incomplete_stability_window",
+        "capture_id": "capture-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+        "case": "floating-b-stationary",
+        "entity_id": "runtime:block:0000",
+        "evidence": {
+          "active_present_body_window_complete": false,
+          "observed_fixed_step_count": 1,
+          "required_fixed_step_count": 2
+        },
+        "fixed_step": 1564,
+        "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-50%25252Ffloating-b-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A5002%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-50%252Ffloating-b-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+        "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-50%252525252Ffloating-b-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A5002%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-50%2525252Ffloating-b-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+        "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-50%2Ffloating-b-template.xml",
+        "source_records": {
+          "capture_id": "capture-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+          "collider_ids": [],
+          "contact_ids": [],
+          "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+          "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+          "entity_id": "runtime:block:0000",
+          "fixed_steps": [
+            1564
+          ],
+          "shot_id": "shot-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+          "source_capture_bundle_identity": "issue-50-physical-violation-probe-capture-bundle-v1:collection-plan-v1:1:issue50-floating-a-seed5001:issue50-floating-b-seed5002",
+          "source_capture_reference": "data/runtime_evidence/issue-50/source-probes/captures/floating-b-stationary.json"
+        },
+        "value": null
+      }
+    ],
+    "unsupported_stationary_or_floating_body": {
+      "boundary_windows": [
+        {
+          "authored_entity_id": "runtime:block:0000",
+          "authored_values": [
+            null,
+            true
+          ],
+          "case": "floating-a-stationary",
+          "fixed_steps": [
+            1556,
+            1557
+          ],
+          "kind": "stability_window_and_support_boundary",
+          "same_lineage_motion_negative": {
+            "availability": "available",
+            "capture_id": "capture-v2:8752da5fe8264cbbbd5aa39e873c1440",
+            "case": "floating-a-stationary",
+            "entity_id": "runtime:bird:0000",
+            "evidence": {
+              "absolute_angular_speed_by_fixed_step": [
+                0.0,
+                0.0
+              ],
+              "active_lifecycle_complete": true,
+              "angular_speed_threshold_degrees_per_second": 0.01,
+              "body_presence_complete": true,
+              "gravity_applicable_all_steps": true,
+              "linear_speed_squared_by_fixed_step": [
+                99.12588343600055,
+                98.26954091622498
+              ],
+              "linear_speed_squared_threshold": 0.0001,
+              "maximum_absolute_angular_speed_degrees_per_second": 0.0,
+              "maximum_linear_speed_squared": 99.12588343600055,
+              "stability_window_fixed_steps": 2,
+              "stationary": false,
+              "support_contact_evidence_complete": true,
+              "support_relations": [],
+              "supported": false,
+              "world_context": [
+                {
+                  "fixed_step": 1707,
+                  "gravity_vector": [
+                    0,
+                    -9.81
+                  ],
+                  "world_id": "unity-physics2d"
+                },
+                {
+                  "fixed_step": 1708,
+                  "gravity_vector": [
+                    0,
+                    -9.81
+                  ],
+                  "world_id": "unity-physics2d"
+                }
+              ]
+            },
+            "fixed_step": 1708,
+            "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-50%25252Ffloating-a-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A5001%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-50%252Ffloating-a-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+            "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-50%252525252Ffloating-a-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A5001%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-50%2525252Ffloating-a-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+            "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-50%2Ffloating-a-template.xml",
+            "source_records": {
+              "capture_id": "capture-v2:8752da5fe8264cbbbd5aa39e873c1440",
+              "collider_ids": [],
+              "contact_ids": [],
+              "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+              "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+              "entity_id": "runtime:bird:0000",
+              "fixed_steps": [
+                1707,
+                1708
+              ],
+              "shot_id": "shot-v2:8752da5fe8264cbbbd5aa39e873c1440",
+              "source_capture_bundle_identity": "issue-50-physical-violation-probe-capture-bundle-v1:collection-plan-v1:1:issue50-floating-a-seed5001:issue50-floating-b-seed5002",
+              "source_capture_reference": "data/runtime_evidence/issue-50/source-probes/captures/floating-a-stationary.json"
+            },
+            "value": false
+          },
+          "same_step_supported_negative": {
+            "availability": "available",
+            "capture_id": "capture-v2:8752da5fe8264cbbbd5aa39e873c1440",
+            "case": "floating-a-stationary",
+            "entity_id": "runtime:block:0001",
+            "evidence": {
+              "absolute_angular_speed_by_fixed_step": [
+                0.0,
+                0.0
+              ],
+              "active_lifecycle_complete": true,
+              "angular_speed_threshold_degrees_per_second": 0.01,
+              "body_presence_complete": true,
+              "gravity_applicable_all_steps": true,
+              "linear_speed_squared_by_fixed_step": [
+                0.0,
+                0.0
+              ],
+              "linear_speed_squared_threshold": 0.0001,
+              "maximum_absolute_angular_speed_degrees_per_second": 0.0,
+              "maximum_linear_speed_squared": 0.0,
+              "stability_window_fixed_steps": 2,
+              "stationary": true,
+              "support_contact_evidence_complete": true,
+              "support_relations": [
+                {
+                  "contact_ids": [
+                    "contact:1556:0000",
+                    "contact:1556:0001"
+                  ],
+                  "fixed_step": 1556,
+                  "supporter_entity_id": "runtime:world:landscape:0001"
+                },
+                {
+                  "contact_ids": [
+                    "contact:1557:0000",
+                    "contact:1557:0001"
+                  ],
+                  "fixed_step": 1557,
+                  "supporter_entity_id": "runtime:world:landscape:0001"
+                }
+              ],
+              "supported": true,
+              "world_context": [
+                {
+                  "fixed_step": 1556,
+                  "gravity_vector": [
+                    0,
+                    -9.81
+                  ],
+                  "world_id": "unity-physics2d"
+                },
+                {
+                  "fixed_step": 1557,
+                  "gravity_vector": [
+                    0,
+                    -9.81
+                  ],
+                  "world_id": "unity-physics2d"
+                }
+              ]
+            },
+            "fixed_step": 1557,
+            "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-50%25252Ffloating-a-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A5001%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-50%252Ffloating-a-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+            "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-50%252525252Ffloating-a-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A5001%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-50%2525252Ffloating-a-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+            "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-50%2Ffloating-a-template.xml",
+            "source_records": {
+              "capture_id": "capture-v2:8752da5fe8264cbbbd5aa39e873c1440",
+              "collider_ids": [],
+              "contact_ids": [
+                "contact:1556:0000",
+                "contact:1556:0001",
+                "contact:1557:0000",
+                "contact:1557:0001"
+              ],
+              "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+              "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+              "entity_id": "runtime:block:0001",
+              "fixed_steps": [
+                1556,
+                1557
+              ],
+              "shot_id": "shot-v2:8752da5fe8264cbbbd5aa39e873c1440",
+              "source_capture_bundle_identity": "issue-50-physical-violation-probe-capture-bundle-v1:collection-plan-v1:1:issue50-floating-a-seed5001:issue50-floating-b-seed5002",
+              "source_capture_reference": "data/runtime_evidence/issue-50/source-probes/captures/floating-a-stationary.json"
+            },
+            "value": false
+          }
+        },
+        {
+          "authored_entity_id": "runtime:block:0000",
+          "authored_values": [
+            null,
+            true
+          ],
+          "case": "floating-b-stationary",
+          "fixed_steps": [
+            1564,
+            1565
+          ],
+          "kind": "stability_window_and_support_boundary",
+          "same_lineage_motion_negative": {
+            "availability": "available",
+            "capture_id": "capture-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+            "case": "floating-b-stationary",
+            "entity_id": "runtime:bird:0000",
+            "evidence": {
+              "absolute_angular_speed_by_fixed_step": [
+                0.0,
+                0.0
+              ],
+              "active_lifecycle_complete": true,
+              "angular_speed_threshold_degrees_per_second": 0.01,
+              "body_presence_complete": true,
+              "gravity_applicable_all_steps": true,
+              "linear_speed_squared_by_fixed_step": [
+                99.12588343600055,
+                98.26954091622498
+              ],
+              "linear_speed_squared_threshold": 0.0001,
+              "maximum_absolute_angular_speed_degrees_per_second": 0.0,
+              "maximum_linear_speed_squared": 99.12588343600055,
+              "stability_window_fixed_steps": 2,
+              "stationary": false,
+              "support_contact_evidence_complete": true,
+              "support_relations": [],
+              "supported": false,
+              "world_context": [
+                {
+                  "fixed_step": 1715,
+                  "gravity_vector": [
+                    0,
+                    -9.81
+                  ],
+                  "world_id": "unity-physics2d"
+                },
+                {
+                  "fixed_step": 1716,
+                  "gravity_vector": [
+                    0,
+                    -9.81
+                  ],
+                  "world_id": "unity-physics2d"
+                }
+              ]
+            },
+            "fixed_step": 1716,
+            "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-50%25252Ffloating-b-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A5002%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-50%252Ffloating-b-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+            "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-50%252525252Ffloating-b-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A5002%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-50%2525252Ffloating-b-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+            "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-50%2Ffloating-b-template.xml",
+            "source_records": {
+              "capture_id": "capture-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+              "collider_ids": [],
+              "contact_ids": [],
+              "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+              "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+              "entity_id": "runtime:bird:0000",
+              "fixed_steps": [
+                1715,
+                1716
+              ],
+              "shot_id": "shot-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+              "source_capture_bundle_identity": "issue-50-physical-violation-probe-capture-bundle-v1:collection-plan-v1:1:issue50-floating-a-seed5001:issue50-floating-b-seed5002",
+              "source_capture_reference": "data/runtime_evidence/issue-50/source-probes/captures/floating-b-stationary.json"
+            },
+            "value": false
+          },
+          "same_step_supported_negative": {
+            "availability": "available",
+            "capture_id": "capture-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+            "case": "floating-b-stationary",
+            "entity_id": "runtime:block:0001",
+            "evidence": {
+              "absolute_angular_speed_by_fixed_step": [
+                0.0,
+                0.0
+              ],
+              "active_lifecycle_complete": true,
+              "angular_speed_threshold_degrees_per_second": 0.01,
+              "body_presence_complete": true,
+              "gravity_applicable_all_steps": true,
+              "linear_speed_squared_by_fixed_step": [
+                0.0,
+                0.0
+              ],
+              "linear_speed_squared_threshold": 0.0001,
+              "maximum_absolute_angular_speed_degrees_per_second": 0.0,
+              "maximum_linear_speed_squared": 0.0,
+              "stability_window_fixed_steps": 2,
+              "stationary": true,
+              "support_contact_evidence_complete": true,
+              "support_relations": [
+                {
+                  "contact_ids": [
+                    "contact:1564:0000",
+                    "contact:1564:0001"
+                  ],
+                  "fixed_step": 1564,
+                  "supporter_entity_id": "runtime:world:landscape:0001"
+                },
+                {
+                  "contact_ids": [
+                    "contact:1565:0000",
+                    "contact:1565:0001"
+                  ],
+                  "fixed_step": 1565,
+                  "supporter_entity_id": "runtime:world:landscape:0001"
+                }
+              ],
+              "supported": true,
+              "world_context": [
+                {
+                  "fixed_step": 1564,
+                  "gravity_vector": [
+                    0,
+                    -9.81
+                  ],
+                  "world_id": "unity-physics2d"
+                },
+                {
+                  "fixed_step": 1565,
+                  "gravity_vector": [
+                    0,
+                    -9.81
+                  ],
+                  "world_id": "unity-physics2d"
+                }
+              ]
+            },
+            "fixed_step": 1565,
+            "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-50%25252Ffloating-b-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A5002%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-50%252Ffloating-b-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+            "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-50%252525252Ffloating-b-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A5002%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-50%2525252Ffloating-b-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+            "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-50%2Ffloating-b-template.xml",
+            "source_records": {
+              "capture_id": "capture-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+              "collider_ids": [],
+              "contact_ids": [
+                "contact:1564:0000",
+                "contact:1564:0001",
+                "contact:1565:0000",
+                "contact:1565:0001"
+              ],
+              "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+              "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+              "entity_id": "runtime:block:0001",
+              "fixed_steps": [
+                1564,
+                1565
+              ],
+              "shot_id": "shot-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+              "source_capture_bundle_identity": "issue-50-physical-violation-probe-capture-bundle-v1:collection-plan-v1:1:issue50-floating-a-seed5001:issue50-floating-b-seed5002",
+              "source_capture_reference": "data/runtime_evidence/issue-50/source-probes/captures/floating-b-stationary.json"
+            },
+            "value": false
+          }
+        }
+      ],
+      "negative": [
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:8752da5fe8264cbbbd5aa39e873c1440",
+          "case": "floating-a-stationary",
+          "entity_id": "runtime:block:0001",
+          "evidence": {
+            "absolute_angular_speed_by_fixed_step": [
+              0.0,
+              0.0
+            ],
+            "active_lifecycle_complete": true,
+            "angular_speed_threshold_degrees_per_second": 0.01,
+            "body_presence_complete": true,
+            "gravity_applicable_all_steps": true,
+            "linear_speed_squared_by_fixed_step": [
+              0.0,
+              0.0
+            ],
+            "linear_speed_squared_threshold": 0.0001,
+            "maximum_absolute_angular_speed_degrees_per_second": 0.0,
+            "maximum_linear_speed_squared": 0.0,
+            "stability_window_fixed_steps": 2,
+            "stationary": true,
+            "support_contact_evidence_complete": true,
+            "support_relations": [
+              {
+                "contact_ids": [
+                  "contact:1556:0000",
+                  "contact:1556:0001"
+                ],
+                "fixed_step": 1556,
+                "supporter_entity_id": "runtime:world:landscape:0001"
+              },
+              {
+                "contact_ids": [
+                  "contact:1557:0000",
+                  "contact:1557:0001"
+                ],
+                "fixed_step": 1557,
+                "supporter_entity_id": "runtime:world:landscape:0001"
+              }
+            ],
+            "supported": true,
+            "world_context": [
+              {
+                "fixed_step": 1556,
+                "gravity_vector": [
+                  0,
+                  -9.81
+                ],
+                "world_id": "unity-physics2d"
+              },
+              {
+                "fixed_step": 1557,
+                "gravity_vector": [
+                  0,
+                  -9.81
+                ],
+                "world_id": "unity-physics2d"
+              }
+            ]
+          },
+          "fixed_step": 1557,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-50%25252Ffloating-a-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A5001%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-50%252Ffloating-a-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-50%252525252Ffloating-a-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A5001%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-50%2525252Ffloating-a-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-50%2Ffloating-a-template.xml",
+          "source_records": {
+            "capture_id": "capture-v2:8752da5fe8264cbbbd5aa39e873c1440",
+            "collider_ids": [],
+            "contact_ids": [
+              "contact:1556:0000",
+              "contact:1556:0001",
+              "contact:1557:0000",
+              "contact:1557:0001"
+            ],
+            "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+            "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+            "entity_id": "runtime:block:0001",
+            "fixed_steps": [
+              1556,
+              1557
+            ],
+            "shot_id": "shot-v2:8752da5fe8264cbbbd5aa39e873c1440",
+            "source_capture_bundle_identity": "issue-50-physical-violation-probe-capture-bundle-v1:collection-plan-v1:1:issue50-floating-a-seed5001:issue50-floating-b-seed5002",
+            "source_capture_reference": "data/runtime_evidence/issue-50/source-probes/captures/floating-a-stationary.json"
+          },
+          "value": false
+        },
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+          "case": "floating-b-stationary",
+          "entity_id": "runtime:block:0001",
+          "evidence": {
+            "absolute_angular_speed_by_fixed_step": [
+              0.0,
+              0.0
+            ],
+            "active_lifecycle_complete": true,
+            "angular_speed_threshold_degrees_per_second": 0.01,
+            "body_presence_complete": true,
+            "gravity_applicable_all_steps": true,
+            "linear_speed_squared_by_fixed_step": [
+              0.0,
+              0.0
+            ],
+            "linear_speed_squared_threshold": 0.0001,
+            "maximum_absolute_angular_speed_degrees_per_second": 0.0,
+            "maximum_linear_speed_squared": 0.0,
+            "stability_window_fixed_steps": 2,
+            "stationary": true,
+            "support_contact_evidence_complete": true,
+            "support_relations": [
+              {
+                "contact_ids": [
+                  "contact:1564:0000",
+                  "contact:1564:0001"
+                ],
+                "fixed_step": 1564,
+                "supporter_entity_id": "runtime:world:landscape:0001"
+              },
+              {
+                "contact_ids": [
+                  "contact:1565:0000",
+                  "contact:1565:0001"
+                ],
+                "fixed_step": 1565,
+                "supporter_entity_id": "runtime:world:landscape:0001"
+              }
+            ],
+            "supported": true,
+            "world_context": [
+              {
+                "fixed_step": 1564,
+                "gravity_vector": [
+                  0,
+                  -9.81
+                ],
+                "world_id": "unity-physics2d"
+              },
+              {
+                "fixed_step": 1565,
+                "gravity_vector": [
+                  0,
+                  -9.81
+                ],
+                "world_id": "unity-physics2d"
+              }
+            ]
+          },
+          "fixed_step": 1565,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-50%25252Ffloating-b-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A5002%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-50%252Ffloating-b-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-50%252525252Ffloating-b-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A5002%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-50%2525252Ffloating-b-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-50%2Ffloating-b-template.xml",
+          "source_records": {
+            "capture_id": "capture-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+            "collider_ids": [],
+            "contact_ids": [
+              "contact:1564:0000",
+              "contact:1564:0001",
+              "contact:1565:0000",
+              "contact:1565:0001"
+            ],
+            "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+            "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+            "entity_id": "runtime:block:0001",
+            "fixed_steps": [
+              1564,
+              1565
+            ],
+            "shot_id": "shot-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+            "source_capture_bundle_identity": "issue-50-physical-violation-probe-capture-bundle-v1:collection-plan-v1:1:issue50-floating-a-seed5001:issue50-floating-b-seed5002",
+            "source_capture_reference": "data/runtime_evidence/issue-50/source-probes/captures/floating-b-stationary.json"
+          },
+          "value": false
+        }
+      ],
+      "positive": [
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:8752da5fe8264cbbbd5aa39e873c1440",
+          "case": "floating-a-stationary",
+          "entity_id": "runtime:block:0000",
+          "evidence": {
+            "absolute_angular_speed_by_fixed_step": [
+              0.0,
+              0.0
+            ],
+            "active_lifecycle_complete": true,
+            "angular_speed_threshold_degrees_per_second": 0.01,
+            "body_presence_complete": true,
+            "gravity_applicable_all_steps": true,
+            "linear_speed_squared_by_fixed_step": [
+              0.0,
+              0.0
+            ],
+            "linear_speed_squared_threshold": 0.0001,
+            "maximum_absolute_angular_speed_degrees_per_second": 0.0,
+            "maximum_linear_speed_squared": 0.0,
+            "stability_window_fixed_steps": 2,
+            "stationary": true,
+            "support_contact_evidence_complete": true,
+            "support_relations": [],
+            "supported": false,
+            "world_context": [
+              {
+                "fixed_step": 1556,
+                "gravity_vector": [
+                  0,
+                  -9.81
+                ],
+                "world_id": "unity-physics2d"
+              },
+              {
+                "fixed_step": 1557,
+                "gravity_vector": [
+                  0,
+                  -9.81
+                ],
+                "world_id": "unity-physics2d"
+              }
+            ]
+          },
+          "fixed_step": 1557,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-50%25252Ffloating-a-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A5001%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-50%252Ffloating-a-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-50%252525252Ffloating-a-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A5001%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-50%2525252Ffloating-a-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-50%2Ffloating-a-template.xml",
+          "source_records": {
+            "capture_id": "capture-v2:8752da5fe8264cbbbd5aa39e873c1440",
+            "collider_ids": [],
+            "contact_ids": [],
+            "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+            "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+            "entity_id": "runtime:block:0000",
+            "fixed_steps": [
+              1556,
+              1557
+            ],
+            "shot_id": "shot-v2:8752da5fe8264cbbbd5aa39e873c1440",
+            "source_capture_bundle_identity": "issue-50-physical-violation-probe-capture-bundle-v1:collection-plan-v1:1:issue50-floating-a-seed5001:issue50-floating-b-seed5002",
+            "source_capture_reference": "data/runtime_evidence/issue-50/source-probes/captures/floating-a-stationary.json"
+          },
+          "value": true
+        },
+        {
+          "availability": "available",
+          "capture_id": "capture-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+          "case": "floating-b-stationary",
+          "entity_id": "runtime:block:0000",
+          "evidence": {
+            "absolute_angular_speed_by_fixed_step": [
+              0.0,
+              0.0
+            ],
+            "active_lifecycle_complete": true,
+            "angular_speed_threshold_degrees_per_second": 0.01,
+            "body_presence_complete": true,
+            "gravity_applicable_all_steps": true,
+            "linear_speed_squared_by_fixed_step": [
+              0.0,
+              0.0
+            ],
+            "linear_speed_squared_threshold": 0.0001,
+            "maximum_absolute_angular_speed_degrees_per_second": 0.0,
+            "maximum_linear_speed_squared": 0.0,
+            "stability_window_fixed_steps": 2,
+            "stationary": true,
+            "support_contact_evidence_complete": true,
+            "support_relations": [],
+            "supported": false,
+            "world_context": [
+              {
+                "fixed_step": 1564,
+                "gravity_vector": [
+                  0,
+                  -9.81
+                ],
+                "world_id": "unity-physics2d"
+              },
+              {
+                "fixed_step": 1565,
+                "gravity_vector": [
+                  0,
+                  -9.81
+                ],
+                "world_id": "unity-physics2d"
+              }
+            ]
+          },
+          "fixed_step": 1565,
+          "level_instance_id": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-50%25252Ffloating-b-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A5002%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-50%252Ffloating-b-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+          "scenario_lineage_id": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-50%252525252Ffloating-b-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A5002%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-50%2525252Ffloating-b-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+          "scenario_template_id": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-50%2Ffloating-b-template.xml",
+          "source_records": {
+            "capture_id": "capture-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+            "collider_ids": [],
+            "contact_ids": [],
+            "derivation_spec_identity": "cohort-v2-physical-violation-derivation-spec-v1:excess-penetration+unsupported-stationary-or-floating-body",
+            "derivation_spec_version": "cohort_v2_physical_violation_derivation_v1",
+            "entity_id": "runtime:block:0000",
+            "fixed_steps": [
+              1564,
+              1565
+            ],
+            "shot_id": "shot-v2:57262f9c7c7b4ce8925c50b2425f71a2",
+            "source_capture_bundle_identity": "issue-50-physical-violation-probe-capture-bundle-v1:collection-plan-v1:1:issue50-floating-a-seed5001:issue50-floating-b-seed5002",
+            "source_capture_reference": "data/runtime_evidence/issue-50/source-probes/captures/floating-b-stationary.json"
+          },
+          "value": true
+        }
+      ]
+    }
+  }
+}
