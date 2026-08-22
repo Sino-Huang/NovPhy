@@ -178,7 +178,7 @@ def _collection_command(
     authorities: dict[str, object],
     games: dict[str, Path],
     runtime_root: Path,
-) -> list[str]:
+) -> tuple[list[str], int]:
     agent_port = free_port()
     game_port = free_port()
     physics_port = free_port()
@@ -222,7 +222,7 @@ def _collection_command(
                 str(games[case]),
             ]
         )
-    return command
+    return command, physics_port
 
 
 def _publish_probe_sources(
@@ -318,7 +318,8 @@ def run(runtime_root: Path, output: Path) -> dict[str, object]:
         environment["DISPLAY"] = display
         environment["NOVPHY_PHYSICS_CAPTURE_V2_STRIDE"] = "1"
         environment[PROBE_ENVIRONMENT] = PROBE_ENVIRONMENT_VALUE
-        command = _collection_command(authorities, games, runtime_root)
+        command, physics_port = _collection_command(authorities, games, runtime_root)
+        environment["NOVPHY_PHYSICS_CAPTURE_PORT"] = str(physics_port)
         _log("starting four fresh-engine Unity probes; collector logs follow")
         _run_with_heartbeat(command, environment=environment)
     finally:

@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from scripts.build_issue_50_evidence import (
     PROBE_CASES,
@@ -19,6 +20,7 @@ from scripts.cohort_v2_physical_violations import (
 )
 from scripts.cohort_v2_scenarios import write_immutable_cohort_v2_json
 from scripts.collection_plan import load_collection_plan
+from scripts.capture_issue_50_evidence import _collection_command
 from scripts.physics_capture_v2 import PhysicsCaptureV2Error, parse_physics_capture_v2
 
 
@@ -199,6 +201,31 @@ class Issue50ProbePlanTests(unittest.TestCase):
                     'physicsViolationProbe="unsupported_stationary_v1"',
                     Path(scenario["xml_path"]).read_text(encoding="utf-8"),
                 )
+
+    def test_collection_command_exposes_the_selected_unity_physics_port(self) -> None:
+        authorities = {
+            "plan_path": "probe-plan.json",
+            "scenarios": {
+                "floating-a": {
+                    "scenario_id": "scenario-a",
+                    "manifest_path": "manifest-a.json",
+                    "xml_path": "floating-a.xml",
+                    "template_path": "template-a.xml",
+                }
+            },
+        }
+        with patch(
+            "scripts.capture_issue_50_evidence.free_port",
+            side_effect=(31001, 31002, 31003),
+        ):
+            command, physics_port = _collection_command(
+                authorities,
+                {"floating-a": Path("game-a")},
+                Path("runtime"),
+            )
+
+        self.assertEqual(physics_port, 31003)
+        self.assertEqual(command[command.index("--physics-port") + 1], "31003")
 
 
 class Issue50EvidenceBundleTests(unittest.TestCase):
