@@ -97,9 +97,19 @@ from world_model.training.scoring_torch import (
 )
 from world_model.training.real_data import RealPhaseData, write_frontier_input, write_real_sweep_manifest
 from world_model.training.frontier import FrontierError, analyze_frontier, pareto_frontier
+from world_model.training.cohort_v2 import (
+    CohortV2EndpointPredictor,
+    CohortV2EndpointScore,
+    LabelAvailability,
+    build_cohort_v2_oracle_window_loader,
+    score_cohort_v2_endpoints,
+)
 
 __all__ = [
     "CollapseReport",
+    "CohortV2EndpointPredictor",
+    "CohortV2EndpointScore",
+    "LabelAvailability",
     "ALPHA_EXCLUSIONS",
     "ArtifactContractError",
     "ArtifactReceipt",
@@ -119,6 +129,7 @@ __all__ = [
     "TeacherForcedTrainer",
     "TrainingConfig",
     "build_window_loader",
+    "build_cohort_v2_oracle_window_loader",
     "capture_environment",
     "canonical_json_bytes",
     "collapse_diagnostics",
@@ -132,6 +143,7 @@ __all__ = [
     "seed_all",
     "select_diverse_windows",
     "select_motion_windows",
+    "score_cohort_v2_endpoints",
     "validate_best_pair_artifacts",
     "write_best_pair_artifacts",
     "DIAGNOSTIC_IMAGE_SIZE",

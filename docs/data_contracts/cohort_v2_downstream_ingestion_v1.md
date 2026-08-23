@@ -18,15 +18,17 @@ example. Ordinary readers cannot select `final_evaluation`.
 The reader exposes every fixed-step engine record, event, terminal record,
 intervention representation, source identity, and exact central label payload.
 The separately synchronized agent observation retains its own pre-intervention
-fixed step; it is not relabeled as a physics-trace frame. Canonical observation
+fixed step; it is not relabeled as a physics-trace frame record. Canonical observation
 bytes remain available only through the existing diagnostic access policy and
 are rejected as model input.
 
 `CohortV2OracleWindowDataset` derives one observation-backed oracle-symbol
 window per admitted rollout without writing to or changing the primary
-release. `score_cohort_v2_endpoints` consumes the complete endpoint tuple and
-excludes unavailable values from its denominator. It rejects a missing or
-malformed prediction before returning metrics.
+release. `build_cohort_v2_oracle_window_loader` passes those windows through
+the public training loader, and `score_cohort_v2_endpoints` consumes all six
+parts of the complete endpoint tuple through the public evaluation interface.
+Unavailable values are excluded from denominators. A missing or malformed
+prediction is rejected before metrics are returned.
 
 ## Final-evaluation probe
 

@@ -78,8 +78,7 @@ from world_model.data.ablations import (
 
 def __getattr__(name: str):
     if name in (
-        "CohortV2CentralFrame",
-        "CohortV2EndpointScore",
+        "CohortV2CentralFrameRecord",
         "CohortV2FinalAccessReceipt",
         "CohortV2IngestionError",
         "CohortV2OracleWindow",
@@ -92,7 +91,7 @@ def __getattr__(name: str):
         value = getattr(cohort_v2, name)
         if isinstance(value, type):
             return value
-    if name in ("probe_cohort_v2_final_access", "score_cohort_v2_endpoints"):
+    if name == "probe_cohort_v2_final_access":
         from world_model.data import cohort_v2  # noqa: PLC0415
 
         return getattr(cohort_v2, name)
@@ -130,8 +129,7 @@ __all__ = [
     "CurriculumSchedule",
     "CurriculumStage",
     "CurriculumState",
-    "CohortV2CentralFrame",
-    "CohortV2EndpointScore",
+    "CohortV2CentralFrameRecord",
     "CohortV2FinalAccessReceipt",
     "CohortV2IngestionError",
     "CohortV2OracleWindow",
@@ -139,7 +137,6 @@ __all__ = [
     "CohortV2ReleaseReader",
     "CohortV2Rollout",
     "probe_cohort_v2_final_access",
-    "score_cohort_v2_endpoints",
     "EpisodeCatalog",
     "EpisodeRecord",
     "DuplicateSourceKeyError",

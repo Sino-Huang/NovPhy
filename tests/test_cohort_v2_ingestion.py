@@ -1,32 +1,27 @@
 import unittest
-import json
-import os
 from pathlib import Path
-import shutil
-import tempfile
 
-from scripts.build_issue_54_evidence import build_ingestion_evidence
+from scripts.build_issue_54_evidence import (
+    build_ingestion_evidence,
+    run_adversarial_ingestion_checks,
+)
 from world_model.data import (
     CohortV2IngestionError,
     CohortV2OracleWindowDataset,
     CohortV2ReleaseReader,
     probe_cohort_v2_final_access,
-    score_cohort_v2_endpoints,
 )
 from world_model.data.cohort_v2 import CENTRAL_LABELS
+from world_model.training import (
+    build_cohort_v2_oracle_window_loader,
+    score_cohort_v2_endpoints,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_RELEASE = ROOT / "data/runtime_evidence/issue-53-mixed-termination-v5"
 CAPABILITY_DECLARATION = ROOT / "docs/data_contracts/cohort_v2_capabilities_v1.json"
 SEALED_RELEASE = ROOT / ".local-artifacts/issue-53-mixed-termination-final-release-v5"
-
-
-def _private_file(shadow: Path, relative: Path) -> Path:
-    target = shadow / relative
-    target.unlink()
-    shutil.copy2(PUBLIC_RELEASE / relative, target)
-    return target
 
 
 class CohortV2ReleaseReaderTests(unittest.TestCase):
@@ -54,7 +49,8 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
 
         dataset = CohortV2OracleWindowDataset(reader)
         self.assertEqual(len(dataset), 6)
-        example = dataset[0]
+        loader = build_cohort_v2_oracle_window_loader(dataset)
+        example = next(iter(loader))[0]
         self.assertEqual(set(example.context.labels), set(CENTRAL_LABELS))
         self.assertEqual(example.target.fixed_step, example.context.fixed_step + 1)
         self.assertTrue(example.agent_observation.startswith(b"\x89PNG\r\n\x1a\n"))
@@ -103,14 +99,16 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
             influence="configuration_selection",
         )
 
-        def all_false(frame):
+        def all_false(frame_record):
             return {
+                "contact": (),
+                "supports": (),
                 "steady-state": False,
                 "structure-unstable": False,
                 "excess_penetration": False,
                 "unsupported_stationary_or_floating_body": {
                     item["entity_id"]: False
-                    for item in frame.labels[
+                    for item in frame_record.labels[
                         "unsupported_stationary_or_floating_body"
                     ]
                 },
@@ -120,83 +118,22 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
         self.assertEqual(score.endpoint_count, 6)
         self.assertGreater(score.scored_value_count, 0)
         self.assertGreater(score.unavailable_value_count, 0)
-        self.assertGreater(score.relation_record_count, 0)
+        self.assertGreater(score.scored_relation_count, 0)
         self.assertLessEqual(score.correct_value_count, score.scored_value_count)
 
-    def test_each_central_capability_mutation_fails_closed(self) -> None:
-        index = json.loads(
-            (PUBLIC_RELEASE / "authoritative-derivation-index.json").read_text()
+    def test_adversarial_ingestion_suite_covers_capabilities_and_boundaries(self) -> None:
+        reader = CohortV2ReleaseReader(
+            PUBLIC_RELEASE,
+            capability_declaration_path=CAPABILITY_DECLARATION,
+            workflow_kind="training",
+            influence="learned_parameters",
         )
-        first_attempt = next(
-            item["attempt_id"]
-            for item in index["artifacts"]
-            if item["exposure_role"] == "training"
+        checks = run_adversarial_ingestion_checks(
+            PUBLIC_RELEASE, CAPABILITY_DECLARATION, reader
         )
-        paths = {
-            item["kind"]: Path(item["path"])
-            for item in index["artifacts"]
-            if item["attempt_id"] == first_attempt
-        }
 
-        def mutate_contact(value):
-            value["labels"][0]["predicates"]["contact"]["relations"].append(
-                ["invented:a", "invented:b"]
-            )
-
-        def mutate_supports(value):
-            value["labels"][0]["predicates"]["supports"]["relations"].append(
-                ["invented:a", "invented:b"]
-            )
-
-        def mutate_macro(predicate):
-            def mutate(value):
-                label = value["labels"][0]["predicates"][predicate]
-                label["availability"] = "available"
-                label["value"] = False
-
-            return mutate
-
-        def mutate_excess(value):
-            label = value["labels"][0]["predicates"]["excess_penetration"]
-            label["value"] = not label["value"]
-
-        def mutate_unsupported(value):
-            label = value["labels"][0]["predicates"][
-                "unsupported_stationary_or_floating_body"
-            ][0]
-            label["availability"] = "available"
-            label["value"] = False
-
-        cases = {
-            "contact": (paths["micro"], mutate_contact),
-            "supports": (paths["micro"], mutate_supports),
-            "steady-state": (paths["macro"], mutate_macro("steady-state")),
-            "structure-unstable": (
-                paths["macro"],
-                mutate_macro("structure-unstable"),
-            ),
-            "excess_penetration": (paths["physical-violations"], mutate_excess),
-            "unsupported_stationary_or_floating_body": (
-                paths["physical-violations"],
-                mutate_unsupported,
-            ),
-        }
-        for capability, (relative, mutate) in cases.items():
-            with self.subTest(capability=capability), tempfile.TemporaryDirectory(dir=ROOT) as temporary:
-                shadow = Path(temporary) / "release"
-                shutil.copytree(PUBLIC_RELEASE, shadow, copy_function=os.link)
-                path = _private_file(shadow, relative)
-                value = json.loads(path.read_text())
-                mutate(value)
-                path.write_text(json.dumps(value), encoding="utf-8")
-
-                with self.assertRaises(CohortV2IngestionError):
-                    CohortV2ReleaseReader(
-                        shadow,
-                        capability_declaration_path=CAPABILITY_DECLARATION,
-                        workflow_kind="training",
-                        influence="learned_parameters",
-                    )
+        self.assertEqual(len(checks), 15)
+        self.assertTrue(all(item["passed"] for item in checks))
 
     @unittest.skipUnless(SEALED_RELEASE.is_dir(), "sealed operator evidence is local")
     def test_authorized_final_probe_returns_audit_receipt_without_final_examples(self) -> None:
@@ -220,7 +157,7 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
         self.assertEqual(report["counts"]["rollouts"], 18)
         self.assertEqual(report["counts"]["oracle_training_windows"], 18)
         self.assertEqual(set(report["roles"]), {"training", "calibration", "model_selection"})
-        self.assertEqual(len(report["adversarial_checks"]), 12)
+        self.assertEqual(len(report["adversarial_checks"]), 15)
         self.assertTrue(all(item["passed"] for item in report["adversarial_checks"]))
 
 

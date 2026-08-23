@@ -18,6 +18,9 @@ from world_model.data.cohort_v2 import (
     CohortV2OracleWindowDataset,
     CohortV2ReleaseReader,
     probe_cohort_v2_final_access,
+)
+from world_model.training import (
+    build_cohort_v2_oracle_window_loader,
     score_cohort_v2_endpoints,
 )
 
@@ -56,14 +59,18 @@ def _load(path: Path) -> dict[str, Any]:
     return value
 
 
-def _all_false(frame: Any) -> dict[str, Any]:
+def _all_false(frame_record: Any) -> dict[str, Any]:
     return {
+        "contact": (),
+        "supports": (),
         "steady-state": False,
         "structure-unstable": False,
         "excess_penetration": False,
         "unsupported_stationary_or_floating_body": {
             item["entity_id"]: False
-            for item in frame.labels["unsupported_stationary_or_floating_body"]
+            for item in frame_record.labels[
+                "unsupported_stationary_or_floating_body"
+            ]
         },
     }
 
@@ -99,7 +106,25 @@ def _mutated_reader(
         )
 
 
-def _adversarial_checks(
+def _mutated_declaration_reader(
+    release_root: Path,
+    capability_declaration: Path,
+    mutate: Callable[[dict[str, Any]], None],
+) -> None:
+    with tempfile.TemporaryDirectory(dir=capability_declaration.parent) as temporary:
+        target = Path(temporary) / capability_declaration.name
+        value = _load(capability_declaration)
+        mutate(value)
+        target.write_bytes(_canonical_json(value))
+        CohortV2ReleaseReader(
+            release_root,
+            capability_declaration_path=target,
+            workflow_kind="training",
+            influence="learned_parameters",
+        )
+
+
+def run_adversarial_ingestion_checks(
     release_root: Path,
     capability_declaration: Path,
     training_reader: CohortV2ReleaseReader,
@@ -177,6 +202,12 @@ def _adversarial_checks(
             Path("cohort-v2-publication.json"),
             lambda value: value.__setitem__("unexpected", True),
         ),
+        "cross_release_sealed_binding": (
+            Path("bundle-manifest.json"),
+            lambda value: value.__setitem__(
+                "sealed_final_evaluation_bundle_identity", "unrelated-sealed-final"
+            ),
+        ),
     }
     checks = [
         _expect_rejection(
@@ -195,6 +226,26 @@ def _adversarial_checks(
             workflow_kind="training",
             influence="learned_parameters",
             requested_capabilities=("physical_regime_gate",),
+        ),
+    ))
+    checks.append(_expect_rejection(
+        "missing_ingestion_guarantees",
+        lambda: _mutated_declaration_reader(
+            release_root,
+            capability_declaration,
+            lambda value: value["capabilities"]["required_central"].__setitem__(
+                "ingestion", []
+            ),
+        ),
+    ))
+    checks.append(_expect_rejection(
+        "unavailable_promoted_to_false",
+        lambda: _mutated_declaration_reader(
+            release_root,
+            capability_declaration,
+            lambda value: value["evidence_semantics"].__setitem__(
+                "unavailable_distinct_from_false", False
+            ),
         ),
     ))
     checks.append(_expect_rejection(
@@ -240,15 +291,20 @@ def build_ingestion_evidence(
     roles = {}
     total_frames = total_windows = total_scored = total_unavailable = 0
     for role, reader in readers.items():
-        windows = CohortV2OracleWindowDataset(reader)
+        dataset = CohortV2OracleWindowDataset(reader)
+        loader = build_cohort_v2_oracle_window_loader(dataset)
+        windows = tuple(item for batch in loader for item in batch)
         endpoints = score_cohort_v2_endpoints(reader, _all_false)
-        frame_count = sum(len(rollout.frames) for rollout in reader.rollouts)
+        frame_record_count = sum(
+            len(rollout.frame_records) for rollout in reader.rollouts
+        )
         termination_counts = Counter(
-            str(rollout.frames[-1].terminal["reason"])
+            str(rollout.frame_records[-1].terminal["reason"])
             for rollout in reader.rollouts
         )
         observation_leads = [
-            rollout.frames[0].fixed_step - rollout.agent_observation_fixed_step
+            rollout.frame_records[0].fixed_step
+            - rollout.agent_observation_fixed_step
             for rollout in reader.rollouts
         ]
         roles[role] = {
@@ -257,7 +313,7 @@ def build_ingestion_evidence(
             "central_strata": sorted(
                 rollout.coverage_stratum for rollout in reader.rollouts
             ),
-            "frame_records": frame_count,
+            "frame_records": frame_record_count,
             "agent_observations": len(windows),
             "oracle_training_windows": len(windows),
             "observation_lead_fixed_steps": {
@@ -268,12 +324,14 @@ def build_ingestion_evidence(
             "termination_counts": dict(sorted(termination_counts.items())),
             "endpoint_scoring": asdict(endpoints),
         }
-        total_frames += frame_count
+        total_frames += frame_record_count
         total_windows += len(windows)
         total_scored += endpoints.scored_value_count
         total_unavailable += endpoints.unavailable_value_count
 
-    adversarial = _adversarial_checks(release_root, declaration, readers["training"])
+    adversarial = run_adversarial_ingestion_checks(
+        release_root, declaration, readers["training"]
+    )
     final_receipt = probe_cohort_v2_final_access(release_root, sealed_root)
     report = {
         "schema": SCHEMA,

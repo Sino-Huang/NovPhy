@@ -7,12 +7,13 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any, Final, Protocol
+from typing import Any, Final
 
 from scripts.cohort_v2_macro_semantics import (
     DERIVATION_SPEC_IDENTITY as MACRO_SPEC_IDENTITY,
     validate_capture_macro_derivation,
 )
+from scripts.cohort_v2_capabilities import validate_capability_declaration
 from scripts.cohort_v2_micro_relations import (
     DERIVATION_SPEC_IDENTITY as MICRO_SPEC_IDENTITY,
     validate_capture_micro_relation_derivation,
@@ -71,7 +72,9 @@ def _load(path: Path, label: str) -> dict[str, Any]:
     return value
 
 
-def _fields(value: Mapping[str, Any], expected: set[str], label: str) -> None:
+def _require_exact_fields(
+    value: Mapping[str, Any], expected: set[str], label: str
+) -> None:
     if set(value) != expected:
         raise CohortV2IngestionError(f"{label} envelope is malformed")
 
@@ -104,7 +107,7 @@ def _freeze(value: Any) -> Any:
 
 
 @dataclass(frozen=True, slots=True)
-class CohortV2CentralFrame:
+class CohortV2CentralFrameRecord:
     identity: str
     capture_id: str
     state_id: str
@@ -125,7 +128,7 @@ class CohortV2Rollout:
     intervention: Mapping[str, Any]
     agent_observation_identity: str
     agent_observation_fixed_step: int
-    frames: tuple[CohortV2CentralFrame, ...]
+    frame_records: tuple[CohortV2CentralFrameRecord, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -135,18 +138,9 @@ class CohortV2OracleWindow:
     attempt_id: str
     scenario_lineage_identity: str
     intervention: Mapping[str, Any]
-    context: CohortV2CentralFrame
-    target: CohortV2CentralFrame
+    context: CohortV2CentralFrameRecord
+    target: CohortV2CentralFrameRecord
     agent_observation: bytes
-
-
-@dataclass(frozen=True, slots=True)
-class CohortV2EndpointScore:
-    endpoint_count: int
-    scored_value_count: int
-    correct_value_count: int
-    unavailable_value_count: int
-    relation_record_count: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -158,10 +152,6 @@ class CohortV2FinalAccessReceipt:
     authorization_state: str
     observed_access_count: int
     passed: bool
-
-
-class CohortV2EndpointPredictor(Protocol):
-    def __call__(self, frame: CohortV2CentralFrame) -> Mapping[str, Any]: ...
 
 
 class CohortV2ReleaseReader:
@@ -208,24 +198,12 @@ class CohortV2ReleaseReader:
     @staticmethod
     def _validate_capability_declaration(path: Path) -> None:
         declaration = _load(path, "cohort-v2 capability declaration")
-        if (
-            declaration.get("schema") != "cohort_v2_capabilities_v1"
-            or declaration.get("identity") != CAPABILITY_DECLARATION_IDENTITY
-            or declaration.get("scope_name") != "central_v2"
-        ):
-            raise CohortV2IngestionError("Central capability declaration identity is stale")
-        required = declaration.get("capabilities", {}).get("required_central", {})
-        declared_labels = {
-            *required.get("micro_labels", []),
-            *required.get("macro_labels", []),
-            *required.get("violation_labels", []),
-        }
-        if declared_labels != set(CENTRAL_LABELS):
-            raise CohortV2IngestionError("Central capability declaration omits or promotes labels")
-        if tuple(required.get("coverage_strata", ())) != CENTRAL_STRATA:
-            raise CohortV2IngestionError("Central coverage declaration differs")
-        if tuple(required.get("exposure_roles", ())) != EXPOSURE_ROLES:
-            raise CohortV2IngestionError("Central exposure-role declaration differs")
+        try:
+            validate_capability_declaration(declaration)
+        except ValueError as error:
+            raise CohortV2IngestionError(
+                f"Central capability declaration is not the approved profile: {error}"
+            ) from error
 
     def _load_envelopes(self) -> tuple[
         dict[str, Any],
@@ -235,7 +213,7 @@ class CohortV2ReleaseReader:
         dict[str, Any],
     ]:
         bundle = _load(self._root / "bundle-manifest.json", "release bundle")
-        _fields(bundle, {
+        _require_exact_fields(bundle, {
             "schema", "identity", "publication_identity", "cohort_release_identity",
             "authoritative_derivation_index_identity",
             "sealed_final_evaluation_bundle_identity", "artifacts", "passed",
@@ -247,6 +225,8 @@ class CohortV2ReleaseReader:
             or bundle["cohort_release_identity"] != V5_CONTRACT.release_identity
             or bundle["authoritative_derivation_index_identity"]
             != V5_CONTRACT.derivation_index_identity
+            or bundle["sealed_final_evaluation_bundle_identity"]
+            != V5_CONTRACT.sealed_bundle_identity
             or bundle["passed"] is not True
         ):
             raise CohortV2IngestionError("Release bundle identity or disposition is stale")
@@ -259,7 +239,7 @@ class CohortV2ReleaseReader:
             raise CohortV2IngestionError("Release bundle membership is stale")
 
         publication = _load(self._root / "cohort-v2-publication.json", "publication")
-        _fields(publication, {
+        _require_exact_fields(publication, {
             "schema", "identity", "cohort_release_identity", "cohort_release_path",
             "authoritative_derivation_index_identity",
             "sealed_final_evaluation_bundle_identity", "disposition",
@@ -271,12 +251,14 @@ class CohortV2ReleaseReader:
             or publication["cohort_release_path"] != "cohort-v2-release.json"
             or publication["authoritative_derivation_index_identity"]
             != V5_CONTRACT.derivation_index_identity
+            or publication["sealed_final_evaluation_bundle_identity"]
+            != V5_CONTRACT.sealed_bundle_identity
             or publication["disposition"] != "complete"
         ):
             raise CohortV2IngestionError("Publication envelope is stale")
 
         release = _load(self._root / publication["cohort_release_path"], "cohort-v2 release")
-        _fields(release, {
+        _require_exact_fields(release, {
             "schema", "release_version", "identity", "source_pilot_report_identity",
             "collection_plan", "production_parameter_plan", "partition_manifest",
             "capability_declaration_identity", "scenario_inventory",
@@ -291,6 +273,8 @@ class CohortV2ReleaseReader:
             or release.get("disposition") != "complete"
             or release.get("capability_declaration_identity")
             != CAPABILITY_DECLARATION_IDENTITY
+            or release.get("sealed_final_evaluation", {}).get("bundle_identity")
+            != V5_CONTRACT.sealed_bundle_identity
         ):
             raise CohortV2IngestionError("Cohort-v2 release envelope is stale")
         derivation_reference = release.get("authoritative_derivation_index")
@@ -300,7 +284,7 @@ class CohortV2ReleaseReader:
             self._root, derivation_reference.get("path"), "authoritative derivation index"
         )
         derivations = _load(derivation_path, "authoritative derivation index")
-        _fields(derivations, {
+        _require_exact_fields(derivations, {
             "schema", "identity", "source_cohort_release_identity",
             "accepted_labels", "artifacts", "sealed_final_evaluation_bundle_identity",
         }, "authoritative derivation index")
@@ -311,6 +295,8 @@ class CohortV2ReleaseReader:
             or derivation_reference.get("identity") != derivations["identity"]
             or derivations.get("source_cohort_release_identity") != release["identity"]
             or derivations.get("accepted_labels") != ACCEPTED_LABELS
+            or derivations.get("sealed_final_evaluation_bundle_identity")
+            != V5_CONTRACT.sealed_bundle_identity
         ):
             raise CohortV2IngestionError("Authoritative derivation envelope is stale")
         primary_rollouts = release.get("primary_rollouts")
@@ -495,7 +481,7 @@ class CohortV2ReleaseReader:
                 raise CohortV2IngestionError(
                     "Agent observation occurs after the intervention trace begins"
                 )
-            frames = self._frames(capture, loaded_derivations)
+            frame_records = self._frame_records(capture, loaded_derivations)
             self._observation_references[attempt_id] = (
                 observation_root,
                 observation["identity"],
@@ -513,18 +499,18 @@ class CohortV2ReleaseReader:
                 }),
                 agent_observation_identity=observation["agent_observation"]["identity"],
                 agent_observation_fixed_step=observation["fixed_step"],
-                frames=frames,
+                frame_records=frame_records,
             ))
         validate_observation_exposure_boundaries(manifests)
         if {item.coverage_stratum for item in rollouts} != set(CENTRAL_STRATA):
             raise CohortV2IngestionError("Exposure role does not cover every central stratum")
         return tuple(rollouts)
 
-    def _frames(
+    def _frame_records(
         self,
         capture: Any,
         derivations: Mapping[str, Mapping[str, Any]],
-    ) -> tuple[CohortV2CentralFrame, ...]:
+    ) -> tuple[CohortV2CentralFrameRecord, ...]:
         samples = capture.record["fixed_step_samples"]
         capture_frames = capture.record["frame_records"]
         micro = derivations["micro"]["labels"]
@@ -542,12 +528,15 @@ class CohortV2ReleaseReader:
         terminal = capture.record["terminal_evidence"]
         if terminal["fixed_step"] != step_sequences[0][-1]:
             raise CohortV2IngestionError("Terminal record is not aligned to the last fixed step")
-        frames = []
+        frame_records = []
         for sample, frame, micro_label, macro_label, violation_label in zip(
             samples, capture_frames, micro, macro, violations, strict=True
         ):
             step = sample["fixed_step"]
-            identity = f"cohort-v2-central-frame-v1:{capture.capture_id}:{frame['state_id']}"
+            identity = (
+                f"cohort-v2-central-frame-record-v1:{capture.capture_id}:"
+                f"{frame['state_id']}"
+            )
             labels = {
                 "contact": micro_label["predicates"]["contact"],
                 "supports": micro_label["predicates"]["supports"],
@@ -558,7 +547,7 @@ class CohortV2ReleaseReader:
                     "unsupported_stationary_or_floating_body"
                 ],
             }
-            frames.append(CohortV2CentralFrame(
+            frame_records.append(CohortV2CentralFrameRecord(
                 identity=identity,
                 capture_id=capture.capture_id,
                 state_id=frame["state_id"],
@@ -569,7 +558,7 @@ class CohortV2ReleaseReader:
                 labels=_freeze(labels),
                 terminal=_freeze(terminal) if step == terminal["fixed_step"] else None,
             ))
-        return tuple(frames)
+        return tuple(frame_records)
 
     def load_observation(
         self, rollout: CohortV2Rollout, *, observation_role: str
@@ -601,8 +590,8 @@ class CohortV2OracleWindowDataset(Sequence[CohortV2OracleWindow]):
                 attempt_id=rollout.attempt_id,
                 scenario_lineage_identity=rollout.scenario_lineage_identity,
                 intervention=rollout.intervention,
-                context=rollout.frames[0],
-                target=rollout.frames[1],
+                context=rollout.frame_records[0],
+                target=rollout.frame_records[1],
                 agent_observation=reader.load_observation(
                     rollout, observation_role="agent"
                 ),
@@ -619,88 +608,6 @@ class CohortV2OracleWindowDataset(Sequence[CohortV2OracleWindow]):
 
     def __getitem__(self, index: int) -> CohortV2OracleWindow:
         return self._examples[index]
-
-
-def _score_boolean_label(
-    label: Mapping[str, Any], prediction: Any
-) -> tuple[int, int, int]:
-    availability = label.get("availability")
-    value = label.get("value")
-    if availability == "available":
-        if type(value) is not bool or type(prediction) is not bool:
-            raise CohortV2IngestionError("Available endpoint labels require boolean predictions")
-        return 1, int(value == prediction), 0
-    if not isinstance(availability, str) or not availability.startswith("unavailable_"):
-        raise CohortV2IngestionError("Endpoint label availability is malformed")
-    if value is not None:
-        raise CohortV2IngestionError("Unavailable endpoint label was converted to a value")
-    return 0, 0, 1
-
-
-def score_cohort_v2_endpoints(
-    reader: CohortV2ReleaseReader,
-    predictor: CohortV2EndpointPredictor,
-) -> CohortV2EndpointScore:
-    """Score role endpoints without treating unavailable oracle values as negatives."""
-    scored = correct = unavailable = relations = 0
-    prediction_fields = {
-        "steady-state",
-        "structure-unstable",
-        "excess_penetration",
-        "unsupported_stationary_or_floating_body",
-    }
-    for rollout in reader.rollouts:
-        endpoint = rollout.frames[-1]
-        if endpoint.terminal is None or set(endpoint.labels) != set(CENTRAL_LABELS):
-            raise CohortV2IngestionError("Endpoint central tuple is incomplete")
-        for predicate in ("contact", "supports"):
-            relation = endpoint.labels[predicate]
-            if relation.get("availability") != "available" or not isinstance(
-                relation.get("relations"), tuple
-            ):
-                raise CohortV2IngestionError("Endpoint relation label is malformed")
-            relations += 1
-        prediction = predictor(endpoint)
-        if not isinstance(prediction, Mapping) or set(prediction) != prediction_fields:
-            raise CohortV2IngestionError("Endpoint predictor returned a partial central prediction")
-        for predicate in (
-            "steady-state", "structure-unstable", "excess_penetration"
-        ):
-            counts = _score_boolean_label(
-                endpoint.labels[predicate], prediction[predicate]
-            )
-            scored += counts[0]
-            correct += counts[1]
-            unavailable += counts[2]
-        unsupported = endpoint.labels["unsupported_stationary_or_floating_body"]
-        unsupported_prediction = prediction[
-            "unsupported_stationary_or_floating_body"
-        ]
-        if not isinstance(unsupported, tuple) or not isinstance(
-            unsupported_prediction, Mapping
-        ):
-            raise CohortV2IngestionError("Unsupported-body endpoint prediction is malformed")
-        entity_ids = tuple(item.get("entity_id") for item in unsupported)
-        if (
-            not all(isinstance(item, str) and item for item in entity_ids)
-            or len(set(entity_ids)) != len(entity_ids)
-            or set(unsupported_prediction) != set(entity_ids)
-        ):
-            raise CohortV2IngestionError("Unsupported-body endpoint prediction is partial")
-        for item in unsupported:
-            counts = _score_boolean_label(
-                item, unsupported_prediction[item["entity_id"]]
-            )
-            scored += counts[0]
-            correct += counts[1]
-            unavailable += counts[2]
-    return CohortV2EndpointScore(
-        endpoint_count=len(reader.rollouts),
-        scored_value_count=scored,
-        correct_value_count=correct,
-        unavailable_value_count=unavailable,
-        relation_record_count=relations,
-    )
 
 
 def probe_cohort_v2_final_access(
@@ -721,7 +628,7 @@ def probe_cohort_v2_final_access(
     if workflow.authorization_state != "authorized":
         raise CohortV2IngestionError("Final access workflow is not authorized")
     audit = _load(sealed / "final-access-audit.json", "final access audit")
-    _fields(audit, {
+    _require_exact_fields(audit, {
         "schema", "workflow_manifest_identity", "workflow_identity",
         "operator_identity", "partition_identity", "authorization_state",
         "authorization_identity", "observed_access_count", "passed",
@@ -765,8 +672,7 @@ def probe_cohort_v2_final_access(
 
 __all__ = [
     "CENTRAL_LABELS",
-    "CohortV2CentralFrame",
-    "CohortV2EndpointScore",
+    "CohortV2CentralFrameRecord",
     "CohortV2FinalAccessReceipt",
     "CohortV2IngestionError",
     "CohortV2OracleWindow",
@@ -774,5 +680,4 @@ __all__ = [
     "CohortV2ReleaseReader",
     "CohortV2Rollout",
     "probe_cohort_v2_final_access",
-    "score_cohort_v2_endpoints",
 ]
