@@ -1,0 +1,193 @@
+{
+  "adversarial_checks": [
+    {
+      "name": "mutated_contact",
+      "passed": true,
+      "rejection": "Cohort-v2 ingestion rejected: capture-v2:87606ecb5171462dae919a51e6db635d: micro-relation derivation differs from exact re-derivation"
+    },
+    {
+      "name": "mutated_supports",
+      "passed": true,
+      "rejection": "Cohort-v2 ingestion rejected: capture-v2:87606ecb5171462dae919a51e6db635d: micro-relation derivation differs from exact re-derivation"
+    },
+    {
+      "name": "mutated_steady_state",
+      "passed": true,
+      "rejection": "Cohort-v2 ingestion rejected: capture-v2:87606ecb5171462dae919a51e6db635d: macro derivation differs from exact re-derivation"
+    },
+    {
+      "name": "mutated_structure_unstable",
+      "passed": true,
+      "rejection": "Cohort-v2 ingestion rejected: capture-v2:87606ecb5171462dae919a51e6db635d: macro derivation differs from exact re-derivation"
+    },
+    {
+      "name": "mutated_excess_penetration",
+      "passed": true,
+      "rejection": "Cohort-v2 ingestion rejected: capture-v2:87606ecb5171462dae919a51e6db635d: physical-violation derivation differs from exact re-derivation"
+    },
+    {
+      "name": "mutated_unsupported_body",
+      "passed": true,
+      "rejection": "Cohort-v2 ingestion rejected: capture-v2:87606ecb5171462dae919a51e6db635d: physical-violation derivation differs from exact re-derivation"
+    },
+    {
+      "name": "cross_release_sidecar",
+      "passed": true,
+      "rejection": "Cohort-v2 ingestion rejected: capture-v2:87606ecb5171462dae919a51e6db635d: micro-relation derivation differs from exact re-derivation"
+    },
+    {
+      "name": "temporal_derivation_mismatch",
+      "passed": true,
+      "rejection": "Cohort-v2 ingestion rejected: capture-v2:87606ecb5171462dae919a51e6db635d: macro derivation differs from exact re-derivation"
+    },
+    {
+      "name": "malformed_publication_envelope",
+      "passed": true,
+      "rejection": "publication envelope is malformed"
+    },
+    {
+      "name": "excluded_capability_request",
+      "passed": true,
+      "rejection": "Requested capabilities must be exactly the accepted central labels"
+    },
+    {
+      "name": "canonical_model_input",
+      "passed": true,
+      "rejection": "canonical observation access is restricted to alignment/capture diagnosis"
+    },
+    {
+      "name": "ordinary_final_evaluation",
+      "passed": true,
+      "rejection": "Ordinary readers cannot access sealed final artifacts"
+    }
+  ],
+  "authoritative_derivation_index_identity": "cohort-v2-authoritative-derivation-index-v5:issue-53:mixed-termination",
+  "authorized_final_evaluation_probe": {
+    "authorization_identity": "github-issue-authorization-v5:53:mixed-termination-production",
+    "authorization_state": "authorized",
+    "observed_access_count": 1,
+    "passed": true,
+    "release_identity": "representative-cohort-v2-release-v5:issue-53:mixed-termination",
+    "sealed_bundle_identity": "issue-53-final-evaluation-sealed-bundle-v5:mixed-termination",
+    "workflow_identity": "central-v2-final-evaluation-workflow-v5:issue-53"
+  },
+  "capability_declaration_identity": "cohort-v2-capabilities-v1",
+  "code_revision": "499779be2ca6c419571144696a60f5bb56b04079",
+  "cohort_release_identity": "representative-cohort-v2-release-v5:issue-53:mixed-termination",
+  "counts": {
+    "agent_observations": 18,
+    "endpoint_scored_values": 178,
+    "endpoint_unavailable_values": 68,
+    "frame_records": 5372,
+    "oracle_training_windows": 18,
+    "rollouts": 18
+  },
+  "identity": "cohort-v2-downstream-ingestion-evidence-v1:issue-54:release-v5",
+  "observation_access": {
+    "canonical": "diagnostic_only",
+    "model_input": "agent_only"
+  },
+  "partition_identity": "cohort-v2-partition-exposure-manifest-v1:4:cohort-v2-production-scenario-inventory-v4%3Aissue-53:%7B%22benchmark_condition_identity%22%3A%22benchmark-condition-v1%3Anovelty_level_0%3Atype010101%22%2C%22dataset_partition%22%3A%22central-v2-training%22%2C%22declared_initial_engine_state_identity%22%3A%22declared-initial-engine-state-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D%22%2C%22exposure_role%22%3A%22training%22%2C%22inventory_state%22%3A%22planned_non_final%22%2C%22level_instance_identity%22%3A%22level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4401%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D%22%2C%22lineage_quota%22%3A1%2C%22may_influence%22%3A%5B%22learned_parameters%22%5D%2C%22scenario_lineage_identity%22%3A%22scenario-lineage-v1%3Ascenario-specification-v1%253Alevel-instance-v1%25253Ascenario-declaration-v1%2525253Abenchmark-condition-v1%252525253Anovelty_level_0%252525253Atype010101%2525253Ascenario-template-v1%252525253Atasks%25252525252Ftask_templates%25252525252Fnovelty_level_0%25252525252Ftype010101%25252525252FLevels%25252525252F00001_0_1_010101_0_1.xml%2525253Agenerated%2525253Anovphy-task-generator%2525253Acanonical_materialization_v1%2525253A4401%2525253A%252525257B%2525252522max_coordinate%2525252522%252525253A%252525255B1.229969%252525252C1.809741%252525255D%252525252C%2525252522min_coordinate%2525252522%252525253A%252525255B-7.88%252525252C-2.39049%252525255D%252525252C%2525252522reference_point%2525252522%252525253A%252525255B1.00798%252525252C-2.1274%252525255D%252525252C%2525252522restricted_objects%2525252522%252525253A%252525255B%252525255D%252525252C%2525252522template_content_identity%2525252522%252525253A%2525252522xml_bytes_v1%252525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%252525253Acanonical_materialization_v1%2525252522%252525252C%2525252522template_name%2525252522%252525253A%25252525220_1_010101_0_1%2525252522%252525257D%22%2C%22scenario_manifest_identity%22%3A%22cohort-v2-scenario-manifest-v1%3Ascenario-lineage-v1%253Ascenario-specification-v1%25253Alevel-instance-v1%2525253Ascenario-declaration-v1%252525253Abenchmark-condition-v1%25252525253Anovelty_level_0%25252525253Atype010101%252525253Ascenario-template-v1%25252525253Atasks%2525252525252Ftask_templates%2525252525252Fnovelty_level_0%2525252525252Ftype010101%2525252525252FLevels%2525252525252F00001_0_1_010101_0_1.xml%252525253Agenerated%252525253Anovphy-task-generator%252525253Acanonical_materialization_v1%252525253A4401%252525253A%25252525257B%252525252522max_coordinate%252525252522%25252525253A%25252525255B1.229969%25252525252C1.809741%25252525255D%25252525252C%252525252522min_coordinate%252525252522%25252525253A%25252525255B-7.88%25252525252C-2.39049%25252525255D%25252525252C%252525252522reference_point%252525252522%25252525253A%25252525255B1.00798%25252525252C-2.1274%25252525255D%25252525252C%252525252522restricted_objects%252525252522%25252525253A%25252525255B%25252525255D%25252525252C%252525252522template_content_identity%252525252522%25252525253A%252525252522xml_bytes_v1%25252525253Atasks%25252525252Ftask_templates%25252525252Fnovelty_level_0%25252525252Ftype010101%25252525252FLevels%25252525252F00001_0_1_010101_0_1.xml%25252525253Acanonical_materialization_v1%252525252522%25252525252C%252525252522template_name%252525252522%25252525253A%2525252525220_1_010101_0_1%252525252522%25252525257D%22%2C%22scenario_manifest_reference%22%3A%22training.json%22%2C%22scenario_specification_identity%22%3A%22scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D%22%2C%22scenario_template_identity%22%3A%22scenario-template-v1%3Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%22%7D:%7B%22benchmark_condition_identity%22%3A%22benchmark-condition-v1%3Anovelty_level_0%3Atype010102%22%2C%22dataset_partition%22%3A%22central-v2-calibration%22%2C%22declared_initial_engine_state_identity%22%3A%22declared-initial-engine-state-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010102%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010102%252525252FLevels%252525252F00001_0_1_010102_0_2.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4501%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.444081%2525252C1.53147%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.235919%2525252C-1.95804%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.02408%2525252C-1.84657%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010102%2525252FLevels%2525252F00001_0_1_010102_0_2.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010102_0_2%25252522%2525257D%22%2C%22exposure_role%22%3A%22calibration%22%2C%22inventory_state%22%3A%22planned_non_final%22%2C%22level_instance_identity%22%3A%22level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010102%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010102%2525252FLevels%2525252F00001_0_1_010102_0_2.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4501%253A%25257B%252522max_coordinate%252522%25253A%25255B1.444081%25252C1.53147%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.235919%25252C-1.95804%25255D%25252C%252522reference_point%252522%25253A%25255B1.02408%25252C-1.84657%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010102%25252FLevels%25252F00001_0_1_010102_0_2.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010102_0_2%252522%25257D%22%2C%22lineage_quota%22%3A1%2C%22may_influence%22%3A%5B%22pilot_values%22%2C%22threshold_values%22%2C%22tolerance_values%22%5D%2C%22scenario_lineage_identity%22%3A%22scenario-lineage-v1%3Ascenario-specification-v1%253Alevel-instance-v1%25253Ascenario-declaration-v1%2525253Abenchmark-condition-v1%252525253Anovelty_level_0%252525253Atype010102%2525253Ascenario-template-v1%252525253Atasks%25252525252Ftask_templates%25252525252Fnovelty_level_0%25252525252Ftype010102%25252525252FLevels%25252525252F00001_0_1_010102_0_2.xml%2525253Agenerated%2525253Anovphy-task-generator%2525253Acanonical_materialization_v1%2525253A4501%2525253A%252525257B%2525252522max_coordinate%2525252522%252525253A%252525255B1.444081%252525252C1.53147%252525255D%252525252C%2525252522min_coordinate%2525252522%252525253A%252525255B-7.235919%252525252C-1.95804%252525255D%252525252C%2525252522reference_point%2525252522%252525253A%252525255B1.02408%252525252C-1.84657%252525255D%252525252C%2525252522restricted_objects%2525252522%252525253A%252525255B%252525255D%252525252C%2525252522template_content_identity%2525252522%252525253A%2525252522xml_bytes_v1%252525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010102%252525252FLevels%252525252F00001_0_1_010102_0_2.xml%252525253Acanonical_materialization_v1%2525252522%252525252C%2525252522template_name%2525252522%252525253A%25252525220_1_010102_0_2%2525252522%252525257D%22%2C%22scenario_manifest_identity%22%3A%22cohort-v2-scenario-manifest-v1%3Ascenario-lineage-v1%253Ascenario-specification-v1%25253Alevel-instance-v1%2525253Ascenario-declaration-v1%252525253Abenchmark-condition-v1%25252525253Anovelty_level_0%25252525253Atype010102%252525253Ascenario-template-v1%25252525253Atasks%2525252525252Ftask_templates%2525252525252Fnovelty_level_0%2525252525252Ftype010102%2525252525252FLevels%2525252525252F00001_0_1_010102_0_2.xml%252525253Agenerated%252525253Anovphy-task-generator%252525253Acanonical_materialization_v1%252525253A4501%252525253A%25252525257B%252525252522max_coordinate%252525252522%25252525253A%25252525255B1.444081%25252525252C1.53147%25252525255D%25252525252C%252525252522min_coordinate%252525252522%25252525253A%25252525255B-7.235919%25252525252C-1.95804%25252525255D%25252525252C%252525252522reference_point%252525252522%25252525253A%25252525255B1.02408%25252525252C-1.84657%25252525255D%25252525252C%252525252522restricted_objects%252525252522%25252525253A%25252525255B%25252525255D%25252525252C%252525252522template_content_identity%252525252522%25252525253A%252525252522xml_bytes_v1%25252525253Atasks%25252525252Ftask_templates%25252525252Fnovelty_level_0%25252525252Ftype010102%25252525252FLevels%25252525252F00001_0_1_010102_0_2.xml%25252525253Acanonical_materialization_v1%252525252522%25252525252C%252525252522template_name%252525252522%25252525253A%2525252525220_1_010102_0_2%252525252522%25252525257D%22%2C%22scenario_manifest_reference%22%3A%22calibration.json%22%2C%22scenario_specification_identity%22%3A%22scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010102%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010102%252525252FLevels%252525252F00001_0_1_010102_0_2.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4501%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.444081%2525252C1.53147%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.235919%2525252C-1.95804%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.02408%2525252C-1.84657%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010102%2525252FLevels%2525252F00001_0_1_010102_0_2.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010102_0_2%25252522%2525257D%22%2C%22scenario_template_identity%22%3A%22scenario-template-v1%3Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010102%252FLevels%252F00001_0_1_010102_0_2.xml%22%7D:%7B%22benchmark_condition_identity%22%3A%22benchmark-condition-v1%3Anovelty_level_0%3Atype010101%22%2C%22dataset_partition%22%3A%22central-v2-model-selection%22%2C%22declared_initial_engine_state_identity%22%3A%22declared-initial-engine-state-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4402%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D%22%2C%22exposure_role%22%3A%22model_selection%22%2C%22inventory_state%22%3A%22planned_non_final%22%2C%22level_instance_identity%22%3A%22level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4402%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D%22%2C%22lineage_quota%22%3A1%2C%22may_influence%22%3A%5B%22configuration_selection%22%5D%2C%22scenario_lineage_identity%22%3A%22scenario-lineage-v1%3Ascenario-specification-v1%253Alevel-instance-v1%25253Ascenario-declaration-v1%2525253Abenchmark-condition-v1%252525253Anovelty_level_0%252525253Atype010101%2525253Ascenario-template-v1%252525253Atasks%25252525252Ftask_templates%25252525252Fnovelty_level_0%25252525252Ftype010101%25252525252FLevels%25252525252F00001_0_1_010101_0_1.xml%2525253Agenerated%2525253Anovphy-task-generator%2525253Acanonical_materialization_v1%2525253A4402%2525253A%252525257B%2525252522max_coordinate%2525252522%252525253A%252525255B1.229969%252525252C1.809741%252525255D%252525252C%2525252522min_coordinate%2525252522%252525253A%252525255B-7.88%252525252C-2.39049%252525255D%252525252C%2525252522reference_point%2525252522%252525253A%252525255B1.00798%252525252C-2.1274%252525255D%252525252C%2525252522restricted_objects%2525252522%252525253A%252525255B%252525255D%252525252C%2525252522template_content_identity%2525252522%252525253A%2525252522xml_bytes_v1%252525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%252525253Acanonical_materialization_v1%2525252522%252525252C%2525252522template_name%2525252522%252525253A%25252525220_1_010101_0_1%2525252522%252525257D%22%2C%22scenario_manifest_identity%22%3A%22cohort-v2-scenario-manifest-v1%3Ascenario-lineage-v1%253Ascenario-specification-v1%25253Alevel-instance-v1%2525253Ascenario-declaration-v1%252525253Abenchmark-condition-v1%25252525253Anovelty_level_0%25252525253Atype010101%252525253Ascenario-template-v1%25252525253Atasks%2525252525252Ftask_templates%2525252525252Fnovelty_level_0%2525252525252Ftype010101%2525252525252FLevels%2525252525252F00001_0_1_010101_0_1.xml%252525253Agenerated%252525253Anovphy-task-generator%252525253Acanonical_materialization_v1%252525253A4402%252525253A%25252525257B%252525252522max_coordinate%252525252522%25252525253A%25252525255B1.229969%25252525252C1.809741%25252525255D%25252525252C%252525252522min_coordinate%252525252522%25252525253A%25252525255B-7.88%25252525252C-2.39049%25252525255D%25252525252C%252525252522reference_point%252525252522%25252525253A%25252525255B1.00798%25252525252C-2.1274%25252525255D%25252525252C%252525252522restricted_objects%252525252522%25252525253A%25252525255B%25252525255D%25252525252C%252525252522template_content_identity%252525252522%25252525253A%252525252522xml_bytes_v1%25252525253Atasks%25252525252Ftask_templates%25252525252Fnovelty_level_0%25252525252Ftype010101%25252525252FLevels%25252525252F00001_0_1_010101_0_1.xml%25252525253Acanonical_materialization_v1%252525252522%25252525252C%252525252522template_name%252525252522%25252525253A%2525252525220_1_010101_0_1%252525252522%25252525257D%22%2C%22scenario_manifest_reference%22%3A%22model-selection.json%22%2C%22scenario_specification_identity%22%3A%22scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4402%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D%22%2C%22scenario_template_identity%22%3A%22scenario-template-v1%3Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%22%7D:%7B%22benchmark_condition_identity%22%3A%22benchmark-condition-v1%3Anovelty_level_0%3Atype010102%22%2C%22dataset_partition%22%3A%22central-v2-final-evaluation%22%2C%22declared_initial_engine_state_identity%22%3A%22declared-initial-engine-state-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010102%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010102%252525252FLevels%252525252F00001_0_1_010102_0_2.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4504%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.444081%2525252C1.53147%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.235919%2525252C-1.95804%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.02408%2525252C-1.84657%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010102%2525252FLevels%2525252F00001_0_1_010102_0_2.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010102_0_2%25252522%2525257D%22%2C%22exposure_role%22%3A%22final_evaluation%22%2C%22inventory_state%22%3A%22sealed_final%22%2C%22level_instance_identity%22%3A%22level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010102%253Ascenario-template-v1%25253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010102%2525252FLevels%2525252F00001_0_1_010102_0_2.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A4504%253A%25257B%252522max_coordinate%252522%25253A%25255B1.444081%25252C1.53147%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.235919%25252C-1.95804%25255D%25252C%252522reference_point%252522%25253A%25255B1.02408%25252C-1.84657%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010102%25252FLevels%25252F00001_0_1_010102_0_2.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010102_0_2%252522%25257D%22%2C%22lineage_quota%22%3A1%2C%22may_influence%22%3A%5B%22frozen_final_metrics_after_authorization%22%5D%2C%22scenario_lineage_identity%22%3A%22scenario-lineage-v1%3Ascenario-specification-v1%253Alevel-instance-v1%25253Ascenario-declaration-v1%2525253Abenchmark-condition-v1%252525253Anovelty_level_0%252525253Atype010102%2525253Ascenario-template-v1%252525253Atasks%25252525252Ftask_templates%25252525252Fnovelty_level_0%25252525252Ftype010102%25252525252FLevels%25252525252F00001_0_1_010102_0_2.xml%2525253Agenerated%2525253Anovphy-task-generator%2525253Acanonical_materialization_v1%2525253A4504%2525253A%252525257B%2525252522max_coordinate%2525252522%252525253A%252525255B1.444081%252525252C1.53147%252525255D%252525252C%2525252522min_coordinate%2525252522%252525253A%252525255B-7.235919%252525252C-1.95804%252525255D%252525252C%2525252522reference_point%2525252522%252525253A%252525255B1.02408%252525252C-1.84657%252525255D%252525252C%2525252522restricted_objects%2525252522%252525253A%252525255B%252525255D%252525252C%2525252522template_content_identity%2525252522%252525253A%2525252522xml_bytes_v1%252525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010102%252525252FLevels%252525252F00001_0_1_010102_0_2.xml%252525253Acanonical_materialization_v1%2525252522%252525252C%2525252522template_name%2525252522%252525253A%25252525220_1_010102_0_2%2525252522%252525257D%22%2C%22scenario_manifest_identity%22%3A%22cohort-v2-scenario-manifest-v1%3Ascenario-lineage-v1%253Ascenario-specification-v1%25253Alevel-instance-v1%2525253Ascenario-declaration-v1%252525253Abenchmark-condition-v1%25252525253Anovelty_level_0%25252525253Atype010102%252525253Ascenario-template-v1%25252525253Atasks%2525252525252Ftask_templates%2525252525252Fnovelty_level_0%2525252525252Ftype010102%2525252525252FLevels%2525252525252F00001_0_1_010102_0_2.xml%252525253Agenerated%252525253Anovphy-task-generator%252525253Acanonical_materialization_v1%252525253A4504%252525253A%25252525257B%252525252522max_coordinate%252525252522%25252525253A%25252525255B1.444081%25252525252C1.53147%25252525255D%25252525252C%252525252522min_coordinate%252525252522%25252525253A%25252525255B-7.235919%25252525252C-1.95804%25252525255D%25252525252C%252525252522reference_point%252525252522%25252525253A%25252525255B1.02408%25252525252C-1.84657%25252525255D%25252525252C%252525252522restricted_objects%252525252522%25252525253A%25252525255B%25252525255D%25252525252C%252525252522template_content_identity%252525252522%25252525253A%252525252522xml_bytes_v1%25252525253Atasks%25252525252Ftask_templates%25252525252Fnovelty_level_0%25252525252Ftype010102%25252525252FLevels%25252525252F00001_0_1_010102_0_2.xml%25252525253Acanonical_materialization_v1%252525252522%25252525252C%252525252522template_name%252525252522%25252525253A%2525252525220_1_010102_0_2%252525252522%25252525257D%22%2C%22scenario_specification_identity%22%3A%22scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010102%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010102%252525252FLevels%252525252F00001_0_1_010102_0_2.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4504%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.444081%2525252C1.53147%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.235919%2525252C-1.95804%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.02408%2525252C-1.84657%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010102%2525252FLevels%2525252F00001_0_1_010102_0_2.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010102_0_2%25252522%2525257D%22%2C%22scenario_template_identity%22%3A%22scenario-template-v1%3Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010102%252FLevels%252F00001_0_1_010102_0_2.xml%22%2C%22sealed_scenario_manifest_reference%22%3A%22issue-53-plan-v4-sealed-final-authority%3Aseed-4504%22%7D",
+  "passed": true,
+  "publication_identity": "representative-cohort-v2-publication-v5:issue-53:mixed-termination",
+  "reader_identity": "world-model-cohort-v2-reader-v1",
+  "roles": {
+    "calibration": {
+      "agent_observations": 6,
+      "central_strata": [
+        "collision",
+        "destruction",
+        "no-contact/miss",
+        "persistent support",
+        "stability transitions",
+        "support change"
+      ],
+      "endpoint_scoring": {
+        "correct_value_count": 60,
+        "endpoint_count": 6,
+        "relation_record_count": 12,
+        "scored_value_count": 66,
+        "unavailable_value_count": 24
+      },
+      "frame_records": 1610,
+      "influence": "threshold_values",
+      "observation_lead_fixed_steps": {
+        "maximum": 71,
+        "minimum": 68
+      },
+      "oracle_training_windows": 6,
+      "rollouts": 6,
+      "terminal_records": 6,
+      "termination_counts": {
+        "stable_entered": 6
+      }
+    },
+    "model_selection": {
+      "agent_observations": 6,
+      "central_strata": [
+        "collision",
+        "destruction",
+        "no-contact/miss",
+        "persistent support",
+        "stability transitions",
+        "support change"
+      ],
+      "endpoint_scoring": {
+        "correct_value_count": 58,
+        "endpoint_count": 6,
+        "relation_record_count": 12,
+        "scored_value_count": 62,
+        "unavailable_value_count": 22
+      },
+      "frame_records": 1606,
+      "influence": "configuration_selection",
+      "observation_lead_fixed_steps": {
+        "maximum": 70,
+        "minimum": 68
+      },
+      "oracle_training_windows": 6,
+      "rollouts": 6,
+      "terminal_records": 6,
+      "termination_counts": {
+        "level_fail": 2,
+        "stable_entered": 4
+      }
+    },
+    "training": {
+      "agent_observations": 6,
+      "central_strata": [
+        "collision",
+        "destruction",
+        "no-contact/miss",
+        "persistent support",
+        "stability transitions",
+        "support change"
+      ],
+      "endpoint_scoring": {
+        "correct_value_count": 46,
+        "endpoint_count": 6,
+        "relation_record_count": 12,
+        "scored_value_count": 50,
+        "unavailable_value_count": 22
+      },
+      "frame_records": 2156,
+      "influence": "learned_parameters",
+      "observation_lead_fixed_steps": {
+        "maximum": 86,
+        "minimum": 66
+      },
+      "oracle_training_windows": 6,
+      "rollouts": 6,
+      "terminal_records": 6,
+      "termination_counts": {
+        "level_fail": 2,
+        "stable_entered": 4
+      }
+    }
+  },
+  "schema": "cohort_v2_downstream_ingestion_evidence_v1",
+  "training_examples": {
+    "artifact_kind": "release_bound_derived_product",
+    "primary_artifacts_mutated": false
+  }
+}
