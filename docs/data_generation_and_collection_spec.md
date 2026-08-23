@@ -322,6 +322,11 @@ rules are defined by
 The supported central v2 terminal reasons are `level_clear`, `level_fail`, and
 `stable_entered`; all three require actual Unity evidence in the accepted pilot.
 
+The immutable central-v2 collection and production-parameter plans, their
+prospective quota dimensions, and their accepted-pilot derivation evidence are
+defined by
+[`cohort_v2_production_plans_v1`](data_contracts/cohort_v2_production_plans_v1.md).
+
 The pilot MUST contain representative benchmark conditions, scenario templates, level instances, interventions, coverage strata, and the physical interaction windows needed by every declared central label. A separately named physical-regime label is required only when its secondary experiment is approved. Fixture suites and smoke rollouts MAY support software confidence but MUST NOT substitute for this pilot.
 
 Production quotas MUST be defined prospectively by benchmark condition, exposure role, split regime, scenario-template/level-instance coverage, intervention coverage stratum, and required capability coverage. Quotas MUST NOT be defined or backfilled by model score or desirable realized outcome. Permanent failures MUST remain visible alongside unmet quotas.
@@ -342,9 +347,9 @@ Final evaluation MUST use a role-separated workflow. The final-evaluation manife
 
 The following statements distinguish implemented foundations from required but unsupported research behavior:
 
-- **Implemented:** frozen `physics_capture_v1` sidecars and validation; synchronized RGB/state capture within that contract; `physics_capture_v2` fixed-step-stride authority and physical evidence; source-bound deterministic generated scenario manifests; request-72 synchronized agent/canonical observation traces and access audits; the issue-47 real four-role instance-held-out partition, lineage/template leakage audit, and pending-authorization final-access workflow; version-bounded replay; accepted issue-49 `steady-state` and `structure-unstable` v2 semantics; accepted issue-50 `excess_penetration` and `unsupported_stationary_or_floating_body` v2 semantics with unavailable-preserving `any(violation)`; fixed-step clocks; scene nodes, kinematics, raw contacts, `support_v1`, macro events, bounded failures; collector-side temporary publication, validation, quarantine, and retry metadata; deterministic path-based bucket partitioning and scoped inventory; fixture-only `physics_macro_labels_v1` derivation and validation.
+- **Implemented:** frozen `physics_capture_v1` sidecars and validation; synchronized RGB/state capture within that contract; `physics_capture_v2` fixed-step-stride authority and physical evidence; source-bound deterministic generated scenario manifests; request-72 synchronized agent/canonical observation traces and access audits; the issue-47 real four-role instance-held-out partition, lineage/template leakage audit, and pending-authorization final-access workflow; version-bounded replay; accepted issue-49 `steady-state` and `structure-unstable` v2 semantics; accepted issue-50 `excess_penetration` and `unsupported_stationary_or_floating_body` v2 semantics with unavailable-preserving `any(violation)`; the accepted issue-51 representative pilot; the issue-52 immutable collection and production-parameter plans with prospective quotas; fixed-step clocks; scene nodes, kinematics, raw contacts, `support_v1`, macro events, bounded failures; collector-side temporary publication, validation, quarantine, and retry metadata; deterministic path-based bucket partitioning and scoped inventory; fixture-only `physics_macro_labels_v1` derivation and validation.
 - **Implemented but insufficient:** the issue-specific #44–#50 representative evidence establishes only its exercised capabilities, identities, exposure assignments, replay properties, macro and physical-violation semantics, and pre-authorization access boundary. It does not create a capability-complete central-v2 pilot, production coverage, or representative enriched cohort release.
-- **Required but currently unsupported or unaccepted:** explicit `legacy_static` inventory evidence where applicable; frozen coverage-stratified intervention plans in canonical action forms; capability-complete pilot; production quotas; immutable cohort release workflow; authorized execution of the role-separated final evaluation.
+- **Required but currently unsupported or unaccepted:** immutable cohort release workflow; authorized execution of the role-separated final evaluation.
 
 ## 16. Definition of done for GitHub issue #2
 
@@ -360,9 +365,10 @@ GitHub issue #2 is complete only when all of the following are true:
 
 Specification completion, pipeline implementation, command success, fixture success, smoke success, or reaching a planned rollout count is insufficient to close issue #2. Issue #2 closes only after the immutable representative cohort release and all evidence above exist and pass acceptance.
 
-## 17. Open numeric parameters
+## 17. Frozen central-v2 numeric parameters
 
-Only the following quantities are intentionally deferred to the representative pilot and collection plan:
+The issue-52 plans freeze the following quantities from the accepted issue-51
+representative pilot for central-v2 production:
 
 - fixed-step capture stride;
 - stability window;
@@ -372,7 +378,7 @@ Only the following quantities are intentionally deferred to the representative p
 - bounded negative cap;
 - transient retry counts.
 
-Their decision process is settled: values MUST be chosen prospectively from capability-complete pilot evidence, recorded in the collection plan or versioned derivation specification before affected data are admitted, held fixed for the corresponding cohort release, and changed only through a new prospective plan or derivation version. Values MUST NOT be selected from final-evaluation outcomes or tuned to make a completed cohort pass.
+Their decision process is settled: values MUST be chosen prospectively from capability-complete pilot evidence, recorded in the collection plan or versioned derivation specification before affected data are admitted, held fixed for the corresponding cohort release, and changed only through a new prospective plan or derivation version. Values MUST NOT be selected from final-evaluation outcomes or tuned to make a completed cohort pass. The exact values, source records, observed ranges or uncertainty, and source-bound decision rules are authoritative in `cohort-v2-production-parameter-plan-v1:issue-52`.
 
 ## 18. ADR candidates
 
