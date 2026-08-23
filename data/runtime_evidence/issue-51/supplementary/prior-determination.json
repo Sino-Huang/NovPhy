@@ -1,0 +1,63 @@
+{
+  "attempts": [
+    {
+      "attempt_identity": "collection-plan-attempt-v1:collection-plan-v1%3A1%3Aissue51-level-clear-seed5101:issue51-level-clear-seed5101:level-clear-targeted:1",
+      "capture_id": "capture-v2:98464c857fda4938a1d75b9e29b95776",
+      "capture_path": "prior-captures/level-clear-targeted.json",
+      "intervention_id": "level-clear-targeted",
+      "intervention_identity": "collection-plan-intervention-v1:level-clear-targeted:1",
+      "realized_coverage_strata": [
+        "collision",
+        "destruction",
+        "persistent support",
+        "stability transitions",
+        "support change"
+      ],
+      "status": "accepted",
+      "terminal_reason": "stable_entered"
+    },
+    {
+      "attempt_identity": "collection-plan-attempt-v1:collection-plan-v1%3A1%3Aissue51-level-clear-seed5101:issue51-level-clear-seed5101:level-clear-geometry:1",
+      "capture_id": "capture-v2:dbf2690e96894824b8ad9a0cd4c9c9fd",
+      "capture_path": "prior-captures/level-clear-geometry.json",
+      "intervention_id": "level-clear-geometry",
+      "intervention_identity": "collection-plan-intervention-v1:level-clear-geometry:2",
+      "realized_coverage_strata": [
+        "collision",
+        "destruction",
+        "persistent support",
+        "stability transitions",
+        "support change"
+      ],
+      "status": "accepted",
+      "terminal_reason": "stable_entered"
+    }
+  ],
+  "collection_plan_identity": "collection-plan-v1:1:issue51-level-clear-seed5101",
+  "collection_plan_path": "prior-captures/collection-plan.json",
+  "counts": {
+    "accepted": 2,
+    "failed": 0,
+    "quarantined": 0,
+    "rejected": 0,
+    "retried": 0
+  },
+  "disposition": "failed",
+  "failure_reason": "unmet_level_clear",
+  "identity": "issue-51-representative-pilot-determination-1:failed-level-clear",
+  "realized_coverage_shortfalls": [
+    {
+      "intended_coverage_stratum": "level clear",
+      "intervention_id": "level-clear-targeted",
+      "realized_coverage_strata": [
+        "collision",
+        "destruction",
+        "persistent support",
+        "stability transitions",
+        "support change"
+      ],
+      "scenario_id": "issue51-level-clear-seed5101"
+    }
+  ],
+  "schema": "issue_51_prior_failed_pilot_determination_v1"
+}

@@ -1,0 +1,381 @@
+{
+  "identity": "collection-plan-v1:1:issue51-level-clear-seed5101",
+  "plan_version": 1,
+  "scenarios": [
+    {
+      "benchmark_condition_identity": "benchmark-condition-v1:novelty_level_0:type010101",
+      "coverage_strata": {
+        "collision": {
+          "intervention_ids": [
+            "level-clear-geometry"
+          ],
+          "status": "targeted"
+        },
+        "destruction": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "explosion": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "level clear": {
+          "intervention_ids": [
+            "level-clear-targeted"
+          ],
+          "status": "targeted"
+        },
+        "level fail": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "no-contact/miss": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "persistent support": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "pig removal": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "stability transitions": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "support change": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        }
+      },
+      "declared_initial_engine_state_identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-51%2525252Flevel-clear-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A5101%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+      "expected_initial_engine_state_identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-51%2525252Flevel-clear-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A5101%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+      "exposure_role": "training",
+      "generation_mode": "generated",
+      "generation_seed": 5101,
+      "interventions": [
+        {
+          "engine_relative_action": {
+            "coordinate_frame": "slingshot_relative",
+            "release_offset": [
+              -77,
+              0
+            ],
+            "release_point": [
+              20,
+              227
+            ],
+            "release_time_ms": 1000,
+            "tap_time_ms": 0
+          },
+          "id": "level-clear-targeted",
+          "intended_coverage_stratum": "level clear",
+          "interface_action": {
+            "action_type": "drag_hold_release",
+            "coordinate_frame": "slingshot_relative",
+            "drag_release": [
+              -77,
+              0
+            ],
+            "drag_start": [
+              97,
+              227
+            ],
+            "frame_height": 480,
+            "releaseTime": 1000,
+            "socket_command": {
+              "releaseTime": 1000,
+              "tapTime": 0,
+              "x": 20,
+              "y": 252
+            },
+            "tapTime": 0
+          },
+          "mapping_version": "science-birds-slingshot-relative-v1",
+          "ordinal": 1,
+          "slingshot_reference": {
+            "gameX": 97,
+            "gameY": 227
+          },
+          "source": "targeted_rare",
+          "source_provenance": {
+            "selection_rule": "issue-51-frozen-direct-tnt-level-clear-v1; outcome-independent supplement to the accepted issue-44 through issue-50 evidence",
+            "target_stratum": "level clear"
+          }
+        },
+        {
+          "engine_relative_action": {
+            "coordinate_frame": "slingshot_relative",
+            "release_offset": [
+              -77,
+              -5
+            ],
+            "release_point": [
+              20,
+              232
+            ],
+            "release_time_ms": 1000,
+            "tap_time_ms": 0
+          },
+          "id": "level-clear-geometry",
+          "intended_coverage_stratum": "collision",
+          "interface_action": {
+            "action_type": "drag_hold_release",
+            "coordinate_frame": "slingshot_relative",
+            "drag_release": [
+              -77,
+              -5
+            ],
+            "drag_start": [
+              97,
+              227
+            ],
+            "frame_height": 480,
+            "releaseTime": 1000,
+            "socket_command": {
+              "releaseTime": 1000,
+              "tapTime": 0,
+              "x": 20,
+              "y": 247
+            },
+            "tapTime": 0
+          },
+          "mapping_version": "science-birds-slingshot-relative-v1",
+          "ordinal": 2,
+          "slingshot_reference": {
+            "gameX": 97,
+            "gameY": 227
+          },
+          "source": "geometry_stratified",
+          "source_provenance": {
+            "feasibility_rule": "issue-51-frozen-level-clear-geometry-action-v1",
+            "scenario_geometry_identity": "scenario-content-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-51%2525252Flevel-clear-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A5101%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+            "stratum": "issue-51-direct-tnt-collision"
+          }
+        }
+      ],
+      "level_instance_identity": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A5101%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-51%252Flevel-clear-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+      "negative_specification": {
+        "cap": 0,
+        "intervention_ids": [],
+        "semantic_justification": "the supplementary terminal probe is not negative-training evidence"
+      },
+      "research_eligibility": "research_eligible",
+      "retry_policy": {
+        "max_attempts": 1,
+        "stopping_rule": "execute_all_interventions",
+        "transient_failure_codes": []
+      },
+      "scenario_id": "issue51-level-clear-seed5101",
+      "scenario_lineage_identity": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-51%252525252Flevel-clear-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A5101%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-51%2525252Flevel-clear-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D",
+      "scenario_manifest": {
+        "benchmark_condition": {
+          "identity": "benchmark-condition-v1:novelty_level_0:type010101",
+          "novelty_level": "novelty_level_0",
+          "novelty_type": "type010101"
+        },
+        "declared_initial_engine_state": {
+          "identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-51%2525252Flevel-clear-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A5101%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+          "schema": "declared_initial_engine_state_v1"
+        },
+        "generation": {
+          "declared_inputs": {
+            "max_coordinate": [
+              1.229969,
+              1.809741
+            ],
+            "min_coordinate": [
+              -7.88,
+              -2.39049
+            ],
+            "reference_point": [
+              1.00798,
+              -2.1274
+            ],
+            "restricted_objects": [],
+            "template_content_identity": "xml_bytes_v1:sciencebirdsgames/physics-v2/issue-51/level-clear-template.xml:canonical_materialization_v1",
+            "template_name": "0_1_010101_0_1"
+          },
+          "generation_seed": 5101,
+          "generator_identity": "novphy-task-generator",
+          "generator_version": "canonical_materialization_v1",
+          "importer_identity": null,
+          "importer_version": null,
+          "mode": "generated",
+          "parameter_realization": {
+            "declared_initial_engine_state": {
+              "root": {
+                "attributes": {
+                  "width": "2"
+                },
+                "children": [
+                  {
+                    "attributes": {
+                      "maxWidth": "35",
+                      "minWidth": "25",
+                      "x": "-4",
+                      "y": "-1"
+                    },
+                    "children": [],
+                    "tag": "Camera"
+                  },
+                  {
+                    "attributes": {
+                      "highScore": "0"
+                    },
+                    "children": [],
+                    "tag": "Score"
+                  },
+                  {
+                    "attributes": {},
+                    "children": [
+                      {
+                        "attributes": {
+                          "scenarioObjectId": "bird:0000",
+                          "type": "BirdRed"
+                        },
+                        "children": [],
+                        "tag": "Bird"
+                      }
+                    ],
+                    "tag": "Birds"
+                  },
+                  {
+                    "attributes": {
+                      "scenarioObjectId": "slingshot:0000",
+                      "x": "-12.0",
+                      "y": "-2.5"
+                    },
+                    "children": [],
+                    "tag": "Slingshot"
+                  },
+                  {
+                    "attributes": {},
+                    "children": [
+                      {
+                        "attributes": {
+                          "rotation": "0.0",
+                          "scenarioObjectId": "pig:0000",
+                          "type": "BasicSmall",
+                          "x": "-7.928",
+                          "y": "1.7874"
+                        },
+                        "children": [],
+                        "tag": "Pig"
+                      },
+                      {
+                        "attributes": {
+                          "rotation": "0.0",
+                          "scenarioObjectId": "tnt:0000",
+                          "type": "",
+                          "x": "-4.8",
+                          "y": "-2.34"
+                        },
+                        "children": [],
+                        "tag": "TNT"
+                      },
+                      {
+                        "attributes": {
+                          "rotation": "0.0",
+                          "scaleX": "3.2",
+                          "scaleY": "1.0",
+                          "scenarioObjectId": "platform:0000",
+                          "type": "Platform",
+                          "x": "-8.378",
+                          "y": "1.2374"
+                        },
+                        "children": [],
+                        "tag": "Platform"
+                      },
+                      {
+                        "attributes": {
+                          "material": "wood",
+                          "rotation": "0",
+                          "scenarioObjectId": "block:0000",
+                          "type": "SquareSmall",
+                          "x": "-5.0093",
+                          "y": "-3.285"
+                        },
+                        "children": [],
+                        "tag": "Block"
+                      },
+                      {
+                        "attributes": {
+                          "material": "ice",
+                          "rotation": "0",
+                          "scenarioObjectId": "block:0001",
+                          "type": "RectSmall",
+                          "x": "4.4828",
+                          "y": "-3.39"
+                        },
+                        "children": [],
+                        "tag": "Block"
+                      },
+                      {
+                        "attributes": {
+                          "material": "wood",
+                          "rotation": "0",
+                          "scaleX": "1.0",
+                          "scaleY": "1.0",
+                          "scenarioObjectId": "platform:0001",
+                          "type": "Platform",
+                          "x": "8.7732",
+                          "y": "-3.18"
+                        },
+                        "children": [],
+                        "tag": "Platform"
+                      }
+                    ],
+                    "tag": "GameObjects"
+                  }
+                ],
+                "tag": "Level"
+              },
+              "schema": "declared_initial_engine_state_v1"
+            },
+            "schema": "scenario_parameter_realization_v1"
+          },
+          "source_path": null
+        },
+        "level_instance": {
+          "identity": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-template.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A5101%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Asciencebirdsgames%252Fphysics-v2%252Fissue-51%252Flevel-clear-template.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D"
+        },
+        "research_eligibility": {
+          "reason": null,
+          "status": "research_eligible"
+        },
+        "scenario_lineage": {
+          "identity": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Asciencebirdsgames%252525252Fphysics-v2%252525252Fissue-51%252525252Flevel-clear-template.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A5101%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-51%2525252Flevel-clear-template.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D"
+        },
+        "scenario_specification": {
+          "content_identity": "scenario-content-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-51%2525252Flevel-clear-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A5101%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+          "declaration_identity": "scenario-declaration-v1:benchmark-condition-v1%3Anovelty_level_0%3Atype010101:scenario-template-v1%3Asciencebirdsgames%252Fphysics-v2%252Fissue-51%252Flevel-clear-template.xml:generated:novphy-task-generator:canonical_materialization_v1:5101:%7B%22max_coordinate%22%3A%5B1.229969%2C1.809741%5D%2C%22min_coordinate%22%3A%5B-7.88%2C-2.39049%5D%2C%22reference_point%22%3A%5B1.00798%2C-2.1274%5D%2C%22restricted_objects%22%3A%5B%5D%2C%22template_content_identity%22%3A%22xml_bytes_v1%3Asciencebirdsgames%2Fphysics-v2%2Fissue-51%2Flevel-clear-template.xml%3Acanonical_materialization_v1%22%2C%22template_name%22%3A%220_1_010101_0_1%22%7D",
+          "identity": "scenario-specification-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-51%2525252Flevel-clear-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A5101%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D"
+        },
+        "scenario_template": {
+          "availability": "available",
+          "identity": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-51%2Flevel-clear-template.xml"
+        },
+        "schema": "scenario_manifest_v1"
+      },
+      "scenario_manifest_reference": ".local-artifacts/issue-51-pilot-run/authorities/scenario-manifest.json",
+      "scenario_specification_identity": "scenario-specification-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Ascenario-template-v1%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-51%2525252Flevel-clear-template.xml%253Agenerated%253Anovphy-task-generator%253Acanonical_materialization_v1%253A5101%253A%25257B%252522max_coordinate%252522%25253A%25255B1.229969%25252C1.809741%25255D%25252C%252522min_coordinate%252522%25253A%25255B-7.88%25252C-2.39049%25255D%25252C%252522reference_point%252522%25253A%25255B1.00798%25252C-2.1274%25255D%25252C%252522restricted_objects%252522%25253A%25255B%25255D%25252C%252522template_content_identity%252522%25253A%252522xml_bytes_v1%25253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-template.xml%25253Acanonical_materialization_v1%252522%25252C%252522template_name%252522%25253A%2525220_1_010101_0_1%252522%25257D",
+      "scenario_template_identity": "scenario-template-v1:sciencebirdsgames%2Fphysics-v2%2Fissue-51%2Flevel-clear-template.xml",
+      "source_dispositions": {
+        "benchmark_agent_replay": {
+          "rationale": "optional and not used by the central pilot",
+          "status": "unavailable"
+        },
+        "geometry_stratified": {
+          "status": "included"
+        },
+        "targeted_rare": {
+          "status": "included"
+        }
+      }
+    }
+  ],
+  "schema": "collection_plan_v1"
+}

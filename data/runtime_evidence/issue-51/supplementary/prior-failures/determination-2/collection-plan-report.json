@@ -1,0 +1,162 @@
+{
+  "accepted_count": 0,
+  "attempt_ledger": [
+    {
+      "artifact_disposition": "quarantined",
+      "artifact_path": null,
+      "attempt_id": "collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-targeted:1",
+      "attempt_number": 1,
+      "disposition": "quarantine",
+      "disposition_reason": "permanent_failure",
+      "eligible": false,
+      "failure_class": "permanent",
+      "failure_code": "transport_unavailable",
+      "failure_manifest_path": ".local-artifacts/issue-51-pilot-run-determination-2/collection/quarantine/collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-targeted:1/failure.json",
+      "intervention_id": "level-clear-targeted",
+      "intervention_identity": "collection-plan-intervention-v1:level-clear-targeted:1",
+      "intervention_ordinal": 1,
+      "plan_identity": "collection-plan-v1:2:issue51-level-clear-static-determination2",
+      "quarantine_path": ".local-artifacts/issue-51-pilot-run-determination-2/collection/quarantine/collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-targeted:1",
+      "realized_coverage_strata": [],
+      "reason": "physics capture v2 failed (14): physics capture v2 event is outside recorded fixed-step coverage",
+      "retry_decision": "stop",
+      "scenario_id": "issue51-level-clear-static-determination2",
+      "scenario_identity": "collection-plan-scenario-v1:issue51-level-clear-static-determination2",
+      "status": "failed"
+    },
+    {
+      "artifact_disposition": "quarantined",
+      "artifact_path": null,
+      "attempt_id": "collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-geometry:1",
+      "attempt_number": 1,
+      "disposition": "quarantine",
+      "disposition_reason": "permanent_failure",
+      "eligible": false,
+      "failure_class": "permanent",
+      "failure_code": "transport_unavailable",
+      "failure_manifest_path": ".local-artifacts/issue-51-pilot-run-determination-2/collection/quarantine/collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-geometry:1/failure.json",
+      "intervention_id": "level-clear-geometry",
+      "intervention_identity": "collection-plan-intervention-v1:level-clear-geometry:2",
+      "intervention_ordinal": 2,
+      "plan_identity": "collection-plan-v1:2:issue51-level-clear-static-determination2",
+      "quarantine_path": ".local-artifacts/issue-51-pilot-run-determination-2/collection/quarantine/collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-geometry:1",
+      "realized_coverage_strata": [],
+      "reason": "physics capture v2 failed (14): physics capture v2 event is outside recorded fixed-step coverage",
+      "retry_decision": "stop",
+      "scenario_id": "issue51-level-clear-static-determination2",
+      "scenario_identity": "collection-plan-scenario-v1:issue51-level-clear-static-determination2",
+      "status": "failed"
+    }
+  ],
+  "failed_count": 2,
+  "plan_identity": "collection-plan-v1:2:issue51-level-clear-static-determination2",
+  "plan_version": 2,
+  "planned_slots": [
+    {
+      "attempt_ids": [
+        "collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-targeted:1"
+      ],
+      "disposition": "failed",
+      "intended_coverage_stratum": "level clear",
+      "intervention_id": "level-clear-targeted",
+      "intervention_identity": "collection-plan-intervention-v1:level-clear-targeted:1",
+      "ordinal": 1,
+      "scenario_id": "issue51-level-clear-static-determination2",
+      "scenario_identity": "collection-plan-scenario-v1:issue51-level-clear-static-determination2",
+      "source": "targeted_rare",
+      "terminal_status": "failed"
+    },
+    {
+      "attempt_ids": [
+        "collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-geometry:1"
+      ],
+      "disposition": "failed",
+      "intended_coverage_stratum": "collision",
+      "intervention_id": "level-clear-geometry",
+      "intervention_identity": "collection-plan-intervention-v1:level-clear-geometry:2",
+      "ordinal": 2,
+      "scenario_id": "issue51-level-clear-static-determination2",
+      "scenario_identity": "collection-plan-scenario-v1:issue51-level-clear-static-determination2",
+      "source": "geometry_stratified",
+      "terminal_status": "failed"
+    }
+  ],
+  "quarantined_attempts": [
+    {
+      "artifact_disposition": "quarantined",
+      "artifact_path": null,
+      "attempt_id": "collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-targeted:1",
+      "attempt_number": 1,
+      "disposition": "quarantine",
+      "disposition_reason": "permanent_failure",
+      "eligible": false,
+      "failure_class": "permanent",
+      "failure_code": "transport_unavailable",
+      "failure_manifest_path": ".local-artifacts/issue-51-pilot-run-determination-2/collection/quarantine/collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-targeted:1/failure.json",
+      "intervention_id": "level-clear-targeted",
+      "intervention_identity": "collection-plan-intervention-v1:level-clear-targeted:1",
+      "intervention_ordinal": 1,
+      "plan_identity": "collection-plan-v1:2:issue51-level-clear-static-determination2",
+      "quarantine_path": ".local-artifacts/issue-51-pilot-run-determination-2/collection/quarantine/collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-targeted:1",
+      "realized_coverage_strata": [],
+      "reason": "physics capture v2 failed (14): physics capture v2 event is outside recorded fixed-step coverage",
+      "retry_decision": "stop",
+      "scenario_id": "issue51-level-clear-static-determination2",
+      "scenario_identity": "collection-plan-scenario-v1:issue51-level-clear-static-determination2",
+      "status": "failed"
+    },
+    {
+      "artifact_disposition": "quarantined",
+      "artifact_path": null,
+      "attempt_id": "collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-geometry:1",
+      "attempt_number": 1,
+      "disposition": "quarantine",
+      "disposition_reason": "permanent_failure",
+      "eligible": false,
+      "failure_class": "permanent",
+      "failure_code": "transport_unavailable",
+      "failure_manifest_path": ".local-artifacts/issue-51-pilot-run-determination-2/collection/quarantine/collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-geometry:1/failure.json",
+      "intervention_id": "level-clear-geometry",
+      "intervention_identity": "collection-plan-intervention-v1:level-clear-geometry:2",
+      "intervention_ordinal": 2,
+      "plan_identity": "collection-plan-v1:2:issue51-level-clear-static-determination2",
+      "quarantine_path": ".local-artifacts/issue-51-pilot-run-determination-2/collection/quarantine/collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-geometry:1",
+      "realized_coverage_strata": [],
+      "reason": "physics capture v2 failed (14): physics capture v2 event is outside recorded fixed-step coverage",
+      "retry_decision": "stop",
+      "scenario_id": "issue51-level-clear-static-determination2",
+      "scenario_identity": "collection-plan-scenario-v1:issue51-level-clear-static-determination2",
+      "status": "failed"
+    }
+  ],
+  "quarantined_count": 2,
+  "realized_coverage_shortfalls": [],
+  "realized_coverage_stratum_counts": {
+    "collision": 0,
+    "destruction": 0,
+    "explosion": 0,
+    "level clear": 0,
+    "level fail": 0,
+    "no-contact/miss": 0,
+    "persistent support": 0,
+    "pig removal": 0,
+    "stability transitions": 0,
+    "support change": 0
+  },
+  "rejected_count": 0,
+  "schema": "collection_plan_execution_report_v2",
+  "unmet_slots": [
+    {
+      "disposition": "failed",
+      "intended_coverage_stratum": "level clear",
+      "intervention_id": "level-clear-targeted",
+      "scenario_id": "issue51-level-clear-static-determination2"
+    },
+    {
+      "disposition": "failed",
+      "intended_coverage_stratum": "collision",
+      "intervention_id": "level-clear-geometry",
+      "scenario_id": "issue51-level-clear-static-determination2"
+    }
+  ]
+}

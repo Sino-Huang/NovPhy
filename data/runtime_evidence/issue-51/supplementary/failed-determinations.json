@@ -1,0 +1,117 @@
+{
+  "determinations": [
+    {
+      "attempts": [
+        {
+          "attempt_identity": "collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-targeted:1",
+          "disposition": "quarantined",
+          "eligible": false,
+          "failure_class": "permanent",
+          "failure_code": "transport_unavailable",
+          "failure_manifest_path": "prior-failures/determination-2/level-clear-targeted-failure.json",
+          "intervention_id": "level-clear-targeted",
+          "intervention_identity": "collection-plan-intervention-v1:level-clear-targeted:1",
+          "reason": "physics capture v2 failed (14): physics capture v2 event is outside recorded fixed-step coverage",
+          "status": "failed"
+        },
+        {
+          "attempt_identity": "collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination2:issue51-level-clear-static-determination2:level-clear-geometry:1",
+          "disposition": "quarantined",
+          "eligible": false,
+          "failure_class": "permanent",
+          "failure_code": "transport_unavailable",
+          "failure_manifest_path": "prior-failures/determination-2/level-clear-geometry-failure.json",
+          "intervention_id": "level-clear-geometry",
+          "intervention_identity": "collection-plan-intervention-v1:level-clear-geometry:2",
+          "reason": "physics capture v2 failed (14): physics capture v2 event is outside recorded fixed-step coverage",
+          "status": "failed"
+        }
+      ],
+      "collection_plan_identity": "collection-plan-v1:2:issue51-level-clear-static-determination2",
+      "collection_plan_path": "prior-failures/determination-2/collection-plan.json",
+      "collection_report_path": "prior-failures/determination-2/collection-plan-report.json",
+      "counts": {
+        "accepted": 0,
+        "failed": 2,
+        "quarantined": 2,
+        "rejected": 0,
+        "retried": 0
+      },
+      "disposition": "failed",
+      "failure_reason": "fixed_step_capture_gap",
+      "identity": "issue-51-representative-pilot-determination-2:failed-fixed-step-coverage",
+      "schema": "issue_51_prior_failed_pilot_determination_v1",
+      "unmet_slots": [
+        {
+          "disposition": "failed",
+          "intended_coverage_stratum": "level clear",
+          "intervention_id": "level-clear-targeted",
+          "scenario_id": "issue51-level-clear-static-determination2"
+        },
+        {
+          "disposition": "failed",
+          "intended_coverage_stratum": "collision",
+          "intervention_id": "level-clear-geometry",
+          "scenario_id": "issue51-level-clear-static-determination2"
+        }
+      ]
+    },
+    {
+      "attempts": [
+        {
+          "attempt_identity": "collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination3:issue51-level-clear-static-determination3:level-clear-targeted:1",
+          "disposition": "quarantined",
+          "eligible": false,
+          "failure_class": "permanent",
+          "failure_code": "transport_unavailable",
+          "failure_manifest_path": "prior-failures/determination-3/level-clear-targeted-failure.json",
+          "intervention_id": "level-clear-targeted",
+          "intervention_identity": "collection-plan-intervention-v1:level-clear-targeted:1",
+          "reason": "physics capture v2 failed (14): physics capture v2 event is outside recorded fixed-step coverage",
+          "status": "failed"
+        },
+        {
+          "attempt_identity": "collection-plan-attempt-v1:collection-plan-v1%3A2%3Aissue51-level-clear-static-determination3:issue51-level-clear-static-determination3:level-clear-geometry:1",
+          "disposition": "quarantined",
+          "eligible": false,
+          "failure_class": "permanent",
+          "failure_code": "transport_unavailable",
+          "failure_manifest_path": "prior-failures/determination-3/level-clear-geometry-failure.json",
+          "intervention_id": "level-clear-geometry",
+          "intervention_identity": "collection-plan-intervention-v1:level-clear-geometry:2",
+          "reason": "physics capture v2 failed (14): physics capture v2 event is outside recorded fixed-step coverage",
+          "status": "failed"
+        }
+      ],
+      "collection_plan_identity": "collection-plan-v1:2:issue51-level-clear-static-determination3",
+      "collection_plan_path": "prior-failures/determination-3/collection-plan.json",
+      "collection_report_path": "prior-failures/determination-3/collection-plan-report.json",
+      "counts": {
+        "accepted": 0,
+        "failed": 2,
+        "quarantined": 2,
+        "rejected": 0,
+        "retried": 0
+      },
+      "disposition": "failed",
+      "failure_reason": "fixed_step_capture_gap",
+      "identity": "issue-51-representative-pilot-determination-3:failed-fixed-step-coverage",
+      "schema": "issue_51_prior_failed_pilot_determination_v1",
+      "unmet_slots": [
+        {
+          "disposition": "failed",
+          "intended_coverage_stratum": "level clear",
+          "intervention_id": "level-clear-targeted",
+          "scenario_id": "issue51-level-clear-static-determination3"
+        },
+        {
+          "disposition": "failed",
+          "intended_coverage_stratum": "collision",
+          "intervention_id": "level-clear-geometry",
+          "scenario_id": "issue51-level-clear-static-determination3"
+        }
+      ]
+    }
+  ],
+  "schema": "issue_51_prior_failed_pilot_determinations_v1"
+}

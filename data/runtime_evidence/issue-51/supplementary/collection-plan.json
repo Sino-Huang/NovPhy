@@ -1,0 +1,233 @@
+{
+  "identity": "collection-plan-v1:2:issue51-level-clear-static-determination6",
+  "plan_version": 2,
+  "scenarios": [
+    {
+      "benchmark_condition_identity": "benchmark-condition-v1:novelty_level_0:type010101",
+      "coverage_strata": {
+        "collision": {
+          "intervention_ids": [
+            "level-clear-geometry"
+          ],
+          "status": "targeted"
+        },
+        "destruction": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "explosion": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "level clear": {
+          "intervention_ids": [
+            "level-clear-targeted"
+          ],
+          "status": "targeted"
+        },
+        "level fail": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "no-contact/miss": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "persistent support": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "pig removal": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "stability transitions": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        },
+        "support change": {
+          "rationale": "covered by the exact accepted issue-44 through issue-50 component plans bound by the representative cohort-v2 pilot plan",
+          "status": "inapplicable"
+        }
+      },
+      "declared_initial_engine_state_identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Aunavailable%253Alegacy_static%253Anovphy-legacy-xml-importer%253A2%253Anone%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-static-v2.xml",
+      "expected_initial_engine_state_identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Aunavailable%253Alegacy_static%253Anovphy-legacy-xml-importer%253A2%253Anone%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-static-v2.xml",
+      "exposure_role": "training",
+      "generation_mode": "legacy_static",
+      "generation_seed": null,
+      "interventions": [
+        {
+          "engine_relative_action": {
+            "coordinate_frame": "slingshot_relative",
+            "release_offset": [
+              -77,
+              30
+            ],
+            "release_point": [
+              20,
+              197
+            ],
+            "release_time_ms": 1000,
+            "tap_time_ms": 0
+          },
+          "id": "level-clear-targeted",
+          "intended_coverage_stratum": "level clear",
+          "interface_action": {
+            "action_type": "drag_hold_release",
+            "coordinate_frame": "slingshot_relative",
+            "drag_release": [
+              -77,
+              30
+            ],
+            "drag_start": [
+              97,
+              227
+            ],
+            "frame_height": 480,
+            "releaseTime": 1000,
+            "socket_command": {
+              "releaseTime": 1000,
+              "tapTime": 0,
+              "x": 20,
+              "y": 282
+            },
+            "tapTime": 0
+          },
+          "mapping_version": "science-birds-slingshot-relative-v1",
+          "ordinal": 1,
+          "slingshot_reference": {
+            "gameX": 97,
+            "gameY": 227
+          },
+          "source": "targeted_rare",
+          "source_provenance": {
+            "selection_rule": "issue-51-frozen-direct-tnt-level-clear-v6; outcome-independent static determination 6 supplement to the accepted issue-44 through issue-50 evidence",
+            "target_stratum": "level clear"
+          }
+        },
+        {
+          "engine_relative_action": {
+            "coordinate_frame": "slingshot_relative",
+            "release_offset": [
+              -77,
+              25
+            ],
+            "release_point": [
+              20,
+              202
+            ],
+            "release_time_ms": 1000,
+            "tap_time_ms": 0
+          },
+          "id": "level-clear-geometry",
+          "intended_coverage_stratum": "collision",
+          "interface_action": {
+            "action_type": "drag_hold_release",
+            "coordinate_frame": "slingshot_relative",
+            "drag_release": [
+              -77,
+              25
+            ],
+            "drag_start": [
+              97,
+              227
+            ],
+            "frame_height": 480,
+            "releaseTime": 1000,
+            "socket_command": {
+              "releaseTime": 1000,
+              "tapTime": 0,
+              "x": 20,
+              "y": 277
+            },
+            "tapTime": 0
+          },
+          "mapping_version": "science-birds-slingshot-relative-v1",
+          "ordinal": 2,
+          "slingshot_reference": {
+            "gameX": 97,
+            "gameY": 227
+          },
+          "source": "geometry_stratified",
+          "source_provenance": {
+            "feasibility_rule": "issue-51-frozen-static-level-clear-geometry-action-v2",
+            "scenario_geometry_identity": "scenario-content-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Aunavailable%253Alegacy_static%253Anovphy-legacy-xml-importer%253A2%253Anone%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-static-v2.xml",
+            "stratum": "issue-51-direct-tnt-collision"
+          }
+        }
+      ],
+      "level_instance_identity": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Aunavailable%3Alegacy_static%3Anovphy-legacy-xml-importer%3A2%3Anone%3Asciencebirdsgames%252Fphysics-v2%252Fissue-51%252Flevel-clear-static-v2.xml",
+      "negative_specification": {
+        "cap": 0,
+        "intervention_ids": [],
+        "semantic_justification": "the supplementary terminal probe is not negative-training evidence"
+      },
+      "research_eligibility": "research_eligible",
+      "retry_policy": {
+        "max_attempts": 1,
+        "stopping_rule": "execute_all_interventions",
+        "transient_failure_codes": []
+      },
+      "scenario_id": "issue51-level-clear-static-determination6",
+      "scenario_lineage_identity": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Aunavailable%25253Alegacy_static%25253Anovphy-legacy-xml-importer%25253A2%25253Anone%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-51%2525252Flevel-clear-static-v2.xml",
+      "scenario_manifest": {
+        "benchmark_condition": {
+          "identity": "benchmark-condition-v1:novelty_level_0:type010101",
+          "novelty_level": "novelty_level_0",
+          "novelty_type": "type010101"
+        },
+        "declared_initial_engine_state": {
+          "identity": "declared-initial-engine-state-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Aunavailable%253Alegacy_static%253Anovphy-legacy-xml-importer%253A2%253Anone%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-static-v2.xml",
+          "schema": "declared_initial_engine_state_v1"
+        },
+        "generation": {
+          "declared_inputs": {},
+          "generation_seed": null,
+          "generator_identity": null,
+          "generator_version": null,
+          "importer_identity": "novphy-legacy-xml-importer",
+          "importer_version": "2",
+          "mode": "legacy_static",
+          "parameter_realization": {},
+          "source_path": "sciencebirdsgames/physics-v2/issue-51/level-clear-static-v2.xml"
+        },
+        "level_instance": {
+          "identity": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Aunavailable%3Alegacy_static%3Anovphy-legacy-xml-importer%3A2%3Anone%3Asciencebirdsgames%252Fphysics-v2%252Fissue-51%252Flevel-clear-static-v2.xml"
+        },
+        "research_eligibility": {
+          "reason": null,
+          "status": "research_eligible"
+        },
+        "scenario_lineage": {
+          "identity": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Aunavailable%25253Alegacy_static%25253Anovphy-legacy-xml-importer%25253A2%25253Anone%25253Asciencebirdsgames%2525252Fphysics-v2%2525252Fissue-51%2525252Flevel-clear-static-v2.xml"
+        },
+        "scenario_specification": {
+          "content_identity": "scenario-content-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Aunavailable%253Alegacy_static%253Anovphy-legacy-xml-importer%253A2%253Anone%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-static-v2.xml",
+          "declaration_identity": "scenario-declaration-v1:benchmark-condition-v1%3Anovelty_level_0%3Atype010101:unavailable:legacy_static:novphy-legacy-xml-importer:2:none:sciencebirdsgames%2Fphysics-v2%2Fissue-51%2Flevel-clear-static-v2.xml",
+          "identity": "scenario-specification-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Aunavailable%253Alegacy_static%253Anovphy-legacy-xml-importer%253A2%253Anone%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-static-v2.xml"
+        },
+        "scenario_template": {
+          "availability": "unavailable",
+          "identity": null
+        },
+        "schema": "scenario_manifest_v1"
+      },
+      "scenario_manifest_reference": ".local-artifacts/issue-51-pilot-run-determination-6/authorities/scenario-manifest.json",
+      "scenario_specification_identity": "scenario-specification-v1:level-instance-v1%3Ascenario-declaration-v1%253Abenchmark-condition-v1%25253Anovelty_level_0%25253Atype010101%253Aunavailable%253Alegacy_static%253Anovphy-legacy-xml-importer%253A2%253Anone%253Asciencebirdsgames%25252Fphysics-v2%25252Fissue-51%25252Flevel-clear-static-v2.xml",
+      "scenario_template_identity": null,
+      "source_dispositions": {
+        "benchmark_agent_replay": {
+          "rationale": "optional and not used by the central pilot",
+          "status": "unavailable"
+        },
+        "geometry_stratified": {
+          "status": "included"
+        },
+        "targeted_rare": {
+          "status": "included"
+        }
+      }
+    }
+  ],
+  "schema": "collection_plan_v1"
+}
