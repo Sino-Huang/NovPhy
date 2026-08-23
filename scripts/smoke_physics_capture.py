@@ -32,6 +32,7 @@ from scripts.collect_rollouts import (
     capture_physics_rollout,
     current_slingshot_reference,
 )
+from scripts.slingshot_readiness import prepare_screen_shot
 from scripts.manual_agent import connect_with_retry, prepare_for_play
 from scripts.rollout_artifacts import validate_physics_shot_artifact
 from scripts.rollout_validation_types import PhysicsArtifactError
@@ -608,9 +609,6 @@ def mutable_json(value: BridgeJsonValue) -> JsonValue:
 
 
 def perform_known_action(bridge: ScienceBirdsBridge) -> JsonObject:
-    reference = current_slingshot_reference(bridge, FRAME_HEIGHT_PIXELS)
-    if reference is None:
-        raise SmokeError("known level has no request-62 slingshot reference")
     # Parameters taken from an accepted legacy rollout whose shot physically
     # struck a structure (novelty_level_4_type010401_00141_0_1_010401_4_1,
     # shot_001: ui_level 1, drag_hold_release, slingshot_relative). The single
@@ -629,17 +627,16 @@ def perform_known_action(bridge: ScienceBirdsBridge) -> JsonObject:
     # type that does record. Changing this offset changes only launch elevation —
     # both pulls saturate the drag clamp. See
     # GitHub issue #44 before spending the run.
-    action = anchor_action_to_slingshot_reference(
+    prepared = prepare_screen_shot(
+        bridge,
         {"coordinate_frame": "slingshot_relative", "drag_start": [97, 227], "drag_release": [-80, 7], "tapTime": 0, "holdTime": 1000},
-        reference,
+        frame_height=FRAME_HEIGHT_PIXELS,
+        execution_speed=1,
+        record_ground_truth=True,
     )
-    shot = action_to_shot(action, frame_height=FRAME_HEIGHT_PIXELS)
-    ground_truth_count = bridge.shoot_and_record_ground_truth(
-        shot["x"],
-        shot["y"],
-        tap_time=shot["tapTime"],
-        release_time=shot["releaseTime"],
-    )
+    reference = dict(prepared.slingshot)
+    shot = dict(prepared.socket_command)
+    ground_truth_count = prepared.execute()
     if ground_truth_count < 1:
         raise SmokeError("known recorded gameplay action returned no ground truth")
     return {"response": 1, "request_code": int(RequestCode.GT_SHOOT), "ground_truth_count": ground_truth_count, "slingshot_reference": reference, "socket_x": shot["x"], "socket_y": shot["y"], "tap_time": shot["tapTime"], "release_time": shot["releaseTime"]}

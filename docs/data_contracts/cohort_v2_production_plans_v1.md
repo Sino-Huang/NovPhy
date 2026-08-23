@@ -1,5 +1,9 @@
 # `cohort_v2_production_plans_v1`
 
+> Historical authority: issue #53 plan v2 supersedes this plan for future
+> production execution. This v1 plan and every release derived from it remain
+> immutable evidence of the original termination-expectation defect.
+
 Issue #52 publishes two immutable, declared-identity plans for the central-v2
 cohort. They are bound to the accepted issue-51 representative pilot and do not
 amend the older scoped collection, pilot, or production-parameter artifacts.

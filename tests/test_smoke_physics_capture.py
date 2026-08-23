@@ -149,6 +149,12 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
             def get_symbolic_state_without_screenshot(self) -> list[dict]:
                 return [{"features": [{"properties": {"label": "Slingshot"}, "geometry": {"type": "Polygon", "coordinates": [[[100, 200], [120, 200], [120, 260], [100, 260]]]}}]}]
 
+            def set_speed(self, _speed):
+                return 1
+
+            def fully_zoom_out(self):
+                return 1
+
             def shoot_and_record_ground_truth(self, x: int, y: int, tap_time: int = 0, release_time: int = 0, frequency: int = 1) -> int:
                 self.recorded_shots.append((x, y, tap_time, release_time, frequency))
                 return 1
@@ -170,6 +176,12 @@ class SmokePhysicsCaptureTests(unittest.TestCase):
         class Bridge:
             def get_symbolic_state_without_screenshot(self) -> list[dict]:
                 return [{"features": [{"properties": {"label": "Slingshot"}, "geometry": {"type": "Polygon", "coordinates": [[[100, 200], [120, 200], [120, 260], [100, 260]]]}}]}]
+
+            def set_speed(self, _speed):
+                return 1
+
+            def fully_zoom_out(self):
+                return 1
 
             def shoot_and_record_ground_truth(self, x: int, y: int, tap_time: int = 0, release_time: int = 0, frequency: int = 1) -> int:
                 recorded.append({"x": x, "y": y, "tap_time": tap_time, "release_time": release_time})

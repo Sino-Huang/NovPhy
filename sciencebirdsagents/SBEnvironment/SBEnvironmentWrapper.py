@@ -2,7 +2,9 @@ import logging
 import os
 import random
 import socket
+import sys
 import time
+from pathlib import Path
 
 import numpy as np
 from Client.agent_client import GameState
@@ -11,6 +13,11 @@ from StateReader.SymbolicStateReader import NotVaildStateError
 from StateReader.game_object import GameObjectType
 from Utils.point2D import Point2D
 from SBEnvironment.action_utils import normalize_release_action
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
+from scripts.slingshot_readiness import prepare_screen_shot
 
 MAX_NUMBER_OF_LEVELS = 300
 
@@ -167,7 +174,6 @@ class SBEnvironmentWrapper:
         if self.state_representation_type == 'image':
             self.next_state = self.next_state[0]  # to just record the image
 
-        self.__get_slingshot_center()
         self.info = [self.did_win, self.total_reward_per_level]
         self.previous_num_pigs = self.__get_num_pigs(self.env_state)
         self.num_birds = self.__get_num_birds(self.env_state)
@@ -211,33 +217,43 @@ class SBEnvironmentWrapper:
             self.agent.ar.report_novelty_likelihood(novelty_likelihood, non_novelty_likelihood, novel_obj_ids,
                                                     novelty_level, novelty_description)
 
-        self.__get_slingshot_center()
-
-        dx, dy, tap_time = normalize_release_action(action, sling_center=self.sling_center)
-        release_point = Point2D(dx, dy)
-        abs_release_point = Point2D(int(self.sling_center.X + release_point.X),
-                                    int(self.sling_center.Y - release_point.Y))
         bird_type = self.__get_bird_on_sling_type(self.env_state)
 
-        if abs(int(tap_time)) == 0:
-            if bird_type == GameObjectType.REDBIRD:
-                tap_time = 0  # start of trajectory
-            elif bird_type == GameObjectType.YELLOWBIRD:
-                tap_time = 65 + random.randint(0, 24)  # 65-90% of the way
-            elif bird_type == GameObjectType.WHITEBIRD:
-                tap_time = 50 + random.randint(0, 19)  # 50-70% of the way
-            elif bird_type == GameObjectType.BLACKBIRD:
-                tap_time = 0  # do not tap black bird
-            elif bird_type == GameObjectType.BLUEBIRD:
-                tap_time = 65 + random.randint(0, 19)  # 65-85% of the way
-            else:
-                tap_time = 60
+        def action_from_stable_slingshot(reference):
+            self.sling_center = Point2D(int(reference['gameX']), int(reference['gameY']))
+            dx, dy, tap_time = normalize_release_action(action, sling_center=self.sling_center)
+            if abs(int(tap_time)) == 0:
+                if bird_type == GameObjectType.REDBIRD:
+                    tap_time = 0
+                elif bird_type == GameObjectType.YELLOWBIRD:
+                    tap_time = 65 + random.randint(0, 24)
+                elif bird_type == GameObjectType.WHITEBIRD:
+                    tap_time = 50 + random.randint(0, 19)
+                elif bird_type == GameObjectType.BLACKBIRD:
+                    tap_time = 0
+                elif bird_type == GameObjectType.BLUEBIRD:
+                    tap_time = 65 + random.randint(0, 19)
+                else:
+                    tap_time = 60
+            return {
+                'action_type': 'drag_release',
+                'coordinate_frame': 'slingshot_relative',
+                'drag_start': [self.sling_center.X, self.sling_center.Y],
+                'drag_release': [int(dx), int(dy)],
+                'tapTime': int(tap_time),
+                'releaseTime': 0,
+            }
 
-        if not batch_gt:
-            self.agent.ar.shoot(abs_release_point.X, abs_release_point.Y, 0, int(tap_time), 0)
-        else:
-            gt_frequency = 1
-            batch_gts = self.agent.ar.shoot_and_record_ground_truth(abs_release_point.X, abs_release_point.Y, 0, int(tap_time), gt_frequency)
+        prepared = prepare_screen_shot(
+            self.agent.ar,
+            action_from_stable_slingshot,
+            execution_speed=self.simulation_speed,
+            record_ground_truth=batch_gt,
+            ground_truth_frequency=1,
+        )
+        shot_result = prepared.execute()
+        if batch_gt:
+            batch_gts = shot_result
         #########################
 
         self.shots_per_level += 1
@@ -311,7 +327,7 @@ class SBEnvironmentWrapper:
     def reload_current_level(self):
 
         self.agent.ar.load_level(self.current_level)
-        self.agent.ar.fully_zoom_out()
+        self.__get_slingshot_center()
         game_state = self.agent.ar.get_game_state()
 
         if game_state == GameState.REQUESTNOVELTYLIKELIHOOD:
@@ -364,7 +380,6 @@ class SBEnvironmentWrapper:
         self.info = [self.did_win, self.total_reward_per_level]
 
         self.total_reward_per_level = 0
-        self.__get_slingshot_center()
 
         return self.next_state, self.step_reward, self.is_done, self.info
 
@@ -411,22 +426,14 @@ class SBEnvironmentWrapper:
         return SymbolicStateDevReader(state, self.model, self.target_class).find_bird_on_sling(birds, sling).type
 
     def __get_slingshot_center(self):
-        try:
-            ground_truth = self.agent.ar.get_symbolic_state_without_screenshot()
-            ground_truth_reader = SymbolicStateDevReader(ground_truth, self.model, self.target_class)
-            sling = ground_truth_reader.find_slingshot()[0]
-            sling.width, sling.height = sling.height, sling.width
-            self.sling_center = self.agent.tp.get_reference_point(sling)
-            self.sling_mbr = sling
-
-        except NotVaildStateError:
-            self.agent.ar.fully_zoom_out()
-            ground_truth = self.agent.ar.get_symbolic_state_without_screenshot()
-            ground_truth_reader = SymbolicStateDevReader(ground_truth, self.model, self.target_class)
-            sling = ground_truth_reader.find_slingshot()[0]
-            sling.width, sling.height = sling.height, sling.width
-            self.sling_center = self.agent.tp.get_reference_point(sling)
-            self.sling_mbr = sling
+        prepared = prepare_screen_shot(
+            self.agent.ar,
+            {'coordinate_frame': 'absolute', 'release': [0, 0]},
+            execution_speed=self.simulation_speed,
+        )
+        self.sling_center = Point2D(
+            int(prepared.slingshot['gameX']), int(prepared.slingshot['gameY'])
+        )
 
     def __start_server(self, if_head=None):
         # if server already started, do nothing

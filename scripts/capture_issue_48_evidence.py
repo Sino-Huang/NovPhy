@@ -29,10 +29,7 @@ from scripts.cohort_v2_replay import (
 )
 from scripts.cohort_v2_scenarios import write_immutable_cohort_v2_json
 from scripts.collect_rollouts import (
-    action_to_shot,
-    anchor_action_to_slingshot_reference,
     capture_physics_v2_rollout,
-    precise_slingshot_reference_point_from_symbolic_state,
 )
 from scripts.manual_agent import connect_with_retry, prepare_for_play
 from scripts.observation_trace import persist_observation_trace
@@ -44,6 +41,7 @@ from scripts.smoke_physics_capture import (
     terminate,
 )
 from src.webui.bridge import ObservationCaptureEngine, PlayingMode
+from scripts.slingshot_readiness import prepare_screen_shot
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -103,20 +101,6 @@ def _install_level(runtime: Path, xml_path: Path) -> None:
     ET.ElementTree(evaluation).write(
         runtime / "config.xml", encoding="utf-8", xml_declaration=True
     )
-
-
-def _stable_slingshot(agent, *, timeout: float = 60.0) -> dict[str, float]:
-    deadline = time.monotonic() + timeout
-    previous = None
-    while time.monotonic() < deadline:
-        current = precise_slingshot_reference_point_from_symbolic_state(
-            agent.get_symbolic_state_without_screenshot(), 480
-        )
-        if current is not None and current == previous:
-            return current
-        previous = current
-        time.sleep(0.25)
-    raise TimeoutError("Science Birds slingshot did not settle before the replay attempt")
 
 
 def _stable_observation(physics, *, timeout: float = 60.0) -> ObservationCaptureEngine:
@@ -208,8 +192,32 @@ def _capture_attempt(
                 "127.0.0.1", agent_port, timeout=300.0, deadline_seconds=90.0
             )
             agent.configure(agent_id=28748, mode=PlayingMode.TRAINING)
-            agent.set_speed(50)
-            prepare_for_play(agent, timeout=120.0, poll_delay=0.5)
+            if role == "original":
+                if frozen_command is not None:
+                    raise ValueError("original attempt cannot use a frozen replay command")
+                interface_action = scenario_collection["intervention"]["interface_action"]
+                frozen_socket = None
+                retained_anchor = None
+            elif role == "replay":
+                if frozen_command is None:
+                    raise ValueError("replay attempt requires the original frozen socket command")
+                interface_action = frozen_command["interface_action"]
+                frozen_socket = interface_action["socket_command"]
+                retained_anchor = interface_action.get("slingshot_reference")
+            else:
+                raise ValueError(f"unsupported replay attempt role: {role}")
+            prepared = prepare_screen_shot(
+                agent,
+                interface_action,
+                frame_height=480,
+                execution_speed=1,
+                frozen_socket_command=frozen_socket,
+                retained_anchor=retained_anchor,
+                fast=True,
+                prepare_level=lambda: prepare_for_play(
+                    agent, timeout=120.0, poll_delay=0.5
+                ),
+            )
             physics = connect_with_retry(
                 "127.0.0.1", physics_port, timeout=120.0, deadline_seconds=90.0
             )
@@ -218,18 +226,14 @@ def _capture_attempt(
                 "waiting for a stable camera and slingshot"
             )
             observation_capture = _stable_observation(physics)
-            slingshot = _stable_slingshot(agent)
+            slingshot = dict(prepared.slingshot)
             _progress(
                 f"{scenario_collection['scenario_collection_id']} {role}: "
                 f"stable slingshot {json.dumps(slingshot, sort_keys=True)}"
             )
             if role == "original":
-                if frozen_command is not None:
-                    raise ValueError("original attempt cannot use a frozen replay command")
-                anchored = anchor_action_to_slingshot_reference(
-                    scenario_collection["intervention"]["interface_action"], slingshot
-                )
-                shot = action_to_shot(anchored, frame_height=480)
+                anchored = dict(prepared.action)
+                shot = dict(prepared.socket_command)
                 actual_action = {
                     **anchored,
                     "socket_command": {
@@ -240,12 +244,8 @@ def _capture_attempt(
                     },
                 }
             elif role == "replay":
-                if frozen_command is None:
-                    raise ValueError("replay attempt requires the original frozen socket command")
                 actual_action = frozen_command["interface_action"]
-                shot = actual_action["socket_command"]
-            else:
-                raise ValueError(f"unsupported replay attempt role: {role}")
+                shot = dict(prepared.socket_command)
             _progress(f"{scenario_collection['scenario_collection_id']} {role}: retaining the synchronized pre-intervention observation")
             physics_bindings = {
                 "scenario_template_id": scenario_collection["scenario_template_identity"],
@@ -258,13 +258,7 @@ def _capture_attempt(
             def shoot():
                 mode = "exact frozen socket command" if role == "replay" else "declared intervention"
                 _progress(f"{scenario_collection['scenario_collection_id']} {role}: applying the {mode}")
-                return agent.shoot(
-                    shot["x"],
-                    shot["y"],
-                    tap_time=shot["tapTime"],
-                    fast=True,
-                    release_time=shot["releaseTime"],
-                )
+                return prepared.execute()
 
             _progress(f"{scenario_collection['scenario_collection_id']} {role}: waiting for terminal physics capture")
             physics_metadata = capture_physics_v2_rollout(
@@ -306,6 +300,7 @@ def _capture_attempt(
                 "scenario_lineage_identity": scenario_collection["scenario_lineage_identity"],
                 "intervention_identity": scenario_collection["intervention"]["identity"],
                 "interface_action": actual_action,
+                "slingshot_readiness": dict(prepared.evidence),
                 "engine_relative_action": scenario_collection["intervention"]["engine_relative_action"],
                 "physics_capture_relative_path": "physics_capture_v2.json",
                 "physics_capture_metadata": _physics_metadata(physics_metadata),

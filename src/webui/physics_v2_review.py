@@ -20,6 +20,7 @@ from scripts.physics_capture_v2_persistence import (
     persist_physics_capture_v2,
     validate_physics_capture_v2_artifact,
 )
+from scripts.slingshot_readiness import PreparedScreenShot
 
 
 REVIEW_GOALS = ("collision", "persistent support", "support change")
@@ -145,6 +146,7 @@ class PhysicsV2ReviewSession:
         self._plan_path: Path | None = None
         self._plan_bytes: bytes | None = None
         self._replay_attempts = 0
+        self.readiness: dict[str, Any] = {}
         self.root.mkdir(parents=True, exist_ok=False)
         self._write_session_status()
 
@@ -232,6 +234,24 @@ class PhysicsV2ReviewSession:
         self.state = "exploring"
         self._write_session_status()
         return {"socket_command": dict(self.socket_command)}
+
+    def bind_prepared_exploration(self, prepared: PreparedScreenShot) -> None:
+        if self.state != "exploring":
+            raise ValueError("prepared exploration can only bind while exploring")
+        self.action = dict(prepared.action)
+        self.socket_command = {
+            key: int(prepared.socket_command[key])
+            for key in ("x", "y", "tapTime", "releaseTime")
+        }
+        self.action["socket_command"] = dict(self.socket_command)
+        self.readiness["exploration"] = dict(prepared.evidence)
+        self._write_session_status()
+
+    def bind_prepared_replay(self, prepared: PreparedScreenShot) -> None:
+        if self.state != "replaying":
+            raise ValueError("prepared replay can only bind while replaying")
+        self.readiness["replay"] = dict(prepared.evidence)
+        self._write_session_status()
 
     def complete_exploration(self, engine_record: Mapping[str, Any]) -> dict[str, Any]:
         if self.state != "exploring" or self.goal is None:
@@ -366,6 +386,7 @@ class PhysicsV2ReviewSession:
             "goal": self.goal,
             "action": self.action,
             "socket_command": self.socket_command,
+            "slingshot_readiness": self.readiness,
             "authority": self.authority,
             "verdict": self.replay_verdict or self.exploration_verdict,
             "diagnostic_capture_eligible": False,

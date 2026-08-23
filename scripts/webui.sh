@@ -3,7 +3,7 @@
 
 physics_review_args=()
 for novphy_webui_arg in "$@"; do
-  if [[ "$novphy_webui_arg" == "--physics-v2-review" ]]; then
+  if [[ "$novphy_webui_arg" == "--physics-v2-review" || "$novphy_webui_arg" == "--issue-53-review-root" ]]; then
     physics_review_args=(--speed 1)
     break
   fi

@@ -102,6 +102,12 @@ class GameplayBridge:
     def set_speed(self, _speed):
         return 1
 
+    def fully_zoom_out(self):
+        return 1
+
+    def get_symbolic_state_without_screenshot(self):
+        return [{"type": "Slingshot", "vertices": [[100, 200], [120, 200], [120, 260], [100, 260]]}]
+
     def disconnect(self):
         self.disconnected = True
 

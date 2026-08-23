@@ -21,6 +21,7 @@ from urllib.parse import parse_qs, urlparse
 
 from scripts.collect_rollouts import precise_slingshot_reference_point_from_symbolic_state
 from scripts.verify_physics_player import safe_unpack
+from scripts.slingshot_readiness import prepare_screen_shot
 
 from .bridge import (
     GameState,
@@ -28,6 +29,7 @@ from .bridge import (
     PlayingMode,
     ScienceBirdsBridge,
 )
+from .issue_53_review import Issue53ReviewSession
 from .physics_v2_review import PhysicsV2ReviewSession, REVIEW_GOAL_LEVELS
 
 
@@ -85,6 +87,8 @@ class AppState:
     engine_game_port: int = 29001
     review_reset_callback: Any | None = None
     review_goal: str | None = None
+    issue_53_review_root: Path | None = None
+    issue_53_review_session: Issue53ReviewSession | None = None
 
     @property
     def game_dir(self) -> Path:
@@ -124,6 +128,7 @@ class AppState:
             "preflightErrors": self.preflight_errors(),
             "physicsV2Review": self.physics_v2_review,
             "physicsV2ReviewSession": None if self.review_session is None else self.review_session.snapshot(),
+            "issue53Review": self.issue_53_review_session is not None,
         }
 
     def prepare_physics_v2_review_runtime(self) -> Path:
@@ -326,14 +331,22 @@ class AppState:
             with self.bridge_lock:
                 if self.bridge is None or not self.bridge.connected:
                     raise RuntimeError("Not connected to Science Birds. Start or connect first.")
-                self._wait_for_stable_review_slingshot(self.bridge)
-                self.bridge.shoot(
-                    shot["x"],
-                    shot["y"],
-                    tap_time=shot["tapTime"],
+                action = dict(self.review_session.action or {})
+                retained_anchor = action.get("slingshot_reference") if replay else None
+                prepared = prepare_screen_shot(
+                    self.bridge,
+                    action,
+                    frame_height=int(action.get("frame_height", self.frame_height)),
+                    execution_speed=1,
+                    frozen_socket_command=shot if replay else None,
+                    retained_anchor=retained_anchor if isinstance(retained_anchor, Mapping) else None,
                     fast=True,
-                    release_time=shot["releaseTime"],
                 )
+                if not replay:
+                    self.review_session.bind_prepared_exploration(prepared)
+                else:
+                    self.review_session.bind_prepared_replay(prepared)
+                prepared.execute()
             record = self._physics_v2_engine_record()
             if replay:
                 return self.review_session.complete_replay(record)
@@ -341,28 +354,6 @@ class AppState:
         except Exception as error:
             self.review_session.fail_active_capture(error)
             raise
-
-    def _wait_for_stable_review_slingshot(self, bridge: ScienceBirdsBridge) -> None:
-        deadline = time.monotonic() + self.readiness_timeout
-        previous: tuple[float, float, float] | None = None
-        while time.monotonic() < deadline:
-            current = None
-            if bridge.get_game_state() == GameState.PLAYING:
-                reference = precise_slingshot_reference_point_from_symbolic_state(
-                    bridge.get_symbolic_state_without_screenshot(),
-                    self.frame_height,
-                )
-                if reference is not None:
-                    current = (
-                        reference["canvasX"],
-                        reference["canvasY"],
-                        reference["pixelsPerWorldUnit"],
-                    )
-            if current is not None and current == previous:
-                return
-            previous = current
-            time.sleep(self.readiness_poll_delay)
-        raise TimeoutError("Science Birds slingshot did not settle before the review shot")
 
     def _reset_physics_v2_review_engine(self) -> None:
         if self.review_session is None or self.review_session.goal is None:
@@ -548,6 +539,35 @@ def create_handler(app: AppState):
 
         def do_GET(self) -> None:
             path = urlparse(self.path).path
+            issue_53_route = self._issue_53_item_route(path)
+            if path == "/api/issue-53-review":
+                self._send_json({"ok": True, "review": self._require_issue_53_review().snapshot()})
+                return
+            if issue_53_route is not None:
+                index, action = issue_53_route
+                try:
+                    review = self._require_issue_53_review()
+                    if action == "steps":
+                        query = parse_qs(urlparse(self.path).query)
+                        start = int(query.get("start", [0])[0])
+                        count = int(query.get("count", [100])[0])
+                        self._send_json({"ok": True, **review.fixed_steps(index, start=start, count=count)})
+                    elif action == "video":
+                        video = review.replay_video(index)
+                        self._send_file(
+                            video,
+                            mimetypes.guess_type(video.name)[0]
+                            or "application/octet-stream",
+                        )
+                    elif action == "detail":
+                        self._send_json({"ok": True, "detail": review.item_detail(index)})
+                    else:
+                        self._send_json({"ok": False, "error": "Unknown issue-53 review endpoint"}, status=404)
+                except PermissionError as exc:
+                    self._send_json({"ok": False, "error": str(exc)}, status=403)
+                except ValueError as exc:
+                    self._send_json({"ok": False, "error": str(exc)}, status=400)
+                return
             if path == "/api/status":
                 self._send_json(app.status())
                 return
@@ -572,7 +592,35 @@ def create_handler(app: AppState):
         def do_POST(self) -> None:
             path = urlparse(self.path).path
             try:
-                if path == "/api/start":
+                issue_53_route = self._issue_53_item_route(path)
+                if path == "/api/issue-53-review/authorize":
+                    payload = self._read_json()
+                    identity = payload.get("authorizationIdentity")
+                    if not isinstance(identity, str):
+                        raise ValueError("Final review authorization identity is required")
+                    review = self._require_issue_53_review()
+                    self._send_json({"ok": True, "review": review.authorize_final_access(identity)})
+                elif issue_53_route is not None:
+                    index, action = issue_53_route
+                    review = self._require_issue_53_review()
+                    if action == "open":
+                        self._send_json({"ok": True, "detail": review.open_trace(index)})
+                    elif action == "replay":
+                        self._send_json({"ok": True, "detail": review.run_replay(index)})
+                    elif action == "decision":
+                        payload = self._read_json()
+                        self._send_json({
+                            "ok": True,
+                            "review": review.record_decision(
+                                index,
+                                decision=payload.get("decision"),
+                                notes=payload.get("notes"),
+                                reviewer=payload.get("reviewer"),
+                            ),
+                        })
+                    else:
+                        self._send_json({"ok": False, "error": "Unknown issue-53 review endpoint"}, status=404)
+                elif path == "/api/start":
                     self._send_json(app.start_game())
                 elif path == "/api/connect":
                     self._send_json(app.connect_bridge(configure=True))
@@ -611,6 +659,8 @@ def create_handler(app: AppState):
                     self._send_json({"ok": True, "session": app.run_physics_v2_review(replay=True)})
                 else:
                     self._send_json({"ok": False, "error": "Unknown API endpoint"}, status=404)
+            except PermissionError as exc:
+                self._send_json({"ok": False, "error": str(exc)}, status=403)
             except ValueError as exc:
                 self._send_json({"ok": False, "error": str(exc)}, status=400)
             except Exception as exc:
@@ -655,8 +705,22 @@ def create_handler(app: AppState):
             release_time = int(payload.get("releaseTime", payload.get("release_time", 0)))
             fast = bool(payload.get("fast", False))
             run_async = bool(payload.get("async", False))
-            bridge_y = max(0, app.frame_height - 1 - y)
-            action = lambda bridge: bridge.shoot(x, bridge_y, tap_time=tap_time, fast=fast, release_time=release_time)
+            shot_action = {
+                "action_type": "drag_hold_release",
+                "coordinate_frame": "absolute",
+                "release": [x, y],
+                "tapTime": tap_time,
+                "releaseTime": release_time,
+            }
+
+            def action(bridge):
+                return prepare_screen_shot(
+                    bridge,
+                    shot_action,
+                    frame_height=app.frame_height,
+                    execution_speed=app.speed,
+                    fast=fast,
+                ).execute()
             if run_async:
                 self._bridge_action_async(action)
                 self._send_json({"ok": True, "scheduled": True})
@@ -801,6 +865,22 @@ def create_handler(app: AppState):
                 raise ValueError("JSON payload must be an object")
             return payload
 
+        def _require_issue_53_review(self) -> Issue53ReviewSession:
+            if app.issue_53_review_session is None:
+                raise ValueError("Issue-53 review mode is not enabled")
+            return app.issue_53_review_session
+
+        def _issue_53_item_route(self, path: str) -> tuple[int, str] | None:
+            parts = path.strip("/").split("/")
+            if len(parts) < 4 or parts[:3] != ["api", "issue-53-review", "items"]:
+                return None
+            try:
+                index = int(parts[3])
+            except ValueError:
+                return None
+            action = "detail" if len(parts) == 4 else parts[4]
+            return index, action
+
         def _required_int(self, payload: dict[str, Any], key: str) -> int:
             if key not in payload:
                 raise ValueError(f"Missing required field: {key}")
@@ -810,7 +890,14 @@ def create_handler(app: AppState):
                 raise ValueError(f"{key} must be an integer") from exc
 
         def _serve_static(self, path: str) -> None:
-            relative = "index.html" if path in ("/", "") else path.lstrip("/")
+            if path in ("/", ""):
+                relative = (
+                    "issue53.html"
+                    if app.issue_53_review_session is not None
+                    else "index.html"
+                )
+            else:
+                relative = path.lstrip("/")
             target = (static_dir() / relative).resolve()
             root = static_dir().resolve()
             if root not in target.parents and target != root:
@@ -826,6 +913,33 @@ def create_handler(app: AppState):
             self.send_header("Content-Length", str(len(data)))
             self.end_headers()
             self.wfile.write(data)
+
+        def _send_file(self, path: Path, content_type: str) -> None:
+            size = path.stat().st_size
+            start = 0
+            end = size - 1
+            range_header = self.headers.get("Range")
+            status = 200
+            if range_header and range_header.startswith("bytes="):
+                bounds = range_header.removeprefix("bytes=").split("-", 1)
+                start = int(bounds[0] or 0)
+                end = min(int(bounds[1]) if bounds[1] else end, end)
+                if start < 0 or start > end:
+                    self.send_error(416)
+                    return
+                status = 206
+            length = end - start + 1
+            self.send_response(status)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Accept-Ranges", "bytes")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(length))
+            if status == 206:
+                self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
+            self.end_headers()
+            with path.open("rb") as handle:
+                handle.seek(start)
+                self.wfile.write(handle.read(length))
 
         def _send_json(self, payload: dict[str, Any], status: int = 200) -> None:
             data = json.dumps(payload).encode("utf-8")
@@ -848,6 +962,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--speed", type=int, default=50, help="Simulation speed set after connect")
     parser.add_argument("--game-headless", action="store_true", default=os.environ.get("NOVPHY_WEBUI_GAME_HEADLESS") == "1")
     parser.add_argument("--physics-v2-review", action="store_true", help="Enable guided diagnostic and confirmatory request-71 capture")
+    parser.add_argument(
+        "--issue-53-review-root",
+        type=Path,
+        help="Enable retained issue-53 mismatch review from this production runtime",
+    )
     parser.add_argument("--review-output-dir", type=Path, help="Local physics-v2 review session directory")
     parser.add_argument("--physics-v2-stage", type=Path, help="Verified packaged physics-v2 stage")
     parser.add_argument("--engine-game-port", type=int, default=29001, help="Unity startup port used by the packaged interface")
@@ -856,6 +975,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     args = build_arg_parser().parse_args()
+    if args.physics_v2_review and args.issue_53_review_root is not None:
+        raise SystemExit("--physics-v2-review and --issue-53-review-root are separate modes")
     if args.physics_v2_review:
         # The packaged physics-v2 player binds its physics-capture listener on
         # its compiled-in default port 2004: the jar accepts --physics-port but
@@ -876,12 +997,25 @@ def main() -> None:
         review_output_root=args.review_output_dir,
         review_stage=args.physics_v2_stage,
         engine_game_port=args.engine_game_port,
+        issue_53_review_root=args.issue_53_review_root,
     )
+    if args.issue_53_review_root is not None:
+        review_output = args.review_output_dir or (
+            repo_root() / ".local-artifacts/issue-53-human-review-v2"
+        )
+        app.issue_53_review_session = Issue53ReviewSession(
+            args.issue_53_review_root,
+            review_output,
+            repository_root=repo_root(),
+            speed=args.speed,
+        )
     server = ThreadingHTTPServer((args.host, args.port), create_handler(app))
     print(f"NovPhy WebUI: http://{args.host}:{args.port}/")
     print(f"Science Birds target: {app.game_host}:{app.game_port}")
     if app.physics_v2_review:
         print(f"Physics-v2 review: enabled (request 71 at {app.physics_host}:{app.physics_port})")
+    if app.issue_53_review_session is not None:
+        print(f"Issue-53 retained-evidence review: {app.issue_53_review_root}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

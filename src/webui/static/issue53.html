@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Issue 53 Human Review · NovPhy</title>
+    <link rel="stylesheet" href="/issue53.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">Retained production evidence · diagnostic review only</p>
+        <h1>Issue #53 termination review</h1>
+        <p class="subtitle">Inspect the exact fixed-step trace first. An optional replay may diagnose the exporter, but cannot replace production evidence or make the release pass.</p>
+      </div>
+      <div class="progress" id="progress">Loading…</div>
+    </header>
+
+    <main class="review-shell">
+      <aside class="playlist-panel">
+        <div class="panel-heading">
+          <h2>Eight mismatches</h2>
+          <span id="accessState" class="pill locked">Final locked</span>
+        </div>
+        <div class="authorization" id="authorizationPanel">
+          <label for="authorizationIdentity">Final-access authorization identity</label>
+          <input id="authorizationIdentity" autocomplete="off" placeholder="github-issue-authorization-v1:…" />
+          <button id="authorizeBtn">Validate and record access</button>
+          <p>Three final-evaluation items remain unavailable until the authorized manifest is validated and a new review access is audited.</p>
+        </div>
+        <nav id="playlist" aria-label="Termination mismatch playlist"></nav>
+      </aside>
+
+      <section class="evidence-panel">
+        <div id="emptyReview" class="empty-review">
+          <h2>Choose a retained trace</h2>
+          <p>Opening a trace records review access in the separate human-review bundle. Production files remain read-only.</p>
+        </div>
+
+        <div id="reviewContent" class="hidden">
+          <header class="item-header">
+            <div>
+              <p class="eyebrow" id="itemRole">—</p>
+              <h2 id="itemTitle">—</h2>
+            </div>
+            <div class="termination-pair">
+              <span>Expected <strong id="expectedTermination">—</strong></span>
+              <span>Observed <strong id="observedTermination">—</strong></span>
+            </div>
+          </header>
+
+          <div class="facts-grid">
+            <div><span>Scenario family</span><strong id="scenarioFamily">—</strong></div>
+            <div><span>Intended stratum</span><strong id="intendedStratum">—</strong></div>
+            <div><span>Anchored socket command</span><strong id="socketCommand">—</strong></div>
+            <div><span>Coverage facts</span><strong id="coverageFacts">—</strong></div>
+          </div>
+          <p id="terminationExplanation" class="explanation"></p>
+
+          <div class="comparison-grid">
+            <section class="trace-card">
+              <div class="card-heading">
+                <div>
+                  <p class="eyebrow">Exact retained physics_capture_v2</p>
+                  <h3>Original fixed-step trace</h3>
+                </div>
+                <span id="stepLabel">—</span>
+              </div>
+              <canvas id="traceCanvas" width="760" height="430" aria-label="Retained fixed-step schematic"></canvas>
+              <div class="trace-controls">
+                <button id="playBtn">Play</button>
+                <button id="previousBtn" class="secondary">Previous</button>
+                <button id="nextBtn" class="secondary">Next</button>
+                <input id="timeline" type="range" min="0" max="0" value="0" aria-label="Fixed-step timeline" />
+              </div>
+              <div class="live-facts">
+                <span>Pigs remaining <strong id="pigsRemaining">—</strong></span>
+                <span>Birds remaining <strong id="birdsRemaining">—</strong></span>
+                <span>Contacts <strong id="contactCount">—</strong></span>
+                <span>Supports <strong id="supportCount">—</strong></span>
+              </div>
+              <div id="eventOverlay" class="event-overlay">No event at this fixed step.</div>
+            </section>
+
+            <section class="trace-card replay-card">
+              <div class="card-heading">
+                <div>
+                  <p class="eyebrow">Optional · one attempt maximum</p>
+                  <h3>Diagnostic RGB replay</h3>
+                </div>
+                <span id="replayState">Not run</span>
+              </div>
+              <div class="video-wrap">
+                <video id="replayVideo" controls preload="metadata"></video>
+                <div id="videoEmpty">Open the original trace before replay. The replay uses the retained XML, manifest, player envelope, and anchored socket command.</div>
+              </div>
+              <div id="alignmentEvidence" class="comparison-facts">Loading the screen-coordinate alignment contract…</div>
+              <button id="replayBtn">Run the one diagnostic replay</button>
+              <div id="comparisonFacts" class="comparison-facts">No original/replay comparison yet.</div>
+            </section>
+          </div>
+
+          <section class="decision-card">
+            <div>
+              <p class="eyebrow">Immutable human decision</p>
+              <h3>Classify this retained mismatch</h3>
+            </div>
+            <div class="decision-fields">
+              <label>Reviewer<input id="reviewer" value="repository operator" /></label>
+              <label>Decision
+                <select id="decision">
+                  <option value="confirmed_mismatch">Confirmed mismatch</option>
+                  <option value="suspicious_termination_export">Suspicious termination/export</option>
+                  <option value="uncertain">Uncertain</option>
+                </select>
+              </label>
+              <label class="notes">Notes<textarea id="notes" rows="3" placeholder="What in the retained trace supports this decision?"></textarea></label>
+              <button id="recordDecisionBtn">Record immutable decision</button>
+            </div>
+            <p id="decisionStatus">No decision recorded.</p>
+          </section>
+        </div>
+      </section>
+    </main>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script src="/issue53.js"></script>
+  </body>
+</html>

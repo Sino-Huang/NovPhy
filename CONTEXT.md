@@ -28,6 +28,10 @@ _Avoid_: Sample group, related episodes
 One independently executed single-shot simulation of a scenario specification under a recorded intervention, ending with a declared termination reason.
 _Avoid_: Episode, multi-shot game, video
 
+**Stable stopping condition**:
+A rollout termination reached when post-intervention movement remains below the declared stability threshold. The `stable_entered` event stops the rollout; it does not mean the level was cleared, won, or failed.
+_Avoid_: Level success, level clear, win
+
 **Scenario collection**:
 The set of independently executed rollouts collected from one level instance under a declared intervention plan.
 _Avoid_: Episode, multi-shot game

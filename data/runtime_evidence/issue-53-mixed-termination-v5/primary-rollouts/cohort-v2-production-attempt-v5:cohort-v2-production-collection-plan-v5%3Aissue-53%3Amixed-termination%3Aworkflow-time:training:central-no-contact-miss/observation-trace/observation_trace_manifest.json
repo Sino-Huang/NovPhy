@@ -1,0 +1,219 @@
+{
+  "access_policy": {
+    "agent": "central_model_workflows",
+    "canonical": "alignment_or_capture_diagnosis_only"
+  },
+  "exposure_role": "training",
+  "frame_records": [
+    {
+      "agent_observation": {
+        "content_identity": "rgb-png-v1:sha256:67166168cf71ccd5ee9254429aa6c62e912b49abedac66b1b0c292d9910a67e9",
+        "height_pixels": 480,
+        "identity": "agent-observation-v1:sha256:79ca781d930c3a19e6d2ad60f295e43cd26fd532a42e1813e3304819ae1d3b87",
+        "media_type": "image/png",
+        "observation_configuration_identity": "observation-configuration-v1:sha256:474dd61cbbae155db1d5bee75ac50d38675e907d5decf097636787aa1fbe78e0",
+        "pixel_format": "rgb8_srgb",
+        "relative_path": "observations/agent/frame_000000.png",
+        "role": "agent",
+        "stage": "post_transform",
+        "synchronization_identity": "observation-synchronization-v1:sha256:b70c85c346ad1f2527576f90eefe530a049ab9d6a3b2ca4280fc590f9c9db0f1",
+        "width_pixels": 840
+      },
+      "canonical_observation": {
+        "content_identity": "rgb-png-v1:sha256:67166168cf71ccd5ee9254429aa6c62e912b49abedac66b1b0c292d9910a67e9",
+        "height_pixels": 480,
+        "identity": "canonical-observation-v1:sha256:44813f026eb3cb983b24d9a3d23c3bc869e5584a5e5e2dd7dbb5e6decfa5be8a",
+        "media_type": "image/png",
+        "observation_configuration_identity": "observation-configuration-v1:sha256:474dd61cbbae155db1d5bee75ac50d38675e907d5decf097636787aa1fbe78e0",
+        "pixel_format": "rgb8_srgb",
+        "relative_path": "observations/canonical/frame_000000.png",
+        "role": "canonical",
+        "stage": "pre_transform",
+        "synchronization_identity": "observation-synchronization-v1:sha256:b70c85c346ad1f2527576f90eefe530a049ab9d6a3b2ca4280fc590f9c9db0f1",
+        "width_pixels": 840
+      },
+      "capture_metadata": {
+        "camera": {
+          "aspect_ratio": 1.75,
+          "camera_identity": "unity-main-camera",
+          "camera_to_clip_matrix": [
+            0.0571428575,
+            0,
+            0,
+            0,
+            0,
+            0.1,
+            0,
+            0,
+            0,
+            0,
+            -0.0020006,
+            -1.0006001,
+            0,
+            0,
+            0,
+            1
+          ],
+          "far_clip_world_units": 1000,
+          "near_clip_world_units": 0.3,
+          "orthographic_size_world_units": 10,
+          "position_world": [
+            0,
+            -1,
+            -10
+          ],
+          "projection_kind": "orthographic",
+          "rotation_xyzw": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "vertical_field_of_view_degrees": null,
+          "world_to_camera_matrix": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            -1,
+            -10,
+            0,
+            0,
+            0,
+            1
+          ]
+        },
+        "capture_id": "capture-9a95dd21affa42d5bf480d8f0377e1a5",
+        "coordinates": {
+          "channel_order": "RGB",
+          "color_space": "sRGB",
+          "observation_origin": "top_left",
+          "observation_space": "rgb_pixel",
+          "observation_units": "pixel",
+          "observation_x_axis": "right",
+          "observation_y_axis": "down",
+          "sample_type": "uint8",
+          "world_space": "unity_world_2d",
+          "world_units": "unity_unit"
+        },
+        "fixed_step": 2656,
+        "fixed_time_seconds": 53.76,
+        "render_frame": 2388,
+        "render_time_seconds": 53.7615128,
+        "schema_version": "observation_capture_engine_v1",
+        "sequence": 1,
+        "source": "synchronized_observation_endpoint",
+        "source_frame_identity": "source-frame-v1:capture-9a95dd21affa42d5bf480d8f0377e1a5:1:2388:2656",
+        "viewport": {
+          "camera_pixel_rect": [
+            0,
+            0,
+            840,
+            480
+          ],
+          "height_pixels": 480,
+          "pixel_origin": "bottom_left",
+          "screen_height_pixels": 480,
+          "screen_width_pixels": 840,
+          "width_pixels": 840
+        },
+        "world_to_observation_transform": {
+          "camera_to_clip_matrix": [
+            0.0571428575,
+            0,
+            0,
+            0,
+            0,
+            0.1,
+            0,
+            0,
+            0,
+            0,
+            -0.0020006,
+            -1.0006001,
+            0,
+            0,
+            0,
+            1
+          ],
+          "clip_to_ndc": "homogeneous_divide",
+          "method": "unity_world_to_clip_to_top_left_pixel_v1",
+          "ndc_to_observation_matrix": [
+            420,
+            0,
+            420,
+            0,
+            -240,
+            240,
+            0,
+            0,
+            1
+          ],
+          "world_to_camera_matrix": [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+            -1,
+            -10,
+            0,
+            0,
+            0,
+            1
+          ]
+        }
+      },
+      "fixed_step": 2656,
+      "fixed_time_seconds": 53.76,
+      "identity": "observation-frame-record-v1:sha256:99c2fd8dfede619a591aa687a3321070120813332250db8d3e9e58b64ba58996",
+      "render_frame": 2388,
+      "render_time_seconds": 53.7615128,
+      "source_frame_identity": "source-frame-v1:capture-9a95dd21affa42d5bf480d8f0377e1a5:1:2388:2656",
+      "synchronization_identity": "observation-synchronization-v1:sha256:b70c85c346ad1f2527576f90eefe530a049ab9d6a3b2ca4280fc590f9c9db0f1"
+    }
+  ],
+  "identity": "observation-trace-manifest-v1:sha256:5d74bae60b0e803f78e6b8399044e598d31df8293d5ff308f4cc37f2d820e914",
+  "observation_configuration": {
+    "agent_representation": {
+      "media_type": "image/png",
+      "pixel_format": "rgb8_srgb",
+      "role": "agent",
+      "stage": "post_transform",
+      "transform": {
+        "method": "identity",
+        "output_height_pixels": null,
+        "output_width_pixels": null,
+        "resampling": "none"
+      }
+    },
+    "canonical_representation": {
+      "media_type": "image/png",
+      "pixel_format": "rgb8_srgb",
+      "role": "canonical",
+      "stage": "pre_transform"
+    },
+    "identity": "observation-configuration-v1:sha256:474dd61cbbae155db1d5bee75ac50d38675e907d5decf097636787aa1fbe78e0",
+    "name": "agent_rgb8_native_v1",
+    "schema": "observation_configuration_v1"
+  },
+  "scenario_lineage_identity": "scenario-lineage-observation-v1:sha256:7f6ab5fae45f81a889533e65b6d5dca1d1c488692ef7ec7a32624c4c5f932941",
+  "schema": "observation_trace_manifest_v1",
+  "source_bindings": {
+    "level_instance_identity": "level-instance-v1:scenario-declaration-v1%3Abenchmark-condition-v1%253Anovelty_level_0%253Atype010101%3Ascenario-template-v1%253Atasks%25252Ftask_templates%25252Fnovelty_level_0%25252Ftype010101%25252FLevels%25252F00001_0_1_010101_0_1.xml%3Agenerated%3Anovphy-task-generator%3Acanonical_materialization_v1%3A4401%3A%257B%2522max_coordinate%2522%253A%255B1.229969%252C1.809741%255D%252C%2522min_coordinate%2522%253A%255B-7.88%252C-2.39049%255D%252C%2522reference_point%2522%253A%255B1.00798%252C-2.1274%255D%252C%2522restricted_objects%2522%253A%255B%255D%252C%2522template_content_identity%2522%253A%2522xml_bytes_v1%253Atasks%252Ftask_templates%252Fnovelty_level_0%252Ftype010101%252FLevels%252F00001_0_1_010101_0_1.xml%253Acanonical_materialization_v1%2522%252C%2522template_name%2522%253A%25220_1_010101_0_1%2522%257D",
+    "rollout_identity": "cohort-v2-production-attempt-v5:cohort-v2-production-collection-plan-v5%3Aissue-53%3Amixed-termination%3Aworkflow-time:training:central-no-contact-miss",
+    "scenario_template_identity": "scenario-template-v1:tasks%2Ftask_templates%2Fnovelty_level_0%2Ftype010101%2FLevels%2F00001_0_1_010101_0_1.xml",
+    "source_scenario_lineage_identity": "scenario-lineage-v1:scenario-specification-v1%3Alevel-instance-v1%253Ascenario-declaration-v1%25253Abenchmark-condition-v1%2525253Anovelty_level_0%2525253Atype010101%25253Ascenario-template-v1%2525253Atasks%252525252Ftask_templates%252525252Fnovelty_level_0%252525252Ftype010101%252525252FLevels%252525252F00001_0_1_010101_0_1.xml%25253Agenerated%25253Anovphy-task-generator%25253Acanonical_materialization_v1%25253A4401%25253A%2525257B%25252522max_coordinate%25252522%2525253A%2525255B1.229969%2525252C1.809741%2525255D%2525252C%25252522min_coordinate%25252522%2525253A%2525255B-7.88%2525252C-2.39049%2525255D%2525252C%25252522reference_point%25252522%2525253A%2525255B1.00798%2525252C-2.1274%2525255D%2525252C%25252522restricted_objects%25252522%2525253A%2525255B%2525255D%2525252C%25252522template_content_identity%25252522%2525253A%25252522xml_bytes_v1%2525253Atasks%2525252Ftask_templates%2525252Fnovelty_level_0%2525252Ftype010101%2525252FLevels%2525252F00001_0_1_010101_0_1.xml%2525253Acanonical_materialization_v1%25252522%2525252C%25252522template_name%25252522%2525253A%252525220_1_010101_0_1%25252522%2525257D"
+  }
+}

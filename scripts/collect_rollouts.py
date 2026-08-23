@@ -43,6 +43,10 @@ from scripts.cohort_v2_scenarios import (  # noqa: E402
     load_cohort_v2_scenario_manifest,
     validate_scenario_template_constraints_workbook,
 )
+from scripts.observation_trace import (  # noqa: E402
+    capture_observation_trace,
+    validate_observation_trace,
+)
 from src.webui.bridge import (  # noqa: E402
     PhysicsCaptureV1Failure,
     PhysicsCaptureV2Failure,
@@ -61,6 +65,11 @@ from scripts.physics_rollout_persistence import (  # noqa: E402
 from scripts.physics_rollout_semantics import REQUIRED_ROLLOUT_SEMANTICS_FIELDS  # noqa: E402
 from scripts.rollout_validation_types import PhysicsArtifactError, PhysicsRecoveryResult  # noqa: E402
 from scripts.scenario_manifest import ScenarioManifest, load_manifest  # noqa: E402
+from scripts.slingshot_readiness import (  # noqa: E402
+    PreparedScreenShot,
+    prepare_screen_shot,
+    slingshot_observation_from_symbolic_state,
+)
 
 
 DEFAULT_DESKTOP_GAME_CROP = (32, 64, 672, 544)
@@ -399,6 +408,7 @@ def write_action_logs(output_dir: Path, attempts: list[dict]) -> dict[str, str]:
             "post_recovery_protocol_state",
             "recovery_action",
             "pre_shot_guard",
+            "slingshot_readiness",
             "artifact_validation",
         ):
             if rollout.get(key) is not None:
@@ -579,24 +589,7 @@ def precise_slingshot_reference_point_from_symbolic_state(
     frame_height: int,
 ) -> dict[str, float] | None:
     """Return the #44 review launch anchor and scale from request-62 geometry."""
-    bounds = _slingshot_bounds(symbolic_state)
-    if bounds is None:
-        return None
-    min_x, _, min_y, max_y = bounds
-    pixels_per_world_unit = (max_y - min_y) / TRAJECTORY_SLINGSHOT_HEIGHT_WORLD
-    canvas_x = (
-        min_x + TRAJECTORY_SLING_REFERENCE_X_FROM_MIN_WORLD * pixels_per_world_unit
-    )
-    canvas_y = (
-        min_y + TRAJECTORY_SLING_REFERENCE_Y_FROM_TOP_WORLD * pixels_per_world_unit
-    )
-    return {
-        "gameX": canvas_x,
-        "gameY": max(0.0, frame_height - canvas_y),
-        "canvasX": canvas_x,
-        "canvasY": canvas_y,
-        "pixelsPerWorldUnit": pixels_per_world_unit,
-    }
+    return slingshot_observation_from_symbolic_state(symbolic_state, frame_height)
 
 
 def anchor_action_to_slingshot_reference(
@@ -1385,6 +1378,7 @@ def _rollout_record_from_metadata(
         "post_recovery_protocol_state": metadata.get("post_recovery_protocol_state"),
         "recovery_action": metadata.get("recovery_action"),
         "pre_shot_guard": metadata.get("pre_shot_guard"),
+        "slingshot_readiness": metadata.get("slingshot_readiness"),
         "artifact_validation": metadata.get("artifact_validation"),
         "attempt_status": metadata.get("attempt_status"),
         "accepted": bool(metadata.get("accepted")),
@@ -1412,6 +1406,9 @@ def _rollout_record_from_metadata(
                 "frame_record_count",
                 "event_count",
                 "scenario_manifest_identity",
+                "observation_trace_path",
+                "observation_trace_manifest_identity",
+                "observation_frame_count",
             )
             if field in metadata
         },
@@ -1764,6 +1761,10 @@ def collect_rollouts(
     scenario_context: dict[str, Any] | None = None,
     physics_v2_source_bindings: Mapping[str, object] | None = None,
     physics_v2_scenario_manifest_identity: str | None = None,
+    observation_configuration: str | None = None,
+    observation_exposure_role: str | None = None,
+    execution_speed: int = 1,
+    readiness_prepare_level=None,
 ) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     if physics_capture_v1 and physics_capture_v2:
@@ -1780,13 +1781,16 @@ def collect_rollouts(
             or not physics_v2_scenario_manifest_identity
         ):
             raise RolloutCollectionError("physics capture v2 source authorities are incomplete")
-        capture_rollout = capture_physics_v2_rollout
+        if capture_rollout is capture_pixel_rollout:
+            capture_rollout = capture_physics_v2_rollout
+        if (observation_configuration is None) != (observation_exposure_role is None):
+            raise RolloutCollectionError(
+                "physics capture v2 observations require both configuration and exposure role"
+            )
     prior_invalid_attempts = list(prior_invalid_attempts or [])
-    if anchor_actions:
-        actions = anchor_actions_to_current_slingshot(bridge, actions, frame_height)
     rollouts = []
-    for index, action in enumerate(actions, start=start_index):
-        shot = action_to_shot(action, frame_height=frame_height)
+    for index, requested_action in enumerate(actions, start=start_index):
+        action = dict(requested_action)
         final_shot_dir = output_dir / f"shot_{index:03d}"
         shot_dir = output_dir / f"shot_{index:03d}.tmp" if physics_capture_v1 else final_shot_dir
         if physics_capture_v1 and final_shot_dir.exists():
@@ -1819,6 +1823,7 @@ def collect_rollouts(
                     and initial_identity_matches
                     and scenario_matches
                 ):
+                    shot = action_to_shot(action, frame_height=frame_height)
                     metadata = dict(metadata)
                     metadata["artifact_validation"] = artifact_validation
                     metadata["accepted"] = True
@@ -1841,6 +1846,33 @@ def collect_rollouts(
         if retry_attempt > 1 and shot_dir.exists():
             shutil.rmtree(shot_dir)
         shot_dir.mkdir(parents=True, exist_ok=True)
+        frozen_command = None
+        retained_anchor = None
+        if (
+            not anchor_actions
+            and action.get("coordinate_frame", "slingshot_relative")
+            == "slingshot_relative"
+        ):
+            shot = action_to_shot(action, frame_height=frame_height)
+            frozen_command = dict(shot)
+            reference = action.get("slingshot_reference")
+            if isinstance(reference, Mapping):
+                retained_anchor = reference
+        prepared_shot: PreparedScreenShot = prepare_screen_shot(
+            bridge,
+            action,
+            frame_height=frame_height,
+            execution_speed=execution_speed,
+            frozen_socket_command=frozen_command,
+            retained_anchor=retained_anchor,
+            fast=fast,
+            record_ground_truth=physics_capture_v1,
+            prepare_level=readiness_prepare_level,
+            clock=clock,
+            sleeper=sleeper,
+        )
+        action = dict(prepared_shot.action)
+        shot = dict(prepared_shot.socket_command)
         pre_shot_image = None
         pre_shot_sample = None
         pre_shot_protocol_state = _protocol_state_snapshot(bridge)
@@ -1885,20 +1917,7 @@ def collect_rollouts(
         pre_shot_sample = pre_shot_guard_result["pre_shot_sample"]
         pre_shot_guard = pre_shot_guard_result["pre_shot_guard"]
         def shoot_once():
-            if physics_capture_v1:
-                return bridge.shoot_and_record_ground_truth(
-                    shot["x"],
-                    shot["y"],
-                    tap_time=shot["tapTime"],
-                    release_time=shot["releaseTime"],
-                )
-            return bridge.shoot(
-                shot["x"],
-                shot["y"],
-                tap_time=shot["tapTime"],
-                fast=fast,
-                release_time=shot["releaseTime"],
-            )
+            return prepared_shot.execute()
 
         capture_kwargs = (
             {
@@ -1964,11 +1983,48 @@ def collect_rollouts(
                 return result
 
             capture_kwargs["shoot"] = shoot_and_snapshot
+        observation_manifest = None
+        observation_root = shot_dir / "observation-trace"
+        if physics_capture_v2 and observation_configuration is not None:
+            assert physics_v2_source_bindings is not None
+            observation_manifest = capture_observation_trace(
+                capture_bridge,
+                observation_root,
+                frame_count=1,
+                observation_configuration=observation_configuration,
+                source_bindings={
+                    "scenario_template_identity": str(
+                        physics_v2_source_bindings["scenario_template_id"]
+                    ),
+                    "level_instance_identity": str(
+                        physics_v2_source_bindings["level_instance_id"]
+                    ),
+                    "source_scenario_lineage_identity": str(
+                        physics_v2_source_bindings["scenario_lineage_id"]
+                    ),
+                    "rollout_identity": str(
+                        physics_v2_source_bindings["rollout_id"]
+                    ),
+                },
+                exposure_role=str(observation_exposure_role),
+            )
         metadata = capture_rollout(capture_bridge, shot_dir, **capture_kwargs)
         if physics_capture_v2:
             metadata["capture_contract"] = "physics_capture_v2"
             metadata["frame_count"] = metadata["frame_record_count"]
             metadata["physics_event_count"] = metadata["event_count"]
+            if observation_manifest is not None:
+                metadata.update(
+                    {
+                        "observation_trace_path": str(observation_root),
+                        "observation_trace_manifest_identity": observation_manifest[
+                            "identity"
+                        ],
+                        "observation_frame_count": len(
+                            observation_manifest["frame_records"]
+                        ),
+                    }
+                )
         if response is None:
             response = metadata.get("shoot_response")
         metadata["pre_shot_protocol_state"] = pre_shot_protocol_state
@@ -1981,6 +2037,7 @@ def collect_rollouts(
         if "recovery_action" not in metadata:
             metadata["recovery_action"] = pre_shot_guard_result["recovery_action"]
         metadata["pre_shot_guard"] = pre_shot_guard
+        metadata["slingshot_readiness"] = dict(prepared_shot.evidence)
         if metadata.get("frames_dir"):
             pre_shot_path = Path(metadata["pre_shot_path"]) if metadata.get("pre_shot_path") else None
             with TemporaryDirectory(prefix="rollout-video-") as temporary_directory:
@@ -2180,6 +2237,8 @@ def collect_fresh_engine_rollouts(
     expected_initial_engine_state_identity: str | None = None,
     physics_v2_source_bindings: Mapping[str, object] | None = None,
     physics_v2_scenario_manifest_identity: str | None = None,
+    observation_configuration: str | None = None,
+    observation_exposure_role: str | None = None,
 ) -> dict:
     if physics_capture_v1 and physics_capture_v2:
         raise ValueError("physics capture v1 and v2 are mutually exclusive")
@@ -2233,7 +2292,7 @@ def collect_fresh_engine_rollouts(
                 if agent_settle_seconds > 0:
                     sleeper(agent_settle_seconds)
                 print(f"configure -> {bridge.configure(agent_id, PlayingMode.TRAINING)}")
-                print(f"speed -> {bridge.set_speed(speed)}")
+                print(f"startup speed -> {bridge.set_speed(50)}")
                 print(f"ready -> {prepare_func(bridge, timeout=prepare_timeout, poll_delay=0.5).name}")
                 if ui_level is not None:
                     if ui_settle_seconds > 0:
@@ -2241,19 +2300,10 @@ def collect_fresh_engine_rollouts(
                     select_level_func(ui_level)
                     if ui_settle_seconds > 0:
                         sleeper(ui_settle_seconds)
-                anchored_action = action
-                if anchor_actions and action.get("coordinate_frame", "slingshot_relative") == "slingshot_relative":
-                    slingshot_reference = slingshot_reference_point_from_symbolic_state(
-                        bridge.get_symbolic_state_without_screenshot(),
-                        frame_height,
-                    )
-                    if slingshot_reference is None:
-                        raise RuntimeError("could not resolve slingshot reference from symbolic state")
-                    anchored_action = anchor_action_to_slingshot_reference(action, slingshot_reference)
                 partial = collect_rollouts(
                     bridge,
                     output_dir,
-                    [anchored_action],
+                    [action],
                     target_fps=target_fps,
                     duration_seconds=duration_seconds,
                     frame_height=frame_height,
@@ -2279,8 +2329,14 @@ def collect_fresh_engine_rollouts(
                     scenario_context=scenario_context,
                     physics_v2_source_bindings=physics_v2_source_bindings,
                     physics_v2_scenario_manifest_identity=physics_v2_scenario_manifest_identity,
+                    observation_configuration=observation_configuration,
+                    observation_exposure_role=observation_exposure_role,
+                    execution_speed=speed,
                 )
                 rollout = partial["rollouts"][0]
+                action_reference = rollout.get("action", {}).get("slingshot_reference")
+                if isinstance(action_reference, dict):
+                    slingshot_reference = action_reference
                 _record_fresh_engine_attempt_metadata(
                     output_dir,
                     rollout,
@@ -2386,6 +2442,15 @@ def collect_fresh_engine_rollouts(
             "physics_event_count": sum(int(item.get("event_count", 0)) for item in accepted_rollouts),
             "scenario_manifest_identity": physics_v2_scenario_manifest_identity,
         })
+        if observation_configuration is not None:
+            manifest.update({
+                "observation_configuration": observation_configuration,
+                "observation_exposure_role": observation_exposure_role,
+                "observation_trace_count": sum(
+                    int(item.get("observation_frame_count", 0))
+                    for item in accepted_rollouts
+                ),
+            })
     if ui_level is not None:
         manifest["ui_level"] = ui_level
     exhausted_attempts = [attempt for attempt in invalid_attempts if attempt.get("attempt_status") == "invalid_exhausted"]
@@ -2674,6 +2739,25 @@ def collect_fresh_engine_attempt(
                         raise RolloutCollectionError(
                             "physics capture v2 scenario manifest identity is stale"
                         )
+                    observation_configuration = options.get(
+                        "observation_configuration"
+                    )
+                    if observation_configuration is not None:
+                        observation_path = shot_dir / "observation-trace"
+                        observation = validate_observation_trace(observation_path)
+                        if (
+                            observation.get("identity")
+                            != metadata.get("observation_trace_manifest_identity")
+                            or observation.get("exposure_role")
+                            != options.get("observation_exposure_role")
+                            or observation.get("observation_configuration", {}).get(
+                                "name"
+                            )
+                            != observation_configuration
+                        ):
+                            raise RolloutCollectionError(
+                                "physics capture v2 observation binding is stale"
+                            )
                     coverage_strata = realized_coverage_strata_v2(shot_dir)
                 else:
                     coverage_strata = realized_coverage_strata(shot_dir)
@@ -2697,6 +2781,8 @@ def collect_fresh_engine_attempt(
                         (shot_dir / "metadata.json").read_text(encoding="utf-8")
                     )
                     validate_physics_capture_v2_artifact(shot_dir, rewritten_metadata)
+                    if options.get("observation_configuration") is not None:
+                        validate_observation_trace(shot_dir / "observation-trace")
                 os.replace(staging_dir, accepted_dir)
             except Exception as exc:
                 collection_error = exc
@@ -3266,7 +3352,7 @@ def main() -> None:
         bridge, engine_process = connect_or_start_engine(args)
     try:
         print(f"configure -> {bridge.configure(args.agent_id, PlayingMode.TRAINING)}")
-        print(f"speed -> {bridge.set_speed(args.speed)}")
+        print(f"startup speed -> {bridge.set_speed(50)}")
         if not args.no_prepare:
             print(f"ready -> {prepare_for_play(bridge, timeout=args.prepare_timeout, poll_delay=0.5).name}")
         manifest = collect_rollouts(
@@ -3286,6 +3372,7 @@ def main() -> None:
             physics_player_version=args.physics_player_version,
             physics_protocol_version=args.physics_protocol_version,
             physics_archive_path=args.physics_archive_path,
+            execution_speed=args.speed,
         )
         print(json.dumps({"manifest": str(args.output_dir / "manifest.json"), "rollout_count": manifest["rollout_count"]}, indent=2))
     finally:

@@ -282,6 +282,15 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
         engine_record["schema_version"] = "physics_capture_v2_engine_v1"
 
         class ActionBridge:
+            def set_speed(self, _speed):
+                return 1
+
+            def fully_zoom_out(self):
+                return 1
+
+            def get_symbolic_state_without_screenshot(self):
+                return [{"type": "Slingshot", "vertices": [[100, 200], [120, 200], [120, 260], [100, 260]]}]
+
             def shoot(self, *_args, **_kwargs):
                 calls.append("shoot")
                 return 1
@@ -1379,7 +1388,7 @@ class FakeBridge:
     def __init__(self):
         self.shots = []
         self.frame_index = 0
-        self.symbolic_state = None
+        self.symbolic_state = [{"type": "Slingshot", "vertices": [[100, 200], [120, 200], [120, 260], [100, 260]]}]
 
     def shoot(self, x, y, tap_time=0, fast=False, release_time=0):
         self.shots.append((x, y, tap_time, fast, release_time))
@@ -1395,6 +1404,9 @@ class FakeBridge:
 
     def set_speed(self, speed):
         self.speed = speed
+        return 1
+
+    def fully_zoom_out(self):
         return 1
 
     def disconnect(self):
@@ -2066,9 +2078,11 @@ class CollectRolloutsTest(unittest.TestCase):
             )
 
         anchored_action = manifest["rollouts"][0]["action"]
-        self.assertEqual(anchored_action["drag_start"], [98, 235])
-        self.assertEqual(manifest["rollouts"][0]["slingshot_reference"], {"gameX": 98, "gameY": 235, "canvasX": 98, "canvasY": 244})
-        self.assertEqual(bridge.shots[0], (53, 248, 0, True, 600))
+        reference = manifest["rollouts"][0]["slingshot_reference"]
+        self.assertEqual(anchored_action["drag_start"], [int(reference["gameX"]), int(reference["gameY"])])
+        self.assertIn("pixelsPerWorldUnit", reference)
+        shot = action_to_shot(anchored_action, frame_height=480)
+        self.assertEqual(bridge.shots[0], (shot["x"], shot["y"], 0, True, 600))
 
     def test_capture_desktop_rollout_records_imagegrab_frames(self):
         class Grabber:
@@ -2811,7 +2825,8 @@ class CollectRolloutsTest(unittest.TestCase):
 
         self.assertEqual(action_log["trial_count"], 1)
         self.assertEqual(len(jsonl_lines), 1)
-        self.assertEqual(json.loads(jsonl_lines[0])["action"], actions[0])
+        self.assertEqual(json.loads(jsonl_lines[0])["action"], manifest["rollouts"][0]["action"])
+        self.assertIn("slingshot_readiness", json.loads(jsonl_lines[0]))
         self.assertEqual(manifest["action_log_path"], str(Path(tmp) / "action_log.json"))
         self.assertEqual(manifest["action_log_jsonl_path"], str(Path(tmp) / "action_log.jsonl"))
         self.assertNotIn("video_frames", runner_calls[0][runner_calls[0].index("-i") + 1])
@@ -3106,12 +3121,11 @@ class CollectRolloutsTest(unittest.TestCase):
     def test_prepare_timeout_retry_path_is_rejected_before_collection(self):
         self._assert_fresh_engine_retries_are_rejected()
 
-    def test_collect_fresh_engine_rollouts_anchors_slingshot_relative_actions_from_symbolic_state(self):
+    def test_collect_fresh_engine_rollouts_anchors_plan_relative_actions_without_drag_start(self):
         actions = [
             {
                 "action_type": "drag_hold_release",
                 "coordinate_frame": "slingshot_relative",
-                "drag_start": [300, 220],
                 "drag_release": [50, 40],
                 "tapTime": 0,
             }
@@ -3190,11 +3204,13 @@ class CollectRolloutsTest(unittest.TestCase):
 
             saved_metadata = json.loads((Path(tmp) / "shot_001" / "metadata.json").read_text(encoding="utf-8"))
 
-        self.assertEqual(manifest["rollouts"][0]["slingshot_reference"], {"gameX": 118, "gameY": 315, "canvasX": 118, "canvasY": 164})
-        self.assertEqual(manifest["rollouts"][0]["action"]["drag_start"], [118, 315])
+        reference = manifest["rollouts"][0]["slingshot_reference"]
+        self.assertIn("pixelsPerWorldUnit", reference)
+        self.assertEqual(manifest["rollouts"][0]["action"]["drag_start"], [int(reference["gameX"]), int(reference["gameY"])])
         self.assertEqual(manifest["rollouts"][0]["action"]["drag_release"], [50, 40])
-        self.assertEqual(bridge.shots[0], (168, 204, 0, True, 600))
-        self.assertEqual(saved_metadata["slingshot_reference"], {"gameX": 118, "gameY": 315, "canvasX": 118, "canvasY": 164})
+        shot = action_to_shot(manifest["rollouts"][0]["action"], frame_height=480)
+        self.assertEqual(bridge.shots[0], (shot["x"], shot["y"], 0, True, 600))
+        self.assertEqual(saved_metadata["slingshot_reference"], reference)
         self.assertTrue(all(process.terminated and process.waited for process in processes))
 
     def test_collect_fresh_engine_rollouts_stops_engine_when_disconnect_raises(self):

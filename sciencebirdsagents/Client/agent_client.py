@@ -308,6 +308,7 @@ class AgentClient:
         return novelty_info
 
     def shoot_and_record_ground_truth(self, fx, fy, t1, t2, gt_frequency):
+        """Unchecked request-38 transport; workflows use PreparedScreenShot."""
         """ Request to execute a shot and record ground truth every gt_frequency frames
             Note: number of frames will be dependent on the set game simulation and gt_frequency
             the slower the game is -> more frequent ground truth snapshots are possible and vice verta.
@@ -346,11 +347,13 @@ class AgentClient:
         return self._read_from_buff("B")[0]
 
     def shoot(self, fx, fy, t1, t2, isPolar):
+        """Unchecked socket transport; first-party workflows use PreparedScreenShot."""
         code = RequestCodes.Pshoot if isPolar else RequestCodes.Cshoot
         self._send_command(code, "iiii", fx, fy, t1, t2)
         return self._read_from_buff("B")[0]
 
     def fast_shoot(self, fx, fy, t1, t2, isPolar):
+        """Unchecked socket transport; first-party workflows use PreparedScreenShot."""
         code = RequestCodes.PFastshoot if isPolar else RequestCodes.CFastshoot
         self._send_command(code, "iiii", fx, fy, t1, t2)
         return self._read_from_buff("B")[0]
@@ -433,7 +436,25 @@ if __name__ == "__main__":
 
         client.fully_zoom_in()
         client.fully_zoom_out()
-        info = client.shoot(172, 276, 943, 264, 0, 0, False)
+        from pathlib import Path
+        import sys
+
+        repository_root = Path(__file__).resolve().parents[2]
+        if str(repository_root) not in sys.path:
+            sys.path.insert(0, str(repository_root))
+        from scripts.slingshot_readiness import prepare_screen_shot
+
+        info = prepare_screen_shot(
+            client,
+            {"coordinate_frame": "absolute", "release": [172, 203]},
+            execution_speed=1,
+            frozen_socket_command={
+                "x": 172,
+                "y": 276,
+                "releaseTime": 943,
+                "tapTime": 264,
+            },
+        ).execute()
 
         image, ground_truth = client.get_symbolic_state_with_screenshot()
         ground_truth = client.get_symbolic_state_without_screenshot()

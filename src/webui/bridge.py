@@ -339,6 +339,7 @@ class ScienceBirdsBridge:
             self.disconnect()
 
     def shoot(self, x: int, y: int, tap_time: int = 0, fast: bool = False, release_time: int = 0) -> int:
+        """Unchecked socket transport; first-party workflows use PreparedScreenShot."""
         code = RequestCode.FAST_SHOOT if fast else RequestCode.SHOOT
         self._send(code, "iiii", int(x), int(y), int(release_time), int(tap_time))
         return self._read("B")[0]
@@ -351,7 +352,7 @@ class ScienceBirdsBridge:
         release_time: int = 0,
         frequency: int = 1,
     ) -> int:
-        """Execute the recorder-backed legacy request-38 action."""
+        """Unchecked request-38 transport; workflows use PreparedScreenShot."""
         self._send(
             RequestCode.GT_SHOOT,
             "iiiii",

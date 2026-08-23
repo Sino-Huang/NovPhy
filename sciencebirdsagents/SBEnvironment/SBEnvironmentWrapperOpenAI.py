@@ -2,7 +2,9 @@ import json
 import os
 import random
 import socket
+import sys
 import time
+from pathlib import Path
 
 import gym
 import numpy as np
@@ -16,6 +18,14 @@ from StateReader.game_object import GameObjectType
 from Utils.point2D import Point2D
 from Utils.trajectory_planner import SimpleTrajectoryPlanner
 from SBEnvironment.action_utils import normalize_release_action
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
+from scripts.slingshot_readiness import (
+    TRAJECTORY_SLINGSHOT_HEIGHT_WORLD,
+    prepare_screen_shot,
+)
 
 N_DISCRETE_ACTIONS = 180
 N_CHANNELS_SYMBOLIC = 12
@@ -145,8 +155,7 @@ class SBEnvironmentWrapperOpenAI(gym.Env):
 
 
         self.ar.load_level(self.current_level)
-
-        self.ar.fully_zoom_out()
+        self.__get_slingshot_center()
         self.num_birds = 0
         self.total_num_birds = 0
         self.total_num_pigs = 0
@@ -181,47 +190,53 @@ class SBEnvironmentWrapperOpenAI(gym.Env):
             self.ar.report_novelty_likelihood(novelty_likelihood, non_novelty_likelihood, novel_obj_ids,
                                               novelty_level, novelty_description)
 
-        self.__get_slingshot_center()
-
-        if isinstance(action, dict):
-            dx, dy, tap_time = normalize_release_action(action, sling_center=self.sling_center)
-            release_point = Point2D(dx, dy)
-
-        elif isinstance(self.action_space, spaces.discrete.Discrete):
-            ax_pixels, ay_pixels = self.__degToShot(action)
-            release_point = Point2D(int(ax_pixels), int(ay_pixels))
-            tap_time = 0
-
-        elif isinstance(self.action_space, spaces.box.Box):
-            mag = self.sling_mbr.height * 0.8
-            release_point = Point2D(int(action[0] * mag), int(action[1] * mag))
-            tap_time = int(abs(action[2]) * 100)
-
-        abs_release_point = Point2D(int(self.sling_center.X + release_point.X),
-                                    int(self.sling_center.Y - release_point.Y))
-
         bird_type = self.__get_bird_on_sling_type(self.env_observation)
 
-        if abs(int(tap_time)) == 0:
-            if bird_type == GameObjectType.REDBIRD:
-                tap_time = 0  # start of trajectory
-            elif bird_type == GameObjectType.YELLOWBIRD:
-                tap_time = 65 + random.randint(0, 24)  # 65-90% of the way
-            elif bird_type == GameObjectType.WHITEBIRD:
-                tap_time = 50 + random.randint(0, 19)  # 50-70% of the way
-            elif bird_type == GameObjectType.BLACKBIRD:
-                tap_time = 0  # do not tap black bird
-            elif bird_type == GameObjectType.BLUEBIRD:
-                tap_time = 65 + random.randint(0, 19)  # 65-85% of the way
-            else:
-                tap_time = 60
+        def action_from_stable_slingshot(reference):
+            self.sling_center = Point2D(int(reference['gameX']), int(reference['gameY']))
+            sling_height = reference['pixelsPerWorldUnit'] * TRAJECTORY_SLINGSHOT_HEIGHT_WORLD
+            self.sling_mbr = type('StableSlingBounds', (), {'height': sling_height})()
+            if isinstance(action, dict):
+                dx, dy, tap_time = normalize_release_action(action, sling_center=self.sling_center)
+            elif isinstance(self.action_space, spaces.discrete.Discrete):
+                dx, dy = self.__degToShot(action)
+                tap_time = 0
+            elif isinstance(self.action_space, spaces.box.Box):
+                magnitude = self.sling_mbr.height * 0.8
+                dx, dy = int(action[0] * magnitude), int(action[1] * magnitude)
+                tap_time = int(abs(action[2]) * 100)
+            if abs(int(tap_time)) == 0:
+                if bird_type == GameObjectType.REDBIRD:
+                    tap_time = 0
+                elif bird_type == GameObjectType.YELLOWBIRD:
+                    tap_time = 65 + random.randint(0, 24)
+                elif bird_type == GameObjectType.WHITEBIRD:
+                    tap_time = 50 + random.randint(0, 19)
+                elif bird_type == GameObjectType.BLACKBIRD:
+                    tap_time = 0
+                elif bird_type == GameObjectType.BLUEBIRD:
+                    tap_time = 65 + random.randint(0, 19)
+                else:
+                    tap_time = 60
+            return {
+                'action_type': 'drag_release',
+                'coordinate_frame': 'slingshot_relative',
+                'drag_start': [self.sling_center.X, self.sling_center.Y],
+                'drag_release': [int(dx), int(dy)],
+                'tapTime': int(tap_time),
+                'releaseTime': 0,
+            }
 
-        if not self.if_batch_state:
-            self.ar.shoot(abs_release_point.X, abs_release_point.Y, 0, int(tap_time), 0)
-        else:
-            gt_frequency = 1
-            batch_states = self.ar.shoot_and_record_ground_truth(abs_release_point.X, abs_release_point.Y, 0,
-                                                                 int(tap_time), gt_frequency)
+        prepared = prepare_screen_shot(
+            self.ar,
+            action_from_stable_slingshot,
+            execution_speed=self.simulation_speed,
+            record_ground_truth=self.if_batch_state,
+            ground_truth_frequency=1,
+        )
+        shot_result = prepared.execute()
+        if self.if_batch_state:
+            batch_states = shot_result
         self.num_birds -= 1
         self.env_observation = self.ar.get_symbolic_state_without_screenshot()
         self.num_pigs = self.__get_num_pigs(self.env_observation)
@@ -306,22 +321,19 @@ class SBEnvironmentWrapperOpenAI(gym.Env):
         return SymbolicStateDevReader(state).find_bird_on_sling(birds, sling).type
 
     def __get_slingshot_center(self):
-        try:
-            ground_truth = self.ar.get_symbolic_state_without_screenshot()
-            ground_truth_reader = SymbolicStateDevReader(ground_truth)
-            sling = ground_truth_reader.find_slingshot()[0]
-            sling.width, sling.height = sling.height, sling.width
-            self.sling_center = self.tp.get_reference_point(sling)
-            self.sling_mbr = sling
-
-        except NotVaildStateError:
-            self.ar.fully_zoom_out()
-            ground_truth = self.ar.get_symbolic_state_without_screenshot()
-            ground_truth_reader = SymbolicStateDevReader(ground_truth)
-            sling = ground_truth_reader.find_slingshot()[0]
-            sling.width, sling.height = sling.height, sling.width
-            self.sling_center = self.tp.get_reference_point(sling)
-            self.sling_mbr = sling
+        prepared = prepare_screen_shot(
+            self.ar,
+            {'coordinate_frame': 'absolute', 'release': [0, 0]},
+            execution_speed=self.simulation_speed,
+        )
+        self.sling_center = Point2D(
+            int(prepared.slingshot['gameX']), int(prepared.slingshot['gameY'])
+        )
+        sling_height = (
+            prepared.slingshot['pixelsPerWorldUnit']
+            * TRAJECTORY_SLINGSHOT_HEIGHT_WORLD
+        )
+        self.sling_mbr = type('StableSlingBounds', (), {'height': sling_height})()
 
     def __degToShot(self, deg):
         mag = self.sling_mbr.height * 0.8

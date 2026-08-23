@@ -79,7 +79,8 @@ class ReleaseActionSemanticsTests(unittest.TestCase):
             with self.subTest(path=path):
                 source = path.read_text(encoding="utf-8")
                 self.assertIn("if not isinstance(action, dict):\n            assert self.action_space.contains(action)", source)
-                self.assertIn("if isinstance(action, dict):\n            dx, dy, tap_time", source)
+                self.assertIn("if isinstance(action, dict):\n                dx, dy, tap_time", source)
+                self.assertIn("prepare_screen_shot(", source)
 
 if __name__ == "__main__":
     unittest.main()

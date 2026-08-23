@@ -21,6 +21,7 @@ from scripts.manual_agent import (
     start_engine,
     stop_started_engine,
 )
+from scripts.slingshot_readiness import slingshot_observation_from_symbolic_state
 
 
 class FakeBridge:
@@ -29,6 +30,12 @@ class FakeBridge:
 
     def shoot(self, x, y, tap_time=0, fast=False, release_time=0):
         self.shots.append((x, y, tap_time, fast, release_time))
+        return 1
+
+    def set_speed(self, _speed):
+        return 1
+
+    def fully_zoom_out(self):
         return 1
 
     def screenshot(self):
@@ -399,7 +406,15 @@ class ManualAgentTest(unittest.TestCase):
         with patch("builtins.input", lambda _: next(commands)), redirect_stdout(io.StringIO()):
             repl(bridge, frame_height=480)
 
-        self.assertEqual(bridge.shots, [(250, 299, 70, True, 120)])
+        reference = slingshot_observation_from_symbolic_state(
+            bridge.get_symbolic_state_without_screenshot(), 480
+        )
+        game_x = int(reference["gameX"]) - 50
+        game_y = int(reference["gameY"]) - 40
+        self.assertEqual(
+            bridge.shots,
+            [(game_x, 479 - game_y, 70, True, 120)],
+        )
 
     def test_release_requires_drag_start(self):
         bridge = FakeBridge()

@@ -348,7 +348,41 @@ class WebUIStaticTests(unittest.TestCase):
         launcher = (ROOT / "scripts" / "webui.sh").read_text(encoding="utf-8")
 
         self.assertIn('physics_review_args=(--speed 1)', launcher)
+        self.assertIn('"--issue-53-review-root"', launcher)
         self.assertIn('"${physics_review_args[@]}" "$@"', launcher)
+
+    def test_issue_53_page_exposes_trace_first_review_and_separate_replay(self) -> None:
+        page = self.read_static("issue53.html")
+        app = self.read_static("issue53.js")
+
+        self.assertIn("Exact retained physics_capture_v2", page)
+        self.assertIn('id="traceCanvas"', page)
+        self.assertIn('id="timeline"', page)
+        self.assertIn('id="replayVideo"', page)
+        self.assertIn("Diagnostic RGB replay", page)
+        self.assertIn("Confirmed mismatch", page)
+        self.assertIn("Suspicious termination/export", page)
+        self.assertIn("Uncertain", page)
+        self.assertIn("/open", app)
+        self.assertIn("/steps?start=", app)
+        self.assertIn("/replay", app)
+        self.assertIn("/decision", app)
+        self.assertIn("pigsRemaining", app)
+        self.assertIn("birdsRemaining", app)
+        self.assertIn("step.contacts", app)
+        self.assertIn("step.supports", app)
+        self.assertIn("step.events", app)
+        self.assertIn('id="alignmentEvidence"', page)
+        self.assertIn("screenCoordinateAlignmentContract", app)
+        self.assertIn("retained anchor matched", app)
+
+    def test_issue_53_javascript_parses(self) -> None:
+        subprocess.run(
+            ["node", "--check", str(STATIC / "issue53.js")],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
 
     def test_readme_documents_local_preview_and_final_shot(self) -> None:
         readme = (ROOT / "src" / "webui" / "README.md").read_text(encoding="utf-8")
@@ -361,6 +395,9 @@ class WebUIStaticTests(unittest.TestCase):
         self.assertIn("releaseTime", readme)
         self.assertIn("/api/shot", readme)
         self.assertIn("no live TCP drag", readme)
+        self.assertIn("--issue-53-review-root", readme)
+        self.assertIn("diagnostic_only", readme)
+        self.assertIn("issue-53-human-review-v2", readme)
 
 
 if __name__ == "__main__":

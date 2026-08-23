@@ -30,6 +30,39 @@ Click **Start game** to launch `game_playing_interface.jar` and connect to it. I
 
 `bash scripts/webui.sh --physics-v2-review` defaults the existing `--speed` option to `1` so issue-44 shots are observable. A later explicit option, such as `--speed 5`, overrides that review default.
 
+## Review the failed issue-53 production run
+
+Issue #53 has a separate retained-evidence review page. It does not use or
+change the issue-44 collision/support state machine:
+
+```sh
+bash scripts/webui.sh \
+  --issue-53-review-root .local-artifacts/issue-53-production-run \
+  --review-output-dir .local-artifacts/issue-53-human-review-v2 \
+  --speed 1
+```
+
+The playlist is loaded from the frozen execution and quality reports. Opening
+an item plays its original `physics_capture_v2` fixed-step trace as a schematic.
+The three final-evaluation items stay locked until the production authorization
+identity is validated; their access records, decisions, and optional diagnostic
+replays are written under the review output's `sealed/` directory.
+
+This is the v2 review workflow. The original
+`.local-artifacts/issue-53-human-review` directory remains v1 setup-defect
+evidence and is never resumed or overwritten. Before a v2 diagnostic replay
+can shoot, the page and result expose the shared screen-coordinate alignment
+contract: accelerated zoom-out, stable anchor/scale at startup and speed 1,
+and a retained production-anchor match within two pixels.
+
+Each item permits at most one optional diagnostic replay after the retained
+trace is opened. The replay uses the retained scenario XML, scenario manifest,
+player envelope, and anchored socket command, captures live RGB frames and a
+new request-71 trace, and encodes Chrome-compatible VP8 as `replay.webm`. Every replay is marked
+`diagnostic_only`; it is ineligible for quotas, production accounting,
+resampling, and release. Reviewer decisions are immutable and never modify the
+production runtime or either production bundle.
+
 ## Manual controls
 
 - **Refresh frame** fetches a `640 x 480` RGB screenshot from the Java interface.

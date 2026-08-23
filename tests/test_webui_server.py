@@ -235,6 +235,90 @@ class ServerTest(unittest.TestCase):
         self.assertIn('id="worldCanvas"', page)
         self.assertIn('id="reviewTimeline"', page)
 
+    def test_issue_53_review_uses_a_separate_page_and_api(self):
+        video = Path(self.review_tmp.name) / "replay.webm"
+        video.write_bytes(b"mp4-fixture")
+
+        class FakeIssue53Review:
+            def __init__(self):
+                self.calls = []
+
+            def snapshot(self):
+                return {
+                    "mismatchCount": 8,
+                    "authorizedFinalAccess": False,
+                    "playlist": [{"index": 0, "locked": False}],
+                    "reviewProgress": {"opened": 0, "decided": 0},
+                    "followUpDecision": None,
+                }
+
+            def open_trace(self, index):
+                self.calls.append(("open", index))
+                return {"fixedStepCount": 1, "item": {"index": index}}
+
+            def item_detail(self, index):
+                return {"fixedStepCount": 1, "item": {"index": index}}
+
+            def fixed_steps(self, index, *, start, count):
+                self.calls.append(("steps", index, start, count))
+                return {"start": start, "count": 1, "total": 1, "steps": []}
+
+            def authorize_final_access(self, identity):
+                self.calls.append(("authorize", identity))
+                return self.snapshot()
+
+            def run_replay(self, index):
+                self.calls.append(("replay", index))
+                return self.item_detail(index)
+
+            def record_decision(self, index, **decision):
+                self.calls.append(("decision", index, decision))
+                return self.snapshot()
+
+            def replay_video(self, index):
+                self.calls.append(("video", index))
+                return video
+
+        review = FakeIssue53Review()
+        self.app.issue_53_review_session = review
+
+        status, page = self.request_bytes("/")
+        self.assertEqual(status, 200)
+        self.assertIn("Issue #53 termination review", page.decode("utf-8"))
+        self.assertEqual(self.request("GET", "/api/issue-53-review")[1]["review"]["mismatchCount"], 8)
+        self.assertEqual(self.request("POST", "/api/issue-53-review/items/0/open")[0], 200)
+        self.assertEqual(self.request("GET", "/api/issue-53-review/items/0/steps?start=0&count=1")[0], 200)
+        self.assertEqual(
+            self.request(
+                "POST",
+                "/api/issue-53-review/authorize",
+                {"authorizationIdentity": "authorization:fixture"},
+            )[0],
+            200,
+        )
+        self.assertEqual(self.request("POST", "/api/issue-53-review/items/0/replay")[0], 200)
+        self.assertEqual(
+            self.request(
+                "POST",
+                "/api/issue-53-review/items/0/decision",
+                {"decision": "uncertain", "notes": "fixture", "reviewer": "operator"},
+            )[0],
+            200,
+        )
+        connection = HTTPConnection("127.0.0.1", self.port, timeout=5)
+        connection.request("GET", "/api/issue-53-review/items/0/video")
+        response = connection.getresponse()
+        self.assertEqual(response.status, 200)
+        self.assertEqual(response.getheader("Content-Type"), "video/webm")
+        self.assertEqual(response.getheader("Cache-Control"), "no-store")
+        self.assertEqual(response.read(), b"mp4-fixture")
+        connection.close()
+        self.assertIn(("open", 0), review.calls)
+        self.assertIn(("steps", 0, 0, 1), review.calls)
+        self.assertIn(("authorize", "authorization:fixture"), review.calls)
+        self.assertIn(("replay", 0), review.calls)
+        self.assertIn(("video", 0), review.calls)
+
     def test_physics_v2_review_stages_explores_freezes_and_replays_exact_action(self):
         self.app.physics_v2_review = True
         self.app.review_output_root = Path(self.review_tmp.name)
@@ -270,7 +354,11 @@ class ServerTest(unittest.TestCase):
         status, explored = self.request("POST", "/api/physics-v2-review/explore")
         self.assertEqual(status, 200)
         self.assertEqual(explored["session"]["state"], "explored")
-        self.assertEqual(self.app.bridge.shots[-1], (17, 260, 0, True, 1000))
+        prepared_command = explored["session"]["socket_command"]
+        self.assertEqual(
+            self.app.bridge.shots[-1],
+            (prepared_command["x"], prepared_command["y"], 0, True, 1000),
+        )
         self.assertFalse(explored["session"]["eligible_for_issue_44"])
 
         self.assertEqual(
@@ -283,6 +371,10 @@ class ServerTest(unittest.TestCase):
         self.assertTrue(replayed["session"]["eligible_for_issue_44_review"])
         self.assertEqual(self.app.physics_bridge.requests, 2)
         self.assertEqual(resets, ["collision", "collision"])
+        self.assertEqual(
+            self.app.bridge.shots[-1],
+            (prepared_command["x"], prepared_command["y"], 0, True, 1000),
+        )
         status, steps = self.request("GET", "/api/physics-v2-review/steps?start=1&count=1")
         self.assertEqual(status, 200)
         self.assertEqual(steps["total"], 2)
@@ -340,7 +432,7 @@ class ServerTest(unittest.TestCase):
 
         self.app.run_physics_v2_review(replay=False)
 
-        self.assertEqual(self.app.bridge.observations_at_shot, 4)
+        self.assertEqual(self.app.bridge.observations_at_shot, 6)
 
     def test_packaged_physics_v2_review_action_can_be_staged(self):
         self.app.root = ROOT
@@ -369,10 +461,15 @@ class ServerTest(unittest.TestCase):
     def test_physics_v2_review_is_an_explicit_cli_mode(self):
         defaults = build_arg_parser().parse_args([])
         review = build_arg_parser().parse_args(["--physics-v2-review", "--physics-port", "2015"])
+        issue_53 = build_arg_parser().parse_args(
+            ["--issue-53-review-root", "/tmp/issue-53", "--speed", "1"]
+        )
 
         self.assertFalse(defaults.physics_v2_review)
         self.assertTrue(review.physics_v2_review)
         self.assertEqual(review.physics_port, 2015)
+        self.assertEqual(issue_53.issue_53_review_root, Path("/tmp/issue-53"))
+        self.assertEqual(issue_53.speed, 1)
 
     def test_review_preflight_accepts_the_staged_archive_without_a_pin_file(self):
         with TemporaryDirectory() as temporary:

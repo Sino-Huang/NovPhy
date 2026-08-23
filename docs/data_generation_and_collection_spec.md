@@ -142,9 +142,17 @@ Each rollout MUST be one independently executed single-shot simulation.
 
 Before each rollout, the engine MUST reset to the declared scenario specification and clear prior runtime entities, contacts, events, timers, score, camera state where scenario-defined, and recorder state. The reset MUST NOT reuse post-shot state from another rollout. All rollouts used to vary interventions within one scenario lineage MUST begin from an identical declared initial engine state. Any seed or other input that changes the initial engine state defines a different scenario specification and therefore a different scenario lineage.
 
+Every first-party screen-coordinate intervention MUST pass the shared `slingshot_readiness_v1` contract before any pre-shot request-72 capture or shot transport. The contract sets startup speed to Unity's maximum 50, requests full zoom-out, requires two identical slingshot anchor/scale observations, restores the requested execution speed (capped at 50), and requires the same stable projection again. Exact replays MUST retain their frozen socket command and match the retained production canvas anchor within two pixels; missing or mismatched alignment evidence blocks the shot. Readiness failures restore execution speed and do not create a transition.
+
 The first frame record MUST be captured after reset and stabilization requirements are satisfied and before the intervention. Exactly one intervention MUST then be applied. No second shot, policy continuation, or hidden corrective input is permitted in the same rollout.
 
 A rollout MUST terminate with exactly one declared termination reason from the collection plan's closed termination vocabulary. Termination MUST be caused by an engine terminal outcome, a declared post-intervention stable condition, bird exhaustion where applicable, or the declared rollout ceiling. Operator interruption, capture failure, and invalid data are collection failures, not scientific termination reasons.
+
+`stable_entered` is a rollout stopping condition only: it records that motion
+remained below the declared stability threshold. It is not evidence of level
+success or failure. `level_clear` separately requires the engine's clear
+condition after all pigs are removed, and `level_fail` separately requires the
+engine's fail condition.
 
 The final frame record MUST be the post-step state at or after the fixed step that establishes the termination reason. A terminal event after the last retained frame record does not satisfy this collection specification, even if an older artifact contract can represent such an event.
 
@@ -170,6 +178,13 @@ The intervention plan MUST be hybrid and MUST combine:
 The plan MUST declare target coverage for `no-contact/miss`, `collision`, `persistent support`, `support change`, `destruction`, `pig removal`, `explosion` where applicable, `stability transitions`, `level clear`, and `level fail`. A target category MAY be marked unsupported only when the scenario specification or accepted engine capabilities make it inapplicable, and that reason MUST appear in the collection plan and production quality report.
 
 For `central_v2`, the declaration narrows this general enriched-cohort inventory. Geometry-aware feasible shots and targeted rare-interaction shots are required; benchmark-agent actions are optional and their absence MUST have an explicit unavailable source disposition. The required central target strata are exactly `no-contact/miss`, `collision`, `persistent support`, `support change`, `destruction`, and `stability transitions`. Pig removal, explosion, level clear, and level fail remain raw events or termination evidence when they occur, but are target quotas only for an approved named-secondary experiment.
+
+The issue-53 plan-v2/v3 stable-only determinations are retained as incomplete
+history. Public non-final production evidence demonstrated that the retained
+one-bird lineages and backward-shot interventions terminate with `level_fail`,
+so the plan-v4 successor binds termination expectations per role/intervention:
+4 `level_fail` and 20 `stable_entered`. `level_clear` remains a supported pilot
+capability but carries zero production quota.
 
 Each intervention MUST be represented in both:
 
@@ -347,9 +362,9 @@ Final evaluation MUST use a role-separated workflow. The final-evaluation manife
 
 The following statements distinguish implemented foundations from required but unsupported research behavior:
 
-- **Implemented:** frozen `physics_capture_v1` sidecars and validation; synchronized RGB/state capture within that contract; `physics_capture_v2` fixed-step-stride authority and physical evidence; source-bound deterministic generated scenario manifests; request-72 synchronized agent/canonical observation traces and access audits; the issue-47 real four-role instance-held-out partition, lineage/template leakage audit, and pending-authorization final-access workflow; version-bounded replay; accepted issue-49 `steady-state` and `structure-unstable` v2 semantics; accepted issue-50 `excess_penetration` and `unsupported_stationary_or_floating_body` v2 semantics with unavailable-preserving `any(violation)`; the accepted issue-51 representative pilot; the issue-52 immutable collection and production-parameter plans with prospective quotas; fixed-step clocks; scene nodes, kinematics, raw contacts, `support_v1`, macro events, bounded failures; collector-side temporary publication, validation, quarantine, and retry metadata; deterministic path-based bucket partitioning and scoped inventory; fixture-only `physics_macro_labels_v1` derivation and validation.
+- **Implemented:** frozen `physics_capture_v1` sidecars and validation; synchronized RGB/state capture within that contract; `physics_capture_v2` fixed-step-stride authority and physical evidence; source-bound deterministic generated scenario manifests; request-72 synchronized agent/canonical observation traces and access audits; the issue-47 real four-role instance-held-out partition, lineage/template leakage audit, and pending-authorization final-access workflow; version-bounded replay; accepted issue-49 `steady-state` and `structure-unstable` v2 semantics; accepted issue-50 `excess_penetration` and `unsupported_stationary_or_floating_body` v2 semantics with unavailable-preserving `any(violation)`; the accepted issue-51 representative pilot; the issue-52 immutable collection and production-parameter plans with prospective quotas; the issue-53 outcome-independent production executor, progress accounting, source-bound six-label publisher, and public/sealed release boundary (production evidence not yet executed); fixed-step clocks; scene nodes, kinematics, raw contacts, `support_v1`, macro events, bounded failures; collector-side temporary publication, validation, quarantine, and retry metadata; deterministic path-based bucket partitioning and scoped inventory; fixture-only `physics_macro_labels_v1` derivation and validation.
 - **Implemented but insufficient:** the issue-specific #44–#50 representative evidence establishes only its exercised capabilities, identities, exposure assignments, replay properties, macro and physical-violation semantics, and pre-authorization access boundary. It does not create a capability-complete central-v2 pilot, production coverage, or representative enriched cohort release.
-- **Required but currently unsupported or unaccepted:** immutable cohort release workflow; authorized execution of the role-separated final evaluation.
+- **Required but currently unsupported or unaccepted:** actual issue-53 production evidence and authorized execution of its role-separated final evaluation.
 
 ## 16. Definition of done for GitHub issue #2
 

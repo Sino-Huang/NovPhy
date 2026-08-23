@@ -19,6 +19,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.webui.bridge import GameState, PlayingMode, ScienceBirdsBridge  # noqa: E402
+from scripts.slingshot_readiness import prepare_screen_shot  # noqa: E402
 
 
 HELP = """
@@ -486,7 +487,7 @@ def parse_game_point(parts: list[str], usage: str) -> tuple[int, int]:
     return int(parts[1]), int(parts[2])
 
 
-def repl(bridge: ScienceBirdsBridge, frame_height: int) -> None:
+def repl(bridge: ScienceBirdsBridge, frame_height: int, execution_speed: int = 1) -> None:
     print(HELP)
     drag_start: tuple[int, int] | None = None
     hold_time = 0
@@ -522,7 +523,8 @@ def repl(bridge: ScienceBirdsBridge, frame_height: int) -> None:
             elif command == "zoom" and len(parts) == 2 and parts[1].lower() == "in":
                 print(bridge.fully_zoom_in())
             elif command == "speed" and len(parts) == 2:
-                print(bridge.set_speed(int(parts[1])))
+                execution_speed = int(parts[1])
+                print(bridge.set_speed(execution_speed))
             elif command == "drag":
                 drag_start = parse_game_point(parts, "usage: drag X Y")
                 hold_time = 0
@@ -547,12 +549,40 @@ def repl(bridge: ScienceBirdsBridge, frame_height: int) -> None:
                     "tapTime": tap_time,
                 }
                 print(action)
-                print(bridge.shoot(x, y, tap_time=tap_time, fast=fast, release_time=hold_time))
+                prepared = prepare_screen_shot(
+                    bridge,
+                    action,
+                    frame_height=frame_height,
+                    execution_speed=execution_speed,
+                    fast=fast,
+                )
+                print(prepared.execute())
                 drag_start = None
                 hold_time = 0
             elif command in {"shoot", "rawshoot"}:
                 x, y, tap_time, fast = parse_shot(parts, raw=command == "rawshoot", frame_height=frame_height)
-                print(bridge.shoot(x, y, tap_time=tap_time, fast=fast))
+                game_y = max(0, frame_height - 1 - y)
+                action = {
+                    "action_type": "drag_release",
+                    "coordinate_frame": "absolute",
+                    "release": [x, game_y],
+                    "tapTime": tap_time,
+                    "releaseTime": 0,
+                }
+                frozen = (
+                    {"x": x, "y": y, "gameX": x, "gameY": game_y, "tapTime": tap_time, "releaseTime": 600}
+                    if command == "rawshoot"
+                    else None
+                )
+                prepared = prepare_screen_shot(
+                    bridge,
+                    action,
+                    frame_height=frame_height,
+                    execution_speed=execution_speed,
+                    frozen_socket_command=frozen,
+                    fast=fast,
+                )
+                print(prepared.execute())
             elif command == "frame":
                 save_frame(bridge, Path(parts[1] if len(parts) > 1 else "sciencebirds-frame.ppm"))
             elif command == "rollout":
@@ -617,7 +647,7 @@ def main() -> None:
         if not args.no_prepare:
             state = prepare_for_play(bridge, timeout=args.prepare_timeout, poll_delay=0.5)
             print(f"Ready: {state.name}")
-        repl(bridge, frame_height=args.frame_height)
+        repl(bridge, frame_height=args.frame_height, execution_speed=args.speed)
     finally:
         try:
             bridge.disconnect()
