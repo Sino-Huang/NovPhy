@@ -27,6 +27,7 @@ from scripts.cohort_v2_physical_violations import (
     DERIVATION_SPEC_IDENTITY as VIOLATION_SPEC_IDENTITY,
     validate_capture_physical_violation_derivation,
 )
+from scripts.cohort_v2_production_plans_v5 import validate_plan_v5_evidence
 from scripts.cohort_v2_release import CENTRAL_LABELS as RELEASE_CENTRAL_LABELS, V5_CONTRACT
 from scripts.cohort_v2_release import validate_published_issue_53_evidence
 from scripts.final_evaluation_access import FinalEvaluationWorkflowAccessManifest
@@ -162,6 +163,7 @@ class CohortV2ReleaseReader:
         release_root: Path,
         *,
         capability_declaration_path: Path,
+        production_plan_root: Path,
         workflow_kind: str,
         influence: str,
         requested_capabilities: tuple[str, ...] = CENTRAL_LABELS,
@@ -179,6 +181,7 @@ class CohortV2ReleaseReader:
                 "Requested capabilities must be exactly the accepted central labels"
             )
         self._root = Path(release_root).resolve()
+        self._production_plan_root = Path(production_plan_root).resolve()
         self._workflow_kind = workflow_kind
         self._observation_references: dict[str, tuple[Path, str]] = {}
         try:
@@ -336,6 +339,45 @@ class CohortV2ReleaseReader:
             or collection.get("identity") != V5_CONTRACT.collection_identity
         ):
             raise CohortV2IngestionError("Collection plan binding is stale")
+        try:
+            validate_plan_v5_evidence(
+                self._production_plan_root,
+                repository_root=self._production_plan_root.parents[2],
+            )
+        except ValueError as error:
+            raise CohortV2IngestionError(
+                f"Production plan authority is invalid: {error}"
+            ) from error
+        authoritative_collection = _load(
+            self._production_plan_root / "collection-plan.json",
+            "authoritative collection plan",
+        )
+        if collection != authoritative_collection:
+            raise CohortV2IngestionError(
+                "Released collection plan differs from the authoritative v5 plan"
+            )
+        parameter_reference = release.get("production_parameter_plan")
+        if not isinstance(parameter_reference, Mapping):
+            raise CohortV2IngestionError("Production parameter reference is malformed")
+        parameters = _load(
+            _path(
+                self._root,
+                parameter_reference.get("path"),
+                "production parameter plan",
+            ),
+            "production parameter plan",
+        )
+        authoritative_parameters = _load(
+            self._production_plan_root / "production-parameter-plan.json",
+            "authoritative production parameter plan",
+        )
+        if (
+            parameter_reference.get("identity") != V5_CONTRACT.parameter_identity
+            or parameters != authoritative_parameters
+        ):
+            raise CohortV2IngestionError(
+                "Released production parameters differ from the authoritative v5 plan"
+            )
         partition_value = _load(
             _path(self._root, partition_reference.get("path"), "partition manifest"),
             "partition manifest",
@@ -512,13 +554,15 @@ class CohortV2ReleaseReader:
         derivations: Mapping[str, Mapping[str, Any]],
     ) -> tuple[CohortV2CentralFrameRecord, ...]:
         samples = capture.record["fixed_step_samples"]
-        capture_frames = capture.record["frame_records"]
+        capture_frame_records = capture.record["frame_records"]
         micro = derivations["micro"]["labels"]
         macro = derivations["macro"]["labels"]
         violations = derivations["physical-violations"]["labels"]
         step_sequences = [
             tuple(item["fixed_step"] for item in values)
-            for values in (samples, capture_frames, micro, macro, violations)
+            for values in (
+                samples, capture_frame_records, micro, macro, violations
+            )
         ]
         if len(set(step_sequences)) != 1:
             raise CohortV2IngestionError("Primary and derived fixed-step sequences are misaligned")
@@ -529,13 +573,18 @@ class CohortV2ReleaseReader:
         if terminal["fixed_step"] != step_sequences[0][-1]:
             raise CohortV2IngestionError("Terminal record is not aligned to the last fixed step")
         frame_records = []
-        for sample, frame, micro_label, macro_label, violation_label in zip(
-            samples, capture_frames, micro, macro, violations, strict=True
+        for sample, frame_record, micro_label, macro_label, violation_label in zip(
+            samples,
+            capture_frame_records,
+            micro,
+            macro,
+            violations,
+            strict=True,
         ):
             step = sample["fixed_step"]
             identity = (
                 f"cohort-v2-central-frame-record-v1:{capture.capture_id}:"
-                f"{frame['state_id']}"
+                f"{frame_record['state_id']}"
             )
             labels = {
                 "contact": micro_label["predicates"]["contact"],
@@ -550,7 +599,7 @@ class CohortV2ReleaseReader:
             frame_records.append(CohortV2CentralFrameRecord(
                 identity=identity,
                 capture_id=capture.capture_id,
-                state_id=frame["state_id"],
+                state_id=frame_record["state_id"],
                 fixed_step=step,
                 capture_stride=capture.configured_fixed_step_capture_stride,
                 engine_state=_freeze(sample),

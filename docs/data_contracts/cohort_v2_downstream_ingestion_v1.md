@@ -13,7 +13,9 @@ role and one permission allowed by the real partition manifest. It validates
 the publication, release, collection plan, partition, attempt accounting,
 primary rollout inventories, physics captures, observation traces, and all
 three source-bound derivation kinds before exposing a rollout or derived
-example. Ordinary readers cannot select `final_evaluation`.
+example. The released collection and parameter plans must equal the validated
+immutable plan-v5 authority, so an action cannot change while retaining its
+declared identity. Ordinary readers cannot select `final_evaluation`.
 
 The reader exposes every fixed-step engine record, event, terminal record,
 intervention representation, source identity, and exact central label payload.

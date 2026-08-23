@@ -83,9 +83,20 @@ def _expect_rejection(name: str, operation: Callable[[], Any]) -> dict[str, Any]
     raise ValueError(f"Adversarial check did not fail closed: {name}")
 
 
+def _mutate_json(
+    source: Path,
+    target: Path,
+    mutate: Callable[[dict[str, Any]], None],
+) -> None:
+    value = _load(source)
+    mutate(value)
+    target.write_bytes(_canonical_json(value))
+
+
 def _mutated_reader(
     release_root: Path,
     capability_declaration: Path,
+    production_plan_root: Path,
     relative_path: Path,
     mutate: Callable[[dict[str, Any]], None],
 ) -> None:
@@ -94,13 +105,11 @@ def _mutated_reader(
         shutil.copytree(release_root, shadow, copy_function=os.link)
         target = shadow / relative_path
         target.unlink()
-        shutil.copy2(release_root / relative_path, target)
-        value = _load(target)
-        mutate(value)
-        target.write_bytes(_canonical_json(value))
+        _mutate_json(release_root / relative_path, target, mutate)
         CohortV2ReleaseReader(
             shadow,
             capability_declaration_path=capability_declaration,
+            production_plan_root=production_plan_root,
             workflow_kind="training",
             influence="learned_parameters",
         )
@@ -109,16 +118,16 @@ def _mutated_reader(
 def _mutated_declaration_reader(
     release_root: Path,
     capability_declaration: Path,
+    production_plan_root: Path,
     mutate: Callable[[dict[str, Any]], None],
 ) -> None:
     with tempfile.TemporaryDirectory(dir=capability_declaration.parent) as temporary:
         target = Path(temporary) / capability_declaration.name
-        value = _load(capability_declaration)
-        mutate(value)
-        target.write_bytes(_canonical_json(value))
+        _mutate_json(capability_declaration, target, mutate)
         CohortV2ReleaseReader(
             release_root,
             capability_declaration_path=target,
+            production_plan_root=production_plan_root,
             workflow_kind="training",
             influence="learned_parameters",
         )
@@ -127,6 +136,7 @@ def _mutated_declaration_reader(
 def run_adversarial_ingestion_checks(
     release_root: Path,
     capability_declaration: Path,
+    production_plan_root: Path,
     training_reader: CohortV2ReleaseReader,
 ) -> list[dict[str, Any]]:
     index = _load(release_root / "authoritative-derivation-index.json")
@@ -208,12 +218,26 @@ def run_adversarial_ingestion_checks(
                 "sealed_final_evaluation_bundle_identity", "unrelated-sealed-final"
             ),
         ),
+        "mutated_intervention_action": (
+            Path("collection-plan.json"),
+            lambda value: value["interventions"][0]["interface_action"][
+                "drag_release"
+            ].__setitem__(
+                0,
+                value["interventions"][0]["interface_action"]["drag_release"][0]
+                + 1,
+            ),
+        ),
     }
     checks = [
         _expect_rejection(
             name,
             lambda path=path, mutate=mutate: _mutated_reader(
-                release_root, capability_declaration, path, mutate
+                release_root,
+                capability_declaration,
+                production_plan_root,
+                path,
+                mutate,
             ),
         )
         for name, (path, mutate) in mutations.items()
@@ -223,6 +247,7 @@ def run_adversarial_ingestion_checks(
         lambda: CohortV2ReleaseReader(
             release_root,
             capability_declaration_path=capability_declaration,
+            production_plan_root=production_plan_root,
             workflow_kind="training",
             influence="learned_parameters",
             requested_capabilities=("physical_regime_gate",),
@@ -233,6 +258,7 @@ def run_adversarial_ingestion_checks(
         lambda: _mutated_declaration_reader(
             release_root,
             capability_declaration,
+            production_plan_root,
             lambda value: value["capabilities"]["required_central"].__setitem__(
                 "ingestion", []
             ),
@@ -243,6 +269,7 @@ def run_adversarial_ingestion_checks(
         lambda: _mutated_declaration_reader(
             release_root,
             capability_declaration,
+            production_plan_root,
             lambda value: value["evidence_semantics"].__setitem__(
                 "unavailable_distinct_from_false", False
             ),
@@ -259,6 +286,7 @@ def run_adversarial_ingestion_checks(
         lambda: CohortV2ReleaseReader(
             release_root,
             capability_declaration_path=capability_declaration,
+            production_plan_root=production_plan_root,
             workflow_kind="final_evaluation",
             influence="frozen_final_metrics_after_authorization",
         ),
@@ -279,17 +307,19 @@ def build_ingestion_evidence(
     if not isinstance(code_revision, str) or not code_revision:
         raise ValueError("code_revision must be a nonempty string")
     declaration = repository_root / "docs/data_contracts/cohort_v2_capabilities_v1.json"
+    production_plan_root = repository_root / "data/runtime_evidence/issue-53-plan-v5"
     readers = {
         role: CohortV2ReleaseReader(
             release_root,
             capability_declaration_path=declaration,
+            production_plan_root=production_plan_root,
             workflow_kind=role,
             influence=influence,
         )
         for role, influence in ROLE_INFLUENCE.items()
     }
     roles = {}
-    total_frames = total_windows = total_scored = total_unavailable = 0
+    total_frame_records = total_windows = total_scored = total_unavailable = 0
     for role, reader in readers.items():
         dataset = CohortV2OracleWindowDataset(reader)
         loader = build_cohort_v2_oracle_window_loader(dataset)
@@ -324,13 +354,13 @@ def build_ingestion_evidence(
             "termination_counts": dict(sorted(termination_counts.items())),
             "endpoint_scoring": asdict(endpoints),
         }
-        total_frames += frame_record_count
+        total_frame_records += frame_record_count
         total_windows += len(windows)
         total_scored += endpoints.scored_value_count
         total_unavailable += endpoints.unavailable_value_count
 
     adversarial = run_adversarial_ingestion_checks(
-        release_root, declaration, readers["training"]
+        release_root, declaration, production_plan_root, readers["training"]
     )
     final_receipt = probe_cohort_v2_final_access(release_root, sealed_root)
     report = {
@@ -346,7 +376,7 @@ def build_ingestion_evidence(
         "roles": roles,
         "counts": {
             "rollouts": sum(len(reader.rollouts) for reader in readers.values()),
-            "frame_records": total_frames,
+            "frame_records": total_frame_records,
             "agent_observations": total_windows,
             "oracle_training_windows": total_windows,
             "endpoint_scored_values": total_scored,

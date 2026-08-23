@@ -21,6 +21,7 @@ from world_model.training import (
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_RELEASE = ROOT / "data/runtime_evidence/issue-53-mixed-termination-v5"
 CAPABILITY_DECLARATION = ROOT / "docs/data_contracts/cohort_v2_capabilities_v1.json"
+PRODUCTION_PLAN = ROOT / "data/runtime_evidence/issue-53-plan-v5"
 SEALED_RELEASE = ROOT / ".local-artifacts/issue-53-mixed-termination-final-release-v5"
 
 
@@ -29,6 +30,7 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
         reader = CohortV2ReleaseReader(
             PUBLIC_RELEASE,
             capability_declaration_path=CAPABILITY_DECLARATION,
+            production_plan_root=PRODUCTION_PLAN,
             workflow_kind="training",
             influence="learned_parameters",
         )
@@ -63,6 +65,7 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
             CohortV2ReleaseReader(
                 PUBLIC_RELEASE,
                 capability_declaration_path=CAPABILITY_DECLARATION,
+                production_plan_root=PRODUCTION_PLAN,
                 workflow_kind="training",
                 influence="learned_parameters",
                 requested_capabilities=("physical_regime_gate",),
@@ -71,6 +74,7 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
             CohortV2ReleaseReader(
                 PUBLIC_RELEASE,
                 capability_declaration_path=CAPABILITY_DECLARATION,
+                production_plan_root=PRODUCTION_PLAN,
                 workflow_kind="final_evaluation",
                 influence="frozen_final_metrics_after_authorization",
             )
@@ -78,6 +82,7 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
             CohortV2ReleaseReader(
                 PUBLIC_RELEASE,
                 capability_declaration_path=CAPABILITY_DECLARATION,
+                production_plan_root=PRODUCTION_PLAN,
                 workflow_kind="calibration",
                 influence="learned_parameters",
             )
@@ -85,6 +90,7 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
         reader = CohortV2ReleaseReader(
             PUBLIC_RELEASE,
             capability_declaration_path=CAPABILITY_DECLARATION,
+            production_plan_root=PRODUCTION_PLAN,
             workflow_kind="training",
             influence="learned_parameters",
         )
@@ -95,6 +101,7 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
         reader = CohortV2ReleaseReader(
             PUBLIC_RELEASE,
             capability_declaration_path=CAPABILITY_DECLARATION,
+            production_plan_root=PRODUCTION_PLAN,
             workflow_kind="model_selection",
             influence="configuration_selection",
         )
@@ -125,14 +132,15 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
         reader = CohortV2ReleaseReader(
             PUBLIC_RELEASE,
             capability_declaration_path=CAPABILITY_DECLARATION,
+            production_plan_root=PRODUCTION_PLAN,
             workflow_kind="training",
             influence="learned_parameters",
         )
         checks = run_adversarial_ingestion_checks(
-            PUBLIC_RELEASE, CAPABILITY_DECLARATION, reader
+            PUBLIC_RELEASE, CAPABILITY_DECLARATION, PRODUCTION_PLAN, reader
         )
 
-        self.assertEqual(len(checks), 15)
+        self.assertEqual(len(checks), 16)
         self.assertTrue(all(item["passed"] for item in checks))
 
     @unittest.skipUnless(SEALED_RELEASE.is_dir(), "sealed operator evidence is local")
@@ -157,7 +165,7 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
         self.assertEqual(report["counts"]["rollouts"], 18)
         self.assertEqual(report["counts"]["oracle_training_windows"], 18)
         self.assertEqual(set(report["roles"]), {"training", "calibration", "model_selection"})
-        self.assertEqual(len(report["adversarial_checks"]), 15)
+        self.assertEqual(len(report["adversarial_checks"]), 16)
         self.assertTrue(all(item["passed"] for item in report["adversarial_checks"]))
 
 
