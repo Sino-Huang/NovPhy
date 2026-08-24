@@ -1,0 +1,86 @@
+{
+  "acceptance_checks": {
+    "eligible_macro_pairs_in_exhaustive_and_frontier_artifacts": "passed",
+    "exclusive_macro_transition_action": "passed",
+    "macro_content_changes_endpoint_carrier": "passed",
+    "macro_event_and_endpoint_readouts_supervised": "passed"
+  },
+  "artifact_type": "cohort_v2_macro_experiment_summary",
+  "available_count": 32502,
+  "capability_declaration_identity": "cohort-v2-capabilities-v1",
+  "checkpoint_capabilities": [
+    "event_endpoint.terminal",
+    "transition.continuous",
+    "transition.macro",
+    "transition.micro"
+  ],
+  "checkpoint_schema": "cohort_v2_macro_checkpoint_v1",
+  "evaluation_batch_size": 128,
+  "evaluation_devices": [
+    "cuda:0",
+    "cuda:1",
+    "cuda:2",
+    "cuda:3"
+  ],
+  "final_evaluation_accessed": false,
+  "final_loss": 0.06584310531616211,
+  "focused_test_count": 98,
+  "frontier_macro_pairs": [
+    {
+      "available_state_count": 6,
+      "mean_objective": 0.00011891287916417544,
+      "requested_horizon": 1
+    },
+    {
+      "available_state_count": 30,
+      "mean_objective": 0.0066702221876767,
+      "requested_horizon": 5
+    },
+    {
+      "available_state_count": 90,
+      "mean_objective": 0.0152921511570134,
+      "requested_horizon": 15
+    }
+  ],
+  "full_suite": {
+    "known_unrelated_failure": "tests.test_issue_44_runtime_evidence.Issue44RuntimeEvidenceTests.test_runtime_bundle_uses_archive_source_commit_provenance",
+    "passed_or_skipped": 1204,
+    "run": 1205,
+    "skipped": 3
+  },
+  "implementation_commit": "08a0d52944b89b0a48756de1afd6a6514b864ac8",
+  "initial_loss": 1.0289372205734253,
+  "macro_event_endpoint_authority": "cohort-v2-terminal-event-endpoint-v1:requested-horizon-clamped:stable_entered+level_fail",
+  "macro_state_authority": "cohort-v2-macro-derivation-spec-v1:steady-state+structure-unstable",
+  "micro_relation_authority": "cohort-v2-micro-relation-derivation-spec-v1:contact+supports",
+  "model_state_identity": "sha256:65d7cf8f0d69f72d6d45f254331a91921a345e3b8b9200b9c8e44fe0e10d4017",
+  "non_final_terminal_counts": {
+    "level_fail": 4,
+    "stable_entered": 14
+  },
+  "objective": "duration-weighted-carrier-mse+selected-symbolic-readout+normalized-effective-horizon",
+  "outcome_count": 48186,
+  "pair_update_counts": {
+    "horizon=1,abstraction=continuous": 200,
+    "horizon=1,abstraction=macro": 200,
+    "horizon=1,abstraction=micro": 200,
+    "horizon=15,abstraction=continuous": 200,
+    "horizon=15,abstraction=macro": 200,
+    "horizon=15,abstraction=micro": 200,
+    "horizon=5,abstraction=continuous": 200,
+    "horizon=5,abstraction=macro": 200,
+    "horizon=5,abstraction=micro": 200
+  },
+  "records_identity": "sha256:dc001ef3b39eb9ae5033976c4d53fd050c5ad19a1db95228d2a255d3185c8a2f",
+  "release_identity": "representative-cohort-v2-release-v5:issue-53:mixed-termination",
+  "rerun_commands": [
+    "python -u -m scripts.run_cohort_v2_macro_experiment --dry-run",
+    "python -u -m scripts.run_cohort_v2_macro_experiment",
+    "python -u -m scripts.run_cohort_v2_macro_experiment --validate"
+  ],
+  "schema": "cohort_v2_macro_experiment_summary_v1",
+  "source_bound_validation": "passed",
+  "state_count": 5354,
+  "step": 1800,
+  "unavailable_count": 15684
+}
