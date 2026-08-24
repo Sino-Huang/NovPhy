@@ -11,12 +11,19 @@ from world_model.data import CohortV2CentralFrameRecord, CohortV2Rollout
 from world_model.model import Abstraction
 from world_model.training import (
     COHORT_V2_HORIZONS,
+    CohortV2ComputeCalibration,
     CohortV2EvaluationError,
+    CohortV2ExecutionProfile,
     CohortV2ExhaustiveEvaluator,
+    CohortV2MeasurementError,
     CohortV2ParallelExhaustiveEvaluator,
     CohortV2PairGrid,
+    load_cohort_v2_evaluation,
+    measure_cohort_v2_evaluation,
     validate_cohort_v2_evaluation,
+    validate_cohort_v2_measurements,
     write_cohort_v2_evaluation,
+    write_cohort_v2_measurements,
 )
 from world_model.training.grid_artifacts import canonical_json_bytes
 from world_model.training.pair_grid import PairGridConfig
@@ -36,14 +43,21 @@ def _reader(
     partition_identity: str = "partition:fixture",
     identity_suffix: str = "",
     contact_available: bool = True,
+    contact_relations=None,
+    support_relations=(),
+    excess_penetration=False,
+    unsupported_bodies=(),
 ):
+    contact = _label(contact_available)
+    if contact_relations is not None:
+        contact = {**contact, "relations": contact_relations}
     labels = {
-        "contact": _label(contact_available),
-        "supports": _label(),
+        "contact": contact,
+        "supports": {**_label(), "relations": support_relations},
         "steady-state": _label(),
         "structure-unstable": _label(),
-        "excess_penetration": _label(),
-        "unsupported_stationary_or_floating_body": (),
+        "excess_penetration": {**_label(), "value": excess_penetration},
+        "unsupported_stationary_or_floating_body": unsupported_bodies,
     }
     records = tuple(
         CohortV2CentralFrameRecord(
@@ -91,6 +105,26 @@ def _readers(**kwargs):
     return tuple(
         _reader(role, **kwargs)
         for role in ("training", "calibration", "model_selection")
+    )
+
+
+def _compute_calibration():
+    return CohortV2ComputeCalibration(
+        authority="fixture:declared-macs",
+        unit="multiply_accumulate",
+        controller_per_decision=2.0,
+        continuous_adapter_per_decision=3.0,
+        micro_adapter_per_decision=5.0,
+        macro_adapter_per_decision=7.0,
+        micro_graph_base_per_decision=11.0,
+        micro_graph_per_entity=13.0,
+        micro_graph_per_contact=17.0,
+        micro_graph_per_support=19.0,
+        transition_per_decision=23.0,
+        continuous_readout_per_decision=0.0,
+        micro_readout_per_decision=29.0,
+        macro_readout_per_decision=31.0,
+        shared_initial_perception_per_rollout=37.0,
     )
 
 
@@ -273,7 +307,15 @@ class CohortV2ExhaustiveEvaluationTests(unittest.TestCase):
             second = Path(directory) / "second"
             receipt = write_cohort_v2_evaluation(first, result, readers=readers)
             write_cohort_v2_evaluation(second, result, readers=readers)
+            loaded = load_cohort_v2_evaluation(
+                first,
+                readers=readers,
+                checkpoint_identity=result.checkpoint_identity,
+                checkpoint_capabilities=frozenset(result.checkpoint_capabilities),
+                objective_identity=result.objective_identity,
+            )
 
+            self.assertEqual(loaded, result)
             self.assertEqual(
                 (first / "manifest.json").read_bytes(),
                 (second / "manifest.json").read_bytes(),
@@ -398,6 +440,120 @@ class CohortV2ExhaustiveEvaluationTests(unittest.TestCase):
         self.assertEqual(COHORT_V2_HORIZONS, (1, 5, 15))
         with self.assertRaises(TypeError):
             CohortV2PairGrid(horizons=(1, 2, 4))
+
+    def test_pair_measurements_compare_endpoint_plausibility_and_complete_compute(self) -> None:
+        readers = _readers(
+            contact_relations=(("a", "b"),),
+            support_relations=(("b", "c"),),
+            excess_penetration=True,
+            unsupported_bodies=(
+                {"entity_id": "a", "availability": "available", "value": True},
+                {
+                    "entity_id": "b",
+                    "availability": "unavailable_incomplete_stability_window",
+                    "value": None,
+                },
+            ),
+        )
+        evaluation = CohortV2ExhaustiveEvaluator(_Scorer()).evaluate(readers)
+        calibration = _compute_calibration()
+        measured = measure_cohort_v2_evaluation(
+            evaluation,
+            readers,
+            calibration,
+            CohortV2ExecutionProfile(
+                controller_executed=True,
+                shared_perception_executed=True,
+            ),
+        )
+
+        state = measured.states[0]
+        by_pair = {item.pair.identity: item for item in state.outcomes}
+        continuous = by_pair[(5, "continuous")]
+        micro = by_pair[(5, "micro")]
+        macro = by_pair[(5, "macro")]
+
+        for outcome in (continuous, micro, macro):
+            self.assertEqual(outcome.target_frame_record_identity, "frame:training:3")
+            self.assertEqual(outcome.effective_horizon, 3)
+            self.assertEqual(outcome.endpoint_plausibility.available_value_count, 2)
+            self.assertEqual(outcome.endpoint_plausibility.unavailable_value_count, 1)
+            self.assertEqual(outcome.endpoint_plausibility.violation_count, 2)
+            self.assertEqual(outcome.endpoint_plausibility.violation_rate, 1.0)
+            self.assertEqual(outcome.compute.simulated_frame_count, 3)
+            self.assertEqual(outcome.compute.infilling, 0.0)
+            self.assertFalse(hasattr(outcome, "dense_path_plausibility"))
+
+        self.assertEqual(continuous.compute.policy_dependent_total, 28.0)
+        self.assertEqual(continuous.compute.full_end_to_end_total, 65.0)
+        self.assertEqual(continuous.compute.policy_dependent_per_simulated_frame, 28.0 / 3.0)
+        self.assertEqual(micro.compute.graph_work, 86.0)
+        self.assertEqual(micro.compute.policy_dependent_total, 145.0)
+        self.assertEqual(micro.compute.full_end_to_end_total, 182.0)
+        self.assertEqual(macro.compute.graph_work, 0.0)
+        self.assertEqual(macro.compute.policy_dependent_total, 63.0)
+        self.assertEqual(macro.compute.full_end_to_end_total, 100.0)
+
+        later = next(
+            state for state in measured.states
+            if state.state_id == "frame:training:1"
+        )
+        later_continuous = next(
+            outcome for outcome in later.outcomes
+            if outcome.pair.identity == (1, "continuous")
+        )
+        self.assertEqual(later_continuous.compute.shared_perception, 0.0)
+        self.assertEqual(later_continuous.compute.full_end_to_end_total, 28.0)
+
+    def test_pair_measurement_artifacts_are_source_bound_and_have_no_dense_path_claim(self) -> None:
+        readers = _readers()
+        evaluation = CohortV2ExhaustiveEvaluator(_Scorer()).evaluate(readers)
+        profile = CohortV2ExecutionProfile(
+            controller_executed=False,
+            shared_perception_executed=True,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first = write_cohort_v2_measurements(
+                root,
+                evaluation,
+                readers=readers,
+                calibration=_compute_calibration(),
+                profile=profile,
+            )
+            first_bytes = tuple(
+                (root / name).read_bytes()
+                for name in ("manifest.json", "pair_measurements.jsonl")
+            )
+            second = write_cohort_v2_measurements(
+                root,
+                evaluation,
+                readers=readers,
+                calibration=_compute_calibration(),
+                profile=profile,
+            )
+            second_bytes = tuple(
+                (root / name).read_bytes()
+                for name in ("manifest.json", "pair_measurements.jsonl")
+            )
+
+            self.assertEqual(first, second)
+            self.assertEqual(first_bytes, second_bytes)
+            self.assertNotIn(b"dense_path", b"".join(second_bytes))
+            self.assertIn(b'"target_frame_record_identity"', second_bytes[1])
+
+            records = (root / "pair_measurements.jsonl").read_bytes()
+            (root / "pair_measurements.jsonl").write_bytes(
+                records.replace(b'"policy_dependent_total":26.0', b'"policy_dependent_total":27.0', 1)
+            )
+            with self.assertRaises(CohortV2MeasurementError):
+                validate_cohort_v2_measurements(
+                    root,
+                    evaluation,
+                    readers=readers,
+                    calibration=_compute_calibration(),
+                    profile=profile,
+                )
 
 
 if __name__ == "__main__":

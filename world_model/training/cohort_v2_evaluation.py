@@ -18,6 +18,7 @@ from world_model.data.cohort_v2 import (
 )
 from world_model.model import ABSTRACTION_ORDER, Abstraction, PredictionPair, identity
 from world_model.training.grid_artifacts import canonical_json_bytes
+from world_model.training.cohort_v2 import PHYSICAL_VIOLATION_ENDPOINT_QUANTITIES
 
 
 SCHEMA_VERSION: Final = "cohort_v2_exhaustive_pair_evaluation_v1"
@@ -38,10 +39,7 @@ CONTEXT_LABEL_REQUIREMENTS: Final = {
     Abstraction.MICRO: ("contact", "supports"),
     Abstraction.MACRO: ("steady-state", "structure-unstable"),
 }
-ENDPOINT_CAPABILITIES: Final = (
-    "excess_penetration",
-    "unsupported_stationary_or_floating_body",
-)
+ENDPOINT_CAPABILITIES: Final = PHYSICAL_VIOLATION_ENDPOINT_QUANTITIES
 TERMINAL_EVENT_ENDPOINT_CAPABILITY: Final = "event_endpoint.terminal"
 TIE_REL_TOL: Final = 1e-6
 TIE_ABS_TOL: Final = 1e-12
@@ -979,6 +977,75 @@ def validate_cohort_v2_evaluation(
     )
 
 
+def load_cohort_v2_evaluation(
+    root: Path,
+    *,
+    readers: tuple[CohortV2ReleaseReader, ...],
+    checkpoint_identity: str,
+    checkpoint_capabilities: frozenset[str],
+    objective_identity: str,
+) -> CohortV2EvaluationResult:
+    """Load a source-validated exhaustive artifact without rerunning its scorer."""
+    receipt = validate_cohort_v2_evaluation(
+        root,
+        readers=readers,
+        checkpoint_identity=checkpoint_identity,
+        checkpoint_capabilities=checkpoint_capabilities,
+        objective_identity=objective_identity,
+    )
+    manifest = json.loads((Path(root) / "manifest.json").read_bytes())
+    records = tuple(
+        json.loads(line)
+        for line in (Path(root) / "state_evaluations.jsonl").read_bytes().splitlines()
+    )
+    source_states = _source_state_windows(readers, CohortV2PairGrid())
+    states = []
+    for record, (windows, frame_record_count) in zip(
+        records, source_states, strict=True
+    ):
+        outcomes = tuple(
+            CohortV2PairOutcome(
+                pair=pair,
+                requested_horizon=outcome["requested_horizon"],
+                effective_horizon=outcome["effective_horizon"],
+                target_frame_record_identity=outcome["target_frame_record_identity"],
+                objective=outcome["objective"],
+                unavailable_reasons=tuple(outcome["unavailable_reasons"]),
+            )
+            for pair, outcome in zip(COHORT_V2_PAIRS, record["outcomes"], strict=True)
+        )
+        selected_pair, tied_pairs = _select_best_pair(outcomes)
+        first = windows[0]
+        states.append(CohortV2StateEvaluation(
+            state_id=first.context.identity,
+            exposure_role=first.exposure_role,
+            attempt_id=first.attempt_id,
+            scenario_lineage_identity=first.scenario_lineage_identity,
+            context_position=first.context_position,
+            context_fixed_step=first.context.fixed_step,
+            frame_record_count=frame_record_count,
+            outcomes=outcomes,
+            selected_pair=selected_pair,
+            tied_pairs=tied_pairs,
+        ))
+    result = CohortV2EvaluationResult(
+        release_identity=receipt.release_identity,
+        capability_declaration_identity=receipt.capability_declaration_identity,
+        partition_identity=receipt.partition_identity,
+        checkpoint_identity=receipt.checkpoint_identity,
+        checkpoint_capabilities=receipt.checkpoint_capabilities,
+        objective_identity=receipt.objective_identity,
+        grid=CohortV2PairGrid(),
+        state_set_identity=receipt.state_set_identity,
+        states=tuple(states),
+    )
+    if result.identity != receipt.evaluation_identity or manifest[
+        "evaluation_identity"
+    ] != result.identity:
+        raise CohortV2EvaluationError("loaded evaluation identity does not recompute")
+    return result
+
+
 __all__ = [
     "COHORT_V2_HORIZONS",
     "COHORT_V2_PAIRS",
@@ -994,6 +1061,7 @@ __all__ = [
     "CohortV2PairOutcome",
     "CohortV2StateEvaluation",
     "cohort_v2_evaluation_state_set_identity",
+    "load_cohort_v2_evaluation",
     "validate_cohort_v2_evaluation",
     "write_cohort_v2_evaluation",
 ]

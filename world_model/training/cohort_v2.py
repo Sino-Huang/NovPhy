@@ -32,6 +32,12 @@ from world_model.model import (
 )
 
 
+PHYSICAL_VIOLATION_ENDPOINT_QUANTITIES = (
+    "excess_penetration",
+    "unsupported_stationary_or_floating_body",
+)
+
+
 class LabelAvailability(StrEnum):
     AVAILABLE = "available"
     UNAVAILABLE = "unavailable"
@@ -46,6 +52,21 @@ class CohortV2EndpointScore:
     scored_relation_count: int
     correct_relation_count: int
     unavailable_relation_count: int
+
+
+@dataclass(frozen=True, slots=True)
+class CohortV2EndpointPlausibility:
+    """Accepted physical-violation incidence at one source endpoint."""
+
+    available_value_count: int
+    unavailable_value_count: int
+    violation_count: int
+
+    @property
+    def violation_rate(self) -> float | None:
+        if self.available_value_count == 0:
+            return None
+        return self.violation_count / self.available_value_count
 
 
 class CohortV2EndpointPredictor(Protocol):
@@ -176,6 +197,40 @@ def _score_boolean_label(
     return 0, 0, 1
 
 
+def score_cohort_v2_endpoint_plausibility(
+    endpoint: CohortV2CentralFrameRecord,
+) -> CohortV2EndpointPlausibility:
+    """Summarize the two accepted derivations already attached to a v5 record.
+
+    The derivations are engine-record quantities, not a decoder for a predicted
+    continuous carrier. This function consumes their accepted labels and never
+    recreates their physical thresholds.
+    """
+    if not isinstance(endpoint, CohortV2CentralFrameRecord) or set(
+        endpoint.labels
+    ) != set(CENTRAL_LABELS):
+        raise CohortV2IngestionError("Endpoint central tuple is incomplete")
+    labels = [endpoint.labels[PHYSICAL_VIOLATION_ENDPOINT_QUANTITIES[0]]]
+    unsupported = endpoint.labels[PHYSICAL_VIOLATION_ENDPOINT_QUANTITIES[1]]
+    if not isinstance(unsupported, tuple):
+        raise CohortV2IngestionError("Unsupported-body endpoint labels are malformed")
+    labels.extend(unsupported)
+
+    available = unavailable = violations = 0
+    for label in labels:
+        if not isinstance(label, Mapping):
+            raise CohortV2IngestionError("Physical-violation endpoint label is malformed")
+        scored, plausible, missing = _score_boolean_label(label, False)
+        available += scored
+        unavailable += missing
+        violations += scored - plausible
+    return CohortV2EndpointPlausibility(
+        available_value_count=available,
+        unavailable_value_count=unavailable,
+        violation_count=violations,
+    )
+
+
 def _relation_pairs(value: Any, label: str) -> tuple[tuple[str, str], ...]:
     if not isinstance(value, Sequence) or isinstance(value, (str, bytes, bytearray)):
         raise CohortV2IngestionError(f"{label} relation prediction is malformed")
@@ -274,9 +329,12 @@ def score_cohort_v2_endpoints(
 
 __all__ = [
     "CohortV2EndpointPredictor",
+    "CohortV2EndpointPlausibility",
     "CohortV2EndpointScore",
     "LabelAvailability",
+    "PHYSICAL_VIOLATION_ENDPOINT_QUANTITIES",
     "build_cohort_v2_oracle_window_loader",
     "build_cohort_v2_transition_request",
+    "score_cohort_v2_endpoint_plausibility",
     "score_cohort_v2_endpoints",
 ]
