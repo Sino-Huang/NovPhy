@@ -66,21 +66,79 @@ def _validate_relations(relations: tuple[Relation, ...], field: str) -> None:
         raise ContractValueError(field, "must contain entity-id relation pairs")
 
 
+def _availability_kind(availability: str, field: str) -> bool:
+    if availability == "available":
+        return True
+    if isinstance(availability, str) and availability.startswith("unavailable_"):
+        return False
+    raise ContractValueError(field, "has malformed availability")
+
+
+@dataclass(frozen=True, slots=True)
+class RelationTransitionValue:
+    """One relation set with its exact cohort-v2 availability status."""
+
+    availability: str
+    relations: tuple[Relation, ...] | None
+
+    def __post_init__(self) -> None:
+        available = _availability_kind(self.availability, "relation input")
+        if available:
+            if self.relations is None:
+                raise ContractValueError(
+                    "relation input", "available relations must be present"
+                )
+            _validate_relations(self.relations, "relation input")
+        elif self.relations is not None:
+            raise ContractValueError(
+                "relation input", "unavailable relations must remain unavailable"
+            )
+
+    @property
+    def available(self) -> bool:
+        return self.availability == "available"
+
+
+@dataclass(frozen=True, slots=True)
+class BooleanTransitionValue:
+    """One boolean predicate with its exact cohort-v2 availability status."""
+
+    availability: str
+    value: bool | None
+
+    def __post_init__(self) -> None:
+        available = _availability_kind(self.availability, "boolean input")
+        if available and type(self.value) is not bool:
+            raise ContractValueError(
+                "boolean input", "available predicates must have a boolean value"
+            )
+        if not available and self.value is not None:
+            raise ContractValueError(
+                "boolean input", "unavailable predicates must remain unavailable"
+            )
+
+    @property
+    def available(self) -> bool:
+        return self.availability == "available"
+
+
 @dataclass(frozen=True, slots=True)
 class MicroTransitionInput:
-    """One available cohort-v2 micro relation state."""
+    """One cohort-v2 micro state; supports remain supporter-to-supported."""
 
     frame_record_identity: str
-    contact: tuple[Relation, ...]
-    supports: tuple[Relation, ...]
+    contact: RelationTransitionValue
+    supports: RelationTransitionValue
 
     def __post_init__(self) -> None:
         if type(self.frame_record_identity) is not str or not self.frame_record_identity:
             raise ContractValueError(
                 "micro frame record identity", "must be nonempty"
             )
-        _validate_relations(self.contact, "contact")
-        _validate_relations(self.supports, "supports")
+        if type(self.contact) is not RelationTransitionValue:
+            raise ContractValueError("contact", "must be a relation transition value")
+        if type(self.supports) is not RelationTransitionValue:
+            raise ContractValueError("supports", "must be a relation transition value")
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,18 +146,22 @@ class MacroTransitionInput:
     """One available cohort-v2 macro predicate state."""
 
     frame_record_identity: str
-    steady_state: bool
-    structure_unstable: bool
+    steady_state: BooleanTransitionValue
+    structure_unstable: BooleanTransitionValue
 
     def __post_init__(self) -> None:
         if type(self.frame_record_identity) is not str or not self.frame_record_identity:
             raise ContractValueError(
                 "macro frame record identity", "must be nonempty"
             )
-        if type(self.steady_state) is not bool:
-            raise ContractValueError("steady-state", "must be a boolean")
-        if type(self.structure_unstable) is not bool:
-            raise ContractValueError("structure-unstable", "must be a boolean")
+        if type(self.steady_state) is not BooleanTransitionValue:
+            raise ContractValueError(
+                "steady-state", "must be a boolean transition value"
+            )
+        if type(self.structure_unstable) is not BooleanTransitionValue:
+            raise ContractValueError(
+                "structure-unstable", "must be a boolean transition value"
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -230,7 +292,15 @@ class MicroTransitionAdapter(nn.Module):
 
     def __init__(self, hidden_dim: int) -> None:
         super().__init__()
-        self.projection = nn.Linear(5, hidden_dim, bias=False)
+        self.entity_embedding = nn.Embedding(256, hidden_dim)
+        self.contact_projection = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.supporter_projection = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.supported_projection = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.availability_projection = nn.Linear(2, hidden_dim, bias=False)
+
+    def _entity(self, identity: str, device: torch.device) -> torch.Tensor:
+        encoded = torch.tensor(tuple(identity.encode("utf-8")), device=device)
+        return self.entity_embedding(encoded).mean(dim=0)
 
     def forward(
         self, hidden: torch.Tensor, mode_input: ModeTransitionInput
@@ -243,21 +313,39 @@ class MicroTransitionAdapter(nn.Module):
             raise ContractValueError(
                 "micro transition input", "must match the latent batch size"
             )
-        features = torch.tensor(
-            [
-                (
-                    len(sample.contact),
-                    len(sample.supports),
-                    len({entity for relation in sample.contact for entity in relation}),
-                    len({supporter for supporter, _supported in sample.supports}),
-                    len({supported for _supporter, supported in sample.supports}),
-                )
-                for sample in mode_input.samples
-            ],
-            dtype=hidden.dtype,
-            device=hidden.device,
-        )
-        return hidden + self.projection(features)
+        encoded_samples = []
+        for sample in mode_input.samples:
+            entities: dict[str, torch.Tensor] = {}
+
+            def entity(identity: str) -> torch.Tensor:
+                if identity not in entities:
+                    entities[identity] = self._entity(identity, hidden.device)
+                return entities[identity]
+
+            encoded = torch.zeros_like(hidden[0])
+            if sample.contact.available:
+                assert sample.contact.relations is not None
+                for first, second in sample.contact.relations:
+                    encoded = encoded + self.contact_projection(
+                        entity(first) + entity(second)
+                    )
+            if sample.supports.available:
+                assert sample.supports.relations is not None
+                for supporter, supported in sample.supports.relations:
+                    encoded = (
+                        encoded
+                        + self.supporter_projection(entity(supporter))
+                        + self.supported_projection(entity(supported))
+                    )
+            availability = torch.tensor(
+                (sample.contact.available, sample.supports.available),
+                dtype=hidden.dtype,
+                device=hidden.device,
+            )
+            encoded_samples.append(
+                encoded + self.availability_projection(availability)
+            )
+        return hidden + torch.stack(encoded_samples)
 
 
 class MacroTransitionAdapter(nn.Module):
@@ -265,7 +353,7 @@ class MacroTransitionAdapter(nn.Module):
 
     def __init__(self, hidden_dim: int) -> None:
         super().__init__()
-        self.projection = nn.Linear(2, hidden_dim, bias=False)
+        self.projection = nn.Linear(4, hidden_dim, bias=False)
 
     def forward(
         self, hidden: torch.Tensor, mode_input: ModeTransitionInput
@@ -280,7 +368,12 @@ class MacroTransitionAdapter(nn.Module):
             )
         features = torch.tensor(
             [
-                (sample.steady_state, sample.structure_unstable)
+                (
+                    sample.steady_state.value or False,
+                    sample.structure_unstable.value or False,
+                    sample.steady_state.available,
+                    sample.structure_unstable.available,
+                )
                 for sample in mode_input.samples
             ],
             dtype=hidden.dtype,

@@ -26,6 +26,7 @@ from world_model.model.heads import (
     mode_weight,
 )
 from world_model.model.predictor import (
+    BooleanTransitionValue,
     ContinuousTransitionAdapter,
     DualOutputPredictor,
     FiLMBlock,
@@ -37,6 +38,7 @@ from world_model.model.predictor import (
     MicroTransitionInput,
     PairConditioner,
     PredictorOutput,
+    RelationTransitionValue,
     TransitionRequest,
 )
 from world_model.model.jepa import JepaBackbone
@@ -44,6 +46,7 @@ from world_model.model.jepa import JepaBackbone
 __all__ = [
     "ABSTRACTION_ORDER",
     "Abstraction",
+    "BooleanTransitionValue",
     "ContextEncoder",
     "ContinuousTransitionAdapter",
     "DualOutputPredictor",
@@ -68,6 +71,7 @@ __all__ = [
     "PredictionPair",
     "PredictorConfig",
     "PredictorOutput",
+    "RelationTransitionValue",
     "TransitionRequest",
     "abstraction_index",
     "build_encoder",

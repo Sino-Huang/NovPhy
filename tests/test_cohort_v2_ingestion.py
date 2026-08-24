@@ -204,7 +204,7 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
             )
             if abstraction is Abstraction.MICRO:
                 self.assertEqual(
-                    request.mode_input.samples[0].supports,
+                    request.mode_input.samples[0].supports.relations,
                     windows[0].context.labels["supports"]["relations"],
                 )
             output = predictor(latent, action, request)
@@ -215,10 +215,14 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
             for window in dataset
             if window.context.labels["steady-state"]["availability"] != "available"
         )
-        with self.assertRaisesRegex(CohortV2IngestionError, "unavailable"):
-            build_cohort_v2_transition_request(
-                PredictionPair(1, Abstraction.MACRO), (unavailable,)
-            )
+        unavailable_request = build_cohort_v2_transition_request(
+            PredictionPair(1, Abstraction.MACRO), (unavailable,)
+        )
+        sample = unavailable_request.mode_input.samples[0]
+        self.assertNotEqual(sample.steady_state.availability, "available")
+        self.assertIsNone(sample.steady_state.value)
+        unavailable_output = predictor(latent[:1], action[:1], unavailable_request)
+        self.assertEqual(unavailable_output.carrier.shape, torch.Size([1, 8]))
 
     def test_adversarial_ingestion_suite_covers_capabilities_and_boundaries(self) -> None:
         reader = CohortV2ReleaseReader(

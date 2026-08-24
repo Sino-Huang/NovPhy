@@ -16,6 +16,7 @@ from torch import nn
 from world_model.data.types import ContractValueError
 from world_model.model import (
     Abstraction,
+    BooleanTransitionValue,
     ContextEncoder,
     DualOutputPredictor,
     EmaTargetEncoder,
@@ -31,6 +32,7 @@ from world_model.model import (
     MicroTransitionInput,
     PredictionPair,
     PredictorConfig,
+    RelationTransitionValue,
     TransitionRequest,
     build_encoder,
     mode_weight,
@@ -121,8 +123,14 @@ def transition_request(
         samples = tuple(
             MicroTransitionInput(
                 frame_record_identity=f"frame:{index}",
-                contact=(("entity:a", "entity:b"),) if active else (),
-                supports=(("entity:a", "entity:b"),) if active else (),
+                contact=RelationTransitionValue(
+                    "available",
+                    (("entity:a", "entity:b"),) if active else (),
+                ),
+                supports=RelationTransitionValue(
+                    "available",
+                    (("entity:a", "entity:b"),) if active else (),
+                ),
             )
             for index in range(batch_size)
         )
@@ -130,8 +138,8 @@ def transition_request(
     samples = tuple(
         MacroTransitionInput(
             frame_record_identity=f"frame:{index}",
-            steady_state=active,
-            structure_unstable=active,
+            steady_state=BooleanTransitionValue("available", active),
+            structure_unstable=BooleanTransitionValue("available", active),
         )
         for index in range(batch_size)
     )
@@ -575,12 +583,99 @@ class DualOutputPredictorTests(unittest.TestCase):
                     (
                         MicroTransitionInput(
                             frame_record_identity="frame:0",
-                            contact=(),
-                            supports=(),
+                            contact=RelationTransitionValue("available", ()),
+                            supports=RelationTransitionValue("available", ()),
                         ),
                     )
                 ),
             )
+
+    def test_directed_support_order_changes_the_carrier(self) -> None:
+        pair = PredictionPair(delta=1, abstraction=Abstraction.MICRO)
+
+        def request(supports: tuple[tuple[str, str], ...]) -> TransitionRequest:
+            return TransitionRequest(
+                pair,
+                MicroTransitionBatch(
+                    tuple(
+                        MicroTransitionInput(
+                            frame_record_identity=f"frame:{index}",
+                            contact=RelationTransitionValue("available", ()),
+                            supports=RelationTransitionValue("available", supports),
+                        )
+                        for index in range(4)
+                    )
+                ),
+            )
+
+        forward = self.predictor(
+            self.latent, self.action, request((("entity:a", "entity:b"),))
+        ).carrier
+        reversed_edge = self.predictor(
+            self.latent, self.action, request((("entity:b", "entity:a"),))
+        ).carrier
+
+        self.assertFalse(torch.allclose(forward, reversed_edge))
+
+    def test_contact_order_does_not_change_the_carrier(self) -> None:
+        pair = PredictionPair(delta=1, abstraction=Abstraction.MICRO)
+
+        def request(contact: tuple[tuple[str, str], ...]) -> TransitionRequest:
+            return TransitionRequest(
+                pair,
+                MicroTransitionBatch(
+                    tuple(
+                        MicroTransitionInput(
+                            frame_record_identity=f"frame:{index}",
+                            contact=RelationTransitionValue("available", contact),
+                            supports=RelationTransitionValue("available", ()),
+                        )
+                        for index in range(4)
+                    )
+                ),
+            )
+
+        forward = self.predictor(
+            self.latent, self.action, request((("entity:a", "entity:b"),))
+        ).carrier
+        reversed_edge = self.predictor(
+            self.latent, self.action, request((("entity:b", "entity:a"),))
+        ).carrier
+
+        torch.testing.assert_close(forward, reversed_edge)
+
+    def test_unavailable_macro_predicate_is_not_encoded_as_false(self) -> None:
+        pair = PredictionPair(delta=1, abstraction=Abstraction.MACRO)
+
+        def request(availability: str) -> TransitionRequest:
+            steady_state = BooleanTransitionValue(
+                availability,
+                False if availability == "available" else None,
+            )
+            return TransitionRequest(
+                pair,
+                MacroTransitionBatch(
+                    tuple(
+                        MacroTransitionInput(
+                            frame_record_identity=f"frame:{index}",
+                            steady_state=steady_state,
+                            structure_unstable=BooleanTransitionValue(
+                                "available", False
+                            ),
+                        )
+                        for index in range(4)
+                    )
+                ),
+            )
+
+        available_false = self.predictor(
+            self.latent, self.action, request("available")
+        ).carrier
+        unavailable = self.predictor(
+            self.latent, self.action, request("unavailable_no_evidence")
+        ).carrier
+
+        self.assertFalse(torch.allclose(available_false, unavailable))
 
     def test_the_pair_conditioning_is_joint_rather_than_additive(self) -> None:
         # An additively factorized conditioner satisfies the parallelogram

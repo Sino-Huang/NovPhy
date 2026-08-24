@@ -21,11 +21,13 @@ from world_model.data.cohort_v2 import (
 )
 from world_model.model import (
     Abstraction,
+    BooleanTransitionValue,
     MacroTransitionBatch,
     MacroTransitionInput,
     MicroTransitionBatch,
     MicroTransitionInput,
     PredictionPair,
+    RelationTransitionValue,
     TransitionRequest,
 )
 
@@ -66,14 +68,38 @@ def build_cohort_v2_oracle_window_loader(
     )
 
 
-def _available_label(window: CohortV2OracleWindow, predicate: str) -> Mapping[str, Any]:
+def _relation_input(
+    window: CohortV2OracleWindow, predicate: str
+) -> RelationTransitionValue:
     label = window.context.labels[predicate]
     availability = label.get("availability")
-    if availability != "available":
-        raise CohortV2IngestionError(
-            f"{predicate} is unavailable for {window.context.identity}: {availability}"
-        )
-    return label
+    relations = label.get("relations")
+    if availability == "available":
+        return RelationTransitionValue(availability, relations)
+    if isinstance(availability, str) and availability.startswith("unavailable_"):
+        if relations not in (None, ()):
+            raise CohortV2IngestionError(
+                f"Unavailable {predicate} contains fabricated relations"
+            )
+        return RelationTransitionValue(availability, None)
+    raise CohortV2IngestionError(f"{predicate} availability is malformed")
+
+
+def _boolean_input(
+    window: CohortV2OracleWindow, predicate: str
+) -> BooleanTransitionValue:
+    label = window.context.labels[predicate]
+    availability = label.get("availability")
+    value = label.get("value")
+    if availability == "available":
+        return BooleanTransitionValue(availability, value)
+    if isinstance(availability, str) and availability.startswith("unavailable_"):
+        if value is not None:
+            raise CohortV2IngestionError(
+                f"Unavailable {predicate} contains a fabricated value"
+            )
+        return BooleanTransitionValue(availability, None)
+    raise CohortV2IngestionError(f"{predicate} availability is malformed")
 
 
 def build_cohort_v2_transition_request(
@@ -108,8 +134,8 @@ def build_cohort_v2_transition_request(
         samples = tuple(
             MicroTransitionInput(
                 frame_record_identity=window.context.identity,
-                contact=_available_label(window, "contact")["relations"],
-                supports=_available_label(window, "supports")["relations"],
+                contact=_relation_input(window, "contact"),
+                supports=_relation_input(window, "supports"),
             )
             for window in windows
         )
@@ -117,10 +143,8 @@ def build_cohort_v2_transition_request(
     samples = tuple(
         MacroTransitionInput(
             frame_record_identity=window.context.identity,
-            steady_state=_available_label(window, "steady-state")["value"],
-            structure_unstable=_available_label(
-                window, "structure-unstable"
-            )["value"],
+            steady_state=_boolean_input(window, "steady-state"),
+            structure_unstable=_boolean_input(window, "structure-unstable"),
         )
         for window in windows
     )
