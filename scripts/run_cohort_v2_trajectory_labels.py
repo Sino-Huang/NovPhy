@@ -23,6 +23,7 @@ from world_model.training import (
     CohortV2TrajectoryCostSpec,
     generate_cohort_v2_myopic_ablation_labels,
     generate_cohort_v2_trajectory_labels,
+    git_revision,
     load_cohort_v2_evaluation,
     measure_cohort_v2_evaluation,
     validate_cohort_v2_measurements,
@@ -118,14 +119,19 @@ def _source_inputs(
 def main() -> int:
     parser = _parser()
     args = parser.parse_args()
-    if args.compact_report is not None and not args.implementation_commit:
-        parser.error("--compact-report requires --implementation-commit")
     repository_root = args.repository_root.resolve()
     release_root = (repository_root / args.release_root).resolve()
     evaluation_root = (repository_root / args.evaluation_root).resolve()
     checkpoint_path = (repository_root / args.checkpoint).resolve()
     measurements_root = (repository_root / args.measurements_root).resolve()
     output = (repository_root / args.output).resolve()
+    implementation_revision = args.implementation_commit
+    if implementation_revision is None:
+        implementation_revision, dirty = git_revision(str(repository_root))
+        if dirty and not args.dry_run:
+            parser.error(
+                "a dirty worktree requires an explicit --implementation-commit"
+            )
 
     evaluation, measurement, calibration = _source_inputs(
         repository_root,
@@ -156,11 +162,19 @@ def main() -> int:
 
     if args.validate:
         receipt = validate_cohort_v2_trajectory_labels(
-            output, evaluation, measurement, spec
+            output,
+            evaluation,
+            measurement,
+            spec,
+            implementation_revision=implementation_revision,
         )
     else:
         receipt = write_cohort_v2_trajectory_labels(
-            output, evaluation, measurement, spec
+            output,
+            evaluation,
+            measurement,
+            spec,
+            implementation_revision=implementation_revision,
         )
     print(
         f"[complete] labels={receipt.label_count} output={output}",
@@ -174,7 +188,7 @@ def main() -> int:
             "cost_spec": asdict(spec),
             "cost_spec_identity": spec.identity,
             "evaluation_identity": evaluation.identity,
-            "implementation_commit": args.implementation_commit,
+            "implementation_commit": implementation_revision,
             "label_artifact_identity": receipt.label_artifact_identity,
             "label_count": receipt.label_count,
             "measurement_identity": measurement.identity,
@@ -184,8 +198,10 @@ def main() -> int:
             "release_identity": evaluation.release_identity,
             "rerun_commands": [
                 "python -u -m scripts.run_cohort_v2_trajectory_labels --dry-run",
-                "python -u -m scripts.run_cohort_v2_trajectory_labels",
-                "python -u -m scripts.run_cohort_v2_trajectory_labels --validate",
+                "python -u -m scripts.run_cohort_v2_trajectory_labels "
+                f"--implementation-commit {implementation_revision}",
+                "python -u -m scripts.run_cohort_v2_trajectory_labels --validate "
+                f"--implementation-commit {implementation_revision}",
             ],
             "schema": "cohort_v2_trajectory_label_summary_v1",
             "selected_pair_counts": {

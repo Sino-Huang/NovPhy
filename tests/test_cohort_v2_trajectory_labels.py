@@ -138,7 +138,7 @@ class CohortV2TrajectoryLabelTests(unittest.TestCase):
         self.assertLess(myopic_first.segment_cost, trajectory_first.segment_cost)
         self.assertGreater(myopic_first.cost_to_go, trajectory_first.cost_to_go)
 
-    def test_duration_weighted_pair_costs_make_equal_episode_segmentations_tie(self):
+    def test_duration_weighted_pair_costs_make_equal_rollout_segmentations_tie(self):
         _readers_, evaluation, measurement = _measure(_EqualSegmentationScorer())
         result = generate_cohort_v2_trajectory_labels(
             evaluation,
@@ -183,14 +183,22 @@ class CohortV2TrajectoryLabelTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             first = write_cohort_v2_trajectory_labels(
-                root, evaluation, measurement, spec
+                root,
+                evaluation,
+                measurement,
+                spec,
+                implementation_revision="implementation:fixture",
             )
             first_bytes = tuple(
                 (root / name).read_bytes()
                 for name in ("manifest.json", "controller_labels.jsonl")
             )
             second = write_cohort_v2_trajectory_labels(
-                root, evaluation, measurement, spec
+                root,
+                evaluation,
+                measurement,
+                spec,
+                implementation_revision="implementation:fixture",
             )
             second_bytes = tuple(
                 (root / name).read_bytes()
@@ -202,13 +210,20 @@ class CohortV2TrajectoryLabelTests(unittest.TestCase):
             self.assertEqual(first_bytes, second_bytes)
             self.assertEqual(
                 validate_cohort_v2_trajectory_labels(
-                    root, evaluation, measurement, spec
+                    root,
+                    evaluation,
+                    measurement,
+                    spec,
+                    implementation_revision="implementation:fixture",
                 ),
                 second,
             )
             self.assertEqual(manifest["release_identity"], evaluation.release_identity)
             self.assertEqual(manifest["checkpoint_identity"], evaluation.checkpoint_identity)
             self.assertEqual(manifest["objective_identity"], evaluation.objective_identity)
+            self.assertEqual(
+                manifest["implementation_revision"], "implementation:fixture"
+            )
             self.assertEqual(
                 manifest["capability_declaration_identity"],
                 evaluation.capability_declaration_identity,
@@ -232,7 +247,11 @@ class CohortV2TrajectoryLabelTests(unittest.TestCase):
             )
             with self.assertRaises(ValueError):
                 validate_cohort_v2_trajectory_labels(
-                    root, evaluation, measurement, spec
+                    root,
+                    evaluation,
+                    measurement,
+                    spec,
+                    implementation_revision="implementation:fixture",
                 )
 
 

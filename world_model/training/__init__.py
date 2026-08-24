@@ -124,6 +124,7 @@ from world_model.training.cohort_v2_measurement import (
 from world_model.training.cohort_v2_trajectory_labels import (
     CohortV2ControllerLabel,
     CohortV2ControllerLabelResult,
+    CohortV2ControllerTeacher,
     CohortV2TrajectoryCostSpec,
     CohortV2TrajectoryLabelError,
     CohortV2TrajectoryLabelReceipt,
@@ -217,6 +218,7 @@ __all__ = [
     "CohortV2StateMeasurement",
     "CohortV2ControllerLabel",
     "CohortV2ControllerLabelResult",
+    "CohortV2ControllerTeacher",
     "CohortV2TrajectoryCostSpec",
     "CohortV2TrajectoryLabelError",
     "CohortV2TrajectoryLabelReceipt",

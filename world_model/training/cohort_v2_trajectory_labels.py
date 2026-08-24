@@ -6,6 +6,7 @@ import json
 import math
 import os
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 
 from world_model.model import ABSTRACTION_ORDER, PredictionPair, identity
@@ -29,6 +30,14 @@ TIE_ABS_TOL = 1e-12
 
 class CohortV2TrajectoryLabelError(ValueError):
     """The controller label inputs or resulting artifact are invalid."""
+
+
+class CohortV2ControllerTeacher(str, Enum):
+    TRAJECTORY_OPTIMAL = "trajectory_optimal"
+    MYOPIC_ABLATION = "myopic_ablation"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 def _nonnegative(value: float, field: str) -> float:
@@ -99,7 +108,7 @@ class CohortV2ControllerLabel:
 
 @dataclass(frozen=True, slots=True)
 class CohortV2ControllerLabelResult:
-    teacher: str
+    teacher: CohortV2ControllerTeacher
     evaluation_identity: str
     measurement_identity: str
     cost_spec_identity: str
@@ -110,6 +119,7 @@ class CohortV2ControllerLabelResult:
 class CohortV2TrajectoryLabelReceipt:
     label_artifact_identity: str
     teacher: str
+    implementation_revision: str
     evaluation_identity: str
     measurement_identity: str
     cost_spec_identity: str
@@ -123,6 +133,12 @@ class _Candidate:
     effective_horizon: int
     next_context_position: int
     segment_cost: float
+
+
+@dataclass(frozen=True, slots=True)
+class _Selection:
+    choice: _Candidate
+    ties: tuple[_Candidate, ...]
 
 
 def _paired_states(
@@ -252,7 +268,7 @@ def _trajectory_labels(
             "controller label trajectory membership is incomplete"
         )
     by_position = {state.context_position: (state, measured) for state, measured in ordered}
-    selected: dict[int, tuple[_Candidate, tuple[_Candidate, ...]]] = {}
+    selection_by_position: dict[int, _Selection] = {}
     if myopic:
         for position, (state, measured) in by_position.items():
             candidates = _candidates(state, measured, spec)
@@ -261,32 +277,42 @@ def _trajectory_labels(
                     f"state {state.state_id} has no admissible pair evidence"
                 )
             ties = _ordered_ties(tuple((item.segment_cost, item) for item in candidates))
-            selected[position] = (ties[0], ties)
-        values = {terminal_position: 0.0}
+            selection_by_position[position] = _Selection(ties[0], ties)
+        cost_to_go_by_position = {terminal_position: 0.0}
         for position in reversed(range(terminal_position)):
-            choice, _ties = selected[position]
-            values[position] = choice.segment_cost + values[choice.next_context_position]
+            choice = selection_by_position[position].choice
+            cost_to_go_by_position[position] = (
+                choice.segment_cost
+                + cost_to_go_by_position[choice.next_context_position]
+            )
     else:
-        values = {terminal_position: 0.0}
+        cost_to_go_by_position = {terminal_position: 0.0}
         for position in reversed(range(terminal_position)):
             state, measured = by_position[position]
             candidates = tuple(
                 item
                 for item in _candidates(state, measured, spec)
-                if item.next_context_position in values
+                if item.next_context_position in cost_to_go_by_position
             )
             if not candidates:
                 raise CohortV2TrajectoryLabelError(
                     f"state {state.state_id} has no admissible complete path"
                 )
             scored = tuple(
-                (item.segment_cost + values[item.next_context_position], item)
+                (
+                    item.segment_cost
+                    + cost_to_go_by_position[item.next_context_position],
+                    item,
+                )
                 for item in candidates
             )
             ties = _ordered_ties(scored)
             choice = ties[0]
-            selected[position] = (choice, ties)
-            values[position] = choice.segment_cost + values[choice.next_context_position]
+            selection_by_position[position] = _Selection(choice, ties)
+            cost_to_go_by_position[position] = (
+                choice.segment_cost
+                + cost_to_go_by_position[choice.next_context_position]
+            )
     return tuple(
         CohortV2ControllerLabel(
             state_id=state.state_id,
@@ -295,12 +321,23 @@ def _trajectory_labels(
             scenario_lineage_identity=state.scenario_lineage_identity,
             context_position=state.context_position,
             context_fixed_step=state.context_fixed_step,
-            selected_pair=selected[state.context_position][0].pair,
-            effective_horizon=selected[state.context_position][0].effective_horizon,
-            next_context_position=selected[state.context_position][0].next_context_position,
-            segment_cost=selected[state.context_position][0].segment_cost,
-            cost_to_go=values[state.context_position],
-            tied_pairs=tuple(item.pair for item in selected[state.context_position][1]),
+            selected_pair=selection_by_position[state.context_position].choice.pair,
+            effective_horizon=(
+                selection_by_position[state.context_position].choice.effective_horizon
+            ),
+            next_context_position=(
+                selection_by_position[
+                    state.context_position
+                ].choice.next_context_position
+            ),
+            segment_cost=(
+                selection_by_position[state.context_position].choice.segment_cost
+            ),
+            cost_to_go=cost_to_go_by_position[state.context_position],
+            tied_pairs=tuple(
+                item.pair
+                for item in selection_by_position[state.context_position].ties
+            ),
         )
         for state, _measured in ordered
     )
@@ -331,7 +368,11 @@ def _generate(
     if len(labels_by_state) != len(evaluation.states):
         raise CohortV2TrajectoryLabelError("controller label state identities are not unique")
     return CohortV2ControllerLabelResult(
-        teacher="myopic_ablation" if myopic else "trajectory_optimal",
+        teacher=(
+            CohortV2ControllerTeacher.MYOPIC_ABLATION
+            if myopic
+            else CohortV2ControllerTeacher.TRAJECTORY_OPTIMAL
+        ),
         evaluation_identity=evaluation.identity,
         measurement_identity=measurement.identity,
         cost_spec_identity=spec.identity,
@@ -393,14 +434,20 @@ def _manifest(
     evaluation: CohortV2EvaluationResult,
     measurement: CohortV2MeasurementResult,
     records: bytes,
+    implementation_revision: str,
 ) -> dict[str, object]:
+    if type(implementation_revision) is not str or not implementation_revision.strip():
+        raise CohortV2TrajectoryLabelError(
+            "implementation revision must be a nonempty declared identity"
+        )
     records_identity = _records_identity(records)
     artifact_identity = identity((
         "cohort-v2-trajectory-controller-labels-v1",
-        result.teacher,
+        str(result.teacher),
         result.evaluation_identity,
         result.measurement_identity,
         result.cost_spec_identity,
+        implementation_revision,
         records_identity,
     ))
     roles = list(dict.fromkeys(label.exposure_role for label in result.labels))
@@ -418,6 +465,7 @@ def _manifest(
         "execution_profile_identity": measurement.execution_profile_identity,
         "exposure_roles": roles,
         "grid_identity": evaluation.grid.identity,
+        "implementation_revision": implementation_revision,
         "label_artifact_identity": artifact_identity,
         "label_count": len(result.labels),
         "measurement_identity": result.measurement_identity,
@@ -429,7 +477,7 @@ def _manifest(
         "scenario_lineage_identities": lineages,
         "schema": TRAJECTORY_LABEL_SCHEMA,
         "state_set_identity": evaluation.state_set_identity,
-        "teacher": result.teacher,
+        "teacher": str(result.teacher),
     }
 
 
@@ -447,6 +495,7 @@ def _receipt(manifest: dict[str, object]) -> CohortV2TrajectoryLabelReceipt:
     return CohortV2TrajectoryLabelReceipt(
         label_artifact_identity=manifest["label_artifact_identity"],
         teacher=manifest["teacher"],
+        implementation_revision=manifest["implementation_revision"],
         evaluation_identity=manifest["evaluation_identity"],
         measurement_identity=manifest["measurement_identity"],
         cost_spec_identity=manifest["cost_spec_identity"],
@@ -460,6 +509,8 @@ def validate_cohort_v2_trajectory_labels(
     evaluation: CohortV2EvaluationResult,
     measurement: CohortV2MeasurementResult,
     spec: CohortV2TrajectoryCostSpec,
+    *,
+    implementation_revision: str,
 ) -> CohortV2TrajectoryLabelReceipt:
     """Recompute the default trajectory teacher and compare exact artifact bytes."""
     try:
@@ -472,7 +523,13 @@ def validate_cohort_v2_trajectory_labels(
         ) from error
     result = generate_cohort_v2_trajectory_labels(evaluation, measurement, spec)
     expected_records = _records(result)
-    expected_manifest = _manifest(result, evaluation, measurement, expected_records)
+    expected_manifest = _manifest(
+        result,
+        evaluation,
+        measurement,
+        expected_records,
+        implementation_revision,
+    )
     if (
         canonical_json_bytes(manifest) != manifest_raw
         or manifest != expected_manifest
@@ -489,22 +546,35 @@ def write_cohort_v2_trajectory_labels(
     evaluation: CohortV2EvaluationResult,
     measurement: CohortV2MeasurementResult,
     spec: CohortV2TrajectoryCostSpec,
+    *,
+    implementation_revision: str,
 ) -> CohortV2TrajectoryLabelReceipt:
     """Write and source-validate the default trajectory-optimal teacher."""
     result = generate_cohort_v2_trajectory_labels(evaluation, measurement, spec)
     records = _records(result)
-    manifest = _manifest(result, evaluation, measurement, records)
+    manifest = _manifest(
+        result,
+        evaluation,
+        measurement,
+        records,
+        implementation_revision,
+    )
     root = Path(root)
     _atomic_write(root / "controller_labels.jsonl", records)
     _atomic_write(root / "manifest.json", canonical_json_bytes(manifest))
     return validate_cohort_v2_trajectory_labels(
-        root, evaluation, measurement, spec
+        root,
+        evaluation,
+        measurement,
+        spec,
+        implementation_revision=implementation_revision,
     )
 
 
 __all__ = [
     "CohortV2ControllerLabel",
     "CohortV2ControllerLabelResult",
+    "CohortV2ControllerTeacher",
     "CohortV2TrajectoryCostSpec",
     "CohortV2TrajectoryLabelError",
     "CohortV2TrajectoryLabelReceipt",
