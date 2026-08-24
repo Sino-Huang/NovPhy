@@ -169,6 +169,20 @@ class CohortV2MeasurementResult:
     execution_profile_identity: str
     states: tuple[CohortV2StateMeasurement, ...]
 
+    @property
+    def records_identity(self) -> str:
+        return _records_identity(_records(self))
+
+    @property
+    def identity(self) -> str:
+        return identity((
+            "cohort-v2-pair-measurements-v1",
+            self.evaluation_identity,
+            self.compute_calibration_identity,
+            self.execution_profile_identity,
+            self.records_identity,
+        ))
+
 
 @dataclass(frozen=True, slots=True)
 class CohortV2MeasurementReceipt:
