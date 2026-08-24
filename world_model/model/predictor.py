@@ -1,6 +1,6 @@
 """The dual-output predictor ``F_theta^{Delta,alpha}`` (Milestone 1b).
 
-Two structural guarantees hold here, and both are pinned by
+Three structural guarantees hold here, and all are pinned by
 ``tests/test_world_model_model.py``:
 
 1. **The carrier is always emitted.**  Every ``(Delta, alpha)`` selection
@@ -9,11 +9,14 @@ Two structural guarantees hold here, and both are pinned by
    touches a head, so no head parameter can influence the rollout state.  Head
    gradients still reach the latent — symbols shape ``z`` through the loss —
    but a symbol decode never sits *inside* a rollout step.
+3. **Exactly one transition adapter executes.**  Continuous steps retain the
+   legacy path; micro and macro steps additionally consume only their selected
+   encoded symbolic content before entering the shared predictor.
 
-The ``(Delta, alpha)`` pair conditions a single shared trunk through FiLM, from
-a code that fuses the two axes *jointly* rather than additively.  The
-conditioner is injected, so Milestone 3's factorized and separate-expert arms
-are constructor swaps rather than rewrites.
+The ``(Delta, alpha)`` pair conditions a single shared trunk through
+AdaLN-Zero-style modulation, from a code that fuses the two axes *jointly*
+rather than additively.  This identity signal is separate from the selected
+adapter's symbolic content.
 """
 from __future__ import annotations
 
@@ -26,6 +29,8 @@ from torch.nn import functional as F
 
 from world_model.data.types import ContractValueError
 from world_model.model.config import (
+    MACRO_TRANSITION_INPUTS,
+    MICRO_TRANSITION_INPUTS,
     Abstraction,
     PredictionPair,
     PredictorConfig,
@@ -49,7 +54,7 @@ class PredictorOutput:
 
 
 class PairConditioner(nn.Module):
-    """Fuse ``(Delta, alpha)`` into one joint FiLM code."""
+    """Fuse ``(Delta, alpha)`` into one joint adaptive-normalization code."""
 
     def __init__(self, config: PredictorConfig) -> None:
         super().__init__()
@@ -90,7 +95,7 @@ class PairConditioner(nn.Module):
 
 
 class FiLMBlock(nn.Module):
-    """A residual MLP block modulated by the joint ``(Delta, alpha)`` code."""
+    """A residual MLP block with zero-initialized adaptive LayerNorm modulation."""
 
     def __init__(self, width: int, code_dim: int) -> None:
         super().__init__()
@@ -107,6 +112,43 @@ class FiLMBlock(nn.Module):
         return hidden + self.outer(F.silu(self.inner(modulated)))
 
 
+class ContinuousTransitionAdapter(nn.Module):
+    """Retain the legacy continuous hidden state without symbolic content."""
+
+    def forward(
+        self, hidden: torch.Tensor, mode_input: torch.Tensor | None
+    ) -> torch.Tensor:
+        if mode_input is not None:
+            raise ContractValueError(
+                "continuous transition input", "must not contain symbolic content"
+            )
+        return hidden
+
+
+class SymbolicTransitionAdapter(nn.Module):
+    """Inject one selected mode's encoded symbolic content into the shared trunk."""
+
+    def __init__(self, abstraction: Abstraction, input_dim: int, hidden_dim: int) -> None:
+        super().__init__()
+        self._abstraction = abstraction
+        self._input_dim = input_dim
+        self.projection = nn.Linear(input_dim, hidden_dim, bias=False)
+
+    def forward(
+        self, hidden: torch.Tensor, mode_input: torch.Tensor | None
+    ) -> torch.Tensor:
+        field = f"{self._abstraction} transition input"
+        if not isinstance(mode_input, torch.Tensor):
+            raise ContractValueError(field, "must be an encoded torch tensor")
+        if mode_input.ndim != 2 or mode_input.shape[1] != self._input_dim:
+            raise ContractValueError(
+                field, f"must have shape [B, {self._input_dim}]"
+            )
+        if mode_input.shape[0] != hidden.shape[0]:
+            raise ContractValueError(field, "must match the latent batch size")
+        return hidden + self.projection(mode_input)
+
+
 class DualOutputPredictor(nn.Module):
     """Predict the carrier for a selected pair, with mode-gated symbolic readouts."""
 
@@ -117,6 +159,9 @@ class DualOutputPredictor(nn.Module):
         conditioner: nn.Module | None = None,
         micro_head: nn.Module | None = None,
         macro_head: nn.Module | None = None,
+        continuous_adapter: nn.Module | None = None,
+        micro_adapter: nn.Module | None = None,
+        macro_adapter: nn.Module | None = None,
     ) -> None:
         super().__init__()
         if type(config) is not PredictorConfig:
@@ -150,27 +195,66 @@ class DualOutputPredictor(nn.Module):
                 config.event_type_count,
             )
         )
+        # Construct adapters after the legacy modules so a seeded continuous
+        # predictor retains its prior initialization and forward behavior.
+        self.continuous_adapter = (
+            continuous_adapter
+            if continuous_adapter is not None
+            else ContinuousTransitionAdapter()
+        )
+        self.micro_adapter = (
+            micro_adapter
+            if micro_adapter is not None
+            else SymbolicTransitionAdapter(
+                Abstraction.MICRO,
+                config.micro_predicate_count,
+                config.hidden_dim,
+            )
+        )
+        self.macro_adapter = (
+            macro_adapter
+            if macro_adapter is not None
+            else SymbolicTransitionAdapter(
+                Abstraction.MACRO,
+                config.macro_predicate_count,
+                config.hidden_dim,
+            )
+        )
 
     @property
     def config(self) -> PredictorConfig:
         return self._config
 
     def carrier(
-        self, latent: torch.Tensor, action: torch.Tensor, pair: PredictionPair
+        self,
+        latent: torch.Tensor,
+        action: torch.Tensor,
+        pair: PredictionPair,
+        mode_input: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """Return ``z_hat`` alone — the only quantity a rollout step may carry."""
         self._validate(latent, action, pair)
         code = self.conditioner.code(pair, latent.shape[0], latent.device)
         hidden = self.input_projection(torch.cat((latent, action), dim=-1))
+        if pair.abstraction is Abstraction.CONTINUOUS:
+            hidden = self.continuous_adapter(hidden, mode_input)
+        elif pair.abstraction is Abstraction.MICRO:
+            hidden = self.micro_adapter(hidden, mode_input)
+        else:
+            hidden = self.macro_adapter(hidden, mode_input)
         for block in self.blocks:
             hidden = block(hidden, code)
         return latent + self.output_projection(self.output_norm(hidden))
 
     def forward(
-        self, latent: torch.Tensor, action: torch.Tensor, pair: PredictionPair
+        self,
+        latent: torch.Tensor,
+        action: torch.Tensor,
+        pair: PredictionPair,
+        mode_input: torch.Tensor | None = None,
     ) -> PredictorOutput:
         """Return the carrier plus the readout for the selected abstraction only."""
-        carrier = self.carrier(latent, action, pair)
+        carrier = self.carrier(latent, action, pair, mode_input)
         micro = self.micro_head(carrier) if pair.abstraction is Abstraction.MICRO else None
         macro = self.macro_head(carrier) if pair.abstraction is Abstraction.MACRO else None
         return PredictorOutput(carrier=carrier, micro_readout=micro, macro_readout=macro)
@@ -180,16 +264,30 @@ class DualOutputPredictor(nn.Module):
         latent: torch.Tensor,
         action: torch.Tensor,
         pairs: Sequence[PredictionPair],
+        *,
+        mode_inputs: Sequence[torch.Tensor | None] | None = None,
     ) -> tuple[torch.Tensor, ...]:
         """Chain carrier to carrier across a pair sequence, touching no head."""
         if not isinstance(pairs, Sequence) or isinstance(pairs, (str, bytes)):
             raise ContractValueError("pairs", "must be a sequence of PredictionPair")
         if not pairs:
             raise ContractValueError("pairs", "must not be empty")
+        if mode_inputs is None:
+            selected_inputs: Sequence[torch.Tensor | None] = (None,) * len(pairs)
+        elif (
+            not isinstance(mode_inputs, Sequence)
+            or isinstance(mode_inputs, (str, bytes))
+            or len(mode_inputs) != len(pairs)
+        ):
+            raise ContractValueError(
+                "mode_inputs", "must match the pair sequence length"
+            )
+        else:
+            selected_inputs = mode_inputs
         carriers: list[torch.Tensor] = []
         current = latent
-        for pair in pairs:
-            current = self.carrier(current, action, pair)
+        for pair, mode_input in zip(pairs, selected_inputs, strict=True):
+            current = self.carrier(current, action, pair, mode_input)
             carriers.append(current)
         return tuple(carriers)
 

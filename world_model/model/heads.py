@@ -4,9 +4,9 @@ These heads are the symbolic side of the dual-output predictor.  They read the
 carrier and enter only the loss; nothing they produce is ever fed back into a
 rollout step.  See ``world_model.model.predictor`` for the structural guarantee.
 
-They are wired and shape-tested now but **inactive during Milestone 1 training**:
-the legacy RGB cohort carries no symbolic labels.  They activate through the
-``PhysicsSupervisionRequest`` seam once the enriched physics cohort exists.
+They remain inactive in the legacy continuous-only training loop. The validated
+cohort-v2 reader now supplies symbolic supervision; the micro and macro training
+paths activate these heads separately in issues #5 and #6.
 """
 from __future__ import annotations
 

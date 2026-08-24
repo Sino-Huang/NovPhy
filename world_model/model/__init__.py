@@ -6,6 +6,8 @@ stays teacher-forced and fully differentiable.
 """
 from world_model.model.config import (
     ABSTRACTION_ORDER,
+    MACRO_TRANSITION_INPUTS,
+    MICRO_TRANSITION_INPUTS,
     Abstraction,
     EncoderConfig,
     JepaConfig,
@@ -24,10 +26,12 @@ from world_model.model.heads import (
     mode_weight,
 )
 from world_model.model.predictor import (
+    ContinuousTransitionAdapter,
     DualOutputPredictor,
     FiLMBlock,
     PairConditioner,
     PredictorOutput,
+    SymbolicTransitionAdapter,
 )
 from world_model.model.jepa import JepaBackbone
 
@@ -35,6 +39,7 @@ __all__ = [
     "ABSTRACTION_ORDER",
     "Abstraction",
     "ContextEncoder",
+    "ContinuousTransitionAdapter",
     "DualOutputPredictor",
     "EmaTargetEncoder",
     "EncoderConfig",
@@ -42,6 +47,8 @@ __all__ = [
     "FiLMBlock",
     "JepaBackbone",
     "JepaConfig",
+    "MACRO_TRANSITION_INPUTS",
+    "MICRO_TRANSITION_INPUTS",
     "MacroReadout",
     "MacroReadoutHead",
     "MicroReadoutHead",
@@ -49,6 +56,7 @@ __all__ = [
     "PredictionPair",
     "PredictorConfig",
     "PredictorOutput",
+    "SymbolicTransitionAdapter",
     "abstraction_index",
     "build_encoder",
     "coerce_abstraction",

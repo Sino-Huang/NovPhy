@@ -56,19 +56,27 @@ class JepaBackbone(nn.Module):
         return self.target(images)  # type: ignore[return-value]
 
     def predict(
-        self, latent: torch.Tensor, action: torch.Tensor, pair: PredictionPair
+        self,
+        latent: torch.Tensor,
+        action: torch.Tensor,
+        pair: PredictionPair,
+        mode_input: torch.Tensor | None = None,
     ) -> PredictorOutput:
         """Predict the carrier (and the selected mode readout) for one pair."""
-        return self.predictor(latent, action, pair)
+        return self.predictor(latent, action, pair, mode_input)
 
     def rollout(
         self,
         latent: torch.Tensor,
         action: torch.Tensor,
         pairs: tuple[PredictionPair, ...],
+        *,
+        mode_inputs: tuple[torch.Tensor | None, ...] | None = None,
     ) -> tuple[torch.Tensor, ...]:
         """Chain carrier to carrier; mode heads are never constructed here."""
-        return self.predictor.rollout(latent, action, pairs)
+        return self.predictor.rollout(
+            latent, action, pairs, mode_inputs=mode_inputs
+        )
 
     def trainable_parameters(self) -> Iterator[nn.Parameter]:
         """Yield online-encoder and predictor parameters only."""

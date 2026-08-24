@@ -23,6 +23,8 @@ class Abstraction(StrEnum):
 
 
 ABSTRACTION_ORDER: Final = (Abstraction.CONTINUOUS, Abstraction.MICRO, Abstraction.MACRO)
+MICRO_TRANSITION_INPUTS: Final = ("contact", "supports")
+MACRO_TRANSITION_INPUTS: Final = ("steady-state", "structure-unstable")
 
 
 def abstraction_index(abstraction: Abstraction) -> int:
@@ -159,8 +161,8 @@ class PredictorConfig:
     depth: int = 4
     pair_code_dim: int = 128
     delta_frequency_count: int = 8
-    micro_predicate_count: int = 16
-    macro_predicate_count: int = 5
+    micro_predicate_count: int = len(MICRO_TRANSITION_INPUTS)
+    macro_predicate_count: int = len(MACRO_TRANSITION_INPUTS)
     event_type_count: int = 10
 
     def __post_init__(self) -> None:
@@ -178,7 +180,7 @@ class PredictorConfig:
     def identity(self) -> str:
         return identity(
             (
-                "jepa-predictor-config-v1",
+                "jepa-predictor-config-v2",
                 self.latent_dim,
                 self.action_dim,
                 self.hidden_dim,

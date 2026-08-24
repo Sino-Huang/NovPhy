@@ -4,7 +4,8 @@
 dual-output predictor.  `world_model.training` implements a teacher-forced
 single-step training loop with a seeded reproducibility manifest.
 
-The backbone section below documents Milestones 1a and 1b. Todo 8 additionally
+The backbone section below documents Milestones 1a and 1b plus the exclusive
+transition adapters introduced for issue #4. Todo 8 additionally
 delivers the legacy temporal projection of 1e/1f, documented in
 [`world_model_jepa_pair_grid.md`](world_model_jepa_pair_grid.md). It still does
 **not** implement the SPSG/GINE relational encoder (1c), the macro-event
@@ -14,8 +15,8 @@ predictor or restriction/lifting maps (1d), or any learned symbolic controller.
 
 The proposal's first non-negotiable is that the continuous latent `z` is the
 **sole** rollout state carrier: no discrete step, graph assembly, or symbol
-decode ever sits in the rollout path.  Two structural guarantees implement it,
-and both are pinned by tests rather than left to convention.
+decode ever sits in the rollout path. Three structural guarantees implement it,
+and all are pinned by tests rather than left to convention.
 
 1. `DualOutputPredictor.carrier()` computes `ẑ` without touching either mode
    head, so no head parameter can influence the rollout state.
@@ -26,6 +27,10 @@ and both are pinned by tests rather than left to convention.
    constructs a head.  `test_the_rollout_path_never_constructs_a_mode_head`
    monkeypatches call counters onto both heads and asserts zero invocations
    across a four-step rollout.
+3. Each decision executes exactly one continuous, micro, or macro transition
+   adapter. Micro and macro inputs fail closed when their selected encoded
+   symbolic content is absent; continuous calls retain the original
+   `(latent, action, pair)` interface.
 
 Head gradients *do* reach the latent — symbols shape `z` through the loss, which
 is the point — but a symbol decode is never *inside* a rollout step.
@@ -37,7 +42,7 @@ is the point — but a symbol decode is never *inside* a rollout step.
 | `world_model/model/config.py` | Validated, identity-bearing configuration; `Abstraction`, `PredictionPair`, `EncoderConfig`, `PredictorConfig`, `JepaConfig` |
 | `world_model/model/encoder.py` | `ContextEncoder` + `build_encoder()` registry |
 | `world_model/model/ema.py` | `EmaTargetEncoder` — deep-copied, no-grad, cosine momentum ramp |
-| `world_model/model/predictor.py` | `PairConditioner`, `FiLMBlock`, `DualOutputPredictor`, `PredictorOutput` |
+| `world_model/model/predictor.py` | `PairConditioner`, transition adapters, `FiLMBlock`, `DualOutputPredictor`, `PredictorOutput` |
 | `world_model/model/heads.py` | `MicroReadoutHead`, `MacroReadoutHead`, `mode_weight()` (`ω_ψ`) |
 | `world_model/model/jepa.py` | `JepaBackbone` — online encoder + EMA target + predictor |
 
@@ -83,6 +88,12 @@ mode-head readout is emitted only for the abstraction the controller selected:
 | `micro` | yes | `[B, n_micro]` | `None` |
 | `macro` | yes | `None` | `(S^M, Δ̂, ê)` |
 
+The selected adapter receives encoded content separately from the pair
+conditioner. The cohort-v2 input vocabulary is exactly `contact` and directed
+`supports` for micro, and `steady-state` and `structure-unstable` for macro.
+Material/damage labels and the excluded legacy macro predicates are not model
+inputs. Only the selected adapter and selected readout execute for a decision.
+
 `mode_weight(α, r_ψ)` is the proposal's `ω_ψ`: `0` for a continuous step, `r_ψ`
 for micro relational constraints, `1` for macro-event supervision.  A masked
 term contributes exactly zero gradient rather than being silently dropped.
@@ -92,21 +103,22 @@ term contributes exactly zero gradient rather than being silently dropped.
 A single shared trunk.  Sinusoidal features of `Δ` (so unseen horizons in
 Milestone 1e interpolate rather than requiring a new embedding row) are
 concatenated with an `α` embedding and fused by an MLP into one **joint** code,
-which FiLM-modulates every trunk block.
+which modulates every trunk block through zero-initialized adaptive LayerNorm.
 
 The conditioning is joint rather than additively factorized — proposal §4.4 —
 and `test_the_pair_conditioning_is_joint_rather_than_additive` pins this by
 checking that the code violates the parallelogram identity that any additive
 conditioner would satisfy.
 
-The FiLM scale/shift are **zero-initialized**, so at construction the predictor
+The adaptive scale/shift are **zero-initialized**, so at construction the predictor
 is a plain residual MLP and the conditioning is deliberately inert; it becomes
 live as soon as the modulation weights move off zero.  The conditioning tests
 perturb the modulation explicitly rather than depending on that initialization
 choice.
 
-`PairConditioner` is injected into `DualOutputPredictor`, so Milestone 3's
-factorized-controller and separate-expert arms are constructor swaps.
+`PairConditioner` and the three transition adapters are injected into
+`DualOutputPredictor`, so later symbolic-interface and conditioning ablations
+are constructor swaps.
 
 ## Training loop
 
@@ -127,12 +139,11 @@ branch, predict the carrier, and regress `ẑ` to the detached `z*`.  AdamW
 
 ## What is deliberately inert, and why
 
-**Symbolic supervision is wired but not trained.**  The legacy RGB cohort
-carries no symbolic labels, so the training loop optimizes the carrier MSE
-only.  The mode heads and `mode_weight` are implemented and shape/masking-tested
-against synthetic targets in the unit suite; they activate through the existing
-`PhysicsSupervisionRequest` seam (`world_model/data/supervision.py`) once the
-enriched `physics_capture_v1` cohort exists.  Every run manifest records
+**Symbolic supervision is wired but not trained by the legacy loop.** The
+legacy RGB cohort carries no symbolic labels, so that loop optimizes the
+carrier MSE only. The validated cohort-v2 reader now supplies the accepted
+symbolic inputs; issues #5 and #6 own their training and scoring paths. Every
+legacy run manifest records
 `"symbolic_loss_active": false` so no run can be mistaken for one that trained
 symbols.
 
