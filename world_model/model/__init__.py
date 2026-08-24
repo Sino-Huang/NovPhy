@@ -1,8 +1,8 @@
 """Milestone 1a + 1b — the BG-NS-JEPA backbone.
 
-The continuous latent ``z`` is the sole rollout state carrier.  Everything
-symbolic lives in mode-head readouts that enter only the loss, so base training
-stays teacher-forced and fully differentiable.
+The continuous latent ``z`` is the sole rollout state carrier. Symbolic content
+enters only through the selected transition adapter and selected supervised
+readout, so no hard symbolic decode becomes rollout state.
 """
 from world_model.model.config import (
     ABSTRACTION_ORDER,
@@ -29,9 +29,15 @@ from world_model.model.predictor import (
     ContinuousTransitionAdapter,
     DualOutputPredictor,
     FiLMBlock,
+    MacroTransitionAdapter,
+    MacroTransitionBatch,
+    MacroTransitionInput,
+    MicroTransitionAdapter,
+    MicroTransitionBatch,
+    MicroTransitionInput,
     PairConditioner,
     PredictorOutput,
-    SymbolicTransitionAdapter,
+    TransitionRequest,
 )
 from world_model.model.jepa import JepaBackbone
 
@@ -49,14 +55,20 @@ __all__ = [
     "JepaConfig",
     "MACRO_TRANSITION_INPUTS",
     "MICRO_TRANSITION_INPUTS",
+    "MacroTransitionAdapter",
+    "MacroTransitionBatch",
+    "MacroTransitionInput",
     "MacroReadout",
     "MacroReadoutHead",
     "MicroReadoutHead",
+    "MicroTransitionAdapter",
+    "MicroTransitionBatch",
+    "MicroTransitionInput",
     "PairConditioner",
     "PredictionPair",
     "PredictorConfig",
     "PredictorOutput",
-    "SymbolicTransitionAdapter",
+    "TransitionRequest",
     "abstraction_index",
     "build_encoder",
     "coerce_abstraction",

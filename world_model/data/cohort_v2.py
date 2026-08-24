@@ -49,6 +49,7 @@ CENTRAL_STRATA: Final = (
     "stability transitions",
 )
 CAPABILITY_DECLARATION_IDENTITY: Final = "cohort-v2-capabilities-v1"
+COHORT_V2_RELEASE_IDENTITY: Final = V5_CONTRACT.release_identity
 ACCEPTED_LABELS: Final = {
     "contact": MICRO_SPEC_IDENTITY,
     "supports": MICRO_SPEC_IDENTITY,
@@ -135,6 +136,7 @@ class CohortV2Rollout:
 @dataclass(frozen=True, slots=True)
 class CohortV2OracleWindow:
     source_release_identity: str
+    capability_declaration_identity: str
     exposure_role: str
     attempt_id: str
     scenario_lineage_identity: str
@@ -191,6 +193,7 @@ class CohortV2ReleaseReader:
             self._validate_capability_declaration(Path(capability_declaration_path))
             release, derivations, collection, partition, ledger = self._load_envelopes()
             self.release_identity = release["identity"]
+            self.capability_declaration_identity = CAPABILITY_DECLARATION_IDENTITY
             self.derivation_identity = derivations["identity"]
             self.partition_identity = partition.identity
             self.rollouts = self._read_role(
@@ -667,6 +670,9 @@ class CohortV2OracleWindowDataset(Sequence[CohortV2OracleWindow]):
                     effective_horizon = min(requested_horizon, remaining)
                     examples.append(CohortV2OracleWindow(
                         source_release_identity=reader.release_identity,
+                        capability_declaration_identity=(
+                            reader.capability_declaration_identity
+                        ),
                         exposure_role=rollout.exposure_role,
                         attempt_id=rollout.attempt_id,
                         scenario_lineage_identity=rollout.scenario_lineage_identity,

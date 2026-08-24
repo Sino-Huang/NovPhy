@@ -1,6 +1,8 @@
 import unittest
 from pathlib import Path
 
+import torch
+
 from scripts.build_issue_54_evidence import (
     build_ingestion_evidence,
     run_adversarial_ingestion_checks,
@@ -12,7 +14,16 @@ from world_model.data import (
     probe_cohort_v2_final_access,
 )
 from world_model.data.cohort_v2 import CENTRAL_LABELS
+from world_model.model import (
+    Abstraction,
+    DualOutputPredictor,
+    MacroTransitionBatch,
+    MicroTransitionBatch,
+    PredictionPair,
+    PredictorConfig,
+)
 from world_model.training import (
+    build_cohort_v2_transition_request,
     build_cohort_v2_oracle_window_loader,
     score_cohort_v2_endpoints,
 )
@@ -142,6 +153,72 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
         self.assertGreater(score.unavailable_value_count, 0)
         self.assertGreater(score.scored_relation_count, 0)
         self.assertLessEqual(score.correct_value_count, score.scored_value_count)
+
+    def test_validated_windows_reach_typed_transition_adapters_without_losing_semantics(
+        self,
+    ) -> None:
+        reader = CohortV2ReleaseReader(
+            PUBLIC_RELEASE,
+            capability_declaration_path=CAPABILITY_DECLARATION,
+            production_plan_root=PRODUCTION_PLAN,
+            workflow_kind="training",
+            influence="learned_parameters",
+        )
+        dataset = CohortV2OracleWindowDataset(reader, requested_horizons=(1,))
+        predictor = DualOutputPredictor(
+            PredictorConfig(
+                latent_dim=8,
+                action_dim=5,
+                hidden_dim=16,
+                depth=1,
+                pair_code_dim=4,
+            )
+        )
+        latent = torch.randn(2, 8)
+        action = torch.randn(2, 5)
+
+        for abstraction, batch_type in (
+            (Abstraction.MICRO, MicroTransitionBatch),
+            (Abstraction.MACRO, MacroTransitionBatch),
+        ):
+            predicates = (
+                ("contact", "supports")
+                if abstraction is Abstraction.MICRO
+                else ("steady-state", "structure-unstable")
+            )
+            windows = tuple(
+                window
+                for window in dataset
+                if all(
+                    window.context.labels[predicate]["availability"] == "available"
+                    for predicate in predicates
+                )
+            )[:2]
+            request = build_cohort_v2_transition_request(
+                PredictionPair(1, abstraction), windows
+            )
+            self.assertIsInstance(request.mode_input, batch_type)
+            self.assertEqual(
+                request.mode_input.samples[0].frame_record_identity,
+                windows[0].context.identity,
+            )
+            if abstraction is Abstraction.MICRO:
+                self.assertEqual(
+                    request.mode_input.samples[0].supports,
+                    windows[0].context.labels["supports"]["relations"],
+                )
+            output = predictor(latent, action, request)
+            self.assertEqual(output.carrier.shape, torch.Size([2, 8]))
+
+        unavailable = next(
+            window
+            for window in dataset
+            if window.context.labels["steady-state"]["availability"] != "available"
+        )
+        with self.assertRaisesRegex(CohortV2IngestionError, "unavailable"):
+            build_cohort_v2_transition_request(
+                PredictionPair(1, Abstraction.MACRO), (unavailable,)
+            )
 
     def test_adversarial_ingestion_suite_covers_capabilities_and_boundaries(self) -> None:
         reader = CohortV2ReleaseReader(

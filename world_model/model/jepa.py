@@ -10,7 +10,11 @@ from world_model.data.types import ContractValueError
 from world_model.model.config import JepaConfig, PredictionPair
 from world_model.model.ema import EmaTargetEncoder
 from world_model.model.encoder import ContextEncoder, EncoderOutput
-from world_model.model.predictor import DualOutputPredictor, PredictorOutput
+from world_model.model.predictor import (
+    DualOutputPredictor,
+    PredictorOutput,
+    TransitionRequest,
+)
 from world_model.model import encoder as _encoder_module
 
 
@@ -59,24 +63,19 @@ class JepaBackbone(nn.Module):
         self,
         latent: torch.Tensor,
         action: torch.Tensor,
-        pair: PredictionPair,
-        mode_input: torch.Tensor | None = None,
+        pair: PredictionPair | TransitionRequest,
     ) -> PredictorOutput:
         """Predict the carrier (and the selected mode readout) for one pair."""
-        return self.predictor(latent, action, pair, mode_input)
+        return self.predictor(latent, action, pair)
 
     def rollout(
         self,
         latent: torch.Tensor,
         action: torch.Tensor,
-        pairs: tuple[PredictionPair, ...],
-        *,
-        mode_inputs: tuple[torch.Tensor | None, ...] | None = None,
+        pairs: tuple[PredictionPair | TransitionRequest, ...],
     ) -> tuple[torch.Tensor, ...]:
         """Chain carrier to carrier; mode heads are never constructed here."""
-        return self.predictor.rollout(
-            latent, action, pairs, mode_inputs=mode_inputs
-        )
+        return self.predictor.rollout(latent, action, pairs)
 
     def trainable_parameters(self) -> Iterator[nn.Parameter]:
         """Yield online-encoder and predictor parameters only."""

@@ -71,6 +71,7 @@ def _reader(
 
     class Reader:
         release_identity = "representative-cohort-v2-release-v5:fixture"
+        capability_declaration_identity = "cohort-v2-capabilities-v1"
         rollouts = (rollout,)
 
         @staticmethod

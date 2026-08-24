@@ -10,8 +10,8 @@ Three structural guarantees hold here, and all are pinned by
    gradients still reach the latent — symbols shape ``z`` through the loss —
    but a symbol decode never sits *inside* a rollout step.
 3. **Exactly one transition adapter executes.**  Continuous steps retain the
-   legacy path; micro and macro steps additionally consume only their selected
-   encoded symbolic content before entering the shared predictor.
+   legacy path; micro and macro steps additionally consume only their selected,
+   availability-checked symbolic content before entering the shared predictor.
 
 The ``(Delta, alpha)`` pair conditions a single shared trunk through
 AdaLN-Zero-style modulation, from a code that fuses the two axes *jointly*
@@ -51,6 +51,106 @@ class PredictorOutput:
     carrier: torch.Tensor
     micro_readout: torch.Tensor | None = None
     macro_readout: MacroReadout | None = None
+
+
+Relation = tuple[str, str]
+
+
+def _validate_relations(relations: tuple[Relation, ...], field: str) -> None:
+    if type(relations) is not tuple or any(
+        type(relation) is not tuple
+        or len(relation) != 2
+        or any(type(entity) is not str or not entity for entity in relation)
+        for relation in relations
+    ):
+        raise ContractValueError(field, "must contain entity-id relation pairs")
+
+
+@dataclass(frozen=True, slots=True)
+class MicroTransitionInput:
+    """One available cohort-v2 micro relation state."""
+
+    frame_record_identity: str
+    contact: tuple[Relation, ...]
+    supports: tuple[Relation, ...]
+
+    def __post_init__(self) -> None:
+        if type(self.frame_record_identity) is not str or not self.frame_record_identity:
+            raise ContractValueError(
+                "micro frame record identity", "must be nonempty"
+            )
+        _validate_relations(self.contact, "contact")
+        _validate_relations(self.supports, "supports")
+
+
+@dataclass(frozen=True, slots=True)
+class MacroTransitionInput:
+    """One available cohort-v2 macro predicate state."""
+
+    frame_record_identity: str
+    steady_state: bool
+    structure_unstable: bool
+
+    def __post_init__(self) -> None:
+        if type(self.frame_record_identity) is not str or not self.frame_record_identity:
+            raise ContractValueError(
+                "macro frame record identity", "must be nonempty"
+            )
+        if type(self.steady_state) is not bool:
+            raise ContractValueError("steady-state", "must be a boolean")
+        if type(self.structure_unstable) is not bool:
+            raise ContractValueError("structure-unstable", "must be a boolean")
+
+
+@dataclass(frozen=True, slots=True)
+class MicroTransitionBatch:
+    samples: tuple[MicroTransitionInput, ...]
+
+    def __post_init__(self) -> None:
+        if type(self.samples) is not tuple or not self.samples or any(
+            type(sample) is not MicroTransitionInput for sample in self.samples
+        ):
+            raise ContractValueError(
+                "micro transition batch", "must contain micro transition inputs"
+            )
+
+
+@dataclass(frozen=True, slots=True)
+class MacroTransitionBatch:
+    samples: tuple[MacroTransitionInput, ...]
+
+    def __post_init__(self) -> None:
+        if type(self.samples) is not tuple or not self.samples or any(
+            type(sample) is not MacroTransitionInput for sample in self.samples
+        ):
+            raise ContractValueError(
+                "macro transition batch", "must contain macro transition inputs"
+            )
+
+
+ModeTransitionInput = MicroTransitionBatch | MacroTransitionBatch | None
+
+
+@dataclass(frozen=True, slots=True)
+class TransitionRequest:
+    """One exclusive pair selection and its mode-specific input batch."""
+
+    pair: PredictionPair
+    mode_input: ModeTransitionInput
+
+    def __post_init__(self) -> None:
+        if type(self.pair) is not PredictionPair:
+            raise ContractValueError("prediction pair", "must be a PredictionPair")
+        expected = {
+            Abstraction.CONTINUOUS: type(None),
+            Abstraction.MICRO: MicroTransitionBatch,
+            Abstraction.MACRO: MacroTransitionBatch,
+        }[self.pair.abstraction]
+        if type(self.mode_input) is not expected:
+            raise ContractValueError(
+                f"{self.pair.abstraction} transition input",
+                "does not match the selected abstraction",
+            )
 
 
 class PairConditioner(nn.Module):
@@ -116,7 +216,7 @@ class ContinuousTransitionAdapter(nn.Module):
     """Retain the legacy continuous hidden state without symbolic content."""
 
     def forward(
-        self, hidden: torch.Tensor, mode_input: torch.Tensor | None
+        self, hidden: torch.Tensor, mode_input: ModeTransitionInput
     ) -> torch.Tensor:
         if mode_input is not None:
             raise ContractValueError(
@@ -125,28 +225,68 @@ class ContinuousTransitionAdapter(nn.Module):
         return hidden
 
 
-class SymbolicTransitionAdapter(nn.Module):
-    """Inject one selected mode's encoded symbolic content into the shared trunk."""
+class MicroTransitionAdapter(nn.Module):
+    """Inject available contact and directed-support relation content."""
 
-    def __init__(self, abstraction: Abstraction, input_dim: int, hidden_dim: int) -> None:
+    def __init__(self, hidden_dim: int) -> None:
         super().__init__()
-        self._abstraction = abstraction
-        self._input_dim = input_dim
-        self.projection = nn.Linear(input_dim, hidden_dim, bias=False)
+        self.projection = nn.Linear(5, hidden_dim, bias=False)
 
     def forward(
-        self, hidden: torch.Tensor, mode_input: torch.Tensor | None
+        self, hidden: torch.Tensor, mode_input: ModeTransitionInput
     ) -> torch.Tensor:
-        field = f"{self._abstraction} transition input"
-        if not isinstance(mode_input, torch.Tensor):
-            raise ContractValueError(field, "must be an encoded torch tensor")
-        if mode_input.ndim != 2 or mode_input.shape[1] != self._input_dim:
+        if type(mode_input) is not MicroTransitionBatch:
             raise ContractValueError(
-                field, f"must have shape [B, {self._input_dim}]"
+                "micro transition input", "must be a micro transition batch"
             )
-        if mode_input.shape[0] != hidden.shape[0]:
-            raise ContractValueError(field, "must match the latent batch size")
-        return hidden + self.projection(mode_input)
+        if len(mode_input.samples) != hidden.shape[0]:
+            raise ContractValueError(
+                "micro transition input", "must match the latent batch size"
+            )
+        features = torch.tensor(
+            [
+                (
+                    len(sample.contact),
+                    len(sample.supports),
+                    len({entity for relation in sample.contact for entity in relation}),
+                    len({supporter for supporter, _supported in sample.supports}),
+                    len({supported for _supporter, supported in sample.supports}),
+                )
+                for sample in mode_input.samples
+            ],
+            dtype=hidden.dtype,
+            device=hidden.device,
+        )
+        return hidden + self.projection(features)
+
+
+class MacroTransitionAdapter(nn.Module):
+    """Inject the two available central macro predicates."""
+
+    def __init__(self, hidden_dim: int) -> None:
+        super().__init__()
+        self.projection = nn.Linear(2, hidden_dim, bias=False)
+
+    def forward(
+        self, hidden: torch.Tensor, mode_input: ModeTransitionInput
+    ) -> torch.Tensor:
+        if type(mode_input) is not MacroTransitionBatch:
+            raise ContractValueError(
+                "macro transition input", "must be a macro transition batch"
+            )
+        if len(mode_input.samples) != hidden.shape[0]:
+            raise ContractValueError(
+                "macro transition input", "must match the latent batch size"
+            )
+        features = torch.tensor(
+            [
+                (sample.steady_state, sample.structure_unstable)
+                for sample in mode_input.samples
+            ],
+            dtype=hidden.dtype,
+            device=hidden.device,
+        )
+        return hidden + self.projection(features)
 
 
 class DualOutputPredictor(nn.Module):
@@ -205,20 +345,12 @@ class DualOutputPredictor(nn.Module):
         self.micro_adapter = (
             micro_adapter
             if micro_adapter is not None
-            else SymbolicTransitionAdapter(
-                Abstraction.MICRO,
-                config.micro_predicate_count,
-                config.hidden_dim,
-            )
+            else MicroTransitionAdapter(config.hidden_dim)
         )
         self.macro_adapter = (
             macro_adapter
             if macro_adapter is not None
-            else SymbolicTransitionAdapter(
-                Abstraction.MACRO,
-                config.macro_predicate_count,
-                config.hidden_dim,
-            )
+            else MacroTransitionAdapter(config.hidden_dim)
         )
 
     @property
@@ -229,19 +361,20 @@ class DualOutputPredictor(nn.Module):
         self,
         latent: torch.Tensor,
         action: torch.Tensor,
-        pair: PredictionPair,
-        mode_input: torch.Tensor | None = None,
+        pair: PredictionPair | TransitionRequest,
     ) -> torch.Tensor:
         """Return ``z_hat`` alone — the only quantity a rollout step may carry."""
-        self._validate(latent, action, pair)
-        code = self.conditioner.code(pair, latent.shape[0], latent.device)
+        selected = self._request(pair)
+        selected_pair = selected.pair
+        self._validate(latent, action, selected_pair)
+        code = self.conditioner.code(selected_pair, latent.shape[0], latent.device)
         hidden = self.input_projection(torch.cat((latent, action), dim=-1))
-        if pair.abstraction is Abstraction.CONTINUOUS:
-            hidden = self.continuous_adapter(hidden, mode_input)
-        elif pair.abstraction is Abstraction.MICRO:
-            hidden = self.micro_adapter(hidden, mode_input)
+        if selected_pair.abstraction is Abstraction.CONTINUOUS:
+            hidden = self.continuous_adapter(hidden, selected.mode_input)
+        elif selected_pair.abstraction is Abstraction.MICRO:
+            hidden = self.micro_adapter(hidden, selected.mode_input)
         else:
-            hidden = self.macro_adapter(hidden, mode_input)
+            hidden = self.macro_adapter(hidden, selected.mode_input)
         for block in self.blocks:
             hidden = block(hidden, code)
         return latent + self.output_projection(self.output_norm(hidden))
@@ -250,46 +383,56 @@ class DualOutputPredictor(nn.Module):
         self,
         latent: torch.Tensor,
         action: torch.Tensor,
-        pair: PredictionPair,
-        mode_input: torch.Tensor | None = None,
+        pair: PredictionPair | TransitionRequest,
     ) -> PredictorOutput:
         """Return the carrier plus the readout for the selected abstraction only."""
-        carrier = self.carrier(latent, action, pair, mode_input)
-        micro = self.micro_head(carrier) if pair.abstraction is Abstraction.MICRO else None
-        macro = self.macro_head(carrier) if pair.abstraction is Abstraction.MACRO else None
+        selected = self._request(pair)
+        selected_pair = selected.pair
+        carrier = self.carrier(latent, action, selected)
+        micro = (
+            self.micro_head(carrier)
+            if selected_pair.abstraction is Abstraction.MICRO
+            else None
+        )
+        macro = (
+            self.macro_head(carrier)
+            if selected_pair.abstraction is Abstraction.MACRO
+            else None
+        )
         return PredictorOutput(carrier=carrier, micro_readout=micro, macro_readout=macro)
 
     def rollout(
         self,
         latent: torch.Tensor,
         action: torch.Tensor,
-        pairs: Sequence[PredictionPair],
-        *,
-        mode_inputs: Sequence[torch.Tensor | None] | None = None,
+        pairs: Sequence[PredictionPair | TransitionRequest],
     ) -> tuple[torch.Tensor, ...]:
         """Chain carrier to carrier across a pair sequence, touching no head."""
         if not isinstance(pairs, Sequence) or isinstance(pairs, (str, bytes)):
-            raise ContractValueError("pairs", "must be a sequence of PredictionPair")
+            raise ContractValueError("requests", "must be a transition request sequence")
         if not pairs:
-            raise ContractValueError("pairs", "must not be empty")
-        if mode_inputs is None:
-            selected_inputs: Sequence[torch.Tensor | None] = (None,) * len(pairs)
-        elif (
-            not isinstance(mode_inputs, Sequence)
-            or isinstance(mode_inputs, (str, bytes))
-            or len(mode_inputs) != len(pairs)
-        ):
-            raise ContractValueError(
-                "mode_inputs", "must match the pair sequence length"
-            )
-        else:
-            selected_inputs = mode_inputs
+            raise ContractValueError("requests", "must not be empty")
         carriers: list[torch.Tensor] = []
         current = latent
-        for pair, mode_input in zip(pairs, selected_inputs, strict=True):
-            current = self.carrier(current, action, pair, mode_input)
+        for pair in pairs:
+            current = self.carrier(current, action, pair)
             carriers.append(current)
         return tuple(carriers)
+
+    @staticmethod
+    def _request(request: PredictionPair | TransitionRequest) -> TransitionRequest:
+        if type(request) is TransitionRequest:
+            return request
+        if type(request) is PredictionPair:
+            if request.abstraction is not Abstraction.CONTINUOUS:
+                raise ContractValueError(
+                    f"{request.abstraction} transition input",
+                    "must be supplied in a TransitionRequest",
+                )
+            return TransitionRequest(request, None)
+        raise ContractValueError(
+            "transition request", "must be a PredictionPair or TransitionRequest"
+        )
 
     def _validate(
         self, latent: torch.Tensor, action: torch.Tensor, pair: PredictionPair

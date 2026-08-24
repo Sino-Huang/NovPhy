@@ -24,9 +24,14 @@ from world_model.model import (
     JepaConfig,
     MACRO_TRANSITION_INPUTS,
     MICRO_TRANSITION_INPUTS,
+    MacroTransitionBatch,
+    MacroTransitionInput,
     MacroReadout,
+    MicroTransitionBatch,
+    MicroTransitionInput,
     PredictionPair,
     PredictorConfig,
+    TransitionRequest,
     build_encoder,
     mode_weight,
 )
@@ -107,8 +112,30 @@ class SpyHead(nn.Module):
         return self.wrapped(*args, **kwargs)
 
 
-class SpyAdapter(SpyHead):
-    """Count calls through one selected transition adapter."""
+def transition_request(
+    pair: PredictionPair, batch_size: int, *, active: bool = True
+) -> PredictionPair | TransitionRequest:
+    if pair.abstraction is Abstraction.CONTINUOUS:
+        return pair
+    if pair.abstraction is Abstraction.MICRO:
+        samples = tuple(
+            MicroTransitionInput(
+                frame_record_identity=f"frame:{index}",
+                contact=(("entity:a", "entity:b"),) if active else (),
+                supports=(("entity:a", "entity:b"),) if active else (),
+            )
+            for index in range(batch_size)
+        )
+        return TransitionRequest(pair, MicroTransitionBatch(samples))
+    samples = tuple(
+        MacroTransitionInput(
+            frame_record_identity=f"frame:{index}",
+            steady_state=active,
+            structure_unstable=active,
+        )
+        for index in range(batch_size)
+    )
+    return TransitionRequest(pair, MacroTransitionBatch(samples))
 
 
 # ---------------------------------------------------------------------------
@@ -327,13 +354,10 @@ class DualOutputPredictorTests(unittest.TestCase):
         self.latent = torch.randn(4, _LATENT_DIM)
         self.action = torch.randn(4, _ACTION_DIM)
 
-    def mode_input(self, pair: PredictionPair, *, fill: float = 1.0) -> torch.Tensor | None:
-        widths = {
-            Abstraction.MICRO: _MICRO_PREDICATES,
-            Abstraction.MACRO: _MACRO_PREDICATES,
-        }
-        width = widths.get(pair.abstraction)
-        return None if width is None else torch.full((4, width), fill)
+    def request(
+        self, pair: PredictionPair, *, active: bool = True
+    ) -> PredictionPair | TransitionRequest:
+        return transition_request(pair, 4, active=active)
 
     def all_pairs(self) -> list[PredictionPair]:
         return [
@@ -346,7 +370,7 @@ class DualOutputPredictorTests(unittest.TestCase):
         for pair in self.all_pairs():
             with self.subTest(pair=pair):
                 output = self.predictor(
-                    self.latent, self.action, pair, self.mode_input(pair)
+                    self.latent, self.action, self.request(pair)
                 )
                 self.assertIsNotNone(output.carrier)
                 self.assertEqual(output.carrier.shape, torch.Size([4, _LATENT_DIM]))
@@ -361,7 +385,7 @@ class DualOutputPredictorTests(unittest.TestCase):
             micro_expected, macro_expected = expectations[pair.abstraction]
             with self.subTest(pair=pair):
                 output = self.predictor(
-                    self.latent, self.action, pair, self.mode_input(pair)
+                    self.latent, self.action, self.request(pair)
                 )
                 self.assertEqual(output.micro_readout is not None, micro_expected)
                 self.assertEqual(output.macro_readout is not None, macro_expected)
@@ -370,8 +394,9 @@ class DualOutputPredictorTests(unittest.TestCase):
         output = self.predictor(
             self.latent,
             self.action,
-            PredictionPair(delta=1, abstraction=Abstraction.MICRO),
-            torch.ones(4, _MICRO_PREDICATES),
+            transition_request(
+                PredictionPair(delta=1, abstraction=Abstraction.MICRO), 4
+            ),
         )
         self.assertEqual(output.micro_readout.shape, torch.Size([4, _MICRO_PREDICATES]))
 
@@ -379,8 +404,9 @@ class DualOutputPredictorTests(unittest.TestCase):
         output = self.predictor(
             self.latent,
             self.action,
-            PredictionPair(delta=1, abstraction=Abstraction.MACRO),
-            torch.ones(4, _MACRO_PREDICATES),
+            transition_request(
+                PredictionPair(delta=1, abstraction=Abstraction.MACRO), 4
+            ),
         )
         readout = output.macro_readout
         self.assertIsInstance(readout, MacroReadout)
@@ -400,7 +426,7 @@ class DualOutputPredictorTests(unittest.TestCase):
         for pair in self.all_pairs():
             with self.subTest(pair=pair):
                 output = self.predictor(
-                    self.latent, self.action, pair, self.mode_input(pair)
+                    self.latent, self.action, self.request(pair)
                 )
                 gradients = torch.autograd.grad(
                     output.carrier.sum(),
@@ -415,8 +441,9 @@ class DualOutputPredictorTests(unittest.TestCase):
         output = self.predictor(
             latent,
             self.action,
-            PredictionPair(delta=1, abstraction=Abstraction.MICRO),
-            torch.ones(4, _MICRO_PREDICATES),
+            transition_request(
+                PredictionPair(delta=1, abstraction=Abstraction.MICRO), 4
+            ),
         )
         output.micro_readout.sum().backward()
         self.assertIsNotNone(latent.grad)
@@ -433,10 +460,8 @@ class DualOutputPredictorTests(unittest.TestCase):
             PredictionPair(delta=4, abstraction=Abstraction.MACRO),
             PredictionPair(delta=1, abstraction=Abstraction.MICRO),
         )
-        mode_inputs = tuple(self.mode_input(pair) for pair in pairs)
-        carriers = self.predictor.rollout(
-            self.latent, self.action, pairs, mode_inputs=mode_inputs
-        )
+        requests = tuple(self.request(pair) for pair in pairs)
+        carriers = self.predictor.rollout(self.latent, self.action, requests)
         self.assertEqual(len(carriers), len(pairs))
         for carrier in carriers:
             self.assertEqual(carrier.shape, torch.Size([4, _LATENT_DIM]))
@@ -447,15 +472,15 @@ class DualOutputPredictorTests(unittest.TestCase):
         for pair in self.all_pairs():
             with self.subTest(pair=pair):
                 predictor = DualOutputPredictor(self.config)
-                predictor.continuous_adapter = SpyAdapter(
+                predictor.continuous_adapter = SpyHead(
                     predictor.continuous_adapter
                 )
-                predictor.micro_adapter = SpyAdapter(predictor.micro_adapter)
-                predictor.macro_adapter = SpyAdapter(predictor.macro_adapter)
+                predictor.micro_adapter = SpyHead(predictor.micro_adapter)
+                predictor.macro_adapter = SpyHead(predictor.macro_adapter)
                 predictor.micro_head = SpyHead(predictor.micro_head)
                 predictor.macro_head = SpyHead(predictor.macro_head)
 
-                predictor(self.latent, self.action, pair, self.mode_input(pair))
+                predictor(self.latent, self.action, self.request(pair))
 
                 adapter_counts = {
                     Abstraction.CONTINUOUS: predictor.continuous_adapter.call_count,
@@ -513,8 +538,7 @@ class DualOutputPredictorTests(unittest.TestCase):
         macro = self.predictor(
             self.latent,
             self.action,
-            pair_macro,
-            self.mode_input(pair_macro, fill=0.0),
+            self.request(pair_macro, active=False),
         ).carrier
         self.assertFalse(torch.allclose(continuous, macro))
 
@@ -522,10 +546,10 @@ class DualOutputPredictorTests(unittest.TestCase):
         self._make_conditioning_live()
         pair = PredictionPair(delta=2, abstraction=Abstraction.MICRO)
         without_content = self.predictor(
-            self.latent, self.action, pair, self.mode_input(pair, fill=0.0)
+            self.latent, self.action, self.request(pair, active=False)
         ).carrier
         with_content = self.predictor(
-            self.latent, self.action, pair, self.mode_input(pair, fill=1.0)
+            self.latent, self.action, self.request(pair, active=True)
         ).carrier
         continuous = self.predictor(
             self.latent,
@@ -539,20 +563,23 @@ class DualOutputPredictorTests(unittest.TestCase):
     def test_symbolic_modes_fail_closed_without_their_selected_content(self) -> None:
         for abstraction in (Abstraction.MICRO, Abstraction.MACRO):
             with self.subTest(abstraction=abstraction):
+                pair = PredictionPair(delta=1, abstraction=abstraction)
                 with self.assertRaises(ContractValueError):
-                    self.predictor(
-                        self.latent,
-                        self.action,
-                        PredictionPair(delta=1, abstraction=abstraction),
-                    )
+                    TransitionRequest(pair, None)
 
     def test_continuous_mode_rejects_symbolic_content_instead_of_ignoring_it(self) -> None:
         with self.assertRaises(ContractValueError):
-            self.predictor(
-                self.latent,
-                self.action,
+            TransitionRequest(
                 PredictionPair(delta=1, abstraction=Abstraction.CONTINUOUS),
-                torch.ones(4, _MICRO_PREDICATES),
+                MicroTransitionBatch(
+                    (
+                        MicroTransitionInput(
+                            frame_record_identity="frame:0",
+                            contact=(),
+                            supports=(),
+                        ),
+                    )
+                ),
             )
 
     def test_the_pair_conditioning_is_joint_rather_than_additive(self) -> None:
@@ -625,8 +652,9 @@ class ModeWeightTests(unittest.TestCase):
         output = predictor(
             latent,
             action,
-            PredictionPair(delta=1, abstraction=Abstraction.MICRO),
-            torch.ones(2, _MICRO_PREDICATES),
+            transition_request(
+                PredictionPair(delta=1, abstraction=Abstraction.MICRO), 2
+            ),
         )
         weight = mode_weight(Abstraction.CONTINUOUS, 1.0)
         (weight * output.micro_readout.pow(2).sum()).backward()
@@ -700,14 +728,12 @@ class JepaBackboneTests(unittest.TestCase):
         without_content = self.backbone.predict(
             latent,
             self.action,
-            pair,
-            torch.zeros(2, _MICRO_PREDICATES),
+            transition_request(pair, 2, active=False),
         ).carrier
         with_content = self.backbone.predict(
             latent,
             self.action,
-            pair,
-            torch.ones(2, _MICRO_PREDICATES),
+            transition_request(pair, 2, active=True),
         ).carrier
 
         self.assertFalse(torch.allclose(without_content, with_content))

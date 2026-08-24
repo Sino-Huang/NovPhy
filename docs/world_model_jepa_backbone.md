@@ -28,7 +28,7 @@ and all are pinned by tests rather than left to convention.
    monkeypatches call counters onto both heads and asserts zero invocations
    across a four-step rollout.
 3. Each decision executes exactly one continuous, micro, or macro transition
-   adapter. Micro and macro inputs fail closed when their selected encoded
+   adapter. Micro and macro inputs fail closed when their selected typed
    symbolic content is absent; continuous calls retain the original
    `(latent, action, pair)` interface.
 
@@ -88,11 +88,13 @@ mode-head readout is emitted only for the abstraction the controller selected:
 | `micro` | yes | `[B, n_micro]` | `None` |
 | `macro` | yes | `None` | `(S^M, Δ̂, ê)` |
 
-The selected adapter receives encoded content separately from the pair
-conditioner. The cohort-v2 input vocabulary is exactly `contact` and directed
-`supports` for micro, and `steady-state` and `structure-unstable` for macro.
-Material/damage labels and the excluded legacy macro predicates are not model
-inputs. Only the selected adapter and selected readout execute for a decision.
+The selected adapter receives typed content separately from the pair
+conditioner. `build_cohort_v2_transition_request()` carries available labels
+from validated v5 oracle windows without turning unavailable labels into empty
+or false values. The vocabulary is exactly `contact` and directed `supports`
+for micro, and `steady-state` and `structure-unstable` for macro. Material/damage
+labels and the excluded legacy macro predicates are not model inputs. Only the
+selected adapter and selected readout execute for a decision.
 
 `mode_weight(α, r_ψ)` is the proposal's `ω_ψ`: `0` for a continuous step, `r_ψ`
 for micro relational constraints, `1` for macro-event supervision.  A masked

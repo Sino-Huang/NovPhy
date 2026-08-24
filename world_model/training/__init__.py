@@ -102,6 +102,7 @@ from world_model.training.cohort_v2 import (
     CohortV2EndpointScore,
     LabelAvailability,
     build_cohort_v2_oracle_window_loader,
+    build_cohort_v2_transition_request,
     score_cohort_v2_endpoints,
 )
 from world_model.training.cohort_v2_evaluation import (
@@ -157,6 +158,7 @@ __all__ = [
     "TrainingConfig",
     "build_window_loader",
     "build_cohort_v2_oracle_window_loader",
+    "build_cohort_v2_transition_request",
     "capture_environment",
     "canonical_json_bytes",
     "collapse_diagnostics",

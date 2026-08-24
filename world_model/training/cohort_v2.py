@@ -10,11 +10,23 @@ from typing import Any, Protocol
 import torch
 
 from world_model.data.cohort_v2 import (
+    CAPABILITY_DECLARATION_IDENTITY,
     CENTRAL_LABELS,
+    COHORT_V2_RELEASE_IDENTITY,
     CohortV2CentralFrameRecord,
     CohortV2IngestionError,
+    CohortV2OracleWindow,
     CohortV2OracleWindowDataset,
     CohortV2ReleaseReader,
+)
+from world_model.model import (
+    Abstraction,
+    MacroTransitionBatch,
+    MacroTransitionInput,
+    MicroTransitionBatch,
+    MicroTransitionInput,
+    PredictionPair,
+    TransitionRequest,
 )
 
 
@@ -52,6 +64,67 @@ def build_cohort_v2_oracle_window_loader(
         shuffle=False,
         collate_fn=tuple,
     )
+
+
+def _available_label(window: CohortV2OracleWindow, predicate: str) -> Mapping[str, Any]:
+    label = window.context.labels[predicate]
+    availability = label.get("availability")
+    if availability != "available":
+        raise CohortV2IngestionError(
+            f"{predicate} is unavailable for {window.context.identity}: {availability}"
+        )
+    return label
+
+
+def build_cohort_v2_transition_request(
+    pair: PredictionPair,
+    windows: tuple[CohortV2OracleWindow, ...],
+) -> TransitionRequest:
+    """Adapt validated v5 oracle windows to one exclusive model request."""
+    if type(pair) is not PredictionPair:
+        raise CohortV2IngestionError("Transition request requires a prediction pair")
+    if type(windows) is not tuple or not windows or any(
+        type(window) is not CohortV2OracleWindow for window in windows
+    ):
+        raise CohortV2IngestionError(
+            "Transition request requires validated cohort-v2 oracle windows"
+        )
+    for window in windows:
+        if (
+            window.source_release_identity != COHORT_V2_RELEASE_IDENTITY
+            or window.capability_declaration_identity
+            != CAPABILITY_DECLARATION_IDENTITY
+        ):
+            raise CohortV2IngestionError(
+                "Transition request crosses the approved cohort-v2 release boundary"
+            )
+        if window.requested_horizon != pair.delta:
+            raise CohortV2IngestionError(
+                "Transition request horizon does not match its oracle windows"
+            )
+    if pair.abstraction is Abstraction.CONTINUOUS:
+        return TransitionRequest(pair, None)
+    if pair.abstraction is Abstraction.MICRO:
+        samples = tuple(
+            MicroTransitionInput(
+                frame_record_identity=window.context.identity,
+                contact=_available_label(window, "contact")["relations"],
+                supports=_available_label(window, "supports")["relations"],
+            )
+            for window in windows
+        )
+        return TransitionRequest(pair, MicroTransitionBatch(samples))
+    samples = tuple(
+        MacroTransitionInput(
+            frame_record_identity=window.context.identity,
+            steady_state=_available_label(window, "steady-state")["value"],
+            structure_unstable=_available_label(
+                window, "structure-unstable"
+            )["value"],
+        )
+        for window in windows
+    )
+    return TransitionRequest(pair, MacroTransitionBatch(samples))
 
 
 def _availability(label: Mapping[str, Any]) -> LabelAvailability:
@@ -180,5 +253,6 @@ __all__ = [
     "CohortV2EndpointScore",
     "LabelAvailability",
     "build_cohort_v2_oracle_window_loader",
+    "build_cohort_v2_transition_request",
     "score_cohort_v2_endpoints",
 ]
