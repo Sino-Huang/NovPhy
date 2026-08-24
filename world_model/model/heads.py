@@ -14,6 +14,7 @@ from dataclasses import dataclass
 
 import torch
 from torch import nn
+from torch.nn import functional as F
 
 from world_model.data.types import ContractValueError
 from world_model.model.config import Abstraction, coerce_abstraction
@@ -29,7 +30,13 @@ class MacroReadout:
 
 
 class MicroReadoutHead(nn.Module):
-    """Decode object-level micro predicates ``S^mu`` from the carrier."""
+    """Decode aggregate and entity-pair micro predicates from the carrier.
+
+    ``forward`` retains the original aggregate-logit contract.  Cohort-v2
+    supervision uses :meth:`relation_logits`, which scores the exact entity-ID
+    pairs supplied by the oracle target.  Contact queries are symmetric while
+    support queries retain supporter-to-supported direction.
+    """
 
     def __init__(self, latent_dim: int, hidden_dim: int, predicate_count: int) -> None:
         super().__init__()
@@ -39,9 +46,98 @@ class MicroReadoutHead(nn.Module):
             nn.SiLU(),
             nn.Linear(hidden_dim, predicate_count),
         )
+        self.relation_carrier = nn.Linear(latent_dim, hidden_dim)
+        self.entity_embedding = nn.Embedding(256, hidden_dim)
+        self.contact_projection = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.supporter_projection = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.supported_projection = nn.Linear(hidden_dim, hidden_dim, bias=False)
+        self.contact_score = nn.Linear(hidden_dim, 1)
+        self.support_score = nn.Linear(hidden_dim, 1)
 
     def forward(self, carrier: torch.Tensor) -> torch.Tensor:
-        return self.body(carrier)
+        aggregate = self.body(carrier)
+        # Keep the historical masked-head contract: when a selected micro loss
+        # is multiplied by zero, every parameter in that head receives an
+        # explicit zero gradient rather than an absent gradient. Exact relation
+        # supervision below supplies the nonzero path for these parameters.
+        relation_zero = sum(
+            parameter.sum() * 0.0
+            for name, parameter in self.named_parameters()
+            if not name.startswith("body.")
+        )
+        return aggregate + relation_zero
+
+    def _entity(self, identity: str, device: torch.device) -> torch.Tensor:
+        if type(identity) is not str or not identity:
+            raise ContractValueError("relation query", "entity ids must be nonempty")
+        encoded = torch.tensor(tuple(identity.encode("utf-8")), device=device)
+        return self.entity_embedding(encoded).mean(dim=0)
+
+    def relation_logits(
+        self,
+        carrier: torch.Tensor,
+        predicate: str,
+        queries: tuple[tuple[tuple[str, str], ...], ...],
+    ) -> tuple[torch.Tensor, ...]:
+        """Score variable-length entity-pair queries for one micro predicate."""
+        if (
+            not isinstance(carrier, torch.Tensor)
+            or carrier.ndim != 2
+            or type(queries) is not tuple
+            or len(queries) != carrier.shape[0]
+        ):
+            raise ContractValueError(
+                "relation queries", "must match a two-dimensional carrier batch"
+            )
+        if predicate not in ("contact", "supports"):
+            raise ContractValueError(
+                "micro predicate", "must be contact or supports"
+            )
+        carrier_features = self.relation_carrier(carrier)
+        results = []
+        entities: dict[str, torch.Tensor] = {}
+
+        def entity(identity: str) -> torch.Tensor:
+            if identity not in entities:
+                entities[identity] = self._entity(identity, carrier.device)
+            return entities[identity]
+
+        for index, sample_queries in enumerate(queries):
+            if type(sample_queries) is not tuple or any(
+                type(query) is not tuple
+                or len(query) != 2
+                or any(type(entity) is not str or not entity for entity in query)
+                for query in sample_queries
+            ):
+                raise ContractValueError(
+                    "relation queries", "must contain entity-id pairs"
+                )
+            if sample_queries:
+                first_entities = torch.stack(
+                    tuple(entity(first) for first, _second in sample_queries)
+                )
+                second_entities = torch.stack(
+                    tuple(entity(second) for _first, second in sample_queries)
+                )
+                if predicate == "contact":
+                    relation = self.contact_projection(
+                        first_entities + second_entities
+                    )
+                    score = self.contact_score
+                else:
+                    relation = (
+                        self.supporter_projection(first_entities)
+                        + self.supported_projection(second_entities)
+                    )
+                    score = self.support_score
+                results.append(
+                    score(
+                        F.silu(carrier_features[index].unsqueeze(0) + relation)
+                    ).squeeze(-1)
+                )
+            else:
+                results.append(carrier_features[index, :0])
+        return tuple(results)
 
 
 class MacroReadoutHead(nn.Module):

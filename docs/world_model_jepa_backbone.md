@@ -313,3 +313,48 @@ final-state, event, penetration, floating, or illegal-contact result is
 fabricated. The resulting frontier therefore supports only the scoped
 continuous temporal comparison and makes no claim about the joint `(delta,
 alpha)` controller or oracle-symbol ceiling.
+
+## Cohort-v2 oracle micro transition experiment
+
+Issue #5 adds a separate cohort-v2 path without changing the legacy temporal
+experiment above. It uses the v5 release's `training` exposure role for all
+learned parameters and balances the six strict-horizon continuous/micro pairs
+over requested horizons `{1,5,15}`. The carrier is a fixed-width continuous
+encoding of the oracle engine state. Micro input uses the context frame
+record's exact entity-ID relation sets under
+`cohort-v2-micro-relation-derivation-spec-v1:contact+supports`; its readout is
+supervised on every eligible target entity pair, with symmetric `contact`,
+directed supporter-to-supported `supports`, and unavailable predicates masked
+rather than treated as empty negative sets.
+
+The frozen checkpoint declares only `transition.continuous` and
+`transition.micro`. Exhaustive scoring therefore emits continuous and eligible
+micro objectives for all non-final roles while retaining explicit unavailable
+outcomes for macro. A canonical model-selection frontier-input artifact carries
+all nine grid pairs and their availability, but does not claim a compute Pareto
+frontier: comparable compute accounting remains issue #7.
+
+Evaluation uses every visible CUDA device by default. Canonically ordered states
+are assigned to devices by deterministic round-robin index, each device scores
+same-pair windows in bounded batches, and completed shards are sorted back into
+source order before the immutable evaluator writes anything. Override discovery
+with `--evaluation-devices cuda:0,cuda:1` or tune the default batch size of 128
+with `--evaluation-batch-size`.
+
+```bash
+# Bounded integration check: validates all three non-final readers, executes
+# one continuous and one micro update, then batched scores on every visible GPU.
+# It writes nothing.
+python -u -m scripts.run_cohort_v2_micro_experiment --dry-run
+
+# Full foreground experiment. Progress is flushed during release loading,
+# training, exhaustive scoring, checkpointing, and artifact publication.
+python -u -m scripts.run_cohort_v2_micro_experiment
+
+# Source/provenance and artifact validation after the full run.
+python -u -m scripts.run_cohort_v2_micro_experiment --validate
+```
+
+Outputs stay ignored under `.local-artifacts/issue-5-micro-experiment`. The
+ordinary reader never opens final evaluation, and neither calibration nor
+model-selection examples enter an optimizer step.

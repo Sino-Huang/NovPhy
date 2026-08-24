@@ -5,6 +5,7 @@ import hashlib
 import json
 import math
 import os
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, Protocol
@@ -91,6 +92,14 @@ class CohortV2PairObjectiveScorer(Protocol):
     def objective(
         self, window: CohortV2OracleWindow, pair: PredictionPair
     ) -> float: ...
+
+
+class CohortV2BatchedPairObjectiveScorer(CohortV2PairObjectiveScorer, Protocol):
+    def objective_batch(
+        self,
+        windows: tuple[CohortV2OracleWindow, ...],
+        pair: PredictionPair,
+    ) -> tuple[float, ...]: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -406,6 +415,169 @@ class CohortV2ExhaustiveEvaluator:
             checkpoint_identity=self._scorer.checkpoint_identity,
             checkpoint_capabilities=tuple(sorted(self._scorer.capabilities)),
             objective_identity=self._scorer.objective_identity,
+            grid=self._grid,
+            state_set_identity=state_set_identity,
+            states=ordered_states,
+        )
+
+
+class CohortV2ParallelExhaustiveEvaluator:
+    """Batch and deterministically shard exhaustive states across scorers."""
+
+    def __init__(
+        self,
+        scorers: tuple[CohortV2BatchedPairObjectiveScorer, ...],
+        *,
+        batch_size: int,
+        grid: CohortV2PairGrid = CohortV2PairGrid(),
+    ) -> None:
+        if type(scorers) is not tuple or not scorers:
+            raise CohortV2EvaluationError("parallel evaluation requires scorers")
+        if type(batch_size) is not int or batch_size <= 0:
+            raise CohortV2EvaluationError("parallel batch size must be positive")
+        first = scorers[0]
+        binding = (
+            first.checkpoint_identity,
+            first.objective_identity,
+            first.capabilities,
+        )
+        if (
+            type(first.checkpoint_identity) is not str
+            or not first.checkpoint_identity.strip()
+            or type(first.objective_identity) is not str
+            or not first.objective_identity.strip()
+            or type(first.capabilities) is not frozenset
+        ):
+            raise CohortV2EvaluationError(
+                "parallel scorer provenance or capabilities are malformed"
+            )
+        for scorer in scorers:
+            if (
+                (
+                    scorer.checkpoint_identity,
+                    scorer.objective_identity,
+                    scorer.capabilities,
+                )
+                != binding
+                or not callable(getattr(scorer, "objective_batch", None))
+            ):
+                raise CohortV2EvaluationError(
+                    "parallel scorers must share one checkpoint and objective"
+                )
+        self._scorers = scorers
+        self._batch_size = batch_size
+        self._grid = grid
+
+    def _evaluate_shard(
+        self,
+        scorer: CohortV2BatchedPairObjectiveScorer,
+        indexed_states: tuple[
+            tuple[int, tuple[tuple[CohortV2OracleWindow, ...], int]], ...
+        ],
+    ) -> tuple[tuple[int, CohortV2StateEvaluation], ...]:
+        objectives: dict[tuple[int, int], float] = {}
+        window_maps = {
+            index: {window.requested_horizon: window for window in windows}
+            for index, (windows, _frame_record_count) in indexed_states
+        }
+        for pair_index, pair in enumerate(self._grid.pairs):
+            eligible = tuple(
+                (index, window_maps[index][pair.delta])
+                for index, (_windows, _frame_record_count) in indexed_states
+                if not _availability_reasons(
+                    window_maps[index][pair.delta], pair, scorer.capabilities
+                )
+            )
+            for start in range(0, len(eligible), self._batch_size):
+                batch = eligible[start:start + self._batch_size]
+                values = scorer.objective_batch(
+                    tuple(window for _index, window in batch), pair
+                )
+                if type(values) is not tuple or len(values) != len(batch):
+                    raise CohortV2EvaluationError(
+                        "batched pair scorer returned a partial batch"
+                    )
+                for (index, _window), value in zip(batch, values, strict=True):
+                    if (
+                        type(value) not in (int, float)
+                        or not math.isfinite(float(value))
+                        or value < 0.0
+                    ):
+                        raise CohortV2EvaluationError(
+                            "batched pair scorer returned an invalid objective"
+                        )
+                    objectives[(index, pair_index)] = float(value)
+
+        states = []
+        for index, (windows, frame_record_count) in indexed_states:
+            first = windows[0]
+            outcomes = []
+            for pair_index, pair in enumerate(self._grid.pairs):
+                window = window_maps[index][pair.delta]
+                reasons = _availability_reasons(
+                    window, pair, scorer.capabilities
+                )
+                objective = None if reasons else objectives[(index, pair_index)]
+                outcomes.append(CohortV2PairOutcome(
+                    pair=pair,
+                    requested_horizon=pair.delta,
+                    effective_horizon=window.effective_horizon,
+                    target_frame_record_identity=window.target.identity,
+                    objective=objective,
+                    unavailable_reasons=reasons,
+                ))
+            outcome_tuple = tuple(outcomes)
+            selected_pair, tied_pairs = _select_best_pair(outcome_tuple)
+            states.append((index, CohortV2StateEvaluation(
+                state_id=first.context.identity,
+                exposure_role=first.exposure_role,
+                attempt_id=first.attempt_id,
+                scenario_lineage_identity=first.scenario_lineage_identity,
+                context_position=first.context_position,
+                context_fixed_step=first.context.fixed_step,
+                frame_record_count=frame_record_count,
+                outcomes=outcome_tuple,
+                selected_pair=selected_pair,
+                tied_pairs=tied_pairs,
+            )))
+        return tuple(states)
+
+    def evaluate(
+        self, readers: tuple[CohortV2ReleaseReader, ...]
+    ) -> CohortV2EvaluationResult:
+        release_identity, partition_identity = _validate_reader_bindings(readers)
+        source_states = _source_state_windows(readers, self._grid)
+        indexed = tuple(enumerate(source_states))
+        shards = tuple(
+            indexed[worker_index::len(self._scorers)]
+            for worker_index in range(len(self._scorers))
+        )
+        if len(self._scorers) == 1:
+            completed = (self._evaluate_shard(self._scorers[0], shards[0]),)
+        else:
+            with ThreadPoolExecutor(max_workers=len(self._scorers)) as executor:
+                futures = tuple(
+                    executor.submit(self._evaluate_shard, scorer, shard)
+                    for scorer, shard in zip(self._scorers, shards, strict=True)
+                )
+                completed = tuple(future.result() for future in futures)
+        indexed_results = tuple(item for shard in completed for item in shard)
+        ordered_states = tuple(
+            state for _index, state in sorted(indexed_results, key=lambda item: item[0])
+        )
+        state_set_identity = cohort_v2_evaluation_state_set_identity(
+            release_identity,
+            partition_identity,
+            tuple(state.state_id for state in ordered_states),
+        )
+        first = self._scorers[0]
+        return CohortV2EvaluationResult(
+            release_identity=release_identity,
+            capability_declaration_identity=CAPABILITY_DECLARATION_IDENTITY,
+            partition_identity=partition_identity,
+            checkpoint_identity=first.checkpoint_identity,
+            checkpoint_capabilities=tuple(sorted(first.capabilities)),
+            objective_identity=first.objective_identity,
             grid=self._grid,
             state_set_identity=state_set_identity,
             states=ordered_states,
@@ -805,6 +977,8 @@ __all__ = [
     "CohortV2EvaluationReceipt",
     "CohortV2EvaluationResult",
     "CohortV2ExhaustiveEvaluator",
+    "CohortV2BatchedPairObjectiveScorer",
+    "CohortV2ParallelExhaustiveEvaluator",
     "CohortV2PairGrid",
     "CohortV2PairObjectiveScorer",
     "CohortV2PairOutcome",

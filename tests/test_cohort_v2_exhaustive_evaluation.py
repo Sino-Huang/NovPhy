@@ -13,6 +13,7 @@ from world_model.training import (
     COHORT_V2_HORIZONS,
     CohortV2EvaluationError,
     CohortV2ExhaustiveEvaluator,
+    CohortV2ParallelExhaustiveEvaluator,
     CohortV2PairGrid,
     validate_cohort_v2_evaluation,
     write_cohort_v2_evaluation,
@@ -139,6 +140,27 @@ class _NearTieScorer:
         return values.get(pair.identity, 2.0)
 
 
+class _BatchedScorer:
+    checkpoint_identity = "checkpoint:fixture"
+    objective_identity = "objective:fixture"
+    capabilities = frozenset({
+        "transition.continuous", "transition.micro", "transition.macro"
+    })
+
+    def __init__(self, worker: int) -> None:
+        self.worker = worker
+        self.batch_sizes = []
+        self.state_ids = set()
+
+    def objective(self, window, pair) -> float:
+        return self.objective_batch((window,), pair)[0]
+
+    def objective_batch(self, windows, pair):
+        self.batch_sizes.append(len(windows))
+        self.state_ids.update(window.context.identity for window in windows)
+        return tuple(float(pair.delta) for _window in windows)
+
+
 def _validate(path: Path, readers, scorer):
     return validate_cohort_v2_evaluation(
         path,
@@ -208,6 +230,38 @@ class CohortV2ExhaustiveEvaluationTests(unittest.TestCase):
         self.assertTrue(all(
             state.selected_pair is None and state.tied_pairs == ()
             for state in result.states
+        ))
+
+    def test_parallel_batches_shard_states_and_merge_in_canonical_order(self) -> None:
+        readers = _readers()
+        expected = CohortV2ExhaustiveEvaluator(_Scorer()).evaluate(readers)
+        scorers = tuple(_BatchedScorer(index) for index in range(4))
+
+        first = CohortV2ParallelExhaustiveEvaluator(
+            scorers, batch_size=2
+        ).evaluate(readers)
+        second = CohortV2ParallelExhaustiveEvaluator(
+            tuple(_BatchedScorer(index) for index in range(4)), batch_size=2
+        ).evaluate(readers)
+
+        self.assertEqual(first, expected)
+        self.assertEqual(second, expected)
+        self.assertEqual(
+            tuple(state.state_id for state in first.states),
+            tuple(state.state_id for state in expected.states),
+        )
+        self.assertTrue(all(scorer.state_ids for scorer in scorers))
+        self.assertEqual(
+            set.union(*(scorer.state_ids for scorer in scorers)),
+            {state.state_id for state in expected.states},
+        )
+        self.assertEqual(
+            sum(len(scorer.state_ids) for scorer in scorers),
+            len(expected.states),
+        )
+        self.assertTrue(all(
+            batch_size <= 2
+            for scorer in scorers for batch_size in scorer.batch_sizes
         ))
 
     def test_artifacts_are_byte_deterministic_and_reject_missing_unavailability_reason(self) -> None:
