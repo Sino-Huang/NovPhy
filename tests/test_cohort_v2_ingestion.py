@@ -49,16 +49,31 @@ class CohortV2ReleaseReaderTests(unittest.TestCase):
             },
         )
 
-        dataset = CohortV2OracleWindowDataset(reader)
-        self.assertEqual(len(dataset), 6)
+        dataset = CohortV2OracleWindowDataset(
+            reader, requested_horizons=(1, 5, 15)
+        )
+        expected_states = sum(len(rollout.frame_records) - 1 for rollout in reader.rollouts)
+        self.assertEqual(len(dataset), expected_states * 3)
         loader = build_cohort_v2_oracle_window_loader(dataset)
         example = next(iter(loader))[0]
         self.assertEqual(set(example.context.labels), set(CENTRAL_LABELS))
         self.assertEqual(example.target.fixed_step, example.context.fixed_step + 1)
+        self.assertEqual(example.requested_horizon, 1)
+        self.assertEqual(example.effective_horizon, 1)
         self.assertTrue(example.agent_observation.startswith(b"\x89PNG\r\n\x1a\n"))
         self.assertEqual(example.intervention["interface_action"]["coordinate_frame"], "slingshot_relative")
         self.assertIsNone(example.context.labels["steady-state"]["value"])
         self.assertNotEqual(example.context.labels["steady-state"]["availability"], "available")
+
+        terminal_edge = next(
+            item
+            for item in dataset
+            if item.context_position > 0 and item.requested_horizon == 15
+            and item.effective_horizon < item.requested_horizon
+        )
+        self.assertEqual(terminal_edge.requested_horizon, 15)
+        self.assertLess(terminal_edge.effective_horizon, 15)
+        self.assertIsNotNone(terminal_edge.target.terminal)
 
     def test_access_and_capability_boundaries_fail_before_examples(self) -> None:
         with self.assertRaisesRegex(CohortV2IngestionError, "capabilit"):

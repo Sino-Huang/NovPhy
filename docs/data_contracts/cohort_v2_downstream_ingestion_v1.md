@@ -24,10 +24,12 @@ fixed step; it is not relabeled as a physics-trace frame record. Canonical obser
 bytes remain available only through the existing diagnostic access policy and
 are rejected as model input.
 
-`CohortV2OracleWindowDataset` derives one observation-backed oracle-symbol
-window per admitted rollout without writing to or changing the primary
-release. `build_cohort_v2_oracle_window_loader` passes those windows through
-the public training loader, and `score_cohort_v2_endpoints` consumes all six
+`CohortV2OracleWindowDataset.ingestion_smoke` derives one observation-backed
+oracle-symbol window per admitted rollout without writing to or changing the
+primary release. The main dataset constructor now requires an explicit horizon
+declaration and enumerates every eligible state for issue #3.
+`build_cohort_v2_oracle_window_loader` passes those windows through the public
+training loader, and `score_cohort_v2_endpoints` consumes all six
 parts of the complete endpoint tuple through the public evaluation interface.
 Unavailable values are excluded from denominators. A missing or malformed
 prediction is rejected before metrics are returned.

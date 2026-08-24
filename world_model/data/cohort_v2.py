@@ -139,6 +139,9 @@ class CohortV2OracleWindow:
     attempt_id: str
     scenario_lineage_identity: str
     intervention: Mapping[str, Any]
+    context_position: int
+    requested_horizon: int
+    effective_horizon: int
     context: CohortV2CentralFrameRecord
     target: CohortV2CentralFrameRecord
     agent_observation: bytes
@@ -629,28 +632,60 @@ class CohortV2ReleaseReader:
 
 
 class CohortV2OracleWindowDataset(Sequence[CohortV2OracleWindow]):
-    """Observation-backed one-step oracle-symbol windows derived from a role reader."""
+    """Oracle-state windows for every nonterminal retained frame record."""
 
-    def __init__(self, reader: CohortV2ReleaseReader) -> None:
-        self._examples = tuple(
-            CohortV2OracleWindow(
-                source_release_identity=reader.release_identity,
-                exposure_role=rollout.exposure_role,
-                attempt_id=rollout.attempt_id,
-                scenario_lineage_identity=rollout.scenario_lineage_identity,
-                intervention=rollout.intervention,
-                context=rollout.frame_records[0],
-                target=rollout.frame_records[1],
-                agent_observation=reader.load_observation(
-                    rollout, observation_role="agent"
-                ),
-            )
-            for rollout in reader.rollouts
-        )
-        if len(self._examples) != len(reader.rollouts):
+    def __init__(
+        self,
+        reader: CohortV2ReleaseReader,
+        *,
+        requested_horizons: tuple[int, ...],
+        first_state_only: bool = False,
+    ) -> None:
+        if (
+            type(requested_horizons) is not tuple
+            or not requested_horizons
+            or len(set(requested_horizons)) != len(requested_horizons)
+            or any(type(value) is not int or value <= 0 for value in requested_horizons)
+        ):
             raise CohortV2IngestionError(
-                "Every admitted rollout must yield one observation-backed training window"
+                "Requested horizons must be unique positive integers"
             )
+        if type(first_state_only) is not bool:
+            raise CohortV2IngestionError("first_state_only must be a boolean")
+        examples = []
+        for rollout in sorted(reader.rollouts, key=lambda item: item.attempt_id):
+            frame_records = rollout.frame_records
+            if len(frame_records) < 2:
+                raise CohortV2IngestionError(
+                    "Every admitted rollout must contain a nonterminal frame record"
+                )
+            observation = reader.load_observation(rollout, observation_role="agent")
+            positions = (0,) if first_state_only else range(len(frame_records) - 1)
+            for context_position in positions:
+                remaining = len(frame_records) - 1 - context_position
+                for requested_horizon in requested_horizons:
+                    effective_horizon = min(requested_horizon, remaining)
+                    examples.append(CohortV2OracleWindow(
+                        source_release_identity=reader.release_identity,
+                        exposure_role=rollout.exposure_role,
+                        attempt_id=rollout.attempt_id,
+                        scenario_lineage_identity=rollout.scenario_lineage_identity,
+                        intervention=rollout.intervention,
+                        context_position=context_position,
+                        requested_horizon=requested_horizon,
+                        effective_horizon=effective_horizon,
+                        context=frame_records[context_position],
+                        target=frame_records[context_position + effective_horizon],
+                        agent_observation=observation,
+                    ))
+        self._examples = tuple(examples)
+
+    @classmethod
+    def ingestion_smoke(
+        cls, reader: CohortV2ReleaseReader
+    ) -> CohortV2OracleWindowDataset:
+        """Retain issue-54's one one-step window per rollout smoke boundary."""
+        return cls(reader, requested_horizons=(1,), first_state_only=True)
 
     def __len__(self) -> int:
         return len(self._examples)

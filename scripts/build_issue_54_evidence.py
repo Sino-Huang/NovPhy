@@ -321,7 +321,7 @@ def build_ingestion_evidence(
     roles = {}
     total_frame_records = total_windows = total_scored = total_unavailable = 0
     for role, reader in readers.items():
-        dataset = CohortV2OracleWindowDataset(reader)
+        dataset = CohortV2OracleWindowDataset.ingestion_smoke(reader)
         loader = build_cohort_v2_oracle_window_loader(dataset)
         windows = tuple(item for batch in loader for item in batch)
         endpoints = score_cohort_v2_endpoints(reader, _all_false)
