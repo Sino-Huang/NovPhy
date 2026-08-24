@@ -662,7 +662,7 @@ def _checkpoint_identity(
     ))
 
 
-def _model_state_identity(model_state: Mapping[str, torch.Tensor]) -> str:
+def cohort_v2_model_state_identity(model_state: Mapping[str, torch.Tensor]) -> str:
     digest = hashlib.sha256()
     for name in sorted(model_state):
         tensor = model_state[name]
@@ -687,7 +687,7 @@ def save_cohort_v2_micro_checkpoint(
         for pair in MICRO_PAIRS
     )
     model_state = trainer.predictor.state_dict()
-    model_state_identity = _model_state_identity(model_state)
+    model_state_identity = cohort_v2_model_state_identity(model_state)
     checkpoint_identity = _checkpoint_identity(
         trainer.data.reader,
         trainer.config,
@@ -756,7 +756,7 @@ def load_cohort_v2_micro_checkpoint(
     step = payload["step"]
     if not isinstance(payload["model_state"], Mapping):
         raise CohortV2MicroError("micro checkpoint model state is malformed")
-    model_state_identity = _model_state_identity(payload["model_state"])
+    model_state_identity = cohort_v2_model_state_identity(payload["model_state"])
     expected_identity = _checkpoint_identity(
         reader,
         config,
@@ -1065,6 +1065,7 @@ __all__ = [
     "MicroRelationLoss",
     "MicroPredicateLoss",
     "cohort_v2_action",
+    "cohort_v2_model_state_identity",
     "load_cohort_v2_micro_checkpoint",
     "micro_relation_loss",
     "micro_predicate_loss",

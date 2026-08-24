@@ -358,3 +358,46 @@ python -u -m scripts.run_cohort_v2_micro_experiment --validate
 Outputs stay ignored under `.local-artifacts/issue-5-micro-experiment`. The
 ordinary reader never opens final evaluation, and neither calibration nor
 model-selection examples enter an optimizer step.
+
+## Cohort-v2 oracle macro-event experiment
+
+Issue #6 extends the same source-bound path to the complete nine-pair grid.
+Macro input is exactly the context frame's availability-preserving
+`steady-state` and `structure-unstable` values from
+`cohort-v2-macro-derivation-spec-v1:steady-state+structure-unstable`.
+`cascade-active`, `collapsed`, and `pigs-cleared` are not inputs or false
+targets. Only the selected transition adapter executes; macro selection is one
+exclusive action and does not run continuous infilling concurrently.
+
+A macro pair is eligible when its requested horizon reaches the rollout's
+declared terminal event endpoint. Its carrier is trained directly against that
+endpoint frame, while the selected macro head is supervised on the endpoint's
+two macro predicates, the terminal-clamped duration, and the accepted terminal
+event class (`stable_entered` or valid `level_fail`). The requested horizon
+remains the action label and is serialized separately from the effective
+endpoint duration. Macro outcomes without a terminal endpoint inside the
+request are retained as explicitly unavailable rather than scored against an
+ordinary intermediate frame.
+
+The checkpoint binds all nine balanced training pairs, the learned tensor
+bytes, both derivation authorities, and the training exposure role. Exhaustive
+scoring emits every pair for every non-final state; the canonical
+model-selection frontier input includes eligible macro pairs alongside
+continuous and micro pairs.
+
+```bash
+# Bounded integration check; validates the release, exercises all three modes,
+# runs a batched score probe, and writes nothing.
+python -u -m scripts.run_cohort_v2_macro_experiment --dry-run
+
+# Full foreground experiment with flushed load/train/score/publication logs.
+python -u -m scripts.run_cohort_v2_macro_experiment
+
+# Revalidate the checkpoint, exhaustive score, and frontier artifacts.
+python -u -m scripts.run_cohort_v2_macro_experiment --validate
+```
+
+Outputs remain ignored under `.local-artifacts/issue-6-macro-experiment`.
+Learned parameters use only `training`; calibration and model selection retain
+their declared narrower influences, and the ordinary reader never opens final
+evaluation.

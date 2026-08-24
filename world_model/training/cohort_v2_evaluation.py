@@ -42,6 +42,7 @@ ENDPOINT_CAPABILITIES: Final = (
     "excess_penetration",
     "unsupported_stationary_or_floating_body",
 )
+TERMINAL_EVENT_ENDPOINT_CAPABILITY: Final = "event_endpoint.terminal"
 TIE_REL_TOL: Final = 1e-6
 TIE_ABS_TOL: Final = 1e-12
 
@@ -202,6 +203,14 @@ def _availability_reasons(
     transition_capability = TRANSITION_CAPABILITY[pair.abstraction]
     if transition_capability not in checkpoint_capabilities:
         reasons.append(f"checkpoint_capability_unavailable:{transition_capability}")
+    if (
+        pair.abstraction is Abstraction.MACRO
+        and TERMINAL_EVENT_ENDPOINT_CAPABILITY in checkpoint_capabilities
+        and window.target.terminal is None
+    ):
+        reasons.append(
+            "event_endpoint_unavailable:no_terminal_within_requested_horizon"
+        )
     for predicate in CONTEXT_LABEL_REQUIREMENTS[pair.abstraction]:
         availability = window.context.labels[predicate].get("availability")
         if availability != "available":
@@ -973,6 +982,7 @@ def validate_cohort_v2_evaluation(
 __all__ = [
     "COHORT_V2_HORIZONS",
     "COHORT_V2_PAIRS",
+    "TERMINAL_EVENT_ENDPOINT_CAPABILITY",
     "CohortV2EvaluationError",
     "CohortV2EvaluationReceipt",
     "CohortV2EvaluationResult",
