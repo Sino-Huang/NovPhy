@@ -118,7 +118,7 @@ class CohortV2ControllerLabelResult:
 @dataclass(frozen=True, slots=True)
 class CohortV2TrajectoryLabelReceipt:
     label_artifact_identity: str
-    teacher: str
+    teacher: CohortV2ControllerTeacher
     implementation_revision: str
     evaluation_identity: str
     measurement_identity: str
@@ -313,34 +313,24 @@ def _trajectory_labels(
                 choice.segment_cost
                 + cost_to_go_by_position[choice.next_context_position]
             )
-    return tuple(
-        CohortV2ControllerLabel(
+    labels = []
+    for state, _measured in ordered:
+        selection = selection_by_position[state.context_position]
+        labels.append(CohortV2ControllerLabel(
             state_id=state.state_id,
             exposure_role=state.exposure_role,
             attempt_id=state.attempt_id,
             scenario_lineage_identity=state.scenario_lineage_identity,
             context_position=state.context_position,
             context_fixed_step=state.context_fixed_step,
-            selected_pair=selection_by_position[state.context_position].choice.pair,
-            effective_horizon=(
-                selection_by_position[state.context_position].choice.effective_horizon
-            ),
-            next_context_position=(
-                selection_by_position[
-                    state.context_position
-                ].choice.next_context_position
-            ),
-            segment_cost=(
-                selection_by_position[state.context_position].choice.segment_cost
-            ),
+            selected_pair=selection.choice.pair,
+            effective_horizon=selection.choice.effective_horizon,
+            next_context_position=selection.choice.next_context_position,
+            segment_cost=selection.choice.segment_cost,
             cost_to_go=cost_to_go_by_position[state.context_position],
-            tied_pairs=tuple(
-                item.pair
-                for item in selection_by_position[state.context_position].ties
-            ),
-        )
-        for state, _measured in ordered
-    )
+            tied_pairs=tuple(item.pair for item in selection.ties),
+        ))
+    return tuple(labels)
 
 
 def _generate(
@@ -494,7 +484,7 @@ def _atomic_write(path: Path, data: bytes) -> None:
 def _receipt(manifest: dict[str, object]) -> CohortV2TrajectoryLabelReceipt:
     return CohortV2TrajectoryLabelReceipt(
         label_artifact_identity=manifest["label_artifact_identity"],
-        teacher=manifest["teacher"],
+        teacher=CohortV2ControllerTeacher(manifest["teacher"]),
         implementation_revision=manifest["implementation_revision"],
         evaluation_identity=manifest["evaluation_identity"],
         measurement_identity=manifest["measurement_identity"],
