@@ -1,0 +1,166 @@
+{
+  "artifact_type": "cohort_v2_symbolic_interface_comparison_summary",
+  "bounded_negative_disposition": "not_required_named_secondary_spsg_contrastive_loss_ablation",
+  "capabilities": [
+    "transition.continuous",
+    "transition.micro"
+  ],
+  "decision": {
+    "comparisons": [
+      {
+        "candidate": "ordered_flat_predicate",
+        "gain_over_retained": 0.025709949787085074,
+        "material_gain": 0.02,
+        "promoted": true,
+        "retained_before": "no_symbol"
+      },
+      {
+        "candidate": "directed_gnn",
+        "gain_over_retained": -0.02550234437141008,
+        "material_gain": 0.02,
+        "promoted": false,
+        "retained_before": "ordered_flat_predicate"
+      },
+      {
+        "candidate": "spsg",
+        "gain_over_retained": -0.02590439881491513,
+        "material_gain": 0.02,
+        "promoted": false,
+        "retained_before": "ordered_flat_predicate"
+      }
+    ],
+    "material_relation_macro_f1_gain": 0.02,
+    "selected_interface": "ordered_flat_predicate",
+    "spsg_decision": "remove"
+  },
+  "endpoint_plausibility_selection_status": "not_used:source-endpoint derivation labels are identical across interfaces; predicted carriers are not engine frame records",
+  "evaluation_scope_per_variant": {
+    "available_count": 32124,
+    "outcome_count": 48186,
+    "state_count": 5354,
+    "unavailable_count": 16062
+  },
+  "final_evaluation_accessed": false,
+  "implementation_commit": "7608b34e36acf19c377699323a69067bbc567695",
+  "matched_capacity_parameter_count": 3016657,
+  "micro_relation_authority": "cohort-v2-micro-relation-derivation-spec-v1:contact+supports",
+  "release_identity": "representative-cohort-v2-release-v5:issue-53:mixed-termination",
+  "rerun_commands": [
+    "python -u -m scripts.run_cohort_v2_symbolic_interfaces --dry-run",
+    "python -u -m scripts.run_cohort_v2_symbolic_interfaces --device cuda:0 --evaluation-devices cuda:0,cuda:1,cuda:2,cuda:3",
+    "python -u -m scripts.run_cohort_v2_symbolic_interfaces --device cuda:0 --evaluation-devices cuda:0,cuda:1,cuda:2,cuda:3 --validate"
+  ],
+  "role_binding_claim": "not_made",
+  "schema": "cohort_v2_symbolic_interface_comparison_summary_v1",
+  "source_bound_validation": "passed",
+  "variants": {
+    "directed_gnn": {
+      "contact_f1": 0.8790058862001308,
+      "final_loss": 0.000887154252268374,
+      "first_loss": 0.30633193254470825,
+      "macro_f1": 0.8283918319889543,
+      "mean_interface_compute_macs": 10768742.4,
+      "model_selection_micro_objectives": [
+        {
+          "available_state_count": 1600,
+          "mean_objective": 0.00023586114654790434,
+          "requested_horizon": 1
+        },
+        {
+          "available_state_count": 1600,
+          "mean_objective": 0.001206579097542999,
+          "requested_horizon": 5
+        },
+        {
+          "available_state_count": 1600,
+          "mean_objective": 0.003723712100090779,
+          "requested_horizon": 15
+        }
+      ],
+      "model_state_identity": "sha256:5742621cbf5606b4dd0250d661b3bee784da0c64a7727f638644fff9284e9418",
+      "records_identity": "sha256:e6aec0fb2b1dfff502d4821cf78775033c823a712aa616991506e3e30ff9e41c",
+      "supports_f1": 0.7777777777777778
+    },
+    "no_symbol": {
+      "contact_f1": 0.8781673483789187,
+      "final_loss": 0.0008895235368981957,
+      "first_loss": 0.30633193254470825,
+      "macro_f1": 0.8281842265732793,
+      "mean_interface_compute_macs": 738048.0,
+      "model_selection_micro_objectives": [
+        {
+          "available_state_count": 1600,
+          "mean_objective": 0.000235363567899185,
+          "requested_horizon": 1
+        },
+        {
+          "available_state_count": 1600,
+          "mean_objective": 0.00120425852446715,
+          "requested_horizon": 5
+        },
+        {
+          "available_state_count": 1600,
+          "mean_objective": 0.003717040687624831,
+          "requested_horizon": 15
+        }
+      ],
+      "model_state_identity": "sha256:3e9362400450dcc9c75f17896f9cce4c9b32523ee39d425d0bef410f1edf945e",
+      "records_identity": "sha256:65c8f5bcddd51fa3c618e0a93fa957cf77f8a6863c3b12bf510b82d6c647def0",
+      "supports_f1": 0.7782011047676398
+    },
+    "ordered_flat_predicate": {
+      "contact_f1": 0.9300105749429509,
+      "final_loss": 0.0008686914225108922,
+      "first_loss": 0.30633193254470825,
+      "macro_f1": 0.8538941763603644,
+      "mean_interface_compute_macs": 6491043.84,
+      "model_selection_micro_objectives": [
+        {
+          "available_state_count": 1600,
+          "mean_objective": 0.00024046050235483564,
+          "requested_horizon": 1
+        },
+        {
+          "available_state_count": 1600,
+          "mean_objective": 0.001229056558386219,
+          "requested_horizon": 5
+        },
+        {
+          "available_state_count": 1600,
+          "mean_objective": 0.0037928676861520216,
+          "requested_horizon": 15
+        }
+      ],
+      "model_state_identity": "sha256:054aca6b76753171d9229f02cf4b6a54af38bbfb826ff5fb5e7b91ced0ec7fd2",
+      "records_identity": "sha256:2e9d3e556906e2ccc6435ce87ffd5d62926b71b62dacdea12015191b102c345f",
+      "supports_f1": 0.7777777777777778
+    },
+    "spsg": {
+      "contact_f1": 0.8782017773131208,
+      "final_loss": 0.0008891914621926844,
+      "first_loss": 0.30633193254470825,
+      "macro_f1": 0.8279897775454492,
+      "mean_interface_compute_macs": 10776809.28,
+      "model_selection_micro_objectives": [
+        {
+          "available_state_count": 1600,
+          "mean_objective": 0.00023587005397530448,
+          "requested_horizon": 1
+        },
+        {
+          "available_state_count": 1600,
+          "mean_objective": 0.001206697381239792,
+          "requested_horizon": 5
+        },
+        {
+          "available_state_count": 1600,
+          "mean_objective": 0.0037241934668600153,
+          "requested_horizon": 15
+        }
+      ],
+      "model_state_identity": "sha256:a4a1450c2c84df31b56d47233524715aaca8b4b7703439e8e3fa719b698cc5e3",
+      "records_identity": "sha256:2f5d3a24840c9b9520f54672b96a53d8ad4a65f6332d8e3ea5f1fe254f171758",
+      "supports_f1": 0.7777777777777778
+    }
+  }
+}
