@@ -9,6 +9,7 @@ import json
 import math
 import os
 from pathlib import Path
+import sys
 
 import numpy as np
 from PIL import Image, UnidentifiedImageError
@@ -546,6 +547,125 @@ def _bytes_identity(value: bytes) -> str:
     return f"sha256:{hashlib.sha256(value).hexdigest()}"
 
 
+def _short_identity(value: object) -> str:
+    text = str(value)
+    if text.startswith("sha256:"):
+        return text[:19]
+    return text if len(text) <= 32 else text[:29] + "..."
+
+
+def _display_value(value: object) -> str:
+    text = repr(value)
+    return text if len(text) <= 120 else text[:117] + "..."
+
+
+def _first_value_difference(expected: object, actual: object, path: str = "$") -> str:
+    if type(expected) is not type(actual):
+        return (
+            f"field={path} expected_type={type(expected).__name__} "
+            f"actual_type={type(actual).__name__}"
+        )
+    if isinstance(expected, dict):
+        for key in sorted(set(expected) | set(actual)):
+            field = f"{path}.{key}"
+            if key not in expected:
+                return f"field={field} expected=<absent> actual={_display_value(actual[key])}"
+            if key not in actual:
+                return f"field={field} expected={_display_value(expected[key])} actual=<absent>"
+            if expected[key] != actual[key]:
+                return _first_value_difference(expected[key], actual[key], field)
+    elif isinstance(expected, list):
+        for index, (expected_item, actual_item) in enumerate(zip(expected, actual)):
+            if expected_item != actual_item:
+                return _first_value_difference(
+                    expected_item, actual_item, f"{path}[{index}]"
+                )
+        if len(expected) != len(actual):
+            return f"field={path} expected_length={len(expected)} actual_length={len(actual)}"
+    elif expected != actual:
+        return (
+            f"field={path} expected={_display_value(expected)} "
+            f"actual={_display_value(actual)}"
+        )
+    return f"field={path} values differ"
+
+
+def _first_jsonl_difference(expected: bytes, actual: bytes) -> str:
+    expected_lines = expected.splitlines()
+    actual_lines = actual.splitlines()
+    for index, (expected_line, actual_line) in enumerate(
+        zip(expected_lines, actual_lines)
+    ):
+        if expected_line == actual_line:
+            continue
+        try:
+            expected_record = json.loads(expected_line)
+        except json.JSONDecodeError as error:
+            return f"record={index} expected_json_error={error.msg}"
+        try:
+            actual_record = json.loads(actual_line)
+        except json.JSONDecodeError as error:
+            return f"record={index} actual_json_error={error.msg}"
+        return f"record={index} {_first_value_difference(expected_record, actual_record)}"
+    return (
+        f"record={min(len(expected_lines), len(actual_lines))} "
+        f"expected_record_count={len(expected_lines)} actual_record_count={len(actual_lines)}"
+    )
+
+
+def _first_json_difference(expected: bytes, actual: bytes) -> str:
+    try:
+        expected_value = json.loads(expected)
+    except json.JSONDecodeError as error:
+        return f"field=$ expected_json_error={error.msg}"
+    try:
+        actual_value = json.loads(actual)
+    except json.JSONDecodeError as error:
+        return f"field=$ actual_json_error={error.msg}"
+    return _first_value_difference(expected_value, actual_value)
+
+
+def _validation_diagnostics(root: Path) -> str:
+    files = []
+    for name in (
+        "checkpoint.pt",
+        "controller_decisions.jsonl",
+        "scores.json",
+        "manifest.json",
+    ):
+        try:
+            status = (root / name).stat()
+            files.append(f"{name}(size={status.st_size},mtime_ns={status.st_mtime_ns})")
+        except OSError as error:
+            files.append(f"{name}({type(error).__name__})")
+    return (
+        "runtime=("
+        f"python={sys.executable},python_version={sys.version_info.major}."
+        f"{sys.version_info.minor}.{sys.version_info.micro},torch={torch.__version__},"
+        f"threads={torch.get_num_threads()},interop_threads={torch.get_num_interop_threads()},"
+        f"deterministic_algorithms={torch.are_deterministic_algorithms_enabled()},"
+        f"OMP_NUM_THREADS={os.environ.get('OMP_NUM_THREADS')!r},"
+        f"MKL_NUM_THREADS={os.environ.get('MKL_NUM_THREADS')!r},"
+        f"PYTHONHASHSEED={os.environ.get('PYTHONHASHSEED')!r}) "
+        f"files=({','.join(files)})"
+    )
+
+
+def _validation_mismatch(
+    root: Path,
+    component: str,
+    expected_identity: object,
+    actual_identity: object,
+    difference: str,
+) -> CohortV2ControllerError:
+    return CohortV2ControllerError(
+        f"controller validation failed [{component}]: "
+        f"expected={_short_identity(expected_identity)} "
+        f"actual={_short_identity(actual_identity)}; {difference}; "
+        f"{_validation_diagnostics(root)}"
+    )
+
+
 def _checkpoint_payload(
     models: tuple[CohortV2JointPairController, CohortV2TwoHeadController],
     config: CohortV2ControllerConfig,
@@ -793,17 +913,95 @@ def validate_cohort_v2_controllers(
     try:
         manifest_raw = (root / "manifest.json").read_bytes()
         manifest = json.loads(manifest_raw)
-        actual = (
-            (root / "controller_decisions.jsonl").read_bytes(),
-            (root / "scores.json").read_bytes(),
-        )
+        actual_decisions = (root / "controller_decisions.jsonl").read_bytes()
+        actual_scores = (root / "scores.json").read_bytes()
     except (OSError, json.JSONDecodeError) as error:
         raise CohortV2ControllerError(f"cannot load controller artifacts: {error}") from error
-    models, checkpoint = _load_checkpoint(root / "checkpoint.pt")
+
+    canonical_manifest = canonical_json_bytes(manifest)
+    if canonical_manifest != manifest_raw:
+        differing_byte = next(
+            (
+                index
+                for index, (expected_byte, actual_byte) in enumerate(
+                    zip(canonical_manifest, manifest_raw)
+                )
+                if expected_byte != actual_byte
+            ),
+            min(len(canonical_manifest), len(manifest_raw)),
+        )
+        raise _validation_mismatch(
+            root,
+            "canonical_manifest",
+            _bytes_identity(canonical_manifest),
+            _bytes_identity(manifest_raw),
+            f"field=canonical_json_encoding first_differing_byte={differing_byte}",
+        )
+    if not isinstance(manifest, dict):
+        raise _validation_mismatch(
+            root,
+            "recomputed_manifest_provenance",
+            "json_object",
+            type(manifest).__name__,
+            "field=$ expected_type=dict "
+            f"actual_type={type(manifest).__name__}",
+        )
+
+    try:
+        models, checkpoint = _load_checkpoint(root / "checkpoint.pt")
+    except CohortV2ControllerError as error:
+        raise _validation_mismatch(
+            root,
+            "stored_artifact_identities",
+            "valid_checkpoint",
+            "invalid_checkpoint",
+            f"field=checkpoint.pt error={error}",
+        ) from error
     config = CohortV2ControllerConfig(**checkpoint["config"])
+    checkpoint_identity = identity((
+        "cohort-v2-controller-checkpoint-v1",
+        config.identity,
+        checkpoint["joint_model_state_identity"],
+        checkpoint["two_head_model_state_identity"],
+    ))
+    stored_identities = (
+        ("decisions_identity", _bytes_identity(actual_decisions)),
+        ("scores_identity", _bytes_identity(actual_scores)),
+        ("checkpoint_identity", checkpoint_identity),
+    )
+    for field, observed in stored_identities:
+        declared = manifest.get(field, "<absent>")
+        if declared != observed:
+            raise _validation_mismatch(
+                root,
+                "stored_artifact_identities",
+                declared,
+                observed,
+                f"field={field} expected={_display_value(declared)} "
+                f"actual={_display_value(observed)}",
+            )
+
     examples = build_cohort_v2_controller_examples(readers, labels, config)
     result = evaluate_cohort_v2_controllers(models, examples, evaluation, measurement, spec)
-    expected = _result_bytes(result)
+    expected_decisions, expected_scores = _result_bytes(result)
+    if expected_decisions != actual_decisions:
+        raise _validation_mismatch(
+            root,
+            "recomputed_decisions",
+            _bytes_identity(expected_decisions),
+            _bytes_identity(actual_decisions),
+            _first_jsonl_difference(expected_decisions, actual_decisions),
+        )
+    if expected_scores != actual_scores:
+        raise _validation_mismatch(
+            root,
+            "recomputed_scores",
+            _bytes_identity(expected_scores),
+            _bytes_identity(actual_scores),
+            _first_json_difference(expected_scores, actual_scores),
+        )
+
+    expected = (expected_decisions, expected_scores)
     expected_manifest = _manifest(
         result, checkpoint, config, evaluation, measurement, labels, examples, expected,
         trajectory_label_artifact_identity=trajectory_label_artifact_identity,
@@ -811,12 +1009,14 @@ def validate_cohort_v2_controllers(
         derivation_index_identity=derivation_index_identity,
         implementation_revision=implementation_revision,
     )
-    if (
-        actual != expected
-        or manifest != expected_manifest
-        or canonical_json_bytes(manifest) != manifest_raw
-    ):
-        raise CohortV2ControllerError("controller artifacts differ from their source evidence")
+    if manifest != expected_manifest:
+        raise _validation_mismatch(
+            root,
+            "recomputed_manifest_provenance",
+            _bytes_identity(canonical_json_bytes(expected_manifest)),
+            _bytes_identity(manifest_raw),
+            _first_value_difference(expected_manifest, manifest),
+        )
     return _receipt(manifest)
 
 

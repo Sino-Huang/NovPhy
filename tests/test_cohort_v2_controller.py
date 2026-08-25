@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 from io import BytesIO
+import hashlib
 import json
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 from PIL import Image
+import torch
 
 from world_model.data import CohortV2Rollout
 from world_model.training import (
@@ -23,6 +28,7 @@ from world_model.training import (
     validate_cohort_v2_controllers,
     write_cohort_v2_controllers,
 )
+from world_model.training.grid_artifacts import canonical_json_bytes
 
 from tests.test_cohort_v2_policy_baselines import _BaselineScorer, _calibration
 from tests.test_cohort_v2_exhaustive_evaluation import _reader
@@ -95,6 +101,38 @@ def _inputs():
     return readers, evaluation, measurement, labels, spec
 
 
+def _validation_kwargs() -> dict[str, str]:
+    return {
+        "trajectory_label_artifact_identity": "labels:fixture",
+        "baseline_artifact_identity": "baselines:fixture",
+        "derivation_index_identity": "derivations:fixture",
+        "implementation_revision": "implementation:fixture",
+    }
+
+
+def _write_fixture(root: Path):
+    readers, evaluation, measurement, labels, spec = _inputs()
+    config = CohortV2ControllerConfig(epochs=2, batch_size=4, hidden_dim=8)
+    receipt = write_cohort_v2_controllers(
+        root,
+        readers,
+        evaluation,
+        measurement,
+        labels,
+        spec,
+        config,
+        **_validation_kwargs(),
+    )
+    return receipt, readers, evaluation, measurement, labels, spec
+
+
+def _artifact_digests(root: Path) -> dict[str, str]:
+    return {
+        name: hashlib.sha256((root / name).read_bytes()).hexdigest()
+        for name in ("controller_decisions.jsonl", "scores.json", "manifest.json")
+    }
+
+
 class CohortV2ControllerTests(unittest.TestCase):
     def test_features_use_agent_observation_intervention_and_elapsed_position(self):
         config = CohortV2ControllerConfig(epochs=1)
@@ -131,28 +169,19 @@ class CohortV2ControllerTests(unittest.TestCase):
         self.assertTrue(all(score.utility_available_count == 3 for score in result.scores))
 
     def test_artifacts_reload_models_and_recompute_held_out_metrics(self):
-        readers, evaluation, measurement, labels, spec = _inputs()
-        config = CohortV2ControllerConfig(epochs=2, batch_size=4, hidden_dim=8)
-        kwargs = {
-            "trajectory_label_artifact_identity": "labels:fixture",
-            "baseline_artifact_identity": "baselines:fixture",
-            "derivation_index_identity": "derivations:fixture",
-            "implementation_revision": "implementation:fixture",
-        }
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            written = write_cohort_v2_controllers(
+            written, readers, evaluation, measurement, labels, spec = _write_fixture(
+                root
+            )
+            validated = validate_cohort_v2_controllers(
                 root,
                 readers,
                 evaluation,
                 measurement,
                 labels,
                 spec,
-                config,
-                **kwargs,
-            )
-            validated = validate_cohort_v2_controllers(
-                root, readers, evaluation, measurement, labels, spec, **kwargs
+                **_validation_kwargs(),
             )
             manifest = json.loads((root / "manifest.json").read_bytes())
 
@@ -163,10 +192,164 @@ class CohortV2ControllerTests(unittest.TestCase):
 
             scores = root / "scores.json"
             scores.write_bytes(scores.read_bytes() + b"\n")
-            with self.assertRaises(ValueError):
+            with self.assertRaisesRegex(
+                ValueError,
+                (
+                    r"stored_artifact_identities.*scores_identity.*python_version=.*"
+                    r"threads=.*deterministic_algorithms=.*checkpoint\.pt\(size="
+                ),
+            ):
                 validate_cohort_v2_controllers(
-                    root, readers, evaluation, measurement, labels, spec, **kwargs
+                    root,
+                    readers,
+                    evaluation,
+                    measurement,
+                    labels,
+                    spec,
+                    **_validation_kwargs(),
                 )
+
+    def test_validation_reports_noncanonical_manifest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, readers, evaluation, measurement, labels, spec = _write_fixture(root)
+            manifest_path = root / "manifest.json"
+            manifest = json.loads(manifest_path.read_bytes())
+            manifest_path.write_text(json.dumps(manifest, indent=2), encoding="ascii")
+
+            with self.assertRaisesRegex(
+                ValueError, "canonical_manifest.*field=canonical_json_encoding"
+            ):
+                validate_cohort_v2_controllers(
+                    root, readers, evaluation, measurement, labels, spec,
+                    **_validation_kwargs(),
+                )
+
+    def test_validation_reports_checkpoint_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, readers, evaluation, measurement, labels, spec = _write_fixture(root)
+            manifest_path = root / "manifest.json"
+            manifest = json.loads(manifest_path.read_bytes())
+            manifest["checkpoint_identity"] = "checkpoint:changed"
+            manifest_path.write_bytes(canonical_json_bytes(manifest))
+
+            with self.assertRaisesRegex(
+                ValueError, "stored_artifact_identities.*checkpoint_identity"
+            ):
+                validate_cohort_v2_controllers(
+                    root, readers, evaluation, measurement, labels, spec,
+                    **_validation_kwargs(),
+                )
+
+    def test_validation_reports_first_recomputed_decision_difference(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, readers, evaluation, measurement, labels, spec = _write_fixture(root)
+            decisions_path = root / "controller_decisions.jsonl"
+            records = [json.loads(line) for line in decisions_path.read_bytes().splitlines()]
+            records[0]["selected_pair"]["requested_horizon"] = 99
+            decisions = b"".join(canonical_json_bytes(record) for record in records)
+            decisions_path.write_bytes(decisions)
+            manifest_path = root / "manifest.json"
+            manifest = json.loads(manifest_path.read_bytes())
+            manifest["decisions_identity"] = f"sha256:{hashlib.sha256(decisions).hexdigest()}"
+            manifest_path.write_bytes(canonical_json_bytes(manifest))
+
+            with self.assertRaisesRegex(
+                ValueError,
+                r"recomputed_decisions.*record=0.*field=\$\.selected_pair\.requested_horizon",
+            ):
+                validate_cohort_v2_controllers(
+                    root, readers, evaluation, measurement, labels, spec,
+                    **_validation_kwargs(),
+                )
+
+    def test_validation_reports_first_recomputed_score_difference(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, readers, evaluation, measurement, labels, spec = _write_fixture(root)
+            scores_path = root / "scores.json"
+            scores = json.loads(scores_path.read_bytes())
+            scores["scores"][0]["pair_accuracy"] = 0.125
+            score_bytes = canonical_json_bytes(scores)
+            scores_path.write_bytes(score_bytes)
+            manifest_path = root / "manifest.json"
+            manifest = json.loads(manifest_path.read_bytes())
+            manifest["scores_identity"] = f"sha256:{hashlib.sha256(score_bytes).hexdigest()}"
+            manifest_path.write_bytes(canonical_json_bytes(manifest))
+
+            with self.assertRaisesRegex(
+                ValueError, r"recomputed_scores.*field=\$\.scores\[0\]\.pair_accuracy"
+            ):
+                validate_cohort_v2_controllers(
+                    root, readers, evaluation, measurement, labels, spec,
+                    **_validation_kwargs(),
+                )
+
+    def test_validation_reports_first_source_provenance_difference(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, readers, evaluation, measurement, labels, spec = _write_fixture(root)
+            manifest_path = root / "manifest.json"
+            manifest = json.loads(manifest_path.read_bytes())
+            manifest["baseline_artifact_identity"] = "baselines:changed"
+            manifest_path.write_bytes(canonical_json_bytes(manifest))
+
+            with self.assertRaisesRegex(
+                ValueError,
+                r"recomputed_manifest_provenance.*field=\$\.baseline_artifact_identity",
+            ):
+                validate_cohort_v2_controllers(
+                    root, readers, evaluation, measurement, labels, spec,
+                    **_validation_kwargs(),
+                )
+
+    def test_subprocess_controller_results_are_byte_identical_across_environment_matrix(self):
+        worker_output = os.environ.get("NOVPHY_CONTROLLER_DETERMINISM_OUTPUT")
+        if worker_output is not None:
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                _write_fixture(root)
+                Path(worker_output).write_bytes(canonical_json_bytes({
+                    "artifacts": _artifact_digests(root),
+                    "torch_threads": torch.get_num_threads(),
+                }))
+            return
+
+        results = []
+        with tempfile.TemporaryDirectory() as directory:
+            for threads, hash_seed in ((1, "0"), (1, "17"), (4, "0"), (4, "17")):
+                output = Path(directory) / f"{threads}-{hash_seed}.json"
+                environment = os.environ.copy()
+                environment.update({
+                    "MKL_NUM_THREADS": str(threads),
+                    "NOVPHY_CONTROLLER_DETERMINISM_OUTPUT": str(output),
+                    "OMP_NUM_THREADS": str(threads),
+                    "PYTHONHASHSEED": hash_seed,
+                })
+                completed = subprocess.run(
+                    [
+                        sys.executable,
+                        "-m",
+                        "unittest",
+                        (
+                            "tests.test_cohort_v2_controller.CohortV2ControllerTests."
+                            "test_subprocess_controller_results_are_byte_identical_across_environment_matrix"
+                        ),
+                    ],
+                    cwd=Path(__file__).resolve().parents[1],
+                    env=environment,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+                result = json.loads(output.read_bytes())
+                self.assertEqual(result["torch_threads"], threads)
+                results.append(result["artifacts"])
+
+        self.assertTrue(all(result == results[0] for result in results[1:]))
 
 
 if __name__ == "__main__":
