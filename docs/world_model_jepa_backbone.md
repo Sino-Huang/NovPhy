@@ -359,6 +359,53 @@ Outputs stay ignored under `.local-artifacts/issue-5-micro-experiment`. The
 ordinary reader never opens final evaluation, and neither calibration nor
 model-selection examples enter an optimizer step.
 
+## Matched-capacity symbolic-interface comparison
+
+Issue #13 compares `no_symbol`, `ordered_flat_predicate`, `directed_gnn`, and
+`spsg` at the issue #5 training and exhaustive-scoring seam. All four variants
+have exactly the same trainable parameter count and use the same oracle
+`contact`/directed `supports` inputs, `{1,5,15}` pair grid, exposure roles,
+optimizer schedule, carrier/readout objective, and source-bound pair evaluator.
+The ordered-flat and graph encoders use separate first/second role projections;
+reversing a support edge therefore changes their conditioning, while contact
+remains symmetric.
+
+The SPSG variant adds tensor-product role/filler binding to directed message
+passing. It does not run a contrastive objective or reinterpret the ordinary
+no-contact coverage stratum as bounded-negative evidence. The experiment makes
+no systematic role-binding generalization claim. Calibration selects relation
+thresholds; model selection supplies the untouched predicate F1 used by the
+declared decision rule. Starting from the simplest interface, a more complex
+candidate is retained only when it adds at least `0.02` absolute macro-averaged
+`contact`/`supports` F1 over the currently retained interface. This produces an
+explicit `keep` or `remove` decision for SPSG.
+
+Each variant also reports its separately computed interface MAC count and the
+same exhaustive micro-pair objectives. Source-endpoint physical-violation
+labels are reported as ineligible for interface selection: they describe the
+same ground-truth target endpoints for every variant, while predicted carriers
+are not engine frame records to which derivation-backed violation labels can be
+attached.
+
+```bash
+# Bounded integration check over the real non-final cohort. It exercises all
+# four training/held-out scoring paths and the decision rule, writes nothing,
+# and never opens final evaluation.
+python -u -m scripts.run_cohort_v2_symbolic_interfaces --dry-run
+
+# Full foreground experiment. Unbuffered progress covers release loading,
+# every variant's training, exhaustive scoring, relation scoring, and decision.
+python -u -m scripts.run_cohort_v2_symbolic_interfaces
+
+# Source/provenance and artifact validation after the full run.
+python -u -m scripts.run_cohort_v2_symbolic_interfaces --validate
+```
+
+Outputs stay ignored under
+`.local-artifacts/issue-13-symbolic-interfaces`. Only the `training` role may
+change learned parameters; `calibration` fixes thresholds and `model_selection`
+chooses the interface. Final evaluation remains sealed.
+
 ## Cohort-v2 oracle macro-event experiment
 
 Issue #6 extends the same source-bound path to the complete nine-pair grid.
