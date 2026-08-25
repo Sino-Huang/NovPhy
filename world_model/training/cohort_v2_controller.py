@@ -390,7 +390,7 @@ def train_cohort_v2_controllers(
     return joint, two_head
 
 
-def _selected_pairs(
+def select_cohort_v2_controller_pairs(
     controller_id: str,
     model: nn.Module,
     features: torch.Tensor,
@@ -458,7 +458,9 @@ def evaluate_cohort_v2_controllers(
     features = torch.stack(tuple(item.features for item in held_out))
     decisions = []
     for controller_id, model in zip(CONTROLLER_IDS, models, strict=True):
-        selected = _selected_pairs(controller_id, model, features, evaluation.grid.pairs)
+        selected = select_cohort_v2_controller_pairs(
+            controller_id, model, features, evaluation.grid.pairs
+        )
         for example, pair in zip(held_out, selected, strict=True):
             state, measured = by_state[example.state_id]
             pair_index = evaluation.grid.pairs.index(pair)
@@ -587,6 +589,25 @@ def _load_checkpoint(path: Path) -> tuple[
     joint.eval()
     two_head.eval()
     return (joint, two_head), payload
+
+
+def load_cohort_v2_controller_checkpoint(
+    path: Path,
+) -> tuple[
+    tuple[CohortV2JointPairController, CohortV2TwoHeadController],
+    CohortV2ControllerConfig,
+    str,
+]:
+    """Load the source-bound controller pair for downstream experiments."""
+    models, payload = _load_checkpoint(path)
+    config = CohortV2ControllerConfig(**payload["config"])
+    checkpoint_identity = identity((
+        "cohort-v2-controller-checkpoint-v1",
+        config.identity,
+        payload["joint_model_state_identity"],
+        payload["two_head_model_state_identity"],
+    ))
+    return models, config, checkpoint_identity
 
 
 def _manifest(
@@ -812,6 +833,8 @@ __all__ = [
     "CohortV2TwoHeadController",
     "build_cohort_v2_controller_examples",
     "evaluate_cohort_v2_controllers",
+    "load_cohort_v2_controller_checkpoint",
+    "select_cohort_v2_controller_pairs",
     "train_cohort_v2_controllers",
     "validate_cohort_v2_controllers",
     "write_cohort_v2_controllers",
