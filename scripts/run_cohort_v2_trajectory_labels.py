@@ -113,7 +113,7 @@ def _source_inputs(
     measurement = measure_cohort_v2_evaluation(
         evaluation, readers, calibration, profile
     )
-    return evaluation, measurement, calibration
+    return evaluation, measurement, calibration, readers
 
 
 def main() -> int:
@@ -133,7 +133,7 @@ def main() -> int:
                 "a dirty worktree requires an explicit --implementation-commit"
             )
 
-    evaluation, measurement, calibration = _source_inputs(
+    evaluation, measurement, calibration, _readers_ = _source_inputs(
         repository_root,
         release_root,
         evaluation_root,
