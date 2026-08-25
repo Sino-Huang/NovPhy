@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import asdict
 from pathlib import Path
 from typing import Final
 
@@ -148,6 +149,10 @@ def main() -> int:
             "implementation_commit": implementation_revision,
             "measurement_identity": measurement.identity,
             "policies": [score.policy_id for score in result.scores[:4]],
+            "frontiers": {
+                role: list(policy_ids)
+                for role, policy_ids in result.frontiers.items()
+            },
             "release_identity": evaluation.release_identity,
             "rerun_commands": [
                 "python -u -m scripts.run_cohort_v2_policy_baselines --dry-run",
@@ -157,6 +162,7 @@ def main() -> int:
                 f"--implementation-commit {implementation_revision}",
             ],
             "schema": "cohort_v2_policy_baseline_summary_v1",
+            "scores": [asdict(score) for score in result.scores],
             "selected_configurations": result.selected_configurations,
             "source_bound_validation": "passed",
             "trajectory_label_artifact_identity": (
