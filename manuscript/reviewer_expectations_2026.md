@@ -12,11 +12,11 @@ This record applies the cited ICLR and NeurIPS guidance to an ICLR, NeurIPS, or 
 
 The paper should lead with the granularity-mismatch problem in action-sparse persistent-effect environments. NovPhy is the test setting. The kinetic or Knudsen analogy is bounded intuition for state-dependent horizon and description selection. It is not a derivation.
 
-The central empirical claim remains `[TODO: result]`: at predeclared common compute, the joint controller must improve a common endpoint over fixed and factorized policies.
+The central empirical claim remains `[TODO: result]`. Only after final-evaluation authorization may one predeclared common-compute protocol evaluate the joint-pair controller against `fixed-pair`, `temporal-only`, `description-only`, `independent-axes`, and the parameter-matched two-head controller.
 
 ### 2. The central controller claim needs one final interface
 
-A controller-advantage claim requires a common, final-evaluation interface across every compared policy. It must define compute accounting, role-separated partitions, a common endpoint, and a result corresponding to the claim. The planned suite includes four controller-free baselines and the joint and parameter-matched two-head controllers.
+A controller-advantage claim requires a common final-evaluation interface across every compared policy. It must define compute accounting, role-separated partitions, a common endpoint, and a result corresponding to the claim. Only after final-evaluation authorization may the protocol evaluate the joint-pair controller against `fixed-pair`, `temporal-only`, `description-only`, `independent-axes`, and the parameter-matched two-head controller. This is a prospective protocol, not a current matched-compute suite.
 
 Relevant technical context includes [Physion](https://arxiv.org/abs/2106.08261), [V-JEPA](https://arxiv.org/abs/2404.08471), [DreamerV3](https://arxiv.org/abs/2301.04104), [ACT](https://arxiv.org/abs/1603.08983), and [Mixture-of-Depths](https://arxiv.org/abs/2404.02258). These papers do not prove a venue requirement or a BG-NS-JEPA result.
 
@@ -24,7 +24,7 @@ Relevant technical context includes [Physion](https://arxiv.org/abs/2106.08261),
 
 The repository records a distilled joint-pair controller and a parameter-matched two-head controller. Their model-selection comparison uses 1,600 states and agent-observable inputs, excludes oracle engine state, gives equal scores, and records no observed joint-controller advantage. Its endpoint violation rate is `0.0002777777777777778`. This does not establish terminal-outcome accuracy, controller effectiveness, or the central comparison. [research_evidence.md](research_evidence.md)
 
-Issue 9 supplies four controller-free baselines with six states per policy and exposure-role cell. Its compute is not matched to issue 10. Issue 11 aggregates one round of six rollouts and 109 decisions using aligned ground-truth-expert carrier continuation. It neither rolls out the model closed loop nor measures terminal outcomes. [research_evidence.md](research_evidence.md)
+Issue 9 supplies the current bounded controller-free `fixed-pair`, `temporal-only`, `description-only`, and `independent-axes` evidence, with six states per policy and exposure-role cell. Its compute is not matched to issue 10. Recomputing those policies under the authorized final protocol remains `[TODO: result]`. Issue 11 aggregates one round of six rollouts and 109 decisions using aligned ground-truth-expert carrier continuation. It neither rolls out the model closed loop nor measures terminal outcomes. [research_evidence.md](research_evidence.md)
 
 ### 4. Final evaluation and endpoint design remain incomplete
 

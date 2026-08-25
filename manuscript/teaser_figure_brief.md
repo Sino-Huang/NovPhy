@@ -20,17 +20,17 @@ Overlay neutral short, adaptive, and long brackets. The visual claim is only tha
 
 ### B. Coupled Decision and Carrier
 
-Place `BG-NS-JEPA (bounded model selection)` between the timeline and a compact loop. A state-summary chip, `$h_t$: uncertainty, event signals, relation reliability`, feeds the controller. One prominent orange arrow goes to a `joint pair $(\Delta,\alpha)$` matrix with rows `short`, `medium`, `long` and columns `continuous`, `micro`, `macro`. Highlight exactly one cell with an orange outline and the label `select one pair`. Every other cell stays neutral. The cell is schematic and does not indicate a preferred policy.
+Place `BG-NS-JEPA (bounded model selection)` between the timeline and a compact loop. A state-summary chip, `$h_t$: uncertainty, event signals, relation reliability`, feeds the controller. One prominent orange arrow goes to a `joint pair $(\Delta,\alpha)$` matrix with rows `1`, `5`, and `15` requested fixed steps and columns `continuous`, `micro`, `macro`. Highlight exactly one cell with an orange outline and the label `select one pair`. Every other cell stays neutral. The cell is schematic and does not indicate a preferred policy.
 
 One blue arrow leads from the matrix to `$F^{\Delta,\alpha} \rightarrow \hat z_{t+\Delta}$`. Return `\hat z_{t+\Delta}` to the next `$h$` state with a teal loop arrow. Attach dashed side readouts, `micro readout` and `macro readout`, ending at `constraints / readouts`. Place `$z$ carries every rollout step` under the loop. Description mode conditions the prediction task and readout. It never replaces the continuous carrier.
 
 ### C. Prospective Comparison and Reserved Result Field
 
-Divide the quieter lower band with a thin rule and title it `Prospective matched-compute comparison`. Four equal, unfilled controller-free baseline labels and two neutral controller labels feed one common outlined box:
+Divide the quieter lower band with a thin rule and title it `Prospective authorized common-compute protocol`. The strip does not report a current matched-compute suite. Only after final-evaluation authorization may the protocol evaluate the joint-pair controller against `fixed-pair`, `temporal-only`, `description-only`, `independent-axes`, and the parameter-matched two-head controller. Four equal, unfilled controller-free baseline labels and two neutral controller labels feed one common outlined box:
 
-`fixed pair` | `temporal-only` | `description-only` | `independent-axes` | `two-head` | `joint pair`
+`fixed-pair` | `temporal-only` | `description-only` | `independent-axes` | `two-head` | `joint pair`
 
-`independent-axes` is the fourth controller-free policy baseline. `two-head` is the separate parameter-matched controller.
+`independent-axes` is the fourth controller-free policy baseline. `two-head` is the separate parameter-matched controller. The current issue-9 and issue-10 artifacts are bounded evidence only. Recomputing all five comparators under the authorized protocol remains `[TODO: result]`.
 
 Label the box `common final interface [TODO: result]`. After it, show neutral tokens `terminal outcome [TODO: result]`, `two endpoint checks`, and `compute [TODO: result]`. Put `final authorization pending` beneath the box. At the far right, reserve a small empty, thin-gray outlined rectangle labelled only `Matched-compute result [TODO: result]`.
 
@@ -67,7 +67,7 @@ continuous carrier z
 BG-NS-JEPA (bounded model selection)
 h_t: uncertainty, event signals, relation reliability
 joint pair (Delta, alpha)
-short   medium   long
+1   5   15
 continuous   micro   macro
 select one pair
 F^(Delta, alpha) -> z-hat_(t+Delta)
@@ -75,8 +75,8 @@ z carries every rollout step
 micro readout
 macro readout
 constraints / readouts
-Prospective matched-compute comparison
-fixed pair   temporal-only   description-only   independent-axes   two-head   joint pair
+Prospective authorized common-compute protocol
+fixed-pair   temporal-only   description-only   independent-axes   two-head   joint pair
 common final interface [TODO: result]
 terminal outcome [TODO: result]   two endpoint checks   compute [TODO: result]
 final authorization pending
@@ -92,7 +92,7 @@ Do not add a slogan, performance adjective, dataset size, result number, physics
 |---|---|
 | `$z_t$, \hat z_{t+\Delta}$` | Continuous predictive latent and sole rollout carrier. |
 | `$h_t$` | Controller summary state. |
-| `$\Delta` | Requested prediction horizon in fixed steps. |
+| `$\Delta` | Requested horizon of 1, 5, or 15 fixed steps. It is distinct from a terminal-clamped effective horizon. |
 | `$\alpha` | Requested mode: continuous, micro, or macro. |
 | Orange outlined cell | One schematic coupled choice, not an empirical selection. |
 | Solid arrow | Proposed rollout or inference flow. |
@@ -123,7 +123,7 @@ Do not add a slogan, performance adjective, dataset size, result number, physics
 
 ## Caption Draft
 
-**Figure 1: Mechanism and prospective comparison protocol for BG-NS-JEPA in the NovPhy instantiation.** A single intervention can induce an action-sparse persistent-effect cascade whose prediction demands vary across fixed steps. The bounded model-selection controller selects a coupled requested horizon and description mode, while the continuous latent remains the rollout carrier and symbolic outputs serve only as readouts or reliability-gated constraints. The planned final study compares four controller-free policies with a parameter-matched two-head controller and joint selection through a common matched-compute interface. The figure reports no controller advantage or final-evaluation metric. Six final rollouts are sealed, and final authorization is pending. The reserved result field remains intentionally empty until authorized predeclared scoring is complete.
+**Figure 1: Mechanism and prospective comparison protocol for BG-NS-JEPA in the NovPhy instantiation.** A single intervention can induce an action-sparse persistent-effect cascade whose prediction demands vary across fixed steps. The bounded model-selection controller selects a coupled requested horizon and description mode, while the continuous latent remains the rollout carrier and symbolic outputs serve only as readouts or reliability-gated constraints. Only after final-evaluation authorization may the predeclared common-compute protocol evaluate joint selection against `fixed-pair`, `temporal-only`, `description-only`, `independent-axes`, and the parameter-matched two-head controller. Current issue-9 and issue-10 artifacts are not a matched-compute suite. The figure reports no controller advantage or final-evaluation metric. Six final rollouts are sealed, and final authorization is pending. The reserved result field remains intentionally empty until authorized predeclared scoring is complete.
 
 ## Source Paths
 
