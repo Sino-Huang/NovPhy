@@ -36,7 +36,11 @@ DEFAULT_OUTPUT: Final = Path(".local-artifacts/issue-12-reliability")
 
 
 def _short_identity(value: str) -> str:
-    return f"sha256:{hashlib.sha256(value.encode('utf-8')).hexdigest()[:12]}"
+    return _identity_digest(value)[:19]
+
+
+def _identity_digest(value: str) -> str:
+    return f"sha256:{hashlib.sha256(value.encode('utf-8')).hexdigest()}"
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -278,10 +282,20 @@ def main(argv: list[str] | None = None) -> int:
         report_path = (repository_root / args.compact_report).resolve()
         report_path.parent.mkdir(parents=True, exist_ok=True)
         report_path.write_bytes(canonical_json_bytes({
-            "artifact_identity": manifest["artifact_identity"],
-            "derivation_identity": derivation.target_identity,
+            "artifact_identity_sha256": _identity_digest(
+                str(manifest["artifact_identity"])
+            ),
+            "checkpoint_identity_sha256": _identity_digest(
+                derivation.preliminary_checkpoint_identity
+            ),
+            "derivation_identity_sha256": _identity_digest(
+                derivation.target_identity
+            ),
+            "excluded_unavailable_count": derivation.excluded_unavailable_count,
             "final_evaluation_consumed": False,
             "implementation_commit": implementation_revision,
+            "labels_identity": manifest["labels_identity"],
+            "model_selection_label_count": manifest["model_selection_label_count"],
             "release_identity": readers[0].release_identity,
             "rerun_commands": [
                 "python -u -m scripts.run_cohort_v2_reliability --dry-run",
@@ -289,8 +303,11 @@ def main(argv: list[str] | None = None) -> int:
                 f"--implementation-commit {implementation_revision}",
                 "python -u -m scripts.run_cohort_v2_reliability --validate",
             ],
-            "schema": "cohort_v2_micro_reliability_summary_v1",
+            "schema": "cohort_v2_micro_reliability_summary_v2",
             "scores": scores,
+            "scores_identity": manifest["scores_identity"],
+            "source_bound_validation": "passed",
+            "training_label_count": manifest["training_label_count"],
         }))
         print(f"[report] {report_path}", flush=True)
     print(
