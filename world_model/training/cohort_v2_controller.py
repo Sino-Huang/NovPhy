@@ -268,6 +268,8 @@ def build_cohort_v2_controller_examples(
     readers: tuple[CohortV2ReleaseReader, ...],
     labels: CohortV2ControllerLabelResult,
     config: CohortV2ControllerConfig,
+    *,
+    included_roles: tuple[str, ...] = CONTROLLER_ROLES,
 ) -> tuple[CohortV2ControllerExample, ...]:
     """Join trajectory labels to agent-only features without reading engine state."""
     if not isinstance(labels, CohortV2ControllerLabelResult):
@@ -276,6 +278,15 @@ def build_cohort_v2_controller_examples(
         "training", "calibration", "model_selection"
     ):
         raise CohortV2ControllerError("controller readers must preserve public role order")
+    if (
+        not included_roles
+        or len(set(included_roles)) != len(included_roles)
+        or any(
+            role not in ("training", "calibration", "model_selection")
+            for role in included_roles
+        )
+    ):
+        raise CohortV2ControllerError("controller example roles are invalid")
     codec = CohortV2ControllerFeatureCodec(config)
     rollouts: dict[str, tuple[CohortV2ReleaseReader, CohortV2Rollout]] = {}
     observations: dict[str, bytes] = {}
@@ -286,7 +297,7 @@ def build_cohort_v2_controller_examples(
             rollouts[rollout.attempt_id] = (reader, rollout)
     examples = []
     for label in labels.labels:
-        if label.exposure_role not in CONTROLLER_ROLES:
+        if label.exposure_role not in included_roles:
             continue
         item = rollouts.get(label.attempt_id)
         if item is None or item[1].exposure_role != label.exposure_role:
@@ -411,7 +422,7 @@ def select_cohort_v2_controller_pairs(
         )
 
 
-def _utility(
+def cohort_v2_pair_utility(
     state,
     outcome: CohortV2PairOutcome,
     measured: CohortV2PairMeasurement,
@@ -448,6 +459,8 @@ def evaluate_cohort_v2_controllers(
     evaluation: CohortV2EvaluationResult,
     measurement: CohortV2MeasurementResult,
     spec: CohortV2TrajectoryCostSpec,
+    *,
+    evaluation_roles: tuple[str, ...] = EVALUATION_ROLES,
 ) -> CohortV2ControllerResult:
     if measurement.evaluation_identity != evaluation.identity:
         raise CohortV2ControllerError("controller utilities do not belong to the evaluation")
@@ -455,7 +468,15 @@ def evaluate_cohort_v2_controllers(
         state.state_id: (state, measured)
         for state, measured in zip(evaluation.states, measurement.states, strict=True)
     }
-    held_out = tuple(item for item in examples if item.exposure_role in EVALUATION_ROLES)
+    if (
+        not evaluation_roles
+        or len(set(evaluation_roles)) != len(evaluation_roles)
+        or any(role not in ("calibration", "model_selection") for role in evaluation_roles)
+    ):
+        raise CohortV2ControllerError("controller evaluation roles are invalid")
+    held_out = tuple(item for item in examples if item.exposure_role in evaluation_roles)
+    if not held_out:
+        raise CohortV2ControllerError("controller evaluation scope is empty")
     features = torch.stack(tuple(item.features for item in held_out))
     decisions = []
     for controller_id, model in zip(CONTROLLER_IDS, models, strict=True):
@@ -465,7 +486,7 @@ def evaluate_cohort_v2_controllers(
         for example, pair in zip(held_out, selected, strict=True):
             state, measured = by_state[example.state_id]
             pair_index = evaluation.grid.pairs.index(pair)
-            utility = _utility(
+            utility = cohort_v2_pair_utility(
                 state, state.outcomes[pair_index], measured.outcomes[pair_index], spec
             )
             decisions.append(CohortV2ControllerDecision(
@@ -484,7 +505,7 @@ def evaluate_cohort_v2_controllers(
                 oracle_segment_cost=example.oracle_segment_cost,
             ))
     scores = []
-    for role in EVALUATION_ROLES:
+    for role in evaluation_roles:
         for controller_id in CONTROLLER_IDS:
             rows = tuple(
                 item for item in decisions
@@ -1032,6 +1053,7 @@ __all__ = [
     "CohortV2JointPairController",
     "CohortV2TwoHeadController",
     "build_cohort_v2_controller_examples",
+    "cohort_v2_pair_utility",
     "evaluate_cohort_v2_controllers",
     "load_cohort_v2_controller_checkpoint",
     "select_cohort_v2_controller_pairs",

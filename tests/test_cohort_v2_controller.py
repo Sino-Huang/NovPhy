@@ -168,6 +168,31 @@ class CohortV2ControllerTests(unittest.TestCase):
         self.assertEqual({score.state_count for score in result.scores}, {3})
         self.assertTrue(all(score.utility_available_count == 3 for score in result.scores))
 
+    def test_preconfirmatory_analysis_can_include_calibration_without_training_on_it(self):
+        readers, evaluation, measurement, labels, spec = _inputs()
+        config = CohortV2ControllerConfig(epochs=2, batch_size=4, hidden_dim=8)
+        examples = build_cohort_v2_controller_examples(
+            readers,
+            labels,
+            config,
+            included_roles=("training", "calibration", "model_selection"),
+        )
+        models = train_cohort_v2_controllers(examples, evaluation.grid.pairs, config)
+        result = evaluate_cohort_v2_controllers(
+            models,
+            examples,
+            evaluation,
+            measurement,
+            spec,
+            evaluation_roles=("calibration", "model_selection"),
+        )
+
+        self.assertEqual(
+            {score.exposure_role for score in result.scores},
+            {"calibration", "model_selection"},
+        )
+        self.assertEqual({score.state_count for score in result.scores}, {3})
+
     def test_artifacts_reload_models_and_recompute_held_out_metrics(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
