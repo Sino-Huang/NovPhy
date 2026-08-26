@@ -7,6 +7,8 @@ from types import SimpleNamespace
 
 import torch
 
+from scripts.run_cohort_v2_integrated import _compact_source_bindings
+
 from world_model.data import CohortV2Rollout
 from world_model.data.cohort_v2 import (
     CAPABILITY_DECLARATION_IDENTITY,
@@ -110,6 +112,16 @@ def _recursive(role: str, horizon: int, error: float, attempt_index: int = 0):
 
 
 class CohortV2IntegratedTests(unittest.TestCase):
+    def test_compact_source_bindings_do_not_embed_full_evaluation_identities(self):
+        compact = _compact_source_bindings(
+            {"artifact_identity": "artifact:fixture", "analysis_identity": "sha256:report"},
+            implementation_revision="commit:fixture",
+            release_identity="release:fixture",
+        )
+
+        self.assertEqual(compact["full_evidence_artifact_identity"], "artifact:fixture")
+        self.assertLess(len(str(compact)), 1024)
+
     def test_variants_are_matched_capacity_and_freeze_gate_roles(self):
         config = _config()
         predictors = {

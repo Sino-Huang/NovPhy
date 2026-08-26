@@ -102,6 +102,21 @@ def _short_identity(value: object) -> str:
     return f"sha256:{hashlib.sha256(str(value).encode('utf-8')).hexdigest()[:16]}"
 
 
+def _compact_source_bindings(
+    evidence_manifest: dict[str, object],
+    *,
+    implementation_revision: str,
+    release_identity: str,
+) -> dict[str, object]:
+    return {
+        "full_evidence_artifact_identity": evidence_manifest["artifact_identity"],
+        "full_report_identity": evidence_manifest["analysis_identity"],
+        "implementation_revision": implementation_revision,
+        "release_identity": release_identity,
+        "status": "full source bindings retained in validated ignored evidence",
+    }
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repository-root", type=Path, default=Path("."))
@@ -749,7 +764,11 @@ def _production(args, paths, readers, reliability_estimator, reliability_config,
             "python -u -m scripts.run_cohort_v2_integrated --validate",
         ],
         "schema": "cohort_v2_integrated_model_calibration_summary_v1",
-        "source_bindings": bindings,
+        "source_bindings": _compact_source_bindings(
+            evidence_manifest,
+            implementation_revision=args.implementation_commit,
+            release_identity=candidate_evaluation.release_identity,
+        ),
         "stress_ablations": stress,
     }
     paths["compact"].parent.mkdir(parents=True, exist_ok=True)
@@ -857,10 +876,14 @@ def _validate(args, paths, readers, reliability_manifest) -> int:
     validate_cohort_v2_controller_aggregation(downstream / "aggregation")
     evidence = validate_integrated_evidence(output / "evidence")
     compact = json.loads(paths["compact"].read_bytes())
+    expected_compact_bindings = _compact_source_bindings(
+        evidence,
+        implementation_revision=compact["implementation_commit"],
+        release_identity=compact["release_identity"],
+    )
     if (
         compact.get("artifact_identity") != evidence["artifact_identity"]
-        or compact.get("source_bindings")
-        != json.loads((output / "evidence/report.json").read_bytes())["source_bindings"]
+        or compact.get("source_bindings") != expected_compact_bindings
     ):
         raise CohortV2IntegratedError("compact report differs from full evidence")
     print(
