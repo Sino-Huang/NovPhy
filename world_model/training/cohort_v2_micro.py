@@ -6,7 +6,7 @@ import json
 import math
 import os
 import random
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
@@ -475,13 +475,32 @@ def _micro_available(window: CohortV2OracleWindow) -> bool:
 class CohortV2MicroTrainingData:
     """Balanced strict-horizon pools from the training exposure role only."""
 
-    def __init__(self, reader: CohortV2ReleaseReader, config: CohortV2MicroConfig) -> None:
+    def __init__(
+        self,
+        reader: CohortV2ReleaseReader,
+        config: CohortV2MicroConfig,
+        *,
+        included_attempt_ids: frozenset[str] | None = None,
+    ) -> None:
         if not isinstance(reader, CohortV2ReleaseReader):
             raise CohortV2MicroError("micro training requires a validated release reader")
         if not reader.rollouts or {rollout.exposure_role for rollout in reader.rollouts} != {"training"}:
             raise CohortV2MicroError("learned parameters may use only the training exposure role")
         if reader.release_identity != COHORT_V2_RELEASE_IDENTITY:
             raise CohortV2MicroError("micro training reader targets another release")
+        available_attempt_ids = frozenset(
+            rollout.attempt_id for rollout in reader.rollouts
+        )
+        if included_attempt_ids is None:
+            included_attempt_ids = available_attempt_ids
+        if (
+            type(included_attempt_ids) is not frozenset
+            or not included_attempt_ids
+            or not included_attempt_ids <= available_attempt_ids
+        ):
+            raise CohortV2MicroError(
+                "included training attempt ids must be a nonempty reader subset"
+            )
         dataset = CohortV2OracleWindowDataset(
             reader, requested_horizons=COHORT_V2_HORIZONS
         )
@@ -489,6 +508,8 @@ class CohortV2MicroTrainingData:
             pair: [] for pair in MICRO_PAIRS
         }
         for window in dataset:
+            if window.attempt_id not in included_attempt_ids:
+                continue
             if window.effective_horizon != window.requested_horizon:
                 continue
             continuous = PredictionPair(window.requested_horizon, Abstraction.CONTINUOUS)
@@ -500,9 +521,11 @@ class CohortV2MicroTrainingData:
             raise CohortV2MicroError(f"training has no eligible windows for pairs: {empty}")
         self.reader = reader
         self.config = config
+        self.included_attempt_ids = included_attempt_ids
         self.pools = {pair: tuple(values) for pair, values in pools.items()}
         self.frame_counts = {
             rollout.attempt_id: len(rollout.frame_records) for rollout in reader.rollouts
+            if rollout.attempt_id in included_attempt_ids
         }
 
     def schedule_at(self, step: int) -> PredictionPair:
@@ -550,9 +573,19 @@ class CohortV2MicroStepResult:
 
 
 class CohortV2MicroTrainer:
-    def __init__(self, data: CohortV2MicroTrainingData, config: CohortV2MicroConfig) -> None:
+    def __init__(
+        self,
+        data: CohortV2MicroTrainingData,
+        config: CohortV2MicroConfig,
+        *,
+        symbolic_gate: Callable[
+            [tuple[CohortV2OracleWindow, ...]], torch.Tensor
+        ]
+        | None = None,
+    ) -> None:
         self.data = data
         self.config = config
+        self.symbolic_gate = symbolic_gate
         self.device = torch.device(config.device)
         self.codec = CohortV2StateCodec(
             latent_dim=config.latent_dim, max_entities=config.max_entities
@@ -583,17 +616,31 @@ class CohortV2MicroTrainer:
         per_example = (carrier - targets).pow(2).mean(dim=1)
         carrier_loss = (per_example * weights).sum() / weights.sum()
         if pair.abstraction is Abstraction.MICRO:
+            symbolic_weights = weights
+            if self.symbolic_gate is not None:
+                gate = self.symbolic_gate(windows)
+                if (
+                    not isinstance(gate, torch.Tensor)
+                    or gate.shape != weights.shape
+                    or not bool(torch.isfinite(gate).all())
+                    or bool((gate < 0.0).any())
+                    or bool((gate > 1.0).any())
+                ):
+                    raise CohortV2MicroError(
+                        "symbolic gate must return one finite [0, 1] weight per window"
+                    )
+                symbolic_weights = weights * gate.to(self.device)
             relations = micro_relation_loss(
                 self.predictor.micro_head,
                 carrier,
                 tuple(window.target for window in windows),
-                weights=weights,
+                weights=symbolic_weights,
             )
             predicates = micro_predicate_loss(
                 self.predictor.micro_head,
                 carrier,
                 tuple(window.target for window in windows),
-                weights=weights,
+                weights=symbolic_weights,
             )
             micro_loss = (relations.loss + predicates.loss) / 2.0
         else:
