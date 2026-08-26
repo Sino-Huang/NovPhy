@@ -883,3 +883,32 @@ def validate_cohort_v2_reliability_artifact(
     if manifest.get("artifact_identity") != expected_artifact_identity:
         raise CohortV2ReliabilityError("reliability artifact identity differs")
     return manifest
+
+
+def load_cohort_v2_reliability_estimator(
+    root: Path,
+    *,
+    readers: tuple[CohortV2ReleaseReader, ...],
+    config: CohortV2ReliabilityConfig,
+    device: str,
+) -> tuple[CohortV2ReliabilityEstimator, dict[str, object]]:
+    """Load the validated issue-12 estimator used by downstream loss gating."""
+    manifest = validate_cohort_v2_reliability_artifact(
+        root, readers=readers, config=config
+    )
+    checkpoint = torch.load(
+        Path(root) / str(manifest["checkpoint"]),
+        map_location="cpu",
+        weights_only=True,
+    )
+    estimator = CohortV2ReliabilityEstimator(
+        config.feature_config.feature_dim, config.hidden_dim
+    )
+    try:
+        estimator.load_state_dict(checkpoint["states"]["estimator"], strict=True)
+    except (KeyError, RuntimeError, TypeError) as error:
+        raise CohortV2ReliabilityError(
+            f"reliability estimator state is invalid: {error}"
+        ) from error
+    estimator.to(torch.device(device)).eval()
+    return estimator, manifest

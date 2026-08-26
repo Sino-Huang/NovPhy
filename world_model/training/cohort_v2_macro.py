@@ -5,7 +5,7 @@ import json
 import math
 import os
 import random
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
@@ -320,14 +320,29 @@ class CohortV2MacroStepResult:
 
 
 class CohortV2MacroTrainer:
-    def __init__(self, data: CohortV2MacroTrainingData, config: CohortV2MacroConfig) -> None:
+    def __init__(
+        self,
+        data: CohortV2MacroTrainingData,
+        config: CohortV2MacroConfig,
+        *,
+        predictor: DualOutputPredictor | None = None,
+        symbolic_gate: Callable[
+            [tuple[CohortV2OracleWindow, ...]], torch.Tensor
+        ]
+        | None = None,
+    ) -> None:
         self.data = data
         self.config = config
         self.device = torch.device(config.device)
         self.codec = CohortV2StateCodec(
             latent_dim=config.latent_dim, max_entities=config.max_entities
         )
-        self.predictor = DualOutputPredictor(config.predictor_config).to(self.device)
+        self.predictor = (
+            DualOutputPredictor(config.predictor_config)
+            if predictor is None
+            else predictor
+        ).to(self.device)
+        self.symbolic_gate = symbolic_gate
         self.optimizer = torch.optim.AdamW(
             self.predictor.parameters(),
             lr=config.learning_rate,
@@ -356,17 +371,31 @@ class CohortV2MacroTrainer:
         macro_loss = carrier.sum() * 0.0
         endpoint_count = 0
         if pair.abstraction is Abstraction.MICRO:
+            symbolic_weights = weights
+            if self.symbolic_gate is not None:
+                gate = self.symbolic_gate(windows)
+                if (
+                    not isinstance(gate, torch.Tensor)
+                    or gate.shape != weights.shape
+                    or not bool(torch.isfinite(gate).all())
+                    or bool((gate < 0.0).any())
+                    or bool((gate > 1.0).any())
+                ):
+                    raise CohortV2MacroError(
+                        "symbolic gate must return one finite [0, 1] weight per window"
+                    )
+                symbolic_weights = weights * gate.to(self.device)
             relation = micro_relation_loss(
                 self.predictor.micro_head,
                 carrier,
                 tuple(window.target for window in windows),
-                weights=weights,
+                weights=symbolic_weights,
             )
             predicate = micro_predicate_loss(
                 self.predictor.micro_head,
                 carrier,
                 tuple(window.target for window in windows),
-                weights=weights,
+                weights=symbolic_weights,
             )
             micro_loss = (relation.loss + predicate.loss) / 2.0
         elif pair.abstraction is Abstraction.MACRO:
