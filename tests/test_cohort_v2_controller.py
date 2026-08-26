@@ -28,6 +28,7 @@ from world_model.training import (
     validate_cohort_v2_controllers,
     write_cohort_v2_controllers,
 )
+from world_model.training.cohort_v2_controller import _mean
 from world_model.training.grid_artifacts import canonical_json_bytes
 
 from tests.test_cohort_v2_policy_baselines import _BaselineScorer, _calibration
@@ -134,6 +135,9 @@ def _artifact_digests(root: Path) -> dict[str, str]:
 
 
 class CohortV2ControllerTests(unittest.TestCase):
+    def test_float_mean_is_stable_across_python_sum_implementations(self) -> None:
+        self.assertEqual(_mean((1e16, 1.0, -1e16)), 0.0)
+
     def test_features_use_agent_observation_intervention_and_elapsed_position(self):
         config = CohortV2ControllerConfig(epochs=1)
         codec = CohortV2ControllerFeatureCodec(config)

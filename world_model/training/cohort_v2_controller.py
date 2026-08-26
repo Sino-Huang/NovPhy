@@ -450,7 +450,14 @@ def cohort_v2_pair_utility(
 
 
 def _mean(values: tuple[float, ...]) -> float | None:
-    return None if not values else sum(values) / len(values)
+    if not values:
+        return None
+    # Keep artifact aggregation stable across Python 3.11's left-to-right sum
+    # and the compensated float sum introduced in Python 3.12.
+    total = 0.0
+    for value in values:
+        total += value
+    return total / len(values)
 
 
 def evaluate_cohort_v2_controllers(
@@ -533,7 +540,9 @@ def evaluate_cohort_v2_controllers(
                     item.full_compute_per_simulated_frame for item in available
                 )),
                 mean_selected_segment_cost=_mean(tuple(item.segment_cost for item in available)),
-                mean_oracle_segment_cost=sum(item.oracle_segment_cost for item in rows) / state_count,
+                mean_oracle_segment_cost=_mean(tuple(
+                    item.oracle_segment_cost for item in rows
+                )),
                 mean_pair_regret=_mean(tuple(
                     item.segment_cost - item.oracle_segment_cost for item in available
                 )),
