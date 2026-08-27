@@ -36,6 +36,7 @@ from world_model.training.cohort_v2_confirmatory import (
     CohortV2ConfirmatoryError,
     CohortV2ConfirmatoryRecord,
     analyze_cohort_v2_confirmatory,
+    audit_final_entity_capacity,
     validate_cohort_v2_confirmatory_evidence,
     write_cohort_v2_confirmatory_evidence,
 )
@@ -113,6 +114,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--implementation-commit")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--validate", action="store_true")
+    parser.add_argument("--finalize-failure", action="store_true")
     return parser
 
 
@@ -409,6 +411,141 @@ def _dry_run(paths, frozen, args) -> int:
     return 0
 
 
+def _finalize_capacity_failure(
+    paths,
+    frozen,
+    final_reader,
+    access_audit,
+    capacity_audit,
+    *,
+    implementation_commit: str,
+    failed_implementation_commit: str,
+) -> int:
+    source_bindings = {
+        "access_audit": access_audit,
+        "access_manifest_identity": access_audit["workflow_manifest_identity"],
+        "candidate_checkpoint_identity": frozen["checkpoint"].identity,
+        "failed_implementation_commit": failed_implementation_commit,
+        "failure_exception": (
+            "CohortV2MicroError: engine state exceeds the declared entity slots"
+        ),
+        "failure_phase": "pre_evaluation_input_encoding",
+        "finalization_implementation_commit": implementation_commit,
+        "sealed_bundle_identity": final_reader.sealed_bundle_identity,
+    }
+    report = analyze_cohort_v2_confirmatory(
+        (),
+        (),
+        frozen["protocol"],
+        source_bindings=source_bindings,
+        capacity_audit=capacity_audit,
+    )
+    manifest = write_cohort_v2_confirmatory_evidence(
+        paths["output"] / "evidence",
+        (),
+        (),
+        report,
+        implementation_revision=implementation_commit,
+        capacity_audit=capacity_audit,
+    )
+    compact = {
+        "schema": "cohort_v2_oracle_symbol_confirmatory_summary_v1",
+        "artifact_identity": manifest["artifact_identity"],
+        "implementation_commit": implementation_commit,
+        "failed_implementation_commit": failed_implementation_commit,
+        "protocol_identity": frozen["protocol"]["artifact_identity"],
+        "decision": report["decision"],
+        "decision_rationale": report["decision_rationale"],
+        "budget_decisions": report["budget_decisions"],
+        "fixed_h15_complete_rollout": report["fixed_h15_complete_rollout"],
+        "failed_missing_or_excluded_runs": report["failed_missing_or_excluded_runs"],
+        "final_access_audit": access_audit,
+        "source_bindings": source_bindings,
+        "rerun_commands": [
+            "python -u -m scripts.run_cohort_v2_confirmatory --validate",
+        ],
+    }
+    _atomic_write(paths["compact"], compact)
+    print(
+        "[failure] frozen codec slots=12 final maximum=15; "
+        "all six candidate replicates retained as failed",
+        flush=True,
+    )
+    print("[decision] central hypothesis unsupported", flush=True)
+    print(f"[complete] artifact={manifest['artifact_identity']}", flush=True)
+    print(f"[report] {paths['compact']}", flush=True)
+    return 0
+
+
+def _finalize_existing_failure(root, paths, frozen, implementation_commit: str) -> int:
+    if (
+        not paths["output"].is_dir()
+        or (paths["output"] / "evidence").exists()
+        or (paths["output"] / "pair_evaluation").exists()
+        or paths["compact"].exists()
+    ):
+        raise CohortV2ConfirmatoryError(
+            "failure finalization requires only the partial access-audit output"
+        )
+    authorized = FinalEvaluationWorkflowAccessManifest.from_dict(json.loads(
+        (paths["output"] / "authorized-final-access-manifest.json").read_bytes()
+    ))
+    access_audit = json.loads(
+        (paths["output"] / "final-access-audit.json").read_bytes()
+    )
+    if authorized.authorization_state != "authorized" or authorized.authorized_at is None:
+        raise CohortV2ConfirmatoryError("partial final access was not authorized")
+    artifact = authorized.authorized_artifacts[0]
+    observed = {
+        "workflow_identity": authorized.workflow_identity,
+        "operator_identity": authorized.operator_identity,
+        "artifact_identity": artifact.artifact_identity,
+        "source_scenario_lineage_identities": list(
+            artifact.source_scenario_lineage_identities
+        ),
+        "accessed_at": authorized.authorized_at,
+        "authorization_identity": authorized.authorization_identity,
+        "consumer_exposure_role": "final_evaluation",
+    }
+    print("[finalize 1/3] revalidating the recorded authorized access", flush=True)
+    final_reader = CohortV2FinalEvaluationReader(
+        paths["release"],
+        paths["sealed"],
+        capability_declaration_path=(
+            root / "docs/data_contracts/cohort_v2_capabilities_v1.json"
+        ),
+        production_plan_root=paths["plan"],
+        access_manifest=authorized,
+        observed_accesses=[observed],
+    )
+    if final_reader.access_audit != access_audit:
+        raise CohortV2ConfirmatoryError("recorded access audit differs")
+    print("[finalize 2/3] auditing carrier entity capacity only", flush=True)
+    capacity_audit = audit_final_entity_capacity(
+        final_reader, max_entities=frozen["config"].max_entities
+    )
+    if not capacity_audit or any(item["passed"] for item in capacity_audit):
+        raise CohortV2ConfirmatoryError(
+            "recorded failure is not reproduced on every frozen final attempt"
+        )
+    fixed_attempts = set(
+        frozen["protocol"]["replicate_and_seed_policy"]["fixed_attempt_ids"]
+    )
+    if {item["attempt_id"] for item in capacity_audit} != fixed_attempts:
+        raise CohortV2ConfirmatoryError("capacity audit attempt inventory differs")
+    failed_commit = str(authorized.authorization_identity).rsplit(":", 1)[-1]
+    print("[finalize 3/3] applying the frozen failed-run rule", flush=True)
+    return _finalize_capacity_failure(
+        paths,
+        frozen,
+        final_reader,
+        access_audit,
+        capacity_audit,
+        implementation_commit=implementation_commit,
+        failed_implementation_commit=failed_commit,
+    )
+
+
 def _production(root, paths, frozen, args, implementation_commit: str) -> int:
     if paths["output"].exists() or paths["compact"].exists():
         raise CohortV2ConfirmatoryError("immutable issue-15 output already exists")
@@ -432,6 +569,19 @@ def _production(root, paths, frozen, args, implementation_commit: str) -> int:
         f"frame_records={sum(len(item.frame_records) for item in final_reader.rollouts)}",
         flush=True,
     )
+    capacity_audit = audit_final_entity_capacity(
+        final_reader, max_entities=frozen["config"].max_entities
+    )
+    if any(item["passed"] is False for item in capacity_audit):
+        return _finalize_capacity_failure(
+            paths,
+            frozen,
+            final_reader,
+            access_audit,
+            capacity_audit,
+            implementation_commit=implementation_commit,
+            failed_implementation_commit=implementation_commit,
+        )
 
     scorers = []
     total = sum(len(item.frame_records) - 1 for item in final_reader.rollouts) * 9
@@ -596,8 +746,8 @@ def _validate(paths, frozen) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
-    if args.dry_run and args.validate:
-        parser.error("--dry-run and --validate are mutually exclusive")
+    if sum((args.dry_run, args.validate, args.finalize_failure)) > 1:
+        parser.error("--dry-run, --validate, and --finalize-failure are mutually exclusive")
     if args.score_log_every <= 0 or args.evaluation_batch_size <= 0:
         parser.error("progress interval and evaluation batch size must be positive")
     root = args.repository_root.resolve()
@@ -609,7 +759,9 @@ def main(argv: list[str] | None = None) -> int:
             parser.error("a dirty worktree requires --implementation-commit")
     print("[design] loading frozen issue-34 protocol and issue-58 model sources", flush=True)
     frozen = _load_frozen_sources(
-        root, paths, "cpu" if args.dry_run or args.validate else args.device
+        root,
+        paths,
+        "cpu" if args.dry_run or args.validate or args.finalize_failure else args.device,
     )
     print(
         "[design] candidate=integrated_aggregated_joint_controller "
@@ -620,6 +772,8 @@ def main(argv: list[str] | None = None) -> int:
         return _dry_run(paths, frozen, args)
     if args.validate:
         return _validate(paths, frozen)
+    if args.finalize_failure:
+        return _finalize_existing_failure(root, paths, frozen, implementation)
     return _production(root, paths, frozen, args, implementation)
 
 

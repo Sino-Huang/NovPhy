@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 import tempfile
 import unittest
 from pathlib import Path
@@ -17,6 +18,7 @@ from world_model.training.cohort_v2_confirmatory import (
     validate_cohort_v2_confirmatory_evidence,
     write_cohort_v2_confirmatory_evidence,
 )
+from world_model.training import cohort_v2_confirmatory as confirmatory
 from world_model.training.cohort_v2_evaluation import (
     _validate_reader_bindings,
     cohort_v2_evaluation_state_set_identity,
@@ -24,6 +26,7 @@ from world_model.training.cohort_v2_evaluation import (
 from world_model.training.cohort_v2_integrated import (
     CohortV2RecursiveRolloutRecord,
 )
+from tests.test_cohort_v2_macro_training import _frame
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -207,6 +210,80 @@ class CohortV2ConfirmatoryTests(unittest.TestCase):
                     observed_accesses=[observed],
                 )
         sealed_validation.assert_not_called()
+
+    def test_entity_capacity_audit_catches_the_pre_evaluation_codec_failure(self):
+        frame = _frame("frame:overflow", 0, steady=False, unstable=False)
+        template = frame.engine_state["entities"][0]
+        entities = tuple(
+            {
+                **template,
+                "entity_id": f"entity:{index:02d}",
+                "scenario_object_id": f"object:{index:02d}",
+            }
+            for index in range(15)
+        )
+        overflow = replace(
+            frame,
+            engine_state={
+                "entities": entities,
+                "world": frame.engine_state["world"],
+            },
+        )
+        reader = SimpleNamespace(rollouts=(SimpleNamespace(
+            attempt_id="attempt:final",
+            coverage_stratum="collision",
+            frame_records=(overflow,),
+        ),))
+
+        audit = confirmatory.audit_final_entity_capacity(reader, max_entities=12)
+
+        self.assertEqual(audit[0]["attempt_id"], "attempt:final")
+        self.assertEqual(audit[0]["maximum_entity_count"], 15)
+        self.assertEqual(audit[0]["declared_entity_slots"], 12)
+        self.assertEqual(audit[0]["failure_code"], "entity_slot_capacity_exceeded")
+
+    def test_capacity_failures_are_retained_and_make_both_budgets_unsupported(self):
+        capacity_audit = tuple({
+            "attempt_id": attempt,
+            "coverage_stratum": f"stratum:{index}",
+            "frame_record_count": 10,
+            "maximum_entity_count": 15,
+            "declared_entity_slots": 12,
+            "overflow_frame_count": 10,
+            "failure_code": "entity_slot_capacity_exceeded",
+            "passed": False,
+        } for index, attempt in enumerate(self.attempts))
+
+        report = analyze_cohort_v2_confirmatory(
+            (),
+            (),
+            self.protocol,
+            source_bindings={"failed_implementation_commit": "commit:fixture"},
+            capacity_audit=capacity_audit,
+        )
+
+        self.assertEqual(report["decision"], "unsupported")
+        self.assertEqual(report["bootstrap"]["replicates"], 0)
+        self.assertEqual(len(report["failed_missing_or_excluded_runs"]), 6)
+        self.assertTrue(all(
+            not item["budget_rule_passed"] for item in report["budget_decisions"]
+        ))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "failure-evidence"
+            written = write_cohort_v2_confirmatory_evidence(
+                root,
+                (),
+                (),
+                report,
+                implementation_revision="commit:finalizer",
+                capacity_audit=capacity_audit,
+            )
+            validated = validate_cohort_v2_confirmatory_evidence(
+                root, self.protocol
+            )
+            self.assertEqual(
+                validated["artifact_identity"], written["artifact_identity"]
+            )
 
 
 if __name__ == "__main__":

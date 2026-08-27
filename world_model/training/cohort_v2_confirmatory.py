@@ -26,6 +26,28 @@ class CohortV2ConfirmatoryError(ValueError):
     """The frozen confirmatory inputs or evidence are invalid."""
 
 
+def audit_final_entity_capacity(reader, *, max_entities: int) -> tuple[dict[str, object], ...]:
+    """Check the frozen carrier width before any predictor evaluation."""
+    rows = []
+    for rollout in reader.rollouts:
+        counts = tuple(
+            len(frame.engine_state["entities"]) for frame in rollout.frame_records
+        )
+        maximum = max(counts)
+        passed = maximum <= max_entities
+        rows.append({
+            "attempt_id": rollout.attempt_id,
+            "coverage_stratum": rollout.coverage_stratum,
+            "frame_record_count": len(rollout.frame_records),
+            "maximum_entity_count": maximum,
+            "declared_entity_slots": max_entities,
+            "overflow_frame_count": sum(value > max_entities for value in counts),
+            "failure_code": None if passed else "entity_slot_capacity_exceeded",
+            "passed": passed,
+        })
+    return tuple(rows)
+
+
 @dataclass(frozen=True, slots=True)
 class CohortV2ConfirmatoryRecord:
     protocol_identity: str
@@ -101,6 +123,7 @@ def analyze_cohort_v2_confirmatory(
     protocol: Mapping[str, object],
     *,
     source_bindings: Mapping[str, object],
+    capacity_audit: tuple[Mapping[str, object], ...] = (),
 ) -> dict[str, object]:
     if (
         protocol.get("schema") != "cohort_v2_prospective_statistical_protocol_v1"
@@ -129,6 +152,62 @@ def analyze_cohort_v2_confirmatory(
         or replicates != 10_000
     ):
         raise CohortV2ConfirmatoryError("frozen confirmatory matrix is incomplete")
+
+    failed_capacity = tuple(
+        dict(item) for item in capacity_audit if item.get("passed") is False
+    )
+    if failed_capacity:
+        if records or recursive:
+            raise CohortV2ConfirmatoryError(
+                "capacity failure cannot be combined with computed final metrics"
+            )
+        if (
+            len(capacity_audit) != len(attempts)
+            or {item.get("attempt_id") for item in capacity_audit} != set(attempts)
+            or any(
+                item.get("failure_code") != "entity_slot_capacity_exceeded"
+                for item in failed_capacity
+            )
+        ):
+            raise CohortV2ConfirmatoryError(
+                "capacity audit does not cover the frozen final attempts"
+            )
+        decisions = [{
+            "budget": float(comparison["budget"]),
+            "strongest_comparator_id": str(comparison["strongest_comparator_id"]),
+            "status": "candidate_model_execution_failure",
+            "candidate_execution_failure_count": len(failed_capacity),
+            "paired_complete_rollout_count": 0,
+            "matched_compute_support": False,
+            "endpoint_gain": "unavailable",
+            "physical_violation_increase": "unavailable",
+            "budget_rule_passed": False,
+        } for comparison in comparisons]
+        return {
+            "schema": SCHEMA,
+            "protocol_identity": protocol_identity,
+            "candidate_configuration_id": CANDIDATE_ID,
+            "decision": "unsupported",
+            "decision_rationale": (
+                "candidate_model_execution_failed_on_the_frozen_final_attempts"
+            ),
+            "budget_decisions": decisions,
+            "paired_rollout_effects": [],
+            "bootstrap": {
+                "method": "not_run_due_to_candidate_model_execution_failure",
+                "replicates": 0,
+            },
+            "fixed_h15_complete_rollout": {
+                "status": "not_run_due_to_candidate_model_execution_failure",
+                "recursive_physical_violation_status": "unavailable",
+            },
+            "sensitivity": [],
+            "failed_missing_or_excluded_runs": list(failed_capacity),
+            "failed_run_treatment": (
+                "retained_without_replacement_or_exclusion_and_failed_both_budgets"
+            ),
+            "source_bindings": dict(source_bindings),
+        }
 
     decisions = []
     sensitivity = []
@@ -303,6 +382,7 @@ def write_cohort_v2_confirmatory_evidence(
     report: Mapping[str, object],
     *,
     implementation_revision: str,
+    capacity_audit: tuple[Mapping[str, object], ...] = (),
 ) -> dict[str, object]:
     record_bytes = b"".join(
         canonical_json_bytes({"schema": SCHEMA, **asdict(item)}) for item in records
@@ -311,9 +391,15 @@ def write_cohort_v2_confirmatory_evidence(
         canonical_json_bytes({"schema": SCHEMA, **asdict(item)}) for item in recursive
     )
     report_bytes = canonical_json_bytes(dict(report))
+    capacity_bytes = b"".join(
+        canonical_json_bytes({"schema": SCHEMA, **dict(item)})
+        for item in capacity_audit
+    )
     manifest = {
         "schema": SCHEMA,
         "implementation_revision": implementation_revision,
+        "capacity_audit": "final_entity_capacity_audit.jsonl",
+        "capacity_audit_identity": _digest(capacity_bytes),
         "confirmatory_records": "confirmatory_records.jsonl",
         "confirmatory_records_identity": _digest(record_bytes),
         "recursive_records": "fixed_h15_recursive_records.jsonl",
@@ -326,6 +412,7 @@ def write_cohort_v2_confirmatory_evidence(
         implementation_revision,
         manifest["confirmatory_records_identity"],
         manifest["recursive_records_identity"],
+        manifest["capacity_audit_identity"],
         manifest["report_identity"],
     ))
     root = Path(root)
@@ -333,6 +420,7 @@ def write_cohort_v2_confirmatory_evidence(
         raise CohortV2ConfirmatoryError(f"immutable output already exists: {root}")
     _atomic_write(root / "confirmatory_records.jsonl", record_bytes)
     _atomic_write(root / "fixed_h15_recursive_records.jsonl", recursive_bytes)
+    _atomic_write(root / "final_entity_capacity_audit.jsonl", capacity_bytes)
     _atomic_write(root / "report.json", report_bytes)
     _atomic_write(root / "manifest.json", canonical_json_bytes(manifest))
     return manifest
@@ -348,6 +436,7 @@ def validate_cohort_v2_confirmatory_evidence(
         manifest = json.loads(manifest_raw)
         record_bytes = (root / manifest["confirmatory_records"]).read_bytes()
         recursive_bytes = (root / manifest["recursive_records"]).read_bytes()
+        capacity_bytes = (root / manifest["capacity_audit"]).read_bytes()
         report_bytes = (root / manifest["report"]).read_bytes()
     except (OSError, KeyError, json.JSONDecodeError) as error:
         raise CohortV2ConfirmatoryError(
@@ -370,17 +459,23 @@ def validate_cohort_v2_confirmatory_evidence(
         for line in recursive_bytes.splitlines()
     )
     report = json.loads(report_bytes)
+    capacity_audit = tuple(
+        {key: value for key, value in json.loads(line).items() if key != "schema"}
+        for line in capacity_bytes.splitlines()
+    )
     expected_report = analyze_cohort_v2_confirmatory(
         records,
         recursive,
         protocol,
         source_bindings=report["source_bindings"],
+        capacity_audit=capacity_audit,
     )
     expected_identity = identity((
         SCHEMA,
         manifest["implementation_revision"],
         _digest(record_bytes),
         _digest(recursive_bytes),
+        _digest(capacity_bytes),
         _digest(report_bytes),
     ))
     if (
@@ -390,6 +485,7 @@ def validate_cohort_v2_confirmatory_evidence(
         or manifest.get("artifact_identity") != expected_identity
         or manifest.get("confirmatory_records_identity") != _digest(record_bytes)
         or manifest.get("recursive_records_identity") != _digest(recursive_bytes)
+        or manifest.get("capacity_audit_identity") != _digest(capacity_bytes)
         or manifest.get("report_identity") != _digest(report_bytes)
     ):
         raise CohortV2ConfirmatoryError(
@@ -402,6 +498,7 @@ __all__ = [
     "CANDIDATE_ID",
     "CohortV2ConfirmatoryError",
     "CohortV2ConfirmatoryRecord",
+    "audit_final_entity_capacity",
     "analyze_cohort_v2_confirmatory",
     "validate_cohort_v2_confirmatory_evidence",
     "write_cohort_v2_confirmatory_evidence",
