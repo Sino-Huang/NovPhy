@@ -31,6 +31,7 @@ from world_model.model import (
     MacroReadoutHead,
     PredictionPair,
     PredictorConfig,
+    TransitionRequest,
     identity,
 )
 from world_model.training.cohort_v2 import build_cohort_v2_transition_request
@@ -591,10 +592,18 @@ class CohortV2MacroPairScorer:
         config: CohortV2MacroConfig,
         readers: tuple[CohortV2ReleaseReader, ...],
         *,
+        transition_request_builder: Callable[
+            [PredictionPair, tuple[CohortV2OracleWindow, ...]], TransitionRequest
+        ] = build_cohort_v2_transition_request,
+        transition_request_identity: str = "cohort-v2-oracle-symbol-input-v1",
         progress_every: int = 0,
         progress_total: int | None = None,
         worker_name: str | None = None,
     ) -> None:
+        if not callable(transition_request_builder):
+            raise CohortV2MacroError("transition request builder must be callable")
+        if not transition_request_identity:
+            raise CohortV2MacroError("transition request identity must be nonempty")
         self.predictor = predictor
         self.codec = codec
         self.checkpoint_identity = checkpoint.identity
@@ -605,7 +614,8 @@ class CohortV2MacroPairScorer:
             for reader in readers
             for rollout in reader.rollouts
         }
-        self.objective_identity = identity((
+        self.transition_request_builder = transition_request_builder
+        objective_fields = (
             "cohort-v2-macro-pair-objective-v1",
             "duration-weighted-carrier-mse+selected-symbolic-readout+normalized-effective-horizon",
             config.symbolic_weight,
@@ -614,7 +624,10 @@ class CohortV2MacroPairScorer:
             MACRO_EVENT_ENDPOINT_AUTHORITY,
             codec.identity,
             checkpoint.identity,
-        ))
+        )
+        if transition_request_builder is not build_cohort_v2_transition_request:
+            objective_fields += (transition_request_identity,)
+        self.objective_identity = identity(objective_fields)
         self.progress_every = progress_every
         self.progress_total = progress_total
         self.worker_name = worker_name or str(self.device)
@@ -635,7 +648,7 @@ class CohortV2MacroPairScorer:
             context = self.codec.batch(tuple(window.context for window in windows)).to(self.device)
             target = self.codec.batch(tuple(window.target for window in windows)).to(self.device)
             action = torch.stack(tuple(cohort_v2_action(window) for window in windows)).to(self.device)
-            request = build_cohort_v2_transition_request(pair, windows)
+            request = self.transition_request_builder(pair, windows)
             carrier = self.predictor.carrier(context, action, request)
             carrier_loss = (carrier - target).pow(2).mean(dim=1)
             symbolic = torch.zeros_like(carrier_loss)
