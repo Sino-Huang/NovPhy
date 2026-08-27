@@ -163,10 +163,23 @@ class CohortV2AlignedObservationReaderTests(unittest.TestCase):
             second = reader.load_frame_observation(
                 rollout, rollout.frame_records[1], observation_role="agent"
             )
+            frozen_source = reader.load_observation(
+                rollout, observation_role="agent"
+            )
 
         self.assertEqual(len(reader.rollouts), 6)
         self.assertTrue(first.startswith(b"\x89PNG\r\n\x1a\n"))
         self.assertTrue(second.startswith(b"\x89PNG\r\n\x1a\n"))
+        self.assertEqual(
+            frozen_source,
+            source_reader.load_observation(
+                next(
+                    item for item in source_reader.rollouts
+                    if item.attempt_id == rollout.attempt_id
+                ),
+                observation_role="agent",
+            ),
+        )
         self.assertEqual(reader.release_identity, ALIGNED_IDENTITY)
 
 

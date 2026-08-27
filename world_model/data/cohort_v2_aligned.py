@@ -109,6 +109,8 @@ class CohortV2AlignedObservationReader(CohortV2ReleaseReader):
             )
 
         self._root = partition_root
+        self._source_reader = source_reader
+        self._source_rollouts = source_rollouts
         self._workflow_kind = role
         self._enforce_expected_termination = False
         self._aligned_observation_roots = {}
@@ -216,19 +218,31 @@ class CohortV2AlignedObservationReader(CohortV2ReleaseReader):
                     item["identity"],
                 )
                 self._observation_records[(attempt_id, fixed_step)] = _freeze(item)
-            first = observations[frames[0].fixed_step]
             rollouts.append(CohortV2Rollout(
                 attempt_id=attempt_id,
                 exposure_role=role,
                 coverage_stratum=source.coverage_stratum,
                 scenario_lineage_identity=source.scenario_lineage_identity,
                 intervention=_freeze(source.intervention),
-                agent_observation_identity=first["agent_observation"]["identity"],
-                agent_observation_fixed_step=frames[0].fixed_step,
+                agent_observation_identity=source.agent_observation_identity,
+                agent_observation_fixed_step=source.agent_observation_fixed_step,
                 frame_records=frames,
             ))
         validate_observation_exposure_boundaries(manifests)
         self.rollouts = tuple(rollouts)
+
+    def load_observation(
+        self, rollout: CohortV2Rollout, *, observation_role: str
+    ) -> bytes:
+        """Preserve the frozen source-rollout observation for existing consumers."""
+        source = self._source_rollouts.get(rollout.attempt_id)
+        if source is None:
+            raise CohortV2IngestionError(
+                "Aligned rollout is absent from its frozen source reader"
+            )
+        return self._source_reader.load_observation(
+            source, observation_role=observation_role
+        )
 
     def frame_observation_metadata(
         self, rollout: CohortV2Rollout, frame: Any
