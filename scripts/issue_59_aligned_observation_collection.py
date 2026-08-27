@@ -13,7 +13,6 @@ from typing import Any, Mapping
 
 from scripts.capture_issue_53_evidence import (
     DEFAULT_PLAN_ROOT,
-    STAGE_ROOT,
     _assignments,
     _capture_attempt,
     _load_plan,
@@ -55,6 +54,7 @@ from world_model.training.manifest import git_revision
 
 
 ROOT = Path(__file__).resolve().parents[1]
+STAGE_ROOT = ROOT / "sciencebirdsgames/aligned-observation-v1"
 DEFAULT_RUNTIME_ROOT = ROOT / ".local-artifacts/issue-59-aligned-collection-run"
 DEFAULT_OUTPUT = ROOT / ".local-artifacts/issue-59-aligned-observation-release"
 DEFAULT_SUMMARY = (
@@ -148,7 +148,7 @@ def dry_run(
     public_plan_root: Path = DEFAULT_PLAN_ROOT,
     issue_15_plan_root: Path = ISSUE_15_PLAN_ROOT,
     stage_root: Path = STAGE_ROOT,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], int]:
     _log("dry-run 1/3: validating frozen public and replacement-final plans")
     public, assignments, _final_plan, final_collection, _assignment, final_access = (
         _source_plan(public_plan_root, issue_15_plan_root)
@@ -325,6 +325,11 @@ def _publish(
             **public_partition["role_counts"],
             **final_partition["role_counts"],
         }
+        frame_count = sum(
+            item["frame_count"]
+            for partition in (public_partition, final_partition)
+            for item in partition["records"]
+        )
         manifest = {
             "schema": SCHEMA,
             "identity": RELEASE_IDENTITY,
@@ -351,16 +356,11 @@ def _publish(
             },
             "role_counts": role_counts,
             "rollout_count": sum(role_counts.values()),
-            "frame_count": sum(
-                item["frame_count"]
-                for partition in (public_partition, final_partition)
-                for item in partition["records"]
-            ),
             "passed": True,
         }
         write_immutable_cohort_v2_json(manifest, bundle / "manifest.json")
         os.replace(bundle, output)
-    return manifest
+    return manifest, frame_count
 
 
 def collect(
@@ -465,7 +465,7 @@ def collect(
             os.environ["NOVPHY_PHYSICS_CAPTURE_V2_STRIDE"] = prior_stride
 
     final_protocol = final_frozen(issue_15_plan_root)[1]
-    manifest = _publish(
+    manifest, frame_count = _publish(
         output=output,
         records=records,
         implementation_commit=implementation_commit,
@@ -480,7 +480,7 @@ def collect(
         "implementation_commit": implementation_commit,
         "role_counts": manifest["role_counts"],
         "rollout_count": manifest["rollout_count"],
-        "frame_count": manifest["frame_count"],
+        "frame_count": frame_count,
         "access_audit": {
             key: access_audit[key]
             for key in (
@@ -619,7 +619,7 @@ def validate(
         or summary.get("artifact_identity") != RELEASE_IDENTITY
         or summary.get("rollout_count") != 24
         or summary.get("frame_count")
-        != manifest["frame_count"]
+        != sum(item["frame_count"] for item in records)
     ):
         raise Issue59CollectionError("issue-59 compact summary differs")
     _log(

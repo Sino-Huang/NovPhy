@@ -149,7 +149,6 @@ class CohortV2AlignedObservationReaderTests(unittest.TestCase):
                     "final_evaluation": 6,
                 },
                 "rollout_count": 24,
-                "frame_count": sum(item["frame_count"] for item in records),
                 "passed": True,
             }
             write_immutable_cohort_v2_json(manifest, root / "manifest.json")

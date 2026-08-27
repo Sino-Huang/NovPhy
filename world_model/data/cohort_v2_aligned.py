@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 from scripts.cohort_v2_macro_semantics import validate_capture_macro_derivation
 from scripts.cohort_v2_micro_relations import (
@@ -113,6 +113,7 @@ class CohortV2AlignedObservationReader(CohortV2ReleaseReader):
         self._enforce_expected_termination = False
         self._aligned_observation_roots = {}
         self._observation_references = {}
+        self._observation_records = {}
         self.release_identity = RELEASE_IDENTITY
         self.capability_declaration_identity = (
             source_reader.capability_declaration_identity
@@ -214,6 +215,7 @@ class CohortV2AlignedObservationReader(CohortV2ReleaseReader):
                     observation_root,
                     item["identity"],
                 )
+                self._observation_records[(attempt_id, fixed_step)] = _freeze(item)
             first = observations[frames[0].fixed_step]
             rollouts.append(CohortV2Rollout(
                 attempt_id=attempt_id,
@@ -227,6 +229,17 @@ class CohortV2AlignedObservationReader(CohortV2ReleaseReader):
             ))
         validate_observation_exposure_boundaries(manifests)
         self.rollouts = tuple(rollouts)
+
+    def frame_observation_metadata(
+        self, rollout: CohortV2Rollout, frame: Any
+    ) -> Mapping[str, Any]:
+        """Return synchronized camera metadata for supervision derivation only."""
+        item = self._observation_records.get((rollout.attempt_id, frame.fixed_step))
+        if item is None:
+            raise CohortV2IngestionError(
+                "Aligned observation metadata is missing for the requested frame"
+            )
+        return item["capture_metadata"]
 
 
 __all__ = ["CohortV2AlignedObservationReader"]
