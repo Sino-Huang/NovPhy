@@ -125,11 +125,23 @@ def analyze_cohort_v2_confirmatory(
     source_bindings: Mapping[str, object],
     capacity_audit: tuple[Mapping[str, object], ...] = (),
 ) -> dict[str, object]:
-    if (
-        protocol.get("schema") != "cohort_v2_prospective_statistical_protocol_v1"
-        or protocol.get("status") != "frozen_before_final_evaluation"
-    ):
+    protocol_state = (protocol.get("schema"), protocol.get("status"))
+    if protocol_state not in {
+        (
+            "cohort_v2_prospective_statistical_protocol_v1",
+            "frozen_before_final_evaluation",
+        ),
+        (
+            "cohort_v2_prospective_statistical_protocol_v2",
+            "frozen_before_new_final_collection",
+        ),
+    }:
         raise CohortV2ConfirmatoryError("issue-34 protocol is not frozen")
+    negative_decision = (
+        "not_supported_by_this_experiment"
+        if protocol_state[0] == "cohort_v2_prospective_statistical_protocol_v2"
+        else "unsupported"
+    )
     protocol_identity = protocol.get("artifact_identity")
     policy = protocol.get("replicate_and_seed_policy")
     matrix = protocol.get("experiment_matrix")
@@ -187,7 +199,7 @@ def analyze_cohort_v2_confirmatory(
             "schema": SCHEMA,
             "protocol_identity": protocol_identity,
             "candidate_configuration_id": CANDIDATE_ID,
-            "decision": "unsupported",
+            "decision": negative_decision,
             "decision_rationale": (
                 "candidate_model_execution_failed_on_the_frozen_final_attempts"
             ),
@@ -337,7 +349,7 @@ def analyze_cohort_v2_confirmatory(
         "schema": SCHEMA,
         "protocol_identity": protocol_identity,
         "candidate_configuration_id": CANDIDATE_ID,
-        "decision": "supported" if supported else "unsupported",
+        "decision": "supported" if supported else negative_decision,
         "decision_rationale": (
             "at_least_one_budget_passed_the_frozen_constrained_gain_rule"
             if supported

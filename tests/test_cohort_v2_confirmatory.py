@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 from dataclasses import replace
 import tempfile
@@ -129,6 +130,20 @@ class CohortV2ConfirmatoryTests(unittest.TestCase):
         self.assertFalse(any(
             item["budget_rule_passed"] for item in report["budget_decisions"]
         ))
+
+    def test_amended_protocol_uses_bounded_not_supported_disposition(self):
+        protocol = deepcopy(self.protocol)
+        protocol["schema"] = "cohort_v2_prospective_statistical_protocol_v2"
+        protocol["status"] = "frozen_before_new_final_collection"
+
+        report = analyze_cohort_v2_confirmatory(
+            self._records(candidate_error=0.2),
+            self._recursive(),
+            protocol,
+            source_bindings={"fixture": True},
+        )
+
+        self.assertEqual(report["decision"], "not_supported_by_this_experiment")
 
     def test_evidence_validates_by_exact_recomputation(self):
         records = self._records(candidate_error=0.01)
