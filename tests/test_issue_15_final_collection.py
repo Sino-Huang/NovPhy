@@ -7,12 +7,17 @@ from scripts.final_evaluation_access import (
     authorize_final_evaluation_workflow_access,
 )
 from scripts.issue_15_final_collection import (
+    DEFAULT_SEALED_ROOT,
     DEFAULT_ROOT,
+    Issue15ConfirmatoryV2Reader,
     _assignment,
     _contract,
     _frozen,
     _observed_access,
 )
+from world_model.data import CohortV2OracleWindowDataset
+from world_model.model import Abstraction, PredictionPair
+from world_model.training.cohort_v2 import build_cohort_v2_transition_request
 
 
 class Issue15FinalCollectionTests(unittest.TestCase):
@@ -44,6 +49,18 @@ class Issue15FinalCollectionTests(unittest.TestCase):
 
         self.assertTrue(audit["passed"])
         self.assertEqual(audit["observed_access_count"], 1)
+
+    def test_replacement_final_window_reaches_the_transition_adapter(self):
+        reader = Issue15ConfirmatoryV2Reader(DEFAULT_SEALED_ROOT)
+        window = CohortV2OracleWindowDataset(
+            reader, requested_horizons=(1,)
+        )[0]
+
+        request = build_cohort_v2_transition_request(
+            PredictionPair(1, Abstraction.CONTINUOUS), (window,)
+        )
+
+        self.assertEqual(request.pair, PredictionPair(1, Abstraction.CONTINUOUS))
 
 
 if __name__ == "__main__":
