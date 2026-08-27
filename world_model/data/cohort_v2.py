@@ -191,6 +191,7 @@ class CohortV2ReleaseReader:
         self._root = Path(release_root).resolve()
         self._production_plan_root = Path(production_plan_root).resolve()
         self._workflow_kind = workflow_kind
+        self._enforce_expected_termination = True
         self._observation_references: dict[str, tuple[Path, str]] = {}
         try:
             self._validate_capability_declaration(Path(capability_declaration_path))
@@ -469,7 +470,11 @@ class CohortV2ReleaseReader:
                 != ledger_entry["intervention_identity"]
                 or capture.record["terminal_evidence"]["reason"]
                 != ledger_entry["terminal_reason"]
-                or ledger_entry["terminal_reason"] != ledger_entry["expected_termination"]
+                or (
+                    self._enforce_expected_termination
+                    and ledger_entry["terminal_reason"]
+                    != ledger_entry["expected_termination"]
+                )
             ):
                 raise CohortV2IngestionError("Primary rollout source binding is stale")
             intervention = interventions[ledger_entry["intervention_id"]]
@@ -653,6 +658,7 @@ class CohortV2FinalEvaluationReader(CohortV2ReleaseReader):
         self._root = Path(public_release_root).resolve()
         self._production_plan_root = Path(production_plan_root).resolve()
         self._workflow_kind = "final_evaluation"
+        self._enforce_expected_termination = True
         self._observation_references: dict[str, tuple[Path, str]] = {}
         try:
             self._validate_capability_declaration(Path(capability_declaration_path))
