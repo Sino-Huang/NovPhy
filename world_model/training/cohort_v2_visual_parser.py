@@ -238,13 +238,19 @@ def _kind(scenario_object_id: str) -> str:
     return prefix if prefix in ENTITY_KINDS[:-1] else "other"
 
 
-def visual_object_vocabulary(reader: CohortV2AlignedObservationReader) -> tuple[str, ...]:
-    if {item.exposure_role for item in reader.rollouts} != {"training"}:
-        raise CohortV2VisualParserError("object vocabulary requires the training role")
+def visual_object_vocabulary(
+    readers: Sequence[CohortV2AlignedObservationReader],
+) -> tuple[str, ...]:
+    roles = tuple(reader.rollouts[0].exposure_role for reader in readers)
+    if roles != ("training", "calibration", "model_selection"):
+        raise CohortV2VisualParserError(
+            "object output schema requires the three ordered public roles"
+        )
     values = {
         entity["scenario_object_id"]
+        for reader in readers
         for rollout in reader.rollouts
-        for frame in rollout.frame_records
+        for frame in rollout.frame_records[:1]
         for entity in frame.engine_state["entities"]
     }
     if any(not isinstance(value, str) or not value for value in values):

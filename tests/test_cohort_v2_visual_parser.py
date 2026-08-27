@@ -148,7 +148,7 @@ class CohortV2VisualParserTests(unittest.TestCase):
             image_height=4, image_width=4, hidden_dim=8,
             epochs=2, batch_size=2, device="cpu",
         )
-        self.vocabulary = visual_object_vocabulary(self.readers[0])
+        self.vocabulary = visual_object_vocabulary(self.readers)
         self.data = tuple(
             build_visual_parser_role_data(
                 reader, self.config, expected_role=reader.role,

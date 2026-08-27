@@ -173,7 +173,7 @@ def _role_data(readers, config, vocabulary, *, frame_limit=None):
 
 
 def _train_and_freeze(frozen, paths, aligned, implementation, device):
-    vocabulary = visual_object_vocabulary(aligned[0])
+    vocabulary = visual_object_vocabulary(aligned)
     base_config = _configs(device)[0]
     training, calibration, selection_data = _role_data(
         aligned, base_config, vocabulary
@@ -692,7 +692,7 @@ def _validate(paths, frozen):
 
 def _dry_run(paths, frozen):
     aligned = _aligned_public(frozen, paths["aligned"])
-    vocabulary = visual_object_vocabulary(aligned[0])
+    vocabulary = visual_object_vocabulary(aligned)
     config = _configs("cpu", dry_run=True)[0]
     training, calibration, selection_data = _role_data(
         aligned, config, vocabulary, frame_limit=8
