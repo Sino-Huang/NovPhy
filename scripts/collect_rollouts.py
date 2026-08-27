@@ -1172,19 +1172,42 @@ def capture_physics_v2_rollout(
     deadline_seconds: float = 30.0,
     clock=time.monotonic,
     sleeper=time.sleep,
+    aligned_observation_capture_root: Path | None = None,
+    observation_configuration: str | None = None,
+    observation_source_bindings: Mapping[str, str] | None = None,
+    observation_exposure_role: str | None = None,
 ) -> dict[str, object]:
     """Execute one planned intervention and persist its request-71 sidecar."""
     if shoot is None:
         raise RolloutCollectionError("physics capture v2 requires a planned shoot callback")
     shoot_response = shoot()
-    deadline = clock() + deadline_seconds
+    started = clock()
+    deadline = started + deadline_seconds
+    next_progress = started + 5.0
     while True:
         try:
             engine_capture = bridge.get_physics_capture_v2()
             break
         except PhysicsCaptureV2Failure as error:
-            if error.code != 3 or clock() >= deadline:
+            now = clock()
+            if error.code != 3 or now >= deadline:
                 raise
+            if (
+                aligned_observation_capture_root is not None
+                and now >= next_progress
+            ):
+                captured = sum(
+                    1
+                    for _ in Path(aligned_observation_capture_root).glob(
+                        "frame_*.json"
+                    )
+                )
+                print(
+                    f"[aligned observation] captured_frames={captured} "
+                    f"elapsed_seconds={now - started:.1f}",
+                    flush=True,
+                )
+                next_progress = now + 5.0
             sleeper(0.25)
     engine_record = getattr(engine_capture, "record", None)
     if not isinstance(engine_record, Mapping):
@@ -1196,6 +1219,41 @@ def capture_physics_v2_rollout(
         scenario_manifest_identity=scenario_manifest_identity,
     )
     validate_physics_capture_v2_artifact(output_dir, metadata)
+    if aligned_observation_capture_root is not None:
+        from scripts.observation_trace import (
+            load_aligned_observation_captures,
+            persist_observation_trace,
+        )
+
+        if (
+            observation_configuration is None
+            or observation_source_bindings is None
+            or observation_exposure_role is None
+        ):
+            raise RolloutCollectionError(
+                "aligned observations require configuration, bindings, and exposure role"
+            )
+        captures = load_aligned_observation_captures(
+            aligned_observation_capture_root, engine_record
+        )
+        print(
+            f"[aligned observation] complete frames={len(captures)}",
+            flush=True,
+        )
+        observation_root = Path(output_dir) / "observation-trace"
+        observation_manifest = persist_observation_trace(
+            observation_root,
+            captures,
+            observation_configuration=observation_configuration,
+            source_bindings=observation_source_bindings,
+            exposure_role=observation_exposure_role,
+        )
+        metadata.update({
+            "observation_trace_path": str(observation_root),
+            "observation_trace_manifest_identity": observation_manifest["identity"],
+            "observation_frame_count": len(observation_manifest["frame_records"]),
+        })
+        shutil.rmtree(aligned_observation_capture_root)
     metadata["shoot_response"] = shoot_response
     return metadata
 
@@ -1763,6 +1821,7 @@ def collect_rollouts(
     physics_v2_scenario_manifest_identity: str | None = None,
     observation_configuration: str | None = None,
     observation_exposure_role: str | None = None,
+    aligned_observation_capture_root: Path | None = None,
     execution_speed: int = 1,
     readiness_prepare_level=None,
 ) -> dict:
@@ -1786,6 +1845,10 @@ def collect_rollouts(
         if (observation_configuration is None) != (observation_exposure_role is None):
             raise RolloutCollectionError(
                 "physics capture v2 observations require both configuration and exposure role"
+            )
+        if aligned_observation_capture_root is not None and observation_configuration is None:
+            raise RolloutCollectionError(
+                "aligned physics observations require an observation configuration"
             )
     prior_invalid_attempts = list(prior_invalid_attempts or [])
     rollouts = []
@@ -1985,7 +2048,11 @@ def collect_rollouts(
             capture_kwargs["shoot"] = shoot_and_snapshot
         observation_manifest = None
         observation_root = shot_dir / "observation-trace"
-        if physics_capture_v2 and observation_configuration is not None:
+        if (
+            physics_capture_v2
+            and observation_configuration is not None
+            and aligned_observation_capture_root is None
+        ):
             assert physics_v2_source_bindings is not None
             observation_manifest = capture_observation_trace(
                 capture_bridge,
@@ -2008,6 +2075,27 @@ def collect_rollouts(
                 },
                 exposure_role=str(observation_exposure_role),
             )
+        elif physics_capture_v2 and aligned_observation_capture_root is not None:
+            assert physics_v2_source_bindings is not None
+            capture_kwargs.update({
+                "aligned_observation_capture_root": aligned_observation_capture_root,
+                "observation_configuration": observation_configuration,
+                "observation_source_bindings": {
+                    "scenario_template_identity": str(
+                        physics_v2_source_bindings["scenario_template_id"]
+                    ),
+                    "level_instance_identity": str(
+                        physics_v2_source_bindings["level_instance_id"]
+                    ),
+                    "source_scenario_lineage_identity": str(
+                        physics_v2_source_bindings["scenario_lineage_id"]
+                    ),
+                    "rollout_identity": str(
+                        physics_v2_source_bindings["rollout_id"]
+                    ),
+                },
+                "observation_exposure_role": str(observation_exposure_role),
+            })
         metadata = capture_rollout(capture_bridge, shot_dir, **capture_kwargs)
         if physics_capture_v2:
             metadata["capture_contract"] = "physics_capture_v2"
@@ -2239,6 +2327,7 @@ def collect_fresh_engine_rollouts(
     physics_v2_scenario_manifest_identity: str | None = None,
     observation_configuration: str | None = None,
     observation_exposure_role: str | None = None,
+    aligned_observation_capture: bool = False,
 ) -> dict:
     if physics_capture_v1 and physics_capture_v2:
         raise ValueError("physics capture v1 and v2 are mutually exclusive")
@@ -2248,6 +2337,14 @@ def collect_fresh_engine_rollouts(
         or not physics_v2_scenario_manifest_identity
     ):
         raise ValueError("physics capture v2 source authorities are incomplete")
+    if aligned_observation_capture and (
+        not physics_capture_v2
+        or observation_configuration is None
+        or observation_exposure_role is None
+    ):
+        raise ValueError(
+            "aligned observations require physics capture v2 configuration and role"
+        )
     if fresh_engine_attempts != 1:
         raise ValueError(
             "fresh_engine_attempts must be 1; frozen collection plans own retry decisions"
@@ -2275,13 +2372,44 @@ def collect_fresh_engine_rollouts(
                 engine_port_options["game_port"] = engine_game_port
             if physics_capture_v1 or physics_capture_v2:
                 engine_port_options["physics_port"] = physics_port
+            aligned_capture_root = (
+                (output_dir / f".aligned-observation-shot-{index:03d}").resolve()
+                if aligned_observation_capture
+                else None
+            )
+            prior_aligned_root = os.environ.get(
+                "NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT"
+            )
+            if aligned_capture_root is not None:
+                if aligned_capture_root.exists():
+                    raise RuntimeError(
+                        f"aligned observation capture path already exists: {aligned_capture_root}"
+                    )
+                os.environ["NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT"] = str(
+                    aligned_capture_root
+                )
             try:
-                engine_process = start_engine_func(game_dir, headless, **engine_port_options)
-            except TypeError:
-                if not (physics_capture_v1 or physics_capture_v2):
-                    raise
-                engine_port_options.pop("physics_port")
-                engine_process = start_engine_func(game_dir, headless, **engine_port_options)
+                try:
+                    engine_process = start_engine_func(
+                        game_dir, headless, **engine_port_options
+                    )
+                except TypeError:
+                    if not (physics_capture_v1 or physics_capture_v2):
+                        raise
+                    engine_port_options.pop("physics_port")
+                    engine_process = start_engine_func(
+                        game_dir, headless, **engine_port_options
+                    )
+            except Exception:
+                if prior_aligned_root is None:
+                    os.environ.pop(
+                        "NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT", None
+                    )
+                else:
+                    os.environ["NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT"] = (
+                        prior_aligned_root
+                    )
+                raise
             attempt_label = f" for rollout {index}" if attempts_per_action == 1 else f" for rollout {index} attempt {attempt}/{attempts_per_action}"
             print(f"Started engine pid={engine_process.pid}{attempt_label}")
             if engine_settle_seconds > 0:
@@ -2331,6 +2459,7 @@ def collect_fresh_engine_rollouts(
                     physics_v2_scenario_manifest_identity=physics_v2_scenario_manifest_identity,
                     observation_configuration=observation_configuration,
                     observation_exposure_role=observation_exposure_role,
+                    aligned_observation_capture_root=aligned_capture_root,
                     execution_speed=speed,
                 )
                 rollout = partial["rollouts"][0]
@@ -2389,6 +2518,12 @@ def collect_fresh_engine_rollouts(
                         stop_owned_engine(engine_process)
                 else:
                     stop_owned_engine(engine_process)
+                if prior_aligned_root is None:
+                    os.environ.pop("NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT", None)
+                else:
+                    os.environ["NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT"] = (
+                        prior_aligned_root
+                    )
 
     accepted_rollouts = [rollout for rollout in rollouts if rollout.get("accepted")]
     invalid_attempts = [rollout for rollout in rollouts if not rollout.get("accepted")]

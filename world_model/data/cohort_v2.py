@@ -56,9 +56,13 @@ COHORT_V2_RELEASE_IDENTITY: Final = V5_CONTRACT.release_identity
 ISSUE_15_CONFIRMATORY_RELEASE_IDENTITY: Final = (
     "issue-15-confirmatory-final-release-v2:seed-4505"
 )
+ISSUE_59_ALIGNED_RELEASE_IDENTITY: Final = (
+    "cohort-v2-aligned-observation-release-v1:issue-59"
+)
 COHORT_V2_TRANSITION_RELEASE_IDENTITIES: Final = frozenset((
     COHORT_V2_RELEASE_IDENTITY,
     ISSUE_15_CONFIRMATORY_RELEASE_IDENTITY,
+    ISSUE_59_ALIGNED_RELEASE_IDENTITY,
 ))
 ACCEPTED_LABELS: Final = {
     "contact": MICRO_SPEC_IDENTITY,
@@ -182,6 +186,7 @@ class CohortV2ReleaseReader:
         workflow_kind: str,
         influence: str,
         requested_capabilities: tuple[str, ...] = CENTRAL_LABELS,
+        aligned_observation_roots: Mapping[str, Path] | None = None,
     ) -> None:
         if workflow_kind not in EXPOSURE_ROLES[:-1]:
             raise CohortV2IngestionError("Ordinary readers cannot access sealed final artifacts")
@@ -199,7 +204,12 @@ class CohortV2ReleaseReader:
         self._production_plan_root = Path(production_plan_root).resolve()
         self._workflow_kind = workflow_kind
         self._enforce_expected_termination = True
-        self._observation_references: dict[str, tuple[Path, str]] = {}
+        self._observation_references: dict[tuple[str, int], tuple[Path, str]] = {}
+        self._aligned_observation_roots = (
+            None
+            if aligned_observation_roots is None
+            else {key: Path(value).resolve() for key, value in aligned_observation_roots.items()}
+        )
         try:
             self._validate_capability_declaration(Path(capability_declaration_path))
             release, derivations, collection, partition, ledger = self._load_envelopes()
@@ -518,7 +528,16 @@ class CohortV2ReleaseReader:
                 source_capture_bundle_identity=release["identity"],
             )
 
-            observation_root = rollout_root / "observation-trace"
+            aligned_roots = getattr(self, "_aligned_observation_roots", None)
+            observation_root = (
+                rollout_root / "observation-trace"
+                if aligned_roots is None
+                else aligned_roots.get(attempt_id)
+            )
+            if observation_root is None:
+                raise CohortV2IngestionError(
+                    "Aligned observation root is missing for a released rollout"
+                )
             manifest = validate_observation_trace(observation_root)
             manifests.append(manifest)
             bindings = manifest["source_bindings"]
@@ -534,21 +553,37 @@ class CohortV2ReleaseReader:
             observations = {
                 item["fixed_step"]: item for item in manifest["frame_records"]
             }
-            if len(observations) != 1:
-                raise CohortV2IngestionError(
-                    "Each released rollout must expose its declared agent observation"
-                )
-            observation = next(iter(observations.values()))
-            first_capture_step = capture.record["fixed_step_samples"][0]["fixed_step"]
-            if observation["fixed_step"] > first_capture_step:
-                raise CohortV2IngestionError(
-                    "Agent observation occurs after the intervention trace begins"
-                )
             frame_records = self._frame_records(capture, loaded_derivations)
-            self._observation_references[attempt_id] = (
-                observation_root,
-                observation["identity"],
-            )
+            if aligned_roots is None:
+                if len(observations) != 1:
+                    raise CohortV2IngestionError(
+                        "Each released rollout must expose its declared agent observation"
+                    )
+                observation = next(iter(observations.values()))
+                first_capture_step = capture.record["fixed_step_samples"][0]["fixed_step"]
+                if observation["fixed_step"] > first_capture_step:
+                    raise CohortV2IngestionError(
+                        "Agent observation occurs after the intervention trace begins"
+                    )
+            else:
+                expected_steps = {item.fixed_step for item in frame_records}
+                if (
+                    set(observations) != expected_steps
+                    or any(
+                        item["capture_metadata"].get("capture_id")
+                        != capture.capture_id
+                        for item in observations.values()
+                    )
+                ):
+                    raise CohortV2IngestionError(
+                        "Aligned observations do not exactly bind released frame records"
+                    )
+                observation = observations[frame_records[0].fixed_step]
+            for fixed_step, item in observations.items():
+                self._observation_references[(attempt_id, fixed_step)] = (
+                    observation_root,
+                    item["identity"],
+                )
             rollouts.append(CohortV2Rollout(
                 attempt_id=attempt_id,
                 exposure_role=self._workflow_kind,
@@ -633,9 +668,38 @@ class CohortV2ReleaseReader:
     def load_observation(
         self, rollout: CohortV2Rollout, *, observation_role: str
     ) -> bytes:
-        reference = self._observation_references.get(rollout.attempt_id)
+        reference = self._observation_references.get((
+            rollout.attempt_id, rollout.agent_observation_fixed_step
+        ))
         if reference is None:
             raise CohortV2IngestionError("Rollout has no synchronized observation")
+        root, frame_record_identity = reference
+        try:
+            return load_observation_bytes(
+                root,
+                frame_record_identity=frame_record_identity,
+                observation_role=observation_role,
+                workflow_kind=self._workflow_kind,
+                purpose="model_input",
+            )
+        except ValueError as error:
+            raise CohortV2IngestionError(str(error)) from error
+
+    def load_frame_observation(
+        self,
+        rollout: CohortV2Rollout,
+        frame: CohortV2CentralFrameRecord,
+        *,
+        observation_role: str,
+    ) -> bytes:
+        """Load the deployment observation aligned to one retained central frame."""
+        reference = self._observation_references.get(
+            (rollout.attempt_id, frame.fixed_step)
+        )
+        if reference is None:
+            raise CohortV2IngestionError(
+                "Rollout has no agent observation aligned to the requested frame"
+            )
         root, frame_record_identity = reference
         try:
             return load_observation_bytes(

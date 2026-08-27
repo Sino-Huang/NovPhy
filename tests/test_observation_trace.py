@@ -13,6 +13,7 @@ from scripts.observation_trace import (
     ObservationTraceError,
     audit_observation_access,
     capture_observation_trace,
+    load_aligned_observation_captures,
     load_observation_bytes,
     persist_observation_trace,
     validate_observation_exposure_boundaries,
@@ -28,7 +29,9 @@ def png(width: int = 4, height: int = 3) -> bytes:
     return output.getvalue()
 
 
-def engine_capture(*, sequence: int = 1) -> dict:
+def engine_capture(
+    *, sequence: int = 1, fixed_step: int = 20, source: str = "synchronized_observation_endpoint"
+) -> dict:
     identity_matrix = [
         1.0, 0.0, 0.0, 0.0,
         0.0, 1.0, 0.0, 0.0,
@@ -39,12 +42,14 @@ def engine_capture(*, sequence: int = 1) -> dict:
         "schema_version": "observation_capture_engine_v1",
         "capture_id": "capture-runtime-1",
         "sequence": sequence,
-        "source_frame_identity": f"source-frame-v1:capture-runtime-1:{sequence}:10:20",
+        "source_frame_identity": (
+            f"source-frame-v1:capture-runtime-1:{sequence}:10:{fixed_step}"
+        ),
         "render_frame": 10,
         "render_time_seconds": 1.5,
-        "fixed_step": 20,
+        "fixed_step": fixed_step,
         "fixed_time_seconds": 0.4,
-        "source": "synchronized_observation_endpoint",
+        "source": source,
         "camera": {
             "camera_identity": "unity-main-camera",
             "projection_kind": "orthographic",
@@ -99,6 +104,35 @@ def source_bindings() -> dict[str, str]:
 
 
 class ObservationTraceTests(unittest.TestCase):
+    def test_loads_only_exactly_aligned_fixed_step_camera_renders(self) -> None:
+        physics = {
+            "capture_id": "capture-runtime-1",
+            "frame_records": ({"fixed_step": 20}, {"fixed_step": 21}),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for sequence, fixed_step in enumerate((20, 21), start=1):
+                record = engine_capture(
+                    sequence=sequence,
+                    fixed_step=fixed_step,
+                    source="synchronized_fixed_step_camera_render",
+                )
+                (root / f"frame_{sequence:06d}.png").write_bytes(
+                    record.pop("canonical_png")
+                )
+                (root / f"frame_{sequence:06d}.json").write_text(
+                    json.dumps(record), encoding="utf-8"
+                )
+
+            captures = load_aligned_observation_captures(root, physics)
+            self.assertEqual(
+                tuple(item["fixed_step"] for item in captures), (20, 21)
+            )
+
+            (root / "frame_000002.json").unlink()
+            with self.assertRaisesRegex(ObservationTraceError, "exactly cover"):
+                load_aligned_observation_captures(root, physics)
+
     def test_published_schema_and_transform_registry_match_the_runtime_contract(self) -> None:
         contract_root = Path(__file__).parents[1] / "docs" / "data_contracts"
         schema = json.loads(

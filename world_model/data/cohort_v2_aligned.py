@@ -1,0 +1,201 @@
+"""Reader for issue #59's fixed-step-aligned observation recollection."""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+from scripts.cohort_v2_macro_semantics import validate_capture_macro_derivation
+from scripts.cohort_v2_micro_relations import (
+    validate_capture_micro_relation_derivation,
+)
+from scripts.cohort_v2_physical_violations import (
+    validate_capture_physical_violation_derivation,
+)
+from scripts.observation_trace import (
+    validate_observation_exposure_boundaries,
+    validate_observation_trace,
+)
+from scripts.physics_capture_v2 import load_physics_capture_v2
+from world_model.data.cohort_v2 import (
+    CohortV2IngestionError,
+    CohortV2ReleaseReader,
+    CohortV2Rollout,
+    _freeze,
+)
+
+
+RELEASE_IDENTITY = "cohort-v2-aligned-observation-release-v1:issue-59"
+SCHEMA = "cohort_v2_aligned_observation_release_v1"
+ROLE_ORDER = ("training", "calibration", "model_selection", "final_evaluation")
+
+
+def _load(path: Path, label: str) -> dict[str, Any]:
+    try:
+        value = json.loads(path.read_bytes())
+    except (OSError, json.JSONDecodeError) as error:
+        raise CohortV2IngestionError(f"Aligned release {label} is malformed") from error
+    if not isinstance(value, dict):
+        raise CohortV2IngestionError(f"Aligned release {label} is not an object")
+    return value
+
+
+class CohortV2AlignedObservationReader(CohortV2ReleaseReader):
+    """Expose one issue-59 role with an agent image for every central frame."""
+
+    def __init__(
+        self,
+        release_root: Path,
+        *,
+        source_reader: CohortV2ReleaseReader,
+    ) -> None:
+        if not isinstance(source_reader, CohortV2ReleaseReader):
+            raise CohortV2IngestionError(
+                "Aligned observations require a validated source-role reader"
+            )
+        roles = {item.exposure_role for item in source_reader.rollouts}
+        if len(roles) != 1 or next(iter(roles)) not in ROLE_ORDER:
+            raise CohortV2IngestionError("Aligned source reader crosses exposure roles")
+        role = next(iter(roles))
+        root = Path(release_root).resolve()
+        manifest = _load(root / "manifest.json", "manifest")
+        if (
+            manifest.get("schema") != SCHEMA
+            or manifest.get("identity") != RELEASE_IDENTITY
+            or manifest.get("passed") is not True
+            or manifest.get("role_counts") != {name: 6 for name in ROLE_ORDER}
+        ):
+            raise CohortV2IngestionError("Aligned release identity or disposition is stale")
+        records = {
+            item["attempt_id"]: item
+            for item in manifest.get("records", ())
+            if item.get("exposure_role") == role
+        }
+        source_rollouts = {item.attempt_id: item for item in source_reader.rollouts}
+        if set(records) != set(source_rollouts) or len(records) != 6:
+            raise CohortV2IngestionError(
+                "Aligned release does not preserve the source-role attempt inventory"
+            )
+
+        self._root = root
+        self._workflow_kind = role
+        self._enforce_expected_termination = False
+        self._aligned_observation_roots = {}
+        self._observation_references = {}
+        self.release_identity = RELEASE_IDENTITY
+        self.capability_declaration_identity = (
+            source_reader.capability_declaration_identity
+        )
+        self.derivation_identity = RELEASE_IDENTITY
+        self.partition_identity = source_reader.partition_identity
+        if hasattr(source_reader, "access_audit"):
+            self.access_audit = source_reader.access_audit
+        if hasattr(source_reader, "sealed_bundle_identity"):
+            self.sealed_bundle_identity = source_reader.sealed_bundle_identity
+
+        rollouts = []
+        manifests = []
+        for attempt_id in sorted(records):
+            record = records[attempt_id]
+            source = source_rollouts[attempt_id]
+            rollout_root = root / record["rollout_path"]
+            capture = load_physics_capture_v2(
+                rollout_root / "physics_capture_v2.json"
+            )
+            if (
+                capture.capture_id != record["capture_id"]
+                or capture.source_bindings["rollout_id"] != attempt_id
+                or capture.source_bindings["scenario_lineage_id"]
+                != source.scenario_lineage_identity
+                or record["coverage_stratum"] != source.coverage_stratum
+                or record["scenario_lineage_identity"]
+                != source.scenario_lineage_identity
+            ):
+                raise CohortV2IngestionError(
+                    "Aligned rollout crossed its frozen source binding"
+                )
+            references = {item["kind"]: item for item in record["derivations"]}
+            if set(references) != {"micro", "macro", "physical-violations"}:
+                raise CohortV2IngestionError(
+                    "Aligned rollout lacks exact central derivations"
+                )
+            derivations = {
+                kind: _load(root / item["path"], f"{kind} derivation")
+                for kind, item in references.items()
+            }
+            for kind, item in references.items():
+                if derivations[kind].get("identity") != item["identity"]:
+                    raise CohortV2IngestionError(
+                        "Aligned derivation identity differs from its manifest"
+                    )
+            source_reference = (
+                Path(record["rollout_path"]) / "physics_capture_v2.json"
+            ).as_posix()
+            validate_capture_micro_relation_derivation(
+                derivations["micro"],
+                capture,
+                source_reference=source_reference,
+                source_capture_bundle_identity=RELEASE_IDENTITY,
+            )
+            validate_capture_macro_derivation(
+                derivations["macro"],
+                capture,
+                source_reference=source_reference,
+                source_capture_bundle_identity=RELEASE_IDENTITY,
+            )
+            validate_capture_physical_violation_derivation(
+                derivations["physical-violations"],
+                capture,
+                source_reference=source_reference,
+                source_capture_bundle_identity=RELEASE_IDENTITY,
+            )
+            observation_root = rollout_root / "observation-trace"
+            observation = validate_observation_trace(observation_root)
+            manifests.append(observation)
+            bindings = observation["source_bindings"]
+            if (
+                observation["identity"] != record["observation_manifest_identity"]
+                or observation["exposure_role"] != role
+                or bindings["rollout_identity"] != attempt_id
+                or bindings["source_scenario_lineage_identity"]
+                != source.scenario_lineage_identity
+            ):
+                raise CohortV2IngestionError(
+                    "Aligned observation crossed its frozen source binding"
+                )
+            frames = self._frame_records(capture, derivations)
+            observations = {
+                item["fixed_step"]: item for item in observation["frame_records"]
+            }
+            if (
+                tuple(item.fixed_step for item in frames)
+                != tuple(observations)
+                or any(
+                    item["capture_metadata"]["capture_id"] != capture.capture_id
+                    for item in observations.values()
+                )
+            ):
+                raise CohortV2IngestionError(
+                    "Aligned observations do not exactly bind central frames"
+                )
+            for fixed_step, item in observations.items():
+                self._observation_references[(attempt_id, fixed_step)] = (
+                    observation_root,
+                    item["identity"],
+                )
+            first = observations[frames[0].fixed_step]
+            rollouts.append(CohortV2Rollout(
+                attempt_id=attempt_id,
+                exposure_role=role,
+                coverage_stratum=source.coverage_stratum,
+                scenario_lineage_identity=source.scenario_lineage_identity,
+                intervention=_freeze(source.intervention),
+                agent_observation_identity=first["agent_observation"]["identity"],
+                agent_observation_fixed_step=frames[0].fixed_step,
+                frame_records=frames,
+            ))
+        validate_observation_exposure_boundaries(manifests)
+        self.rollouts = tuple(rollouts)
+
+
+__all__ = ["CohortV2AlignedObservationReader"]

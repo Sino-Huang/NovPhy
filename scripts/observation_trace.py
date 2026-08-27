@@ -95,7 +95,10 @@ def _validate_engine_capture(capture: Mapping[str, Any], canonical_png: bytes) -
         raise ObservationTraceError("observation capture metadata fields are incomplete")
     if capture["schema_version"] != "observation_capture_engine_v1":
         raise ObservationTraceError("observation capture engine schema is unsupported")
-    if capture["source"] != "synchronized_observation_endpoint":
+    if capture["source"] not in {
+        "synchronized_observation_endpoint",
+        "synchronized_fixed_step_camera_render",
+    }:
         raise ObservationTraceError(
             "desktop and ordinary screenshot sources are not synchronized observations"
         )
@@ -467,6 +470,52 @@ def capture_observation_trace(
     )
 
 
+def load_aligned_observation_captures(
+    root: Path,
+    physics_record: Mapping[str, Any],
+) -> tuple[dict[str, Any], ...]:
+    """Load Unity fixed-step renders and require exact physics-frame coverage."""
+    target = Path(root)
+    frame_records = physics_record.get("frame_records")
+    capture_id = physics_record.get("capture_id")
+    if (
+        not isinstance(frame_records, (list, tuple))
+        or not frame_records
+        or not isinstance(capture_id, str)
+        or not capture_id
+    ):
+        raise ObservationTraceError("aligned observation physics authority is incomplete")
+    expected_steps = tuple(item.get("fixed_step") for item in frame_records)
+    captures = []
+    for metadata_path in sorted(target.glob("frame_*.json")):
+        png_path = metadata_path.with_suffix(".png")
+        try:
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            png = png_path.read_bytes()
+        except (OSError, UnicodeError, json.JSONDecodeError) as error:
+            raise ObservationTraceError(
+                "aligned observation capture is incomplete"
+            ) from error
+        if not isinstance(metadata, dict):
+            raise ObservationTraceError("aligned observation metadata is malformed")
+        _validate_engine_capture(metadata, png)
+        if (
+            metadata.get("source") != "synchronized_fixed_step_camera_render"
+            or metadata.get("capture_id") != capture_id
+        ):
+            raise ObservationTraceError(
+                "aligned observation is not bound to its physics capture"
+            )
+        metadata["canonical_png"] = png
+        captures.append(metadata)
+    observed_steps = tuple(item["fixed_step"] for item in captures)
+    if observed_steps != expected_steps:
+        raise ObservationTraceError(
+            "aligned observations do not exactly cover physics frame records"
+        )
+    return tuple(captures)
+
+
 def validate_observation_trace(root: Path) -> dict[str, Any]:
     """Validate trace identities and exact canonical-to-agent transformation."""
     path = Path(root) / MANIFEST_NAME
@@ -732,6 +781,7 @@ __all__ = [
     "TRANSFORMS",
     "audit_observation_access",
     "capture_observation_trace",
+    "load_aligned_observation_captures",
     "load_observation_bytes",
     "persist_observation_trace",
     "validate_observation_exposure_boundaries",

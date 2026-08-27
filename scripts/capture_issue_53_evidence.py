@@ -217,8 +217,8 @@ def _load_object(path: Path) -> dict[str, Any]:
     return value
 
 
-def _accepted_player() -> dict[str, Any]:
-    provenance = verify_physics_player_archive(STAGE_ROOT, physics_v2=True)
+def _accepted_player(stage_root: Path = STAGE_ROOT) -> dict[str, Any]:
+    provenance = verify_physics_player_archive(stage_root, physics_v2=True)
     pilot = _load_object(
         ROOT / "data/runtime_evidence/issue-51/representative-cohort-v2-pilot-report.json"
     )
@@ -413,6 +413,7 @@ def _attempt_options(
     contract: ReleaseContract,
     *,
     anchor_actions: bool,
+    aligned_observation_capture: bool = False,
 ) -> dict[str, Any]:
     scenario = authority["scenario"]
     agent_port = free_port()
@@ -470,6 +471,7 @@ def _attempt_options(
         ],
         "observation_configuration": OBSERVATION_CONFIGURATION,
         "observation_exposure_role": assignment["exposure_role"],
+        "aligned_observation_capture": aligned_observation_capture,
     }
 
 
@@ -484,10 +486,12 @@ def _capture_attempt(
     contract: ReleaseContract,
     *,
     replay: bool = False,
+    aligned_observation_capture: bool = False,
+    stage_root: Path = STAGE_ROOT,
 ) -> dict[str, Any]:
     game = runtime_root / "games" / ("replay" if replay else "production") / attempt_id
     _log(f"{attempt_id}: unpacking the accepted physics-v2 player")
-    archive_details(STAGE_ROOT, game)
+    archive_details(stage_root, game)
     _install_level(game, authority["xml_path"], attempt_id)
     result = collect_fresh_engine_attempt(
         output_root,
@@ -505,6 +509,7 @@ def _capture_attempt(
             game,
             contract,
             anchor_actions=not replay,
+            aligned_observation_capture=aligned_observation_capture,
         ),
     )
     return result

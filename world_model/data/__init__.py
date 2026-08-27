@@ -86,7 +86,12 @@ def __getattr__(name: str):
         "CohortV2OracleWindowDataset",
         "CohortV2ReleaseReader",
         "CohortV2Rollout",
+        "CohortV2AlignedObservationReader",
     ):
+        if name == "CohortV2AlignedObservationReader":
+            from world_model.data import cohort_v2_aligned  # noqa: PLC0415
+
+            return cohort_v2_aligned.CohortV2AlignedObservationReader
         from world_model.data import cohort_v2  # noqa: PLC0415
 
         value = getattr(cohort_v2, name)
@@ -131,6 +136,7 @@ __all__ = [
     "CurriculumStage",
     "CurriculumState",
     "CohortV2CentralFrameRecord",
+    "CohortV2AlignedObservationReader",
     "CohortV2FinalAccessReceipt",
     "CohortV2FinalEvaluationReader",
     "CohortV2IngestionError",
