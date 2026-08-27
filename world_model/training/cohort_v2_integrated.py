@@ -107,7 +107,9 @@ class CohortV2RecursiveRolloutRecord:
         }
         if (
             not self.checkpoint_identity
-            or self.exposure_role not in ("calibration", "model_selection")
+            or self.exposure_role not in (
+                "calibration", "model_selection", "final_evaluation"
+            )
             or not self.attempt_id
             or self.requested_horizon not in RECURSIVE_HORIZONS
             or self.simulated_duration <= 0
@@ -412,13 +414,22 @@ def recursive_continuous_rollouts(
     compute: CohortV2ComputeCalibration,
     *,
     rollout_limit: int | None = None,
+    requested_horizons: tuple[int, ...] = RECURSIVE_HORIZONS,
 ) -> tuple[CohortV2RecursiveRolloutRecord, ...]:
     """Roll predicted carriers without feeding future engine state or labels."""
+    if (
+        not requested_horizons
+        or len(set(requested_horizons)) != len(requested_horizons)
+        or any(value not in RECURSIVE_HORIZONS for value in requested_horizons)
+    ):
+        raise CohortV2IntegratedError("recursive horizons are not declared")
     records = []
     for reader in readers:
-        if reader.rollouts[0].exposure_role not in ("calibration", "model_selection"):
+        if reader.rollouts[0].exposure_role not in (
+            "calibration", "model_selection", "final_evaluation"
+        ):
             raise CohortV2IntegratedError(
-                "recursive evidence accepts calibration and model-selection roles only"
+                "recursive evidence accepts held-out evaluation roles only"
             )
         first_windows = {}
         for window in CohortV2OracleWindowDataset(reader, requested_horizons=(1,)):
@@ -429,7 +440,7 @@ def recursive_continuous_rollouts(
             action = cohort_v2_action(first_windows[rollout.attempt_id]).unsqueeze(0)
             device = next(predictor.parameters()).device
             action = action.to(device)
-            for requested in RECURSIVE_HORIZONS:
+            for requested in requested_horizons:
                 current = initial.unsqueeze(0).to(device)
                 position = 0
                 effective = []

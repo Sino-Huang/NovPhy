@@ -30,7 +30,10 @@ from scripts.cohort_v2_physical_violations import (
 from scripts.cohort_v2_production_plans_v5 import validate_plan_v5_evidence
 from scripts.cohort_v2_release import CENTRAL_LABELS as RELEASE_CENTRAL_LABELS, V5_CONTRACT
 from scripts.cohort_v2_release import validate_published_issue_53_evidence
-from scripts.final_evaluation_access import FinalEvaluationWorkflowAccessManifest
+from scripts.final_evaluation_access import (
+    FinalEvaluationWorkflowAccessManifest,
+    audit_final_evaluation_workflow_access,
+)
 from scripts.observation_trace import (
     load_observation_bytes,
     validate_observation_exposure_boundaries,
@@ -634,6 +637,134 @@ class CohortV2ReleaseReader:
             raise CohortV2IngestionError(str(error)) from error
 
 
+class CohortV2FinalEvaluationReader(CohortV2ReleaseReader):
+    """Expose the sealed final role only after its declared access is audited."""
+
+    def __init__(
+        self,
+        public_release_root: Path,
+        sealed_release_root: Path,
+        *,
+        capability_declaration_path: Path,
+        production_plan_root: Path,
+        access_manifest: FinalEvaluationWorkflowAccessManifest,
+        observed_accesses: Sequence[Mapping[str, Any]],
+    ) -> None:
+        self._root = Path(public_release_root).resolve()
+        self._production_plan_root = Path(production_plan_root).resolve()
+        self._workflow_kind = "final_evaluation"
+        self._observation_references: dict[str, tuple[Path, str]] = {}
+        try:
+            self._validate_capability_declaration(Path(capability_declaration_path))
+            release, public_derivations, collection, partition, public_ledger = (
+                self._load_envelopes()
+            )
+            validated_access = FinalEvaluationWorkflowAccessManifest.from_dict(
+                access_manifest.to_dict()
+            )
+            self.access_audit = audit_final_evaluation_workflow_access(
+                partition,
+                validated_access,
+                observed_accesses=observed_accesses,
+            )
+
+            sealed = Path(sealed_release_root).resolve()
+            validation = validate_published_issue_53_evidence(self._root, sealed)
+            if validation.get("passed") is not True:
+                raise CohortV2IngestionError(
+                    "Authorized final release validation failed"
+                )
+            sealed_manifest = _load(
+                sealed / "sealed-bundle-manifest.json", "sealed bundle"
+            )
+            if (
+                sealed_manifest.get("schema")
+                != V5_CONTRACT.schema("issue_53_final_evaluation_sealed_bundle")
+                or sealed_manifest.get("identity") != V5_CONTRACT.sealed_bundle_identity
+                or sealed_manifest.get("ordinary_workflow_access") is not False
+                or sealed_manifest.get("authorized_workflow_identity")
+                != validated_access.identity
+                or sealed_manifest.get("passed") is not True
+            ):
+                raise CohortV2IngestionError("Sealed final boundary is stale")
+            attempt_ids = sealed_manifest.get("attempt_ids")
+            if (
+                not isinstance(attempt_ids, list)
+                or len(attempt_ids) != len(CENTRAL_STRATA)
+                or len(set(attempt_ids)) != len(attempt_ids)
+            ):
+                raise CohortV2IngestionError(
+                    "Sealed final attempt inventory is incomplete"
+                )
+
+            ledger_by_attempt = {
+                item["attempt_id"]: dict(item)
+                for item in public_ledger["attempt_ledger"]
+                if item["exposure_role"] == "final_evaluation"
+            }
+            rollout_references = []
+            derivation_references = []
+            for attempt_id in attempt_ids:
+                rollout_root = sealed / "primary-rollouts" / attempt_id
+                capture = load_physics_capture_v2(
+                    rollout_root / "physics_capture_v2.json"
+                )
+                ledger_entry = ledger_by_attempt.get(attempt_id)
+                if ledger_entry is None:
+                    raise CohortV2IngestionError(
+                        "Sealed final attempt is absent from public accounting"
+                    )
+                ledger_entry["status"] = "accepted"
+                ledger_entry["terminal_reason"] = capture.record[
+                    "terminal_evidence"
+                ]["reason"]
+                rollout_references.append({
+                    "attempt_id": attempt_id,
+                    "exposure_role": "final_evaluation",
+                    "capture_id": capture.capture_id,
+                    "path": f"primary-rollouts/{attempt_id}",
+                    "files": _inventory(rollout_root),
+                })
+                for kind in ("micro", "macro", "physical-violations"):
+                    path = f"derivations/{attempt_id}/{kind}.json"
+                    value = _load(sealed / path, f"{kind} derivation")
+                    derivation_references.append({
+                        "attempt_id": attempt_id,
+                        "exposure_role": "final_evaluation",
+                        "kind": kind,
+                        "identity": value.get("identity"),
+                        "path": path,
+                    })
+
+            self._root = sealed
+            self.release_identity = release["identity"]
+            self.capability_declaration_identity = CAPABILITY_DECLARATION_IDENTITY
+            self.derivation_identity = public_derivations["identity"]
+            self.partition_identity = partition.identity
+            self.sealed_bundle_identity = sealed_manifest["identity"]
+            final_release = {
+                "identity": release["identity"],
+                "primary_rollouts": rollout_references,
+            }
+            final_derivations = {"artifacts": derivation_references}
+            final_ledger = {
+                "attempt_ledger": list(ledger_by_attempt.values())
+            }
+            self.rollouts = self._read_role(
+                final_release,
+                final_derivations,
+                collection,
+                partition,
+                final_ledger,
+            )
+        except CohortV2IngestionError:
+            raise
+        except (KeyError, TypeError, ValueError) as error:
+            raise CohortV2IngestionError(
+                f"Authorized final ingestion rejected: {error}"
+            ) from error
+
+
 class CohortV2OracleWindowDataset(Sequence[CohortV2OracleWindow]):
     """Oracle-state windows for every nonterminal retained frame record."""
 
@@ -764,6 +895,7 @@ __all__ = [
     "CENTRAL_LABELS",
     "CohortV2CentralFrameRecord",
     "CohortV2FinalAccessReceipt",
+    "CohortV2FinalEvaluationReader",
     "CohortV2IngestionError",
     "CohortV2OracleWindow",
     "CohortV2OracleWindowDataset",

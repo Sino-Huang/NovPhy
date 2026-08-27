@@ -80,6 +80,7 @@ def __getattr__(name: str):
     if name in (
         "CohortV2CentralFrameRecord",
         "CohortV2FinalAccessReceipt",
+        "CohortV2FinalEvaluationReader",
         "CohortV2IngestionError",
         "CohortV2OracleWindow",
         "CohortV2OracleWindowDataset",
@@ -131,6 +132,7 @@ __all__ = [
     "CurriculumState",
     "CohortV2CentralFrameRecord",
     "CohortV2FinalAccessReceipt",
+    "CohortV2FinalEvaluationReader",
     "CohortV2IngestionError",
     "CohortV2OracleWindow",
     "CohortV2OracleWindowDataset",

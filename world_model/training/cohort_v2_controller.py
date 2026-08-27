@@ -274,15 +274,21 @@ def build_cohort_v2_controller_examples(
     """Join trajectory labels to agent-only features without reading engine state."""
     if not isinstance(labels, CohortV2ControllerLabelResult):
         raise CohortV2ControllerError("controller examples require trajectory labels")
-    if tuple(reader.rollouts[0].exposure_role for reader in readers) != (
-        "training", "calibration", "model_selection"
+    reader_roles = tuple(reader.rollouts[0].exposure_role for reader in readers)
+    if reader_roles not in (
+        ("training", "calibration", "model_selection"),
+        ("final_evaluation",),
     ):
-        raise CohortV2ControllerError("controller readers must preserve public role order")
+        raise CohortV2ControllerError(
+            "controller readers must preserve public role order or contain one final role"
+        )
     if (
         not included_roles
         or len(set(included_roles)) != len(included_roles)
         or any(
-            role not in ("training", "calibration", "model_selection")
+            role not in (
+                "training", "calibration", "model_selection", "final_evaluation"
+            )
             for role in included_roles
         )
     ):
@@ -478,7 +484,10 @@ def evaluate_cohort_v2_controllers(
     if (
         not evaluation_roles
         or len(set(evaluation_roles)) != len(evaluation_roles)
-        or any(role not in ("calibration", "model_selection") for role in evaluation_roles)
+        or any(
+            role not in ("calibration", "model_selection", "final_evaluation")
+            for role in evaluation_roles
+        )
     ):
         raise CohortV2ControllerError("controller evaluation roles are invalid")
     held_out = tuple(item for item in examples if item.exposure_role in evaluation_roles)
