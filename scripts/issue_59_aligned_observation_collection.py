@@ -63,6 +63,7 @@ DEFAULT_SUMMARY = (
 AUTHORIZATION_IDENTITY = "github-issue-authorization-v1:59:aligned-final-recollection"
 RELEASE_IDENTITY = "cohort-v2-aligned-observation-release-v1:issue-59"
 SCHEMA = "cohort_v2_aligned_observation_release_v1"
+PARTITION_SCHEMA = "cohort_v2_aligned_observation_partition_v1"
 SUMMARY_SCHEMA = "cohort_v2_aligned_observation_release_summary_v1"
 ROLE_ORDER = ("training", "calibration", "model_selection", "final_evaluation")
 
@@ -248,39 +249,82 @@ def _publish(
     with tempfile.TemporaryDirectory(prefix=".issue-59-", dir=output.parent) as temporary:
         bundle = Path(temporary) / "bundle"
         bundle.mkdir()
-        manifest_records = []
-        for entry, source in records:
-            role = entry["exposure_role"]
-            attempt_id = entry["attempt_id"]
-            relative = Path("rollouts") / role / attempt_id
-            destination = bundle / relative
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copytree(source, destination)
-            capture = load_physics_capture_v2(destination / "physics_capture_v2.json")
-            observation = validate_observation_trace(destination / "observation-trace")
-            derivation_relative = Path("derivations") / role / attempt_id
-            derivations = _write_derivations(
-                bundle / derivation_relative,
-                capture,
-                source_reference=(relative / "physics_capture_v2.json").as_posix(),
-                release_identity=RELEASE_IDENTITY,
+        def publish_partition(
+            name: str,
+            included_roles: tuple[str, ...],
+        ) -> dict[str, Any]:
+            partition_root = bundle / name
+            partition_root.mkdir()
+            manifest_records = []
+            for entry, source in records:
+                role = entry["exposure_role"]
+                if role not in included_roles:
+                    continue
+                attempt_id = entry["attempt_id"]
+                relative = Path("rollouts") / role / attempt_id
+                destination = partition_root / relative
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copytree(source, destination)
+                capture = load_physics_capture_v2(
+                    destination / "physics_capture_v2.json"
+                )
+                observation = validate_observation_trace(
+                    destination / "observation-trace"
+                )
+                derivation_relative = Path("derivations") / role / attempt_id
+                derivations = _write_derivations(
+                    partition_root / derivation_relative,
+                    capture,
+                    source_reference=(
+                        relative / "physics_capture_v2.json"
+                    ).as_posix(),
+                    release_identity=RELEASE_IDENTITY,
+                )
+                manifest_records.append({
+                    "attempt_id": attempt_id,
+                    "exposure_role": role,
+                    "coverage_stratum": entry["intended_coverage_stratum"],
+                    "scenario_lineage_identity": entry["scenario_lineage_identity"],
+                    "capture_id": capture.capture_id,
+                    "terminal_reason": entry["terminal_reason"],
+                    "frame_count": len(capture.record["frame_records"]),
+                    "rollout_path": relative.as_posix(),
+                    "observation_manifest_identity": observation["identity"],
+                    "derivations": [
+                        {
+                            **item,
+                            "path": (derivation_relative / item["path"]).as_posix(),
+                        }
+                        for item in derivations
+                    ],
+                })
+            manifest_records.sort(
+                key=lambda item: (
+                    ROLE_ORDER.index(item["exposure_role"]), item["attempt_id"]
+                )
             )
-            manifest_records.append({
-                "attempt_id": attempt_id,
-                "exposure_role": role,
-                "coverage_stratum": entry["intended_coverage_stratum"],
-                "scenario_lineage_identity": entry["scenario_lineage_identity"],
-                "capture_id": capture.capture_id,
-                "terminal_reason": entry["terminal_reason"],
-                "frame_count": len(capture.record["frame_records"]),
-                "rollout_path": relative.as_posix(),
-                "observation_manifest_identity": observation["identity"],
-                "derivations": [
-                    {**item, "path": (derivation_relative / item["path"]).as_posix()}
-                    for item in derivations
-                ],
-            })
-        manifest_records.sort(key=lambda item: (ROLE_ORDER.index(item["exposure_role"]), item["attempt_id"]))
+            partition = {
+                "schema": PARTITION_SCHEMA,
+                "identity": f"{RELEASE_IDENTITY}:{name}",
+                "release_identity": RELEASE_IDENTITY,
+                "included_roles": list(included_roles),
+                "records": manifest_records,
+                "role_counts": dict(sorted(Counter(
+                    item["exposure_role"] for item in manifest_records
+                ).items())),
+                "passed": True,
+            }
+            write_immutable_cohort_v2_json(
+                partition, partition_root / "manifest.json"
+            )
+            return partition
+
+        public_partition = publish_partition("public", ROLE_ORDER[:3])
+        final_partition = publish_partition("sealed-final", ROLE_ORDER[3:])
+        role_counts = {
+            **public_partition["role_counts"],
+            **final_partition["role_counts"],
+        }
         manifest = {
             "schema": SCHEMA,
             "identity": RELEASE_IDENTITY,
@@ -294,8 +338,24 @@ def _publish(
                 "issue_16_disposition_unchanged": True,
             },
             "access_audit": dict(access_audit),
-            "records": manifest_records,
-            "role_counts": dict(sorted(Counter(item["exposure_role"] for item in manifest_records).items())),
+            "partitions": {
+                "public": {
+                    "path": "public",
+                    "identity": public_partition["identity"],
+                },
+                "sealed_final": {
+                    "path": "sealed-final",
+                    "identity": final_partition["identity"],
+                    "ordinary_workflow_access": False,
+                },
+            },
+            "role_counts": role_counts,
+            "rollout_count": sum(role_counts.values()),
+            "frame_count": sum(
+                item["frame_count"]
+                for partition in (public_partition, final_partition)
+                for item in partition["records"]
+            ),
             "passed": True,
         }
         write_immutable_cohort_v2_json(manifest, bundle / "manifest.json")
@@ -419,8 +479,8 @@ def collect(
         "artifact_identity": manifest["identity"],
         "implementation_commit": implementation_commit,
         "role_counts": manifest["role_counts"],
-        "rollout_count": len(manifest["records"]),
-        "frame_count": sum(item["frame_count"] for item in manifest["records"]),
+        "rollout_count": manifest["rollout_count"],
+        "frame_count": manifest["frame_count"],
         "access_audit": {
             key: access_audit[key]
             for key in (
@@ -462,53 +522,96 @@ def validate(
         or manifest.get("schema") != SCHEMA
         or manifest.get("identity") != RELEASE_IDENTITY
         or manifest.get("role_counts") != {role: 6 for role in ROLE_ORDER}
-        or len(manifest.get("records", ())) != 24
+        or manifest.get("rollout_count") != 24
+        or set(manifest.get("partitions", ())) != {"public", "sealed_final"}
     ):
         raise Issue59CollectionError("issue-59 release manifest is malformed")
-    observed_roles = Counter(item.get("exposure_role") for item in manifest["records"])
-    if observed_roles != Counter({role: 6 for role in ROLE_ORDER}):
-        raise Issue59CollectionError("issue-59 record roles differ")
+    partition_specs = (
+        ("public", ROLE_ORDER[:3], 18),
+        ("sealed_final", ROLE_ORDER[3:], 6),
+    )
+    records = []
     observation_manifests = []
-    for record in manifest["records"]:
-        rollout = output / record["rollout_path"]
-        capture = load_physics_capture_v2(rollout / "physics_capture_v2.json")
-        observation = validate_observation_trace(rollout / "observation-trace")
-        observation_manifests.append(observation)
+    for name, included_roles, expected_count in partition_specs:
+        reference = manifest["partitions"][name]
+        partition_root = output / reference["path"]
+        partition_raw = (partition_root / "manifest.json").read_bytes()
+        partition = json.loads(partition_raw)
         if (
-            capture.capture_id != record["capture_id"]
-            or observation["identity"] != record["observation_manifest_identity"]
-            or tuple(item["fixed_step"] for item in capture.record["frame_records"])
-            != tuple(item["fixed_step"] for item in observation["frame_records"])
+            (
+                json.dumps(partition, ensure_ascii=False, indent=2, sort_keys=True)
+                .encode("utf-8")
+                + b"\n"
+            )
+            != partition_raw
+            or partition.get("schema") != PARTITION_SCHEMA
+            or partition.get("identity") != reference["identity"]
+            or partition.get("included_roles") != list(included_roles)
+            or partition.get("role_counts")
+            != {role: 6 for role in included_roles}
+            or len(partition.get("records", ())) != expected_count
         ):
-            raise Issue59CollectionError("issue-59 rollout alignment differs")
-        derivations = {item["kind"]: item for item in record["derivations"]}
-        if set(derivations) != {"micro", "macro", "physical-violations"}:
-            raise Issue59CollectionError("issue-59 derivation inventory differs")
-        values = {
-            kind: _load(output / item["path"])
-            for kind, item in derivations.items()
-        }
-        for kind, item in derivations.items():
-            if values[kind].get("identity") != item["identity"]:
-                raise Issue59CollectionError("issue-59 derivation identity differs")
-        source_reference = (
-            Path(record["rollout_path"]) / "physics_capture_v2.json"
-        ).as_posix()
-        validate_capture_micro_relation_derivation(
-            values["micro"], capture,
-            source_reference=source_reference,
-            source_capture_bundle_identity=RELEASE_IDENTITY,
-        )
-        validate_capture_macro_derivation(
-            values["macro"], capture,
-            source_reference=source_reference,
-            source_capture_bundle_identity=RELEASE_IDENTITY,
-        )
-        validate_capture_physical_violation_derivation(
-            values["physical-violations"], capture,
-            source_reference=source_reference,
-            source_capture_bundle_identity=RELEASE_IDENTITY,
-        )
+            raise Issue59CollectionError("issue-59 partition manifest is malformed")
+        records.extend(partition["records"])
+        for record in partition["records"]:
+            rollout = partition_root / record["rollout_path"]
+            capture = load_physics_capture_v2(
+                rollout / "physics_capture_v2.json"
+            )
+            observation = validate_observation_trace(
+                rollout / "observation-trace"
+            )
+            observation_manifests.append(observation)
+            if (
+                capture.capture_id != record["capture_id"]
+                or observation["identity"]
+                != record["observation_manifest_identity"]
+                or tuple(
+                    item["fixed_step"]
+                    for item in capture.record["frame_records"]
+                )
+                != tuple(
+                    item["fixed_step"]
+                    for item in observation["frame_records"]
+                )
+            ):
+                raise Issue59CollectionError("issue-59 rollout alignment differs")
+            derivations = {
+                item["kind"]: item for item in record["derivations"]
+            }
+            if set(derivations) != {"micro", "macro", "physical-violations"}:
+                raise Issue59CollectionError("issue-59 derivation inventory differs")
+            values = {
+                kind: _load(partition_root / item["path"])
+                for kind, item in derivations.items()
+            }
+            for kind, item in derivations.items():
+                if values[kind].get("identity") != item["identity"]:
+                    raise Issue59CollectionError(
+                        "issue-59 derivation identity differs"
+                    )
+            source_reference = (
+                Path(record["rollout_path"]) / "physics_capture_v2.json"
+            ).as_posix()
+            validate_capture_micro_relation_derivation(
+                values["micro"], capture,
+                source_reference=source_reference,
+                source_capture_bundle_identity=RELEASE_IDENTITY,
+            )
+            validate_capture_macro_derivation(
+                values["macro"], capture,
+                source_reference=source_reference,
+                source_capture_bundle_identity=RELEASE_IDENTITY,
+            )
+            validate_capture_physical_violation_derivation(
+                values["physical-violations"], capture,
+                source_reference=source_reference,
+                source_capture_bundle_identity=RELEASE_IDENTITY,
+            )
+    if Counter(item["exposure_role"] for item in records) != Counter(
+        {role: 6 for role in ROLE_ORDER}
+    ):
+        raise Issue59CollectionError("issue-59 record roles differ")
     validate_observation_exposure_boundaries(observation_manifests)
     summary = _load(summary_path)
     if (
@@ -516,7 +619,7 @@ def validate(
         or summary.get("artifact_identity") != RELEASE_IDENTITY
         or summary.get("rollout_count") != 24
         or summary.get("frame_count")
-        != sum(item["frame_count"] for item in manifest["records"])
+        != manifest["frame_count"]
     ):
         raise Issue59CollectionError("issue-59 compact summary differs")
     _log(

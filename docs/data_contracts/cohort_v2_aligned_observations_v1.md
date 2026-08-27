@@ -35,9 +35,14 @@ entity identities; neither is a permitted inference input.
 The immutable release schema is
 `cohort_v2_aligned_observation_release_v1`, with identity
 `cohort-v2-aligned-observation-release-v1:issue-59`. It contains exactly six
-complete rollouts in each of the four frozen exposure roles. The issue-59 reader
-requires one validated source-role reader and exposes `load_frame_observation`
-only for an exact retained frame.
+complete rollouts in each of the four frozen exposure roles. Training,
+calibration, and model-selection records are published under the public
+partition; final records are placed under a separate `sealed-final` partition
+whose ordinary-workflow access is false. The top-level manifest exposes only
+partition identities and aggregate counts, not final rollout metadata. The
+issue-59 reader requires one validated source-role reader (including an
+authorized final reader for the sealed partition) and exposes
+`load_frame_observation` only for an exact retained frame.
 
 The no-write preflight and foreground production commands are:
 

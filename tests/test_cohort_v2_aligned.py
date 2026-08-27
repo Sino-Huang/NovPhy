@@ -35,10 +35,12 @@ class CohortV2AlignedObservationReaderTests(unittest.TestCase):
         )
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
+            partition_root = root / "public"
+            partition_root.mkdir()
             records = []
             for rollout in source_reader.rollouts:
                 relative = Path("rollouts/training") / rollout.attempt_id
-                destination = root / relative
+                destination = partition_root / relative
                 destination.mkdir(parents=True)
                 source = PUBLIC_RELEASE / "primary-rollouts" / rollout.attempt_id
                 shutil.copyfile(
@@ -83,7 +85,7 @@ class CohortV2AlignedObservationReaderTests(unittest.TestCase):
                 )
                 derivation_relative = Path("derivations/training") / rollout.attempt_id
                 derivations = _write_derivations(
-                    root / derivation_relative,
+                    partition_root / derivation_relative,
                     capture,
                     source_reference=(relative / "physics_capture_v2.json").as_posix(),
                     release_identity=ALIGNED_IDENTITY,
@@ -106,6 +108,22 @@ class CohortV2AlignedObservationReaderTests(unittest.TestCase):
                         for item in derivations
                     ],
                 })
+            partition = {
+                "schema": "cohort_v2_aligned_observation_partition_v1",
+                "identity": f"{ALIGNED_IDENTITY}:public",
+                "release_identity": ALIGNED_IDENTITY,
+                "included_roles": ["training", "calibration", "model_selection"],
+                "records": records,
+                "role_counts": {
+                    "training": 6,
+                    "calibration": 6,
+                    "model_selection": 6,
+                },
+                "passed": True,
+            }
+            write_immutable_cohort_v2_json(
+                partition, partition_root / "manifest.json"
+            )
             manifest = {
                 "schema": "cohort_v2_aligned_observation_release_v1",
                 "identity": ALIGNED_IDENTITY,
@@ -113,13 +131,25 @@ class CohortV2AlignedObservationReaderTests(unittest.TestCase):
                 "player_provenance": {},
                 "source_bindings": {},
                 "access_audit": {},
-                "records": records,
+                "partitions": {
+                    "public": {
+                        "path": "public",
+                        "identity": f"{ALIGNED_IDENTITY}:public",
+                    },
+                    "sealed_final": {
+                        "path": "sealed-final",
+                        "identity": f"{ALIGNED_IDENTITY}:sealed-final",
+                        "ordinary_workflow_access": False,
+                    },
+                },
                 "role_counts": {
                     "training": 6,
                     "calibration": 6,
                     "model_selection": 6,
                     "final_evaluation": 6,
                 },
+                "rollout_count": 24,
+                "frame_count": sum(item["frame_count"] for item in records),
                 "passed": True,
             }
             write_immutable_cohort_v2_json(manifest, root / "manifest.json")

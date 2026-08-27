@@ -27,6 +27,7 @@ from world_model.data.cohort_v2 import (
 
 RELEASE_IDENTITY = "cohort-v2-aligned-observation-release-v1:issue-59"
 SCHEMA = "cohort_v2_aligned_observation_release_v1"
+PARTITION_SCHEMA = "cohort_v2_aligned_observation_partition_v1"
 ROLE_ORDER = ("training", "calibration", "model_selection", "final_evaluation")
 
 
@@ -58,14 +59,44 @@ class CohortV2AlignedObservationReader(CohortV2ReleaseReader):
             raise CohortV2IngestionError("Aligned source reader crosses exposure roles")
         role = next(iter(roles))
         root = Path(release_root).resolve()
-        manifest = _load(root / "manifest.json", "manifest")
+        release = _load(root / "manifest.json", "manifest")
         if (
-            manifest.get("schema") != SCHEMA
-            or manifest.get("identity") != RELEASE_IDENTITY
-            or manifest.get("passed") is not True
-            or manifest.get("role_counts") != {name: 6 for name in ROLE_ORDER}
+            release.get("schema") != SCHEMA
+            or release.get("identity") != RELEASE_IDENTITY
+            or release.get("passed") is not True
+            or release.get("role_counts") != {name: 6 for name in ROLE_ORDER}
         ):
             raise CohortV2IngestionError("Aligned release identity or disposition is stale")
+        partition_name = "sealed_final" if role == "final_evaluation" else "public"
+        reference = release.get("partitions", {}).get(partition_name)
+        if not isinstance(reference, dict):
+            raise CohortV2IngestionError("Aligned release partition is missing")
+        if role == "final_evaluation" and (
+            reference.get("ordinary_workflow_access") is not False
+            or not hasattr(source_reader, "access_audit")
+        ):
+            raise CohortV2IngestionError(
+                "Aligned final observations require an authorized final reader"
+            )
+        partition_root = root / str(reference.get("path"))
+        manifest = _load(partition_root / "manifest.json", "partition manifest")
+        included_roles = (
+            ("final_evaluation",)
+            if role == "final_evaluation"
+            else ROLE_ORDER[:3]
+        )
+        if (
+            manifest.get("schema") != PARTITION_SCHEMA
+            or manifest.get("identity") != reference.get("identity")
+            or manifest.get("release_identity") != RELEASE_IDENTITY
+            or manifest.get("included_roles") != list(included_roles)
+            or manifest.get("role_counts")
+            != {name: 6 for name in included_roles}
+            or manifest.get("passed") is not True
+        ):
+            raise CohortV2IngestionError(
+                "Aligned release partition identity or disposition is stale"
+            )
         records = {
             item["attempt_id"]: item
             for item in manifest.get("records", ())
@@ -77,7 +108,7 @@ class CohortV2AlignedObservationReader(CohortV2ReleaseReader):
                 "Aligned release does not preserve the source-role attempt inventory"
             )
 
-        self._root = root
+        self._root = partition_root
         self._workflow_kind = role
         self._enforce_expected_termination = False
         self._aligned_observation_roots = {}
@@ -98,7 +129,7 @@ class CohortV2AlignedObservationReader(CohortV2ReleaseReader):
         for attempt_id in sorted(records):
             record = records[attempt_id]
             source = source_rollouts[attempt_id]
-            rollout_root = root / record["rollout_path"]
+            rollout_root = partition_root / record["rollout_path"]
             capture = load_physics_capture_v2(
                 rollout_root / "physics_capture_v2.json"
             )
@@ -120,7 +151,7 @@ class CohortV2AlignedObservationReader(CohortV2ReleaseReader):
                     "Aligned rollout lacks exact central derivations"
                 )
             derivations = {
-                kind: _load(root / item["path"], f"{kind} derivation")
+                kind: _load(partition_root / item["path"], f"{kind} derivation")
                 for kind, item in references.items()
             }
             for kind, item in references.items():
