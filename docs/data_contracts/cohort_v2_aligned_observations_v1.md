@@ -42,7 +42,8 @@ only for an exact retained frame.
 The no-write preflight and foreground production commands are:
 
 ```bash
-python -u -m scripts.issue_59_aligned_observation_collection --dry-run
+python -u -m scripts.issue_59_aligned_observation_collection --dry-run \
+  --implementation-commit <IMPLEMENTATION_COMMIT>
 
 python -u -m scripts.issue_59_aligned_observation_collection \
   --implementation-commit <IMPLEMENTATION_COMMIT> \

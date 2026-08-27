@@ -429,7 +429,8 @@ def collect(
             )
         },
         "rerun_commands": [
-            "python -u -m scripts.issue_59_aligned_observation_collection --dry-run",
+            "python -u -m scripts.issue_59_aligned_observation_collection --dry-run "
+            f"--implementation-commit {implementation_commit}",
             "python -u -m scripts.issue_59_aligned_observation_collection "
             f"--implementation-commit {implementation_commit} "
             f"--authorization-identity {authorization_identity}",
