@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
 from statistics import mean
@@ -115,6 +116,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--validate", action="store_true")
     parser.add_argument("--finalize-failure", action="store_true")
+    parser.add_argument("--rewrite-compact", action="store_true")
     return parser
 
 
@@ -235,6 +237,64 @@ def _atomic_write(path: Path, value: object) -> None:
     temporary = path.with_name(path.name + ".tmp")
     temporary.write_bytes(canonical_json_bytes(value))
     temporary.replace(path)
+
+
+def _identity_digest(value: object) -> str:
+    return f"sha256:{hashlib.sha256(str(value).encode('utf-8')).hexdigest()}"
+
+
+def _compact_summary(manifest, report, protocol, implementation_commit: str):
+    audit = report["source_bindings"]["access_audit"]
+    bindings = report["source_bindings"]
+    compact = {
+        "schema": "cohort_v2_oracle_symbol_confirmatory_summary_v1",
+        "artifact_identity": manifest["artifact_identity"],
+        "implementation_commit": implementation_commit,
+        "protocol_identity": protocol["artifact_identity"],
+        "decision": report["decision"],
+        "decision_rationale": report["decision_rationale"],
+        "budget_decisions": report["budget_decisions"],
+        "fixed_h15_complete_rollout": report["fixed_h15_complete_rollout"],
+        "failed_missing_or_excluded_runs": report["failed_missing_or_excluded_runs"],
+        "final_access_audit": {
+            "schema": audit["schema"],
+            "authorization_state": audit["authorization_state"],
+            "authorization_identity": audit["authorization_identity"],
+            "observed_access_count": audit["observed_access_count"],
+            "passed": audit["passed"],
+            "workflow_identity": audit["workflow_identity"],
+            "partition_identity_sha256": _identity_digest(audit["partition_identity"]),
+            "workflow_manifest_identity_sha256": _identity_digest(
+                audit["workflow_manifest_identity"]
+            ),
+        },
+        "source_bindings": {
+            "access_manifest_identity_sha256": _identity_digest(
+                bindings["access_manifest_identity"]
+            ),
+            "candidate_checkpoint_identity_sha256": _identity_digest(
+                bindings["candidate_checkpoint_identity"]
+            ),
+            "failed_implementation_commit": bindings.get(
+                "failed_implementation_commit"
+            ),
+            "failure_exception": bindings.get("failure_exception"),
+            "failure_phase": bindings.get("failure_phase"),
+            "finalization_implementation_commit": bindings.get(
+                "finalization_implementation_commit"
+            ),
+            "sealed_bundle_identity": bindings["sealed_bundle_identity"],
+            "status": "full exact bindings retained in validated ignored evidence",
+        },
+        "rerun_commands": [
+            "python -u -m scripts.run_cohort_v2_confirmatory --validate",
+        ],
+    }
+    if bindings.get("failed_implementation_commit") is not None:
+        compact["failed_implementation_commit"] = bindings[
+            "failed_implementation_commit"
+        ]
+    return compact
 
 
 def _authorize_final_access(paths, protocol, implementation_commit: str):
@@ -448,23 +508,9 @@ def _finalize_capacity_failure(
         implementation_revision=implementation_commit,
         capacity_audit=capacity_audit,
     )
-    compact = {
-        "schema": "cohort_v2_oracle_symbol_confirmatory_summary_v1",
-        "artifact_identity": manifest["artifact_identity"],
-        "implementation_commit": implementation_commit,
-        "failed_implementation_commit": failed_implementation_commit,
-        "protocol_identity": frozen["protocol"]["artifact_identity"],
-        "decision": report["decision"],
-        "decision_rationale": report["decision_rationale"],
-        "budget_decisions": report["budget_decisions"],
-        "fixed_h15_complete_rollout": report["fixed_h15_complete_rollout"],
-        "failed_missing_or_excluded_runs": report["failed_missing_or_excluded_runs"],
-        "final_access_audit": access_audit,
-        "source_bindings": source_bindings,
-        "rerun_commands": [
-            "python -u -m scripts.run_cohort_v2_confirmatory --validate",
-        ],
-    }
+    compact = _compact_summary(
+        manifest, report, frozen["protocol"], implementation_commit
+    )
     _atomic_write(paths["compact"], compact)
     print(
         "[failure] frozen codec slots=12 final maximum=15; "
@@ -693,25 +739,9 @@ def _production(root, paths, frozen, args, implementation_commit: str) -> int:
         paths["output"] / "evidence", records, recursive, report,
         implementation_revision=implementation_commit,
     )
-    compact = {
-        "schema": "cohort_v2_oracle_symbol_confirmatory_summary_v1",
-        "artifact_identity": manifest["artifact_identity"],
-        "implementation_commit": implementation_commit,
-        "protocol_identity": frozen["protocol"]["artifact_identity"],
-        "decision": report["decision"],
-        "decision_rationale": report["decision_rationale"],
-        "budget_decisions": report["budget_decisions"],
-        "fixed_h15_complete_rollout": report["fixed_h15_complete_rollout"],
-        "failed_missing_or_excluded_runs": report["failed_missing_or_excluded_runs"],
-        "final_access_audit": access_audit,
-        "source_bindings": source_bindings,
-        "rerun_commands": [
-            "python -u -m scripts.run_cohort_v2_confirmatory --dry-run",
-            "python -u -m scripts.run_cohort_v2_confirmatory "
-            f"--implementation-commit {implementation_commit}",
-            "python -u -m scripts.run_cohort_v2_confirmatory --validate",
-        ],
-    }
+    compact = _compact_summary(
+        manifest, report, frozen["protocol"], implementation_commit
+    )
     _atomic_write(paths["compact"], compact)
     print(f"[decision] central hypothesis {report['decision']}", flush=True)
     print(f"[complete] artifact={manifest['artifact_identity']}", flush=True)
@@ -728,12 +758,22 @@ def _validate(paths, frozen) -> int:
     ))
     audit = json.loads((paths["output"] / "final-access-audit.json").read_bytes())
     compact = json.loads(paths["compact"].read_bytes())
+    report = json.loads(
+        (paths["output"] / "evidence/report.json").read_bytes()
+    )
+    expected_compact = _compact_summary(
+        manifest,
+        report,
+        frozen["protocol"],
+        manifest["implementation_revision"],
+    )
     if (
         authorized.authorization_state != "authorized"
         or audit.get("passed") is not True
         or audit.get("workflow_manifest_identity") != authorized.identity
         or compact.get("artifact_identity") != manifest["artifact_identity"]
         or compact.get("protocol_identity") != frozen["protocol"]["artifact_identity"]
+        or compact != expected_compact
     ):
         raise CohortV2ConfirmatoryError("stored issue-15 evidence bindings differ")
     print(
@@ -743,11 +783,34 @@ def _validate(paths, frozen) -> int:
     return 0
 
 
+def _rewrite_compact(paths, frozen) -> int:
+    manifest = validate_cohort_v2_confirmatory_evidence(
+        paths["output"] / "evidence", frozen["protocol"]
+    )
+    report = json.loads(
+        (paths["output"] / "evidence/report.json").read_bytes()
+    )
+    compact = _compact_summary(
+        manifest,
+        report,
+        frozen["protocol"],
+        manifest["implementation_revision"],
+    )
+    _atomic_write(paths["compact"], compact)
+    print(f"[compact] rewrote {paths['compact']}", flush=True)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
-    if sum((args.dry_run, args.validate, args.finalize_failure)) > 1:
-        parser.error("--dry-run, --validate, and --finalize-failure are mutually exclusive")
+    if sum((
+        args.dry_run, args.validate, args.finalize_failure, args.rewrite_compact
+    )) > 1:
+        parser.error(
+            "--dry-run, --validate, --finalize-failure, and --rewrite-compact "
+            "are mutually exclusive"
+        )
     if args.score_log_every <= 0 or args.evaluation_batch_size <= 0:
         parser.error("progress interval and evaluation batch size must be positive")
     root = args.repository_root.resolve()
@@ -761,7 +824,10 @@ def main(argv: list[str] | None = None) -> int:
     frozen = _load_frozen_sources(
         root,
         paths,
-        "cpu" if args.dry_run or args.validate or args.finalize_failure else args.device,
+        "cpu" if (
+            args.dry_run or args.validate or args.finalize_failure
+            or args.rewrite_compact
+        ) else args.device,
     )
     print(
         "[design] candidate=integrated_aggregated_joint_controller "
@@ -774,6 +840,8 @@ def main(argv: list[str] | None = None) -> int:
         return _validate(paths, frozen)
     if args.finalize_failure:
         return _finalize_existing_failure(root, paths, frozen, implementation)
+    if args.rewrite_compact:
+        return _rewrite_compact(paths, frozen)
     return _production(root, paths, frozen, args, implementation)
 
 

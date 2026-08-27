@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from scripts.cohort_v2_statistical_protocol import load_protocol
 from scripts.final_evaluation_access import FinalEvaluationWorkflowAccessManifest
+from scripts.run_cohort_v2_confirmatory import _compact_summary
 from world_model.data import CohortV2FinalEvaluationReader, CohortV2IngestionError
 from world_model.training.cohort_v2_confirmatory import (
     CANDIDATE_ID,
@@ -284,6 +285,46 @@ class CohortV2ConfirmatoryTests(unittest.TestCase):
             self.assertEqual(
                 validated["artifact_identity"], written["artifact_identity"]
             )
+
+    def test_compact_summary_digests_large_source_identities(self):
+        large = "source:" + "x" * 100_000
+        report = {
+            "decision": "unsupported",
+            "decision_rationale": "fixture",
+            "budget_decisions": [],
+            "fixed_h15_complete_rollout": {"status": "not_run"},
+            "failed_missing_or_excluded_runs": [],
+            "source_bindings": {
+                "access_audit": {
+                    "schema": "final_evaluation_workflow_access_audit_v1",
+                    "authorization_state": "authorized",
+                    "authorization_identity": "authorization:fixture",
+                    "observed_access_count": 1,
+                    "passed": True,
+                    "workflow_identity": "workflow:fixture",
+                    "partition_identity": large,
+                    "workflow_manifest_identity": large,
+                },
+                "access_manifest_identity": large,
+                "candidate_checkpoint_identity": large,
+                "failed_implementation_commit": "commit:failed",
+                "failure_exception": "failure:fixture",
+                "failure_phase": "pre_evaluation",
+                "finalization_implementation_commit": "commit:finalizer",
+                "sealed_bundle_identity": "sealed:fixture",
+            },
+        }
+
+        compact = _compact_summary(
+            {"artifact_identity": "artifact:fixture"},
+            report,
+            self.protocol,
+            "commit:finalizer",
+        )
+
+        encoded = json.dumps(compact)
+        self.assertLess(len(encoded), 10_000)
+        self.assertNotIn(large, encoded)
 
 
 if __name__ == "__main__":
