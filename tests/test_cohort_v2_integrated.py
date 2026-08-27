@@ -7,7 +7,12 @@ from types import SimpleNamespace
 
 import torch
 
-from scripts.run_cohort_v2_integrated import _compact_source_bindings
+from scripts.run_cohort_v2_integrated import (
+    _compact_source_bindings,
+    _config as runner_config,
+    _parser as runner_parser,
+    _variants as runner_variants,
+)
 
 from world_model.data import CohortV2Rollout
 from world_model.data.cohort_v2 import (
@@ -112,6 +117,14 @@ def _recursive(role: str, horizon: int, error: float, attempt_index: int = 0):
 
 
 class CohortV2IntegratedTests(unittest.TestCase):
+    def test_capacity_successor_is_minimal_and_candidate_only(self):
+        args = runner_parser().parse_args(("--design", "issue-15-capacity"))
+        config = runner_config(args)
+
+        self.assertEqual(config.max_entities, 15)
+        self.assertEqual(config.latent_dim, 2 + 15 * 13)
+        self.assertEqual(runner_variants(args), (IntegratedVariant.CANDIDATE,))
+
     def test_compact_source_bindings_do_not_embed_full_evaluation_identities(self):
         compact = _compact_source_bindings(
             {"artifact_identity": "artifact:fixture", "analysis_identity": "sha256:report"},

@@ -88,6 +88,10 @@ DEFAULT_OUTPUT: Final = Path(".local-artifacts/issue-58-integrated")
 DEFAULT_COMPACT_REPORT: Final = Path(
     "data/runtime_evidence/issue-58/cohort-v2-integrated-calibration-summary.json"
 )
+CAPACITY_OUTPUT: Final = Path(".local-artifacts/issue-15-capacity-integrated")
+CAPACITY_COMPACT_REPORT: Final = Path(
+    "data/runtime_evidence/issue-15/capacity-integrated-calibration-summary.json"
+)
 CANDIDATE_ID: Final = "integrated_aggregated_joint_controller"
 BASELINE_IDS: Final = (
     "fixed_pair",
@@ -122,8 +126,11 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--repository-root", type=Path, default=Path("."))
     parser.add_argument("--release-root", type=Path, default=DEFAULT_RELEASE)
     parser.add_argument("--reliability-root", type=Path, default=DEFAULT_RELIABILITY)
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    parser.add_argument("--compact-report", type=Path, default=DEFAULT_COMPACT_REPORT)
+    parser.add_argument(
+        "--design", choices=("issue-58", "issue-15-capacity"), default="issue-58"
+    )
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--compact-report", type=Path)
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--evaluation-devices", default="auto")
     parser.add_argument("--evaluation-batch-size", type=int, default=128)
@@ -144,6 +151,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _config(args: argparse.Namespace) -> CohortV2MacroConfig:
+    capacity = args.design == "issue-15-capacity"
     return CohortV2MacroConfig(
         seed=args.seed,
         steps=args.steps,
@@ -151,7 +159,15 @@ def _config(args: argparse.Namespace) -> CohortV2MacroConfig:
         learning_rate=args.learning_rate,
         symbolic_weight=args.symbolic_weight,
         device=args.device,
+        latent_dim=197 if capacity else 192,
+        max_entities=15 if capacity else 12,
     )
+
+
+def _variants(args: argparse.Namespace) -> tuple[IntegratedVariant, ...]:
+    if args.design == "issue-15-capacity":
+        return (IntegratedVariant.CANDIDATE,)
+    return tuple(IntegratedVariant)
 
 
 def _frozen_design(args: argparse.Namespace) -> None:
@@ -173,11 +189,19 @@ def _frozen_design(args: argparse.Namespace) -> None:
 
 
 def _paths(args: argparse.Namespace, root: Path) -> dict[str, Path]:
+    output = args.output or (
+        CAPACITY_OUTPUT if args.design == "issue-15-capacity" else DEFAULT_OUTPUT
+    )
+    compact = args.compact_report or (
+        CAPACITY_COMPACT_REPORT
+        if args.design == "issue-15-capacity"
+        else DEFAULT_COMPACT_REPORT
+    )
     return {
         "release": (root / args.release_root).resolve(),
         "reliability": (root / args.reliability_root).resolve(),
-        "output": (root / args.output).resolve(),
-        "compact": (root / args.compact_report).resolve(),
+        "output": (root / output).resolve(),
+        "compact": (root / compact).resolve(),
     }
 
 
@@ -236,8 +260,9 @@ def _dry_run(args, readers, reliability_estimator, reliability_config) -> int:
     config = replace(_config(args), steps=9, batch_size=min(2, args.batch_size))
     parameter_counts = set()
     candidate = None
-    for index, variant in enumerate(IntegratedVariant, start=1):
-        print(f"[dry-run model {index}/3] {variant}", flush=True)
+    variants = _variants(args)
+    for index, variant in enumerate(variants, start=1):
+        print(f"[dry-run model {index}/{len(variants)}] {variant}", flush=True)
         seed_all(config.seed)
         trainer = build_integrated_trainer(
             readers[0],
@@ -292,6 +317,7 @@ def _dry_run(args, readers, reliability_estimator, reliability_config) -> int:
     print("[dry-run] no files written; final evaluation remained sealed", flush=True)
     print(
         "[actual command] python -u -m scripts.run_cohort_v2_integrated "
+        f"--design {args.design} "
         "--implementation-commit <IMPLEMENTATION_COMMIT>",
         flush=True,
     )
@@ -503,8 +529,9 @@ def _production(args, paths, readers, reliability_estimator, reliability_config,
     measurements = {}
     compute = {}
     parameter_counts = set()
-    for index, variant in enumerate(IntegratedVariant, start=1):
-        print(f"[model {index}/3] {variant}", flush=True)
+    variants = _variants(args)
+    for index, variant in enumerate(variants, start=1):
+        print(f"[model {index}/{len(variants)}] {variant}", flush=True)
         values = _train_variant(
             variant,
             config,
@@ -700,7 +727,11 @@ def _production(args, paths, readers, reliability_estimator, reliability_config,
             f"[recursive {role}] records={sum(item.exposure_role == role for item in recursive)}",
             flush=True,
         )
-    stress = _stress_ablations(evaluations)
+    stress = (
+        _stress_ablations(evaluations)
+        if set(evaluations) == set(IntegratedVariant)
+        else {}
+    )
     bindings = {
         "aggregation_artifact_identity": aggregation_manifest["aggregation_artifact_identity"],
         "baseline_artifact_identity": baseline_receipt.baseline_artifact_identity,
@@ -743,7 +774,12 @@ def _production(args, paths, readers, reliability_estimator, reliability_config,
     )
     compact = {
         "artifact_identity": evidence_manifest["artifact_identity"],
-        "artifact_type": "cohort_v2_integrated_model_calibration_summary",
+        "artifact_type": (
+            "cohort_v2_capacity_integrated_model_calibration_summary"
+            if args.design == "issue-15-capacity"
+            else "cohort_v2_integrated_model_calibration_summary"
+        ),
+        "design": args.design,
         "disposition": report["disposition"],
         "exposure_audit": report["exposure_audit"],
         "implementation_commit": args.implementation_commit,
@@ -758,10 +794,13 @@ def _production(args, paths, readers, reliability_estimator, reliability_config,
         "recursive_physical_violation_status": "unavailable",
         "release_identity": candidate_evaluation.release_identity,
         "rerun_commands": [
-            "python -u -m scripts.run_cohort_v2_integrated --dry-run",
             "python -u -m scripts.run_cohort_v2_integrated "
+            f"--design {args.design} --dry-run",
+            "python -u -m scripts.run_cohort_v2_integrated "
+            f"--design {args.design} "
             f"--implementation-commit {args.implementation_commit}",
-            "python -u -m scripts.run_cohort_v2_integrated --validate",
+            "python -u -m scripts.run_cohort_v2_integrated "
+            f"--design {args.design} --validate",
         ],
         "schema": "cohort_v2_integrated_model_calibration_summary_v1",
         "source_bindings": _compact_source_bindings(
@@ -788,7 +827,8 @@ def _validate(args, paths, readers, reliability_manifest) -> int:
     reliability_identity = str(reliability_manifest["artifact_identity"])
     parameter_counts = set()
     loaded = {}
-    for index, variant in enumerate(IntegratedVariant, start=1):
+    variants = _variants(args)
+    for index, variant in enumerate(variants, start=1):
         root = _variant_root(output, variant)
         predictor, codec, checkpoint = load_cohort_v2_integrated_checkpoint(
             root / "checkpoint.pt",
@@ -829,7 +869,7 @@ def _validate(args, paths, readers, reliability_manifest) -> int:
             evaluation, readers, compute, profile
         )
         loaded[variant] = (predictor, codec, checkpoint, evaluation, measurement, compute)
-        print(f"[validate model {index}/3] {variant}", flush=True)
+        print(f"[validate model {index}/{len(variants)}] {variant}", flush=True)
     if len(parameter_counts) != 1:
         raise CohortV2IntegratedError("validated variants differ in capacity")
     candidate = loaded[IntegratedVariant.CANDIDATE]
@@ -907,10 +947,14 @@ def main(argv: list[str] | None = None) -> int:
         if dirty and not args.dry_run and not args.validate:
             parser.error("a dirty worktree requires --implementation-commit")
     args.implementation_commit = implementation
-    print("[design] frozen issue-58 candidate, ablations, seeds, and schedule", flush=True)
+    print(
+        f"[design] frozen {args.design} candidate, ablations, seeds, and schedule",
+        flush=True,
+    )
     print(
         f"[design] candidate={CANDIDATE_ID} comparators={COMPARATOR_IDS} "
-        f"variants={tuple(str(value) for value in IntegratedVariant)}",
+        f"variants={tuple(str(value) for value in _variants(args))} "
+        f"latent_dim={_config(args).latent_dim} max_entities={_config(args).max_entities}",
         flush=True,
     )
     print("[load] validating public training/calibration/model-selection readers", flush=True)
