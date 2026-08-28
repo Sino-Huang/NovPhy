@@ -17,4 +17,4 @@ when use `gh` cli, always explicitly specify the repo with `--repo Sino-Huang/No
 
 ### Unity Editor
 
-Use `/home/sukai/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity` for Unity 2019.4.41f2 batch-mode commands.
+Use `~/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity` for Unity 2019.4.41f2 batch-mode commands.
