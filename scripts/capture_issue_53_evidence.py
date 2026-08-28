@@ -92,7 +92,9 @@ class PlanSelection:
     contract: ReleaseContract
 
 
-def _load_plan(plan_root: Path) -> PlanSelection:
+def _load_plan(
+    plan_root: Path, *, migration_recovery: bool = False
+) -> PlanSelection:
     selected = Path(plan_root).resolve()
     collection_path = selected / "collection-plan.json"
     parameter_path = selected / "production-parameter-plan.json"
@@ -138,7 +140,9 @@ def _load_plan(plan_root: Path) -> PlanSelection:
         from scripts.cohort_v2_production_plans_v4 import FINAL_SEED
         from scripts.cohort_v2_production_plans_v5 import validate_plan_v5_evidence
 
-        validate_plan_v5_evidence(selected)
+        validate_plan_v5_evidence(
+            selected, migration_recovery=migration_recovery
+        )
         partition_path = selected / "partition-exposure-manifest.json"
         access_path = selected / "final-evaluation-workflow-access-manifest.json"
         final_role = replace(ROLES[3], seed=FINAL_SEED)

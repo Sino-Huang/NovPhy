@@ -370,6 +370,7 @@ def validate_sealed(
         or any(item.get("status") != "accepted" for item in ledger)
     ):
         raise Issue15FinalCollectionError("sealed final ledger is incomplete")
+    frame_count = 0
     for entry in ledger:
         attempt_id = entry["attempt_id"]
         capture = load_physics_capture_v2(
@@ -381,12 +382,34 @@ def validate_sealed(
             != entry["terminal_reason"]
         ):
             raise Issue15FinalCollectionError("sealed rollout binding is stale")
+        frame_count += len(capture.record["fixed_step_samples"])
+    authorized = FinalEvaluationWorkflowAccessManifest.from_dict(
+        _load(root / "authorized-final-access-manifest.json")
+    )
+    observed = _load(root / "observed-final-access.json")
+    access_audit = audit_final_evaluation_workflow_access(
+        partition, authorized, observed_accesses=[observed]
+    )
+    if (
+        Counter(item["terminal_reason"] for item in ledger)
+        != Counter({"stable_entered": 6})
+        or frame_count != 1_610
+        or authorized.authorization_identity != AUTHORIZATION_IDENTITY
+        or access_audit != _load(root / "final-access-audit.json")
+        or access_audit.get("observed_access_count") != 1
+    ):
+        raise Issue15FinalCollectionError(
+            "sealed final termination, frame, or access audit is stale"
+        )
     return {
         "schema": "issue_15_confirmatory_final_collection_validation_v2",
         "sealed_bundle_identity": SEALED_BUNDLE_IDENTITY,
         "protocol_identity": protocol["artifact_identity"],
         "partition_bound": bool(plan["partition-exposure-manifest.json"]["identity"]),
         "accepted_rollouts": 6,
+        "frame_count": frame_count,
+        "termination_counts": {"stable_entered": 6},
+        "observed_access_count": 1,
         "passed": True,
     }
 

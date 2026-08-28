@@ -244,9 +244,12 @@ def build_protocol(
     plan: Mapping[str, Mapping[str, Any]],
     *,
     implementation_commit: str,
+    capacity_report: Path = CAPACITY_REPORT,
 ) -> dict[str, Any]:
     base = _load(ROOT / BASE_PROTOCOL)
-    capacity_path = ROOT / CAPACITY_REPORT
+    capacity_path = Path(capacity_report)
+    if not capacity_path.is_absolute():
+        capacity_path = ROOT / capacity_path
     capacity = _load(capacity_path)
     if (
         capacity.get("design") != "issue-15-capacity"
@@ -268,7 +271,11 @@ def build_protocol(
             "sha256": _sha256(ROOT / BASE_PROTOCOL),
         },
         "capacity_calibration": {
-            "path": CAPACITY_REPORT.as_posix(),
+            "path": (
+                capacity_path.relative_to(ROOT).as_posix()
+                if capacity_path.is_relative_to(ROOT)
+                else capacity_path.as_posix()
+            ),
             "sha256": _sha256(capacity_path),
             "artifact_identity": capacity["artifact_identity"],
             "implementation_commit": capacity["implementation_commit"],

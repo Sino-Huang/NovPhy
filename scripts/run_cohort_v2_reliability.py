@@ -11,6 +11,7 @@ from scripts.run_cohort_v2_macro_experiment import (
     DEFAULT_RELEASE,
     _readers,
 )
+from scripts.cohort_v2_migration_recovery import DEFAULT_MANIFEST
 from world_model.training.cohort_v2_micro import (
     CohortV2MicroTrainer,
     CohortV2MicroTrainingData,
@@ -61,6 +62,13 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--validate", action="store_true")
     parser.add_argument("--compact-report", type=Path)
     parser.add_argument("--implementation-commit")
+    parser.add_argument(
+        "--migration-recovery",
+        type=Path,
+        nargs="?",
+        const=DEFAULT_MANIFEST,
+        metavar="MANIFEST",
+    )
     return parser
 
 
@@ -160,7 +168,16 @@ def main(argv: list[str] | None = None) -> int:
         print("[dry-run] reduced training and bounded scoring; no files will be written", flush=True)
 
     print("[load] validating public training/calibration/model-selection readers", flush=True)
-    readers = _readers(repository_root, release_root)
+    recovery = (
+        None
+        if args.migration_recovery is None
+        else (repository_root / args.migration_recovery).resolve()
+    )
+    readers = _readers(
+        repository_root,
+        release_root,
+        migration_recovery_authority=recovery,
+    )
     if args.validate:
         manifest = validate_cohort_v2_reliability_artifact(
             output, readers=readers, config=config

@@ -12,6 +12,7 @@ from typing import Final
 
 import torch
 
+from scripts.cohort_v2_migration_recovery import DEFAULT_MANIFEST
 from scripts.run_cohort_v2_macro_experiment import (
     DEFAULT_RELEASE,
     _evaluation_devices,
@@ -145,6 +146,13 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--log-every", type=int, default=25)
     parser.add_argument("--score-log-every", type=int, default=250)
     parser.add_argument("--implementation-commit")
+    parser.add_argument(
+        "--migration-recovery",
+        type=Path,
+        nargs="?",
+        const=DEFAULT_MANIFEST,
+        metavar="MANIFEST",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--validate", action="store_true")
     return parser
@@ -958,7 +966,16 @@ def main(argv: list[str] | None = None) -> int:
         flush=True,
     )
     print("[load] validating public training/calibration/model-selection readers", flush=True)
-    readers = _readers(root, paths["release"])
+    recovery = (
+        None
+        if args.migration_recovery is None
+        else (root / args.migration_recovery).resolve()
+    )
+    readers = _readers(
+        root,
+        paths["release"],
+        migration_recovery_authority=recovery,
+    )
     reliability_manifest_raw = json.loads(
         (paths["reliability"] / "manifest.json").read_bytes()
     )

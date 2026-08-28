@@ -7,6 +7,7 @@ from pathlib import Path
 import tempfile
 
 from scripts.issue_15_amended_protocol import (
+    CAPACITY_REPORT,
     DEFAULT_AUTHORITY_ROOT,
     DEFAULT_ROOT,
     Issue15AmendmentError,
@@ -15,6 +16,12 @@ from scripts.issue_15_amended_protocol import (
     load_frozen_bundle,
     materialize_final_authority,
     write_frozen_bundle,
+)
+from scripts.cohort_v2_migration_recovery import (
+    DEFAULT_MANIFEST,
+    DEFAULT_PLAN_ROOT,
+    DEFAULT_RELEASE_ROOT,
+    validate_migration_recovery_manifest,
 )
 from world_model.training.grid_artifacts import canonical_json_bytes
 from world_model.training.manifest import git_revision
@@ -26,16 +33,32 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", type=Path, default=DEFAULT_ROOT)
     parser.add_argument("--authority-root", type=Path, default=DEFAULT_AUTHORITY_ROOT)
     parser.add_argument("--implementation-commit")
+    parser.add_argument("--capacity-report", type=Path, default=CAPACITY_REPORT)
+    parser.add_argument(
+        "--migration-recovery",
+        type=Path,
+        nargs="?",
+        const=DEFAULT_MANIFEST,
+        metavar="MANIFEST",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--freeze", action="store_true")
     parser.add_argument("--validate", action="store_true")
     return parser
 
 
-def _build(authority_root: Path, implementation_commit: str):
+def _build(
+    authority_root: Path,
+    implementation_commit: str,
+    capacity_report: Path = CAPACITY_REPORT,
+):
     scenario, manifest_path, xml_path = materialize_final_authority(authority_root)
     plan = build_plan(scenario)
-    protocol = build_protocol(plan, implementation_commit=implementation_commit)
+    protocol = build_protocol(
+        plan,
+        implementation_commit=implementation_commit,
+        capacity_report=capacity_report,
+    )
     return plan, protocol, manifest_path, xml_path
 
 
@@ -48,6 +71,14 @@ def main(argv: list[str] | None = None) -> int:
     root = args.repository_root.resolve()
     output = (root / args.output).resolve()
     authority = (root / args.authority_root).resolve()
+    capacity_report = (root / args.capacity_report).resolve()
+    if args.migration_recovery is not None:
+        validate_migration_recovery_manifest(
+            (root / args.migration_recovery).resolve(),
+            repository_root=root,
+            plan_root=(root / DEFAULT_PLAN_ROOT).resolve(),
+            release_root=(root / DEFAULT_RELEASE_ROOT).resolve(),
+        )
     implementation = args.implementation_commit
     if implementation is None:
         implementation, dirty = git_revision(str(root))
@@ -62,7 +93,9 @@ def main(argv: list[str] | None = None) -> int:
         stored_plan, stored_protocol = load_frozen_bundle(output)
         with tempfile.TemporaryDirectory(prefix="issue-15-amendment-validate-") as temporary:
             expected_plan, expected_protocol, manifest_path, xml_path = _build(
-                Path(temporary), stored_protocol["implementation_commit"]
+                Path(temporary),
+                stored_protocol["implementation_commit"],
+                capacity_report,
             )
             if any(
                 canonical_json_bytes(stored_plan[name])
@@ -89,7 +122,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.dry_run:
         with tempfile.TemporaryDirectory(prefix="issue-15-amendment-dry-") as temporary:
-            plan, protocol, _manifest, _xml = _build(Path(temporary), implementation)
+            plan, protocol, _manifest, _xml = _build(
+                Path(temporary), implementation, capacity_report
+            )
         print(
             f"[dry-run] attempts={len(plan['confirmatory-plan.json']['attempt_ids'])} "
             "workflow=pending files_written=false new_final_outcomes_accessed=false",
@@ -100,7 +135,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if output.exists() or authority.exists():
         raise Issue15AmendmentError("immutable amendment or authority already exists")
-    plan, protocol, _manifest, _xml = _build(authority, implementation)
+    plan, protocol, _manifest, _xml = _build(
+        authority, implementation, capacity_report
+    )
     write_frozen_bundle(plan, protocol, output)
     print(f"[freeze] plan={output / 'confirmatory-plan.json'}", flush=True)
     print(

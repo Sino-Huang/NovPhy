@@ -11,9 +11,11 @@ from typing import Any, Final
 import numpy as np
 
 from scripts.issue_15_final_collection import DEFAULT_SEALED_ROOT
+from scripts.cohort_v2_migration_recovery import DEFAULT_MANIFEST
 from scripts.run_cohort_v2_confirmatory import _group_controller_decisions
 from scripts.run_cohort_v2_integrated import _evaluation_devices
 from scripts.run_issue_15_confirmatory_v2 import (
+    CAPACITY_COMPACT,
     DEFAULT_COMPACT as ISSUE_15_COMPACT,
     DEFAULT_INTEGRATED,
     DEFAULT_PROTOCOL_ROOT,
@@ -97,11 +99,20 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--oracle-output", type=Path, default=DEFAULT_ORACLE_OUTPUT)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--compact-report", type=Path, default=DEFAULT_COMPACT)
+    parser.add_argument("--integrated-compact", type=Path, default=CAPACITY_COMPACT)
+    parser.add_argument("--oracle-compact", type=Path, default=ISSUE_15_COMPACT)
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--evaluation-devices", default="auto")
     parser.add_argument("--evaluation-batch-size", type=int, default=128)
     parser.add_argument("--score-log-every", type=int, default=250)
     parser.add_argument("--implementation-commit")
+    parser.add_argument(
+        "--migration-recovery",
+        type=Path,
+        nargs="?",
+        const=DEFAULT_MANIFEST,
+        metavar="MANIFEST",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--validate", action="store_true")
     return parser
@@ -115,7 +126,13 @@ def _paths(args: argparse.Namespace, root: Path) -> dict[str, Path]:
         "integrated": (root / args.integrated_root).resolve(),
         "reliability": (root / args.reliability_root).resolve(),
         "oracle": (root / args.oracle_output).resolve(),
-        "oracle_compact": (root / ISSUE_15_COMPACT).resolve(),
+        "oracle_compact": (root / args.oracle_compact).resolve(),
+        "integrated_compact": (root / args.integrated_compact).resolve(),
+        "migration_recovery": (
+            None
+            if args.migration_recovery is None
+            else (root / args.migration_recovery).resolve()
+        ),
         "output": (root / args.output).resolve(),
         "compact": (root / args.compact_report).resolve(),
     }

@@ -16,8 +16,10 @@ from scripts.manual_agent import (
     start_engine,
     stop_started_engine,
 )
+from scripts.cohort_v2_migration_recovery import DEFAULT_MANIFEST
 from scripts.run_cohort_v2_visual_parser import DEFAULT_ALIGNED, DEFAULT_OUTPUT as VISUAL_OUTPUT
 from scripts.run_issue_15_confirmatory_v2 import (
+    CAPACITY_COMPACT,
     DEFAULT_INTEGRATED,
     DEFAULT_PROTOCOL_ROOT,
     _load_frozen,
@@ -72,6 +74,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--protocol-root", type=Path, default=DEFAULT_PROTOCOL_ROOT)
     parser.add_argument("--integrated-root", type=Path, default=DEFAULT_INTEGRATED)
     parser.add_argument("--reliability-root", type=Path, default=DEFAULT_RELIABILITY)
+    parser.add_argument("--integrated-compact", type=Path, default=CAPACITY_COMPACT)
     parser.add_argument("--aligned-root", type=Path, default=DEFAULT_ALIGNED)
     parser.add_argument("--visual-parser-root", type=Path, default=VISUAL_OUTPUT / "parser")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
@@ -95,6 +98,13 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--start-engine", action="store_true")
     parser.add_argument("--level", type=int)
     parser.add_argument("--implementation-commit")
+    parser.add_argument(
+        "--migration-recovery",
+        type=Path,
+        nargs="?",
+        const=DEFAULT_MANIFEST,
+        metavar="MANIFEST",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--live-smoke", action="store_true")
     parser.add_argument("--validate", action="store_true")
@@ -107,6 +117,12 @@ def _paths(args: argparse.Namespace, root: Path) -> dict[str, Path]:
         "protocol": (root / args.protocol_root).resolve(),
         "integrated": (root / args.integrated_root).resolve(),
         "reliability": (root / args.reliability_root).resolve(),
+        "integrated_compact": (root / args.integrated_compact).resolve(),
+        "migration_recovery": (
+            None
+            if args.migration_recovery is None
+            else (root / args.migration_recovery).resolve()
+        ),
         "aligned": (root / args.aligned_root).resolve(),
         "visual": (root / args.visual_parser_root).resolve(),
         "output": (root / args.output).resolve(),

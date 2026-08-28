@@ -13,6 +13,10 @@ from scripts.cohort_v2_macro_semantics import (
     DERIVATION_SPEC_IDENTITY as MACRO_SPEC_IDENTITY,
     validate_capture_macro_derivation,
 )
+from scripts.cohort_v2_migration_recovery import (
+    migration_recovery_manifest_path,
+    validate_migration_recovery_manifest,
+)
 from scripts.cohort_v2_capabilities import validate_capability_declaration
 from scripts.cohort_v2_micro_relations import (
     DERIVATION_SPEC_IDENTITY as MICRO_SPEC_IDENTITY,
@@ -187,6 +191,7 @@ class CohortV2ReleaseReader:
         influence: str,
         requested_capabilities: tuple[str, ...] = CENTRAL_LABELS,
         aligned_observation_roots: Mapping[str, Path] | None = None,
+        migration_recovery_authority: Path | None = None,
     ) -> None:
         if workflow_kind not in EXPOSURE_ROLES[:-1]:
             raise CohortV2IngestionError("Ordinary readers cannot access sealed final artifacts")
@@ -202,6 +207,14 @@ class CohortV2ReleaseReader:
             )
         self._root = Path(release_root).resolve()
         self._production_plan_root = Path(production_plan_root).resolve()
+        self._repository_root = Path(capability_declaration_path).resolve().parents[2]
+        self._migration_recovery_authority = (
+            None
+            if migration_recovery_authority is None
+            else migration_recovery_manifest_path(
+                Path(migration_recovery_authority).resolve()
+            )
+        )
         self._workflow_kind = workflow_kind
         self._enforce_expected_termination = True
         self._observation_references: dict[tuple[str, int], tuple[Path, str]] = {}
@@ -367,10 +380,24 @@ class CohortV2ReleaseReader:
         ):
             raise CohortV2IngestionError("Collection plan binding is stale")
         try:
-            validate_plan_v5_evidence(
-                self._production_plan_root,
-                repository_root=self._production_plan_root.parents[2],
+            recovery_authority = getattr(
+                self, "_migration_recovery_authority", None
             )
+            repository_root = getattr(
+                self, "_repository_root", self._production_plan_root.parents[2]
+            )
+            if recovery_authority is None:
+                validate_plan_v5_evidence(
+                    self._production_plan_root,
+                    repository_root=repository_root,
+                )
+            else:
+                validate_migration_recovery_manifest(
+                    recovery_authority,
+                    repository_root=repository_root,
+                    plan_root=self._production_plan_root,
+                    release_root=self._root,
+                )
         except ValueError as error:
             raise CohortV2IngestionError(
                 f"Production plan authority is invalid: {error}"

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Final
 
 from scripts.issue_15_amended_protocol import load_frozen_bundle
+from scripts.cohort_v2_migration_recovery import DEFAULT_MANIFEST
 from scripts.issue_15_final_collection import (
     DEFAULT_SEALED_ROOT,
     Issue15ConfirmatoryV2Reader,
@@ -103,11 +104,19 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--reliability-root", type=Path, default=DEFAULT_RELIABILITY)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--compact-report", type=Path, default=DEFAULT_COMPACT)
+    parser.add_argument("--integrated-compact", type=Path, default=CAPACITY_COMPACT)
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--evaluation-devices", default="auto")
     parser.add_argument("--evaluation-batch-size", type=int, default=128)
     parser.add_argument("--score-log-every", type=int, default=250)
     parser.add_argument("--implementation-commit")
+    parser.add_argument(
+        "--migration-recovery",
+        type=Path,
+        nargs="?",
+        const=DEFAULT_MANIFEST,
+        metavar="MANIFEST",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--validate", action="store_true")
     return parser
@@ -122,6 +131,12 @@ def _paths(args: argparse.Namespace, root: Path) -> dict[str, Path]:
         "reliability": (root / args.reliability_root).resolve(),
         "output": (root / args.output).resolve(),
         "compact": (root / args.compact_report).resolve(),
+        "integrated_compact": (root / args.integrated_compact).resolve(),
+        "migration_recovery": (
+            None
+            if args.migration_recovery is None
+            else (root / args.migration_recovery).resolve()
+        ),
     }
 
 
@@ -140,7 +155,11 @@ def _config(device: str = "cuda:0") -> CohortV2MacroConfig:
 
 def _load_frozen(root: Path, paths: dict[str, Path], device: str):
     _plan, protocol = load_frozen_bundle(paths["protocol"])
-    readers = _readers(root, paths["release"])
+    readers = _readers(
+        root,
+        paths["release"],
+        migration_recovery_authority=paths.get("migration_recovery"),
+    )
     reliability_raw = json.loads(
         (paths["reliability"] / "manifest.json").read_bytes()
     )
@@ -190,7 +209,7 @@ def _load_frozen(root: Path, paths: dict[str, Path], device: str):
     report = json.loads(
         (paths["integrated"] / "evidence/report.json").read_bytes()
     )
-    compact = json.loads((root / CAPACITY_COMPACT).read_bytes())
+    compact = json.loads(paths["integrated_compact"].read_bytes())
     if (
         compact.get("design") != "issue-15-capacity"
         or compact.get("artifact_identity") != evidence["artifact_identity"]

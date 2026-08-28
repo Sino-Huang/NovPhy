@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from scripts.issue_59_aligned_observation_collection import dry_run
@@ -11,8 +12,14 @@ class Issue59AlignedObservationCollectionTests(unittest.TestCase):
         with patch(
             "scripts.issue_59_aligned_observation_collection._player",
             return_value={"source_snapshot_commit": "commit-59"},
+        ), patch(
+            "scripts.issue_59_aligned_observation_collection."
+            "validate_migration_recovery_manifest"
         ):
-            result = dry_run(implementation_commit="commit-59")
+            result = dry_run(
+                implementation_commit="commit-59",
+                migration_recovery_authority=Path("recovery.json"),
+            )
 
         self.assertEqual(result["planned_rollouts"], 24)
         self.assertEqual(

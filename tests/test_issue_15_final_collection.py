@@ -50,6 +50,7 @@ class Issue15FinalCollectionTests(unittest.TestCase):
         self.assertTrue(audit["passed"])
         self.assertEqual(audit["observed_access_count"], 1)
 
+    @unittest.skipUnless(DEFAULT_SEALED_ROOT.is_dir(), "sealed issue-15 data is local")
     def test_replacement_final_window_reaches_the_transition_adapter(self):
         reader = Issue15ConfirmatoryV2Reader(DEFAULT_SEALED_ROOT)
         window = CohortV2OracleWindowDataset(

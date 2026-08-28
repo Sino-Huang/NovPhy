@@ -24,6 +24,11 @@ from scripts.cohort_v2_release import (
     production_attempt_identity,
 )
 from scripts.cohort_v2_macro_semantics import validate_capture_macro_derivation
+from scripts.cohort_v2_migration_recovery import (
+    DEFAULT_MANIFEST,
+    DEFAULT_RELEASE_ROOT as PUBLIC_RELEASE_ROOT,
+    validate_migration_recovery_manifest,
+)
 from scripts.cohort_v2_micro_relations import (
     validate_capture_micro_relation_derivation,
 )
@@ -93,9 +98,23 @@ def _load(path: Path) -> dict[str, Any]:
 
 
 def _source_plan(
-    public_plan_root: Path, issue_15_plan_root: Path
+    public_plan_root: Path,
+    issue_15_plan_root: Path,
+    *,
+    migration_recovery_authority: Path | None = None,
+    public_release_root: Path = PUBLIC_RELEASE_ROOT,
 ) -> tuple[Any, Mapping[str, Mapping[str, Any]], Any, Mapping[str, Any], Any, Any]:
-    public = _load_plan(public_plan_root)
+    if migration_recovery_authority is not None:
+        validate_migration_recovery_manifest(
+            migration_recovery_authority,
+            repository_root=ROOT,
+            plan_root=public_plan_root,
+            release_root=public_release_root,
+        )
+    public = _load_plan(
+        public_plan_root,
+        migration_recovery=migration_recovery_authority is not None,
+    )
     assignments = _assignments(public.collection)
     if set(assignments) != set(ROLE_ORDER):
         raise Issue59CollectionError("public source plan does not contain four roles")
@@ -148,10 +167,17 @@ def dry_run(
     public_plan_root: Path = DEFAULT_PLAN_ROOT,
     issue_15_plan_root: Path = ISSUE_15_PLAN_ROOT,
     stage_root: Path = STAGE_ROOT,
+    migration_recovery_authority: Path | None = None,
+    public_release_root: Path = PUBLIC_RELEASE_ROOT,
 ) -> tuple[dict[str, Any], int]:
     _log("dry-run 1/3: validating frozen public and replacement-final plans")
     public, assignments, _final_plan, final_collection, _assignment, final_access = (
-        _source_plan(public_plan_root, issue_15_plan_root)
+        _source_plan(
+            public_plan_root,
+            issue_15_plan_root,
+            migration_recovery_authority=migration_recovery_authority,
+            public_release_root=public_release_root,
+        )
     )
     attempts = _planned_attempts(public, assignments, final_collection)
     _log("dry-run 2/3: verifying the source-bound aligned-observation player")
@@ -373,6 +399,8 @@ def collect(
     public_plan_root: Path = DEFAULT_PLAN_ROOT,
     issue_15_plan_root: Path = ISSUE_15_PLAN_ROOT,
     stage_root: Path = STAGE_ROOT,
+    migration_recovery_authority: Path | None = None,
+    public_release_root: Path = PUBLIC_RELEASE_ROOT,
 ) -> dict[str, Any]:
     runtime_root = Path(runtime_root).resolve()
     output = Path(output).resolve()
@@ -380,7 +408,12 @@ def collect(
     if runtime_root.exists() or output.exists() or summary_path.exists():
         raise Issue59CollectionError("immutable issue-59 output already exists")
     public, assignments, _final_plan, final_collection, final_assign, final_access = (
-        _source_plan(public_plan_root, issue_15_plan_root)
+        _source_plan(
+            public_plan_root,
+            issue_15_plan_root,
+            migration_recovery_authority=migration_recovery_authority,
+            public_release_root=public_release_root,
+        )
     )
     _planned_attempts(public, assignments, final_collection)
     player = _player(implementation_commit, stage_root)
@@ -613,6 +646,21 @@ def validate(
     ):
         raise Issue59CollectionError("issue-59 record roles differ")
     validate_observation_exposure_boundaries(observation_manifests)
+    role_frame_counts = {
+        role: sum(
+            item["frame_count"]
+            for item in records
+            if item["exposure_role"] == role
+        )
+        for role in ROLE_ORDER
+    }
+    if role_frame_counts != {
+        "training": 2_156,
+        "calibration": 1_610,
+        "model_selection": 1_606,
+        "final_evaluation": 1_610,
+    }:
+        raise Issue59CollectionError("issue-59 role frame counts differ")
     summary = _load(summary_path)
     if (
         summary.get("schema") != SUMMARY_SCHEMA
@@ -620,6 +668,7 @@ def validate(
         or summary.get("rollout_count") != 24
         or summary.get("frame_count")
         != sum(item["frame_count"] for item in records)
+        or summary.get("frame_count") != 6_982
     ):
         raise Issue59CollectionError("issue-59 compact summary differs")
     _log(
@@ -637,8 +686,16 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--public-plan-root", type=Path, default=DEFAULT_PLAN_ROOT)
     parser.add_argument("--issue-15-plan-root", type=Path, default=ISSUE_15_PLAN_ROOT)
     parser.add_argument("--stage-root", type=Path, default=STAGE_ROOT)
+    parser.add_argument("--public-release-root", type=Path, default=PUBLIC_RELEASE_ROOT)
     parser.add_argument("--implementation-commit")
     parser.add_argument("--authorization-identity", default=AUTHORIZATION_IDENTITY)
+    parser.add_argument(
+        "--migration-recovery",
+        type=Path,
+        nargs="?",
+        const=DEFAULT_MANIFEST,
+        metavar="MANIFEST",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--validate", action="store_true")
     return parser
@@ -649,6 +706,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.dry_run and args.validate:
         raise Issue59CollectionError("--dry-run and --validate are mutually exclusive")
     root = args.repository_root.resolve()
+    recovery = (
+        None
+        if args.migration_recovery is None
+        else (root / args.migration_recovery).resolve()
+    )
+    public_release_root = (root / args.public_release_root).resolve()
     implementation = args.implementation_commit
     if implementation is None:
         implementation, dirty = git_revision(str(root))
@@ -664,6 +727,8 @@ def main(argv: list[str] | None = None) -> int:
             public_plan_root=args.public_plan_root,
             issue_15_plan_root=args.issue_15_plan_root,
             stage_root=args.stage_root,
+            migration_recovery_authority=recovery,
+            public_release_root=public_release_root,
         )
         print(json.dumps(result, indent=2, sort_keys=True), flush=True)
     else:
@@ -676,6 +741,8 @@ def main(argv: list[str] | None = None) -> int:
             public_plan_root=args.public_plan_root,
             issue_15_plan_root=args.issue_15_plan_root,
             stage_root=args.stage_root,
+            migration_recovery_authority=recovery,
+            public_release_root=public_release_root,
         )
     return 0
 
