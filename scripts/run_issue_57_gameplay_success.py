@@ -26,6 +26,10 @@ from scripts.run_issue_56_gameplay_planner import (
 )
 from scripts.smoke_physics_capture import start_display, terminate
 from src.webui.bridge import PlayingMode
+from world_model.data.deployment_temporal import (
+    AgentObservation,
+    TemporalObservationContext,
+)
 from world_model.model import Abstraction, PredictionPair
 from world_model.planning.gameplay import (
     ControlConfig,
@@ -247,20 +251,36 @@ class _TimedObservationAdapter:
             self.call_count += 1
             self.wall_clock_seconds += time.monotonic() - started
 
+    def from_temporal_context(self, *args, **kwargs):
+        started = time.monotonic()
+        try:
+            return self.adapter.from_temporal_context(*args, **kwargs)
+        finally:
+            self.call_count += 1
+            self.wall_clock_seconds += time.monotonic() - started
+
 
 def _dry_observations(aligned, observation_adapter) -> tuple[PlanningObservation, ...]:
     rollout = aligned[0].rollouts[0]
-    return tuple(
-        observation_adapter.from_agent_rgb(
-            identity=f"issue-57-dry:{frame.identity}",
+    observations = []
+    prior = None
+    for frame in rollout.frame_records[:3]:
+        metadata = aligned[0].frame_observation_metadata(rollout, frame)
+        current = AgentObservation(
+            identity=aligned[0].frame_agent_observation_identity(rollout, frame),
+            fixed_step=frame.fixed_step,
+            fixed_time_seconds=float(metadata["fixed_time_seconds"]),
             png=aligned[0].load_frame_observation(
                 rollout, frame, observation_role="agent"
             ),
+        )
+        observations.append(observation_adapter.from_temporal_context(
+            TemporalObservationContext(prior, current),
             slingshot_anchor=(312, 227),
             terminal_status=TerminalStatus.ONGOING,
-        )
-        for frame in rollout.frame_records[:3]
-    )
+        ))
+        prior = current
+    return tuple(observations)
 
 
 def _dry_run(args, protocol, frozen, aligned, parser_checkpoint, adapter) -> int:

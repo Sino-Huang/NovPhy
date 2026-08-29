@@ -17,22 +17,24 @@ import numpy as np
 import torch
 from PIL import Image
 
+from world_model.data.deployment_temporal import (
+    AgentObservation,
+    TemporalObservationContext,
+    TemporalVisualCarrierAdapter,
+)
 from world_model.model import (
     Abstraction,
-    BooleanTransitionValue,
     MacroTransitionBatch,
     MacroTransitionInput,
     MicroTransitionBatch,
     MicroTransitionInput,
     PredictionPair,
-    RelationTransitionValue,
     TransitionRequest,
 )
 from world_model.training.cohort_v2_controller import (
     CohortV2ControllerFeatureCodec,
     select_cohort_v2_controller_pairs,
 )
-from world_model.training.cohort_v2_feature_parser import ParsedFrameSymbols
 from world_model.training.cohort_v2_macro import MACRO_PAIRS
 from world_model.training.cohort_v2_measurement import CohortV2ComputeCalibration
 from world_model.training.grid_artifacts import canonical_json_bytes
@@ -182,44 +184,37 @@ class PlanningObservation:
     frame_height: int = 480
 
 
-class VisualPlanningObservationAdapter:
-    """Map frozen issue-17 parser outputs to the issue-15 carrier layout."""
+class VisualPlanningObservationAdapter(TemporalVisualCarrierAdapter):
+    """Expose the shared deployment temporal carrier to gameplay planning."""
 
-    carrier_adapter_identity = (
-        "cohort-v2-visual-object-carrier-v1:screen-center-normalization;"
-        "zero-velocity;frozen-object-vocabulary"
-    )
+    carrier_adapter_identity = TemporalVisualCarrierAdapter.identity
 
-    def __init__(
+    def from_temporal_context(
         self,
-        model: torch.nn.Module,
+        context: TemporalObservationContext,
         *,
-        parser_checkpoint_identity: str,
-        temperatures: Mapping[str, float],
-        thresholds: Mapping[str, float],
-        latent_dim: int,
-        max_entities: int,
-        object_kind_temperature: float = 1.0,
-    ) -> None:
-        if len(model.object_vocabulary) > max_entities or latent_dim < 2 + 13 * max_entities:
-            raise ValueError("visual carrier dimensions do not fit the frozen parser schema")
-        self.model = model
-        self.parser_checkpoint_identity = parser_checkpoint_identity
-        self.temperatures = dict(temperatures)
-        self.thresholds = dict(thresholds)
-        self.latent_dim = latent_dim
-        self.max_entities = max_entities
-        self.object_kind_temperature = object_kind_temperature
-
-    def _image(self, png: bytes) -> tuple[torch.Tensor, int]:
-        with Image.open(BytesIO(png)) as opened:
+        slingshot_anchor: tuple[int, int],
+        terminal_status: TerminalStatus,
+    ) -> PlanningObservation:
+        result = self.build(context)
+        with Image.open(BytesIO(context.current.png)) as opened:
             frame_height = opened.height
-            image = opened.convert("RGB").resize(
-                (self.model.config.image_width, self.model.config.image_height),
-                Image.Resampling.BILINEAR,
-            )
-            array = np.asarray(image, dtype=np.uint8).copy()
-        return torch.from_numpy(array).permute(2, 0, 1), frame_height
+        pig_slots = tuple(
+            index
+            for index, value in enumerate(self.model.object_vocabulary)
+            if value.startswith("pig:")
+        )
+        return PlanningObservation(
+            identity=context.current.identity,
+            carrier=result.tensor,
+            pig_slots=pig_slots,
+            slingshot_anchor=slingshot_anchor,
+            agent_rgb=context.current.png,
+            terminal_status=terminal_status,
+            parser_diagnostics=result.diagnostics,
+            symbols=result.symbols,
+            frame_height=frame_height,
+        )
 
     def from_agent_rgb(
         self,
@@ -228,116 +223,17 @@ class VisualPlanningObservationAdapter:
         png: bytes,
         slingshot_anchor: tuple[int, int],
         terminal_status: TerminalStatus,
+        fixed_step: int = 0,
+        fixed_time_seconds: float = 0.0,
+        prior_observation: AgentObservation | None = None,
     ) -> PlanningObservation:
-        image, frame_height = self._image(png)
-        device = next(self.model.parameters()).device
-        with torch.no_grad():
-            output = self.model(image.unsqueeze(0).to(device))
-        presence_probabilities = torch.sigmoid(
-            output["presence_logits"][0] / self.temperatures["object_presence"]
-        ).detach().cpu()
-        presence = presence_probabilities >= self.thresholds["object_presence"]
-        centers = output["centers"][0].detach().cpu()
-        kind_probabilities = torch.softmax(
-            output["kind_logits"][0] / self.object_kind_temperature, dim=-1
-        ).detach().cpu()
-
-        values = [0.0, -0.981]
-        for index, object_identity in enumerate(self.model.object_vocabulary):
-            probability = float(presence_probabilities[index])
-            kind = object_identity.split(":", 1)[0]
-            dynamic = kind not in {"platform", "slingshot", "world"}
-            center_x, center_y = (float(value) for value in centers[index])
-            values.extend((
-                probability,
-                probability,
-                probability * (1.0 if dynamic else -1.0),
-                probability,
-                probability * float(dynamic),
-                probability * float(dynamic),
-                probability * (center_x - 0.5),
-                probability * (0.5 - center_y),
-                0.0,
-                0.0,
-                0.0,
-                probability,
-                0.0,
-            ))
-        values.extend((0.0,) * ((self.max_entities - len(self.model.object_vocabulary)) * 13))
-        values.extend((0.0,) * (self.latent_dim - len(values)))
-        carrier = torch.tensor(values, dtype=torch.float32)
-
-        relations = {}
-        for predicate_index, predicate in enumerate(("contact", "supports")):
-            probabilities = torch.sigmoid(
-                output["relation_logits"][0, :, :, predicate_index]
-                / self.temperatures[predicate]
-            ).detach().cpu()
-            selected = []
-            for first in range(len(self.model.object_vocabulary)):
-                for second in range(len(self.model.object_vocabulary)):
-                    if first == second or not presence[first] or not presence[second]:
-                        continue
-                    if float(probabilities[first, second]) < self.thresholds[predicate]:
-                        continue
-                    if predicate == "contact" and first > second:
-                        continue
-                    selected.append((
-                        "runtime:" + self.model.object_vocabulary[first],
-                        "runtime:" + self.model.object_vocabulary[second],
-                    ))
-            relations[predicate] = RelationTransitionValue("available", tuple(selected))
-
-        macro_probabilities = {}
-        macro_values = {}
-        for predicate_index, predicate in enumerate(("steady-state", "structure-unstable")):
-            probability = float(torch.sigmoid(
-                output["macro_logits"][0, predicate_index]
-                / self.temperatures[predicate]
-            ).detach().cpu())
-            macro_probabilities[predicate] = probability
-            macro_values[predicate] = BooleanTransitionValue(
-                "available", probability >= self.thresholds[predicate]
-            )
-        symbols = ParsedFrameSymbols(
-            identity,
-            relations["contact"],
-            relations["supports"],
-            macro_values["steady-state"],
-            macro_values["structure-unstable"],
-        )
-        diagnostics = {
-            "parser_checkpoint_identity": self.parser_checkpoint_identity,
-            "carrier_adapter_identity": self.carrier_adapter_identity,
-            "object_presence_probabilities": tuple(
-                float(value) for value in presence_probabilities
+        return self.from_temporal_context(
+            TemporalObservationContext(
+                prior_observation,
+                AgentObservation(identity, fixed_step, fixed_time_seconds, png),
             ),
-            "object_centers": tuple(
-                tuple(float(value) for value in row) for row in centers
-            ),
-            "object_kind_probabilities": tuple(
-                tuple(float(value) for value in row) for row in kind_probabilities
-            ),
-            "steady_state_probability": macro_probabilities["steady-state"],
-            "steady_state_thresholded": macro_values["steady-state"].value,
-            "structure_unstable_probability": macro_probabilities["structure-unstable"],
-            "structure_unstable_thresholded": macro_values["structure-unstable"].value,
-        }
-        pig_slots = tuple(
-            index
-            for index, value in enumerate(self.model.object_vocabulary)
-            if value.startswith("pig:")
-        )
-        return PlanningObservation(
-            identity=identity,
-            carrier=carrier,
-            pig_slots=pig_slots,
             slingshot_anchor=slingshot_anchor,
-            agent_rgb=png,
             terminal_status=terminal_status,
-            parser_diagnostics=diagnostics,
-            symbols=symbols,
-            frame_height=frame_height,
         )
 
 

@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 
 from scripts.cohort_v2_release import _write_derivations
+from scripts.cohort_v2_migration_recovery import DEFAULT_MANIFEST
 from scripts.cohort_v2_scenarios import write_immutable_cohort_v2_json
 from scripts.observation_trace import persist_observation_trace
 from scripts.physics_capture_v2 import load_physics_capture_v2
@@ -32,6 +33,7 @@ class CohortV2AlignedObservationReaderTests(unittest.TestCase):
             production_plan_root=PLAN_ROOT,
             workflow_kind="training",
             influence="learned_parameters",
+            migration_recovery_authority=ROOT / DEFAULT_MANIFEST,
         )
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -163,6 +165,9 @@ class CohortV2AlignedObservationReaderTests(unittest.TestCase):
             second = reader.load_frame_observation(
                 rollout, rollout.frame_records[1], observation_role="agent"
             )
+            first_identity = reader.frame_agent_observation_identity(
+                rollout, rollout.frame_records[0]
+            )
             frozen_source = reader.load_observation(
                 rollout, observation_role="agent"
             )
@@ -170,6 +175,7 @@ class CohortV2AlignedObservationReaderTests(unittest.TestCase):
         self.assertEqual(len(reader.rollouts), 6)
         self.assertTrue(first.startswith(b"\x89PNG\r\n\x1a\n"))
         self.assertTrue(second.startswith(b"\x89PNG\r\n\x1a\n"))
+        self.assertTrue(first_identity.startswith("agent-observation-v1:"))
         self.assertEqual(
             frozen_source,
             source_reader.load_observation(

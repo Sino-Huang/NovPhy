@@ -20,6 +20,7 @@ from world_model.data import (
     CohortV2AlignedObservationReader,
     CohortV2CentralFrameRecord,
 )
+from world_model.data.deployment_temporal import OBJECT_KIND_VOCABULARY
 from world_model.model import BooleanTransitionValue, RelationTransitionValue, identity
 from world_model.training.cohort_v2_feature_parser import (
     LearnedFeatureTransitionRequestBuilder,
@@ -35,9 +36,7 @@ RELATION_PREDICATES: Final = ("contact", "supports")
 MACRO_PREDICATES: Final = ("steady-state", "structure-unstable")
 PREDICATES: Final = RELATION_PREDICATES + MACRO_PREDICATES
 CALIBRATED_TARGETS: Final = ("object_presence",) + PREDICATES
-ENTITY_KINDS: Final = (
-    "bird", "pig", "block", "platform", "slingshot", "world", "other",
-)
+ENTITY_KINDS: Final = OBJECT_KIND_VOCABULARY
 
 
 class CohortV2VisualParserError(ValueError):

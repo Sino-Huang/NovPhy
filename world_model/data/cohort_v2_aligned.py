@@ -255,5 +255,16 @@ class CohortV2AlignedObservationReader(CohortV2ReleaseReader):
             )
         return item["capture_metadata"]
 
+    def frame_agent_observation_identity(
+        self, rollout: CohortV2Rollout, frame: Any
+    ) -> str:
+        """Return the deployment observation identity without exposing canonical data."""
+        item = self._observation_records.get((rollout.attempt_id, frame.fixed_step))
+        if item is None:
+            raise CohortV2IngestionError(
+                "Aligned observation identity is missing for the requested frame"
+            )
+        return str(item["agent_observation"]["identity"])
+
 
 __all__ = ["CohortV2AlignedObservationReader"]

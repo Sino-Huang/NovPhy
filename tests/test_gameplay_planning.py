@@ -377,7 +377,7 @@ class FrozenCohortV2WorldModelTests(unittest.TestCase):
 
 
 class VisualPlanningObservationAdapterTests(unittest.TestCase):
-    def test_agent_rgb_builds_the_live_carrier_and_logs_raw_instability(self) -> None:
+    def test_agent_rgb_builds_the_live_carrier_with_unavailable_initial_motion(self) -> None:
         class FrozenParserFixture(torch.nn.Module):
             def __init__(self) -> None:
                 super().__init__()
@@ -429,8 +429,9 @@ class VisualPlanningObservationAdapterTests(unittest.TestCase):
 
         self.assertEqual(observation.pig_slots, (0,))
         self.assertAlmostEqual(float(observation.carrier[2]), 0.99995, places=4)
+        self.assertAlmostEqual(float(observation.carrier[7]), 0.75, places=4)
         self.assertAlmostEqual(float(observation.carrier[8]), 0.25, places=4)
-        self.assertAlmostEqual(float(observation.carrier[9]), 0.25, places=4)
+        self.assertEqual(float(observation.carrier[12]), 0.0)
         self.assertAlmostEqual(
             observation.parser_diagnostics["structure_unstable_probability"],
             0.9,

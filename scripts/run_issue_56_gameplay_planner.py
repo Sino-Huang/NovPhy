@@ -32,6 +32,10 @@ from scripts.slingshot_readiness import (
 )
 from src.webui.bridge import GameState, PlayingMode, ScienceBirdsBridge
 from world_model.data import CohortV2AlignedObservationReader
+from world_model.data.deployment_temporal import (
+    AgentObservation,
+    TemporalObservationContext,
+)
 from world_model.model import PredictionPair
 from world_model.planning.gameplay import (
     CEMConfig,
@@ -244,22 +248,29 @@ class _DryRunEnvironment:
 def _dry_run(args, frozen, aligned, observation_adapter) -> int:
     rollout = aligned[0].rollouts[0]
     frames = rollout.frame_records[:3]
-    observations = tuple(
-        observation_adapter.from_agent_rgb(
-            identity=f"dry-run:{frame.identity}",
+    observations = []
+    prior = None
+    for frame in frames:
+        metadata = aligned[0].frame_observation_metadata(rollout, frame)
+        current = AgentObservation(
+            identity=aligned[0].frame_agent_observation_identity(rollout, frame),
+            fixed_step=frame.fixed_step,
+            fixed_time_seconds=float(metadata["fixed_time_seconds"]),
             png=aligned[0].load_frame_observation(
                 rollout, frame, observation_role="agent"
             ),
+        )
+        observations.append(observation_adapter.from_temporal_context(
+            TemporalObservationContext(prior, current),
             slingshot_anchor=(312, 227),
             terminal_status=TerminalStatus.ONGOING,
-        )
-        for frame in frames
-    )
+        ))
+        prior = current
     planner = _planner(args, frozen, observation_adapter, dry_run=True)
     mode = ControlMode(args.mode)
     result = run_gameplay_control(
         planner,
-        _DryRunEnvironment(observations),
+        _DryRunEnvironment(tuple(observations)),
         ControlConfig(mode, max_shots=2, max_planner_compute=1e12),
         progress=lambda value: print(value, flush=True),
     )
@@ -297,6 +308,7 @@ class _LiveScienceBirdsEnvironment:
         self.level_label = level_label
         self.index = 0
         self.current: PlanningObservation | None = None
+        self.prior_agent_observation: AgentObservation | None = None
         self.last_anchor: tuple[int, int] | None = None
 
     @staticmethod
@@ -326,14 +338,20 @@ class _LiveScienceBirdsEnvironment:
             raise RuntimeError("live observation has no retained slingshot anchor")
         self.index += 1
         level_label = self.level_label or f"level-{self.bridge.get_current_level()}"
-        self.current = self.observation_adapter.from_agent_rgb(
-            identity=(
-                f"live:{level_label}:observation-{self.index}"
-            ),
+        current_agent_observation = AgentObservation(
+            identity=f"live:{level_label}:observation-{self.index}",
+            fixed_step=self.index,
+            fixed_time_seconds=time.monotonic(),
             png=encoded.getvalue(),
+        )
+        self.current = self.observation_adapter.from_temporal_context(
+            TemporalObservationContext(
+                self.prior_agent_observation, current_agent_observation
+            ),
             slingshot_anchor=self.last_anchor,
             terminal_status=self._terminal(state),
         )
+        self.prior_agent_observation = current_agent_observation
         diagnostics = self.current.parser_diagnostics or {}
         print(
             f"[observe {self.index}] state={state.name} "

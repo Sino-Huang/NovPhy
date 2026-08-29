@@ -78,6 +78,26 @@ from world_model.data.ablations import (
 
 def __getattr__(name: str):
     if name in (
+        "AgentObservation",
+        "DecisionInference",
+        "DecisionTargets",
+        "DecisionTransition",
+        "DeploymentFrameSymbols",
+        "DeploymentTemporalError",
+        "DeploymentTrajectory",
+        "DeploymentTrajectoryReader",
+        "ExecutedAction",
+        "TemporalCarrier",
+        "TemporalObjectSlot",
+        "TemporalObservationContext",
+        "TemporalVisualCarrierAdapter",
+        "TransitionCarriers",
+        "build_transition_carriers",
+    ):
+        from world_model.data import deployment_temporal  # noqa: PLC0415
+
+        return getattr(deployment_temporal, name)
+    if name in (
         "CohortV2CentralFrameRecord",
         "CohortV2FinalAccessReceipt",
         "CohortV2FinalEvaluationReader",
@@ -125,6 +145,7 @@ __all__ = [
     "PHYSICS_CAPTURE_V1",
     "PHYSICS_CAPTURE_V1_CAPABILITIES",
     "CaptureContractDescriptor",
+    "AgentObservation",
     "AblationRunConfig",
     "ComputeBudgetMismatchError",
     "ContractValueError",
@@ -144,6 +165,20 @@ __all__ = [
     "CohortV2OracleWindowDataset",
     "CohortV2ReleaseReader",
     "CohortV2Rollout",
+    "DecisionInference",
+    "DecisionTargets",
+    "DecisionTransition",
+    "DeploymentFrameSymbols",
+    "DeploymentTemporalError",
+    "DeploymentTrajectory",
+    "DeploymentTrajectoryReader",
+    "ExecutedAction",
+    "TemporalCarrier",
+    "TemporalObjectSlot",
+    "TemporalObservationContext",
+    "TemporalVisualCarrierAdapter",
+    "TransitionCarriers",
+    "build_transition_carriers",
     "probe_cohort_v2_final_access",
     "EpisodeCatalog",
     "EpisodeRecord",
