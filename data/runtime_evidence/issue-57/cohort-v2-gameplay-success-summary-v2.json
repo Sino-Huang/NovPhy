@@ -1,0 +1,227 @@
+{
+  "aggregate_artifact_identity": "cohort-v2-gameplay-success-aggregate-v1:sha256:7eeacaeca0f53bc45a86dcf3c70b460fff8e1408172e5dc57a5e034c1c82f765",
+  "claim_boundary": {
+    "excluded_claims": [
+      "human-level gameplay",
+      "unseen-physics generalization",
+      "perception novelty",
+      "changes to issue-1, issue-14, issue-15, or issue-17 conclusions"
+    ],
+    "held_out_scope": "packaged instance-held-out gameplay levels",
+    "primary_question": "whether frozen adaptive CEM/MPC improves held-out level success over the strongest declared gameplay comparator"
+  },
+  "decision": "not_supported_by_this_experiment",
+  "decision_rationale": "All five systems completed the frozen matrix with zero successes. Adaptive CEM/MPC therefore had zero paired success-rate gain and zero penalized-shots gain over the tie-selected random-legal comparator, below the frozen practical margin.",
+  "evidence_identity": "cohort-v2-gameplay-success-evidence-v1:sha256:5f166273d98e375e1e5b966a46ce09939025bdb33529763ade7f51754182ffdb",
+  "exposure_audit": {
+    "authorization_identity": "github-issue-authorization-v2:57:final-gameplay-evaluation",
+    "final_outcomes_influenced_goal_cost": false,
+    "final_outcomes_influenced_parser": false,
+    "final_outcomes_influenced_planner": false,
+    "final_outcomes_influenced_world_model": false,
+    "observed_access_count": 1,
+    "outcome_conditioned_retraining": false,
+    "passed": true
+  },
+  "failure_accounting": {
+    "action_planning_failure": 0,
+    "compute_limit": 0,
+    "game_execution_failure": 1,
+    "game_execution_failure_detail": {
+      "message": "game_interface_execute: SlingshotReadinessError: slingshot_missing",
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-030"
+    },
+    "infrastructure_failure": 0,
+    "invalid_action": 0,
+    "level_terminal_failure": 74,
+    "model_rollout_failure": 0,
+    "timeout": 0
+  },
+  "implementation_revision": "8b52664b336349949ee9457e3af9b81e6af2a5f9",
+  "interpretation": {
+    "adaptive_granularity_exercised": false,
+    "causal_training_data_insufficiency_established": false,
+    "floor_effect": "complete_zero_success_floor",
+    "parser_path": "The visual carrier affected ranking and execution in all 45 model-based trials, but no symbolic parser output affected ranking and no structure-unstable macro rollout was selected.",
+    "result_scope": "Bounded negative evidence for the frozen stack, packaged final levels, seeds, limits, and decision rule; not an equivalence or impossibility result."
+  },
+  "parser_and_prediction_usage": {
+    "adaptive_cem_mpc": {
+      "requested_abstractions": {
+        "continuous": 44
+      },
+      "requested_horizons": {
+        "15": 44
+      }
+    },
+    "direct_structure_unstable_cost_weight": 0.0,
+    "macro_rollout_trial_count": 0,
+    "open_loop_cem_adaptive": {
+      "requested_abstractions": {
+        "continuous": 90
+      },
+      "requested_horizons": {
+        "15": 90
+      }
+    },
+    "parser_execution_dependency_trial_count": 45,
+    "repeated_h1_cem_mpc": {
+      "requested_abstractions": {
+        "continuous": 630
+      },
+      "requested_horizons": {
+        "1": 630
+      }
+    },
+    "structure_unstable_thresholded_true_count": 181,
+    "symbolic_ranking_dependency_trial_count": 0,
+    "total_observation_count": 181,
+    "visual_carrier_ranking_dependency_trial_count": 45
+  },
+  "primary_comparison": {
+    "paired_unit_count": 15,
+    "penalized_shots_difference_bootstrap_95": [
+      0.0,
+      0.0
+    ],
+    "penalized_shots_mean_difference": 0.0,
+    "practical_success_rate_margin": 0.1,
+    "primary_system": "adaptive_cem_mpc",
+    "strongest_comparator": "random_legal",
+    "strongest_comparator_selection_note": "All comparator success rates tied at zero; the frozen comparator ordering selected random_legal.",
+    "success_rate_difference": 0.0,
+    "success_rate_difference_bootstrap_95": [
+      0.0,
+      0.0
+    ]
+  },
+  "protocol_identity": "cohort-v2-gameplay-success-protocol-v2:sha256:00c8539a5309074af14803550f119b3350ab8757e04bbf6b9cd15ac1f55e563a",
+  "rerun_commands": [
+    "python -u -m scripts.run_issue_57_gameplay_success --dry-run",
+    "python -u -m scripts.run_issue_57_gameplay_success --live-level-preflight --start-display --start-engine",
+    "python -u -m scripts.run_issue_57_gameplay_success --run-final --start-display --start-engine --authorization-identity github-issue-authorization-v2:57:final-gameplay-evaluation",
+    "python -u -m scripts.run_issue_57_gameplay_success --aggregate",
+    "python -u -m scripts.run_issue_57_gameplay_success --validate"
+  ],
+  "schema": "cohort_v2_gameplay_success_summary_v2",
+  "source_bindings": {
+    "full_evidence_root": ".local-artifacts/migration-recovery-v1/issue-57-gameplay-success-v2",
+    "full_evidence_status": "Full immutable evidence remains local; this committed summary retains the exact validated protocol, aggregate, evidence, implementation, and stack identities.",
+    "stack_bindings": {
+      "controller_checkpoint_identity_sha256": "695bbd5b60afb458bca2dfcfd92520f61ed2a4394ff71c0377533b0b4aa98510",
+      "observation_adapter_identity": "cohort-v2-visual-object-carrier-v1:screen-center-normalization;zero-velocity;frozen-object-vocabulary",
+      "visual_parser_checkpoint_identity_sha256": "11dc38945106215f7dedeb11daa0540d05140881ab3d371f5eecd09ac6fcf337",
+      "world_model_checkpoint_identity_sha256": "36e81ddf3fe41eb364460a5967749a56623136abb69a8a717865a5c2d1914bbb"
+    }
+  },
+  "successor_issues": [
+    60,
+    61,
+    62,
+    63,
+    64,
+    65
+  ],
+  "superseded_protocol_v1": {
+    "disposition": "superseded_pre_outcome_infrastructure_abort",
+    "executed_shot_count": 0,
+    "intended_final_level_access_count": 0,
+    "protocol_identity": "cohort-v2-gameplay-success-protocol-v1:sha256:c15ca77b13a61d5c599fb8a999bd4c4159a161d6ea94931569be9d418dffa0a2",
+    "recorded_trial_count": 2
+  },
+  "system_results": {
+    "adaptive_cem_mpc": {
+      "denominator": 15,
+      "executed_shot_count": 22,
+      "model_rollout_count": 14080,
+      "penalized_shots_mean": 7.0,
+      "recursive_rollout_error": 0.07375056250020862,
+      "success_count": 0,
+      "success_rate": 0.0,
+      "success_rate_wilson_95": [
+        0.0,
+        0.20388330103584862
+      ]
+    },
+    "heuristic_no_model": {
+      "denominator": 15,
+      "executed_shot_count": 21,
+      "model_rollout_count": 0,
+      "penalized_shots_mean": 7.0,
+      "recursive_rollout_error": 0.0,
+      "success_count": 0,
+      "success_rate": 0.0,
+      "success_rate_wilson_95": [
+        0.0,
+        0.20388330103584862
+      ]
+    },
+    "open_loop_cem_adaptive": {
+      "denominator": 15,
+      "executed_shot_count": 22,
+      "model_rollout_count": 28800,
+      "penalized_shots_mean": 7.0,
+      "recursive_rollout_error": 0.1597391392569989,
+      "success_count": 0,
+      "success_rate": 0.0,
+      "success_rate_wilson_95": [
+        0.0,
+        0.20388330103584862
+      ]
+    },
+    "random_legal": {
+      "denominator": 15,
+      "executed_shot_count": 21,
+      "model_rollout_count": 0,
+      "penalized_shots_mean": 7.0,
+      "recursive_rollout_error": 0.0,
+      "success_count": 0,
+      "success_rate": 0.0,
+      "success_rate_wilson_95": [
+        0.0,
+        0.20388330103584862
+      ]
+    },
+    "repeated_h1_cem_mpc": {
+      "denominator": 15,
+      "executed_shot_count": 21,
+      "model_rollout_count": 201600,
+      "penalized_shots_mean": 7.0,
+      "recursive_rollout_error": 30.08275079727173,
+      "success_count": 0,
+      "success_rate": 0.0,
+      "success_rate_wilson_95": [
+        0.0,
+        0.20388330103584862
+      ]
+    }
+  },
+  "trial_matrix": {
+    "all_trials_included": true,
+    "benchmark_conditions": [
+      "benchmark-condition-v1:novelty_level_1:type010101",
+      "benchmark-condition-v1:novelty_level_1:type010102",
+      "benchmark-condition-v1:novelty_level_1:type010103",
+      "benchmark-condition-v1:novelty_level_1:type010104",
+      "benchmark-condition-v1:novelty_level_1:type010105"
+    ],
+    "executed_shot_count": 107,
+    "final_level_numbers": [
+      10,
+      20,
+      30,
+      40,
+      50
+    ],
+    "retry_count": 0,
+    "scheduled_trial_count": 75,
+    "seeds": [
+      20260831,
+      20260832,
+      20260833
+    ],
+    "success_count": 0,
+    "trial_count": 75
+  }
+}
