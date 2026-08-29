@@ -149,6 +149,16 @@ def build_recovery_audit(
         components.append(_component("sciencebirds-linux-archive", "present-valid", linux_zip))
     else:
         components.append(_component("sciencebirds-linux-archive", "missing", linux_zip))
+    linux_player = repository_root / "sciencebirdsgames/Linux/9001.x86_64"
+    components.append(
+        _component(
+            "sciencebirds-linux-player",
+            "present-valid"
+            if linux_player.is_file() and linux_player.stat().st_mode & 0o111
+            else "missing",
+            linux_player,
+        )
+    )
 
     if authority.exists():
         validate_migration_recovery_manifest(
