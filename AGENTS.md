@@ -1,5 +1,9 @@
 ## Agent skills
 
+## Environment — read this first
+
+Init `novphy` conda environment and then source `env.sh` before running any python scripts.
+
 ### Issue tracker
 
 Issues and specs are tracked in this repository’s GitHub Issues. See `docs/agents/issue-tracker.md`.
