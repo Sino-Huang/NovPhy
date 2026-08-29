@@ -165,9 +165,20 @@ class CohortV2AlignedObservationReaderTests(unittest.TestCase):
             second = reader.load_frame_observation(
                 rollout, rollout.frame_records[1], observation_role="agent"
             )
-            first_identity = reader.frame_agent_observation_identity(
+            first_identity = reader.agent_observation_identity(
                 rollout, rollout.frame_records[0]
             )
+            deployment_observation = reader.load_agent_observation(
+                rollout, rollout.frame_records[0]
+            )
+            with self.assertRaisesRegex(
+                ValueError, "canonical observation access is restricted"
+            ):
+                reader.load_frame_observation(
+                    rollout,
+                    rollout.frame_records[0],
+                    observation_role="canonical",
+                )
             frozen_source = reader.load_observation(
                 rollout, observation_role="agent"
             )
@@ -176,6 +187,7 @@ class CohortV2AlignedObservationReaderTests(unittest.TestCase):
         self.assertTrue(first.startswith(b"\x89PNG\r\n\x1a\n"))
         self.assertTrue(second.startswith(b"\x89PNG\r\n\x1a\n"))
         self.assertTrue(first_identity.startswith("agent-observation-v1:"))
+        self.assertEqual(deployment_observation.identity, first_identity)
         self.assertEqual(
             frozen_source,
             source_reader.load_observation(

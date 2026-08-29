@@ -15,13 +15,13 @@ from scripts.run_cohort_v2_visual_parser import (
 )
 from world_model.data import CohortV2AlignedObservationReader
 from world_model.data.deployment_temporal import (
-    AgentObservation,
     DecisionTargets,
     DecisionTransition,
+    DeploymentCarrierDataset,
     DeploymentTrajectory,
     DeploymentTrajectoryReader,
     ExecutedAction,
-    build_transition_carriers,
+    TrajectoryLineageBinding,
 )
 from world_model.planning.gameplay import (
     TerminalStatus,
@@ -48,18 +48,6 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--dry-run", action="store_true")
     return parser
-
-
-def _agent_observation(reader, rollout, frame) -> AgentObservation:
-    metadata = reader.frame_observation_metadata(rollout, frame)
-    return AgentObservation(
-        identity=reader.frame_agent_observation_identity(rollout, frame),
-        fixed_step=frame.fixed_step,
-        fixed_time_seconds=float(metadata["fixed_time_seconds"]),
-        png=reader.load_frame_observation(
-            rollout, frame, observation_role="agent"
-        ),
-    )
 
 
 def _dry_run(args: argparse.Namespace) -> int:
@@ -102,11 +90,11 @@ def _dry_run(args: argparse.Namespace) -> int:
         max_entities=15,
     )
     reader = aligned[0]
-    rollout = next(item for item in reader.rollouts if len(item.frame_records) >= 3)
-    prior_frame, current_frame, next_frame = rollout.frame_records[-3:]
-    prior = _agent_observation(reader, rollout, prior_frame)
-    current = _agent_observation(reader, rollout, current_frame)
-    next_observation = _agent_observation(reader, rollout, next_frame)
+    rollout = next(item for item in reader.rollouts if len(item.frame_records) >= 2)
+    current_frame_record = rollout.frame_records[0]
+    next_frame_record = rollout.frame_records[-1]
+    current = reader.load_agent_observation(rollout, current_frame_record)
+    next_observation = reader.load_agent_observation(rollout, next_frame_record)
     intervention = rollout.intervention
     action = ExecutedAction(
         identity=f"{rollout.attempt_id}:executed-intervention",
@@ -115,8 +103,8 @@ def _dry_run(args: argparse.Namespace) -> int:
         legal=True,
     )
     terminal_status = (
-        str(next_frame.terminal["reason"])
-        if next_frame.terminal is not None
+        str(next_frame_record.terminal["reason"])
+        if next_frame_record.terminal is not None
         else "ongoing"
     )
     transition = DecisionTransition(
@@ -124,14 +112,14 @@ def _dry_run(args: argparse.Namespace) -> int:
         scenario_lineage_identity=rollout.scenario_lineage_identity,
         exposure_role=rollout.exposure_role,
         decision_index=0,
-        prior_observation=prior,
+        prior_observation=None,
         current_observation=current,
         action=action,
         targets=DecisionTargets(
             next_observation=next_observation,
-            source_frame_identity=next_frame.identity,
-            source_state_identity=next_frame.state_id,
-            source_targets=next_frame.labels,
+            source_frame_record_identity=next_frame_record.identity,
+            source_state_identity=next_frame_record.state_id,
+            source_targets=next_frame_record.labels,
         ),
         terminal_status=terminal_status,
         source_bindings={
@@ -148,10 +136,19 @@ def _dry_run(args: argparse.Namespace) -> int:
         complete=True,
     )
     trajectory_reader = DeploymentTrajectoryReader(
-        (trajectory,), exposure_role="training"
+        (trajectory,),
+        exposure_role="training",
+        lineage_bindings=(TrajectoryLineageBinding(
+            trajectory_identity=trajectory.identity,
+            scenario_lineage_identity=trajectory.scenario_lineage_identity,
+            exposure_role=trajectory.exposure_role,
+            transition_identities=(transition.identity,),
+            initial_observation_identity=current.identity,
+            terminal_observation_identity=next_observation.identity,
+        ),),
     )
     DeploymentTrajectoryReader.validate_role_isolation((trajectory_reader,))
-    carriers = build_transition_carriers(transition, adapter)
+    carriers = DeploymentCarrierDataset(trajectory_reader, adapter)[0]
     gameplay = adapter.from_temporal_context(
         transition.inference.observations,
         slingshot_anchor=(312, 227),
@@ -166,7 +163,7 @@ def _dry_run(args: argparse.Namespace) -> int:
         flush=True,
     )
     print(
-        f"[dry-run] transition={transition.schema} prior={prior.fixed_step} "
+        f"[dry-run] transition={transition.schema} prior=unavailable "
         f"current={current.fixed_step} next={next_observation.fixed_step} "
         f"motion_available_slots={available_motion} action={action.identity}",
         flush=True,

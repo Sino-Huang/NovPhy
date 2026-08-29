@@ -23,6 +23,7 @@ from world_model.data.cohort_v2 import (
     CohortV2Rollout,
     _freeze,
 )
+from world_model.data.deployment_temporal import AgentObservation
 
 
 RELEASE_IDENTITY = "cohort-v2-aligned-observation-release-v1:issue-59"
@@ -245,26 +246,45 @@ class CohortV2AlignedObservationReader(CohortV2ReleaseReader):
         )
 
     def frame_observation_metadata(
-        self, rollout: CohortV2Rollout, frame: Any
+        self, rollout: CohortV2Rollout, frame_record: Any
     ) -> Mapping[str, Any]:
         """Return synchronized camera metadata for supervision derivation only."""
-        item = self._observation_records.get((rollout.attempt_id, frame.fixed_step))
+        item = self._observation_records.get(
+            (rollout.attempt_id, frame_record.fixed_step)
+        )
         if item is None:
             raise CohortV2IngestionError(
-                "Aligned observation metadata is missing for the requested frame"
+                "Aligned observation metadata is missing for the requested frame record"
             )
         return item["capture_metadata"]
 
-    def frame_agent_observation_identity(
-        self, rollout: CohortV2Rollout, frame: Any
+    def agent_observation_identity(
+        self, rollout: CohortV2Rollout, frame_record: Any
     ) -> str:
         """Return the deployment observation identity without exposing canonical data."""
-        item = self._observation_records.get((rollout.attempt_id, frame.fixed_step))
+        item = self._observation_records.get(
+            (rollout.attempt_id, frame_record.fixed_step)
+        )
         if item is None:
             raise CohortV2IngestionError(
-                "Aligned observation identity is missing for the requested frame"
+                "Aligned observation identity is missing for the requested frame record"
             )
         return str(item["agent_observation"]["identity"])
+
+    def load_agent_observation(
+        self, rollout: CohortV2Rollout, frame_record: Any
+    ) -> AgentObservation:
+        """Load one deployment-only observation with its exact simulation identities."""
+        metadata = self.frame_observation_metadata(rollout, frame_record)
+        return AgentObservation(
+            identity=self.agent_observation_identity(rollout, frame_record),
+            fixed_step=frame_record.fixed_step,
+            fixed_time_seconds=float(metadata["fixed_time_seconds"]),
+            png=self.load_frame_observation(
+                rollout, frame_record, observation_role="agent"
+            ),
+            observation_role="agent",
+        )
 
 
 __all__ = ["CohortV2AlignedObservationReader"]

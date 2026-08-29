@@ -82,29 +82,37 @@ def _observation_payload(value: "AgentObservation") -> dict[str, Any]:
         "identity": value.identity,
         "observation_role": value.observation_role,
         "fixed_step": value.fixed_step,
-        "fixed_time_seconds": float(value.fixed_time_seconds),
+        "fixed_time_seconds": (
+            None
+            if value.fixed_time_seconds is None
+            else float(value.fixed_time_seconds)
+        ),
     }
 
 
 @dataclass(frozen=True, slots=True)
 class AgentObservation:
     identity: str
-    fixed_step: int
-    fixed_time_seconds: float
+    fixed_step: int | None
+    fixed_time_seconds: float | None
     png: bytes
-    observation_role: str = "agent"
+    observation_role: str
 
     def __post_init__(self) -> None:
         if not isinstance(self.identity, str) or not self.identity:
             raise DeploymentTemporalError("agent observation identity is missing")
-        if type(self.fixed_step) is not int or self.fixed_step < 0:
-            raise DeploymentTemporalError("agent observation fixed step is invalid")
-        if (
-            type(self.fixed_time_seconds) not in (int, float)
+        if (self.fixed_step is None) != (self.fixed_time_seconds is None):
+            raise DeploymentTemporalError(
+                "agent observation time identities must be both available or unavailable"
+            )
+        if self.fixed_step is not None and (
+            type(self.fixed_step) is not int
+            or self.fixed_step < 0
+            or type(self.fixed_time_seconds) not in (int, float)
             or not math.isfinite(float(self.fixed_time_seconds))
             or self.fixed_time_seconds < 0
         ):
-            raise DeploymentTemporalError("agent observation fixed time is invalid")
+            raise DeploymentTemporalError("agent observation time identities are invalid")
         if type(self.png) is not bytes:
             raise DeploymentTemporalError("agent observation pixels must be bytes")
         if self.observation_role != "agent":
@@ -121,6 +129,10 @@ class TemporalObservationContext:
             raise DeploymentTemporalError("temporal context requires a current agent observation")
         if self.prior is not None and (
             type(self.prior) is not AgentObservation
+            or self.prior.fixed_step is None
+            or self.current.fixed_step is None
+            or self.prior.fixed_time_seconds is None
+            or self.current.fixed_time_seconds is None
             or self.prior.fixed_step >= self.current.fixed_step
             or self.prior.fixed_time_seconds >= self.current.fixed_time_seconds
         ):
@@ -174,14 +186,14 @@ class ExecutedAction:
 @dataclass(frozen=True, slots=True)
 class DecisionTargets:
     next_observation: AgentObservation
-    source_frame_identity: str
+    source_frame_record_identity: str
     source_state_identity: str
     source_targets: Mapping[str, Any]
 
     def __post_init__(self) -> None:
         if type(self.next_observation) is not AgentObservation:
             raise DeploymentTemporalError("decision targets require the next agent observation")
-        if not self.source_frame_identity or not self.source_state_identity:
+        if not self.source_frame_record_identity or not self.source_state_identity:
             raise DeploymentTemporalError("decision target source identities are missing")
         if not isinstance(self.source_targets, Mapping):
             raise DeploymentTemporalError("source-derived decision targets are malformed")
@@ -195,7 +207,7 @@ class DecisionInference:
 
 
 @dataclass(frozen=True, slots=True)
-class DeploymentFrameSymbols:
+class DeploymentFrameRecordSymbols:
     frame_record_identity: str
     contact: RelationTransitionValue
     supports: RelationTransitionValue
@@ -238,7 +250,11 @@ class DecisionTransition:
             raise DeploymentTemporalError("decision transition action or targets are malformed")
         next_observation = self.targets.next_observation
         if (
-            next_observation.fixed_step <= self.current_observation.fixed_step
+            self.current_observation.fixed_step is None
+            or self.current_observation.fixed_time_seconds is None
+            or next_observation.fixed_step is None
+            or next_observation.fixed_time_seconds is None
+            or next_observation.fixed_step <= self.current_observation.fixed_step
             or next_observation.fixed_time_seconds
             <= self.current_observation.fixed_time_seconds
         ):
@@ -283,7 +299,9 @@ class DecisionTransition:
             "terminal_status": self.terminal_status,
             "source_bindings": _thaw(self.source_bindings),
             "source_targets": {
-                "source_frame_identity": self.targets.source_frame_identity,
+                "source_frame_record_identity": (
+                    self.targets.source_frame_record_identity
+                ),
                 "source_state_identity": self.targets.source_state_identity,
                 "values": _thaw(self.targets.source_targets),
             },
@@ -337,6 +355,26 @@ class DeploymentTrajectory:
             raise DeploymentTemporalError("complete trajectory lacks terminal status")
 
 
+@dataclass(frozen=True, slots=True)
+class TrajectoryLineageBinding:
+    trajectory_identity: str
+    scenario_lineage_identity: str
+    exposure_role: str
+    transition_identities: tuple[str, ...]
+    initial_observation_identity: str
+    terminal_observation_identity: str
+
+    def __post_init__(self) -> None:
+        if (
+            not self.trajectory_identity
+            or not self.scenario_lineage_identity
+            or not self.transition_identities
+            or not self.initial_observation_identity
+            or not self.terminal_observation_identity
+        ):
+            raise DeploymentTemporalError("trajectory lineage binding is incomplete")
+
+
 class DeploymentTrajectoryReader:
     """Expose complete trajectories for exactly one permitted exposure role."""
 
@@ -345,6 +383,7 @@ class DeploymentTrajectoryReader:
         trajectories: tuple[DeploymentTrajectory, ...],
         *,
         exposure_role: str,
+        lineage_bindings: tuple[TrajectoryLineageBinding, ...],
     ) -> None:
         if (
             type(trajectories) is not tuple
@@ -354,6 +393,36 @@ class DeploymentTrajectoryReader:
             raise DeploymentTemporalError("reader inputs must be complete trajectories")
         if any(item.exposure_role != exposure_role for item in trajectories):
             raise DeploymentTemporalError("reader crossed its declared exposure role")
+        if (
+            type(lineage_bindings) is not tuple
+            or len(lineage_bindings) != len(trajectories)
+            or any(type(item) is not TrajectoryLineageBinding for item in lineage_bindings)
+        ):
+            raise DeploymentTemporalError("reader lineage bindings are malformed")
+        bindings = {item.trajectory_identity: item for item in lineage_bindings}
+        if len(bindings) != len(lineage_bindings):
+            raise DeploymentTemporalError("reader lineage bindings are duplicated")
+        for trajectory in trajectories:
+            binding = bindings.get(trajectory.identity)
+            if (
+                binding is None
+                or binding.scenario_lineage_identity
+                != trajectory.scenario_lineage_identity
+                or binding.exposure_role != trajectory.exposure_role
+                or binding.initial_observation_identity
+                != trajectory.transitions[0].current_observation.identity
+                or binding.terminal_observation_identity
+                != trajectory.transitions[-1].targets.next_observation.identity
+            ):
+                raise DeploymentTemporalError(
+                    "trajectory differs from its lineage binding"
+                )
+            if binding.transition_identities != tuple(
+                item.identity for item in trajectory.transitions
+            ):
+                raise DeploymentTemporalError(
+                    "trajectory decision inventory is incomplete or split"
+                )
         lineages = tuple(item.scenario_lineage_identity for item in trajectories)
         if len(lineages) != len(set(lineages)):
             raise DeploymentTemporalError(
@@ -361,6 +430,7 @@ class DeploymentTrajectoryReader:
             )
         self.exposure_role = exposure_role
         self.trajectories = trajectories
+        self.lineage_bindings = lineage_bindings
 
     def iter_transitions(self):
         for trajectory in self.trajectories:
@@ -408,7 +478,7 @@ class TemporalCarrier:
     fixed_step_delta: int | None
     elapsed_seconds: float | None
     diagnostics: Mapping[str, Any]
-    symbols: DeploymentFrameSymbols
+    symbols: DeploymentFrameRecordSymbols
 
 
 @dataclass(frozen=True, slots=True)
@@ -504,11 +574,15 @@ class TemporalVisualCarrierAdapter:
         elapsed = (
             None
             if context.prior is None
+            or context.prior.fixed_time_seconds is None
+            or context.current.fixed_time_seconds is None
             else context.current.fixed_time_seconds - context.prior.fixed_time_seconds
         )
         step_delta = (
             None
             if context.prior is None
+            or context.prior.fixed_step is None
+            or context.current.fixed_step is None
             else context.current.fixed_step - context.prior.fixed_step
         )
         values = [float(context.prior is not None), 0.0 if elapsed is None else float(elapsed)]
@@ -600,7 +674,7 @@ class TemporalVisualCarrierAdapter:
             )
             for index, predicate in enumerate(("steady-state", "structure-unstable"))
         }
-        symbols = DeploymentFrameSymbols(
+        symbols = DeploymentFrameRecordSymbols(
             context.current.identity,
             relation_values["contact"],
             relation_values["supports"],
@@ -612,6 +686,10 @@ class TemporalVisualCarrierAdapter:
             "carrier_adapter_identity": self.identity,
             "entity_features": ENTITY_FEATURES,
             "motion_units": "normalized_screen_center_per_second",
+            "fixed_time_identity_available": (
+                context.current.fixed_step is not None
+                and context.current.fixed_time_seconds is not None
+            ),
             "object_presence_probabilities": tuple(
                 float(value) for value in current["presence"]
             ),
@@ -657,13 +735,39 @@ def build_transition_carriers(
     return TransitionCarriers(context, target, transition.action, transition.targets)
 
 
+class DeploymentCarrierDataset(torch.utils.data.Dataset):
+    """World-model training/validation view over atomic deployment trajectories."""
+
+    def __init__(
+        self,
+        reader: DeploymentTrajectoryReader,
+        adapter: TemporalVisualCarrierAdapter,
+    ) -> None:
+        if not isinstance(reader, DeploymentTrajectoryReader) or not isinstance(
+            adapter, TemporalVisualCarrierAdapter
+        ):
+            raise DeploymentTemporalError(
+                "deployment carrier data requires a trajectory reader and adapter"
+            )
+        self.reader = reader
+        self.adapter = adapter
+        self.transitions = tuple(reader.iter_transitions())
+
+    def __len__(self) -> int:
+        return len(self.transitions)
+
+    def __getitem__(self, index: int) -> TransitionCarriers:
+        return build_transition_carriers(self.transitions[index], self.adapter)
+
+
 __all__ = [
     "AgentObservation",
     "DecisionInference",
     "DecisionTargets",
     "DecisionTransition",
     "DeploymentTemporalError",
-    "DeploymentFrameSymbols",
+    "DeploymentCarrierDataset",
+    "DeploymentFrameRecordSymbols",
     "DeploymentTrajectory",
     "DeploymentTrajectoryReader",
     "ENTITY_FEATURES",
@@ -673,6 +777,7 @@ __all__ = [
     "TemporalObservationContext",
     "TemporalVisualCarrierAdapter",
     "TransitionCarriers",
+    "TrajectoryLineageBinding",
     "ExecutedAction",
     "build_transition_carriers",
 ]

@@ -26,10 +26,7 @@ from scripts.run_issue_56_gameplay_planner import (
 )
 from scripts.smoke_physics_capture import start_display, terminate
 from src.webui.bridge import PlayingMode
-from world_model.data.deployment_temporal import (
-    AgentObservation,
-    TemporalObservationContext,
-)
+from world_model.data.deployment_temporal import TemporalObservationContext
 from world_model.model import Abstraction, PredictionPair
 from world_model.planning.gameplay import (
     ControlConfig,
@@ -243,37 +240,27 @@ class _TimedObservationAdapter:
         self.call_count = 0
         self.wall_clock_seconds = 0.0
 
-    def from_agent_rgb(self, **kwargs):
+    def _call(self, method, *args, **kwargs):
         started = time.monotonic()
         try:
-            return self.adapter.from_agent_rgb(**kwargs)
+            return method(*args, **kwargs)
         finally:
             self.call_count += 1
             self.wall_clock_seconds += time.monotonic() - started
 
+    def from_agent_rgb(self, **kwargs):
+        return self._call(self.adapter.from_agent_rgb, **kwargs)
+
     def from_temporal_context(self, *args, **kwargs):
-        started = time.monotonic()
-        try:
-            return self.adapter.from_temporal_context(*args, **kwargs)
-        finally:
-            self.call_count += 1
-            self.wall_clock_seconds += time.monotonic() - started
+        return self._call(self.adapter.from_temporal_context, *args, **kwargs)
 
 
 def _dry_observations(aligned, observation_adapter) -> tuple[PlanningObservation, ...]:
     rollout = aligned[0].rollouts[0]
     observations = []
     prior = None
-    for frame in rollout.frame_records[:3]:
-        metadata = aligned[0].frame_observation_metadata(rollout, frame)
-        current = AgentObservation(
-            identity=aligned[0].frame_agent_observation_identity(rollout, frame),
-            fixed_step=frame.fixed_step,
-            fixed_time_seconds=float(metadata["fixed_time_seconds"]),
-            png=aligned[0].load_frame_observation(
-                rollout, frame, observation_role="agent"
-            ),
-        )
+    for frame_record in rollout.frame_records[:3]:
+        current = aligned[0].load_agent_observation(rollout, frame_record)
         observations.append(observation_adapter.from_temporal_context(
             TemporalObservationContext(prior, current),
             slingshot_anchor=(312, 227),

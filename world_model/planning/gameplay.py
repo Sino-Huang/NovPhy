@@ -223,14 +223,17 @@ class VisualPlanningObservationAdapter(TemporalVisualCarrierAdapter):
         png: bytes,
         slingshot_anchor: tuple[int, int],
         terminal_status: TerminalStatus,
-        fixed_step: int = 0,
-        fixed_time_seconds: float = 0.0,
-        prior_observation: AgentObservation | None = None,
     ) -> PlanningObservation:
         return self.from_temporal_context(
             TemporalObservationContext(
-                prior_observation,
-                AgentObservation(identity, fixed_step, fixed_time_seconds, png),
+                None,
+                AgentObservation(
+                    identity,
+                    None,
+                    None,
+                    png,
+                    observation_role="agent",
+                ),
             ),
             slingshot_anchor=slingshot_anchor,
             terminal_status=terminal_status,

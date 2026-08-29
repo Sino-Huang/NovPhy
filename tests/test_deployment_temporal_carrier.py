@@ -10,13 +10,14 @@ from world_model.data.deployment_temporal import (
     AgentObservation,
     DecisionTargets,
     DecisionTransition,
+    DeploymentCarrierDataset,
     DeploymentTemporalError,
     DeploymentTrajectory,
     DeploymentTrajectoryReader,
     ExecutedAction,
     TemporalObservationContext,
     TemporalVisualCarrierAdapter,
-    build_transition_carriers,
+    TrajectoryLineageBinding,
 )
 from world_model.planning.gameplay import (
     TerminalStatus,
@@ -89,6 +90,7 @@ def _observation(identity: str, step: int, time: float, red: int) -> AgentObserv
         fixed_step=step,
         fixed_time_seconds=time,
         png=_png(red),
+        observation_role="agent",
     )
 
 
@@ -127,12 +129,44 @@ def _transition(
         action=_action(),
         targets=DecisionTargets(
             next_observation=_observation("observation:2", 12, 1.2, 153),
-            source_frame_identity="frame:2",
+            source_frame_record_identity="frame-record:2",
             source_state_identity="state:2",
             source_targets={"contact": {"availability": "available", "relations": ()}},
         ),
         terminal_status="level_fail",
         source_bindings={"release_identity": "release:fixture"},
+    )
+
+
+def _trajectory(transition: DecisionTransition | None = None) -> DeploymentTrajectory:
+    transition = transition or _transition()
+    return DeploymentTrajectory(
+        identity="trajectory:training",
+        scenario_lineage_identity=transition.scenario_lineage_identity,
+        exposure_role=transition.exposure_role,
+        transitions=(transition,),
+        complete=True,
+    )
+
+
+def _binding(
+    trajectory: DeploymentTrajectory,
+    *,
+    transition_identities: tuple[str, ...] | None = None,
+) -> TrajectoryLineageBinding:
+    return TrajectoryLineageBinding(
+        trajectory_identity=trajectory.identity,
+        scenario_lineage_identity=trajectory.scenario_lineage_identity,
+        exposure_role=trajectory.exposure_role,
+        transition_identities=(
+            transition_identities
+            if transition_identities is not None
+            else tuple(item.identity for item in trajectory.transitions)
+        ),
+        initial_observation_identity=trajectory.transitions[0].current_observation.identity,
+        terminal_observation_identity=(
+            trajectory.transitions[-1].targets.next_observation.identity
+        ),
     )
 
 
@@ -241,16 +275,26 @@ class DecisionTransitionContractTests(unittest.TestCase):
 
     def test_reader_rejects_split_decisions_and_cross_role_lineage_reuse(self) -> None:
         transition = _transition()
-        trajectory = DeploymentTrajectory(
-            identity="trajectory:training",
-            scenario_lineage_identity="lineage:1",
-            exposure_role="training",
-            transitions=(transition,),
-            complete=True,
-        )
+        trajectory = _trajectory(transition)
 
         with self.assertRaisesRegex(DeploymentTemporalError, "complete trajectories"):
-            DeploymentTrajectoryReader((transition,), exposure_role="training")
+            DeploymentTrajectoryReader(
+                (transition,),
+                exposure_role="training",
+                lineage_bindings=(_binding(trajectory),),
+            )
+
+        with self.assertRaisesRegex(DeploymentTemporalError, "decision inventory"):
+            DeploymentTrajectoryReader(
+                (trajectory,),
+                exposure_role="training",
+                lineage_bindings=(
+                    _binding(
+                        trajectory,
+                        transition_identities=("transition:missing", "transition:1"),
+                    ),
+                ),
+            )
 
         leaked = DeploymentTrajectory(
             identity="trajectory:calibration",
@@ -261,15 +305,29 @@ class DecisionTransitionContractTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(DeploymentTemporalError, "exposure role"):
             DeploymentTrajectoryReader.validate_role_isolation((
-                DeploymentTrajectoryReader((trajectory,), exposure_role="training"),
-                DeploymentTrajectoryReader((leaked,), exposure_role="calibration"),
+                DeploymentTrajectoryReader(
+                    (trajectory,),
+                    exposure_role="training",
+                    lineage_bindings=(_binding(trajectory),),
+                ),
+                DeploymentTrajectoryReader(
+                    (leaked,),
+                    exposure_role="calibration",
+                    lineage_bindings=(_binding(leaked),),
+                ),
             ))
 
     def test_training_and_gameplay_use_identical_carrier_construction(self) -> None:
         adapter = _adapter(VisualPlanningObservationAdapter)
         transition = _transition()
+        trajectory = _trajectory(transition)
+        reader = DeploymentTrajectoryReader(
+            (trajectory,),
+            exposure_role="training",
+            lineage_bindings=(_binding(trajectory),),
+        )
 
-        training = build_transition_carriers(transition, adapter)
+        training = DeploymentCarrierDataset(reader, adapter)[0]
         gameplay = adapter.from_temporal_context(
             transition.inference.observations,
             slingshot_anchor=(312, 227),
