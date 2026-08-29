@@ -83,7 +83,6 @@ def __getattr__(name: str):
         "DecisionTargets",
         "DecisionTransition",
         "DeploymentFrameRecordSymbols",
-        "DeploymentCarrierDataset",
         "DeploymentTemporalError",
         "DeploymentTrajectory",
         "DeploymentTrajectoryReader",
@@ -94,6 +93,7 @@ def __getattr__(name: str):
         "TemporalVisualCarrierAdapter",
         "TransitionCarriers",
         "TrajectoryLineageBinding",
+        "TrajectoryLineageManifest",
         "build_transition_carriers",
     ):
         from world_model.data import deployment_temporal  # noqa: PLC0415
@@ -171,7 +171,6 @@ __all__ = [
     "DecisionTargets",
     "DecisionTransition",
     "DeploymentFrameRecordSymbols",
-    "DeploymentCarrierDataset",
     "DeploymentTemporalError",
     "DeploymentTrajectory",
     "DeploymentTrajectoryReader",
@@ -182,6 +181,7 @@ __all__ = [
     "TemporalVisualCarrierAdapter",
     "TransitionCarriers",
     "TrajectoryLineageBinding",
+    "TrajectoryLineageManifest",
     "build_transition_carriers",
     "probe_cohort_v2_final_access",
     "EpisodeCatalog",

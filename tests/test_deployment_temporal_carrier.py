@@ -10,7 +10,6 @@ from world_model.data.deployment_temporal import (
     AgentObservation,
     DecisionTargets,
     DecisionTransition,
-    DeploymentCarrierDataset,
     DeploymentTemporalError,
     DeploymentTrajectory,
     DeploymentTrajectoryReader,
@@ -18,11 +17,13 @@ from world_model.data.deployment_temporal import (
     TemporalObservationContext,
     TemporalVisualCarrierAdapter,
     TrajectoryLineageBinding,
+    TrajectoryLineageManifest,
 )
 from world_model.planning.gameplay import (
     TerminalStatus,
     VisualPlanningObservationAdapter,
 )
+from world_model.training.deployment_temporal import DeploymentTemporalTrainingData
 
 
 def _png(red: int) -> bytes:
@@ -170,6 +171,12 @@ def _binding(
     )
 
 
+def _manifest(trajectory: DeploymentTrajectory) -> TrajectoryLineageManifest:
+    return TrajectoryLineageManifest.create(
+        "release:fixture", (_binding(trajectory),)
+    )
+
+
 class TemporalVisualCarrierTests(unittest.TestCase):
     def test_aligned_prior_context_produces_declared_motion(self) -> None:
         adapter = _adapter()
@@ -281,18 +288,19 @@ class DecisionTransitionContractTests(unittest.TestCase):
             DeploymentTrajectoryReader(
                 (transition,),
                 exposure_role="training",
-                lineage_bindings=(_binding(trajectory),),
+                lineage_manifest=_manifest(trajectory),
             )
 
         with self.assertRaisesRegex(DeploymentTemporalError, "decision inventory"):
             DeploymentTrajectoryReader(
                 (trajectory,),
                 exposure_role="training",
-                lineage_bindings=(
-                    _binding(
+                lineage_manifest=TrajectoryLineageManifest.create(
+                    "release:fixture",
+                    (_binding(
                         trajectory,
                         transition_identities=("transition:missing", "transition:1"),
-                    ),
+                    ),),
                 ),
             )
 
@@ -308,12 +316,12 @@ class DecisionTransitionContractTests(unittest.TestCase):
                 DeploymentTrajectoryReader(
                     (trajectory,),
                     exposure_role="training",
-                    lineage_bindings=(_binding(trajectory),),
+                    lineage_manifest=_manifest(trajectory),
                 ),
                 DeploymentTrajectoryReader(
                     (leaked,),
                     exposure_role="calibration",
-                    lineage_bindings=(_binding(leaked),),
+                    lineage_manifest=_manifest(leaked),
                 ),
             ))
 
@@ -324,10 +332,11 @@ class DecisionTransitionContractTests(unittest.TestCase):
         reader = DeploymentTrajectoryReader(
             (trajectory,),
             exposure_role="training",
-            lineage_bindings=(_binding(trajectory),),
+            lineage_manifest=_manifest(trajectory),
         )
 
-        training = DeploymentCarrierDataset(reader, adapter)[0]
+        training_trajectory = DeploymentTemporalTrainingData(reader, adapter)[0]
+        training = training_trajectory.transitions[0]
         gameplay = adapter.from_temporal_context(
             transition.inference.observations,
             slingshot_anchor=(312, 227),
@@ -340,6 +349,11 @@ class DecisionTransitionContractTests(unittest.TestCase):
             gameplay.parser_diagnostics["carrier_adapter_identity"],
         )
         self.assertIs(training.action, transition.action)
+        self.assertEqual(
+            training_trajectory.scenario_lineage_identity,
+            transition.scenario_lineage_identity,
+        )
+        self.assertEqual(training_trajectory.exposure_role, "training")
 
 
 if __name__ == "__main__":

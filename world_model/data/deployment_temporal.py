@@ -11,7 +11,7 @@ import numpy as np
 from PIL import Image, UnidentifiedImageError
 import torch
 
-from world_model.model import BooleanTransitionValue, RelationTransitionValue
+from world_model.model import BooleanTransitionValue, RelationTransitionValue, identity
 
 
 OBJECT_KIND_VOCABULARY: Final = (
@@ -375,6 +375,56 @@ class TrajectoryLineageBinding:
             raise DeploymentTemporalError("trajectory lineage binding is incomplete")
 
 
+@dataclass(frozen=True, slots=True)
+class TrajectoryLineageManifest:
+    identity: str
+    source_release_identity: str
+    bindings: tuple[TrajectoryLineageBinding, ...]
+    schema: str = "deployment_trajectory_lineage_manifest_v1"
+
+    @classmethod
+    def create(
+        cls,
+        source_release_identity: str,
+        bindings: tuple[TrajectoryLineageBinding, ...],
+    ) -> "TrajectoryLineageManifest":
+        manifest_identity = cls._identity(source_release_identity, bindings)
+        return cls(manifest_identity, source_release_identity, bindings)
+
+    @staticmethod
+    def _identity(
+        source_release_identity: str,
+        bindings: tuple[TrajectoryLineageBinding, ...],
+    ) -> str:
+        return identity((
+            "deployment-trajectory-lineage-manifest-v1",
+            source_release_identity,
+            tuple(
+                (
+                    item.trajectory_identity,
+                    item.scenario_lineage_identity,
+                    item.exposure_role,
+                    item.transition_identities,
+                    item.initial_observation_identity,
+                    item.terminal_observation_identity,
+                )
+                for item in bindings
+            ),
+        ))
+
+    def __post_init__(self) -> None:
+        if (
+            self.schema != "deployment_trajectory_lineage_manifest_v1"
+            or not self.source_release_identity
+            or not self.bindings
+            or self.identity
+            != self._identity(self.source_release_identity, self.bindings)
+        ):
+            raise DeploymentTemporalError(
+                "trajectory lineage manifest identity or schema differs"
+            )
+
+
 class DeploymentTrajectoryReader:
     """Expose complete trajectories for exactly one permitted exposure role."""
 
@@ -383,7 +433,7 @@ class DeploymentTrajectoryReader:
         trajectories: tuple[DeploymentTrajectory, ...],
         *,
         exposure_role: str,
-        lineage_bindings: tuple[TrajectoryLineageBinding, ...],
+        lineage_manifest: TrajectoryLineageManifest,
     ) -> None:
         if (
             type(trajectories) is not tuple
@@ -393,15 +443,18 @@ class DeploymentTrajectoryReader:
             raise DeploymentTemporalError("reader inputs must be complete trajectories")
         if any(item.exposure_role != exposure_role for item in trajectories):
             raise DeploymentTemporalError("reader crossed its declared exposure role")
+        if type(lineage_manifest) is not TrajectoryLineageManifest:
+            raise DeploymentTemporalError("reader lineage manifest is missing")
+        bindings = {
+            item.trajectory_identity: item for item in lineage_manifest.bindings
+        }
         if (
-            type(lineage_bindings) is not tuple
-            or len(lineage_bindings) != len(trajectories)
-            or any(type(item) is not TrajectoryLineageBinding for item in lineage_bindings)
+            len(bindings) != len(lineage_manifest.bindings)
+            or set(bindings) != {item.identity for item in trajectories}
         ):
-            raise DeploymentTemporalError("reader lineage bindings are malformed")
-        bindings = {item.trajectory_identity: item for item in lineage_bindings}
-        if len(bindings) != len(lineage_bindings):
-            raise DeploymentTemporalError("reader lineage bindings are duplicated")
+            raise DeploymentTemporalError(
+                "reader trajectory inventory differs from lineage manifest"
+            )
         for trajectory in trajectories:
             binding = bindings.get(trajectory.identity)
             if (
@@ -423,6 +476,14 @@ class DeploymentTrajectoryReader:
                 raise DeploymentTemporalError(
                     "trajectory decision inventory is incomplete or split"
                 )
+            if any(
+                transition.source_bindings.get("release_identity")
+                != lineage_manifest.source_release_identity
+                for transition in trajectory.transitions
+            ):
+                raise DeploymentTemporalError(
+                    "trajectory crossed its source release lineage manifest"
+                )
         lineages = tuple(item.scenario_lineage_identity for item in trajectories)
         if len(lineages) != len(set(lineages)):
             raise DeploymentTemporalError(
@@ -430,7 +491,7 @@ class DeploymentTrajectoryReader:
             )
         self.exposure_role = exposure_role
         self.trajectories = trajectories
-        self.lineage_bindings = lineage_bindings
+        self.lineage_manifest = lineage_manifest
 
     def iter_transitions(self):
         for trajectory in self.trajectories:
@@ -735,38 +796,12 @@ def build_transition_carriers(
     return TransitionCarriers(context, target, transition.action, transition.targets)
 
 
-class DeploymentCarrierDataset(torch.utils.data.Dataset):
-    """World-model training/validation view over atomic deployment trajectories."""
-
-    def __init__(
-        self,
-        reader: DeploymentTrajectoryReader,
-        adapter: TemporalVisualCarrierAdapter,
-    ) -> None:
-        if not isinstance(reader, DeploymentTrajectoryReader) or not isinstance(
-            adapter, TemporalVisualCarrierAdapter
-        ):
-            raise DeploymentTemporalError(
-                "deployment carrier data requires a trajectory reader and adapter"
-            )
-        self.reader = reader
-        self.adapter = adapter
-        self.transitions = tuple(reader.iter_transitions())
-
-    def __len__(self) -> int:
-        return len(self.transitions)
-
-    def __getitem__(self, index: int) -> TransitionCarriers:
-        return build_transition_carriers(self.transitions[index], self.adapter)
-
-
 __all__ = [
     "AgentObservation",
     "DecisionInference",
     "DecisionTargets",
     "DecisionTransition",
     "DeploymentTemporalError",
-    "DeploymentCarrierDataset",
     "DeploymentFrameRecordSymbols",
     "DeploymentTrajectory",
     "DeploymentTrajectoryReader",
@@ -778,6 +813,7 @@ __all__ = [
     "TemporalVisualCarrierAdapter",
     "TransitionCarriers",
     "TrajectoryLineageBinding",
+    "TrajectoryLineageManifest",
     "ExecutedAction",
     "build_transition_carriers",
 ]

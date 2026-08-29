@@ -1,4 +1,9 @@
 """Teacher-forced training loop, reproducibility manifest, and diagnostics."""
+from world_model.training.deployment_temporal import (
+    DeploymentTemporalTrainingData,
+    DeploymentTrajectoryCarrierExample,
+    validate_deployment_temporal_training_data,
+)
 from world_model.training.diagnostics import (
     CollapseReport,
     collapse_diagnostics,
@@ -296,6 +301,9 @@ from world_model.training.cohort_v2_reliability import (
 )
 
 __all__ = [
+    "DeploymentTemporalTrainingData",
+    "DeploymentTrajectoryCarrierExample",
+    "validate_deployment_temporal_training_data",
     "CollapseReport",
     "CohortV2EndpointPredictor",
     "CohortV2EndpointPlausibility",

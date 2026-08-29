@@ -17,17 +17,21 @@ from world_model.data import CohortV2AlignedObservationReader
 from world_model.data.deployment_temporal import (
     DecisionTargets,
     DecisionTransition,
-    DeploymentCarrierDataset,
     DeploymentTrajectory,
     DeploymentTrajectoryReader,
     ExecutedAction,
     TrajectoryLineageBinding,
+    TrajectoryLineageManifest,
 )
 from world_model.planning.gameplay import (
     TerminalStatus,
     VisualPlanningObservationAdapter,
 )
 from world_model.training.cohort_v2_visual_parser import load_visual_parser_checkpoint
+from world_model.training.deployment_temporal import (
+    DeploymentTemporalTrainingData,
+    validate_deployment_temporal_training_data,
+)
 
 
 DEFAULT_VISUAL_PARSER: Final = VISUAL_OUTPUT / "parser"
@@ -135,20 +139,25 @@ def _dry_run(args: argparse.Namespace) -> int:
         transitions=(transition,),
         complete=True,
     )
-    trajectory_reader = DeploymentTrajectoryReader(
-        (trajectory,),
-        exposure_role="training",
-        lineage_bindings=(TrajectoryLineageBinding(
+    lineage_binding = TrajectoryLineageBinding(
             trajectory_identity=trajectory.identity,
             scenario_lineage_identity=trajectory.scenario_lineage_identity,
             exposure_role=trajectory.exposure_role,
             transition_identities=(transition.identity,),
             initial_observation_identity=current.identity,
             terminal_observation_identity=next_observation.identity,
-        ),),
+    )
+    trajectory_reader = DeploymentTrajectoryReader(
+        (trajectory,),
+        exposure_role="training",
+        lineage_manifest=TrajectoryLineageManifest.create(
+            reader.release_identity, (lineage_binding,)
+        ),
     )
     DeploymentTrajectoryReader.validate_role_isolation((trajectory_reader,))
-    carriers = DeploymentCarrierDataset(trajectory_reader, adapter)[0]
+    training_data = DeploymentTemporalTrainingData(trajectory_reader, adapter)
+    validation = validate_deployment_temporal_training_data(training_data)
+    carriers = training_data[0].transitions[0]
     gameplay = adapter.from_temporal_context(
         transition.inference.observations,
         slingshot_anchor=(312, 227),
@@ -170,7 +179,8 @@ def _dry_run(args: argparse.Namespace) -> int:
     )
     print(
         f"[dry-run] shared carrier adapter={adapter.identity} "
-        f"shape={tuple(carriers.context.tensor.shape)}; no files written",
+        f"shape={tuple(carriers.context.tensor.shape)} "
+        f"trajectories={validation['trajectory_count']}; no files written",
         flush=True,
     )
     return 0
