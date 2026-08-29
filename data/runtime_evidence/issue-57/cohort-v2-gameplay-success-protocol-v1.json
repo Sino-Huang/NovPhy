@@ -1,0 +1,1212 @@
+{
+  "action_bounds": {
+    "drag_x": [
+      -160,
+      -40
+    ],
+    "drag_y": [
+      -80,
+      80
+    ],
+    "release_time_ms": 600,
+    "tap_time_ms": [
+      0,
+      1000
+    ]
+  },
+  "analysis": {
+    "bootstrap_replicates": 10000,
+    "bootstrap_seed": 20261201,
+    "confidence_level": 0.95,
+    "practical_success_rate_margin": 0.1,
+    "primary_system": "adaptive_cem_mpc",
+    "strongest_comparator_candidates": [
+      "random_legal",
+      "heuristic_no_model",
+      "open_loop_cem_adaptive",
+      "repeated_h1_cem_mpc"
+    ],
+    "supported_rule": "adaptive_cem_mpc is supported only when its paired success-rate gain over the strongest declared comparator is at least 0.10, the paired 95% bootstrap lower bound is above 0, and its mean penalized shots is no larger; otherwise the disposition is not_supported_by_this_experiment"
+  },
+  "authorization_identity": "github-issue-authorization-v1:57:final-gameplay-evaluation",
+  "cem": {
+    "elite_count": 8,
+    "iterations": 5,
+    "minimum_std": 1.0,
+    "population_size": 64
+  },
+  "claim_boundary": {
+    "excluded_claims": [
+      "human-level gameplay",
+      "unseen-physics generalization",
+      "perception novelty",
+      "changes to issue-1, issue-14, issue-15, or issue-17 conclusions"
+    ],
+    "held_out_scope": "packaged instance-held-out gameplay levels",
+    "primary_question": "whether frozen adaptive CEM/MPC improves held-out level success over the strongest declared gameplay comparator"
+  },
+  "execution_limits": {
+    "fixed_steps_per_shot": 15,
+    "max_planner_compute": 100000000000000.0,
+    "max_shots": 6,
+    "max_trial_wall_clock_seconds": 300.0,
+    "retry_count": 0
+  },
+  "failure_policy": {
+    "denominator": "every scheduled trial, including every failure",
+    "exclusions": "none",
+    "missing_trial": "artifact remains incomplete and cannot claim a conclusion",
+    "stopping": "run the fixed matrix once; no early success stop, replacement trial, seed change, level change, or outcome-conditioned rerun",
+    "taxonomy": [
+      "action_planning_failure",
+      "model_rollout_failure",
+      "game_execution_failure",
+      "timeout",
+      "invalid_action",
+      "infrastructure_failure",
+      "compute_limit",
+      "level_terminal_failure"
+    ]
+  },
+  "frozen_before_final_access": true,
+  "level_inventory": {
+    "isolation_rule": "level identities are disjoint across smoke, training/tuning, calibration, model selection, and final evaluation; final levels cannot change any checkpoint, parser, cost, planner, metric, or limit",
+    "roles": {
+      "calibration": [
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+          "level_identity": "science-birds-level-v1:sha256:1d9185c9438cc4d3f2d86403161f52224829a4082805d8ae019a68a6c82b6c16",
+          "level_number": 3,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010101",
+          "source_content_sha256": "1d9185c9438cc4d3f2d86403161f52224829a4082805d8ae019a68a6c82b6c16",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/00120_0_1_010101_1_1.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+          "level_identity": "science-birds-level-v1:sha256:43d8b59b9377a870f9ce5acd80f58ab9e9369ccabcb665c1b825e9a182a058fc",
+          "level_number": 13,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010102",
+          "source_content_sha256": "43d8b59b9377a870f9ce5acd80f58ab9e9369ccabcb665c1b825e9a182a058fc",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010102/Levels/00182_0_1_010102_1_2.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+          "level_identity": "science-birds-level-v1:sha256:281d45e52f58ce1ab2cbf8c88d22493969b0cbd574952382a8c63394045288b2",
+          "level_number": 23,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010103",
+          "source_content_sha256": "281d45e52f58ce1ab2cbf8c88d22493969b0cbd574952382a8c63394045288b2",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010103/Levels/00036_0_1_010103_1_3.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+          "level_identity": "science-birds-level-v1:sha256:2efa61df901bf16c113ebd88f207c7c70b4958bd44e4ea394d630deab7e62372",
+          "level_number": 33,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010104",
+          "source_content_sha256": "2efa61df901bf16c113ebd88f207c7c70b4958bd44e4ea394d630deab7e62372",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010104/Levels/00234_0_1_010104_1_4.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+          "level_identity": "science-birds-level-v1:sha256:c45b3078edce404c10235683723dd2e1c290cfe074b1e50c5b373797ca11aae9",
+          "level_number": 43,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010105",
+          "source_content_sha256": "c45b3078edce404c10235683723dd2e1c290cfe074b1e50c5b373797ca11aae9",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010105/Levels/00191_0_1_010105_1_5.xml"
+        }
+      ],
+      "final_evaluation": [
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+          "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+          "level_number": 10,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010101",
+          "source_content_sha256": "733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/00040_0_1_010101_1_1.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+          "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+          "level_number": 20,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010102",
+          "source_content_sha256": "c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010102/Levels/00205_0_1_010102_1_2.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+          "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+          "level_number": 30,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010103",
+          "source_content_sha256": "f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010103/Levels/00219_0_1_010103_1_3.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+          "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+          "level_number": 40,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010104",
+          "source_content_sha256": "13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010104/Levels/00199_0_1_010104_1_4.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+          "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+          "level_number": 50,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010105",
+          "source_content_sha256": "6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010105/Levels/00152_0_1_010105_1_5.xml"
+        }
+      ],
+      "model_selection": [
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+          "level_identity": "science-birds-level-v1:sha256:e533b1e93c5c916d936a5e0e55634073753c3164c799533892c0bbde575cf8db",
+          "level_number": 4,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010101",
+          "source_content_sha256": "e533b1e93c5c916d936a5e0e55634073753c3164c799533892c0bbde575cf8db",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/00291_0_1_010101_1_1.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+          "level_identity": "science-birds-level-v1:sha256:a0dd9b9a6c644daf322f618f8a69b32d3ab58befb2f0b46ec2d634fad75d0bc7",
+          "level_number": 14,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010102",
+          "source_content_sha256": "a0dd9b9a6c644daf322f618f8a69b32d3ab58befb2f0b46ec2d634fad75d0bc7",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010102/Levels/00038_0_1_010102_1_2.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+          "level_identity": "science-birds-level-v1:sha256:4a88ef694846dee8b743e0e69fc0bd34b11b36767f2a781d548ce4545a01681e",
+          "level_number": 24,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010103",
+          "source_content_sha256": "4a88ef694846dee8b743e0e69fc0bd34b11b36767f2a781d548ce4545a01681e",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010103/Levels/00142_0_1_010103_1_3.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+          "level_identity": "science-birds-level-v1:sha256:39cd0e5f987acaa5bef3b17a9ae447c2e9cca00ad7b036e94b0459c1f500b7df",
+          "level_number": 34,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010104",
+          "source_content_sha256": "39cd0e5f987acaa5bef3b17a9ae447c2e9cca00ad7b036e94b0459c1f500b7df",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010104/Levels/00139_0_1_010104_1_4.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+          "level_identity": "science-birds-level-v1:sha256:ac51574755083b5bb3b9950949ea6e27e46d4657384b5f544ed04e96b5a79995",
+          "level_number": 44,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010105",
+          "source_content_sha256": "ac51574755083b5bb3b9950949ea6e27e46d4657384b5f544ed04e96b5a79995",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010105/Levels/00278_0_1_010105_1_5.xml"
+        }
+      ],
+      "smoke": [
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+          "level_identity": "science-birds-level-v1:sha256:8d4218628fce645289178817a048b45fb52ff3f2ba2712b5ec25543d12737e55",
+          "level_number": 1,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010101",
+          "source_content_sha256": "8d4218628fce645289178817a048b45fb52ff3f2ba2712b5ec25543d12737e55",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/00190_0_1_010101_1_1.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+          "level_identity": "science-birds-level-v1:sha256:a54f4e7d0845bf167560a3a6adf91e8b2ae36f2d553b06a857f6a00d41789c7a",
+          "level_number": 11,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010102",
+          "source_content_sha256": "a54f4e7d0845bf167560a3a6adf91e8b2ae36f2d553b06a857f6a00d41789c7a",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010102/Levels/00028_0_1_010102_1_2.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+          "level_identity": "science-birds-level-v1:sha256:98f80cbd3e64f0f387495174456585343a90066f7aaea80131335ca7b0cbdddb",
+          "level_number": 21,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010103",
+          "source_content_sha256": "98f80cbd3e64f0f387495174456585343a90066f7aaea80131335ca7b0cbdddb",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010103/Levels/00101_0_1_010103_1_3.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+          "level_identity": "science-birds-level-v1:sha256:64fcae6fd0ca067de0d691f77537e54bab26b380d22e1525c5778f48ca1d658b",
+          "level_number": 31,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010104",
+          "source_content_sha256": "64fcae6fd0ca067de0d691f77537e54bab26b380d22e1525c5778f48ca1d658b",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010104/Levels/00032_0_1_010104_1_4.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+          "level_identity": "science-birds-level-v1:sha256:ee29e3b9746fda9d731e040df79bce35c6e667ba715b6321a5bd89f4fcab2cb1",
+          "level_number": 41,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010105",
+          "source_content_sha256": "ee29e3b9746fda9d731e040df79bce35c6e667ba715b6321a5bd89f4fcab2cb1",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010105/Levels/00326_0_1_010105_1_5.xml"
+        }
+      ],
+      "training_tuning": [
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+          "level_identity": "science-birds-level-v1:sha256:93bc1520df89040921042bb8715cffce6c7e73fd066b3a3e6bb779cfc5ea51e7",
+          "level_number": 2,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010101",
+          "source_content_sha256": "93bc1520df89040921042bb8715cffce6c7e73fd066b3a3e6bb779cfc5ea51e7",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010101/Levels/00086_0_1_010101_1_1.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+          "level_identity": "science-birds-level-v1:sha256:eee6c278006b3b8f9b9ffd0dc3321b110c08ff7f37c4a987969041ecca23da10",
+          "level_number": 12,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010102",
+          "source_content_sha256": "eee6c278006b3b8f9b9ffd0dc3321b110c08ff7f37c4a987969041ecca23da10",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010102/Levels/00209_0_1_010102_1_2.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+          "level_identity": "science-birds-level-v1:sha256:848f9becd71a12fa744b25ea6f8768fbe504a75f079d0dde0bab931c4ec0a843",
+          "level_number": 22,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010103",
+          "source_content_sha256": "848f9becd71a12fa744b25ea6f8768fbe504a75f079d0dde0bab931c4ec0a843",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010103/Levels/00213_0_1_010103_1_3.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+          "level_identity": "science-birds-level-v1:sha256:50c0de900b1de7161b39754ff4727dadcb36b391d0d63ca09d3550a29a9059c8",
+          "level_number": 32,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010104",
+          "source_content_sha256": "50c0de900b1de7161b39754ff4727dadcb36b391d0d63ca09d3550a29a9059c8",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010104/Levels/00288_0_1_010104_1_4.xml"
+        },
+        {
+          "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+          "level_identity": "science-birds-level-v1:sha256:24ec1c1f6ed26960e3b2d92c57ff54cda338d58a44028f2df9f180fffe8a790f",
+          "level_number": 42,
+          "novelty_level": "novelty_level_1",
+          "novelty_type": "type010105",
+          "source_content_sha256": "24ec1c1f6ed26960e3b2d92c57ff54cda338d58a44028f2df9f180fffe8a790f",
+          "source_path": "9001_Data/StreamingAssets/Levels/novelty_level_1/type010105/Levels/00240_0_1_010105_1_5.xml"
+        }
+      ]
+    },
+    "source": "packaged Science Birds config.xml trial 0; trial 1 is identical",
+    "unused_level_numbers": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      15,
+      16,
+      17,
+      18,
+      19,
+      25,
+      26,
+      27,
+      28,
+      29,
+      35,
+      36,
+      37,
+      38,
+      39,
+      45,
+      46,
+      47,
+      48,
+      49
+    ]
+  },
+  "metrics": {
+    "compute": [
+      "model rollout count and declared multiply-accumulate compute",
+      "CEM candidate, goal-evaluation, replan, and inclusive planner wall time",
+      "game-interface inclusive and parser-exclusive wall time",
+      "observation/parser call count and wall time"
+    ],
+    "prediction": [
+      "requested/effective horizon counts",
+      "requested abstraction counts",
+      "repeated h1 transition count",
+      "accumulated executed-transition recursive rollout error"
+    ],
+    "shots_to_success": "executed shots for successful trials; unsuccessful trials remain right-censored and receive max_shots+1 only in the declared penalized-shots estimand",
+    "success": "WON before any frozen execution limit",
+    "uncertainty": "two-sided 95% Wilson success intervals and paired bootstrap intervals"
+  },
+  "protocol_identity": "cohort-v2-gameplay-success-protocol-v1:sha256:c15ca77b13a61d5c599fb8a999bd4c4159a161d6ea94931569be9d418dffa0a2",
+  "protocol_version": 1,
+  "required_outputs": {
+    "machine_readable": [
+      "trials.jsonl",
+      "aggregate.json",
+      "exposure-audit.json",
+      "evidence.json"
+    ],
+    "plots": [
+      "success-rate.svg",
+      "shots-to-success.svg"
+    ],
+    "tables": [
+      "success_rates.csv",
+      "shots_to_success.csv",
+      "compute_failures.csv"
+    ],
+    "trial_records": "one immutable JSON record per scheduled trial"
+  },
+  "rerun_commands": [
+    "python -u -m scripts.run_issue_57_gameplay_success --dry-run",
+    "python -u -m scripts.run_issue_57_gameplay_success --run-final --start-display --start-engine --authorization-identity github-issue-authorization-v1:57:final-gameplay-evaluation",
+    "python -u -m scripts.run_issue_57_gameplay_success --aggregate",
+    "python -u -m scripts.run_issue_57_gameplay_success --validate"
+  ],
+  "schema": "cohort_v2_gameplay_success_protocol_v1",
+  "source_bindings": {
+    "controller_checkpoint_identity_sha256": "695bbd5b60afb458bca2dfcfd92520f61ed2a4394ff71c0377533b0b4aa98510",
+    "environment_version": "ScienceBirds-Linux-Unity-2019.4.41f2",
+    "game_interface_sha256": "b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a",
+    "goal_cost_version": "cohort-v2-gameplay-cost-v1",
+    "issue_56_implementation_revision": "5143f16370074ea4e22b95f682b4c98c993b0e02",
+    "issue_56_planning_artifact_identity": "cohort-v2-gameplay-planning-evidence-v1:sha256:993feed7d3b22b5efec1259990acb0d8f268a677b00db4f3f3199e12603e7c64",
+    "migration_recovery_manifest_identity": "cohort-v2-migration-recovery-v1:issue-53-plan-v5-public",
+    "observation_adapter_identity": "cohort-v2-visual-object-carrier-v1:screen-center-normalization;zero-velocity;frozen-object-vocabulary",
+    "player_config_sha256": "c00871693a447be68f1ac612e4ffdf746078ea3d0954999f41136f8859dd4bab",
+    "player_executable_sha256": "df8ac4c670dfc8328b7e3ab75602732ebe46b7ec8807a28149fce3f21ed1c8bf",
+    "visual_parser_checkpoint_identity_sha256": "11dc38945106215f7dedeb11daa0540d05140881ab3d371f5eecd09ac6fcf337",
+    "world_model_checkpoint_identity_sha256": "36e81ddf3fe41eb364460a5967749a56623136abb69a8a717865a5c2d1914bbb"
+  },
+  "systems": [
+    {
+      "control_mode": "mpc",
+      "fixed_prediction_pair": null,
+      "planner": "random",
+      "sequence_length": 2,
+      "system_id": "random_legal",
+      "uses_world_model": false
+    },
+    {
+      "control_mode": "mpc",
+      "fixed_prediction_pair": null,
+      "planner": "heuristic",
+      "sequence_length": 2,
+      "system_id": "heuristic_no_model",
+      "uses_world_model": false
+    },
+    {
+      "control_mode": "open_loop",
+      "fixed_prediction_pair": null,
+      "planner": "cem",
+      "sequence_length": 6,
+      "system_id": "open_loop_cem_adaptive",
+      "uses_world_model": true
+    },
+    {
+      "control_mode": "mpc",
+      "fixed_prediction_pair": {
+        "abstraction": "continuous",
+        "horizon": 1
+      },
+      "planner": "cem",
+      "sequence_length": 2,
+      "system_id": "repeated_h1_cem_mpc",
+      "uses_world_model": true
+    },
+    {
+      "control_mode": "mpc",
+      "fixed_prediction_pair": null,
+      "planner": "cem",
+      "sequence_length": 2,
+      "system_id": "adaptive_cem_mpc",
+      "uses_world_model": true
+    }
+  ],
+  "trial_schedule": [
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260831,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-001",
+      "trial_index": 1
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260831,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-002",
+      "trial_index": 2
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260831,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-003",
+      "trial_index": 3
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260831,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-004",
+      "trial_index": 4
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260831,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-005",
+      "trial_index": 5
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260831,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-006",
+      "trial_index": 6
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260831,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-007",
+      "trial_index": 7
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260831,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-008",
+      "trial_index": 8
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260831,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-009",
+      "trial_index": 9
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260831,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-010",
+      "trial_index": 10
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260831,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-011",
+      "trial_index": 11
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260831,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-012",
+      "trial_index": 12
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260831,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-013",
+      "trial_index": 13
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260831,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-014",
+      "trial_index": 14
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260831,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-015",
+      "trial_index": 15
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260831,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-016",
+      "trial_index": 16
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260831,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-017",
+      "trial_index": 17
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260831,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-018",
+      "trial_index": 18
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260831,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-019",
+      "trial_index": 19
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260831,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-020",
+      "trial_index": 20
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260831,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-021",
+      "trial_index": 21
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260831,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-022",
+      "trial_index": 22
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260831,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-023",
+      "trial_index": 23
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260831,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-024",
+      "trial_index": 24
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260831,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-025",
+      "trial_index": 25
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260832,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-026",
+      "trial_index": 26
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260832,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-027",
+      "trial_index": 27
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260832,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-028",
+      "trial_index": 28
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260832,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-029",
+      "trial_index": 29
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260832,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-030",
+      "trial_index": 30
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260832,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-031",
+      "trial_index": 31
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260832,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-032",
+      "trial_index": 32
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260832,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-033",
+      "trial_index": 33
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260832,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-034",
+      "trial_index": 34
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260832,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-035",
+      "trial_index": 35
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260832,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-036",
+      "trial_index": 36
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260832,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-037",
+      "trial_index": 37
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260832,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-038",
+      "trial_index": 38
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260832,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-039",
+      "trial_index": 39
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260832,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-040",
+      "trial_index": 40
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260832,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-041",
+      "trial_index": 41
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260832,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-042",
+      "trial_index": 42
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260832,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-043",
+      "trial_index": 43
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260832,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-044",
+      "trial_index": 44
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260832,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-045",
+      "trial_index": 45
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260832,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-046",
+      "trial_index": 46
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260832,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-047",
+      "trial_index": 47
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260832,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-048",
+      "trial_index": 48
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260832,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-049",
+      "trial_index": 49
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260832,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-050",
+      "trial_index": 50
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260833,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-051",
+      "trial_index": 51
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260833,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-052",
+      "trial_index": 52
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260833,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-053",
+      "trial_index": 53
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260833,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-054",
+      "trial_index": 54
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010101",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:733290c833177b233685071a1acf74b7efa6731c8387f80bd1e385f2e63eca0f",
+      "level_number": 10,
+      "seed": 20260833,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-055",
+      "trial_index": 55
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260833,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-056",
+      "trial_index": 56
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260833,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-057",
+      "trial_index": 57
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260833,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-058",
+      "trial_index": 58
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260833,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-059",
+      "trial_index": 59
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010102",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:c7e2dd6d661a60f7fe2c6050e72754da1041d28d5a531922685ce9cf6b0e2b4a",
+      "level_number": 20,
+      "seed": 20260833,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-060",
+      "trial_index": 60
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260833,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-061",
+      "trial_index": 61
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260833,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-062",
+      "trial_index": 62
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260833,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-063",
+      "trial_index": 63
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260833,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-064",
+      "trial_index": 64
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010103",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:f52cdef47de2b23b3699a08eb80e8f0649b35718e2dae71627addc7e6590a80a",
+      "level_number": 30,
+      "seed": 20260833,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-065",
+      "trial_index": 65
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260833,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-066",
+      "trial_index": 66
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260833,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-067",
+      "trial_index": 67
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260833,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-068",
+      "trial_index": 68
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260833,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-069",
+      "trial_index": 69
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010104",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:13276760a9af430e30b456842a49240c622997b37e9f912531a72fd8f584e179",
+      "level_number": 40,
+      "seed": 20260833,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-070",
+      "trial_index": 70
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260833,
+      "system_id": "heuristic_no_model",
+      "trial_id": "issue-57-trial-071",
+      "trial_index": 71
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260833,
+      "system_id": "open_loop_cem_adaptive",
+      "trial_id": "issue-57-trial-072",
+      "trial_index": 72
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260833,
+      "system_id": "repeated_h1_cem_mpc",
+      "trial_id": "issue-57-trial-073",
+      "trial_index": 73
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260833,
+      "system_id": "adaptive_cem_mpc",
+      "trial_id": "issue-57-trial-074",
+      "trial_index": 74
+    },
+    {
+      "condition_identity": "benchmark-condition-v1:novelty_level_1:type010105",
+      "exposure_role": "final_evaluation",
+      "level_identity": "science-birds-level-v1:sha256:6def40e930c06a2d3c7fba5110445cfa4b52c3572d1d25f66040f48622d97f86",
+      "level_number": 50,
+      "seed": 20260833,
+      "system_id": "random_legal",
+      "trial_id": "issue-57-trial-075",
+      "trial_index": 75
+    }
+  ],
+  "trial_seeds": [
+    20260831,
+    20260832,
+    20260833
+  ],
+  "visual_parser_handoff": {
+    "logging_rule": "record raw probability, thresholded value, selected abstraction, and whether visual carrier or macro symbols enter action ranking/execution",
+    "retraining": "forbidden on every gameplay level and outcome",
+    "structure_unstable_direct_cost_weight": 0.0,
+    "structure_unstable_final_confusion": {
+      "false_negative": 0,
+      "false_positive": 1590,
+      "true_negative": 0,
+      "true_positive": 14
+    },
+    "structure_unstable_training_prevalence": "28/2150"
+  }
+}

@@ -32,6 +32,7 @@ from scripts.slingshot_readiness import (
 )
 from src.webui.bridge import GameState, PlayingMode, ScienceBirdsBridge
 from world_model.data import CohortV2AlignedObservationReader
+from world_model.model import PredictionPair
 from world_model.planning.gameplay import (
     CEMConfig,
     CEMPlanner,
@@ -181,6 +182,7 @@ def _planner(
     observation_adapter,
     *,
     dry_run: bool,
+    fixed_pair: PredictionPair | None = None,
 ):
     bounds = _bounds()
     sequence_length = 2 if dry_run else args.sequence_length
@@ -204,6 +206,7 @@ def _planner(
         compute=compute,
         fixed_steps_per_shot=1 if dry_run else args.fixed_steps_per_shot,
         release_time_ms=bounds.release_time_ms,
+        fixed_pair=fixed_pair,
     )
     evaluator = WorldModelCandidateEvaluator(
         world_model, bounds, GameplayCost(_cost_config())

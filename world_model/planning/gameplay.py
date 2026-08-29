@@ -24,6 +24,7 @@ from world_model.model import (
     MacroTransitionInput,
     MicroTransitionBatch,
     MicroTransitionInput,
+    PredictionPair,
     RelationTransitionValue,
     TransitionRequest,
 )
@@ -351,6 +352,7 @@ class CandidateEvaluation:
     failure: str | None = None
     cost_breakdown: GameplayCostBreakdown | None = None
     model_compute: float = 0.0
+    requested_abstractions: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -361,6 +363,7 @@ class PredictedTransition:
     compute: float
     physical_penalty: float
     rollout_penalty: float
+    requested_abstractions: tuple[str, ...] = ()
 
 
 class ActionConditionedWorldModel(Protocol):
@@ -384,6 +387,7 @@ class FrozenCohortV2WorldModel:
         compute: CohortV2ComputeCalibration,
         fixed_steps_per_shot: int,
         release_time_ms: int,
+        fixed_pair: PredictionPair | None = None,
     ) -> None:
         if fixed_steps_per_shot <= 0:
             raise ValueError("fixed_steps_per_shot must be positive")
@@ -393,6 +397,7 @@ class FrozenCohortV2WorldModel:
         self.compute = compute
         self.fixed_steps_per_shot = fixed_steps_per_shot
         self.release_time_ms = release_time_ms
+        self.fixed_pair = fixed_pair
 
     @staticmethod
     def _transition_request(pair, symbols: Any | None) -> TransitionRequest:
@@ -439,7 +444,11 @@ class FrozenCohortV2WorldModel:
                 + len(supports) * self.compute.micro_graph_per_support
             )
         return (
-            self.compute.controller_per_decision
+            (
+                0.0
+                if self.fixed_pair is not None
+                else self.compute.controller_per_decision
+            )
             + adapters[pair.abstraction]
             + graph
             + self.compute.transition_per_decision
@@ -454,19 +463,22 @@ class FrozenCohortV2WorldModel:
     ) -> PredictedTransition:
         if observation.agent_rgb is None:
             raise ValueError("frozen controller requires a deployment RGB observation")
-        features = self.controller_codec.encode(
-            observation.agent_rgb,
-            elapsed_fixed_steps=0,
-            intervention={"interface_action": {
-                "drag_release": (action.drag_x, action.drag_y),
-                "frame_height": observation.frame_height,
-                "releaseTime": self.release_time_ms,
-                "tapTime": action.tap_time_ms,
-            }},
-        ).unsqueeze(0)
-        pair = select_cohort_v2_controller_pairs(
-            "joint_pair", self.pair_controller, features, MACRO_PAIRS
-        )[0]
+        if self.fixed_pair is None:
+            features = self.controller_codec.encode(
+                observation.agent_rgb,
+                elapsed_fixed_steps=0,
+                intervention={"interface_action": {
+                    "drag_release": (action.drag_x, action.drag_y),
+                    "frame_height": observation.frame_height,
+                    "releaseTime": self.release_time_ms,
+                    "tapTime": action.tap_time_ms,
+                }},
+            ).unsqueeze(0)
+            pair = select_cohort_v2_controller_pairs(
+                "joint_pair", self.pair_controller, features, MACRO_PAIRS
+            )[0]
+        else:
+            pair = self.fixed_pair
         request = self._transition_request(pair, observation.symbols)
         device = next(self.predictor.parameters()).device
         action_tensor = torch.tensor((
@@ -479,6 +491,7 @@ class FrozenCohortV2WorldModel:
         current = carrier.to(device).unsqueeze(0)
         requested = []
         effective = []
+        abstractions = []
         total_compute = 0.0
         physical_penalty = 0.0
         rollout_penalty = 0.0
@@ -497,6 +510,7 @@ class FrozenCohortV2WorldModel:
                 elapsed += step
                 requested.append(pair.delta)
                 effective.append(step)
+                abstractions.append(pair.abstraction.value)
                 total_compute += self._decision_compute(pair, observation.symbols)
         return PredictedTransition(
             carrier=current.squeeze(0).detach().cpu(),
@@ -505,6 +519,7 @@ class FrozenCohortV2WorldModel:
             compute=total_compute,
             physical_penalty=physical_penalty,
             rollout_penalty=rollout_penalty,
+            requested_abstractions=tuple(abstractions),
         )
 
 
@@ -567,6 +582,7 @@ class WorldModelCandidateEvaluator:
         carriers = []
         requested = []
         effective = []
+        abstractions = []
         compute = 0.0
         physical = 0.0
         rollout = 0.0
@@ -577,6 +593,7 @@ class WorldModelCandidateEvaluator:
             carriers.append(current)
             requested.extend(transition.requested_horizons)
             effective.extend(transition.effective_horizons)
+            abstractions.extend(transition.requested_abstractions)
             compute += transition.compute
             physical += transition.physical_penalty
             rollout += transition.rollout_penalty
@@ -610,6 +627,7 @@ class WorldModelCandidateEvaluator:
             model_rollout_count=rollout_count,
             cost_breakdown=breakdown,
             model_compute=compute,
+            requested_abstractions=tuple(abstractions),
         )
 
 
@@ -882,6 +900,7 @@ class ControlConfig:
     mode: ControlMode
     max_shots: int
     max_planner_compute: float
+    max_wall_clock_seconds: float | None = None
 
     def __post_init__(self) -> None:
         if (
@@ -889,6 +908,13 @@ class ControlConfig:
             or self.max_shots <= 0
             or not math.isfinite(self.max_planner_compute)
             or self.max_planner_compute <= 0.0
+            or (
+                self.max_wall_clock_seconds is not None
+                and (
+                    not math.isfinite(self.max_wall_clock_seconds)
+                    or self.max_wall_clock_seconds <= 0.0
+                )
+            )
         ):
             raise ValueError("gameplay control configuration is invalid")
 
@@ -966,6 +992,12 @@ def run_gameplay_control(
     game_interface_wall_clock += time.monotonic() - interface_started
 
     while observation is not None and len(steps) < config.max_shots:
+        if (
+            config.max_wall_clock_seconds is not None
+            and time.monotonic() - started >= config.max_wall_clock_seconds
+        ):
+            termination = "timeout"
+            break
         if observation.terminal_status is TerminalStatus.SUCCESS:
             termination = "success"
             break
@@ -985,6 +1017,12 @@ def run_gameplay_control(
         planner_compute += plan.planner_compute
         goal_evaluations += plan.goal_evaluation_count
         planner_wall_clock += plan.wall_clock_seconds
+        if (
+            config.max_wall_clock_seconds is not None
+            and time.monotonic() - started >= config.max_wall_clock_seconds
+        ):
+            termination = "timeout"
+            break
         if progress is not None:
             progress(
                 f"[plan {replans}] mode={config.mode} candidates={plan.candidate_count} "
@@ -1030,6 +1068,12 @@ def run_gameplay_control(
                 observation_before_diagnostics=before.parser_diagnostics,
                 observation_after_diagnostics=observation.parser_diagnostics,
             ))
+            if (
+                config.max_wall_clock_seconds is not None
+                and time.monotonic() - started >= config.max_wall_clock_seconds
+            ):
+                termination = "timeout"
+                break
             if progress is not None:
                 progress(
                     f"[shot {len(steps)}/{config.max_shots}] action={action} "
@@ -1042,7 +1086,7 @@ def run_gameplay_control(
                 termination = "terminal_failure"
                 break
         if observation is None or termination in {
-            "success", "terminal_failure", "game_interface_failure"
+            "success", "terminal_failure", "game_interface_failure", "timeout"
         }:
             break
         if config.mode is ControlMode.OPEN_LOOP:
@@ -1113,6 +1157,7 @@ def _bindings_payload(bindings: GameplayEvidenceBindings) -> dict[str, Any]:
             "mode": str(bindings.control_config.mode),
             "max_shots": bindings.control_config.max_shots,
             "max_planner_compute": bindings.control_config.max_planner_compute,
+            "max_wall_clock_seconds": bindings.control_config.max_wall_clock_seconds,
         },
         "seed": bindings.seed,
         "level_identity": bindings.level_identity,
@@ -1133,6 +1178,7 @@ def _plan_payload(plan: PlanResult) -> dict[str, Any]:
         ),
         "requested_horizons": list(selected.requested_horizons),
         "effective_horizons": list(selected.effective_horizons),
+        "requested_abstractions": list(selected.requested_abstractions),
         "selected_model_rollout_count": selected.model_rollout_count,
         "candidate_count": plan.candidate_count,
         "invalid_candidate_count": plan.invalid_candidate_count,
@@ -1194,6 +1240,9 @@ def _result_payload(result: ControlResult) -> dict[str, Any]:
                 ),
                 "effective_horizons": list(
                     item.plan.selected_evaluation.effective_horizons
+                ),
+                "requested_abstractions": list(
+                    item.plan.selected_evaluation.requested_abstractions
                 ),
                 "plan": _plan_payload(item.plan),
             }

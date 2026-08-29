@@ -10,6 +10,7 @@ import torch
 from PIL import Image
 
 from sciencebirdsagents.SBEnvironment.action_utils import normalize_release_action
+from world_model.model import Abstraction, PredictionPair
 from world_model.planning.gameplay import (
     CEMConfig,
     CEMPlanner,
@@ -308,6 +309,72 @@ class FrozenCohortV2WorldModelTests(unittest.TestCase):
         ))
         self.assertEqual(result.compute, 30.0)
 
+    def test_fixed_h1_comparator_bypasses_controller_and_repeats_to_duration(self) -> None:
+        class ForbiddenController(torch.nn.Module):
+            def forward(self, features):
+                raise AssertionError("fixed comparator must not query adaptive controller")
+
+        class RecordingPredictor(torch.nn.Module):
+            def __init__(self) -> None:
+                super().__init__()
+                self.device_anchor = torch.nn.Parameter(torch.zeros(()))
+                self.requests = []
+
+            def carrier(self, carrier, action, request):
+                self.requests.append(request)
+                return carrier + 0.1
+
+        image = Image.new("RGB", (2, 2), (20, 40, 60))
+        encoded = BytesIO()
+        image.save(encoded, format="PNG")
+        predictor = RecordingPredictor()
+        compute = CohortV2ComputeCalibration(
+            authority="fixture-compute",
+            unit="multiply_accumulate",
+            controller_per_decision=1.0,
+            continuous_adapter_per_decision=2.0,
+            micro_adapter_per_decision=0.0,
+            macro_adapter_per_decision=0.0,
+            micro_graph_base_per_decision=0.0,
+            micro_graph_per_entity=0.0,
+            micro_graph_per_contact=0.0,
+            micro_graph_per_support=0.0,
+            transition_per_decision=3.0,
+            continuous_readout_per_decision=4.0,
+            micro_readout_per_decision=0.0,
+            macro_readout_per_decision=0.0,
+            shared_initial_perception_per_rollout=0.0,
+        )
+        model = FrozenCohortV2WorldModel(
+            predictor=predictor,
+            pair_controller=ForbiddenController(),
+            controller_codec=CohortV2ControllerFeatureCodec(
+                CohortV2ControllerConfig(image_height=1, image_width=1)
+            ),
+            compute=compute,
+            fixed_steps_per_shot=3,
+            release_time_ms=600,
+            fixed_pair=PredictionPair(1, Abstraction.CONTINUOUS),
+        )
+        observation = PlanningObservation(
+            "rgb-now",
+            torch.zeros(15),
+            (0,),
+            (312, 227),
+            agent_rgb=encoded.getvalue(),
+        )
+
+        result = model.rollout(
+            observation,
+            observation.carrier,
+            SlingshotAction(-100, 20, 70),
+        )
+
+        self.assertEqual(result.requested_horizons, (1, 1, 1))
+        self.assertEqual(result.effective_horizons, (1, 1, 1))
+        self.assertEqual(result.requested_abstractions, ("continuous",) * 3)
+        self.assertEqual(len(predictor.requests), 3)
+
 
 class VisualPlanningObservationAdapterTests(unittest.TestCase):
     def test_agent_rgb_builds_the_live_carrier_and_logs_raw_instability(self) -> None:
@@ -422,7 +489,11 @@ class GameplayControlTests(unittest.TestCase):
 
             def plan(self, observation):
                 self.calls += 1
-                selected = (actions[0], actions[1]) if self.calls == 1 else (actions[2], actions[1])
+                selected = (
+                    (actions[0], actions[1])
+                    if self.calls == 1
+                    else (actions[2], actions[1])
+                )
                 predicted = (
                     self.outer._observation(self.calls).carrier,
                     self.outer._observation(2).carrier,
@@ -469,6 +540,30 @@ class GameplayControlTests(unittest.TestCase):
         self.assertEqual(result.replan_count, 2)
         self.assertEqual(result.termination_reason, "success")
         self.assertEqual([step.recursive_rollout_error for step in result.steps], [0.0, 0.0])
+
+    def test_wall_clock_limit_is_a_retained_timeout(self) -> None:
+        class PlannerFixture:
+            planner_id = "fixture"
+
+            def plan(self, observation):
+                raise AssertionError("expired trial must not plan")
+
+        class EnvironmentFixture:
+            def observe(self):
+                return GameplayControlTests._observation(0)
+
+            def execute(self, action):
+                raise AssertionError("expired trial must not execute")
+
+        result = run_gameplay_control(
+            PlannerFixture(),
+            EnvironmentFixture(),
+            ControlConfig(ControlMode.MPC, 2, 1000.0, 1e-12),
+        )
+
+        self.assertEqual(result.termination_reason, "timeout")
+        self.assertFalse(result.success)
+        self.assertEqual(result.steps, ())
 
     def test_open_loop_executes_the_planned_sequence_without_replanning(self) -> None:
         first = SlingshotAction(-100, 10, 0)
