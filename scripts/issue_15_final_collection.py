@@ -18,6 +18,11 @@ from scripts.capture_issue_53_evidence import (
     _report_entry,
     _validate_authority,
 )
+from scripts.cohort_v2_migration_recovery import (
+    CohortV2MigrationRecoveryError,
+    DEFAULT_MANIFEST,
+    validate_migration_recovery_manifest,
+)
 from scripts.cohort_v2_partition import CohortV2PartitionExposureManifest
 from scripts.cohort_v2_release import ReleaseContract, _write_derivations
 from scripts.cohort_v2_scenarios import write_immutable_cohort_v2_json
@@ -54,6 +59,8 @@ DEFAULT_SUMMARY = Path(
 )
 CAPABILITY_DECLARATION = ROOT / "docs/data_contracts/cohort_v2_capabilities_v1.json"
 AUTHORIZATION_IDENTITY = "github-issue-authorization-v2:15:seed-4505-final"
+EXPECTED_FINAL_FRAME_COUNT = 1_610
+MIGRATION_RECOVERY_FRAME_TOLERANCE = 6
 DERIVATION_IDENTITY = "issue-15-confirmatory-derivations-v2:seed-4505"
 CONTRACT_TEMPLATE = ReleaseContract(
     version=2,
@@ -109,6 +116,11 @@ def _contract(protocol: Mapping[str, Any]) -> ReleaseContract:
 
 def _log(message: str) -> None:
     print(f"[issue-15 final] {message}", flush=True)
+
+
+def _frame_count_is_accepted(frame_count: int, *, migration_recovery: bool) -> bool:
+    tolerance = MIGRATION_RECOVERY_FRAME_TOLERANCE if migration_recovery else 0
+    return abs(frame_count - EXPECTED_FINAL_FRAME_COUNT) <= tolerance
 
 
 def _frozen(plan_root: Path):
@@ -233,6 +245,7 @@ def _seal(
     access_record: Mapping[str, Any],
     access_audit: Mapping[str, Any],
     collection_implementation_commit: str,
+    migration_recovery_authority: Path | None = None,
 ) -> dict[str, Any]:
     destination = Path(sealed_root)
     if destination.exists():
@@ -335,14 +348,21 @@ def _seal(
             bundle / "sealed-bundle-manifest.json",
         )
         os.replace(bundle, destination)
-    return validate_sealed(destination, plan_root=plan_root)
+    return validate_sealed(
+        destination,
+        plan_root=plan_root,
+        migration_recovery_authority=migration_recovery_authority,
+    )
 
 
 def validate_sealed(
     sealed_root: Path = DEFAULT_SEALED_ROOT,
     *,
     plan_root: Path = DEFAULT_ROOT,
+    migration_recovery_authority: Path | None = None,
 ) -> dict[str, Any]:
+    if migration_recovery_authority is not None:
+        validate_migration_recovery_manifest(migration_recovery_authority)
     plan, protocol, collection, partition, _pending = _frozen(plan_root)
     root = Path(sealed_root)
     manifest = _load(root / "sealed-bundle-manifest.json")
@@ -390,10 +410,19 @@ def validate_sealed(
     access_audit = audit_final_evaluation_workflow_access(
         partition, authorized, observed_accesses=[observed]
     )
+    frame_count_delta = frame_count - EXPECTED_FINAL_FRAME_COUNT
+    allowed_frame_delta = (
+        MIGRATION_RECOVERY_FRAME_TOLERANCE
+        if migration_recovery_authority is not None
+        else 0
+    )
     if (
         Counter(item["terminal_reason"] for item in ledger)
         != Counter({"stable_entered": 6})
-        or frame_count != 1_610
+        or not _frame_count_is_accepted(
+            frame_count,
+            migration_recovery=migration_recovery_authority is not None,
+        )
         or authorized.authorization_identity != AUTHORIZATION_IDENTITY
         or access_audit != _load(root / "final-access-audit.json")
         or access_audit.get("observed_access_count") != 1
@@ -408,6 +437,10 @@ def validate_sealed(
         "partition_bound": bool(plan["partition-exposure-manifest.json"]["identity"]),
         "accepted_rollouts": 6,
         "frame_count": frame_count,
+        "expected_frame_count": EXPECTED_FINAL_FRAME_COUNT,
+        "frame_count_delta": frame_count_delta,
+        "allowed_frame_delta": allowed_frame_delta,
+        "migration_recovery": migration_recovery_authority is not None,
         "termination_counts": {"stable_entered": 6},
         "observed_access_count": 1,
         "passed": True,
@@ -422,6 +455,7 @@ def collect(
     plan_root: Path = DEFAULT_ROOT,
     authorization_identity: str,
     implementation_commit: str,
+    migration_recovery_authority: Path | None = None,
 ) -> dict[str, Any]:
     if not authorization_identity:
         raise Issue15FinalCollectionError("collection requires authorization identity")
@@ -516,8 +550,13 @@ def collect(
         access_record=access_record,
         access_audit=access_audit,
         collection_implementation_commit=implementation_commit,
+        migration_recovery_authority=migration_recovery_authority,
     )
-    reader = Issue15ConfirmatoryV2Reader(sealed_root, plan_root=plan_root)
+    reader = Issue15ConfirmatoryV2Reader(
+        sealed_root,
+        plan_root=plan_root,
+        migration_recovery_authority=migration_recovery_authority,
+    )
     if len(reader.rollouts) != 6:
         raise Issue15FinalCollectionError("sealed reader did not expose six rollouts")
     compact_access_audit = {
@@ -558,6 +597,7 @@ class Issue15ConfirmatoryV2Reader(CohortV2ReleaseReader):
         *,
         plan_root: Path = DEFAULT_ROOT,
         capability_declaration_path: Path = CAPABILITY_DECLARATION,
+        migration_recovery_authority: Path | None = None,
     ) -> None:
         self._root = Path(sealed_root).resolve()
         self._production_plan_root = Path(plan_root).resolve()
@@ -566,7 +606,11 @@ class Issue15ConfirmatoryV2Reader(CohortV2ReleaseReader):
         self._observation_references: dict[str, tuple[Path, str]] = {}
         try:
             self._validate_capability_declaration(Path(capability_declaration_path))
-            validate_sealed(self._root, plan_root=self._production_plan_root)
+            validate_sealed(
+                self._root,
+                plan_root=self._production_plan_root,
+                migration_recovery_authority=migration_recovery_authority,
+            )
             _plan, _protocol, collection, partition, _pending = _frozen(
                 self._production_plan_root
             )
@@ -624,6 +668,13 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--summary", type=Path, default=DEFAULT_SUMMARY)
     parser.add_argument("--authorization-identity")
     parser.add_argument("--implementation-commit")
+    parser.add_argument(
+        "--migration-recovery",
+        type=Path,
+        nargs="?",
+        const=DEFAULT_MANIFEST,
+        metavar="MANIFEST",
+    )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--validate", action="store_true")
@@ -632,10 +683,19 @@ def _parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
+    recovery = (
+        None
+        if args.migration_recovery is None
+        else args.migration_recovery.resolve()
+    )
     if args.dry_run:
         result = dry_run(plan_root=args.plan_root, authority_root=args.authority_root)
     elif args.validate:
-        result = validate_sealed(args.sealed_root, plan_root=args.plan_root)
+        result = validate_sealed(
+            args.sealed_root,
+            plan_root=args.plan_root,
+            migration_recovery_authority=recovery,
+        )
     else:
         result = collect(
             runtime_root=args.runtime_root,
@@ -644,6 +704,7 @@ def main(argv: list[str] | None = None) -> int:
             plan_root=args.plan_root,
             authorization_identity=args.authorization_identity or "",
             implementation_commit=args.implementation_commit or "",
+            migration_recovery_authority=recovery,
         )
     displayed = {
         key: result[key]
@@ -653,6 +714,11 @@ def main(argv: list[str] | None = None) -> int:
             "sealed_bundle_identity",
             "planned_rollouts",
             "accepted_rollouts",
+            "frame_count",
+            "expected_frame_count",
+            "frame_count_delta",
+            "allowed_frame_delta",
+            "migration_recovery",
             "termination_counts",
             "final_outcomes_accessed",
             "files_written",
@@ -668,6 +734,11 @@ def main(argv: list[str] | None = None) -> int:
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except (Issue15FinalCollectionError, CohortV2IngestionError, OSError) as error:
+    except (
+        CohortV2IngestionError,
+        CohortV2MigrationRecoveryError,
+        Issue15FinalCollectionError,
+        OSError,
+    ) as error:
         print(f"error: {error}", flush=True)
         raise SystemExit(2) from error

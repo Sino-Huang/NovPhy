@@ -257,7 +257,9 @@ def _compact(manifest, report, protocol, implementation_commit: str):
 
 def _final_reader(paths: dict[str, Path]) -> Issue15ConfirmatoryV2Reader:
     return Issue15ConfirmatoryV2Reader(
-        paths["sealed"], plan_root=paths["protocol"]
+        paths["sealed"],
+        plan_root=paths["protocol"],
+        migration_recovery_authority=paths.get("migration_recovery"),
     )
 
 

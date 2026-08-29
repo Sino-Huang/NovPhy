@@ -219,17 +219,16 @@ def build_recovery_audit(
     ))
 
     sealed = recovery_root / "issue-15-confirmatory-v2-final"
-    final_summary = summaries / "issue-15-final-collection-summary.json"
     components.append(_validated_regenerated(
         "issue-15-seed-4505-final",
         sealed,
-        requires=(amendment, amendment_authority, final_summary),
+        requires=(authority, amendment, amendment_authority),
         command=(
             "-m", "scripts.issue_15_final_collection",
             "--plan-root", str(amendment),
             "--authority-root", str(amendment_authority),
             "--sealed-root", str(sealed),
-            "--summary", str(final_summary),
+            "--migration-recovery", str(authority),
             "--validate",
         ),
         repository_root=repository_root,

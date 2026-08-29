@@ -9,9 +9,11 @@ from scripts.final_evaluation_access import (
 from scripts.issue_15_final_collection import (
     DEFAULT_SEALED_ROOT,
     DEFAULT_ROOT,
+    EXPECTED_FINAL_FRAME_COUNT,
     Issue15ConfirmatoryV2Reader,
     _assignment,
     _contract,
+    _frame_count_is_accepted,
     _frozen,
     _observed_access,
 )
@@ -21,6 +23,23 @@ from world_model.training.cohort_v2 import build_cohort_v2_transition_request
 
 
 class Issue15FinalCollectionTests(unittest.TestCase):
+    def test_frame_drift_is_accepted_only_in_explicit_recovery_mode(self):
+        self.assertTrue(
+            _frame_count_is_accepted(
+                EXPECTED_FINAL_FRAME_COUNT,
+                migration_recovery=False,
+            )
+        )
+        self.assertFalse(
+            _frame_count_is_accepted(1_607, migration_recovery=False)
+        )
+        self.assertTrue(
+            _frame_count_is_accepted(1_607, migration_recovery=True)
+        )
+        self.assertFalse(
+            _frame_count_is_accepted(1_603, migration_recovery=True)
+        )
+
     def test_frozen_collection_is_final_only_and_protocol_bound(self):
         _plan, protocol, collection, _partition, pending = _frozen(DEFAULT_ROOT)
 
