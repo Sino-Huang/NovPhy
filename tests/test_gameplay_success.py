@@ -2,7 +2,9 @@ import copy
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from types import SimpleNamespace
 import unittest
+from unittest.mock import patch
 
 from world_model.planning.gameplay import (
     CandidateEvaluation,
@@ -15,11 +17,14 @@ from world_model.planning.gameplay import (
 )
 from world_model.planning.gameplay_success import (
     AUTHORIZATION_IDENTITY,
+    PROTOCOL_NAMESPACE,
     SYSTEM_IDS,
     _identity,
     aggregate_trials,
     build_protocol,
     build_trial_record,
+    load_aborted_v1_run,
+    materialize_protocol_runtimes,
     validate_final_artifacts,
     validate_protocol,
     validate_trial_record,
@@ -28,6 +33,7 @@ from world_model.planning.gameplay_success import (
     write_run_manifest,
 )
 from scripts.cohort_v2_scenarios import write_immutable_cohort_v2_json
+from scripts.run_issue_57_gameplay_success import _run_final
 
 
 class GameplaySuccessFixture(unittest.TestCase):
@@ -65,6 +71,12 @@ class GameplaySuccessFixture(unittest.TestCase):
         (streaming / "config.xml").write_text(config, encoding="utf-8")
         (cls.game / "9001.x86_64").write_bytes(b"fixture-player")
         (cls.game / "game_playing_interface.jar").write_bytes(b"fixture-interface")
+        for name in (
+            "LinuxPlayer_s.debug",
+            "UnityPlayer.so",
+            "UnityPlayer_s.debug",
+        ):
+            (cls.game / name).write_bytes(b"fixture-runtime")
         cls.identities = {
             "world": "world-model-fixture",
             "controller": "controller-fixture",
@@ -211,6 +223,12 @@ class GameplaySuccessProtocolTests(GameplaySuccessFixture):
         )
         self.assertEqual(len(validated["trial_schedule"]), 75)
         self.assertEqual(validated["execution_limits"]["retry_count"], 0)
+        self.assertEqual(validated["protocol_version"], 2)
+        self.assertEqual(
+            validated["execution_runtime"]["strategy"],
+            "fresh_single_level_engine_per_trial",
+        )
+        self.assertEqual(len(validated["execution_runtime"]["configs"]), 25)
 
     def test_altered_protocol_and_cross_role_level_reuse_are_rejected(self):
         altered = copy.deepcopy(self.protocol)
@@ -225,10 +243,49 @@ class GameplaySuccessProtocolTests(GameplaySuccessFixture):
         payload = dict(leaked)
         payload.pop("protocol_identity")
         leaked["protocol_identity"] = _identity(
-            "cohort-v2-gameplay-success-protocol-v1", payload
+            PROTOCOL_NAMESPACE, payload
         )
         with self.assertRaisesRegex(ValueError, "level inventory|leak"):
             validate_protocol(leaked)
+
+    def test_single_level_runtime_contains_only_its_bound_source(self):
+        with TemporaryDirectory() as temporary:
+            runtimes = materialize_protocol_runtimes(
+                self.game, Path(temporary), self.protocol
+            )
+            level = self.protocol["level_inventory"]["roles"]["final_evaluation"][0]
+            runtime = runtimes[level["level_identity"]]
+            config = (runtime / "config.xml").read_text(encoding="utf-8")
+
+            self.assertEqual(config.count("<game_levels "), 1)
+            self.assertIn(str((self.game / level["source_path"]).resolve()), config)
+            self.assertIn('allow_level_selection="False"', config)
+            self.assertTrue((runtime / "9001.x86_64").is_file())
+            self.assertTrue((runtime / "game_playing_interface.jar").is_file())
+
+    def test_v1_zero_shot_infrastructure_run_is_explicitly_superseded(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_immutable_cohort_v2_json({
+                "protocol_identity": self.protocol["supersedes"]["protocol_identity"],
+                "implementation_revision": "a" * 40,
+            }, root / "run-manifest.json")
+            write_immutable_cohort_v2_json({
+                "evidence_identity": "aborted-trial",
+                "outcome": {
+                    "termination_reason": "infrastructure_failure",
+                    "executed_shot_count": 0,
+                    "success": False,
+                },
+            }, root / "trial-records/issue-57-trial-001.json")
+
+            summary = load_aborted_v1_run(root)
+
+            self.assertEqual(
+                summary["disposition"],
+                "superseded_pre_outcome_infrastructure_abort",
+            )
+            self.assertEqual(summary["intended_final_level_access_count"], 0)
 
 
 class GameplaySuccessAccountingTests(GameplaySuccessFixture):
@@ -293,6 +350,182 @@ class GameplaySuccessAccountingTests(GameplaySuccessFixture):
         self.assertGreater(upper, 0.5)
         self.assertGreaterEqual(lower, 0.0)
         self.assertLessEqual(upper, 1.0)
+
+
+class GameplaySuccessRunnerTests(GameplaySuccessFixture):
+    def test_level_mismatch_aborts_before_any_final_trial_record_is_written(self):
+        class WrongLevelBridge:
+            def configure(self, agent_id, mode):
+                return (1, 0, 0)
+
+            def set_speed(self, speed):
+                return 1
+
+            def get_current_level(self):
+                return 2
+
+            def disconnect(self):
+                return None
+
+        protocol = copy.deepcopy(self.protocol)
+        protocol["trial_schedule"] = protocol["trial_schedule"][:1]
+        args = SimpleNamespace(
+            start_display=False,
+            start_engine=True,
+            game_headless=False,
+            host="127.0.0.1",
+            port=2004,
+            agent_id=28889,
+            speed=1,
+            authorization_identity=AUTHORIZATION_IDENTITY,
+        )
+        with TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            paths = {
+                "output": output,
+                "game": self.game,
+                "game_runtimes": output / "runtimes",
+            }
+            runtimes = {
+                level["level_identity"]: output / f"runtime-{level['level_number']}"
+                for levels in protocol["level_inventory"]["roles"].values()
+                for level in levels
+            }
+            with (
+                patch(
+                    "scripts.run_issue_57_gameplay_success._stack_bindings",
+                    return_value=self.stack,
+                ),
+                patch(
+                    "scripts.run_issue_57_gameplay_success.materialize_protocol_runtimes",
+                    return_value=runtimes,
+                ),
+                patch(
+                    "scripts.run_issue_57_gameplay_success.start_engine",
+                    return_value=SimpleNamespace(pid=123, novphy_log_file=None),
+                ),
+                patch(
+                    "scripts.run_issue_57_gameplay_success.stop_started_engine"
+                ),
+                patch(
+                    "scripts.run_issue_57_gameplay_success.connect_with_retry",
+                    return_value=WrongLevelBridge(),
+                ),
+                patch("scripts.run_issue_57_gameplay_success.prepare_for_play"),
+            ):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "single-level runtime did not establish runtime level index 1",
+                ):
+                    _run_final(
+                        args,
+                        protocol,
+                        paths,
+                        frozen={},
+                        parser_checkpoint=object(),
+                        adapter=object(),
+                        implementation="a" * 40,
+                    )
+
+            records = output / "trial-records"
+            self.assertFalse(records.exists() and any(records.iterdir()))
+            self.assertFalse((output / "run-manifest.json").exists())
+
+    def test_final_runner_uses_fresh_single_level_engines_without_select_or_restart(self):
+        class SingleLevelBridge:
+            def configure(self, agent_id, mode):
+                return (1, 0, 0)
+
+            def set_speed(self, speed):
+                return 1
+
+            def get_current_level(self):
+                return 1
+
+            def load_level(self, level):
+                raise AssertionError("select_level is forbidden")
+
+            def restart_level(self):
+                raise AssertionError("restart_level is forbidden")
+
+            def disconnect(self):
+                return None
+
+        protocol = copy.deepcopy(self.protocol)
+        protocol["trial_schedule"] = protocol["trial_schedule"][:1]
+        args = SimpleNamespace(
+            start_display=False,
+            start_engine=True,
+            game_headless=False,
+            host="127.0.0.1",
+            port=2004,
+            agent_id=28889,
+            speed=1,
+            authorization_identity=AUTHORIZATION_IDENTITY,
+        )
+        with TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            paths = {
+                "output": output,
+                "game": self.game,
+                "game_runtimes": output / "runtimes",
+            }
+            runtimes = {
+                level["level_identity"]: output / f"runtime-{level['level_number']}"
+                for levels in protocol["level_inventory"]["roles"].values()
+                for level in levels
+            }
+            with (
+                patch(
+                    "scripts.run_issue_57_gameplay_success._stack_bindings",
+                    return_value=self.stack,
+                ),
+                patch(
+                    "scripts.run_issue_57_gameplay_success.materialize_protocol_runtimes",
+                    return_value=runtimes,
+                ),
+                patch(
+                    "scripts.run_issue_57_gameplay_success.start_engine",
+                    return_value=SimpleNamespace(pid=123, novphy_log_file=None),
+                ) as start,
+                patch("scripts.run_issue_57_gameplay_success.stop_started_engine"),
+                patch(
+                    "scripts.run_issue_57_gameplay_success.connect_with_retry",
+                    side_effect=lambda *_args, **_kwargs: SingleLevelBridge(),
+                ),
+                patch("scripts.run_issue_57_gameplay_success.prepare_for_play"),
+                patch("scripts.run_issue_57_gameplay_success._system_planner"),
+                patch(
+                    "scripts.run_issue_57_gameplay_success.run_gameplay_control",
+                    return_value=self._result(success=True),
+                ),
+                patch(
+                    "scripts.run_issue_57_gameplay_success.load_trial_records",
+                    return_value=[],
+                ),
+                patch(
+                    "scripts.run_issue_57_gameplay_success.write_final_artifacts",
+                    return_value={
+                        "gameplay_conclusion": "supported",
+                        "evidence_identity": "fixture",
+                    },
+                ),
+            ):
+                result = _run_final(
+                    args,
+                    protocol,
+                    paths,
+                    frozen={},
+                    parser_checkpoint=object(),
+                    adapter=object(),
+                    implementation="a" * 40,
+                )
+
+            self.assertEqual(result, 0)
+            self.assertEqual(start.call_count, 3)
+            self.assertTrue(
+                (output / "trial-records/issue-57-trial-001.json").is_file()
+            )
 
 
 class GameplaySuccessArtifactTests(GameplaySuccessFixture):

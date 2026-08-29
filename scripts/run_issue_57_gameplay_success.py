@@ -37,12 +37,15 @@ from world_model.planning.gameplay import (
 from world_model.planning.gameplay_success import (
     AUTHORIZATION_IDENTITY,
     PROTOCOL_FILENAME,
+    RUN_SCHEMA,
     aggregate_trials,
     build_protocol,
     build_trial_record,
     build_trial_schedule,
+    load_aborted_v1_run,
     load_protocol,
     load_trial_records,
+    materialize_protocol_runtimes,
     rendered_aggregate_outputs,
     stack_identity_bindings,
     validate_final_artifacts,
@@ -56,8 +59,11 @@ from world_model.training.manifest import git_revision
 
 RECOVERY_ROOT: Final = Path(".local-artifacts/migration-recovery-v1")
 DEFAULT_PROTOCOL: Final = Path("data/runtime_evidence/issue-57") / PROTOCOL_FILENAME
-DEFAULT_OUTPUT: Final = RECOVERY_ROOT / "issue-57-gameplay-success"
+DEFAULT_OUTPUT: Final = RECOVERY_ROOT / "issue-57-gameplay-success-v2"
 DEFAULT_GAME_DIR: Final = RECOVERY_ROOT / "game-engine-runtime"
+DEFAULT_GAME_RUNTIME_ROOT: Final = RECOVERY_ROOT / "issue-57-game-runtimes-v2"
+DEFAULT_SUPERSEDED_RUN: Final = RECOVERY_ROOT / "issue-57-gameplay-success"
+DEFAULT_PREFLIGHT_OUTPUT: Final = RECOVERY_ROOT / "issue-57-live-level-preflight-v2"
 DEFAULT_PLANNING_EVIDENCE: Final = (
     RECOVERY_ROOT / "issue-56-gameplay-planner/evidence.json"
 )
@@ -73,6 +79,15 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--protocol", type=Path, default=DEFAULT_PROTOCOL)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--game-dir", type=Path, default=DEFAULT_GAME_DIR)
+    parser.add_argument(
+        "--game-runtime-root", type=Path, default=DEFAULT_GAME_RUNTIME_ROOT
+    )
+    parser.add_argument(
+        "--superseded-run-root", type=Path, default=DEFAULT_SUPERSEDED_RUN
+    )
+    parser.add_argument(
+        "--preflight-output", type=Path, default=DEFAULT_PREFLIGHT_OUTPUT
+    )
     parser.add_argument(
         "--planning-evidence", type=Path, default=DEFAULT_PLANNING_EVIDENCE
     )
@@ -124,6 +139,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--authorization-identity")
     parser.add_argument("--freeze-protocol", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--live-level-preflight", action="store_true")
     parser.add_argument("--run-final", action="store_true")
     parser.add_argument("--aggregate", action="store_true")
     parser.add_argument("--validate", action="store_true")
@@ -146,6 +162,9 @@ def _paths(args: argparse.Namespace, root: Path) -> dict[str, Path]:
         "visual": _resolve(root, args.visual_parser_root),
         "output": _resolve(root, args.output),
         "game": _resolve(root, args.game_dir),
+        "game_runtimes": _resolve(root, args.game_runtime_root),
+        "superseded_run": _resolve(root, args.superseded_run_root),
+        "preflight_output": _resolve(root, args.preflight_output),
         "gameplay_protocol": _resolve(root, args.protocol),
         "planning_evidence": _resolve(root, args.planning_evidence),
     }
@@ -312,6 +331,96 @@ def _record_path(output: Path, entry: dict[str, Any]) -> Path:
     return output / "trial-records" / f"{entry['trial_id']}.json"
 
 
+def _open_single_level_runtime(
+    args,
+    runtime: Path,
+    *,
+    level_label: str,
+):
+    engine = None
+    bridge = None
+    try:
+        engine = start_engine(
+            runtime, args.game_headless, agent_port=args.port
+        )
+        log_name = getattr(
+            getattr(engine, "novphy_log_file", None), "name", "unknown"
+        )
+        print(
+            f"[game start] level={level_label} pid={engine.pid} "
+            f"engine_log={log_name}",
+            flush=True,
+        )
+        bridge = connect_with_retry(
+            args.host, args.port, timeout=300, deadline_seconds=60
+        )
+        bridge.configure(args.agent_id, PlayingMode.TRAINING)
+        bridge.set_speed(args.speed)
+        prepare_for_play(bridge, timeout=60, poll_delay=0.5)
+        runtime_index = bridge.get_current_level()
+        if runtime_index != 1:
+            raise RuntimeError(
+                "single-level runtime did not establish runtime level index 1"
+            )
+        print(
+            f"[level ready] level={level_label} runtime_index={runtime_index}",
+            flush=True,
+        )
+        return bridge, engine
+    except Exception:
+        if bridge is not None:
+            bridge.disconnect()
+        stop_started_engine(engine)
+        raise
+
+
+def _close_single_level_runtime(bridge, engine) -> None:
+    if bridge is not None:
+        bridge.disconnect()
+    stop_started_engine(engine)
+
+
+def _preflight_single_level_runtimes(
+    args,
+    protocol: dict[str, Any],
+    runtimes: dict[str, Path],
+) -> list[dict[str, Any]]:
+    roles = protocol["level_inventory"]["roles"]
+    runtime_configs = {
+        value["level_identity"]: value
+        for value in protocol["execution_runtime"]["configs"]
+    }
+    records = []
+    for role in protocol["execution_runtime"]["pre_final_live_preflight_roles"]:
+        level = roles[role][0]
+        identity = str(level["level_identity"])
+        print(
+            f"[preflight] role={role} level={level['level_number']} "
+            f"identity={identity}",
+            flush=True,
+        )
+        bridge, engine = _open_single_level_runtime(
+            args,
+            runtimes[identity],
+            level_label=f"preflight-{level['level_number']}",
+        )
+        _close_single_level_runtime(bridge, engine)
+        records.append({
+            "exposure_role": role,
+            "level_number": level["level_number"],
+            "level_identity": identity,
+            "runtime_config_sha256": runtime_configs[identity]["config_sha256"],
+            "runtime_level_index": 1,
+            "state": "PLAYING",
+        })
+    print(
+        "[preflight complete] exact smoke and training/tuning one-level runtimes "
+        "reached PLAYING; final levels opened=0",
+        flush=True,
+    )
+    return records
+
+
 def _run_final(
     args,
     protocol,
@@ -322,38 +431,27 @@ def _run_final(
     implementation: str,
 ) -> int:
     stack = _stack_bindings(frozen, parser_checkpoint, adapter)
-    write_run_manifest(
-        paths["output"],
-        protocol,
-        implementation_revision=implementation,
-        stack_bindings=stack,
-        authorization_identity=str(args.authorization_identity),
+    runtimes = materialize_protocol_runtimes(
+        paths["game"], paths["game_runtimes"], protocol
     )
     systems = {value["system_id"]: value for value in protocol["systems"]}
     schedule = protocol["trial_schedule"]
     display_process = None
-    engine = None
-    bridge = None
     previous_display = os.environ.get("DISPLAY")
     try:
+        paths["output"].mkdir(parents=True, exist_ok=True)
         if args.start_display:
             display, display_process = start_display(paths["output"] / "display.log")
             os.environ["DISPLAY"] = display
             print(f"[display start] DISPLAY={display}", flush=True)
-        if args.start_engine:
-            engine = start_engine(
-                paths["game"], args.game_headless, agent_port=args.port
-            )
-            log_name = getattr(
-                getattr(engine, "novphy_log_file", None), "name", "unknown"
-            )
-            print(f"[game start] pid={engine.pid} engine_log={log_name}", flush=True)
-        bridge = connect_with_retry(
-            args.host, args.port, timeout=300, deadline_seconds=60
+        _preflight_single_level_runtimes(args, protocol, runtimes)
+        write_run_manifest(
+            paths["output"],
+            protocol,
+            implementation_revision=implementation,
+            stack_bindings=stack,
+            authorization_identity=str(args.authorization_identity),
         )
-        print(f"[game connect] {args.host}:{args.port}", flush=True)
-        bridge.configure(args.agent_id, PlayingMode.TRAINING)
-        bridge.set_speed(args.speed)
         for entry in schedule:
             path = _record_path(paths["output"], entry)
             if path.exists():
@@ -376,11 +474,13 @@ def _run_final(
             result = None
             failure = None
             failure_class = "infrastructure_failure"
+            identity = str(entry["level_identity"])
+            bridge, engine = _open_single_level_runtime(
+                args,
+                runtimes[identity],
+                level_label=f"final-{entry['level_number']}",
+            )
             try:
-                bridge.load_level(entry["level_number"])
-                prepare_for_play(bridge, timeout=60, poll_delay=0.5)
-                if bridge.get_current_level() != entry["level_number"]:
-                    raise RuntimeError("game interface loaded a different level")
                 planner = _system_planner(
                     args,
                     protocol,
@@ -391,7 +491,11 @@ def _run_final(
                     dry_run=False,
                 )
                 environment = _LiveScienceBirdsEnvironment(
-                    bridge, timed_adapter, _bounds(), speed=args.speed
+                    bridge,
+                    timed_adapter,
+                    _bounds(),
+                    speed=args.speed,
+                    level_label=f"science-birds-level-{entry['level_number']}",
                 )
                 result = run_gameplay_control(
                     planner,
@@ -404,6 +508,8 @@ def _run_final(
                 if isinstance(error, TimeoutError):
                     failure_class = "timeout"
                 print(f"[trial failure] {failure}", flush=True)
+            finally:
+                _close_single_level_runtime(bridge, engine)
             record = build_trial_record(
                 protocol,
                 entry,
@@ -437,9 +543,42 @@ def _run_final(
         )
         return 0
     finally:
-        if bridge is not None:
-            bridge.disconnect()
-        stop_started_engine(engine)
+        if display_process is not None:
+            print(f"[display stop] {terminate(display_process)}", flush=True)
+        if previous_display is None:
+            os.environ.pop("DISPLAY", None)
+        else:
+            os.environ["DISPLAY"] = previous_display
+
+
+def _run_live_level_preflight(args, protocol, paths) -> int:
+    runtimes = materialize_protocol_runtimes(
+        paths["game"], paths["game_runtimes"], protocol
+    )
+    display_process = None
+    previous_display = os.environ.get("DISPLAY")
+    try:
+        paths["preflight_output"].mkdir(parents=True, exist_ok=True)
+        if args.start_display:
+            display, display_process = start_display(
+                paths["preflight_output"] / "display.log"
+            )
+            os.environ["DISPLAY"] = display
+            print(f"[display start] DISPLAY={display}", flush=True)
+        records = _preflight_single_level_runtimes(args, protocol, runtimes)
+        write_immutable_cohort_v2_json({
+            "schema": "cohort_v2_gameplay_success_live_level_preflight_v2",
+            "protocol_identity": protocol["protocol_identity"],
+            "records": records,
+            "intended_final_level_access_count": 0,
+            "passed": True,
+        }, paths["preflight_output"] / "preflight.json")
+        print(
+            f"[preflight report] {paths['preflight_output'] / 'preflight.json'}",
+            flush=True,
+        )
+        return 0
+    finally:
         if display_process is not None:
             print(f"[display stop] {terminate(display_process)}", flush=True)
         if previous_display is None:
@@ -453,7 +592,7 @@ def _validate_run_manifest(
 ) -> dict[str, Any]:
     manifest = _load_json(output / "run-manifest.json", "gameplay-success run manifest")
     if (
-        manifest.get("schema") != "cohort_v2_gameplay_success_run_v1"
+        manifest.get("schema") != RUN_SCHEMA
         or manifest.get("protocol_identity") != protocol["protocol_identity"]
         or manifest.get("authorization_identity") != protocol["authorization_identity"]
         or manifest.get("scheduled_trial_count") != len(protocol["trial_schedule"])
@@ -481,14 +620,15 @@ def main(argv: list[str] | None = None) -> int:
     selected = sum((
         args.freeze_protocol,
         args.dry_run,
+        args.live_level_preflight,
         args.run_final,
         args.aggregate,
         args.validate,
     ))
     if selected != 1:
         parser.error(
-            "select exactly one of --freeze-protocol, --dry-run, --run-final, "
-            "--aggregate, or --validate"
+            "select exactly one of --freeze-protocol, --dry-run, "
+            "--live-level-preflight, --run-final, --aggregate, or --validate"
         )
     root = args.repository_root.resolve()
     paths = _paths(args, root)
@@ -498,7 +638,10 @@ def main(argv: list[str] | None = None) -> int:
         migration = _load_json(
             paths["migration_recovery"], "migration-recovery manifest"
         )
-        protocol = build_protocol(paths["game"], planning, migration)
+        superseded = load_aborted_v1_run(paths["superseded_run"])
+        protocol = build_protocol(
+            paths["game"], planning, migration, superseded
+        )
         write_protocol(protocol, paths["gameplay_protocol"])
         print(
             f"[freeze] protocol={protocol['protocol_identity']} "
@@ -510,8 +653,16 @@ def main(argv: list[str] | None = None) -> int:
 
     protocol = load_protocol(
         paths["gameplay_protocol"],
-        game_dir=paths["game"] if args.dry_run or args.run_final else None,
+        game_dir=(
+            paths["game"]
+            if args.dry_run or args.live_level_preflight or args.run_final
+            else None
+        ),
     )
+    if args.live_level_preflight:
+        if not args.start_engine:
+            parser.error("--live-level-preflight requires --start-engine")
+        return _run_live_level_preflight(args, protocol, paths)
     if args.aggregate:
         manifest = _validate_run_manifest(paths["output"], protocol)
         records = load_trial_records(paths["output"], protocol)
@@ -547,6 +698,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(
             f"--run-final requires --authorization-identity {AUTHORIZATION_IDENTITY}"
         )
+    if args.run_final and not args.start_engine:
+        parser.error("--run-final requires --start-engine for per-trial runtimes")
     print(
         f"[protocol] identity={protocol['protocol_identity']} "
         f"systems={len(protocol['systems'])} trials={len(protocol['trial_schedule'])}",

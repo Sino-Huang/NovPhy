@@ -9,6 +9,7 @@ import html
 from io import StringIO
 import json
 import math
+import os
 from pathlib import Path
 import random
 import statistics
@@ -23,13 +24,18 @@ from world_model.planning.gameplay import ControlResult
 from world_model.training.grid_artifacts import canonical_json_bytes
 
 
-PROTOCOL_SCHEMA = "cohort_v2_gameplay_success_protocol_v1"
+PROTOCOL_SCHEMA = "cohort_v2_gameplay_success_protocol_v2"
+PROTOCOL_NAMESPACE = "cohort-v2-gameplay-success-protocol-v2"
 TRIAL_SCHEMA = "cohort_v2_gameplay_success_trial_v1"
 AGGREGATE_SCHEMA = "cohort_v2_gameplay_success_aggregate_v1"
-RUN_SCHEMA = "cohort_v2_gameplay_success_run_v1"
+RUN_SCHEMA = "cohort_v2_gameplay_success_run_v2"
 EVIDENCE_SCHEMA = "cohort_v2_gameplay_success_evidence_v1"
-AUTHORIZATION_IDENTITY = "github-issue-authorization-v1:57:final-gameplay-evaluation"
-PROTOCOL_FILENAME = "cohort-v2-gameplay-success-protocol-v1.json"
+AUTHORIZATION_IDENTITY = "github-issue-authorization-v2:57:final-gameplay-evaluation"
+PROTOCOL_FILENAME = "cohort-v2-gameplay-success-protocol-v2.json"
+SUPERSEDED_PROTOCOL_IDENTITY = (
+    "cohort-v2-gameplay-success-protocol-v1:sha256:"
+    "c15ca77b13a61d5c599fb8a999bd4c4159a161d6ea94931569be9d418dffa0a2"
+)
 
 SYSTEM_IDS = (
     "random_legal",
@@ -138,6 +144,151 @@ def _player_levels(game_dir: Path) -> tuple[dict[str, Any], ...]:
     return tuple(records)
 
 
+def single_level_config_bytes(
+    game_dir: Path, level: Mapping[str, Any]
+) -> bytes:
+    source = (Path(game_dir) / str(level["source_path"])).resolve()
+    if not source.is_file():
+        raise ValueError("single-level gameplay source is missing")
+    evaluation = ET.Element("evaluation")
+    ET.SubElement(evaluation, "novelty_detection_measurement", {
+        "step": "1",
+        "measure_in_training": "False",
+        "measure_in_testing": "False",
+    })
+    trials = ET.SubElement(evaluation, "trials")
+    trial = ET.SubElement(trials, "trial", {
+        "id": "0",
+        "number_of_executions": "1",
+        "checkpoint_time_limit": "9999999",
+        "checkpoint_interaction_limit": "9999999",
+        "notify_novelty": "False",
+    })
+    level_set = ET.SubElement(trial, "game_level_set", {
+        "mode": "training",
+        "time_limit": "9999999",
+        "total_interaction_limit": "9999999",
+        "attempt_limit_per_level": "1",
+        "allow_level_selection": "False",
+    })
+    ET.SubElement(level_set, "game_levels", {"level_path": str(source)})
+    ET.indent(evaluation, space="  ")
+    return ET.tostring(
+        evaluation, encoding="utf-8", xml_declaration=True
+    ) + b"\n"
+
+
+def _runtime_entries(
+    game_dir: Path, roles: Mapping[str, Sequence[Mapping[str, Any]]]
+) -> list[dict[str, Any]]:
+    levels = {
+        str(level["level_identity"]): level
+        for values in roles.values()
+        for level in values
+    }
+    return [
+        {
+            "level_number": int(level["level_number"]),
+            "level_identity": identity,
+            "source_path": str(level["source_path"]),
+            "config_sha256": _sha256(single_level_config_bytes(game_dir, level)),
+            "runtime_directory": f"level-{int(level['level_number']):02d}",
+        }
+        for identity, level in sorted(
+            levels.items(), key=lambda item: int(item[1]["level_number"])
+        )
+    ]
+
+
+def materialize_single_level_runtime(
+    game_dir: Path,
+    runtime_root: Path,
+    level: Mapping[str, Any],
+) -> Path:
+    target = Path(runtime_root) / f"level-{int(level['level_number']):02d}"
+    config = single_level_config_bytes(game_dir, level)
+    required = (
+        "9001.x86_64",
+        "9001_Data",
+        "LinuxPlayer_s.debug",
+        "UnityPlayer.so",
+        "UnityPlayer_s.debug",
+        "game_playing_interface.jar",
+    )
+    if not target.exists():
+        target.mkdir(parents=True)
+        (target / "DB").mkdir()
+        for name in required:
+            source = (Path(game_dir) / name).resolve()
+            if not source.exists():
+                raise ValueError(f"single-level runtime source is missing: {name}")
+            os.symlink(source, target / name, target_is_directory=source.is_dir())
+        write_immutable_cohort_v2_bytes(config, target / "config.xml")
+    if (target / "config.xml").read_bytes() != config or any(
+        not (target / name).exists() for name in required
+    ):
+        raise ValueError("single-level gameplay runtime differs")
+    return target
+
+
+def materialize_protocol_runtimes(
+    game_dir: Path,
+    runtime_root: Path,
+    protocol: Mapping[str, Any],
+) -> dict[str, Path]:
+    levels = {
+        str(level["level_identity"]): level
+        for values in protocol["level_inventory"]["roles"].values()
+        for level in values
+    }
+    runtimes = {}
+    for entry in protocol["execution_runtime"]["configs"]:
+        identity = str(entry["level_identity"])
+        level = levels[identity]
+        runtime = materialize_single_level_runtime(
+            game_dir, runtime_root, level
+        )
+        if _sha256((runtime / "config.xml").read_bytes()) != entry["config_sha256"]:
+            raise ValueError("single-level runtime configuration identity differs")
+        runtimes[identity] = runtime
+    return runtimes
+
+
+def load_aborted_v1_run(root: Path) -> dict[str, Any]:
+    manifest = _load_object(Path(root) / "run-manifest.json", "aborted v1 run")
+    records = [
+        _load_object(path, "aborted v1 trial")
+        for path in sorted((Path(root) / "trial-records").glob("*.json"))
+    ]
+    if (
+        manifest.get("protocol_identity") != SUPERSEDED_PROTOCOL_IDENTITY
+        or not records
+        or any(
+            record.get("outcome", {}).get("termination_reason")
+            != "infrastructure_failure"
+            or record.get("outcome", {}).get("executed_shot_count") != 0
+            or record.get("outcome", {}).get("success") is not False
+            for record in records
+        )
+    ):
+        raise ValueError("superseded issue-57 run is not the zero-shot infrastructure abort")
+    return {
+        "protocol_identity": manifest["protocol_identity"],
+        "implementation_revision": manifest["implementation_revision"],
+        "recorded_trial_count": len(records),
+        "trial_evidence_identities": [
+            record["evidence_identity"] for record in records
+        ],
+        "executed_shot_count": 0,
+        "intended_final_level_access_count": 0,
+        "disposition": "superseded_pre_outcome_infrastructure_abort",
+        "reason": (
+            "archived player SelectLevel could not establish the declared level; "
+            "the runner aborted before any observation, shot, or intended final outcome"
+        ),
+    }
+
+
 def _systems() -> list[dict[str, Any]]:
     return [
         {
@@ -215,6 +366,7 @@ def build_protocol(
     game_dir: Path,
     planning_evidence: Mapping[str, Any],
     migration_manifest: Mapping[str, Any],
+    superseded_run: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     levels = _player_levels(game_dir)
     by_number = {int(value["level_number"]): value for value in levels}
@@ -233,12 +385,24 @@ def build_protocol(
     interface = Path(game_dir) / "game_playing_interface.jar"
     if not executable.is_file() or not interface.is_file():
         raise ValueError("gameplay player executable or interface is missing")
+    if superseded_run is None:
+        superseded_run = {
+            "protocol_identity": SUPERSEDED_PROTOCOL_IDENTITY,
+            "implementation_revision": "fixture",
+            "recorded_trial_count": 0,
+            "trial_evidence_identities": [],
+            "executed_shot_count": 0,
+            "intended_final_level_access_count": 0,
+            "disposition": "superseded_pre_outcome_infrastructure_abort",
+            "reason": "fixture contains no opened final gameplay outcome",
+        }
 
     payload = {
         "schema": PROTOCOL_SCHEMA,
-        "protocol_version": 1,
+        "protocol_version": 2,
         "frozen_before_final_access": True,
         "authorization_identity": AUTHORIZATION_IDENTITY,
+        "supersedes": dict(superseded_run),
         "source_bindings": {
             "issue_56_planning_artifact_identity": planning_evidence.get(
                 "artifact_identity"
@@ -296,6 +460,17 @@ def build_protocol(
                 "cannot change any checkpoint, parser, cost, planner, metric, or limit"
             ),
         },
+        "execution_runtime": {
+            "strategy": "fresh_single_level_engine_per_trial",
+            "runtime_level_index": 1,
+            "level_authority": (
+                "the immutable one-level config source path and content identity; "
+                "the archived numeric current-level API is not an identity authority"
+            ),
+            "forbidden_interface_operations": ["select_level", "restart_level"],
+            "pre_final_live_preflight_roles": ["smoke", "training_tuning"],
+            "configs": _runtime_entries(game_dir, roles),
+        },
         "systems": systems,
         "trial_seeds": list(TRIAL_SEEDS),
         "trial_schedule": schedule,
@@ -347,6 +522,10 @@ def build_protocol(
             "stopping": (
                 "run the fixed matrix once; no early success stop, replacement trial, "
                 "seed change, level change, or outcome-conditioned rerun"
+            ),
+            "pre_outcome_source_failure": (
+                "abort before writing a trial record; do not convert a level-identity "
+                "or runtime-configuration failure into a gameplay outcome"
             ),
         },
         "analysis": {
@@ -402,6 +581,10 @@ def build_protocol(
         "rerun_commands": [
             "python -u -m scripts.run_issue_57_gameplay_success --dry-run",
             (
+                "python -u -m scripts.run_issue_57_gameplay_success "
+                "--live-level-preflight --start-display --start-engine"
+            ),
+            (
                 "python -u -m scripts.run_issue_57_gameplay_success --run-final "
                 "--start-display --start-engine "
                 f"--authorization-identity {AUTHORIZATION_IDENTITY}"
@@ -411,7 +594,7 @@ def build_protocol(
         ],
     }
     return _with_identity(
-        "cohort-v2-gameplay-success-protocol-v1",
+        PROTOCOL_NAMESPACE,
         "protocol_identity",
         payload,
     )
@@ -426,10 +609,10 @@ def validate_protocol(
     identity = value.pop("protocol_identity", None)
     if (
         value.get("schema") != PROTOCOL_SCHEMA
-        or value.get("protocol_version") != 1
+        or value.get("protocol_version") != 2
         or value.get("frozen_before_final_access") is not True
         or value.get("authorization_identity") != AUTHORIZATION_IDENTITY
-        or identity != _identity("cohort-v2-gameplay-success-protocol-v1", value)
+        or identity != _identity(PROTOCOL_NAMESPACE, value)
     ):
         raise ValueError("gameplay-success protocol identity or freeze differs")
     roles = value.get("level_inventory", {}).get("roles", {})
@@ -460,6 +643,27 @@ def validate_protocol(
         raise ValueError("gameplay-success trial schedule differs")
     if value.get("failure_policy", {}).get("exclusions") != "none":
         raise ValueError("gameplay-success outcome exclusions are forbidden")
+    superseded = value.get("supersedes", {})
+    if (
+        superseded.get("protocol_identity") != SUPERSEDED_PROTOCOL_IDENTITY
+        or superseded.get("executed_shot_count") != 0
+        or superseded.get("intended_final_level_access_count") != 0
+        or superseded.get("disposition")
+        != "superseded_pre_outcome_infrastructure_abort"
+    ):
+        raise ValueError("gameplay-success v1 supersession differs")
+    runtime = value.get("execution_runtime", {})
+    if (
+        runtime.get("strategy") != "fresh_single_level_engine_per_trial"
+        or runtime.get("runtime_level_index") != 1
+        or runtime.get("forbidden_interface_operations")
+        != ["select_level", "restart_level"]
+    ):
+        raise ValueError("gameplay-success single-level runtime plan differs")
+    if game_dir is not None and runtime.get("configs") != _runtime_entries(
+        game_dir, roles
+    ):
+        raise ValueError("gameplay-success single-level runtime configs differ")
     if value.get("action_bounds") != {
         "drag_x": [-160, -40],
         "drag_y": [-80, 80],

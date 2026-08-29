@@ -288,11 +288,13 @@ class _LiveScienceBirdsEnvironment:
         bounds: SlingshotActionBounds,
         *,
         speed: int,
+        level_label: str | None = None,
     ) -> None:
         self.bridge = bridge
         self.observation_adapter = observation_adapter
         self.bounds = bounds
         self.speed = speed
+        self.level_label = level_label
         self.index = 0
         self.current: PlanningObservation | None = None
         self.last_anchor: tuple[int, int] | None = None
@@ -323,9 +325,10 @@ class _LiveScienceBirdsEnvironment:
         if self.last_anchor is None:
             raise RuntimeError("live observation has no retained slingshot anchor")
         self.index += 1
+        level_label = self.level_label or f"level-{self.bridge.get_current_level()}"
         self.current = self.observation_adapter.from_agent_rgb(
             identity=(
-                f"live:level-{self.bridge.get_current_level()}:observation-{self.index}"
+                f"live:{level_label}:observation-{self.index}"
             ),
             png=encoded.getvalue(),
             slingshot_anchor=self.last_anchor,
