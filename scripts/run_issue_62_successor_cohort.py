@@ -3,8 +3,15 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
+from concurrent.futures import (
+    ProcessPoolExecutor,
+    ThreadPoolExecutor,
+    TimeoutError as FutureTimeout,
+    as_completed,
+)
+from contextlib import contextmanager
 from datetime import datetime, timezone
+import fcntl
 import html
 import json
 import math
@@ -103,6 +110,7 @@ DEFAULT_SUMMARY: Final = (
 OBSERVATION_CONFIGURATION: Final = "agent_rgb8_native_v1"
 PILOT_AUDIT_FPS: Final = 50
 PILOT_ATTEMPT_AUDIT_STALLED_FRAME_LIMIT: Final = 250
+DEFAULT_PRODUCTION_WORKERS: Final = 4
 
 
 def _log(message: str) -> None:
@@ -770,6 +778,7 @@ def dry_run(pilot_plan_path: Path = DEFAULT_PILOT_PLAN) -> dict[str, Any]:
         "fixed_step_capture_stride": 1,
         "minimum_training_scale": 6,
         "first_larger_training_scale": 200,
+        "default_production_workers": DEFAULT_PRODUCTION_WORKERS,
         "dry_production_plan_identity": production["identity"],
         "player_source_commit": player["source_snapshot_commit"],
         "pilot_audit_output": str(DEFAULT_PILOT_AUDIT.relative_to(ROOT)),
@@ -1078,6 +1087,20 @@ def _trajectory_record(
     }
 
 
+@contextmanager
+def _engine_start_guard(lock_path: Path | None):
+    if lock_path is None:
+        yield
+        return
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as handle:
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(handle, fcntl.LOCK_UN)
+
+
 def _collect_lineage_attempt(
     slot: Mapping[str, Any],
     attempt_root: Path,
@@ -1086,6 +1109,7 @@ def _collect_lineage_attempt(
     release_identity: str,
     speed: int,
     headless: bool,
+    engine_start_lock: Path | None = None,
 ) -> dict[str, Any]:
     authority = _materialize_slot(slot, attempt_root)
     scenario = authority["scenario"]
@@ -1095,34 +1119,38 @@ def _collect_lineage_attempt(
             "planned action count exceeds materialized authored birds"
         )
     _install_level(game, authority["xml_path"], slot["slot_identity"])
-    agent_port = free_port()
-    game_port = free_port()
-    physics_port = free_port()
     aligned_root = attempt_root / ".aligned-observation-current"
-    os.environ["NOVPHY_PHYSICS_CAPTURE_PORT"] = str(physics_port)
-    os.environ["NOVPHY_PHYSICS_CAPTURE_V2_STRIDE"] = "1"
-    os.environ["NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT"] = str(aligned_root)
     engine = None
     bridge = None
     shot_records = []
     final_state = GameState.UNKNOWN
     try:
-        engine = start_engine(
-            game,
-            headless,
-            agent_port=agent_port,
-            game_port=game_port,
-            physics_port=physics_port,
-        )
+        with _engine_start_guard(engine_start_lock):
+            ports = []
+            while len(ports) < 3:
+                candidate = free_port()
+                if candidate not in ports:
+                    ports.append(candidate)
+            agent_port, game_port, physics_port = ports
+            os.environ["NOVPHY_PHYSICS_CAPTURE_PORT"] = str(physics_port)
+            os.environ["NOVPHY_PHYSICS_CAPTURE_V2_STRIDE"] = "1"
+            os.environ["NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT"] = str(aligned_root)
+            engine = start_engine(
+                game,
+                headless,
+                agent_port=agent_port,
+                game_port=game_port,
+                physics_port=physics_port,
+            )
+            bridge = connect_with_retry(
+                "127.0.0.1", agent_port, timeout=300, deadline_seconds=60
+            )
         log_name = getattr(
             getattr(engine, "novphy_log_file", None), "name", "unknown"
         )
         _log(
             f"engine started pid={engine.pid} slot={slot['slot_identity']} "
             f"engine_log={log_name}"
-        )
-        bridge = connect_with_retry(
-            "127.0.0.1", agent_port, timeout=300, deadline_seconds=60
         )
         bridge.configure(62_000 + int(slot["ordinal"]), PlayingMode.TRAINING)
         bridge.set_speed(speed)
@@ -1137,6 +1165,7 @@ def _collect_lineage_attempt(
                 final_state = state_before
                 break
             _log(
+                f"lineage={int(slot['ordinal']) + 1} "
                 f"shot {shot_index + 1}/{len(slot['planned_actions'])} "
                 f"policy={slot['behavior_policy']} "
                 f"stratum={planned['action_stratum']}"
@@ -1200,7 +1229,9 @@ def _collect_lineage_attempt(
                 derivations=derivations,
             ))
             _log(
-                f"shot {shot_index + 1} complete frames={shot_records[-1]['frame_count']} "
+                f"lineage={int(slot['ordinal']) + 1} "
+                f"shot {shot_index + 1} complete "
+                f"frames={shot_records[-1]['frame_count']} "
                 f"physics_terminal={shot_records[-1]['terminal_reason']} "
                 f"game_state={final_state.name}"
             )
@@ -1356,43 +1387,12 @@ def _validate_result(
     return value
 
 
-def run_collection(
+def _initialize_collection_runtime(
     plan: Mapping[str, Any],
-    *,
     runtime_root: Path,
+    *,
     implementation_commit: str,
-    start_display_process: bool,
-    speed: int,
-    headless: bool,
-    attempt_audit_output: Path | None = None,
-    lineage_limit: int | None = None,
-    lineage_ordinals: tuple[int, ...] | None = None,
-) -> list[dict[str, Any]]:
-    plan = validate_successor_plan(plan)
-    if lineage_limit is not None and lineage_ordinals is not None:
-        raise SuccessorCohortError(
-            "lineage limit and explicit lineage ordinals are mutually exclusive"
-        )
-    if lineage_ordinals is not None:
-        if (
-            not lineage_ordinals
-            or len(set(lineage_ordinals)) != len(lineage_ordinals)
-            or any(
-                type(value) is not int or not 0 <= value < len(plan["lineages"])
-                for value in lineage_ordinals
-            )
-        ):
-            raise SuccessorCohortError("lineage ordinals are outside the frozen plan")
-        scheduled_lineages = [plan["lineages"][value] for value in lineage_ordinals]
-    elif lineage_limit is None:
-        scheduled_lineages = plan["lineages"]
-    elif type(lineage_limit) is int and 1 <= lineage_limit <= len(plan["lineages"]):
-        scheduled_lineages = plan["lineages"][:lineage_limit]
-    else:
-        raise SuccessorCohortError("lineage limit is outside the frozen plan")
-    runtime_root = Path(runtime_root).resolve()
-    if attempt_audit_output is not None:
-        attempt_audit_output = Path(attempt_audit_output).resolve()
+) -> None:
     runtime_root.mkdir(parents=True, exist_ok=True)
     plan_copy = runtime_root / "frozen-collection-plan.json"
     write_immutable_cohort_v2_json(plan, plan_copy)
@@ -1421,9 +1421,98 @@ def run_collection(
         staging = runtime_root / "release-staging"
         staging.mkdir(parents=True, exist_ok=True)
         write_immutable_cohort_v2_json(plan, staging / "production-plan.json")
-    game = runtime_root / "game-runtime"
+
+
+def _pending_lineage_shards(
+    plan: Mapping[str, Any],
+    runtime_root: Path,
+    worker_count: int,
+    *,
+    lineage_ordinals: tuple[int, ...] | None = None,
+) -> tuple[tuple[int, ...], ...]:
+    if type(worker_count) is not int or worker_count < 1:
+        raise SuccessorCohortError("production worker count must be positive")
+    selected = (
+        tuple(range(len(plan["lineages"])))
+        if lineage_ordinals is None
+        else lineage_ordinals
+    )
+    if (
+        not selected
+        or len(set(selected)) != len(selected)
+        or any(
+            type(value) is not int or not 0 <= value < len(plan["lineages"])
+            for value in selected
+        )
+    ):
+        raise SuccessorCohortError("lineage ordinals are outside the frozen plan")
+    pending = tuple(
+        ordinal
+        for ordinal in selected
+        if not _result_path(runtime_root, plan["lineages"][ordinal]).exists()
+    )
+    active_workers = min(worker_count, len(pending))
+    return tuple(
+        tuple(pending[worker::active_workers])
+        for worker in range(active_workers)
+    ) if active_workers else ()
+
+
+def run_collection(
+    plan: Mapping[str, Any],
+    *,
+    runtime_root: Path,
+    implementation_commit: str,
+    start_display_process: bool,
+    speed: int,
+    headless: bool,
+    attempt_audit_output: Path | None = None,
+    lineage_limit: int | None = None,
+    lineage_ordinals: tuple[int, ...] | None = None,
+    game_runtime: Path | None = None,
+    worker_label: str | None = None,
+    engine_start_lock: Path | None = None,
+) -> list[dict[str, Any]]:
+    plan = validate_successor_plan(plan)
+    if lineage_limit is not None and lineage_ordinals is not None:
+        raise SuccessorCohortError(
+            "lineage limit and explicit lineage ordinals are mutually exclusive"
+        )
+    if lineage_ordinals is not None:
+        if (
+            not lineage_ordinals
+            or len(set(lineage_ordinals)) != len(lineage_ordinals)
+            or any(
+                type(value) is not int or not 0 <= value < len(plan["lineages"])
+                for value in lineage_ordinals
+            )
+        ):
+            raise SuccessorCohortError("lineage ordinals are outside the frozen plan")
+        scheduled_lineages = [plan["lineages"][value] for value in lineage_ordinals]
+    elif lineage_limit is None:
+        scheduled_lineages = plan["lineages"]
+    elif type(lineage_limit) is int and 1 <= lineage_limit <= len(plan["lineages"]):
+        scheduled_lineages = plan["lineages"][:lineage_limit]
+    else:
+        raise SuccessorCohortError("lineage limit is outside the frozen plan")
+    runtime_root = Path(runtime_root).resolve()
+    if attempt_audit_output is not None:
+        attempt_audit_output = Path(attempt_audit_output).resolve()
+    _initialize_collection_runtime(
+        plan,
+        runtime_root,
+        implementation_commit=implementation_commit,
+    )
+    game = (
+        runtime_root / "game-runtime"
+        if game_runtime is None
+        else Path(game_runtime).resolve()
+    )
+    progress_prefix = "" if worker_label is None else f"{worker_label} "
     if not game.exists():
-        _log("extracting the accepted aligned-observation player once")
+        _log(
+            f"{progress_prefix}extracting the accepted aligned-observation player"
+        )
         archive_details(STAGE_ROOT, game)
     release_identity = release_identity_for_plan(plan["identity"])
     display_process = None
@@ -1438,7 +1527,8 @@ def run_collection(
             os.environ["DISPLAY"] = display
             _log(f"display started DISPLAY={display}")
         total = len(plan["lineages"])
-        for index, slot in enumerate(scheduled_lineages, start=1):
+        for slot in scheduled_lineages:
+            index = int(slot["ordinal"]) + 1
             result_path = _result_path(runtime_root, slot)
             if result_path.exists():
                 result = _validate_result(
@@ -1446,12 +1536,14 @@ def run_collection(
                 )
                 records.append(result)
                 _log(
-                    f"resume {index}/{total}: status={result['status']} "
+                    f"{progress_prefix}resume {index}/{total}: "
+                    f"status={result['status']} "
                     f"role={slot['exposure_role']} slot={slot['slot_identity']}"
                 )
                 continue
             _log(
-                f"lineage {index}/{total} start role={slot['exposure_role']} "
+                f"{progress_prefix}lineage {index}/{total} start "
+                f"role={slot['exposure_role']} "
                 f"family={slot['generator_family']} policy={slot['behavior_policy']} "
                 f"seed={slot['generation_seed']}"
             )
@@ -1471,7 +1563,8 @@ def run_collection(
                     accepted_path, release_identity=release_identity
                 )
                 _log(
-                    f"resume {index}/{total}: recovered accepted trajectory "
+                    f"{progress_prefix}resume {index}/{total}: "
+                    f"recovered accepted trajectory "
                     f"before result publication"
                 )
             for attempt_number in (
@@ -1512,7 +1605,8 @@ def run_collection(
                             accepted_path.parent.mkdir(parents=True, exist_ok=True)
                             os.replace(attempt_root, accepted_path)
                             _log(
-                                f"resume {index}/{total}: recovered complete "
+                                f"{progress_prefix}resume {index}/{total}: "
+                                f"recovered complete "
                                 f"attempt {attempt_number}"
                             )
                             break
@@ -1536,7 +1630,8 @@ def run_collection(
                         )
                     failures.append(failure)
                     _log(
-                        f"resume {index}/{total}: counted incomplete attempt "
+                        f"{progress_prefix}resume {index}/{total}: "
+                        f"counted incomplete attempt "
                         f"{attempt_number}/{plan['fixed_retry_limit']}"
                     )
                     continue
@@ -1548,6 +1643,7 @@ def run_collection(
                         release_identity=release_identity,
                         speed=speed,
                         headless=headless,
+                        engine_start_lock=engine_start_lock,
                     )
                 except Exception as error:
                     failure = {
@@ -1566,7 +1662,8 @@ def run_collection(
                         )
                     failures.append(failure)
                     _log(
-                        f"lineage {index}/{total} attempt {attempt_number}/"
+                        f"{progress_prefix}lineage {index}/{total} "
+                        f"attempt {attempt_number}/"
                         f"{plan['fixed_retry_limit']} failed: "
                         f"{failure['error_type']}: {failure['message']}"
                     )
@@ -1641,7 +1738,8 @@ def run_collection(
             write_immutable_cohort_v2_json(result, result_path)
             records.append(result)
             _log(
-                f"lineage {index}/{total} complete status={result['status']} "
+                f"{progress_prefix}lineage {index}/{total} complete "
+                f"status={result['status']} "
                 f"shots={result.get('executed_action_count', 0)} "
                 f"frames={result.get('frame_record_count', 0)} "
                 f"terminal={result.get('terminal_reason', 'unavailable')} "
@@ -1667,6 +1765,123 @@ def run_collection(
             os.environ.pop("NOVPHY_PHYSICS_CAPTURE_PORT", None)
         else:
             os.environ["NOVPHY_PHYSICS_CAPTURE_PORT"] = prior_physics_port
+
+
+def run_parallel_collection(
+    plan: Mapping[str, Any],
+    *,
+    runtime_root: Path,
+    implementation_commit: str,
+    start_display_process: bool,
+    speed: int,
+    headless: bool,
+    worker_count: int,
+    lineage_ordinals: tuple[int, ...] | None = None,
+) -> list[dict[str, Any]]:
+    plan = validate_successor_plan(plan)
+    runtime_root = Path(runtime_root).resolve()
+    selected = (
+        tuple(range(len(plan["lineages"])))
+        if lineage_ordinals is None
+        else lineage_ordinals
+    )
+    shards = _pending_lineage_shards(
+        plan,
+        runtime_root,
+        worker_count,
+        lineage_ordinals=selected,
+    )
+    _initialize_collection_runtime(
+        plan,
+        runtime_root,
+        implementation_commit=implementation_commit,
+    )
+    completed = []
+    for ordinal in selected:
+        slot = plan["lineages"][ordinal]
+        result_path = _result_path(runtime_root, slot)
+        if result_path.exists():
+            completed.append(_validate_result(
+                _load(result_path, "lineage collection result"), slot
+            ))
+    if not shards:
+        _log(f"parallel collection already complete lineages={len(completed)}")
+        return completed
+
+    _log(
+        f"parallel collection workers={len(shards)} "
+        f"pending={sum(map(len, shards))} resumed={len(completed)} "
+        f"shard_sizes={','.join(str(len(shard)) for shard in shards)}"
+    )
+    display_process = None
+    prior_display = os.environ.get("DISPLAY")
+    collected = []
+    try:
+        if start_display_process:
+            display, display_process = start_display(runtime_root / "display.log")
+            os.environ["DISPLAY"] = display
+            _log(f"shared worker display started DISPLAY={display}")
+        engine_start_lock = runtime_root / "engine-start.lock"
+        with ProcessPoolExecutor(max_workers=len(shards)) as executor:
+            futures = {}
+            for worker_index, shard in enumerate(shards, start=1):
+                label = f"worker={worker_index}/{len(shards)}"
+                future = executor.submit(
+                    run_collection,
+                    plan,
+                    runtime_root=runtime_root,
+                    implementation_commit=implementation_commit,
+                    start_display_process=False,
+                    speed=speed,
+                    headless=headless,
+                    lineage_ordinals=shard,
+                    game_runtime=(
+                        runtime_root / "workers"
+                        / f"worker-{worker_index:02d}" / "game-runtime"
+                    ),
+                    worker_label=label,
+                    engine_start_lock=engine_start_lock,
+                )
+                futures[future] = label
+            for future in as_completed(futures):
+                label = futures[future]
+                records = future.result()
+                collected.extend(records)
+                _log(
+                    f"{label} complete lineages={len(records)} "
+                    f"accepted={sum(item['status'] == 'accepted' for item in records)} "
+                    f"failed={sum(item['status'] == 'failed' for item in records)}"
+                )
+    finally:
+        if display_process is not None:
+            _log(f"shared worker display stopped result={terminate(display_process)}")
+        if prior_display is None:
+            os.environ.pop("DISPLAY", None)
+        else:
+            os.environ["DISPLAY"] = prior_display
+
+    slots_by_identity = {
+        plan["lineages"][ordinal]["slot_identity"]: plan["lineages"][ordinal]
+        for ordinal in selected
+    }
+    records_by_identity = {}
+    for record in completed + collected:
+        slot_identity = record.get("slot_identity")
+        if slot_identity not in slots_by_identity or slot_identity in records_by_identity:
+            raise SuccessorCohortError(
+                "parallel collection returned unexpected lineage accounting"
+            )
+        records_by_identity[slot_identity] = _validate_result(
+            record, slots_by_identity[slot_identity]
+        )
+    if set(records_by_identity) != set(slots_by_identity):
+        raise SuccessorCohortError(
+            "parallel collection lacks frozen lineage accounting"
+        )
+    return [
+        records_by_identity[plan["lineages"][ordinal]["slot_identity"]]
+        for ordinal in selected
+    ]
 
 
 def run_pilot(
@@ -2031,6 +2246,12 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--output", type=Path, default=DEFAULT_RELEASE)
     parser.add_argument("--summary", type=Path, default=DEFAULT_SUMMARY)
     parser.add_argument("--maximum-training-lineages", type=int, default=10_000)
+    parser.add_argument(
+        "--production-workers",
+        type=int,
+        default=DEFAULT_PRODUCTION_WORKERS,
+        help="isolated Unity player processes used for production (default: 4)",
+    )
     parser.add_argument("--implementation-commit")
     parser.add_argument("--start-display", action="store_true")
     parser.add_argument("--headless", action="store_true")
@@ -2068,7 +2289,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     elif args.run_production:
         plan = _load_plan(args.production_plan, "production")
-        records = run_collection(
+        records = run_parallel_collection(
             plan,
             runtime_root=args.production_runtime,
             implementation_commit=_implementation_commit(
@@ -2077,6 +2298,7 @@ def main(argv: list[str] | None = None) -> int:
             start_display_process=args.start_display,
             speed=args.speed,
             headless=args.headless,
+            worker_count=args.production_workers,
         )
         result = {
             "schema": "issue_62_production_collection_status_v1",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from concurrent.futures import Future
 import json
 from pathlib import Path
 import subprocess
@@ -20,18 +21,23 @@ from scripts.observation_trace import (
 )
 from scripts.physics_capture_v2 import load_physics_capture_v2
 from scripts.run_issue_62_successor_cohort import (
+    DEFAULT_PRODUCTION_WORKERS,
     _bounds,
     _encode_agent_frames_webm,
     _interaction_coverage,
+    _pending_lineage_shards,
     _materialize_slot,
     _materialized_bird_count,
     _pilot_report,
+    _parser,
     _resolve_planned_interface_action,
     _shot_record,
     _synthetic_pilot_records,
     _terminal_status,
     _trajectory_record,
     dry_run,
+    main,
+    run_parallel_collection,
     run_collection,
     run_pilot,
     write_attempt_audit,
@@ -52,6 +58,30 @@ from world_model.planning.gameplay import SlingshotAction
 
 
 class SuccessorCohortPlanTests(unittest.TestCase):
+    def test_production_cli_defaults_to_four_workers(self) -> None:
+        args = _parser().parse_args(["--run-production"])
+
+        self.assertEqual(args.production_workers, DEFAULT_PRODUCTION_WORKERS)
+
+    def test_production_cli_uses_parallel_collection_without_an_extra_flag(self) -> None:
+        plan = build_pilot_plan()
+        with patch(
+            "scripts.run_issue_62_successor_cohort._load_plan", return_value=plan
+        ), patch(
+            "scripts.run_issue_62_successor_cohort._implementation_commit",
+            return_value="commit:fixture",
+        ), patch(
+            "scripts.run_issue_62_successor_cohort.run_parallel_collection",
+            return_value=[],
+        ) as collect, patch("builtins.print"):
+            result = main(["--run-production", "--start-display"])
+
+        self.assertEqual(result, 0)
+        self.assertEqual(
+            collect.call_args.kwargs["worker_count"], DEFAULT_PRODUCTION_WORKERS
+        )
+        self.assertTrue(collect.call_args.kwargs["start_display_process"])
+
     def test_pilot_plan_freezes_non_final_lineages_actions_and_mixtures(self) -> None:
         first = build_pilot_plan()
         second = build_pilot_plan()
@@ -381,6 +411,9 @@ class SuccessorCohortPlanTests(unittest.TestCase):
         temporal.assert_called_once()
         encoder.assert_called_once()
         self.assertEqual(result["planned_pilot_lineages"], 36)
+        self.assertEqual(
+            result["default_production_workers"], DEFAULT_PRODUCTION_WORKERS
+        )
         self.assertFalse(result["final_evaluation_opened"])
         self.assertFalse(result["files_written"])
         self.assertTrue(all("python -u -m" in item for item in result["actual_commands"]))
@@ -637,6 +670,111 @@ class SuccessorCohortAuditTests(unittest.TestCase):
 
 
 class SuccessorCohortResumeTests(unittest.TestCase):
+    def test_pending_lineages_are_balanced_across_deterministic_worker_shards(self) -> None:
+        plan = build_pilot_plan()
+        with tempfile.TemporaryDirectory() as temporary:
+            runtime = Path(temporary)
+            completed = {0, 5}
+            for ordinal in completed:
+                path = runtime / "records" / (
+                    f"{plan['lineages'][ordinal]['slot_identity']}.json"
+                )
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("{}", encoding="utf-8")
+
+            shards = _pending_lineage_shards(plan, runtime, 4)
+
+        flattened = [ordinal for shard in shards for ordinal in shard]
+        self.assertEqual(
+            sorted(flattened),
+            [ordinal for ordinal in range(36) if ordinal not in completed],
+        )
+        self.assertEqual(len(flattened), len(set(flattened)))
+        self.assertLessEqual(max(map(len, shards)) - min(map(len, shards)), 1)
+        pending = [ordinal for ordinal in range(36) if ordinal not in completed]
+        self.assertEqual(
+            shards,
+            tuple(tuple(pending[worker::4]) for worker in range(4)),
+        )
+
+    def test_parallel_collection_isolates_game_runtimes_and_reuses_one_display(self) -> None:
+        plan = build_pilot_plan()
+        selected = tuple(range(6))
+        calls = []
+
+        class InlineExecutor:
+            def __init__(self, *, max_workers):
+                self.max_workers = max_workers
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def submit(self, function, *args, **kwargs):
+                future = Future()
+                try:
+                    future.set_result(function(*args, **kwargs))
+                except Exception as error:
+                    future.set_exception(error)
+                return future
+
+        def collect(_plan, **kwargs):
+            calls.append(kwargs)
+            return [
+                {
+                    "schema": "issue_62_lineage_collection_result_v1",
+                    "slot_identity": plan["lineages"][ordinal]["slot_identity"],
+                    "exposure_role": plan["lineages"][ordinal]["exposure_role"],
+                    "status": "accepted",
+                    "attempt_count": 1,
+                }
+                for ordinal in kwargs["lineage_ordinals"]
+            ]
+
+        with tempfile.TemporaryDirectory() as temporary, patch(
+            "scripts.run_issue_62_successor_cohort._initialize_collection_runtime"
+        ), patch(
+            "scripts.run_issue_62_successor_cohort.ProcessPoolExecutor",
+            InlineExecutor,
+        ), patch(
+            "scripts.run_issue_62_successor_cohort.run_collection",
+            side_effect=collect,
+        ), patch(
+            "scripts.run_issue_62_successor_cohort.start_display",
+            return_value=(":fixture", SimpleNamespace()),
+        ) as display, patch(
+            "scripts.run_issue_62_successor_cohort.terminate", return_value=0
+        ) as terminate_display:
+            records = run_parallel_collection(
+                plan,
+                runtime_root=Path(temporary),
+                implementation_commit="commit:fixture",
+                start_display_process=True,
+                speed=50,
+                headless=False,
+                worker_count=DEFAULT_PRODUCTION_WORKERS,
+                lineage_ordinals=selected,
+            )
+
+        self.assertEqual([item["slot_identity"] for item in records], [
+            plan["lineages"][ordinal]["slot_identity"] for ordinal in selected
+        ])
+        self.assertEqual(len(calls), 4)
+        self.assertEqual(
+            {ordinal for call in calls for ordinal in call["lineage_ordinals"]},
+            set(selected),
+        )
+        self.assertEqual(len({call["game_runtime"] for call in calls}), 4)
+        self.assertTrue(all(not call["start_display_process"] for call in calls))
+        self.assertEqual(
+            {call["engine_start_lock"] for call in calls},
+            {Path(temporary).resolve() / "engine-start.lock"},
+        )
+        display.assert_called_once()
+        terminate_display.assert_called_once()
+
     def test_each_new_failed_attempt_is_audited_immediately(self) -> None:
         plan = build_pilot_plan()
         first = plan["lineages"][0]
