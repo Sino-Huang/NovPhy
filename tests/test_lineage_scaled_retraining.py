@@ -47,6 +47,7 @@ from world_model.training.lineage_scaling import (
     train_continuous_predictor,
     validate_matched_carrier_lineages,
     validate_lineage_scaled_checkpoint_matrix,
+    validate_matched_action_ranking_states,
 )
 
 
@@ -63,7 +64,10 @@ def _manifest(
                 trajectory_identity=f"trajectory:{lineage}",
                 scenario_lineage_identity=lineage,
                 exposure_role=role,
-                transition_identities=(f"transition:{lineage}:0",),
+                transition_identities=(
+                    f"transition:{lineage}:h1",
+                    f"transition:{lineage}:h15",
+                ),
                 initial_observation_identity=f"observation:{lineage}:0",
                 terminal_observation_identity=f"observation:{lineage}:1",
             )
@@ -116,6 +120,8 @@ def _lineages(
         start[index % 15] = 1.0
         target = start.clone()
         target[(index + 1) % 15] = 0.5
+        target_h15 = start.clone()
+        target_h15[(index + 2) % 15] = 0.75
         result.append(CarrierLineage(
             trajectory_identity=f"trajectory:{lineage_identity}",
             scenario_lineage_identity=lineage_identity,
@@ -123,13 +129,26 @@ def _lineages(
             source_release_identity=scale.source_release_identity,
             carrier=cell.carrier,
             carrier_identity=carrier_identity,
-            transitions=(ContinuousTransitionExample(
-                identity=f"transition:{lineage_identity}:0",
-                context=start,
-                action=torch.tensor((-0.2, 0.1, 0.6, 0.0, 1.0)),
-                target=target,
-                physical_diagnostics={"unstable": False},
-            ),),
+            transitions=(
+                ContinuousTransitionExample(
+                    identity=f"transition:{lineage_identity}:h1",
+                    context=start,
+                    action=torch.tensor((-0.2, 0.1, 0.6, 0.0, 1.0)),
+                    target=target,
+                    physical_diagnostics={"unstable": False},
+                    decision_index=0,
+                    horizon=1,
+                ),
+                ContinuousTransitionExample(
+                    identity=f"transition:{lineage_identity}:h15",
+                    context=start,
+                    action=torch.tensor((-0.2, 0.1, 0.6, 0.0, 1.0)),
+                    target=target_h15,
+                    physical_diagnostics={"unstable": False},
+                    decision_index=0,
+                    horizon=15,
+                ),
+            ),
             complete=True,
         ))
     return tuple(result)
@@ -229,7 +248,7 @@ class LineageScalingTrainingTests(unittest.TestCase):
             deployment,
         )
         self.assertEqual(result["lineage_count"], 8)
-        self.assertEqual(result["transition_count"], 8)
+        self.assertEqual(result["transition_count"], 16)
 
         changed = replace(
             deployment[0],
@@ -262,8 +281,9 @@ class LineageScalingTrainingTests(unittest.TestCase):
 
         self.assertEqual(report.optimizer_examples, 7)
         self.assertEqual(report.optimizer_steps, 4)
-        self.assertAlmostEqual(report.epochs, 7 / 6)
+        self.assertAlmostEqual(report.epochs, 7 / 12)
         self.assertEqual(report.lineage_count, 6)
+        self.assertEqual(report.horizon_example_counts, ((1, 6), (15, 6)))
         self.assertEqual(report.carrier_identity, protocol.deployment_carrier_identity)
 
         with tempfile.TemporaryDirectory() as temporary:
@@ -297,6 +317,49 @@ class LineageScalingTrainingTests(unittest.TestCase):
                     device="cpu",
                 )
 
+    def test_training_rejects_transition_membership_not_frozen_by_the_manifest(self) -> None:
+        protocol = _protocol()
+        cell = protocol.cells[0]
+        lineages = _lineages(protocol, cell)
+        changed = replace(
+            lineages[0],
+            transitions=(
+                replace(lineages[0].transitions[0], identity="transition:injected"),
+                lineages[0].transitions[1],
+            ),
+        )
+        with self.assertRaisesRegex(LineageScalingError, "trajectory manifest"):
+            train_continuous_predictor(
+                protocol,
+                cell,
+                (changed, *lineages[1:]),
+                device="cpu",
+            )
+
+    def test_h1_and_h15_use_their_own_targets_and_recursive_auc_spacing(self) -> None:
+        protocol = _protocol()
+        cell = protocol.cells[0]
+        lineage = _lineages(protocol, cell)[0]
+        model = DualOutputPredictor(protocol.predictor_config)
+        with torch.no_grad():
+            for parameter in model.parameters():
+                parameter.zero_()
+
+        evaluation = evaluate_continuous_prediction(
+            model,
+            (lineage,),
+            horizons=(1, 15),
+        )
+
+        h1_error = 0.5 ** 2 / 15
+        h15_error = 0.75 ** 2 / 15
+        self.assertAlmostEqual(evaluation.local_by_horizon[1], h1_error)
+        self.assertAlmostEqual(evaluation.local_by_horizon[15], h15_error)
+        self.assertAlmostEqual(evaluation.recursive[0].error_auc, h1_error / 2)
+        self.assertAlmostEqual(
+            evaluation.recursive[1].error_auc, h15_error * 15 / 2
+        )
+
     def test_prediction_and_action_ranking_report_separate_estimands(self) -> None:
         protocol = _protocol(budget=4)
         cell = protocol.cells[0]
@@ -317,14 +380,17 @@ class LineageScalingTrainingTests(unittest.TestCase):
         self.assertEqual(tuple(item.horizon for item in prediction.recursive), (1, 15))
         self.assertEqual(prediction.nonfinite_failures, 0)
         self.assertEqual(prediction.execution_failures, ())
-        self.assertEqual(prediction.model_evaluations, 3)
+        self.assertEqual(prediction.model_evaluations, 4)
         self.assertGreaterEqual(prediction.wall_seconds, 0.0)
-        self.assertIn("carrier_norm", prediction.physical_diagnostics)
+        self.assertIn("unstable", prediction.target_physical_diagnostics)
+        self.assertIn("carrier_norm", prediction.predicted_physical_diagnostics)
 
         transition = lineages[0].transitions[0]
         state = ActionRankingState(
             identity="ranking-state:0",
             scenario_lineage_identity="lineage:model-selection:0",
+            trajectory_identity="trajectory:lineage:model-selection:0",
+            decision_transition_identity="transition:lineage:model-selection:0:h1",
             exposure_role="model_selection",
             carrier=cell.carrier,
             carrier_identity=protocol.carrier_identity(cell.carrier),
@@ -352,6 +418,16 @@ class LineageScalingTrainingTests(unittest.TestCase):
         self.assertEqual(ranking.states[0].selected_candidate_identity, "candidate:a")
         self.assertEqual(ranking.model_evaluations, 2)
         self.assertGreaterEqual(ranking.wall_seconds, 0.0)
+        matched = validate_matched_action_ranking_states(
+            protocol,
+            (state,),
+            (replace(
+                state,
+                carrier=CarrierKind.DEPLOYMENT,
+                carrier_identity=protocol.deployment_carrier_identity,
+            ),),
+        )
+        self.assertEqual(matched["candidate_count"], 2)
 
 
 class LineageScalingGameplayTests(unittest.TestCase):
@@ -490,9 +566,16 @@ class LineageScalingGameplayTests(unittest.TestCase):
 
             evaluation_lineage = replace(
                 _lineages(protocol, source_cell)[0],
-                trajectory_identity="trajectory:calibration:runner",
-                scenario_lineage_identity="lineage:calibration:runner",
+                trajectory_identity="trajectory:lineage:calibration:0",
+                scenario_lineage_identity="lineage:calibration:0",
                 exposure_role="calibration",
+                transitions=tuple(
+                    replace(
+                        item,
+                        identity=f"transition:lineage:calibration:0:h{item.horizon}",
+                    )
+                    for item in _lineages(protocol, source_cell)[0].transitions
+                ),
             )
             save_carrier_lineage_bundle(evaluation_path, (evaluation_lineage,))
             score_result = issue_61_main([
@@ -513,6 +596,8 @@ class LineageScalingGameplayTests(unittest.TestCase):
             ranking_state = ActionRankingState(
                 identity="ranking-state:runner",
                 scenario_lineage_identity=evaluation_lineage.scenario_lineage_identity,
+                trajectory_identity=evaluation_lineage.trajectory_identity,
+                decision_transition_identity=transition.identity,
                 exposure_role="calibration",
                 carrier=CarrierKind.SOURCE,
                 carrier_identity=protocol.source_carrier_identity,

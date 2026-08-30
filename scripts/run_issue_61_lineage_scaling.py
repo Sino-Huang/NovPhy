@@ -47,6 +47,8 @@ from world_model.training.lineage_scaling import (
     matched_gameplay_systems,
     train_continuous_predictor,
     validate_carrier_alignment,
+    validate_action_ranking_states,
+    validate_evaluation_lineages,
     validate_lineage_scaled_checkpoint_matrix,
     validate_matched_carrier_lineages,
 )
@@ -82,6 +84,9 @@ def _parser() -> argparse.ArgumentParser:
         metavar="SCALE,CARRIER,SEED,PATH",
     )
     parser.add_argument("--device", default="cuda")
+    parser.add_argument("--legacy-gameplay-checkpoint", type=Path)
+    parser.add_argument("--retrained-gameplay-checkpoint", type=Path)
+    parser.add_argument("--adaptive-controller-checkpoint", type=Path)
     parser.add_argument("--repository-root", type=Path, default=Path("."))
     parser.add_argument("--release-root", type=Path, default=DEFAULT_RELEASE)
     parser.add_argument("--aligned-root", type=Path, default=DEFAULT_ALIGNED)
@@ -97,22 +102,35 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _required(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
-    fields = (
-        "protocol",
-        "source_bundle",
-        "deployment_bundle",
-        "scale",
-        "carrier",
-        "seed",
-        "checkpoint",
-    )
+def _require_args(
+    args: argparse.Namespace,
+    parser: argparse.ArgumentParser,
+    mode: str,
+    fields: tuple[str, ...],
+) -> None:
     missing = tuple(name for name in fields if getattr(args, name) is None)
     if missing:
         parser.error(
-            "--train requires "
+            f"--{mode} requires "
             + ", ".join(f"--{name.replace('_', '-')}" for name in missing)
         )
+
+
+def _required(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
+    _require_args(
+        args,
+        parser,
+        "train",
+        (
+            "protocol",
+            "source_bundle",
+            "deployment_bundle",
+            "scale",
+            "carrier",
+            "seed",
+            "checkpoint",
+        ),
+    )
 
 
 def _train(args: argparse.Namespace) -> int:
@@ -154,6 +172,7 @@ def _train(args: argparse.Namespace) -> int:
                 "seed": cell.seed,
                 "lineage_count": report.lineage_count,
                 "transition_count": report.transition_count,
+                "horizon_example_counts": report.horizon_example_counts,
                 "optimizer_examples": report.optimizer_examples,
                 "optimizer_steps": report.optimizer_steps,
                 "epochs": report.epochs,
@@ -179,12 +198,7 @@ def _score(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         "evaluation_bundle",
         "output",
     )
-    missing = tuple(name for name in fields if getattr(args, name) is None)
-    if missing:
-        parser.error(
-            "--score requires "
-            + ", ".join(f"--{name.replace('_', '-')}" for name in missing)
-        )
+    _require_args(args, parser, "score", fields)
     if args.output.exists():
         raise LineageScalingError(f"score output already exists: {args.output}")
     print("[load 1/3] frozen lineage-scaling protocol", flush=True)
@@ -199,23 +213,14 @@ def _score(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     )
     print("[load 3/3] isolated evaluation carrier lineages", flush=True)
     lineages = load_carrier_lineage_bundle(args.evaluation_bundle)
-    training_membership = set(protocol.training_scales[-1].lineage_identities)
-    if any(
-        item.exposure_role not in ("calibration", "model_selection")
-        or item.scenario_lineage_identity in training_membership
-        or item.source_release_identity
-        != protocol.training_scales[-1].source_release_identity
-        or item.carrier is not cell.carrier
-        or item.carrier_identity != protocol.carrier_identity(cell.carrier)
-        for item in lineages
-    ):
-        raise LineageScalingError(
-            "score inputs contain role leakage, carrier mismatch, or another release"
-        )
+    evaluation_manifest = validate_evaluation_lineages(
+        protocol, lineages, carrier=cell.carrier
+    )
     evaluation = evaluate_continuous_prediction(
         model,
         lineages,
         horizons=(1, 15),
+        physical_diagnostic=_predicted_physical_diagnostics,
         progress=lambda value: print(value, flush=True),
     )
     payload = {
@@ -224,8 +229,10 @@ def _score(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         "protocol_identity": protocol.identity,
         "cell_identity": cell.identity,
         "evaluation_role": lineages[0].exposure_role,
+        "evaluation_manifest_identity": evaluation_manifest.identity,
         "lineage_count": len(lineages),
         "local_mse": evaluation.local_mse,
+        "local_by_horizon": dict(evaluation.local_by_horizon),
         "recursive": [
             {
                 "horizon": item.horizon,
@@ -237,7 +244,12 @@ def _score(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         ],
         "nonfinite_failures": evaluation.nonfinite_failures,
         "execution_failures": list(evaluation.execution_failures),
-        "physical_diagnostics": dict(evaluation.physical_diagnostics),
+        "target_physical_diagnostics": dict(
+            evaluation.target_physical_diagnostics
+        ),
+        "predicted_physical_diagnostics": dict(
+            evaluation.predicted_physical_diagnostics
+        ),
         "compute": {
             "model_evaluations": evaluation.model_evaluations,
             "wall_seconds": evaluation.wall_seconds,
@@ -270,12 +282,7 @@ def _rank(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         "ranking_bundle",
         "output",
     )
-    missing = tuple(name for name in fields if getattr(args, name) is None)
-    if missing:
-        parser.error(
-            "--rank requires "
-            + ", ".join(f"--{name.replace('_', '-')}" for name in missing)
-        )
+    _require_args(args, parser, "rank", fields)
     if args.output.exists():
         raise LineageScalingError(f"ranking output already exists: {args.output}")
     print("[load 1/3] frozen lineage-scaling protocol", flush=True)
@@ -290,16 +297,9 @@ def _rank(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     )
     print("[load 3/3] frozen legal candidate sets and realized costs", flush=True)
     states = load_action_ranking_bundle(args.ranking_bundle)
-    training_membership = set(protocol.training_scales[-1].lineage_identities)
-    if any(
-        state.scenario_lineage_identity in training_membership
-        or state.carrier is not cell.carrier
-        or state.carrier_identity != protocol.carrier_identity(cell.carrier)
-        for state in states
-    ):
-        raise LineageScalingError(
-            "ranking inputs contain role leakage or a carrier mismatch"
-        )
+    evaluation_manifest = validate_action_ranking_states(
+        protocol, states, carrier=cell.carrier
+    )
 
     def carrier_goal_cost(state, _candidate, predicted) -> float:
         if state.cost_target is None:
@@ -319,6 +319,7 @@ def _rank(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         "protocol_identity": protocol.identity,
         "cell_identity": cell.identity,
         "evaluation_role": states[0].exposure_role,
+        "evaluation_manifest_identity": evaluation_manifest.identity,
         "state_count": evaluation.state_count,
         "mean_top_action_regret": evaluation.mean_top_action_regret,
         "states": [
@@ -356,16 +357,12 @@ def _rank(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
 
 
 def _validate(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
-    missing = tuple(
-        name
-        for name in ("protocol", "source_bundle", "deployment_bundle")
-        if getattr(args, name) is None
+    _require_args(
+        args,
+        parser,
+        "validate",
+        ("protocol", "source_bundle", "deployment_bundle"),
     )
-    if missing:
-        parser.error(
-            "--validate requires "
-            + ", ".join(f"--{name.replace('_', '-')}" for name in missing)
-        )
     protocol = load_lineage_scaling_protocol(args.protocol)
     source = load_carrier_lineage_bundle(args.source_bundle)
     deployment = load_carrier_lineage_bundle(args.deployment_bundle)
@@ -427,7 +424,28 @@ def _physical_diagnostics(labels: Mapping[str, object]) -> dict[str, float | boo
     return result
 
 
-def _dry_run(args: argparse.Namespace) -> int:
+def _predicted_physical_diagnostics(carrier: torch.Tensor) -> dict[str, float]:
+    return {
+        "predicted_carrier_bound_excess": float(
+            torch.relu(carrier.abs() - 2.0).pow(2).mean()
+        ),
+    }
+
+
+def _dry_run(
+    args: argparse.Namespace,
+    parser: argparse.ArgumentParser,
+) -> int:
+    _require_args(
+        args,
+        parser,
+        "dry-run",
+        (
+            "legacy_gameplay_checkpoint",
+            "retrained_gameplay_checkpoint",
+            "adaptive_controller_checkpoint",
+        ),
+    )
     root = args.repository_root.resolve()
     release_root = (root / args.release_root).resolve()
     aligned_root = (root / args.aligned_root).resolve()
@@ -473,35 +491,58 @@ def _dry_run(args: argparse.Namespace) -> int:
     bindings = []
     planning_observation = None
     for rollout in training_reader.rollouts[:1]:
-        current_frame = rollout.frame_records[0]
-        next_frame = rollout.frame_records[-1]
+        current_frame_record = rollout.frame_records[0]
         current_observation = training_reader.load_agent_observation(
-            rollout, current_frame
+            rollout, current_frame_record
         )
-        next_observation = training_reader.load_agent_observation(rollout, next_frame)
         action = _action_tensor(rollout.intervention)
-        transition_identity = f"{rollout.attempt_id}:issue-61-dry-transition"
         trajectory_identity = f"{rollout.attempt_id}:issue-61-dry-trajectory"
-        diagnostics = _physical_diagnostics(next_frame.labels)
-        source_transition = ContinuousTransitionExample(
-            identity=transition_identity,
-            context=source_codec.encode(current_frame),
-            action=action,
-            target=source_codec.encode(next_frame),
-            physical_diagnostics=diagnostics,
-        )
         deployment_context = deployment_adapter.build(
             TemporalObservationContext(None, current_observation)
         )
-        deployment_transition = ContinuousTransitionExample(
-            identity=transition_identity,
-            context=deployment_context.tensor,
-            action=action,
-            target=deployment_adapter.build(TemporalObservationContext(
-                current_observation, next_observation
-            )).tensor,
-            physical_diagnostics=diagnostics,
-        )
+        source_transitions = []
+        deployment_transitions = []
+        target_observations = []
+        for horizon in (1, 15):
+            try:
+                target_frame_record = next(
+                    item
+                    for item in rollout.frame_records
+                    if item.fixed_step
+                    == current_frame_record.fixed_step + horizon
+                )
+            except StopIteration as error:
+                raise RuntimeError(
+                    f"public dry run has no exact h{horizon} target frame record"
+                ) from error
+            target_observation = training_reader.load_agent_observation(
+                rollout, target_frame_record
+            )
+            target_observations.append(target_observation)
+            transition_identity = (
+                f"{rollout.attempt_id}:issue-61-dry-transition-h{horizon}"
+            )
+            diagnostics = _physical_diagnostics(target_frame_record.labels)
+            source_transitions.append(ContinuousTransitionExample(
+                identity=transition_identity,
+                context=source_codec.encode(current_frame_record),
+                action=action,
+                target=source_codec.encode(target_frame_record),
+                physical_diagnostics=diagnostics,
+                decision_index=0,
+                horizon=horizon,
+            ))
+            deployment_transitions.append(ContinuousTransitionExample(
+                identity=transition_identity,
+                context=deployment_context.tensor,
+                action=action,
+                target=deployment_adapter.build(TemporalObservationContext(
+                    current_observation, target_observation
+                )).tensor,
+                physical_diagnostics=diagnostics,
+                decision_index=0,
+                horizon=horizon,
+            ))
         planning_observation = PlanningObservation(
             identity=current_observation.identity,
             carrier=deployment_context.tensor,
@@ -527,21 +568,23 @@ def _dry_run(args: argparse.Namespace) -> int:
             **common,
             carrier=CarrierKind.SOURCE,
             carrier_identity=source_codec.identity,
-            transitions=(source_transition,),
+            transitions=tuple(source_transitions),
         ))
         deployment_lineages.append(CarrierLineage(
             **common,
             carrier=CarrierKind.DEPLOYMENT,
             carrier_identity=deployment_adapter.identity,
-            transitions=(deployment_transition,),
+            transitions=tuple(deployment_transitions),
         ))
         bindings.append(TrajectoryLineageBinding(
             trajectory_identity=trajectory_identity,
             scenario_lineage_identity=rollout.scenario_lineage_identity,
             exposure_role="training",
-            transition_identities=(transition_identity,),
+            transition_identities=tuple(
+                item.identity for item in source_transitions
+            ),
             initial_observation_identity=current_observation.identity,
-            terminal_observation_identity=next_observation.identity,
+            terminal_observation_identity=target_observations[-1].identity,
         ))
         print("[carrier] one complete public scenario-lineage probe", flush=True)
     scale = FrozenLineageScale.from_manifest(
@@ -568,6 +611,7 @@ def _dry_run(args: argparse.Namespace) -> int:
         predictor,
         (deployment_lineages[0],),
         horizons=(1, 15),
+        physical_diagnostic=_predicted_physical_diagnostics,
         progress=lambda value: print(value, flush=True),
     )
     if planning_observation is None:
@@ -604,9 +648,9 @@ def _dry_run(args: argparse.Namespace) -> int:
     gameplay_system_specs = matched_gameplay_systems(
         gameplay_protocol,
         GameplayCheckpointBindings(
-            legacy_predictor=(root / ".local-artifacts/issue-15-legacy.pt").resolve(),
-            retrained_predictor=(root / ".local-artifacts/issue-61-retrained.pt").resolve(),
-            adaptive_controller=(root / ".local-artifacts/issue-15-controller.pt").resolve(),
+            legacy_predictor=(root / args.legacy_gameplay_checkpoint).resolve(),
+            retrained_predictor=(root / args.retrained_gameplay_checkpoint).resolve(),
+            adaptive_controller=(root / args.adaptive_controller_checkpoint).resolve(),
         ),
     )
     gameplay_planners = build_matched_gameplay_planners(
@@ -652,7 +696,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
     if args.dry_run:
-        return _dry_run(args)
+        return _dry_run(args, parser)
     if args.score:
         return _score(args, parser)
     if args.rank:

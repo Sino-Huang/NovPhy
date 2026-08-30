@@ -488,10 +488,19 @@ class ContinuousTransitionExample:
     action: torch.Tensor
     target: torch.Tensor
     physical_diagnostics: Mapping[str, float | bool | None]
+    decision_index: int = 0
+    horizon: int = 1
 
     def __post_init__(self) -> None:
         if not self.identity:
             raise LineageScalingError("continuous transition identity is missing")
+        if (
+            type(self.decision_index) is not int
+            or self.decision_index < 0
+            or type(self.horizon) is not int
+            or self.horizon <= 0
+        ):
+            raise LineageScalingError("continuous transition position or horizon is invalid")
         if not isinstance(self.context, torch.Tensor) or self.context.ndim != 1:
             raise LineageScalingError("continuous transition context is malformed")
         _require_vector(self.target, self.context.shape[0], "continuous target")
@@ -539,6 +548,8 @@ class CarrierLineage:
             or not self.transitions
             or any(type(item) is not ContinuousTransitionExample for item in self.transitions)
             or len({item.identity for item in self.transitions}) != len(self.transitions)
+            or len({(item.decision_index, item.horizon) for item in self.transitions})
+            != len(self.transitions)
         ):
             raise LineageScalingError("carrier lineage transitions are malformed")
 
@@ -585,6 +596,8 @@ def save_carrier_lineage_bundle(
                             "context": transition.context.detach().cpu(),
                             "action": transition.action.detach().cpu(),
                             "target": transition.target.detach().cpu(),
+                            "decision_index": transition.decision_index,
+                            "horizon": transition.horizon,
                             "physical_diagnostics": dict(
                                 transition.physical_diagnostics
                             ),
@@ -635,6 +648,8 @@ def load_carrier_lineage_bundle(path: Path) -> tuple[CarrierLineage, ...]:
                     "context",
                     "action",
                     "target",
+                    "decision_index",
+                    "horizon",
                     "physical_diagnostics",
                 }:
                     raise LineageScalingError("continuous transition fields differ")
@@ -644,6 +659,8 @@ def load_carrier_lineage_bundle(path: Path) -> tuple[CarrierLineage, ...]:
                     action=raw_transition["action"],
                     target=raw_transition["target"],
                     physical_diagnostics=raw_transition["physical_diagnostics"],
+                    decision_index=raw_transition["decision_index"],
+                    horizon=raw_transition["horizon"],
                 ))
             lineages.append(CarrierLineage(
                 trajectory_identity=raw_lineage["trajectory_identity"],
@@ -690,12 +707,17 @@ def validate_carrier_alignment(
     deployment_by_lineage = {
         item.scenario_lineage_identity: item for item in deployment_lineages
     }
+    bindings_by_lineage = {
+        item.scenario_lineage_identity: item for item in scale.bindings
+    }
     transition_count = 0
     for lineage_identity in scale.lineage_identities:
         source = source_by_lineage[lineage_identity]
         deployment = deployment_by_lineage[lineage_identity]
+        binding = bindings_by_lineage[lineage_identity]
         if (
             source.trajectory_identity != deployment.trajectory_identity
+            or source.trajectory_identity != binding.trajectory_identity
             or source.exposure_role != "training"
             or deployment.exposure_role != "training"
             or source.source_release_identity != scale.source_release_identity
@@ -706,6 +728,8 @@ def validate_carrier_alignment(
             or deployment.carrier_identity != deployment_carrier_identity
             or tuple(item.identity for item in source.transitions)
             != tuple(item.identity for item in deployment.transitions)
+            or tuple(item.identity for item in source.transitions)
+            != binding.transition_identities
             or len(source.transitions) != len(deployment.transitions)
         ):
             raise LineageScalingError(
@@ -719,6 +743,9 @@ def validate_carrier_alignment(
                 or not torch.equal(
                     source_transition.action, deployment_transition.action
                 )
+                or source_transition.decision_index
+                != deployment_transition.decision_index
+                or source_transition.horizon != deployment_transition.horizon
             ):
                 raise LineageScalingError(
                     "carrier alignment changed an executed legal action"
@@ -748,6 +775,49 @@ def validate_matched_carrier_lineages(
     return {"protocol_identity": protocol.identity, **result}
 
 
+def validate_evaluation_lineages(
+    protocol: LineageScalingProtocol,
+    lineages: tuple[CarrierLineage, ...],
+    *,
+    carrier: CarrierKind,
+) -> TrajectoryLineageManifest:
+    """Bind one scoring bundle to its exact public exposure-role manifest."""
+
+    if not lineages or len({item.exposure_role for item in lineages}) != 1:
+        raise LineageScalingError("evaluation lineages crossed or omitted their role")
+    role = lineages[0].exposure_role
+    try:
+        manifest = next(
+            item
+            for item in protocol.evaluation_manifests
+            if {binding.exposure_role for binding in item.bindings} == {role}
+        )
+    except StopIteration as error:
+        raise LineageScalingError("evaluation role has no frozen lineage manifest") from error
+    bindings = {
+        item.scenario_lineage_identity: item for item in manifest.bindings
+    }
+    if {item.scenario_lineage_identity for item in lineages} != set(bindings):
+        raise LineageScalingError(
+            "evaluation lineages differ from the frozen role manifest"
+        )
+    expected_carrier_identity = protocol.carrier_identity(carrier)
+    for lineage in lineages:
+        binding = bindings[lineage.scenario_lineage_identity]
+        if (
+            lineage.trajectory_identity != binding.trajectory_identity
+            or tuple(item.identity for item in lineage.transitions)
+            != binding.transition_identities
+            or lineage.source_release_identity != manifest.source_release_identity
+            or lineage.carrier is not carrier
+            or lineage.carrier_identity != expected_carrier_identity
+        ):
+            raise LineageScalingError(
+                "evaluation trajectory, transition, release, or carrier mismatch"
+            )
+    return manifest
+
+
 @dataclass(frozen=True, slots=True)
 class TrainingReport:
     protocol_identity: str
@@ -760,6 +830,7 @@ class TrainingReport:
     optimizer_steps: int
     lineage_count: int
     transition_count: int
+    horizon_example_counts: tuple[tuple[int, int], ...]
     epochs: float
     final_loss: float
     wall_seconds: float
@@ -779,6 +850,7 @@ class TrainingReport:
             self.optimizer_steps,
             self.lineage_count,
             self.transition_count,
+            self.horizon_example_counts,
             self.epochs,
             self.final_loss,
             self.parameter_count,
@@ -812,6 +884,19 @@ def _validate_training_inputs(
         for item in lineages
     ):
         raise LineageScalingError("training input role, release, or carrier mismatch")
+    bindings = {
+        item.scenario_lineage_identity: item for item in scale.bindings
+    }
+    for lineage in lineages:
+        binding = bindings[lineage.scenario_lineage_identity]
+        if (
+            lineage.trajectory_identity != binding.trajectory_identity
+            or tuple(item.identity for item in lineage.transitions)
+            != binding.transition_identities
+        ):
+            raise LineageScalingError(
+                "training inputs differ from the frozen trajectory manifest"
+            )
     examples = tuple(
         transition
         for lineage_identity in scale.lineage_identities
@@ -846,7 +931,6 @@ def train_continuous_predictor(
         lr=protocol.learning_rate,
         weight_decay=protocol.weight_decay,
     )
-    pair = PredictionPair(1, Abstraction.CONTINUOUS)
     generator = torch.Generator().manual_seed(cell.seed)
     order = torch.randperm(len(examples), generator=generator).tolist()
     cursor = 0
@@ -869,8 +953,22 @@ def train_continuous_predictor(
         actions = torch.stack(tuple(item.action for item in batch)).to(target_device)
         targets = torch.stack(tuple(item.target for item in batch)).to(target_device)
         optimizer.zero_grad(set_to_none=True)
-        predicted = model.carrier(contexts, actions, pair)
-        loss = F.mse_loss(predicted, targets)
+        loss = torch.zeros((), device=target_device)
+        for horizon in sorted({item.horizon for item in batch}):
+            indices = tuple(
+                index for index, item in enumerate(batch) if item.horizon == horizon
+            )
+            selected = torch.tensor(indices, device=target_device)
+            predicted = model.carrier(
+                contexts[selected],
+                actions[selected],
+                PredictionPair(horizon, Abstraction.CONTINUOUS),
+            )
+            loss = loss + (
+                F.mse_loss(predicted, targets[selected])
+                * len(indices)
+                / len(batch)
+            )
         if not bool(torch.isfinite(loss)):
             raise LineageScalingError("training produced a nonfinite loss")
         loss.backward()
@@ -897,6 +995,10 @@ def train_continuous_predictor(
         optimizer_steps=steps,
         lineage_count=len(lineages),
         transition_count=len(examples),
+        horizon_example_counts=tuple(
+            (horizon, sum(item.horizon == horizon for item in examples))
+            for horizon in sorted({item.horizon for item in examples})
+        ),
         epochs=examples_seen / len(examples),
         final_loss=loss_value,
         wall_seconds=time.monotonic() - started,
@@ -917,6 +1019,7 @@ class LineageScaledCheckpoint:
     carrier_identity: str
     predictor_config: PredictorConfig
     optimizer_examples: int
+    horizon_example_counts: tuple[tuple[int, int], ...]
     epochs: float
 
 
@@ -954,6 +1057,7 @@ def save_lineage_scaled_checkpoint(
         carrier_identity=report.carrier_identity,
         predictor_config=report.predictor_config,
         optimizer_examples=report.optimizer_examples,
+        horizon_example_counts=report.horizon_example_counts,
         epochs=report.epochs,
     )
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -975,6 +1079,7 @@ def save_lineage_scaled_checkpoint(
                 "carrier_identity": metadata.carrier_identity,
                 "predictor_config": asdict(metadata.predictor_config),
                 "optimizer_examples": metadata.optimizer_examples,
+                "horizon_example_counts": metadata.horizon_example_counts,
                 "epochs": metadata.epochs,
             },
             "model_state": state,
@@ -1015,6 +1120,9 @@ def load_lineage_scaled_checkpoint(
             carrier_identity=raw["carrier_identity"],
             predictor_config=config,
             optimizer_examples=raw["optimizer_examples"],
+            horizon_example_counts=tuple(
+                tuple(item) for item in raw["horizon_example_counts"]
+            ),
             epochs=raw["epochs"],
         )
     except (OSError, KeyError, TypeError, ValueError, RuntimeError) as error:
@@ -1082,10 +1190,12 @@ class RecursivePredictionResult:
 @dataclass(frozen=True, slots=True)
 class PredictionEvaluation:
     local_mse: float | None
+    local_by_horizon: Mapping[int, float]
     recursive: tuple[RecursivePredictionResult, ...]
     nonfinite_failures: int
     execution_failures: tuple[str, ...]
-    physical_diagnostics: Mapping[str, float]
+    target_physical_diagnostics: Mapping[str, float]
+    predicted_physical_diagnostics: Mapping[str, float]
     model_evaluations: int
     wall_seconds: float
 
@@ -1113,14 +1223,16 @@ def evaluate_continuous_prediction(
     nonfinite = 0
     model_evaluations = 0
     local_errors: list[float] = []
-    diagnostic_values: dict[str, list[float]] = {}
+    local_errors_by_horizon: dict[int, list[float]] = {}
+    target_diagnostic_values: dict[str, list[float]] = {}
+    predicted_diagnostic_values: dict[str, list[float]] = {}
     for lineage in lineages:
         for transition in lineage.transitions:
             for name, value in transition.physical_diagnostics.items():
                 if value is not None and type(value) in (bool, int, float):
                     number = float(value)
                     if math.isfinite(number):
-                        diagnostic_values.setdefault(name, []).append(number)
+                        target_diagnostic_values.setdefault(name, []).append(number)
     started = time.monotonic()
     model.eval()
     with torch.no_grad():
@@ -1131,14 +1243,27 @@ def evaluate_continuous_prediction(
                     predicted = model.carrier(
                         transition.context.to(device).unsqueeze(0),
                         transition.action.to(device).unsqueeze(0),
-                        PredictionPair(1, Abstraction.CONTINUOUS),
+                        PredictionPair(
+                            transition.horizon, Abstraction.CONTINUOUS
+                        ),
                     )[0]
                     if not bool(torch.isfinite(predicted).all()):
                         nonfinite += 1
                         continue
-                    local_errors.append(float(F.mse_loss(
+                    value = float(F.mse_loss(
                         predicted, transition.target.to(device)
-                    ).cpu()))
+                    ).cpu())
+                    local_errors.append(value)
+                    local_errors_by_horizon.setdefault(
+                        transition.horizon, []
+                    ).append(value)
+                    if physical_diagnostic is not None:
+                        for name, diagnostic in physical_diagnostic(
+                            predicted.detach().cpu()
+                        ).items():
+                            predicted_diagnostic_values.setdefault(name, []).append(
+                                float(diagnostic)
+                            )
                 except Exception as error:
                     failures.append(
                         f"local:{transition.identity}:{type(error).__name__}: {error}"
@@ -1149,11 +1274,21 @@ def evaluate_continuous_prediction(
             errors: list[float] = []
             lineage_aucs: list[float] = []
             for lineage_index, lineage in enumerate(lineages, start=1):
-                current = lineage.transitions[0].context.to(device)
-                lineage_errors: list[float] = []
-                for transition in lineage.transitions:
+                windows = {
+                    item.decision_index: item
+                    for item in lineage.transitions
+                    if item.horizon == horizon
+                }
+                lineage_errors: list[tuple[int, float]] = []
+                position = min(windows) if windows else 0
+                current = (
+                    windows[position].context.to(device) if windows else None
+                )
+                while position in windows:
+                    transition = windows[position]
                     try:
                         model_evaluations += 1
+                        assert current is not None
                         predicted = model.carrier(
                             current.unsqueeze(0),
                             transition.action.to(device).unsqueeze(0),
@@ -1166,13 +1301,16 @@ def evaluate_continuous_prediction(
                             predicted, transition.target.to(device)
                         ).cpu())
                         errors.append(value)
-                        lineage_errors.append(value)
+                        position += horizon
+                        lineage_errors.append((position, value))
                         current = predicted
                         if physical_diagnostic is not None:
                             for name, diagnostic in physical_diagnostic(
                                 predicted.detach().cpu()
                             ).items():
-                                diagnostic_values.setdefault(name, []).append(float(diagnostic))
+                                predicted_diagnostic_values.setdefault(name, []).append(
+                                    float(diagnostic)
+                                )
                     except Exception as error:
                         failures.append(
                             f"recursive-h{horizon}:{transition.identity}:"
@@ -1180,7 +1318,18 @@ def evaluate_continuous_prediction(
                         )
                         break
                 if lineage_errors:
-                    lineage_aucs.append(sum(lineage_errors))
+                    previous_position = lineage_errors[0][0] - horizon
+                    previous_error = 0.0
+                    area = 0.0
+                    for target_position, error in lineage_errors:
+                        area += (
+                            (previous_error + error)
+                            * (target_position - previous_position)
+                            / 2.0
+                        )
+                        previous_position = target_position
+                        previous_error = error
+                    lineage_aucs.append(area)
                 if progress is not None:
                     progress(
                         f"[score recursive-h{horizon}] lineage "
@@ -1194,12 +1343,20 @@ def evaluate_continuous_prediction(
             ))
     return PredictionEvaluation(
         local_mse=None if not local_errors else sum(local_errors) / len(local_errors),
+        local_by_horizon=MappingProxyType({
+            horizon: sum(values) / len(values)
+            for horizon, values in local_errors_by_horizon.items()
+        }),
         recursive=tuple(recursive_results),
         nonfinite_failures=nonfinite,
         execution_failures=tuple(failures),
-        physical_diagnostics=MappingProxyType({
+        target_physical_diagnostics=MappingProxyType({
             name: sum(values) / len(values)
-            for name, values in diagnostic_values.items()
+            for name, values in target_diagnostic_values.items()
+        }),
+        predicted_physical_diagnostics=MappingProxyType({
+            name: sum(values) / len(values)
+            for name, values in predicted_diagnostic_values.items()
         }),
         model_evaluations=model_evaluations,
         wall_seconds=time.monotonic() - started,
@@ -1224,6 +1381,8 @@ class ActionCandidate:
 class ActionRankingState:
     identity: str
     scenario_lineage_identity: str
+    trajectory_identity: str
+    decision_transition_identity: str
     exposure_role: str
     carrier: CarrierKind
     carrier_identity: str
@@ -1232,7 +1391,13 @@ class ActionRankingState:
     cost_target: torch.Tensor | None = None
 
     def __post_init__(self) -> None:
-        if not self.identity or not self.scenario_lineage_identity or not self.carrier_identity:
+        if (
+            not self.identity
+            or not self.scenario_lineage_identity
+            or not self.trajectory_identity
+            or not self.decision_transition_identity
+            or not self.carrier_identity
+        ):
             raise LineageScalingError("action-ranking state identity is incomplete")
         if self.exposure_role not in ("calibration", "model_selection"):
             raise LineageScalingError("action-ranking state must use an isolated evaluation role")
@@ -1297,6 +1462,8 @@ def save_action_ranking_bundle(
                 {
                     "identity": state.identity,
                     "scenario_lineage_identity": state.scenario_lineage_identity,
+                    "trajectory_identity": state.trajectory_identity,
+                    "decision_transition_identity": state.decision_transition_identity,
                     "context": state.context.detach().cpu(),
                     "cost_target": state.cost_target.detach().cpu(),
                     "candidate_set_identity": state.candidate_set_identity,
@@ -1337,6 +1504,8 @@ def load_action_ranking_bundle(path: Path) -> tuple[ActionRankingState, ...]:
             if not isinstance(raw_state, Mapping) or set(raw_state) != {
                 "identity",
                 "scenario_lineage_identity",
+                "trajectory_identity",
+                "decision_transition_identity",
                 "context",
                 "cost_target",
                 "candidate_set_identity",
@@ -1360,6 +1529,10 @@ def load_action_ranking_bundle(path: Path) -> tuple[ActionRankingState, ...]:
             state = ActionRankingState(
                 identity=raw_state["identity"],
                 scenario_lineage_identity=raw_state["scenario_lineage_identity"],
+                trajectory_identity=raw_state["trajectory_identity"],
+                decision_transition_identity=raw_state[
+                    "decision_transition_identity"
+                ],
                 exposure_role=payload["exposure_role"],
                 carrier=CarrierKind(payload["carrier"]),
                 carrier_identity=payload["carrier_identity"],
@@ -1375,6 +1548,79 @@ def load_action_ranking_bundle(path: Path) -> tuple[ActionRankingState, ...]:
         if isinstance(error, LineageScalingError):
             raise
         raise LineageScalingError(f"action-ranking bundle is invalid: {error}") from error
+
+
+def validate_action_ranking_states(
+    protocol: LineageScalingProtocol,
+    states: tuple[ActionRankingState, ...],
+    *,
+    carrier: CarrierKind,
+) -> TrajectoryLineageManifest:
+    if not states or len({item.exposure_role for item in states}) != 1:
+        raise LineageScalingError("action-ranking states crossed or omitted their role")
+    role = states[0].exposure_role
+    try:
+        manifest = next(
+            item
+            for item in protocol.evaluation_manifests
+            if {binding.exposure_role for binding in item.bindings} == {role}
+        )
+    except StopIteration as error:
+        raise LineageScalingError("ranking role has no frozen lineage manifest") from error
+    bindings = {
+        item.scenario_lineage_identity: item for item in manifest.bindings
+    }
+    expected_carrier_identity = protocol.carrier_identity(carrier)
+    for state in states:
+        binding = bindings.get(state.scenario_lineage_identity)
+        if (
+            binding is None
+            or state.trajectory_identity != binding.trajectory_identity
+            or state.decision_transition_identity not in binding.transition_identities
+            or state.carrier is not carrier
+            or state.carrier_identity != expected_carrier_identity
+        ):
+            raise LineageScalingError(
+                "ranking state, candidate source, role, or carrier mismatch"
+            )
+    return manifest
+
+
+def validate_matched_action_ranking_states(
+    protocol: LineageScalingProtocol,
+    source_states: tuple[ActionRankingState, ...],
+    deployment_states: tuple[ActionRankingState, ...],
+) -> dict[str, int | str]:
+    source_manifest = validate_action_ranking_states(
+        protocol, source_states, carrier=CarrierKind.SOURCE
+    )
+    deployment_manifest = validate_action_ranking_states(
+        protocol, deployment_states, carrier=CarrierKind.DEPLOYMENT
+    )
+    if source_manifest.identity != deployment_manifest.identity:
+        raise LineageScalingError("ranking carriers use different role manifests")
+    source_by_identity = {item.identity: item for item in source_states}
+    deployment_by_identity = {item.identity: item for item in deployment_states}
+    if set(source_by_identity) != set(deployment_by_identity):
+        raise LineageScalingError("ranking carriers use different decision states")
+    for state_identity, source in source_by_identity.items():
+        deployment = deployment_by_identity[state_identity]
+        if (
+            source.scenario_lineage_identity
+            != deployment.scenario_lineage_identity
+            or source.trajectory_identity != deployment.trajectory_identity
+            or source.decision_transition_identity
+            != deployment.decision_transition_identity
+            or source.candidate_set_identity != deployment.candidate_set_identity
+        ):
+            raise LineageScalingError(
+                "ranking carriers changed a state or declared legal candidate set"
+            )
+    return {
+        "evaluation_manifest_identity": source_manifest.identity,
+        "state_count": len(source_states),
+        "candidate_count": sum(len(item.candidates) for item in source_states),
+    }
 
 
 @dataclass(frozen=True, slots=True)
@@ -1751,6 +1997,9 @@ __all__ = [
     "save_lineage_scaled_checkpoint",
     "train_continuous_predictor",
     "validate_carrier_alignment",
+    "validate_action_ranking_states",
+    "validate_evaluation_lineages",
     "validate_lineage_scaled_checkpoint_matrix",
+    "validate_matched_action_ranking_states",
     "validate_matched_carrier_lineages",
 ]
