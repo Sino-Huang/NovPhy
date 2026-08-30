@@ -205,6 +205,33 @@ public sealed class PhysicsCaptureV2RuntimeIntegrationTests
     }
 
     [Test]
+    public void StabilityDoesNotRepeatAnAlreadyDebouncedExitAfterOneQuietStep()
+    {
+        Environment.SetEnvironmentVariable(
+            PhysicsCaptureV2EngineProtocol.StrideEnvironmentVariable, "1",
+            EnvironmentVariableTarget.Process);
+        PhysicalSnapshotRuntime runtime = PhysicalSnapshotRuntime.Attach(host);
+        Rigidbody2D body = causal.GetComponent<Rigidbody2D>();
+        runtime.BeginShot(32, 64 * 1024, 10f);
+        runtime.RecordLaunch(runtime.EntityIdFor(causal), Vector2.right);
+
+        body.velocity = Vector2.right;
+        InvokeFixedUpdate(runtime);
+        InvokeFixedUpdate(runtime);
+        body.velocity = Vector2.zero;
+        InvokeFixedUpdate(runtime);
+        body.velocity = Vector2.right;
+        InvokeFixedUpdate(runtime);
+        InvokeFixedUpdate(runtime);
+        runtime.RecordLevelFail("test-terminal");
+
+        PhysicsCaptureV2EngineSnapshot snapshot =
+            PhysicsCaptureV2FixedStepRecorder.Active.CreateFinalizedSnapshot();
+        Assert.AreEqual(1,
+            snapshot.Events.Count(item => item.EventType == "stable_exited"));
+    }
+
+    [Test]
     public void PendingLevelClearTakesPriorityOverStableTerminal()
     {
         Environment.SetEnvironmentVariable(

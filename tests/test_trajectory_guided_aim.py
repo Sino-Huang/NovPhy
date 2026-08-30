@@ -12,6 +12,15 @@ class TrajectoryGuidedAimTests(unittest.TestCase):
             {
                 "features": [
                     {
+                        "properties": {"id": "bird:fixture", "label": "redBird"},
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [[
+                                [94, 294], [106, 294], [106, 306], [94, 306]
+                            ]],
+                        },
+                    },
+                    {
                         "properties": {"id": "pig:fixture", "label": "pig_basic_small_1"},
                         "geometry": {
                             "type": "Polygon",
@@ -39,7 +48,7 @@ class TrajectoryGuidedAimTests(unittest.TestCase):
             },
             bounds,
             target_rank=0,
-            arc="low",
+            arc="lowest_clear",
             aim_point="visible_polygon_upper_edge",
             tap_time_ms=0,
         )
@@ -49,7 +58,65 @@ class TrajectoryGuidedAimTests(unittest.TestCase):
         self.assertEqual(aim.target_label, "pig_basic_small_1")
         self.assertEqual(aim.target_canvas, (300.0, 210.0))
         self.assertEqual(aim.aim_point, "visible_polygon_upper_edge")
+        self.assertEqual(aim.arc, "low")
         self.assertLess(aim.predicted_miss_pixels, 1.0)
+
+    def test_obstructed_low_arc_uses_collision_free_high_arc(self) -> None:
+        symbolic_state = [{
+            "features": [
+                {
+                    "properties": {"id": "bird:fixture", "label": "redBird"},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [94, 294], [106, 294], [106, 306], [94, 306]
+                        ]],
+                    },
+                },
+                {
+                    "properties": {"id": "pig:fixture", "label": "pig_basic_big_1"},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [290, 210], [310, 210], [310, 230], [290, 230]
+                        ]],
+                    },
+                },
+                {
+                    "properties": {"id": "platform:fixture", "label": "Platform"},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [220, 205], [250, 205], [250, 275], [220, 275]
+                        ]],
+                    },
+                },
+            ],
+        }]
+        bounds = SlingshotActionBounds(
+            drag_x=(-160, -10),
+            drag_y=(-80, 80),
+            tap_time_ms=(0, 1000),
+            release_time_ms=600,
+        )
+
+        aim = aim_directly_at_visible_pig(
+            symbolic_state,
+            {
+                "canvasX": 100.0,
+                "canvasY": 300.0,
+                "pixelsPerWorldUnit": 32.0,
+            },
+            bounds,
+            target_rank=0,
+            arc="lowest_clear",
+            aim_point="visible_polygon_upper_edge",
+            tap_time_ms=0,
+        )
+
+        self.assertEqual(aim.arc, "high")
+        self.assertEqual(aim.obstacle_clearance, "bird_volume_swept_clear")
+        self.assertIn("platform:fixture", aim.cleared_obstacle_ids)
 
 
 if __name__ == "__main__":

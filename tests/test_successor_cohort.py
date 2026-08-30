@@ -116,10 +116,12 @@ class SuccessorCohortPlanTests(unittest.TestCase):
         ]
         self.assertTrue(guided_actions)
         self.assertTrue(all(
-            action["selection_mode"] == "trajectory_guided_direct_pig"
-            and action["trajectory_arc"] == "low"
+            action["selection_mode"] == "trajectory_guided_direct_pig_clearance"
+            and action["trajectory_arc"] == "lowest_clear"
             and action["target_kind"] == "pig"
             and action["aim_point"] == "visible_polygon_upper_edge"
+            and action["clearance_model"]
+            == "live_bird_radius_inflated_visible_obstacles"
             for action in guided_actions
         ))
 
@@ -150,16 +152,28 @@ class SuccessorCohortPlanTests(unittest.TestCase):
             for action in slot["planned_actions"]
         )
         symbolic_state = [{
-            "features": [{
-                "properties": {"id": "pig-1", "label": "BasicSmallPig"},
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [[
-                        [292.0, 212.0], [308.0, 212.0],
-                        [308.0, 228.0], [292.0, 228.0],
-                    ]],
+            "features": [
+                {
+                    "properties": {"id": "bird-1", "label": "redBird"},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [94.0, 294.0], [106.0, 294.0],
+                            [106.0, 306.0], [94.0, 306.0],
+                        ]],
+                    },
                 },
-            }],
+                {
+                    "properties": {"id": "pig-1", "label": "BasicSmallPig"},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [292.0, 212.0], [308.0, 212.0],
+                            [308.0, 228.0], [292.0, 228.0],
+                        ]],
+                    },
+                },
+            ],
         }]
         bridge = SimpleNamespace(
             get_symbolic_state_without_screenshot=lambda: symbolic_state

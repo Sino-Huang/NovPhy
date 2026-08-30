@@ -36,22 +36,22 @@ from world_model.data.deployment_temporal import (
 )
 
 
-PLAN_SCHEMA: Final = "multi_shot_successor_collection_plan_v3"
-PLAN_IDENTITY_NAMESPACE: Final = "issue-62-collection-plan-v3"
-PLANNED_ACTION_IDENTITY_NAMESPACE: Final = "issue-62-planned-action-v2"
-PILOT_REPORT_SCHEMA: Final = "multi_shot_successor_pilot_report_v2"
-PILOT_REPORT_IDENTITY_NAMESPACE: Final = "issue-62-pilot-report-v2"
-RELEASE_SCHEMA: Final = "multi_shot_successor_cohort_release_v2"
-TRAJECTORY_SCHEMA: Final = "multi_shot_successor_trajectory_v2"
+PLAN_SCHEMA: Final = "multi_shot_successor_collection_plan_v4"
+PLAN_IDENTITY_NAMESPACE: Final = "issue-62-collection-plan-v4"
+PLANNED_ACTION_IDENTITY_NAMESPACE: Final = "issue-62-planned-action-v3"
+PILOT_REPORT_SCHEMA: Final = "multi_shot_successor_pilot_report_v3"
+PILOT_REPORT_IDENTITY_NAMESPACE: Final = "issue-62-pilot-report-v3"
+RELEASE_SCHEMA: Final = "multi_shot_successor_cohort_release_v3"
+TRAJECTORY_SCHEMA: Final = "multi_shot_successor_trajectory_v3"
 PUBLIC_ROLES: Final = ("training", "calibration", "model_selection")
 BEHAVIOR_POLICIES: Final = (
     "uniform_random",
     "stratified_bounds",
     "trajectory_guided_direct_pig",
 )
-GUIDED_ACTION_STRATUM: Final = "direct_pig__low_arc__tap_early"
+GUIDED_ACTION_STRATUM: Final = "direct_pig__lowest_clear_arc__tap_early"
 ACTION_BOUNDS: Final = {
-    "drag_x": [-160, -40],
+    "drag_x": [-160, -10],
     "drag_y": [-80, 80],
     "tap_time_ms": [0, 1000],
     "release_time_ms": 600,
@@ -117,7 +117,7 @@ def _expected_identity(namespace: str, field: str, value: Mapping[str, Any]) -> 
 
 
 def release_identity_for_plan(plan_identity: str) -> str:
-    return successor_identity("issue-62-successor-release-v2", plan_identity)
+    return successor_identity("issue-62-successor-release-v3", plan_identity)
 
 
 def _action_stratum(drag_x: int, drag_y: int, tap_time_ms: int) -> str:
@@ -151,7 +151,7 @@ def _sample_action(
         x_bin = stratum_index % 2
         y_bin = (stratum_index // 2) % 3
         tap_bin = (stratum_index // 6) % 2
-        x_ranges = ((-160, -101), (-100, -40))
+        x_ranges = ((-160, -101), (-100, -10))
         y_ranges = ((-80, -28), (-27, 27), (28, 80))
         tap_ranges = ((0, 499), (500, 1000))
         drag_x = rng.randint(*x_ranges[x_bin])
@@ -163,11 +163,12 @@ def _sample_action(
             "identity",
             {
                 "action_index": action_index,
-                "selection_mode": "trajectory_guided_direct_pig",
+                "selection_mode": "trajectory_guided_direct_pig_clearance",
                 "target_kind": "pig",
                 "target_rank": 0,
                 "aim_point": "visible_polygon_upper_edge",
-                "trajectory_arc": "low",
+                "trajectory_arc": "lowest_clear",
+                "clearance_model": "live_bird_radius_inflated_visible_obstacles",
                 "tap_time_ms": 0,
                 "release_time_ms": ACTION_BOUNDS["release_time_ms"],
                 "action_stratum": GUIDED_ACTION_STRATUM,
@@ -214,7 +215,7 @@ def _lineage_slots(
                 "behavior_policy": policy,
             }
             slot_identity = successor_identity(
-                "issue-62-scenario-lineage-slot-v2", slot_payload
+                "issue-62-scenario-lineage-slot-v3", slot_payload
             )
             rng = random.Random(f"{slot_identity}:actions")
             action_count = min(max_shots, int(family["authored_bird_count"]))
@@ -447,15 +448,18 @@ def validate_successor_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
                     set(action) == {
                         "action_index", "selection_mode", "target_kind",
                         "target_rank", "aim_point", "trajectory_arc",
+                        "clearance_model",
                         "tap_time_ms", "release_time_ms", "action_stratum",
                         "identity",
                     }
                     and action.get("selection_mode")
-                    == "trajectory_guided_direct_pig"
+                    == "trajectory_guided_direct_pig_clearance"
                     and action.get("target_kind") == "pig"
                     and action.get("target_rank") == 0
                     and action.get("aim_point") == "visible_polygon_upper_edge"
-                    and action.get("trajectory_arc") == "low"
+                    and action.get("trajectory_arc") == "lowest_clear"
+                    and action.get("clearance_model")
+                    == "live_bird_radius_inflated_visible_obstacles"
                     and action.get("tap_time_ms") == 0
                     and action.get("action_stratum") == GUIDED_ACTION_STRATUM
                 )

@@ -18,6 +18,7 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
     private int stabilityCandidateSteps;
     private bool v2StabilityCandidate;
     private int v2StabilityCandidateSteps;
+    private bool? v2StableState;
     private bool v2InterventionObserved;
     private PhysicsCaptureV2FixedStepRecorder v2Recorder;
     private PhysicsCaptureV2AlignedObservationRecorder v2ObservationRecorder;
@@ -68,6 +69,7 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
         captureSequence = 1;
         stabilityCandidateSteps = 0;
         v2StabilityCandidateSteps = 0;
+        v2StableState = null;
         v2InterventionObserved = false;
     }
 
@@ -92,6 +94,7 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
         }
         v2EntityIds.Clear();
         v2StabilityCandidateSteps = 0;
+        v2StableState = null;
         v2InterventionObserved = false;
         v2Recorder = GetComponent<PhysicsCaptureV2FixedStepRecorder>();
         if (v2Recorder == null) v2Recorder = gameObject.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
@@ -346,8 +349,10 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
         {
             v2StabilityCandidateSteps++;
         }
-        if (v2StabilityCandidateSteps == 2)
+        if (v2StabilityCandidateSteps == 2
+            && (!v2StableState.HasValue || v2StableState.Value != v2StabilityCandidate))
         {
+            v2StableState = v2StabilityCandidate;
             RecordV2(v2StabilityCandidate ? "stable_entered" : "stable_exited", null, "{}");
             bool levelClearPending = Resources.FindObjectsOfTypeAll<ABGameWorld>()
                 .Any(world => world != null && world.gameObject.scene.IsValid()

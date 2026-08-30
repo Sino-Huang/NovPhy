@@ -85,20 +85,20 @@ from world_model.training.manifest import git_revision
 ROOT: Final = Path(__file__).resolve().parents[1]
 STAGE_ROOT: Final = ROOT / "sciencebirdsgames/aligned-observation-v1"
 DEFAULT_PILOT_PLAN: Final = (
-    ROOT / "docs/data_contracts/issue_62_pilot_plan_v3.json"
+    ROOT / "docs/data_contracts/issue_62_pilot_plan_v4.json"
 )
-DEFAULT_PILOT_RUNTIME: Final = ROOT / ".local-artifacts/issue-62-pilot-run-v3"
-DEFAULT_PILOT_REPORT: Final = ROOT / ".local-artifacts/issue-62-pilot-report-v3.json"
-DEFAULT_PILOT_AUDIT: Final = ROOT / "data/issue-62-pilot-audit-v3"
+DEFAULT_PILOT_RUNTIME: Final = ROOT / ".local-artifacts/issue-62-pilot-run-v4"
+DEFAULT_PILOT_REPORT: Final = ROOT / ".local-artifacts/issue-62-pilot-report-v4.json"
+DEFAULT_PILOT_AUDIT: Final = ROOT / "data/issue-62-pilot-audit-v4"
 DEFAULT_PRODUCTION_PLAN: Final = (
-    ROOT / ".local-artifacts/issue-62-production-plan-v3.json"
+    ROOT / ".local-artifacts/issue-62-production-plan-v4.json"
 )
 DEFAULT_PRODUCTION_RUNTIME: Final = (
-    ROOT / ".local-artifacts/issue-62-production-run-v3"
+    ROOT / ".local-artifacts/issue-62-production-run-v4"
 )
-DEFAULT_RELEASE: Final = ROOT / ".local-artifacts/issue-62-successor-cohort-v3"
+DEFAULT_RELEASE: Final = ROOT / ".local-artifacts/issue-62-successor-cohort-v4"
 DEFAULT_SUMMARY: Final = (
-    ROOT / "data/runtime_evidence/issue-62/successor-cohort-summary-v3.json"
+    ROOT / "data/runtime_evidence/issue-62/successor-cohort-summary-v4.json"
 )
 OBSERVATION_CONFIGURATION: Final = "agent_rgb8_native_v1"
 PILOT_AUDIT_FPS: Final = 50
@@ -757,7 +757,7 @@ def dry_run(pilot_plan_path: Path = DEFAULT_PILOT_PLAN) -> dict[str, Any]:
         maximum_training_lineages=200,
     )
     result = {
-        "schema": "issue_62_successor_cohort_dry_run_v2",
+        "schema": "issue_62_successor_cohort_dry_run_v3",
         "pilot_plan_identity": plan["identity"],
         "planned_pilot_lineages": len(plan["lineages"]),
         "public_roles": list(PUBLIC_ROLES),
@@ -819,7 +819,7 @@ def _resolve_planned_interface_action(
     observation: Mapping[str, float],
     bridge: Any,
 ) -> dict[str, Any]:
-    if planned["selection_mode"] == "trajectory_guided_direct_pig":
+    if planned["selection_mode"] == "trajectory_guided_direct_pig_clearance":
         aim = aim_directly_at_visible_pig(
             bridge.get_symbolic_state_without_screenshot(),
             observation,
@@ -1362,9 +1362,25 @@ def run_collection(
     headless: bool,
     attempt_audit_output: Path | None = None,
     lineage_limit: int | None = None,
+    lineage_ordinals: tuple[int, ...] | None = None,
 ) -> list[dict[str, Any]]:
     plan = validate_successor_plan(plan)
-    if lineage_limit is None:
+    if lineage_limit is not None and lineage_ordinals is not None:
+        raise SuccessorCohortError(
+            "lineage limit and explicit lineage ordinals are mutually exclusive"
+        )
+    if lineage_ordinals is not None:
+        if (
+            not lineage_ordinals
+            or len(set(lineage_ordinals)) != len(lineage_ordinals)
+            or any(
+                type(value) is not int or not 0 <= value < len(plan["lineages"])
+                for value in lineage_ordinals
+            )
+        ):
+            raise SuccessorCohortError("lineage ordinals are outside the frozen plan")
+        scheduled_lineages = [plan["lineages"][value] for value in lineage_ordinals]
+    elif lineage_limit is None:
         scheduled_lineages = plan["lineages"]
     elif type(lineage_limit) is int and 1 <= lineage_limit <= len(plan["lineages"]):
         scheduled_lineages = plan["lineages"][:lineage_limit]
@@ -1660,6 +1676,7 @@ def run_pilot(
     speed: int,
     headless: bool,
     lineage_limit: int | None = None,
+    lineage_ordinals: tuple[int, ...] | None = None,
 ) -> dict[str, Any]:
     plan = _load_plan(plan_path, "pilot")
     records = run_collection(
@@ -1671,6 +1688,7 @@ def run_pilot(
         headless=headless,
         attempt_audit_output=audit_output,
         lineage_limit=lineage_limit,
+        lineage_ordinals=lineage_ordinals,
     )
     if len(records) < len(plan["lineages"]):
         accepted = sum(item["status"] == "accepted" for item in records)
@@ -1997,6 +2015,10 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--pilot-audit-output", type=Path, default=DEFAULT_PILOT_AUDIT)
     parser.add_argument("--pilot-lineage-limit", type=int)
     parser.add_argument(
+        "--pilot-lineage-ordinals",
+        type=lambda value: tuple(int(item) for item in value.split(",")),
+    )
+    parser.add_argument(
         "--production-plan", type=Path, default=DEFAULT_PRODUCTION_PLAN
     )
     parser.add_argument(
@@ -2031,6 +2053,7 @@ def main(argv: list[str] | None = None) -> int:
             speed=args.speed,
             headless=args.headless,
             lineage_limit=args.pilot_lineage_limit,
+            lineage_ordinals=args.pilot_lineage_ordinals,
         )
     elif args.freeze_production:
         result = freeze_production(

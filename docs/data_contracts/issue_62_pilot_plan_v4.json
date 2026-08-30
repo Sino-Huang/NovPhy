@@ -1,0 +1,1306 @@
+{
+  "action_bounds": {
+    "drag_x": [
+      -160,
+      -10
+    ],
+    "drag_y": [
+      -80,
+      80
+    ],
+    "release_time_ms": 600,
+    "tap_time_ms": [
+      0,
+      1000
+    ]
+  },
+  "behavior_policy_mixture": {
+    "stratified_bounds": "balanced_by_frozen_slot_ordinal",
+    "trajectory_guided_direct_pig": "balanced_by_frozen_slot_ordinal",
+    "uniform_random": "balanced_by_frozen_slot_ordinal"
+  },
+  "fixed_retry_limit": 2,
+  "generator_families": [
+    {
+      "authored_bird_count": 1,
+      "canonical_template_name": "0_1_010101_0_1",
+      "max_coordinate": [
+        1.229969,
+        1.809741
+      ],
+      "min_coordinate": [
+        -7.88,
+        -2.39049
+      ],
+      "name": "type010101",
+      "reference_point": [
+        1.00798,
+        -2.1274
+      ],
+      "template_source": "tasks/task_templates/novelty_level_0/type010101/Levels/00001_0_1_010101_0_1.xml",
+      "workbook_row": 3
+    },
+    {
+      "authored_bird_count": 3,
+      "canonical_template_name": "0_1_010102_0_2",
+      "max_coordinate": [
+        1.444081,
+        1.53147
+      ],
+      "min_coordinate": [
+        -7.235919,
+        -1.95804
+      ],
+      "name": "type010102",
+      "reference_point": [
+        1.02408,
+        -1.84657
+      ],
+      "template_source": "tasks/task_templates/novelty_level_0/type010102/Levels/00001_0_1_010102_0_2.xml",
+      "workbook_row": 4
+    }
+  ],
+  "identity": "issue-62-collection-plan-v4:sha256:1ce1dc59c7b903c19f5962785d673927563cbc865691619289094b1f3c7d0dbf",
+  "lineages": [
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "training",
+      "generation_seed": 6300000,
+      "generator_family": "type010101",
+      "ordinal": 0,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_low__tap_late",
+          "drag_x": -115,
+          "drag_y": -49,
+          "identity": "issue-62-planned-action-v3:sha256:4af3ba0db2950b9bdfd9a0f5920436f9faaa75843da16674fc74918575ecc6c1",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 793
+        }
+      ],
+      "role_ordinal": 0,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:6b516cb0adc9d434809a511ad414220a8ca16448949d7c537c1f20e77893dc22"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "training",
+      "generation_seed": 6300001,
+      "generator_family": "type010102",
+      "ordinal": 1,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_low__tap_early",
+          "drag_x": -103,
+          "drag_y": -71,
+          "identity": "issue-62-planned-action-v3:sha256:ab06dd5f4de6faa64e75584abb897cd772557d79c3a9c751bbf94c2c3c01934f",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 443
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_low__tap_early",
+          "drag_x": -44,
+          "drag_y": -65,
+          "identity": "issue-62-planned-action-v3:sha256:87d175fed96bb3c43c2eaa215f849fb8ce1bb1152e2b9428bcaac80b1c71dd14",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 160
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_far__y_middle__tap_early",
+          "drag_x": -149,
+          "drag_y": 13,
+          "identity": "issue-62-planned-action-v3:sha256:31b497440105b055c023eda1e092560bffb2d00ebaf56515340b7b1862189145",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 4
+        }
+      ],
+      "role_ordinal": 1,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:e5999622d7ad2208d61404d2f73847d406146af838e5c6639b7f46f896db171c"
+    },
+    {
+      "behavior_policy": "trajectory_guided_direct_pig",
+      "exposure_role": "training",
+      "generation_seed": 6300002,
+      "generator_family": "type010101",
+      "ordinal": 2,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        }
+      ],
+      "role_ordinal": 2,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:ebf3acacce72f60ca87d80e93e4ff671a474abfbcd38041255721bf4137599ce"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "training",
+      "generation_seed": 6300003,
+      "generator_family": "type010102",
+      "ordinal": 3,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_middle__tap_early",
+          "drag_x": -112,
+          "drag_y": 9,
+          "identity": "issue-62-planned-action-v3:sha256:be0290750ab74ba47857a7f341ad3366cd4c635cf3681d571e55c0b19e2cc215",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 61
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_middle__tap_late",
+          "drag_x": -135,
+          "drag_y": 5,
+          "identity": "issue-62-planned-action-v3:sha256:eaea9686dde0d4f6d615a143d9aab53d6c71fb321683984ca741a1c5db3b0402",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 536
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_middle__tap_early",
+          "drag_x": -98,
+          "drag_y": 0,
+          "identity": "issue-62-planned-action-v3:sha256:5e90954b9ee9ed7b3bd9a3dbaff4c54fcacdaeb3675455ece99cc1bba407349e",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 415
+        }
+      ],
+      "role_ordinal": 3,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:c2701b74af769e5c87a255599520e2f8bcf92b8009f3166f6ccfffa991618290"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "training",
+      "generation_seed": 6300004,
+      "generator_family": "type010101",
+      "ordinal": 4,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_early",
+          "drag_x": -57,
+          "drag_y": -27,
+          "identity": "issue-62-planned-action-v3:sha256:1795a4b7a99cc6df4515e05ad8c3c557ea8ac68a8bf859dd54e1e70900c1a277",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 27
+        }
+      ],
+      "role_ordinal": 4,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:1013cd3653fbf92d420aa40ef0cd4024159b1393c255dbe464e64c2d3a5e7720"
+    },
+    {
+      "behavior_policy": "trajectory_guided_direct_pig",
+      "exposure_role": "training",
+      "generation_seed": 6300005,
+      "generator_family": "type010102",
+      "ordinal": 5,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:3ed27c16b9bba7f3963f5a13a9783f56058c195820ad06fd92650004b46b9da1",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d4b66b4ee601beb0458f29ba6e88fefb0dad7814fce2257d7d45878712199ae2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        }
+      ],
+      "role_ordinal": 5,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:e6e160b06f466e64a8eed9859708d37ae72dc82b268aa334f20401d867ae05fb"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "training",
+      "generation_seed": 6300006,
+      "generator_family": "type010101",
+      "ordinal": 6,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_low__tap_late",
+          "drag_x": -101,
+          "drag_y": -62,
+          "identity": "issue-62-planned-action-v3:sha256:6ef69a777fd7fa898a40e177710928d1091fd521c268b31b557b40122bbb3a2e",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 665
+        }
+      ],
+      "role_ordinal": 6,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:75701f0111be631780afbca703137c36a943135e56c2dc7e2d1098677bdeb69e"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "training",
+      "generation_seed": 6300007,
+      "generator_family": "type010102",
+      "ordinal": 7,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_high__tap_early",
+          "drag_x": -113,
+          "drag_y": 39,
+          "identity": "issue-62-planned-action-v3:sha256:fa878626a8d20e61de19a426ed8b3ab934a26db55a2908d170f1c3926582ee23",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 440
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_high__tap_early",
+          "drag_x": -36,
+          "drag_y": 41,
+          "identity": "issue-62-planned-action-v3:sha256:6fbb8fcc3b4e72b3110730e5961206ffc25f2741f7f30fa4885e4052639aa8ab",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 396
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_far__y_low__tap_late",
+          "drag_x": -114,
+          "drag_y": -76,
+          "identity": "issue-62-planned-action-v3:sha256:06334fb310b9aa21b7d64f216d86ea6c2d9d452d367719456426e66901f05f82",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 642
+        }
+      ],
+      "role_ordinal": 7,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:8bb6db92b4c9ee31ce5f28e4dba8568fb486240dc2d69d347695147e288de5cf"
+    },
+    {
+      "behavior_policy": "trajectory_guided_direct_pig",
+      "exposure_role": "training",
+      "generation_seed": 6300008,
+      "generator_family": "type010101",
+      "ordinal": 8,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        }
+      ],
+      "role_ordinal": 8,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:f8f351fbc56076d9681e8c3fe8d3a2e492089b8f1020bfd278e215706da1191d"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "training",
+      "generation_seed": 6300009,
+      "generator_family": "type010102",
+      "ordinal": 9,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_high__tap_early",
+          "drag_x": -80,
+          "drag_y": 38,
+          "identity": "issue-62-planned-action-v3:sha256:61b3cc4e8d0082b55572836806232b51014cdf7583e1c31267105405fc24ed4f",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 119
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_high__tap_early",
+          "drag_x": -66,
+          "drag_y": 53,
+          "identity": "issue-62-planned-action-v3:sha256:1507d4555ff9d930d0f94bff07236ff99cb2f2956d07deff7f39573ec77697b8",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 193
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_far__y_middle__tap_late",
+          "drag_x": -157,
+          "drag_y": 6,
+          "identity": "issue-62-planned-action-v3:sha256:30358e65ea964167a97bf8ea19ca467b83e265fd80a0198be707ce11c67d61bb",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 973
+        }
+      ],
+      "role_ordinal": 9,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:cd709d4438a9f480459d451310c2e1b11d6edf61e0a757ed52e01fbccc09b5c5"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "training",
+      "generation_seed": 6300010,
+      "generator_family": "type010101",
+      "ordinal": 10,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_low__tap_late",
+          "drag_x": -41,
+          "drag_y": -55,
+          "identity": "issue-62-planned-action-v3:sha256:87c944c0cd86f0ebd5a1be03ae3086e351472d42aa134d483c341f512d7a1388",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 575
+        }
+      ],
+      "role_ordinal": 10,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:383063a2f622d4b6709ae009aa0a414f7527be8ed9ca5687c5ac5734fd90f03d"
+    },
+    {
+      "behavior_policy": "trajectory_guided_direct_pig",
+      "exposure_role": "training",
+      "generation_seed": 6300011,
+      "generator_family": "type010102",
+      "ordinal": 11,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:3ed27c16b9bba7f3963f5a13a9783f56058c195820ad06fd92650004b46b9da1",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d4b66b4ee601beb0458f29ba6e88fefb0dad7814fce2257d7d45878712199ae2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        }
+      ],
+      "role_ordinal": 11,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:d321d4c51d3a00b1d1214792be102ea9accb98fb1a83eef176e391751c1b4d55"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "calibration",
+      "generation_seed": 7300000,
+      "generator_family": "type010102",
+      "ordinal": 12,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_middle__tap_late",
+          "drag_x": -119,
+          "drag_y": 23,
+          "identity": "issue-62-planned-action-v3:sha256:15007357a6b8e7085ee843c83bc6038012fcdcac23163c5ba5e461df3aba045b",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 970
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_middle__tap_late",
+          "drag_x": -63,
+          "drag_y": -27,
+          "identity": "issue-62-planned-action-v3:sha256:254a975fff00152a8b947aa1eb73224305958cee956048fd20de6f8cc7c16b91",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 813
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_far__y_high__tap_late",
+          "drag_x": -154,
+          "drag_y": 41,
+          "identity": "issue-62-planned-action-v3:sha256:0131a97c313adba73ee736e13d61a50a09957829cb5aa403cc5da8966b439483",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 540
+        }
+      ],
+      "role_ordinal": 0,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:d71df0aecd43436e5d7d903d624dd6cdc016ef29000f0936f65004785f04210f"
+    },
+    {
+      "behavior_policy": "trajectory_guided_direct_pig",
+      "exposure_role": "calibration",
+      "generation_seed": 7300001,
+      "generator_family": "type010101",
+      "ordinal": 13,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        }
+      ],
+      "role_ordinal": 1,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:baea056c8b8833b6276e8229316e01af03747ba67c1dea203ea7f40bc3f68dca"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "calibration",
+      "generation_seed": 7300002,
+      "generator_family": "type010102",
+      "ordinal": 14,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_high__tap_late",
+          "drag_x": -140,
+          "drag_y": 62,
+          "identity": "issue-62-planned-action-v3:sha256:bd18b72900e230a123c932b3a55015349b16643667898b1a3c0759ac120a0472",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 593
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_high__tap_early",
+          "drag_x": -52,
+          "drag_y": 66,
+          "identity": "issue-62-planned-action-v3:sha256:92290ebd593beb80efb7e8113b8a4308829fa070a147b0a9c13cda9709c6f123",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 288
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_far__y_middle__tap_early",
+          "drag_x": -132,
+          "drag_y": -17,
+          "identity": "issue-62-planned-action-v3:sha256:aeea9e6d924feef722a73bbb470100155b8cf1badc3fc998df9167f224b3496a",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 445
+        }
+      ],
+      "role_ordinal": 2,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:a088da7ef1c36ad74d5b7e006ff32cbdcc0f1f87f707ac7e809834204b92302a"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "calibration",
+      "generation_seed": 7300003,
+      "generator_family": "type010101",
+      "ordinal": 15,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -47,
+          "drag_y": 75,
+          "identity": "issue-62-planned-action-v3:sha256:ed0cd3f53f5bef1f4e8008d6e1088e4b2591b8139f5ea2af7e3e3818b71d9a67",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 826
+        }
+      ],
+      "role_ordinal": 3,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:b30bca94f8981037f0fd7b496bb1aadaf6d4bb76efbae88c7fd51c71b2380ca2"
+    },
+    {
+      "behavior_policy": "trajectory_guided_direct_pig",
+      "exposure_role": "calibration",
+      "generation_seed": 7300004,
+      "generator_family": "type010102",
+      "ordinal": 16,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:3ed27c16b9bba7f3963f5a13a9783f56058c195820ad06fd92650004b46b9da1",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d4b66b4ee601beb0458f29ba6e88fefb0dad7814fce2257d7d45878712199ae2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        }
+      ],
+      "role_ordinal": 4,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:f5c0f2428eb806809f883c3d9cb87af6dc42fdc76a7e7ef76baf3a6eab0045e1"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "calibration",
+      "generation_seed": 7300005,
+      "generator_family": "type010101",
+      "ordinal": 17,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_early",
+          "drag_x": -25,
+          "drag_y": -27,
+          "identity": "issue-62-planned-action-v3:sha256:1ab407c587c5f32c57c433a2349081696a942d1d6ec21ccb7babefc25c5c311c",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 278
+        }
+      ],
+      "role_ordinal": 5,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:34b780b84245bb3b4fe210370ab4c7e8dc8f4c41f2b8cb3d604cf6ef0d0eee51"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "calibration",
+      "generation_seed": 7300006,
+      "generator_family": "type010102",
+      "ordinal": 18,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_low__tap_early",
+          "drag_x": -134,
+          "drag_y": -52,
+          "identity": "issue-62-planned-action-v3:sha256:94f8d527cec36f1f915565d75516b9927d6364477acc8ada5eb59198588014f8",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 397
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_low__tap_early",
+          "drag_x": -69,
+          "drag_y": -62,
+          "identity": "issue-62-planned-action-v3:sha256:4ed1119df001ec7ca02b58b4402bca8a48bdba3906073f0b9431fcb13603965a",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 353
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_far__y_middle__tap_early",
+          "drag_x": -102,
+          "drag_y": 27,
+          "identity": "issue-62-planned-action-v3:sha256:4a5304ea50f48044178a6d12d7ade817259f8e3b60dd5d3dbe17844282d0537e",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 371
+        }
+      ],
+      "role_ordinal": 6,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:fd17090d79cca0060765834b63ea762080c36c2ffc87757592a831e8973ac772"
+    },
+    {
+      "behavior_policy": "trajectory_guided_direct_pig",
+      "exposure_role": "calibration",
+      "generation_seed": 7300007,
+      "generator_family": "type010101",
+      "ordinal": 19,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        }
+      ],
+      "role_ordinal": 7,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:d1f89b805aef32b6878ff3087fb7f769ed71a82bcca9e9a11fad0900acd97bee"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "calibration",
+      "generation_seed": 7300008,
+      "generator_family": "type010102",
+      "ordinal": 20,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_late",
+          "drag_x": -63,
+          "drag_y": -19,
+          "identity": "issue-62-planned-action-v3:sha256:6808dcb35049ce2f1896ac12b442579e1902d483280a696ec6555941da132b59",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 647
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_middle__tap_late",
+          "drag_x": -141,
+          "drag_y": -24,
+          "identity": "issue-62-planned-action-v3:sha256:28f280999157c999b0866a33c5f830c56ad2abf3e3b92e9ae19286896bdd19e1",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 549
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_far__y_middle__tap_early",
+          "drag_x": -137,
+          "drag_y": 9,
+          "identity": "issue-62-planned-action-v3:sha256:4e05dafd23e2410eb0c19e8678a18b77f85139254689d4b46674584ffd5d1293",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 272
+        }
+      ],
+      "role_ordinal": 8,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:aae098265c4394a31ac58e67d996aa3afd4579968445045f8c3fbdf2f28e00cf"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "calibration",
+      "generation_seed": 7300009,
+      "generator_family": "type010101",
+      "ordinal": 21,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_early",
+          "drag_x": -66,
+          "drag_y": 1,
+          "identity": "issue-62-planned-action-v3:sha256:e6db143dec85d08ef71fe238378babf9e262dd82c246abbce50bb7f244a23ded",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 57
+        }
+      ],
+      "role_ordinal": 9,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:e5657a05ba745853884473203f8ad75f68f43176e41314e30ae667cd7ed1998b"
+    },
+    {
+      "behavior_policy": "trajectory_guided_direct_pig",
+      "exposure_role": "calibration",
+      "generation_seed": 7300010,
+      "generator_family": "type010102",
+      "ordinal": 22,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:3ed27c16b9bba7f3963f5a13a9783f56058c195820ad06fd92650004b46b9da1",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d4b66b4ee601beb0458f29ba6e88fefb0dad7814fce2257d7d45878712199ae2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        }
+      ],
+      "role_ordinal": 10,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:ea96099cc2946f85fa0d27e299da8dd7635ce119cbb4fafafc1c74ef686b1d6f"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "calibration",
+      "generation_seed": 7300011,
+      "generator_family": "type010101",
+      "ordinal": 23,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_low__tap_late",
+          "drag_x": -83,
+          "drag_y": -69,
+          "identity": "issue-62-planned-action-v3:sha256:0b2d8646ee579d79d4c907f83d7b77cc58a1a5a1039526ab86c3e84d151bec17",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 616
+        }
+      ],
+      "role_ordinal": 11,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:3dba9c677c429f2ee36d80b4e5bc0df264e362cd8aa195647da3f2ce6a5f5670"
+    },
+    {
+      "behavior_policy": "trajectory_guided_direct_pig",
+      "exposure_role": "model_selection",
+      "generation_seed": 8300000,
+      "generator_family": "type010101",
+      "ordinal": 24,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        }
+      ],
+      "role_ordinal": 0,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:3ad7bfacc6b142a9ec8be4c672d90d7c62e13b899f3a49527fd46e036d8c7e2a"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "model_selection",
+      "generation_seed": 8300001,
+      "generator_family": "type010102",
+      "ordinal": 25,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -48,
+          "drag_y": 34,
+          "identity": "issue-62-planned-action-v3:sha256:08a9b70a59d35a762f7983fbe9925fbce70ad39c4edfacad552566dd60e66505",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 535
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_middle__tap_late",
+          "drag_x": -104,
+          "drag_y": -25,
+          "identity": "issue-62-planned-action-v3:sha256:42c508ecbb15ac2f4ad92a9ef694bf5a0fc365bc98f36e3342242b89b35e297d",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 760
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_low__tap_early",
+          "drag_x": -51,
+          "drag_y": -54,
+          "identity": "issue-62-planned-action-v3:sha256:3d6e5d1cc0e90a6a1d90577b9398646852a39ec6db4ed64da587c20dd8dfc1b8",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 383
+        }
+      ],
+      "role_ordinal": 1,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:325edc99f8d2ac69a3c0f9fcdeb4a1e1612356c6b8ed78dfd861238b266b7929"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "model_selection",
+      "generation_seed": 8300002,
+      "generator_family": "type010101",
+      "ordinal": 26,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_high__tap_early",
+          "drag_x": -151,
+          "drag_y": 57,
+          "identity": "issue-62-planned-action-v3:sha256:9b2c86b732189ccb6d64d366e9f965ac29a43e0a746d33381447ebfcac7c95db",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 84
+        }
+      ],
+      "role_ordinal": 2,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:f0440160d456bfc5f1fcf5e0353ee5ba8c4981f15811e26c721f08e1bccf2cac"
+    },
+    {
+      "behavior_policy": "trajectory_guided_direct_pig",
+      "exposure_role": "model_selection",
+      "generation_seed": 8300003,
+      "generator_family": "type010102",
+      "ordinal": 27,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:3ed27c16b9bba7f3963f5a13a9783f56058c195820ad06fd92650004b46b9da1",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d4b66b4ee601beb0458f29ba6e88fefb0dad7814fce2257d7d45878712199ae2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        }
+      ],
+      "role_ordinal": 3,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:9c285c12c0c67341c9d4519d7a8cd92d9159bc9c409e5bc7d3f7efa66de6e9a3"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "model_selection",
+      "generation_seed": 8300004,
+      "generator_family": "type010101",
+      "ordinal": 28,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_low__tap_early",
+          "drag_x": -18,
+          "drag_y": -71,
+          "identity": "issue-62-planned-action-v3:sha256:5033b001458f471541e3d205f997ac8867816bfb98584ba1059e82031d80b270",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 38
+        }
+      ],
+      "role_ordinal": 4,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:146fc7a90304d0a6c09f8e7fe490be4b987c39216de9243e5e7063ebb6eb8af1"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "model_selection",
+      "generation_seed": 8300005,
+      "generator_family": "type010102",
+      "ordinal": 29,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_high__tap_early",
+          "drag_x": -43,
+          "drag_y": 70,
+          "identity": "issue-62-planned-action-v3:sha256:1a23854898cec1f79a8e8818b2338bb967cbe95effd887f51ad4b6b69a9073f8",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 16
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_low__tap_late",
+          "drag_x": -149,
+          "drag_y": -67,
+          "identity": "issue-62-planned-action-v3:sha256:59eefbd68d2ec472efd059da79b7d5b735e5bc6fc14d05136aa6c6646e81a127",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 602
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_low__tap_late",
+          "drag_x": -59,
+          "drag_y": -62,
+          "identity": "issue-62-planned-action-v3:sha256:c5a2a21812ac4ffdfb9c8a9d3a2561f3be541b9d9bf4c0be5b4fadcb74b5fd9a",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 606
+        }
+      ],
+      "role_ordinal": 5,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:b3ea20efe8a03d8694b163dd2c1add34e3e55c8967b845dab3621396375d89c3"
+    },
+    {
+      "behavior_policy": "trajectory_guided_direct_pig",
+      "exposure_role": "model_selection",
+      "generation_seed": 8300006,
+      "generator_family": "type010101",
+      "ordinal": 30,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        }
+      ],
+      "role_ordinal": 6,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:0f6b4047bb30808a38e8aa4e58809dec93b0d9d5111b2be2b5cb0def7e3ad2ee"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "model_selection",
+      "generation_seed": 8300007,
+      "generator_family": "type010102",
+      "ordinal": 31,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_low__tap_late",
+          "drag_x": -28,
+          "drag_y": -72,
+          "identity": "issue-62-planned-action-v3:sha256:b44d54569bb48c6da6184aa1be24d9fdcd1f2078c2aa9e2a655a5a2b72788c4d",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 653
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_high__tap_early",
+          "drag_x": -94,
+          "drag_y": 35,
+          "identity": "issue-62-planned-action-v3:sha256:72ce0abc5d1713842f2df3652b2bd2b98867cda084620f95c059ae29f88b90ce",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 29
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_far__y_middle__tap_late",
+          "drag_x": -149,
+          "drag_y": 4,
+          "identity": "issue-62-planned-action-v3:sha256:5bc15e94b118d005b7bf15cbed1b5c58de480e4ba12ad0f105635ddcdbf8256e",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 643
+        }
+      ],
+      "role_ordinal": 7,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:e6cd364e93dc0487b78ee456be56420713c9bba526cbb56b105d8c70996431f2"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "model_selection",
+      "generation_seed": 8300008,
+      "generator_family": "type010101",
+      "ordinal": 32,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_middle__tap_late",
+          "drag_x": -153,
+          "drag_y": 5,
+          "identity": "issue-62-planned-action-v3:sha256:98b89e0f51e9a2f58d2e0247bd7b9f17c5620419fb30b69de5f259591287a330",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 876
+        }
+      ],
+      "role_ordinal": 8,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:48b4b301badce66cd2f9a22570a3e8f03a5db87999bbbe9ca9c6caf2c546a5c1"
+    },
+    {
+      "behavior_policy": "trajectory_guided_direct_pig",
+      "exposure_role": "model_selection",
+      "generation_seed": 8300009,
+      "generator_family": "type010102",
+      "ordinal": 33,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:3ed27c16b9bba7f3963f5a13a9783f56058c195820ad06fd92650004b46b9da1",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "aim_point": "visible_polygon_upper_edge",
+          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:d4b66b4ee601beb0458f29ba6e88fefb0dad7814fce2257d7d45878712199ae2",
+          "release_time_ms": 600,
+          "selection_mode": "trajectory_guided_direct_pig_clearance",
+          "tap_time_ms": 0,
+          "target_kind": "pig",
+          "target_rank": 0,
+          "trajectory_arc": "lowest_clear"
+        }
+      ],
+      "role_ordinal": 9,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:65efeee04bd89a6ce5b09d828e9b8ec3b61a9a1634bba8a90dcc57577f97ce6f"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "model_selection",
+      "generation_seed": 8300010,
+      "generator_family": "type010101",
+      "ordinal": 34,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_low__tap_late",
+          "drag_x": -19,
+          "drag_y": -59,
+          "identity": "issue-62-planned-action-v3:sha256:280a847e759e9f66815904a3c38c7f1fec549d3675bcceaae57136c99897141c",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 950
+        }
+      ],
+      "role_ordinal": 10,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:33d6cb81447b20e5af01b745ca5362d0c11c8e2c41426f12fa086a529865eed2"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "model_selection",
+      "generation_seed": 8300011,
+      "generator_family": "type010102",
+      "ordinal": 35,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_late",
+          "drag_x": -31,
+          "drag_y": 15,
+          "identity": "issue-62-planned-action-v3:sha256:83d713aed1f324269c4a66309d4c143133b050201cc08455e82844b65cd465e1",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 744
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_high__tap_late",
+          "drag_x": -119,
+          "drag_y": 60,
+          "identity": "issue-62-planned-action-v3:sha256:debb34b9faae455a3a487353d72429d486884cc3493506e743fe850ac47deb6f",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 818
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -19,
+          "drag_y": 33,
+          "identity": "issue-62-planned-action-v3:sha256:18ee3ced0675e0856d1590a707078d26aa31f129e3d04e11ba4479c91658015c",
+          "release_time_ms": 600,
+          "selection_mode": "frozen_relative_drag",
+          "tap_time_ms": 555
+        }
+      ],
+      "role_ordinal": 11,
+      "slot_identity": "issue-62-scenario-lineage-slot-v3:sha256:755aa816ae31c5548ede6fa5e89043f495c2326db779b6d9441d348ab84506cd"
+    }
+  ],
+  "max_shots": 6,
+  "nested_training_scales": [],
+  "non_final_only": true,
+  "phase": "pilot",
+  "pilot_report_identity": null,
+  "resource_decision": {
+    "bounded_pilot_lineages": 36,
+    "production_membership_frozen_after_pilot": true
+  },
+  "role_counts": {
+    "calibration": 12,
+    "model_selection": 12,
+    "training": 12
+  },
+  "schema": "multi_shot_successor_collection_plan_v4",
+  "source_issue": 62
+}
