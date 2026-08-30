@@ -722,7 +722,10 @@ def _dry_run(
             DualOutputPredictor(predictor.config),
             device="cpu",
         ),
-        adaptive_selector_loader=load_adaptive_horizon_checkpoint,
+        adaptive_selector_loader=lambda system: load_adaptive_horizon_checkpoint(
+            system,
+            release_time_ms=gameplay_protocol.action_bounds.release_time_ms,
+        ),
         progress=lambda value: print(value, flush=True),
     )
     plans = tuple(item.planner.plan(planning_observation) for item in gameplay_planners)

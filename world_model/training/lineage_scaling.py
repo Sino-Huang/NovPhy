@@ -44,6 +44,12 @@ from world_model.planning import (
     WorldModelCandidateEvaluator,
 )
 from world_model.planning.gameplay import PlanningObservation
+from world_model.training.cohort_v2_controller import (
+    CohortV2ControllerFeatureCodec,
+    load_cohort_v2_controller_checkpoint,
+    select_cohort_v2_controller_pairs,
+)
+from world_model.training.cohort_v2_evaluation import COHORT_V2_PAIRS
 from world_model.training.cohort_v2_micro import (
     CohortV2StateCodec,
     cohort_v2_model_state_identity,
@@ -118,6 +124,7 @@ class FrozenRankingState:
     trajectory_identity: str
     decision_transition_identity: str
     exposure_role: str
+    legal_candidate_set_identity: str
 
     def __post_init__(self) -> None:
         if (
@@ -125,6 +132,7 @@ class FrozenRankingState:
             or not self.scenario_lineage_identity
             or not self.trajectory_identity
             or not self.decision_transition_identity
+            or not self.legal_candidate_set_identity
             or self.exposure_role not in ("calibration", "model_selection")
         ):
             raise LineageScalingError("frozen ranking-state binding is invalid")
@@ -389,6 +397,7 @@ class LineageScalingProtocol:
                     item.trajectory_identity,
                     item.decision_transition_identity,
                     item.exposure_role,
+                    item.legal_candidate_set_identity,
                 )
                 for item in self.ranking_states
             ),
@@ -1746,9 +1755,9 @@ class ActionRankingState:
             )
 
     @property
-    def candidate_set_identity(self) -> str:
+    def legal_candidate_set_identity(self) -> str:
         return identity((
-            "realized-action-candidate-set-v1",
+            "legal-action-candidate-set-v1",
             self.identity,
             (
                 self.action_bounds.drag_x,
@@ -1766,6 +1775,19 @@ class ActionRankingState:
                         item.interface_action.drag_y,
                         item.interface_action.tap_time_ms,
                     ),
+                )
+                for item in self.candidates
+            ),
+        ))
+
+    @property
+    def candidate_set_identity(self) -> str:
+        return identity((
+            "realized-action-candidate-set-v1",
+            self.legal_candidate_set_identity,
+            tuple(
+                (
+                    item.identity,
                     float(item.realized_cost),
                 )
                 for item in self.candidates
@@ -1951,6 +1973,8 @@ def validate_action_ranking_states(
             or state.trajectory_identity != frozen.trajectory_identity
             or state.decision_transition_identity
             != frozen.decision_transition_identity
+            or state.legal_candidate_set_identity
+            != frozen.legal_candidate_set_identity
             or state.trajectory_identity != binding.trajectory_identity
             or state.decision_transition_identity not in binding.transition_identities
             or state.carrier is not carrier
@@ -2329,39 +2353,33 @@ class LoadedAdaptiveHorizonSelector:
 
 def load_adaptive_horizon_checkpoint(
     system: GameplaySystemSpec,
+    *,
+    release_time_ms: int,
 ) -> LoadedAdaptiveHorizonSelector:
-    """Load a small action-conditional h1/h15 controller checkpoint."""
+    """Load issue 15's learned controller, restricted to continuous h1/h15."""
 
     if (
         type(system) is not GameplaySystemSpec
         or system.mode is not GameplayPlanningMode.ADAPTIVE
         or system.controller_checkpoint is None
+        or type(release_time_ms) is not int
+        or release_time_ms < 0
     ):
         raise LineageScalingError("adaptive controller loader requires an adaptive system")
     try:
-        payload = torch.load(
-            system.controller_checkpoint,
-            map_location="cpu",
-            weights_only=True,
+        models, config, _semantic_identity = load_cohort_v2_controller_checkpoint(
+            system.controller_checkpoint
         )
-        if not isinstance(payload, Mapping) or set(payload) != {
-            "schema",
-            "drag_y_threshold",
-            "below_horizon",
-            "at_or_above_horizon",
-        }:
-            raise LineageScalingError("adaptive controller checkpoint fields differ")
-        threshold = int(payload["drag_y_threshold"])
-        below = int(payload["below_horizon"])
-        at_or_above = int(payload["at_or_above_horizon"])
-        if (
-            payload["schema"] != "lineage_scaled_adaptive_horizon_checkpoint_v1"
-            or {below, at_or_above} != {1, 15}
-        ):
-            raise LineageScalingError("adaptive controller checkpoint is invalid")
+        controller = models[0]
+        codec = CohortV2ControllerFeatureCodec(config)
+        continuous_pairs = (
+            PredictionPair(1, Abstraction.CONTINUOUS),
+            PredictionPair(15, Abstraction.CONTINUOUS),
+        )
+        continuous_indices = tuple(
+            COHORT_V2_PAIRS.index(pair) for pair in continuous_pairs
+        )
     except (OSError, TypeError, ValueError, RuntimeError) as error:
-        if isinstance(error, LineageScalingError):
-            raise
         raise LineageScalingError(
             f"adaptive controller checkpoint is invalid: {error}"
         ) from error
@@ -2369,10 +2387,41 @@ def load_adaptive_horizon_checkpoint(
         system.controller_checkpoint_identity
     ):
         raise LineageScalingError("adaptive controller checkpoint bytes changed")
+
+    class ContinuousPairController(torch.nn.Module):
+        def forward(self, values: torch.Tensor) -> torch.Tensor:
+            return controller(values)[:, continuous_indices]
+
+    restricted_controller = ContinuousPairController()
+
+    def select_horizon(
+        observation: PlanningObservation,
+        action: SlingshotAction,
+    ) -> int:
+        if observation.agent_rgb is None:
+            raise LineageScalingError(
+                "adaptive controller requires a deployment RGB observation"
+            )
+        features = codec.encode(
+            observation.agent_rgb,
+            elapsed_fixed_steps=0,
+            intervention={"interface_action": {
+                "drag_release": (action.drag_x, action.drag_y),
+                "frame_height": observation.frame_height,
+                "releaseTime": release_time_ms,
+                "tapTime": action.tap_time_ms,
+            }},
+        ).unsqueeze(0)
+
+        return select_cohort_v2_controller_pairs(
+            "joint_pair",
+            restricted_controller,
+            features,
+            continuous_pairs,
+        )[0].delta
+
     return LoadedAdaptiveHorizonSelector(
-        selector=lambda _observation, action: (
-            below if action.drag_y < threshold else at_or_above
-        ),
+        selector=select_horizon,
         checkpoint_identity=system.controller_checkpoint_identity,
     )
 

@@ -13,7 +13,7 @@ from world_model.data.deployment_temporal import (
     TrajectoryLineageBinding,
     TrajectoryLineageManifest,
 )
-from world_model.model import DualOutputPredictor, PredictorConfig
+from world_model.model import DualOutputPredictor, PredictorConfig, identity
 from world_model.planning import (
     GameplayCostConfig,
     PlanningObservation,
@@ -83,6 +83,26 @@ def _manifest(
     )
 
 
+def _legal_candidate_set_identity(state_identity: str) -> str:
+    return identity((
+        "legal-action-candidate-set-v1",
+        state_identity,
+        ((-160, -40), (-80, 80), (0, 1000), 600, 400),
+        (
+            (
+                "candidate:a",
+                torch.tensor((-0.2, 0.1, 0.6, 0.0, 1.0)).tolist(),
+                (-80, 40, 0),
+            ),
+            (
+                "candidate:b",
+                torch.tensor((-0.1, 0.2, 0.6, 0.0, 1.0)).tolist(),
+                (-40, 80, 0),
+            ),
+        ),
+    ))
+
+
 def _protocol(*, budget: int = 8) -> LineageScalingProtocol:
     small_ids = tuple(f"lineage:train:{index}" for index in range(6))
     full_ids = small_ids + tuple(f"lineage:train:{index}" for index in range(6, 8))
@@ -104,6 +124,9 @@ def _protocol(*, budget: int = 8) -> LineageScalingProtocol:
                     "transition:lineage:calibration:0:d0:h1"
                 ),
                 exposure_role="calibration",
+                legal_candidate_set_identity=_legal_candidate_set_identity(
+                    "ranking-state:runner"
+                ),
             ),
             FrozenRankingState(
                 identity="ranking-state:0",
@@ -113,6 +136,9 @@ def _protocol(*, budget: int = 8) -> LineageScalingProtocol:
                     "transition:lineage:model-selection:0:d0:h1"
                 ),
                 exposure_role="model_selection",
+                legal_candidate_set_identity=_legal_candidate_set_identity(
+                    "ranking-state:0"
+                ),
             ),
         ),
         training_seeds=(11, 12, 13),
@@ -502,6 +528,12 @@ class LineageScalingTrainingTests(unittest.TestCase):
             ),),
         )
         self.assertEqual(matched["candidate_count"], 2)
+        with self.assertRaisesRegex(LineageScalingError, "candidate"):
+            validate_action_ranking_states(
+                protocol,
+                (replace(state, candidates=tuple(reversed(state.candidates))),),
+                carrier=CarrierKind.SOURCE,
+            )
         extra_state = FrozenRankingState(
             identity="ranking-state:1",
             scenario_lineage_identity="lineage:model-selection:0",
@@ -510,6 +542,9 @@ class LineageScalingTrainingTests(unittest.TestCase):
                 "transition:lineage:model-selection:0:d1:h1"
             ),
             exposure_role="model_selection",
+            legal_candidate_set_identity=_legal_candidate_set_identity(
+                "ranking-state:1"
+            ),
         )
         expanded_protocol = replace(
             protocol,
