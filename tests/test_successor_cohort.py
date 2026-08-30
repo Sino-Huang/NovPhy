@@ -27,6 +27,7 @@ from scripts.run_issue_62_successor_cohort import (
     _materialized_bird_count,
     _pilot_report,
     _resolve_planned_interface_action,
+    _shot_record,
     _synthetic_pilot_records,
     _terminal_status,
     _trajectory_record,
@@ -118,6 +119,7 @@ class SuccessorCohortPlanTests(unittest.TestCase):
             action["selection_mode"] == "trajectory_guided_direct_pig"
             and action["trajectory_arc"] == "low"
             and action["target_kind"] == "pig"
+            and action["aim_point"] == "visible_polygon_upper_edge"
             for action in guided_actions
         ))
 
@@ -179,6 +181,38 @@ class SuccessorCohortPlanTests(unittest.TestCase):
         )
         self.assertLess(
             action["selection_evidence"]["predicted_miss_pixels"], 1.0
+        )
+        capture = SimpleNamespace(
+            capture_id="capture-v2:fixture",
+            shot_id="shot-v2:fixture",
+            record={
+                "frame_records": [{"fixed_step": 1}],
+                "terminal_evidence": {"reason": "stable_entered"},
+            },
+        )
+        with (
+            patch(
+                "scripts.run_issue_62_successor_cohort.load_physics_capture_v2",
+                return_value=capture,
+            ),
+            patch(
+                "scripts.run_issue_62_successor_cohort.validate_observation_trace",
+                return_value={"identity": "observation-trace:fixture"},
+            ),
+        ):
+            shot = _shot_record(
+                Path("/unused"),
+                shot_index=0,
+                planned_action=planned,
+                prepared=SimpleNamespace(action=action),
+                state=GameState.PLAYING,
+                derivations=[],
+            )
+        self.assertNotIn(
+            "selection_evidence", shot["action"]["interface_action"]
+        )
+        self.assertEqual(
+            shot["action_selection_evidence"]["target_id"], "pig-1"
         )
 
     def test_pilot_gate_requires_pig_hits_and_support_changes_in_every_role(self) -> None:

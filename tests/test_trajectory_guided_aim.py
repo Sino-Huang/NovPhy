@@ -7,7 +7,7 @@ from world_model.planning.trajectory_guided import aim_directly_at_visible_pig
 
 
 class TrajectoryGuidedAimTests(unittest.TestCase):
-    def test_low_arc_uses_visible_pig_center_and_matches_preview_trajectory(self) -> None:
+    def test_low_arc_uses_visible_pig_upper_edge_and_matches_preview(self) -> None:
         symbolic_state = [
             {
                 "features": [
@@ -40,13 +40,15 @@ class TrajectoryGuidedAimTests(unittest.TestCase):
             bounds,
             target_rank=0,
             arc="low",
+            aim_point="visible_polygon_upper_edge",
             tap_time_ms=0,
         )
 
         self.assertTrue(bounds.contains(aim.action))
         self.assertGreater(aim.action.drag_y, 0)
         self.assertEqual(aim.target_label, "pig_basic_small_1")
-        self.assertEqual(aim.target_canvas, (300.0, 220.0))
+        self.assertEqual(aim.target_canvas, (300.0, 210.0))
+        self.assertEqual(aim.aim_point, "visible_polygon_upper_edge")
         self.assertLess(aim.predicted_miss_pixels, 1.0)
 
 

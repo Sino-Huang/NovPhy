@@ -12,6 +12,8 @@ from world_model.planning.gameplay import SlingshotAction, SlingshotActionBounds
 TRAJECTORY_MAX_LAUNCH_SPEED = 10.0
 TRAJECTORY_LAUNCH_GRAVITY = 0.48
 TRAJECTORY_DRAG_RADIUS_WORLD = 1.0
+TRAJECTORY_TIME_STEP_SECONDS = 0.02
+TRAJECTORY_STEPS = 300
 
 
 class TrajectoryGuidedAimError(ValueError):
@@ -27,6 +29,8 @@ class TrajectoryGuidedAim:
     predicted_canvas_y: float
     predicted_miss_pixels: float
     arc: str
+    aim_point: str
+    target_polygon_bounds: tuple[float, float, float, float]
 
     def evidence(self) -> dict[str, Any]:
         return {
@@ -37,11 +41,14 @@ class TrajectoryGuidedAim:
             "predicted_canvas_y": self.predicted_canvas_y,
             "predicted_miss_pixels": self.predicted_miss_pixels,
             "trajectory_arc": self.arc,
+            "aim_point": self.aim_point,
+            "target_polygon_bounds": list(self.target_polygon_bounds),
             "preview_model": {
                 "maximum_launch_speed": TRAJECTORY_MAX_LAUNCH_SPEED,
                 "launch_gravity_scale": TRAJECTORY_LAUNCH_GRAVITY,
                 "drag_radius_world": TRAJECTORY_DRAG_RADIUS_WORLD,
-                "fixed_step_seconds": 0.02,
+                "fixed_step_seconds": TRAJECTORY_TIME_STEP_SECONDS,
+                "preview_steps": TRAJECTORY_STEPS,
             },
         }
 
@@ -70,6 +77,7 @@ def _target(label: str, target_id: str, vertices: Any) -> dict[str, Any] | None:
         "id": target_id,
         "label": label,
         "center": ((min(xs) + max(xs)) / 2.0, (min(ys) + max(ys)) / 2.0),
+        "bounds": (min(xs), min(ys), max(xs), max(ys)),
     }
 
 
@@ -137,20 +145,22 @@ def _preview_at_target_x(
         * pixels_per_world_unit
     )
     velocity_x = -drag_x / pull * speed
-    velocity_y_up = drag_y / pull * speed
+    velocity_y = -drag_y / pull * speed
     if velocity_x <= 0 or target_x <= release_x:
         return None
-    elapsed = (target_x - release_x) / velocity_x
-    vertical_up = (
-        velocity_y_up * elapsed
-        - 0.5
-        * 9.81
-        * TRAJECTORY_LAUNCH_GRAVITY
-        * pixels_per_world_unit
-        * elapsed
-        * elapsed
+    gravity_y = (
+        9.81 * TRAJECTORY_LAUNCH_GRAVITY * pixels_per_world_unit
     )
-    return release_y - vertical_up
+    previous_x, previous_y = release_x, release_y
+    for _ in range(TRAJECTORY_STEPS):
+        velocity_y += gravity_y * TRAJECTORY_TIME_STEP_SECONDS
+        current_x = previous_x + velocity_x * TRAJECTORY_TIME_STEP_SECONDS
+        current_y = previous_y + velocity_y * TRAJECTORY_TIME_STEP_SECONDS
+        if previous_x <= target_x <= current_x:
+            fraction = (target_x - previous_x) / (current_x - previous_x)
+            return previous_y + fraction * (current_y - previous_y)
+        previous_x, previous_y = current_x, current_y
+    return None
 
 
 def aim_directly_at_visible_pig(
@@ -160,6 +170,7 @@ def aim_directly_at_visible_pig(
     *,
     target_rank: int,
     arc: str,
+    aim_point: str,
     tap_time_ms: int,
 ) -> TrajectoryGuidedAim:
     if arc != "low":
@@ -168,7 +179,10 @@ def aim_directly_at_visible_pig(
     if not 0 <= target_rank < len(targets):
         raise TrajectoryGuidedAimError("the frozen visible-pig target is unavailable")
     target = targets[target_rank]
-    target_x, target_y = target["center"]
+    if aim_point != "visible_polygon_upper_edge":
+        raise TrajectoryGuidedAimError("the frozen pig aim point is unsupported")
+    target_x = target["center"][0]
+    target_y = target["bounds"][1]
     sling_x = float(slingshot_reference["canvasX"])
     sling_y = float(slingshot_reference["canvasY"])
     pixels_per_world_unit = float(slingshot_reference["pixelsPerWorldUnit"])
@@ -213,4 +227,6 @@ def aim_directly_at_visible_pig(
         predicted_canvas_y=predicted_y,
         predicted_miss_pixels=miss,
         arc=arc,
+        aim_point=aim_point,
+        target_polygon_bounds=target["bounds"],
     )

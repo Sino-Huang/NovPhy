@@ -166,7 +166,7 @@ def _sample_action(
                 "selection_mode": "trajectory_guided_direct_pig",
                 "target_kind": "pig",
                 "target_rank": 0,
-                "aim_point": "visible_polygon_center",
+                "aim_point": "visible_polygon_upper_edge",
                 "trajectory_arc": "low",
                 "tap_time_ms": 0,
                 "release_time_ms": ACTION_BOUNDS["release_time_ms"],
@@ -454,7 +454,7 @@ def validate_successor_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
                     == "trajectory_guided_direct_pig"
                     and action.get("target_kind") == "pig"
                     and action.get("target_rank") == 0
-                    and action.get("aim_point") == "visible_polygon_center"
+                    and action.get("aim_point") == "visible_polygon_upper_edge"
                     and action.get("trajectory_arc") == "low"
                     and action.get("tap_time_ms") == 0
                     and action.get("action_stratum") == GUIDED_ACTION_STRATUM

@@ -826,6 +826,7 @@ def _resolve_planned_interface_action(
             _bounds(),
             target_rank=int(planned["target_rank"]),
             arc=str(planned["trajectory_arc"]),
+            aim_point=str(planned["aim_point"]),
             tap_time_ms=int(planned["tap_time_ms"]),
         )
         action = aim.action.to_interface_action(
@@ -918,7 +919,7 @@ def _shot_record(
         "interface_action": {
             key: value
             for key, value in prepared.action.items()
-            if key != "slingshot_reference"
+            if key not in {"selection_evidence", "slingshot_reference"}
         },
         "engine_relative_action": engine_action,
     }
@@ -927,6 +928,7 @@ def _shot_record(
         "path": f"shots/shot-{shot_index:03d}",
         "planned_action_identity": planned_action["identity"],
         "action_stratum": planned_action["action_stratum"],
+        "action_selection_evidence": prepared.action.get("selection_evidence"),
         "action": action,
         "capture_id": capture.capture_id,
         "shot_id": capture.shot_id,
