@@ -334,6 +334,13 @@ class SuccessorCohortPlanTests(unittest.TestCase):
         with self.assertRaisesRegex(SuccessorCohortError, "pilot report"):
             validate_pilot_report(report, pilot_plan=pilot)
 
+    def test_pilot_gate_rejects_one_exhausted_frozen_lineage(self) -> None:
+        pilot = build_pilot_plan()
+        records = _synthetic_pilot_records(pilot)
+        records[0]["status"] = "failed"
+
+        self.assertFalse(_pilot_report(pilot, records)["passed"])
+
     def test_no_write_dry_run_wires_the_real_carrier_boundary(self) -> None:
         lineages = iter(("lineage:a", "lineage:b"))
 

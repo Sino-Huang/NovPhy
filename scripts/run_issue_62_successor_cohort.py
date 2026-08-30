@@ -297,7 +297,7 @@ def _pilot_report(
     artifact_bytes = [int(item["artifact_bytes"]) for item in accepted]
     passed = (
         len(records) == len(plan["lineages"])
-        and len(accepted) >= math.ceil(5 * len(records) / 6)
+        and len(accepted) == len(records)
         and multi_shot_roles == set(PUBLIC_ROLES)
         and {item["generator_family"] for item in accepted}
         == {item["name"] for item in GENERATOR_FAMILIES}
@@ -365,7 +365,7 @@ def _pilot_report(
         "production_freeze_rule": {
             "training_ladder": [6, 200, 1_000, 5_000, 10_000],
             "held_out_lineages_per_role": 200,
-            "minimum_pilot_acceptance_fraction": "5/6",
+            "minimum_pilot_acceptance_fraction": "1",
             "outcome_conditioned_replacement": False,
         },
         "final_evaluation_opened": False,
