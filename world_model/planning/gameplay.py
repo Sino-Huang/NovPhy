@@ -11,7 +11,7 @@ import math
 import os
 from pathlib import Path
 import time
-from typing import Any, Mapping, Protocol
+from typing import Any, Callable, Mapping, Protocol
 
 import numpy as np
 import torch
@@ -419,6 +419,95 @@ class FrozenCohortV2WorldModel:
             physical_penalty=physical_penalty,
             rollout_penalty=rollout_penalty,
             requested_abstractions=tuple(abstractions),
+        )
+
+
+class ContinuousCheckpointWorldModel:
+    """Run a retrained continuous checkpoint under one fixed or adaptive horizon."""
+
+    def __init__(
+        self,
+        *,
+        predictor: torch.nn.Module,
+        fixed_steps_per_shot: int,
+        release_time_ms: int,
+        transition_compute: float,
+        fixed_horizon: int | None = None,
+        horizon_selector: Callable[[PlanningObservation, SlingshotAction], int] | None = None,
+        controller_compute: float = 0.0,
+    ) -> None:
+        if (
+            fixed_steps_per_shot <= 0
+            or release_time_ms < 0
+            or not math.isfinite(transition_compute)
+            or transition_compute < 0.0
+            or not math.isfinite(controller_compute)
+            or controller_compute < 0.0
+            or (fixed_horizon is None) == (horizon_selector is None)
+            or (fixed_horizon is not None and fixed_horizon not in (1, 15))
+        ):
+            raise ValueError("continuous checkpoint world-model configuration is invalid")
+        self.predictor = predictor
+        self.fixed_steps_per_shot = fixed_steps_per_shot
+        self.release_time_ms = release_time_ms
+        self.transition_compute = float(transition_compute)
+        self.fixed_horizon = fixed_horizon
+        self.horizon_selector = horizon_selector
+        self.controller_compute = float(controller_compute)
+
+    def rollout(
+        self,
+        observation: PlanningObservation,
+        carrier: torch.Tensor,
+        action: SlingshotAction,
+    ) -> PredictedTransition:
+        horizon = (
+            self.fixed_horizon
+            if self.fixed_horizon is not None
+            else self.horizon_selector(observation, action)  # type: ignore[misc]
+        )
+        if horizon not in (1, 15):
+            raise ValueError("adaptive continuous horizon must be 1 or 15")
+        pair = PredictionPair(horizon, Abstraction.CONTINUOUS)
+        device = next(self.predictor.parameters()).device
+        action_tensor = torch.tensor((
+            action.drag_x / float(observation.frame_height),
+            action.drag_y / float(observation.frame_height),
+            self.release_time_ms / 1000.0,
+            action.tap_time_ms / 1000.0,
+            1.0,
+        ), dtype=torch.float32, device=device).unsqueeze(0)
+        current = carrier.to(device).unsqueeze(0)
+        requested = []
+        effective = []
+        rollout_penalty = 0.0
+        physical_penalty = 0.0
+        elapsed = 0
+        with torch.no_grad():
+            while elapsed < self.fixed_steps_per_shot:
+                step = min(horizon, self.fixed_steps_per_shot - elapsed)
+                predicted = self.predictor.carrier(current, action_tensor, pair)
+                if not bool(torch.isfinite(predicted).all()):
+                    raise RuntimeError("world model produced a nonfinite carrier")
+                rollout_penalty += float((predicted - current).pow(2).mean())
+                physical_penalty += float(
+                    torch.relu(predicted.abs() - 2.0).pow(2).mean()
+                )
+                current = predicted
+                elapsed += step
+                requested.append(horizon)
+                effective.append(step)
+        return PredictedTransition(
+            carrier=current.squeeze(0).detach().cpu(),
+            requested_horizons=tuple(requested),
+            effective_horizons=tuple(effective),
+            compute=(
+                len(requested) * self.transition_compute
+                + (self.controller_compute if self.fixed_horizon is None else 0.0)
+            ),
+            physical_penalty=physical_penalty,
+            rollout_penalty=rollout_penalty,
+            requested_abstractions=("continuous",) * len(requested),
         )
 
 
