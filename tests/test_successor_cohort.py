@@ -23,11 +23,14 @@ from scripts.run_issue_62_successor_cohort import (
     _bounds,
     _encode_agent_frames_webm,
     _materialize_slot,
+    _materialized_bird_count,
     _pilot_report,
     _synthetic_pilot_records,
     _trajectory_record,
     dry_run,
     run_collection,
+    run_pilot,
+    write_attempt_audit,
     write_pilot_audit,
 )
 from src.webui.bridge import GameState
@@ -64,7 +67,40 @@ class SuccessorCohortPlanTests(unittest.TestCase):
         self.assertEqual(
             len({item["generation_seed"] for item in first["lineages"]}), 36
         )
-        self.assertTrue(all(len(item["planned_actions"]) == 6 for item in first["lineages"]))
+        expected_action_counts = {"type010101": 1, "type010102": 3}
+        self.assertTrue(all(
+            len(item["planned_actions"])
+            == expected_action_counts[item["generator_family"]]
+            for item in first["lineages"]
+        ))
+        for role in PUBLIC_ROLES:
+            self.assertTrue(any(
+                item["exposure_role"] == role
+                and len(item["planned_actions"]) > 1
+                for item in first["lineages"]
+            ))
+        stratified = {
+            action["action_stratum"]
+            for slot in first["lineages"]
+            if slot["behavior_policy"] == "stratified_bounds"
+            for action in slot["planned_actions"]
+        }
+        self.assertEqual(len(stratified), 12)
+
+    def test_materialized_birds_exactly_bound_each_family_action_plan(self) -> None:
+        plan = build_pilot_plan()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for family in ("type010101", "type010102"):
+                slot = next(
+                    item for item in plan["lineages"]
+                    if item["generator_family"] == family
+                )
+                authority = _materialize_slot(slot, root / family)
+                self.assertEqual(
+                    _materialized_bird_count(authority["xml_path"]),
+                    len(slot["planned_actions"]),
+                )
 
     def test_production_membership_is_nested_and_pilot_bound(self) -> None:
         pilot = build_pilot_plan()
@@ -109,8 +145,19 @@ class SuccessorCohortPlanTests(unittest.TestCase):
     def test_no_write_dry_run_wires_the_real_carrier_boundary(self) -> None:
         lineages = iter(("lineage:a", "lineage:b"))
 
-        def authority(*_args, **_kwargs):
+        def authority(slot, root):
+            root.mkdir(parents=True)
+            bird_count = {"type010101": 1, "type010102": 3}[
+                slot["generator_family"]
+            ]
+            xml_path = root / "scenario.xml"
+            xml_path.write_text(
+                "<Level><Birds>"
+                + '<Bird type="BirdRed"/>' * bird_count
+                + "</Birds></Level>"
+            )
             return {
+                "xml_path": xml_path,
                 "scenario": SimpleNamespace(
                     scenario_manifest=SimpleNamespace(
                         scenario_lineage=SimpleNamespace(identity=next(lineages))
@@ -139,6 +186,47 @@ class SuccessorCohortPlanTests(unittest.TestCase):
         self.assertFalse(result["files_written"])
         self.assertTrue(all("python -u -m" in item for item in result["actual_commands"]))
         self.assertIn("WebM", result["pilot_audit_format"])
+
+    def test_review_prefix_stops_cleanly_without_publishing_a_report(self) -> None:
+        plan = build_pilot_plan()
+        records = [
+            {
+                "slot_identity": slot["slot_identity"],
+                "status": "accepted",
+            }
+            for slot in plan["lineages"][:2]
+        ]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            plan_path = root / "pilot-plan.json"
+            write_immutable_cohort_v2_json(plan, plan_path)
+            with patch(
+                "scripts.run_issue_62_successor_cohort.run_collection",
+                return_value=records,
+            ) as collect, patch(
+                "scripts.run_issue_62_successor_cohort._pilot_report"
+            ) as report, patch(
+                "scripts.run_issue_62_successor_cohort.write_pilot_audit"
+            ) as final_audit:
+                result = run_pilot(
+                    plan_path=plan_path,
+                    runtime_root=root / "runtime",
+                    report_path=root / "pilot-report.json",
+                    audit_output=root / "audit",
+                    implementation_commit="commit:fixture",
+                    start_display_process=False,
+                    speed=50,
+                    headless=False,
+                    lineage_limit=2,
+                )
+
+            self.assertEqual(
+                result["schema"], "issue_62_pilot_review_prefix_v1"
+            )
+            self.assertEqual(result["collected_lineage_count"], 2)
+            self.assertEqual(collect.call_args.kwargs["lineage_limit"], 2)
+            report.assert_not_called()
+            final_audit.assert_not_called()
 
 
 class SuccessorCohortAuditTests(unittest.TestCase):
@@ -287,8 +375,113 @@ class SuccessorCohortAuditTests(unittest.TestCase):
             ).stdout.strip()
             self.assertEqual(codec, "vp8")
 
+    def test_failed_attempt_audit_is_immediate_and_caps_stalled_frames(self) -> None:
+        slot = build_pilot_plan()["lineages"][0]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            attempt = root / "runtime/attempt-01"
+            output = root / "data/issue-62-pilot-audit"
+            self._observation_trace(
+                attempt / "shots/shot-000/observation-trace",
+                capture_id="capture:attempt-audit",
+                fixed_steps=(10, 11),
+                role=slot["exposure_role"],
+                rollout_identity="rollout:attempt-audit",
+            )
+            stalled = attempt / ".aligned-observation-current"
+            stalled.mkdir(parents=True)
+            for index in range(255):
+                Image.new("RGB", (8, 8), (index % 255, 0, 0)).save(
+                    stalled / f"frame_{index:06d}.png"
+                )
+            observed = []
+
+            def encode(frames, video):
+                observed.extend(frames)
+                video.parent.mkdir(parents=True, exist_ok=True)
+                video.write_bytes(b"webm")
+
+            with patch(
+                "scripts.run_issue_62_successor_cohort._encode_agent_frames_webm",
+                side_effect=encode,
+            ):
+                manifest = write_attempt_audit(
+                    slot,
+                    1,
+                    attempt,
+                    output=output,
+                    status="failed",
+                    failure={"error_type": "PhysicsCaptureV2Failure"},
+                )
+
+            self.assertEqual(len(observed), 252)
+            self.assertIn("shot-000", observed[0].as_posix())
+            self.assertIn("shot-000", observed[1].as_posix())
+            self.assertEqual(observed[2], stalled / "frame_000000.png")
+            self.assertEqual(observed[-1], stalled / "frame_000254.png")
+            self.assertEqual(manifest["status"], "failed")
+            self.assertEqual(manifest["finalized_frame_count"], 2)
+            self.assertEqual(manifest["stalled_source_frame_count"], 255)
+            self.assertEqual(manifest["video_frame_count"], 252)
+            self.assertTrue((output / manifest["video_path"]).is_file())
+
 
 class SuccessorCohortResumeTests(unittest.TestCase):
+    def test_each_new_failed_attempt_is_audited_immediately(self) -> None:
+        plan = build_pilot_plan()
+        first = plan["lineages"][0]
+        with tempfile.TemporaryDirectory() as temporary:
+            runtime = Path(temporary)
+            (runtime / "game-runtime").mkdir()
+            write_immutable_cohort_v2_json(
+                {
+                    "schema": "issue_62_collection_provenance_v2",
+                    "implementation_commit": "commit:same",
+                    "player": {"source_snapshot_commit": "player:fixture"},
+                    "collected_at": "2026-08-30T06:38:59Z",
+                    "final_evaluation_opened": False,
+                    "superseded_pre_acceptance_implementation_commits": [],
+                },
+                runtime / "provenance.json",
+            )
+            def fail_attempt(_slot, attempt_root, *_args, **_kwargs):
+                attempt_root.mkdir(parents=True)
+                raise RuntimeError("fixture capture failure")
+
+            with patch(
+                "scripts.run_issue_62_successor_cohort._player",
+                return_value={"source_snapshot_commit": "player:fixture"},
+            ), patch(
+                "scripts.run_issue_62_successor_cohort._collect_lineage_attempt",
+                side_effect=fail_attempt,
+            ) as collect, patch(
+                "scripts.run_issue_62_successor_cohort.write_attempt_audit",
+                return_value={},
+            ) as audit:
+                records = run_collection(
+                    plan,
+                    runtime_root=runtime,
+                    implementation_commit="commit:same",
+                    start_display_process=False,
+                    speed=50,
+                    headless=False,
+                    attempt_audit_output=runtime / "audit",
+                    lineage_limit=1,
+                )
+
+            self.assertEqual(collect.call_count, 2)
+            self.assertEqual(audit.call_count, 2)
+            self.assertEqual(len(records), 1)
+            self.assertTrue(all(
+                call.kwargs["status"] == "failed"
+                for call in audit.call_args_list
+            ))
+            result = next(
+                item for item in records
+                if item["slot_identity"] == first["slot_identity"]
+            )
+            self.assertEqual(result["status"], "failed")
+
     def test_revision_can_roll_over_before_any_lineage_is_accepted(self) -> None:
         plan = build_pilot_plan()
         with tempfile.TemporaryDirectory() as temporary:

@@ -36,7 +36,8 @@ from world_model.data.deployment_temporal import (
 )
 
 
-PLAN_SCHEMA: Final = "multi_shot_successor_collection_plan_v1"
+PLAN_SCHEMA: Final = "multi_shot_successor_collection_plan_v2"
+PLAN_IDENTITY_NAMESPACE: Final = "issue-62-collection-plan-v2"
 PILOT_REPORT_SCHEMA: Final = "multi_shot_successor_pilot_report_v1"
 RELEASE_SCHEMA: Final = "multi_shot_successor_cohort_release_v1"
 TRAJECTORY_SCHEMA: Final = "multi_shot_successor_trajectory_v1"
@@ -60,6 +61,7 @@ GENERATOR_FAMILIES: Final = (
         "reference_point": [1.00798, -2.1274],
         "min_coordinate": [-7.88, -2.39049],
         "max_coordinate": [1.229969, 1.809741],
+        "authored_bird_count": 1,
     },
     {
         "name": "type010102",
@@ -72,6 +74,7 @@ GENERATOR_FAMILIES: Final = (
         "reference_point": [1.02408, -1.84657],
         "min_coordinate": [-7.235919, -1.95804],
         "max_coordinate": [1.444081, 1.53147],
+        "authored_bird_count": 3,
     },
 )
 
@@ -126,7 +129,7 @@ def _sample_action(
     rng: random.Random,
     *,
     policy: str,
-    slot_ordinal: int,
+    policy_action_index: int,
     action_index: int,
 ) -> dict[str, Any]:
     x_bounds = tuple(ACTION_BOUNDS["drag_x"])
@@ -137,7 +140,7 @@ def _sample_action(
         drag_y = rng.randint(*y_bounds)
         tap = rng.randint(*tap_bounds)
     elif policy == "stratified_bounds":
-        stratum_index = (slot_ordinal * 6 + action_index) % 12
+        stratum_index = policy_action_index % 12
         x_bin = stratum_index % 2
         y_bin = (stratum_index // 2) % 3
         tap_bin = (stratum_index // 6) % 2
@@ -169,6 +172,7 @@ def _lineage_slots(
     phase_offset = 6_200_000 if phase == "pilot" else 62_000_000
     slots = []
     global_ordinal = 0
+    policy_action_counts = Counter()
     for role_index, role in enumerate(PUBLIC_ROLES):
         for role_ordinal in range(role_counts[role]):
             family = GENERATOR_FAMILIES[(role_ordinal + role_index) % 2]
@@ -187,15 +191,17 @@ def _lineage_slots(
                 "issue-62-scenario-lineage-slot-v1", slot_payload
             )
             rng = random.Random(f"{slot_identity}:actions")
+            action_count = min(max_shots, int(family["authored_bird_count"]))
             actions = [
                 _sample_action(
                     rng,
                     policy=policy,
-                    slot_ordinal=global_ordinal,
+                    policy_action_index=policy_action_counts[policy] + index,
                     action_index=index,
                 )
-                for index in range(max_shots)
+                for index in range(action_count)
             ]
+            policy_action_counts[policy] += action_count
             slots.append({
                 **slot_payload,
                 "slot_identity": slot_identity,
@@ -229,7 +235,7 @@ def build_pilot_plan() -> dict[str, Any]:
         },
     }
     return validate_successor_plan(
-        _with_identity("issue-62-collection-plan-v1", "identity", payload)
+        _with_identity(PLAN_IDENTITY_NAMESPACE, "identity", payload)
     )
 
 
@@ -323,7 +329,7 @@ def build_production_plan(
         },
     }
     return validate_successor_plan(
-        _with_identity("issue-62-collection-plan-v1", "identity", payload)
+        _with_identity(PLAN_IDENTITY_NAMESPACE, "identity", payload)
     )
 
 
@@ -348,7 +354,7 @@ def validate_successor_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
         != [dict(item) for item in GENERATOR_FAMILIES]
         or set(value.get("role_counts", {})) != set(PUBLIC_ROLES)
         or value.get("identity")
-        != _expected_identity("issue-62-collection-plan-v1", "identity", value)
+        != _expected_identity(PLAN_IDENTITY_NAMESPACE, "identity", value)
     ):
         raise SuccessorCohortError("successor collection plan contract differs")
     lineages = value.get("lineages")
@@ -357,7 +363,7 @@ def validate_successor_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
     counts = Counter()
     slots = set()
     seeds = set()
-    families = {item["name"] for item in GENERATOR_FAMILIES}
+    families = {item["name"]: item for item in GENERATOR_FAMILIES}
     for expected_ordinal, slot in enumerate(lineages):
         if not isinstance(slot, Mapping) or set(slot) != {
             "phase", "exposure_role", "ordinal", "role_ordinal",
@@ -377,7 +383,11 @@ def validate_successor_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
         ):
             raise SuccessorCohortError("successor lineage slot is invalid or reused")
         actions = slot["planned_actions"]
-        if not isinstance(actions, list) or len(actions) != value["max_shots"]:
+        expected_action_count = min(
+            value["max_shots"],
+            int(families[slot["generator_family"]]["authored_bird_count"]),
+        )
+        if not isinstance(actions, list) or len(actions) != expected_action_count:
             raise SuccessorCohortError("successor lineage action plan is incomplete")
         for action_index, action in enumerate(actions):
             if (

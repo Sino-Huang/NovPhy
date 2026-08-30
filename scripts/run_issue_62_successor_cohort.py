@@ -16,6 +16,7 @@ import subprocess
 import tempfile
 import time
 from typing import Any, Final, Mapping
+import xml.etree.ElementTree as ET
 
 from scripts.build_issue_45_evidence import CONSTRAINTS_WORKBOOK_REFERENCE
 from scripts.cohort_v2_release import _write_derivations
@@ -59,6 +60,7 @@ from world_model.data.deployment_temporal import (
 from world_model.data.successor_cohort import (
     ACTION_BOUNDS,
     GENERATOR_FAMILIES,
+    PLAN_SCHEMA,
     PILOT_REPORT_SCHEMA,
     PUBLIC_ROLES,
     RELEASE_SCHEMA,
@@ -80,11 +82,11 @@ from world_model.training.manifest import git_revision
 ROOT: Final = Path(__file__).resolve().parents[1]
 STAGE_ROOT: Final = ROOT / "sciencebirdsgames/aligned-observation-v1"
 DEFAULT_PILOT_PLAN: Final = (
-    ROOT / "docs/data_contracts/issue_62_pilot_plan_v1.json"
+    ROOT / "docs/data_contracts/issue_62_pilot_plan_v2.json"
 )
-DEFAULT_PILOT_RUNTIME: Final = ROOT / ".local-artifacts/issue-62-pilot-run"
-DEFAULT_PILOT_REPORT: Final = ROOT / ".local-artifacts/issue-62-pilot-report.json"
-DEFAULT_PILOT_AUDIT: Final = ROOT / "data/issue-62-pilot-audit"
+DEFAULT_PILOT_RUNTIME: Final = ROOT / ".local-artifacts/issue-62-pilot-run-v2"
+DEFAULT_PILOT_REPORT: Final = ROOT / ".local-artifacts/issue-62-pilot-report-v2.json"
+DEFAULT_PILOT_AUDIT: Final = ROOT / "data/issue-62-pilot-audit-v2"
 DEFAULT_PRODUCTION_PLAN: Final = (
     ROOT / ".local-artifacts/issue-62-production-plan.json"
 )
@@ -97,6 +99,7 @@ DEFAULT_SUMMARY: Final = (
 )
 OBSERVATION_CONFIGURATION: Final = "agent_rgb8_native_v1"
 PILOT_AUDIT_FPS: Final = 25
+PILOT_ATTEMPT_AUDIT_STALLED_FRAME_LIMIT: Final = 250
 
 
 def _log(message: str) -> None:
@@ -199,6 +202,16 @@ def _materialize_slot(slot: Mapping[str, Any], root: Path) -> dict[str, Any]:
         "xml_path": xml_path,
         "manifest_path": manifest_path,
     }
+
+
+def _materialized_bird_count(xml_path: Path) -> int:
+    try:
+        count = len(ET.parse(xml_path).getroot().findall(".//Bird"))
+    except (OSError, ET.ParseError) as error:
+        raise SuccessorCohortError("cannot read materialized scenario birds") from error
+    if count < 1:
+        raise SuccessorCohortError("materialized scenario has no authored birds")
+    return count
 
 
 def freeze_pilot_plan(path: Path = DEFAULT_PILOT_PLAN) -> dict[str, Any]:
@@ -393,6 +406,80 @@ def _encode_agent_frames_webm(frames: list[Path], output: Path) -> None:
                 process.wait()
             if temporary_video.exists():
                 temporary_video.unlink()
+
+
+def _evenly_sample_frames(frames: list[Path], limit: int) -> list[Path]:
+    if len(frames) <= limit:
+        return frames
+    return [
+        frames[round(index * (len(frames) - 1) / (limit - 1))]
+        for index in range(limit)
+    ]
+
+
+def write_attempt_audit(
+    slot: Mapping[str, Any],
+    attempt_number: int,
+    attempt_root: Path,
+    *,
+    output: Path,
+    status: str,
+    failure: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    attempt_root = Path(attempt_root).resolve()
+    output = Path(output).resolve()
+    finalized_frames = []
+    finalized_shot_count = 0
+    for observation_root in sorted(
+        attempt_root.glob("shots/shot-*/observation-trace")
+    ):
+        observation = validate_observation_trace(observation_root)
+        finalized_shot_count += 1
+        finalized_frames.extend(
+            observation_root / item["agent_observation"]["relative_path"]
+            for item in observation["frame_records"]
+        )
+    stalled_frames = sorted(
+        (attempt_root / ".aligned-observation-current").glob("frame_*.png")
+    )
+    sampled_stalled_frames = _evenly_sample_frames(
+        stalled_frames, PILOT_ATTEMPT_AUDIT_STALLED_FRAME_LIMIT
+    )
+    video_frames = finalized_frames + sampled_stalled_frames
+    stem = (
+        f"lineage-{int(slot['ordinal']) + 1:03d}-"
+        f"attempt-{attempt_number:02d}-{status}"
+    )
+    relative_video = Path("attempts") / f"{stem}.webm"
+    relative_manifest = Path("attempts") / f"{stem}.json"
+    if video_frames:
+        _encode_agent_frames_webm(video_frames, output / relative_video)
+        video_path: str | None = relative_video.as_posix()
+    else:
+        video_path = None
+    manifest = {
+        "schema": "issue_62_attempt_frame_audit_v1",
+        "slot_identity": slot["slot_identity"],
+        "lineage_ordinal": slot["ordinal"],
+        "exposure_role": slot["exposure_role"],
+        "attempt_number": attempt_number,
+        "status": status,
+        "failure": dict(failure) if failure is not None else None,
+        "finalized_shot_count": finalized_shot_count,
+        "finalized_frame_count": len(finalized_frames),
+        "stalled_source_frame_count": len(stalled_frames),
+        "stalled_sampled_frame_count": len(sampled_stalled_frames),
+        "video_frame_count": len(video_frames),
+        "video_path": video_path,
+    }
+    (output / relative_manifest).parent.mkdir(parents=True, exist_ok=True)
+    _replace_json(manifest, output / relative_manifest)
+    _log(
+        f"attempt audit lineage={int(slot['ordinal']) + 1} "
+        f"attempt={attempt_number} status={status} "
+        f"frames={len(video_frames)} video={video_path or 'unavailable'}"
+    )
+    return manifest
 
 
 def _pilot_audit_frames(
@@ -610,6 +697,12 @@ def dry_run(pilot_plan_path: Path = DEFAULT_PILOT_PLAN) -> dict[str, Any]:
                 if item["generator_family"] == family["name"]
             )
             authority = _materialize_slot(slot, root / str(family["name"]))
+            if _materialized_bird_count(authority["xml_path"]) != len(
+                slot["planned_actions"]
+            ):
+                raise SuccessorCohortError(
+                    "dry-run planned actions differ from materialized authored birds"
+                )
             manifests.append(authority["scenario"].scenario_manifest)
         if len({item.scenario_lineage.identity for item in manifests}) != 2:
             raise SuccessorCohortError("dry-run generator families repeat a lineage")
@@ -646,10 +739,19 @@ def dry_run(pilot_plan_path: Path = DEFAULT_PILOT_PLAN) -> dict[str, Any]:
         "dry_production_plan_identity": production["identity"],
         "player_source_commit": player["source_snapshot_commit"],
         "pilot_audit_output": str(DEFAULT_PILOT_AUDIT.relative_to(ROOT)),
-        "pilot_audit_format": "one VP8/WebM per accepted lineage plus index.html",
+        "pilot_audit_format": (
+            "immediate VP8/WebM per attempt plus accepted-lineage index.html"
+        ),
+        "attempt_audit_stalled_frame_limit": (
+            PILOT_ATTEMPT_AUDIT_STALLED_FRAME_LIMIT
+        ),
         "final_evaluation_opened": False,
         "files_written": False,
         "actual_commands": [
+            (
+                "python -u -m scripts.run_issue_62_successor_cohort "
+                "--run-pilot --start-display --pilot-lineage-limit 2"
+            ),
             "python -u -m scripts.run_issue_62_successor_cohort --run-pilot --start-display",
             (
                 "python -u -m scripts.run_issue_62_successor_cohort "
@@ -904,6 +1006,11 @@ def _collect_lineage_attempt(
 ) -> dict[str, Any]:
     authority = _materialize_slot(slot, attempt_root)
     scenario = authority["scenario"]
+    bird_count = _materialized_bird_count(authority["xml_path"])
+    if len(slot["planned_actions"]) != bird_count:
+        raise SuccessorCohortError(
+            "planned action count differs from materialized authored birds"
+        )
     _install_level(game, authority["xml_path"], slot["slot_identity"])
     agent_port = free_port()
     game_port = free_port()
@@ -1146,9 +1253,19 @@ def run_collection(
     start_display_process: bool,
     speed: int,
     headless: bool,
+    attempt_audit_output: Path | None = None,
+    lineage_limit: int | None = None,
 ) -> list[dict[str, Any]]:
     plan = validate_successor_plan(plan)
+    if lineage_limit is None:
+        scheduled_lineages = plan["lineages"]
+    elif type(lineage_limit) is int and 1 <= lineage_limit <= len(plan["lineages"]):
+        scheduled_lineages = plan["lineages"][:lineage_limit]
+    else:
+        raise SuccessorCohortError("lineage limit is outside the frozen plan")
     runtime_root = Path(runtime_root).resolve()
+    if attempt_audit_output is not None:
+        attempt_audit_output = Path(attempt_audit_output).resolve()
     runtime_root.mkdir(parents=True, exist_ok=True)
     plan_copy = runtime_root / "frozen-collection-plan.json"
     write_immutable_cohort_v2_json(plan, plan_copy)
@@ -1194,7 +1311,7 @@ def run_collection(
             os.environ["DISPLAY"] = display
             _log(f"display started DISPLAY={display}")
         total = len(plan["lineages"])
-        for index, slot in enumerate(plan["lineages"], start=1):
+        for index, slot in enumerate(scheduled_lineages, start=1):
             result_path = _result_path(runtime_root, slot)
             if result_path.exists():
                 result = _validate_result(
@@ -1248,6 +1365,23 @@ def run_collection(
                             load_successor_trajectory(
                                 attempt_root, release_identity=release_identity
                             )
+                        except Exception as error:
+                            trajectory_record = None
+                            failure = {
+                                "attempt_number": attempt_number,
+                                "error_type": type(error).__name__,
+                                "message": str(error),
+                            }
+                        else:
+                            if attempt_audit_output is not None:
+                                write_attempt_audit(
+                                    slot,
+                                    attempt_number,
+                                    attempt_root,
+                                    output=attempt_audit_output,
+                                    status="accepted",
+                                    failure=None,
+                                )
                             accepted_path.parent.mkdir(parents=True, exist_ok=True)
                             os.replace(attempt_root, accepted_path)
                             _log(
@@ -1255,12 +1389,6 @@ def run_collection(
                                 f"attempt {attempt_number}"
                             )
                             break
-                        except Exception as error:
-                            failure = {
-                                "attempt_number": attempt_number,
-                                "error_type": type(error).__name__,
-                                "message": str(error),
-                            }
                     else:
                         failure = {
                             "attempt_number": attempt_number,
@@ -1270,6 +1398,15 @@ def run_collection(
                                 "complete trajectory"
                             ),
                         }
+                    if attempt_audit_output is not None:
+                        write_attempt_audit(
+                            slot,
+                            attempt_number,
+                            attempt_root,
+                            output=attempt_audit_output,
+                            status="failed",
+                            failure=failure,
+                        )
                     failures.append(failure)
                     _log(
                         f"resume {index}/{total}: counted incomplete attempt "
@@ -1285,21 +1422,40 @@ def run_collection(
                         speed=speed,
                         headless=headless,
                     )
-                    accepted_path.parent.mkdir(parents=True, exist_ok=True)
-                    os.replace(attempt_root, accepted_path)
-                    break
                 except Exception as error:
                     failure = {
                         "attempt_number": attempt_number,
                         "error_type": type(error).__name__,
                         "message": str(error),
                     }
+                    if attempt_audit_output is not None:
+                        write_attempt_audit(
+                            slot,
+                            attempt_number,
+                            attempt_root,
+                            output=attempt_audit_output,
+                            status="failed",
+                            failure=failure,
+                        )
                     failures.append(failure)
                     _log(
                         f"lineage {index}/{total} attempt {attempt_number}/"
                         f"{plan['fixed_retry_limit']} failed: "
                         f"{failure['error_type']}: {failure['message']}"
                     )
+                else:
+                    if attempt_audit_output is not None:
+                        write_attempt_audit(
+                            slot,
+                            attempt_number,
+                            attempt_root,
+                            output=attempt_audit_output,
+                            status="accepted",
+                            failure=None,
+                        )
+                    accepted_path.parent.mkdir(parents=True, exist_ok=True)
+                    os.replace(attempt_root, accepted_path)
+                    break
             wall_seconds = time.monotonic() - started
             if trajectory_record is None:
                 result = {
@@ -1396,6 +1552,7 @@ def run_pilot(
     start_display_process: bool,
     speed: int,
     headless: bool,
+    lineage_limit: int | None = None,
 ) -> dict[str, Any]:
     plan = _load_plan(plan_path, "pilot")
     records = run_collection(
@@ -1405,7 +1562,29 @@ def run_pilot(
         start_display_process=start_display_process,
         speed=speed,
         headless=headless,
+        attempt_audit_output=audit_output,
+        lineage_limit=lineage_limit,
     )
+    if len(records) < len(plan["lineages"]):
+        accepted = sum(item["status"] == "accepted" for item in records)
+        failed = sum(item["status"] == "failed" for item in records)
+        _log(
+            f"pilot review prefix complete collected={len(records)}/"
+            f"{len(plan['lineages'])} accepted={accepted} failed={failed} "
+            f"videos={Path(audit_output).resolve() / 'attempts'}"
+        )
+        return {
+            "schema": "issue_62_pilot_review_prefix_v1",
+            "pilot_plan_identity": plan["identity"],
+            "collected_lineage_count": len(records),
+            "planned_lineage_count": len(plan["lineages"]),
+            "accepted_lineage_count": accepted,
+            "failed_lineage_count": failed,
+            "attempt_video_directory": str(
+                Path(audit_output).resolve() / "attempts"
+            ),
+            "final_evaluation_opened": False,
+        }
     report = _pilot_report(plan, records)
     write_immutable_cohort_v2_json(report, report_path)
     audit = write_pilot_audit(
@@ -1709,6 +1888,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--pilot-runtime", type=Path, default=DEFAULT_PILOT_RUNTIME)
     parser.add_argument("--pilot-report", type=Path, default=DEFAULT_PILOT_REPORT)
     parser.add_argument("--pilot-audit-output", type=Path, default=DEFAULT_PILOT_AUDIT)
+    parser.add_argument("--pilot-lineage-limit", type=int)
     parser.add_argument(
         "--production-plan", type=Path, default=DEFAULT_PRODUCTION_PLAN
     )
@@ -1743,6 +1923,7 @@ def main(argv: list[str] | None = None) -> int:
             start_display_process=args.start_display,
             speed=args.speed,
             headless=args.headless,
+            lineage_limit=args.pilot_lineage_limit,
         )
     elif args.freeze_production:
         result = freeze_production(
@@ -1781,7 +1962,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         result = validate_release(output=args.output, summary_path=args.summary)
     displayed = result
-    if result.get("schema") == "multi_shot_successor_collection_plan_v1":
+    if result.get("schema") == PLAN_SCHEMA:
         displayed = {
             "schema": result["schema"],
             "identity": result["identity"],

@@ -1,0 +1,1161 @@
+{
+  "action_bounds": {
+    "drag_x": [
+      -160,
+      -40
+    ],
+    "drag_y": [
+      -80,
+      80
+    ],
+    "release_time_ms": 600,
+    "tap_time_ms": [
+      0,
+      1000
+    ]
+  },
+  "behavior_policy_mixture": {
+    "stratified_bounds": "balanced_by_frozen_slot_ordinal",
+    "uniform_random": "balanced_by_frozen_slot_ordinal"
+  },
+  "fixed_retry_limit": 2,
+  "generator_families": [
+    {
+      "authored_bird_count": 1,
+      "canonical_template_name": "0_1_010101_0_1",
+      "max_coordinate": [
+        1.229969,
+        1.809741
+      ],
+      "min_coordinate": [
+        -7.88,
+        -2.39049
+      ],
+      "name": "type010101",
+      "reference_point": [
+        1.00798,
+        -2.1274
+      ],
+      "template_source": "tasks/task_templates/novelty_level_0/type010101/Levels/00001_0_1_010101_0_1.xml",
+      "workbook_row": 3
+    },
+    {
+      "authored_bird_count": 3,
+      "canonical_template_name": "0_1_010102_0_2",
+      "max_coordinate": [
+        1.444081,
+        1.53147
+      ],
+      "min_coordinate": [
+        -7.235919,
+        -1.95804
+      ],
+      "name": "type010102",
+      "reference_point": [
+        1.02408,
+        -1.84657
+      ],
+      "template_source": "tasks/task_templates/novelty_level_0/type010102/Levels/00001_0_1_010102_0_2.xml",
+      "workbook_row": 4
+    }
+  ],
+  "identity": "issue-62-collection-plan-v2:sha256:4156b36f85c5192c77e99e8c068f8e44c3f43b25032dec1c8c5cfe1effcbb5e4",
+  "lineages": [
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "training",
+      "generation_seed": 6200000,
+      "generator_family": "type010101",
+      "ordinal": 0,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_low__tap_early",
+          "drag_x": -84,
+          "drag_y": -43,
+          "identity": "issue-62-planned-action-v1:sha256:c4453f7cae87378fc452c04b5c3846d7f5300d7dca0fa6289da8eb9fa779aa37",
+          "release_time_ms": 600,
+          "tap_time_ms": 16
+        }
+      ],
+      "role_ordinal": 0,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:91564df8e50f7ade9caed5e85fd3efffab6a9d0c37cf0144620c53346ff44991"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "training",
+      "generation_seed": 6200001,
+      "generator_family": "type010102",
+      "ordinal": 1,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_high__tap_early",
+          "drag_x": -110,
+          "drag_y": 34,
+          "identity": "issue-62-planned-action-v1:sha256:4fe061d67eda480f279d6e2dffbb7c6097521c80c0f15c328dc1f5c5cc3f999e",
+          "release_time_ms": 600,
+          "tap_time_ms": 151
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_middle__tap_late",
+          "drag_x": -57,
+          "drag_y": 7,
+          "identity": "issue-62-planned-action-v1:sha256:776b6da48c9c836ee8f9e93b198530aa48d7ca9f584a0eacda5ac7736979e3ff",
+          "release_time_ms": 600,
+          "tap_time_ms": 522
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_low__tap_early",
+          "drag_x": -98,
+          "drag_y": -29,
+          "identity": "issue-62-planned-action-v1:sha256:0172d0e91c6894577d6a17b7feaa4fd939e83d67de5b8565ff0b73d828e938ed",
+          "release_time_ms": 600,
+          "tap_time_ms": 122
+        }
+      ],
+      "role_ordinal": 1,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:60aeeb0cc2fe92f5eb1c37d999bd9e33169ae68a12b485986c70445dccdebbdb"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "training",
+      "generation_seed": 6200002,
+      "generator_family": "type010101",
+      "ordinal": 2,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_low__tap_early",
+          "drag_x": -146,
+          "drag_y": -35,
+          "identity": "issue-62-planned-action-v1:sha256:8d0bd8ad0a320d2f04e92fb4f9ad93c0d4a7fbde9533750f712b097119ac5d6c",
+          "release_time_ms": 600,
+          "tap_time_ms": 43
+        }
+      ],
+      "role_ordinal": 2,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:e651432ccc8b9c5b62bcdcd5ed996a986e976e7539321faf88b40e3e3cf839b5"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "training",
+      "generation_seed": 6200003,
+      "generator_family": "type010102",
+      "ordinal": 3,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_low__tap_early",
+          "drag_x": -63,
+          "drag_y": -45,
+          "identity": "issue-62-planned-action-v1:sha256:2e8125e38dcfdb6fd38890e45cac9fd93a1baf62b62ccf17b4f7f1cab5bb4da9",
+          "release_time_ms": 600,
+          "tap_time_ms": 293
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_middle__tap_early",
+          "drag_x": -130,
+          "drag_y": -10,
+          "identity": "issue-62-planned-action-v1:sha256:c84d296f5d66d1a55f158856c52193314f73c8cbef54aed8eda204f5a92a43e4",
+          "release_time_ms": 600,
+          "tap_time_ms": 18
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_middle__tap_early",
+          "drag_x": -100,
+          "drag_y": -7,
+          "identity": "issue-62-planned-action-v1:sha256:635ff2c0b161e6145b9eea2f526e91f232d424ab5d76a6fa69f2f685676b93dd",
+          "release_time_ms": 600,
+          "tap_time_ms": 425
+        }
+      ],
+      "role_ordinal": 3,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:994664910635f161ea72c7adcc399600669b5c47d4be90b8717b69d90423fcb7"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "training",
+      "generation_seed": 6200004,
+      "generator_family": "type010101",
+      "ordinal": 4,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -86,
+          "drag_y": 53,
+          "identity": "issue-62-planned-action-v1:sha256:f9c85b391a89120177869c2e9b61bcc472c56dc2839bbf3174455d0b58f6076f",
+          "release_time_ms": 600,
+          "tap_time_ms": 732
+        }
+      ],
+      "role_ordinal": 4,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:41006b0b3d8830e5bfbc248cfb56a989b9c2e1b7b82003b8a0617c6186e540c2"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "training",
+      "generation_seed": 6200005,
+      "generator_family": "type010102",
+      "ordinal": 5,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_middle__tap_early",
+          "drag_x": -141,
+          "drag_y": 14,
+          "identity": "issue-62-planned-action-v1:sha256:ae503f953cc63c7c368237e76dcea371ae7347fa31f811fd8e68782e386dec7f",
+          "release_time_ms": 600,
+          "tap_time_ms": 65
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_high__tap_late",
+          "drag_x": -116,
+          "drag_y": 54,
+          "identity": "issue-62-planned-action-v1:sha256:69adb8178a6dff2e6a8fbc45b8ece031ff2da6fac1695d77ea6e4a908e159350",
+          "release_time_ms": 600,
+          "tap_time_ms": 520
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_far__y_middle__tap_late",
+          "drag_x": -107,
+          "drag_y": 6,
+          "identity": "issue-62-planned-action-v1:sha256:7064e22272d6bd05a8b22d84b28627c5983c927eaade31046a1e29c35613a64f",
+          "release_time_ms": 600,
+          "tap_time_ms": 675
+        }
+      ],
+      "role_ordinal": 5,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:b2e84116abd047c74061f993bcc1572a1f2c7c8add7a606d67f725d01fad299a"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "training",
+      "generation_seed": 6200006,
+      "generator_family": "type010101",
+      "ordinal": 6,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_high__tap_early",
+          "drag_x": -133,
+          "drag_y": 53,
+          "identity": "issue-62-planned-action-v1:sha256:10306e4ca6a169e70962100220fca60a90164bec9475e90cc57a52ecef9f0311",
+          "release_time_ms": 600,
+          "tap_time_ms": 123
+        }
+      ],
+      "role_ordinal": 6,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:97d9e8418fdbd55f7e97947882e238975508e22d1bf8ff8e2bc4bce2b7c031b5"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "training",
+      "generation_seed": 6200007,
+      "generator_family": "type010102",
+      "ordinal": 7,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_high__tap_early",
+          "drag_x": -48,
+          "drag_y": 35,
+          "identity": "issue-62-planned-action-v1:sha256:466fc8c2a8211ce3333280d9e89649d89cf6e0512899ebed0e206db517d81695",
+          "release_time_ms": 600,
+          "tap_time_ms": 152
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_low__tap_late",
+          "drag_x": -131,
+          "drag_y": -74,
+          "identity": "issue-62-planned-action-v1:sha256:28b256b8e604111b11bbef7a33f05e0cbae8c2217d609d132aa43712c2baa869",
+          "release_time_ms": 600,
+          "tap_time_ms": 570
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_low__tap_late",
+          "drag_x": -70,
+          "drag_y": -33,
+          "identity": "issue-62-planned-action-v1:sha256:90bb0214ca0184aa4491624c83747500becefcb64711773473f5276938404791",
+          "release_time_ms": 600,
+          "tap_time_ms": 868
+        }
+      ],
+      "role_ordinal": 7,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:f0c21388762a4338c1d5d61678fa094aa7c4d6fb516bebfdd65c2af75fd76ac6"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "training",
+      "generation_seed": 6200008,
+      "generator_family": "type010101",
+      "ordinal": 8,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -70,
+          "drag_y": 55,
+          "identity": "issue-62-planned-action-v1:sha256:242fc4d2e26506feaa1bd56046006961a860209551f7b5267c6a979ffcd2d6d9",
+          "release_time_ms": 600,
+          "tap_time_ms": 854
+        }
+      ],
+      "role_ordinal": 8,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:2d9e006607e2c48b19dac43b8c315957a403ab99fb22d1f04f60233caa433605"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "training",
+      "generation_seed": 6200009,
+      "generator_family": "type010102",
+      "ordinal": 9,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_high__tap_late",
+          "drag_x": -119,
+          "drag_y": 32,
+          "identity": "issue-62-planned-action-v1:sha256:01c7021a090d43cc2cd0fa54c44beaac9778443270f23a29c75837bc47912e23",
+          "release_time_ms": 600,
+          "tap_time_ms": 518
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_low__tap_early",
+          "drag_x": -70,
+          "drag_y": -45,
+          "identity": "issue-62-planned-action-v1:sha256:a3f6c5b85a1bc9c34d34752f46e2c1eff437f9d3490320a63316d7e83f76c1a4",
+          "release_time_ms": 600,
+          "tap_time_ms": 394
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_middle__tap_late",
+          "drag_x": -84,
+          "drag_y": -9,
+          "identity": "issue-62-planned-action-v1:sha256:368c3ada4f9b1f9b76104987d5f70752242033802cfaad3d76d8e555405a91ca",
+          "release_time_ms": 600,
+          "tap_time_ms": 556
+        }
+      ],
+      "role_ordinal": 9,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:4b9bc654c6c8d1c370632156255c5a89126a79e58c5390509081b27b87ad813a"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "training",
+      "generation_seed": 6200010,
+      "generator_family": "type010101",
+      "ordinal": 10,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_middle__tap_late",
+          "drag_x": -120,
+          "drag_y": -4,
+          "identity": "issue-62-planned-action-v1:sha256:f87fa749261278268e9d86aaeb408240a4edd4a85bcd0a36820c09e70aa99371",
+          "release_time_ms": 600,
+          "tap_time_ms": 635
+        }
+      ],
+      "role_ordinal": 10,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:0a3af005ee7f3511da52f1d98e7e0290fe7ede6917fdbca236e77aa2aea35669"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "training",
+      "generation_seed": 6200011,
+      "generator_family": "type010102",
+      "ordinal": 11,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_late",
+          "drag_x": -71,
+          "drag_y": 10,
+          "identity": "issue-62-planned-action-v1:sha256:614577eac1e92268ace32197cf40145fd130d2bddad89c72f26ddc07dfa0097f",
+          "release_time_ms": 600,
+          "tap_time_ms": 599
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_high__tap_late",
+          "drag_x": -121,
+          "drag_y": 64,
+          "identity": "issue-62-planned-action-v1:sha256:fee235fcebbc5b8828960ab7904b6810a22fd16c09421fad4d71b9a22c5da77b",
+          "release_time_ms": 600,
+          "tap_time_ms": 592
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -69,
+          "drag_y": 61,
+          "identity": "issue-62-planned-action-v1:sha256:8ede3d233fb49bcfdb88985550ee428a57fead29d937d97176db4d9d012c632c",
+          "release_time_ms": 600,
+          "tap_time_ms": 577
+        }
+      ],
+      "role_ordinal": 11,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:2ce7f96a46d25bc5730e8390472f0d12d69c6cd6fff03a48a69abea44c1d0d7c"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "calibration",
+      "generation_seed": 7200000,
+      "generator_family": "type010102",
+      "ordinal": 12,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_low__tap_early",
+          "drag_x": -111,
+          "drag_y": -72,
+          "identity": "issue-62-planned-action-v1:sha256:2903ac7ee04113a3e56eabf2b3f1cd7c70818b0a384a8c275edb1623389613a1",
+          "release_time_ms": 600,
+          "tap_time_ms": 71
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_low__tap_early",
+          "drag_x": -65,
+          "drag_y": -50,
+          "identity": "issue-62-planned-action-v1:sha256:0723da1b303b143a62ba1ab0fbd5ab23856a2039018650f4719a4e2cf2fbe3e2",
+          "release_time_ms": 600,
+          "tap_time_ms": 452
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_far__y_middle__tap_early",
+          "drag_x": -154,
+          "drag_y": -5,
+          "identity": "issue-62-planned-action-v1:sha256:50b426e6c00067650317985ccc89f9177d1de0988b5b632d75363c6b55b5d0be",
+          "release_time_ms": 600,
+          "tap_time_ms": 334
+        }
+      ],
+      "role_ordinal": 0,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:da994a3ac1019f769cd7caf3bd02febd884bf3ab3e63364e8439f879c4712008"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "calibration",
+      "generation_seed": 7200001,
+      "generator_family": "type010101",
+      "ordinal": 13,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_early",
+          "drag_x": -53,
+          "drag_y": -17,
+          "identity": "issue-62-planned-action-v1:sha256:a1f92a22a5a17bb968cd4e0d1b9db43271ae75ad41344250d5f3c214b4b4a83a",
+          "release_time_ms": 600,
+          "tap_time_ms": 198
+        }
+      ],
+      "role_ordinal": 1,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:e66dfd3d1adc97119a8632a299dd14f6ec8f6e57614d9ef0c3008d1524595ee1"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "calibration",
+      "generation_seed": 7200002,
+      "generator_family": "type010102",
+      "ordinal": 14,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_late",
+          "drag_x": -48,
+          "drag_y": -4,
+          "identity": "issue-62-planned-action-v1:sha256:453544118b2e5740932b44f7c8b3f65816813dbaac0875fd730f5fe4ecb71215",
+          "release_time_ms": 600,
+          "tap_time_ms": 680
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_low__tap_late",
+          "drag_x": -99,
+          "drag_y": -33,
+          "identity": "issue-62-planned-action-v1:sha256:75ee44e91063ee2b8fd7ced62032f3772bb1499202a295e1e274af96421548f5",
+          "release_time_ms": 600,
+          "tap_time_ms": 794
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_high__tap_early",
+          "drag_x": -96,
+          "drag_y": 65,
+          "identity": "issue-62-planned-action-v1:sha256:70361c5ff271b4c2b23a8a50eca38997b637c4b5542517a7c5f572a99544c637",
+          "release_time_ms": 600,
+          "tap_time_ms": 489
+        }
+      ],
+      "role_ordinal": 2,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:84361ebbe7a88391d38b52d11e5325e49e9a4b36a86cc9b548731e8faa3be5de"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "calibration",
+      "generation_seed": 7200003,
+      "generator_family": "type010101",
+      "ordinal": 15,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_low__tap_early",
+          "drag_x": -126,
+          "drag_y": -28,
+          "identity": "issue-62-planned-action-v1:sha256:1ffb6c5f59b21f5d89c2c74643606050429ae4fa446ce0a44981c84b9080da93",
+          "release_time_ms": 600,
+          "tap_time_ms": 17
+        }
+      ],
+      "role_ordinal": 3,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:352d7a8b7b44a99bbf4f4d21ea9b42cab1ce3ecadb6c1399f242d9117869287f"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "calibration",
+      "generation_seed": 7200004,
+      "generator_family": "type010102",
+      "ordinal": 16,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_high__tap_early",
+          "drag_x": -141,
+          "drag_y": 57,
+          "identity": "issue-62-planned-action-v1:sha256:c38e38f5ec9917fc67010f7c5d68e59596fc7a098da247f7d97dce42e7d5eaa5",
+          "release_time_ms": 600,
+          "tap_time_ms": 123
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_high__tap_early",
+          "drag_x": -84,
+          "drag_y": 34,
+          "identity": "issue-62-planned-action-v1:sha256:94fac06cfcd39ad71c72bc08b9c47844a4127fca39a15c1afd5b1c39eb9cea6b",
+          "release_time_ms": 600,
+          "tap_time_ms": 57
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_far__y_low__tap_late",
+          "drag_x": -155,
+          "drag_y": -54,
+          "identity": "issue-62-planned-action-v1:sha256:12ec1b7e84601c17b9e2e6ba76c7f4316c20e65aea48d6a4b99e066a6b2f02d3",
+          "release_time_ms": 600,
+          "tap_time_ms": 802
+        }
+      ],
+      "role_ordinal": 4,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:c51abef1ca42040977c127f06d0c32c1c3948b2743d13acdc63fd4d5529edc1a"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "calibration",
+      "generation_seed": 7200005,
+      "generator_family": "type010101",
+      "ordinal": 17,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_low__tap_late",
+          "drag_x": -84,
+          "drag_y": -74,
+          "identity": "issue-62-planned-action-v1:sha256:be3907a5df787dec216f8fd747fd8e21e8632ff5aa57611dc23cb7443eb3cc49",
+          "release_time_ms": 600,
+          "tap_time_ms": 896
+        }
+      ],
+      "role_ordinal": 5,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:11ecd38f6d3bba52d0fa17f4015fa4df15e445d41e20adf75529525b0b99061f"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "calibration",
+      "generation_seed": 7200006,
+      "generator_family": "type010102",
+      "ordinal": 18,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_high__tap_early",
+          "drag_x": -102,
+          "drag_y": 47,
+          "identity": "issue-62-planned-action-v1:sha256:79ad42c44e59477672c173ede94b5717db337c0d2fcf7b6c9ece453fbbbc9fbf",
+          "release_time_ms": 600,
+          "tap_time_ms": 425
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_middle__tap_early",
+          "drag_x": -108,
+          "drag_y": -25,
+          "identity": "issue-62-planned-action-v1:sha256:4d03e99bc43009814539d6f3434f4719ace567133a0dce11eda576cd91ebdf0a",
+          "release_time_ms": 600,
+          "tap_time_ms": 52
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_low__tap_late",
+          "drag_x": -68,
+          "drag_y": -63,
+          "identity": "issue-62-planned-action-v1:sha256:29e1e9338de2a0b239d802dee7f083126b024acbc36160e4c0980e1ee0ec9d85",
+          "release_time_ms": 600,
+          "tap_time_ms": 781
+        }
+      ],
+      "role_ordinal": 6,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:0165c9459036d0f350b10811aa769999619874bcce64339920a1e63c98e271d3"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "calibration",
+      "generation_seed": 7200007,
+      "generator_family": "type010101",
+      "ordinal": 19,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_low__tap_early",
+          "drag_x": -41,
+          "drag_y": -43,
+          "identity": "issue-62-planned-action-v1:sha256:818c603975faf04419f31bea0baa0ecc78f8b34f6c305e6738a5ff992cd40b09",
+          "release_time_ms": 600,
+          "tap_time_ms": 32
+        }
+      ],
+      "role_ordinal": 7,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:1ec337e98d01f0377037ef2a23a4a1545e78652b864f51b98beca2741b9549a6"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "calibration",
+      "generation_seed": 7200008,
+      "generator_family": "type010102",
+      "ordinal": 20,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_middle__tap_late",
+          "drag_x": -130,
+          "drag_y": 15,
+          "identity": "issue-62-planned-action-v1:sha256:cab137ebcde0a822d5c4a970921f5eb053f189136cb8201fb2a6c6c301169412",
+          "release_time_ms": 600,
+          "tap_time_ms": 784
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_middle__tap_late",
+          "drag_x": -88,
+          "drag_y": -18,
+          "identity": "issue-62-planned-action-v1:sha256:9095e6f5e3c76283c4f215c3554ec7dfb3e5420e4912391f9af9fa1056321066",
+          "release_time_ms": 600,
+          "tap_time_ms": 666
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_far__y_high__tap_late",
+          "drag_x": -144,
+          "drag_y": 55,
+          "identity": "issue-62-planned-action-v1:sha256:21bf10650eb064edca2ceceb75e2690ba5ecd557675c47d6110a640b8e9da9bb",
+          "release_time_ms": 600,
+          "tap_time_ms": 626
+        }
+      ],
+      "role_ordinal": 8,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:2ccba94279694db7e4073041155887cce81d200cd8b66440af9193de239cc97d"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "calibration",
+      "generation_seed": 7200009,
+      "generator_family": "type010101",
+      "ordinal": 21,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -84,
+          "drag_y": 66,
+          "identity": "issue-62-planned-action-v1:sha256:8f0c588577856d6587f666371dbd768ab79c253569b1377e0276dffc3bcb4e52",
+          "release_time_ms": 600,
+          "tap_time_ms": 634
+        }
+      ],
+      "role_ordinal": 9,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:cc7c5650b388d37c9cd2154afe162eab236648af78221560c5bf040b38ce381c"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "calibration",
+      "generation_seed": 7200010,
+      "generator_family": "type010102",
+      "ordinal": 22,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_early",
+          "drag_x": -52,
+          "drag_y": 10,
+          "identity": "issue-62-planned-action-v1:sha256:6bc7a1be588cfbf87e1ef79b5a81d9135af93fcc38b87b3b6535c1790c9254e7",
+          "release_time_ms": 600,
+          "tap_time_ms": 260
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_low__tap_early",
+          "drag_x": -88,
+          "drag_y": -76,
+          "identity": "issue-62-planned-action-v1:sha256:b4213677d672347bd447d39877944460e415d88e69d5c8e9d272a7907013325a",
+          "release_time_ms": 600,
+          "tap_time_ms": 54
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -92,
+          "drag_y": 60,
+          "identity": "issue-62-planned-action-v1:sha256:3ed1fa64651f4ee26037d3b66faf60c9b7c583fe585eebb17a9d53e13abdbd68",
+          "release_time_ms": 600,
+          "tap_time_ms": 539
+        }
+      ],
+      "role_ordinal": 10,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:dae531068317c9d60b2bd75227de96493108dd66730c46175367ba51221d7c8c"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "calibration",
+      "generation_seed": 7200011,
+      "generator_family": "type010101",
+      "ordinal": 23,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -87,
+          "drag_y": 39,
+          "identity": "issue-62-planned-action-v1:sha256:79008c7840cbc6086c76094cfa2cc13fe8b993f0a1a1e5f9ef5a0c642a88b717",
+          "release_time_ms": 600,
+          "tap_time_ms": 784
+        }
+      ],
+      "role_ordinal": 11,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:91777d9dab6a7a16e887e5cd7b053231f0f0f0680e2661eb8b924063ae8943e9"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "model_selection",
+      "generation_seed": 8200000,
+      "generator_family": "type010101",
+      "ordinal": 24,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_middle__tap_late",
+          "drag_x": -123,
+          "drag_y": 24,
+          "identity": "issue-62-planned-action-v1:sha256:998952b65b0dd2dd7b67bf80c10c21e12ba5f5b18fc038e0f38bf2f526b5278e",
+          "release_time_ms": 600,
+          "tap_time_ms": 946
+        }
+      ],
+      "role_ordinal": 0,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:0ce12f47a45ccc0d1c66770bde065afd70ac14dfb115b71d9c6357b81db3778d"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "model_selection",
+      "generation_seed": 8200001,
+      "generator_family": "type010102",
+      "ordinal": 25,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_middle__tap_early",
+          "drag_x": -131,
+          "drag_y": -23,
+          "identity": "issue-62-planned-action-v1:sha256:c588d925ff94bde7c92d2459d9f58ff830c9b40ae58be87b6b3012aad877ce34",
+          "release_time_ms": 600,
+          "tap_time_ms": 263
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_high__tap_early",
+          "drag_x": -66,
+          "drag_y": 80,
+          "identity": "issue-62-planned-action-v1:sha256:130c24bbd3e8d953651f0dbcab4fc3c3a782bacf50fa54a35838d729a96b953a",
+          "release_time_ms": 600,
+          "tap_time_ms": 37
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_middle__tap_early",
+          "drag_x": -92,
+          "drag_y": -11,
+          "identity": "issue-62-planned-action-v1:sha256:b394c7e0917c4bab36c99caf01898452d2e88d7d975ecf1f5121c9e8ab458ed8",
+          "release_time_ms": 600,
+          "tap_time_ms": 228
+        }
+      ],
+      "role_ordinal": 1,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:4bba17b3ba4070398be6107e9fb937605b553eca98f5c2cad5556e1c5d9d1351"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "model_selection",
+      "generation_seed": 8200002,
+      "generator_family": "type010101",
+      "ordinal": 26,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_low__tap_early",
+          "drag_x": -116,
+          "drag_y": -52,
+          "identity": "issue-62-planned-action-v1:sha256:caa0dee8925307d6dbf2521ebeacca4dd02f305fd54f1fa7efd3458c4099a949",
+          "release_time_ms": 600,
+          "tap_time_ms": 366
+        }
+      ],
+      "role_ordinal": 2,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:83c02c8608044e95f3a12702ea4a7b7834c9352debdcae4ce770bc69af6c81ae"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "model_selection",
+      "generation_seed": 8200003,
+      "generator_family": "type010102",
+      "ordinal": 27,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_low__tap_early",
+          "drag_x": -47,
+          "drag_y": -49,
+          "identity": "issue-62-planned-action-v1:sha256:59dc53e02dd92e74b6d9bcc522466c3e7811f3e9c1626936f3e4bacaa05cfcf5",
+          "release_time_ms": 600,
+          "tap_time_ms": 263
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_middle__tap_early",
+          "drag_x": -144,
+          "drag_y": 5,
+          "identity": "issue-62-planned-action-v1:sha256:55c564ea144ce0f2ba64a6cc3d6bf2650c3f4d995a839fa978df7f6d69fabe61",
+          "release_time_ms": 600,
+          "tap_time_ms": 356
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_middle__tap_early",
+          "drag_x": -97,
+          "drag_y": 19,
+          "identity": "issue-62-planned-action-v1:sha256:d2bb41a3b4e69a50a945721e17cf91d0ed5c443a959e5753ab48d42c317e0022",
+          "release_time_ms": 600,
+          "tap_time_ms": 336
+        }
+      ],
+      "role_ordinal": 3,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:6b746259acd5826db9b086e2302df939c77482e45aca42a8144c38a1ce57614d"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "model_selection",
+      "generation_seed": 8200004,
+      "generator_family": "type010101",
+      "ordinal": 28,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -40,
+          "drag_y": 78,
+          "identity": "issue-62-planned-action-v1:sha256:20b7846ad15dbecc56fdc3c0e48604117bf4a3b80665e510e7c18b0078c53126",
+          "release_time_ms": 600,
+          "tap_time_ms": 539
+        }
+      ],
+      "role_ordinal": 4,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:ecdc2311fe8bb284841bc6434d299ef251d375d722cf0f58b26ccbb786310f61"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "model_selection",
+      "generation_seed": 8200005,
+      "generator_family": "type010102",
+      "ordinal": 29,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_early",
+          "drag_x": -90,
+          "drag_y": -3,
+          "identity": "issue-62-planned-action-v1:sha256:06b1f513a68082d5f764dc492c0d093d809abad85f6cb95fcb5e733dfad4d74d",
+          "release_time_ms": 600,
+          "tap_time_ms": 390
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_middle__tap_late",
+          "drag_x": -43,
+          "drag_y": -1,
+          "identity": "issue-62-planned-action-v1:sha256:4e086e02c3b2e6745f67bc71a76bcc6873c56b385eb88a0925061adf047151db",
+          "release_time_ms": 600,
+          "tap_time_ms": 818
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -78,
+          "drag_y": 52,
+          "identity": "issue-62-planned-action-v1:sha256:51f9540522b43ac7fdf80a20a11096957094321f30d75fc29cf36a4759001ac4",
+          "release_time_ms": 600,
+          "tap_time_ms": 808
+        }
+      ],
+      "role_ordinal": 5,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:492bdac084eb43f3a3738157977f312c7a7dfd3ba6418caad678d58dbc99477d"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "model_selection",
+      "generation_seed": 8200006,
+      "generator_family": "type010101",
+      "ordinal": 30,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_high__tap_early",
+          "drag_x": -123,
+          "drag_y": 65,
+          "identity": "issue-62-planned-action-v1:sha256:4479bfff0f734219083f77cba8ff5b17a66b43ebd8f8f78f44b503d51bb51531",
+          "release_time_ms": 600,
+          "tap_time_ms": 367
+        }
+      ],
+      "role_ordinal": 6,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:cba22ab2807d253c3a089356e7b39b3d5482871390048ed4d44fe591fe4959ff"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "model_selection",
+      "generation_seed": 8200007,
+      "generator_family": "type010102",
+      "ordinal": 31,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_high__tap_early",
+          "drag_x": -47,
+          "drag_y": 47,
+          "identity": "issue-62-planned-action-v1:sha256:cc4b3efc1a27285880685cbb8538c45a74658d9ad5bacf81d4df2a30d392ff64",
+          "release_time_ms": 600,
+          "tap_time_ms": 163
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_low__tap_late",
+          "drag_x": -155,
+          "drag_y": -33,
+          "identity": "issue-62-planned-action-v1:sha256:4e031d4592cf623fb78a6163064ac83916ca2678daf5c745b49af7e6afca5466",
+          "release_time_ms": 600,
+          "tap_time_ms": 582
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_low__tap_late",
+          "drag_x": -87,
+          "drag_y": -69,
+          "identity": "issue-62-planned-action-v1:sha256:55887df6967a402208ae0a9500aefc4c081e30bcc8316b30ae150356c5ae33eb",
+          "release_time_ms": 600,
+          "tap_time_ms": 783
+        }
+      ],
+      "role_ordinal": 7,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:79756d4c4893610ec8930a582a58ab3bd6b5460bfab13bb8c80ed44046e320a9"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "model_selection",
+      "generation_seed": 8200008,
+      "generator_family": "type010101",
+      "ordinal": 32,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_late",
+          "drag_x": -93,
+          "drag_y": -6,
+          "identity": "issue-62-planned-action-v1:sha256:7bab9ee09b6c6afeb90c2fa290207e665f8fa910c7c2851539a93ddc16b17ed4",
+          "release_time_ms": 600,
+          "tap_time_ms": 837
+        }
+      ],
+      "role_ordinal": 8,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:6bfde5c4d636ea103ed4ed737df82eabbd5f6f6ac6b36063f4ae3637e6291c2a"
+    },
+    {
+      "behavior_policy": "uniform_random",
+      "exposure_role": "model_selection",
+      "generation_seed": 8200009,
+      "generator_family": "type010102",
+      "ordinal": 33,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_late",
+          "drag_x": -48,
+          "drag_y": -11,
+          "identity": "issue-62-planned-action-v1:sha256:06003ab0d514065d37b37fcf3e03ac44d6fc2d76ccbc9222a677eafb65b26d42",
+          "release_time_ms": 600,
+          "tap_time_ms": 699
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -93,
+          "drag_y": 51,
+          "identity": "issue-62-planned-action-v1:sha256:432847def9436108da1d919d613beb0db439b6234704b636f993b5a41038b167",
+          "release_time_ms": 600,
+          "tap_time_ms": 959
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_high__tap_early",
+          "drag_x": -44,
+          "drag_y": 58,
+          "identity": "issue-62-planned-action-v1:sha256:7e9451134de9cb0bb113d914fed27bd207533301d5793ef1bd920a0b647e78b2",
+          "release_time_ms": 600,
+          "tap_time_ms": 99
+        }
+      ],
+      "role_ordinal": 9,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:92e1fd3af9721662256ba34b657896e10e13a1ece47273da039c0217e5dbf6dd"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "model_selection",
+      "generation_seed": 8200010,
+      "generator_family": "type010101",
+      "ordinal": 34,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_far__y_middle__tap_late",
+          "drag_x": -125,
+          "drag_y": -18,
+          "identity": "issue-62-planned-action-v1:sha256:c94f4e9dbd6a77966c3e45b1bfa7eef111e16348be4c4db6ecab4bbf41c034a7",
+          "release_time_ms": 600,
+          "tap_time_ms": 589
+        }
+      ],
+      "role_ordinal": 10,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:d8da8c8b2963e407e09224e50cdd04eb62528cc94e2bd1792ea07d7744c5e15e"
+    },
+    {
+      "behavior_policy": "stratified_bounds",
+      "exposure_role": "model_selection",
+      "generation_seed": 8200011,
+      "generator_family": "type010102",
+      "ordinal": 35,
+      "phase": "pilot",
+      "planned_actions": [
+        {
+          "action_index": 0,
+          "action_stratum": "x_near__y_middle__tap_late",
+          "drag_x": -54,
+          "drag_y": 5,
+          "identity": "issue-62-planned-action-v1:sha256:bdd89aa97069a8b8c5006bcf1cd641e50aac615616d558b9642052d3e4b718e7",
+          "release_time_ms": 600,
+          "tap_time_ms": 754
+        },
+        {
+          "action_index": 1,
+          "action_stratum": "x_far__y_high__tap_late",
+          "drag_x": -140,
+          "drag_y": 38,
+          "identity": "issue-62-planned-action-v1:sha256:959afa4f6839d127d6ad90e6e5311d1db742da1ebdafa4aa243e89241eaf5a6a",
+          "release_time_ms": 600,
+          "tap_time_ms": 701
+        },
+        {
+          "action_index": 2,
+          "action_stratum": "x_near__y_high__tap_late",
+          "drag_x": -40,
+          "drag_y": 63,
+          "identity": "issue-62-planned-action-v1:sha256:32bf6d9dc1b7e36ff3ef033a1a1b6cc14f79cdfddac7759478141cf8ee360678",
+          "release_time_ms": 600,
+          "tap_time_ms": 568
+        }
+      ],
+      "role_ordinal": 11,
+      "slot_identity": "issue-62-scenario-lineage-slot-v1:sha256:a190053c297b07add3cb917513144507ea2141544a8dfbe00f577672d1765e2d"
+    }
+  ],
+  "max_shots": 6,
+  "nested_training_scales": [],
+  "non_final_only": true,
+  "phase": "pilot",
+  "pilot_report_identity": null,
+  "resource_decision": {
+    "bounded_pilot_lineages": 36,
+    "production_membership_frozen_after_pilot": true
+  },
+  "role_counts": {
+    "calibration": 12,
+    "model_selection": 12,
+    "training": 12
+  },
+  "schema": "multi_shot_successor_collection_plan_v2",
+  "source_issue": 62
+}
