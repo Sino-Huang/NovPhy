@@ -1,11 +1,12 @@
 # Manuscript Content Brief
 
-Status note: The working title is *Granularity Is a Decision: Joint Horizon-Description Selection in Latent World Models*. This repository contains Method and Experiments specifications, not drafted TeX prose. Every paper section remains `NOT STARTED`. Latest evidence adds the bounded issue-57 zero-success gameplay matrix and implemented issue-60 deployment-temporal infrastructure. The central authorized comparison remains `[TODO: result]`. Cohort-v2 supports bounded model-selection artifacts, while six central final-evaluation rollouts are sealed and final metric derivation and consumption are **Blocked** pending authorization. A completed cohort release is not final-evaluation or manuscript authorization. Issues #61 through #65 remain Specified/Open with `[TODO: result]` outcomes. Use [research_evidence.md](research_evidence.md), [CONTEXT.md](CONTEXT.md), and [reviewer_expectations_2026.md](reviewer_expectations_2026.md) as the current claim boundary.
+Status note: The title and temporary abstract are now drafted in TeX. The working title is *Granularity Is a Decision: Joint Horizon-Description Selection in Latent World Models*. All six numbered paper sections remain `NOT STARTED`. Latest evidence adds the bounded issue-57 zero-success gameplay matrix and implemented issue-60 deployment-temporal infrastructure. The central authorized comparison remains `[TODO: result]`. Cohort-v2 supports bounded model-selection artifacts, while six central final-evaluation rollouts are sealed and final metric derivation and consumption are **Blocked** pending authorization. A completed cohort release is not final-evaluation or manuscript authorization. Issues #61 through #65 remain Specified/Open with `[TODO: result]` outcomes. Use [research_evidence.md](research_evidence.md), [CONTEXT.md](CONTEXT.md), and [reviewer_expectations_2026.md](reviewer_expectations_2026.md) as the current claim boundary.
 
 ## Progress
 
 | # | Section | Status | Notes |
 |---|---|---|---|
+| -- | Abstract | DRAFTED | Temporary single-paragraph abstract drafted in TeX without a comparative result claim. |
 | 1 | Introduction | NOT STARTED | No TeX prose drafted. State the falsifiable mechanism question and retain `[TODO: result]`. |
 | 2 | Related Work | NOT STARTED | No TeX prose drafted. Use independently verified citations only. |
 | 3 | Method | NOT STARTED | No TeX prose drafted. Specify the 3 by 3 pair scope, continuous carrier, supervision, and status boundaries. |
@@ -44,7 +45,7 @@ Status note: The working title is *Granularity Is a Decision: Joint Horizon-Desc
 - Obtain final-evaluation authorization, then run the predeclared common-compute comparison of the joint-pair controller against `fixed-pair`, `temporal-only`, `description-only`, `independent-axes`, and the parameter-matched two-head controller. Keep its result `[TODO: result]` until then.
 - Keep issue-57 claims within its frozen gameplay matrix. Do not use its zero-success floor as a controller-effectiveness conclusion.
 - Keep issues #61 through #65 as Specified/Open work until a source-bound record supports an implementation and a result.
-- Keep every paper section `NOT STARTED` until TeX prose is drafted.
+- Keep every numbered paper section `NOT STARTED` until its TeX prose is drafted.
 - Preserve the local TeX toolchain and rerun the mandatory build after subsequent TeX changes.
 - Preserve the implemented HIGH corrections. The MEDIUM teaser-label and LOW null-rate clarity issues remain for a later lane.
 - Resolve the two Gate 3 LOW teaser clarity edits before treating the figure brief as submission-ready.
