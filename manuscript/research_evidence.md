@@ -21,6 +21,9 @@
 | Policy baselines | The controller-free `fixed-pair`, `temporal-only`, `description-only`, and `independent-axes` policies are implemented. Issue 9 evaluates six states for each policy, exposure-role cell. | This is bounded controller-free evidence, not a matched-compute suite with issue 10. Recomputing these policies under the authorized final protocol remains `[TODO: result]`. [issue-9 summary](../data/runtime_evidence/issue-9/cohort-v2-policy-baseline-summary.json#L1) |
 | Controller comparison | A distilled joint-pair controller and a parameter-matched two-head controller are implemented. Their bounded model-selection comparison uses 1,600 states, agent-observable inputs, and excludes oracle engine state. The controllers have equal scores, with no observed advantage for the joint controller. The recorded endpoint violation rate is `0.0002777777777777778`. | This is model-selection evidence only. It is not final evaluation, terminal-outcome accuracy, or the authorized prospective common-compute comparison. [issue-10 summary](../data/runtime_evidence/issue-10/cohort-v2-controller-summary.json#L1) |
 | Issue-11 aggregation | One aggregation round covers six rollouts and 109 controller decisions using aligned ground-truth-expert carrier continuation. The source cohort is not mutated, and the aggregation reports zero deltas against the oracle-state baseline. | This is neither a model closed-loop rollout nor evidence of terminal-outcome accuracy or effectiveness. [issue-11 summary](../data/runtime_evidence/issue-11/cohort-v2-controller-aggregation-summary.json#L1) |
+| Issue-57 held-out gameplay matrix | Five systems ran on five held-out levels with three seeds each, for 75 trials. Each system recorded `0/15` successes, yielding a complete zero-success floor and the disposition `not_supported_by_this_experiment`. | This is verified, bounded negative gameplay evidence for the frozen stack, packaged instance-held-out levels, seeds, limits, and decision rule. It does not establish equivalence, impossibility, causal training-data insufficiency, controller efficacy or inefficacy, or the manuscript's central claim. [issue-57 summary](../data/runtime_evidence/issue-57/cohort-v2-gameplay-success-summary-v2.json#L13-L15) [system results](../data/runtime_evidence/issue-57/cohort-v2-gameplay-success-summary-v2.json#L133-L198) [trial matrix](../data/runtime_evidence/issue-57/cohort-v2-gameplay-success-summary-v2.json#L200-L225) |
+| Issue-57 adaptive-granularity use | Adaptive granularity was not materially exercised. Adaptive CEM/MPC requested `continuous-h15` for all 44 recorded decisions. | The gameplay floor cannot test variation across requested horizon-description pairs. [issue-57 interpretation and usage](../data/runtime_evidence/issue-57/cohort-v2-gameplay-success-summary-v2.json#L42-L56) |
+| Issue-60 deployment temporal carrier | Issue 60, included in merge `6119b6c`, implements method infrastructure for a deployment-aligned temporal carrier. It uses aligned prior context for motion, an explicit motion-availability mask when that context is absent, complete trajectory atomicity, and one exposure role per scenario lineage. Oracle or canonical engine state is excluded from model and planner input except for declared supervision or alignment diagnosis. | This is implemented infrastructure, not an empirical result or a controller-effectiveness finding. [carrier input and motion contract](../world_model/data/deployment_temporal.py#L93-L141) [carrier construction](../world_model/data/deployment_temporal.py#L630-L705) [trajectory and role-isolation contract](../world_model/data/deployment_temporal.py#L311-L515) [input-isolation and contract tests](../tests/test_deployment_temporal_carrier.py#L196-L326) |
 
 ### Blocked evidence
 
@@ -34,6 +37,7 @@
 - OOD, template-held-out, and cross-domain claims are **Unavailable**. The central contract provides instance-held-out exposure roles and explicitly creates no template-held-out score. [partition and exposure contract](../docs/data_contracts/cohort_v2_partition_exposure_v1.md#L24-L43) [capability declaration](../docs/data_contracts/cohort_v2_capabilities_v1.json#L15-L24)
 - Dense-path plausibility is **Unavailable**. The two accepted violation checks are endpoint measurements only. [physical-violation contract](../docs/data_contracts/cohort_v2_physical_violations_v1.md#L1-L11) [accepted violation labels](../docs/data_contracts/cohort_v2_capabilities_v1.json#L81-L84) `illegal_contact` is **Unavailable** because it is excluded from the central capability declaration. [illegal-contact exclusion](../docs/data_contracts/cohort_v2_capabilities_v1.json#L23)
 - The learned reliability gate, learned predicate parser, and SPSG are **Specified** components. Their benefit is **Unavailable** because no bounded source here evaluates it.
+- Issues #61 through #65 are **Specified/Open** future work in this ledger. Their results remain `[TODO: result]`. Do not report an implementation or outcome for any of them.
 - Legacy backbone, smoke, and continuous-only temporal assertions formerly linked through retired evidence paths are **Unavailable** in this ledger. They must not be cited as current implementation evidence without a valid `data/runtime_evidence/issue-*` or `docs/data_contracts/*` source.
 
 ## Source Hierarchy
@@ -51,6 +55,9 @@
 - Do not claim final-evaluation metrics, terminal-outcome accuracy, common final-state readout performance, shared coordinate decoding, ADE, FDE, event F1, dense-path plausibility, illegal-contact handling, OOD performance, template-held-out performance, cross-domain performance, learned-gate benefit, parser performance, or SPSG benefit.
 - Do not describe issue 9 as controller-based or compute-matched to issue 10.
 - Do not describe issue 11 as a model closed-loop rollout or terminal-outcome evidence.
+- Describe issue 57 only as the bounded zero-success gameplay matrix. It is not evidence of controller equivalence, impossibility, training-data causality, controller efficacy or inefficacy, or the central joint-pair comparison.
+- Describe issue 60 as implemented deployment-temporal method infrastructure. Do not report it as an empirical result.
+- Keep issues #61 through #65 as Specified/Open work with `[TODO: result]` outcomes.
 - Do not treat cohort-release completion as final-evaluation authorization or manuscript authorization.
 
 ## Evidence-to-Provisional Six-Section Outline
@@ -59,8 +66,8 @@
 |---|---|---|
 | 1. Introduction | State the mechanism question and distinguish published NovPhy from BG-NS-JEPA. | The central advantage remains `[TODO: result]`. |
 | 2. Related Work | Position the published benchmark and the specified evaluation problem. | Verify citations independently before drafting. |
-| 3. Method | Describe the 3 by 3 pair scope and mark unevaluated components by status. | Do not turn specification into efficacy. |
-| 4. Experiments | Report the bounded model-selection artifacts and the blocked final-evaluation boundary. | No final metric or controller-advantage table. |
+| 3. Method | Describe the 3 by 3 pair scope and the implemented deployment-temporal carrier contract. Mark unevaluated components by status. | Do not turn implementation or specification into efficacy. |
+| 4. Experiments | Report the bounded model-selection artifacts, issue-57 zero-success floor, and blocked central final-evaluation boundary. | No final metric or controller-advantage table. |
 | 5. Discussion | Explain what the bounded controller comparison does and does not show. | Do not infer effectiveness from equal scores or zero deltas. |
 | 6. Conclusion | State the specified test and missing authorized final evidence. | No efficacy conclusion. |
 
@@ -69,3 +76,4 @@
 - Retain `[TODO: result]` until a final authorized comparison supports or rejects the central claim.
 - Decide whether a paper limited to bounded model-selection evidence is appropriate for the intended venue.
 - Define the common final-state readout and coordinate-decoder protocol before adding terminal-outcome, ADE, FDE, or event-F1 claims.
+- Keep issues #61 through #65 as future-work items until evidence records an implementation and a result.

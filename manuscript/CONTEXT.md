@@ -54,9 +54,15 @@ _Avoid_: Unrun, Unavailable, authorized result.
 
 **Continuous carrier**
 
-The continuous predictive latent designated to carry a BG-NS-JEPA rollout between prediction decisions. Symbolic readouts do not replace it.
+The continuous predictive latent designated to carry a BG-NS-JEPA rollout between prediction decisions. Issue 60 implements a deployment-aligned temporal carrier with aligned prior context for motion and explicit motion-availability masks. Symbolic readouts do not replace it. [carrier construction](../world_model/data/deployment_temporal.py#L630-L705) [carrier tests](../tests/test_deployment_temporal_carrier.py#L180-L207)
 
 _Avoid_: Symbolic rollout state, controller output.
+
+**Deployment temporal carrier**
+
+Implemented method infrastructure from issue 60, included in merge `6119b6c`. It accepts agent observations only. Canonical engine state is excluded from model and planner input except for declared source-bound supervision or alignment diagnosis. Complete trajectories are atomic, and each scenario lineage may belong to exactly one exposure role. This is not an empirical result. [input and inference contract](../world_model/data/deployment_temporal.py#L93-L120) [trajectory contract](../world_model/data/deployment_temporal.py#L311-L515) [input-isolation tests](../tests/test_deployment_temporal_carrier.py#L209-L326)
+
+_Avoid_: Controller result, canonical-state input, independently sampled decision.
 
 **Requested horizon**
 
@@ -118,9 +124,21 @@ One round over six rollouts and 109 controller decisions using aligned ground-tr
 
 _Avoid_: Model closed-loop rollout, terminal-outcome accuracy, controller effectiveness.
 
+**Issue-57 held-out gameplay evidence**
+
+Verified bounded negative evidence from five systems on five held-out levels with three seeds each. All 75 trials were included, and every system recorded `0/15` successes. The result is a complete zero-success floor with disposition `not_supported_by_this_experiment`. Adaptive granularity was not materially exercised because adaptive CEM/MPC requested `continuous-h15` on all 44 recorded decisions. This does not establish equivalence, impossibility, causal training-data insufficiency, controller efficacy or inefficacy, or the manuscript's central claim. [issue-57 summary](../data/runtime_evidence/issue-57/cohort-v2-gameplay-success-summary-v2.json#L13-L15) [usage](../data/runtime_evidence/issue-57/cohort-v2-gameplay-success-summary-v2.json#L42-L56) [system results and trial matrix](../data/runtime_evidence/issue-57/cohort-v2-gameplay-success-summary-v2.json#L133-L225)
+
+_Avoid_: Controller equivalence, impossibility result, central-claim result.
+
+**Issues #61 through #65**
+
+Specified/Open future work. Their results remain `[TODO: result]`. Do not describe an implementation or outcome for any of these issues.
+
+_Avoid_: Merged result, completed experiment, demonstrated effect.
+
 **Oracle supervision**
 
-Training-time, source-bound labels or diagnostics derived from engine evidence under a versioned contract. Oracle engine state is excluded from the bounded controller input.
+Training-time, source-bound labels or alignment diagnostics derived from engine evidence under a versioned contract. Oracle or canonical engine state is excluded from model and planner input.
 
 _Avoid_: Test-time controller input, visual guess.
 
