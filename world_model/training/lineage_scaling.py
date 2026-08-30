@@ -19,6 +19,7 @@ import torch
 from torch.nn import functional as F
 
 from world_model.data.deployment_temporal import (
+    TemporalVisualCarrierAdapter,
     TrajectoryLineageBinding,
     TrajectoryLineageManifest,
 )
@@ -42,7 +43,10 @@ from world_model.planning import (
     WorldModelCandidateEvaluator,
 )
 from world_model.planning.gameplay import PlanningObservation
-from world_model.training.cohort_v2_micro import cohort_v2_model_state_identity
+from world_model.training.cohort_v2_micro import (
+    CohortV2StateCodec,
+    cohort_v2_model_state_identity,
+)
 
 
 class LineageScalingError(ValueError):
@@ -52,6 +56,17 @@ class LineageScalingError(ValueError):
 class CarrierKind(StrEnum):
     SOURCE = "source"
     DEPLOYMENT = "deployment"
+
+
+class GameplayCheckpointRole(StrEnum):
+    LEGACY = "legacy"
+    RETRAINED = "retrained"
+
+
+class GameplayPlanningMode(StrEnum):
+    CONTINUOUS_H1 = "continuous-h1"
+    CONTINUOUS_H15 = "continuous-h15"
+    ADAPTIVE = "adaptive"
 
 
 @dataclass(frozen=True, slots=True)
@@ -138,12 +153,14 @@ class LineageScalingProtocol:
     training_scales: tuple[FrozenLineageScale, ...]
     evaluation_manifests: tuple[TrajectoryLineageManifest, ...]
     training_seeds: tuple[int, ...]
+    training_horizons: tuple[int, ...]
     optimizer_example_budget: int
     batch_size: int
     learning_rate: float
     weight_decay: float
     grad_clip: float
     predictor_config: PredictorConfig
+    source_max_entities: int
     source_carrier_identity: str
     deployment_carrier_identity: str
     configuration_basis: str
@@ -217,6 +234,10 @@ class LineageScalingProtocol:
             raise LineageScalingError(
                 "protocol requires at least three unique frozen training seeds"
             )
+        if self.training_horizons != (1, 15):
+            raise LineageScalingError(
+                "continuous training horizons must be exactly h1 and h15"
+            )
         if (
             type(self.optimizer_example_budget) is not int
             or self.optimizer_example_budget <= 0
@@ -224,17 +245,26 @@ class LineageScalingProtocol:
             or self.batch_size <= 0
             or type(self.predictor_config) is not PredictorConfig
             or self.predictor_config.action_dim != 5
+            or self.optimizer_example_budget % len(self.training_horizons)
             or self.learning_rate <= 0.0
             or self.weight_decay < 0.0
             or self.grad_clip < 0.0
         ):
             raise LineageScalingError("training architecture or optimizer budget is invalid")
         if (
-            not self.source_carrier_identity
-            or not self.deployment_carrier_identity
-            or self.source_carrier_identity == self.deployment_carrier_identity
+            type(self.source_max_entities) is not int
+            or self.source_max_entities <= 0
+            or self.source_carrier_identity
+            != CohortV2StateCodec(
+                latent_dim=self.predictor_config.latent_dim,
+                max_entities=self.source_max_entities,
+            ).identity
+            or self.deployment_carrier_identity
+            != TemporalVisualCarrierAdapter.identity
         ):
-            raise LineageScalingError("source and deployment carrier identities must differ")
+            raise LineageScalingError(
+                "carrier identities must bind the historical source and issue-60 adapters"
+            )
         if self.configuration_basis != "prospectively_frozen":
             raise LineageScalingError(
                 "training configuration must be prospectively frozen, not outcome conditioned"
@@ -254,12 +284,14 @@ class LineageScalingProtocol:
             ),
             tuple(item.identity for item in self.evaluation_manifests),
             self.training_seeds,
+            self.training_horizons,
             self.optimizer_example_budget,
             self.batch_size,
             self.learning_rate,
             self.weight_decay,
             self.grad_clip,
             self.predictor_config.identity,
+            self.source_max_entities,
             self.source_carrier_identity,
             self.deployment_carrier_identity,
             self.configuration_basis,
@@ -377,6 +409,7 @@ def _protocol_payload(protocol: LineageScalingProtocol) -> dict[str, Any]:
             _manifest_payload(item) for item in protocol.evaluation_manifests
         ],
         "training_seeds": list(protocol.training_seeds),
+        "training_horizons": list(protocol.training_horizons),
         "optimizer": {
             "example_budget": protocol.optimizer_example_budget,
             "batch_size": protocol.batch_size,
@@ -386,6 +419,7 @@ def _protocol_payload(protocol: LineageScalingProtocol) -> dict[str, Any]:
         },
         "predictor_config": asdict(protocol.predictor_config),
         "carrier_identities": {
+            "source_max_entities": protocol.source_max_entities,
             "source": protocol.source_carrier_identity,
             "deployment": protocol.deployment_carrier_identity,
         },
@@ -417,6 +451,7 @@ def load_lineage_scaling_protocol(path: Path) -> LineageScalingProtocol:
             "training_scales",
             "evaluation_manifests",
             "training_seeds",
+            "training_horizons",
             "optimizer",
             "predictor_config",
             "carrier_identities",
@@ -444,7 +479,9 @@ def load_lineage_scaling_protocol(path: Path) -> LineageScalingProtocol:
             "example_budget", "batch_size", "learning_rate", "weight_decay", "grad_clip"
         }:
             raise LineageScalingError("protocol optimizer fields differ")
-        if not isinstance(carriers, Mapping) or set(carriers) != {"source", "deployment"}:
+        if not isinstance(carriers, Mapping) or set(carriers) != {
+            "source_max_entities", "source", "deployment"
+        }:
             raise LineageScalingError("protocol carrier fields differ")
         protocol = LineageScalingProtocol(
             training_scales=tuple(scales),
@@ -452,12 +489,14 @@ def load_lineage_scaling_protocol(path: Path) -> LineageScalingProtocol:
                 _manifest_from_payload(item) for item in raw_evaluation
             ),
             training_seeds=tuple(payload["training_seeds"]),
+            training_horizons=tuple(payload["training_horizons"]),
             optimizer_example_budget=optimizer["example_budget"],
             batch_size=optimizer["batch_size"],
             learning_rate=optimizer["learning_rate"],
             weight_decay=optimizer["weight_decay"],
             grad_clip=optimizer["grad_clip"],
             predictor_config=PredictorConfig(**payload["predictor_config"]),
+            source_max_entities=carriers["source_max_entities"],
             source_carrier_identity=carriers["source"],
             deployment_carrier_identity=carriers["deployment"],
             configuration_basis=payload["configuration_basis"],
@@ -490,6 +529,7 @@ class ContinuousTransitionExample:
     physical_diagnostics: Mapping[str, float | bool | None]
     decision_index: int = 0
     horizon: int = 1
+    target_decision_index: int = 1
 
     def __post_init__(self) -> None:
         if not self.identity:
@@ -499,6 +539,9 @@ class ContinuousTransitionExample:
             or self.decision_index < 0
             or type(self.horizon) is not int
             or self.horizon <= 0
+            or type(self.target_decision_index) is not int
+            or self.target_decision_index <= self.decision_index
+            or self.target_decision_index - self.decision_index > self.horizon
         ):
             raise LineageScalingError("continuous transition position or horizon is invalid")
         if not isinstance(self.context, torch.Tensor) or self.context.ndim != 1:
@@ -526,6 +569,7 @@ class CarrierLineage:
     carrier_identity: str
     transitions: tuple[ContinuousTransitionExample, ...]
     complete: bool
+    decision_count: int = 15
 
     def __post_init__(self) -> None:
         if (
@@ -543,6 +587,8 @@ class CarrierLineage:
             raise LineageScalingError("carrier lineage exposure role is not public")
         if self.complete is not True:
             raise LineageScalingError("carrier training requires complete trajectories")
+        if type(self.decision_count) is not int or self.decision_count <= 0:
+            raise LineageScalingError("carrier lineage decision count is invalid")
         if (
             type(self.transitions) is not tuple
             or not self.transitions
@@ -552,6 +598,36 @@ class CarrierLineage:
             != len(self.transitions)
         ):
             raise LineageScalingError("carrier lineage transitions are malformed")
+        if any(
+            item.target_decision_index > self.decision_count
+            for item in self.transitions
+        ):
+            raise LineageScalingError("carrier transition exceeds its complete trajectory")
+
+
+def _validate_window_coverage(
+    lineage: CarrierLineage,
+    horizons: tuple[int, ...],
+) -> None:
+    for horizon in horizons:
+        windows = {
+            item.decision_index: item
+            for item in lineage.transitions
+            if item.horizon == horizon
+        }
+        expected_positions = tuple(range(0, lineage.decision_count, horizon))
+        if tuple(sorted(windows)) != expected_positions:
+            raise LineageScalingError(
+                f"complete lineage lacks contiguous h{horizon} windows"
+            )
+        if any(
+            windows[position].target_decision_index
+            != min(position + horizon, lineage.decision_count)
+            for position in expected_positions
+        ):
+            raise LineageScalingError(
+                f"complete lineage h{horizon} target positions differ"
+            )
 
 
 def save_carrier_lineage_bundle(
@@ -590,6 +666,7 @@ def save_carrier_lineage_bundle(
                     "trajectory_identity": lineage.trajectory_identity,
                     "scenario_lineage_identity": lineage.scenario_lineage_identity,
                     "complete": lineage.complete,
+                    "decision_count": lineage.decision_count,
                     "transitions": [
                         {
                             "identity": transition.identity,
@@ -598,6 +675,9 @@ def save_carrier_lineage_bundle(
                             "target": transition.target.detach().cpu(),
                             "decision_index": transition.decision_index,
                             "horizon": transition.horizon,
+                            "target_decision_index": (
+                                transition.target_decision_index
+                            ),
                             "physical_diagnostics": dict(
                                 transition.physical_diagnostics
                             ),
@@ -635,6 +715,7 @@ def load_carrier_lineage_bundle(path: Path) -> tuple[CarrierLineage, ...]:
                 "trajectory_identity",
                 "scenario_lineage_identity",
                 "complete",
+                "decision_count",
                 "transitions",
             }:
                 raise LineageScalingError("carrier lineage fields differ")
@@ -650,6 +731,7 @@ def load_carrier_lineage_bundle(path: Path) -> tuple[CarrierLineage, ...]:
                     "target",
                     "decision_index",
                     "horizon",
+                    "target_decision_index",
                     "physical_diagnostics",
                 }:
                     raise LineageScalingError("continuous transition fields differ")
@@ -661,6 +743,9 @@ def load_carrier_lineage_bundle(path: Path) -> tuple[CarrierLineage, ...]:
                     physical_diagnostics=raw_transition["physical_diagnostics"],
                     decision_index=raw_transition["decision_index"],
                     horizon=raw_transition["horizon"],
+                    target_decision_index=raw_transition[
+                        "target_decision_index"
+                    ],
                 ))
             lineages.append(CarrierLineage(
                 trajectory_identity=raw_lineage["trajectory_identity"],
@@ -671,6 +756,7 @@ def load_carrier_lineage_bundle(path: Path) -> tuple[CarrierLineage, ...]:
                 carrier_identity=payload["carrier_identity"],
                 transitions=tuple(transitions),
                 complete=raw_lineage["complete"],
+                decision_count=raw_lineage["decision_count"],
             ))
         return tuple(lineages)
     except (OSError, KeyError, TypeError, ValueError, RuntimeError) as error:
@@ -775,6 +861,22 @@ def validate_matched_carrier_lineages(
     return {"protocol_identity": protocol.identity, **result}
 
 
+def _evaluation_manifest_for_role(
+    protocol: LineageScalingProtocol,
+    role: str,
+) -> TrajectoryLineageManifest:
+    try:
+        return next(
+            item
+            for item in protocol.evaluation_manifests
+            if {binding.exposure_role for binding in item.bindings} == {role}
+        )
+    except StopIteration as error:
+        raise LineageScalingError(
+            "evaluation role has no frozen lineage manifest"
+        ) from error
+
+
 def validate_evaluation_lineages(
     protocol: LineageScalingProtocol,
     lineages: tuple[CarrierLineage, ...],
@@ -786,14 +888,7 @@ def validate_evaluation_lineages(
     if not lineages or len({item.exposure_role for item in lineages}) != 1:
         raise LineageScalingError("evaluation lineages crossed or omitted their role")
     role = lineages[0].exposure_role
-    try:
-        manifest = next(
-            item
-            for item in protocol.evaluation_manifests
-            if {binding.exposure_role for binding in item.bindings} == {role}
-        )
-    except StopIteration as error:
-        raise LineageScalingError("evaluation role has no frozen lineage manifest") from error
+    manifest = _evaluation_manifest_for_role(protocol, role)
     bindings = {
         item.scenario_lineage_identity: item for item in manifest.bindings
     }
@@ -830,7 +925,8 @@ class TrainingReport:
     optimizer_steps: int
     lineage_count: int
     transition_count: int
-    horizon_example_counts: tuple[tuple[int, int], ...]
+    available_horizon_counts: tuple[tuple[int, int], ...]
+    optimizer_horizon_counts: tuple[tuple[int, int], ...]
     epochs: float
     final_loss: float
     wall_seconds: float
@@ -850,7 +946,8 @@ class TrainingReport:
             self.optimizer_steps,
             self.lineage_count,
             self.transition_count,
-            self.horizon_example_counts,
+            self.available_horizon_counts,
+            self.optimizer_horizon_counts,
             self.epochs,
             self.final_loss,
             self.parameter_count,
@@ -897,6 +994,7 @@ def _validate_training_inputs(
             raise LineageScalingError(
                 "training inputs differ from the frozen trajectory manifest"
             )
+        _validate_window_coverage(lineage, protocol.training_horizons)
     examples = tuple(
         transition
         for lineage_identity in scale.lineage_identities
@@ -931,24 +1029,32 @@ def train_continuous_predictor(
         lr=protocol.learning_rate,
         weight_decay=protocol.weight_decay,
     )
-    generator = torch.Generator().manual_seed(cell.seed)
-    order = torch.randperm(len(examples), generator=generator).tolist()
-    cursor = 0
+    examples_per_horizon = (
+        protocol.optimizer_example_budget // len(protocol.training_horizons)
+    )
+    selected_by_horizon: dict[int, list[ContinuousTransitionExample]] = {}
+    for horizon in protocol.training_horizons:
+        pool = tuple(item for item in examples if item.horizon == horizon)
+        if not pool:
+            raise LineageScalingError(f"training data has no h{horizon} examples")
+        generator = torch.Generator().manual_seed(cell.seed + horizon)
+        selected = []
+        while len(selected) < examples_per_horizon:
+            order = torch.randperm(len(pool), generator=generator).tolist()
+            selected.extend(pool[index] for index in order)
+        selected_by_horizon[horizon] = selected[:examples_per_horizon]
+    schedule = tuple(
+        selected_by_horizon[horizon][position]
+        for position in range(examples_per_horizon)
+        for horizon in protocol.training_horizons
+    )
     examples_seen = 0
     steps = 0
     loss_value = math.nan
     started = time.monotonic()
-    while examples_seen < protocol.optimizer_example_budget:
-        if cursor == len(order):
-            order = torch.randperm(len(examples), generator=generator).tolist()
-            cursor = 0
-        take = min(
-            protocol.batch_size,
-            protocol.optimizer_example_budget - examples_seen,
-            len(order) - cursor,
-        )
-        batch = tuple(examples[index] for index in order[cursor:cursor + take])
-        cursor += take
+    for start in range(0, len(schedule), protocol.batch_size):
+        batch = schedule[start:start + protocol.batch_size]
+        take = len(batch)
         contexts = torch.stack(tuple(item.context for item in batch)).to(target_device)
         actions = torch.stack(tuple(item.action for item in batch)).to(target_device)
         targets = torch.stack(tuple(item.target for item in batch)).to(target_device)
@@ -995,9 +1101,13 @@ def train_continuous_predictor(
         optimizer_steps=steps,
         lineage_count=len(lineages),
         transition_count=len(examples),
-        horizon_example_counts=tuple(
+        available_horizon_counts=tuple(
             (horizon, sum(item.horizon == horizon for item in examples))
             for horizon in sorted({item.horizon for item in examples})
+        ),
+        optimizer_horizon_counts=tuple(
+            (horizon, examples_per_horizon)
+            for horizon in protocol.training_horizons
         ),
         epochs=examples_seen / len(examples),
         final_loss=loss_value,
@@ -1019,7 +1129,8 @@ class LineageScaledCheckpoint:
     carrier_identity: str
     predictor_config: PredictorConfig
     optimizer_examples: int
-    horizon_example_counts: tuple[tuple[int, int], ...]
+    available_horizon_counts: tuple[tuple[int, int], ...]
+    optimizer_horizon_counts: tuple[tuple[int, int], ...]
     epochs: float
 
 
@@ -1057,7 +1168,8 @@ def save_lineage_scaled_checkpoint(
         carrier_identity=report.carrier_identity,
         predictor_config=report.predictor_config,
         optimizer_examples=report.optimizer_examples,
-        horizon_example_counts=report.horizon_example_counts,
+        available_horizon_counts=report.available_horizon_counts,
+        optimizer_horizon_counts=report.optimizer_horizon_counts,
         epochs=report.epochs,
     )
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -1079,7 +1191,8 @@ def save_lineage_scaled_checkpoint(
                 "carrier_identity": metadata.carrier_identity,
                 "predictor_config": asdict(metadata.predictor_config),
                 "optimizer_examples": metadata.optimizer_examples,
-                "horizon_example_counts": metadata.horizon_example_counts,
+                "available_horizon_counts": metadata.available_horizon_counts,
+                "optimizer_horizon_counts": metadata.optimizer_horizon_counts,
                 "epochs": metadata.epochs,
             },
             "model_state": state,
@@ -1120,8 +1233,11 @@ def load_lineage_scaled_checkpoint(
             carrier_identity=raw["carrier_identity"],
             predictor_config=config,
             optimizer_examples=raw["optimizer_examples"],
-            horizon_example_counts=tuple(
-                tuple(item) for item in raw["horizon_example_counts"]
+            available_horizon_counts=tuple(
+                tuple(item) for item in raw["available_horizon_counts"]
+            ),
+            optimizer_horizon_counts=tuple(
+                tuple(item) for item in raw["optimizer_horizon_counts"]
             ),
             epochs=raw["epochs"],
         )
@@ -1142,6 +1258,17 @@ def load_lineage_scaled_checkpoint(
         or metadata.source_release_identity != scale.source_release_identity
         or metadata.carrier_identity != protocol.carrier_identity(expected_cell.carrier)
         or metadata.optimizer_examples != protocol.optimizer_example_budget
+        or metadata.optimizer_horizon_counts
+        != tuple(
+            (
+                horizon,
+                protocol.optimizer_example_budget
+                // len(protocol.training_horizons),
+            )
+            for horizon in protocol.training_horizons
+        )
+        or {horizon for horizon, count in metadata.available_horizon_counts if count > 0}
+        != set(protocol.training_horizons)
         or metadata.model_state_identity != state_identity
         or metadata.identity != expected_identity
     ):
@@ -1218,6 +1345,8 @@ def evaluate_continuous_prediction(
         or any(type(value) is not int or value <= 0 for value in horizons)
     ):
         raise LineageScalingError("prediction horizons must be positive integers")
+    for lineage in lineages:
+        _validate_window_coverage(lineage, horizons)
     device = next(model.parameters()).device
     failures: list[str] = []
     nonfinite = 0
@@ -1301,7 +1430,7 @@ def evaluate_continuous_prediction(
                             predicted, transition.target.to(device)
                         ).cpu())
                         errors.append(value)
-                        position += horizon
+                        position = transition.target_decision_index
                         lineage_errors.append((position, value))
                         current = predicted
                         if physical_diagnostic is not None:
@@ -1368,11 +1497,14 @@ class ActionCandidate:
     identity: str
     action: torch.Tensor
     realized_cost: float
+    interface_action: SlingshotAction
 
     def __post_init__(self) -> None:
         if not self.identity:
             raise LineageScalingError("action candidate identity is missing")
         _require_vector(self.action, 5, "action candidate")
+        if type(self.interface_action) is not SlingshotAction:
+            raise LineageScalingError("action candidate interface action is missing")
         if not math.isfinite(float(self.realized_cost)):
             raise LineageScalingError("realized action cost must be finite")
 
@@ -1387,6 +1519,8 @@ class ActionRankingState:
     carrier: CarrierKind
     carrier_identity: str
     context: torch.Tensor
+    action_bounds: SlingshotActionBounds
+    frame_height: int
     candidates: tuple[ActionCandidate, ...]
     cost_target: torch.Tensor | None = None
 
@@ -1405,11 +1539,31 @@ class ActionRankingState:
         if not isinstance(self.context, torch.Tensor) or self.context.ndim != 1:
             raise LineageScalingError("action-ranking context is malformed")
         if (
+            type(self.action_bounds) is not SlingshotActionBounds
+            or type(self.frame_height) is not int
+            or self.frame_height <= 0
+        ):
+            raise LineageScalingError("action-ranking legal bounds are malformed")
+        if (
             type(self.candidates) is not tuple
             or len(self.candidates) < 2
             or len({item.identity for item in self.candidates}) != len(self.candidates)
         ):
             raise LineageScalingError("declared legal candidate set is malformed")
+        for candidate in self.candidates:
+            if not self.action_bounds.contains(candidate.interface_action):
+                raise LineageScalingError("action-ranking candidate is not legal")
+            expected = torch.tensor((
+                candidate.interface_action.drag_x / float(self.frame_height),
+                candidate.interface_action.drag_y / float(self.frame_height),
+                self.action_bounds.release_time_ms / 1000.0,
+                candidate.interface_action.tap_time_ms / 1000.0,
+                1.0,
+            ), dtype=torch.float32)
+            if not torch.allclose(candidate.action.cpu(), expected):
+                raise LineageScalingError(
+                    "action-ranking tensor differs from its legal interface action"
+                )
         if self.cost_target is not None:
             _require_vector(
                 self.cost_target,
@@ -1422,8 +1576,24 @@ class ActionRankingState:
         return identity((
             "realized-action-candidate-set-v1",
             self.identity,
+            (
+                self.action_bounds.drag_x,
+                self.action_bounds.drag_y,
+                self.action_bounds.tap_time_ms,
+                self.action_bounds.release_time_ms,
+                self.frame_height,
+            ),
             tuple(
-                (item.identity, item.action.tolist(), float(item.realized_cost))
+                (
+                    item.identity,
+                    item.action.tolist(),
+                    (
+                        item.interface_action.drag_x,
+                        item.interface_action.drag_y,
+                        item.interface_action.tap_time_ms,
+                    ),
+                    float(item.realized_cost),
+                )
                 for item in self.candidates
             ),
         ))
@@ -1465,6 +1635,13 @@ def save_action_ranking_bundle(
                     "trajectory_identity": state.trajectory_identity,
                     "decision_transition_identity": state.decision_transition_identity,
                     "context": state.context.detach().cpu(),
+                    "action_bounds": {
+                        "drag_x": state.action_bounds.drag_x,
+                        "drag_y": state.action_bounds.drag_y,
+                        "tap_time_ms": state.action_bounds.tap_time_ms,
+                        "release_time_ms": state.action_bounds.release_time_ms,
+                    },
+                    "frame_height": state.frame_height,
                     "cost_target": state.cost_target.detach().cpu(),
                     "candidate_set_identity": state.candidate_set_identity,
                     "candidates": [
@@ -1472,6 +1649,13 @@ def save_action_ranking_bundle(
                             "identity": candidate.identity,
                             "action": candidate.action.detach().cpu(),
                             "realized_cost": candidate.realized_cost,
+                            "interface_action": {
+                                "drag_x": candidate.interface_action.drag_x,
+                                "drag_y": candidate.interface_action.drag_y,
+                                "tap_time_ms": (
+                                    candidate.interface_action.tap_time_ms
+                                ),
+                            },
                         }
                         for candidate in state.candidates
                     ],
@@ -1507,6 +1691,8 @@ def load_action_ranking_bundle(path: Path) -> tuple[ActionRankingState, ...]:
                 "trajectory_identity",
                 "decision_transition_identity",
                 "context",
+                "action_bounds",
+                "frame_height",
                 "cost_target",
                 "candidate_set_identity",
                 "candidates",
@@ -1518,14 +1704,16 @@ def load_action_ranking_bundle(path: Path) -> tuple[ActionRankingState, ...]:
             candidates = []
             for raw_candidate in raw_candidates:
                 if not isinstance(raw_candidate, Mapping) or set(raw_candidate) != {
-                    "identity", "action", "realized_cost"
+                    "identity", "action", "realized_cost", "interface_action"
                 }:
                     raise LineageScalingError("action candidate fields differ")
                 candidates.append(ActionCandidate(
                     raw_candidate["identity"],
                     raw_candidate["action"],
                     raw_candidate["realized_cost"],
+                    SlingshotAction(**raw_candidate["interface_action"]),
                 ))
+            action_bounds = SlingshotActionBounds(**raw_state["action_bounds"])
             state = ActionRankingState(
                 identity=raw_state["identity"],
                 scenario_lineage_identity=raw_state["scenario_lineage_identity"],
@@ -1537,6 +1725,8 @@ def load_action_ranking_bundle(path: Path) -> tuple[ActionRankingState, ...]:
                 carrier=CarrierKind(payload["carrier"]),
                 carrier_identity=payload["carrier_identity"],
                 context=raw_state["context"],
+                action_bounds=action_bounds,
+                frame_height=raw_state["frame_height"],
                 candidates=tuple(candidates),
                 cost_target=raw_state["cost_target"],
             )
@@ -1559,14 +1749,7 @@ def validate_action_ranking_states(
     if not states or len({item.exposure_role for item in states}) != 1:
         raise LineageScalingError("action-ranking states crossed or omitted their role")
     role = states[0].exposure_role
-    try:
-        manifest = next(
-            item
-            for item in protocol.evaluation_manifests
-            if {binding.exposure_role for binding in item.bindings} == {role}
-        )
-    except StopIteration as error:
-        raise LineageScalingError("ranking role has no frozen lineage manifest") from error
+    manifest = _evaluation_manifest_for_role(protocol, role)
     bindings = {
         item.scenario_lineage_identity: item for item in manifest.bindings
     }
@@ -1792,8 +1975,14 @@ class MatchedGameplayProtocol:
 @dataclass(frozen=True, slots=True)
 class GameplayCheckpointBindings:
     legacy_predictor: Path
+    legacy_predictor_identity: str
+    legacy_carrier_identity: str
     retrained_predictor: Path
+    retrained_predictor_identity: str
+    retrained_carrier_identity: str
+    retrained_protocol_identity: str
     adaptive_controller: Path
+    adaptive_controller_identity: str
 
     def __post_init__(self) -> None:
         for value in (
@@ -1809,15 +1998,31 @@ class GameplayCheckpointBindings:
             raise LineageScalingError(
                 "legacy and retrained gameplay checkpoints must be explicit and distinct"
             )
+        if (
+            not self.legacy_predictor_identity
+            or not self.legacy_carrier_identity.startswith(
+                "cohort-v2-oracle-continuous-carrier-v1:"
+            )
+            or not self.retrained_predictor_identity
+            or self.retrained_carrier_identity
+            != TemporalVisualCarrierAdapter.identity
+            or not self.retrained_protocol_identity
+            or not self.adaptive_controller_identity
+        ):
+            raise LineageScalingError("gameplay checkpoint provenance is incomplete")
 
 
 @dataclass(frozen=True, slots=True)
 class GameplaySystemSpec:
     identity: str
-    checkpoint_role: str
-    mode: str
+    checkpoint_role: GameplayCheckpointRole
+    mode: GameplayPlanningMode
     predictor_checkpoint: Path
+    predictor_checkpoint_identity: str
+    carrier_identity: str
+    predictor_protocol_identity: str
     controller_checkpoint: Path | None
+    controller_checkpoint_identity: str | None
     fixed_horizon: int | None
     protocol_identity: str
 
@@ -1830,13 +2035,13 @@ def matched_gameplay_systems(
 
     systems = []
     for checkpoint_role, predictor in (
-        ("legacy", checkpoints.legacy_predictor),
-        ("retrained", checkpoints.retrained_predictor),
+        (GameplayCheckpointRole.LEGACY, checkpoints.legacy_predictor),
+        (GameplayCheckpointRole.RETRAINED, checkpoints.retrained_predictor),
     ):
         for mode, fixed_horizon in (
-            ("continuous-h1", 1),
-            ("continuous-h15", 15),
-            ("adaptive", None),
+            (GameplayPlanningMode.CONTINUOUS_H1, 1),
+            (GameplayPlanningMode.CONTINUOUS_H15, 15),
+            (GameplayPlanningMode.ADAPTIVE, None),
         ):
             system_identity = identity((
                 "lineage-scaled-gameplay-system-v1",
@@ -1844,8 +2049,18 @@ def matched_gameplay_systems(
                 mode,
                 str(predictor),
                 (
+                    checkpoints.legacy_predictor_identity
+                    if checkpoint_role is GameplayCheckpointRole.LEGACY
+                    else checkpoints.retrained_predictor_identity
+                ),
+                (
                     str(checkpoints.adaptive_controller)
-                    if mode == "adaptive"
+                    if mode is GameplayPlanningMode.ADAPTIVE
+                    else None
+                ),
+                (
+                    checkpoints.adaptive_controller_identity
+                    if mode is GameplayPlanningMode.ADAPTIVE
                     else None
                 ),
                 protocol.identity,
@@ -1855,8 +2070,30 @@ def matched_gameplay_systems(
                 checkpoint_role=checkpoint_role,
                 mode=mode,
                 predictor_checkpoint=predictor,
+                predictor_checkpoint_identity=(
+                    checkpoints.legacy_predictor_identity
+                    if checkpoint_role is GameplayCheckpointRole.LEGACY
+                    else checkpoints.retrained_predictor_identity
+                ),
+                carrier_identity=(
+                    checkpoints.legacy_carrier_identity
+                    if checkpoint_role is GameplayCheckpointRole.LEGACY
+                    else checkpoints.retrained_carrier_identity
+                ),
+                predictor_protocol_identity=(
+                    "historical-issue-15"
+                    if checkpoint_role is GameplayCheckpointRole.LEGACY
+                    else checkpoints.retrained_protocol_identity
+                ),
                 controller_checkpoint=(
-                    checkpoints.adaptive_controller if mode == "adaptive" else None
+                    checkpoints.adaptive_controller
+                    if mode is GameplayPlanningMode.ADAPTIVE
+                    else None
+                ),
+                controller_checkpoint_identity=(
+                    checkpoints.adaptive_controller_identity
+                    if mode is GameplayPlanningMode.ADAPTIVE
+                    else None
                 ),
                 fixed_horizon=fixed_horizon,
                 protocol_identity=protocol.identity,
@@ -1872,13 +2109,28 @@ class MatchedGameplayPlanner:
     control: ControlConfig
 
 
+@dataclass(frozen=True, slots=True)
+class LoadedGameplayPredictor:
+    predictor: DualOutputPredictor
+    checkpoint_role: GameplayCheckpointRole
+    checkpoint_identity: str
+    carrier_identity: str
+    protocol_identity: str
+
+
+@dataclass(frozen=True, slots=True)
+class LoadedAdaptiveHorizonSelector:
+    selector: Callable[[PlanningObservation, SlingshotAction], int]
+    checkpoint_identity: str
+
+
 def build_matched_gameplay_planners(
     protocol: MatchedGameplayProtocol,
     systems: tuple[GameplaySystemSpec, ...],
     *,
-    predictor_loader: Callable[[Path], DualOutputPredictor],
+    predictor_loader: Callable[[GameplaySystemSpec], LoadedGameplayPredictor],
     adaptive_selector_loader: Callable[
-        [Path], Callable[[PlanningObservation, SlingshotAction], int]
+        [GameplaySystemSpec], LoadedAdaptiveHorizonSelector
     ],
     progress: Callable[[str], None] | None = None,
 ) -> tuple[MatchedGameplayPlanner, ...]:
@@ -1886,8 +2138,8 @@ def build_matched_gameplay_planners(
 
     expected = {
         (checkpoint_role, mode)
-        for checkpoint_role in ("legacy", "retrained")
-        for mode in ("continuous-h1", "continuous-h15", "adaptive")
+        for checkpoint_role in GameplayCheckpointRole
+        for mode in GameplayPlanningMode
     }
     if (
         type(systems) is not tuple
@@ -1896,27 +2148,49 @@ def build_matched_gameplay_planners(
         or any(item.protocol_identity != protocol.identity for item in systems)
     ):
         raise LineageScalingError("gameplay systems do not form the matched six-system matrix")
-    predictors: dict[Path, DualOutputPredictor] = {}
-    selectors: dict[Path, Callable[[PlanningObservation, SlingshotAction], int]] = {}
+    predictors: dict[Path, LoadedGameplayPredictor] = {}
+    selectors: dict[Path, LoadedAdaptiveHorizonSelector] = {}
     built = []
     for system in systems:
-        predictor = predictors.get(system.predictor_checkpoint)
-        if predictor is None:
-            predictor = predictor_loader(system.predictor_checkpoint)
-            if not isinstance(predictor, DualOutputPredictor):
-                raise LineageScalingError("gameplay checkpoint did not load a continuous predictor")
-            predictor.eval()
-            predictors[system.predictor_checkpoint] = predictor
+        loaded_predictor = predictors.get(system.predictor_checkpoint)
+        if loaded_predictor is None:
+            loaded_predictor = predictor_loader(system)
+            if (
+                type(loaded_predictor) is not LoadedGameplayPredictor
+                or not isinstance(
+                    loaded_predictor.predictor, DualOutputPredictor
+                )
+                or loaded_predictor.checkpoint_role is not system.checkpoint_role
+                or loaded_predictor.checkpoint_identity
+                != system.predictor_checkpoint_identity
+                or loaded_predictor.carrier_identity != system.carrier_identity
+                or loaded_predictor.protocol_identity
+                != system.predictor_protocol_identity
+            ):
+                raise LineageScalingError(
+                    "gameplay predictor checkpoint role or provenance mismatch"
+                )
+            loaded_predictor.predictor.eval()
+            predictors[system.predictor_checkpoint] = loaded_predictor
+        predictor = loaded_predictor.predictor
         selector = None
-        if system.mode == "adaptive":
+        if system.mode is GameplayPlanningMode.ADAPTIVE:
             if system.controller_checkpoint is None:
                 raise LineageScalingError("adaptive gameplay system has no controller checkpoint")
-            selector = selectors.get(system.controller_checkpoint)
-            if selector is None:
-                selector = adaptive_selector_loader(system.controller_checkpoint)
-                if not callable(selector):
-                    raise LineageScalingError("adaptive controller checkpoint did not load a selector")
-                selectors[system.controller_checkpoint] = selector
+            loaded_selector = selectors.get(system.controller_checkpoint)
+            if loaded_selector is None:
+                loaded_selector = adaptive_selector_loader(system)
+                if (
+                    type(loaded_selector) is not LoadedAdaptiveHorizonSelector
+                    or not callable(loaded_selector.selector)
+                    or loaded_selector.checkpoint_identity
+                    != system.controller_checkpoint_identity
+                ):
+                    raise LineageScalingError(
+                        "adaptive controller checkpoint provenance mismatch"
+                    )
+                selectors[system.controller_checkpoint] = loaded_selector
+            selector = loaded_selector.selector
         elif system.controller_checkpoint is not None or system.fixed_horizon not in (1, 15):
             raise LineageScalingError("fixed gameplay system has a checkpoint or horizon mismatch")
         world_model = ContinuousCheckpointWorldModel(
@@ -1960,6 +2234,10 @@ def build_matched_gameplay_planners(
                 protocol.max_planner_compute,
             ),
         ))
+    if len({item.predictor.config.identity for item in predictors.values()}) != 1:
+        raise LineageScalingError(
+            "legacy and retrained gameplay predictor architectures differ"
+        )
     return tuple(built)
 
 
@@ -1973,10 +2251,14 @@ __all__ = [
     "ContinuousTransitionExample",
     "FrozenLineageScale",
     "GameplayCheckpointBindings",
+    "GameplayCheckpointRole",
+    "GameplayPlanningMode",
     "GameplaySystemSpec",
     "LineageScaledCheckpoint",
     "LineageScalingError",
     "LineageScalingProtocol",
+    "LoadedAdaptiveHorizonSelector",
+    "LoadedGameplayPredictor",
     "MatchedGameplayProtocol",
     "MatchedGameplayPlanner",
     "PredictionEvaluation",

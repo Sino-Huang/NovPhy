@@ -34,6 +34,8 @@ from world_model.training.lineage_scaling import (
     FrozenLineageScale,
     GameplayCheckpointBindings,
     LineageScalingError,
+    LoadedAdaptiveHorizonSelector,
+    LoadedGameplayPredictor,
     MatchedGameplayProtocol,
     TrainingCell,
     evaluate_action_ranking,
@@ -50,6 +52,7 @@ from world_model.training.lineage_scaling import (
     validate_action_ranking_states,
     validate_evaluation_lineages,
     validate_lineage_scaled_checkpoint_matrix,
+    validate_matched_action_ranking_states,
     validate_matched_carrier_lineages,
 )
 
@@ -75,7 +78,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--seed", type=int)
     parser.add_argument("--checkpoint", type=Path)
     parser.add_argument("--evaluation-bundle", type=Path)
-    parser.add_argument("--ranking-bundle", type=Path)
+    parser.add_argument("--source-ranking-bundle", type=Path)
+    parser.add_argument("--deployment-ranking-bundle", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument(
         "--cell-checkpoint",
@@ -172,7 +176,8 @@ def _train(args: argparse.Namespace) -> int:
                 "seed": cell.seed,
                 "lineage_count": report.lineage_count,
                 "transition_count": report.transition_count,
-                "horizon_example_counts": report.horizon_example_counts,
+                "available_horizon_counts": report.available_horizon_counts,
+                "optimizer_horizon_counts": report.optimizer_horizon_counts,
                 "optimizer_examples": report.optimizer_examples,
                 "optimizer_steps": report.optimizer_steps,
                 "epochs": report.epochs,
@@ -279,7 +284,8 @@ def _rank(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         "carrier",
         "seed",
         "checkpoint",
-        "ranking_bundle",
+        "source_ranking_bundle",
+        "deployment_ranking_bundle",
         "output",
     )
     _require_args(args, parser, "rank", fields)
@@ -295,8 +301,15 @@ def _rank(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         expected_cell=cell,
         device=args.device,
     )
-    print("[load 3/3] frozen legal candidate sets and realized costs", flush=True)
-    states = load_action_ranking_bundle(args.ranking_bundle)
+    print("[load 3/3] matched frozen legal candidate sets and realized costs", flush=True)
+    source_states = load_action_ranking_bundle(args.source_ranking_bundle)
+    deployment_states = load_action_ranking_bundle(args.deployment_ranking_bundle)
+    matched_states = validate_matched_action_ranking_states(
+        protocol, source_states, deployment_states
+    )
+    states = (
+        source_states if cell.carrier is CarrierKind.SOURCE else deployment_states
+    )
     evaluation_manifest = validate_action_ranking_states(
         protocol, states, carrier=cell.carrier
     )
@@ -320,6 +333,7 @@ def _rank(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         "cell_identity": cell.identity,
         "evaluation_role": states[0].exposure_role,
         "evaluation_manifest_identity": evaluation_manifest.identity,
+        "matched_state_count": matched_states["state_count"],
         "state_count": evaluation.state_count,
         "mean_top_action_regret": evaluation.mean_top_action_regret,
         "states": [
@@ -361,12 +375,23 @@ def _validate(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         args,
         parser,
         "validate",
-        ("protocol", "source_bundle", "deployment_bundle"),
+        (
+            "protocol",
+            "source_bundle",
+            "deployment_bundle",
+            "source_ranking_bundle",
+            "deployment_ranking_bundle",
+        ),
     )
     protocol = load_lineage_scaling_protocol(args.protocol)
     source = load_carrier_lineage_bundle(args.source_bundle)
     deployment = load_carrier_lineage_bundle(args.deployment_bundle)
     alignment = validate_matched_carrier_lineages(protocol, source, deployment)
+    ranking = validate_matched_action_ranking_states(
+        protocol,
+        load_action_ranking_bundle(args.source_ranking_bundle),
+        load_action_ranking_bundle(args.deployment_ranking_bundle),
+    )
     checkpoints = {}
     for value in args.cell_checkpoint:
         try:
@@ -389,6 +414,7 @@ def _validate(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
         f"scales={len(protocol.training_scales)} "
         f"lineages={alignment['lineage_count']} "
         f"transitions={alignment['transition_count']} "
+        f"ranking_states={ranking['state_count']} "
         f"checkpoints={len(validated)} final_evaluation=unopened",
         flush=True,
     )
@@ -497,51 +523,69 @@ def _dry_run(
         )
         action = _action_tensor(rollout.intervention)
         trajectory_identity = f"{rollout.attempt_id}:issue-61-dry-trajectory"
-        deployment_context = deployment_adapter.build(
-            TemporalObservationContext(None, current_observation)
-        )
-        source_transitions = []
-        deployment_transitions = []
-        target_observations = []
-        for horizon in (1, 15):
+        frame_records_by_position = {}
+        observations_by_position = {}
+        for position in range(16):
             try:
-                target_frame_record = next(
+                frame_record = next(
                     item
                     for item in rollout.frame_records
                     if item.fixed_step
-                    == current_frame_record.fixed_step + horizon
+                    == current_frame_record.fixed_step + position
                 )
             except StopIteration as error:
                 raise RuntimeError(
-                    f"public dry run has no exact h{horizon} target frame record"
+                    f"public dry run has no frame record at decision {position}"
                 ) from error
-            target_observation = training_reader.load_agent_observation(
-                rollout, target_frame_record
+            frame_records_by_position[position] = frame_record
+            observations_by_position[position] = (
+                current_observation
+                if position == 0
+                else training_reader.load_agent_observation(rollout, frame_record)
             )
-            target_observations.append(target_observation)
+        source_carriers = {
+            position: source_codec.encode(frame_record)
+            for position, frame_record in frame_records_by_position.items()
+        }
+        deployment_carriers = {
+            position: deployment_adapter.build(TemporalObservationContext(
+                None if position == 0 else observations_by_position[position - 1],
+                observations_by_position[position],
+            ))
+            for position in range(16)
+        }
+        deployment_context = deployment_carriers[0]
+        source_transitions = []
+        deployment_transitions = []
+        window_specs = tuple(
+            (position, 1, position + 1) for position in range(15)
+        ) + ((0, 15, 15),)
+        for decision_index, horizon, target_decision_index in window_specs:
+            target_frame_record = frame_records_by_position[target_decision_index]
             transition_identity = (
-                f"{rollout.attempt_id}:issue-61-dry-transition-h{horizon}"
+                f"{rollout.attempt_id}:issue-61-dry-transition-"
+                f"d{decision_index}-h{horizon}"
             )
             diagnostics = _physical_diagnostics(target_frame_record.labels)
             source_transitions.append(ContinuousTransitionExample(
                 identity=transition_identity,
-                context=source_codec.encode(current_frame_record),
+                context=source_carriers[decision_index],
                 action=action,
-                target=source_codec.encode(target_frame_record),
+                target=source_carriers[target_decision_index],
                 physical_diagnostics=diagnostics,
-                decision_index=0,
+                decision_index=decision_index,
                 horizon=horizon,
+                target_decision_index=target_decision_index,
             ))
             deployment_transitions.append(ContinuousTransitionExample(
                 identity=transition_identity,
-                context=deployment_context.tensor,
+                context=deployment_carriers[decision_index].tensor,
                 action=action,
-                target=deployment_adapter.build(TemporalObservationContext(
-                    current_observation, target_observation
-                )).tensor,
+                target=deployment_carriers[target_decision_index].tensor,
                 physical_diagnostics=diagnostics,
-                decision_index=0,
+                decision_index=decision_index,
                 horizon=horizon,
+                target_decision_index=target_decision_index,
             ))
         planning_observation = PlanningObservation(
             identity=current_observation.identity,
@@ -563,6 +607,7 @@ def _dry_run(
             "exposure_role": "training",
             "source_release_identity": training_reader.release_identity,
             "complete": True,
+            "decision_count": 15,
         }
         source_lineages.append(CarrierLineage(
             **common,
@@ -584,7 +629,7 @@ def _dry_run(
                 item.identity for item in source_transitions
             ),
             initial_observation_identity=current_observation.identity,
-            terminal_observation_identity=target_observations[-1].identity,
+            terminal_observation_identity=observations_by_position[15].identity,
         ))
         print("[carrier] one complete public scenario-lineage probe", flush=True)
     scale = FrozenLineageScale.from_manifest(
@@ -649,16 +694,31 @@ def _dry_run(
         gameplay_protocol,
         GameplayCheckpointBindings(
             legacy_predictor=(root / args.legacy_gameplay_checkpoint).resolve(),
+            legacy_predictor_identity="dry-run-legacy-checkpoint",
+            legacy_carrier_identity=source_codec.identity,
             retrained_predictor=(root / args.retrained_gameplay_checkpoint).resolve(),
+            retrained_predictor_identity="dry-run-retrained-checkpoint",
+            retrained_carrier_identity=deployment_adapter.identity,
+            retrained_protocol_identity="dry-run-lineage-scaling-protocol",
             adaptive_controller=(root / args.adaptive_controller_checkpoint).resolve(),
+            adaptive_controller_identity="dry-run-adaptive-controller",
         ),
     )
     gameplay_planners = build_matched_gameplay_planners(
         gameplay_protocol,
         gameplay_system_specs,
-        predictor_loader=lambda _path: predictor,
-        adaptive_selector_loader=lambda _path: (
-            lambda _observation, _action: 15
+        predictor_loader=lambda system: LoadedGameplayPredictor(
+            predictor=predictor,
+            checkpoint_role=system.checkpoint_role,
+            checkpoint_identity=system.predictor_checkpoint_identity,
+            carrier_identity=system.carrier_identity,
+            protocol_identity=system.predictor_protocol_identity,
+        ),
+        adaptive_selector_loader=lambda system: (
+            LoadedAdaptiveHorizonSelector(
+                selector=lambda _observation, _action: 15,
+                checkpoint_identity=system.controller_checkpoint_identity,
+            )
         ),
         progress=lambda value: print(value, flush=True),
     )
