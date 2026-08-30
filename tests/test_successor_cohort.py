@@ -3,10 +3,13 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
+import subprocess
 from types import SimpleNamespace
 import tempfile
 import unittest
 from unittest.mock import patch
+
+from PIL import Image
 
 from scripts.cohort_v2_release import _write_derivations
 from scripts.cohort_v2_scenarios import write_immutable_cohort_v2_json
@@ -18,11 +21,13 @@ from scripts.observation_trace import (
 from scripts.physics_capture_v2 import load_physics_capture_v2
 from scripts.run_issue_62_successor_cohort import (
     _bounds,
+    _encode_agent_frames_webm,
     _materialize_slot,
     _pilot_report,
     _synthetic_pilot_records,
     _trajectory_record,
     dry_run,
+    write_pilot_audit,
 )
 from src.webui.bridge import GameState
 from tests.test_observation_trace import engine_capture
@@ -121,14 +126,165 @@ class SuccessorCohortPlanTests(unittest.TestCase):
         ), patch(
             "scripts.run_issue_62_successor_cohort.temporal_carrier_main",
             return_value=0,
-        ) as carrier:
+        ) as temporal, patch(
+            "scripts.run_issue_62_successor_cohort._verify_webm_encoder"
+        ) as encoder:
             result = dry_run(Path(temporary) / "absent-pilot-plan.json")
 
-        carrier.assert_called_once()
+        temporal.assert_called_once()
+        encoder.assert_called_once()
         self.assertEqual(result["planned_pilot_lineages"], 36)
         self.assertFalse(result["final_evaluation_opened"])
         self.assertFalse(result["files_written"])
         self.assertTrue(all("python -u -m" in item for item in result["actual_commands"]))
+        self.assertIn("WebM", result["pilot_audit_format"])
+
+
+class SuccessorCohortAuditTests(unittest.TestCase):
+    @staticmethod
+    def _observation_trace(
+        root: Path,
+        *,
+        capture_id: str,
+        fixed_steps: tuple[int, ...],
+        role: str,
+        rollout_identity: str,
+    ) -> dict:
+        captures = []
+        for sequence, fixed_step in enumerate(fixed_steps, start=1):
+            item = engine_capture(
+                sequence=sequence,
+                fixed_step=fixed_step,
+                source="synchronized_fixed_step_camera_render",
+            )
+            item["capture_id"] = capture_id
+            item["source_frame_identity"] = (
+                f"source-frame-v1:{capture_id}:{sequence}:10:{fixed_step}"
+            )
+            item["fixed_time_seconds"] = fixed_step * 0.02
+            captures.append(item)
+        return persist_observation_trace(
+            root,
+            captures,
+            observation_configuration="agent_rgb8_native_v1",
+            source_bindings={
+                "scenario_template_identity": "template:audit",
+                "level_instance_identity": "level:audit",
+                "source_scenario_lineage_identity": "lineage:audit",
+                "rollout_identity": rollout_identity,
+            },
+            exposure_role=role,
+        )
+
+    def test_pilot_audit_orders_all_agent_frames_and_writes_gallery(self) -> None:
+        plan = build_pilot_plan()
+        accepted_slot = plan["lineages"][0]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runtime = root / "runtime"
+            output = root / "data/issue-62-pilot-audit"
+            trajectory_root = (
+                runtime / "accepted" / accepted_slot["exposure_role"]
+                / accepted_slot["slot_identity"]
+            )
+            shots = []
+            for shot_index, fixed_steps in enumerate(((10, 11), (20, 21))):
+                shot_path = f"shots/shot-{shot_index:03d}"
+                self._observation_trace(
+                    trajectory_root / shot_path / "observation-trace",
+                    capture_id=f"capture:audit:{shot_index}",
+                    fixed_steps=fixed_steps,
+                    role=accepted_slot["exposure_role"],
+                    rollout_identity=f"rollout:audit:{shot_index}",
+                )
+                shots.append({
+                    "shot_index": shot_index,
+                    "path": shot_path,
+                    "action_stratum": f"stratum:{shot_index}",
+                })
+            write_immutable_cohort_v2_json(
+                {
+                    "slot_identity": accepted_slot["slot_identity"],
+                    "trajectory_identity": "trajectory:audit",
+                    "shots": shots,
+                },
+                trajectory_root / "trajectory.json",
+            )
+            records = []
+            for slot in plan["lineages"]:
+                if slot is accepted_slot:
+                    records.append({
+                        "slot_identity": slot["slot_identity"],
+                        "status": "accepted",
+                        "trajectory_identity": "trajectory:audit",
+                        "frame_record_count": 4,
+                        "terminal_reason": "shot_limit",
+                        "executed_action_count": 2,
+                    })
+                else:
+                    records.append({
+                        "slot_identity": slot["slot_identity"],
+                        "status": "failed",
+                        "failures": [{"message": "fixture failure"}],
+                    })
+            observed = []
+
+            def encode(frames, video):
+                observed.extend(path.as_posix() for path in frames)
+                video.parent.mkdir(parents=True, exist_ok=True)
+                video.write_bytes(b"webm")
+
+            with patch(
+                "scripts.run_issue_62_successor_cohort._encode_agent_frames_webm",
+                side_effect=encode,
+            ):
+                manifest = write_pilot_audit(
+                    plan,
+                    records,
+                    {"identity": "pilot-report:audit"},
+                    runtime_root=runtime,
+                    output=output,
+                )
+
+            self.assertEqual(len(observed), 4)
+            self.assertIn("shot-000", observed[0])
+            self.assertIn("shot-000", observed[1])
+            self.assertIn("shot-001", observed[2])
+            self.assertIn("shot-001", observed[3])
+            self.assertEqual(manifest["video_count"], 1)
+            self.assertFalse(manifest["canonical_observations_included"])
+            self.assertEqual(
+                manifest["videos"][0]["shot_ranges"][1][
+                    "video_frame_start"
+                ],
+                2,
+            )
+            self.assertIn("<video controls", (output / "index.html").read_text())
+            self.assertTrue((output / manifest["videos"][0]["path"]).is_file())
+
+    def test_webm_encoder_produces_vp8_video(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            frames = []
+            for index, color in enumerate(((255, 0, 0), (0, 0, 255))):
+                path = root / f"source-{index}.png"
+                Image.new("RGB", (32, 24), color).save(path)
+                frames.append(path)
+            output = root / "audit.webm"
+
+            _encode_agent_frames_webm(frames, output)
+
+            codec = subprocess.run(
+                [
+                    "ffprobe", "-v", "error", "-select_streams", "v:0",
+                    "-show_entries", "stream=codec_name", "-of", "default=nw=1:nk=1",
+                    str(output),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+            self.assertEqual(codec, "vp8")
 
 
 class SuccessorCohortTrajectoryTests(unittest.TestCase):

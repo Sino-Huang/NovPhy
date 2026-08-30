@@ -5,12 +5,14 @@ import argparse
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeout
 from datetime import datetime, timezone
+import html
 import json
 import math
 import os
 from pathlib import Path
 import shutil
 import statistics
+import subprocess
 import tempfile
 import time
 from typing import Any, Final, Mapping
@@ -82,6 +84,7 @@ DEFAULT_PILOT_PLAN: Final = (
 )
 DEFAULT_PILOT_RUNTIME: Final = ROOT / ".local-artifacts/issue-62-pilot-run"
 DEFAULT_PILOT_REPORT: Final = ROOT / ".local-artifacts/issue-62-pilot-report.json"
+DEFAULT_PILOT_AUDIT: Final = ROOT / "data/issue-62-pilot-audit"
 DEFAULT_PRODUCTION_PLAN: Final = (
     ROOT / ".local-artifacts/issue-62-production-plan.json"
 )
@@ -93,6 +96,7 @@ DEFAULT_SUMMARY: Final = (
     ROOT / "data/runtime_evidence/issue-62/successor-cohort-summary.json"
 )
 OBSERVATION_CONFIGURATION: Final = "agent_rgb8_native_v1"
+PILOT_AUDIT_FPS: Final = 25
 
 
 def _log(message: str) -> None:
@@ -323,16 +327,273 @@ def _pilot_report(
     return report
 
 
+def _verify_webm_encoder() -> None:
+    result = subprocess.run(
+        ["ffmpeg", "-hide_banner", "-encoders"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    if "libvpx" not in result.stdout:
+        raise SuccessorCohortError("ffmpeg does not provide the VP8 libvpx encoder")
+
+
+def _encode_agent_frames_webm(frames: list[Path], output: Path) -> None:
+    if not frames:
+        raise SuccessorCohortError("pilot audit video has no agent frames")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(
+        prefix=".issue-62-audit-frames-", dir=output.parent
+    ) as temporary:
+        sequence = Path(temporary)
+        for index, source in enumerate(frames):
+            (sequence / f"frame_{index:06d}.png").symlink_to(source.resolve())
+        with tempfile.NamedTemporaryFile(
+            prefix=f".{output.stem}-", suffix=".webm", dir=output.parent,
+            delete=False,
+        ) as handle:
+            temporary_video = Path(handle.name)
+        command = [
+            "ffmpeg", "-hide_banner", "-loglevel", "error", "-y",
+            "-framerate", str(PILOT_AUDIT_FPS),
+            "-i", str(sequence / "frame_%06d.png"),
+            "-an", "-c:v", "libvpx", "-deadline", "realtime",
+            "-cpu-used", "5", "-crf", "10", "-b:v", "4M",
+            "-pix_fmt", "yuv420p", "-f", "webm", str(temporary_video),
+        ]
+        started = time.monotonic()
+        process = subprocess.Popen(
+            command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        try:
+            while True:
+                try:
+                    return_code = process.wait(timeout=5.0)
+                    break
+                except subprocess.TimeoutExpired:
+                    _log(
+                        f"audit encoding video={output.name} frames={len(frames)} "
+                        f"elapsed_seconds={time.monotonic() - started:.1f}"
+                    )
+            if return_code != 0 or temporary_video.stat().st_size == 0:
+                raise SuccessorCohortError(
+                    f"ffmpeg failed to encode pilot audit video {output.name}"
+                )
+            os.replace(temporary_video, output)
+        finally:
+            if process.poll() is None:
+                process.terminate()
+                process.wait()
+            if temporary_video.exists():
+                temporary_video.unlink()
+
+
+def _pilot_audit_frames(
+    trajectory_root: Path,
+    trajectory: Mapping[str, Any],
+) -> tuple[list[Path], list[dict[str, Any]]]:
+    frames = []
+    ranges = []
+    for shot in trajectory["shots"]:
+        observation_root = trajectory_root / shot["path"] / "observation-trace"
+        observation = validate_observation_trace(observation_root)
+        first = len(frames)
+        for frame in observation["frame_records"]:
+            path = observation_root / frame["agent_observation"]["relative_path"]
+            if not path.is_file():
+                raise SuccessorCohortError("pilot audit agent frame is missing")
+            frames.append(path)
+        source_frames = observation["frame_records"]
+        ranges.append({
+            "shot_index": shot["shot_index"],
+            "action_stratum": shot["action_stratum"],
+            "video_frame_start": first,
+            "video_frame_end_exclusive": len(frames),
+            "source_fixed_step_start": source_frames[0]["fixed_step"],
+            "source_fixed_step_end": source_frames[-1]["fixed_step"],
+            "source_fixed_time_start_seconds": source_frames[0][
+                "fixed_time_seconds"
+            ],
+            "source_fixed_time_end_seconds": source_frames[-1][
+                "fixed_time_seconds"
+            ],
+            "observation_manifest_identity": observation["identity"],
+        })
+    return frames, ranges
+
+
+def _pilot_audit_gallery(manifest: Mapping[str, Any]) -> bytes:
+    sections = []
+    for item in manifest["videos"]:
+        label = (
+            f"{item['ordinal'] + 1:03d} · {item['exposure_role']} · "
+            f"{item['generator_family']} · {item['behavior_policy']}"
+        )
+        sections.append(
+            "<section>"
+            f"<h2>{html.escape(label)}</h2>"
+            f"<video controls preload=\"metadata\" src=\"{html.escape(item['path'])}\"></video>"
+            f"<p>{item['frame_count']} agent frames · "
+            f"{item['executed_action_count']} shots · "
+            f"terminal: {html.escape(item['terminal_reason'])}</p>"
+            f"<code>{html.escape(item['slot_identity'])}</code>"
+            "</section>"
+        )
+    document = (
+        "<!doctype html><html><head><meta charset=\"utf-8\">"
+        "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+        "<title>Issue 62 pilot frame audit</title>"
+        "<style>body{font-family:system-ui;margin:2rem;max-width:1000px}"
+        "section{border-top:1px solid #bbb;padding:1rem 0}"
+        "video{display:block;width:100%;max-width:800px;background:#111}"
+        "code{overflow-wrap:anywhere}</style></head><body>"
+        "<h1>Issue 62 pilot agent-frame audit</h1>"
+        f"<p>{len(manifest['videos'])} accepted lineages; "
+        f"VP8/WebM at {manifest['playback_fps']} fps. "
+        "These are deployment-valid agent observations; canonical frames are excluded.</p>"
+        + "".join(sections)
+        + "</body></html>"
+    )
+    return document.encode("utf-8")
+
+
+def write_pilot_audit(
+    plan: Mapping[str, Any],
+    records: list[Mapping[str, Any]],
+    report: Mapping[str, Any],
+    *,
+    runtime_root: Path,
+    output: Path,
+) -> dict[str, Any]:
+    output = Path(output).resolve()
+    manifest_path = output / "manifest.json"
+    if manifest_path.exists():
+        manifest = _load(manifest_path, "pilot audit manifest")
+        if (
+            manifest.get("pilot_plan_identity") != plan["identity"]
+            or manifest.get("pilot_report_identity") != report["identity"]
+            or not (output / "index.html").is_file()
+            or any(
+                not (output / item["path"]).is_file()
+                for item in manifest.get("videos", ())
+            )
+        ):
+            raise SuccessorCohortError("existing pilot audit differs")
+        _log(
+            f"pilot audit already complete videos={len(manifest['videos'])} "
+            f"gallery={output / 'index.html'}"
+        )
+        return manifest
+    records_by_slot = {item["slot_identity"]: item for item in records}
+    if set(records_by_slot) != {
+        item["slot_identity"] for item in plan["lineages"]
+    }:
+        raise SuccessorCohortError("pilot audit lacks frozen lineage accounting")
+    accepted = [
+        slot for slot in plan["lineages"]
+        if records_by_slot[slot["slot_identity"]]["status"] == "accepted"
+    ]
+    output.mkdir(parents=True, exist_ok=True)
+    videos = []
+    for video_index, slot in enumerate(accepted, start=1):
+        result = records_by_slot[slot["slot_identity"]]
+        trajectory_root = (
+            _accepted_root(Path(runtime_root).resolve(), "pilot")
+            / slot["exposure_role"] / slot["slot_identity"]
+        )
+        trajectory = _load(trajectory_root / "trajectory.json", "pilot trajectory")
+        if (
+            trajectory.get("slot_identity") != slot["slot_identity"]
+            or trajectory.get("trajectory_identity") != result["trajectory_identity"]
+        ):
+            raise SuccessorCohortError("pilot audit trajectory binding differs")
+        frames, shot_ranges = _pilot_audit_frames(trajectory_root, trajectory)
+        if len(frames) != result["frame_record_count"]:
+            raise SuccessorCohortError("pilot audit frame count differs")
+        relative = Path("videos") / (
+            f"lineage-{slot['ordinal'] + 1:03d}-{slot['exposure_role']}.webm"
+        )
+        _log(
+            f"pilot audit {video_index}/{len(accepted)}: "
+            f"role={slot['exposure_role']} frames={len(frames)} "
+            f"video={relative.name}"
+        )
+        _encode_agent_frames_webm(frames, output / relative)
+        videos.append({
+            "ordinal": slot["ordinal"],
+            "slot_identity": slot["slot_identity"],
+            "trajectory_identity": result["trajectory_identity"],
+            "exposure_role": slot["exposure_role"],
+            "generator_family": slot["generator_family"],
+            "behavior_policy": slot["behavior_policy"],
+            "terminal_reason": result["terminal_reason"],
+            "executed_action_count": result["executed_action_count"],
+            "frame_count": len(frames),
+            "path": relative.as_posix(),
+            "shot_ranges": shot_ranges,
+        })
+    failed = [
+        {
+            "ordinal": slot["ordinal"],
+            "slot_identity": slot["slot_identity"],
+            "exposure_role": slot["exposure_role"],
+            "failures": records_by_slot[slot["slot_identity"]]["failures"],
+        }
+        for slot in plan["lineages"]
+        if records_by_slot[slot["slot_identity"]]["status"] == "failed"
+    ]
+    payload = {
+        "schema": "issue_62_pilot_frame_audit_v1",
+        "pilot_plan_identity": plan["identity"],
+        "pilot_report_identity": report["identity"],
+        "source_observation_role": "agent",
+        "canonical_observations_included": False,
+        "video_container": "webm",
+        "video_codec": "vp8",
+        "playback_fps": PILOT_AUDIT_FPS,
+        "video_count": len(videos),
+        "videos": videos,
+        "failed_lineages": failed,
+        "gallery": "index.html",
+    }
+    manifest = {
+        **payload,
+        "identity": successor_identity(
+            "issue-62-pilot-frame-audit-v1",
+            plan["identity"],
+            report["identity"],
+            tuple(
+                (
+                    item["trajectory_identity"],
+                    tuple(
+                        shot["observation_manifest_identity"]
+                        for shot in item["shot_ranges"]
+                    ),
+                )
+                for item in videos
+            ),
+        ),
+    }
+    write_immutable_cohort_v2_bytes(
+        _pilot_audit_gallery(manifest), output / "index.html"
+    )
+    write_immutable_cohort_v2_json(manifest, manifest_path)
+    _log(
+        f"pilot audit complete videos={len(videos)} gallery={output / 'index.html'}"
+    )
+    return manifest
+
+
 def dry_run(pilot_plan_path: Path = DEFAULT_PILOT_PLAN) -> dict[str, Any]:
-    _log("dry-run 1/5: validating the frozen 36-lineage non-final pilot")
+    _log("dry-run 1/6: validating the frozen 36-lineage non-final pilot")
     plan = (
         _load_plan(pilot_plan_path, "pilot")
         if Path(pilot_plan_path).is_file()
         else build_pilot_plan()
     )
-    _log("dry-run 2/5: verifying the aligned physics-v2 player")
+    _log("dry-run 2/6: verifying the aligned physics-v2 player")
     player = _player()
-    _log("dry-run 3/5: materializing one level instance from each generator family")
+    _log("dry-run 3/6: materializing one level instance from each generator family")
     with tempfile.TemporaryDirectory(prefix="novphy-issue62-dry-") as temporary:
         root = Path(temporary)
         manifests = []
@@ -345,7 +606,7 @@ def dry_run(pilot_plan_path: Path = DEFAULT_PILOT_PLAN) -> dict[str, Any]:
             manifests.append(authority["scenario"].scenario_manifest)
         if len({item.scenario_lineage.identity for item in manifests}) != 2:
             raise SuccessorCohortError("dry-run generator families repeat a lineage")
-    _log("dry-run 4/5: exercising the public deployment temporal carrier")
+    _log("dry-run 4/6: exercising the public deployment temporal carrier")
     temporal_carrier_main([
         "--repository-root", str(ROOT),
         "--aligned-root",
@@ -354,7 +615,9 @@ def dry_run(pilot_plan_path: Path = DEFAULT_PILOT_PLAN) -> dict[str, Any]:
         ".local-artifacts/migration-recovery-v1/issue-17-visual-parser/parser",
         "--dry-run", "--migration-recovery",
     ])
-    _log("dry-run 5/5: validating pilot-to-production freeze without writing")
+    _log("dry-run 5/6: verifying VP8/WebM audit encoding support")
+    _verify_webm_encoder()
+    _log("dry-run 6/6: validating pilot-to-production freeze without writing")
     synthetic = _pilot_report(plan, _synthetic_pilot_records(plan))
     validate_pilot_report(synthetic, pilot_plan=plan)
     production = build_production_plan(
@@ -375,6 +638,8 @@ def dry_run(pilot_plan_path: Path = DEFAULT_PILOT_PLAN) -> dict[str, Any]:
         "first_larger_training_scale": 200,
         "dry_production_plan_identity": production["identity"],
         "player_source_commit": player["source_snapshot_commit"],
+        "pilot_audit_output": str(DEFAULT_PILOT_AUDIT.relative_to(ROOT)),
+        "pilot_audit_format": "one VP8/WebM per accepted lineage plus index.html",
         "final_evaluation_opened": False,
         "files_written": False,
         "actual_commands": [
@@ -1006,6 +1271,7 @@ def run_pilot(
     plan_path: Path,
     runtime_root: Path,
     report_path: Path,
+    audit_output: Path,
     implementation_commit: str,
     start_display_process: bool,
     speed: int,
@@ -1022,12 +1288,27 @@ def run_pilot(
     )
     report = _pilot_report(plan, records)
     write_immutable_cohort_v2_json(report, report_path)
+    audit = write_pilot_audit(
+        plan,
+        records,
+        report,
+        runtime_root=runtime_root,
+        output=audit_output,
+    )
     _log(
         f"pilot complete accepted={report['accepted_lineage_count']}/"
         f"{report['planned_lineage_count']} passed={report['passed']} "
         f"report={report['identity']}"
     )
-    return report
+    return {
+        **report,
+        "audit": {
+            "manifest_identity": audit["identity"],
+            "output": str(Path(audit_output).resolve()),
+            "gallery": str((Path(audit_output).resolve() / "index.html")),
+            "video_count": audit["video_count"],
+        },
+    }
 
 
 def freeze_production(
@@ -1307,6 +1588,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--pilot-plan", type=Path, default=DEFAULT_PILOT_PLAN)
     parser.add_argument("--pilot-runtime", type=Path, default=DEFAULT_PILOT_RUNTIME)
     parser.add_argument("--pilot-report", type=Path, default=DEFAULT_PILOT_REPORT)
+    parser.add_argument("--pilot-audit-output", type=Path, default=DEFAULT_PILOT_AUDIT)
     parser.add_argument(
         "--production-plan", type=Path, default=DEFAULT_PRODUCTION_PLAN
     )
@@ -1334,6 +1616,7 @@ def main(argv: list[str] | None = None) -> int:
             plan_path=args.pilot_plan,
             runtime_root=args.pilot_runtime,
             report_path=args.pilot_report,
+            audit_output=args.pilot_audit_output,
             implementation_commit=_implementation_commit(
                 args.implementation_commit, required=True
             ),
