@@ -1,0 +1,25 @@
+{
+  "access_audit": {
+    "authorization_identity": "github-issue-authorization-v1:59:aligned-final-recollection",
+    "authorization_state": "authorized",
+    "observed_access_count": 1,
+    "passed": true,
+    "workflow_identity": "issue-15-final-evaluation-workflow-v2:seed-4505"
+  },
+  "artifact_identity": "cohort-v2-aligned-observation-release-v1:issue-59",
+  "frame_count": 6982,
+  "implementation_commit": "2bf7c8d568690199b225697305843558aede4120",
+  "rerun_commands": [
+    "python -u -m scripts.issue_59_aligned_observation_collection --dry-run --implementation-commit 2bf7c8d568690199b225697305843558aede4120",
+    "python -u -m scripts.issue_59_aligned_observation_collection --implementation-commit 2bf7c8d568690199b225697305843558aede4120 --authorization-identity github-issue-authorization-v1:59:aligned-final-recollection",
+    "python -u -m scripts.issue_59_aligned_observation_collection --validate"
+  ],
+  "role_counts": {
+    "calibration": 6,
+    "final_evaluation": 6,
+    "model_selection": 6,
+    "training": 6
+  },
+  "rollout_count": 24,
+  "schema": "cohort_v2_aligned_observation_release_summary_v1"
+}

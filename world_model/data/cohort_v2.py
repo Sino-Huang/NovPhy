@@ -13,6 +13,10 @@ from scripts.cohort_v2_macro_semantics import (
     DERIVATION_SPEC_IDENTITY as MACRO_SPEC_IDENTITY,
     validate_capture_macro_derivation,
 )
+from scripts.cohort_v2_migration_recovery import (
+    migration_recovery_manifest_path,
+    validate_migration_recovery_manifest,
+)
 from scripts.cohort_v2_capabilities import validate_capability_declaration
 from scripts.cohort_v2_micro_relations import (
     DERIVATION_SPEC_IDENTITY as MICRO_SPEC_IDENTITY,
@@ -30,7 +34,10 @@ from scripts.cohort_v2_physical_violations import (
 from scripts.cohort_v2_production_plans_v5 import validate_plan_v5_evidence
 from scripts.cohort_v2_release import CENTRAL_LABELS as RELEASE_CENTRAL_LABELS, V5_CONTRACT
 from scripts.cohort_v2_release import validate_published_issue_53_evidence
-from scripts.final_evaluation_access import FinalEvaluationWorkflowAccessManifest
+from scripts.final_evaluation_access import (
+    FinalEvaluationWorkflowAccessManifest,
+    audit_final_evaluation_workflow_access,
+)
 from scripts.observation_trace import (
     load_observation_bytes,
     validate_observation_exposure_boundaries,
@@ -50,6 +57,17 @@ CENTRAL_STRATA: Final = (
 )
 CAPABILITY_DECLARATION_IDENTITY: Final = "cohort-v2-capabilities-v1"
 COHORT_V2_RELEASE_IDENTITY: Final = V5_CONTRACT.release_identity
+ISSUE_15_CONFIRMATORY_RELEASE_IDENTITY: Final = (
+    "issue-15-confirmatory-final-release-v2:seed-4505"
+)
+ISSUE_59_ALIGNED_RELEASE_IDENTITY: Final = (
+    "cohort-v2-aligned-observation-release-v1:issue-59"
+)
+COHORT_V2_TRANSITION_RELEASE_IDENTITIES: Final = frozenset((
+    COHORT_V2_RELEASE_IDENTITY,
+    ISSUE_15_CONFIRMATORY_RELEASE_IDENTITY,
+    ISSUE_59_ALIGNED_RELEASE_IDENTITY,
+))
 ACCEPTED_LABELS: Final = {
     "contact": MICRO_SPEC_IDENTITY,
     "supports": MICRO_SPEC_IDENTITY,
@@ -172,6 +190,8 @@ class CohortV2ReleaseReader:
         workflow_kind: str,
         influence: str,
         requested_capabilities: tuple[str, ...] = CENTRAL_LABELS,
+        aligned_observation_roots: Mapping[str, Path] | None = None,
+        migration_recovery_authority: Path | None = None,
     ) -> None:
         if workflow_kind not in EXPOSURE_ROLES[:-1]:
             raise CohortV2IngestionError("Ordinary readers cannot access sealed final artifacts")
@@ -187,8 +207,22 @@ class CohortV2ReleaseReader:
             )
         self._root = Path(release_root).resolve()
         self._production_plan_root = Path(production_plan_root).resolve()
+        self._repository_root = Path(capability_declaration_path).resolve().parents[2]
+        self._migration_recovery_authority = (
+            None
+            if migration_recovery_authority is None
+            else migration_recovery_manifest_path(
+                Path(migration_recovery_authority).resolve()
+            )
+        )
         self._workflow_kind = workflow_kind
-        self._observation_references: dict[str, tuple[Path, str]] = {}
+        self._enforce_expected_termination = True
+        self._observation_references: dict[tuple[str, int], tuple[Path, str]] = {}
+        self._aligned_observation_roots = (
+            None
+            if aligned_observation_roots is None
+            else {key: Path(value).resolve() for key, value in aligned_observation_roots.items()}
+        )
         try:
             self._validate_capability_declaration(Path(capability_declaration_path))
             release, derivations, collection, partition, ledger = self._load_envelopes()
@@ -346,10 +380,24 @@ class CohortV2ReleaseReader:
         ):
             raise CohortV2IngestionError("Collection plan binding is stale")
         try:
-            validate_plan_v5_evidence(
-                self._production_plan_root,
-                repository_root=self._production_plan_root.parents[2],
+            recovery_authority = getattr(
+                self, "_migration_recovery_authority", None
             )
+            repository_root = getattr(
+                self, "_repository_root", self._production_plan_root.parents[2]
+            )
+            if recovery_authority is None:
+                validate_plan_v5_evidence(
+                    self._production_plan_root,
+                    repository_root=repository_root,
+                )
+            else:
+                validate_migration_recovery_manifest(
+                    recovery_authority,
+                    repository_root=repository_root,
+                    plan_root=self._production_plan_root,
+                    release_root=self._root,
+                )
         except ValueError as error:
             raise CohortV2IngestionError(
                 f"Production plan authority is invalid: {error}"
@@ -466,7 +514,11 @@ class CohortV2ReleaseReader:
                 != ledger_entry["intervention_identity"]
                 or capture.record["terminal_evidence"]["reason"]
                 != ledger_entry["terminal_reason"]
-                or ledger_entry["terminal_reason"] != ledger_entry["expected_termination"]
+                or (
+                    self._enforce_expected_termination
+                    and ledger_entry["terminal_reason"]
+                    != ledger_entry["expected_termination"]
+                )
             ):
                 raise CohortV2IngestionError("Primary rollout source binding is stale")
             intervention = interventions[ledger_entry["intervention_id"]]
@@ -503,7 +555,16 @@ class CohortV2ReleaseReader:
                 source_capture_bundle_identity=release["identity"],
             )
 
-            observation_root = rollout_root / "observation-trace"
+            aligned_roots = getattr(self, "_aligned_observation_roots", None)
+            observation_root = (
+                rollout_root / "observation-trace"
+                if aligned_roots is None
+                else aligned_roots.get(attempt_id)
+            )
+            if observation_root is None:
+                raise CohortV2IngestionError(
+                    "Aligned observation root is missing for a released rollout"
+                )
             manifest = validate_observation_trace(observation_root)
             manifests.append(manifest)
             bindings = manifest["source_bindings"]
@@ -519,21 +580,37 @@ class CohortV2ReleaseReader:
             observations = {
                 item["fixed_step"]: item for item in manifest["frame_records"]
             }
-            if len(observations) != 1:
-                raise CohortV2IngestionError(
-                    "Each released rollout must expose its declared agent observation"
-                )
-            observation = next(iter(observations.values()))
-            first_capture_step = capture.record["fixed_step_samples"][0]["fixed_step"]
-            if observation["fixed_step"] > first_capture_step:
-                raise CohortV2IngestionError(
-                    "Agent observation occurs after the intervention trace begins"
-                )
             frame_records = self._frame_records(capture, loaded_derivations)
-            self._observation_references[attempt_id] = (
-                observation_root,
-                observation["identity"],
-            )
+            if aligned_roots is None:
+                if len(observations) != 1:
+                    raise CohortV2IngestionError(
+                        "Each released rollout must expose its declared agent observation"
+                    )
+                observation = next(iter(observations.values()))
+                first_capture_step = capture.record["fixed_step_samples"][0]["fixed_step"]
+                if observation["fixed_step"] > first_capture_step:
+                    raise CohortV2IngestionError(
+                        "Agent observation occurs after the intervention trace begins"
+                    )
+            else:
+                expected_steps = {item.fixed_step for item in frame_records}
+                if (
+                    set(observations) != expected_steps
+                    or any(
+                        item["capture_metadata"].get("capture_id")
+                        != capture.capture_id
+                        for item in observations.values()
+                    )
+                ):
+                    raise CohortV2IngestionError(
+                        "Aligned observations do not exactly bind released frame records"
+                    )
+                observation = observations[frame_records[0].fixed_step]
+            for fixed_step, item in observations.items():
+                self._observation_references[(attempt_id, fixed_step)] = (
+                    observation_root,
+                    item["identity"],
+                )
             rollouts.append(CohortV2Rollout(
                 attempt_id=attempt_id,
                 exposure_role=self._workflow_kind,
@@ -618,7 +695,9 @@ class CohortV2ReleaseReader:
     def load_observation(
         self, rollout: CohortV2Rollout, *, observation_role: str
     ) -> bytes:
-        reference = self._observation_references.get(rollout.attempt_id)
+        reference = self._observation_references.get((
+            rollout.attempt_id, rollout.agent_observation_fixed_step
+        ))
         if reference is None:
             raise CohortV2IngestionError("Rollout has no synchronized observation")
         root, frame_record_identity = reference
@@ -632,6 +711,162 @@ class CohortV2ReleaseReader:
             )
         except ValueError as error:
             raise CohortV2IngestionError(str(error)) from error
+
+    def load_frame_observation(
+        self,
+        rollout: CohortV2Rollout,
+        frame: CohortV2CentralFrameRecord,
+        *,
+        observation_role: str,
+    ) -> bytes:
+        """Load the deployment observation aligned to one retained central frame."""
+        reference = self._observation_references.get(
+            (rollout.attempt_id, frame.fixed_step)
+        )
+        if reference is None:
+            raise CohortV2IngestionError(
+                "Rollout has no agent observation aligned to the requested frame"
+            )
+        root, frame_record_identity = reference
+        try:
+            return load_observation_bytes(
+                root,
+                frame_record_identity=frame_record_identity,
+                observation_role=observation_role,
+                workflow_kind=self._workflow_kind,
+                purpose="model_input",
+            )
+        except ValueError as error:
+            raise CohortV2IngestionError(str(error)) from error
+
+
+class CohortV2FinalEvaluationReader(CohortV2ReleaseReader):
+    """Expose the sealed final role only after its declared access is audited."""
+
+    def __init__(
+        self,
+        public_release_root: Path,
+        sealed_release_root: Path,
+        *,
+        capability_declaration_path: Path,
+        production_plan_root: Path,
+        access_manifest: FinalEvaluationWorkflowAccessManifest,
+        observed_accesses: Sequence[Mapping[str, Any]],
+    ) -> None:
+        self._root = Path(public_release_root).resolve()
+        self._production_plan_root = Path(production_plan_root).resolve()
+        self._workflow_kind = "final_evaluation"
+        self._enforce_expected_termination = True
+        self._observation_references: dict[str, tuple[Path, str]] = {}
+        try:
+            self._validate_capability_declaration(Path(capability_declaration_path))
+            release, public_derivations, collection, partition, public_ledger = (
+                self._load_envelopes()
+            )
+            validated_access = FinalEvaluationWorkflowAccessManifest.from_dict(
+                access_manifest.to_dict()
+            )
+            self.access_audit = audit_final_evaluation_workflow_access(
+                partition,
+                validated_access,
+                observed_accesses=observed_accesses,
+            )
+
+            sealed = Path(sealed_release_root).resolve()
+            validation = validate_published_issue_53_evidence(self._root, sealed)
+            if validation.get("passed") is not True:
+                raise CohortV2IngestionError(
+                    "Authorized final release validation failed"
+                )
+            sealed_manifest = _load(
+                sealed / "sealed-bundle-manifest.json", "sealed bundle"
+            )
+            if (
+                sealed_manifest.get("schema")
+                != V5_CONTRACT.schema("issue_53_final_evaluation_sealed_bundle")
+                or sealed_manifest.get("identity") != V5_CONTRACT.sealed_bundle_identity
+                or sealed_manifest.get("ordinary_workflow_access") is not False
+                or sealed_manifest.get("authorized_workflow_identity")
+                != validated_access.identity
+                or sealed_manifest.get("passed") is not True
+            ):
+                raise CohortV2IngestionError("Sealed final boundary is stale")
+            attempt_ids = sealed_manifest.get("attempt_ids")
+            if (
+                not isinstance(attempt_ids, list)
+                or len(attempt_ids) != len(CENTRAL_STRATA)
+                or len(set(attempt_ids)) != len(attempt_ids)
+            ):
+                raise CohortV2IngestionError(
+                    "Sealed final attempt inventory is incomplete"
+                )
+
+            ledger_by_attempt = {
+                item["attempt_id"]: dict(item)
+                for item in public_ledger["attempt_ledger"]
+                if item["exposure_role"] == "final_evaluation"
+            }
+            rollout_references = []
+            derivation_references = []
+            for attempt_id in attempt_ids:
+                rollout_root = sealed / "primary-rollouts" / attempt_id
+                capture = load_physics_capture_v2(
+                    rollout_root / "physics_capture_v2.json"
+                )
+                ledger_entry = ledger_by_attempt.get(attempt_id)
+                if ledger_entry is None:
+                    raise CohortV2IngestionError(
+                        "Sealed final attempt is absent from public accounting"
+                    )
+                ledger_entry["status"] = "accepted"
+                ledger_entry["terminal_reason"] = capture.record[
+                    "terminal_evidence"
+                ]["reason"]
+                rollout_references.append({
+                    "attempt_id": attempt_id,
+                    "exposure_role": "final_evaluation",
+                    "capture_id": capture.capture_id,
+                    "path": f"primary-rollouts/{attempt_id}",
+                    "files": _inventory(rollout_root),
+                })
+                for kind in ("micro", "macro", "physical-violations"):
+                    path = f"derivations/{attempt_id}/{kind}.json"
+                    value = _load(sealed / path, f"{kind} derivation")
+                    derivation_references.append({
+                        "attempt_id": attempt_id,
+                        "exposure_role": "final_evaluation",
+                        "kind": kind,
+                        "identity": value.get("identity"),
+                        "path": path,
+                    })
+
+            self._root = sealed
+            self.release_identity = release["identity"]
+            self.capability_declaration_identity = CAPABILITY_DECLARATION_IDENTITY
+            self.derivation_identity = public_derivations["identity"]
+            self.partition_identity = partition.identity
+            self.sealed_bundle_identity = sealed_manifest["identity"]
+            final_release = {
+                "identity": release["identity"],
+                "primary_rollouts": rollout_references,
+            }
+            final_derivations = {"artifacts": derivation_references}
+            final_ledger = {
+                "attempt_ledger": list(ledger_by_attempt.values())
+            }
+            self.rollouts = self._read_role(
+                final_release,
+                final_derivations,
+                collection,
+                partition,
+                final_ledger,
+            )
+        except CohortV2IngestionError:
+            raise
+        except (KeyError, TypeError, ValueError) as error:
+            raise CohortV2IngestionError(
+                f"Authorized final ingestion rejected: {error}"
+            ) from error
 
 
 class CohortV2OracleWindowDataset(Sequence[CohortV2OracleWindow]):
@@ -764,6 +999,7 @@ __all__ = [
     "CENTRAL_LABELS",
     "CohortV2CentralFrameRecord",
     "CohortV2FinalAccessReceipt",
+    "CohortV2FinalEvaluationReader",
     "CohortV2IngestionError",
     "CohortV2OracleWindow",
     "CohortV2OracleWindowDataset",

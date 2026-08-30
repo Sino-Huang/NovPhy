@@ -20,6 +20,7 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
     private int v2StabilityCandidateSteps;
     private bool v2InterventionObserved;
     private PhysicsCaptureV2FixedStepRecorder v2Recorder;
+    private PhysicsCaptureV2AlignedObservationRecorder v2ObservationRecorder;
     private Coroutine v2PostPhysicsLoop;
     private readonly Dictionary<string, string> v2EntityIds = new Dictionary<string, string>();
 
@@ -61,6 +62,7 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
         shotRecorder = null;
         if (v2Recorder != null) v2Recorder.Deactivate();
         v2Recorder = null;
+        v2ObservationRecorder = null;
         v2EntityIds.Clear();
         captureId = "capture-" + Guid.NewGuid().ToString("N");
         captureSequence = 1;
@@ -94,6 +96,9 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
         v2Recorder = GetComponent<PhysicsCaptureV2FixedStepRecorder>();
         if (v2Recorder == null) v2Recorder = gameObject.AddComponent<PhysicsCaptureV2FixedStepRecorder>();
         v2Recorder.BeginPreInterventionFromUnity(Clock.FixedStep, V2CausalObjects());
+        v2ObservationRecorder = PhysicsCaptureV2AlignedObservationRecorder.Create(
+            v2Recorder.CaptureId);
+        if (v2ObservationRecorder != null) v2ObservationRecorder.Capture(this);
         v2PostPhysicsLoop = StartCoroutine(CaptureV2PostPhysicsSteps());
     }
 
@@ -314,6 +319,8 @@ public sealed class PhysicalSnapshotRuntime : MonoBehaviour
     {
         if (v2Recorder == null || v2Recorder.IsFinalized || v2Recorder.Failure != null) return;
         v2Recorder.RecordUnityFixedStep(Clock.FixedStep, V2CausalObjects());
+        if (v2Recorder.Failure == null && v2ObservationRecorder != null)
+            v2ObservationRecorder.Capture(this);
         if (v2Recorder.Failure == null) ObserveV2Stability();
     }
 

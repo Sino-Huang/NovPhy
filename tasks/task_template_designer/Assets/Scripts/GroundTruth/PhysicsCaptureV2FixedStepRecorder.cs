@@ -148,6 +148,7 @@ public sealed class PhysicsCaptureV2FixedStepRecorder : MonoBehaviour,
     public PhysicsCaptureV2RecorderFailure Failure { get; private set; }
     public bool IsFinalized { get { return finalized; } }
     public long LastFixedStep { get { return lastFixedStep; } }
+    public string CaptureId { get { return captureId; } }
 
     private void Awake()
     {

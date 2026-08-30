@@ -287,10 +287,142 @@ def validate_plan_v5_payloads(
         raise ValueError("Plan-v5 differs from its exact workflow successor derivation")
 
 
+def validate_plan_v5_migration_recovery_payloads(
+    payloads: Mapping[str, Mapping[str, Any]],
+) -> None:
+    """Validate the surviving v5 authority without reconstructing v2-v4."""
+    if set(payloads) != set(PLAN_MEMBERS):
+        raise ValueError("Plan-v5 immutable bundle membership is incomplete")
+    collection = payloads["collection-plan.json"]
+    parameters = payloads["production-parameter-plan.json"]
+    partition = CohortV2PartitionExposureManifest.from_dict(
+        payloads["partition-exposure-manifest.json"]
+    )
+    workflow = FinalEvaluationWorkflowAccessManifest.from_dict(
+        payloads["final-evaluation-workflow-access-manifest.json"]
+    )
+    bundle = payloads["bundle-manifest.json"]
+    inventory = payloads["scenario-inventory.json"]
+    final_projection = ScenarioInventoryEntry.from_dict(
+        payloads["final-evaluation.sealed-projection.json"]
+    )
+    correction = payloads["workflow-time-correction-evidence.json"]
+
+    if (
+        collection.get("schema") != COLLECTION_SCHEMA
+        or collection.get("identity") != COLLECTION_IDENTITY
+        or collection.get("plan_version") != PLAN_VERSION
+        or collection.get("workflow_correction")
+        != "utc_freeze_precedes_authorization"
+        or parameters.get("schema") != PARAMETER_SCHEMA
+        or parameters.get("identity") != PARAMETER_IDENTITY
+        or parameters.get("plan_version") != PLAN_VERSION
+        or parameters.get("workflow_correction")
+        != "utc_freeze_precedes_authorization"
+        or parameters.get("authority", {}).get("collection_plan_identity")
+        != COLLECTION_IDENTITY
+    ):
+        raise ValueError("Plan-v5 identities or schemas are stale")
+
+    roles = ("training", "calibration", "model_selection", "final_evaluation")
+    assignments = collection.get("assignments")
+    interventions = collection.get("interventions")
+    if not isinstance(assignments, list) or not isinstance(interventions, list):
+        raise ValueError("Plan-v5 assignments or interventions are malformed")
+    intervention_ids = [item.get("id") for item in interventions]
+    if (
+        len(intervention_ids) != 6
+        or len(set(intervention_ids)) != 6
+        or tuple(item.get("exposure_role") for item in assignments) != roles
+        or any(item.get("intervention_ids") != intervention_ids for item in assignments)
+        or len({item.get("scenario_lineage_identity") for item in assignments}) != 4
+    ):
+        raise ValueError("Plan-v5 role assignments are not internally isolated")
+    role_quotas = collection.get("quotas", {}).get("exposure_role", {})
+    termination_quotas = collection.get("quotas", {}).get("termination_class", {})
+    if (
+        {role: role_quotas.get(role, {}).get("quota") for role in roles}
+        != {role: 6 for role in roles}
+        or {
+            name: termination_quotas.get(name, {}).get("quota")
+            for name in ("level_clear", "level_fail", "stable_entered")
+        }
+        != {"level_clear": 0, "level_fail": 4, "stable_entered": 20}
+    ):
+        raise ValueError("Plan-v5 rollout quotas are stale")
+
+    partition_entries = {entry.exposure_role: entry for entry in partition.entries}
+    inventory_entries = inventory.get("entries")
+    if (
+        set(partition_entries) != set(roles)
+        or not isinstance(inventory_entries, list)
+        or len(inventory_entries) != 4
+        or [item.get("exposure_role") for item in inventory_entries] != list(roles)
+        or any(
+            item.get("scenario_lineage_identity")
+            != partition_entries[item["exposure_role"]].scenario_lineage_identity
+            for item in inventory_entries
+        )
+        or any(
+            item.get("scenario_lineage_identity")
+            != partition_entries[item["exposure_role"]].scenario_lineage_identity
+            for item in assignments
+        )
+        or final_projection.to_dict()
+        != next(
+            item for item in inventory_entries
+            if item.get("exposure_role") == "final_evaluation"
+        )
+    ):
+        raise ValueError("Plan-v5 inventory and partition bindings differ")
+
+    if (
+        workflow.workflow_version != 5
+        or workflow.workflow_identity != WORKFLOW_IDENTITY
+        or workflow.frozen_at != WORKFLOW_FROZEN_AT
+        or workflow.authorization_state != "pending"
+        or _utc(workflow.frozen_at) <= _utc(FAILED_AUTHORIZATION_OBSERVED_AT)
+        or len(workflow.authorized_artifacts) != 1
+        or workflow.authorized_artifacts[0].source_scenario_lineage_identities
+        != (final_projection.scenario_lineage_identity,)
+    ):
+        raise ValueError("Plan-v5 corrected pending workflow is stale")
+
+    if (
+        correction.get("schema") != CORRECTION_SCHEMA
+        or correction.get("identity") != CORRECTION_IDENTITY
+        or correction.get("corrected_frozen_at") != WORKFLOW_FROZEN_AT
+        or correction.get("diagnostic_utc_observed_at")
+        != FAILED_AUTHORIZATION_OBSERVED_AT
+        or correction.get("production_attempts_started") != 0
+        or correction.get("final_authority_accessed") is not False
+        or correction.get("scientific_plan_changed") is not False
+    ):
+        raise ValueError("Plan-v5 workflow-time correction record is stale")
+
+    expected_artifacts = [name for name in PLAN_MEMBERS if name != "bundle-manifest.json"]
+    if (
+        bundle.get("schema") != BUNDLE_SCHEMA
+        or bundle.get("identity") != BUNDLE_IDENTITY
+        or bundle.get("github_issue") != 53
+        or bundle.get("collection_plan_identity") != COLLECTION_IDENTITY
+        or bundle.get("production_parameter_plan_identity") != PARAMETER_IDENTITY
+        or bundle.get("partition_manifest_identity") != partition.identity
+        or bundle.get("final_evaluation_workflow_access_manifest_identity")
+        != workflow.identity
+        or bundle.get("sealed_final_authority_identity") != SEALED_AUTHORITY_IDENTITY
+        or bundle.get("generation_seed") != FINAL_SEED
+        or bundle.get("artifacts") != expected_artifacts
+        or bundle.get("passed") is not True
+    ):
+        raise ValueError("Plan-v5 bundle bindings are stale")
+
+
 def validate_plan_v5_evidence(
     plan_root: Path = DEFAULT_PLAN_ROOT,
     *,
     repository_root: Path = ROOT,
+    migration_recovery: bool = False,
 ) -> dict[str, Any]:
     root = Path(plan_root)
     payloads = {name: _load_object(root / name) for name in PLAN_MEMBERS}
@@ -300,12 +432,15 @@ def validate_plan_v5_evidence(
         ).encode("utf-8")
         if (root / name).read_bytes() != expected_bytes:
             raise ValueError(f"Plan-v5 frozen artifact bytes are noncanonical: {name}")
-    validate_plan_v5_payloads(payloads, repository_root=repository_root)
+    if migration_recovery:
+        validate_plan_v5_migration_recovery_payloads(payloads)
+    else:
+        validate_plan_v5_payloads(payloads, repository_root=repository_root)
     if sorted(path.name for path in root.iterdir() if path.is_file()) != sorted(
         PLAN_MEMBERS
     ):
         raise ValueError("Plan-v5 directory contains undeclared members")
-    return {
+    result = {
         "schema": "issue_53_workflow_time_successor_plan_validation_result_v5",
         "bundle_identity": BUNDLE_IDENTITY,
         "collection_plan_identity": COLLECTION_IDENTITY,
@@ -320,4 +455,6 @@ def validate_plan_v5_evidence(
         "workflow_frozen_at": WORKFLOW_FROZEN_AT,
         "passed": True,
     }
-
+    if migration_recovery:
+        result["validation_mode"] = "migration_recovery"
+    return result

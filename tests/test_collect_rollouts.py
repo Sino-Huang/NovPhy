@@ -206,6 +206,67 @@ class PhysicsCapturePersistenceTests(unittest.TestCase):
         self.assertEqual(bridge.calls, 2)
         self.assertEqual(sleeps, [0.25])
 
+    def test_v2_capture_publishes_exact_fixed_step_observation_trace(self):
+        from tests.test_observation_trace import engine_capture
+        from tests.test_physics_capture_v2 import capture
+
+        engine_record = capture()
+        source_bindings = engine_record.pop("source_bindings")
+        engine_record["schema_version"] = "physics_capture_v2_engine_v1"
+
+        class Bridge:
+            def get_physics_capture_v2(self):
+                return type("EngineCapture", (), {"record": engine_record})()
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            raw = root / "raw-aligned"
+            raw.mkdir()
+            for sequence, fixed_step in enumerate((0, 1), start=1):
+                record = engine_capture(
+                    sequence=sequence,
+                    fixed_step=fixed_step,
+                    source="synchronized_fixed_step_camera_render",
+                )
+                record["capture_id"] = "capture-1"
+                record["source_frame_identity"] = (
+                    f"source-frame-v1:capture-1:{sequence}:10:{fixed_step}"
+                )
+                (raw / f"frame_{sequence:06d}.png").write_bytes(
+                    record.pop("canonical_png")
+                )
+                (raw / f"frame_{sequence:06d}.json").write_text(
+                    json.dumps(record), encoding="utf-8"
+                )
+
+            metadata = capture_physics_v2_rollout(
+                Bridge(),
+                root / "shot",
+                shoot=lambda: 1,
+                source_bindings=source_bindings,
+                scenario_manifest_identity="manifest-1",
+                aligned_observation_capture_root=raw,
+                observation_configuration="agent_rgb8_nearest_320x240_v1",
+                observation_source_bindings={
+                    "scenario_template_identity": "template-1",
+                    "level_instance_identity": "instance-1",
+                    "source_scenario_lineage_identity": "lineage-1",
+                    "rollout_identity": "rollout-1",
+                },
+                observation_exposure_role="training",
+            )
+
+            manifest = json.loads(
+                (root / "shot/observation-trace/observation_trace_manifest.json")
+                .read_text(encoding="utf-8")
+            )
+            self.assertEqual(metadata["observation_frame_count"], 2)
+            self.assertEqual(
+                [item["fixed_step"] for item in manifest["frame_records"]],
+                [0, 1],
+            )
+            self.assertFalse(raw.exists())
+
     def test_fresh_engine_attempt_atomically_publishes_valid_v2_sidecar(self):
         from scripts.physics_capture_v2_persistence import (
             persist_physics_capture_v2,
@@ -3051,6 +3112,84 @@ class CollectRolloutsTest(unittest.TestCase):
         self.assertEqual(selected_levels, [1, 1])
         self.assertEqual(len(processes), 2)
         self.assertTrue(all(process.terminated and process.waited for process in processes))
+
+    def test_aligned_capture_root_is_present_for_engine_lifetime_and_restored(self):
+        seen = []
+
+        class FakeProcess:
+            pid = 1234
+
+            def poll(self):
+                return None
+
+            def terminate(self):
+                pass
+
+            def wait(self, timeout=None):
+                pass
+
+        def start_engine_func(game_dir, headless, **ports):
+            seen.append(os.environ.get("NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT"))
+            return FakeProcess()
+
+        action = {"coordinate_frame": "absolute", "release": [1, 2], "tapTime": 0}
+        rollout = {
+            "accepted": True,
+            "name": "shot_001",
+            "action": action,
+            "shot": {"x": 1, "y": 2, "tapTime": 0, "releaseTime": 0},
+            "shoot_response": 1,
+            "frame_count": 1,
+            "metadata_path": "metadata.json",
+            "artifact_validation": {"accepted": True},
+        }
+        with TemporaryDirectory() as tmp, patch(
+            "scripts.collect_rollouts.collect_rollouts",
+            return_value={"rollouts": [rollout]},
+        ), patch("scripts.collect_rollouts._record_fresh_engine_attempt_metadata"):
+            prior = os.environ.pop(
+                "NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT", None
+            )
+            try:
+                collect_fresh_engine_rollouts(
+                    Path(tmp),
+                    [action],
+                    game_dir=Path("game"),
+                    host="127.0.0.1",
+                    port=2004,
+                    physics_host="127.0.0.1",
+                    physics_port=2005,
+                    agent_id=1,
+                    speed=1,
+                    connect_timeout=1,
+                    read_timeout=1,
+                    prepare_timeout=1,
+                    frame_height=480,
+                    fast=True,
+                    headless=False,
+                    target_fps=1,
+                    duration_seconds=1,
+                    ui_level=None,
+                    ui_settle_seconds=0,
+                    start_engine_func=start_engine_func,
+                    connect_func=lambda *args, **kwargs: FakeBridge(),
+                    prepare_func=lambda bridge, **kwargs: bridge.get_game_state(),
+                    physics_capture_v2=True,
+                    physics_v2_source_bindings={"rollout_id": "rollout"},
+                    physics_v2_scenario_manifest_identity="manifest",
+                    observation_configuration="agent_rgb8_native_v1",
+                    observation_exposure_role="training",
+                    aligned_observation_capture=True,
+                )
+                self.assertIsNone(
+                    os.environ.get("NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT")
+                )
+            finally:
+                if prior is not None:
+                    os.environ["NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT"] = prior
+
+        self.assertEqual(len(seen), 1)
+        self.assertTrue(seen[0].endswith(".aligned-observation-shot-001"))
 
     def test_collect_fresh_engine_rollouts_waits_after_engine_start_and_connect_before_configure(self):
         events = []

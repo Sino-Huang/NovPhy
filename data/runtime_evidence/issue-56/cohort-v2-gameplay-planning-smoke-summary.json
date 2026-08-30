@@ -1,0 +1,205 @@
+{
+  "schema": "cohort_v2_gameplay_planning_smoke_summary_v1",
+  "smoke_disposition": "passed",
+  "claim_boundary": "This demonstrates legal-action generation, seeded CEM search, frozen action-conditioned model rollout, one-shot execution, real RGB re-observation, and MPC replanning. The terminal level failure is not a gameplay-success result; issue 57 owns repeated held-out gameplay evaluation.",
+  "source_bindings": {
+    "full_artifact_identity": "cohort-v2-gameplay-planning-evidence-v1:sha256:5d87ea58be7e6cd3d23b446e21cab7f96a25e45d817c71de886e47a858047ca5",
+    "full_artifact_location": ".local-artifacts/issue-56-gameplay-planner/evidence.json",
+    "implementation_revision": "4e11130a1e220f0d511db7d8b2c920ed6c00fb6b",
+    "world_model_checkpoint_identity_sha256": "3acb420c5817177f1595628711ecf3f1d6a87865570fe0a91968cb2f7d2e52de",
+    "controller_checkpoint_identity_sha256": "00d95ecf3fdd40c0a510059a3c18f3e0fbc903bb66b6486f4940b32a56bee98a",
+    "visual_parser_checkpoint_identity_sha256": "7be349c1e2ce09aac3ead9de00bf02a79ff7df261ccb7c86046067f10a0b0aa8",
+    "observation_adapter_identity": "cohort-v2-visual-object-carrier-v1:screen-center-normalization;zero-velocity;frozen-object-vocabulary",
+    "goal_cost_version": "cohort-v2-gameplay-cost-v1",
+    "level_identity": "science-birds-level-1",
+    "environment_version": "ScienceBirds-Linux-Unity-2019.4.41f2",
+    "seed": 20260830
+  },
+  "configuration": {
+    "action_bounds": {
+      "drag_x": [-160, -40],
+      "drag_y": [-80, 80],
+      "tap_time_ms": [0, 1000],
+      "release_time_ms": 600
+    },
+    "cem": {
+      "population_size": 64,
+      "elite_count": 8,
+      "iterations": 5,
+      "sequence_length": 2,
+      "minimum_std": 1.0,
+      "seed": 20260830
+    },
+    "control": {
+      "mode": "mpc",
+      "max_shots": 2,
+      "max_planner_compute": 1000000000000.0
+    },
+    "goal_cost": {
+      "goal_progress_weight": 10.0,
+      "terminal_success_cost": -20.0,
+      "terminal_failure_cost": 20.0,
+      "illegal_action_cost": 50.0,
+      "physical_penalty_weight": 1.0,
+      "rollout_penalty_weight": 0.1,
+      "compute_weight": 1e-08,
+      "structure_unstable_weight": 0.0
+    }
+  },
+  "result": {
+    "mode": "mpc",
+    "planner_id": "cem_world_model",
+    "termination_reason": "terminal_failure",
+    "success": false,
+    "replan_count": 2,
+    "executed_shot_count": 2,
+    "candidate_count": 640,
+    "invalid_candidate_count": 0,
+    "goal_evaluation_count": 640,
+    "model_rollout_count": 1280,
+    "planner_compute": 1804451840.0,
+    "planner_wall_clock_seconds": 7.3643116150051355,
+    "game_interface_wall_clock_seconds": 11.829680155962706,
+    "wall_clock_seconds": 19.194662956520915,
+    "failures": [],
+    "accumulated_recursive_rollout_error": 0.0074881198816001415,
+    "steps": [
+      {
+        "shot_index": 1,
+        "seed": 20260830,
+        "observation_before": "live:level-1:observation-1",
+        "observation_after": "live:level-1:observation-2",
+        "executed_action": {
+          "drag_x": -46,
+          "drag_y": 80,
+          "tap_time_ms": 998
+        },
+        "requested_horizons": [15, 15],
+        "effective_horizons": [15, 15],
+        "recursive_rollout_error": 0.0017799604684114456,
+        "structure_unstable_probability": 0.5024513602256775,
+        "structure_unstable_thresholded": true,
+        "structure_unstable_affects_cost": false,
+        "selected_cost": -0.4478607887045696,
+        "candidate_count": 320,
+        "invalid_candidate_count": 0,
+        "model_rollout_count": 640,
+        "planner_compute": 902225920.0,
+        "iteration_elites": [
+          {
+            "iteration": 1,
+            "elite_cost": -0.40012985593360934,
+            "invalid_candidate_count": 0,
+            "updated_mean": [[-102.875, -1.5, 965.125], [-97.5, 19.5, 945.875]],
+            "updated_std": [[42.98091873145571, 55.80770556114989, 46.26401814585499], [41.99404719719213, 42.921439864012015, 65.89088992417692]]
+          },
+          {
+            "iteration": 2,
+            "elite_cost": -0.4237808842810552,
+            "invalid_candidate_count": 0,
+            "updated_mean": [[-61.625, 27.75, 957.5], [-69.625, 39.875, 973.875]],
+            "updated_std": [[26.640840358367075, 46.9061563123648, 41.6593326878864], [26.598578439458, 45.44897551100575, 39.42219393945497]]
+          },
+          {
+            "iteration": 3,
+            "elite_cost": -0.44587149640339335,
+            "invalid_candidate_count": 0,
+            "updated_mean": [[-45.625, 40.0, 989.625], [-52.875, 51.375, 995.875]],
+            "updated_std": [[10.43955818030629, 31.20496755325985, 10.976537477729487], [12.771428072067744, 25.612191921036356, 6.173279112432873]]
+          },
+          {
+            "iteration": 4,
+            "elite_cost": -0.4449811879655572,
+            "invalid_candidate_count": 0,
+            "updated_mean": [[-41.625, 61.625, 989.75], [-47.375, 69.875, 996.5]],
+            "updated_std": [[3.07967124868873, 12.144314513384442, 7.644442425710328], [3.9350190596742984, 6.936092199502541, 3.2015621187164243]]
+          },
+          {
+            "iteration": 5,
+            "elite_cost": -0.4478607887045696,
+            "invalid_candidate_count": 0,
+            "updated_mean": [[-41.625, 68.875, 995.375], [-45.625, 71.625, 998.375]],
+            "updated_std": [[1.996089927833914, 9.211914838946353, 4.29934588047996], [2.9973947020704497, 4.270172713134681, 1.79843682124227]]
+          }
+        ]
+      },
+      {
+        "shot_index": 2,
+        "seed": 20260831,
+        "observation_before": "live:level-1:observation-2",
+        "observation_after": "live:level-1:observation-3",
+        "executed_action": {
+          "drag_x": -40,
+          "drag_y": 76,
+          "tap_time_ms": 994
+        },
+        "requested_horizons": [15, 15],
+        "effective_horizons": [15, 15],
+        "recursive_rollout_error": 0.005708159413188696,
+        "structure_unstable_probability": 0.5024163722991943,
+        "structure_unstable_thresholded": true,
+        "structure_unstable_affects_cost": false,
+        "selected_cost": -0.4485475299579321,
+        "candidate_count": 320,
+        "invalid_candidate_count": 0,
+        "model_rollout_count": 640,
+        "planner_compute": 902225920.0,
+        "iteration_elites": [
+          {
+            "iteration": 1,
+            "elite_cost": -0.42619684143916853,
+            "invalid_candidate_count": 0,
+            "updated_mean": [[-79.5, -6.625, 955.375], [-75.75, 24.375, 937.0]],
+            "updated_std": [[29.073183520213263, 65.71327396348472, 92.46477369787912], [43.55671590007677, 51.52168839430633, 113.07961796893373]]
+          },
+          {
+            "iteration": 2,
+            "elite_cost": -0.43442602982355877,
+            "invalid_candidate_count": 0,
+            "updated_mean": [[-79.125, 39.625, 980.125], [-64.375, 46.875, 961.0]],
+            "updated_std": [[19.231728341467388, 39.03504034838443, 34.00896021639003], [20.645444412751207, 33.216853779369295, 44.348055199749176]]
+          },
+          {
+            "iteration": 3,
+            "elite_cost": -0.4351086881329823,
+            "invalid_candidate_count": 0,
+            "updated_mean": [[-65.625, 56.0, 983.125], [-53.625, 66.75, 973.5]],
+            "updated_std": [[15.960400214280343, 24.160918856699137, 24.25612036167367], [13.67422301266145, 14.428704030508076, 31.064449134018133]]
+          },
+          {
+            "iteration": 4,
+            "elite_cost": -0.44376670585517314,
+            "invalid_candidate_count": 0,
+            "updated_mean": [[-52.125, 69.125, 989.625], [-51.125, 67.125, 991.0]],
+            "updated_std": [[8.880280119455692, 15.169356446467992, 10.61764451279096], [8.62318821550359, 10.16658128379447, 9.473647660748208]]
+          },
+          {
+            "iteration": 5,
+            "elite_cost": -0.4485475299579321,
+            "invalid_candidate_count": 0,
+            "updated_mean": [[-45.625, 68.625, 996.875], [-46.375, 73.125, 995.0]],
+            "updated_std": [[4.442338910979215, 7.77717011515114, 2.8034576865007255], [5.383713866839507, 5.775757526073961, 6.123724356957945]]
+          }
+        ]
+      }
+    ]
+  },
+  "verification": {
+    "full_artifact_exact_validation": "passed",
+    "dry_run": {
+      "replan_count": 2,
+      "executed_shot_count": 2,
+      "model_rollout_count": 16,
+      "files_written": 0
+    },
+    "targeted_tests": {
+      "count": 76,
+      "status": "passed"
+    }
+  },
+  "rerun_commands": [
+    "python -u -m scripts.run_issue_56_gameplay_planner --dry-run",
+    "DISPLAY=:10 python -u -m scripts.run_issue_56_gameplay_planner --live-smoke --start-engine --implementation-commit 4e11130a1e220f0d511db7d8b2c920ed6c00fb6b",
+    "python -u -m scripts.run_issue_56_gameplay_planner --validate"
+  ]
+}

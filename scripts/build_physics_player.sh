@@ -4,23 +4,32 @@ set -euo pipefail
 worktree="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 physics_v2=false
 observation_v1=false
+aligned_observation_v1=false
 print_stage=false
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
     --physics-v2) physics_v2=true ;;
     --observation-v1) observation_v1=true ;;
+    --aligned-observation-v1) aligned_observation_v1=true ;;
     --print-stage) print_stage=true ;;
-    *) echo "usage: $0 [--physics-v2|--observation-v1] [--print-stage]" >&2; exit 2 ;;
+    *) echo "usage: $0 [--physics-v2|--observation-v1|--aligned-observation-v1] [--print-stage]" >&2; exit 2 ;;
   esac
   shift
 done
-if [[ "$physics_v2" == true && "$observation_v1" == true ]]; then
-  echo "--physics-v2 and --observation-v1 are mutually exclusive" >&2
+profile_count=0
+[[ "$physics_v2" == true ]] && profile_count=$((profile_count + 1))
+[[ "$observation_v1" == true ]] && profile_count=$((profile_count + 1))
+[[ "$aligned_observation_v1" == true ]] && profile_count=$((profile_count + 1))
+if [[ "$profile_count" -gt 1 ]]; then
+  echo "player capture profiles are mutually exclusive" >&2
   exit 2
 fi
 editor="${UNITY_2019_4_41F2:-$HOME/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity}"
 project="${MIGRATED_UNITY_PROJECT:-$worktree/tasks/task_template_designer}"
-if [[ "$observation_v1" == true ]]; then
+if [[ "$aligned_observation_v1" == true ]]; then
+  stage="$worktree/sciencebirdsgames/aligned-observation-v1"
+  capture_schema="physics_capture_v2_engine_v1"
+elif [[ "$observation_v1" == true ]]; then
   stage="$worktree/sciencebirdsgames/observation-v1"
   capture_schema="observation_capture_engine_v1"
 elif [[ "$physics_v2" == true ]]; then

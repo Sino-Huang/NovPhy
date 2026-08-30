@@ -120,6 +120,28 @@ public sealed class ObservationCaptureProtocolTests
         UnityEngine.Object.DestroyImmediate(cameraObject);
     }
 
+    [Test]
+    public void FixedStepRenderMetadataRetainsItsDistinctSynchronizedSource()
+    {
+        GameObject cameraObject = new GameObject("Main Camera");
+        Camera camera = cameraObject.AddComponent<Camera>();
+        camera.orthographic = true;
+        camera.orthographicSize = 5f;
+        PhysicalSceneSnapshot snapshot = new PhysicalSceneSnapshot(
+            5, 0.1f, 7, 0.14f, new PhysicalNodeSnapshot[0]);
+
+        string metadata = ObservationCaptureProtocol.BuildMetadata(
+            snapshot, camera, "capture-v2:one", 1, 4, 3,
+            "synchronized_fixed_step_camera_render");
+        JSONNode value = JSONNode.Parse(metadata.Replace(":null", ":\"null\""));
+
+        Assert.AreEqual("synchronized_fixed_step_camera_render", value["source"].Value);
+        Assert.AreEqual(7, value["fixed_step"].AsInt);
+        Assert.AreEqual("source-frame-v1:capture-v2:one:1:5:7",
+            value["source_frame_identity"].Value);
+        UnityEngine.Object.DestroyImmediate(cameraObject);
+    }
+
     private static int ReadUInt16(byte[] buffer, int offset)
     {
         return (buffer[offset] << 8) | buffer[offset + 1];

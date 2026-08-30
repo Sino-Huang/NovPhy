@@ -12,7 +12,7 @@ import torch
 from world_model.data.cohort_v2 import (
     CAPABILITY_DECLARATION_IDENTITY,
     CENTRAL_LABELS,
-    COHORT_V2_RELEASE_IDENTITY,
+    COHORT_V2_TRANSITION_RELEASE_IDENTITIES,
     CohortV2CentralFrameRecord,
     CohortV2IngestionError,
     CohortV2OracleWindow,
@@ -127,7 +127,7 @@ def build_cohort_v2_transition_request(
     pair: PredictionPair,
     windows: tuple[CohortV2OracleWindow, ...],
 ) -> TransitionRequest:
-    """Adapt validated v5 oracle windows to one exclusive model request."""
+    """Adapt validated oracle windows to one exclusive model request."""
     if type(pair) is not PredictionPair:
         raise CohortV2IngestionError("Transition request requires a prediction pair")
     if type(windows) is not tuple or not windows or any(
@@ -138,7 +138,8 @@ def build_cohort_v2_transition_request(
         )
     for window in windows:
         if (
-            window.source_release_identity != COHORT_V2_RELEASE_IDENTITY
+            window.source_release_identity
+            not in COHORT_V2_TRANSITION_RELEASE_IDENTITIES
             or window.capability_declaration_identity
             != CAPABILITY_DECLARATION_IDENTITY
         ):

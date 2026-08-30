@@ -1,0 +1,91 @@
+{
+  "artifact_type": "cohort_v2_shared_predictor_pair_expert_diagnostic_summary",
+  "authoritative_derivation_index_identity": "cohort-v2-authoritative-derivation-index-v5:issue-53:mixed-termination",
+  "capability_declaration_identity": "cohort-v2-capabilities-v1",
+  "conclusion": "On the declared v5 model-selection partition, separately parameterized matched-pair controls changed the preferred pair in only 4 of 1,600 states. The evidence does not show pervasive harmful shared-training interference; most pair objectives instead suggest positive transfer from shared training. This is a teacher-forced prediction diagnostic and makes no claim about accumulated closed-loop error, action selection, or Angry Birds level success.",
+  "evaluation_scope": {
+    "pair_experts": {
+      "available_count": 32502,
+      "checkpoint_identity_sha256": "sha256:8d84ee234b2fbd964f4a8ddd3426519c6a1ff134f7c74440364221fab00204b4",
+      "evaluation_identity_sha256": "sha256:0eec62b561821d52dbee3a450cf408704532fbad6fac2a7202faf1e5739f53c0",
+      "objective_identity_sha256": "sha256:21562f5a530b175e0cb25fc1902a3f5489fa8e91d62d84829cd9d6d723ad1383",
+      "outcome_count": 48186,
+      "records_identity": "sha256:aebf0e3cbaf13e0d978e9042f48271465dfa0bd60eeaf6ed65184ccc29787863",
+      "state_count": 5354,
+      "unavailable_count": 15684
+    },
+    "shared": {
+      "available_count": 32502,
+      "checkpoint_identity_sha256": "sha256:707840f5fa99f6dac78cd151b595950f2abc2f4b3e70bdbc7d6caead850bb389",
+      "evaluation_identity_sha256": "sha256:aa55701a1329dbc4d108804f5c4ecab6fb04f38833d1b98f9e888238f60050e7",
+      "objective_identity_sha256": "sha256:d008a850bd5cbba310df61d2a12ba6808617aa13591310bd9d6e1e8402ab20c7",
+      "outcome_count": 48186,
+      "records_identity": "sha256:dc001ef3b39eb9ae5033976c4d53fd050c5ad19a1db95228d2a255d3185c8a2f",
+      "state_count": 5354,
+      "unavailable_count": 15684
+    }
+  },
+  "expert_model_state_identities": {
+    "h1/continuous": "sha256:881cb1971751b8a89339ccc36f66ae2d1d2e709551ede701304cd6d96628d718",
+    "h1/macro": "sha256:580497788697283633eeba36b97545be755ce50bc608ed0a1f837754c9b4319d",
+    "h1/micro": "sha256:056897714495970475d5a6c39b9934f88c79724ff22f9d1c94f1ba6708a5386f",
+    "h15/continuous": "sha256:599815aeb67dee5b553c99f5de74bf6789b656dd716ca7333915008bc667a3c6",
+    "h15/macro": "sha256:7ccd9c6442de01b424ddadbccb454253a295f22279df8bd8c2aaee9a6f6b7d82",
+    "h15/micro": "sha256:c6bb9d6999875c2f8d6d2adcb7d780b072acad3dcf19fa61c61e5ff92c6b1e77",
+    "h5/continuous": "sha256:f84c122463c59aba8c53a631cc9a08c51a55c8f3c1e490434600ea2d56d2895d",
+    "h5/macro": "sha256:0cddb2f8abab31801354aa1cc32f8e749eeddcd6b95b50eb8b484ef4287d5b72",
+    "h5/micro": "sha256:ad47fb7de255953d1d2b91b3d1415a7b233741b8edeb231ce374e3119a3f55cc"
+  },
+  "final_evaluation_accessed": false,
+  "implementation_commit": "ec57876145c790b0c300be32a9902b3a8ef78925",
+  "matched_pair_control_definition": "Each pair expert is independently parameterized and receives the exact 200 minibatches and global learning-rate positions used for that pair by the balanced shared predictor. The controls expose positive or negative transfer and are not claimed to be guaranteed empirical performance upper bounds.",
+  "model_selection_preferred_pairs": {
+    "changed_count": 4,
+    "changed_rate": 0.0025,
+    "pair_experts": {
+      "h1/continuous": 1600
+    },
+    "shared": {
+      "h1/continuous": 1596,
+      "h5/continuous": 4
+    },
+    "state_count": 1600
+  },
+  "pair_objective_shared_minus_expert": {
+    "h1/continuous": -0.000025504704946683888,
+    "h1/macro": -0.000005945958643375586,
+    "h1/micro": -0.0002730076533134707,
+    "h15/continuous": -0.00046759496715310434,
+    "h15/macro": 0.007756053026565092,
+    "h15/micro": -0.004092355869997846,
+    "h5/continuous": -0.0001317564722491227,
+    "h5/macro": 0.0021689936559899556,
+    "h5/micro": -0.0013691206910334585
+  },
+  "prediction_only_scope": "The supplied intervention is fixed before scoring. The horizon/description controller does not generate slingshot actions, optimize candidate shots, replan in closed loop, or measure level success or shots-to-success.",
+  "provenance_correction": "The ignored local run summary named pre-implementation HEAD 8180be2. The training implementation was unchanged when committed as ec57876145c790b0c300be32a9902b3a8ef78925; this compact source-bound record supersedes that stale implementation-commit field without rerunning training.",
+  "release_identity": "representative-cohort-v2-release-v5:issue-53:mixed-termination",
+  "rerun_commands": [
+    "python -u -m scripts.run_cohort_v2_pair_experts --dry-run",
+    "python -u -m scripts.run_cohort_v2_pair_experts --device cuda:0 --evaluation-devices cuda:0,cuda:1,cuda:2,cuda:3",
+    "python -u -m scripts.run_cohort_v2_pair_experts --device cuda:0 --evaluation-devices cuda:0 --validate"
+  ],
+  "schema": "cohort_v2_shared_predictor_pair_expert_diagnostic_summary_v1",
+  "shared_model_state_identity": "sha256:65d7cf8f0d69f72d6d45f254331a91921a345e3b8b9200b9c8e44fe0e10d4017",
+  "shared_pair_training": [
+    {"mean_carrier_loss": 0.0026348182592118973, "mean_macro_loss": 0.0, "mean_micro_loss": 0.0, "mean_total_loss": 0.0026348182592118973, "optimizer_update_count": 200, "pair": "h1/continuous"},
+    {"mean_carrier_loss": 0.0025090658894077935, "mean_macro_loss": 0.0, "mean_micro_loss": 0.09835592111572623, "mean_total_loss": 0.10086498703807592, "optimizer_update_count": 200, "pair": "h1/micro"},
+    {"mean_carrier_loss": 0.009604839466628618, "mean_macro_loss": 0.028458517619874328, "mean_micro_loss": 0.0, "mean_total_loss": 0.038063357123173776, "optimizer_update_count": 200, "pair": "h1/macro"},
+    {"mean_carrier_loss": 0.0041210925228733685, "mean_macro_loss": 0.0, "mean_micro_loss": 0.0, "mean_total_loss": 0.0041210925228733685, "optimizer_update_count": 200, "pair": "h5/continuous"},
+    {"mean_carrier_loss": 0.004908920082743862, "mean_macro_loss": 0.0, "mean_micro_loss": 0.10012973424047232, "mean_total_loss": 0.10503865420818329, "optimizer_update_count": 200, "pair": "h5/micro"},
+    {"mean_carrier_loss": 0.0090255922236247, "mean_macro_loss": 0.03749883274780586, "mean_micro_loss": 0.0, "mean_total_loss": 0.04652442482300103, "optimizer_update_count": 200, "pair": "h5/macro"},
+    {"mean_carrier_loss": 0.007726998070138507, "mean_macro_loss": 0.0, "mean_micro_loss": 0.0, "mean_total_loss": 0.007726998070138507, "optimizer_update_count": 200, "pair": "h15/continuous"},
+    {"mean_carrier_loss": 0.007152463797101518, "mean_macro_loss": 0.0, "mean_micro_loss": 0.09922130674123764, "mean_total_loss": 0.10637377016246319, "optimizer_update_count": 200, "pair": "h15/micro"},
+    {"mean_carrier_loss": 0.009167250752216204, "mean_macro_loss": 0.03724769451655448, "mean_micro_loss": 0.0, "mean_total_loss": 0.0464149454748258, "optimizer_update_count": 200, "pair": "h15/macro"}
+  ],
+  "source_bound_validation": "passed",
+  "target_vocabulary": {
+    "macro": ["steady-state", "structure-unstable"],
+    "micro": ["contact", "supports"]
+  }
+}

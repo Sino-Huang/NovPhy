@@ -69,7 +69,7 @@ public static class ObservationCaptureProtocol
                 "observation identity or camera metadata is invalid");
 
         string metadata = BuildMetadata(snapshot, camera, captureId, sequence,
-            width, height);
+            width, height, "synchronized_observation_endpoint");
         byte[] metadataBytes = Encoding.UTF8.GetBytes(metadata);
         long payloadLength = 8L + canonicalPng.Length + metadataBytes.Length;
         if (payloadLength > MaxEnvelopeBytes - 16L)
@@ -95,8 +95,9 @@ public static class ObservationCaptureProtocol
         return BuildEnvelope(1, (int)code, payload);
     }
 
-    private static string BuildMetadata(PhysicalSceneSnapshot snapshot,
-        Camera camera, string captureId, long sequence, int width, int height)
+    public static string BuildMetadata(PhysicalSceneSnapshot snapshot,
+        Camera camera, string captureId, long sequence, int width, int height,
+        string source)
     {
         string sourceFrameIdentity = string.Format(CultureInfo.InvariantCulture,
             "source-frame-v1:{0}:{1}:{2}:{3}", captureId, sequence,
@@ -118,7 +119,8 @@ public static class ObservationCaptureProtocol
         json.Append(",\"render_time_seconds\":"); AppendFloat(json, snapshot.RenderTime);
         json.Append(",\"fixed_step\":").Append(snapshot.FixedStep.ToString(CultureInfo.InvariantCulture));
         json.Append(",\"fixed_time_seconds\":"); AppendFloat(json, snapshot.FixedTime);
-        json.Append(",\"source\":\"synchronized_observation_endpoint\",\"camera\":{");
+        json.Append(",\"source\":"); AppendString(json, source);
+        json.Append(",\"camera\":{");
         json.Append("\"camera_identity\":\"unity-main-camera\",\"projection_kind\":");
         AppendString(json, camera.orthographic ? "orthographic" : "perspective");
         json.Append(",\"position_world\":"); AppendVector3(json, camera.transform.position);

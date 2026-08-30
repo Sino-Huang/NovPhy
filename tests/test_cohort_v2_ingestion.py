@@ -37,6 +37,19 @@ SEALED_RELEASE = ROOT / ".local-artifacts/issue-53-mixed-termination-final-relea
 
 
 class CohortV2ReleaseReaderTests(unittest.TestCase):
+    def test_aligned_reader_requires_one_trace_for_every_role_rollout(self) -> None:
+        with self.assertRaisesRegex(
+            CohortV2IngestionError, "Aligned observation root is missing"
+        ):
+            CohortV2ReleaseReader(
+                PUBLIC_RELEASE,
+                capability_declaration_path=CAPABILITY_DECLARATION,
+                production_plan_root=PRODUCTION_PLAN,
+                workflow_kind="training",
+                influence="learned_parameters",
+                aligned_observation_roots={},
+            )
+
     def test_training_reader_exposes_observation_backed_central_windows(self) -> None:
         reader = CohortV2ReleaseReader(
             PUBLIC_RELEASE,

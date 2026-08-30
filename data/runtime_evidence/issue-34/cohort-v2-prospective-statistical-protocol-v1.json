@@ -1,0 +1,322 @@
+{
+  "amendment_policy": "This version is frozen before issue #15. Any change requires a new version, a reason, a field-level diff, and a complete rerun of every affected analysis. An outcome-informed amendment is exploratory unless evaluated on a new untouched sealed partition; it cannot preserve the confirmatory label on the opened data.",
+  "artifact_identity": "cohort-v2-prospective-statistical-protocol-v1:sha256:4a189a5583c9bedf4fd5f670f14fd7ae2d4339c3a2beba95a1c5e269b02834e4",
+  "calibration_basis": {
+    "calibration_is_confirmatory": false,
+    "compute_budgets": "The two retained budgets are the distinct calibrated support points at which the integrated candidate and at least one declared comparator are eligible. Configurations above a budget are ineligible.",
+    "failed_run_treatment": "Copied from issue #58: source/provenance failures abort, while execution failures remain failed replicates and are neither replaced nor excluded.",
+    "physical_violation_margin": "At each budget, max(0, upper endpoint of the calibration paired-violation increase 95 percent bootstrap interval).",
+    "practical_effect_threshold": "At each budget, max(10 percent of the strongest comparator's calibration mean endpoint error, calibration paired-gain 95 percent interval half-width).",
+    "replicate_and_precision": "Six complete calibration rollouts established the fixed six-rollout design; the budget rows retain the observed paired-gain interval half-width as the declared precision target.",
+    "source": "issue_58_integrated_calibration_only"
+  },
+  "claim_boundary": {
+    "excluded": [
+      "template-held-out generalization",
+      "unseen physics or gravity shift",
+      "material or damage semantics",
+      "illegal-contact derivation",
+      "planning or gameplay success"
+    ],
+    "gameplay_protocol_owner": "issue_57",
+    "supported": "instance-held-out configurations in the same physics family and the accepted contact, directed-supports, steady-state, and structure-unstable ontology"
+  },
+  "estimands": {
+    "parser_secondary": {
+      "agreement_metrics": [
+        "precision",
+        "recall",
+        "F1",
+        "directed-predicate agreement",
+        "macro-event agreement"
+      ],
+      "availability_rule": "Unavailable oracle targets remain unavailable and are reported in denominators; they are never converted to negative labels.",
+      "coherence": [
+        "self-relation rate",
+        "supports-without-contact rate"
+      ],
+      "probability_metrics": [
+        "Brier score",
+        "negative log likelihood",
+        "10-bin equal-width expected calibration error"
+      ]
+    },
+    "primary_confirmatory": {
+      "compute": [
+        "policy_compute_per_simulated_frame",
+        "full_end_to_end_compute_per_simulated_frame"
+      ],
+      "endpoint_error": "Within each complete rollout, mean duration-weighted authoritative endpoint carrier MSE over all eligible teacher-forced decision states.",
+      "endpoint_gain": "strongest_comparator_error_minus_candidate_error",
+      "physical_violation": "Within-rollout authoritative source-endpoint incidence of any accepted endpoint violation; recursive predicted-carrier violation is unavailable.",
+      "violation_increase": "candidate_rate_minus_strongest_comparator_rate"
+    },
+    "stress_primary": {
+      "controller_degradation": [
+        "pair_disagreement_rate",
+        "horizon_disagreement_rate",
+        "description_mode_disagreement_rate"
+      ],
+      "endpoint_degradation": "parser_endpoint_error_minus_oracle_endpoint_error",
+      "violation_degradation": "parser_violation_rate_minus_oracle_violation_rate"
+    }
+  },
+  "experiment_matrix": {
+    "configuration_freeze_rule": "The issue-58 predictor, controller, pair grid, costs, and budget-specific comparators are immutable. Parser checkpoints, probability calibration, and decision thresholds must be source-bound using training parameters, model-selection configuration choice, and calibration thresholds before the parser receives final-evaluation data.",
+    "confirmatory_oracle_symbol_issue_15": {
+      "candidate_configuration_id": "integrated_aggregated_joint_controller",
+      "candidate_source": "issue_58_integrated_candidate_and_one_round_controller",
+      "comparisons": [
+        {
+          "budget": 106659.08223346318,
+          "calibration_precision_half_width": 0.0,
+          "fixed_complete_rollout_replicates": 6,
+          "gain_bootstrap_seed": 20260826,
+          "physical_violation_margin": 0.0,
+          "practical_effect_threshold_absolute_endpoint_error_reduction": 4.51556734403382e-05,
+          "strongest_comparator_id": "matched_capacity_two_head",
+          "violation_bootstrap_seed": 20260827
+        },
+        {
+          "budget": 1398656.0,
+          "calibration_precision_half_width": 0.0001664452670262089,
+          "fixed_complete_rollout_replicates": 6,
+          "gain_bootstrap_seed": 20260828,
+          "physical_violation_margin": 0.0003768522753780134,
+          "practical_effect_threshold_absolute_endpoint_error_reduction": 0.0001664452670262089,
+          "strongest_comparator_id": "fixed_pair",
+          "violation_bootstrap_seed": 20260829
+        }
+      ],
+      "complete_rollout_secondary": {
+        "configuration": "fixed_h15_continuous",
+        "metrics": [
+          "requested_and_effective_horizons",
+          "terminal_mse",
+          "error_auc",
+          "error_curve",
+          "total_compute"
+        ],
+        "recursive_physical_violation": "unavailable",
+        "selection_source": "issue_58_model_selection"
+      },
+      "local_primary_mode": "teacher_forced_local_successor_prediction"
+    },
+    "frozen_visual_symbol_stress_issue_17": {
+      "accepted_targets": [
+        "object_alignment",
+        "contact",
+        "directed_supports",
+        "steady-state",
+        "structure-unstable"
+      ],
+      "canonical_observation_input": "forbidden",
+      "comparisons": [
+        {
+          "budget": 106659.08223346318,
+          "calibration_precision_half_width": 0.0,
+          "endpoint_bootstrap_seed": 20261026,
+          "endpoint_estimand": "parser_endpoint_error_minus_oracle_endpoint_error",
+          "fixed_complete_rollout_replicates": 6,
+          "physical_violation_margin": 0.0,
+          "practical_effect_threshold_absolute_endpoint_error_reduction": 4.51556734403382e-05,
+          "strongest_comparator_id": "matched_capacity_two_head",
+          "violation_bootstrap_seed": 20261027,
+          "violation_estimand": "parser_violation_rate_minus_oracle_violation_rate"
+        },
+        {
+          "budget": 1398656.0,
+          "calibration_precision_half_width": 0.0001664452670262089,
+          "endpoint_bootstrap_seed": 20261028,
+          "endpoint_estimand": "parser_endpoint_error_minus_oracle_endpoint_error",
+          "fixed_complete_rollout_replicates": 6,
+          "physical_violation_margin": 0.0003768522753780134,
+          "practical_effect_threshold_absolute_endpoint_error_reduction": 0.0001664452670262089,
+          "strongest_comparator_id": "fixed_pair",
+          "violation_bootstrap_seed": 20261029,
+          "violation_estimand": "parser_violation_rate_minus_oracle_violation_rate"
+        }
+      ],
+      "parser_input": "synchronized_agent_observation_only",
+      "reference": "frozen_issue_15_oracle_symbol_system",
+      "secondary_reference": "frozen_issue_16_feature_parser_system",
+      "stressed_configuration": "frozen_encoder_agent_observation_parser"
+    },
+    "learned_feature_symbol_stress_issue_16": {
+      "accepted_targets": [
+        "contact",
+        "directed_supports",
+        "steady-state",
+        "structure-unstable"
+      ],
+      "comparisons": [
+        {
+          "budget": 106659.08223346318,
+          "calibration_precision_half_width": 0.0,
+          "endpoint_bootstrap_seed": 20260926,
+          "endpoint_estimand": "parser_endpoint_error_minus_oracle_endpoint_error",
+          "fixed_complete_rollout_replicates": 6,
+          "physical_violation_margin": 0.0,
+          "practical_effect_threshold_absolute_endpoint_error_reduction": 4.51556734403382e-05,
+          "strongest_comparator_id": "matched_capacity_two_head",
+          "violation_bootstrap_seed": 20260927,
+          "violation_estimand": "parser_violation_rate_minus_oracle_violation_rate"
+        },
+        {
+          "budget": 1398656.0,
+          "calibration_precision_half_width": 0.0001664452670262089,
+          "endpoint_bootstrap_seed": 20260928,
+          "endpoint_estimand": "parser_endpoint_error_minus_oracle_endpoint_error",
+          "fixed_complete_rollout_replicates": 6,
+          "physical_violation_margin": 0.0003768522753780134,
+          "practical_effect_threshold_absolute_endpoint_error_reduction": 0.0001664452670262089,
+          "strongest_comparator_id": "fixed_pair",
+          "violation_bootstrap_seed": 20260929,
+          "violation_estimand": "parser_violation_rate_minus_oracle_violation_rate"
+        }
+      ],
+      "parser_input": "simulator_observable_deployment_features",
+      "reference": "frozen_issue_15_oracle_symbol_system",
+      "stressed_configuration": "training_role_feature_parser_with_frozen_semantics"
+    }
+  },
+  "exposure_audit": {
+    "issue_41_final_scenarios_outcomes_labels_or_derived_metrics_accessed": false,
+    "issue_54_receipt_use": "boundary validation only; it contains no final observation, label, outcome, example, or metric",
+    "issue_58_final_scenarios_outcomes_labels_or_derived_metrics_accessed": false,
+    "passed": true,
+    "protocol_construction_final_scenarios_outcomes_labels_or_derived_metrics_accessed": false,
+    "protocol_construction_inputs": "non-final calibration reports and public release/workflow metadata only",
+    "sealed_final_bundle_opened": false
+  },
+  "failures_exclusions_and_stopping": {
+    "missing_run": "no imputation; retain the missing record and fail the affected budget",
+    "model_or_parser_execution_failure": "retain as a failed replicate, do not replace or exclude it, and fail the affected configuration and budget",
+    "outliers": "no outcome-based exclusions, winsorization, or robust substitution",
+    "source_or_provenance_failure": "abort before analysis and do not open more final data",
+    "stopping": "Run the complete fixed matrix once. No interim decision, early success stop, sample-size increase, seed change, or outcome-conditioned rerun is allowed."
+  },
+  "final_evaluation_access": {
+    "authorization_rule": "Issue #15 must create an authorized derivative of the immutable pending workflow manifest after this protocol is committed and before its first final access; every access must be recorded under the declared workflow, operator, authorization, artifact, lineage, timestamp, and final role.",
+    "current_manifest_authorization_state": "pending",
+    "later_consumer_identity": "issue-15-oracle-symbol-confirmatory-v1",
+    "operator_identity": "novphy-operator-v5:issue-53-mixed-termination-final-evaluation-custodian",
+    "required_access_record_schema": "final_evaluation_workflow_access_audit_v1",
+    "sealed_bundle_identity": "issue-53-final-evaluation-sealed-bundle-v5:mixed-termination",
+    "workflow_identity": "central-v2-final-evaluation-workflow-v5:issue-53"
+  },
+  "implementation_commit": "7c4cc9ea85109108a2b0ab55eddce637ac25dc4c",
+  "protocol_version": 1,
+  "replicate_and_seed_policy": {
+    "analysis_bootstrap_master_seed": 20260826,
+    "analysis_bootstrap_replicates": 10000,
+    "analysis_unit": "complete_final_evaluation_rollout",
+    "candidate_training_seed": 20260824,
+    "controller_aggregation_rounds": 1,
+    "controller_seed": 10,
+    "coverage": "exactly one rollout in each of the six accepted central strata",
+    "feature_parser_seed": 20260828,
+    "fixed_attempt_ids": [
+      "cohort-v2-production-attempt-v5:cohort-v2-production-collection-plan-v5%3Aissue-53%3Amixed-termination%3Aworkflow-time:final_evaluation:central-no-contact-miss",
+      "cohort-v2-production-attempt-v5:cohort-v2-production-collection-plan-v5%3Aissue-53%3Amixed-termination%3Aworkflow-time:final_evaluation:central-collision",
+      "cohort-v2-production-attempt-v5:cohort-v2-production-collection-plan-v5%3Aissue-53%3Amixed-termination%3Aworkflow-time:final_evaluation:central-persistent-support",
+      "cohort-v2-production-attempt-v5:cohort-v2-production-collection-plan-v5%3Aissue-53%3Amixed-termination%3Aworkflow-time:final_evaluation:central-support-change",
+      "cohort-v2-production-attempt-v5:cohort-v2-production-collection-plan-v5%3Aissue-53%3Amixed-termination%3Aworkflow-time:final_evaluation:central-destruction",
+      "cohort-v2-production-attempt-v5:cohort-v2-production-collection-plan-v5%3Aissue-53%3Amixed-termination%3Aworkflow-time:final_evaluation:central-stability-transition"
+    ],
+    "fixed_replicate_count": 6,
+    "rule": "Seeds, replicate count, attempt inventory, and bootstrap offsets are fixed. No outcome-conditioned seed changes, replacement replicates, or optional stopping are permitted.",
+    "visual_parser_seed": 20260829
+  },
+  "required_outputs": {
+    "binding_columns": [
+      "protocol_identity",
+      "release_identity",
+      "partition_identity",
+      "code_revision",
+      "configuration_id",
+      "checkpoint_identity",
+      "attempt_id",
+      "seed",
+      "exposure_role"
+    ],
+    "decision_values": [
+      "supported",
+      "unsupported",
+      "not_run_due_to_provenance_abort"
+    ],
+    "machine_readable": [
+      "one source-bound row per configuration, budget, rollout, and metric",
+      "failure and missing-run records",
+      "paired effects and bootstrap samples or reproducible bootstrap inputs",
+      "aggregate decisions and sensitivity results"
+    ],
+    "plots": [
+      "per-budget paired gain and violation interval plot",
+      "compute-error frontier with matched-support boundaries",
+      "fixed-h15 complete-rollout error curve",
+      "feature-parser reliability and degradation plots",
+      "visual-parser reliability, coherence, and degradation plots"
+    ],
+    "tables": [
+      "final replicate inventory and exposure audit",
+      "per-budget confirmatory gain, violation, compute, intervals, and decision",
+      "local teacher-forced versus complete-rollout metrics",
+      "feature-parser predicate, controller, endpoint, and violation gaps",
+      "visual-parser agreement, calibration, coherence, controller, endpoint, and violation gaps",
+      "failures, missing runs, exclusions, and sensitivity"
+    ]
+  },
+  "rerun_commands": [
+    "python -u -m scripts.run_cohort_v2_statistical_protocol --dry-run",
+    "python -u -m scripts.run_cohort_v2_statistical_protocol --implementation-commit 7c4cc9ea85109108a2b0ab55eddce637ac25dc4c",
+    "python -u -m scripts.run_cohort_v2_statistical_protocol --validate"
+  ],
+  "schema": "cohort_v2_prospective_statistical_protocol_v1",
+  "source_bindings": {
+    "access_probe": {
+      "path": "data/runtime_evidence/issue-54/cohort-v2-downstream-ingestion-evidence.json",
+      "sha256": "sha256:902eeb6c54aeb934298c0d41810af1d54c7554d82664aca87355632623c81452"
+    },
+    "authoritative_derivation_index_identity": "cohort-v2-authoritative-derivation-index-v5:issue-53:mixed-termination",
+    "final_workflow_manifest_identity_sha256": "sha256:e20ae2ca65006d0914585cabfa41dc16a7d8b189c6f57071399c0a9f27fdb1b7",
+    "issue_41_calibration": {
+      "path": "data/runtime_evidence/issue-41/cohort-v2-calibration-summary.json",
+      "sha256": "sha256:ac9c4a146eed3ff05e115f6093d526dd722b6daa3aaa3c6cce6a13bdf9961216"
+    },
+    "issue_58_evidence_artifact_identity": "cohort_v2_integrated_calibration_v1:[\"e2e4bf0c51ea6df8840be1cdda96c5e22aa21507\",\"sha256:294a8bc8c690dd29d8c605fef40f0709397d55c09f877a7e9c50aa7b82f02d66\",\"sha256:93adaa6557930b6571d865e9922f3d06d950c0d7ba0947c1857655ba8bd1006a\",\"sha256:bfe55cddc424571a1fd96987716580dd52463ca70ae2f1295420388aab1bf2fe\"]",
+    "issue_58_implementation_commit": "e2e4bf0c51ea6df8840be1cdda96c5e22aa21507",
+    "issue_58_integrated_calibration": {
+      "path": "data/runtime_evidence/issue-58/cohort-v2-integrated-calibration-summary.json",
+      "sha256": "sha256:de0dbb520b48e789dedae57c2b7679d790db98b982198e4395fc9f0703d6011e"
+    },
+    "publication": {
+      "path": "data/runtime_evidence/issue-53-mixed-termination-v5/cohort-v2-publication.json",
+      "sha256": "sha256:3d88cbf4e2a48a8cecf94f25e5ec2275e17d935b0756ecb3eff2ae9198995610"
+    },
+    "publication_identity": "representative-cohort-v2-publication-v5:issue-53:mixed-termination",
+    "release": {
+      "path": "data/runtime_evidence/issue-53-mixed-termination-v5/cohort-v2-release.json",
+      "sha256": "sha256:182583341138a8a7b4ae0324dcba20a2309817728947bda56cdd30fe1b4e7e37"
+    },
+    "release_identity": "representative-cohort-v2-release-v5:issue-53:mixed-termination",
+    "workflow": {
+      "path": "data/runtime_evidence/issue-53-plan-v5/final-evaluation-workflow-access-manifest.json",
+      "sha256": "sha256:c09f9961712cd349acb21e7d77b2779a4118e3c337c0286e28314d0f489bef14"
+    }
+  },
+  "statistical_analysis": {
+    "bootstrap": "Nonparametric paired rollout bootstrap with replacement, 10,000 samples, using the fixed row-specific seeds.",
+    "confirmatory_decision": "Supported only if at least one declared budget has all six valid paired rollouts, candidate and comparator are within matched-compute support, the one-sided lower gain bound is at least that budget's practical-effect threshold, and the one-sided upper violation-increase bound is at most its margin. Otherwise the central hypothesis is unsupported.",
+    "effect_summary": "arithmetic mean of the six paired rollout effects",
+    "multiple_comparisons": "Each analysis family has two budgets. Bonferroni alpha=0.05/2 gives one-sided 97.5 percent bounds. Gain and violation form an intersection-union rule at a budget and receive no additional split. Secondary and per-stratum analyses are descriptive and cannot rescue a primary decision.",
+    "pairing": "pair candidate and comparator within the same complete rollout",
+    "reported_intervals": [
+      "two-sided percentile 95 percent interval for every effect",
+      "one-sided percentile 97.5 percent decision bound for each budget"
+    ],
+    "sensitivity": "Repeat descriptively at 0.5x and 1.5x each practical-effect threshold and at 0x and 2x each violation margin; the frozen primary decision is unchanged.",
+    "stress_decision": "Each parser stress test is supported as non-materially degrading the oracle system only if at least one declared budget has an upper one-sided endpoint-degradation bound no greater than its practical-effect threshold and an upper one-sided violation-degradation bound no greater than its margin. A stress result cannot change or rescue the issue-15 decision."
+  },
+  "status": "frozen_before_final_evaluation"
+}

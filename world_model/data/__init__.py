@@ -78,14 +78,42 @@ from world_model.data.ablations import (
 
 def __getattr__(name: str):
     if name in (
+        "AgentObservation",
+        "DecisionInference",
+        "DecisionTargets",
+        "DecisionTransition",
+        "DeploymentFrameRecordSymbols",
+        "DeploymentTemporalError",
+        "DeploymentTrajectory",
+        "DeploymentTrajectoryReader",
+        "ExecutedAction",
+        "TemporalCarrier",
+        "TemporalObjectSlot",
+        "TemporalObservationContext",
+        "TemporalVisualCarrierAdapter",
+        "TransitionCarriers",
+        "TrajectoryLineageBinding",
+        "TrajectoryLineageManifest",
+        "build_transition_carriers",
+    ):
+        from world_model.data import deployment_temporal  # noqa: PLC0415
+
+        return getattr(deployment_temporal, name)
+    if name in (
         "CohortV2CentralFrameRecord",
         "CohortV2FinalAccessReceipt",
+        "CohortV2FinalEvaluationReader",
         "CohortV2IngestionError",
         "CohortV2OracleWindow",
         "CohortV2OracleWindowDataset",
         "CohortV2ReleaseReader",
         "CohortV2Rollout",
+        "CohortV2AlignedObservationReader",
     ):
+        if name == "CohortV2AlignedObservationReader":
+            from world_model.data import cohort_v2_aligned  # noqa: PLC0415
+
+            return cohort_v2_aligned.CohortV2AlignedObservationReader
         from world_model.data import cohort_v2  # noqa: PLC0415
 
         value = getattr(cohort_v2, name)
@@ -119,6 +147,7 @@ __all__ = [
     "PHYSICS_CAPTURE_V1",
     "PHYSICS_CAPTURE_V1_CAPABILITIES",
     "CaptureContractDescriptor",
+    "AgentObservation",
     "AblationRunConfig",
     "ComputeBudgetMismatchError",
     "ContractValueError",
@@ -130,12 +159,30 @@ __all__ = [
     "CurriculumStage",
     "CurriculumState",
     "CohortV2CentralFrameRecord",
+    "CohortV2AlignedObservationReader",
     "CohortV2FinalAccessReceipt",
+    "CohortV2FinalEvaluationReader",
     "CohortV2IngestionError",
     "CohortV2OracleWindow",
     "CohortV2OracleWindowDataset",
     "CohortV2ReleaseReader",
     "CohortV2Rollout",
+    "DecisionInference",
+    "DecisionTargets",
+    "DecisionTransition",
+    "DeploymentFrameRecordSymbols",
+    "DeploymentTemporalError",
+    "DeploymentTrajectory",
+    "DeploymentTrajectoryReader",
+    "ExecutedAction",
+    "TemporalCarrier",
+    "TemporalObjectSlot",
+    "TemporalObservationContext",
+    "TemporalVisualCarrierAdapter",
+    "TransitionCarriers",
+    "TrajectoryLineageBinding",
+    "TrajectoryLineageManifest",
+    "build_transition_carriers",
     "probe_cohort_v2_final_access",
     "EpisodeCatalog",
     "EpisodeRecord",

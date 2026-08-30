@@ -73,7 +73,12 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _readers(repository_root: Path, release_root: Path):
+def _readers(
+    repository_root: Path,
+    release_root: Path,
+    *,
+    migration_recovery_authority: Path | None = None,
+):
     declaration = repository_root / "docs/data_contracts/cohort_v2_capabilities_v1.json"
     production_plan = repository_root / "data/runtime_evidence/issue-53-plan-v5"
     readers = []
@@ -85,6 +90,7 @@ def _readers(repository_root: Path, release_root: Path):
             production_plan_root=production_plan,
             workflow_kind=role,
             influence=influence,
+            migration_recovery_authority=migration_recovery_authority,
         )
         frame_records = sum(len(rollout.frame_records) for rollout in reader.rollouts)
         terminal_counts: dict[str, int] = {}

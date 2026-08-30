@@ -29,6 +29,7 @@ COHORT_V2_PAIRS: Final = tuple(
     for abstraction in ABSTRACTION_ORDER
 )
 NON_FINAL_ROLES: Final = ("training", "calibration", "model_selection")
+FINAL_EVALUATION_ROLES: Final = ("final_evaluation",)
 TRANSITION_CAPABILITY: Final = {
     Abstraction.CONTINUOUS: "transition.continuous",
     Abstraction.MICRO: "transition.micro",
@@ -252,6 +253,7 @@ def cohort_v2_evaluation_state_set_identity(
     release_identity: str,
     partition_identity: str,
     state_ids: tuple[str, ...],
+    exposure_roles: tuple[str, ...] = NON_FINAL_ROLES,
 ) -> str:
     """Name the exact nonterminal cohort-v2 evaluation scope."""
     if any(
@@ -273,7 +275,7 @@ def cohort_v2_evaluation_state_set_identity(
         release_identity,
         partition_identity,
         "all-nonterminal-contexts",
-        NON_FINAL_ROLES,
+        exposure_roles,
         COHORT_V2_HORIZONS,
         "terminal-clamp-v1",
         tuple(sorted(state_ids)),
@@ -282,17 +284,17 @@ def cohort_v2_evaluation_state_set_identity(
 
 def _validate_reader_bindings(
     readers: tuple[CohortV2ReleaseReader, ...],
-) -> tuple[str, str]:
-    if type(readers) is not tuple or len(readers) != len(NON_FINAL_ROLES):
+) -> tuple[str, str, tuple[str, ...]]:
+    if type(readers) is not tuple or not readers:
         raise CohortV2EvaluationError(
-            "evaluation requires the three non-final cohort-v2 readers"
+            "evaluation requires cohort-v2 readers"
         )
     if any(not reader.rollouts for reader in readers):
         raise CohortV2EvaluationError("evaluation readers must contain rollouts")
     roles = tuple(reader.rollouts[0].exposure_role for reader in readers)
-    if roles != NON_FINAL_ROLES:
+    if roles not in (NON_FINAL_ROLES, FINAL_EVALUATION_ROLES):
         raise CohortV2EvaluationError(
-            "readers must be ordered training, calibration, model_selection"
+            "readers must be the ordered non-final roles or one authorized final role"
         )
     releases = {reader.release_identity for reader in readers}
     partitions = {reader.partition_identity for reader in readers}
@@ -300,7 +302,7 @@ def _validate_reader_bindings(
         raise CohortV2EvaluationError("evaluation readers cross cohort releases")
     if len(partitions) != 1:
         raise CohortV2EvaluationError("evaluation readers cross release partitions")
-    return releases.pop(), partitions.pop()
+    return releases.pop(), partitions.pop(), roles
 
 
 def _source_state_windows(
@@ -323,7 +325,8 @@ def _source_state_windows(
                 )
             first = windows[0]
             states.append((tuple(windows), len(rollouts[first.attempt_id].frame_records)))
-    role_order = {role: index for index, role in enumerate(NON_FINAL_ROLES)}
+    roles = tuple(reader.rollouts[0].exposure_role for reader in readers)
+    role_order = {role: index for index, role in enumerate(roles)}
     ordered = tuple(sorted(
         states,
         key=lambda item: (
@@ -362,7 +365,7 @@ class CohortV2ExhaustiveEvaluator:
     def evaluate(
         self, readers: tuple[CohortV2ReleaseReader, ...]
     ) -> CohortV2EvaluationResult:
-        release_identity, partition_identity = _validate_reader_bindings(readers)
+        release_identity, partition_identity, roles = _validate_reader_bindings(readers)
         states = []
         for windows, frame_record_count in _source_state_windows(readers, self._grid):
             first = windows[0]
@@ -414,6 +417,7 @@ class CohortV2ExhaustiveEvaluator:
             release_identity,
             partition_identity,
             tuple(item.state_id for item in ordered_states),
+            roles,
         )
         return CohortV2EvaluationResult(
             release_identity=release_identity,
@@ -552,7 +556,7 @@ class CohortV2ParallelExhaustiveEvaluator:
     def evaluate(
         self, readers: tuple[CohortV2ReleaseReader, ...]
     ) -> CohortV2EvaluationResult:
-        release_identity, partition_identity = _validate_reader_bindings(readers)
+        release_identity, partition_identity, roles = _validate_reader_bindings(readers)
         source_states = _source_state_windows(readers, self._grid)
         indexed = tuple(enumerate(source_states))
         shards = tuple(
@@ -576,6 +580,7 @@ class CohortV2ParallelExhaustiveEvaluator:
             release_identity,
             partition_identity,
             tuple(state.state_id for state in ordered_states),
+            roles,
         )
         first = self._scorers[0]
         return CohortV2EvaluationResult(
@@ -713,7 +718,9 @@ def write_cohort_v2_evaluation(
         "checkpoint_capabilities": list(result.checkpoint_capabilities),
         "checkpoint_identity": result.checkpoint_identity,
         "evaluation_identity": result.identity,
-        "exposure_roles": list(NON_FINAL_ROLES),
+        "exposure_roles": list(dict.fromkeys(
+            state.exposure_role for state in result.states
+        )),
         "grid_capabilities": _grid_capability_payload(),
         "grid_identity": result.grid.identity,
         "horizons": list(result.grid.horizons),
@@ -786,17 +793,17 @@ def validate_cohort_v2_evaluation(
     ):
         raise CohortV2EvaluationError("declared checkpoint capabilities are malformed")
     declared_checkpoint_capabilities = tuple(sorted(checkpoint_capabilities))
-    release_identity, partition_identity = _validate_reader_bindings(readers)
+    release_identity, partition_identity, roles = _validate_reader_bindings(readers)
     source_states = _source_state_windows(readers, grid)
     source_state_ids = tuple(item[0][0].context.identity for item in source_states)
     source_state_set_identity = cohort_v2_evaluation_state_set_identity(
-        release_identity, partition_identity, source_state_ids
+        release_identity, partition_identity, source_state_ids, roles
     )
     if (
         manifest["horizons"] != list(grid.horizons)
         or manifest["grid_identity"] != grid.identity
         or manifest["grid_capabilities"] != _grid_capability_payload()
-        or manifest["exposure_roles"] != list(NON_FINAL_ROLES)
+        or manifest["exposure_roles"] != list(roles)
         or manifest["capability_declaration_identity"]
         != CAPABILITY_DECLARATION_IDENTITY
         or manifest["release_identity"] != release_identity
