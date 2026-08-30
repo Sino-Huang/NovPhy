@@ -36,13 +36,20 @@ from world_model.data.deployment_temporal import (
 )
 
 
-PLAN_SCHEMA: Final = "multi_shot_successor_collection_plan_v2"
-PLAN_IDENTITY_NAMESPACE: Final = "issue-62-collection-plan-v2"
-PILOT_REPORT_SCHEMA: Final = "multi_shot_successor_pilot_report_v1"
-RELEASE_SCHEMA: Final = "multi_shot_successor_cohort_release_v1"
-TRAJECTORY_SCHEMA: Final = "multi_shot_successor_trajectory_v1"
+PLAN_SCHEMA: Final = "multi_shot_successor_collection_plan_v3"
+PLAN_IDENTITY_NAMESPACE: Final = "issue-62-collection-plan-v3"
+PLANNED_ACTION_IDENTITY_NAMESPACE: Final = "issue-62-planned-action-v2"
+PILOT_REPORT_SCHEMA: Final = "multi_shot_successor_pilot_report_v2"
+PILOT_REPORT_IDENTITY_NAMESPACE: Final = "issue-62-pilot-report-v2"
+RELEASE_SCHEMA: Final = "multi_shot_successor_cohort_release_v2"
+TRAJECTORY_SCHEMA: Final = "multi_shot_successor_trajectory_v2"
 PUBLIC_ROLES: Final = ("training", "calibration", "model_selection")
-BEHAVIOR_POLICIES: Final = ("uniform_random", "stratified_bounds")
+BEHAVIOR_POLICIES: Final = (
+    "uniform_random",
+    "stratified_bounds",
+    "trajectory_guided_direct_pig",
+)
+GUIDED_ACTION_STRATUM: Final = "direct_pig__low_arc__tap_early"
 ACTION_BOUNDS: Final = {
     "drag_x": [-160, -40],
     "drag_y": [-80, 80],
@@ -110,7 +117,7 @@ def _expected_identity(namespace: str, field: str, value: Mapping[str, Any]) -> 
 
 
 def release_identity_for_plan(plan_identity: str) -> str:
-    return successor_identity("issue-62-successor-release-v1", plan_identity)
+    return successor_identity("issue-62-successor-release-v2", plan_identity)
 
 
 def _action_stratum(drag_x: int, drag_y: int, tap_time_ms: int) -> str:
@@ -150,17 +157,34 @@ def _sample_action(
         drag_x = rng.randint(*x_ranges[x_bin])
         drag_y = rng.randint(*y_ranges[y_bin])
         tap = rng.randint(*tap_ranges[tap_bin])
+    elif policy == "trajectory_guided_direct_pig":
+        return _with_identity(
+            PLANNED_ACTION_IDENTITY_NAMESPACE,
+            "identity",
+            {
+                "action_index": action_index,
+                "selection_mode": "trajectory_guided_direct_pig",
+                "target_kind": "pig",
+                "target_rank": 0,
+                "aim_point": "visible_polygon_center",
+                "trajectory_arc": "low",
+                "tap_time_ms": 0,
+                "release_time_ms": ACTION_BOUNDS["release_time_ms"],
+                "action_stratum": GUIDED_ACTION_STRATUM,
+            },
+        )
     else:
         raise SuccessorCohortError("behavior policy is unsupported")
     value = {
         "action_index": action_index,
+        "selection_mode": "frozen_relative_drag",
         "drag_x": drag_x,
         "drag_y": drag_y,
         "tap_time_ms": tap,
         "release_time_ms": ACTION_BOUNDS["release_time_ms"],
         "action_stratum": _action_stratum(drag_x, drag_y, tap),
     }
-    return _with_identity("issue-62-planned-action-v1", "identity", value)
+    return _with_identity(PLANNED_ACTION_IDENTITY_NAMESPACE, "identity", value)
 
 
 def _lineage_slots(
@@ -169,14 +193,16 @@ def _lineage_slots(
     *,
     max_shots: int,
 ) -> list[dict[str, Any]]:
-    phase_offset = 6_200_000 if phase == "pilot" else 62_000_000
+    phase_offset = 6_300_000 if phase == "pilot" else 63_000_000
     slots = []
     global_ordinal = 0
     policy_action_counts = Counter()
     for role_index, role in enumerate(PUBLIC_ROLES):
         for role_ordinal in range(role_counts[role]):
             family = GENERATOR_FAMILIES[(role_ordinal + role_index) % 2]
-            policy = BEHAVIOR_POLICIES[(role_ordinal // 2 + role_index) % 2]
+            policy = BEHAVIOR_POLICIES[
+                (role_ordinal + role_index) % len(BEHAVIOR_POLICIES)
+            ]
             generation_seed = phase_offset + role_index * 1_000_000 + role_ordinal
             slot_payload = {
                 "phase": phase,
@@ -188,7 +214,7 @@ def _lineage_slots(
                 "behavior_policy": policy,
             }
             slot_identity = successor_identity(
-                "issue-62-scenario-lineage-slot-v1", slot_payload
+                "issue-62-scenario-lineage-slot-v2", slot_payload
             )
             rng = random.Random(f"{slot_identity}:actions")
             action_count = min(max_shots, int(family["authored_bird_count"]))
@@ -254,7 +280,7 @@ def validate_pilot_report(
         or value.get("accepted_lineage_count", 0) < 1
         or value.get("passed") is not True
         or value.get("identity")
-        != _expected_identity("issue-62-pilot-report-v1", "identity", value)
+        != _expected_identity(PILOT_REPORT_IDENTITY_NAMESPACE, "identity", value)
     ):
         raise SuccessorCohortError("pilot report is incomplete or stale")
     return value
@@ -352,6 +378,8 @@ def validate_successor_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
         or value.get("fixed_retry_limit") != 2
         or value.get("generator_families")
         != [dict(item) for item in GENERATOR_FAMILIES]
+        or set(value.get("behavior_policy_mixture", {}))
+        != set(BEHAVIOR_POLICIES)
         or set(value.get("role_counts", {})) != set(PUBLIC_ROLES)
         or value.get("identity")
         != _expected_identity(PLAN_IDENTITY_NAMESPACE, "identity", value)
@@ -390,19 +418,48 @@ def validate_successor_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
         if not isinstance(actions, list) or len(actions) != expected_action_count:
             raise SuccessorCohortError("successor lineage action plan is incomplete")
         for action_index, action in enumerate(actions):
-            if (
-                not isinstance(action, Mapping)
-                or action.get("action_index") != action_index
-                or action.get("release_time_ms")
-                != ACTION_BOUNDS["release_time_ms"]
-                or action.get("action_stratum")
-                != _action_stratum(
-                    action.get("drag_x"), action.get("drag_y"),
-                    action.get("tap_time_ms"),
+            if not isinstance(action, Mapping):
+                raise SuccessorCohortError("successor planned action is malformed")
+            common_valid = (
+                action.get("action_index") == action_index
+                and action.get("release_time_ms")
+                == ACTION_BOUNDS["release_time_ms"]
+                and action.get("identity")
+                == _expected_identity(
+                    PLANNED_ACTION_IDENTITY_NAMESPACE, "identity", action
                 )
-                or action.get("identity")
-                != _expected_identity("issue-62-planned-action-v1", "identity", action)
-            ):
+            )
+            if action.get("selection_mode") == "frozen_relative_drag":
+                mode_valid = (
+                    set(action) == {
+                        "action_index", "selection_mode", "drag_x", "drag_y",
+                        "tap_time_ms", "release_time_ms", "action_stratum",
+                        "identity",
+                    }
+                    and action.get("action_stratum")
+                    == _action_stratum(
+                        action.get("drag_x"), action.get("drag_y"),
+                        action.get("tap_time_ms"),
+                    )
+                )
+            else:
+                mode_valid = (
+                    set(action) == {
+                        "action_index", "selection_mode", "target_kind",
+                        "target_rank", "aim_point", "trajectory_arc",
+                        "tap_time_ms", "release_time_ms", "action_stratum",
+                        "identity",
+                    }
+                    and action.get("selection_mode")
+                    == "trajectory_guided_direct_pig"
+                    and action.get("target_kind") == "pig"
+                    and action.get("target_rank") == 0
+                    and action.get("aim_point") == "visible_polygon_center"
+                    and action.get("trajectory_arc") == "low"
+                    and action.get("tap_time_ms") == 0
+                    and action.get("action_stratum") == GUIDED_ACTION_STRATUM
+                )
+            if not common_valid or not mode_valid:
                 raise SuccessorCohortError("successor planned action is malformed")
         counts[role] += 1
         slots.add(slot["slot_identity"])

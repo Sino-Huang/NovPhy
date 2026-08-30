@@ -61,7 +61,9 @@ from world_model.data.successor_cohort import (
     ACTION_BOUNDS,
     GENERATOR_FAMILIES,
     PLAN_SCHEMA,
+    BEHAVIOR_POLICIES,
     PILOT_REPORT_SCHEMA,
+    PILOT_REPORT_IDENTITY_NAMESPACE,
     PUBLIC_ROLES,
     RELEASE_SCHEMA,
     TRAJECTORY_SCHEMA,
@@ -76,29 +78,30 @@ from world_model.data.successor_cohort import (
     validate_successor_plan,
 )
 from world_model.planning.gameplay import SlingshotAction, SlingshotActionBounds
+from world_model.planning.trajectory_guided import aim_directly_at_visible_pig
 from world_model.training.manifest import git_revision
 
 
 ROOT: Final = Path(__file__).resolve().parents[1]
 STAGE_ROOT: Final = ROOT / "sciencebirdsgames/aligned-observation-v1"
 DEFAULT_PILOT_PLAN: Final = (
-    ROOT / "docs/data_contracts/issue_62_pilot_plan_v2.json"
+    ROOT / "docs/data_contracts/issue_62_pilot_plan_v3.json"
 )
-DEFAULT_PILOT_RUNTIME: Final = ROOT / ".local-artifacts/issue-62-pilot-run-v2"
-DEFAULT_PILOT_REPORT: Final = ROOT / ".local-artifacts/issue-62-pilot-report-v2.json"
-DEFAULT_PILOT_AUDIT: Final = ROOT / "data/issue-62-pilot-audit-v2"
+DEFAULT_PILOT_RUNTIME: Final = ROOT / ".local-artifacts/issue-62-pilot-run-v3"
+DEFAULT_PILOT_REPORT: Final = ROOT / ".local-artifacts/issue-62-pilot-report-v3.json"
+DEFAULT_PILOT_AUDIT: Final = ROOT / "data/issue-62-pilot-audit-v3"
 DEFAULT_PRODUCTION_PLAN: Final = (
-    ROOT / ".local-artifacts/issue-62-production-plan.json"
+    ROOT / ".local-artifacts/issue-62-production-plan-v3.json"
 )
 DEFAULT_PRODUCTION_RUNTIME: Final = (
-    ROOT / ".local-artifacts/issue-62-production-run"
+    ROOT / ".local-artifacts/issue-62-production-run-v3"
 )
-DEFAULT_RELEASE: Final = ROOT / ".local-artifacts/issue-62-successor-cohort"
+DEFAULT_RELEASE: Final = ROOT / ".local-artifacts/issue-62-successor-cohort-v3"
 DEFAULT_SUMMARY: Final = (
-    ROOT / "data/runtime_evidence/issue-62/successor-cohort-summary.json"
+    ROOT / "data/runtime_evidence/issue-62/successor-cohort-summary-v3.json"
 )
 OBSERVATION_CONFIGURATION: Final = "agent_rgb8_native_v1"
-PILOT_AUDIT_FPS: Final = 25
+PILOT_AUDIT_FPS: Final = 50
 PILOT_ATTEMPT_AUDIT_STALLED_FRAME_LIMIT: Final = 250
 
 
@@ -239,7 +242,15 @@ def _synthetic_pilot_records(plan: Mapping[str, Any]) -> list[dict[str, Any]]:
             "action_strata": [
                 action["action_stratum"] for action in slot["planned_actions"][:2]
             ],
-            "interaction_coverage": ["collision"],
+            "interaction_coverage": (
+                ["collision", "collision:bird:pig", "non_bird_support_change"]
+                if slot["behavior_policy"] == "trajectory_guided_direct_pig"
+                else [
+                    "collision",
+                    "collision:bird:block",
+                    "non_bird_support_change",
+                ]
+            ),
             "wall_seconds": 1.0,
             "artifact_bytes": 1_000,
             "attempt_count": 1,
@@ -265,6 +276,15 @@ def _pilot_report(
     coverage = Counter(
         value for item in accepted for value in item["interaction_coverage"]
     )
+    interaction_lineages_by_role = {
+        role: Counter(
+            value
+            for item in accepted
+            if item["exposure_role"] == role
+            for value in item["interaction_coverage"]
+        )
+        for role in PUBLIC_ROLES
+    }
     action_strata = Counter(
         value for item in accepted for value in item["action_strata"]
     )
@@ -282,7 +302,12 @@ def _pilot_report(
         and {item["generator_family"] for item in accepted}
         == {item["name"] for item in GENERATOR_FAMILIES}
         and {item["behavior_policy"] for item in accepted}
-        == {"uniform_random", "stratified_bounds"}
+        == set(BEHAVIOR_POLICIES)
+        and all(
+            role_coverage["collision:bird:pig"] >= 1
+            and role_coverage["non_bird_support_change"] >= 1
+            for role_coverage in interaction_lineages_by_role.values()
+        )
     )
     payload = {
         "schema": PILOT_REPORT_SCHEMA,
@@ -305,6 +330,10 @@ def _pilot_report(
         },
         "coverage": {
             "interaction_counts": dict(sorted(coverage.items())),
+            "interaction_lineages_by_role": {
+                role: dict(sorted(counts.items()))
+                for role, counts in interaction_lineages_by_role.items()
+            },
             "action_stratum_counts": dict(sorted(action_strata.items())),
             "generator_family_counts": dict(sorted(Counter(
                 item["generator_family"] for item in accepted
@@ -343,7 +372,9 @@ def _pilot_report(
         "passed": passed,
     }
     report = dict(payload)
-    report["identity"] = successor_identity("issue-62-pilot-report-v1", payload)
+    report["identity"] = successor_identity(
+        PILOT_REPORT_IDENTITY_NAMESPACE, payload
+    )
     return report
 
 
@@ -726,13 +757,17 @@ def dry_run(pilot_plan_path: Path = DEFAULT_PILOT_PLAN) -> dict[str, Any]:
         maximum_training_lineages=200,
     )
     result = {
-        "schema": "issue_62_successor_cohort_dry_run_v1",
+        "schema": "issue_62_successor_cohort_dry_run_v2",
         "pilot_plan_identity": plan["identity"],
         "planned_pilot_lineages": len(plan["lineages"]),
         "public_roles": list(PUBLIC_ROLES),
         "generator_families": [item["name"] for item in GENERATOR_FAMILIES],
-        "behavior_policies": ["uniform_random", "stratified_bounds"],
-        "action_strata": 12,
+        "behavior_policies": list(BEHAVIOR_POLICIES),
+        "action_strata": len({
+            action["action_stratum"]
+            for slot in plan["lineages"]
+            for action in slot["planned_actions"]
+        }),
         "fixed_step_capture_stride": 1,
         "minimum_training_scale": 6,
         "first_larger_training_scale": 200,
@@ -750,7 +785,7 @@ def dry_run(pilot_plan_path: Path = DEFAULT_PILOT_PLAN) -> dict[str, Any]:
         "actual_commands": [
             (
                 "python -u -m scripts.run_issue_62_successor_cohort "
-                "--run-pilot --start-display --pilot-lineage-limit 2"
+                "--run-pilot --start-display --pilot-lineage-limit 6"
             ),
             "python -u -m scripts.run_issue_62_successor_cohort --run-pilot --start-display",
             (
@@ -779,7 +814,47 @@ def _bounds() -> SlingshotActionBounds:
     )
 
 
-def _terminal_status(state: GameState, exhausted: bool) -> str:
+def _resolve_planned_interface_action(
+    planned: Mapping[str, Any],
+    observation: Mapping[str, float],
+    bridge: Any,
+) -> dict[str, Any]:
+    if planned["selection_mode"] == "trajectory_guided_direct_pig":
+        aim = aim_directly_at_visible_pig(
+            bridge.get_symbolic_state_without_screenshot(),
+            observation,
+            _bounds(),
+            target_rank=int(planned["target_rank"]),
+            arc=str(planned["trajectory_arc"]),
+            tap_time_ms=int(planned["tap_time_ms"]),
+        )
+        action = aim.action.to_interface_action(
+            (int(observation["gameX"]), int(observation["gameY"])),
+            _bounds(),
+        )
+        action["selection_evidence"] = aim.evidence()
+        return action
+    action = SlingshotAction(
+        int(planned["drag_x"]),
+        int(planned["drag_y"]),
+        int(planned["tap_time_ms"]),
+    )
+    return action.to_interface_action(
+        (int(observation["gameX"]), int(observation["gameY"])),
+        _bounds(),
+    )
+
+
+def _terminal_status(
+    state: GameState,
+    exhausted: bool,
+    *,
+    physics_terminal_reason: str | None = None,
+) -> str:
+    if physics_terminal_reason == "level_clear":
+        return "success"
+    if physics_terminal_reason == "level_fail":
+        return "failure"
     if state is GameState.WON:
         return "success"
     if state in (GameState.LOST, GameState.EVALUATION_TERMINATED):
@@ -828,13 +903,14 @@ def _shot_record(
 ) -> dict[str, Any]:
     capture = load_physics_capture_v2(shot_root / "physics_capture_v2.json")
     observation = validate_observation_trace(shot_root / "observation-trace")
+    resolved_action = SlingshotAction.from_interface_action(prepared.action)
     engine_action = {
         "schema": "slingshot_relative_intervention_v1",
         "drag_delta_canvas_pixels": [
-            planned_action["drag_x"], planned_action["drag_y"]
+            resolved_action.drag_x, resolved_action.drag_y
         ],
-        "hold_milliseconds": planned_action["release_time_ms"],
-        "tap_time_milliseconds": planned_action["tap_time_ms"],
+        "hold_milliseconds": int(prepared.action["releaseTime"]),
+        "tap_time_milliseconds": resolved_action.tap_time_ms,
     }
     action = {
         "identity": planned_action["identity"],
@@ -965,6 +1041,7 @@ def _trajectory_record(
                 else _terminal_status(
                     final_state,
                     len(shot_records) == len(slot["planned_actions"]),
+                    physics_terminal_reason=shot_records[-1]["terminal_reason"],
                 )
             ),
         })
@@ -1058,16 +1135,12 @@ def _collect_lineage_attempt(
                 f"policy={slot['behavior_policy']} "
                 f"stratum={planned['action_stratum']}"
             )
-            action = SlingshotAction(
-                int(planned["drag_x"]),
-                int(planned["drag_y"]),
-                int(planned["tap_time_ms"]),
-            )
             prepared = prepare_screen_shot(
                 bridge,
-                lambda observation, selected=action: selected.to_interface_action(
-                    (int(observation["gameX"]), int(observation["gameY"])),
-                    _bounds(),
+                lambda observation, selected=planned: (
+                    _resolve_planned_interface_action(
+                        selected, observation, bridge
+                    )
                 ),
                 frame_height=480,
                 execution_speed=speed,
@@ -1125,7 +1198,11 @@ def _collect_lineage_attempt(
                 f"physics_terminal={shot_records[-1]['terminal_reason']} "
                 f"game_state={final_state.name}"
             )
-            if final_state is not GameState.PLAYING:
+            if (
+                final_state is not GameState.PLAYING
+                or shot_records[-1]["terminal_reason"]
+                in {"level_clear", "level_fail"}
+            ):
                 break
     finally:
         if bridge is not None:
@@ -1150,13 +1227,41 @@ def _directory_bytes(root: Path) -> int:
     return sum(path.stat().st_size for path in root.rglob("*") if path.is_file())
 
 
+def _runtime_entity_kind(entity_id: str) -> str:
+    parts = entity_id.split(":")
+    return parts[1] if len(parts) >= 3 and parts[0] == "runtime" else "unknown"
+
+
+def _non_bird_supports(sample: Mapping[str, Any]) -> set[tuple[str, str]]:
+    return {
+        (str(item["supporter_entity_id"]), str(item["supported_entity_id"]))
+        for item in sample["supports"]
+        if _runtime_entity_kind(str(item["supporter_entity_id"])) != "bird"
+        and _runtime_entity_kind(str(item["supported_entity_id"])) != "bird"
+    }
+
+
 def _interaction_coverage(trajectory_root: Path, record: Mapping[str, Any]) -> list[str]:
     events = set()
     for shot in record["shots"]:
         capture = load_physics_capture_v2(
             trajectory_root / shot["path"] / "physics_capture_v2.json"
         )
-        events.update(item["event_type"] for item in capture.record["events"])
+        for event in capture.record["events"]:
+            events.add(event["event_type"])
+            if event["event_type"] == "collision" and len(event["participants"]) == 2:
+                kinds = sorted(
+                    _runtime_entity_kind(str(entity_id))
+                    for entity_id in event["participants"]
+                )
+                if "bird" in kinds:
+                    kinds.remove("bird")
+                    kinds.insert(0, "bird")
+                events.add(f"collision:{kinds[0]}:{kinds[1]}")
+        samples = capture.record["fixed_step_samples"]
+        initial_supports = _non_bird_supports(samples[0])
+        if any(_non_bird_supports(sample) != initial_supports for sample in samples[1:]):
+            events.add("non_bird_support_change")
     return sorted(events)
 
 

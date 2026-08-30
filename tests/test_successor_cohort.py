@@ -22,10 +22,13 @@ from scripts.physics_capture_v2 import load_physics_capture_v2
 from scripts.run_issue_62_successor_cohort import (
     _bounds,
     _encode_agent_frames_webm,
+    _interaction_coverage,
     _materialize_slot,
     _materialized_bird_count,
     _pilot_report,
+    _resolve_planned_interface_action,
     _synthetic_pilot_records,
+    _terminal_status,
     _trajectory_record,
     dry_run,
     run_collection,
@@ -62,7 +65,11 @@ class SuccessorCohortPlanTests(unittest.TestCase):
         )
         self.assertEqual(
             {item["behavior_policy"] for item in first["lineages"]},
-            {"uniform_random", "stratified_bounds"},
+            {
+                "uniform_random",
+                "stratified_bounds",
+                "trajectory_guided_direct_pig",
+            },
         )
         self.assertEqual(
             len({item["generation_seed"] for item in first["lineages"]}), 36
@@ -86,6 +93,130 @@ class SuccessorCohortPlanTests(unittest.TestCase):
             for action in slot["planned_actions"]
         }
         self.assertEqual(len(stratified), 12)
+        for role in PUBLIC_ROLES:
+            counts = {
+                policy: sum(
+                    item["exposure_role"] == role
+                    and item["behavior_policy"] == policy
+                    for item in first["lineages"]
+                )
+                for policy in {
+                    "uniform_random",
+                    "stratified_bounds",
+                    "trajectory_guided_direct_pig",
+                }
+            }
+            self.assertEqual(set(counts.values()), {4})
+        guided_actions = [
+            action
+            for slot in first["lineages"]
+            if slot["behavior_policy"] == "trajectory_guided_direct_pig"
+            for action in slot["planned_actions"]
+        ]
+        self.assertTrue(guided_actions)
+        self.assertTrue(all(
+            action["selection_mode"] == "trajectory_guided_direct_pig"
+            and action["trajectory_arc"] == "low"
+            and action["target_kind"] == "pig"
+            for action in guided_actions
+        ))
+
+    def test_authoritative_physics_terminal_overrides_lagging_game_state(self) -> None:
+        self.assertEqual(
+            _terminal_status(
+                GameState.EVALUATION_TERMINATED,
+                exhausted=True,
+                physics_terminal_reason="level_clear",
+            ),
+            "success",
+        )
+        self.assertEqual(
+            _terminal_status(
+                GameState.PLAYING,
+                exhausted=False,
+                physics_terminal_reason="level_fail",
+            ),
+            "failure",
+        )
+
+    def test_guided_action_resolves_from_live_visible_pig_geometry(self) -> None:
+        plan = build_pilot_plan()
+        planned = next(
+            action
+            for slot in plan["lineages"]
+            if slot["behavior_policy"] == "trajectory_guided_direct_pig"
+            for action in slot["planned_actions"]
+        )
+        symbolic_state = [{
+            "features": [{
+                "properties": {"id": "pig-1", "label": "BasicSmallPig"},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                        [292.0, 212.0], [308.0, 212.0],
+                        [308.0, 228.0], [292.0, 228.0],
+                    ]],
+                },
+            }],
+        }]
+        bridge = SimpleNamespace(
+            get_symbolic_state_without_screenshot=lambda: symbolic_state
+        )
+        action = _resolve_planned_interface_action(
+            planned,
+            {
+                "gameX": 100.0,
+                "gameY": 180.0,
+                "canvasX": 100.0,
+                "canvasY": 300.0,
+                "pixelsPerWorldUnit": 32.0,
+            },
+            bridge,
+        )
+        self.assertGreater(action["drag_release"][1], 0)
+        self.assertEqual(
+            action["selection_evidence"]["target_id"], "pig-1"
+        )
+        self.assertLess(
+            action["selection_evidence"]["predicted_miss_pixels"], 1.0
+        )
+
+    def test_pilot_gate_requires_pig_hits_and_support_changes_in_every_role(self) -> None:
+        plan = build_pilot_plan()
+        records = _synthetic_pilot_records(plan)
+        self.assertTrue(_pilot_report(plan, records)["passed"])
+        for record in records:
+            if record["exposure_role"] == "model_selection":
+                record["interaction_coverage"] = [
+                    value
+                    for value in record["interaction_coverage"]
+                    if value != "collision:bird:pig"
+                ]
+        self.assertFalse(_pilot_report(plan, records)["passed"])
+
+    def test_interaction_coverage_classifies_pig_hit_and_support_change(self) -> None:
+        capture = SimpleNamespace(record={
+            "events": [{
+                "event_type": "collision",
+                "participants": ["runtime:pig:0000", "runtime:bird:0001"],
+            }],
+            "fixed_step_samples": [
+                {"supports": [{
+                    "supporter_entity_id": "runtime:platform:0000",
+                    "supported_entity_id": "runtime:pig:0000",
+                }]},
+                {"supports": []},
+            ],
+        })
+        with patch(
+            "scripts.run_issue_62_successor_cohort.load_physics_capture_v2",
+            return_value=capture,
+        ):
+            coverage = _interaction_coverage(
+                Path("/unused"), {"shots": [{"path": "shots/shot-000"}]}
+            )
+        self.assertIn("collision:bird:pig", coverage)
+        self.assertIn("non_bird_support_change", coverage)
 
     def test_materialized_birds_exactly_bound_each_family_action_plan(self) -> None:
         plan = build_pilot_plan()
@@ -374,6 +505,17 @@ class SuccessorCohortAuditTests(unittest.TestCase):
                 text=True,
             ).stdout.strip()
             self.assertEqual(codec, "vp8")
+            frame_rate = subprocess.run(
+                [
+                    "ffprobe", "-v", "error", "-select_streams", "v:0",
+                    "-show_entries", "stream=r_frame_rate",
+                    "-of", "default=nw=1:nk=1", str(output),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+            self.assertEqual(frame_rate, "50/1")
 
     def test_failed_attempt_audit_is_immediate_and_caps_stalled_frames(self) -> None:
         slot = build_pilot_plan()["lineages"][0]
