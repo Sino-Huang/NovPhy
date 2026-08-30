@@ -8,6 +8,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass
 from enum import StrEnum
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -67,6 +68,66 @@ class GameplayPlanningMode(StrEnum):
     CONTINUOUS_H1 = "continuous-h1"
     CONTINUOUS_H15 = "continuous-h15"
     ADAPTIVE = "adaptive"
+
+
+def gameplay_checkpoint_file_identity(path: Path) -> str:
+    """Return the content identity of one explicit gameplay checkpoint file."""
+
+    target = Path(path)
+    try:
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()
+    except OSError as error:
+        raise LineageScalingError(
+            f"cannot read gameplay checkpoint {target}: {error}"
+        ) from error
+    return f"sha256:{digest}"
+
+
+def gameplay_predictor_protocol_identity(path: Path) -> str:
+    """Read the retraining-protocol identity embedded in a predictor checkpoint."""
+
+    try:
+        payload = torch.load(Path(path), map_location="cpu", weights_only=True)
+        if not isinstance(payload, Mapping):
+            raise LineageScalingError("gameplay predictor checkpoint is not a mapping")
+        metadata = payload.get("metadata")
+        value = (
+            metadata.get("protocol_identity")
+            if isinstance(metadata, Mapping)
+            else payload.get("protocol_identity")
+        )
+        if not isinstance(value, str) or not value:
+            raise LineageScalingError(
+                "gameplay predictor checkpoint has no protocol identity"
+            )
+        return value
+    except (OSError, TypeError, ValueError, RuntimeError) as error:
+        if isinstance(error, LineageScalingError):
+            raise
+        raise LineageScalingError(
+            f"gameplay predictor checkpoint is invalid: {error}"
+        ) from error
+
+
+@dataclass(frozen=True, slots=True)
+class FrozenRankingState:
+    """One prospectively selected decision state for action-ranking evaluation."""
+
+    identity: str
+    scenario_lineage_identity: str
+    trajectory_identity: str
+    decision_transition_identity: str
+    exposure_role: str
+
+    def __post_init__(self) -> None:
+        if (
+            not self.identity
+            or not self.scenario_lineage_identity
+            or not self.trajectory_identity
+            or not self.decision_transition_identity
+            or self.exposure_role not in ("calibration", "model_selection")
+        ):
+            raise LineageScalingError("frozen ranking-state binding is invalid")
 
 
 @dataclass(frozen=True, slots=True)
@@ -152,6 +213,7 @@ class LineageScalingProtocol:
 
     training_scales: tuple[FrozenLineageScale, ...]
     evaluation_manifests: tuple[TrajectoryLineageManifest, ...]
+    ranking_states: tuple[FrozenRankingState, ...]
     training_seeds: tuple[int, ...]
     training_horizons: tuple[int, ...]
     optimizer_example_budget: int
@@ -226,6 +288,43 @@ class LineageScalingProtocol:
                 evaluation_lineages.add(binding.scenario_lineage_identity)
 
         if (
+            type(self.ranking_states) is not tuple
+            or not self.ranking_states
+            or any(type(item) is not FrozenRankingState for item in self.ranking_states)
+            or len({item.identity for item in self.ranking_states})
+            != len(self.ranking_states)
+            or len({
+                (item.trajectory_identity, item.decision_transition_identity)
+                for item in self.ranking_states
+            })
+            != len(self.ranking_states)
+            or {item.exposure_role for item in self.ranking_states}
+            != {"calibration", "model_selection"}
+        ):
+            raise LineageScalingError(
+                "protocol requires unique frozen ranking states for both evaluation roles"
+            )
+        evaluation_bindings = {
+            (binding.exposure_role, binding.scenario_lineage_identity): binding
+            for manifest in self.evaluation_manifests
+            for binding in manifest.bindings
+        }
+        for state in self.ranking_states:
+            binding = evaluation_bindings.get((
+                state.exposure_role,
+                state.scenario_lineage_identity,
+            ))
+            if (
+                binding is None
+                or state.trajectory_identity != binding.trajectory_identity
+                or state.decision_transition_identity
+                not in binding.transition_identities
+            ):
+                raise LineageScalingError(
+                    "frozen ranking state differs from its evaluation manifest"
+                )
+
+        if (
             type(self.training_seeds) is not tuple
             or len(self.training_seeds) < 3
             or len(set(self.training_seeds)) != len(self.training_seeds)
@@ -283,6 +382,16 @@ class LineageScalingProtocol:
                 for item in self.training_scales
             ),
             tuple(item.identity for item in self.evaluation_manifests),
+            tuple(
+                (
+                    item.identity,
+                    item.scenario_lineage_identity,
+                    item.trajectory_identity,
+                    item.decision_transition_identity,
+                    item.exposure_role,
+                )
+                for item in self.ranking_states
+            ),
             self.training_seeds,
             self.training_horizons,
             self.optimizer_example_budget,
@@ -408,6 +517,9 @@ def _protocol_payload(protocol: LineageScalingProtocol) -> dict[str, Any]:
         "evaluation_manifests": [
             _manifest_payload(item) for item in protocol.evaluation_manifests
         ],
+        "ranking_states": [
+            asdict(item) for item in protocol.ranking_states
+        ],
         "training_seeds": list(protocol.training_seeds),
         "training_horizons": list(protocol.training_horizons),
         "optimizer": {
@@ -450,6 +562,7 @@ def load_lineage_scaling_protocol(path: Path) -> LineageScalingProtocol:
             "identity",
             "training_scales",
             "evaluation_manifests",
+            "ranking_states",
             "training_seeds",
             "training_horizons",
             "optimizer",
@@ -487,6 +600,9 @@ def load_lineage_scaling_protocol(path: Path) -> LineageScalingProtocol:
             training_scales=tuple(scales),
             evaluation_manifests=tuple(
                 _manifest_from_payload(item) for item in raw_evaluation
+            ),
+            ranking_states=tuple(
+                FrozenRankingState(**item) for item in payload["ranking_states"]
             ),
             training_seeds=tuple(payload["training_seeds"]),
             training_horizons=tuple(payload["training_horizons"]),
@@ -821,6 +937,8 @@ def validate_carrier_alignment(
             raise LineageScalingError(
                 "carrier alignment changed a trajectory, transition, role, or carrier binding"
             )
+        _validate_window_coverage(source, (1, 15))
+        _validate_window_coverage(deployment, (1, 15))
         for source_transition, deployment_transition in zip(
             source.transitions, deployment.transitions, strict=True
         ):
@@ -1129,9 +1247,14 @@ class LineageScaledCheckpoint:
     carrier_identity: str
     predictor_config: PredictorConfig
     optimizer_examples: int
+    optimizer_steps: int
+    lineage_count: int
+    transition_count: int
     available_horizon_counts: tuple[tuple[int, int], ...]
     optimizer_horizon_counts: tuple[tuple[int, int], ...]
     epochs: float
+    final_loss: float
+    parameter_count: int
 
 
 def _checkpoint_identity(
@@ -1168,9 +1291,14 @@ def save_lineage_scaled_checkpoint(
         carrier_identity=report.carrier_identity,
         predictor_config=report.predictor_config,
         optimizer_examples=report.optimizer_examples,
+        optimizer_steps=report.optimizer_steps,
+        lineage_count=report.lineage_count,
+        transition_count=report.transition_count,
         available_horizon_counts=report.available_horizon_counts,
         optimizer_horizon_counts=report.optimizer_horizon_counts,
         epochs=report.epochs,
+        final_loss=report.final_loss,
+        parameter_count=report.parameter_count,
     )
     target.parent.mkdir(parents=True, exist_ok=True)
     torch.save(
@@ -1191,9 +1319,14 @@ def save_lineage_scaled_checkpoint(
                 "carrier_identity": metadata.carrier_identity,
                 "predictor_config": asdict(metadata.predictor_config),
                 "optimizer_examples": metadata.optimizer_examples,
+                "optimizer_steps": metadata.optimizer_steps,
+                "lineage_count": metadata.lineage_count,
+                "transition_count": metadata.transition_count,
                 "available_horizon_counts": metadata.available_horizon_counts,
                 "optimizer_horizon_counts": metadata.optimizer_horizon_counts,
                 "epochs": metadata.epochs,
+                "final_loss": metadata.final_loss,
+                "parameter_count": metadata.parameter_count,
             },
             "model_state": state,
         },
@@ -1233,6 +1366,9 @@ def load_lineage_scaled_checkpoint(
             carrier_identity=raw["carrier_identity"],
             predictor_config=config,
             optimizer_examples=raw["optimizer_examples"],
+            optimizer_steps=raw["optimizer_steps"],
+            lineage_count=raw["lineage_count"],
+            transition_count=raw["transition_count"],
             available_horizon_counts=tuple(
                 tuple(item) for item in raw["available_horizon_counts"]
             ),
@@ -1240,15 +1376,46 @@ def load_lineage_scaled_checkpoint(
                 tuple(item) for item in raw["optimizer_horizon_counts"]
             ),
             epochs=raw["epochs"],
+            final_loss=raw["final_loss"],
+            parameter_count=raw["parameter_count"],
         )
     except (OSError, KeyError, TypeError, ValueError, RuntimeError) as error:
         raise LineageScalingError(f"lineage-scaled checkpoint is invalid: {error}") from error
+    model = DualOutputPredictor(config)
+    try:
+        model.load_state_dict(state, strict=True)
+    except RuntimeError as error:
+        raise LineageScalingError(f"checkpoint weights are invalid: {error}") from error
     scale = protocol.scale(expected_cell.scale_name)
+    report = TrainingReport(
+        protocol_identity=metadata.protocol_identity,
+        cell=metadata.cell,
+        lineage_manifest_identity=metadata.lineage_manifest_identity,
+        source_release_identity=metadata.source_release_identity,
+        carrier_identity=metadata.carrier_identity,
+        predictor_config=metadata.predictor_config,
+        optimizer_examples=metadata.optimizer_examples,
+        optimizer_steps=metadata.optimizer_steps,
+        lineage_count=metadata.lineage_count,
+        transition_count=metadata.transition_count,
+        available_horizon_counts=metadata.available_horizon_counts,
+        optimizer_horizon_counts=metadata.optimizer_horizon_counts,
+        epochs=metadata.epochs,
+        final_loss=metadata.final_loss,
+        wall_seconds=0.0,
+        parameter_count=metadata.parameter_count,
+    )
     expected_identity = identity((
         "lineage-scaled-continuous-checkpoint-v1",
-        metadata.training_report_identity,
+        report.identity,
         state_identity,
     ))
+    expected_transition_count = sum(
+        len(binding.transition_identities) for binding in scale.bindings
+    )
+    expected_parameter_count = sum(
+        parameter.numel() for parameter in model.parameters()
+    )
     if (
         expected_cell not in protocol.cells
         or metadata.cell != expected_cell
@@ -1258,6 +1425,10 @@ def load_lineage_scaled_checkpoint(
         or metadata.source_release_identity != scale.source_release_identity
         or metadata.carrier_identity != protocol.carrier_identity(expected_cell.carrier)
         or metadata.optimizer_examples != protocol.optimizer_example_budget
+        or metadata.optimizer_steps
+        != math.ceil(protocol.optimizer_example_budget / protocol.batch_size)
+        or metadata.lineage_count != len(scale.bindings)
+        or metadata.transition_count != expected_transition_count
         or metadata.optimizer_horizon_counts
         != tuple(
             (
@@ -1267,17 +1438,20 @@ def load_lineage_scaled_checkpoint(
             )
             for horizon in protocol.training_horizons
         )
-        or {horizon for horizon, count in metadata.available_horizon_counts if count > 0}
-        != set(protocol.training_horizons)
+        or tuple(horizon for horizon, _count in metadata.available_horizon_counts)
+        != protocol.training_horizons
+        or any(count <= 0 for _horizon, count in metadata.available_horizon_counts)
+        or sum(count for _horizon, count in metadata.available_horizon_counts)
+        != expected_transition_count
+        or metadata.epochs
+        != metadata.optimizer_examples / expected_transition_count
+        or not math.isfinite(metadata.final_loss)
+        or metadata.parameter_count != expected_parameter_count
+        or metadata.training_report_identity != report.identity
         or metadata.model_state_identity != state_identity
         or metadata.identity != expected_identity
     ):
         raise LineageScalingError("checkpoint differs from its frozen training cell")
-    model = DualOutputPredictor(config)
-    try:
-        model.load_state_dict(state, strict=True)
-    except RuntimeError as error:
-        raise LineageScalingError(f"checkpoint weights are invalid: {error}") from error
     return model.to(torch.device(device)), metadata
 
 
@@ -1750,14 +1924,33 @@ def validate_action_ranking_states(
         raise LineageScalingError("action-ranking states crossed or omitted their role")
     role = states[0].exposure_role
     manifest = _evaluation_manifest_for_role(protocol, role)
+    expected_states = {
+        item.identity: item
+        for item in protocol.ranking_states
+        if item.exposure_role == role
+    }
+    states_by_identity = {item.identity: item for item in states}
+    if (
+        len(states_by_identity) != len(states)
+        or set(states_by_identity) != set(expected_states)
+    ):
+        raise LineageScalingError(
+            "ranking states differ from the prospectively frozen state set"
+        )
     bindings = {
         item.scenario_lineage_identity: item for item in manifest.bindings
     }
     expected_carrier_identity = protocol.carrier_identity(carrier)
     for state in states:
         binding = bindings.get(state.scenario_lineage_identity)
+        frozen = expected_states[state.identity]
         if (
             binding is None
+            or state.scenario_lineage_identity
+            != frozen.scenario_lineage_identity
+            or state.trajectory_identity != frozen.trajectory_identity
+            or state.decision_transition_identity
+            != frozen.decision_transition_identity
             or state.trajectory_identity != binding.trajectory_identity
             or state.decision_transition_identity not in binding.transition_identities
             or state.carrier is not carrier
@@ -1999,6 +2192,23 @@ class GameplayCheckpointBindings:
                 "legacy and retrained gameplay checkpoints must be explicit and distinct"
             )
         if (
+            self.legacy_predictor_identity
+            != gameplay_checkpoint_file_identity(self.legacy_predictor)
+            or self.retrained_predictor_identity
+            != gameplay_checkpoint_file_identity(self.retrained_predictor)
+            or self.adaptive_controller_identity
+            != gameplay_checkpoint_file_identity(self.adaptive_controller)
+        ):
+            raise LineageScalingError(
+                "gameplay checkpoint identity differs from the supplied file bytes"
+            )
+        if self.retrained_protocol_identity != gameplay_predictor_protocol_identity(
+            self.retrained_predictor
+        ):
+            raise LineageScalingError(
+                "retrained gameplay protocol differs from its checkpoint envelope"
+            )
+        if (
             not self.legacy_predictor_identity
             or not self.legacy_carrier_identity.startswith(
                 "cohort-v2-oracle-continuous-carrier-v1:"
@@ -2033,36 +2243,49 @@ def matched_gameplay_systems(
 ) -> tuple[GameplaySystemSpec, ...]:
     """Expose the same h1, h15, and adaptive MPC systems for both checkpoints."""
 
+    role_bindings = {
+        GameplayCheckpointRole.LEGACY: (
+            checkpoints.legacy_predictor,
+            checkpoints.legacy_predictor_identity,
+            checkpoints.legacy_carrier_identity,
+            "historical-issue-15",
+        ),
+        GameplayCheckpointRole.RETRAINED: (
+            checkpoints.retrained_predictor,
+            checkpoints.retrained_predictor_identity,
+            checkpoints.retrained_carrier_identity,
+            checkpoints.retrained_protocol_identity,
+        ),
+    }
+    mode_bindings = {
+        GameplayPlanningMode.CONTINUOUS_H1: (1, None, None),
+        GameplayPlanningMode.CONTINUOUS_H15: (15, None, None),
+        GameplayPlanningMode.ADAPTIVE: (
+            None,
+            checkpoints.adaptive_controller,
+            checkpoints.adaptive_controller_identity,
+        ),
+    }
     systems = []
-    for checkpoint_role, predictor in (
-        (GameplayCheckpointRole.LEGACY, checkpoints.legacy_predictor),
-        (GameplayCheckpointRole.RETRAINED, checkpoints.retrained_predictor),
-    ):
-        for mode, fixed_horizon in (
-            (GameplayPlanningMode.CONTINUOUS_H1, 1),
-            (GameplayPlanningMode.CONTINUOUS_H15, 15),
-            (GameplayPlanningMode.ADAPTIVE, None),
-        ):
+    for checkpoint_role, (
+        predictor,
+        predictor_identity,
+        carrier_identity,
+        predictor_protocol_identity,
+    ) in role_bindings.items():
+        for mode, (
+            fixed_horizon,
+            controller_checkpoint,
+            controller_identity,
+        ) in mode_bindings.items():
             system_identity = identity((
                 "lineage-scaled-gameplay-system-v1",
                 checkpoint_role,
                 mode,
                 str(predictor),
-                (
-                    checkpoints.legacy_predictor_identity
-                    if checkpoint_role is GameplayCheckpointRole.LEGACY
-                    else checkpoints.retrained_predictor_identity
-                ),
-                (
-                    str(checkpoints.adaptive_controller)
-                    if mode is GameplayPlanningMode.ADAPTIVE
-                    else None
-                ),
-                (
-                    checkpoints.adaptive_controller_identity
-                    if mode is GameplayPlanningMode.ADAPTIVE
-                    else None
-                ),
+                predictor_identity,
+                str(controller_checkpoint) if controller_checkpoint else None,
+                controller_identity,
                 protocol.identity,
             ))
             systems.append(GameplaySystemSpec(
@@ -2070,31 +2293,11 @@ def matched_gameplay_systems(
                 checkpoint_role=checkpoint_role,
                 mode=mode,
                 predictor_checkpoint=predictor,
-                predictor_checkpoint_identity=(
-                    checkpoints.legacy_predictor_identity
-                    if checkpoint_role is GameplayCheckpointRole.LEGACY
-                    else checkpoints.retrained_predictor_identity
-                ),
-                carrier_identity=(
-                    checkpoints.legacy_carrier_identity
-                    if checkpoint_role is GameplayCheckpointRole.LEGACY
-                    else checkpoints.retrained_carrier_identity
-                ),
-                predictor_protocol_identity=(
-                    "historical-issue-15"
-                    if checkpoint_role is GameplayCheckpointRole.LEGACY
-                    else checkpoints.retrained_protocol_identity
-                ),
-                controller_checkpoint=(
-                    checkpoints.adaptive_controller
-                    if mode is GameplayPlanningMode.ADAPTIVE
-                    else None
-                ),
-                controller_checkpoint_identity=(
-                    checkpoints.adaptive_controller_identity
-                    if mode is GameplayPlanningMode.ADAPTIVE
-                    else None
-                ),
+                predictor_checkpoint_identity=predictor_identity,
+                carrier_identity=carrier_identity,
+                predictor_protocol_identity=predictor_protocol_identity,
+                controller_checkpoint=controller_checkpoint,
+                controller_checkpoint_identity=controller_identity,
                 fixed_horizon=fixed_horizon,
                 protocol_identity=protocol.identity,
             ))
@@ -2122,6 +2325,109 @@ class LoadedGameplayPredictor:
 class LoadedAdaptiveHorizonSelector:
     selector: Callable[[PlanningObservation, SlingshotAction], int]
     checkpoint_identity: str
+
+
+def load_adaptive_horizon_checkpoint(
+    system: GameplaySystemSpec,
+) -> LoadedAdaptiveHorizonSelector:
+    """Load a small action-conditional h1/h15 controller checkpoint."""
+
+    if (
+        type(system) is not GameplaySystemSpec
+        or system.mode is not GameplayPlanningMode.ADAPTIVE
+        or system.controller_checkpoint is None
+    ):
+        raise LineageScalingError("adaptive controller loader requires an adaptive system")
+    try:
+        payload = torch.load(
+            system.controller_checkpoint,
+            map_location="cpu",
+            weights_only=True,
+        )
+        if not isinstance(payload, Mapping) or set(payload) != {
+            "schema",
+            "drag_y_threshold",
+            "below_horizon",
+            "at_or_above_horizon",
+        }:
+            raise LineageScalingError("adaptive controller checkpoint fields differ")
+        threshold = int(payload["drag_y_threshold"])
+        below = int(payload["below_horizon"])
+        at_or_above = int(payload["at_or_above_horizon"])
+        if (
+            payload["schema"] != "lineage_scaled_adaptive_horizon_checkpoint_v1"
+            or {below, at_or_above} != {1, 15}
+        ):
+            raise LineageScalingError("adaptive controller checkpoint is invalid")
+    except (OSError, TypeError, ValueError, RuntimeError) as error:
+        if isinstance(error, LineageScalingError):
+            raise
+        raise LineageScalingError(
+            f"adaptive controller checkpoint is invalid: {error}"
+        ) from error
+    if gameplay_checkpoint_file_identity(system.controller_checkpoint) != (
+        system.controller_checkpoint_identity
+    ):
+        raise LineageScalingError("adaptive controller checkpoint bytes changed")
+    return LoadedAdaptiveHorizonSelector(
+        selector=lambda _observation, action: (
+            below if action.drag_y < threshold else at_or_above
+        ),
+        checkpoint_identity=system.controller_checkpoint_identity,
+    )
+
+
+def load_gameplay_predictor_checkpoint(
+    system: GameplaySystemSpec,
+    predictor: DualOutputPredictor,
+    *,
+    device: str,
+) -> LoadedGameplayPredictor:
+    """Load the exact predictor weights named by a matched gameplay system."""
+
+    if type(system) is not GameplaySystemSpec or not isinstance(
+        predictor, DualOutputPredictor
+    ):
+        raise LineageScalingError("gameplay predictor loader inputs are invalid")
+    try:
+        payload = torch.load(
+            system.predictor_checkpoint,
+            map_location="cpu",
+            weights_only=True,
+        )
+        if not isinstance(payload, Mapping) or not isinstance(
+            payload.get("model_state"), Mapping
+        ):
+            raise LineageScalingError("gameplay predictor checkpoint has no model state")
+        state = payload["model_state"]
+        declared_state_identity = payload.get("model_state_identity")
+        if declared_state_identity is None and isinstance(
+            payload.get("metadata"), Mapping
+        ):
+            declared_state_identity = payload["metadata"].get(
+                "model_state_identity"
+            )
+        if declared_state_identity != cohort_v2_model_state_identity(state):
+            raise LineageScalingError("gameplay predictor model-state identity is stale")
+        predictor.load_state_dict(state, strict=True)
+    except (OSError, KeyError, TypeError, ValueError, RuntimeError) as error:
+        if isinstance(error, LineageScalingError):
+            raise
+        raise LineageScalingError(
+            f"gameplay predictor checkpoint is invalid: {error}"
+        ) from error
+    if gameplay_checkpoint_file_identity(system.predictor_checkpoint) != (
+        system.predictor_checkpoint_identity
+    ):
+        raise LineageScalingError("gameplay predictor checkpoint bytes changed")
+    predictor.to(torch.device(device)).eval()
+    return LoadedGameplayPredictor(
+        predictor=predictor,
+        checkpoint_role=system.checkpoint_role,
+        checkpoint_identity=system.predictor_checkpoint_identity,
+        carrier_identity=system.carrier_identity,
+        protocol_identity=system.predictor_protocol_identity,
+    )
 
 
 def build_matched_gameplay_planners(
@@ -2152,6 +2458,16 @@ def build_matched_gameplay_planners(
     selectors: dict[Path, LoadedAdaptiveHorizonSelector] = {}
     built = []
     for system in systems:
+        if gameplay_checkpoint_file_identity(system.predictor_checkpoint) != (
+            system.predictor_checkpoint_identity
+        ):
+            raise LineageScalingError("gameplay predictor checkpoint changed after binding")
+        if (
+            system.controller_checkpoint is not None
+            and gameplay_checkpoint_file_identity(system.controller_checkpoint)
+            != system.controller_checkpoint_identity
+        ):
+            raise LineageScalingError("gameplay controller checkpoint changed after binding")
         loaded_predictor = predictors.get(system.predictor_checkpoint)
         if loaded_predictor is None:
             loaded_predictor = predictor_loader(system)
@@ -2250,6 +2566,7 @@ __all__ = [
     "CarrierLineage",
     "ContinuousTransitionExample",
     "FrozenLineageScale",
+    "FrozenRankingState",
     "GameplayCheckpointBindings",
     "GameplayCheckpointRole",
     "GameplayPlanningMode",
@@ -2268,10 +2585,14 @@ __all__ = [
     "evaluate_action_ranking",
     "evaluate_continuous_prediction",
     "build_matched_gameplay_planners",
+    "gameplay_checkpoint_file_identity",
+    "gameplay_predictor_protocol_identity",
     "load_action_ranking_bundle",
+    "load_adaptive_horizon_checkpoint",
     "load_carrier_lineage_bundle",
     "load_lineage_scaling_protocol",
     "load_lineage_scaled_checkpoint",
+    "load_gameplay_predictor_checkpoint",
     "matched_gameplay_systems",
     "save_action_ranking_bundle",
     "save_carrier_lineage_bundle",

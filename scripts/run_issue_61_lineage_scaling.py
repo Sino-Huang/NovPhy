@@ -34,17 +34,19 @@ from world_model.training.lineage_scaling import (
     FrozenLineageScale,
     GameplayCheckpointBindings,
     LineageScalingError,
-    LoadedAdaptiveHorizonSelector,
-    LoadedGameplayPredictor,
     MatchedGameplayProtocol,
     TrainingCell,
     evaluate_action_ranking,
     evaluate_continuous_prediction,
     build_matched_gameplay_planners,
+    gameplay_checkpoint_file_identity,
+    gameplay_predictor_protocol_identity,
     load_action_ranking_bundle,
+    load_adaptive_horizon_checkpoint,
     load_carrier_lineage_bundle,
     load_lineage_scaling_protocol,
     load_lineage_scaled_checkpoint,
+    load_gameplay_predictor_checkpoint,
     save_lineage_scaled_checkpoint,
     matched_gameplay_systems,
     train_continuous_predictor,
@@ -694,32 +696,33 @@ def _dry_run(
         gameplay_protocol,
         GameplayCheckpointBindings(
             legacy_predictor=(root / args.legacy_gameplay_checkpoint).resolve(),
-            legacy_predictor_identity="dry-run-legacy-checkpoint",
+            legacy_predictor_identity=gameplay_checkpoint_file_identity(
+                (root / args.legacy_gameplay_checkpoint).resolve()
+            ),
             legacy_carrier_identity=source_codec.identity,
             retrained_predictor=(root / args.retrained_gameplay_checkpoint).resolve(),
-            retrained_predictor_identity="dry-run-retrained-checkpoint",
+            retrained_predictor_identity=gameplay_checkpoint_file_identity(
+                (root / args.retrained_gameplay_checkpoint).resolve()
+            ),
             retrained_carrier_identity=deployment_adapter.identity,
-            retrained_protocol_identity="dry-run-lineage-scaling-protocol",
+            retrained_protocol_identity=gameplay_predictor_protocol_identity(
+                (root / args.retrained_gameplay_checkpoint).resolve()
+            ),
             adaptive_controller=(root / args.adaptive_controller_checkpoint).resolve(),
-            adaptive_controller_identity="dry-run-adaptive-controller",
+            adaptive_controller_identity=gameplay_checkpoint_file_identity(
+                (root / args.adaptive_controller_checkpoint).resolve()
+            ),
         ),
     )
     gameplay_planners = build_matched_gameplay_planners(
         gameplay_protocol,
         gameplay_system_specs,
-        predictor_loader=lambda system: LoadedGameplayPredictor(
-            predictor=predictor,
-            checkpoint_role=system.checkpoint_role,
-            checkpoint_identity=system.predictor_checkpoint_identity,
-            carrier_identity=system.carrier_identity,
-            protocol_identity=system.predictor_protocol_identity,
+        predictor_loader=lambda system: load_gameplay_predictor_checkpoint(
+            system,
+            DualOutputPredictor(predictor.config),
+            device="cpu",
         ),
-        adaptive_selector_loader=lambda system: (
-            LoadedAdaptiveHorizonSelector(
-                selector=lambda _observation, _action: 15,
-                checkpoint_identity=system.controller_checkpoint_identity,
-            )
-        ),
+        adaptive_selector_loader=load_adaptive_horizon_checkpoint,
         progress=lambda value: print(value, flush=True),
     )
     plans = tuple(item.planner.plan(planning_observation) for item in gameplay_planners)

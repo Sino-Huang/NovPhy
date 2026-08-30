@@ -28,6 +28,7 @@ from world_model.training.lineage_scaling import (
     ContinuousTransitionExample,
     build_matched_gameplay_planners,
     FrozenLineageScale,
+    FrozenRankingState,
     GameplayCheckpointBindings,
     LineageScalingError,
     LineageScalingProtocol,
@@ -37,6 +38,8 @@ from world_model.training.lineage_scaling import (
     TrainingCell,
     evaluate_action_ranking,
     evaluate_continuous_prediction,
+    gameplay_checkpoint_file_identity,
+    gameplay_predictor_protocol_identity,
     load_carrier_lineage_bundle,
     load_action_ranking_bundle,
     load_lineage_scaling_protocol,
@@ -47,6 +50,7 @@ from world_model.training.lineage_scaling import (
     save_lineage_scaling_protocol,
     save_lineage_scaled_checkpoint,
     train_continuous_predictor,
+    validate_action_ranking_states,
     validate_matched_carrier_lineages,
     validate_lineage_scaled_checkpoint_matrix,
     validate_matched_action_ranking_states,
@@ -90,6 +94,26 @@ def _protocol(*, budget: int = 8) -> LineageScalingProtocol:
         evaluation_manifests=(
             _manifest("calibration", ("lineage:calibration:0",)),
             _manifest("model_selection", ("lineage:model-selection:0",)),
+        ),
+        ranking_states=(
+            FrozenRankingState(
+                identity="ranking-state:runner",
+                scenario_lineage_identity="lineage:calibration:0",
+                trajectory_identity="trajectory:lineage:calibration:0",
+                decision_transition_identity=(
+                    "transition:lineage:calibration:0:d0:h1"
+                ),
+                exposure_role="calibration",
+            ),
+            FrozenRankingState(
+                identity="ranking-state:0",
+                scenario_lineage_identity="lineage:model-selection:0",
+                trajectory_identity="trajectory:lineage:model-selection:0",
+                decision_transition_identity=(
+                    "transition:lineage:model-selection:0:d0:h1"
+                ),
+                exposure_role="model_selection",
+            ),
         ),
         training_seeds=(11, 12, 13),
         training_horizons=(1, 15),
@@ -277,6 +301,18 @@ class LineageScalingTrainingTests(unittest.TestCase):
                 (changed, *deployment[1:]),
             )
 
+        incomplete_source = (replace(source[0], decision_count=16), *source[1:])
+        incomplete_deployment = (
+            replace(deployment[0], decision_count=16),
+            *deployment[1:],
+        )
+        with self.assertRaisesRegex(LineageScalingError, "contiguous h1"):
+            validate_matched_carrier_lineages(
+                protocol,
+                incomplete_source,
+                incomplete_deployment,
+            )
+
     def test_training_uses_the_exact_example_budget_and_checkpoint_binding(self) -> None:
         protocol = _protocol(budget=8)
         cell = next(
@@ -314,6 +350,18 @@ class LineageScalingTrainingTests(unittest.TestCase):
                 model.state_dict().values(), loaded.state_dict().values(), strict=True
             ):
                 torch.testing.assert_close(expected, actual)
+
+            tampered_path = Path(temporary) / "tampered.pt"
+            tampered = torch.load(path, map_location="cpu", weights_only=True)
+            tampered["metadata"]["epochs"] = 99.0
+            torch.save(tampered, tampered_path)
+            with self.assertRaisesRegex(LineageScalingError, "checkpoint"):
+                load_lineage_scaled_checkpoint(
+                    tampered_path,
+                    protocol,
+                    expected_cell=cell,
+                    device="cpu",
+                )
 
             wrong_cell = replace(cell, carrier=CarrierKind.SOURCE)
             with self.assertRaisesRegex(LineageScalingError, "checkpoint"):
@@ -454,10 +502,41 @@ class LineageScalingTrainingTests(unittest.TestCase):
             ),),
         )
         self.assertEqual(matched["candidate_count"], 2)
+        extra_state = FrozenRankingState(
+            identity="ranking-state:1",
+            scenario_lineage_identity="lineage:model-selection:0",
+            trajectory_identity="trajectory:lineage:model-selection:0",
+            decision_transition_identity=(
+                "transition:lineage:model-selection:0:d1:h1"
+            ),
+            exposure_role="model_selection",
+        )
+        expanded_protocol = replace(
+            protocol,
+            ranking_states=(*protocol.ranking_states, extra_state),
+        )
+        with self.assertRaisesRegex(LineageScalingError, "frozen state set"):
+            validate_action_ranking_states(
+                expanded_protocol,
+                (state,),
+                carrier=CarrierKind.SOURCE,
+            )
 
 
 class LineageScalingGameplayTests(unittest.TestCase):
     def test_gameplay_systems_bind_explicit_checkpoints_and_matched_limits(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        checkpoint_root = Path(temporary.name)
+        legacy_path = checkpoint_root / "legacy.pt"
+        retrained_path = checkpoint_root / "retrained.pt"
+        controller_path = checkpoint_root / "controller.pt"
+        legacy_path.write_bytes(b"legacy-checkpoint-fixture")
+        torch.save(
+            {"protocol_identity": "retrained-protocol:fixture"},
+            retrained_path,
+        )
+        controller_path.write_bytes(b"controller-checkpoint-fixture")
         protocol = MatchedGameplayProtocol(
             action_candidate_set_identity="legal-actions:v1",
             cost_terms_identity="gameplay-cost:v1",
@@ -486,17 +565,23 @@ class LineageScalingGameplayTests(unittest.TestCase):
             controller_compute=2.0,
         )
         bindings = GameplayCheckpointBindings(
-            legacy_predictor=Path("/checkpoints/legacy.pt"),
-            legacy_predictor_identity="legacy-checkpoint:fixture",
+            legacy_predictor=legacy_path,
+            legacy_predictor_identity=gameplay_checkpoint_file_identity(legacy_path),
             legacy_carrier_identity=CohortV2StateCodec(
                 latent_dim=15, max_entities=1
             ).identity,
-            retrained_predictor=Path("/checkpoints/retrained.pt"),
-            retrained_predictor_identity="retrained-checkpoint:fixture",
+            retrained_predictor=retrained_path,
+            retrained_predictor_identity=gameplay_checkpoint_file_identity(
+                retrained_path
+            ),
             retrained_carrier_identity=TemporalVisualCarrierAdapter.identity,
-            retrained_protocol_identity="retrained-protocol:fixture",
-            adaptive_controller=Path("/checkpoints/controller.pt"),
-            adaptive_controller_identity="controller-checkpoint:fixture",
+            retrained_protocol_identity=gameplay_predictor_protocol_identity(
+                retrained_path
+            ),
+            adaptive_controller=controller_path,
+            adaptive_controller_identity=gameplay_checkpoint_file_identity(
+                controller_path
+            ),
         )
 
         systems = matched_gameplay_systems(protocol, bindings)
@@ -564,6 +649,25 @@ class LineageScalingGameplayTests(unittest.TestCase):
             {"continuous-h1": 1, "continuous-h15": 15, "adaptive": 15},
         )
         self.assertEqual({item.control.max_shots for item in built}, {6})
+        controller_path.write_bytes(b"changed-controller-checkpoint")
+        with self.assertRaisesRegex(LineageScalingError, "changed after binding"):
+            build_matched_gameplay_planners(
+                protocol,
+                systems,
+                predictor_loader=lambda system: LoadedGameplayPredictor(
+                    predictor=predictor,
+                    checkpoint_role=system.checkpoint_role,
+                    checkpoint_identity=system.predictor_checkpoint_identity,
+                    carrier_identity=system.carrier_identity,
+                    protocol_identity=system.predictor_protocol_identity,
+                ),
+                adaptive_selector_loader=lambda system: (
+                    LoadedAdaptiveHorizonSelector(
+                        selector=lambda _observation, _action: 15,
+                        checkpoint_identity=system.controller_checkpoint_identity,
+                    )
+                ),
+            )
 
     def test_unbuffered_runner_trains_one_explicit_cell(self) -> None:
         protocol = _protocol(budget=4)
