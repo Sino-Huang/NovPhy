@@ -151,6 +151,76 @@ class CohortV2Rollout:
     frame_records: tuple[CohortV2CentralFrameRecord, ...]
 
 
+def build_cohort_v2_central_frame_records(
+    capture: Any,
+    derivations: Mapping[str, Mapping[str, Any]],
+) -> tuple[CohortV2CentralFrameRecord, ...]:
+    """Join one physics-v2 trace to its exact fixed-step derivations."""
+    samples = capture.record["fixed_step_samples"]
+    capture_frame_records = capture.record["frame_records"]
+    micro = derivations["micro"]["labels"]
+    macro = derivations["macro"]["labels"]
+    violations = derivations["physical-violations"]["labels"]
+    step_sequences = [
+        tuple(item["fixed_step"] for item in values)
+        for values in (
+            samples, capture_frame_records, micro, macro, violations
+        )
+    ]
+    if len(set(step_sequences)) != 1:
+        raise CohortV2IngestionError(
+            "Primary and derived fixed-step sequences are misaligned"
+        )
+    events_by_step: dict[int, list[Mapping[str, Any]]] = {}
+    for event in capture.record["events"]:
+        events_by_step.setdefault(event["fixed_step"], []).append(event)
+    terminal = capture.record["terminal_evidence"]
+    if terminal["fixed_step"] != step_sequences[0][-1]:
+        raise CohortV2IngestionError(
+            "Terminal record is not aligned to the last fixed step"
+        )
+    frame_records = []
+    for sample, frame_record, micro_label, macro_label, violation_label in zip(
+        samples,
+        capture_frame_records,
+        micro,
+        macro,
+        violations,
+        strict=True,
+    ):
+        step = sample["fixed_step"]
+        identity = (
+            f"cohort-v2-central-frame-record-v1:{capture.capture_id}:"
+            f"{frame_record['state_id']}"
+        )
+        labels = {
+            "contact": micro_label["predicates"]["contact"],
+            "supports": micro_label["predicates"]["supports"],
+            "steady-state": macro_label["predicates"]["steady-state"],
+            "structure-unstable": macro_label["predicates"][
+                "structure-unstable"
+            ],
+            "excess_penetration": violation_label["predicates"][
+                "excess_penetration"
+            ],
+            "unsupported_stationary_or_floating_body": violation_label[
+                "predicates"
+            ]["unsupported_stationary_or_floating_body"],
+        }
+        frame_records.append(CohortV2CentralFrameRecord(
+            identity=identity,
+            capture_id=capture.capture_id,
+            state_id=frame_record["state_id"],
+            fixed_step=step,
+            capture_stride=capture.configured_fixed_step_capture_stride,
+            engine_state=_freeze(sample),
+            events=tuple(_freeze(item) for item in events_by_step.get(step, ())),
+            labels=_freeze(labels),
+            terminal=_freeze(terminal) if step == terminal["fixed_step"] else None,
+        ))
+    return tuple(frame_records)
+
+
 @dataclass(frozen=True, slots=True)
 class CohortV2OracleWindow:
     source_release_identity: str
@@ -636,61 +706,7 @@ class CohortV2ReleaseReader:
         capture: Any,
         derivations: Mapping[str, Mapping[str, Any]],
     ) -> tuple[CohortV2CentralFrameRecord, ...]:
-        samples = capture.record["fixed_step_samples"]
-        capture_frame_records = capture.record["frame_records"]
-        micro = derivations["micro"]["labels"]
-        macro = derivations["macro"]["labels"]
-        violations = derivations["physical-violations"]["labels"]
-        step_sequences = [
-            tuple(item["fixed_step"] for item in values)
-            for values in (
-                samples, capture_frame_records, micro, macro, violations
-            )
-        ]
-        if len(set(step_sequences)) != 1:
-            raise CohortV2IngestionError("Primary and derived fixed-step sequences are misaligned")
-        events_by_step: dict[int, list[Mapping[str, Any]]] = {}
-        for event in capture.record["events"]:
-            events_by_step.setdefault(event["fixed_step"], []).append(event)
-        terminal = capture.record["terminal_evidence"]
-        if terminal["fixed_step"] != step_sequences[0][-1]:
-            raise CohortV2IngestionError("Terminal record is not aligned to the last fixed step")
-        frame_records = []
-        for sample, frame_record, micro_label, macro_label, violation_label in zip(
-            samples,
-            capture_frame_records,
-            micro,
-            macro,
-            violations,
-            strict=True,
-        ):
-            step = sample["fixed_step"]
-            identity = (
-                f"cohort-v2-central-frame-record-v1:{capture.capture_id}:"
-                f"{frame_record['state_id']}"
-            )
-            labels = {
-                "contact": micro_label["predicates"]["contact"],
-                "supports": micro_label["predicates"]["supports"],
-                "steady-state": macro_label["predicates"]["steady-state"],
-                "structure-unstable": macro_label["predicates"]["structure-unstable"],
-                "excess_penetration": violation_label["predicates"]["excess_penetration"],
-                "unsupported_stationary_or_floating_body": violation_label["predicates"][
-                    "unsupported_stationary_or_floating_body"
-                ],
-            }
-            frame_records.append(CohortV2CentralFrameRecord(
-                identity=identity,
-                capture_id=capture.capture_id,
-                state_id=frame_record["state_id"],
-                fixed_step=step,
-                capture_stride=capture.configured_fixed_step_capture_stride,
-                engine_state=_freeze(sample),
-                events=tuple(_freeze(item) for item in events_by_step.get(step, ())),
-                labels=_freeze(labels),
-                terminal=_freeze(terminal) if step == terminal["fixed_step"] else None,
-            ))
-        return tuple(frame_records)
+        return build_cohort_v2_central_frame_records(capture, derivations)
 
     def load_observation(
         self, rollout: CohortV2Rollout, *, observation_role: str

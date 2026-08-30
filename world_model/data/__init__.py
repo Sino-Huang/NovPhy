@@ -123,6 +123,10 @@ def __getattr__(name: str):
         from world_model.data import cohort_v2  # noqa: PLC0415
 
         return getattr(cohort_v2, name)
+    if name in ("SuccessorCohortError", "SuccessorCohortReader"):
+        from world_model.data import successor_cohort  # noqa: PLC0415
+
+        return getattr(successor_cohort, name)
     if name in (
         "FrameReadError",
         "NoEligibleTemporalWindowError",
@@ -194,6 +198,8 @@ __all__ = [
     "RequiredCapabilityError",
     "ShotAction",
     "ShotRecord",
+    "SuccessorCohortError",
+    "SuccessorCohortReader",
     "SidecarPath",
     "SplitName",
     "TemporalWindowDataset",
