@@ -49,7 +49,7 @@ BEHAVIOR_POLICIES: Final = (
     "stratified_bounds",
     "trajectory_guided_direct_pig",
 )
-GUIDED_ACTION_STRATUM: Final = "direct_pig__lowest_clear_arc__tap_early"
+GUIDED_ACTION_STRATUM: Final = "direct_pig__lowest_clear_full_pull__tap_early"
 ACTION_BOUNDS: Final = {
     "drag_x": [-160, -10],
     "drag_y": [-80, 80],
@@ -167,8 +167,12 @@ def _sample_action(
                 "target_kind": "pig",
                 "target_rank": 0,
                 "aim_point": "visible_polygon_upper_edge",
-                "trajectory_arc": "lowest_clear",
-                "clearance_model": "live_bird_radius_inflated_visible_obstacles",
+                "trajectory_arc": "lowest_clear_full_pull",
+                "minimum_pull": "trajectory_drag_radius",
+                "clearance_model": "near_target_margin_inflated_obstacles",
+                "bird_radius_world": 0.17,
+                "clearance_margin_world": 0.34,
+                "clearance_margin_minimum_target_distance_world": 8.0,
                 "tap_time_ms": 0,
                 "release_time_ms": ACTION_BOUNDS["release_time_ms"],
                 "action_stratum": GUIDED_ACTION_STRATUM,
@@ -186,6 +190,13 @@ def _sample_action(
         "action_stratum": _action_stratum(drag_x, drag_y, tap),
     }
     return _with_identity(PLANNED_ACTION_IDENTITY_NAMESPACE, "identity", value)
+
+
+def _planned_action_count(
+    family: Mapping[str, Any], policy: str, max_shots: int
+) -> int:
+    count = min(max_shots, int(family["authored_bird_count"]))
+    return min(count, 2) if policy == "trajectory_guided_direct_pig" else count
 
 
 def _lineage_slots(
@@ -218,7 +229,7 @@ def _lineage_slots(
                 "issue-62-scenario-lineage-slot-v3", slot_payload
             )
             rng = random.Random(f"{slot_identity}:actions")
-            action_count = min(max_shots, int(family["authored_bird_count"]))
+            action_count = _planned_action_count(family, policy, max_shots)
             actions = [
                 _sample_action(
                     rng,
@@ -412,9 +423,10 @@ def validate_successor_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
         ):
             raise SuccessorCohortError("successor lineage slot is invalid or reused")
         actions = slot["planned_actions"]
-        expected_action_count = min(
-            value["max_shots"],
-            int(families[slot["generator_family"]]["authored_bird_count"]),
+        expected_action_count = _planned_action_count(
+            families[slot["generator_family"]],
+            str(slot["behavior_policy"]),
+            int(value["max_shots"]),
         )
         if not isinstance(actions, list) or len(actions) != expected_action_count:
             raise SuccessorCohortError("successor lineage action plan is incomplete")
@@ -449,6 +461,10 @@ def validate_successor_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
                         "action_index", "selection_mode", "target_kind",
                         "target_rank", "aim_point", "trajectory_arc",
                         "clearance_model",
+                        "bird_radius_world",
+                        "clearance_margin_world",
+                        "clearance_margin_minimum_target_distance_world",
+                        "minimum_pull",
                         "tap_time_ms", "release_time_ms", "action_stratum",
                         "identity",
                     }
@@ -457,9 +473,15 @@ def validate_successor_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
                     and action.get("target_kind") == "pig"
                     and action.get("target_rank") == 0
                     and action.get("aim_point") == "visible_polygon_upper_edge"
-                    and action.get("trajectory_arc") == "lowest_clear"
+                    and action.get("trajectory_arc") == "lowest_clear_full_pull"
+                    and action.get("minimum_pull") == "trajectory_drag_radius"
                     and action.get("clearance_model")
-                    == "live_bird_radius_inflated_visible_obstacles"
+                    == "near_target_margin_inflated_obstacles"
+                    and action.get("bird_radius_world") == 0.17
+                    and action.get("clearance_margin_world") == 0.34
+                    and action.get(
+                        "clearance_margin_minimum_target_distance_world"
+                    ) == 8.0
                     and action.get("tap_time_ms") == 0
                     and action.get("action_stratum") == GUIDED_ACTION_STRATUM
                 )

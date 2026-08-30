@@ -75,10 +75,19 @@ class SuccessorCohortPlanTests(unittest.TestCase):
         self.assertEqual(
             len({item["generation_seed"] for item in first["lineages"]}), 36
         )
-        expected_action_counts = {"type010101": 1, "type010102": 3}
+        expected_action_counts = {
+            ("type010101", "uniform_random"): 1,
+            ("type010101", "stratified_bounds"): 1,
+            ("type010101", "trajectory_guided_direct_pig"): 1,
+            ("type010102", "uniform_random"): 3,
+            ("type010102", "stratified_bounds"): 3,
+            ("type010102", "trajectory_guided_direct_pig"): 2,
+        }
         self.assertTrue(all(
             len(item["planned_actions"])
-            == expected_action_counts[item["generator_family"]]
+            == expected_action_counts[
+                (item["generator_family"], item["behavior_policy"])
+            ]
             for item in first["lineages"]
         ))
         for role in PUBLIC_ROLES:
@@ -117,11 +126,15 @@ class SuccessorCohortPlanTests(unittest.TestCase):
         self.assertTrue(guided_actions)
         self.assertTrue(all(
             action["selection_mode"] == "trajectory_guided_direct_pig_clearance"
-            and action["trajectory_arc"] == "lowest_clear"
+            and action["trajectory_arc"] == "lowest_clear_full_pull"
+            and action["minimum_pull"] == "trajectory_drag_radius"
             and action["target_kind"] == "pig"
             and action["aim_point"] == "visible_polygon_upper_edge"
             and action["clearance_model"]
-            == "live_bird_radius_inflated_visible_obstacles"
+            == "near_target_margin_inflated_obstacles"
+            and action["bird_radius_world"] == 0.17
+            and action["clearance_margin_world"] == 0.34
+            and action["clearance_margin_minimum_target_distance_world"] == 8.0
             for action in guided_actions
         ))
 
@@ -266,7 +279,7 @@ class SuccessorCohortPlanTests(unittest.TestCase):
         self.assertIn("collision:bird:pig", coverage)
         self.assertIn("non_bird_support_change", coverage)
 
-    def test_materialized_birds_exactly_bound_each_family_action_plan(self) -> None:
+    def test_action_plan_never_exceeds_materialized_birds(self) -> None:
         plan = build_pilot_plan()
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -276,9 +289,9 @@ class SuccessorCohortPlanTests(unittest.TestCase):
                     if item["generator_family"] == family
                 )
                 authority = _materialize_slot(slot, root / family)
-                self.assertEqual(
-                    _materialized_bird_count(authority["xml_path"]),
+                self.assertLessEqual(
                     len(slot["planned_actions"]),
+                    _materialized_bird_count(authority["xml_path"]),
                 )
 
     def test_production_membership_is_nested_and_pilot_bound(self) -> None:

@@ -728,11 +728,10 @@ def dry_run(pilot_plan_path: Path = DEFAULT_PILOT_PLAN) -> dict[str, Any]:
                 if item["generator_family"] == family["name"]
             )
             authority = _materialize_slot(slot, root / str(family["name"]))
-            if _materialized_bird_count(authority["xml_path"]) != len(
-                slot["planned_actions"]
-            ):
+            bird_count = _materialized_bird_count(authority["xml_path"])
+            if not 1 <= len(slot["planned_actions"]) <= bird_count:
                 raise SuccessorCohortError(
-                    "dry-run planned actions differ from materialized authored birds"
+                    "dry-run planned actions exceed materialized authored birds"
                 )
             manifests.append(authority["scenario"].scenario_manifest)
         if len({item.scenario_lineage.identity for item in manifests}) != 2:
@@ -827,6 +826,11 @@ def _resolve_planned_interface_action(
             target_rank=int(planned["target_rank"]),
             arc=str(planned["trajectory_arc"]),
             aim_point=str(planned["aim_point"]),
+            bird_radius_world=float(planned["bird_radius_world"]),
+            clearance_margin_world=float(planned["clearance_margin_world"]),
+            clearance_margin_minimum_target_distance_world=float(
+                planned["clearance_margin_minimum_target_distance_world"]
+            ),
             tap_time_ms=int(planned["tap_time_ms"]),
         )
         action = aim.action.to_interface_action(
@@ -1086,9 +1090,9 @@ def _collect_lineage_attempt(
     authority = _materialize_slot(slot, attempt_root)
     scenario = authority["scenario"]
     bird_count = _materialized_bird_count(authority["xml_path"])
-    if len(slot["planned_actions"]) != bird_count:
+    if not 1 <= len(slot["planned_actions"]) <= bird_count:
         raise SuccessorCohortError(
-            "planned action count differs from materialized authored birds"
+            "planned action count exceeds materialized authored birds"
         )
     _install_level(game, authority["xml_path"], slot["slot_identity"])
     agent_port = free_port()

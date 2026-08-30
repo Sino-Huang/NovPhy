@@ -33,7 +33,13 @@ class TrajectoryGuidedAim:
     target_polygon_bounds: tuple[float, float, float, float]
     obstacle_clearance: str
     cleared_obstacle_ids: tuple[str, ...]
+    margin_applied_obstacle_ids: tuple[str, ...]
     bird_radius_pixels: float
+    bird_radius_world: float
+    clearance_margin_pixels: float
+    clearance_margin_world: float
+    target_distance_world: float
+    clearance_margin_minimum_target_distance_world: float
 
     def evidence(self) -> dict[str, Any]:
         return {
@@ -48,7 +54,17 @@ class TrajectoryGuidedAim:
             "target_polygon_bounds": list(self.target_polygon_bounds),
             "obstacle_clearance": self.obstacle_clearance,
             "cleared_obstacle_ids": list(self.cleared_obstacle_ids),
+            "margin_applied_obstacle_ids": list(
+                self.margin_applied_obstacle_ids
+            ),
             "bird_radius_pixels": self.bird_radius_pixels,
+            "bird_radius_world": self.bird_radius_world,
+            "clearance_margin_pixels": self.clearance_margin_pixels,
+            "clearance_margin_world": self.clearance_margin_world,
+            "target_distance_world": self.target_distance_world,
+            "clearance_margin_minimum_target_distance_world": (
+                self.clearance_margin_minimum_target_distance_world
+            ),
             "preview_model": {
                 "maximum_launch_speed": TRAJECTORY_MAX_LAUNCH_SPEED,
                 "launch_gravity_scale": TRAJECTORY_LAUNCH_GRAVITY,
@@ -230,16 +246,25 @@ def _trajectory_is_clear(
     obstacles: tuple[dict[str, Any], ...],
     *,
     bird_radius: float,
+    clearance_margin: float,
+    apply_clearance_margin: bool,
     horizon_x: float,
+    target_left: float,
 ) -> bool:
     inflated = [
         (
-            obstacle["bounds"][0] - bird_radius,
-            obstacle["bounds"][1] - bird_radius,
-            obstacle["bounds"][2] + bird_radius,
-            obstacle["bounds"][3] + bird_radius,
+            obstacle["bounds"][0] - radius,
+            obstacle["bounds"][1] - radius,
+            obstacle["bounds"][2] + radius,
+            obstacle["bounds"][3] + radius,
         )
         for obstacle in obstacles
+        for gap in (target_left - obstacle["bounds"][2],)
+        for radius in (
+            bird_radius + clearance_margin
+            if apply_clearance_margin and 0 <= gap <= bird_radius
+            else bird_radius,
+        )
     ]
     for start, end in zip(points, points[1:]):
         if start[0] >= horizon_x:
@@ -259,26 +284,6 @@ def _trajectory_is_clear(
     return True
 
 
-def _bird_radius(
-    polygons: tuple[dict[str, Any], ...], sling_x: float, sling_y: float
-) -> float:
-    birds = [item for item in polygons if "bird" in item["label"].lower()]
-    if not birds:
-        raise TrajectoryGuidedAimError("the live bird polygon is unavailable")
-    bird = min(
-        birds,
-        key=lambda item: math.hypot(
-            item["center"][0] - sling_x, item["center"][1] - sling_y
-        ),
-    )
-    width = bird["bounds"][2] - bird["bounds"][0]
-    height = bird["bounds"][3] - bird["bounds"][1]
-    radius = max(width, height) / 2.0
-    if radius <= 0:
-        raise TrajectoryGuidedAimError("the live bird polygon has no volume")
-    return radius
-
-
 def aim_directly_at_visible_pig(
     symbolic_state: Any,
     slingshot_reference: Mapping[str, float],
@@ -287,11 +292,14 @@ def aim_directly_at_visible_pig(
     target_rank: int,
     arc: str,
     aim_point: str,
+    bird_radius_world: float,
+    clearance_margin_world: float,
+    clearance_margin_minimum_target_distance_world: float,
     tap_time_ms: int,
 ) -> TrajectoryGuidedAim:
-    if arc != "lowest_clear":
+    if arc != "lowest_clear_full_pull":
         raise TrajectoryGuidedAimError(
-            "only the frozen lowest-clear trajectory rule is supported"
+            "only the frozen lowest-clear full-pull trajectory rule is supported"
         )
     polygons = _visible_polygons(symbolic_state)
     targets = tuple(sorted(
@@ -310,7 +318,24 @@ def aim_directly_at_visible_pig(
     pixels_per_world_unit = float(slingshot_reference["pixelsPerWorldUnit"])
     if pixels_per_world_unit <= 0 or target_x <= sling_x:
         raise TrajectoryGuidedAimError("the visible pig is outside direct trajectory range")
-    bird_radius = _bird_radius(polygons, sling_x, sling_y)
+    if not math.isfinite(bird_radius_world) or bird_radius_world <= 0:
+        raise TrajectoryGuidedAimError("the frozen bird radius is invalid")
+    if not math.isfinite(clearance_margin_world) or clearance_margin_world < 0:
+        raise TrajectoryGuidedAimError("the frozen clearance margin is invalid")
+    if (
+        not math.isfinite(clearance_margin_minimum_target_distance_world)
+        or clearance_margin_minimum_target_distance_world <= 0
+    ):
+        raise TrajectoryGuidedAimError(
+            "the frozen clearance-margin distance is invalid"
+        )
+    bird_radius = pixels_per_world_unit * bird_radius_world
+    clearance_margin = pixels_per_world_unit * clearance_margin_world
+    target_distance_world = (target_x - sling_x) / pixels_per_world_unit
+    apply_clearance_margin = (
+        target_distance_world
+        >= clearance_margin_minimum_target_distance_world
+    )
     obstacle_tokens = ("block", "ice", "platform", "stone", "wood")
     horizon_x = target["bounds"][0] - bird_radius
     obstacles = tuple(
@@ -328,6 +353,9 @@ def aim_directly_at_visible_pig(
         for drag_y in range(max(0, bounds.drag_y[0]), bounds.drag_y[1] + 1):
             action = SlingshotAction(drag_x, drag_y, tap_time_ms)
             if not bounds.contains(action):
+                continue
+            pull = math.hypot(drag_x, drag_y)
+            if pull < pixels_per_world_unit * TRAJECTORY_DRAG_RADIUS_WORLD:
                 continue
             predicted_y = _preview_at_target_x(
                 sling_x=sling_x,
@@ -354,14 +382,17 @@ def aim_directly_at_visible_pig(
                 points,
                 obstacles,
                 bird_radius=bird_radius,
+                clearance_margin=clearance_margin,
+                apply_clearance_margin=apply_clearance_margin,
                 horizon_x=horizon_x,
+                target_left=target["bounds"][0],
             ):
                 continue
             candidates.append(
                 (
                     0 if angle <= math.pi / 4 else 1,
                     miss,
-                    math.hypot(drag_x, drag_y),
+                    pull,
                     angle,
                     drag_x,
                     drag_y,
@@ -390,10 +421,25 @@ def aim_directly_at_visible_pig(
         target_canvas=(target_x, target_y),
         predicted_canvas_y=predicted_y,
         predicted_miss_pixels=miss,
-        arc="low" if arc_rank == 0 else "high",
+        arc="high" if _angle > math.pi / 4 else "low",
         aim_point=aim_point,
         target_polygon_bounds=target["bounds"],
         obstacle_clearance="bird_volume_swept_clear",
         cleared_obstacle_ids=tuple(sorted({item["id"] for item in obstacles})),
+        margin_applied_obstacle_ids=tuple(sorted({
+            item["id"]
+            for item in obstacles
+            if apply_clearance_margin
+            and 0
+            <= target["bounds"][0] - item["bounds"][2]
+            <= bird_radius
+        })),
         bird_radius_pixels=bird_radius,
+        bird_radius_world=bird_radius_world,
+        clearance_margin_pixels=clearance_margin,
+        clearance_margin_world=clearance_margin_world,
+        target_distance_world=target_distance_world,
+        clearance_margin_minimum_target_distance_world=(
+            clearance_margin_minimum_target_distance_world
+        ),
     )

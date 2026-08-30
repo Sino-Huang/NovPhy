@@ -60,7 +60,7 @@
       "workbook_row": 4
     }
   ],
-  "identity": "issue-62-collection-plan-v4:sha256:1ce1dc59c7b903c19f5962785d673927563cbc865691619289094b1f3c7d0dbf",
+  "identity": "issue-62-collection-plan-v4:sha256:c65a104c29cc51310e634d553920d0696510211c7a9ad8feafcd631e86628404",
   "lineages": [
     {
       "behavior_policy": "uniform_random",
@@ -136,16 +136,20 @@
       "planned_actions": [
         {
           "action_index": 0,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:733b1fc7369fce90f9c14a7438426d13f5c7e16fd27ed4f2f1c410215b0b7e87",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         }
       ],
       "role_ordinal": 2,
@@ -225,42 +229,37 @@
       "planned_actions": [
         {
           "action_index": 0,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:733b1fc7369fce90f9c14a7438426d13f5c7e16fd27ed4f2f1c410215b0b7e87",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         },
         {
           "action_index": 1,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:3ed27c16b9bba7f3963f5a13a9783f56058c195820ad06fd92650004b46b9da1",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:b5ee584a7b5f8ceaef13f4863ddffb39770787fa5beb01435e422a76f68ea067",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
-        },
-        {
-          "action_index": 2,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
-          "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d4b66b4ee601beb0458f29ba6e88fefb0dad7814fce2257d7d45878712199ae2",
-          "release_time_ms": 600,
-          "selection_mode": "trajectory_guided_direct_pig_clearance",
-          "tap_time_ms": 0,
-          "target_kind": "pig",
-          "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         }
       ],
       "role_ordinal": 5,
@@ -340,16 +339,20 @@
       "planned_actions": [
         {
           "action_index": 0,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:733b1fc7369fce90f9c14a7438426d13f5c7e16fd27ed4f2f1c410215b0b7e87",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         }
       ],
       "role_ordinal": 8,
@@ -429,42 +432,37 @@
       "planned_actions": [
         {
           "action_index": 0,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:733b1fc7369fce90f9c14a7438426d13f5c7e16fd27ed4f2f1c410215b0b7e87",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         },
         {
           "action_index": 1,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:3ed27c16b9bba7f3963f5a13a9783f56058c195820ad06fd92650004b46b9da1",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:b5ee584a7b5f8ceaef13f4863ddffb39770787fa5beb01435e422a76f68ea067",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
-        },
-        {
-          "action_index": 2,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
-          "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d4b66b4ee601beb0458f29ba6e88fefb0dad7814fce2257d7d45878712199ae2",
-          "release_time_ms": 600,
-          "selection_mode": "trajectory_guided_direct_pig_clearance",
-          "tap_time_ms": 0,
-          "target_kind": "pig",
-          "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         }
       ],
       "role_ordinal": 11,
@@ -522,16 +520,20 @@
       "planned_actions": [
         {
           "action_index": 0,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:733b1fc7369fce90f9c14a7438426d13f5c7e16fd27ed4f2f1c410215b0b7e87",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         }
       ],
       "role_ordinal": 1,
@@ -611,42 +613,37 @@
       "planned_actions": [
         {
           "action_index": 0,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:733b1fc7369fce90f9c14a7438426d13f5c7e16fd27ed4f2f1c410215b0b7e87",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         },
         {
           "action_index": 1,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:3ed27c16b9bba7f3963f5a13a9783f56058c195820ad06fd92650004b46b9da1",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:b5ee584a7b5f8ceaef13f4863ddffb39770787fa5beb01435e422a76f68ea067",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
-        },
-        {
-          "action_index": 2,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
-          "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d4b66b4ee601beb0458f29ba6e88fefb0dad7814fce2257d7d45878712199ae2",
-          "release_time_ms": 600,
-          "selection_mode": "trajectory_guided_direct_pig_clearance",
-          "tap_time_ms": 0,
-          "target_kind": "pig",
-          "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         }
       ],
       "role_ordinal": 4,
@@ -726,16 +723,20 @@
       "planned_actions": [
         {
           "action_index": 0,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:733b1fc7369fce90f9c14a7438426d13f5c7e16fd27ed4f2f1c410215b0b7e87",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         }
       ],
       "role_ordinal": 7,
@@ -815,42 +816,37 @@
       "planned_actions": [
         {
           "action_index": 0,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:733b1fc7369fce90f9c14a7438426d13f5c7e16fd27ed4f2f1c410215b0b7e87",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         },
         {
           "action_index": 1,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:3ed27c16b9bba7f3963f5a13a9783f56058c195820ad06fd92650004b46b9da1",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:b5ee584a7b5f8ceaef13f4863ddffb39770787fa5beb01435e422a76f68ea067",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
-        },
-        {
-          "action_index": 2,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
-          "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d4b66b4ee601beb0458f29ba6e88fefb0dad7814fce2257d7d45878712199ae2",
-          "release_time_ms": 600,
-          "selection_mode": "trajectory_guided_direct_pig_clearance",
-          "tap_time_ms": 0,
-          "target_kind": "pig",
-          "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         }
       ],
       "role_ordinal": 10,
@@ -888,16 +884,20 @@
       "planned_actions": [
         {
           "action_index": 0,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:733b1fc7369fce90f9c14a7438426d13f5c7e16fd27ed4f2f1c410215b0b7e87",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         }
       ],
       "role_ordinal": 0,
@@ -977,42 +977,37 @@
       "planned_actions": [
         {
           "action_index": 0,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:733b1fc7369fce90f9c14a7438426d13f5c7e16fd27ed4f2f1c410215b0b7e87",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         },
         {
           "action_index": 1,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:3ed27c16b9bba7f3963f5a13a9783f56058c195820ad06fd92650004b46b9da1",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:b5ee584a7b5f8ceaef13f4863ddffb39770787fa5beb01435e422a76f68ea067",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
-        },
-        {
-          "action_index": 2,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
-          "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d4b66b4ee601beb0458f29ba6e88fefb0dad7814fce2257d7d45878712199ae2",
-          "release_time_ms": 600,
-          "selection_mode": "trajectory_guided_direct_pig_clearance",
-          "tap_time_ms": 0,
-          "target_kind": "pig",
-          "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         }
       ],
       "role_ordinal": 3,
@@ -1092,16 +1087,20 @@
       "planned_actions": [
         {
           "action_index": 0,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:733b1fc7369fce90f9c14a7438426d13f5c7e16fd27ed4f2f1c410215b0b7e87",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         }
       ],
       "role_ordinal": 6,
@@ -1181,42 +1180,37 @@
       "planned_actions": [
         {
           "action_index": 0,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d38b4990420f07637b80ef559da94bd66ec531a107ef966e0effce4c8c17acc2",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:733b1fc7369fce90f9c14a7438426d13f5c7e16fd27ed4f2f1c410215b0b7e87",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         },
         {
           "action_index": 1,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
+          "action_stratum": "direct_pig__lowest_clear_full_pull__tap_early",
           "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:3ed27c16b9bba7f3963f5a13a9783f56058c195820ad06fd92650004b46b9da1",
+          "bird_radius_world": 0.17,
+          "clearance_margin_minimum_target_distance_world": 8.0,
+          "clearance_margin_world": 0.34,
+          "clearance_model": "near_target_margin_inflated_obstacles",
+          "identity": "issue-62-planned-action-v3:sha256:b5ee584a7b5f8ceaef13f4863ddffb39770787fa5beb01435e422a76f68ea067",
+          "minimum_pull": "trajectory_drag_radius",
           "release_time_ms": 600,
           "selection_mode": "trajectory_guided_direct_pig_clearance",
           "tap_time_ms": 0,
           "target_kind": "pig",
           "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
-        },
-        {
-          "action_index": 2,
-          "action_stratum": "direct_pig__lowest_clear_arc__tap_early",
-          "aim_point": "visible_polygon_upper_edge",
-          "clearance_model": "live_bird_radius_inflated_visible_obstacles",
-          "identity": "issue-62-planned-action-v3:sha256:d4b66b4ee601beb0458f29ba6e88fefb0dad7814fce2257d7d45878712199ae2",
-          "release_time_ms": 600,
-          "selection_mode": "trajectory_guided_direct_pig_clearance",
-          "tap_time_ms": 0,
-          "target_kind": "pig",
-          "target_rank": 0,
-          "trajectory_arc": "lowest_clear"
+          "trajectory_arc": "lowest_clear_full_pull"
         }
       ],
       "role_ordinal": 9,

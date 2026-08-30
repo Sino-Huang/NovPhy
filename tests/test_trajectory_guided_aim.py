@@ -48,8 +48,11 @@ class TrajectoryGuidedAimTests(unittest.TestCase):
             },
             bounds,
             target_rank=0,
-            arc="lowest_clear",
+            arc="lowest_clear_full_pull",
             aim_point="visible_polygon_upper_edge",
+            bird_radius_world=0.17,
+            clearance_margin_world=0.34,
+            clearance_margin_minimum_target_distance_world=8.0,
             tap_time_ms=0,
         )
 
@@ -109,14 +112,119 @@ class TrajectoryGuidedAimTests(unittest.TestCase):
             },
             bounds,
             target_rank=0,
-            arc="lowest_clear",
+            arc="lowest_clear_full_pull",
             aim_point="visible_polygon_upper_edge",
+            bird_radius_world=0.17,
+            clearance_margin_world=0.34,
+            clearance_margin_minimum_target_distance_world=8.0,
             tap_time_ms=0,
         )
 
         self.assertEqual(aim.arc, "high")
         self.assertEqual(aim.obstacle_clearance, "bird_volume_swept_clear")
         self.assertIn("platform:fixture", aim.cleared_obstacle_ids)
+
+    def test_prediction_margin_moves_the_observed_platform_shot_higher(self) -> None:
+        symbolic_state = [{
+            "features": [
+                {
+                    "properties": {"id": "pig:observed", "label": "pig_basic_big_8"},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [303, 178], [326, 178], [326, 201], [303, 201]
+                        ]],
+                    },
+                },
+                {
+                    "properties": {"id": "platform:observed", "label": "Platform"},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [282.7, 192.5], [298, 192.5],
+                            [298, 217.5], [282.7, 217.5]
+                        ]],
+                    },
+                },
+            ],
+        }]
+
+        aim = aim_directly_at_visible_pig(
+            symbolic_state,
+            {
+                "canvasX": 127.0,
+                "canvasY": 256.0,
+                "pixelsPerWorldUnit": 23.844282,
+            },
+            SlingshotActionBounds(
+                drag_x=(-160, -10),
+                drag_y=(-80, 80),
+                tap_time_ms=(0, 1000),
+                release_time_ms=600,
+            ),
+            target_rank=0,
+            arc="lowest_clear_full_pull",
+            aim_point="visible_polygon_upper_edge",
+            bird_radius_world=0.17,
+            clearance_margin_world=0.34,
+            clearance_margin_minimum_target_distance_world=8.0,
+            tap_time_ms=0,
+        )
+
+        self.assertGreaterEqual(
+            (aim.action.drag_x ** 2 + aim.action.drag_y ** 2) ** 0.5,
+            23.844282,
+        )
+        self.assertEqual(aim.margin_applied_obstacle_ids, ())
+        self.assertEqual(aim.clearance_margin_world, 0.34)
+
+    def test_prediction_margin_applies_to_support_adjacent_to_pig(self) -> None:
+        def feature(object_id, label, bounds):
+            left, top, right, bottom = bounds
+            return {
+                "properties": {"id": object_id, "label": label},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                        [left, top], [right, top],
+                        [right, bottom], [left, bottom],
+                    ]],
+                },
+            }
+
+        aim = aim_directly_at_visible_pig(
+            [{"features": [
+                feature("pig:adjacent", "pig_basic_big_1", (319, 181, 342, 205)),
+                feature("platform:adjacent", "Platform", (303, 195.6, 318.3, 220.6)),
+            ]}],
+            {
+                "canvasX": 127.0,
+                "canvasY": 256.0,
+                "pixelsPerWorldUnit": 23.844282,
+            },
+            SlingshotActionBounds(
+                drag_x=(-160, -10),
+                drag_y=(-80, 80),
+                tap_time_ms=(0, 1000),
+                release_time_ms=600,
+            ),
+            target_rank=0,
+            arc="lowest_clear_full_pull",
+            aim_point="visible_polygon_upper_edge",
+            bird_radius_world=0.17,
+            clearance_margin_world=0.34,
+            clearance_margin_minimum_target_distance_world=8.0,
+            tap_time_ms=0,
+        )
+
+        self.assertEqual(
+            aim.margin_applied_obstacle_ids, ("platform:adjacent",)
+        )
+        self.assertGreaterEqual(aim.target_distance_world, 8.0)
+        self.assertGreaterEqual(
+            (aim.action.drag_x ** 2 + aim.action.drag_y ** 2) ** 0.5,
+            23.844282,
+        )
 
 
 if __name__ == "__main__":
