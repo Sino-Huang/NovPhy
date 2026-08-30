@@ -27,6 +27,7 @@ from scripts.run_issue_62_successor_cohort import (
     _synthetic_pilot_records,
     _trajectory_record,
     dry_run,
+    run_collection,
     write_pilot_audit,
 )
 from src.webui.bridge import GameState
@@ -285,6 +286,159 @@ class SuccessorCohortAuditTests(unittest.TestCase):
                 text=True,
             ).stdout.strip()
             self.assertEqual(codec, "vp8")
+
+
+class SuccessorCohortResumeTests(unittest.TestCase):
+    def test_revision_can_roll_over_before_any_lineage_is_accepted(self) -> None:
+        plan = build_pilot_plan()
+        with tempfile.TemporaryDirectory() as temporary:
+            runtime = Path(temporary)
+            (runtime / "game-runtime").mkdir()
+            write_immutable_cohort_v2_json(
+                {
+                    "schema": "issue_62_collection_provenance_v1",
+                    "implementation_commit": "commit:before-audit",
+                    "player": {"source_snapshot_commit": "player:fixture"},
+                    "collected_at": "2026-08-30T06:38:59Z",
+                    "final_evaluation_opened": False,
+                },
+                runtime / "provenance.json",
+            )
+            for slot in plan["lineages"]:
+                write_immutable_cohort_v2_json(
+                    {
+                        "schema": "issue_62_lineage_collection_result_v1",
+                        "slot_identity": slot["slot_identity"],
+                        "status": "failed",
+                        "exposure_role": slot["exposure_role"],
+                        "attempt_count": 2,
+                    },
+                    runtime / "records" / f"{slot['slot_identity']}.json",
+                )
+
+            with patch(
+                "scripts.run_issue_62_successor_cohort._player",
+                return_value={"source_snapshot_commit": "player:fixture"},
+            ):
+                records = run_collection(
+                    plan,
+                    runtime_root=runtime,
+                    implementation_commit="commit:after-audit",
+                    start_display_process=False,
+                    speed=50,
+                    headless=False,
+                )
+
+            provenance = json.loads((runtime / "provenance.json").read_bytes())
+            self.assertEqual(len(records), 36)
+            self.assertEqual(
+                provenance["implementation_commit"], "commit:after-audit"
+            )
+            self.assertEqual(
+                provenance["superseded_pre_acceptance_implementation_commits"],
+                ["commit:before-audit"],
+            )
+
+    def test_revision_change_still_fails_after_an_accepted_lineage(self) -> None:
+        plan = build_pilot_plan()
+        first = plan["lineages"][0]
+        with tempfile.TemporaryDirectory() as temporary:
+            runtime = Path(temporary)
+            write_immutable_cohort_v2_json(
+                {
+                    "schema": "issue_62_collection_provenance_v1",
+                    "implementation_commit": "commit:old",
+                    "player": {"source_snapshot_commit": "player:fixture"},
+                    "collected_at": "2026-08-30T06:38:59Z",
+                    "final_evaluation_opened": False,
+                },
+                runtime / "provenance.json",
+            )
+            write_immutable_cohort_v2_json(
+                {
+                    "schema": "issue_62_lineage_collection_result_v1",
+                    "slot_identity": first["slot_identity"],
+                    "status": "accepted",
+                    "exposure_role": first["exposure_role"],
+                    "attempt_count": 1,
+                },
+                runtime / "records" / f"{first['slot_identity']}.json",
+            )
+
+            with patch(
+                "scripts.run_issue_62_successor_cohort._player",
+                return_value={"source_snapshot_commit": "player:fixture"},
+            ), self.assertRaisesRegex(
+                SuccessorCohortError, "revision differs after an accepted lineage"
+            ):
+                run_collection(
+                    plan,
+                    runtime_root=runtime,
+                    implementation_commit="commit:new",
+                    start_display_process=False,
+                    speed=50,
+                    headless=False,
+                )
+
+    def test_interrupted_attempt_directories_are_counted_without_overwrite(self) -> None:
+        plan = build_pilot_plan()
+        interrupted = plan["lineages"][0]
+        with tempfile.TemporaryDirectory() as temporary:
+            runtime = Path(temporary)
+            (runtime / "game-runtime").mkdir()
+            write_immutable_cohort_v2_json(
+                {
+                    "schema": "issue_62_collection_provenance_v2",
+                    "implementation_commit": "commit:same",
+                    "player": {"source_snapshot_commit": "player:fixture"},
+                    "collected_at": "2026-08-30T06:38:59Z",
+                    "final_evaluation_opened": False,
+                    "superseded_pre_acceptance_implementation_commits": [],
+                },
+                runtime / "provenance.json",
+            )
+            for attempt_number in (1, 2):
+                (
+                    runtime / "attempts" / interrupted["slot_identity"]
+                    / f"attempt-{attempt_number:02d}"
+                ).mkdir(parents=True)
+            for slot in plan["lineages"][1:]:
+                write_immutable_cohort_v2_json(
+                    {
+                        "schema": "issue_62_lineage_collection_result_v1",
+                        "slot_identity": slot["slot_identity"],
+                        "status": "failed",
+                        "exposure_role": slot["exposure_role"],
+                        "attempt_count": 2,
+                    },
+                    runtime / "records" / f"{slot['slot_identity']}.json",
+                )
+
+            with patch(
+                "scripts.run_issue_62_successor_cohort._player",
+                return_value={"source_snapshot_commit": "player:fixture"},
+            ), patch(
+                "scripts.run_issue_62_successor_cohort._collect_lineage_attempt"
+            ) as collect:
+                records = run_collection(
+                    plan,
+                    runtime_root=runtime,
+                    implementation_commit="commit:same",
+                    start_display_process=False,
+                    speed=50,
+                    headless=False,
+                )
+
+            collect.assert_not_called()
+            result = next(
+                item for item in records
+                if item["slot_identity"] == interrupted["slot_identity"]
+            )
+            self.assertEqual(result["status"], "failed")
+            self.assertEqual(
+                [item["error_type"] for item in result["failures"]],
+                ["InterruptedAttempt", "InterruptedAttempt"],
+            )
 
 
 class SuccessorCohortTrajectoryTests(unittest.TestCase):

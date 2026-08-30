@@ -126,6 +126,13 @@ def _canonical_bytes(value: Mapping[str, Any]) -> bytes:
     ).encode("utf-8")
 
 
+def _replace_json(value: Mapping[str, Any], path: Path) -> None:
+    with tempfile.NamedTemporaryFile("wb", dir=path.parent, delete=False) as handle:
+        handle.write(_canonical_bytes(value))
+        temporary = Path(handle.name)
+    os.replace(temporary, path)
+
+
 def _load_plan(path: Path, phase: str) -> dict[str, Any]:
     raw = Path(path).read_bytes()
     value = validate_successor_plan(json.loads(raw))
@@ -1056,6 +1063,66 @@ def _accepted_root(runtime_root: Path, phase: str) -> Path:
     return runtime_root / "accepted"
 
 
+def _runtime_has_accepted_lineage(runtime_root: Path, phase: str) -> bool:
+    accepted_root = _accepted_root(runtime_root, phase)
+    if accepted_root.is_dir() and any(
+        accepted_root.glob("*/*/trajectory.json")
+    ):
+        return True
+    records_root = runtime_root / "records"
+    if not records_root.is_dir():
+        return False
+    return any(
+        _load(path, "lineage collection result").get("status") == "accepted"
+        for path in records_root.glob("*.json")
+    )
+
+
+def _validate_or_roll_over_provenance(
+    provenance_path: Path,
+    *,
+    runtime_root: Path,
+    phase: str,
+    implementation_commit: str,
+    player: Mapping[str, Any],
+) -> dict[str, Any]:
+    provenance = _load(provenance_path, "collection provenance")
+    if (
+        provenance.get("schema") not in {
+            "issue_62_collection_provenance_v1",
+            "issue_62_collection_provenance_v2",
+        }
+        or provenance.get("player") != player
+        or provenance.get("final_evaluation_opened") is not False
+    ):
+        raise SuccessorCohortError("resumed collection provenance differs")
+    prior_commit = provenance.get("implementation_commit")
+    if prior_commit == implementation_commit:
+        return provenance
+    if _runtime_has_accepted_lineage(runtime_root, phase):
+        raise SuccessorCohortError(
+            "resumed collection revision differs after an accepted lineage"
+        )
+    history = list(
+        provenance.get("superseded_pre_acceptance_implementation_commits", ())
+    )
+    if prior_commit not in history:
+        history.append(prior_commit)
+    updated = {
+        **provenance,
+        "schema": "issue_62_collection_provenance_v2",
+        "implementation_commit": implementation_commit,
+        "superseded_pre_acceptance_implementation_commits": history,
+        "provenance_updated_at": _now(),
+    }
+    _replace_json(updated, provenance_path)
+    _log(
+        f"resume provenance updated before first accepted lineage: "
+        f"{prior_commit} -> {implementation_commit}"
+    )
+    return updated
+
+
 def _validate_result(
     result: Mapping[str, Any], slot: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -1090,20 +1157,21 @@ def run_collection(
     player = _player()
     provenance_path = runtime_root / "provenance.json"
     if provenance_path.exists():
-        provenance = _load(provenance_path, "collection provenance")
-        if (
-            provenance.get("implementation_commit") != implementation_commit
-            or provenance.get("player") != player
-            or provenance.get("final_evaluation_opened") is not False
-        ):
-            raise SuccessorCohortError("resumed collection provenance differs")
+        _validate_or_roll_over_provenance(
+            provenance_path,
+            runtime_root=runtime_root,
+            phase=plan["phase"],
+            implementation_commit=implementation_commit,
+            player=player,
+        )
     else:
         write_immutable_cohort_v2_json({
-            "schema": "issue_62_collection_provenance_v1",
+            "schema": "issue_62_collection_provenance_v2",
             "implementation_commit": implementation_commit,
             "player": player,
             "collected_at": _now(),
             "final_evaluation_opened": False,
+            "superseded_pre_acceptance_implementation_commits": [],
         }, provenance_path)
     if plan["phase"] == "production":
         staging = runtime_root / "release-staging"
@@ -1151,11 +1219,63 @@ def run_collection(
                 / slot["slot_identity"]
             )
             started = time.monotonic()
-            for attempt_number in range(1, plan["fixed_retry_limit"] + 1):
+            if accepted_path.exists():
+                trajectory_record = _load(
+                    accepted_path / "trajectory.json", "accepted pilot trajectory"
+                )
+                load_successor_trajectory(
+                    accepted_path, release_identity=release_identity
+                )
+                _log(
+                    f"resume {index}/{total}: recovered accepted trajectory "
+                    f"before result publication"
+                )
+            for attempt_number in (
+                () if trajectory_record is not None
+                else range(1, plan["fixed_retry_limit"] + 1)
+            ):
                 attempt_root = (
                     runtime_root / "attempts" / slot["slot_identity"]
                     / f"attempt-{attempt_number:02d}"
                 )
+                if attempt_root.exists():
+                    if (attempt_root / "trajectory.json").is_file():
+                        try:
+                            trajectory_record = _load(
+                                attempt_root / "trajectory.json",
+                                "interrupted complete trajectory",
+                            )
+                            load_successor_trajectory(
+                                attempt_root, release_identity=release_identity
+                            )
+                            accepted_path.parent.mkdir(parents=True, exist_ok=True)
+                            os.replace(attempt_root, accepted_path)
+                            _log(
+                                f"resume {index}/{total}: recovered complete "
+                                f"attempt {attempt_number}"
+                            )
+                            break
+                        except Exception as error:
+                            failure = {
+                                "attempt_number": attempt_number,
+                                "error_type": type(error).__name__,
+                                "message": str(error),
+                            }
+                    else:
+                        failure = {
+                            "attempt_number": attempt_number,
+                            "error_type": "InterruptedAttempt",
+                            "message": (
+                                "attempt directory exists without an atomic "
+                                "complete trajectory"
+                            ),
+                        }
+                    failures.append(failure)
+                    _log(
+                        f"resume {index}/{total}: counted incomplete attempt "
+                        f"{attempt_number}/{plan['fixed_retry_limit']}"
+                    )
+                    continue
                 try:
                     trajectory_record = _collect_lineage_attempt(
                         slot,
