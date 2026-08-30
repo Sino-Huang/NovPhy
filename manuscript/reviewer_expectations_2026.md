@@ -46,6 +46,10 @@ The ICLR 2027 materials emphasize complete, well-supported work. A main-track su
 
 This is a manuscript-planning judgement based on the ICLR materials. It is not venue policy set by the cited technical papers.
 
+### 7. Current program status after the 2026-08-31 issue audit
+
+A direct GitHub issue audit on 2026-08-31 confirms the infrastructure state. Issues 60 and 61 are complete as infrastructure and tooling only: the deployment-aligned temporal carrier (#60) and the retraining, carrier-matrix, and evaluation tooling (#61) have no empirical outcome attached. The successor data and experiment chain remains open: multi-shot cohort generation (#62), the matched carrier-alignment by training-coverage experiment (#63), sealed gameplay benchmark generation contingent on a supported #63 candidate and a nonzero pilot (#64), and the future sealed matched gameplay test separating retraining from adaptive-granularity claims (#65). The research-completion chain also remains open: the prespecified replicate analysis including the issue-57 gameplay evidence and issue-17 parser imbalance (#35), the reproducible archive (#36), the consolidated final report (#37), and the terminal program audit (#38). This status does not invalidate the completeness concern above. The common evaluator, the authorized controller comparison, and the final result are still missing, and no completed tooling item supplies them.
+
 ## External Source Record
 
 | Source | URL | Accessed |

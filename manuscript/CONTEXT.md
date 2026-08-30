@@ -130,11 +130,23 @@ Verified bounded negative evidence from five systems on five held-out levels wit
 
 _Avoid_: Controller equivalence, impossibility result, central-claim result.
 
-**Issues #61 through #65**
+**Issue-61 retraining and evaluation tooling**
 
-Specified/Open future work. Their results remain `[TODO: result]`. Do not describe an implementation or outcome for any of these issues.
+Completed implementation/tooling work, closed at commit `40ab258`. It delivers nested complete-lineage retraining manifests, matched source/deployment carrier matrix tooling, exact h1/h15 exposure and checkpoint validation, prediction, recursive, ranking, physical, and compute evaluation tooling, explicit legacy and retrained h1/h15 and adaptive gameplay systems, and a public no-write dry run. It is not a retraining result, model-selection result, data-scaling finding, gameplay result, or adaptive-granularity benefit.
 
-_Avoid_: Merged result, completed experiment, demonstrated effect.
+_Avoid_: Retraining result, gameplay result, demonstrated effect.
+
+**Issues #62 through #65**
+
+Open successor work. Issue 62 is successor multi-shot cohort generation and data work. Issue 63 is a matched carrier-alignment by training-coverage experiment with no result. Issue 64 is fresh sealed gameplay benchmark generation, contingent on a supported issue-63 candidate and a nonzero pilot, with no benchmark or result yet. Issue 65 is a future sealed matched gameplay test separating retraining and adaptive-granularity claims, with no result. Their outcomes remain `[TODO: result]`.
+
+_Avoid_: Completed experiment, benchmark result, demonstrated effect.
+
+**Issues #35 through #38**
+
+Open research-completion work. Issue 35 is the prespecified replicate matrix and statistical analysis, which must include the issue-57 gameplay evidence and the issue-17 parser imbalance. Issue 36 is the reproducible archive. Issue 37 is the consolidated final report. Issue 38 is the terminal research-program audit. All four are incomplete.
+
+_Avoid_: Completed analysis, archived release, final report.
 
 **Oracle supervision**
 
