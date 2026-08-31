@@ -60,6 +60,7 @@ def static_dir() -> Path:
 @dataclass
 class AppState:
     root: Path = field(default_factory=repo_root)
+    game_dir_override: Path | None = None
     game_version: str = "Linux"
     game_host: str = "127.0.0.1"
     game_port: int = 2004
@@ -85,16 +86,38 @@ class AppState:
     review_runtime_dir: Path | None = None
     review_runtime_temporary: tempfile.TemporaryDirectory | None = None
     engine_game_port: int = 29001
+    explicit_game_ports: bool = False
     review_reset_callback: Any | None = None
     review_goal: str | None = None
     issue_53_review_root: Path | None = None
     issue_53_review_session: Issue53ReviewSession | None = None
+    manual_action_log: Path | None = None
+    manual_action_context: Mapping[str, Any] = field(default_factory=dict)
+    manual_action_log_lock: threading.Lock = field(default_factory=threading.Lock)
 
     @property
     def game_dir(self) -> Path:
+        if self.game_dir_override is not None:
+            return Path(self.game_dir_override)
         if self.review_runtime_dir is not None:
             return self.review_runtime_dir
         return self.root / "sciencebirdsgames" / self.game_version
+
+    def record_manual_action(self, event: str, payload: Mapping[str, Any]) -> None:
+        if self.manual_action_log is None:
+            return
+        record = {
+            "schema": "webui_manual_action_record_v1",
+            "recorded_at_unix_seconds": time.time(),
+            "event": event,
+            "context": dict(self.manual_action_context),
+            **dict(payload),
+        }
+        path = Path(self.manual_action_log)
+        with self.manual_action_log_lock:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(record, sort_keys=True) + "\n")
 
     def preflight_errors(self) -> list[str]:
         if self.physics_v2_review and self.review_runtime_dir is None:
@@ -129,6 +152,9 @@ class AppState:
             "physicsV2Review": self.physics_v2_review,
             "physicsV2ReviewSession": None if self.review_session is None else self.review_session.snapshot(),
             "issue53Review": self.issue_53_review_session is not None,
+            "manualActionLog": (
+                None if self.manual_action_log is None else str(self.manual_action_log)
+            ),
         }
 
     def prepare_physics_v2_review_runtime(self) -> Path:
@@ -430,7 +456,7 @@ class AppState:
             command = ["java", "-jar", "./game_playing_interface.jar"]
             if self.game_headless:
                 command.append("--headless")
-            if self.physics_v2_review:
+            if self.physics_v2_review or self.explicit_game_ports:
                 command.extend([
                     "--agent-port", str(self.game_port),
                     "--game-start-port", str(self.engine_game_port),
@@ -438,6 +464,10 @@ class AppState:
                 ])
             command.append("--dev")
             environment = os.environ.copy()
+            if self.physics_v2_review or self.explicit_game_ports:
+                environment["NOVPHY_PHYSICS_CAPTURE_PORT"] = str(
+                    self.physics_port
+                )
             if self.physics_v2_review:
                 environment["NOVPHY_PHYSICS_CAPTURE_V2_STRIDE"] = "1"
             self.game_process = subprocess.Popen(
@@ -452,7 +482,9 @@ class AppState:
 
         # Review mode boots the packaged Unity player, which can take tens of
         # seconds on a remote/software-GL display before the jar ACKs configure.
-        deadline = time.time() + (60 if self.physics_v2_review else 15)
+        deadline = time.time() + (
+            60 if self.physics_v2_review or self.explicit_game_ports else 15
+        )
         last_error: Exception | None = None
         while time.time() < deadline:
             try:
@@ -714,13 +746,32 @@ def create_handler(app: AppState):
             }
 
             def action(bridge):
-                return prepare_screen_shot(
-                    bridge,
-                    shot_action,
-                    frame_height=app.frame_height,
-                    execution_speed=app.speed,
-                    fast=fast,
-                ).execute()
+                try:
+                    response = prepare_screen_shot(
+                        bridge,
+                        shot_action,
+                        frame_height=app.frame_height,
+                        execution_speed=app.speed,
+                        fast=fast,
+                    ).execute()
+                except Exception as error:
+                    app.record_manual_action("shot_failed", {
+                        "shot": dict(payload),
+                        "error_type": type(error).__name__,
+                        "error": str(error),
+                    })
+                    raise
+                state = self._safe_call(lambda: bridge.get_game_state())
+                app.record_manual_action("shot_executed", {
+                    "shot": dict(payload),
+                    "game_state_after": (
+                        state.name if isinstance(state, GameState) else state
+                    ),
+                    "score_after": self._safe_call(
+                        lambda: bridge.get_current_score()
+                    ),
+                })
+                return response
             if run_async:
                 self._bridge_action_async(action)
                 self._send_json({"ok": True, "scheduled": True})
@@ -743,6 +794,10 @@ def create_handler(app: AppState):
             }
             if normalized["releaseTime"]:
                 shot["releaseTime"] = normalized["releaseTime"]
+            app.record_manual_action("agent_action_validated", {
+                "action": normalized["action"],
+                "shot": shot,
+            })
             self._send_json({"ok": True, "action": normalized["action"], "shot": shot})
 
         def _normalize_agent_action(self, action: dict[str, Any]) -> dict[str, Any]:

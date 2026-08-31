@@ -754,6 +754,45 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(data["action"]["drag_release"], [-50, 40])
         self.assertEqual(self.app.bridge.shots, [])
 
+    def test_opt_in_manual_action_log_records_normalized_action_and_executed_shot(self):
+        with TemporaryDirectory() as temporary:
+            log_path = Path(temporary) / "actions.jsonl"
+            self.app.manual_action_log = log_path
+            self.app.manual_action_context = {
+                "lineage": 1431,
+                "slot_identity": "slot:fixture",
+            }
+            action = {
+                "action_type": "drag_release",
+                "coordinate_frame": "slingshot_relative",
+                "drag_start": [300, 220],
+                "drag_release": [-50, 40],
+                "tapTime": 70,
+            }
+
+            action_status, action_data = self.request(
+                "POST", "/api/agent-action", {"action": action, "fast": True}
+            )
+            shot_status, shot_data = self.request(
+                "POST", "/api/shot", {**action_data["shot"], "async": False}
+            )
+            records = [
+                json.loads(line)
+                for line in log_path.read_text(encoding="utf-8").splitlines()
+            ]
+
+        self.assertEqual(action_status, 200)
+        self.assertEqual(shot_status, 200)
+        self.assertTrue(shot_data["ok"])
+        self.assertEqual(
+            [record["event"] for record in records],
+            ["agent_action_validated", "shot_executed"],
+        )
+        self.assertEqual(records[0]["context"]["lineage"], 1431)
+        self.assertEqual(records[0]["action"]["drag_release"], [-50, 40])
+        self.assertEqual(records[1]["game_state_after"], "PLAYING")
+        self.assertEqual(records[1]["score_after"], 123)
+
     def test_agent_action_translates_relative_drag_hold_release_without_shooting(self):
         payload = {
             "action": {
@@ -926,6 +965,37 @@ class ServerTest(unittest.TestCase):
             self.assertIn("--physics-port", command)
             self.assertEqual(command[command.index("--physics-port") + 1], "2005")
             self.assertEqual(popen.call_args.kwargs["env"]["NOVPHY_PHYSICS_CAPTURE_V2_STRIDE"], "1")
+
+    def test_custom_game_runtime_uses_explicit_nonconflicting_ports(self):
+        with TemporaryDirectory() as tmp:
+            game_dir = Path(tmp)
+            for name in ("game_playing_interface.jar", "9001.x86_64", "config.xml"):
+                (game_dir / name).write_text("ok", encoding="utf-8")
+            (game_dir / "9001_Data").mkdir()
+            app = AppState(
+                root=Path("/tmp/nonexistent-webui-root"),
+                game_dir_override=game_dir,
+                game_port=31001,
+                engine_game_port=31002,
+                physics_port=31003,
+                explicit_game_ports=True,
+            )
+            app.connect_bridge = lambda configure=True: app.status()
+
+            with patch("src.webui.server.subprocess.Popen") as popen:
+                popen.return_value.poll.return_value = None
+                app.start_game()
+
+            command = popen.call_args.args[0]
+            self.assertEqual(command[command.index("--agent-port") + 1], "31001")
+            self.assertEqual(
+                command[command.index("--game-start-port") + 1], "31002"
+            )
+            self.assertEqual(command[command.index("--physics-port") + 1], "31003")
+            self.assertEqual(
+                popen.call_args.kwargs["env"]["NOVPHY_PHYSICS_CAPTURE_PORT"],
+                "31003",
+            )
 
     def test_stop_terminates_started_process_group(self):
         process = type("Process", (), {})()
