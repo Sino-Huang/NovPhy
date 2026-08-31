@@ -539,14 +539,6 @@ class AppState:
         raise TimeoutError("Science Birds did not reach PLAYING before the readiness timeout")
 
     def stop(self) -> dict[str, Any]:
-        with self.bridge_lock:
-            if self.bridge is not None:
-                self.bridge.disconnect()
-                self.bridge = None
-        if self.physics_bridge is not None:
-            if hasattr(self.physics_bridge, "disconnect"):
-                self.physics_bridge.disconnect()
-            self.physics_bridge = None
         if self.game_process is not None:
             try:
                 os.killpg(os.getpgid(self.game_process.pid), signal.SIGTERM)
@@ -558,11 +550,23 @@ class AppState:
                 os.killpg(os.getpgid(self.game_process.pid), signal.SIGKILL)
                 self.game_process.wait(timeout=5)
             self.game_process = None
+        with self.bridge_lock:
+            if self.bridge is not None:
+                self.bridge.disconnect()
+                self.bridge = None
+        if self.physics_bridge is not None:
+            if hasattr(self.physics_bridge, "disconnect"):
+                self.physics_bridge.disconnect()
+            self.physics_bridge = None
         if self.review_runtime_temporary is not None:
             self.review_runtime_temporary.cleanup()
             self.review_runtime_temporary = None
             self.review_runtime_dir = None
         return self.status()
+
+    def restart_game(self) -> dict[str, Any]:
+        self.stop()
+        return self.start_game()
 
 
 def create_handler(app: AppState):
@@ -665,7 +669,12 @@ def create_handler(app: AppState):
                 elif path == "/api/load-level":
                     self._handle_load_level()
                 elif path == "/api/restart":
-                    self._bridge_action(lambda bridge: bridge.load_next_available_level())
+                    if app.game_dir_override is not None:
+                        self._send_json(app.restart_game())
+                    else:
+                        self._bridge_action(
+                            lambda bridge: bridge.load_next_available_level()
+                        )
                 elif path == "/api/zoom-out":
                     self._bridge_action(lambda bridge: bridge.fully_zoom_out())
                 elif path == "/api/zoom-in":
@@ -866,6 +875,9 @@ def create_handler(app: AppState):
             level = self._required_int(payload, "level")
             if level < 1:
                 raise ValueError("level must be >= 1")
+            if app.game_dir_override is not None:
+                self._send_json(app.restart_game())
+                return
             self._bridge_action(lambda bridge: bridge.load_next_available_level())
 
         def _bridge_action(self, action) -> None:

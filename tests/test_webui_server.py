@@ -895,6 +895,32 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(self.app.bridge.restarted, 0)
         self.assertEqual(self.app.bridge.loaded_next, [True])
 
+    def test_expert_demo_restart_restarts_the_isolated_game_process(self):
+        self.app.game_dir_override = Path("/tmp/expert-demo-game")
+        with patch.object(
+            self.app,
+            "restart_game",
+            return_value={"ok": True, "connected": True},
+        ) as restart:
+            status, data = self.request("POST", "/api/restart", {})
+
+        self.assertEqual(status, 200)
+        self.assertTrue(data["connected"])
+        restart.assert_called_once_with()
+
+    def test_expert_demo_load_next_restarts_the_same_exact_level(self):
+        self.app.game_dir_override = Path("/tmp/expert-demo-game")
+        with patch.object(
+            self.app,
+            "restart_game",
+            return_value={"ok": True, "connected": True},
+        ) as restart:
+            status, data = self.request("POST", "/api/load-level", {"level": 1})
+
+        self.assertEqual(status, 200)
+        self.assertTrue(data["connected"])
+        restart.assert_called_once_with()
+
     def test_connect_accepts_new_training_set_with_ready_for_new_set(self):
         self.app.bridge.states = [GameState.NEWTRAININGSET, GameState.PLAYING]
 
@@ -1015,6 +1041,38 @@ class ServerTest(unittest.TestCase):
 
         self.assertFalse(status["gameProcessRunning"])
         self.assertEqual(killpg.call_count, 1)
+
+    def test_stop_kills_game_before_waiting_for_the_bridge_lock(self):
+        events = []
+
+        class RecordingLock:
+            def __enter__(self):
+                events.append("bridge-lock")
+
+            def __exit__(self, *_args):
+                return False
+
+        process = SimpleNamespace(
+            pid=12345,
+            poll=lambda: None,
+            wait=lambda timeout=None: 0,
+        )
+        app = AppState(
+            root=Path("/tmp/nonexistent-webui-root"),
+            game_process=process,
+            bridge=SimpleNamespace(disconnect=lambda: None),
+            bridge_lock=RecordingLock(),
+        )
+
+        with patch(
+            "src.webui.server.os.getpgid", return_value=12345
+        ), patch(
+            "src.webui.server.os.killpg",
+            side_effect=lambda *_args: events.append("kill-game"),
+        ):
+            app.stop()
+
+        self.assertLess(events.index("kill-game"), events.index("bridge-lock"))
 
 
 if __name__ == "__main__":
