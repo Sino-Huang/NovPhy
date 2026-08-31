@@ -1302,6 +1302,51 @@ def _interaction_coverage(trajectory_root: Path, record: Mapping[str, Any]) -> l
     return sorted(events)
 
 
+def _accepted_lineage_result(
+    slot: Mapping[str, Any],
+    trajectory_record: Mapping[str, Any],
+    accepted_path: Path,
+    *,
+    wall_seconds: float,
+    attempt_count: int,
+    failures: list[Mapping[str, Any]],
+) -> dict[str, Any]:
+    return {
+        "schema": "issue_62_lineage_collection_result_v1",
+        "slot_identity": slot["slot_identity"],
+        "status": "accepted",
+        "exposure_role": slot["exposure_role"],
+        "generator_family": slot["generator_family"],
+        "behavior_policy": slot["behavior_policy"],
+        "generation_seed": slot["generation_seed"],
+        "scenario_lineage_identity": trajectory_record[
+            "scenario_lineage_identity"
+        ],
+        "level_instance_identity": trajectory_record["level_instance_identity"],
+        "scenario_template_identity": trajectory_record[
+            "scenario_template_identity"
+        ],
+        "trajectory_identity": trajectory_record["trajectory_identity"],
+        "executed_action_count": trajectory_record["executed_action_count"],
+        "decision_state_count": trajectory_record["executed_action_count"] + 1,
+        "frame_record_count": sum(
+            item["frame_count"] for item in trajectory_record["shots"]
+        ),
+        "terminal_reason": trajectory_record["terminal_reason"],
+        "action_strata": [
+            item["action_stratum"] for item in trajectory_record["shots"]
+        ],
+        "interaction_coverage": _interaction_coverage(
+            accepted_path, trajectory_record
+        ),
+        "wall_seconds": wall_seconds,
+        "artifact_bytes": _directory_bytes(accepted_path),
+        "attempt_count": attempt_count,
+        "failures": list(failures),
+        "outcome_conditioned_replacement": False,
+    }
+
+
 def _result_path(runtime_root: Path, slot: Mapping[str, Any]) -> Path:
     return runtime_root / "records" / f"{slot['slot_identity']}.json"
 
@@ -1695,46 +1740,14 @@ def run_collection(
                     "outcome_conditioned_replacement": False,
                 }
             else:
-                result = {
-                    "schema": "issue_62_lineage_collection_result_v1",
-                    "slot_identity": slot["slot_identity"],
-                    "status": "accepted",
-                    "exposure_role": slot["exposure_role"],
-                    "generator_family": slot["generator_family"],
-                    "behavior_policy": slot["behavior_policy"],
-                    "generation_seed": slot["generation_seed"],
-                    "scenario_lineage_identity": trajectory_record[
-                        "scenario_lineage_identity"
-                    ],
-                    "level_instance_identity": trajectory_record[
-                        "level_instance_identity"
-                    ],
-                    "scenario_template_identity": trajectory_record[
-                        "scenario_template_identity"
-                    ],
-                    "trajectory_identity": trajectory_record["trajectory_identity"],
-                    "executed_action_count": trajectory_record[
-                        "executed_action_count"
-                    ],
-                    "decision_state_count": trajectory_record[
-                        "executed_action_count"
-                    ] + 1,
-                    "frame_record_count": sum(
-                        item["frame_count"] for item in trajectory_record["shots"]
-                    ),
-                    "terminal_reason": trajectory_record["terminal_reason"],
-                    "action_strata": [
-                        item["action_stratum"] for item in trajectory_record["shots"]
-                    ],
-                    "interaction_coverage": _interaction_coverage(
-                        accepted_path, trajectory_record
-                    ),
-                    "wall_seconds": wall_seconds,
-                    "artifact_bytes": _directory_bytes(accepted_path),
-                    "attempt_count": len(failures) + 1,
-                    "failures": failures,
-                    "outcome_conditioned_replacement": False,
-                }
+                result = _accepted_lineage_result(
+                    slot,
+                    trajectory_record,
+                    accepted_path,
+                    wall_seconds=wall_seconds,
+                    attempt_count=len(failures) + 1,
+                    failures=failures,
+                )
             write_immutable_cohort_v2_json(result, result_path)
             records.append(result)
             _log(
@@ -1882,6 +1895,288 @@ def run_parallel_collection(
         records_by_identity[plan["lineages"][ordinal]["slot_identity"]]
         for ordinal in selected
     ]
+
+
+def _production_correction_reference(
+    root: Path, plan: Mapping[str, Any]
+) -> dict[str, Any] | None:
+    intent_path = Path(root) / "production-correction-plan.json"
+    result_path = Path(root) / "production-correction-result.json"
+    if not intent_path.exists() and not result_path.exists():
+        return None
+    if not intent_path.is_file() or not result_path.is_file():
+        raise SuccessorCohortError("production correction artifacts are incomplete")
+    intent = _load(intent_path, "production correction plan")
+    result = _load(result_path, "production correction result")
+    intent_slots = [item.get("slot_identity") for item in intent.get("lineages", ())]
+    result_slots = [item.get("slot_identity") for item in result.get("lineages", ())]
+    plan_slots = {item["slot_identity"] for item in plan["lineages"]}
+    if (
+        intent.get("schema") != "issue_62_production_correction_plan_v1"
+        or result.get("schema") != "issue_62_production_correction_result_v1"
+        or intent.get("production_plan_identity") != plan["identity"]
+        or result.get("production_plan_identity") != plan["identity"]
+        or intent.get("outcome_conditioned_replacement") is not False
+        or intent.get("membership_changed") is not False
+        or result.get("accepted") != len(intent_slots)
+        or result.get("failed") != 0
+        or not intent_slots
+        or len(intent_slots) != len(set(intent_slots))
+        or intent_slots != result_slots
+        or not set(intent_slots).issubset(plan_slots)
+    ):
+        raise SuccessorCohortError("production correction artifacts differ")
+    return {
+        "plan_path": intent_path.name,
+        "result_path": result_path.name,
+        "corrected_lineage_count": len(intent_slots),
+        "membership_changed": False,
+        "outcome_conditioned_replacement": False,
+        "protocol_deviation_disclosed": True,
+    }
+
+
+def repair_failed_production(
+    *,
+    plan_path: Path,
+    runtime_root: Path,
+    implementation_commit: str,
+    start_display_process: bool,
+    speed: int,
+    headless: bool,
+) -> dict[str, Any]:
+    plan = _load_plan(plan_path, "production")
+    runtime_root = Path(runtime_root).resolve()
+    results = _all_results(runtime_root, plan)
+    failed = [item for item in results if item["status"] == "failed"]
+    existing_correction = _production_correction_reference(runtime_root, plan)
+    if not failed:
+        return {
+            "schema": "issue_62_production_collection_status_v1",
+            "production_plan_identity": plan["identity"],
+            "scheduled": len(results),
+            "accepted": len(results),
+            "failed": 0,
+            "production_correction": existing_correction,
+            "final_evaluation_opened": False,
+        }
+    if existing_correction is not None:
+        raise SuccessorCohortError(
+            "production correction says complete but failed results remain"
+        )
+    provenance = _load(runtime_root / "provenance.json", "collection provenance")
+    if implementation_commit == provenance.get("implementation_commit"):
+        raise SuccessorCohortError(
+            "production repair requires the committed planner correction"
+        )
+    slots_by_identity = {
+        item["slot_identity"]: item for item in plan["lineages"]
+    }
+    correction_slots = [slots_by_identity[item["slot_identity"]] for item in failed]
+    intent = {
+        "schema": "issue_62_production_correction_plan_v1",
+        "production_plan_identity": plan["identity"],
+        "frozen_before_correction_collection_at": _now(),
+        "original_implementation_commit": provenance["implementation_commit"],
+        "corrected_implementation_commit": implementation_commit,
+        "correction_retry_limit": 2,
+        "correction_reason": (
+            "repair every exhausted frozen lineage after correcting the "
+            "guided full-pull-only resolver and transient readiness handling"
+        ),
+        "protocol_deviation": (
+            "two disclosed correction attempts extend the original retry limit; "
+            "scenario membership, roles, seeds, and non-guided actions are unchanged"
+        ),
+        "membership_changed": False,
+        "outcome_conditioned_replacement": False,
+        "final_evaluation_opened": False,
+        "lineages": [
+            {
+                "slot_identity": slot["slot_identity"],
+                "ordinal": slot["ordinal"],
+                "exposure_role": slot["exposure_role"],
+                "behavior_policy": slot["behavior_policy"],
+                "prior_result": result,
+            }
+            for slot, result in zip(correction_slots, failed)
+        ],
+    }
+    staging = runtime_root / "release-staging"
+    if (staging / "production-plan.json").read_bytes() != Path(plan_path).read_bytes():
+        raise SuccessorCohortError("release staging plan differs")
+    write_immutable_cohort_v2_json(
+        intent, runtime_root / "production-correction-plan.json"
+    )
+    write_immutable_cohort_v2_json(
+        intent, staging / "production-correction-plan.json"
+    )
+    _log(
+        f"production correction frozen failed={len(failed)} "
+        f"retries_per_lineage={intent['correction_retry_limit']}"
+    )
+
+    game = runtime_root / "repair" / "game-runtime"
+    if not game.exists():
+        _log("extracting the accepted player for production correction")
+        archive_details(STAGE_ROOT, game)
+    display_process = None
+    prior_display = os.environ.get("DISPLAY")
+    prior_stride = os.environ.get("NOVPHY_PHYSICS_CAPTURE_V2_STRIDE")
+    prior_aligned = os.environ.get("NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT")
+    prior_physics_port = os.environ.get("NOVPHY_PHYSICS_CAPTURE_PORT")
+    corrected = []
+    try:
+        if start_display_process:
+            display, display_process = start_display(
+                runtime_root / "repair" / "display.log"
+            )
+            os.environ["DISPLAY"] = display
+            _log(f"production correction display started DISPLAY={display}")
+        release_identity = release_identity_for_plan(plan["identity"])
+        for slot, prior_result in zip(correction_slots, failed):
+            lineage_number = int(slot["ordinal"]) + 1
+            started = time.monotonic()
+            correction_failures = []
+            trajectory_record = None
+            successful_attempt = None
+            _log(
+                f"production correction lineage={lineage_number} "
+                f"policy={slot['behavior_policy']} start"
+            )
+            for correction_index in range(1, intent["correction_retry_limit"] + 1):
+                attempt_number = plan["fixed_retry_limit"] + correction_index
+                attempt_root = (
+                    runtime_root / "attempts" / slot["slot_identity"]
+                    / f"attempt-{attempt_number:02d}"
+                )
+                try:
+                    if attempt_root.exists() and (attempt_root / "trajectory.json").is_file():
+                        trajectory_record = _load(
+                            attempt_root / "trajectory.json",
+                            "interrupted correction trajectory",
+                        )
+                        load_successor_trajectory(
+                            attempt_root, release_identity=release_identity
+                        )
+                    elif attempt_root.exists():
+                        raise SuccessorCohortError(
+                            "correction attempt directory is incomplete"
+                        )
+                    else:
+                        trajectory_record = _collect_lineage_attempt(
+                            slot,
+                            attempt_root,
+                            game,
+                            release_identity=release_identity,
+                            speed=speed,
+                            headless=headless,
+                        )
+                except Exception as error:
+                    correction_failures.append({
+                        "attempt_number": attempt_number,
+                        "error_type": type(error).__name__,
+                        "message": str(error),
+                    })
+                    _log(
+                        f"production correction lineage={lineage_number} "
+                        f"attempt={attempt_number} failed: "
+                        f"{type(error).__name__}: {error}"
+                    )
+                    trajectory_record = None
+                    continue
+                successful_attempt = attempt_number
+                accepted_path = (
+                    _accepted_root(runtime_root, "production")
+                    / slot["exposure_role"] / slot["slot_identity"]
+                )
+                accepted_path.parent.mkdir(parents=True, exist_ok=True)
+                os.replace(attempt_root, accepted_path)
+                all_failures = list(prior_result["failures"]) + correction_failures
+                repaired_result = _accepted_lineage_result(
+                    slot,
+                    trajectory_record,
+                    accepted_path,
+                    wall_seconds=time.monotonic() - started,
+                    attempt_count=successful_attempt,
+                    failures=all_failures,
+                )
+                repaired_result["production_correction"] = {
+                    "schema": intent["schema"],
+                    "successful_attempt_number": successful_attempt,
+                    "prior_attempt_count": prior_result["attempt_count"],
+                }
+                _replace_json(repaired_result, _result_path(runtime_root, slot))
+                corrected.append({
+                    "slot_identity": slot["slot_identity"],
+                    "ordinal": slot["ordinal"],
+                    "successful_attempt_number": successful_attempt,
+                    "trajectory_identity": repaired_result["trajectory_identity"],
+                })
+                _log(
+                    f"production correction lineage={lineage_number} accepted "
+                    f"attempt={successful_attempt} "
+                    f"shots={repaired_result['executed_action_count']}"
+                )
+                break
+            if trajectory_record is None:
+                raise SuccessorCohortError(
+                    f"production correction exhausted for lineage {lineage_number}"
+                )
+    finally:
+        if display_process is not None:
+            _log(
+                "production correction display stopped "
+                f"result={terminate(display_process)}"
+            )
+        if prior_display is None:
+            os.environ.pop("DISPLAY", None)
+        else:
+            os.environ["DISPLAY"] = prior_display
+        for name, prior in (
+            ("NOVPHY_PHYSICS_CAPTURE_V2_STRIDE", prior_stride),
+            ("NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT", prior_aligned),
+            ("NOVPHY_PHYSICS_CAPTURE_PORT", prior_physics_port),
+        ):
+            if prior is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = prior
+
+    correction_result = {
+        "schema": "issue_62_production_correction_result_v1",
+        "production_plan_identity": plan["identity"],
+        "corrected_implementation_commit": implementation_commit,
+        "lineages": corrected,
+        "accepted": len(corrected),
+        "failed": 0,
+        "completed_at": _now(),
+        "final_evaluation_opened": False,
+    }
+    write_immutable_cohort_v2_json(
+        correction_result, runtime_root / "production-correction-result.json"
+    )
+    write_immutable_cohort_v2_json(
+        correction_result, staging / "production-correction-result.json"
+    )
+    final_results = _all_results(runtime_root, plan)
+    accepted_count = sum(item["status"] == "accepted" for item in final_results)
+    failed_count = len(final_results) - accepted_count
+    _log(
+        f"production correction complete accepted={accepted_count}/"
+        f"{len(final_results)} failed={failed_count}"
+    )
+    return {
+        "schema": "issue_62_production_collection_status_v1",
+        "production_plan_identity": plan["identity"],
+        "scheduled": len(final_results),
+        "accepted": accepted_count,
+        "failed": failed_count,
+        "production_correction": _production_correction_reference(
+            runtime_root, plan
+        ),
+        "final_evaluation_opened": False,
+    }
 
 
 def run_pilot(
@@ -2034,6 +2329,7 @@ def publish_production(
     staging = runtime_root / "release-staging"
     if (staging / "production-plan.json").read_bytes() != Path(plan_path).read_bytes():
         raise SuccessorCohortError("release staging plan differs")
+    correction_reference = _production_correction_reference(staging, plan)
     release_identity = release_identity_for_plan(plan["identity"])
     trajectories_by_role = {role: [] for role in PUBLIC_ROLES}
     release_records = []
@@ -2131,6 +2427,7 @@ def publish_production(
             "failed": 0,
             "outcome_conditioned_replacement": False,
         },
+        "production_correction": correction_reference,
         "passed": True,
     }
     write_immutable_cohort_v2_json(manifest, staging / "manifest.json")
@@ -2145,6 +2442,7 @@ def publish_production(
         "nested_training_scale_counts": [
             item["lineage_count"] for item in nested_scales
         ],
+        "production_correction": correction_reference,
         "final_evaluation_collected": False,
         "rerun_commands": [
             "python -u -m scripts.run_issue_62_successor_cohort --dry-run",
@@ -2177,6 +2475,9 @@ def validate_release(
         or manifest.get("failure_accounting", {}).get("failed") != 0
     ):
         raise SuccessorCohortError("successor release manifest differs")
+    correction_reference = _production_correction_reference(root, plan)
+    if manifest.get("production_correction") != correction_reference:
+        raise SuccessorCohortError("successor production correction differs")
     readers = tuple(
         SuccessorCohortReader(root, exposure_role=role) for role in PUBLIC_ROLES
     )
@@ -2192,6 +2493,7 @@ def validate_release(
     if (
         summary.get("artifact_identity") != manifest["identity"]
         or summary.get("counts") != manifest["counts"]
+        or summary.get("production_correction") != correction_reference
         or summary.get("final_evaluation_collected") is not False
     ):
         raise SuccessorCohortError("successor compact summary differs")
@@ -2226,6 +2528,7 @@ def _parser() -> argparse.ArgumentParser:
     mode.add_argument("--run-pilot", action="store_true")
     mode.add_argument("--freeze-production", action="store_true")
     mode.add_argument("--run-production", action="store_true")
+    mode.add_argument("--repair-production", action="store_true")
     mode.add_argument("--publish-production", action="store_true")
     mode.add_argument("--validate", action="store_true")
     parser.add_argument("--pilot-plan", type=Path, default=DEFAULT_PILOT_PLAN)
@@ -2308,6 +2611,17 @@ def main(argv: list[str] | None = None) -> int:
             "failed": sum(item["status"] == "failed" for item in records),
             "final_evaluation_opened": False,
         }
+    elif args.repair_production:
+        result = repair_failed_production(
+            plan_path=args.production_plan,
+            runtime_root=args.production_runtime,
+            implementation_commit=_implementation_commit(
+                args.implementation_commit, required=True
+            ),
+            start_display_process=args.start_display,
+            speed=args.speed,
+            headless=args.headless,
+        )
     elif args.publish_production:
         result = publish_production(
             plan_path=args.production_plan,

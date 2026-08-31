@@ -37,6 +37,7 @@ from scripts.run_issue_62_successor_cohort import (
     _trajectory_record,
     dry_run,
     main,
+    repair_failed_production,
     run_parallel_collection,
     run_collection,
     run_pilot,
@@ -58,6 +59,109 @@ from world_model.planning.gameplay import SlingshotAction
 
 
 class SuccessorCohortPlanTests(unittest.TestCase):
+    def test_production_repair_recollects_every_failed_frozen_slot(self) -> None:
+        pilot = build_pilot_plan()
+        slots = [copy.deepcopy(item) for item in pilot["lineages"][:2]]
+        plan = {
+            "identity": "production-plan:fixture",
+            "phase": "production",
+            "fixed_retry_limit": 2,
+            "lineages": slots,
+        }
+        failed = [
+            {
+                "schema": "issue_62_lineage_collection_result_v1",
+                "slot_identity": slot["slot_identity"],
+                "status": "failed",
+                "exposure_role": slot["exposure_role"],
+                "generator_family": slot["generator_family"],
+                "behavior_policy": slot["behavior_policy"],
+                "attempt_count": 2,
+                "failures": [{
+                    "attempt_number": 1,
+                    "error_type": "FixtureError",
+                    "message": "fixture",
+                }],
+            }
+            for slot in slots
+        ]
+        accepted = [
+            {**item, "status": "accepted", "trajectory_identity": f"trajectory:{index}"}
+            for index, item in enumerate(failed)
+        ]
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            plan_path = root / "production-plan.json"
+            plan_path.write_text("fixture\n", encoding="utf-8")
+            staging = root / "runtime/release-staging"
+            staging.mkdir(parents=True)
+            (root / "runtime/records").mkdir()
+            (staging / "production-plan.json").write_bytes(plan_path.read_bytes())
+            write_immutable_cohort_v2_json(
+                {"implementation_commit": "old-commit"},
+                root / "runtime/provenance.json",
+            )
+
+            def collect(slot, attempt_root, *_args, **_kwargs):
+                attempt_root.mkdir(parents=True)
+                return {
+                    "trajectory_identity": f"trajectory:{slot['ordinal']}",
+                }
+
+            def result(slot, trajectory, *_args, **_kwargs):
+                return {
+                    "schema": "issue_62_lineage_collection_result_v1",
+                    "slot_identity": slot["slot_identity"],
+                    "status": "accepted",
+                    "trajectory_identity": trajectory["trajectory_identity"],
+                    "executed_action_count": 1,
+                }
+
+            with (
+                patch(
+                    "scripts.run_issue_62_successor_cohort._load_plan",
+                    return_value=plan,
+                ),
+                patch(
+                    "scripts.run_issue_62_successor_cohort._all_results",
+                    side_effect=[failed, accepted],
+                ),
+                patch(
+                    "scripts.run_issue_62_successor_cohort.archive_details",
+                    side_effect=lambda _stage, game: game.mkdir(parents=True),
+                ),
+                patch(
+                    "scripts.run_issue_62_successor_cohort._collect_lineage_attempt",
+                    side_effect=collect,
+                ) as collector,
+                patch(
+                    "scripts.run_issue_62_successor_cohort._accepted_lineage_result",
+                    side_effect=result,
+                ),
+            ):
+                status = repair_failed_production(
+                    plan_path=plan_path,
+                    runtime_root=root / "runtime",
+                    implementation_commit="new-commit",
+                    start_display_process=False,
+                    speed=50,
+                    headless=False,
+                )
+
+            self.assertEqual(status["accepted"], 2)
+            self.assertEqual(status["failed"], 0)
+            self.assertEqual(collector.call_count, 2)
+            intent = json.loads(
+                (root / "runtime/production-correction-plan.json").read_bytes()
+            )
+            self.assertEqual(
+                [item["slot_identity"] for item in intent["lineages"]],
+                [item["slot_identity"] for item in slots],
+            )
+            self.assertFalse(intent["membership_changed"])
+            self.assertFalse(intent["outcome_conditioned_replacement"])
+
     def test_production_cli_defaults_to_four_workers(self) -> None:
         args = _parser().parse_args(["--run-production"])
 

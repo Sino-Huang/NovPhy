@@ -40,10 +40,12 @@ class TrajectoryGuidedAim:
     clearance_margin_world: float
     target_distance_world: float
     clearance_margin_minimum_target_distance_world: float
+    pull_pixels: float
+    pull_fraction: float
 
     def evidence(self) -> dict[str, Any]:
         return {
-            "schema": "trajectory_guided_direct_pig_resolution_v2",
+            "schema": "trajectory_guided_direct_pig_resolution_v3",
             "target_id": self.target_id,
             "target_label": self.target_label,
             "target_canvas": list(self.target_canvas),
@@ -65,6 +67,8 @@ class TrajectoryGuidedAim:
             "clearance_margin_minimum_target_distance_world": (
                 self.clearance_margin_minimum_target_distance_world
             ),
+            "pull_pixels": self.pull_pixels,
+            "pull_fraction": self.pull_fraction,
             "preview_model": {
                 "maximum_launch_speed": TRAJECTORY_MAX_LAUNCH_SPEED,
                 "launch_gravity_scale": TRAJECTORY_LAUNCH_GRAVITY,
@@ -349,14 +353,13 @@ def aim_directly_at_visible_pig(
         (target["bounds"][3] - target["bounds"][1]) / 2.0 + bird_radius
     )
     candidates = []
+    full_pull_radius = pixels_per_world_unit * TRAJECTORY_DRAG_RADIUS_WORLD
     for drag_x in range(bounds.drag_x[0], bounds.drag_x[1] + 1):
         for drag_y in range(max(0, bounds.drag_y[0]), bounds.drag_y[1] + 1):
             action = SlingshotAction(drag_x, drag_y, tap_time_ms)
             if not bounds.contains(action):
                 continue
             pull = math.hypot(drag_x, drag_y)
-            if pull < pixels_per_world_unit * TRAJECTORY_DRAG_RADIUS_WORLD:
-                continue
             predicted_y = _preview_at_target_x(
                 sling_x=sling_x,
                 sling_y=sling_y,
@@ -391,8 +394,9 @@ def aim_directly_at_visible_pig(
             candidates.append(
                 (
                     0 if angle <= math.pi / 4 else 1,
+                    0 if pull >= full_pull_radius else 1,
                     miss,
-                    pull,
+                    -pull,
                     angle,
                     drag_x,
                     drag_y,
@@ -406,8 +410,9 @@ def aim_directly_at_visible_pig(
         )
     (
         arc_rank,
+        _pull_rank,
         miss,
-        _pull,
+        negative_pull,
         _angle,
         _drag_x,
         _drag_y,
@@ -442,4 +447,6 @@ def aim_directly_at_visible_pig(
         clearance_margin_minimum_target_distance_world=(
             clearance_margin_minimum_target_distance_world
         ),
+        pull_pixels=-negative_pull,
+        pull_fraction=min(1.0, -negative_pull / full_pull_radius),
     )

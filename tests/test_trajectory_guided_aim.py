@@ -226,6 +226,57 @@ class TrajectoryGuidedAimTests(unittest.TestCase):
             23.844282,
         )
 
+    def test_expert_solvable_platform_layouts_allow_partial_pull(self) -> None:
+        def feature(object_id, label, bounds):
+            left, top, right, bottom = bounds
+            return {
+                "properties": {"id": object_id, "label": label},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                        [left, top], [right, top],
+                        [right, bottom], [left, bottom],
+                    ]],
+                },
+            }
+
+        bounds = SlingshotActionBounds(
+            drag_x=(-160, -10),
+            drag_y=(-80, 80),
+            tap_time_ms=(0, 1000),
+            release_time_ms=600,
+        )
+        for pig_bounds, platform_bounds in (
+            ((227, 192, 239, 203), (208, 203, 257, 218)),
+            ((227, 186, 238, 197), (207, 197, 256, 212)),
+        ):
+            with self.subTest(pig_bounds=pig_bounds):
+                aim = aim_directly_at_visible_pig(
+                    [{"features": [
+                        feature("pig:expert", "pig_basic_small_1", pig_bounds),
+                        feature("platform:expert", "Platform", platform_bounds),
+                    ]}],
+                    {
+                        "canvasX": 127.98783454987834,
+                        "canvasY": 256.96107055961073,
+                        "pixelsPerWorldUnit": 23.84428223844282,
+                    },
+                    bounds,
+                    target_rank=0,
+                    arc="lowest_clear_full_pull",
+                    aim_point="visible_polygon_upper_edge",
+                    bird_radius_world=0.17,
+                    clearance_margin_world=0.34,
+                    clearance_margin_minimum_target_distance_world=8.0,
+                    tap_time_ms=0,
+                )
+
+                self.assertEqual(aim.arc, "high")
+                self.assertLess(
+                    (aim.action.drag_x ** 2 + aim.action.drag_y ** 2) ** 0.5,
+                    23.84428223844282,
+                )
+
 
 if __name__ == "__main__":
     unittest.main()
