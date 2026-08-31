@@ -6,7 +6,7 @@ import hashlib
 import json
 from pathlib import Path
 import random
-from typing import Any, Final, Mapping
+from typing import Any, Callable, Final, Mapping
 
 from scripts.cohort_v2_macro_semantics import validate_capture_macro_derivation
 from scripts.cohort_v2_micro_relations import (
@@ -770,7 +770,13 @@ def load_successor_trajectory(
 class SuccessorCohortReader:
     """Expose one non-final role as complete deployment decision trajectories."""
 
-    def __init__(self, release_root: Path, *, exposure_role: str) -> None:
+    def __init__(
+        self,
+        release_root: Path,
+        *,
+        exposure_role: str,
+        progress: Callable[[int, int], None] | None = None,
+    ) -> None:
         if exposure_role not in PUBLIC_ROLES:
             raise SuccessorCohortError("successor reader permits only non-final roles")
         root = Path(release_root).resolve()
@@ -794,12 +800,14 @@ class SuccessorCohortReader:
         ]
         if len(records) != plan["role_counts"][exposure_role]:
             raise SuccessorCohortError("successor release role inventory differs")
-        trajectories = tuple(
-            load_successor_trajectory(
+        loaded = []
+        for index, item in enumerate(records, start=1):
+            loaded.append(load_successor_trajectory(
                 root / item["path"], release_identity=expected_release_identity
-            )
-            for item in records
-        )
+            ))
+            if progress is not None:
+                progress(index, len(records))
+        trajectories = tuple(loaded)
         bindings = tuple(
             TrajectoryLineageBinding(
                 trajectory_identity=item.identity,

@@ -2333,7 +2333,7 @@ def publish_production(
     release_identity = release_identity_for_plan(plan["identity"])
     trajectories_by_role = {role: [] for role in PUBLIC_ROLES}
     release_records = []
-    for result in results:
+    for result_index, result in enumerate(results, start=1):
         relative = (
             Path("trajectories") / result["exposure_role"] / result["slot_identity"]
         )
@@ -2356,6 +2356,15 @@ def publish_production(
             "frame_record_count": result["frame_record_count"],
             "path": relative.as_posix(),
         })
+        if (
+            result_index == 1
+            or result_index % 100 == 0
+            or result_index == len(results)
+        ):
+            _log(
+                f"publication validated trajectories="
+                f"{result_index}/{len(results)}"
+            )
     if (
         len({item["scenario_lineage_identity"] for item in release_records})
         != len(release_records)
@@ -2478,9 +2487,28 @@ def validate_release(
     correction_reference = _production_correction_reference(root, plan)
     if manifest.get("production_correction") != correction_reference:
         raise SuccessorCohortError("successor production correction differs")
-    readers = tuple(
-        SuccessorCohortReader(root, exposure_role=role) for role in PUBLIC_ROLES
-    )
+    readers = []
+    for role_index, role in enumerate(PUBLIC_ROLES, start=1):
+        _log(
+            f"validate role={role} phase={role_index}/{len(PUBLIC_ROLES)} "
+            f"lineages={plan['role_counts'][role]}"
+        )
+
+        def report_progress(
+            completed: int, total: int, *, selected_role: str = role
+        ) -> None:
+            if completed == 1 or completed % 100 == 0 or completed == total:
+                _log(
+                    f"validate role={selected_role} "
+                    f"trajectories={completed}/{total}"
+                )
+
+        readers.append(SuccessorCohortReader(
+            root,
+            exposure_role=role,
+            progress=report_progress,
+        ))
+    readers = tuple(readers)
     SuccessorCohortReader.validate_role_isolation(readers)
     training_slots = [
         item["slot_identity"] for item in plan["lineages"]
