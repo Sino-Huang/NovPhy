@@ -293,6 +293,45 @@ class LineageScalingContractTests(unittest.TestCase):
 
 
 class LineageScalingTrainingTests(unittest.TestCase):
+    def test_recursive_scoring_resets_at_real_multi_shot_segment_boundaries(self) -> None:
+        protocol = _protocol()
+        model = DualOutputPredictor(protocol.predictor_config)
+        transitions = []
+        for horizon, windows in (
+            (1, ((0, 1), (1, 2), (2, 3), (3, 4))),
+            (15, ((0, 2), (2, 4))),
+        ):
+            for position, target in windows:
+                transitions.append(ContinuousTransitionExample(
+                    identity=f"segment-window:{position}:h{horizon}",
+                    context=torch.zeros(15),
+                    action=torch.zeros(5),
+                    target=torch.ones(15),
+                    physical_diagnostics={},
+                    decision_index=position,
+                    horizon=horizon,
+                    target_decision_index=target,
+                ))
+        lineage = CarrierLineage(
+            trajectory_identity="trajectory:segmented",
+            scenario_lineage_identity="lineage:segmented",
+            exposure_role="calibration",
+            source_release_identity="release:fixture",
+            carrier=CarrierKind.SOURCE,
+            carrier_identity=protocol.source_carrier_identity,
+            transitions=tuple(transitions),
+            complete=True,
+            decision_count=4,
+            segment_end_positions=(2, 4),
+        )
+
+        evaluation = evaluate_continuous_prediction(
+            model, (lineage,), horizons=(1, 15)
+        )
+
+        self.assertEqual(evaluation.recursive[0].evaluated_transitions, 4)
+        self.assertEqual(evaluation.recursive[1].evaluated_transitions, 2)
+
     def test_source_and_deployment_carriers_must_bind_the_same_transitions(self) -> None:
         protocol = _protocol()
         source_cell = next(

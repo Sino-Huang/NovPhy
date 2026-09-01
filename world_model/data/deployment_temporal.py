@@ -583,55 +583,100 @@ class TemporalVisualCarrierAdapter:
         self.object_kind_temperature = object_kind_temperature
 
     def _parse(self, observation: AgentObservation) -> dict[str, torch.Tensor]:
-        try:
-            with Image.open(BytesIO(observation.png)) as opened:
-                image = opened.convert("RGB").resize(
-                    (self.model.config.image_width, self.model.config.image_height),
-                    Image.Resampling.BILINEAR,
-                )
-                array = np.asarray(image, dtype=np.uint8).copy()
-        except (OSError, UnidentifiedImageError) as error:
-            raise DeploymentTemporalError("agent observation is not a readable image") from error
+        return self.parse_batch((observation,))[0]
+
+    def parse_batch(
+        self, observations: tuple[AgentObservation, ...]
+    ) -> tuple[dict[str, torch.Tensor], ...]:
+        """Parse observations once so callers can reuse adjacent-frame results."""
+        if not observations or any(
+            type(observation) is not AgentObservation
+            for observation in observations
+        ):
+            raise DeploymentTemporalError(
+                "parser batch requires agent observations"
+            )
+        images = []
+        for observation in observations:
+            try:
+                with Image.open(BytesIO(observation.png)) as opened:
+                    image = opened.convert("RGB").resize(
+                        (
+                            self.model.config.image_width,
+                            self.model.config.image_height,
+                        ),
+                        Image.Resampling.BILINEAR,
+                    )
+                    images.append(
+                        torch.from_numpy(
+                            np.asarray(image, dtype=np.uint8).copy()
+                        ).permute(2, 0, 1)
+                    )
+            except (OSError, UnidentifiedImageError) as error:
+                raise DeploymentTemporalError(
+                    "agent observation is not a readable image"
+                ) from error
         device = next(self.model.parameters()).device
         with torch.no_grad():
-            output = self.model(
-                torch.from_numpy(array).permute(2, 0, 1).unsqueeze(0).to(device)
-            )
-        return {
-            "presence": torch.sigmoid(
-                output["presence_logits"][0] / self.temperatures["object_presence"]
-            ).detach().cpu(),
-            "centers": output["centers"][0].detach().cpu(),
-            "kinds": torch.softmax(
-                output["kind_logits"][0] / self.object_kind_temperature, dim=-1
-            ).detach().cpu(),
-            "relations": torch.sigmoid(
-                output["relation_logits"][0]
-                / torch.tensor(
-                    (
-                        self.temperatures["contact"],
-                        self.temperatures["supports"],
-                    ),
-                    device=output["relation_logits"].device,
-                )
-            ).detach().cpu(),
-            "macros": torch.sigmoid(
-                output["macro_logits"][0]
-                / torch.tensor(
-                    (
-                        self.temperatures["steady-state"],
-                        self.temperatures["structure-unstable"],
-                    ),
-                    device=output["macro_logits"].device,
-                )
-            ).detach().cpu(),
-        }
+            output = self.model(torch.stack(images).to(device))
+        relation_temperatures = torch.tensor(
+            (
+                self.temperatures["contact"],
+                self.temperatures["supports"],
+            ),
+            device=output["relation_logits"].device,
+        )
+        macro_temperatures = torch.tensor(
+            (
+                self.temperatures["steady-state"],
+                self.temperatures["structure-unstable"],
+            ),
+            device=output["macro_logits"].device,
+        )
+        return tuple(
+            {
+                "presence": torch.sigmoid(
+                    output["presence_logits"][index]
+                    / self.temperatures["object_presence"]
+                ).detach().cpu(),
+                "centers": output["centers"][index].detach().cpu(),
+                "kinds": torch.softmax(
+                    output["kind_logits"][index]
+                    / self.object_kind_temperature,
+                    dim=-1,
+                ).detach().cpu(),
+                "relations": torch.sigmoid(
+                    output["relation_logits"][index]
+                    / relation_temperatures
+                ).detach().cpu(),
+                "macros": torch.sigmoid(
+                    output["macro_logits"][index] / macro_temperatures
+                ).detach().cpu(),
+            }
+            for index in range(len(observations))
+        )
 
-    def build(self, context: TemporalObservationContext) -> TemporalCarrier:
+    def build_from_parsed(
+        self,
+        context: TemporalObservationContext,
+        current: Mapping[str, torch.Tensor],
+        prior: Mapping[str, torch.Tensor] | None,
+    ) -> TemporalCarrier:
+        """Build a carrier from parser outputs produced by :meth:`parse_batch`."""
         if type(context) is not TemporalObservationContext:
-            raise DeploymentTemporalError("carrier adapter requires temporal observations")
-        current = self._parse(context.current)
-        prior = None if context.prior is None else self._parse(context.prior)
+            raise DeploymentTemporalError(
+                "carrier adapter requires temporal observations"
+            )
+        if context.prior is None and prior is not None:
+            raise DeploymentTemporalError("parsed prior has no observation binding")
+        if context.prior is not None and prior is None:
+            raise DeploymentTemporalError("temporal prior parser output is missing")
+        required = {"presence", "centers", "kinds", "relations", "macros"}
+        if set(current) != required or (
+            prior is not None and set(prior) != required
+        ):
+            raise DeploymentTemporalError("parsed carrier fields differ")
+
         elapsed = (
             None
             if context.prior is None
@@ -775,6 +820,15 @@ class TemporalVisualCarrierAdapter:
             diagnostics=diagnostics,
             symbols=symbols,
         )
+
+    def build(self, context: TemporalObservationContext) -> TemporalCarrier:
+        if type(context) is not TemporalObservationContext:
+            raise DeploymentTemporalError(
+                "carrier adapter requires temporal observations"
+            )
+        current = self._parse(context.current)
+        prior = None if context.prior is None else self._parse(context.prior)
+        return self.build_from_parsed(context, current, prior)
 
 
 def build_transition_carriers(

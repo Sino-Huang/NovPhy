@@ -695,6 +695,7 @@ class CarrierLineage:
     transitions: tuple[ContinuousTransitionExample, ...]
     complete: bool
     decision_count: int = 15
+    segment_end_positions: tuple[int, ...] = ()
 
     def __post_init__(self) -> None:
         if (
@@ -715,6 +716,22 @@ class CarrierLineage:
         if type(self.decision_count) is not int or self.decision_count <= 0:
             raise LineageScalingError("carrier lineage decision count is invalid")
         if (
+            type(self.segment_end_positions) is not tuple
+            or any(
+                type(position) is not int or position <= 0
+                for position in self.segment_end_positions
+            )
+            or tuple(sorted(set(self.segment_end_positions)))
+            != self.segment_end_positions
+            or (
+                self.segment_end_positions
+                and self.segment_end_positions[-1] != self.decision_count
+            )
+        ):
+            raise LineageScalingError(
+                "carrier lineage segment boundaries are malformed"
+            )
+        if (
             type(self.transitions) is not tuple
             or not self.transitions
             or any(type(item) is not ContinuousTransitionExample for item in self.transitions)
@@ -729,6 +746,10 @@ class CarrierLineage:
         ):
             raise LineageScalingError("carrier transition exceeds its complete trajectory")
 
+    @property
+    def segment_ends(self) -> tuple[int, ...]:
+        return self.segment_end_positions or (self.decision_count,)
+
 
 def _validate_window_coverage(
     lineage: CarrierLineage,
@@ -740,14 +761,28 @@ def _validate_window_coverage(
             for item in lineage.transitions
             if item.horizon == horizon
         }
-        expected_positions = tuple(range(0, lineage.decision_count, horizon))
+        starts = (0, *lineage.segment_ends[:-1])
+        expected_positions = tuple(
+            position
+            for start, end in zip(
+                starts, lineage.segment_ends, strict=True
+            )
+            for position in range(start, end, horizon)
+        )
         if tuple(sorted(windows)) != expected_positions:
             raise LineageScalingError(
                 f"complete lineage lacks contiguous h{horizon} windows"
             )
+        segment_end_by_position = {
+            position: end
+            for start, end in zip(
+                starts, lineage.segment_ends, strict=True
+            )
+            for position in range(start, end, horizon)
+        }
         if any(
             windows[position].target_decision_index
-            != min(position + horizon, lineage.decision_count)
+            != min(position + horizon, segment_end_by_position[position])
             for position in expected_positions
         ):
             raise LineageScalingError(
@@ -781,7 +816,7 @@ def save_carrier_lineage_bundle(
     target.parent.mkdir(parents=True, exist_ok=True)
     torch.save(
         {
-            "schema": "carrier_lineage_bundle_v1",
+            "schema": "carrier_lineage_bundle_v2",
             "source_release_identity": release,
             "exposure_role": role,
             "carrier": carrier.value,
@@ -792,6 +827,7 @@ def save_carrier_lineage_bundle(
                     "scenario_lineage_identity": lineage.scenario_lineage_identity,
                     "complete": lineage.complete,
                     "decision_count": lineage.decision_count,
+                    "segment_end_positions": lineage.segment_ends,
                     "transitions": [
                         {
                             "identity": transition.identity,
@@ -829,7 +865,7 @@ def load_carrier_lineage_bundle(path: Path) -> tuple[CarrierLineage, ...]:
             "lineages",
         }:
             raise LineageScalingError("carrier lineage bundle fields differ")
-        if payload["schema"] != "carrier_lineage_bundle_v1":
+        if payload["schema"] != "carrier_lineage_bundle_v2":
             raise LineageScalingError("carrier lineage bundle schema is unsupported")
         raw_lineages = payload["lineages"]
         if not isinstance(raw_lineages, list) or not raw_lineages:
@@ -841,6 +877,7 @@ def load_carrier_lineage_bundle(path: Path) -> tuple[CarrierLineage, ...]:
                 "scenario_lineage_identity",
                 "complete",
                 "decision_count",
+                "segment_end_positions",
                 "transitions",
             }:
                 raise LineageScalingError("carrier lineage fields differ")
@@ -882,6 +919,9 @@ def load_carrier_lineage_bundle(path: Path) -> tuple[CarrierLineage, ...]:
                 transitions=tuple(transitions),
                 complete=raw_lineage["complete"],
                 decision_count=raw_lineage["decision_count"],
+                segment_end_positions=tuple(
+                    raw_lineage["segment_end_positions"]
+                ),
             ))
         return tuple(lineages)
     except (OSError, KeyError, TypeError, ValueError, RuntimeError) as error:
@@ -1178,6 +1218,10 @@ def train_continuous_predictor(
     examples_seen = 0
     steps = 0
     loss_value = math.nan
+    progress_interval = max(
+        protocol.batch_size, protocol.optimizer_example_budget // 100
+    )
+    next_progress = progress_interval
     started = time.monotonic()
     for start in range(0, len(schedule), protocol.batch_size):
         batch = schedule[start:start + protocol.batch_size]
@@ -1211,12 +1255,17 @@ def train_continuous_predictor(
         examples_seen += take
         steps += 1
         loss_value = float(loss.detach().cpu())
-        if progress is not None:
+        if progress is not None and (
+            examples_seen >= next_progress
+            or examples_seen == protocol.optimizer_example_budget
+        ):
             progress(
                 f"[train {cell.scale_name}/{cell.carrier.value}/seed-{cell.seed}] "
                 f"examples {examples_seen}/{protocol.optimizer_example_budget} "
                 f"loss={loss_value:.8f}"
             )
+            while next_progress <= examples_seen:
+                next_progress += progress_interval
     report = TrainingReport(
         protocol_identity=protocol.identity,
         cell=cell,
@@ -1591,57 +1640,61 @@ def evaluate_continuous_prediction(
                     for item in lineage.transitions
                     if item.horizon == horizon
                 }
-                lineage_errors: list[tuple[int, float]] = []
-                position = min(windows) if windows else 0
-                current = (
-                    windows[position].context.to(device) if windows else None
-                )
-                while position in windows:
-                    transition = windows[position]
-                    try:
-                        model_evaluations += 1
-                        assert current is not None
-                        predicted = model.carrier(
-                            current.unsqueeze(0),
-                            transition.action.to(device).unsqueeze(0),
-                            PredictionPair(horizon, Abstraction.CONTINUOUS),
-                        )[0]
-                        if not bool(torch.isfinite(predicted).all()):
-                            nonfinite += 1
+                lineage_area = 0.0
+                lineage_evaluated = False
+                starts = (0, *lineage.segment_ends[:-1])
+                for segment_start, segment_end in zip(
+                    starts, lineage.segment_ends, strict=True
+                ):
+                    segment_errors: list[tuple[int, float]] = []
+                    position = segment_start
+                    current = windows[position].context.to(device)
+                    while position < segment_end:
+                        transition = windows[position]
+                        try:
+                            model_evaluations += 1
+                            predicted = model.carrier(
+                                current.unsqueeze(0),
+                                transition.action.to(device).unsqueeze(0),
+                                PredictionPair(horizon, Abstraction.CONTINUOUS),
+                            )[0]
+                            if not bool(torch.isfinite(predicted).all()):
+                                nonfinite += 1
+                                break
+                            value = float(F.mse_loss(
+                                predicted, transition.target.to(device)
+                            ).cpu())
+                            errors.append(value)
+                            position = transition.target_decision_index
+                            segment_errors.append((position, value))
+                            current = predicted
+                            if physical_diagnostic is not None:
+                                for name, diagnostic in physical_diagnostic(
+                                    predicted.detach().cpu()
+                                ).items():
+                                    predicted_diagnostic_values.setdefault(
+                                        name, []
+                                    ).append(float(diagnostic))
+                        except Exception as error:
+                            failures.append(
+                                f"recursive-h{horizon}:{transition.identity}:"
+                                f"{type(error).__name__}: {error}"
+                            )
                             break
-                        value = float(F.mse_loss(
-                            predicted, transition.target.to(device)
-                        ).cpu())
-                        errors.append(value)
-                        position = transition.target_decision_index
-                        lineage_errors.append((position, value))
-                        current = predicted
-                        if physical_diagnostic is not None:
-                            for name, diagnostic in physical_diagnostic(
-                                predicted.detach().cpu()
-                            ).items():
-                                predicted_diagnostic_values.setdefault(name, []).append(
-                                    float(diagnostic)
-                                )
-                    except Exception as error:
-                        failures.append(
-                            f"recursive-h{horizon}:{transition.identity}:"
-                            f"{type(error).__name__}: {error}"
-                        )
-                        break
-                if lineage_errors:
-                    previous_position = lineage_errors[0][0] - horizon
-                    previous_error = 0.0
-                    area = 0.0
-                    for target_position, error in lineage_errors:
-                        area += (
-                            (previous_error + error)
-                            * (target_position - previous_position)
-                            / 2.0
-                        )
-                        previous_position = target_position
-                        previous_error = error
-                    lineage_aucs.append(area)
+                    if segment_errors:
+                        previous_position = segment_start
+                        previous_error = 0.0
+                        for target_position, error in segment_errors:
+                            lineage_area += (
+                                (previous_error + error)
+                                * (target_position - previous_position)
+                                / 2.0
+                            )
+                            previous_position = target_position
+                            previous_error = error
+                        lineage_evaluated = True
+                if lineage_evaluated:
+                    lineage_aucs.append(lineage_area)
                 if progress is not None:
                     progress(
                         f"[score recursive-h{horizon}] lineage "
@@ -2047,6 +2100,7 @@ def evaluate_action_ranking(
     states: tuple[ActionRankingState, ...],
     *,
     horizon: int,
+    recursive_steps: int = 1,
     predicted_cost: Callable[
         [ActionRankingState, ActionCandidate, torch.Tensor], float
     ],
@@ -2054,7 +2108,13 @@ def evaluate_action_ranking(
 ) -> ActionRankingEvaluation:
     """Measure realized regret on each state's one frozen legal candidate set."""
 
-    if not states or type(horizon) is not int or horizon <= 0:
+    if (
+        not states
+        or type(horizon) is not int
+        or horizon <= 0
+        or type(recursive_steps) is not int
+        or recursive_steps <= 0
+    ):
         raise LineageScalingError("action-ranking evaluation inputs are invalid")
     if len({(item.carrier, item.carrier_identity) for item in states}) != 1:
         raise LineageScalingError("action-ranking states contain a carrier mismatch")
@@ -2070,12 +2130,14 @@ def evaluate_action_ranking(
             scores = []
             try:
                 for candidate in state.candidates:
-                    model_evaluations += 1
-                    predicted = model.carrier(
-                        state.context.to(device).unsqueeze(0),
-                        candidate.action.to(device).unsqueeze(0),
-                        pair,
-                    )[0]
+                    predicted = state.context.to(device)
+                    for _step in range(recursive_steps):
+                        model_evaluations += 1
+                        predicted = model.carrier(
+                            predicted.unsqueeze(0),
+                            candidate.action.to(device).unsqueeze(0),
+                            pair,
+                        )[0]
                     if not bool(torch.isfinite(predicted).all()):
                         raise RuntimeError("candidate prediction is nonfinite")
                     score = float(predicted_cost(state, candidate, predicted.detach().cpu()))

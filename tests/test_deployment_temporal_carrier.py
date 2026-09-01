@@ -178,6 +178,22 @@ def _manifest(trajectory: DeploymentTrajectory) -> TrajectoryLineageManifest:
 
 
 class TemporalVisualCarrierTests(unittest.TestCase):
+    def test_batched_parser_outputs_build_the_same_carriers_without_reparsing(self) -> None:
+        adapter = _adapter()
+        prior = _observation("observation:prior", 10, 1.0, 51)
+        current = _observation("observation:current", 11, 1.1, 102)
+        context = TemporalObservationContext(prior, current)
+
+        parsed_prior, parsed_current = adapter.parse_batch((prior, current))
+        batched = adapter.build_from_parsed(
+            context, parsed_current, parsed_prior
+        )
+        ordinary = adapter.build(context)
+
+        torch.testing.assert_close(batched.tensor, ordinary.tensor)
+        self.assertEqual(batched.symbols, ordinary.symbols)
+        self.assertEqual(batched.object_slots, ordinary.object_slots)
+
     def test_aligned_prior_context_produces_declared_motion(self) -> None:
         adapter = _adapter()
         prior = _observation("observation:prior", 10, 1.0, 51)
