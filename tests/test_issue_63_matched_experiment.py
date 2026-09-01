@@ -7,6 +7,7 @@ from scripts.run_issue_63_matched_experiment import (
     _analyze,
     _bounds,
     _candidate_actions,
+    _declared_training_scales,
     _realized_goal_cost,
 )
 from tests.test_lineage_scaled_retraining import _protocol
@@ -29,6 +30,37 @@ def _score(value: float) -> dict:
 
 
 class Issue63MatchedExperimentTests(unittest.TestCase):
+    def test_reads_the_issue_62_v4_nested_training_scale_schema(self) -> None:
+        scales = _declared_training_scales({
+            "nested_training_scales": [
+                {
+                    "name": "training_6",
+                    "lineage_count": 6,
+                    "slot_identities": [f"slot:{index}" for index in range(6)],
+                },
+                {
+                    "name": "training_200",
+                    "lineage_count": 200,
+                    "slot_identities": [f"slot:{index}" for index in range(200)],
+                },
+                {
+                    "name": "training_1000",
+                    "lineage_count": 1000,
+                    "slot_identities": [f"slot:{index}" for index in range(1000)],
+                },
+                {
+                    "name": "training_3000",
+                    "lineage_count": 3000,
+                    "slot_identities": [f"slot:{index}" for index in range(3000)],
+                },
+            ]
+        })
+
+        self.assertEqual(
+            tuple(item["lineage_count"] for item in scales),
+            (6, 200, 1000, 3000),
+        )
+
     def test_candidate_freeze_keeps_the_observed_action_and_four_distinct_legal_perturbations(self) -> None:
         observed = {
             "engine_relative_action": {

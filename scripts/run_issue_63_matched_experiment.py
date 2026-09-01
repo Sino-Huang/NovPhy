@@ -331,6 +331,30 @@ def _release_inventory(
     return manifest, plan, roles
 
 
+def _declared_training_scales(
+    plan: Mapping[str, Any],
+) -> tuple[Mapping[str, Any], ...]:
+    raw = plan.get("nested_training_scales")
+    if not isinstance(raw, list):
+        raise LineageScalingError(
+            "issue-62 production plan has no nested training scales"
+        )
+    scales = tuple(raw)
+    if (
+        tuple(item.get("lineage_count") for item in scales)
+        != TRAINING_SCALE_COUNTS
+        or tuple(item.get("name") for item in scales)
+        != tuple(f"training_{count}" for count in TRAINING_SCALE_COUNTS)
+        or any(
+            not isinstance(item.get("slot_identities"), list)
+            or len(item["slot_identities"]) != item["lineage_count"]
+            for item in scales
+        )
+    ):
+        raise LineageScalingError("issue-62 nested training ladder differs")
+    return scales
+
+
 def _load_deployment_adapter(
     *, device: str
 ) -> VisualPlanningObservationAdapter:
@@ -675,8 +699,7 @@ def _prepare(args: argparse.Namespace) -> int:
             "issue-63 production design requires a clean implementation revision"
         )
     manifest, plan, role_records = _release_inventory(args.successor_release)
-    if tuple(plan["nested_training_scale_counts"]) != TRAINING_SCALE_COUNTS:
-        raise LineageScalingError("issue-62 nested training ladder differs")
+    declared_scales = _declared_training_scales(plan)
     _log(
         f"prepare source={manifest['identity']} roles="
         + ",".join(f"{role}:{len(role_records[role])}" for role in PUBLIC_ROLES)
@@ -741,19 +764,30 @@ def _prepare(args: argparse.Namespace) -> int:
         bindings_by_role[role] = tuple(_binding(item) for item in source_tuple)
         _log(f"prepared role={role} bundles written")
 
-    training_manifest = TrajectoryLineageManifest.create(
-        str(manifest["identity"]), bindings_by_role["training"]
-    )
+    training_bindings_by_slot = {
+        record["slot_identity"]: binding
+        for record, binding in zip(
+            role_records["training"],
+            bindings_by_role["training"],
+            strict=True,
+        )
+    }
     scales = tuple(
         FrozenLineageScale.from_manifest(
             "full" if count == TRAINING_SCALE_COUNTS[-1] else (
                 "six" if count == 6 else str(count)
             ),
             TrajectoryLineageManifest.create(
-                str(manifest["identity"]), training_manifest.bindings[:count]
+                str(manifest["identity"]),
+                tuple(
+                    training_bindings_by_slot[slot_identity]
+                    for slot_identity in declared["slot_identities"]
+                ),
             ),
         )
-        for count in TRAINING_SCALE_COUNTS
+        for count, declared in zip(
+            TRAINING_SCALE_COUNTS, declared_scales, strict=True
+        )
     )
     ranking_specs = tuple(
         _ranking_spec(
@@ -2194,6 +2228,7 @@ def _validate(args: argparse.Namespace) -> int:
 
 def _dry_run(args: argparse.Namespace) -> int:
     manifest, plan, role_records = _release_inventory(args.successor_release)
+    _declared_training_scales(plan)
     adapter = _load_deployment_adapter(device=args.device)
     codec = CohortV2StateCodec(latent_dim=197, max_entities=15)
     pairs = {
