@@ -65,7 +65,7 @@ class Issue63MatchedExperimentTests(unittest.TestCase):
             self.assertTrue(
                 (
                     root
-                    / "ranking-collection/superseded-pre-execution-failures.json"
+                    / "ranking-collection/superseded-pre-execution-failures-v2.json"
                 ).is_file()
             )
 
@@ -82,17 +82,22 @@ class Issue63MatchedExperimentTests(unittest.TestCase):
 
         branch = _ranking_branch_slot(
             {"slot_identity": "original", "planned_actions": []},
-            {"identity": state_identity},
+            {"identity": state_identity, "exposure_role": "calibration"},
             {
                 "identity": candidate_identity,
                 "drag_x": -159,
                 "drag_y": 15,
                 "tap_time_ms": 901,
             },
+            state_ordinal=11,
+            candidate_ordinal=4,
         )
 
         installed_name = f"issue-53-{branch['slot_identity']}.xml"
         self.assertLessEqual(len(installed_name.encode("utf-8")), 255)
+        self.assertEqual(
+            branch["slot_identity"], "issue-63-rank-cal-s011-c04-slot-v3"
+        )
 
     def test_reads_the_issue_62_v4_nested_training_scale_schema(self) -> None:
         scales = _declared_training_scales({

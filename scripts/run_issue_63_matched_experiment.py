@@ -46,7 +46,6 @@ from world_model.data.successor_cohort import (
     RELEASE_SCHEMA,
     _load_shot,
     release_identity_for_plan,
-    successor_identity,
     validate_successor_plan,
 )
 from world_model.model import DualOutputPredictor, PredictorConfig, identity
@@ -1087,14 +1086,18 @@ def _ranking_branch_slot(
     original: Mapping[str, Any],
     state_spec: Mapping[str, Any],
     candidate_spec: Mapping[str, Any],
+    *,
+    state_ordinal: int,
+    candidate_ordinal: int,
 ) -> dict[str, Any]:
+    branch_key = _ranking_branch_key(
+        state_spec,
+        state_ordinal=state_ordinal,
+        candidate_ordinal=candidate_ordinal,
+    )
     return {
         **original,
-        "slot_identity": successor_identity(
-            "issue-63-ranking-branch-slot-v2",
-            state_spec["identity"],
-            candidate_spec["identity"],
-        ),
+        "slot_identity": f"issue-63-{branch_key}-slot-v3",
         "behavior_policy": "issue_63_frozen_ranking_candidates",
         "planned_actions": [
             {
@@ -1109,14 +1112,23 @@ def _ranking_branch_slot(
     }
 
 
-def _ranking_branch_identity(
-    state_spec: Mapping[str, Any], candidate_spec: Mapping[str, Any]
+def _ranking_branch_key(
+    state_spec: Mapping[str, Any],
+    *,
+    state_ordinal: int,
+    candidate_ordinal: int,
 ) -> str:
-    return successor_identity(
-        "issue-63-ranking-branch-artifact-v1",
-        state_spec["identity"],
-        candidate_spec["identity"],
-    )
+    role = state_spec.get("exposure_role")
+    role_code = {"calibration": "cal", "model_selection": "ms"}.get(role)
+    if (
+        role_code is None
+        or type(state_ordinal) is not int
+        or not 1 <= state_ordinal <= RANKING_STATES_PER_ROLE
+        or type(candidate_ordinal) is not int
+        or not 1 <= candidate_ordinal <= 4
+    ):
+        raise LineageScalingError("ranking branch ordinal is invalid")
+    return f"rank-{role_code}-s{state_ordinal:03d}-c{candidate_ordinal:02d}"
 
 
 def _supersede_legacy_long_filename_failures(
@@ -1154,26 +1166,22 @@ def _supersede_legacy_long_filename_failures(
         str(path.relative_to(paths["root"])) for path in failure_paths
     )
     correction = {
-        "schema": "issue_63_ranking_infrastructure_correction_v1",
+        "schema": "issue_63_ranking_infrastructure_correction_v2",
         "failure_count": len(failure_paths),
         "failure_paths": list(relative_paths),
         "failure_stage": "pre_execution_level_install",
         "failure_code": "ENAMETOOLONG",
         "candidate_outcomes_observed": False,
-        "treatment": "superseded_and_replayed_with_compact_runtime_paths",
+        "treatment": "superseded_and_replayed_with_ordinal_runtime_paths",
         "final_evaluation_opened": False,
     }
-    correction["identity"] = successor_identity(
-        "issue-63-ranking-infrastructure-correction-v1",
-        correction["failure_count"],
-        relative_paths,
-        correction["failure_stage"],
-        correction["failure_code"],
-        correction["treatment"],
+    correction["identity"] = (
+        "issue-63-ranking-infrastructure-correction-v2:"
+        "pre-execution-enametoolong"
     )
     correction_path = (
         paths["root"]
-        / "ranking-collection/superseded-pre-execution-failures.json"
+        / "ranking-collection/superseded-pre-execution-failures-v2.json"
     )
     if correction_path.exists():
         if _load_json(correction_path, "ranking correction") != correction:
@@ -1189,17 +1197,23 @@ def _collect_ranking_branch(
     state_spec: Mapping[str, Any],
     candidate_spec: Mapping[str, Any],
     *,
+    state_ordinal: int,
+    candidate_ordinal: int,
     game: Path,
     release_identity: str,
     speed: int,
     headless: bool,
 ) -> Path | None:
-    branch_identity = _ranking_branch_identity(state_spec, candidate_spec)
+    branch_key = _ranking_branch_key(
+        state_spec,
+        state_ordinal=state_ordinal,
+        candidate_ordinal=candidate_ordinal,
+    )
     branches_root = paths["root"] / "ranking-collection/branches"
     branch_root = (
-        branches_root / branch_identity
+        branches_root / branch_key
     )
-    failure_path = branches_root / f"{branch_identity}.failure.json"
+    failure_path = branches_root / f"{branch_key}.failure.json"
     if (branch_root / "trajectory.json").is_file():
         return branch_root
     if failure_path.is_file():
@@ -1217,7 +1231,13 @@ def _collect_ranking_branch(
     branch_root.parent.mkdir(parents=True, exist_ok=True)
     try:
         record = _collect_lineage_attempt(
-            _ranking_branch_slot(original_slot, state_spec, candidate_spec),
+            _ranking_branch_slot(
+                original_slot,
+                state_spec,
+                candidate_spec,
+                state_ordinal=state_ordinal,
+                candidate_ordinal=candidate_ordinal,
+            ),
             branch_root,
             game,
             release_identity=release_identity,
@@ -1236,7 +1256,7 @@ def _collect_ranking_branch(
             "schema": "issue_63_ranking_candidate_failure_v1",
             "state_identity": state_spec["identity"],
             "candidate_identity": candidate_spec["identity"],
-            "branch_identity": branch_identity,
+            "branch_key": branch_key,
             "error_type": type(error).__name__,
             "error": str(error),
             "failed_run_treatment": "worst_cost",
@@ -1368,6 +1388,8 @@ def _collect_ranking(args: argparse.Namespace, role: str) -> int:
                             original_slot,
                             state_spec,
                             candidate_spec,
+                            state_ordinal=state_index,
+                            candidate_ordinal=candidate_index,
                             game=game,
                             release_identity=str(manifest["identity"]),
                             speed=args.speed,
@@ -2489,6 +2511,8 @@ def _dry_run(args: argparse.Namespace) -> int:
         original_slot,
         calibration_spec,
         calibration_spec["candidates"][1],
+        state_ordinal=1,
+        candidate_ordinal=1,
     )
     if (
         len(branch_slot["planned_actions"]) != 1
