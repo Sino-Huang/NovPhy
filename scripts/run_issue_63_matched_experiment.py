@@ -46,6 +46,7 @@ from world_model.data.successor_cohort import (
     RELEASE_SCHEMA,
     _load_shot,
     release_identity_for_plan,
+    successor_identity,
     validate_successor_plan,
 )
 from world_model.model import DualOutputPredictor, PredictorConfig, identity
@@ -188,6 +189,7 @@ def _results_identity(results: Mapping[str, Any]) -> str:
             results["design_identity"],
             results["decision_freeze_identity"],
             results["analysis"]["decision"],
+            results.get("ranking_collection_correction_identity"),
             None if selected is None else tuple(sorted(selected.items())),
         )
     )
@@ -1088,12 +1090,10 @@ def _ranking_branch_slot(
 ) -> dict[str, Any]:
     return {
         **original,
-        "slot_identity": identity(
-            (
-                "issue-63-ranking-branch-slot-v1",
-                state_spec["identity"],
-                candidate_spec["identity"],
-            )
+        "slot_identity": successor_identity(
+            "issue-63-ranking-branch-slot-v2",
+            state_spec["identity"],
+            candidate_spec["identity"],
         ),
         "behavior_policy": "issue_63_frozen_ranking_candidates",
         "planned_actions": [
@@ -1109,6 +1109,80 @@ def _ranking_branch_slot(
     }
 
 
+def _ranking_branch_identity(
+    state_spec: Mapping[str, Any], candidate_spec: Mapping[str, Any]
+) -> str:
+    return successor_identity(
+        "issue-63-ranking-branch-artifact-v1",
+        state_spec["identity"],
+        candidate_spec["identity"],
+    )
+
+
+def _supersede_legacy_long_filename_failures(
+    paths: Mapping[str, Path],
+) -> dict[str, Any] | None:
+    branches_root = paths["root"] / "ranking-collection/branches"
+    if not branches_root.is_dir():
+        return None
+    failure_paths = tuple(
+        sorted(
+            path
+            for path in branches_root.rglob("*.failure.json")
+            if path.parent != branches_root
+        )
+    )
+    if not failure_paths:
+        return None
+    records = tuple(
+        _load_json(path, "legacy ranking failure") for path in failure_paths
+    )
+    if any(
+        record.get("schema") != "issue_63_ranking_candidate_failure_v1"
+        or record.get("error_type") != "OSError"
+        or "[Errno 36] File name too long" not in str(record.get("error"))
+        or (
+            path.with_name(path.name.removesuffix(".failure.json"))
+            / "trajectory.json"
+        ).exists()
+        for path, record in zip(failure_paths, records, strict=True)
+    ):
+        raise LineageScalingError(
+            "legacy ranking failures include an executed or different failure"
+        )
+    relative_paths = tuple(
+        str(path.relative_to(paths["root"])) for path in failure_paths
+    )
+    correction = {
+        "schema": "issue_63_ranking_infrastructure_correction_v1",
+        "failure_count": len(failure_paths),
+        "failure_paths": list(relative_paths),
+        "failure_stage": "pre_execution_level_install",
+        "failure_code": "ENAMETOOLONG",
+        "candidate_outcomes_observed": False,
+        "treatment": "superseded_and_replayed_with_compact_runtime_paths",
+        "final_evaluation_opened": False,
+    }
+    correction["identity"] = successor_identity(
+        "issue-63-ranking-infrastructure-correction-v1",
+        correction["failure_count"],
+        relative_paths,
+        correction["failure_stage"],
+        correction["failure_code"],
+        correction["treatment"],
+    )
+    correction_path = (
+        paths["root"]
+        / "ranking-collection/superseded-pre-execution-failures.json"
+    )
+    if correction_path.exists():
+        if _load_json(correction_path, "ranking correction") != correction:
+            raise LineageScalingError("ranking correction record differs")
+    else:
+        _write_json(correction_path, correction)
+    return correction
+
+
 def _collect_ranking_branch(
     paths: Mapping[str, Path],
     original_slot: Mapping[str, Any],
@@ -1120,13 +1194,12 @@ def _collect_ranking_branch(
     speed: int,
     headless: bool,
 ) -> Path | None:
+    branch_identity = _ranking_branch_identity(state_spec, candidate_spec)
+    branches_root = paths["root"] / "ranking-collection/branches"
     branch_root = (
-        paths["root"]
-        / "ranking-collection/branches"
-        / str(state_spec["identity"])
-        / str(candidate_spec["identity"])
+        branches_root / branch_identity
     )
-    failure_path = branch_root.parent / f"{candidate_spec['identity']}.failure.json"
+    failure_path = branches_root / f"{branch_identity}.failure.json"
     if (branch_root / "trajectory.json").is_file():
         return branch_root
     if failure_path.is_file():
@@ -1163,6 +1236,7 @@ def _collect_ranking_branch(
             "schema": "issue_63_ranking_candidate_failure_v1",
             "state_identity": state_spec["identity"],
             "candidate_identity": candidate_spec["identity"],
+            "branch_identity": branch_identity,
             "error_type": type(error).__name__,
             "error": str(error),
             "failed_run_treatment": "worst_cost",
@@ -1192,6 +1266,12 @@ def _atomic_save_ranking(
 def _collect_ranking(args: argparse.Namespace, role: str) -> int:
     paths = _paths(args.output)
     protocol, design = _load_frozen(paths)
+    correction = _supersede_legacy_long_filename_failures(paths)
+    if correction is not None:
+        _log(
+            "superseded pre-execution filename failures="
+            f"{correction['failure_count']} correction={correction['identity']}"
+        )
     if role not in ("calibration", "model_selection"):
         raise LineageScalingError("ranking collection role is unsupported")
     if role == "model_selection" and not paths["decision_freeze"].is_file():
@@ -1678,14 +1758,6 @@ def _freeze_decision(args: argparse.Namespace) -> int:
         "model_selection_opened": False,
         "final_evaluation_opened": False,
     }
-    summary["identity"] = identity((
-        "issue-63-matched-experiment-summary-v1",
-        summary["results_identity"],
-        summary["decision"],
-        None
-        if selected is None
-        else tuple(sorted(selected.items())),
-    ))
     freeze["identity"] = _decision_freeze_identity(freeze)
     _write_json(paths["decision_freeze"], freeze)
     _log(
@@ -2012,6 +2084,7 @@ def _publish(args: argparse.Namespace) -> int:
         raise LineageScalingError("decision freeze differs")
     scores = _score_inventory(paths, protocol, "model_selection")
     analysis = _analyze(protocol, scores)
+    ranking_correction = _supersede_legacy_long_filename_failures(paths)
     supported = analysis["decision"] == "supported"
     selected = None
     if supported:
@@ -2049,6 +2122,11 @@ def _publish(args: argparse.Namespace) -> int:
         "decision_freeze_identity": freeze["identity"],
         "model_selection_cell_count": len(scores),
         "analysis": analysis,
+        "ranking_collection_correction_identity": (
+            None
+            if ranking_correction is None
+            else ranking_correction["identity"]
+        ),
         "selected_deployment_configuration": selected,
         "historical_issue_15_role": "external_reference_only",
         "final_evaluation_opened": False,
@@ -2135,8 +2213,20 @@ def _publish(args: argparse.Namespace) -> int:
         "matched_primary_cells": 12,
         "all_learning_curve_cells": len(protocol.cells),
         "selected_deployment_configuration": selected,
+        "ranking_collection_correction_identity": results[
+            "ranking_collection_correction_identity"
+        ],
         "final_evaluation_opened": False,
     }
+    summary["identity"] = identity((
+        "issue-63-matched-experiment-summary-v1",
+        summary["results_identity"],
+        summary["decision"],
+        summary["ranking_collection_correction_identity"],
+        None
+        if selected is None
+        else tuple(sorted(selected.items())),
+    ))
     _write_json(args.summary, summary)
     _log(
         f"published decision={analysis['decision']} results={results['identity']} "
@@ -2198,20 +2288,29 @@ def _validate(args: argparse.Namespace) -> int:
     freeze = _load_json(paths["decision_freeze"], "decision freeze")
     results = _load_json(paths["results"], "experiment results")
     summary = _load_json(args.summary, "compact issue-63 summary")
+    ranking_correction = _supersede_legacy_long_filename_failures(paths)
+    ranking_correction_identity = (
+        None if ranking_correction is None else ranking_correction["identity"]
+    )
     if (
         freeze.get("protocol_identity") != protocol.identity
         or freeze.get("identity") != _decision_freeze_identity(freeze)
         or results.get("design_identity") != design["identity"]
         or results.get("decision_freeze_identity") != freeze.get("identity")
         or results.get("identity") != _results_identity(results)
+        or results.get("ranking_collection_correction_identity")
+        != ranking_correction_identity
         or results.get("final_evaluation_opened") is not False
         or summary.get("results_identity") != results.get("identity")
         or summary.get("decision") != results["analysis"]["decision"]
+        or summary.get("ranking_collection_correction_identity")
+        != ranking_correction_identity
         or summary.get("identity")
         != identity((
             "issue-63-matched-experiment-summary-v1",
             summary.get("results_identity"),
             summary.get("decision"),
+            summary.get("ranking_collection_correction_identity"),
             None
             if summary.get("selected_deployment_configuration") is None
             else tuple(sorted(summary["selected_deployment_configuration"].items())),

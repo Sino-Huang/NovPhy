@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from pathlib import Path
+import tempfile
 import unittest
 
 from scripts.run_issue_63_matched_experiment import (
@@ -9,6 +11,9 @@ from scripts.run_issue_63_matched_experiment import (
     _candidate_actions,
     _declared_training_scales,
     _realized_goal_cost,
+    _ranking_branch_slot,
+    _supersede_legacy_long_filename_failures,
+    _write_json,
 )
 from tests.test_lineage_scaled_retraining import _protocol
 from world_model.training.lineage_scaling import CarrierKind, TrainingCell
@@ -30,6 +35,65 @@ def _score(value: float) -> dict:
 
 
 class Issue63MatchedExperimentTests(unittest.TestCase):
+    def test_pre_execution_long_filename_failures_are_preserved_and_superseded(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            failure_path = (
+                root
+                / "ranking-collection/branches/legacy-state"
+                / "legacy-candidate.failure.json"
+            )
+            _write_json(failure_path, {
+                "schema": "issue_63_ranking_candidate_failure_v1",
+                "state_identity": "state:legacy",
+                "candidate_identity": "candidate:legacy",
+                "error_type": "OSError",
+                "error": "[Errno 36] File name too long: legacy.xml",
+                "failed_run_treatment": "worst_cost",
+                "final_evaluation_opened": False,
+            })
+
+            correction = _supersede_legacy_long_filename_failures(
+                {"root": root}
+            )
+
+            self.assertIsNotNone(correction)
+            assert correction is not None
+            self.assertEqual(correction["failure_count"], 1)
+            self.assertFalse(correction["candidate_outcomes_observed"])
+            self.assertTrue(failure_path.is_file())
+            self.assertTrue(
+                (
+                    root
+                    / "ranking-collection/superseded-pre-execution-failures.json"
+                ).is_file()
+            )
+
+    def test_ranking_branch_slot_identity_fits_the_runtime_level_filename(self) -> None:
+        state_identity = (
+            'issue-63-ranking-state-v1:["calibration",'
+            '"issue-62-decision-trajectory-v1:sha256:' + "a" * 64 + '",0]'
+        )
+        candidate_identity = (
+            'issue-63-ranking-candidate-v1:["'
+            + state_identity.replace('"', '\\"')
+            + '",4,-159,15,901]'
+        )
+
+        branch = _ranking_branch_slot(
+            {"slot_identity": "original", "planned_actions": []},
+            {"identity": state_identity},
+            {
+                "identity": candidate_identity,
+                "drag_x": -159,
+                "drag_y": 15,
+                "tap_time_ms": 901,
+            },
+        )
+
+        installed_name = f"issue-53-{branch['slot_identity']}.xml"
+        self.assertLessEqual(len(installed_name.encode("utf-8")), 255)
+
     def test_reads_the_issue_62_v4_nested_training_scale_schema(self) -> None:
         scales = _declared_training_scales({
             "nested_training_scales": [
