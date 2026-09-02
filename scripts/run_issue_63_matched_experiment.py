@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Mapping
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import csv
 from dataclasses import asdict
 import json
@@ -195,11 +196,11 @@ def _results_identity(results: Mapping[str, Any]) -> str:
 
 
 def _cell_score_identity(score: Mapping[str, Any]) -> str:
-    return identity(
-        (
-            "issue-63-matched-cell-score-v1",
-            {key: value for key, value in score.items() if key != "identity"},
-        )
+    cell = score["cell"]
+    return (
+        "issue-63-matched-cell-score-v2:"
+        f"{score['evaluation_role']}:{cell['scale']}:{cell['carrier']}:"
+        f"seed-{cell['seed']}"
     )
 
 
@@ -247,7 +248,39 @@ def _score_path(paths: Mapping[str, Path], role: str, cell: TrainingCell) -> Pat
     parent = (
         paths["calibration"] if role == "calibration" else paths["model_selection"]
     )
-    return parent / cell.scale_name / cell.carrier.value / f"seed-{cell.seed}.json"
+    return (
+        parent
+        / cell.scale_name
+        / cell.carrier.value
+        / f"seed-{cell.seed}.score-v2.json"
+    )
+
+
+def _score_matches(
+    score: Mapping[str, Any],
+    paths: Mapping[str, Path],
+    role: str,
+    cell: TrainingCell,
+) -> bool:
+    return (
+        score.get("schema") == "issue_63_matched_cell_score_v2"
+        and score.get("protocol_reference") == "protocol.json"
+        and score.get("checkpoint_reference")
+        == _checkpoint_path(paths, cell).relative_to(paths["root"]).as_posix()
+        and isinstance(score.get("compute"), Mapping)
+        and score["compute"].get("training_report_reference")
+        == _training_report_path(paths, cell)
+        .relative_to(paths["root"])
+        .as_posix()
+        and score.get("cell") == {
+            "scale": cell.scale_name,
+            "carrier": cell.carrier.value,
+            "seed": cell.seed,
+        }
+        and score.get("evaluation_role") == role
+        and score.get("identity") == _cell_score_identity(score)
+        and score.get("final_evaluation_opened") is False
+    )
 
 
 def _bounds() -> SlingshotActionBounds:
@@ -1550,20 +1583,25 @@ def _null_variance(lineages: tuple[CarrierLineage, ...], horizon: int) -> float:
 
 def _score_role(args: argparse.Namespace, role: str) -> int:
     paths = _paths(args.output)
+    _log(f"score {role} load=1/5 frozen protocol and design")
     protocol, _design = _load_frozen(paths)
     if role == "model_selection" and not paths["decision_freeze"].is_file():
         raise LineageScalingError(
             "freeze the calibration-only decision rule before model-selection scoring"
         )
+    _log(f"score {role} load=2/5 source evaluation carrier")
     source_lineages = load_carrier_lineage_bundle(
         _bundle_path(paths, role, CarrierKind.SOURCE)
     )
+    _log(f"score {role} load=3/5 deployment evaluation carrier")
     deployment_lineages = load_carrier_lineage_bundle(
         _bundle_path(paths, role, CarrierKind.DEPLOYMENT)
     )
+    _log(f"score {role} load=4/5 source action-ranking states")
     source_ranking = load_action_ranking_bundle(
         _ranking_path(paths, role, CarrierKind.SOURCE)
     )
+    _log(f"score {role} load=5/5 deployment action-ranking states")
     deployment_ranking = load_action_ranking_bundle(
         _ranking_path(paths, role, CarrierKind.DEPLOYMENT)
     )
@@ -1591,40 +1629,44 @@ def _score_role(args: argparse.Namespace, role: str) -> int:
         }
         for carrier, lineages in lineages_by_carrier.items()
     }
+    pending = []
     for index, cell in enumerate(protocol.cells, start=1):
         output_path = _score_path(paths, role, cell)
         if output_path.exists():
             existing = _load_json(output_path, "cell score")
-            if (
-                existing.get("protocol_identity") != protocol.identity
-                or existing.get("cell_identity") != cell.identity
-                or existing.get("evaluation_role") != role
-                or existing.get("identity") != _cell_score_identity(existing)
-            ):
+            if not _score_matches(existing, paths, role, cell):
                 raise LineageScalingError("existing cell score differs")
             _log(f"score {role} cell={index}/{len(protocol.cells)} validated existing")
             continue
+        pending.append((index, cell))
+
+    def score_cell(index: int, cell: TrainingCell) -> None:
+        output_path = _score_path(paths, role, cell)
+        _log(
+            f"score {role} cell={index}/{len(protocol.cells)} "
+            f"loading checkpoint scale={cell.scale_name} "
+            f"carrier={cell.carrier.value} seed={cell.seed}"
+        )
         model, checkpoint = load_lineage_scaled_checkpoint(
             _checkpoint_path(paths, cell),
             protocol,
             expected_cell=cell,
             device=args.device,
         )
-        training_compute = _load_json(
-            _training_report_path(paths, cell), "training compute report"
-        )
-        if training_compute.get("checkpoint_identity") != checkpoint.identity:
-            raise LineageScalingError("training compute report differs")
         _log(
             f"score {role} cell={index}/{len(protocol.cells)} "
             f"scale={cell.scale_name} carrier={cell.carrier.value} seed={cell.seed}"
         )
+
+        def progress(message: str) -> None:
+            _log(f"score {role} cell={index}/{len(protocol.cells)} {message}")
+
         prediction = evaluate_continuous_prediction(
             model,
             lineages_by_carrier[cell.carrier],
             horizons=(1, 15),
             physical_diagnostic=_predicted_physical_diagnostics,
-            progress=_log,
+            progress=progress,
         )
 
         def predicted_cost(
@@ -1641,7 +1683,7 @@ def _score_role(args: argparse.Namespace, role: str) -> int:
             horizon=15,
             recursive_steps=RANKING_RECURSIVE_H15_STEPS,
             predicted_cost=predicted_cost,
-            progress=_log,
+            progress=progress,
         )
         recursive = {item.horizon: item for item in prediction.recursive}
         selected_actions = []
@@ -1663,10 +1705,18 @@ def _score_role(args: argparse.Namespace, role: str) -> int:
                 )
             )
         payload = {
-            "schema": "issue_63_matched_cell_score_v1",
-            "protocol_identity": protocol.identity,
-            "checkpoint_identity": checkpoint.identity,
-            "cell_identity": cell.identity,
+            "schema": "issue_63_matched_cell_score_v2",
+            "protocol_reference": "protocol.json",
+            "checkpoint_reference": (
+                _checkpoint_path(paths, cell)
+                .relative_to(paths["root"])
+                .as_posix()
+            ),
+            "cell": {
+                "scale": cell.scale_name,
+                "carrier": cell.carrier.value,
+                "seed": cell.seed,
+            },
             "scale": cell.scale_name,
             "carrier": cell.carrier.value,
             "seed": cell.seed,
@@ -1711,14 +1761,36 @@ def _score_role(args: argparse.Namespace, role: str) -> int:
                 "training_optimizer_examples": checkpoint.optimizer_examples,
                 "training_optimizer_steps": checkpoint.optimizer_steps,
                 "training_epochs": checkpoint.epochs,
-                "training_wall_seconds": training_compute["wall_seconds"],
+                "training_report_reference": (
+                    _training_report_path(paths, cell)
+                    .relative_to(paths["root"])
+                    .as_posix()
+                ),
                 "parameter_count": checkpoint.parameter_count,
             },
             "final_evaluation_opened": False,
         }
         payload["identity"] = _cell_score_identity(payload)
         _write_json(output_path, payload)
-        _log(f"score {role} cell={index}/{len(protocol.cells)} written")
+
+    if pending:
+        worker_count = min(args.score_workers, len(pending))
+        _log(
+            f"score {role} parallel workers={worker_count} "
+            f"pending_cells={len(pending)}"
+        )
+        with ThreadPoolExecutor(
+            max_workers=worker_count,
+            thread_name_prefix="issue-63-score",
+        ) as executor:
+            futures = {
+                executor.submit(score_cell, index, cell): (index, cell)
+                for index, cell in pending
+            }
+            for future in as_completed(futures):
+                index, _cell = futures[future]
+                future.result()
+                _log(f"score {role} cell={index}/{len(protocol.cells)} written")
     _log(f"{role} scoring complete cells={len(protocol.cells)}")
     return 0
 
@@ -1729,14 +1801,7 @@ def _score_inventory(
     result = {}
     for cell in protocol.cells:
         score = _load_json(_score_path(paths, role, cell), f"{role} score")
-        if (
-            score.get("schema") != "issue_63_matched_cell_score_v1"
-            or score.get("protocol_identity") != protocol.identity
-            or score.get("cell_identity") != cell.identity
-            or score.get("evaluation_role") != role
-            or score.get("identity") != _cell_score_identity(score)
-            or score.get("final_evaluation_opened") is not False
-        ):
+        if not _score_matches(score, paths, role, cell):
             raise LineageScalingError(f"{role} score inventory differs")
         result[cell] = score
     return result
@@ -2554,6 +2619,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--summary", type=Path, default=DEFAULT_SUMMARY)
     parser.add_argument("--device", default="cuda")
+    parser.add_argument("--score-workers", type=int, default=4)
     parser.add_argument("--start-display", action="store_true")
     parser.add_argument("--speed", type=int, default=100)
     return parser
@@ -2568,6 +2634,8 @@ def main(argv: list[str] | None = None) -> int:
     args.summary = args.summary.resolve()
     if args.speed <= 0:
         raise LineageScalingError("ranking collection speed must be positive")
+    if args.score_workers <= 0:
+        raise LineageScalingError("score workers must be positive")
     if args.dry_run:
         return _dry_run(args)
     if args.prepare:

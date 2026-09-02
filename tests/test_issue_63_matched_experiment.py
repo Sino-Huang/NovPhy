@@ -9,9 +9,14 @@ from scripts.run_issue_63_matched_experiment import (
     _analyze,
     _bounds,
     _candidate_actions,
+    _cell_score_identity,
     _declared_training_scales,
+    _parser,
+    _paths,
     _realized_goal_cost,
     _ranking_branch_slot,
+    _score_matches,
+    _score_path,
     _supersede_legacy_long_filename_failures,
     _write_json,
 )
@@ -35,6 +40,58 @@ def _score(value: float) -> dict:
 
 
 class Issue63MatchedExperimentTests(unittest.TestCase):
+    def test_cell_scores_use_compact_ordinal_identity_and_v2_path(self) -> None:
+        cell = TrainingCell("training_3000", CarrierKind.DEPLOYMENT, 13)
+        score = {
+            "schema": "issue_63_matched_cell_score_v2",
+            "evaluation_role": "calibration",
+            "cell": {
+                "scale": cell.scale_name,
+                "carrier": cell.carrier.value,
+                "seed": cell.seed,
+            },
+        }
+
+        score_identity = _cell_score_identity(score)
+
+        self.assertEqual(
+            score_identity,
+            "issue-63-matched-cell-score-v2:calibration:"
+            "training_3000:deployment:seed-13",
+        )
+        self.assertNotIn("sha256", score_identity)
+        with tempfile.TemporaryDirectory() as temporary:
+            paths = _paths(Path(temporary))
+            path = _score_path(paths, "calibration", cell)
+            score.update({
+                "identity": score_identity,
+                "protocol_reference": "protocol.json",
+                "checkpoint_reference": (
+                    "checkpoints/training_3000/deployment/seed-13.pt"
+                ),
+                "compute": {
+                    "training_report_reference": (
+                        "checkpoints/training_3000/deployment/"
+                        "seed-13.training.json"
+                    ),
+                },
+                "final_evaluation_opened": False,
+            })
+
+            self.assertEqual(path.name, "seed-13.score-v2.json")
+            self.assertTrue(_score_matches(score, paths, "calibration", cell))
+
+    def test_scoring_defaults_to_four_bounded_workers(self) -> None:
+        parser = _parser()
+
+        defaults = parser.parse_args(["--score-calibration"])
+        explicit = parser.parse_args(
+            ["--score-calibration", "--score-workers", "2"]
+        )
+
+        self.assertEqual(defaults.score_workers, 4)
+        self.assertEqual(explicit.score_workers, 2)
+
     def test_pre_execution_long_filename_failures_are_preserved_and_superseded(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
