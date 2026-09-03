@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import csv
 from dataclasses import asdict
+import io
 import json
 import math
 import os
@@ -91,7 +92,7 @@ DEFAULT_OUTPUT: Final = (
 )
 DEFAULT_SUMMARY: Final = (
     REPOSITORY_ROOT
-    / "data/runtime_evidence/issue-63/matched-carrier-scaling-summary-v1.json"
+    / "data/runtime_evidence/issue-63/matched-carrier-scaling-summary-v2.json"
 )
 TRAINING_SCALE_COUNTS: Final = (6, 200, 1000, 3000)
 TRAINING_SEEDS: Final = (20260901, 20260902, 20260903)
@@ -145,6 +146,29 @@ def _write_json(path: Path, value: Mapping[str, Any]) -> None:
     os.replace(temporary, path)
 
 
+def _write_or_validate_json(
+    path: Path, value: Mapping[str, Any], label: str
+) -> None:
+    if path.exists():
+        if _load_json(path, label) != value:
+            raise LineageScalingError(f"existing {label} differs: {path}")
+        return
+    _write_json(path, value)
+
+
+def _write_or_validate_text(path: Path, value: str, label: str) -> None:
+    encoded = value.encode("utf-8")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        if path.read_bytes() != encoded:
+            raise LineageScalingError(f"existing {label} differs: {path}")
+        return
+    with tempfile.NamedTemporaryFile("wb", dir=path.parent, delete=False) as stream:
+        stream.write(encoded)
+        temporary = Path(stream.name)
+    os.replace(temporary, path)
+
+
 def _design_identity(design: Mapping[str, Any]) -> str:
     return identity(
         (
@@ -183,15 +207,29 @@ def _decision_freeze_identity(freeze: Mapping[str, Any]) -> str:
 
 def _results_identity(results: Mapping[str, Any]) -> str:
     selected = results["selected_deployment_configuration"]
-    return identity(
-        (
-            "issue-63-matched-experiment-results-v1",
-            results["design_identity"],
-            results["decision_freeze_identity"],
-            results["analysis"]["decision"],
-            results.get("ranking_collection_correction_identity"),
-            None if selected is None else tuple(sorted(selected.items())),
+    selection = "none"
+    if selected is not None:
+        cell = selected["cell"]
+        selection = (
+            f"{cell['scale']}:{cell['carrier']}:seed-{cell['seed']}"
         )
+    return (
+        "issue-63-matched-experiment-results-v2:"
+        f"{results['analysis']['decision']}:{selection}"
+    )
+
+
+def _summary_identity(summary: Mapping[str, Any]) -> str:
+    selected = summary["selected_deployment_configuration"]
+    selection = "none"
+    if selected is not None:
+        cell = selected["cell"]
+        selection = (
+            f"{cell['scale']}:{cell['carrier']}:seed-{cell['seed']}"
+        )
+    return (
+        "issue-63-matched-experiment-summary-v2:"
+        f"{summary['decision']}:{selection}"
     )
 
 
@@ -217,7 +255,7 @@ def _paths(output: Path) -> dict[str, Path]:
         "model_selection": root / "scores/model-selection",
         "decision_freeze": root / "decision-freeze.json",
         "evidence": root / "evidence",
-        "results": root / "evidence/results.json",
+        "results": root / "evidence/results-v2.json",
     }
 
 
@@ -242,6 +280,36 @@ def _training_report_path(
     paths: Mapping[str, Path], cell: TrainingCell
 ) -> Path:
     return _checkpoint_path(paths, cell).with_suffix(".training.json")
+
+
+def _training_wall_seconds(path: Path) -> float:
+    schema = b'\n  "schema": "issue_63_training_compute_report_v1",\n'
+    marker = b'  "wall_seconds": '
+    try:
+        with Path(path).open("rb") as stream:
+            stream.seek(0, os.SEEK_END)
+            stream.seek(max(0, stream.tell() - 1024), os.SEEK_SET)
+            tail = stream.read()
+        if schema not in tail:
+            raise ValueError("schema")
+        _prefix, found, suffix = tail.rpartition(marker)
+        if found != marker:
+            raise ValueError("wall_seconds")
+        raw_value, separator, ending = suffix.partition(b"\n")
+        if not separator or ending != b"}\n":
+            raise ValueError("ending")
+        value = json.loads(raw_value)
+        if (
+            type(value) not in (int, float)
+            or not math.isfinite(float(value))
+            or value < 0
+        ):
+            raise ValueError("wall_seconds")
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        raise LineageScalingError(
+            f"training compute report tail differs: {path}"
+        ) from error
+    return float(value)
 
 
 def _score_path(paths: Mapping[str, Path], role: str, cell: TrainingCell) -> Path:
@@ -2165,7 +2233,7 @@ def _svg_primary_effects(analysis: Mapping[str, Any]) -> str:
 
 def _publish(args: argparse.Namespace) -> int:
     paths = _paths(args.output)
-    protocol, design = _load_frozen(paths)
+    protocol, _design = _load_frozen(paths)
     freeze = _load_json(paths["decision_freeze"], "decision freeze")
     if freeze.get("protocol_identity") != protocol.identity:
         raise LineageScalingError("decision freeze differs")
@@ -2187,26 +2255,27 @@ def _publish(args: argparse.Namespace) -> int:
                 + float(scores[cell]["ranking"]["mean_top_action_regret"])
             ),
         )
-        checkpoint = load_lineage_scaled_checkpoint(
-            _checkpoint_path(paths, selected_cell),
-            protocol,
-            expected_cell=selected_cell,
-            device="cpu",
-        )[1]
         selected = {
-            "cell_identity": selected_cell.identity,
-            "checkpoint": str(_checkpoint_path(paths, selected_cell)),
-            "checkpoint_identity": checkpoint.identity,
+            "cell": {
+                "scale": selected_cell.scale_name,
+                "carrier": selected_cell.carrier.value,
+                "seed": selected_cell.seed,
+            },
+            "checkpoint_reference": (
+                _checkpoint_path(paths, selected_cell)
+                .relative_to(paths["root"])
+                .as_posix()
+            ),
             "carrier": "deployment",
             "controller_mode": "continuous-h15",
             "controller_checkpoint": None,
             "ranking_recursive_h15_steps": RANKING_RECURSIVE_H15_STEPS,
         }
     results = {
-        "schema": "issue_63_matched_experiment_results_v1",
-        "design_identity": design["identity"],
-        "protocol_identity": protocol.identity,
-        "decision_freeze_identity": freeze["identity"],
+        "schema": "issue_63_matched_experiment_results_v2",
+        "design_reference": "design.json",
+        "protocol_reference": "protocol.json",
+        "decision_freeze_reference": "decision-freeze.json",
         "model_selection_cell_count": len(scores),
         "analysis": analysis,
         "ranking_collection_correction_identity": (
@@ -2220,78 +2289,94 @@ def _publish(args: argparse.Namespace) -> int:
     }
     results["identity"] = _results_identity(results)
     paths["evidence"].mkdir(parents=True, exist_ok=True)
-    _write_json(paths["results"], results)
-    table_path = paths["evidence"] / "per-seed-model-selection.csv"
-    with table_path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.writer(stream)
+    _write_or_validate_json(paths["results"], results, "issue-63 v2 results")
+    table_path = paths["evidence"] / "per-seed-model-selection-v2.csv"
+    stream = io.StringIO(newline="")
+    writer = csv.writer(stream)
+    writer.writerow(
+        (
+            "scale",
+            "carrier",
+            "seed",
+            "local_mse_diagnostic",
+            "recursive_h1_auc",
+            "recursive_h15_auc",
+            "normalized_recursive_h1_auc",
+            "normalized_recursive_h15_auc",
+            "mean_top_action_regret",
+            "distinct_selected_actions",
+            "nonfinite_failures",
+            "execution_failures",
+            "prediction_model_evaluations",
+            "prediction_wall_seconds",
+            "training_wall_seconds",
+        )
+    )
+    for cell in protocol.cells:
+        score = scores[cell]
+        training_report = paths["root"] / score["compute"][
+            "training_report_reference"
+        ]
         writer.writerow(
             (
-                "scale",
-                "carrier",
-                "seed",
-                "local_mse_diagnostic",
-                "recursive_h1_auc",
-                "recursive_h15_auc",
-                "normalized_recursive_h1_auc",
-                "normalized_recursive_h15_auc",
-                "mean_top_action_regret",
-                "distinct_selected_actions",
-                "nonfinite_failures",
-                "execution_failures",
-                "prediction_model_evaluations",
-                "prediction_wall_seconds",
-                "training_wall_seconds",
+                cell.scale_name,
+                cell.carrier.value,
+                cell.seed,
+                score["local_mse_diagnostic"],
+                score["recursive"]["1"]["error_auc"],
+                score["recursive"]["15"]["error_auc"],
+                score["recursive"]["1"]["normalized_error_auc"],
+                score["recursive"]["15"]["normalized_error_auc"],
+                score["ranking"]["mean_top_action_regret"],
+                score["ranking"]["distinct_selected_actions"],
+                score["failures"]["nonfinite"],
+                len(score["failures"]["execution"])
+                + len(score["ranking"]["execution_failures"]),
+                score["compute"]["prediction_model_evaluations"],
+                score["compute"]["prediction_wall_seconds"],
+                _training_wall_seconds(training_report),
             )
         )
-        for cell in protocol.cells:
-            score = scores[cell]
-            writer.writerow(
-                (
-                    cell.scale_name,
-                    cell.carrier.value,
-                    cell.seed,
-                    score["local_mse_diagnostic"],
-                    score["recursive"]["1"]["error_auc"],
-                    score["recursive"]["15"]["error_auc"],
-                    score["recursive"]["1"]["normalized_error_auc"],
-                    score["recursive"]["15"]["normalized_error_auc"],
-                    score["ranking"]["mean_top_action_regret"],
-                    score["ranking"]["distinct_selected_actions"],
-                    score["failures"]["nonfinite"],
-                    len(score["failures"]["execution"])
-                    + len(score["ranking"]["execution_failures"]),
-                    score["compute"]["prediction_model_evaluations"],
-                    score["compute"]["prediction_wall_seconds"],
-                    score["compute"]["training_wall_seconds"],
-                )
-            )
-    (paths["evidence"] / "learning-curve.svg").write_text(
-        _svg_learning_curve(protocol, scores), encoding="utf-8"
+    _write_or_validate_text(
+        table_path, stream.getvalue(), "issue-63 per-seed model-selection table"
     )
-    (paths["evidence"] / "primary-effects.svg").write_text(
-        _svg_primary_effects(analysis), encoding="utf-8"
+    _write_or_validate_text(
+        paths["evidence"] / "learning-curve-v2.svg",
+        _svg_learning_curve(protocol, scores),
+        "issue-63 learning curve",
     )
-    aggregate_path = paths["evidence"] / "aggregate-contrasts.csv"
-    with aggregate_path.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.writer(stream)
-        writer.writerow(("contrast", "metric", "estimate", "passed"))
-        for metric, result in analysis["primary_data_scale_effect"].items():
-            writer.writerow((
-                "full-vs-six:deployment",
-                metric,
-                result["mean_relative_improvement"],
-                result["passed"],
-            ))
-        for key, result in analysis["carrier_contrasts"].items():
-            scale, metric = key.split(":", 1)
-            writer.writerow((
-                f"deployment-vs-source:{scale}",
-                metric,
-                result["mean"],
-                "diagnostic",
-            ))
+    _write_or_validate_text(
+        paths["evidence"] / "primary-effects-v2.svg",
+        _svg_primary_effects(analysis),
+        "issue-63 primary effects",
+    )
+    aggregate_path = paths["evidence"] / "aggregate-contrasts-v2.csv"
+    stream = io.StringIO(newline="")
+    writer = csv.writer(stream)
+    writer.writerow(("contrast", "metric", "estimate", "passed"))
+    for metric, result in analysis["primary_data_scale_effect"].items():
+        writer.writerow((
+            "full-vs-six:deployment",
+            metric,
+            result["mean_relative_improvement"],
+            result["passed"],
+        ))
+    for key, result in analysis["carrier_contrasts"].items():
+        scale, metric = key.split(":", 1)
+        writer.writerow((
+            f"deployment-vs-source:{scale}",
+            metric,
+            result["mean"],
+            "diagnostic",
+        ))
+    _write_or_validate_text(
+        aggregate_path, stream.getvalue(), "issue-63 aggregate contrasts"
+    )
     summary = {
-        "schema": "issue_63_matched_experiment_summary_v1",
+        "schema": "issue_63_matched_experiment_summary_v2",
+        "results_reference": paths["results"].relative_to(
+            REPOSITORY_ROOT
+        ).as_posix(),
         "results_identity": results["identity"],
         "decision": analysis["decision"],
         "training_lineages": TRAINING_SCALE_COUNTS[-1],
@@ -2305,16 +2390,8 @@ def _publish(args: argparse.Namespace) -> int:
         ],
         "final_evaluation_opened": False,
     }
-    summary["identity"] = identity((
-        "issue-63-matched-experiment-summary-v1",
-        summary["results_identity"],
-        summary["decision"],
-        summary["ranking_collection_correction_identity"],
-        None
-        if selected is None
-        else tuple(sorted(selected.items())),
-    ))
-    _write_json(args.summary, summary)
+    summary["identity"] = _summary_identity(summary)
+    _write_or_validate_json(args.summary, summary, "compact issue-63 v2 summary")
     _log(
         f"published decision={analysis['decision']} results={results['identity']} "
         f"final_evaluation=unopened"
@@ -2324,7 +2401,7 @@ def _publish(args: argparse.Namespace) -> int:
 
 def _validate(args: argparse.Namespace) -> int:
     paths = _paths(args.output)
-    protocol, design = _load_frozen(paths)
+    protocol, _design = _load_frozen(paths)
     for role in PUBLIC_ROLES:
         _log(f"validate carrier bundles role={role}")
         source = load_carrier_lineage_bundle(
@@ -2343,21 +2420,13 @@ def _validate(args: argparse.Namespace) -> int:
                 protocol, deployment, carrier=CarrierKind.DEPLOYMENT
             )
     for index, cell in enumerate(protocol.cells, start=1):
-        _model, checkpoint = load_lineage_scaled_checkpoint(
+        _model, _checkpoint = load_lineage_scaled_checkpoint(
             _checkpoint_path(paths, cell),
             protocol,
             expected_cell=cell,
             device="cpu",
         )
-        training_compute = _load_json(
-            _training_report_path(paths, cell), "training compute report"
-        )
-        if (
-            training_compute.get("cell_identity") != cell.identity
-            or training_compute.get("checkpoint_identity") != checkpoint.identity
-            or training_compute.get("final_evaluation_opened") is not False
-        ):
-            raise LineageScalingError("training compute report differs")
+        _training_wall_seconds(_training_report_path(paths, cell))
         if index == len(protocol.cells) or index % 4 == 0:
             _log(f"validate checkpoints={index}/{len(protocol.cells)}")
     for role in ("calibration", "model_selection"):
@@ -2382,27 +2451,35 @@ def _validate(args: argparse.Namespace) -> int:
     if (
         freeze.get("protocol_identity") != protocol.identity
         or freeze.get("identity") != _decision_freeze_identity(freeze)
-        or results.get("design_identity") != design["identity"]
-        or results.get("decision_freeze_identity") != freeze.get("identity")
+        or results.get("schema") != "issue_63_matched_experiment_results_v2"
+        or results.get("design_reference") != "design.json"
+        or results.get("protocol_reference") != "protocol.json"
+        or results.get("decision_freeze_reference") != "decision-freeze.json"
+        or results.get("model_selection_cell_count") != len(protocol.cells)
         or results.get("identity") != _results_identity(results)
         or results.get("ranking_collection_correction_identity")
         != ranking_correction_identity
         or results.get("final_evaluation_opened") is not False
+        or summary.get("schema") != "issue_63_matched_experiment_summary_v2"
+        or summary.get("results_reference")
+        != paths["results"].relative_to(REPOSITORY_ROOT).as_posix()
         or summary.get("results_identity") != results.get("identity")
         or summary.get("decision") != results["analysis"]["decision"]
+        or summary.get("selected_deployment_configuration")
+        != results.get("selected_deployment_configuration")
         or summary.get("ranking_collection_correction_identity")
         != ranking_correction_identity
-        or summary.get("identity")
-        != identity((
-            "issue-63-matched-experiment-summary-v1",
-            summary.get("results_identity"),
-            summary.get("decision"),
-            summary.get("ranking_collection_correction_identity"),
-            None
-            if summary.get("selected_deployment_configuration") is None
-            else tuple(sorted(summary["selected_deployment_configuration"].items())),
-        ))
+        or summary.get("identity") != _summary_identity(summary)
         or summary.get("final_evaluation_opened") is not False
+        or not all(
+            (paths["evidence"] / filename).is_file()
+            for filename in (
+                "per-seed-model-selection-v2.csv",
+                "learning-curve-v2.svg",
+                "primary-effects-v2.svg",
+                "aggregate-contrasts-v2.csv",
+            )
+        )
     ):
         raise LineageScalingError("issue-63 published evidence differs")
     _log(

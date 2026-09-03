@@ -6,6 +6,7 @@ import tempfile
 import unittest
 
 from scripts.run_issue_63_matched_experiment import (
+    DEFAULT_SUMMARY,
     _analyze,
     _bounds,
     _candidate_actions,
@@ -14,10 +15,12 @@ from scripts.run_issue_63_matched_experiment import (
     _parser,
     _paths,
     _realized_goal_cost,
+    _results_identity,
     _ranking_branch_slot,
     _score_matches,
     _score_path,
     _supersede_legacy_long_filename_failures,
+    _training_wall_seconds,
     _write_json,
 )
 from tests.test_lineage_scaled_retraining import _protocol
@@ -40,6 +43,45 @@ def _score(value: float) -> dict:
 
 
 class Issue63MatchedExperimentTests(unittest.TestCase):
+    def test_published_results_identity_is_compact_and_ordinal(self) -> None:
+        results = {
+            "analysis": {"decision": "not_supported_by_this_experiment"},
+            "design_identity": "x" * 1_000_000,
+            "decision_freeze_identity": "y" * 1_000_000,
+            "ranking_collection_correction_identity": None,
+            "selected_deployment_configuration": None,
+        }
+
+        result_identity = _results_identity(results)
+
+        self.assertEqual(
+            result_identity,
+            "issue-63-matched-experiment-results-v2:"
+            "not_supported_by_this_experiment:none",
+        )
+        self.assertNotIn("sha256", result_identity)
+        self.assertLess(len(result_identity), 120)
+        with tempfile.TemporaryDirectory() as temporary:
+            self.assertEqual(
+                _paths(Path(temporary))["results"].name,
+                "results-v2.json",
+            )
+        self.assertEqual(
+            DEFAULT_SUMMARY.name,
+            "matched-carrier-scaling-summary-v2.json",
+        )
+
+    def test_training_wall_seconds_reads_only_the_canonical_report_tail(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "cell.training.json"
+            _write_json(path, {
+                "schema": "issue_63_training_compute_report_v1",
+                "protocol_identity": "x" * 10_000,
+                "wall_seconds": 52.25,
+            })
+
+            self.assertEqual(_training_wall_seconds(path), 52.25)
+
     def test_cell_scores_use_compact_ordinal_identity_and_v2_path(self) -> None:
         cell = TrainingCell("training_3000", CarrierKind.DEPLOYMENT, 13)
         score = {
