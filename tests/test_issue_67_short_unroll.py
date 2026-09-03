@@ -10,7 +10,10 @@ import unittest
 
 import torch
 
-from scripts.run_issue_67_short_unroll import main as issue_67_main
+from scripts.run_issue_67_short_unroll import (
+    _training_payload,
+    main as issue_67_main,
+)
 from world_model.data.deployment_temporal import TemporalVisualCarrierAdapter
 from world_model.model import PredictorConfig
 from world_model.training.lineage_scaling import (
@@ -263,6 +266,15 @@ class Issue67ShortUnrollTests(unittest.TestCase):
                     replace(spec, lineage_manifest_reference="another-manifest"),
                     device="cpu",
                 )
+
+    def test_training_payload_survives_json_round_trip_for_validation(self) -> None:
+        spec = _spec()
+        _model, report = train_short_unroll_predictor(
+            spec, (_lineage("a"),), device="cpu"
+        )
+        payload = _training_payload(report)
+
+        self.assertEqual(json.loads(json.dumps(payload)), payload)
 
     def test_public_dry_run_is_no_write_and_reports_foreground_progress(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

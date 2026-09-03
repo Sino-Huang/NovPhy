@@ -27,6 +27,7 @@ from world_model.training.lineage_scaling import (
     load_carrier_lineage_bundle,
 )
 from world_model.training.short_unroll import (
+    ShortUnrollTrainingReport,
     ShortUnrollTrainingSpec,
     build_short_unroll_windows,
     evaluate_recursive_carrier,
@@ -292,10 +293,12 @@ def _training_report_path(output: Path, spec: ShortUnrollTrainingSpec) -> Path:
     return output / "checkpoints" / spec.name / f"seed-{spec.seed}.training.json"
 
 
-def _training_payload(report: Any) -> dict[str, Any]:
+def _training_payload(report: ShortUnrollTrainingReport) -> dict[str, Any]:
+    values = asdict(report)
+    values["failures"] = list(report.failures)
     return {
         "schema": "issue_67_short_unroll_training_report_v1",
-        **asdict(report),
+        **values,
         "final_evaluation_opened": False,
     }
 
