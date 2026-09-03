@@ -8,7 +8,9 @@ from collections.abc import Mapping
 from dataclasses import asdict
 import gc
 import json
+import multiprocessing
 from pathlib import Path
+import resource
 import sys
 from typing import Any, Final
 
@@ -33,10 +35,8 @@ from world_model.training.lineage_scaling import (
     ActionCandidate,
     ActionRankingState,
     CarrierKind,
-    LineageScalingProtocol,
     TrainingCell,
     load_action_ranking_bundle,
-    load_lineage_scaling_protocol,
 )
 
 
@@ -44,6 +44,7 @@ REPOSITORY_ROOT: Final = Path(__file__).resolve().parents[1]
 DEFAULT_ISSUE_63_OUTPUT: Final = (
     REPOSITORY_ROOT / ".local-artifacts/issue-63-matched-experiment-v1"
 )
+ISSUE_63_TRAINING_SEEDS: Final = (20260901, 20260902, 20260903)
 
 
 def _log(message: str) -> None:
@@ -83,28 +84,21 @@ def _checkpoint_path(output: Path, cell: TrainingCell) -> Path:
     )
 
 
-def _expected_full_deployment_cells(
-    protocol: LineageScalingProtocol,
-) -> tuple[TrainingCell, ...]:
-    cells = tuple(
-        cell
-        for cell in protocol.cells
-        if cell.scale_name == "full" and cell.carrier is CarrierKind.DEPLOYMENT
+def _expected_full_deployment_cells() -> tuple[TrainingCell, ...]:
+    return tuple(
+        TrainingCell("full", CarrierKind.DEPLOYMENT, seed)
+        for seed in ISSUE_63_TRAINING_SEEDS
     )
-    if len(cells) != 3:
-        raise ActionRankingProbeError(
-            "protocol does not contain three full deployment checkpoints"
-        )
-    return cells
 
 
 def _load_checkpoint_without_rehashing(
     path: Path,
-    protocol: LineageScalingProtocol,
     expected_cell: TrainingCell,
     *,
+    expected_carrier_identity: str,
+    expected_config: PredictorConfig | None,
     device: str,
-) -> tuple[DualOutputPredictor, EnsembleCheckpointBinding]:
+) -> tuple[DualOutputPredictor, EnsembleCheckpointBinding, PredictorConfig]:
     """Load already-validated #63 weights without recomputing their 2 GB digest."""
 
     try:
@@ -128,9 +122,8 @@ def _load_checkpoint_without_rehashing(
         )
         if (
             cell != expected_cell
-            or raw["protocol_identity"] != protocol.identity
-            or raw["carrier_identity"] != protocol.carrier_identity(cell.carrier)
-            or config != protocol.predictor_config
+            or raw["carrier_identity"] != expected_carrier_identity
+            or (expected_config is not None and config != expected_config)
             or 15 not in available_horizons
         ):
             raise ActionRankingProbeError(
@@ -139,21 +132,24 @@ def _load_checkpoint_without_rehashing(
         model = DualOutputPredictor(config)
         model.load_state_dict(payload["model_state"], strict=True)
         binding = EnsembleCheckpointBinding(
-            checkpoint_identity=str(raw["identity"]),
-            protocol_identity=str(raw["protocol_identity"]),
-            carrier_identity=str(raw["carrier_identity"]),
+            checkpoint_identity=f"issue-63-full-deployment-seed-{cell.seed}",
+            protocol_identity="issue-63-exact-validated-protocol",
+            carrier_identity=expected_carrier_identity,
             scale_name=cell.scale_name,
             carrier=cell.carrier.value,
             seed=cell.seed,
             available_horizons=available_horizons,
         )
+        model = model.to(torch.device(device))
     except (OSError, KeyError, TypeError, ValueError, RuntimeError) as error:
         if isinstance(error, ActionRankingProbeError):
             raise
         raise ActionRankingProbeError(
             f"cannot load deterministic ensemble checkpoint: {path}: {error}"
         ) from error
-    return model.to(torch.device(device)), binding
+    del raw, payload
+    gc.collect()
+    return model, binding, config
 
 
 def _diversity_payload(states: tuple[ActionRankingState, ...]) -> dict[str, Any]:
@@ -205,9 +201,103 @@ def _ranking_cost(
     return float(F.mse_loss(predicted, state.cost_target))
 
 
+def _score_checkpoint_worker(
+    path: Path,
+    expected_cell: TrainingCell,
+    output: Path,
+    expected_carrier_identity: str,
+    expected_config: PredictorConfig | None,
+    state_limit: int | None,
+    device: str,
+    connection: Any,
+) -> None:
+    """Score one large checkpoint, then let process exit reclaim its metadata."""
+
+    try:
+        role_states = {
+            role: load_action_ranking_bundle(
+                output / "ranking-bundles" / f"{role}-deployment.pt"
+            )
+            for role in ("calibration", "model_selection")
+        }
+        if state_limit is not None:
+            role_states = {
+                role: states[:state_limit] for role, states in role_states.items()
+            }
+        model, binding, config = _load_checkpoint_without_rehashing(
+            path,
+            expected_cell,
+            expected_carrier_identity=expected_carrier_identity,
+            expected_config=expected_config,
+            device=device,
+        )
+        predictions = {}
+        for role, states in role_states.items():
+            _log(
+                f"score seed={expected_cell.seed} role={role} states={len(states)}"
+            )
+            predictions[role] = score_action_ranking_member(
+                model,
+                binding,
+                states,
+                predicted_cost=_ranking_cost,
+                progress=_log,
+            )
+        peak_rss_mib = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0
+        connection.send(("ok", binding, config, predictions, peak_rss_mib))
+    except Exception as error:
+        connection.send(("error", f"{type(error).__name__}: {error}"))
+    finally:
+        connection.close()
+
+
+def _score_checkpoint_isolated(
+    path: Path,
+    expected_cell: TrainingCell,
+    output: Path,
+    expected_carrier_identity: str,
+    expected_config: PredictorConfig | None,
+    state_limit: int | None,
+    device: str,
+) -> tuple[EnsembleCheckpointBinding, PredictorConfig, dict[str, Any], float]:
+    context = multiprocessing.get_context("spawn")
+    receive, send = context.Pipe(duplex=False)
+    process = context.Process(
+        target=_score_checkpoint_worker,
+        args=(
+            path,
+            expected_cell,
+            output,
+            expected_carrier_identity,
+            expected_config,
+            state_limit,
+            device,
+            send,
+        ),
+    )
+    process.start()
+    send.close()
+    try:
+        message = receive.recv()
+    except EOFError as error:
+        process.join()
+        raise ActionRankingProbeError(
+            f"checkpoint worker exited without a result: {path}"
+        ) from error
+    finally:
+        receive.close()
+    process.join()
+    if process.exitcode != 0 or message[0] != "ok":
+        detail = message[1] if message[0] == "error" else process.exitcode
+        raise ActionRankingProbeError(
+            f"checkpoint worker failed: {path}: {detail}"
+        )
+    _status, binding, config, predictions, peak_rss_mib = message
+    return binding, config, predictions, peak_rss_mib
+
+
 def _diagnose_existing(args: argparse.Namespace) -> int:
     output = args.issue_63_output.resolve()
-    protocol = load_lineage_scaling_protocol(output / "protocol.json")
     role_states = {
         role: load_action_ranking_bundle(
             output / "ranking-bundles" / f"{role}-deployment.pt"
@@ -230,7 +320,17 @@ def _diagnose_existing(args: argparse.Namespace) -> int:
             f"{diversity[role]['pig_removal_discordant_state_count']} "
             f"failures={diversity[role]['candidate_failure_count']}"
         )
-    expected_cells = _expected_full_deployment_cells(protocol)
+    carrier_headers = {
+        (state.carrier, state.carrier_identity)
+        for states in role_states.values()
+        for state in states
+    }
+    if len(carrier_headers) != 1:
+        raise ActionRankingProbeError("ranking roles use different deployment carriers")
+    carrier, expected_carrier_identity = next(iter(carrier_headers))
+    if carrier is not CarrierKind.DEPLOYMENT:
+        raise ActionRankingProbeError("ranking diagnostic requires deployment carriers")
+    expected_cells = _expected_full_deployment_cells()
     expected_paths = {
         _checkpoint_path(output, cell).resolve(): cell for cell in expected_cells
     }
@@ -243,31 +343,34 @@ def _diagnose_existing(args: argparse.Namespace) -> int:
         "calibration": [],
         "model_selection": [],
     }
+    expected_config = None
+    worker_peak_rss_mib = []
     for model_index, path in enumerate(supplied, start=1):
         cell = expected_paths[path]
         _log(
             f"load model={model_index}/3 seed={cell.seed} path={path} "
-            "integrity=existing-exact-validation no_rehash=true"
+            "integrity=existing-exact-validation no_rehash=true "
+            "memory=isolate-one-checkpoint-process"
         )
-        model, binding = _load_checkpoint_without_rehashing(
-            path, protocol, cell, device=args.device
-        )
-        for role, states in role_states.items():
-            _log(
-                f"score model={model_index}/3 seed={cell.seed} role={role} "
-                f"states={len(states)}"
+        binding, config, model_predictions, peak_rss_mib = (
+            _score_checkpoint_isolated(
+                path,
+                cell,
+                output,
+                expected_carrier_identity,
+                expected_config,
+                args.state_limit,
+                args.device,
             )
-            predictions[role].append(score_action_ranking_member(
-                model,
-                binding,
-                states,
-                predicted_cost=_ranking_cost,
-                progress=_log,
-            ))
-        del model
-        gc.collect()
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        )
+        expected_config = config
+        worker_peak_rss_mib.append((binding.member_id, peak_rss_mib))
+        for role in predictions:
+            predictions[role].append(model_predictions[role])
+        _log(
+            f"model={model_index}/3 seed={binding.seed} complete "
+            f"worker_peak_rss_mib={peak_rss_mib:.1f} worker_memory=reclaimed"
+        )
     for role in predictions:
         validate_ensemble_checkpoint_bindings(
             tuple(item.checkpoint for item in predictions[role])
@@ -295,6 +398,12 @@ def _diagnose_existing(args: argparse.Namespace) -> int:
         "may_support_advancement": False,
         "candidate_design_for_issue_68": _design_payload(),
         "evaluated_candidate_design": "issue_63_local_five_candidate_probe",
+        "checkpoint_paths": [str(path) for path in supplied],
+        "memory_strategy": "one_short_lived_process_per_checkpoint",
+        "worker_peak_rss_mib": worker_peak_rss_mib,
+        "maximum_worker_peak_rss_mib": max(
+            peak for _member, peak in worker_peak_rss_mib
+        ),
         "population_diversity": diversity,
         "disagreement_calibration": asdict(calibration),
         "ranking": {

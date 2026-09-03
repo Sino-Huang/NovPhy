@@ -161,6 +161,10 @@ class EnsembleCheckpointBinding:
     seed: int
     available_horizons: tuple[int, ...]
 
+    @property
+    def member_id(self) -> str:
+        return f"{self.scale_name}-{self.carrier}-seed-{self.seed}"
+
 
 def validate_ensemble_checkpoint_bindings(
     bindings: tuple[EnsembleCheckpointBinding, ...],
@@ -170,7 +174,7 @@ def validate_ensemble_checkpoint_bindings(
     if (
         type(bindings) is not tuple
         or len(bindings) != 3
-        or len({item.checkpoint_identity for item in bindings}) != 3
+        or len({item.member_id for item in bindings}) != 3
         or len({item.seed for item in bindings}) != 3
         or any(15 not in item.available_horizons for item in bindings)
         or len({
@@ -186,7 +190,7 @@ def validate_ensemble_checkpoint_bindings(
         raise ActionRankingProbeError(
             "ensemble checkpoints must be three distinct matched h15 seeds"
         )
-    return tuple(sorted(bindings, key=lambda item: item.checkpoint_identity))
+    return tuple(sorted(bindings, key=lambda item: item.member_id))
 
 
 @dataclass(frozen=True, slots=True)
@@ -369,8 +373,8 @@ def aggregate_ensemble_ranking(
     ordered_bindings = validate_ensemble_checkpoint_bindings(
         tuple(item.checkpoint for item in members)
     )
-    by_identity = {item.checkpoint.checkpoint_identity: item for item in members}
-    ordered = tuple(by_identity[item.checkpoint_identity] for item in ordered_bindings)
+    by_identity = {item.checkpoint.member_id: item for item in members}
+    ordered = tuple(by_identity[item.member_id] for item in ordered_bindings)
     if len(by_identity) != 3 or any(len(item.states) != len(states) for item in ordered):
         raise ActionRankingProbeError("ensemble member state inventory differs")
     state_results = []
@@ -378,7 +382,7 @@ def aggregate_ensemble_ranking(
         failure for member in ordered for failure in member.execution_failures
     ]
     per_member_regrets = {
-        item.checkpoint.checkpoint_identity: [] for item in ordered
+        item.checkpoint.member_id: [] for item in ordered
     }
     ensemble_regrets = []
     pessimistic_regrets = []
@@ -412,7 +416,7 @@ def aggregate_ensemble_ranking(
             candidate_scores.append(EnsembleCandidateScore(
                 candidate_identity=candidate.identity,
                 member_costs=tuple(
-                    (member.checkpoint.checkpoint_identity, cost)
+                    (member.checkpoint.member_id, cost)
                     for member, cost in zip(ordered, costs, strict=True)
                 ),
                 ensemble_mean_cost=mean,
@@ -441,7 +445,7 @@ def aggregate_ensemble_ranking(
                     member_state.candidates[index].predicted_cost
                 ),
             )
-            identity = member.checkpoint.checkpoint_identity
+            identity = member.checkpoint.member_id
             regret = float(
                 state.candidates[selected_index].realized_cost - best_cost
             )
@@ -471,7 +475,7 @@ def aggregate_ensemble_ranking(
             uncertainty_penalized_top_action_regret=pessimistic_regret,
         ))
     return EnsembleRankingEvaluation(
-        checkpoint_identities=tuple(item.checkpoint.checkpoint_identity for item in ordered),
+        checkpoint_identities=tuple(item.checkpoint.member_id for item in ordered),
         disagreement_penalty=disagreement_penalty,
         requested_state_count=len(states),
         evaluated_state_count=len(state_results),

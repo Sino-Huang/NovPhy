@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import asdict, replace
 import math
+from pathlib import Path
+import tempfile
 import unittest
 
 import torch
 
+from scripts.run_issue_66_ranking_probe import _score_checkpoint_isolated
 from world_model.data.successor_cohort import ACTION_BOUNDS
+from world_model.model import DualOutputPredictor, PredictorConfig
 from world_model.planning.gameplay import (
     CEMConfig,
     CEMPlanner,
@@ -33,6 +37,8 @@ from world_model.training.lineage_scaling import (
     ActionCandidate,
     ActionRankingState,
     CarrierKind,
+    TrainingCell,
+    save_action_ranking_bundle,
 )
 
 
@@ -177,7 +183,11 @@ class Issue66ActionRankingProbeTests(unittest.TestCase):
         self.assertEqual(result.evaluated_state_count, 1)
         self.assertEqual(
             result.single_model_mean_top_action_regrets,
-            (("checkpoint-1", 10.0), ("checkpoint-2", 10.0), ("checkpoint-3", 10.0)),
+            (
+                ("full-deployment-seed-101", 10.0),
+                ("full-deployment-seed-102", 10.0),
+                ("full-deployment-seed-103", 10.0),
+            ),
         )
         self.assertEqual(result.ensemble_mean_top_action_regret, 10.0)
         self.assertEqual(result.uncertainty_penalized_mean_top_action_regret, 10.0)
@@ -202,6 +212,86 @@ class Issue66ActionRankingProbeTests(unittest.TestCase):
         )
 
         self.assertEqual(forward, reverse)
+
+    def test_recursive_checkpoint_identities_do_not_enter_retained_results(self) -> None:
+        state = _state("ranking", (0.0, 10.0))
+        recursive_metadata = "recursive-checkpoint-metadata:" + "x" * 100_000
+        members = tuple(
+            _member(
+                replace(
+                    _binding(index),
+                    checkpoint_identity=f"{recursive_metadata}:{index}",
+                ),
+                state,
+                (1.0, 2.0),
+            )
+            for index in range(1, 4)
+        )
+
+        result = aggregate_ensemble_ranking(
+            (state,), members, disagreement_penalty=1.0
+        )
+
+        self.assertNotIn(recursive_metadata, repr(result))
+
+    def test_checkpoint_worker_returns_only_compact_metadata(self) -> None:
+        recursive_metadata = "recursive-checkpoint-metadata:" + "x" * 100_000
+        cell = TrainingCell("full", CarrierKind.DEPLOYMENT, 20260901)
+        config = PredictorConfig(
+            latent_dim=197,
+            action_dim=5,
+            hidden_dim=16,
+            depth=1,
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            ranking = root / "ranking-bundles"
+            calibration = _state("calibration", (0.0, 10.0))
+            model_selection = replace(
+                _state("model-selection", (0.0, 10.0)),
+                exposure_role="model_selection",
+            )
+            save_action_ranking_bundle(
+                ranking / "calibration-deployment.pt", (calibration,)
+            )
+            save_action_ranking_bundle(
+                ranking / "model_selection-deployment.pt", (model_selection,)
+            )
+            checkpoint = root / "checkpoint.pt"
+            model = DualOutputPredictor(config)
+            torch.save({
+                "schema": "lineage_scaled_continuous_checkpoint_v1",
+                "metadata": {
+                    "identity": recursive_metadata,
+                    "protocol_identity": recursive_metadata,
+                    "cell": {
+                        "scale_name": cell.scale_name,
+                        "carrier": cell.carrier.value,
+                        "seed": cell.seed,
+                    },
+                    "carrier_identity": "deployment-carrier",
+                    "predictor_config": asdict(config),
+                    "available_horizon_counts": ((1, 1), (15, 1)),
+                },
+                "model_state": model.state_dict(),
+            }, checkpoint)
+
+            binding, returned_config, predictions, peak_rss_mib = (
+                _score_checkpoint_isolated(
+                    checkpoint,
+                    cell,
+                    root,
+                    "deployment-carrier",
+                    None,
+                    1,
+                    "cpu",
+                )
+            )
+
+        self.assertEqual(returned_config, config)
+        self.assertEqual(binding.member_id, "full-deployment-seed-20260901")
+        self.assertNotIn(recursive_metadata, repr((binding, predictions)))
+        self.assertGreater(peak_rss_mib, 0.0)
 
     def test_disagreement_never_reduces_pessimistic_cost(self) -> None:
         same = pessimistic_ensemble_cost((2.0, 2.0, 2.0), 2.0)
