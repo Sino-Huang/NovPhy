@@ -252,6 +252,7 @@ class CandidateEvaluation:
     cost_breakdown: GameplayCostBreakdown | None = None
     model_compute: float = 0.0
     requested_abstractions: tuple[str, ...] = ()
+    ensemble_cost: EnsembleCostSummary | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -625,6 +626,155 @@ class CandidateEvaluator(Protocol):
         observation: PlanningObservation,
         actions: tuple[SlingshotAction, ...],
     ) -> CandidateEvaluation: ...
+
+
+@dataclass(frozen=True, slots=True)
+class EnsembleCostSummary:
+    member_costs: tuple[tuple[str, float], ...]
+    member_physical_costs: tuple[tuple[str, float], ...]
+    member_rollout_costs: tuple[tuple[str, float], ...]
+    ensemble_mean_cost: float | None
+    model_disagreement: float | None
+    disagreement_penalty: float
+    pessimistic_cost: float | None
+    member_failures: tuple[tuple[str, str], ...]
+
+
+class DeterministicEnsembleCandidateEvaluator:
+    """Aggregate three seeded candidate evaluators behind the CEM seam."""
+
+    def __init__(
+        self,
+        members: tuple[tuple[str, CandidateEvaluator], ...],
+        *,
+        disagreement_penalty: float,
+    ) -> None:
+        if (
+            type(members) is not tuple
+            or len(members) != 3
+            or len({identity for identity, _evaluator in members}) != 3
+            or not math.isfinite(disagreement_penalty)
+            or disagreement_penalty < 0.0
+        ):
+            raise ValueError("deterministic ensemble configuration is invalid")
+        self.members = tuple(sorted(members, key=lambda item: item[0]))
+        self.disagreement_penalty = disagreement_penalty
+
+    def evaluate(
+        self,
+        observation: PlanningObservation,
+        actions: tuple[SlingshotAction, ...],
+    ) -> CandidateEvaluation:
+        evaluated = []
+        for identity, evaluator in self.members:
+            try:
+                result = evaluator.evaluate(observation, actions)
+            except Exception as error:
+                result = CandidateEvaluation(
+                    actions=actions,
+                    total_cost=math.inf,
+                    failure=f"{type(error).__name__}: {error}",
+                )
+            evaluated.append((identity, result))
+        member_results = tuple(evaluated)
+        member_failures = tuple(
+            (identity, result.failure or "nonfinite_total_cost")
+            for identity, result in member_results
+            if result.failure is not None or not math.isfinite(result.total_cost)
+        )
+        costs = tuple(float(result.total_cost) for _identity, result in member_results)
+        physical_costs = tuple(
+            (
+                identity,
+                0.0
+                if result.cost_breakdown is None
+                else result.cost_breakdown.physical_cost,
+            )
+            for identity, result in member_results
+        )
+        rollout_costs = tuple(
+            (
+                identity,
+                0.0
+                if result.cost_breakdown is None
+                else result.cost_breakdown.rollout_cost,
+            )
+            for identity, result in member_results
+        )
+        if member_failures:
+            summary = EnsembleCostSummary(
+                member_costs=tuple(
+                    (identity, float(result.total_cost))
+                    for identity, result in member_results
+                ),
+                member_physical_costs=physical_costs,
+                member_rollout_costs=rollout_costs,
+                ensemble_mean_cost=None,
+                model_disagreement=None,
+                disagreement_penalty=self.disagreement_penalty,
+                pessimistic_cost=None,
+                member_failures=member_failures,
+            )
+            return CandidateEvaluation(
+                actions=actions,
+                total_cost=math.inf,
+                model_rollout_count=sum(
+                    result.model_rollout_count for _identity, result in member_results
+                ),
+                failure="ensemble_member_failure",
+                model_compute=sum(
+                    result.model_compute for _identity, result in member_results
+                ),
+                ensemble_cost=summary,
+            )
+        mean = math.fsum(costs) / len(costs)
+        disagreement = math.sqrt(
+            math.fsum((value - mean) ** 2 for value in costs) / len(costs)
+        )
+        pessimistic = mean + self.disagreement_penalty * disagreement
+        first = member_results[0][1]
+        if any(
+            result.requested_horizons != first.requested_horizons
+            or result.effective_horizons != first.effective_horizons
+            or result.requested_abstractions != first.requested_abstractions
+            or len(result.predicted_carriers) != len(first.predicted_carriers)
+            for _identity, result in member_results[1:]
+        ):
+            raise RuntimeError("ensemble member rollout structure differs")
+        predicted_carriers = tuple(
+            torch.stack(tuple(
+                result.predicted_carriers[index]
+                for _identity, result in member_results
+            )).mean(dim=0)
+            for index in range(len(first.predicted_carriers))
+        )
+        return CandidateEvaluation(
+            actions=actions,
+            total_cost=pessimistic,
+            predicted_carriers=predicted_carriers,
+            requested_horizons=first.requested_horizons,
+            effective_horizons=first.effective_horizons,
+            model_rollout_count=sum(
+                result.model_rollout_count for _identity, result in member_results
+            ),
+            model_compute=sum(
+                result.model_compute for _identity, result in member_results
+            ),
+            requested_abstractions=first.requested_abstractions,
+            ensemble_cost=EnsembleCostSummary(
+                member_costs=tuple(
+                    (identity, float(result.total_cost))
+                    for identity, result in member_results
+                ),
+                member_physical_costs=physical_costs,
+                member_rollout_costs=rollout_costs,
+                ensemble_mean_cost=mean,
+                model_disagreement=disagreement,
+                disagreement_penalty=self.disagreement_penalty,
+                pessimistic_cost=pessimistic,
+                member_failures=(),
+            ),
+        )
 
 
 @dataclass(frozen=True, slots=True)
