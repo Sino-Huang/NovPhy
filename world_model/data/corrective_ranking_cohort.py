@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Mapping
+import math
 from typing import Any, Final
 
 from world_model.data.successor_cohort import ACTION_BOUNDS, GENERATOR_FAMILIES
@@ -14,11 +15,11 @@ from world_model.training.action_ranking_probe import (
 )
 
 
-PLAN_SCHEMA: Final = "issue_68_corrective_collection_plan_v1"
-PILOT_REPORT_SCHEMA: Final = "issue_68_corrective_pilot_report_v1"
-RELEASE_SCHEMA: Final = "issue_68_corrective_cohort_release_v1"
+PLAN_SCHEMA: Final = "issue_68_corrective_collection_plan_v2"
+PILOT_REPORT_SCHEMA: Final = "issue_68_corrective_pilot_report_v2"
+RELEASE_SCHEMA: Final = "issue_68_corrective_cohort_release_v2"
 ROLES: Final = ("calibration", "model_selection")
-PILOT_STATES_PER_ROLE: Final = 4
+PILOT_STATES_PER_ROLE: Final = 12
 DEFAULT_PRODUCTION_STATES_PER_ROLE: Final = 200
 FIXED_RETRY_LIMIT: Final = 2
 FAILURE_COST: Final = 1_000_000_000.0
@@ -26,16 +27,55 @@ ISSUE_63_DISCRIMINATING_STATE_FRACTION: Final = 10 / 24
 MINIMUM_DISCRIMINATION_IMPROVEMENT: Final = 0.10
 
 _PHASE_SEED_BASES: Final = {
-    "pilot": {"calibration": 68_100_000, "model_selection": 68_200_000},
+    "pilot": {"calibration": 68_300_000, "model_selection": 68_400_000},
     "production": {
-        "calibration": 680_100_000,
-        "model_selection": 680_200_000,
+        "calibration": 680_300_000,
+        "model_selection": 680_400_000,
     },
 }
 
 
 class CorrectiveRankingCohortError(ValueError):
     """The issue-68 collection contract is inconsistent."""
+
+
+def realized_endpoint_cost(
+    *,
+    active_pigs: int,
+    active_blocks: int,
+    pig_contact: bool,
+    block_contact: bool,
+    support_change: bool,
+    pig_displacement: float,
+    block_displacement: float,
+) -> tuple[float, dict[str, float]]:
+    """Keep removal lexicographically primary, then reward bounded progress."""
+
+    if (
+        type(active_pigs) is not int
+        or active_pigs < 0
+        or type(active_blocks) is not int
+        or active_blocks < 0
+        or type(pig_contact) is not bool
+        or type(block_contact) is not bool
+        or type(support_change) is not bool
+        or not math.isfinite(pig_displacement)
+        or pig_displacement < 0.0
+        or not math.isfinite(block_displacement)
+        or block_displacement < 0.0
+    ):
+        raise CorrectiveRankingCohortError("realized endpoint inputs are invalid")
+    components = {
+        "pig_contact": 0.40 if pig_contact else 0.0,
+        "support_change": 0.25 if support_change else 0.0,
+        "block_contact": 0.10 if block_contact else 0.0,
+        "pig_displacement": 0.15 * min(round(pig_displacement, 3), 1.0),
+        "block_displacement": 0.08 * min(round(block_displacement, 3), 1.0),
+    }
+    total = sum(components.values())
+    progress = {**components, "total": total}
+    count_cost = active_pigs * 1000 + active_blocks
+    return count_cost + 0.999 * (1.0 - total), progress
 
 
 def action_bounds() -> SlingshotActionBounds:
@@ -50,7 +90,26 @@ def action_bounds() -> SlingshotActionBounds:
 def release_identity(plan_identity: str) -> str:
     if not plan_identity:
         raise CorrectiveRankingCohortError("release requires a plan identity")
-    return f"issue-68-corrective-release-v1:{plan_identity}"
+    return f"issue-68-corrective-release-v2:{plan_identity}"
+
+
+def _cost_contract() -> dict[str, Any]:
+    return {
+        "identity": "issue-68-realized-endpoint-cost-v2",
+        "lower_is_better": True,
+        "primary_count_cost": "1000 * active_pigs + active_blocks",
+        "fractional_progress_tie_break": {
+            "formula": "0.999 * (1 - bounded_progress)",
+            "pig_contact_weight": 0.40,
+            "support_change_weight": 0.25,
+            "block_contact_weight": 0.10,
+            "pig_displacement_weight": 0.15,
+            "block_displacement_weight": 0.08,
+            "displacement_cap_world_units": 1.0,
+            "displacement_round_decimals": 3,
+        },
+        "failure_cost": FAILURE_COST,
+    }
 
 
 def _design() -> dict[str, Any]:
@@ -80,7 +139,7 @@ def _states(phase: str, states_per_role: int) -> list[dict[str, Any]]:
         for role_ordinal in range(states_per_role):
             family = GENERATOR_FAMILIES[(role_ordinal + role_index) % 2]
             state_identity = (
-                f"issue-68-{phase}-{role}-state-{role_ordinal + 1:04d}"
+                f"issue-68-{phase}-v2-{role}-state-{role_ordinal + 1:04d}"
             )
             candidates = broad_action_candidates(state_identity, action_bounds())
             states.append({
@@ -130,7 +189,7 @@ def build_plan(
         raise CorrectiveRankingCohortError("production requires the passing pilot")
     candidate_count = states_per_role * len(ROLES) * 12
     identity = (
-        f"issue-68-{phase}-plan-v1:states-per-role-{states_per_role}"
+        f"issue-68-{phase}-plan-v2:states-per-role-{states_per_role}"
     )
     plan = {
         "schema": PLAN_SCHEMA,
@@ -143,6 +202,7 @@ def build_plan(
         "generator_families": [dict(item) for item in GENERATOR_FAMILIES],
         "action_bounds": dict(ACTION_BOUNDS),
         "action_design": _design(),
+        "realized_cost_contract": _cost_contract(),
         "fixed_retry_limit": FIXED_RETRY_LIMIT,
         "failure_treatment": {
             "candidate_failure_cost": FAILURE_COST,
@@ -175,6 +235,17 @@ def build_plan(
                 max(_PHASE_SEED_BASES[phase].values()) + states_per_role - 1,
             ],
             "future_issue_64_must_exclude_issue_68_seeds": True,
+        },
+        "supersedes": {
+            "pilot_plan_identity": (
+                "issue-68-pilot-plan-v1:states-per-role-4"
+            ),
+            "pilot_report_identity": (
+                "issue-68-pilot-report-v1:"
+                "issue-68-pilot-plan-v1:states-per-role-4"
+            ),
+            "disposition": "failed_insufficient_outcome_discrimination",
+            "candidate_outcomes_reused": False,
         },
         "model_selection_access_rule": (
             "issue-69 must freeze its training/calibration decision rule before "
@@ -220,9 +291,10 @@ def validate_plan(
     required = {
         "schema", "identity", "phase", "source_issue", "non_final_only",
         "exposure_roles", "role_counts", "generator_families", "action_bounds",
-        "action_design", "fixed_retry_limit", "failure_treatment",
+        "action_design", "realized_cost_contract", "fixed_retry_limit",
+        "failure_treatment",
         "stopping_rule", "states", "pilot_report_identity", "resource_decision",
-        "disjoint_seed_reservations", "model_selection_access_rule",
+        "disjoint_seed_reservations", "supersedes", "model_selection_access_rule",
         "outcome_conditioned_membership", "final_evaluation_opened",
     }
     actual_phase = value.get("phase")
@@ -237,6 +309,7 @@ def validate_plan(
         or value.get("generator_families") != [dict(item) for item in GENERATOR_FAMILIES]
         or value.get("action_bounds") != ACTION_BOUNDS
         or value.get("action_design") != _design()
+        or value.get("realized_cost_contract") != _cost_contract()
         or value.get("fixed_retry_limit") != FIXED_RETRY_LIMIT
         or value.get("failure_treatment") != {
             "candidate_failure_cost": FAILURE_COST,
@@ -258,7 +331,7 @@ def validate_plan(
     if type(states_per_role) is not int or states_per_role < 1:
         raise CorrectiveRankingCohortError("corrective role count is invalid")
     if value.get("identity") != (
-        f"issue-68-{actual_phase}-plan-v1:states-per-role-{states_per_role}"
+        f"issue-68-{actual_phase}-plan-v2:states-per-role-{states_per_role}"
     ):
         raise CorrectiveRankingCohortError("corrective plan identity differs")
     expected_states = _states(str(actual_phase), states_per_role)
@@ -278,6 +351,15 @@ def validate_plan(
         value.get("stopping_rule")
         != "attempt every frozen candidate through the fixed retry limit"
         or value.get("disjoint_seed_reservations") != expected_reservation
+        or value.get("supersedes") != {
+            "pilot_plan_identity": "issue-68-pilot-plan-v1:states-per-role-4",
+            "pilot_report_identity": (
+                "issue-68-pilot-report-v1:"
+                "issue-68-pilot-plan-v1:states-per-role-4"
+            ),
+            "disposition": "failed_insufficient_outcome_discrimination",
+            "candidate_outcomes_reused": False,
+        }
         or value.get("model_selection_access_rule")
         != (
             "issue-69 must freeze its training/calibration decision rule before "
@@ -339,7 +421,7 @@ def validate_pilot_report(report: Mapping[str, Any]) -> dict[str, Any]:
     if (
         value.get("schema") != PILOT_REPORT_SCHEMA
         or value.get("identity")
-        != f"issue-68-pilot-report-v1:{value.get('pilot_plan_identity')}"
+        != f"issue-68-pilot-report-v2:{value.get('pilot_plan_identity')}"
         or value.get("planned_state_count") != PILOT_STATES_PER_ROLE * len(ROLES)
         or value.get("scheduled_candidate_count")
         != PILOT_STATES_PER_ROLE * len(ROLES) * 12
@@ -406,6 +488,7 @@ __all__ = [
     "build_pilot_plan",
     "build_production_plan",
     "release_identity",
+    "realized_endpoint_cost",
     "validate_pilot_report",
     "validate_plan",
     "validate_role_access",

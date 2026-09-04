@@ -123,7 +123,7 @@ def _member(
 
 
 class Issue66ActionRankingProbeTests(unittest.TestCase):
-    def test_broad_candidates_are_deterministic_source_bound_and_full_stratum(self) -> None:
+    def test_broad_candidates_are_deterministic_source_bound_and_physically_distinct(self) -> None:
         bounds = _bounds()
 
         first = broad_action_candidates("state-a", bounds)
@@ -135,10 +135,14 @@ class Issue66ActionRankingProbeTests(unittest.TestCase):
         self.assertEqual(len({item.action_stratum for item in first}), 12)
         self.assertTrue(all(bounds.contains(item.action) for item in first))
         self.assertEqual(
-            {item.action.drag_x for item in first}, {-160, -85, -10}
+            {item.action.drag_x for item in first}, {-160, -110, -60, -10}
         )
-        self.assertEqual({item.action.drag_y for item in first}, {-80, 80})
-        self.assertEqual({item.action.tap_time_ms for item in first}, {0, 1000})
+        self.assertEqual({item.action.drag_y for item in first}, {-80, 0, 80})
+        self.assertEqual({item.action.tap_time_ms for item in first}, {0})
+        self.assertEqual(
+            len({(item.action.drag_x, item.action.drag_y) for item in first}),
+            12,
+        )
         self.assertEqual(
             [item.action for item in first], [item.action for item in other_source]
         )
@@ -153,17 +157,19 @@ class Issue66ActionRankingProbeTests(unittest.TestCase):
             _state("tied", (1002.0, 1002.0, 1002.0)),
             _state("pig", (1002.0, 2.0, 2.0)),
             _state("block", (1002.0, 1001.0, 1001.0)),
+            _state("progress", (1002.9, 1002.2, 1002.2)),
             _state("failure", (1002.0, 1002.0, 1_000_000_000.0)),
         )
 
         report = summarize_ranking_diversity(states)
 
-        self.assertEqual(report.state_count, 4)
-        self.assertEqual(report.candidate_count, 12)
+        self.assertEqual(report.state_count, 5)
+        self.assertEqual(report.candidate_count, 15)
         self.assertEqual(report.all_tied_state_count, 1)
         self.assertEqual(report.pig_removal_discordant_state_count, 1)
         self.assertEqual(report.block_only_discordant_state_count, 1)
-        self.assertEqual(report.best_action_tie_sizes, (3, 2, 2, 2))
+        self.assertEqual(report.progress_only_discordant_state_count, 1)
+        self.assertEqual(report.best_action_tie_sizes, (3, 2, 2, 2, 2))
         self.assertEqual(report.candidate_failure_count, 1)
         self.assertEqual(report.state_failure_count, 1)
 

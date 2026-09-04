@@ -10,6 +10,7 @@ from datetime import datetime, timezone
 import gc
 import html
 import json
+import math
 import os
 from pathlib import Path
 import statistics
@@ -58,6 +59,7 @@ from world_model.data.corrective_ranking_cohort import (
     action_bounds,
     build_pilot_plan,
     build_production_plan,
+    realized_endpoint_cost,
     release_identity,
     validate_pilot_report,
     validate_plan,
@@ -85,16 +87,16 @@ from world_model.training.manifest import git_revision
 
 
 ROOT: Final = Path(__file__).resolve().parents[1]
-DEFAULT_ROOT: Final = ROOT / ".local-artifacts/issue-68-corrective-cohort-v1"
+DEFAULT_ROOT: Final = ROOT / ".local-artifacts/issue-68-corrective-cohort-v2"
 DEFAULT_PILOT_PLAN: Final = DEFAULT_ROOT / "pilot-plan.json"
 DEFAULT_PILOT_RUNTIME: Final = DEFAULT_ROOT / "pilot-run"
 DEFAULT_PILOT_REPORT: Final = DEFAULT_ROOT / "pilot-report.json"
 DEFAULT_PRODUCTION_PLAN: Final = DEFAULT_ROOT / "production-plan.json"
 DEFAULT_PRODUCTION_RUNTIME: Final = DEFAULT_ROOT / "production-run"
 DEFAULT_RELEASE: Final = DEFAULT_ROOT / "release"
-DEFAULT_AUDIT: Final = ROOT / "data/issue-68-ranking-audit"
+DEFAULT_AUDIT: Final = ROOT / "data/issue-68-ranking-audit-v2"
 DEFAULT_SUMMARY: Final = (
-    ROOT / "data/runtime_evidence/issue-68/corrective-cohort-summary-v1.json"
+    ROOT / "data/runtime_evidence/issue-68/corrective-cohort-summary-v2.json"
 )
 DEFAULT_ISSUE_57_PROTOCOL: Final = (
     ROOT / "data/runtime_evidence/issue-57/"
@@ -250,7 +252,7 @@ def _result_outcome(
     *,
     release: str,
     role: str,
-) -> tuple[float, str, list[str]]:
+) -> tuple[dict[str, Any], str, list[str]]:
     raw = _load_json(trajectory_root / "trajectory.json", "candidate trajectory")
     shot = _load_shot(
         trajectory_root,
@@ -258,11 +260,74 @@ def _result_outcome(
         release_identity=release,
         role=role,
     )
+    initial = shot["frames"][min(shot["frames"])]
     endpoint = shot["frames"][max(shot["frames"])]
+    coverage = _interaction_coverage(trajectory_root, raw)
+
+    def active_positions(frame: Any, prefix: str) -> dict[str, tuple[float, float]]:
+        positions = {}
+        for entity in frame.engine_state["entities"]:
+            scenario_id = str(entity.get("scenario_object_id", ""))
+            body = entity.get("body")
+            if (
+                entity.get("lifecycle") == "active"
+                and scenario_id.startswith(prefix)
+                and isinstance(body, Mapping)
+                and isinstance(body.get("position"), tuple)
+            ):
+                x, y = body["position"]
+                positions[scenario_id] = (float(x), float(y))
+        return positions
+
+    initial_pigs = active_positions(initial, "pig:")
+    endpoint_pigs = active_positions(endpoint, "pig:")
+    initial_blocks = active_positions(initial, "block:")
+    endpoint_blocks = active_positions(endpoint, "block:")
+
+    def displacement(
+        before: Mapping[str, tuple[float, float]],
+        after: Mapping[str, tuple[float, float]],
+    ) -> float:
+        return sum(
+            math.hypot(after[key][0] - value[0], after[key][1] - value[1])
+            for key, value in before.items()
+            if key in after
+        )
+
+    active_pigs = len(endpoint_pigs)
+    active_blocks = len(endpoint_blocks)
+    pig_displacement = displacement(initial_pigs, endpoint_pigs)
+    block_displacement = displacement(initial_blocks, endpoint_blocks)
+    pig_contact = "collision:bird:pig" in coverage
+    block_contact = "collision:bird:block" in coverage
+    support_change = "non_bird_support_change" in coverage
+    cost, progress = realized_endpoint_cost(
+        active_pigs=active_pigs,
+        active_blocks=active_blocks,
+        pig_contact=pig_contact,
+        block_contact=block_contact,
+        support_change=support_change,
+        pig_displacement=pig_displacement,
+        block_displacement=block_displacement,
+    )
+    count_cost = int(_realized_goal_cost(endpoint))
+    if count_cost != active_pigs * 1000 + active_blocks:
+        raise CorrectiveRankingCohortError("endpoint count cost differs")
     return (
-        _realized_goal_cost(endpoint),
+        {
+            "realized_cost": cost,
+            "goal_count_cost": count_cost,
+            "active_pigs": active_pigs,
+            "active_blocks": active_blocks,
+            "pig_contact": pig_contact,
+            "block_contact": block_contact,
+            "support_change": support_change,
+            "pig_displacement_world": pig_displacement,
+            "block_displacement_world": block_displacement,
+            "bounded_progress": progress,
+        },
         str(raw["terminal_reason"]),
-        _interaction_coverage(trajectory_root, raw),
+        coverage,
     )
 
 
@@ -276,7 +341,7 @@ def _validate_result(
 ) -> dict[str, Any]:
     value = dict(result)
     expected = {
-        "schema": "issue_68_candidate_execution_result_v1",
+        "schema": "issue_68_candidate_execution_result_v2",
         "plan_identity": plan["identity"],
         "state_identity": state["identity"],
         "candidate_identity": candidate["identity"],
@@ -290,6 +355,9 @@ def _validate_result(
             "drag_y": candidate["drag_y"],
             "tap_time_ms": candidate["tap_time_ms"],
         },
+        "realized_cost_contract_identity": plan["realized_cost_contract"][
+            "identity"
+        ],
     }
     if any(value.get(key) != item for key, item in expected.items()):
         raise CorrectiveRankingCohortError("candidate result differs from its plan")
@@ -304,6 +372,8 @@ def _validate_result(
     if value["status"] == "failed":
         if (
             value.get("realized_cost") != FAILURE_COST
+            or value.get("goal_count_cost") is not None
+            or value.get("endpoint_outcome") is not None
             or value.get("trajectory_relative_path") is not None
             or value["attempt_count"] != plan["fixed_retry_limit"]
         ):
@@ -342,8 +412,29 @@ def _validate_result(
         or value.get("trajectory_identity") != raw["trajectory_identity"]
         or type(value.get("realized_cost")) not in (int, float)
         or not 0 <= float(value["realized_cost"]) < FAILURE_COST
+        or type(value.get("goal_count_cost")) is not int
+        or math.floor(float(value["realized_cost"]))
+        != value.get("goal_count_cost")
+        or not isinstance(value.get("endpoint_outcome"), Mapping)
+        or value["endpoint_outcome"].get("goal_count_cost")
+        != value.get("goal_count_cost")
+        or value["endpoint_outcome"].get("realized_cost")
+        != value.get("realized_cost")
     ):
         raise CorrectiveRankingCohortError("accepted candidate binding differs")
+    outcome, terminal_reason, interaction_coverage = _result_outcome(
+        trajectory_root,
+        release=release_identity(str(plan["identity"])),
+        role=str(state["exposure_role"]),
+    )
+    if (
+        value.get("endpoint_outcome") != outcome
+        or value.get("terminal_reason") != terminal_reason
+        or value.get("interaction_coverage") != interaction_coverage
+    ):
+        raise CorrectiveRankingCohortError(
+            "candidate result changed its realized endpoint"
+        )
     return value
 
 
@@ -403,7 +494,7 @@ def _attempt_audit(
     if video_relative is not None:
         _encode_agent_frames_webm(frames, output / video_relative)
     manifest = {
-        "schema": "issue_68_candidate_frame_audit_v1",
+        "schema": "issue_68_candidate_frame_audit_v2",
         "state_identity": state["identity"],
         "candidate_identity": candidate["identity"],
         "candidate_ordinal": candidate["ordinal"],
@@ -554,7 +645,7 @@ def _collect_candidate(
             break
     wall_seconds = time.monotonic() - started
     common = {
-        "schema": "issue_68_candidate_execution_result_v1",
+        "schema": "issue_68_candidate_execution_result_v2",
         "plan_identity": plan["identity"],
         "state_identity": state["identity"],
         "candidate_identity": candidate["identity"],
@@ -568,6 +659,9 @@ def _collect_candidate(
             "drag_y": candidate["drag_y"],
             "tap_time_ms": candidate["tap_time_ms"],
         },
+        "realized_cost_contract_identity": plan["realized_cost_contract"][
+            "identity"
+        ],
         "wall_seconds": wall_seconds,
         "attempt_count": len(failures) + (1 if record is not None else 0),
         "failures": failures,
@@ -586,13 +680,15 @@ def _collect_candidate(
             "level_instance_identity": None,
             "trajectory_identity": None,
             "realized_cost": FAILURE_COST,
+            "goal_count_cost": None,
+            "endpoint_outcome": None,
             "terminal_reason": "collection_failure",
             "interaction_coverage": [],
             "frame_record_count": 0,
             "artifact_bytes": 0,
         }
     else:
-        realized_cost, terminal, coverage = _result_outcome(
+        outcome, terminal, coverage = _result_outcome(
             accepted_root,
             release=release_identity(str(plan["identity"])),
             role=str(state["exposure_role"]),
@@ -606,7 +702,9 @@ def _collect_candidate(
             "scenario_lineage_identity": record["scenario_lineage_identity"],
             "level_instance_identity": record["level_instance_identity"],
             "trajectory_identity": record["trajectory_identity"],
-            "realized_cost": realized_cost,
+            "realized_cost": outcome["realized_cost"],
+            "goal_count_cost": outcome["goal_count_cost"],
+            "endpoint_outcome": outcome,
             "terminal_reason": terminal,
             "interaction_coverage": coverage,
             "frame_record_count": sum(
@@ -677,7 +775,7 @@ def _initialize_runtime(
     player = _player()
     provenance_path = runtime / "provenance.json"
     provenance = {
-        "schema": "issue_68_collection_provenance_v1",
+        "schema": "issue_68_collection_provenance_v2",
         "plan_identity": plan["identity"],
         "implementation_revision": implementation_revision,
         "player": player,
@@ -771,7 +869,7 @@ def _audit_gallery(
             "video_path": video,
         })
     manifest = {
-        "schema": "issue_68_candidate_frame_audit_gallery_v1",
+        "schema": "issue_68_candidate_frame_audit_gallery_v2",
         "plan_identity": plan["identity"],
         "phase": plan["phase"],
         "source_observation_role": "agent",
@@ -1025,6 +1123,17 @@ def _diversity_payload(
         len({float(item["realized_cost"]) for item in items}) > 1
         for items in fully_realized
     )
+    goal_count_discriminating = sum(
+        len({
+            int(
+                item["goal_count_cost"]
+                if item.get("goal_count_cost") is not None
+                else math.floor(float(item["realized_cost"]))
+            )
+            for item in items
+        }) > 1
+        for items in fully_realized
+    )
     return {
         "state_count": report.state_count,
         "candidate_count": report.candidate_count,
@@ -1034,6 +1143,9 @@ def _diversity_payload(
         ),
         "block_only_discordant_state_count": (
             report.block_only_discordant_state_count
+        ),
+        "progress_only_discordant_state_count": (
+            report.progress_only_discordant_state_count
         ),
         "best_action_tie_sizes": list(report.best_action_tie_sizes),
         "best_action_tie_size_counts": {
@@ -1045,6 +1157,10 @@ def _diversity_payload(
         "outcome_discriminating_state_count": discriminating,
         "outcome_discriminating_state_fraction": (
             discriminating / len(plan["states"])
+        ),
+        "goal_count_discriminating_state_count": goal_count_discriminating,
+        "goal_count_discriminating_state_fraction": (
+            goal_count_discriminating / len(plan["states"])
         ),
     }
 
@@ -1075,7 +1191,7 @@ def _pilot_report(
     artifact_bytes = [int(item["artifact_bytes"]) for item in accepted]
     payload = {
         "schema": PILOT_REPORT_SCHEMA,
-        "identity": f"issue-68-pilot-report-v1:{plan['identity']}",
+        "identity": f"issue-68-pilot-report-v2:{plan['identity']}",
         "pilot_plan_identity": plan["identity"],
         "planned_state_count": len(plan["states"]),
         "scheduled_candidate_count": scheduled,
@@ -1102,6 +1218,7 @@ def _pilot_report(
             for item in accepted
             for interaction in item["interaction_coverage"]
         ).items())),
+        "realized_cost_contract": dict(plan["realized_cost_contract"]),
         "diversity": diversity,
         "issue_63_local_probe_reference": {
             "state_count": 24,
@@ -1134,12 +1251,13 @@ def _pilot_report(
             ),
         },
         "audit": {
-            "root": str(Path("data/issue-68-ranking-audit/pilot")),
+            "root": str(Path("data/issue-68-ranking-audit-v2/pilot")),
             "gallery": "index.html",
             "candidate_count": audit["candidate_count"],
             "video_count": audit["video_count"],
         },
         "candidate_failure_fraction": failure_fraction,
+        "supersedes": dict(plan["supersedes"]),
         "outcome_conditioned_membership": False,
         "final_evaluation_opened": False,
         "passed": passed,
@@ -1158,6 +1276,9 @@ def freeze_pilot(path: Path) -> dict[str, Any]:
 
 
 def run_pilot(args: argparse.Namespace) -> dict[str, Any]:
+    if not args.pilot_plan.is_file():
+        _log("fresh v2 pilot plan is absent; freezing it before collection")
+        freeze_pilot(args.pilot_plan)
     plan = _load_plan(args.pilot_plan, "pilot")
     if args.pilot_report.is_file():
         report = validate_pilot_report(
@@ -1433,7 +1554,7 @@ def _build_role_products(
                 adapter=adapter,
                 codec=codec,
             )
-            if values[-1] != float(result["realized_cost"]):
+            if values[-1] != float(result["goal_count_cost"]):
                 raise CorrectiveRankingCohortError(
                     "published carrier endpoint changed the realized cost"
                 )
@@ -1735,11 +1856,12 @@ def _manifest(
     }
     return {
         "schema": RELEASE_SCHEMA,
-        "identity": f"issue-68-corrective-cohort-v1:{plan['identity']}",
+        "identity": f"issue-68-corrective-cohort-v2:{plan['identity']}",
         "production_plan_identity": plan["identity"],
         "pilot_report_identity": pilot_report["identity"],
         "implementation_revision": provenance["implementation_revision"],
         "candidate_design_identity": plan["action_design"]["identity"],
+        "realized_cost_contract": dict(plan["realized_cost_contract"]),
         "failure_treatment": dict(plan["failure_treatment"]),
         "counts": {
             "states": len(plan["states"]),
@@ -1795,6 +1917,7 @@ def _manifest(
         "expert_demonstrations_used": False,
         "target_shot_labels_used": False,
         "outcome_conditioned_membership": False,
+        "supersedes": dict(plan["supersedes"]),
         "final_evaluation_opened": False,
         "passed": True,
     }
@@ -1874,7 +1997,7 @@ def publish_production(args: argparse.Namespace) -> dict[str, Any]:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     os.replace(staging, args.output)
     summary = {
-        "schema": "issue_68_corrective_cohort_summary_v1",
+        "schema": "issue_68_corrective_cohort_summary_v2",
         "artifact_identity": manifest["identity"],
         "production_plan_identity": plan["identity"],
         "counts": manifest["counts"],
@@ -2071,7 +2194,7 @@ def validate_release(args: argparse.Namespace) -> dict[str, Any]:
     if manifest != expected_manifest:
         raise CorrectiveRankingCohortError("corrective release manifest differs")
     expected_summary = {
-        "schema": "issue_68_corrective_cohort_summary_v1",
+        "schema": "issue_68_corrective_cohort_summary_v2",
         "artifact_identity": manifest["identity"],
         "production_plan_identity": plan["identity"],
         "counts": manifest["counts"],
@@ -2097,9 +2220,9 @@ def _synthetic_results(plan: Mapping[str, Any]) -> list[dict[str, Any]]:
     for state in plan["states"]:
         for candidate in state["candidates"]:
             cost = float(
-                1000 + (candidate["ordinal"] % 3)
-                if state["ordinal"] < 6
-                else 1000
+                1000.2 + (candidate["ordinal"] % 3) * 0.1
+                if state["ordinal"] < 18
+                else 1000.9
             )
             results.append({
                 "state_identity": state["identity"],
@@ -2155,7 +2278,7 @@ def dry_run() -> dict[str, Any]:
     validate_pilot_report(report)
     production = build_production_plan(report)
     result = {
-        "schema": "issue_68_corrective_cohort_dry_run_v1",
+        "schema": "issue_68_corrective_cohort_dry_run_v2",
         "pilot_states": len(pilot["states"]),
         "pilot_candidates": len(synthetic),
         "action_strata": len(pilot["action_design"]["strata"]),
@@ -2250,7 +2373,7 @@ def main(argv: list[str] | None = None) -> int:
             workers=args.workers,
         )
         result = {
-            "schema": "issue_68_production_collection_status_v1",
+            "schema": "issue_68_production_collection_status_v2",
             "production_plan_identity": plan["identity"],
             "scheduled": len(results),
             "accepted": sum(item["status"] == "accepted" for item in results),

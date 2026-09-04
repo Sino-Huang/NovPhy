@@ -14,7 +14,9 @@ from world_model.planning.gameplay import SlingshotAction, SlingshotActionBounds
 from world_model.training.lineage_scaling import ActionCandidate, ActionRankingState
 
 
-BROAD_ACTION_DESIGN_ID = "issue-66-broad-action-design-v1:2x3x2-full-bounds"
+BROAD_ACTION_DESIGN_ID = (
+    "issue-66-broad-action-design-v2:3x4-redbird-distinct-full-bounds"
+)
 RANKING_FAILURE_COST = 1_000_000_000.0
 DISAGREEMENT_PENALTY_GRID = (0.0, 0.25, 0.5, 1.0, 2.0)
 
@@ -35,37 +37,36 @@ def broad_action_candidates(
     source_state_identity: str,
     bounds: SlingshotActionBounds,
 ) -> tuple[BroadActionCandidate, ...]:
-    """Bind the fixed 2x3x2 full-bound design to one source decision state."""
+    """Bind the fixed 3x4 RedBird action grid to one source decision state."""
 
     if not source_state_identity or type(bounds) is not SlingshotActionBounds:
         raise ActionRankingProbeError("broad action design requires a source and bounds")
+    drag_step = (bounds.drag_x[1] - bounds.drag_x[0]) / 3
     drag_values = (
         ("near", bounds.drag_x[1]),
-        ("middle", round((bounds.drag_x[0] + bounds.drag_x[1]) / 2)),
+        ("middle_near", round(bounds.drag_x[1] - drag_step)),
+        ("middle_far", round(bounds.drag_x[1] - 2 * drag_step)),
         ("far", bounds.drag_x[0]),
     )
-    arc_values = (("low", bounds.drag_y[0]), ("high", bounds.drag_y[1]))
-    tap_values = (
-        ("early", bounds.tap_time_ms[0]),
-        ("late", bounds.tap_time_ms[1]),
+    arc_values = (
+        ("low", bounds.drag_y[0]),
+        ("middle", round((bounds.drag_y[0] + bounds.drag_y[1]) / 2)),
+        ("high", bounds.drag_y[1]),
     )
+    tap_time_ms = bounds.tap_time_ms[0]
     candidates = []
     for arc_name, drag_y in arc_values:
         for drag_name, drag_x in drag_values:
-            for tap_name, tap_time_ms in tap_values:
-                ordinal = len(candidates) + 1
-                stratum = (
-                    f"arc_{arc_name}__drag_{drag_name}__tap_{tap_name}"
-                )
-                candidates.append(BroadActionCandidate(
-                    identity=(
-                        f"issue-66-broad-candidate-v1:{source_state_identity}:"
-                        f"c{ordinal:02d}"
-                    ),
-                    ordinal=ordinal,
-                    action_stratum=stratum,
-                    action=SlingshotAction(drag_x, drag_y, tap_time_ms),
-                ))
+            ordinal = len(candidates) + 1
+            candidates.append(BroadActionCandidate(
+                identity=(
+                    f"issue-66-broad-candidate-v2:{source_state_identity}:"
+                    f"c{ordinal:02d}"
+                ),
+                ordinal=ordinal,
+                action_stratum=f"arc_{arc_name}__drag_{drag_name}__redbird",
+                action=SlingshotAction(drag_x, drag_y, tap_time_ms),
+            ))
     result = tuple(candidates)
     if (
         len(result) != 12
@@ -84,16 +85,17 @@ class RankingDiversityReport:
     all_tied_state_count: int
     pig_removal_discordant_state_count: int
     block_only_discordant_state_count: int
+    progress_only_discordant_state_count: int
     best_action_tie_sizes: tuple[int, ...]
     candidate_failure_count: int
     state_failure_count: int
 
 
 def _goal_counts(realized_cost: float) -> tuple[int, int]:
-    rounded = round(realized_cost)
-    if realized_cost < 0.0 or not math.isclose(realized_cost, rounded, abs_tol=1e-6):
-        raise ActionRankingProbeError("realized goal cost is not an integer count cost")
-    return rounded // 1000, rounded % 1000
+    if realized_cost < 0.0 or not math.isfinite(realized_cost):
+        raise ActionRankingProbeError("realized goal cost is invalid")
+    count_cost = math.floor(realized_cost)
+    return count_cost // 1000, count_cost % 1000
 
 
 def summarize_ranking_diversity(
@@ -108,6 +110,7 @@ def summarize_ranking_diversity(
     all_tied = 0
     pig_discordant = 0
     block_only_discordant = 0
+    progress_only_discordant = 0
     failures = 0
     failed_states = 0
     tie_sizes = []
@@ -133,18 +136,21 @@ def summarize_ranking_diversity(
         outcomes = tuple(_goal_counts(cost) for cost in valid_costs)
         pig_counts = {pigs for pigs, _blocks in outcomes}
         block_counts = {blocks for _pigs, blocks in outcomes}
-        if not state_failures and len(set(outcomes)) == 1:
+        if not state_failures and len(set(valid_costs)) == 1:
             all_tied += 1
-        elif len(pig_counts) > 1:
+        if len(pig_counts) > 1:
             pig_discordant += 1
         elif len(block_counts) > 1:
             block_only_discordant += 1
+        elif len(set(valid_costs)) > 1:
+            progress_only_discordant += 1
     return RankingDiversityReport(
         state_count=len(states),
         candidate_count=candidate_count,
         all_tied_state_count=all_tied,
         pig_removal_discordant_state_count=pig_discordant,
         block_only_discordant_state_count=block_only_discordant,
+        progress_only_discordant_state_count=progress_only_discordant,
         best_action_tie_sizes=tuple(tie_sizes),
         candidate_failure_count=failures,
         state_failure_count=failed_states,
