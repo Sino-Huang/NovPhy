@@ -1,24 +1,328 @@
-@incollection{Bengio+chapter2007,
-author = {Bengio, Yoshua and LeCun, Yann},
-booktitle = {Large Scale Kernel Machines},
-publisher = {MIT Press},
-title = {Scaling Learning Algorithms Towards {AI}},
-year = {2007}
+% Bibliography for the BG-NS-JEPA manuscript.
+% All entries verified against primary sources (arXiv/publisher/DBLP), 2026-09.
+% Characterizations and per-entry caveats are recorded in manuscript/related_work_citation_map.md.
+
+%% Foundations: world models and planning in imagination
+
+@inproceedings{ha2018recurrent,
+  title={Recurrent World Models Facilitate Policy Evolution},
+  author={Ha, David and Schmidhuber, J{\"u}rgen},
+  booktitle={Advances in Neural Information Processing Systems 31 (NeurIPS 2018)},
+  pages={2451--2463},
+  year={2018}
 }
 
-@article{Hinton06,
-author = {Hinton, Geoffrey E. and Osindero, Simon and Teh, Yee Whye},
-journal = {Neural Computation},
-pages = {1527--1554},
-title = {A Fast Learning Algorithm for Deep Belief Nets},
-volume = {18},
-year = {2006}
+@article{ha2018world,
+  title={World Models},
+  author={Ha, David and Schmidhuber, J{\"u}rgen},
+  journal={arXiv preprint arXiv:1803.10122},
+  year={2018},
+  eprint={1803.10122}, archivePrefix={arXiv}, primaryClass={cs.LG},
+  doi={10.48550/arXiv.1803.10122}
 }
 
-@book{goodfellow2016deep,
-title={Deep learning},
-author={Goodfellow, Ian and Bengio, Yoshua and Courville, Aaron and Bengio, Yoshua},
-volume={1},
-year={2016},
-publisher={MIT Press}
+@inproceedings{hafner2020dreamer,
+  title={Dream to Control: Learning Behaviors by Latent Imagination},
+  author={Hafner, Danijar and Lillicrap, Timothy and Ba, Jimmy and Norouzi, Mohammad},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2020},
+  eprint={1912.01603}, archivePrefix={arXiv}
+}
+
+@article{hafner2025dreamerv3,
+  title={Mastering Diverse Control Tasks through World Models},
+  author={Hafner, Danijar and Pa{\v{s}}ukonis, Jurgis and Ba, Jimmy and Lillicrap, Timothy},
+  journal={Nature},
+  volume={640},
+  number={8059},
+  pages={647--653},
+  year={2025},
+  publisher={Springer Nature},
+  doi={10.1038/s41586-025-08744-2}
+}
+
+@inproceedings{hansen2022tdmpc,
+  title={Temporal Difference Learning for Model Predictive Control},
+  author={Hansen, Nicklas and Wang, Xiaolong and Su, Hao},
+  booktitle={Proceedings of the 39th International Conference on Machine Learning (ICML)},
+  year={2022},
+  url={https://proceedings.mlr.press/v162/hansen22a.html},
+  eprint={2203.04955}, archivePrefix={arXiv}
+}
+
+%% Latent / JEPA-style world models
+
+@inproceedings{assran2023ijepa,
+  title={Self-Supervised Learning from Images with a Joint-Embedding Predictive Architecture},
+  author={Assran, Mahmoud and Duval, Quentin and Misra, Ishan and Bojanowski, Piotr and Vincent, Pascal and Rabbat, Michael and LeCun, Yann and Ballas, Nicolas},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  pages={15619--15629},
+  year={2023},
+  doi={10.1109/CVPR52729.2023.01499}
+}
+
+@article{bardes2024vjepa,
+  title={Revisiting Feature Prediction for Learning Visual Representations from Video},
+  author={Bardes, Adrien and Garrido, Quentin and Ponce, Jean and Chen, Xinlei and Rabbat, Michael and LeCun, Yann and Assran, Mahmoud and Ballas, Nicolas},
+  journal={Transactions on Machine Learning Research (TMLR)},
+  year={2024},
+  url={https://openreview.net/forum?id=QaCCuDfBk2},
+  eprint={2404.08471}, archivePrefix={arXiv}
+}
+
+@article{assran2025vjepa2,
+  title={V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning},
+  author={Assran, Mido and Bardes, Adrien and Fan, David and Garrido, Quentin and Howes, Russell and Komeili, Mojtaba and Muckley, Matthew and Rizvi, Ammar and Roberts, Claire and Sinha, Koustuv and Zholus, Artem and Arnaud, Sergio and Gejji, Abha and Martin, Ada and Hogan, Francois Robert and Dugas, Daniel and Bojanowski, Piotr and Khalidov, Vasil and Labatut, Patrick and Massa, Francisco and Szafraniec, Marc and Krishnakumar, Kapil and Li, Yong and Ma, Xiaodong and Chandar, Sarath and Meier, Franziska and LeCun, Yann and Rabbat, Michael and Ballas, Nicolas},
+  journal={arXiv preprint arXiv:2506.09985},
+  year={2025},
+  eprint={2506.09985}, archivePrefix={arXiv}, primaryClass={cs.AI}
+}
+
+@article{maes2026leworldmodel,
+  title={LeWorldModel: Stable End-to-End Joint-Embedding Predictive Architecture from Pixels},
+  author={Maes, Lucas and Le Lidec, Quentin and Scieur, Damien and LeCun, Yann and Balestriero, Randall},
+  journal={arXiv preprint arXiv:2603.19312},
+  year={2026},
+  eprint={2603.19312}, archivePrefix={arXiv}, primaryClass={cs.LG},
+  doi={10.48550/arXiv.2603.19312}
+}
+
+@article{zhou2025dinowm,
+  title={DINO-WM: World Models on Pre-trained Visual Features enable Zero-shot Planning},
+  author={Zhou, Gaoyue and Pan, Hengkai and LeCun, Yann and Pinto, Lerrel},
+  journal={arXiv preprint arXiv:2411.04983},
+  year={2025},
+  eprint={2411.04983}, archivePrefix={arXiv}, primaryClass={cs.RO},
+  doi={10.48550/arXiv.2411.04983}
+}
+
+@inproceedings{sobal2025pldm,
+  title={Stress-Testing Offline Reward-Free Reinforcement Learning: A Case for Planning with Latent Dynamics Models},
+  author={Sobal, Vlad and Zhang, Wancong and Cho, Kyunghyun and Balestriero, Randall and Rudner, Tim G. J. and LeCun, Yann},
+  booktitle={7th Robot Learning Workshop: Towards Robots with Human-Level Abilities (WRL@ICLR 2025)},
+  year={2025},
+  note={OpenReview forum jON7H6A9UU}
+}
+
+%% Single-axis adaptivity: horizon, chunking, reliability, test-time adaptation
+
+@article{du2026vlwm,
+  title={Beyond the Next Step: Variable-Length Latent World Models for Long-Horizon Planning},
+  author={Du, Tianqi and Zhang, Qi and Wang, Yifei and Wang, Yisen},
+  journal={arXiv preprint arXiv:2606.21775},
+  year={2026},
+  eprint={2606.21775}, archivePrefix={arXiv}, primaryClass={cs.LG},
+  doi={10.48550/arXiv.2606.21775}
+}
+
+@article{iiyama2026sunta,
+  title={SUNTA: Hierarchical Video Prediction with Surprise-based Chunking},
+  author={Iiyama, Tomoshi and Suzuki, Masahiro and Matsuo, Yutaka},
+  journal={arXiv preprint arXiv:2607.02087},
+  year={2026},
+  eprint={2607.02087}, archivePrefix={arXiv}, primaryClass={cs.AI},
+  doi={10.48550/arXiv.2607.02087}
+}
+
+@article{wang2026adajepa,
+  title={AdaJEPA: An Adaptive Latent World Model},
+  author={Wang, Ying and Bounou, Oumayma and LeCun, Yann and Ren, Mengye},
+  journal={arXiv preprint arXiv:2606.32026},
+  year={2026},
+  eprint={2606.32026}, archivePrefix={arXiv}, primaryClass={cs.LG},
+  doi={10.48550/arXiv.2606.32026}
+}
+
+@article{hafez2020improving,
+  title={Improving Robot Dual-System Motor Learning with Intrinsically Motivated Meta-Control and Latent-Space Experience Imagination},
+  author={Hafez, Muhammad Burhan and Weber, Cornelius and Kerzel, Matthias and Wermter, Stefan},
+  journal={Robotics and Autonomous Systems},
+  volume={133},
+  pages={103630},
+  year={2020},
+  publisher={Elsevier},
+  doi={10.1016/j.robot.2020.103630}
+}
+
+%% Single-axis adaptivity: resolution, temporal scale, abstraction, model granularity
+
+@inproceedings{wang2023dynamic,
+  title={Dynamic-Resolution Model Learning for Object Pile Manipulation},
+  author={Wang, Yixuan and Li, Yunzhu and Driggs-Campbell, Katherine and Fei-Fei, Li and Wu, Jiajun},
+  booktitle={Proceedings of Robotics: Science and Systems (RSS)},
+  address={Daegu, Republic of Korea},
+  month={July},
+  year={2023},
+  doi={10.15607/RSS.2023.XIX.047},
+  eprint={2306.16700}, archivePrefix={arXiv}
+}
+
+@article{scarafoni2022islands,
+  title={Finding Islands of Predictability in Action Forecasting},
+  author={Scarafoni, Daniel and Essa, Irfan and Ploetz, Thomas},
+  journal={arXiv preprint arXiv:2210.07354},
+  year={2022},
+  eprint={2210.07354}, archivePrefix={arXiv}, primaryClass={cs.CV},
+  doi={10.48550/arXiv.2210.07354}
+}
+
+@inproceedings{shaj2023multi,
+  title={Multi Time Scale World Models},
+  author={Shaj, Vaisakh and Gholam Zadeh, Saleh and Demir, Ozan and Douat, Luiz Ricardo and Neumann, Gerhard},
+  booktitle={Advances in Neural Information Processing Systems 36 (NeurIPS 2023)},
+  year={2023},
+  eprint={2310.18534}, archivePrefix={arXiv}, primaryClass={cs.LG}
+}
+
+@inproceedings{villarcorrales2022mspred,
+  title={MSPred: Video Prediction at Multiple Spatio-Temporal Scales with Hierarchical Recurrent Networks},
+  author={Villar-Corrales, Angel and Karapetyan, Ani and Boltres, Andreas and Behnke, Sven},
+  booktitle={Proceedings of the 33rd British Machine Vision Conference (BMVC)},
+  year={2022},
+  eprint={2203.09303}, archivePrefix={arXiv}, primaryClass={cs.CV}
+}
+
+@inproceedings{brudigam2021mpc,
+  title={Model Predictive Control with Models of Different Granularity and a Non-uniformly Spaced Prediction Horizon},
+  author={Br{\"u}digam, Tim and Prader, Daniel and Wollherr, Dirk and Leibold, Marion},
+  booktitle={2021 American Control Conference (ACC)},
+  pages={3876--3881},
+  year={2021},
+  publisher={IEEE},
+  doi={10.23919/ACC50511.2021.9482617}
+}
+
+@article{jang2026musix,
+  title={Multi-scale Mixture of World Models for Embodied Agents in Evolving Environments},
+  author={Jang, Jinwoo and Rho, Daniel J. and Yoon, Sihyung and Cho, Hyunsuk and Woo, Honguk},
+  journal={arXiv preprint arXiv:2607.00457},
+  year={2026},
+  eprint={2607.00457}, archivePrefix={arXiv}, primaryClass={cs.AI},
+  doi={10.48550/arXiv.2607.00457}
+}
+
+%% Temporal and action abstraction (control schedule, not prediction granularity)
+
+@article{sutton1999options,
+  title={Between {MDP}s and Semi-{MDP}s: A Framework for Temporal Abstraction in Reinforcement Learning},
+  author={Sutton, Richard S. and Precup, Doina and Singh, Satinder},
+  journal={Artificial Intelligence},
+  volume={112},
+  number={1--2},
+  pages={181--211},
+  year={1999},
+  publisher={Elsevier},
+  doi={10.1016/S0004-3702(99)00052-1}
+}
+
+@inproceedings{bacon2017optioncritic,
+  title={The Option-Critic Architecture},
+  author={Bacon, Pierre-Luc and Harb, Jean and Precup, Doina},
+  booktitle={Proceedings of the Thirty-First AAAI Conference on Artificial Intelligence (AAAI)},
+  year={2017},
+  eprint={1609.05140}, archivePrefix={arXiv}
+}
+
+@inproceedings{biedenkapp2021temporl,
+  title={TempoRL: Learning When to Act},
+  author={Biedenkapp, Andr{\'e} and Rajan, Raghu and Hutter, Frank and Lindauer, Marius},
+  booktitle={Proceedings of the 38th International Conference on Machine Learning (ICML)},
+  year={2021},
+  eprint={2106.05262}, archivePrefix={arXiv}
+}
+
+@inproceedings{snell2025testtime,
+  title={Scaling {LLM} Test-Time Compute Optimally can be More Effective than Scaling Model Parameters},
+  author={Snell, Charlie and Lee, Jaehoon and Xu, Kelvin and Kumar, Aviral},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2025},
+  eprint={2408.03314}, archivePrefix={arXiv}
+}
+
+%% Physical reasoning benchmarks
+
+@article{pinto2024novphy,
+  title={NovPhy: A Physical Reasoning Benchmark for Open-World AI Systems},
+  author={Pinto, Vimukthini and Gamage, Chathura and Xue, Cheng and Zhang, Peng and Nikonova, Ekaterina and Stephenson, Matthew and Renz, Jochen},
+  journal={Artificial Intelligence},
+  volume={336},
+  pages={104198},
+  year={2024},
+  publisher={Elsevier},
+  doi={10.1016/j.artint.2024.104198}
+}
+
+@inproceedings{bakhtin2019phyre,
+  title={PHYRE: A New Benchmark for Physical Reasoning},
+  author={Bakhtin, Anton and van der Maaten, Laurens and Johnson, Justin and Gustafson, Laura and Girshick, Ross},
+  booktitle={Advances in Neural Information Processing Systems 32 (NeurIPS 2019)},
+  year={2019},
+  eprint={1908.05656}, archivePrefix={arXiv}
+}
+
+@inproceedings{bear2021physion,
+  title={Physion: Evaluating Physical Prediction from Vision in Humans and Machines},
+  author={Bear, Daniel M. and Wang, Elias and Mrowca, Damian and Binder, Felix J. and Tung, Hsiao-Yu Fish and Pramod, R. T. and Holdaway, Cameron and Tao, Sirui and Smith, Kevin A. and Sun, Fan-Yun and Fei-Fei, Li and Kanwisher, Nancy and Tenenbaum, Joshua B. and Yamins, Daniel L. K. and Fan, Judith E.},
+  booktitle={Advances in Neural Information Processing Systems 34 (NeurIPS 2021), Datasets and Benchmarks Track},
+  year={2021},
+  eprint={2106.08261}, archivePrefix={arXiv}
+}
+
+@inproceedings{yi2020clevrer,
+  title={CLEVRER: CoLlision Events for Video REpresentation and Reasoning},
+  author={Yi, Kexin and Gan, Chuang and Li, Yunzhu and Kohli, Pushmeet and Wu, Jiajun and Torralba, Antonio and Tenenbaum, Joshua B.},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2020},
+  eprint={1910.01442}, archivePrefix={arXiv}
+}
+
+@inproceedings{li2024iphyre,
+  title={I-PHYRE: Interactive Physical Reasoning},
+  author={Li, Shiqian and Wu, Kewen and Zhang, Chi and Zhu, Yixin},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2024},
+  eprint={2312.03009}, archivePrefix={arXiv}
+}
+
+@article{riochet2022intphys,
+  title={IntPhys 2019: A Benchmark for Visual Intuitive Physics Understanding},
+  author={Riochet, Ronan and Ynocente Castro, Mario and Bernard, Mathieu and Lerer, Adam and Fergus, Rob and Izard, V{\'e}ronique and Dupoux, Emmanuel},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  volume={44},
+  number={9},
+  pages={5016--5025},
+  year={2022},
+  publisher={IEEE},
+  doi={10.1109/TPAMI.2021.3083839}
+}
+
+@inproceedings{ates2022craft,
+  title={CRAFT: A Benchmark for Causal Reasoning About Forces and inTeractions},
+  author={Ates, Tayfun and Atesoglu, M. Samil and Yigit, Cagatay and Kesen, Ilker and Kobas, Mert and Erdem, Erkut and Erdem, Aykut and Goksun, Tilbe and Yuret, Deniz},
+  booktitle={Findings of the Association for Computational Linguistics: ACL 2022},
+  year={2022},
+  eprint={2012.04293}, archivePrefix={arXiv}
+}
+
+@inproceedings{asai2018latplan,
+  title={Classical Planning in Deep Latent Space: Bridging the Subsymbolic-Symbolic Boundary},
+  author={Asai, Masataro and Fukunaga, Alex},
+  booktitle={Proceedings of the Thirty-Second AAAI Conference on Artificial Intelligence (AAAI)},
+  year={2018},
+  eprint={1705.00154}, archivePrefix={arXiv}
+}
+
+%% Survey
+
+@article{ding2025understanding,
+  title={Understanding World or Predicting Future? A Comprehensive Survey of World Models},
+  author={Ding, Jingtao and Zhang, Yunke and Shang, Yu and Zhang, Yuheng and Zong, Zefang and Feng, Jie and Yuan, Yuan and Su, Hongyuan and Li, Nian and Sukiennik, Nicholas and Xu, Fengli and Li, Yong},
+  journal={ACM Computing Surveys},
+  volume={58},
+  number={3},
+  articleno={57},
+  pages={1--38},
+  year={2025},
+  publisher={ACM},
+  doi={10.1145/3746449}
 }
