@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from concurrent.futures import Future
 from contextlib import redirect_stdout
 from copy import deepcopy
 import io
@@ -11,9 +12,11 @@ import unittest
 from unittest.mock import patch
 
 from scripts.run_issue_68_corrective_cohort import (
+    _all_results,
     _collect_candidate,
     _diversity_payload,
     _pilot_report,
+    _parser,
     _synthetic_results,
     main as issue_68_main,
 )
@@ -73,6 +76,82 @@ class Issue68CorrectiveCohortTests(unittest.TestCase):
             and all("sha256" not in item["identity"] for item in state["candidates"])
             for state in first["states"]
         ))
+
+    def test_publication_defaults_to_four_validation_processes(self) -> None:
+        args = _parser().parse_args(["--publish-production"])
+
+        self.assertEqual(args.validation_workers, 4)
+
+    def test_parallel_exact_validation_preserves_plan_order_and_logs_progress(
+        self,
+    ) -> None:
+        plan = build_pilot_plan()
+        plan = {**plan, "states": plan["states"][:4]}
+        calls = []
+        executor_worker_counts = []
+
+        class InlineExecutor:
+            def __init__(self, *, max_workers):
+                executor_worker_counts.append(max_workers)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def submit(self, function, *args, **kwargs):
+                future = Future()
+                try:
+                    future.set_result(function(*args, **kwargs))
+                except Exception as error:
+                    future.set_exception(error)
+                return future
+
+        def validate_state(_plan_header, state, _runtime):
+            calls.append(state["identity"])
+            return ([{
+                "state_identity": state["identity"],
+                "candidate_ordinal": candidate["ordinal"],
+            } for candidate in state["candidates"]], 0.1)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            runtime = Path(temporary)
+            records = runtime / "records"
+            records.mkdir()
+            for ordinal in range(48):
+                (records / f"candidate-{ordinal}.json").write_text(
+                    "{}", encoding="utf-8"
+                )
+            output = io.StringIO()
+            with patch(
+                "scripts.run_issue_68_corrective_cohort.ProcessPoolExecutor",
+                InlineExecutor,
+            ), patch(
+                "scripts.run_issue_68_corrective_cohort._validate_state_results",
+                side_effect=validate_state,
+            ), redirect_stdout(output):
+                results = _all_results(
+                    plan,
+                    runtime,
+                    workers=4,
+                    progress_label="publish preflight",
+                )
+
+        self.assertEqual(calls, [state["identity"] for state in plan["states"]])
+        self.assertEqual(executor_worker_counts, [4])
+        self.assertEqual(
+            [results[index * 12]["state_identity"] for index in range(4)],
+            [state["identity"] for state in plan["states"]],
+        )
+        self.assertIn(
+            "publish preflight exact validation start states=4 candidates=48 workers=4",
+            output.getvalue(),
+        )
+        self.assertIn(
+            "publish preflight exact validation progress=4/4",
+            output.getvalue(),
+        )
 
     def test_plan_validation_rejects_post_outcome_candidate_change(self) -> None:
         plan = build_pilot_plan()

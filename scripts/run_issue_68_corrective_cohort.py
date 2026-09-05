@@ -795,34 +795,105 @@ def _initialize_runtime(
         _write_json(runtime / "release-staging/production-plan.json", plan)
 
 
-def _all_results(
-    plan: Mapping[str, Any], runtime: Path
-) -> list[dict[str, Any]]:
+def _validate_state_results(
+    plan_header: Mapping[str, Any],
+    state: Mapping[str, Any],
+    runtime: Path,
+) -> tuple[list[dict[str, Any]], float]:
+    started = time.monotonic()
     results = []
-    for state in plan["states"]:
-        for candidate in state["candidates"]:
-            path = _result_path(runtime, state, candidate)
-            if not path.is_file():
-                raise CorrectiveRankingCohortError(
-                    f"candidate result is missing: {_candidate_key(state, candidate)}"
-                )
-            result = _load_json(path, "candidate result")
-            trajectory_root = (
-                None
-                if result.get("status") == "failed"
-                else _accepted_root(
-                    runtime, str(plan["phase"]), state, candidate
-                )
+    for candidate in state["candidates"]:
+        path = _result_path(runtime, state, candidate)
+        if not path.is_file():
+            raise CorrectiveRankingCohortError(
+                f"candidate result is missing: {_candidate_key(state, candidate)}"
             )
-            results.append(
-                _validate_result(
-                    result,
-                    plan,
+        result = _load_json(path, "candidate result")
+        trajectory_root = (
+            None
+            if result.get("status") == "failed"
+            else _accepted_root(
+                runtime, str(plan_header["phase"]), state, candidate
+            )
+        )
+        results.append(_validate_result(
+            result,
+            plan_header,
+            state,
+            candidate,
+            trajectory_root=trajectory_root,
+        ))
+    return results, time.monotonic() - started
+
+
+def _all_results(
+    plan: Mapping[str, Any],
+    runtime: Path,
+    *,
+    workers: int = 1,
+    progress_label: str = "collection",
+) -> list[dict[str, Any]]:
+    if type(workers) is not int or workers < 1:
+        raise CorrectiveRankingCohortError("validation worker count must be positive")
+    states = tuple(plan["states"])
+    plan_header = {
+        key: plan[key]
+        for key in (
+            "identity",
+            "phase",
+            "fixed_retry_limit",
+            "realized_cost_contract",
+        )
+    }
+    active_workers = min(workers, len(states))
+    candidate_count = sum(len(state["candidates"]) for state in states)
+    _log(
+        f"{progress_label} exact validation start states={len(states)} "
+        f"candidates={candidate_count} workers={active_workers}"
+    )
+    by_state: dict[int, list[dict[str, Any]]] = {}
+    completed = 0
+    if active_workers == 1:
+        for state_index, state in enumerate(states):
+            state_results, wall_seconds = _validate_state_results(
+                plan_header, state, runtime
+            )
+            by_state[state_index] = state_results
+            completed += 1
+            _log(
+                f"{progress_label} exact validation progress={completed}/"
+                f"{len(states)} state={state_index + 1}/{len(states)} "
+                f"role={state['exposure_role']} candidates=12/12 "
+                f"wall={wall_seconds:.1f}s"
+            )
+    else:
+        with ProcessPoolExecutor(max_workers=active_workers) as executor:
+            futures = {
+                executor.submit(
+                    _validate_state_results,
+                    plan_header,
                     state,
-                    candidate,
-                    trajectory_root=trajectory_root,
+                    runtime,
+                ): state_index
+                for state_index, state in enumerate(states)
+            }
+            for future in as_completed(futures):
+                state_index = futures[future]
+                state_results, wall_seconds = future.result()
+                by_state[state_index] = state_results
+                completed += 1
+                state = states[state_index]
+                _log(
+                    f"{progress_label} exact validation progress={completed}/"
+                    f"{len(states)} state={state_index + 1}/{len(states)} "
+                    f"role={state['exposure_role']} candidates=12/12 "
+                    f"wall={wall_seconds:.1f}s"
                 )
-            )
+    results = [
+        result
+        for state_index in range(len(states))
+        for result in by_state[state_index]
+    ]
     records = Path(runtime) / "records"
     actual_count = len(tuple(records.glob("*.json"))) if records.is_dir() else 0
     if actual_count != len(results):
@@ -1036,7 +1107,12 @@ def run_collection(
             os.environ.pop("DISPLAY", None)
         else:
             os.environ["DISPLAY"] = prior_display
-    results = _all_results(plan, runtime)
+    results = _all_results(
+        plan,
+        runtime,
+        workers=workers,
+        progress_label=f"{plan['phase']} finalization",
+    )
     _audit_gallery(plan, results, audit)
     _log(
         f"collection complete phase={plan['phase']} "
@@ -1940,7 +2016,12 @@ def publish_production(args: argparse.Namespace) -> dict[str, Any]:
     staging = runtime / "release-staging"
     if not staging.is_dir():
         raise CorrectiveRankingCohortError("production collection staging is absent")
-    results = _all_results(plan, runtime)
+    results = _all_results(
+        plan,
+        runtime,
+        workers=args.validation_workers,
+        progress_label="publish preflight",
+    )
     audit_root = (args.audit_output / "production").resolve()
     audit = _load_json(audit_root / "manifest.json", "production audit gallery")
     if audit.get("candidate_count") != len(results):
@@ -2338,6 +2419,12 @@ def _parser() -> argparse.ArgumentParser:
         default=DEFAULT_PRODUCTION_STATES_PER_ROLE,
     )
     parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
+    parser.add_argument(
+        "--validation-workers",
+        type=int,
+        default=DEFAULT_WORKERS,
+        help="isolated processes for exact trajectory validation (default: 4)",
+    )
     parser.add_argument("--implementation-revision")
     parser.add_argument("--start-display", action="store_true")
     parser.add_argument("--headless", action="store_true")
