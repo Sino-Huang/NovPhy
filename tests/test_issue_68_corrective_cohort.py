@@ -20,6 +20,7 @@ from scripts.run_issue_68_corrective_cohort import (
     _diversity_payload,
     _pilot_report,
     _parser,
+    _published_results,
     _result_path,
     _synthetic_results,
     _write_json,
@@ -249,6 +250,65 @@ class Issue68CorrectiveCohortTests(unittest.TestCase):
                 anchor_candidate_ordinal=2,
                 state_identity="state-1",
             )
+
+    def test_published_validation_parallelizes_and_preserves_plan_order(
+        self,
+    ) -> None:
+        plan = build_pilot_plan()
+        plan = {**plan, "states": plan["states"][:4]}
+        executor_worker_counts = []
+
+        class InlineExecutor:
+            def __init__(self, *, max_workers):
+                executor_worker_counts.append(max_workers)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                return False
+
+            def submit(self, function, *args, **kwargs):
+                future = Future()
+                try:
+                    future.set_result(function(*args, **kwargs))
+                except Exception as error:
+                    future.set_exception(error)
+                return future
+
+        def validate_state(_header, state, _root):
+            return ([{
+                "state_identity": state["identity"],
+                "candidate_identity": candidate["identity"],
+            } for candidate in state["candidates"]], 0.1)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            results_root = root / "candidate-results"
+            results_root.mkdir()
+            for ordinal in range(48):
+                (results_root / f"candidate-{ordinal}.json").write_text(
+                    "{}", encoding="utf-8"
+                )
+            output = io.StringIO()
+            with patch(
+                "scripts.run_issue_68_corrective_cohort.ProcessPoolExecutor",
+                InlineExecutor,
+            ), patch(
+                "scripts.run_issue_68_corrective_cohort."
+                "_validate_published_state_results",
+                side_effect=validate_state,
+            ), redirect_stdout(output):
+                results = _published_results(plan, root, workers=4)
+
+        self.assertEqual(executor_worker_counts, [4])
+        self.assertEqual(
+            [results[index * 12]["state_identity"] for index in range(4)],
+            [state["identity"] for state in plan["states"]],
+        )
+        self.assertIn(
+            "validate trajectories progress=4/4", output.getvalue()
+        )
 
     def test_plan_validation_rejects_post_outcome_candidate_change(self) -> None:
         plan = build_pilot_plan()

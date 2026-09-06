@@ -2282,6 +2282,106 @@ def _validate_role_products(
     _log(f"validate role={role} carrier/ranking products passed")
 
 
+def _validate_published_state_results(
+    plan_header: Mapping[str, Any],
+    state: Mapping[str, Any],
+    root: Path,
+) -> tuple[list[dict[str, Any]], float]:
+    started = time.monotonic()
+    results = []
+    for candidate in state["candidates"]:
+        path = (
+            root / "candidate-results"
+            / f"{_candidate_key(state, candidate)}.json"
+        )
+        result = _load_json(path, "published candidate result")
+        trajectory_root = (
+            None
+            if result.get("status") == "failed"
+            else root / _trajectory_relative(state, candidate)
+        )
+        results.append(_validate_result(
+            result,
+            plan_header,
+            state,
+            candidate,
+            trajectory_root=trajectory_root,
+        ))
+    return results, time.monotonic() - started
+
+
+def _published_results(
+    plan: Mapping[str, Any], root: Path, *, workers: int
+) -> list[dict[str, Any]]:
+    if type(workers) is not int or workers < 1:
+        raise CorrectiveRankingCohortError("validation worker count must be positive")
+    states = tuple(plan["states"])
+    plan_header = {
+        key: plan[key]
+        for key in (
+            "identity",
+            "phase",
+            "fixed_retry_limit",
+            "realized_cost_contract",
+        )
+    }
+    active_workers = min(workers, len(states))
+    candidate_count = sum(len(state["candidates"]) for state in states)
+    _log(
+        f"validate trajectories start states={len(states)} "
+        f"candidates={candidate_count} workers={active_workers}"
+    )
+    by_state: dict[int, list[dict[str, Any]]] = {}
+    completed = 0
+    if active_workers == 1:
+        for state_index, state in enumerate(states):
+            state_results, wall_seconds = _validate_published_state_results(
+                plan_header, state, root
+            )
+            by_state[state_index] = state_results
+            completed += 1
+            _log(
+                f"validate trajectories progress={completed}/{len(states)} "
+                f"state={state_index + 1}/{len(states)} "
+                f"role={state['exposure_role']} candidates=12/12 "
+                f"wall={wall_seconds:.1f}s"
+            )
+    else:
+        with ProcessPoolExecutor(max_workers=active_workers) as executor:
+            futures = {
+                executor.submit(
+                    _validate_published_state_results,
+                    plan_header,
+                    state,
+                    root,
+                ): state_index
+                for state_index, state in enumerate(states)
+            }
+            for future in as_completed(futures):
+                state_index = futures[future]
+                state_results, wall_seconds = future.result()
+                by_state[state_index] = state_results
+                completed += 1
+                state = states[state_index]
+                _log(
+                    f"validate trajectories progress={completed}/{len(states)} "
+                    f"state={state_index + 1}/{len(states)} "
+                    f"role={state['exposure_role']} candidates=12/12 "
+                    f"wall={wall_seconds:.1f}s"
+                )
+    results = [
+        result
+        for state_index in range(len(states))
+        for result in by_state[state_index]
+    ]
+    result_files = tuple((root / "candidate-results").glob("*.json"))
+    if len(result_files) != len(results):
+        raise CorrectiveRankingCohortError(
+            "published candidate result inventory differs"
+        )
+    return results
+
+
 def validate_release(args: argparse.Namespace) -> dict[str, Any]:
     root = args.output.resolve()
     plan = validate_plan(
@@ -2294,34 +2394,7 @@ def validate_release(args: argparse.Namespace) -> dict[str, Any]:
     )
     provenance = _load_json(root / "provenance.json", "published provenance")
     manifest = _load_json(root / "manifest.json", "corrective release manifest")
-    results = []
-    for state_index, state in enumerate(plan["states"], start=1):
-        for candidate in state["candidates"]:
-            path = (
-                root / "candidate-results" / f"{_candidate_key(state, candidate)}.json"
-            )
-            result = _load_json(path, "published candidate result")
-            trajectory_root = (
-                None
-                if result.get("status") == "failed"
-                else root / _trajectory_relative(state, candidate)
-            )
-            results.append(_validate_result(
-                result,
-                plan,
-                state,
-                candidate,
-                trajectory_root=trajectory_root,
-            ))
-        _log(
-            f"validate trajectories state={state_index}/{len(plan['states'])} "
-            f"role={state['exposure_role']} candidates=12/12"
-        )
-    result_files = tuple((root / "candidate-results").glob("*.json"))
-    if len(result_files) != len(results):
-        raise CorrectiveRankingCohortError(
-            "published candidate result inventory differs"
-        )
+    results = _published_results(plan, root, workers=args.validation_workers)
     for role in ROLES:
         _validate_role_products(plan, results, root=root, role=role)
         gc.collect()
