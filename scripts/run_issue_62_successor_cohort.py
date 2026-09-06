@@ -1110,6 +1110,7 @@ def _collect_lineage_attempt(
     speed: int,
     headless: bool,
     engine_start_lock: Path | None = None,
+    action_selector: Any | None = None,
 ) -> dict[str, Any]:
     authority = _materialize_slot(slot, attempt_root)
     scenario = authority["scenario"]
@@ -1173,6 +1174,8 @@ def _collect_lineage_attempt(
             prepared = prepare_screen_shot(
                 bridge,
                 lambda observation, selected=planned: (
+                    action_selector(observation, bridge, shot_index)
+                    if action_selector is not None else
                     _resolve_planned_interface_action(
                         selected, observation, bridge
                     )

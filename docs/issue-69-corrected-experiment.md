@@ -1,5 +1,14 @@
 # Issue 69 corrected h15 experiment
 
+Historical result: the completed v1 run validated as
+`not_supported_by_this_experiment`. Subsequent diagnosis found that the declared
+no-active-pig/block target did not match the implemented ranking input: #68
+supplied the best-realized-candidate endpoint. That outcome-derived target is
+not available to a deployment planner. Numerical validation did not detect this
+semantic mismatch. Preserve the v1 artifacts; use the redesigned
+[issue-70 workflow](issue-70-action-design.md) for further experiments. The
+commands below reproduce the historical experiment, not the corrected design.
+
 This experiment uses the completed #67 checkpoints and #68 v2 release. No new
 training, Unity capture, expert demonstrations, or final benchmark access is
 needed. The original #63 result and checkpoints remain immutable references.
