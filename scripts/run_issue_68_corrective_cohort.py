@@ -826,12 +826,68 @@ def _validate_state_results(
     return results, time.monotonic() - started
 
 
+def _load_validation_receipt(
+    plan: Mapping[str, Any],
+    runtime: Path,
+    receipt_path: Path,
+    *,
+    progress_label: str,
+) -> list[dict[str, Any]]:
+    receipt = _load_json(receipt_path, "exact validation receipt")
+    states = tuple(plan["states"])
+    expected_candidates = tuple(
+        (state, candidate)
+        for state in states
+        for candidate in state["candidates"]
+    )
+    results = receipt.get("results")
+    if (
+        receipt.get("schema") != "issue_68_exact_validation_receipt_v1"
+        or receipt.get("plan_identity") != plan["identity"]
+        or receipt.get("state_count") != len(states)
+        or receipt.get("candidate_count") != len(expected_candidates)
+        or not isinstance(results, list)
+        or len(results) != len(expected_candidates)
+    ):
+        raise CorrectiveRankingCohortError("exact validation receipt differs")
+    for (state, candidate), result in zip(
+        expected_candidates, results, strict=True
+    ):
+        if (
+            not isinstance(result, Mapping)
+            or result.get("state_identity") != state["identity"]
+            or result.get("candidate_identity") != candidate["identity"]
+        ):
+            raise CorrectiveRankingCohortError(
+                "exact validation receipt candidate order differs"
+            )
+        record_path = _result_path(runtime, state, candidate)
+        if (
+            not record_path.is_file()
+            or record_path.read_bytes() != _canonical_bytes(result)
+        ):
+            raise CorrectiveRankingCohortError(
+                "exact validation receipt no longer matches candidate records"
+            )
+    records = Path(runtime) / "records"
+    if len(tuple(records.glob("*.json"))) != len(results):
+        raise CorrectiveRankingCohortError(
+            "exact validation receipt candidate inventory differs"
+        )
+    _log(
+        f"{progress_label} exact validation receipt reused "
+        f"candidates={len(results)}"
+    )
+    return [dict(result) for result in results]
+
+
 def _all_results(
     plan: Mapping[str, Any],
     runtime: Path,
     *,
     workers: int = 1,
     progress_label: str = "collection",
+    receipt_path: Path | None = None,
 ) -> list[dict[str, Any]]:
     if type(workers) is not int or workers < 1:
         raise CorrectiveRankingCohortError("validation worker count must be positive")
@@ -847,6 +903,13 @@ def _all_results(
     }
     active_workers = min(workers, len(states))
     candidate_count = sum(len(state["candidates"]) for state in states)
+    if receipt_path is not None and Path(receipt_path).is_file():
+        return _load_validation_receipt(
+            plan,
+            runtime,
+            Path(receipt_path),
+            progress_label=progress_label,
+        )
     _log(
         f"{progress_label} exact validation start states={len(states)} "
         f"candidates={candidate_count} workers={active_workers}"
@@ -899,6 +962,18 @@ def _all_results(
     if actual_count != len(results):
         raise CorrectiveRankingCohortError(
             "collection has candidate results outside the frozen plan"
+        )
+    if receipt_path is not None:
+        _write_json(Path(receipt_path), {
+            "schema": "issue_68_exact_validation_receipt_v1",
+            "plan_identity": plan["identity"],
+            "state_count": len(states),
+            "candidate_count": len(results),
+            "results": results,
+        })
+        _log(
+            f"{progress_label} exact validation receipt written "
+            f"candidates={len(results)}"
         )
     return results
 
@@ -1466,6 +1541,37 @@ def _candidate_carriers(
     )
 
 
+def _anchor_initial_source(
+    successful_carriers: list[
+        tuple[
+            int,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+            torch.Tensor,
+        ]
+    ],
+    *,
+    anchor_candidate_ordinal: int,
+    state_identity: str,
+) -> torch.Tensor:
+    anchor = next(
+        item
+        for item in successful_carriers
+        if item[0] == anchor_candidate_ordinal
+    )
+    source_initial = anchor[1]
+    if any(
+        not torch.equal(item[1], source_initial)
+        for item in successful_carriers
+    ):
+        raise CorrectiveRankingCohortError(
+            "candidate replays changed the authoritative initial state: "
+            f"{state_identity}"
+        )
+    return source_initial
+
+
 def _matched_bundle_projection(
     source: tuple[CarrierLineage, ...], deployment: tuple[CarrierLineage, ...]
 ) -> tuple[tuple[str, str, tuple[str, ...]], ...]:
@@ -1643,16 +1749,11 @@ def _build_role_products(
             raise CorrectiveRankingCohortError(
                 f"ranking state has no realized candidate: {state['identity']}"
             )
-        reference_source = successful_carriers[0][1]
-        reference_deployment = successful_carriers[0][2]
-        if any(
-            not torch.equal(item[1], reference_source)
-            or not torch.allclose(item[2], reference_deployment, atol=0.0, rtol=0.0)
-            for item in successful_carriers[1:]
-        ):
-            raise CorrectiveRankingCohortError(
-                f"candidate replays changed the initial state: {state['identity']}"
-            )
+        reference_source = _anchor_initial_source(
+            successful_carriers,
+            anchor_candidate_ordinal=anchor_index + 1,
+            state_identity=str(state["identity"]),
+        )
         successful_results = [
             (index, item)
             for index, item in enumerate(ordered_results)
@@ -1694,17 +1795,10 @@ def _build_role_products(
             for item in deployment_lineage.transitions
             if item.horizon == 15 and item.decision_index == 0
         )
-        if (
-            not torch.equal(source_transition.context, reference_source)
-            or not torch.allclose(
-                deployment_transition.context,
-                reference_deployment,
-                atol=0.0,
-                rtol=0.0,
-            )
-        ):
+        if not torch.equal(source_transition.context, reference_source):
             raise CorrectiveRankingCohortError(
-                "carrier anchor context differs from candidate initial state"
+                "carrier anchor authoritative context differs from candidate "
+                "initial state"
             )
         action_candidates = tuple(
             ActionCandidate(
@@ -2021,6 +2115,7 @@ def publish_production(args: argparse.Namespace) -> dict[str, Any]:
         runtime,
         workers=args.validation_workers,
         progress_label="publish preflight",
+        receipt_path=runtime / "publication-preflight.json",
     )
     audit_root = (args.audit_output / "production").resolve()
     audit = _load_json(audit_root / "manifest.json", "production audit gallery")

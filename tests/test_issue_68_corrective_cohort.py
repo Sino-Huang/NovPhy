@@ -11,13 +11,18 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+import torch
+
 from scripts.run_issue_68_corrective_cohort import (
     _all_results,
+    _anchor_initial_source,
     _collect_candidate,
     _diversity_payload,
     _pilot_report,
     _parser,
+    _result_path,
     _synthetic_results,
+    _write_json,
     main as issue_68_main,
 )
 from world_model.data.corrective_ranking_cohort import (
@@ -152,6 +157,98 @@ class Issue68CorrectiveCohortTests(unittest.TestCase):
             "publish preflight exact validation progress=4/4",
             output.getvalue(),
         )
+
+    def test_exact_preflight_receipt_is_reused_after_publication_failure(
+        self,
+    ) -> None:
+        plan = build_pilot_plan()
+        plan = {**plan, "states": plan["states"][:2]}
+        expected = [{
+            "state_identity": state["identity"],
+            "candidate_identity": candidate["identity"],
+        } for state in plan["states"] for candidate in state["candidates"]]
+        by_state = {
+            state["identity"]: [
+                result for result in expected
+                if result["state_identity"] == state["identity"]
+            ]
+            for state in plan["states"]
+        }
+
+        with tempfile.TemporaryDirectory() as temporary:
+            runtime = Path(temporary)
+            for state in plan["states"]:
+                for candidate in state["candidates"]:
+                    result = next(
+                        item for item in expected
+                        if item["candidate_identity"] == candidate["identity"]
+                    )
+                    _write_json(_result_path(runtime, state, candidate), result)
+            receipt = runtime / "publication-preflight.json"
+
+            with patch(
+                "scripts.run_issue_68_corrective_cohort._validate_state_results",
+                side_effect=lambda _header, state, _runtime: (
+                    by_state[state["identity"]], 0.1
+                ),
+            ):
+                first = _all_results(
+                    plan,
+                    runtime,
+                    workers=1,
+                    progress_label="publish preflight",
+                    receipt_path=receipt,
+                )
+
+            output = io.StringIO()
+            with patch(
+                "scripts.run_issue_68_corrective_cohort._validate_state_results",
+                side_effect=AssertionError("deep validation repeated"),
+            ), redirect_stdout(output):
+                repeated = _all_results(
+                    plan,
+                    runtime,
+                    workers=1,
+                    progress_label="publish preflight",
+                    receipt_path=receipt,
+                )
+
+        self.assertEqual(first, expected)
+        self.assertEqual(repeated, expected)
+        self.assertIn(
+            "publish preflight exact validation receipt reused candidates=24",
+            output.getvalue(),
+        )
+
+    def test_anchor_context_allows_render_variation_but_not_physical_drift(
+        self,
+    ) -> None:
+        source = torch.tensor([1.0, 2.0])
+        first_deployment = torch.tensor([3.0, 4.0])
+        anchor_deployment = torch.tensor([3.00001, 4.0])
+        carriers = [
+            (1, source, first_deployment, torch.zeros(2), torch.zeros(2)),
+            (2, source.clone(), anchor_deployment, torch.ones(2), torch.ones(2)),
+        ]
+
+        selected_source = _anchor_initial_source(
+            carriers,
+            anchor_candidate_ordinal=2,
+            state_identity="state-1",
+        )
+
+        self.assertIs(selected_source, carriers[1][1])
+        changed_source = source.clone()
+        changed_source[0] += 0.01
+        with self.assertRaisesRegex(
+            CorrectiveRankingCohortError, "authoritative initial state"
+        ):
+            _anchor_initial_source(
+                [carriers[0], (2, changed_source, anchor_deployment,
+                               torch.ones(2), torch.ones(2))],
+                anchor_candidate_ordinal=2,
+                state_identity="state-1",
+            )
 
     def test_plan_validation_rejects_post_outcome_candidate_change(self) -> None:
         plan = build_pilot_plan()
