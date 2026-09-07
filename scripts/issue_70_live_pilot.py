@@ -31,7 +31,8 @@ def pilot_plan(frozen):
     return {"schema":"issue_70_live_plan_v1","freeze":frozen,
         "levels":[{"ordinal":i,"generation_seed":700_500_000+i,
                    "generator_family":("type010101","type010102")[i%2]} for i in range(12)],
-        "systems":list(SYSTEMS),"role":"calibration","final_evaluation_opened":False}
+        "systems":(["teacher_forced_cem",*SYSTEMS[1:]] if "parser_repair_root" in frozen else list(SYSTEMS)),
+        "role":"calibration","final_evaluation_opened":False}
 
 
 def slot_for(level,system):
@@ -107,12 +108,12 @@ def run_trial(args,frozen,level,system):
             raise RuntimeError("interrupted fixed single attempt retained as failure")
         else:
             root.mkdir(parents=True)
-            adapter=experiment.load_adapter(args.device)
+            adapter=experiment.load_adapter(args.device, frozen.get("parser_repair_root"))
             objective=TaskObjective.from_vocabulary(adapter.model.object_vocabulary)
             if (asdict(objective)!={k:tuple(v) for k,v in frozen["objective"].items()}
                     or adapter.parser_checkpoint_identity!=frozen["parser_identity"]):
                 raise ValueError("pilot parser differs from calibration")
-            configuration=frozen["original"] if system=="original_cem" else frozen["corrected"]
+            configuration=frozen["original"] if system in ("original_cem","teacher_forced_cem") else frozen["corrected"]
             models=[] if system=="fixed_prior" else [old.load_model(c,args.device)[0] for c in configuration["members"]]
             evaluator=None if not models else TaskCandidateEvaluator(models,objective,old.probe._bounds(),penalty=configuration["penalty"],progress=experiment.log)
             game=args.output/"pilot-game"
@@ -235,7 +236,7 @@ def run_pilot(args):
             os.environ["DISPLAY"]=display
         ctx=multiprocessing.get_context("spawn")
         for level in plan["levels"]:
-            for system in SYSTEMS:
+            for system in plan["systems"]:
                 experiment.log(f"pilot level={level['ordinal']+1}/12 system={system} start")
                 receive,send=ctx.Pipe(duplex=False)
                 process=ctx.Process(target=trial_worker,args=(args,frozen,level,system,send))
@@ -268,7 +269,7 @@ def pilot_report(args):
     trials=[]
     for level in plan["levels"]:
         level={**level,"authored_birds":sources["authored_birds"][level["ordinal"]]}
-        for system in SYSTEMS:
+        for system in plan["systems"]:
             slot=slot_for(level,system)
             result=experiment.read(args.output/"pilot-results"/f"{slot['slot_identity']}.json")
             if result["slot"]!=slot or result["final_evaluation_opened"] is not False:
@@ -293,9 +294,9 @@ def pilot_report(args):
                     raise ValueError("accepted pilot video missing")
             trials.append(result)
     counts={s:{"successes":sum(r["success"] for r in trials if r["slot"]["behavior_policy"]==s),
-               "failures":sum(r["failure"] is not None for r in trials if r["slot"]["behavior_policy"]==s)} for s in SYSTEMS}
+               "failures":sum(r["failure"] is not None for r in trials if r["slot"]["behavior_policy"]==s)} for s in plan["systems"]}
     differences={}
-    for comparator in ("original_cem","corrected_grid","fixed_prior"):
+    for comparator in (plan["systems"][0],"corrected_grid","fixed_prior"):
         x=np.array([float(next(r for r in trials if r["slot"]["ordinal"]==i and r["slot"]["behavior_policy"]=="corrected_cem")["success"])
                     -float(next(r for r in trials if r["slot"]["ordinal"]==i and r["slot"]["behavior_policy"]==comparator)["success"]) for i in range(12)])
         rng=np.random.default_rng(7001)

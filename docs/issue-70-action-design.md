@@ -21,11 +21,12 @@ synthetic independent-removal regression is learnable with v2 and not v1.
 This is an architecture repair, not a trained replacement or proof of real-data
 accuracy. The v1 serializer rejects v2, and v1 checkpoints/behavior remain intact.
 
-Before resuming gameplay, a new training workflow must train/validate the repaired
-parser on training-only data, validate counts on calibration, rebuild the carrier
-bundles, and retrain matched world models. Inserting an untrained or differently
-trained parser underneath existing world-model checkpoints is not a valid fix.
-The commands below preserve and publish the current negative diagnostic result.
+The complete [parser-repair rerun workflow](issue-70-parser-repair.md) now trains
+the repaired parser on training-only data, audits calibration counts, rebuilds
+carriers and retrains matched world models before returning to this experiment.
+Use that workflow to rerun. Inserting a different parser underneath existing
+world-model checkpoints is not a valid fix. The commands below preserve and
+publish the original negative diagnostic result.
 
 This is a new exploratory experiment. The original #63/#69 results are preserved.
 It asks whether a deployment-available task score represents useful outcomes,

@@ -45,8 +45,11 @@ def write(path, value):
     old.write(Path(path), value)
 
 
-def load_adapter(device):
+def load_adapter(device, repair_root=None):
     """Reuse the already validated parser without reopening its training corpus."""
+    if repair_root is not None:
+        from scripts.run_issue_70_parser_repair import load_repaired_adapter
+        return load_repaired_adapter(Path(repair_root), device)
     from world_model.training.cohort_v2_visual_parser import (
         CohortV2VisualParserConfig, CohortV2VisualPredicateParser, MANIFEST_SCHEMA,
     )
@@ -185,7 +188,7 @@ def prepare_endpoint_state(plan, state, adapter):
 def prepare_endpoints(args, *, smoke=False):
     plan = plan_for(args)
     log("loading frozen deployment parser; endpoint-only RGB reads, no full trace integrity scan")
-    adapter = load_adapter(args.device)
+    adapter = load_adapter(args.device, plan.get("parser_repair_root"))
     states = plan["states"][:1] if smoke else plan["states"]
     started = time.monotonic()
     for i, state in enumerate(states, 1):
@@ -371,8 +374,11 @@ def ranking_systems(scores, endpoints):
     systems=[]
     for name, score in scores.items():
         systems.append({"name":name,"members":[name],"penalty":0.0,"costs":[r["costs"] for r in score["rows"]]})
-    for prefix in ("original","teacher-forced-h15",*old.CORRECTIONS):
+    prefixes = ("original","teacher-forced-h15",*old.CORRECTIONS)
+    for prefix in prefixes:
         members=[f"{prefix}-{s}" for s in old.SEEDS]
+        if not all(m in scores for m in members):
+            continue
         for penalty in contract()["penalty_grid"]:
             costs=[]
             for i,row in enumerate(endpoints):
@@ -396,7 +402,8 @@ def freeze_payload(plan, rows, scores):
     def key(system):
         return system["summary"]["all_states"]["mean_regret"], system["name"], system["penalty"]
     corrected=min((s for s in systems if any(s["name"].startswith(c) for c in old.CORRECTIONS)),key=key)
-    original=min((s for s in systems if s["name"].startswith("original")),key=key)
+    reference_prefix = "teacher-forced-h15" if "parser_repair_root" in plan else "original"
+    original=min((s for s in systems if s["name"].startswith(reference_prefix)),key=key)
     priors=[]
     for j in range(12):
         predicted=[1.0]*12;predicted[j]=0
@@ -406,7 +413,7 @@ def freeze_payload(plan, rows, scores):
     def selected(system):
         return {"name":system["name"],"penalty":system["penalty"],
                 "members":[next(c for c in plan["models"] if c["name"]==name) for name in system["members"]]}
-    return {"schema":"issue_70_pilot_freeze_v1","contract":contract(),
+    result = {"schema":"issue_70_pilot_freeze_v1","contract":contract(),
             "objective":rows[0]["objective"],"parser_identity":rows[0]["parser_identity"],
             "objective_passed":audit["passed"],"corrected":selected(corrected),"original":selected(original),
             "prior_action":rows[0]["candidates"][prior]["action"],"prior_ordinal":prior+1,
@@ -414,12 +421,17 @@ def freeze_payload(plan, rows, scores):
             "pilot_allowed":audit["passed"] and corrected["summary"]["prediction_failures"]==0 and key(corrected)[0]<priors[prior],
             "comparison_table":[{k:s[k] for k in ("name","penalty","summary","progress_secondary")} for s in systems],
             "exploratory_only":True,"issue_64_authorized":False}
+    if "parser_repair_root" in plan:
+        result["parser_repair_root"] = plan["parser_repair_root"]
+        result["reference_kind"] = "matched_teacher_forced_repaired_carrier"
+    return result
 
 
 def load_scores(args, rows):
     scores={}
-    for i,cell in enumerate(plan_for(args)["models"],1):
-        log(f"validate model={i}/12 {cell['name']}")
+    cells=plan_for(args)["models"]
+    for i,cell in enumerate(cells,1):
+        log(f"validate model={i}/{len(cells)} {cell['name']}")
         value=read(args.output/"scores"/f"{cell['name']}.json")
         validate_scores(value,cell,rows);scores[cell["name"]]=value
     return scores
