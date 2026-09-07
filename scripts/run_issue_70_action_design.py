@@ -239,6 +239,36 @@ def audit_payload(rows):
             "passed": objective_gate(counts), "exploratory_only": True}
 
 
+def diagnose_parser(args):
+    rows=endpoint_rows(args)
+    audit=audit_payload(rows)
+    groups={}
+    for index,name in enumerate(("pigs","blocks")):
+        actual=[];predicted=[]
+        for row in rows:
+            objective=TaskObjective(**{k:tuple(v) for k,v in row["objective"].items()})
+            for candidate in row["candidates"]:
+                if candidate["accepted"]:
+                    actual.append(candidate["actual_counts"][index])
+                    predicted.append(objective.counts(torch.tensor(candidate["terminal_carrier"]))[index])
+        actual=np.asarray(actual);predicted=np.asarray(predicted)
+        groups[name]={"predicted_min":float(predicted.min()),"predicted_max":float(predicted.max()),
+            "mean_absolute_error":float(np.abs(actual-predicted).mean()),
+            "by_actual_count":[{"actual":float(value),"candidates":int((actual==value).sum()),
+                "predicted_mean":float(predicted[actual==value].mean())} for value in sorted(set(actual))]}
+        log(f"parser diagnostic {name}: {groups[name]}")
+    report={"schema":"issue_70_parser_diagnosis_v1","objective_passed":audit["passed"],
+        "count_ranking":audit["count_ranking"],"counts":groups,
+        "legacy_architecture_limitation":"presence logit(image,slot) = shared image term + fixed slot bias",
+        "repair_architecture":"visual-parser-slot-conditioned-v2",
+        "repair_trained_on_real_data":False,"old_checkpoints_changed":False,
+        "required_next_step":"prospective parser retraining and validation, then regenerated carriers and matched world-model retraining",
+        "pilot_authorized":False,"final_evaluation_opened":False}
+    target=args.output/"parser-diagnosis.json"
+    write(target,report)
+    log(f"diagnosis saved={target}; current pilot remains blocked")
+
+
 def observation(row):
     return PlanningObservation(row["state"], torch.tensor(row["context"]),
         tuple(row["objective"]["pig_slots"]), (0,0), frame_height=480)
@@ -480,7 +510,7 @@ def dry_run():
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     modes=parser.add_mutually_exclusive_group(required=True)
-    for mode in ("prepare","prepare-endpoints","audit-objective","score-models","freeze-pilot","run-pilot","publish","validate","dry-run","smoke-test"):
+    for mode in ("prepare","prepare-endpoints","audit-objective","diagnose-parser","score-models","freeze-pilot","run-pilot","publish","validate","dry-run","smoke-test"):
         modes.add_argument("--"+mode,action="store_true")
     parser.add_argument("--output",type=Path,default=OUTPUT)
     parser.add_argument("--issue69",type=Path,default=old.OUTPUT)
@@ -504,6 +534,7 @@ def main(argv=None):
         elif args.audit_objective:
             report=audit_payload(endpoint_rows(args));write(args.output/"objective-audit.json",report)
             log(f"objective audit passed={report['passed']} {report['count_ranking']}")
+        elif args.diagnose_parser:diagnose_parser(args)
         elif args.score_models:score_models(args)
         elif args.freeze_pilot:freeze_pilot(args)
         elif args.run_pilot:

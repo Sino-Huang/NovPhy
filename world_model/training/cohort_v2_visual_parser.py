@@ -189,7 +189,7 @@ class CohortV2VisualPredicateParser(nn.Module):
     def forward(self, images: torch.Tensor) -> dict[str, torch.Tensor]:
         encoded = self.encoder(images)
         global_features = self.backbone(encoded)
-        slots = global_features.unsqueeze(1) + self.queries.unsqueeze(0)
+        slots = self.slot_features(global_features)
         first = slots.unsqueeze(2).expand(-1, -1, len(self.object_vocabulary), -1)
         second = slots.unsqueeze(1).expand(-1, len(self.object_vocabulary), -1, -1)
         return {
@@ -201,6 +201,32 @@ class CohortV2VisualPredicateParser(nn.Module):
             ),
             "macro_logits": self.macro_head(global_features),
         }
+
+    def slot_features(self, global_features: torch.Tensor) -> torch.Tensor:
+        # Keep v1 checkpoint behavior exact. The independently versioned repair
+        # below adds the missing image/object interaction.
+        return global_features.unsqueeze(1) + self.queries.unsqueeze(0)
+
+
+class SlotConditionedVisualPredicateParser(CohortV2VisualPredicateParser):
+    """V2 architecture; requires new training and downstream carrier validation.
+
+    V1's linear presence head on (global image + object query) can only add
+    constant object biases to a shared image response. Nonlinear fusion permits
+    different objects to respond differently to the same change in the image.
+    Additional state keys intentionally prevent loading v2 weights as v1.
+    """
+
+    architecture_identity = "visual-parser-slot-conditioned-v2"
+
+    def __init__(self, config, object_vocabulary):
+        super().__init__(config, object_vocabulary)
+        self.slot_fusion = nn.Sequential(
+            nn.Linear(config.hidden_dim, config.hidden_dim), nn.Tanh(),
+        )
+
+    def slot_features(self, global_features: torch.Tensor) -> torch.Tensor:
+        return self.slot_fusion(super().slot_features(global_features))
 
 
 class LearnedVisualTransitionRequestBuilder(
@@ -798,6 +824,11 @@ def save_visual_parser_checkpoint(
     calibration_metrics: Mapping[str, Any],
     implementation_revision: str,
 ) -> CohortV2VisualParserCheckpoint:
+    if isinstance(model, SlotConditionedVisualPredicateParser):
+        raise CohortV2VisualParserError(
+            "slot-conditioned v2 requires a new checkpoint contract and carrier rebuild; "
+            "cannot publish it as the frozen v1 parser"
+        )
     target = Path(root)
     if target.exists():
         raise CohortV2VisualParserError("visual checkpoint destination exists")
@@ -925,7 +956,7 @@ def load_visual_parser_checkpoint(
 __all__ = [
     "CALIBRATED_TARGETS", "CohortV2VisualParserCheckpoint",
     "CohortV2VisualParserConfig", "CohortV2VisualParserError",
-    "CohortV2VisualPredicateParser", "FrozenVisualEncoder",
+    "CohortV2VisualPredicateParser", "SlotConditionedVisualPredicateParser", "FrozenVisualEncoder",
     "VisualParserRoleData", "build_visual_parser_model",
     "build_visual_parser_role_data", "calibrate_visual_parser",
     "load_visual_parser_checkpoint", "parse_visual_frame_symbols",

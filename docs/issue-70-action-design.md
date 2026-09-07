@@ -1,5 +1,32 @@
 # Task scoring, action ranking, and bounded CEM pilot (#70)
 
+The completed calibration run failed its objective audit. Across 2,400 actual
+endpoints the frozen parser estimated approximately 0.69 pigs both when a pig
+remained and when it had been removed, and approximately 2.61 blocks across
+actual counts 0–5. On the 81 count-discriminating states, top-3 was 0.420 and
+regret 0.741, failing the frozen 0.80/0.10 requirements. The pilot remains blocked.
+
+Reproduce the count diagnosis without inference or new collection:
+
+```bash
+python -u -m scripts.run_issue_70_action_design \
+  --diagnose-parser 2>&1 | tee -a data/issue-70-parser-diagnosis.log
+```
+
+The legacy parser also has a proven architectural limitation: its shared linear
+presence head on `image_features + object_query` gives all objects the same
+image-dependent logit change, plus fixed object biases. The separately versioned
+`SlotConditionedVisualPredicateParser` adds nonlinear image/object fusion. A
+synthetic independent-removal regression is learnable with v2 and not v1.
+This is an architecture repair, not a trained replacement or proof of real-data
+accuracy. The v1 serializer rejects v2, and v1 checkpoints/behavior remain intact.
+
+Before resuming gameplay, a new training workflow must train/validate the repaired
+parser on training-only data, validate counts on calibration, rebuild the carrier
+bundles, and retrain matched world models. Inserting an untrained or differently
+trained parser underneath existing world-model checkpoints is not a valid fix.
+The commands below preserve and publish the current negative diagnostic result.
+
 This is a new exploratory experiment. The original #63/#69 results are preserved.
 It asks whether a deployment-available task score represents useful outcomes,
 whether model predictions preserve those rankings, and only then whether CEM
