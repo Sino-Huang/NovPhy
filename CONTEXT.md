@@ -28,6 +28,18 @@ _Avoid_: Sample group, related episodes
 One independently executed single-shot simulation of a scenario specification under a recorded intervention, ending with a declared termination reason.
 _Avoid_: Episode, multi-shot game, video
 
+**Gameplay episode**:
+A continuous sequence of interventions and re-observations in one level instance, without resetting its physical state between shots, ending under declared gameplay or budget stopping rules.
+_Avoid_: Rollout, independent shot collection
+
+**Shot segment**:
+The portion of a gameplay episode containing one executed intervention and its subsequent observations up to a declared segment stopping condition; its initial state may depend on earlier shots.
+_Avoid_: Independent rollout, new level instance
+
+**Observed history**:
+The causally ordered agent observations and executed interventions available so far in one gameplay episode, including their observed timing and explicit missing-observation status.
+_Avoid_: Engine hit counter, future trace, oracle state history
+
 **Stable stopping condition**:
 A rollout termination reached when post-intervention movement remains below the declared stability threshold. The `stable_entered` event stops the rollout; it does not mean the level was cleared, won, or failed.
 _Avoid_: Level success, level clear, win
