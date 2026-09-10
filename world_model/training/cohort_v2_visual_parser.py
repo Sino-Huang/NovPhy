@@ -153,14 +153,19 @@ class FrozenVisualEncoder(nn.Module):
 
 
 class CohortV2VisualPredicateParser(nn.Module):
+    maximum_object_slots = 15
+
     def __init__(
         self,
         config: CohortV2VisualParserConfig,
         object_vocabulary: tuple[str, ...],
     ) -> None:
         super().__init__()
-        if not object_vocabulary or len(object_vocabulary) > 15:
-            raise CohortV2VisualParserError("visual object vocabulary must contain 1-15 slots")
+        if not object_vocabulary or (
+            self.maximum_object_slots is not None
+            and len(object_vocabulary) > self.maximum_object_slots
+        ):
+            raise CohortV2VisualParserError("visual object vocabulary is empty or exceeds the architecture slot limit")
         self.config = config
         self.object_vocabulary = object_vocabulary
         self.encoder = FrozenVisualEncoder(config.image_height, config.image_width)
@@ -187,7 +192,7 @@ class CohortV2VisualPredicateParser(nn.Module):
             parameter.requires_grad_(False)
 
     def forward(self, images: torch.Tensor) -> dict[str, torch.Tensor]:
-        encoded = self.encoder(images)
+        encoded = self.encode_images(images)
         global_features = self.backbone(encoded)
         slots = self.slot_features(global_features)
         first = slots.unsqueeze(2).expand(-1, -1, len(self.object_vocabulary), -1)
@@ -201,6 +206,9 @@ class CohortV2VisualPredicateParser(nn.Module):
             ),
             "macro_logits": self.macro_head(global_features),
         }
+
+    def encode_images(self, images: torch.Tensor) -> torch.Tensor:
+        return self.encoder(images)
 
     def slot_features(self, global_features: torch.Tensor) -> torch.Tensor:
         # Keep v1 checkpoint behavior exact. The independently versioned repair
@@ -218,6 +226,7 @@ class SlotConditionedVisualPredicateParser(CohortV2VisualPredicateParser):
     """
 
     architecture_identity = "visual-parser-slot-conditioned-v2"
+    maximum_object_slots = None  # New training derives the inventory from its full corpus.
 
     def __init__(self, config, object_vocabulary):
         super().__init__(config, object_vocabulary)
@@ -227,6 +236,59 @@ class SlotConditionedVisualPredicateParser(CohortV2VisualPredicateParser):
 
     def slot_features(self, global_features: torch.Tensor) -> torch.Tensor:
         return self.slot_fusion(super().slot_features(global_features))
+
+
+class NormalizedSlotVisualPredicateParser(SlotConditionedVisualPredicateParser):
+    """Keep the image path trainable when dense projections become negative.
+
+    Layer normalization bounds the scale entering each activation and the slot
+    fusion. Leaky activations avoid the absorbing all-zero ReLU image path.
+    V1/V2 architectures remain unchanged; new normalization weights deliberately
+    make these checkpoints incompatible with their loaders.
+    """
+
+    architecture_identity = "visual-parser-normalized-slot-v3"
+
+    def __init__(self, config, object_vocabulary):
+        super().__init__(config, object_vocabulary)
+        self.register_buffer("input_mean",torch.zeros(self.encoder.output_dim))
+        self.register_buffer("input_scale",torch.ones(self.encoder.output_dim))
+        self.backbone = nn.Sequential(
+            self.backbone[0], nn.LayerNorm(config.hidden_dim), nn.LeakyReLU(0.1),
+            self.backbone[2], nn.LayerNorm(config.hidden_dim), nn.LeakyReLU(0.1),
+        )
+
+    def fit_input_standardization(self, training_images: torch.Tensor) -> None:
+        """Fit once on the fixed training-only probe, then save with the weights."""
+        with torch.no_grad():
+            encoded=self.encoder(training_images.to(self.input_mean.device))
+            self.input_mean.copy_(encoded.mean(0))
+            self.input_scale.copy_(encoded.std(0,unbiased=False).clamp_min(0.05))
+
+    def encode_images(self, images: torch.Tensor) -> torch.Tensor:
+        return (self.encoder(images)-self.input_mean)/self.input_scale
+
+
+class ConvSlotVisualPredicateParser(SlotConditionedVisualPredicateParser):
+    """Small learned RGB backbone with the existing slot/predicate interface."""
+
+    architecture_identity = "visual-parser-small-conv-slot-v1"
+
+    def __init__(self, config, object_vocabulary):
+        super().__init__(config, object_vocabulary)
+        self.encoder = nn.Sequential(
+            nn.Conv2d(3,16,3,stride=1,padding=1), nn.GroupNorm(4,16), nn.LeakyReLU(0.1),
+            nn.Conv2d(16,32,3,stride=2,padding=1), nn.GroupNorm(4,32), nn.LeakyReLU(0.1),
+            nn.Conv2d(32,64,3,stride=2,padding=1), nn.GroupNorm(4,64), nn.LeakyReLU(0.1),
+            nn.AdaptiveAvgPool2d((4,6)), nn.Flatten(),
+        )
+        self.backbone = nn.Sequential(
+            nn.Linear(64*4*6,config.hidden_dim), nn.LayerNorm(config.hidden_dim), nn.LeakyReLU(0.1),
+        )
+
+    def encode_images(self, images: torch.Tensor) -> torch.Tensor:
+        # Fixed scaling only: no per-pixel statistics or pretrained weights.
+        return self.encoder(images.float()/127.5-1.0)
 
 
 class LearnedVisualTransitionRequestBuilder(

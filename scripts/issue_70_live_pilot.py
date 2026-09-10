@@ -1,6 +1,7 @@
 """Bounded non-final closed-loop pilot using the existing captured-shot runner."""
 
 from dataclasses import asdict
+from html import escape
 from io import BytesIO
 import json
 import math
@@ -25,6 +26,38 @@ from world_model.planning.task_objective import TaskCandidateEvaluator,TaskObjec
 
 
 SYSTEMS=("original_cem","corrected_cem","corrected_grid","fixed_prior")
+RENDER_REPAIR_PLAN = "pilot-render-repair-plan.json"
+RENDER_REPAIR_DIRECTORY = "pilot-rendered-v1"
+
+
+def prepare_render_repair(args):
+    """Disclose one graphics-enabled repeat of the wholly uncaptured pilot."""
+    plan=experiment.read(args.output/"pilot-plan.json")
+    frozen=experiment.read(args.output/"pilot-freeze.json")
+    if plan!=pilot_plan(frozen) or not frozen["pilot_allowed"]:
+        raise ValueError("render repair requires the unchanged authorized pilot plan")
+    sources=experiment.read(args.output/"pilot-source-inventory.json")
+    original=[]
+    for level in plan["levels"]:
+        level={**level,"authored_birds":sources["authored_birds"][level["ordinal"]]}
+        for system in plan["systems"]:
+            slot=slot_for(level,system)
+            path=Path("pilot-results")/f"{slot['slot_identity']}.json"
+            result=experiment.read(args.output/path)
+            if (result["slot"]!=slot or result["shots"]!=0 or result["video"] is not None
+                    or result["failure"]!="LegacyGroundTruthProtocolError: request-38 record_count: is truncated"):
+                raise ValueError("render repair is restricted to the original wholly uncaptured request-38 failure run")
+            original.append({"path":str(path),"result":result})
+    repair={"schema":"issue_70_render_capture_repair_v1","pilot_plan":plan,
+            "reason":"Unity NullGfxDevice from headless=True/-nographics crashed Camera.Render before capture",
+            "graphics_enabled":True,"output_directory":RENDER_REPAIR_DIRECTORY,
+            "additional_attempts_per_trial":1,"repeat_all_scheduled_trials":True,
+            "membership_changed":False,"outcome_conditioned_replacement":False,
+            "protocol_deviation_disclosed":True,"original_results":original,
+            "final_evaluation_opened":False}
+    experiment.write(args.output/RENDER_REPAIR_PLAN,repair)
+    experiment.log(f"render repair frozen original_failures={len(original)}; old evidence retained; one new attempt per frozen trial")
+    return repair
 
 
 def pilot_plan(frozen):
@@ -97,8 +130,9 @@ def run_trial(args,frozen,level,system):
     sources=experiment.read(args.output/"pilot-source-inventory.json")
     level={**level,"authored_birds":sources["authored_birds"][level["ordinal"]]}
     slot=slot_for(level,system);label=slot["slot_identity"]
-    root=args.output/"pilot"/label
-    result_path=args.output/"pilot-results"/f"{label}.json"
+    output=Path(getattr(args,"pilot_output",args.output))
+    root=output/"pilot"/label
+    result_path=output/"pilot-results"/f"{label}.json"
     if result_path.exists():return experiment.read(result_path)
     started=time.monotonic();failure=None;record=None
     try:
@@ -116,7 +150,7 @@ def run_trial(args,frozen,level,system):
             configuration=frozen["original"] if system in ("original_cem","teacher_forced_cem") else frozen["corrected"]
             models=[] if system=="fixed_prior" else [old.load_model(c,args.device)[0] for c in configuration["members"]]
             evaluator=None if not models else TaskCandidateEvaluator(models,objective,old.probe._bounds(),penalty=configuration["penalty"],progress=experiment.log)
-            game=args.output/"pilot-game"
+            game=output/"pilot-game"
             def choose(reference,bridge,shot_index):
                 shot_started=time.monotonic()
                 screenshot=bridge.screenshot()
@@ -136,7 +170,9 @@ def run_trial(args,frozen,level,system):
                 interface["selection_evidence"]=evidence
                 return interface
             record=capture._collect_lineage_attempt(slot,root,game,
-                release_identity="issue-70-exploratory-pilot-v1",speed=10,headless=True,
+                # RGB/aligned capture calls Camera.Render; -nographics uses
+                # Unity's NullGfxDevice and crashes before the initial frame.
+                release_identity="issue-70-exploratory-pilot-v1",speed=10,headless=False,
                 action_selector=choose)
     except Exception as error:
         failure=f"{type(error).__name__}: {error}"
@@ -222,9 +258,12 @@ def run_pilot(args):
         raise ValueError("calibration prerequisite gates do not authorize pilot")
     plan=experiment.read(args.output/"pilot-plan.json")
     if plan!=pilot_plan(frozen):raise ValueError("pilot plan differs")
+    output=Path(getattr(args,"pilot_output",args.output))
+    if output==args.output/RENDER_REPAIR_DIRECTORY:prepare_render_repair(args)
     check_disjointness(args,plan)
     capture._verify_webm_encoder()
-    game=args.output/"pilot-game"
+    output.mkdir(parents=True,exist_ok=True)
+    game=output/"pilot-game"
     if not game.exists():
         archive_details(capture.STAGE_ROOT,game)
     if not (game/"provenance.json").is_file():
@@ -232,11 +271,14 @@ def run_pilot(args):
     display_process=None;previous_display=os.environ.get("DISPLAY")
     try:
         if args.start_display:
-            display,display_process=start_display(args.output/"pilot-display.log")
+            display,display_process=start_display(output/"pilot-display.log")
             os.environ["DISPLAY"]=display
         ctx=multiprocessing.get_context("spawn")
+        completed=[]
         for level in plan["levels"]:
             for system in plan["systems"]:
+                label=slot_for(level,system)["slot_identity"]
+                cached=(output/"pilot-results"/f"{label}.json").exists()
                 experiment.log(f"pilot level={level['ordinal']+1}/12 system={system} start")
                 receive,send=ctx.Pipe(duplex=False)
                 process=ctx.Process(target=trial_worker,args=(args,frozen,level,system,send))
@@ -252,6 +294,10 @@ def run_pilot(args):
                 finally:receive.close();process.join()
                 if status!="ok" or process.exitcode!=0:raise RuntimeError(str(result))
                 experiment.log(f"pilot level={level['ordinal']+1}/12 system={system} complete success={result['success']} shots={result['shots']} failure={result['failure']}")
+                completed.append(result)
+                if not cached and result["failure"] is not None and result["shots"]==0:
+                    write_gallery(args,{"trials":completed,"incomplete":True})
+                    raise RuntimeError("pilot paused after an uncaptured trial; inspect its engine log before continuing; failed attempt retained")
         write_gallery(args,pilot_report(args))
     finally:
         if display_process is not None:terminate(display_process)
@@ -266,16 +312,18 @@ def pilot_report(args):
     sources=experiment.read(args.output/"pilot-source-inventory.json")
     if sources["seeds"]!=sorted(level["generation_seed"] for level in plan["levels"]) or sources["source_overlap_count"]!=0:
         raise ValueError("pilot source inventory differs")
+    output=Path(getattr(args,"pilot_output",args.output))
+    repair=prepare_render_repair(args) if output==args.output/RENDER_REPAIR_DIRECTORY else None
     trials=[]
     for level in plan["levels"]:
         level={**level,"authored_birds":sources["authored_birds"][level["ordinal"]]}
         for system in plan["systems"]:
             slot=slot_for(level,system)
-            result=experiment.read(args.output/"pilot-results"/f"{slot['slot_identity']}.json")
+            result=experiment.read(output/"pilot-results"/f"{slot['slot_identity']}.json")
             if result["slot"]!=slot or result["final_evaluation_opened"] is not False:
                 raise ValueError("pilot result binding differs")
             if result["failure"] is None:
-                root=args.output/"pilot"/slot["slot_identity"]
+                root=output/"pilot"/slot["slot_identity"]
                 trajectory=experiment.read(root/"trajectory.json")
                 if (trajectory["trajectory_identity"]!=result["trajectory_identity"]
                         or (trajectory["terminal_reason"]=="success")!=result["success"]
@@ -293,6 +341,8 @@ def pilot_report(args):
                 if result["video"] is None or not (args.audit/result["video"]["path"]).is_file():
                     raise ValueError("accepted pilot video missing")
             trials.append(result)
+    if not any(r["failure"] is None for r in trials):
+        raise ValueError("pilot has no completed captures; cannot publish an all-infrastructure-failure run as a gameplay comparison")
     counts={s:{"successes":sum(r["success"] for r in trials if r["slot"]["behavior_policy"]==s),
                "failures":sum(r["failure"] is not None for r in trials if r["slot"]["behavior_policy"]==s)} for s in plan["systems"]}
     differences={}
@@ -303,20 +353,61 @@ def pilot_report(args):
         samples=x[rng.integers(0,12,size=(10000,12))].mean(1)
         differences[comparator]={"mean_paired_success_difference":float(x.mean()),
                                  "descriptive_95_percent_interval":np.quantile(samples,[0.025,0.975]).tolist()}
-    return {"schema":"issue_70_pilot_report_v1","trials":trials,"counts":counts,
+    report={"schema":"issue_70_pilot_report_v1","trials":trials,"counts":counts,
             "paired_comparisons":differences,"exploratory_only":True,"issue_64_authorized":False,
             "final_evaluation_opened":False}
+    if repair is not None:report["capture_repair"]=repair
+    return report
 
 
 def write_gallery(args,report):
     lines=["<!doctype html><meta charset='utf-8'><title>Issue 70 pilot audit</title>",
            "<h1>Issue 70 exploratory closed-loop pilot</h1>"]
+    if report.get("incomplete"):lines.append("<p>Partial pilot: paused after a capture failure. This is not a complete gameplay comparison.</p>")
+    if report.get("diagnostic_only"):lines.append("<p>Live rendering smoke test only; these trials are not included in the pilot comparison.</p>")
+    if report.get("capture_repair"):lines.append("<p>Graphics-enabled corrective run. Original uncaptured failures are retained and disclosed in the report.</p>")
     for trial in report["trials"]:
         lines.append(f"<h2>{trial['slot']['slot_identity']}</h2><p>Success: {trial['success']}; shots: {trial['shots']}</p>")
+        if trial.get("failure"):lines.append(f"<p>Capture failure: {escape(trial['failure'])}</p>")
         if trial["video"]:lines.append(f"<video controls preload='none' width='800' src='{trial['video']['path']}'></video>")
     args.audit.mkdir(parents=True,exist_ok=True)
     (args.audit/"index.html").write_text("\n".join(lines))
     experiment.log(f"pilot gallery {args.audit/'index.html'}")
+
+
+def smoke_pilot(args):
+    """Two actual live shots, separate from production/recovery evidence."""
+    from copy import copy
+    args=copy(args)
+    args.pilot_output=args.output/"rendering-smoke-v1"
+    args.audit=experiment.ROOT/"data/issue-70-pilot-rendering-smoke-v1"
+    frozen=experiment.read(args.output/"pilot-freeze.json")
+    if not frozen["pilot_allowed"]:raise ValueError("live smoke requires an authorized pilot")
+    plan=experiment.read(args.output/"pilot-plan.json")
+    if plan!=pilot_plan(frozen):raise ValueError("live smoke pilot plan differs")
+    check_disjointness(args,plan)
+    capture._verify_webm_encoder()
+    args.pilot_output.mkdir(parents=True,exist_ok=True)
+    game=args.pilot_output/"pilot-game"
+    if not game.exists():archive_details(capture.STAGE_ROOT,game)
+    if not (game/"provenance.json").is_file():raise ValueError("live smoke game unpacking is incomplete")
+    process=None;previous=os.environ.get("DISPLAY")
+    try:
+        if args.start_display:
+            display,process=start_display(args.pilot_output/"display.log");os.environ["DISPLAY"]=display
+        results=[]
+        for system in ("fixed_prior","corrected_cem"):
+            experiment.log(f"live rendering smoke system={system}; diagnostic only")
+            result=run_trial(args,frozen,plan["levels"][0],system)
+            if result["failure"] is not None or result["shots"]==0 or result["video"] is None:
+                raise RuntimeError(f"live rendering smoke failed: {result['failure']}")
+            results.append(result)
+        write_gallery(args,{"trials":results,"diagnostic_only":True})
+        experiment.log("live rendering smoke passed; production/recovery trials unchanged")
+    finally:
+        if process is not None:terminate(process)
+        if previous is None:os.environ.pop("DISPLAY",None)
+        else:os.environ["DISPLAY"]=previous
 
 
 def dry_run():

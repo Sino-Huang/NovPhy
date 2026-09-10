@@ -1,4 +1,4 @@
-"""Train the v2 parser, rebuild h15 carriers, and rerun #70 in separate artifacts."""
+"""Train the small CNN parser, audit perception, and optionally resume the #70 experiment."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import time
+import xml.etree.ElementTree as ET
 
 import numpy as np
 from PIL import Image
@@ -22,7 +23,7 @@ from scripts import run_issue_70_action_design as experiment
 from world_model.data.deployment_temporal import AgentObservation, TemporalObservationContext
 from world_model.planning.gameplay import VisualPlanningObservationAdapter, SlingshotAction
 from world_model.training.cohort_v2_visual_parser import (
-    CohortV2VisualParserConfig, SlotConditionedVisualPredicateParser, ENTITY_KINDS,
+    CohortV2VisualParserConfig, ConvSlotVisualPredicateParser, ENTITY_KINDS,
 )
 from world_model.training.lineage_scaling import (
     CarrierKind, CarrierLineage, ContinuousTransitionExample,
@@ -32,9 +33,10 @@ from world_model.training.short_unroll import (
     train_short_unroll_predictor, save_short_unroll_checkpoint, load_short_unroll_checkpoint,
 )
 
-ROOT = experiment.ROOT / ".local-artifacts/issue-70-parser-repair-v2"
-PARSER_ID = "issue-70-slot-conditioned-parser-v2:seed-7002001"
-CARRIER_ID = VisualPlanningObservationAdapter.identity + ":slot-conditioned-parser-v2"
+PREVIOUS_ROOT = experiment.ROOT / ".local-artifacts/issue-70-parser-repair-v5"
+ROOT = experiment.ROOT / ".local-artifacts/issue-70-parser-repair-v6"
+PARSER_ID = "issue-70-cnn-slot-parser-v6:seed-7002001"
+CARRIER_ID = VisualPlanningObservationAdapter.identity + ":cnn-slot-parser-v6"
 
 
 def log(message):
@@ -69,28 +71,66 @@ def atomic_bundle(path, lineages):
     os.replace(temporary,path)
 
 
+def training_vocabulary(root, records, release_identity):
+    """Union all authored training slots plus the engine's static scene slots.
+
+    These red-bird scenarios do not spawn additional object kinds. The first
+    training capture supplies the runtime landscape IDs absent from scenario XML.
+    No held-out data, image scan, or checkpoint vocabulary is used.
+    """
+    if any(record["exposure_role"] != "training" for record in records):
+        raise ValueError("vocabulary requires training-only scenarios")
+    log(f"vocabulary inventory start training_lineages={len(records)}")
+    first = trajectory(root, records[0], release_identity)
+    _, samples, _, _ = load_shot(root, records[0], first["shots"][0])
+    slots = {e["scenario_object_id"] for e in samples[0]["entities"]}
+    for i, record in enumerate(records, 1):
+        tree = ET.parse(root / record["path"] / "scenario.xml")
+        slots.update(e.attrib["scenarioObjectId"] for e in tree.iter()
+                     if "scenarioObjectId" in e.attrib)
+        if i % 200 == 0 or i == len(records):
+            log(f"vocabulary inventory lineage={i}/{len(records)} slots={len(slots)}")
+    return sorted(slots)
+
+
+def carrier_dimensions(plan):
+    count = len(plan["vocabulary"])
+    return {"max_entities": count, "latent_dim": 2 + 13 * count}
+
+
 def prepare(args):
+    if (args.root / "plan.json").exists():
+        load_plan(args.root)
+        log("plan resumed; frozen training vocabulary reused")
+        return
     manifest = read(collection.DEFAULT_RELEASE / "manifest.json")
     records = [r for r in manifest["trajectories"] if r["exposure_role"] == "training"]
     if len(records) != 3000 or manifest["passed"] is not True:
         raise ValueError("repair requires the accepted 3000-lineage #62 training release")
-    legacy = experiment.load_adapter("cpu")
-    vocabulary = list(legacy.model.object_vocabulary)
+    vocabulary = training_vocabulary(collection.DEFAULT_RELEASE, records, manifest["identity"])
     config = CohortV2VisualParserConfig(seed=7002001, image_height=64, image_width=96,
         hidden_dim=128, epochs=20, batch_size=128, learning_rate=1e-3, device="cuda")
     plan = {"schema": "issue_70_parser_repair_plan_v2", "identity": PARSER_ID,
         "config": asdict(config), "vocabulary": vocabulary,
+        "architecture": ConvSlotVisualPredicateParser.architecture_identity,
+        "training_health_probe": {"uniform_lineages":16,"frames":"first and last","minimum_presence_range":1e-5},
+        "input_standardization": {"source":"fixed RGB scaling","formula":"image / 127.5 - 1","fitted_statistics":False},
         "training_release": str(collection.DEFAULT_RELEASE), "training_release_identity": manifest["identity"],
         "training_records": [{k:r[k] for k in ("path","trajectory_identity","scenario_lineage_identity","exposure_role")} for r in records],
         "calibration_release": str(experiment.old.RELEASE),
         "frames_per_shot": 8, "sampling": "uniform index spacing including first and last; every training lineage and shot",
-        "loss": {"presence":4.0,"count":1.0,"center":1.0,"kind":1.0,"relations":1.0,"macros":1.0},
+        "loss": {"presence":4.0,"count":1.0,"center":1.0,"kind":1.0,"relations":1.0,"macros":1.0,
+                 "balanced_task_presence":4.0,"class_weights":"N/(2*N_class) per authored pig/block slot; training-only"},
+        "training_diagnostic_probe":{"uniform_lineages":128,"frames":"all prepared frames","independent_evaluation":False},
         "temperatures": {k:1.0 for k in ("object_presence","contact","supports","steady-state","structure-unstable")},
         "thresholds": {k:0.5 for k in ("object_presence","contact","supports","steady-state","structure-unstable")},
         "carrier_identity": CARRIER_ID, "world_optimizer_examples":8_000_000,
         "calibration_fits_parameters":False,"model_selection_opened":False,"final_evaluation_opened":False}
+    plan["parser_initialization"]={"mode":"from_scratch","pretrained_weights":False}
+    plan["parser_data_source"] = str(PREVIOUS_ROOT)
+    plan["historical_comparison"]={"root":str(PREVIOUS_ROOT),"matched_backbone_ablation":False}
     write(args.root / "plan.json", plan)
-    log("plan frozen training_lineages=3000 parser_epochs=20 snapshots_per_shot=8; old artifacts untouched")
+    log(f"plan frozen training_lineages=3000 slots={len(vocabulary)} latent_dim={carrier_dimensions(plan)['latent_dim']} cnn_epochs=20 learning_rate=0.001 from_scratch=True; old artifacts untouched")
 
 
 def load_plan(root):
@@ -210,6 +250,20 @@ def prepare_data(args):
                 or any(not Path(s["path"]).is_file() for s in existing["shards"])):
             raise ValueError("completed parser data inventory differs")
         log("parser data complete: validated existing 3000-shard inventory");return
+    if "parser_data_source" in plan:
+        source=Path(plan["parser_data_source"])
+        previous=read(source/"plan.json"); data=read(source/"parser-data.json")
+        for key in ("vocabulary","training_release","training_release_identity","training_records","frames_per_shot","sampling"):
+            if previous[key]!=plan[key]:raise ValueError(f"reusable parser data differs: {key}")
+        if any(previous["config"][k]!=plan["config"][k] for k in ("image_height","image_width")):
+            raise ValueError("reusable parser image dimensions differ")
+        if (data["plan_identity"]!=previous["identity"] or data["role"]!="training"
+                or [s["lineage"] for s in data["shards"]]!=[r["scenario_lineage_identity"] for r in plan["training_records"]]
+                or any(not Path(s["path"]).is_file() for s in data["shards"])):
+            raise ValueError("reusable parser data inventory differs")
+        write(manifest_path,{**data,"plan_identity":plan["identity"],"source_plan_identity":previous["identity"]})
+        log("parser data reused: 3000 existing training shards; no image rescan or data copies")
+        return
     for i,record in enumerate(plan["training_records"],1):
         log(f"parser data lineage={i}/3000 start")
         path = args.root / "parser-data" / f"lineage-{i:04d}.pt"
@@ -238,10 +292,46 @@ def batches(paths, batch_size, generator):
         yield {k:torch.cat([t[k] for t in pending]) for k in pending[0]}
 
 
-def parser_loss(model, batch, vocabulary):
+def class_balance_weights(total, positive):
+    counts=torch.stack((positive,total-positive)).float()
+    # A slot with only one observed class retains unit weight for that class.
+    classes=(counts>0).sum(0)
+    return torch.where(counts>0,total/(classes*counts.clamp_min(1)),0)
+
+
+def balanced_task_presence_loss(logits, labels, vocabulary, weights):
+    weights=weights.to(logits.device)
+    bce=F.binary_cross_entropy_with_logits(logits,labels,reduction="none")
+    weighted=bce*(labels*weights[0]+(1-labels)*weights[1])
+    return sum(weighted[:,[i for i,v in enumerate(vocabulary) if v.startswith(kind+":")]].mean()
+               for kind in ("pig","block"))
+
+
+def loss_contract(root, plan, data):
+    path=root/"parser-loss.json"
+    if path.exists():
+        result=read(path)
+        if result["plan_identity"]!=plan["identity"] or result["vocabulary"]!=plan["vocabulary"]:
+            raise ValueError("parser loss contract differs")
+        return result
+    total=0;positive=torch.zeros(len(plan["vocabulary"]))
+    for i,shard in enumerate(data["shards"],1):
+        labels=torch.load(shard["path"],weights_only=True)["tensors"]["presence"]
+        total+=len(labels);positive+=labels.sum(0)
+        if i%200==0:log(f"loss class inventory lineage={i}/{len(data['shards'])} frames={total}")
+    result={"schema":"issue_70_task_presence_loss_v1","plan_identity":plan["identity"],
+            "role":"training","vocabulary":plan["vocabulary"],"frames":total,
+            "positive_counts":positive.tolist(),"weights":class_balance_weights(total,positive).tolist()}
+    write(path,result)
+    return result
+
+
+def parser_loss(model, batch, vocabulary, task_weights=None):
     output = model(batch["images"])
     present = batch["presence"].bool()
     loss = 4 * F.binary_cross_entropy_with_logits(output["presence_logits"],batch["presence"])
+    if task_weights is not None:
+        loss=loss+4*balanced_task_presence_loss(output["presence_logits"],batch["presence"],vocabulary,task_weights)
     probability = output["presence_logits"].sigmoid()
     for kind in ("pig","block"):
         indices = [i for i,v in enumerate(vocabulary) if v.startswith(kind+":")]
@@ -255,6 +345,52 @@ def parser_loss(model, batch, vocabulary):
     return loss
 
 
+def training_probe(data):
+    """Fixed small training-only sample; never select frames by their outcomes."""
+    indices=np.linspace(0,len(data["shards"])-1,min(16,len(data["shards"])),dtype=int)
+    return torch.cat([torch.load(data["shards"][i]["path"],weights_only=True)["tensors"]["images"][[0,-1]]
+                      for i in indices])
+
+
+def parser_health(model, images, vocabulary):
+    with torch.no_grad():
+        probability=model(images.to(next(model.parameters()).device))["presence_logits"].sigmoid()
+        ranges=(probability.max(0).values-probability.min(0).values)
+        result={"maximum_presence_range":float(ranges.max())}
+        for kind in ("pig","block"):
+            slots=[i for i,v in enumerate(vocabulary) if v.startswith(kind+":")]
+            counts=probability[:,slots].sum(1)
+            result[kind+"_count_range"]=float(counts.max()-counts.min())
+    if not all(np.isfinite(v) for v in result.values()) or result["maximum_presence_range"]<=1e-5:
+        raise ValueError(f"parser image-sensitivity check failed: {result}; training stopped before publishing weights")
+    return result
+
+
+def diagnostic_probe(data):
+    indices=np.linspace(0,len(data["shards"])-1,min(128,len(data["shards"])),dtype=int)
+    tensors=[torch.load(data["shards"][i]["path"],weights_only=True)["tensors"] for i in indices]
+    return {k:torch.cat([t[k] for t in tensors]) for k in ("images","presence")}
+
+
+def training_diagnostics(model, probe, vocabulary):
+    device=next(model.parameters()).device
+    with torch.no_grad():
+        prediction=torch.cat([model(images.to(device))["presence_logits"].sigmoid().cpu()
+                              for images in probe["images"].split(128)])
+    result={"independent_evaluation":False,"frames":len(prediction)}
+    for kind in ("pig","block"):
+        slots=[i for i,v in enumerate(vocabulary) if v.startswith(kind+":")]
+        pred=prediction[:,slots];truth=probe["presence"][:,slots]
+        groups={"count_mae":float((pred.sum(1)-truth.sum(1)).abs().mean())}
+        for value,name in ((0,"absent"),(1,"present")):
+            selected=pred[truth==value]
+            groups[name]={"examples":len(selected),
+                          "mean_probability":float(selected.mean()) if len(selected) else None,
+                          "accuracy":float(((selected>=0.5)==bool(value)).float().mean()) if len(selected) else None}
+        result[kind]=groups
+    return result
+
+
 def train_parser(args):
     plan = load_plan(args.root); config = CohortV2VisualParserConfig(**plan["config"])
     data = read(args.root/"parser-data.json")
@@ -262,8 +398,12 @@ def train_parser(args):
         raise ValueError("parser training inventory incomplete or role leakage")
     if (args.root/"parser.pt").exists():
         load_repaired_adapter(args.root,args.device); log("validated existing final parser"); return
+    balance=loss_contract(args.root,plan,data)
+    task_weights=torch.tensor(balance["weights"],device=args.device)
+    log(f"training loss balance frozen frames={balance['frames']} source=training-only")
     torch.manual_seed(config.seed)
-    model = SlotConditionedVisualPredicateParser(config,tuple(plan["vocabulary"])).to(args.device)
+    model = ConvSlotVisualPredicateParser(config,tuple(plan["vocabulary"])).to(args.device)
+    log(f"parser architecture={model.architecture_identity} parameters={sum(p.numel() for p in model.parameters())} device={args.device}")
     optimizer = torch.optim.AdamW(model.parameters(),lr=config.learning_rate,weight_decay=config.weight_decay)
     progress_path = args.root/"parser-progress.pt"; first_epoch = 0; reports = []
     if progress_path.exists():
@@ -272,23 +412,36 @@ def train_parser(args):
         model.load_state_dict(previous["model_state"]); optimizer.load_state_dict(previous["optimizer_state"])
         first_epoch = previous["epoch"]; reports = previous["reports"]
         payload = previous
+    probe=training_probe(data)
+    diagnostic=diagnostic_probe(data)
+    log(f"parser training-only sensitivity probe images={len(probe)}")
+    expected_frames=sum(s['frames'] for s in data['shards'])
     for epoch in range(first_epoch,config.epochs):
         model.train(); started=time.monotonic(); total=0.0; seen=0; steps=0
         generator = torch.Generator().manual_seed(config.seed+epoch)
         for batch in batches([s["path"] for s in data["shards"]],config.batch_size,generator):
             batch={k:v.to(args.device) for k,v in batch.items()}
-            optimizer.zero_grad(set_to_none=True); loss=parser_loss(model,batch,plan["vocabulary"])
+            optimizer.zero_grad(set_to_none=True); loss=parser_loss(model,batch,plan["vocabulary"],task_weights)
             if not torch.isfinite(loss):raise ValueError("nonfinite repaired parser loss")
             loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1.0);optimizer.step()
             n=len(batch["images"]);seen+=n;steps+=1;total+=float(loss.detach())*n
-            if steps%10==0:log(f"parser epoch={epoch+1}/{config.epochs} frames={seen}/{sum(s['frames'] for s in data['shards'])} loss={total/seen:.5f} seconds={time.monotonic()-started:.1f}")
-        reports.append({"epoch":epoch+1,"frames":seen,"steps":steps,"mean_loss":total/seen,"wall_seconds":time.monotonic()-started})
+            if steps%10==0:
+                elapsed=time.monotonic()-started
+                eta=elapsed/seen*((config.epochs-epoch)*expected_frames-seen)
+                log(f"parser epoch={epoch+1}/{config.epochs} frames={seen}/{expected_frames} loss={total/seen:.5f} seconds={elapsed:.1f} estimated_training_remaining_seconds={eta:.1f}")
+        health=parser_health(model,probe,plan["vocabulary"])
+        log(f"parser epoch={epoch+1}/{config.epochs} image_sensitivity={health}")
+        quality=training_diagnostics(model,diagnostic,plan["vocabulary"])
+        log(f"parser epoch={epoch+1}/{config.epochs} training_diagnostics={quality}")
+        reports.append({"epoch":epoch+1,"frames":seen,"steps":steps,"mean_loss":total/seen,"wall_seconds":time.monotonic()-started,"image_sensitivity":health,"training_diagnostics":quality})
         payload={"schema":"issue_70_repaired_parser_checkpoint_v2","identity":PARSER_ID,
             "architecture":model.architecture_identity,"config":plan["config"],"vocabulary":plan["vocabulary"],
             "training_release_identity":plan["training_release_identity"],"epoch":epoch+1,"reports":reports,"device":args.device,
-            "model_state":{k:v.detach().cpu() for k,v in model.state_dict().items()},"optimizer_state":optimizer.state_dict()}
+            "model_state":{k:v.detach().cpu() for k,v in model.state_dict().items()},"optimizer_state":optimizer.state_dict(),
+            "loss_contract":balance,"initialization":plan["parser_initialization"]}
         atomic_torch(progress_path,payload)
         log(f"parser epoch={epoch+1}/{config.epochs} complete loss={total/seen:.5f}; resume saved")
+    parser_health(model,probe,plan["vocabulary"])
     payload.pop("optimizer_state")
     atomic_torch(args.root/"parser.pt",payload)
     log("repaired parser trained; calibration audit is required before carrier/model rebuild")
@@ -296,37 +449,47 @@ def train_parser(args):
 
 def validate_parser_payload(value,plan):
     if (value["schema"] != "issue_70_repaired_parser_checkpoint_v2" or value["identity"] != PARSER_ID
-            or value["architecture"] != SlotConditionedVisualPredicateParser.architecture_identity
+            or value["architecture"] != ConvSlotVisualPredicateParser.architecture_identity
             or value["config"] != plan["config"] or value["vocabulary"] != plan["vocabulary"]
             or value["training_release_identity"] != plan["training_release_identity"]
             or not 1 <= value["epoch"] <= plan["config"]["epochs"]
             or len(value["reports"]) != value["epoch"]):
         raise ValueError("repaired parser checkpoint binding differs")
+    if "parser_initialization" in plan and (
+            value.get("initialization")!=plan["parser_initialization"]
+            or value.get("loss_contract",{}).get("plan_identity")!=plan["identity"]):
+        raise ValueError("parser checkpoint initialization or loss binding differs")
 
 
 def load_repaired_adapter(root,device):
     plan=load_plan(root);payload=torch.load(root/"parser.pt",map_location="cpu",weights_only=True)
     validate_parser_payload(payload,plan)
     if payload["epoch"]!=plan["config"]["epochs"]:raise ValueError("parser training incomplete")
-    model=SlotConditionedVisualPredicateParser(CohortV2VisualParserConfig(**plan["config"]),tuple(plan["vocabulary"]))
+    model=ConvSlotVisualPredicateParser(CohortV2VisualParserConfig(**plan["config"]),tuple(plan["vocabulary"]))
     model.load_state_dict(payload["model_state"],strict=True)
     return RepairedAdapter(model.to(device).eval(),parser_checkpoint_identity=PARSER_ID,
         temperatures=plan["temperatures"],thresholds=plan["thresholds"],object_kind_temperature=1.0,
-        latent_dim=197,max_entities=15)
+        **carrier_dimensions(plan))
 
 
 def specs_for(root,plan):
     return tuple(replace(s,carrier_identity=CARRIER_ID) for s in unroll._specs(
         optimizer_example_budget=plan["world_optimizer_examples"],batch_size=512,learning_rate=1e-4,
         weight_decay=1e-4,grad_clip=1.0,carrier_bound=2.0,
+        predictor_config=replace(unroll._predictor_config(),latent_dim=carrier_dimensions(plan)["latent_dim"]),
         lineage_manifest_reference=str(root/"training-carriers.pt")))
 
 
 def rerun_args(args):
-    return argparse.Namespace(output=args.root/"experiment",device=args.device,
-        audit=experiment.ROOT/"data/issue-70-pilot-audit-v2",
-        summary=experiment.ROOT/"data/runtime_evidence/issue-70/action-design-v2.json",
+    result=argparse.Namespace(output=args.root/"experiment",device=args.device,
+        audit=experiment.ROOT/"data/issue-70-pilot-audit-v6",
+        summary=experiment.ROOT/"data/runtime_evidence/issue-70/action-design-v6.json",
         start_display=getattr(args,"start_display",False))
+    if (result.output/"pilot-render-repair-plan.json").exists():
+        result.pilot_output=result.output/"pilot-rendered-v1"
+        result.audit=experiment.ROOT/"data/issue-70-pilot-audit-v6-rendered"
+        result.summary=experiment.ROOT/"data/runtime_evidence/issue-70/action-design-v6-rendered.json"
+    return result
 
 
 def prepare_rerun(args):
@@ -339,13 +502,13 @@ def prepare_rerun(args):
                    "checkpoint":str(unroll._checkpoint_path(args.root/"world-models",s))} for s in specs_for(args.root,plan)],
         "parser_repair_root":str(args.root),"old_result_preserved":str(experiment.OUTPUT)}
     write(args.root/"experiment/plan.json",result)
-    log("v2 rerun prepared: repaired parser, 9 matched cells, separate output and videos")
+    log("v6 rerun prepared: CNN parser, 9 matched cells, separate output and videos")
 
 
 def require_audit(args):
     report=experiment.audit_payload(experiment.endpoint_rows(rerun_args(args)))
     if not report["passed"]:
-        raise ValueError("repaired parser still fails objective audit; inspect v2 objective log before retraining world models")
+        raise ValueError("CNN parser still fails objective audit; inspect v6 objective log before retraining world models")
 
 
 def build_lineage(plan,record,adapter,index):
@@ -444,6 +607,8 @@ def train_world_models(args):
 def validate_repair(args, *, world_models=True):
     plan=load_plan(args.root);load_repaired_adapter(args.root,"cpu")
     payload=torch.load(args.root/"parser.pt",map_location="cpu",weights_only=True)
+    if payload["loss_contract"]!=read(args.root/"parser-loss.json"):
+        raise ValueError("parser loss contract differs")
     inventory=read(args.root/"parser-data.json")
     expected_frames=sum(s["frames"] for s in inventory["shards"])
     if (len(inventory["shards"])!=3000 or inventory["role"]!="training"
@@ -473,15 +638,16 @@ def smoke_test(args):
     shard=prepare_shard(plan,plan["training_records"][0])
     config=CohortV2VisualParserConfig(**plan["config"])
     torch.manual_seed(config.seed)
-    model=SlotConditionedVisualPredicateParser(config,tuple(plan["vocabulary"])).to(args.device)
+    model=ConvSlotVisualPredicateParser(config,tuple(plan["vocabulary"])).to(args.device)
     optimizer=torch.optim.AdamW(model.parameters(),lr=config.learning_rate)
     batch={k:v.to(args.device) for k,v in shard["tensors"].items()}
+    weights=class_balance_weights(len(batch["presence"]),batch["presence"].sum(0))
     for step in range(2):
-        optimizer.zero_grad();loss=parser_loss(model,batch,plan["vocabulary"])
+        optimizer.zero_grad();loss=parser_loss(model,batch,plan["vocabulary"],weights)
         if not torch.isfinite(loss):raise ValueError("smoke parser loss nonfinite")
         loss.backward();optimizer.step();log(f"smoke parser step={step+1}/2 loss={float(loss.detach()):.5f}")
     adapter=RepairedAdapter(model.eval(),parser_checkpoint_identity=PARSER_ID,
-        temperatures=plan["temperatures"],thresholds=plan["thresholds"],object_kind_temperature=1.0,latent_dim=197,max_entities=15)
+        temperatures=plan["temperatures"],thresholds=plan["thresholds"],object_kind_temperature=1.0,**carrier_dimensions(plan))
     lineage=build_lineage(plan,plan["training_records"][0],adapter,1)
     spec=replace(specs_for(args.root,plan)[-1],optimizer_example_budget=4,batch_size=2)
     _,report=train_short_unroll_predictor(spec,(lineage,),device=args.device,progress=log)
@@ -492,14 +658,15 @@ def dry_run():
     config=CohortV2VisualParserConfig(seed=7002001,image_height=8,image_width=8,hidden_dim=8,epochs=1,device="cpu")
     vocabulary=("pig:0000","block:0000")
     torch.manual_seed(config.seed)
-    model=SlotConditionedVisualPredicateParser(config,vocabulary)
+    model=ConvSlotVisualPredicateParser(config,vocabulary)
     batch={"images":torch.randint(0,256,(4,3,8,8),dtype=torch.uint8),
         "presence":torch.tensor([[1.,0.],[0.,1.],[1.,1.],[0.,0.]]),"centers":torch.zeros(4,2,2),
         "relations":torch.zeros(4,2,2,2),"relation_mask":torch.ones(4,2,2,2,dtype=torch.bool),
         "macros":torch.zeros(4,2),"macro_mask":torch.ones(4,2,dtype=torch.bool)}
     optimizer=torch.optim.AdamW(model.parameters(),lr=0.01)
+    weights=class_balance_weights(len(batch["presence"]),batch["presence"].sum(0))
     for step in range(3):
-        optimizer.zero_grad();loss=parser_loss(model,batch,vocabulary);loss.backward();optimizer.step()
+        optimizer.zero_grad();loss=parser_loss(model,batch,vocabulary,weights);loss.backward();optimizer.step()
         log(f"dry parser step={step+1}/3 loss={float(loss.detach()):.5f}")
     lineages=tuple(replace(l,carrier_identity=CARRIER_ID) for l in unroll._fixture_lineages("training",count=2))
     from world_model.model import PredictorConfig
@@ -514,13 +681,35 @@ def dry_run():
 
 
 def audit_parser(args):
-    result=experiment.audit_payload(experiment.endpoint_rows(rerun_args(args)))
+    rows=experiment.endpoint_rows(rerun_args(args))
+    result=experiment.audit_payload(rows)
+    candidates=[c for row in rows for c in row["candidates"] if c["accepted"]]
+    diagnostics={"role":"calibration","fits_parameters":False,"by_actual_count":{}}
+    for index,kind in enumerate(("pig","block")):
+        groups=[]
+        for count in sorted({c["actual_counts"][index] for c in candidates}):
+            predictions=[c["parsed_counts"][index] for c in candidates if c["actual_counts"][index]==count]
+            groups.append({"actual_count":count,"candidates":len(predictions),
+                           "mean_prediction":float(np.mean(predictions)),
+                           "mean_absolute_error":float(np.mean(np.abs(np.array(predictions)-count)))})
+        diagnostics["by_actual_count"][kind]=groups
+        log(f"calibration {kind} count diagnostics={groups}")
+    write(args.root/"experiment/parser-count-diagnostics.json",diagnostics)
     write(args.root/"experiment/objective-audit.json",result)
     log(f"repaired objective passed={result['passed']} {result['count_ranking']}")
+    plan=load_plan(args.root)
+    reference=read(Path(plan["historical_comparison"]["root"])/"experiment/objective-audit.json")
+    comparison={"schema":"issue_70_visual_backbone_comparison_v1",
+                "matched_backbone_ablation":False,"exploratory_only":True,
+                "reference":"preserved v5 MLP; different initialization/training schedule",
+                "reference_count_ranking":reference["count_ranking"],"cnn_count_ranking":result["count_ranking"],
+                "objective_gate_unchanged":reference["contract"]==result["contract"]}
+    write(args.root/"experiment/backbone-comparison.json",comparison)
+    log(f"historical MLP reference={reference['count_ranking']['discriminating_states']}; comparison is exploratory, not a matched backbone ablation")
     return result["passed"]
 
 
-def run_repair(args):
+def run_repair(args, *, perception_only=False):
     stages=(("prepare",prepare),("parser data",prepare_data),("train parser",train_parser),
             ("prepare rerun",prepare_rerun),
             ("calibration endpoints",lambda a:experiment.prepare_endpoints(rerun_args(a))))
@@ -529,6 +718,9 @@ def run_repair(args):
     log("repair stage=6/10 parser objective audit")
     if not audit_parser(args):
         log("repair stopped: parser objective gate failed; publish/validate the negative report; gameplay remains blocked")
+        return
+    if perception_only:
+        log("perception complete passed=True; no carrier rebuild, world-model training or gameplay started; use --run-repair to resume explicitly")
         return
     for i,(name,run) in enumerate((("rebuild carriers",rebuild_carriers),("train matched world models",train_world_models),
             ("score actions",lambda a:experiment.score_models(rerun_args(a))),
@@ -541,14 +733,15 @@ def run_repair(args):
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     mode=parser.add_mutually_exclusive_group(required=True)
-    for name in ("run-repair","prepare","prepare-parser-data","train-parser","prepare-rerun","prepare-endpoints","audit-objective",
-                 "rebuild-carriers","train-world-models","score-models","freeze-pilot","run-pilot","publish","validate","dry-run","smoke-test"):
+    for name in ("run-repair","run-perception","prepare","prepare-parser-data","train-parser","prepare-rerun","prepare-endpoints","audit-objective",
+                 "rebuild-carriers","train-world-models","score-models","freeze-pilot","run-pilot","repair-pilot","smoke-pilot","publish","validate","dry-run","smoke-test"):
         mode.add_argument("--"+name,action="store_true")
     parser.add_argument("--root",type=Path,default=ROOT);parser.add_argument("--device",default="cuda")
     parser.add_argument("--start-display",action="store_true")
     args=parser.parse_args(argv);args.root=args.root.resolve();torch.set_num_threads(1)
     try:
         if args.run_repair:run_repair(args)
+        elif args.run_perception:run_repair(args,perception_only=True)
         elif args.prepare:prepare(args)
         elif args.prepare_parser_data:prepare_data(args)
         elif args.train_parser:train_parser(args)
@@ -557,6 +750,13 @@ def main(argv=None):
         elif args.train_world_models:train_world_models(args)
         elif args.dry_run:dry_run()
         elif args.smoke_test:smoke_test(args)
+        elif args.smoke_pilot:
+            from scripts.issue_70_live_pilot import smoke_pilot
+            smoke_pilot(rerun_args(args))
+        elif args.repair_pilot:
+            from scripts.issue_70_live_pilot import prepare_render_repair,run_pilot
+            prepare_render_repair(rerun_args(args))
+            run_pilot(rerun_args(args))
         elif args.prepare_endpoints:experiment.prepare_endpoints(rerun_args(args))
         elif args.audit_objective:audit_parser(args)
         elif args.score_models:require_audit(args);experiment.score_models(rerun_args(args))

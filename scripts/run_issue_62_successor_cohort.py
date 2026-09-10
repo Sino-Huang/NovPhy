@@ -1112,6 +1112,8 @@ def _collect_lineage_attempt(
     engine_start_lock: Path | None = None,
     action_selector: Any | None = None,
 ) -> dict[str, Any]:
+    if headless:
+        raise SuccessorCohortError("aligned RGB capture requires graphics; use a virtual display, not Unity -nographics/headless")
     authority = _materialize_slot(slot, attempt_root)
     scenario = authority["scenario"]
     bird_count = _materialized_bird_count(authority["xml_path"])
