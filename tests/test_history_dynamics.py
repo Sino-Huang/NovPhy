@@ -3,8 +3,7 @@ import unittest
 import torch
 
 from world_model.model import Abstraction, PredictionPair
-from world_model.training.cnn_hybrid import PAIRS
-from world_model.training.history_dynamics import HistoryDynamics, STATE_DIM, capacity_contract
+from world_model.training.history_dynamics import HistoryDynamics, PAIRS, STATE_DIM, capacity_contract
 
 
 class HistoryDynamicsTests(unittest.TestCase):
@@ -20,12 +19,12 @@ class HistoryDynamicsTests(unittest.TestCase):
         for pair in model.pairs:
             self.assertEqual(model.carrier(self.z, self.a, pair).shape, self.z.shape)
         with self.assertRaisesRegex(ValueError, "permitted pair"):
-            model.carrier(self.z, self.a, PredictionPair(1, Abstraction.MICRO))
+            model.carrier(self.z, self.a, PredictionPair(50, Abstraction.MICRO))
 
     def test_same_observed_memory_influences_both_arms(self):
         changed = self.z.clone()
         changed[:, 236:] += 1
-        pair = PredictionPair(1, Abstraction.CONTINUOUS)
+        pair = PredictionPair(50, Abstraction.CONTINUOUS)
         for pure in (False, True):
             model = HistoryDynamics(pure=pure, width=32)
             first = model.carrier(self.z, self.a, pair)[:, :236]
@@ -40,7 +39,7 @@ class HistoryDynamicsTests(unittest.TestCase):
         for mode, expected in ((Abstraction.CONTINUOUS, []), (Abstraction.MICRO, ["micro"]),
                                (Abstraction.MACRO, ["macro"])):
             calls.clear()
-            model.carrier(self.z, self.a, PredictionPair(1, mode))
+            model.carrier(self.z, self.a, PredictionPair(50, mode))
             self.assertEqual(calls, expected)
         for hook in hooks:
             hook.remove()
@@ -56,6 +55,18 @@ class HistoryDynamicsTests(unittest.TestCase):
         self.assertLessEqual(contract["relative_parameter_difference"], .02)
         self.assertEqual(contract["dead_padding_parameters"], 0)
         self.assertFalse(contract["fit_executed"])
+
+    def test_native_horizons_do_not_reinterpret_legacy_ticks(self):
+        from world_model.training.cnn_hybrid import PAIRS as old_pairs
+        self.assertEqual({p.delta for p in old_pairs}, {1, 5, 15})
+        self.assertEqual({p.delta for p in PAIRS}, {50, 250, 750})
+        contract = capacity_contract()
+        self.assertEqual(contract["horizons_seconds"], [.02, .1, .3])
+        self.assertEqual(contract["equal_time_endpoint_native_steps"] * contract["fixed_delta_seconds"], 4.5)
+        for pure in (True, False):
+            with self.assertRaisesRegex(ValueError, "permitted pair"):
+                HistoryDynamics(pure=pure, width=32).carrier(
+                    self.z, self.a, PredictionPair(1, Abstraction.CONTINUOUS))
 
 
 if __name__ == "__main__":

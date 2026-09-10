@@ -1,5 +1,13 @@
 # #76 implementation, requirement coverage and operator handoff
 
+## Latest canonical-native engineering stage
+
+The approved migration has now completed its bounded native-time smoke.
+See [native findings and requirement disposition](issue-76-native-findings.md)
+for the final failures, validated playback, exact no-recapture commands and the
+next data-contract decision. The long production collection/refit workflow is
+not ready; the earlier diagnostic commands below do not implement it.
+
 The Phase A workflow is implemented. The operator completed the full diagnostic;
 saved-evidence validation passed after the CSV correction documented below.
 #76 is not yet closed. Protocol: [frozen diagnostic definitions](issue-76-diagnostic-protocol.md).

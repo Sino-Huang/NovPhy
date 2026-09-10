@@ -4,13 +4,17 @@ from dataclasses import replace
 import torch
 from torch import nn
 
-from world_model.model import Abstraction
+from world_model.model import Abstraction, PredictionPair
 from world_model.model.predictor import FiLMBlock, PairConditioner
-from world_model.training.cnn_hybrid import CONFIG, DIM, PAIRS, SLOTS, linear_macs
-from world_model.training.matched_dynamics import CONTINUOUS_PAIRS, HorizonConditioner
+from world_model.training.cnn_hybrid import CONFIG, DIM, SLOTS, linear_macs
+from world_model.training.matched_dynamics import HorizonConditioner
 from world_model.training.observed_history import HISTORY_DIM, history_contract
 
 STATE_DIM = DIM + HISTORY_DIM
+NATIVE_FIXED_DELTA_SECONDS = .0004
+NATIVE_HORIZONS = (50, 250, 750)
+PAIRS = tuple(PredictionPair(h, mode) for h in NATIVE_HORIZONS for mode in Abstraction)
+CONTINUOUS_PAIRS = tuple(p for p in PAIRS if p.abstraction == Abstraction.CONTINUOUS)
 
 
 class HistoryDynamics(nn.Module):
@@ -91,7 +95,11 @@ def capacity_contract():
     difference = abs(counts[width] - target) / target
     if difference > .02:
         raise ValueError("history dynamics exceed the declared 2% parameter-matching tolerance")
-    return {"schema": "issue_76_observed_history_dynamics_v1", "history": history_contract(),
+    return {"schema": "issue_76_native_observed_history_dynamics_v2", "history": history_contract(),
+            "fixed_delta_seconds": NATIVE_FIXED_DELTA_SECONDS,
+            "horizons_native_steps": list(NATIVE_HORIZONS),
+            "horizons_seconds": [h * NATIVE_FIXED_DELTA_SECONDS for h in NATIVE_HORIZONS],
+            "equal_time_endpoint_native_steps": 11250,
             "state_dim": STATE_DIM, "hybrid_width": 384, "continuous_width": width,
             "hybrid_parameters": target, "continuous_parameters": counts[width],
             "relative_parameter_difference": difference,
