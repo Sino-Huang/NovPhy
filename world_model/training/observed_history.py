@@ -31,14 +31,15 @@ class ObservedHistoryEncoder(nn.Module):
     Passing the returned state continues the episode; omitting it starts a new
     episode. Planning branches must not replace the real episode's state.
     """
-    def __init__(self):
+    def __init__(self, carrier_dim=DIM):
         super().__init__()
-        self.cell = nn.GRUCell(DIM + ACTION_DIM + 3, HISTORY_DIM)
+        self.carrier_dim = carrier_dim
+        self.cell = nn.GRUCell(carrier_dim + ACTION_DIM + 3, HISTORY_DIM)
 
     def forward(self, carriers, actions, timestamps, observation_mask, action_mask, state=None):
         batch, steps, width = carriers.shape
-        if width != DIM or actions.shape != (batch, steps, ACTION_DIM):
-            raise ValueError("history requires 236-carriers and five-component executed actions")
+        if width != self.carrier_dim or actions.shape != (batch, steps, ACTION_DIM):
+            raise ValueError(f"history requires {self.carrier_dim}-carriers and five-component executed actions")
         if any(value.shape != (batch, steps) for value in (timestamps, observation_mask, action_mask)):
             raise ValueError("history timestamps and event masks must align with the event sequence")
         if observation_mask.dtype != torch.bool or action_mask.dtype != torch.bool:

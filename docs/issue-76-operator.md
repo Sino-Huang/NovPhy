@@ -1,12 +1,13 @@
 # #76 implementation, requirement coverage and operator handoff
 
-## Latest canonical-native engineering stage
+## Latest operator-run native collection/refit stage
 
-The approved migration has now completed its bounded native-time smoke.
-See [native findings and requirement disposition](issue-76-native-findings.md)
-for the final failures, validated playback, exact no-recapture commands and the
-next data-contract decision. The long production collection/refit workflow is
-not ready; the earlier diagnostic commands below do not implement it.
+The approved censored-policy smoke has passed, and the new collection/refit
+commands are implemented, frozen and dry-run/CUDA-smoke tested. See the
+[native operator handoff](issue-76-native-operator.md) for the actual long-run
+commands, progress logs, failure/resume rules and remaining scientific gates.
+Those long research jobs have not been run. The earlier commands below describe
+historical stages and do not replace this new workflow.
 
 The Phase A workflow is implemented. The operator completed the full diagnostic;
 saved-evidence validation passed after the CSV correction documented below.

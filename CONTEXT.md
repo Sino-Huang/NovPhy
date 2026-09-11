@@ -36,6 +36,10 @@ _Avoid_: Rollout, independent shot collection
 The portion of a gameplay episode containing one executed intervention and its subsequent observations up to a declared segment stopping condition; its initial state may depend on earlier shots.
 _Avoid_: Independent rollout, new level instance
 
+**Censored shot segment**:
+A shot segment whose intact observed interval ends at a declared capture window without an observed physical terminal. Its observed endpoints can be learning targets, but censoring supplies neither a terminal event nor a gameplay success.
+_Avoid_: Complete rollout, successful capture, synthetic terminal
+
 **Observed history**:
 The causally ordered agent observations and executed interventions available so far in one gameplay episode, including their observed timing and explicit missing-observation status.
 _Avoid_: Engine hit counter, future trace, oracle state history
