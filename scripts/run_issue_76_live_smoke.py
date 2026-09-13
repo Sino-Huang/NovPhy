@@ -135,7 +135,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--first-only", action="store_true")
     modes = parser.add_mutually_exclusive_group(required=True)
-    for name in ("dry-run", "prepare", "run", "report"):
+    for name in ("dry-run", "prepare", "record-correction", "run", "report"):
         modes.add_argument("--" + name, action="store_true")
     args = parser.parse_args()
     if args.dry_run or args.prepare:
@@ -150,6 +150,31 @@ def main():
               f"at most {plan['limits']['maximum_new_shots']} shots; no model comparison or fresh access", flush=True)
     else:
         plan = files.read(OUTPUT / "plan.json")
+        correction = OUTPUT / "observation-json-correction.json"
+        if args.record_correction:
+            current = make_plan()
+            if ({k: v for k, v in plan.items() if k != "source_text"}
+                    != {k: v for k, v in current.items() if k != "source_text"}):
+                raise ValueError("technical correction cannot change assignments, policy or limits")
+            first = files.read(OUTPUT / "results" / (plan["members"][0]["identity"] + ".json"))
+            if (first["failure"] != "ObservationTraceError: camera position is incomplete"
+                    or first["attempted_shots"] or first["segments"]):
+                raise ValueError("requires the exact retained pre-shot serialization failure")
+            if any((OUTPUT / "attempts" / m["identity"]).exists() for m in plan["members"][1:]):
+                raise ValueError("correction must precede remaining engineering access")
+            if correction.exists():
+                raise ValueError("technical correction is already frozen")
+            files.write(correction, dict(reason="recursively convert typed bridge metadata to JSON lists",
+                original_failed_result=first, original_budget=files.read(OUTPUT / "budget.json"),
+                original_plan_preserved=True, failed_assignment_replayed=False, plan=current))
+            print("technical correction frozen; original failed attempt/costs retained", flush=True)
+            return
+        if correction.exists():
+            receipt = files.read(correction)
+            first = files.read(OUTPUT / "results" / (plan["members"][0]["identity"] + ".json"))
+            if first != receipt["original_failed_result"]:
+                raise ValueError("original engineering failure changed")
+            plan = receipt["plan"]
         if plan != make_plan():
             raise ValueError("frozen engineering source/membership changed; retain original attempts")
         if args.run:

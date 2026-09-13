@@ -5,9 +5,26 @@ import unittest
 from unittest.mock import Mock, patch
 
 from scripts import issue_76_live_episode as live
+from src.webui.bridge import ObservationCaptureEngine, _freeze
+from tests.test_observation_trace import engine_capture, source_bindings
 
 
 class LiveEpisodeTests(unittest.TestCase):
+    def test_typed_snapshot_persists_nested_frozen_metadata_and_exposes_only_rgb_time(self):
+        frame = engine_capture()
+        png = frame.pop("canonical_png")
+        endpoint = Mock()
+        endpoint.get_observation_capture.return_value = ObservationCaptureEngine(png, _freeze(frame))
+        policy = Mock()
+        with tempfile.TemporaryDirectory() as directory, patch.object(
+                live.capture.old.capture, "_observation_bindings", return_value=source_bindings()):
+            identity = live.observe_snapshot(endpoint, Path(directory) / "observation", None,
+                                             "test", "calibration", policy)
+            policy.observe.assert_called_once_with(png, .4)
+            saved = live.files.read(Path(directory) / "observation" / live.MANIFEST_NAME)
+            self.assertEqual(identity, saved["identity"])
+            self.assertIsInstance(saved["frame_records"][0]["capture_metadata"]["camera"]["position_world"], list)
+
     def test_accepted_segment_replays_only_agent_images_with_one_action_event(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

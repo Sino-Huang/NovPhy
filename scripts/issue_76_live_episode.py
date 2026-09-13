@@ -9,7 +9,7 @@ import time
 from scripts import issue_76_censored_episode as capture
 from scripts import issue_76_expansion as files
 from scripts.issue_76_native_outcomes import terminal_evidence, gameplay_outcome
-from scripts.observation_trace import MANIFEST_NAME, _configuration, _transform, persist_observation_trace
+from scripts.observation_trace import MANIFEST_NAME, _configuration, _plain_json, _transform, persist_observation_trace
 from scripts.run_issue_62_successor_cohort import _replace_json
 from src.webui.bridge import ScienceBirdsBridge
 from world_model.planning.native_gameplay import agent_image_tensor
@@ -46,7 +46,7 @@ def start_display(log_path):
 def observe_snapshot(endpoint, destination, scenario, identity, role, policy):
     """Persist provenance outside the policy; expose only transformed RGB and time."""
     frame = endpoint.get_observation_capture()
-    metadata = dict(frame.metadata)
+    metadata = _plain_json(frame.metadata)
     manifest = persist_observation_trace(destination,
         [{**metadata, "canonical_png": frame.canonical_png}],
         observation_configuration=capture.old.capture.OBSERVATION_CONFIGURATION,
