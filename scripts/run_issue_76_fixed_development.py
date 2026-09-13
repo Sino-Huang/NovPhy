@@ -99,7 +99,19 @@ def load_plan():
         raise ValueError("only frozen fixed development scoring is authorized")
     if plan["inventory"] != fit.files.read(ROOT / "inventory.json"):
         raise ValueError("frozen development inventory changed")
-    for path, text in plan["source_text"].items():
+    sources = plan["source_text"]
+    correction_path = ROOT / "json-order-correction.json"
+    if correction_path.exists():
+        correction = fit.files.read(correction_path)
+        changed_path = "scripts/run_issue_76_fixed_development.py"
+        if (correction["identity"] != "issue-76-fixed-development-json-order-correction-v1"
+                or correction["execution_plan_identity"] != plan["identity"]
+                or correction["original_execution_source"] != sources[changed_path]
+                or set(correction["corrected_source_text"]) != {changed_path, "tests/test_issue_76_fixed_development_json.py"}
+                or correction["score_values_changed"] or correction["selection_rule_changed"]):
+            raise ValueError("JSON-order technical correction does not bind the original freeze")
+        sources = {**sources, **correction["corrected_source_text"]}
+    for path, text in sources.items():
         if (fit.files.ROOT / path).read_text() != text:
             raise ValueError(f"execution source changed: {path}")
     return plan
@@ -211,7 +223,17 @@ def load_results(plan, role):
             or complete["cells"] != [cell_name(cell) for cell in plan["inventory"]["models"]]):
         raise ValueError("role completion inventory differs")
     fit.require_finished_budget(ROOT, f"score-{role}")
-    return [fit.files.read(phase_path(role, cell_name(cell))) for cell in plan["inventory"]["models"]]
+    results = [fit.files.read(phase_path(role, cell_name(cell))) for cell in plan["inventory"]["models"]]
+    # The artifact writer sorts JSON object keys. Restore the frozen pair order
+    # at this serialization boundary; never infer it from object-key ordering.
+    for cell, result in zip(plan["inventory"]["models"], results, strict=True):
+        names = [fit.policy_name(pair) for pair in (fit.CONTINUOUS_PAIRS if cell["pure"] else fit.PAIRS)]
+        for row in result["rows"]:
+            if row["policies"]:
+                if set(row["policies"]) != set(names):
+                    raise ValueError("saved fixed-policy membership differs")
+                row["policies"] = {name: row["policies"][name] for name in names}
+    return results
 
 
 def freeze_choice(plan):
