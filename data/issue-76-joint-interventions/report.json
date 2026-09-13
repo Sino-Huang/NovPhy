@@ -1,0 +1,1939 @@
+{
+  "advancement_passed": false,
+  "assignments": [
+    {
+      "boundary_rows": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "seed": 760930001,
+      "uniform_rows": [
+        [
+          0,
+          209
+        ],
+        [
+          1,
+          431
+        ],
+        [
+          2,
+          156
+        ],
+        [
+          3,
+          115
+        ],
+        [
+          4,
+          68
+        ]
+      ]
+    },
+    {
+      "boundary_rows": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "seed": 760930002,
+      "uniform_rows": [
+        [
+          0,
+          520
+        ],
+        [
+          1,
+          743
+        ],
+        [
+          2,
+          191
+        ],
+        [
+          3,
+          447
+        ],
+        [
+          4,
+          510
+        ]
+      ]
+    },
+    {
+      "boundary_rows": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          4,
+          0
+        ]
+      ],
+      "seed": 760930003,
+      "uniform_rows": [
+        [
+          0,
+          174
+        ],
+        [
+          1,
+          368
+        ],
+        [
+          2,
+          241
+        ],
+        [
+          3,
+          98
+        ],
+        [
+          4,
+          47
+        ]
+      ]
+    }
+  ],
+  "budget": {
+    "active_seconds": 89.59440669999458,
+    "limit_seconds": 600,
+    "peak_cpu_rss_mib": 1549.2421875,
+    "peak_cuda_allocated_mib": 304.6005859375,
+    "peak_cuda_reserved_mib": 334.0,
+    "process_id": 3510224,
+    "running": false,
+    "stopped": false
+  },
+  "checkpoint_writes": false,
+  "evaluation": [
+    {
+      "base_cluster": "issue-76-development-001",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010101",
+      "frames": 601,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-001",
+      "path": "prepared/issue-76-development-001.pt",
+      "preparation_failure": null,
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-071",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010102",
+      "frames": 943,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-071",
+      "path": "prepared/issue-76-development-071.pt",
+      "preparation_failure": null,
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-141",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010103",
+      "frames": 302,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-141",
+      "path": "prepared/issue-76-development-141.pt",
+      "preparation_failure": null,
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-211",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010204",
+      "frames": 601,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-211",
+      "path": "prepared/issue-76-development-211.pt",
+      "preparation_failure": null,
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-281",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010105",
+      "frames": 601,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-281",
+      "path": "prepared/issue-76-development-281.pt",
+      "preparation_failure": null,
+      "usable": true
+    }
+  ],
+  "fresh_access": false,
+  "interpretation": "Temporary single-batch interventions, not trained candidates or advancement evidence",
+  "prior_replay_budget": {
+    "active_seconds": 0.7304168881382793,
+    "limit_seconds": 180,
+    "peak_cpu_rss_mib": 633.65625,
+    "peak_cuda_allocated_mib": 0.0,
+    "peak_cuda_reserved_mib": 0.0,
+    "process_id": 3509819,
+    "running": false,
+    "stopped": false
+  },
+  "rows": [
+    {
+      "base": {
+        "anchor": 0.0014088619500398636,
+        "anchor_endpoint": 0.003968923352658749,
+        "local": 0.003730106633156538,
+        "policy_endpoint": 0.017565861344337463,
+        "recursive": 0.010292936116456985,
+        "total": 0.01402304321527481
+      },
+      "policy": "fixed-50-continuous",
+      "pure": false,
+      "seed": 760930001,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0014241350581869483,
+          "anchor_endpoint": 0.003980020526796579,
+          "local": 0.0037311436608433723,
+          "policy_endpoint": 0.017560727894306183,
+          "recursive": 0.010753711685538292,
+          "total": 0.014484855346381664
+        },
+        "boundary_only": {
+          "anchor": 0.00142336031422019,
+          "anchor_endpoint": 0.003979635424911976,
+          "local": 0.003730547148734331,
+          "policy_endpoint": 0.01699870266020298,
+          "recursive": 0.010471649467945099,
+          "total": 0.014202196151018143
+        },
+        "control": {
+          "anchor": 0.0014237473951652646,
+          "anchor_endpoint": 0.003979652654379606,
+          "local": 0.003730829805135727,
+          "policy_endpoint": 0.01725253276526928,
+          "recursive": 0.010532493703067303,
+          "total": 0.01426332350820303
+        },
+        "local_weight_1": {
+          "anchor": 0.0014237473951652646,
+          "anchor_endpoint": 0.003979652654379606,
+          "local": 0.003730829805135727,
+          "policy_endpoint": 0.01725253276526928,
+          "recursive": 0.010532493703067303,
+          "total": 0.01426332350820303
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0014088619500398636,
+        "anchor_endpoint": 0.003968923352658749,
+        "local": 0.003706972114741802,
+        "policy_endpoint": 0.0153734739869833,
+        "recursive": 0.00956822745501995,
+        "total": 0.13149255514144897
+      },
+      "policy": "fixed-50-micro",
+      "pure": false,
+      "seed": 760930001,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0014243961777538061,
+          "anchor_endpoint": 0.003991669975221157,
+          "local": 0.003708889940753579,
+          "policy_endpoint": 0.015303248539566994,
+          "recursive": 0.009933892637491226,
+          "total": 0.13180986046791077
+        },
+        "boundary_only": {
+          "anchor": 0.0014235974522307515,
+          "anchor_endpoint": 0.003993178717792034,
+          "local": 0.0037082599010318518,
+          "policy_endpoint": 0.014517426490783691,
+          "recursive": 0.00953881349414587,
+          "total": 0.13140320777893066
+        },
+        "control": {
+          "anchor": 0.0014240045566111803,
+          "anchor_endpoint": 0.003992627374827862,
+          "local": 0.003708590753376484,
+          "policy_endpoint": 0.014853921718895435,
+          "recursive": 0.009647219441831112,
+          "total": 0.13151061534881592
+        },
+        "local_weight_1": {
+          "anchor": 0.0014240045566111803,
+          "anchor_endpoint": 0.003992627374827862,
+          "local": 0.003708590753376484,
+          "policy_endpoint": 0.014853921718895435,
+          "recursive": 0.009647219441831112,
+          "total": 0.13151061534881592
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0014088619500398636,
+        "anchor_endpoint": 0.003968923352658749,
+        "local": 0.003681609407067299,
+        "policy_endpoint": 0.018011894077062607,
+        "recursive": 0.010494462214410305,
+        "total": 0.5354089140892029
+      },
+      "policy": "fixed-50-macro",
+      "pure": false,
+      "seed": 760930001,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0014241458848118782,
+          "anchor_endpoint": 0.003983126487582922,
+          "local": 0.0036829346790909767,
+          "policy_endpoint": 0.01800958439707756,
+          "recursive": 0.010980105958878994,
+          "total": 0.535724937915802
+        },
+        "boundary_only": {
+          "anchor": 0.0014235092094168067,
+          "anchor_endpoint": 0.003985907882452011,
+          "local": 0.0036824510898441076,
+          "policy_endpoint": 0.01801964081823826,
+          "recursive": 0.010920296423137188,
+          "total": 0.5357978940010071
+        },
+        "control": {
+          "anchor": 0.0014238039730116725,
+          "anchor_endpoint": 0.003984470386058092,
+          "local": 0.003682666225358844,
+          "policy_endpoint": 0.01777508296072483,
+          "recursive": 0.01078189630061388,
+          "total": 0.5354989767074585
+        },
+        "local_weight_1": {
+          "anchor": 0.0014238039730116725,
+          "anchor_endpoint": 0.003984470386058092,
+          "local": 0.003682666225358844,
+          "policy_endpoint": 0.01777508296072483,
+          "recursive": 0.01078189630061388,
+          "total": 0.5354989767074585
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0014088619500398636,
+        "anchor_endpoint": 0.003968923352658749,
+        "local": 0.002392715308815241,
+        "policy_endpoint": 0.004540409427136183,
+        "recursive": 0.004017784260213375,
+        "total": 0.006410499569028616
+      },
+      "policy": "fixed-250-continuous",
+      "pure": false,
+      "seed": 760930001,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0014234924456104636,
+          "anchor_endpoint": 0.003856989787891507,
+          "local": 0.0023921499960124493,
+          "policy_endpoint": 0.0046624839305877686,
+          "recursive": 0.004043128341436386,
+          "total": 0.006435278337448835
+        },
+        "boundary_only": {
+          "anchor": 0.0014150781789794564,
+          "anchor_endpoint": 0.0037886472418904305,
+          "local": 0.0023867846466600895,
+          "policy_endpoint": 0.00439081434160471,
+          "recursive": 0.0040118820033967495,
+          "total": 0.006398666650056839
+        },
+        "control": {
+          "anchor": 0.0014199553988873959,
+          "anchor_endpoint": 0.0038433668669313192,
+          "local": 0.0023889243602752686,
+          "policy_endpoint": 0.004513783846050501,
+          "recursive": 0.003972352482378483,
+          "total": 0.006361276842653751
+        },
+        "local_weight_1": {
+          "anchor": 0.0014199553988873959,
+          "anchor_endpoint": 0.0038433668669313192,
+          "local": 0.0023889243602752686,
+          "policy_endpoint": 0.004513783846050501,
+          "recursive": 0.003972352482378483,
+          "total": 0.006361276842653751
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0014088619500398636,
+        "anchor_endpoint": 0.003968923352658749,
+        "local": 0.0023947611916810274,
+        "policy_endpoint": 0.004410390742123127,
+        "recursive": 0.003956124652177095,
+        "total": 0.1226511001586914
+      },
+      "policy": "fixed-250-micro",
+      "pure": false,
+      "seed": 760930001,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.001423750421963632,
+          "anchor_endpoint": 0.0038569520693272352,
+          "local": 0.0023947767913341522,
+          "policy_endpoint": 0.004516842775046825,
+          "recursive": 0.0039647785015404224,
+          "total": 0.12256759405136108
+        },
+        "boundary_only": {
+          "anchor": 0.0014143993612378836,
+          "anchor_endpoint": 0.003778900718316436,
+          "local": 0.002389006782323122,
+          "policy_endpoint": 0.0042379507794976234,
+          "recursive": 0.00393582321703434,
+          "total": 0.12238480150699615
+        },
+        "control": {
+          "anchor": 0.001420069020241499,
+          "anchor_endpoint": 0.003842798760160804,
+          "local": 0.0023916768841445446,
+          "policy_endpoint": 0.004376939032226801,
+          "recursive": 0.0038982327096164227,
+          "total": 0.12234096229076385
+        },
+        "local_weight_1": {
+          "anchor": 0.001420069020241499,
+          "anchor_endpoint": 0.003842798760160804,
+          "local": 0.0023916768841445446,
+          "policy_endpoint": 0.004376939032226801,
+          "recursive": 0.0038982327096164227,
+          "total": 0.12234096229076385
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0014088619500398636,
+        "anchor_endpoint": 0.003968923352658749,
+        "local": 0.002410575281828642,
+        "policy_endpoint": 0.004610175266861916,
+        "recursive": 0.004035674035549164,
+        "total": 0.5732169151306152
+      },
+      "policy": "fixed-250-macro",
+      "pure": false,
+      "seed": 760930001,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0014237152645364404,
+          "anchor_endpoint": 0.003870336338877678,
+          "local": 0.0024102849420160055,
+          "policy_endpoint": 0.004751497879624367,
+          "recursive": 0.004071488976478577,
+          "total": 0.5730591416358948
+        },
+        "boundary_only": {
+          "anchor": 0.0014229551889002323,
+          "anchor_endpoint": 0.003980707377195358,
+          "local": 0.0024110206868499517,
+          "policy_endpoint": 0.005530944559723139,
+          "recursive": 0.00441679498180747,
+          "total": 0.5737270712852478
+        },
+        "control": {
+          "anchor": 0.001421140506863594,
+          "anchor_endpoint": 0.003884816076606512,
+          "local": 0.0024080011062324047,
+          "policy_endpoint": 0.004733709618449211,
+          "recursive": 0.004057319834828377,
+          "total": 0.5728943347930908
+        },
+        "local_weight_1": {
+          "anchor": 0.001421140506863594,
+          "anchor_endpoint": 0.003884816076606512,
+          "local": 0.0024080011062324047,
+          "policy_endpoint": 0.004733709618449211,
+          "recursive": 0.004057319834828377,
+          "total": 0.5728943347930908
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0014088619500398636,
+        "anchor_endpoint": 0.003968923352658749,
+        "local": 0.0009900524746626616,
+        "policy_endpoint": 0.00393966818228364,
+        "recursive": 0.0035650592762976885,
+        "total": 0.013465584255754948
+      },
+      "policy": "fixed-750-continuous",
+      "pure": false,
+      "seed": 760930001,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0013613750925287604,
+          "anchor_endpoint": 0.0037314279470592737,
+          "local": 0.0009720999514684081,
+          "policy_endpoint": 0.003727792529389262,
+          "recursive": 0.003454728052020073,
+          "total": 0.013175727799534798
+        },
+        "boundary_only": {
+          "anchor": 0.0012850775383412838,
+          "anchor_endpoint": 0.003856782801449299,
+          "local": 0.000967561500146985,
+          "policy_endpoint": 0.003848944790661335,
+          "recursive": 0.003542091231793165,
+          "total": 0.013217706233263016
+        },
+        "control": {
+          "anchor": 0.0013431718107312918,
+          "anchor_endpoint": 0.0038914040196686983,
+          "local": 0.0009678814676590264,
+          "policy_endpoint": 0.00388702261261642,
+          "recursive": 0.003529330948367715,
+          "total": 0.013208145275712013
+        },
+        "local_weight_1": {
+          "anchor": 0.0014100356493145227,
+          "anchor_endpoint": 0.003916251007467508,
+          "local": 0.0009873101953417063,
+          "policy_endpoint": 0.003910498693585396,
+          "recursive": 0.003550126450136304,
+          "total": 0.013423227705061436
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0014088619500398636,
+        "anchor_endpoint": 0.003968923352658749,
+        "local": 0.0009694456239230931,
+        "policy_endpoint": 0.003968923352658749,
+        "recursive": 0.0035440088249742985,
+        "total": 0.13248109817504883
+      },
+      "policy": "fixed-750-micro",
+      "pure": false,
+      "seed": 760930001,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0013617561198771,
+          "anchor_endpoint": 0.0037293306086212397,
+          "local": 0.0009540740866214037,
+          "policy_endpoint": 0.0037293306086212397,
+          "recursive": 0.003425623057410121,
+          "total": 0.13199292123317719
+        },
+        "boundary_only": {
+          "anchor": 0.001276815659366548,
+          "anchor_endpoint": 0.0038503592368215322,
+          "local": 0.0009474772959947586,
+          "policy_endpoint": 0.0038503592368215322,
+          "recursive": 0.003515701275318861,
+          "total": 0.13198280334472656
+        },
+        "control": {
+          "anchor": 0.0013382778270170093,
+          "anchor_endpoint": 0.0038861380890011787,
+          "local": 0.0009490858064964414,
+          "policy_endpoint": 0.0038861380890011787,
+          "recursive": 0.0035001065116375685,
+          "total": 0.1319499909877777
+        },
+        "local_weight_1": {
+          "anchor": 0.0014094214420765638,
+          "anchor_endpoint": 0.003912394400686026,
+          "local": 0.0009677814086899161,
+          "policy_endpoint": 0.003912394400686026,
+          "recursive": 0.00352100795134902,
+          "total": 0.13215753436088562
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0014088619500398636,
+        "anchor_endpoint": 0.003968923352658749,
+        "local": 0.0009817585814744234,
+        "policy_endpoint": 0.003875386668369174,
+        "recursive": 0.0035500105004757643,
+        "total": 0.6022684574127197
+      },
+      "policy": "fixed-750-macro",
+      "pure": false,
+      "seed": 760930001,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0013832360273227096,
+          "anchor_endpoint": 0.003840443678200245,
+          "local": 0.0009721525711938739,
+          "policy_endpoint": 0.0037852306850254536,
+          "recursive": 0.0034981421194970608,
+          "total": 0.6011959910392761
+        },
+        "boundary_only": {
+          "anchor": 0.0013856126461178064,
+          "anchor_endpoint": 0.003984841983765364,
+          "local": 0.0009774737991392612,
+          "policy_endpoint": 0.00393334636464715,
+          "recursive": 0.0035838226322084665,
+          "total": 0.6027460694313049
+        },
+        "control": {
+          "anchor": 0.0013734756503254175,
+          "anchor_endpoint": 0.003952374216169119,
+          "local": 0.0009703540708869696,
+          "policy_endpoint": 0.003900073701515794,
+          "recursive": 0.003553052432835102,
+          "total": 0.6010702848434448
+        },
+        "local_weight_1": {
+          "anchor": 0.001415525795891881,
+          "anchor_endpoint": 0.003965293522924185,
+          "local": 0.0009811786003410816,
+          "policy_endpoint": 0.003913160413503647,
+          "recursive": 0.003565618535503745,
+          "total": 0.6011872887611389
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0016472700517624617,
+        "anchor_endpoint": 0.0038189480546861887,
+        "local": 0.0033105339389294386,
+        "policy_endpoint": 0.01568535901606083,
+        "recursive": 0.009732643142342567,
+        "total": 0.01304317731410265
+      },
+      "policy": "fixed-50-continuous",
+      "pure": true,
+      "seed": 760930001,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0016927054384723306,
+          "anchor_endpoint": 0.003906082361936569,
+          "local": 0.003312384244054556,
+          "policy_endpoint": 0.011417104862630367,
+          "recursive": 0.007505082059651613,
+          "total": 0.010817466303706169
+        },
+        "boundary_only": {
+          "anchor": 0.0016922354698181152,
+          "anchor_endpoint": 0.0039004290010780096,
+          "local": 0.003312088083475828,
+          "policy_endpoint": 0.011453717947006226,
+          "recursive": 0.007469188421964645,
+          "total": 0.01078127697110176
+        },
+        "control": {
+          "anchor": 0.0016922277864068747,
+          "anchor_endpoint": 0.003894869238138199,
+          "local": 0.003312242217361927,
+          "policy_endpoint": 0.011354289948940277,
+          "recursive": 0.0073981620371341705,
+          "total": 0.010710404254496098
+        },
+        "local_weight_1": {
+          "anchor": 0.0016922277864068747,
+          "anchor_endpoint": 0.003894869238138199,
+          "local": 0.003312242217361927,
+          "policy_endpoint": 0.011354289948940277,
+          "recursive": 0.0073981620371341705,
+          "total": 0.010710404254496098
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0016472700517624617,
+        "anchor_endpoint": 0.0038189480546861887,
+        "local": 0.0021902439184486866,
+        "policy_endpoint": 0.004712770227342844,
+        "recursive": 0.0041701896116137505,
+        "total": 0.006360433530062437
+      },
+      "policy": "fixed-250-continuous",
+      "pure": true,
+      "seed": 760930001,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0016876376466825604,
+          "anchor_endpoint": 0.0037560840137302876,
+          "local": 0.002186782658100128,
+          "policy_endpoint": 0.003966346848756075,
+          "recursive": 0.0037448881193995476,
+          "total": 0.005931670777499676
+        },
+        "boundary_only": {
+          "anchor": 0.0016611285973340273,
+          "anchor_endpoint": 0.003588808933272958,
+          "local": 0.0021809968166053295,
+          "policy_endpoint": 0.003513679374009371,
+          "recursive": 0.0036428081803023815,
+          "total": 0.005823804996907711
+        },
+        "control": {
+          "anchor": 0.0016799886943772435,
+          "anchor_endpoint": 0.0036903948057442904,
+          "local": 0.0021843072026968002,
+          "policy_endpoint": 0.0037807172629982233,
+          "recursive": 0.003649462014436722,
+          "total": 0.005833769217133522
+        },
+        "local_weight_1": {
+          "anchor": 0.0016799886943772435,
+          "anchor_endpoint": 0.0036903948057442904,
+          "local": 0.0021843072026968002,
+          "policy_endpoint": 0.0037807172629982233,
+          "recursive": 0.003649462014436722,
+          "total": 0.005833769217133522
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0016472700517624617,
+        "anchor_endpoint": 0.0038189480546861887,
+        "local": 0.000890847179107368,
+        "policy_endpoint": 0.0038189480546861887,
+        "recursive": 0.0036430221516638994,
+        "total": 0.01255149394273758
+      },
+      "policy": "fixed-750-continuous",
+      "pure": true,
+      "seed": 760930001,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0015604780055582523,
+          "anchor_endpoint": 0.0035175008233636618,
+          "local": 0.0008725185180082917,
+          "policy_endpoint": 0.0035175008233636618,
+          "recursive": 0.003425916191190481,
+          "total": 0.012151101604104042
+        },
+        "boundary_only": {
+          "anchor": 0.0012684931280091405,
+          "anchor_endpoint": 0.0035222077276557684,
+          "local": 0.0008349391864612699,
+          "policy_endpoint": 0.0035222077276557684,
+          "recursive": 0.0035244158934801817,
+          "total": 0.01187380775809288
+        },
+        "control": {
+          "anchor": 0.0014456631615757942,
+          "anchor_endpoint": 0.003577801398932934,
+          "local": 0.0008535108063369989,
+          "policy_endpoint": 0.003577801398932934,
+          "recursive": 0.0034770548809319735,
+          "total": 0.012012162245810032
+        },
+        "local_weight_1": {
+          "anchor": 0.0016332399100065231,
+          "anchor_endpoint": 0.0036706055980175734,
+          "local": 0.0008848406141623855,
+          "policy_endpoint": 0.0036706055980175734,
+          "recursive": 0.003529714420437813,
+          "total": 0.012378120794892311
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.004293494392186403,
+        "anchor_endpoint": 0.0023861511144787073,
+        "local": 0.002919326536357403,
+        "policy_endpoint": 0.009424859657883644,
+        "recursive": 0.006309922784566879,
+        "total": 0.009229249320924282
+      },
+      "policy": "fixed-50-continuous",
+      "pure": false,
+      "seed": 760930002,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004273011814802885,
+          "anchor_endpoint": 0.0023399931378662586,
+          "local": 0.0029204562306404114,
+          "policy_endpoint": 0.007339656352996826,
+          "recursive": 0.005430235527455807,
+          "total": 0.008350691758096218
+        },
+        "boundary_only": {
+          "anchor": 0.0042719971388578415,
+          "anchor_endpoint": 0.002319380873814225,
+          "local": 0.0029187898617237806,
+          "policy_endpoint": 0.007179431151598692,
+          "recursive": 0.005288177169859409,
+          "total": 0.008206967264413834
+        },
+        "control": {
+          "anchor": 0.004272436257451773,
+          "anchor_endpoint": 0.0023030629381537437,
+          "local": 0.0029197055846452713,
+          "policy_endpoint": 0.0074068582616746426,
+          "recursive": 0.005279536824673414,
+          "total": 0.008199242874979973
+        },
+        "local_weight_1": {
+          "anchor": 0.004272436257451773,
+          "anchor_endpoint": 0.0023030629381537437,
+          "local": 0.0029197055846452713,
+          "policy_endpoint": 0.0074068582616746426,
+          "recursive": 0.005279536824673414,
+          "total": 0.008199242874979973
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.004293494392186403,
+        "anchor_endpoint": 0.0023861511144787073,
+        "local": 0.002934396732598543,
+        "policy_endpoint": 0.00995321199297905,
+        "recursive": 0.006581910420209169,
+        "total": 0.12417884916067123
+      },
+      "policy": "fixed-50-micro",
+      "pure": false,
+      "seed": 760930002,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004272547550499439,
+          "anchor_endpoint": 0.0023409081622958183,
+          "local": 0.002935517579317093,
+          "policy_endpoint": 0.007243081461638212,
+          "recursive": 0.00538839865475893,
+          "total": 0.1230219230055809
+        },
+        "boundary_only": {
+          "anchor": 0.004271458834409714,
+          "anchor_endpoint": 0.002317956183105707,
+          "local": 0.00293384725227952,
+          "policy_endpoint": 0.007117381319403648,
+          "recursive": 0.005238983314484358,
+          "total": 0.1228589415550232
+        },
+        "control": {
+          "anchor": 0.0042719715274870396,
+          "anchor_endpoint": 0.002300696913152933,
+          "local": 0.00293477950617671,
+          "policy_endpoint": 0.007442306261509657,
+          "recursive": 0.005239229183644056,
+          "total": 0.12285451591014862
+        },
+        "local_weight_1": {
+          "anchor": 0.0042719715274870396,
+          "anchor_endpoint": 0.002300696913152933,
+          "local": 0.00293477950617671,
+          "policy_endpoint": 0.007442306261509657,
+          "recursive": 0.005239229183644056,
+          "total": 0.12285451591014862
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.004293494392186403,
+        "anchor_endpoint": 0.0023861511144787073,
+        "local": 0.002854720689356327,
+        "policy_endpoint": 0.010707773268222809,
+        "recursive": 0.006716277915984392,
+        "total": 0.49224182963371277
+      },
+      "policy": "fixed-50-macro",
+      "pure": false,
+      "seed": 760930002,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004273306578397751,
+          "anchor_endpoint": 0.0023635022807866335,
+          "local": 0.002855762606486678,
+          "policy_endpoint": 0.008054562844336033,
+          "recursive": 0.005800768733024597,
+          "total": 0.49131903052330017
+        },
+        "boundary_only": {
+          "anchor": 0.0042724753729999065,
+          "anchor_endpoint": 0.0023462690878659487,
+          "local": 0.0028545879758894444,
+          "policy_endpoint": 0.007940076291561127,
+          "recursive": 0.005664236377924681,
+          "total": 0.4915660619735718
+        },
+        "control": {
+          "anchor": 0.004272810183465481,
+          "anchor_endpoint": 0.0023336305748671293,
+          "local": 0.0028552142903208733,
+          "policy_endpoint": 0.008040256798267365,
+          "recursive": 0.005622070748358965,
+          "total": 0.490864098072052
+        },
+        "local_weight_1": {
+          "anchor": 0.004272810183465481,
+          "anchor_endpoint": 0.0023336305748671293,
+          "local": 0.0028552142903208733,
+          "policy_endpoint": 0.008040256798267365,
+          "recursive": 0.005622070748358965,
+          "total": 0.490864098072052
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.004293494392186403,
+        "anchor_endpoint": 0.0023861511144787073,
+        "local": 0.0020665600895881653,
+        "policy_endpoint": 0.003311541862785816,
+        "recursive": 0.0028434768319129944,
+        "total": 0.00491003692150116
+      },
+      "policy": "fixed-250-continuous",
+      "pure": false,
+      "seed": 760930002,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004264875780791044,
+          "anchor_endpoint": 0.002145330421626568,
+          "local": 0.0020609444472938776,
+          "policy_endpoint": 0.0026289671659469604,
+          "recursive": 0.00254269503057003,
+          "total": 0.004603639245033264
+        },
+        "boundary_only": {
+          "anchor": 0.00423902552574873,
+          "anchor_endpoint": 0.0021185693331062794,
+          "local": 0.0020493243355304003,
+          "policy_endpoint": 0.002600851934403181,
+          "recursive": 0.0025233719497919083,
+          "total": 0.004572696052491665
+        },
+        "control": {
+          "anchor": 0.00425483426079154,
+          "anchor_endpoint": 0.0021243649534881115,
+          "local": 0.0020563702564686537,
+          "policy_endpoint": 0.0026133728679269552,
+          "recursive": 0.002522446680814028,
+          "total": 0.004578816704452038
+        },
+        "local_weight_1": {
+          "anchor": 0.00425483426079154,
+          "anchor_endpoint": 0.0021243649534881115,
+          "local": 0.0020563702564686537,
+          "policy_endpoint": 0.0026133728679269552,
+          "recursive": 0.002522446680814028,
+          "total": 0.004578816704452038
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.004293494392186403,
+        "anchor_endpoint": 0.0023861511144787073,
+        "local": 0.0020727948285639286,
+        "policy_endpoint": 0.003456789767369628,
+        "recursive": 0.0028796184342354536,
+        "total": 0.12124163657426834
+      },
+      "policy": "fixed-250-micro",
+      "pure": false,
+      "seed": 760930002,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004265299066901207,
+          "anchor_endpoint": 0.0021484706085175276,
+          "local": 0.0020675980485975742,
+          "policy_endpoint": 0.0026288714725524187,
+          "recursive": 0.0025205921847373247,
+          "total": 0.12086713314056396
+        },
+        "boundary_only": {
+          "anchor": 0.004240880720317364,
+          "anchor_endpoint": 0.002125623868778348,
+          "local": 0.002057592384517193,
+          "policy_endpoint": 0.0026055285707116127,
+          "recursive": 0.002505344105884433,
+          "total": 0.12074758112430573
+        },
+        "control": {
+          "anchor": 0.004255999345332384,
+          "anchor_endpoint": 0.0021314199548214674,
+          "local": 0.002063690684735775,
+          "policy_endpoint": 0.002621293067932129,
+          "recursive": 0.0025046630762517452,
+          "total": 0.12072450667619705
+        },
+        "local_weight_1": {
+          "anchor": 0.004255999345332384,
+          "anchor_endpoint": 0.0021314199548214674,
+          "local": 0.002063690684735775,
+          "policy_endpoint": 0.002621293067932129,
+          "recursive": 0.0025046630762517452,
+          "total": 0.12072450667619705
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.004293494392186403,
+        "anchor_endpoint": 0.0023861511144787073,
+        "local": 0.0020701210014522076,
+        "policy_endpoint": 0.0031193846371024847,
+        "recursive": 0.0027420283295214176,
+        "total": 0.6120973825454712
+      },
+      "policy": "fixed-250-macro",
+      "pure": false,
+      "seed": 760930002,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004263882525265217,
+          "anchor_endpoint": 0.0021750759333372116,
+          "local": 0.0020648252684623003,
+          "policy_endpoint": 0.0025884550996124744,
+          "recursive": 0.00250840000808239,
+          "total": 0.6116339564323425
+        },
+        "boundary_only": {
+          "anchor": 0.004266382660716772,
+          "anchor_endpoint": 0.002360396087169647,
+          "local": 0.0020647519268095493,
+          "policy_endpoint": 0.00326887471601367,
+          "recursive": 0.0027942671440541744,
+          "total": 0.6129105091094971
+        },
+        "control": {
+          "anchor": 0.004261474125087261,
+          "anchor_endpoint": 0.0022488748654723167,
+          "local": 0.0020632147789001465,
+          "policy_endpoint": 0.0028793502133339643,
+          "recursive": 0.002623080275952816,
+          "total": 0.6114197373390198
+        },
+        "local_weight_1": {
+          "anchor": 0.004261474125087261,
+          "anchor_endpoint": 0.0022488748654723167,
+          "local": 0.0020632147789001465,
+          "policy_endpoint": 0.0028793502133339643,
+          "recursive": 0.002623080275952816,
+          "total": 0.6114197373390198
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.004293494392186403,
+        "anchor_endpoint": 0.0023861511144787073,
+        "local": 0.001245168037712574,
+        "policy_endpoint": 0.0023846717085689306,
+        "recursive": 0.00222756527364254,
+        "total": 0.01467924565076828
+      },
+      "policy": "fixed-750-continuous",
+      "pure": false,
+      "seed": 760930002,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004103375598788261,
+          "anchor_endpoint": 0.002007693750783801,
+          "local": 0.0012196213938295841,
+          "policy_endpoint": 0.00202710903249681,
+          "recursive": 0.0020483683329075575,
+          "total": 0.014244582504034042
+        },
+        "boundary_only": {
+          "anchor": 0.003968539647758007,
+          "anchor_endpoint": 0.0022408105432987213,
+          "local": 0.0012031845981255174,
+          "policy_endpoint": 0.0022481470368802547,
+          "recursive": 0.0021311871241778135,
+          "total": 0.014163033105432987
+        },
+        "control": {
+          "anchor": 0.004107115790247917,
+          "anchor_endpoint": 0.0022598695941269398,
+          "local": 0.0012205879902467132,
+          "policy_endpoint": 0.002267389092594385,
+          "recursive": 0.002152861561626196,
+          "total": 0.014358742162585258
+        },
+        "local_weight_1": {
+          "anchor": 0.004237976390868425,
+          "anchor_endpoint": 0.0022825365886092186,
+          "local": 0.0012378640240058303,
+          "policy_endpoint": 0.002290294971317053,
+          "recursive": 0.002177886199206114,
+          "total": 0.014556527137756348
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.004293494392186403,
+        "anchor_endpoint": 0.0023861511144787073,
+        "local": 0.0012389227049425244,
+        "policy_endpoint": 0.0023861511144787073,
+        "recursive": 0.0022122731897979975,
+        "total": 0.13275833427906036
+      },
+      "policy": "fixed-750-micro",
+      "pure": false,
+      "seed": 760930002,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004106799606233835,
+          "anchor_endpoint": 0.002004349837079644,
+          "local": 0.0012143779313191772,
+          "policy_endpoint": 0.002004349837079644,
+          "recursive": 0.002024678746238351,
+          "total": 0.13215181231498718
+        },
+        "boundary_only": {
+          "anchor": 0.003946198616176844,
+          "anchor_endpoint": 0.0022279894910752773,
+          "local": 0.0011949631152674556,
+          "policy_endpoint": 0.0022279894910752773,
+          "recursive": 0.002105721738189459,
+          "total": 0.13205642998218536
+        },
+        "control": {
+          "anchor": 0.004094682168215513,
+          "anchor_endpoint": 0.002246871357783675,
+          "local": 0.001213189447298646,
+          "policy_endpoint": 0.002246871357783675,
+          "recursive": 0.0021275775507092476,
+          "total": 0.1322098821401596
+        },
+        "local_weight_1": {
+          "anchor": 0.0042357719503343105,
+          "anchor_endpoint": 0.002270480152219534,
+          "local": 0.0012313647894188762,
+          "policy_endpoint": 0.002270480152219534,
+          "recursive": 0.002153822686523199,
+          "total": 0.13241785764694214
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.004293494392186403,
+        "anchor_endpoint": 0.0023861511144787073,
+        "local": 0.0012370970798656344,
+        "policy_endpoint": 0.002264593727886677,
+        "recursive": 0.0021653659641742706,
+        "total": 0.6300255060195923
+      },
+      "policy": "fixed-750-macro",
+      "pure": false,
+      "seed": 760930002,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004203622229397297,
+          "anchor_endpoint": 0.002261100336909294,
+          "local": 0.0012254663743078709,
+          "policy_endpoint": 0.002168488223105669,
+          "recursive": 0.0021118526346981525,
+          "total": 0.6288284063339233
+        },
+        "boundary_only": {
+          "anchor": 0.004182332195341587,
+          "anchor_endpoint": 0.002374646719545126,
+          "local": 0.0012230412103235722,
+          "policy_endpoint": 0.0022759437561035156,
+          "recursive": 0.002156277187168598,
+          "total": 0.6311018466949463
+        },
+        "control": {
+          "anchor": 0.004205441568046808,
+          "anchor_endpoint": 0.002363045932725072,
+          "local": 0.0012258619535714388,
+          "policy_endpoint": 0.0022654200438410044,
+          "recursive": 0.0021535225678235292,
+          "total": 0.6288045644760132
+        },
+        "local_weight_1": {
+          "anchor": 0.004259411711245775,
+          "anchor_endpoint": 0.002371874637901783,
+          "local": 0.0012329276651144028,
+          "policy_endpoint": 0.0022748722694814205,
+          "recursive": 0.0021638586185872555,
+          "total": 0.6288836002349854
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.004127518739551306,
+        "anchor_endpoint": 0.0029748904053121805,
+        "local": 0.0031338087283074856,
+        "policy_endpoint": 0.021389326080679893,
+        "recursive": 0.011667249724268913,
+        "total": 0.014801058918237686
+      },
+      "policy": "fixed-50-continuous",
+      "pure": true,
+      "seed": 760930002,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004117792937904596,
+          "anchor_endpoint": 0.003104664385318756,
+          "local": 0.0031302005518227816,
+          "policy_endpoint": 0.0203755721449852,
+          "recursive": 0.01178470253944397,
+          "total": 0.014914902858436108
+        },
+        "boundary_only": {
+          "anchor": 0.004117670468986034,
+          "anchor_endpoint": 0.003078482346609235,
+          "local": 0.0031291672494262457,
+          "policy_endpoint": 0.01977740414440632,
+          "recursive": 0.01142170000821352,
+          "total": 0.01455086749047041
+        },
+        "control": {
+          "anchor": 0.004117850214242935,
+          "anchor_endpoint": 0.003077551955357194,
+          "local": 0.0031296785455197096,
+          "policy_endpoint": 0.019979458302259445,
+          "recursive": 0.011480354703962803,
+          "total": 0.014610033482313156
+        },
+        "local_weight_1": {
+          "anchor": 0.004117850214242935,
+          "anchor_endpoint": 0.003077551955357194,
+          "local": 0.0031296785455197096,
+          "policy_endpoint": 0.019979458302259445,
+          "recursive": 0.011480354703962803,
+          "total": 0.014610033482313156
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.004127518739551306,
+        "anchor_endpoint": 0.0029748904053121805,
+        "local": 0.002228283090516925,
+        "policy_endpoint": 0.004485793877393007,
+        "recursive": 0.003259265096858144,
+        "total": 0.005487548187375069
+      },
+      "policy": "fixed-250-continuous",
+      "pure": true,
+      "seed": 760930002,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004112512804567814,
+          "anchor_endpoint": 0.002869771793484688,
+          "local": 0.0022267322055995464,
+          "policy_endpoint": 0.004320115782320499,
+          "recursive": 0.003166591515764594,
+          "total": 0.005393323488533497
+        },
+        "boundary_only": {
+          "anchor": 0.004101431462913752,
+          "anchor_endpoint": 0.002831239951774478,
+          "local": 0.002220729598775506,
+          "policy_endpoint": 0.0043067969381809235,
+          "recursive": 0.0031439128797501326,
+          "total": 0.005364642478525639
+        },
+        "control": {
+          "anchor": 0.0041081877425313,
+          "anchor_endpoint": 0.0028420148883014917,
+          "local": 0.0022241403348743916,
+          "policy_endpoint": 0.004310783464461565,
+          "recursive": 0.0031459445599466562,
+          "total": 0.0053700851276516914
+        },
+        "local_weight_1": {
+          "anchor": 0.0041081877425313,
+          "anchor_endpoint": 0.0028420148883014917,
+          "local": 0.0022241403348743916,
+          "policy_endpoint": 0.004310783464461565,
+          "recursive": 0.0031459445599466562,
+          "total": 0.0053700851276516914
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.004127518739551306,
+        "anchor_endpoint": 0.0029748904053121805,
+        "local": 0.001213202252984047,
+        "policy_endpoint": 0.0029748904053121805,
+        "recursive": 0.002433846006169915,
+        "total": 0.014565868303179741
+      },
+      "policy": "fixed-750-continuous",
+      "pure": true,
+      "seed": 760930002,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004034968093037605,
+          "anchor_endpoint": 0.0027106034103780985,
+          "local": 0.0012006559409201145,
+          "policy_endpoint": 0.0027106034103780985,
+          "recursive": 0.002297522732988,
+          "total": 0.014304081909358501
+        },
+        "boundary_only": {
+          "anchor": 0.003900938667356968,
+          "anchor_endpoint": 0.0029770126566290855,
+          "local": 0.0011851026210933924,
+          "policy_endpoint": 0.0029770126566290855,
+          "recursive": 0.0023978096432983875,
+          "total": 0.014248834922909737
+        },
+        "control": {
+          "anchor": 0.004001802299171686,
+          "anchor_endpoint": 0.00298692611977458,
+          "local": 0.0011969301849603653,
+          "policy_endpoint": 0.00298692611977458,
+          "recursive": 0.002407450694590807,
+          "total": 0.014376752078533173
+        },
+        "local_weight_1": {
+          "anchor": 0.004093044903129339,
+          "anchor_endpoint": 0.0030214840080589056,
+          "local": 0.0012091067619621754,
+          "policy_endpoint": 0.0030214840080589056,
+          "recursive": 0.0024323405232280493,
+          "total": 0.014523408375680447
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0041099367663264275,
+        "anchor_endpoint": 0.0027935130055993795,
+        "local": 0.0037314107175916433,
+        "policy_endpoint": 0.014320150949060917,
+        "recursive": 0.010213819332420826,
+        "total": 0.013945230282843113
+      },
+      "policy": "fixed-50-continuous",
+      "pure": false,
+      "seed": 760930003,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0042571332305669785,
+          "anchor_endpoint": 0.00280141388066113,
+          "local": 0.0037428634241223335,
+          "policy_endpoint": 0.014670953154563904,
+          "recursive": 0.01090281642973423,
+          "total": 0.014645679853856564
+        },
+        "boundary_only": {
+          "anchor": 0.004254210740327835,
+          "anchor_endpoint": 0.0027803375851362944,
+          "local": 0.0037409160286188126,
+          "policy_endpoint": 0.014398982748389244,
+          "recursive": 0.010906614363193512,
+          "total": 0.014647530391812325
+        },
+        "control": {
+          "anchor": 0.00425564544275403,
+          "anchor_endpoint": 0.002791214967146516,
+          "local": 0.0037421416491270065,
+          "policy_endpoint": 0.014597360044717789,
+          "recursive": 0.010603227652609348,
+          "total": 0.014345369301736355
+        },
+        "local_weight_1": {
+          "anchor": 0.00425564544275403,
+          "anchor_endpoint": 0.002791214967146516,
+          "local": 0.0037421416491270065,
+          "policy_endpoint": 0.014597360044717789,
+          "recursive": 0.010603227652609348,
+          "total": 0.014345369301736355
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0041099367663264275,
+        "anchor_endpoint": 0.0027935130055993795,
+        "local": 0.0037188553251326084,
+        "policy_endpoint": 0.013292750343680382,
+        "recursive": 0.009812711738049984,
+        "total": 0.12331559509038925
+      },
+      "policy": "fixed-50-micro",
+      "pure": false,
+      "seed": 760930003,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004257632419466972,
+          "anchor_endpoint": 0.0027951672673225403,
+          "local": 0.003733330871909857,
+          "policy_endpoint": 0.013466873206198215,
+          "recursive": 0.010400855913758278,
+          "total": 0.12391960620880127
+        },
+        "boundary_only": {
+          "anchor": 0.004253968130797148,
+          "anchor_endpoint": 0.0027703356463462114,
+          "local": 0.0037312267813831568,
+          "policy_endpoint": 0.013439510017633438,
+          "recursive": 0.010443476028740406,
+          "total": 0.12395112961530685
+        },
+        "control": {
+          "anchor": 0.004255897365510464,
+          "anchor_endpoint": 0.0027811462059617043,
+          "local": 0.0037324954755604267,
+          "policy_endpoint": 0.013406413607299328,
+          "recursive": 0.010082872584462166,
+          "total": 0.12359122186899185
+        },
+        "local_weight_1": {
+          "anchor": 0.004255897365510464,
+          "anchor_endpoint": 0.0027811462059617043,
+          "local": 0.0037324954755604267,
+          "policy_endpoint": 0.013406413607299328,
+          "recursive": 0.010082872584462166,
+          "total": 0.12359122186899185
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0041099367663264275,
+        "anchor_endpoint": 0.0027935130055993795,
+        "local": 0.003715687897056341,
+        "policy_endpoint": 0.014856819994747639,
+        "recursive": 0.010495482943952084,
+        "total": 0.9350550770759583
+      },
+      "policy": "fixed-50-macro",
+      "pure": false,
+      "seed": 760930003,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004257136024534702,
+          "anchor_endpoint": 0.0028010914102196693,
+          "local": 0.0037269173189997673,
+          "policy_endpoint": 0.015260390937328339,
+          "recursive": 0.011224530637264252,
+          "total": 0.9369609355926514
+        },
+        "boundary_only": {
+          "anchor": 0.004254356026649475,
+          "anchor_endpoint": 0.002779858186841011,
+          "local": 0.003725009737536311,
+          "policy_endpoint": 0.01493094488978386,
+          "recursive": 0.011162024922668934,
+          "total": 0.9368031620979309
+        },
+        "control": {
+          "anchor": 0.004255724139511585,
+          "anchor_endpoint": 0.0027902715373784304,
+          "local": 0.003726221853867173,
+          "policy_endpoint": 0.015207624062895775,
+          "recursive": 0.010938373394310474,
+          "total": 0.9365546703338623
+        },
+        "local_weight_1": {
+          "anchor": 0.004255724139511585,
+          "anchor_endpoint": 0.0027902715373784304,
+          "local": 0.003726221853867173,
+          "policy_endpoint": 0.015207624062895775,
+          "recursive": 0.010938373394310474,
+          "total": 0.9365546703338623
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0041099367663264275,
+        "anchor_endpoint": 0.0027935130055993795,
+        "local": 0.0019168145954608917,
+        "policy_endpoint": 0.003258784767240286,
+        "recursive": 0.005373512394726276,
+        "total": 0.007290326990187168
+      },
+      "policy": "fixed-250-continuous",
+      "pure": false,
+      "seed": 760930003,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0042510670609772205,
+          "anchor_endpoint": 0.0027393025811761618,
+          "local": 0.001918483292683959,
+          "policy_endpoint": 0.0033044840674847364,
+          "recursive": 0.005347563419491053,
+          "total": 0.007266046479344368
+        },
+        "boundary_only": {
+          "anchor": 0.004238590132445097,
+          "anchor_endpoint": 0.0026586418971419334,
+          "local": 0.0019058602629229426,
+          "policy_endpoint": 0.003251707646995783,
+          "recursive": 0.005589333828538656,
+          "total": 0.007495194207876921
+        },
+        "control": {
+          "anchor": 0.0042467485181987286,
+          "anchor_endpoint": 0.0027545595075935125,
+          "local": 0.0019137131748721004,
+          "policy_endpoint": 0.003444777801632881,
+          "recursive": 0.005290328059345484,
+          "total": 0.007204041350632906
+        },
+        "local_weight_1": {
+          "anchor": 0.0042467485181987286,
+          "anchor_endpoint": 0.0027545595075935125,
+          "local": 0.0019137131748721004,
+          "policy_endpoint": 0.003444777801632881,
+          "recursive": 0.005290328059345484,
+          "total": 0.007204041350632906
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0041099367663264275,
+        "anchor_endpoint": 0.0027935130055993795,
+        "local": 0.0018580169416964054,
+        "policy_endpoint": 0.003426190000027418,
+        "recursive": 0.0055208043195307255,
+        "total": 0.11694850772619247
+      },
+      "policy": "fixed-250-micro",
+      "pure": false,
+      "seed": 760930003,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004246079828590155,
+          "anchor_endpoint": 0.0027166446670889854,
+          "local": 0.0018617003224790096,
+          "policy_endpoint": 0.00338094518519938,
+          "recursive": 0.00546861719340086,
+          "total": 0.1168607622385025
+        },
+        "boundary_only": {
+          "anchor": 0.004213826730847359,
+          "anchor_endpoint": 0.0026335532311350107,
+          "local": 0.001851985463872552,
+          "policy_endpoint": 0.003332246793434024,
+          "recursive": 0.005723673850297928,
+          "total": 0.11701731383800507
+        },
+        "control": {
+          "anchor": 0.0042342692613601685,
+          "anchor_endpoint": 0.002729400061070919,
+          "local": 0.0018575964495539665,
+          "policy_endpoint": 0.0035166097804903984,
+          "recursive": 0.005415445193648338,
+          "total": 0.11670144647359848
+        },
+        "local_weight_1": {
+          "anchor": 0.0042342692613601685,
+          "anchor_endpoint": 0.002729400061070919,
+          "local": 0.0018575964495539665,
+          "policy_endpoint": 0.0035166097804903984,
+          "recursive": 0.005415445193648338,
+          "total": 0.11670144647359848
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0041099367663264275,
+        "anchor_endpoint": 0.0027935130055993795,
+        "local": 0.0019079854246228933,
+        "policy_endpoint": 0.0033149458467960358,
+        "recursive": 0.00540470564737916,
+        "total": 0.4680379629135132
+      },
+      "policy": "fixed-250-macro",
+      "pure": false,
+      "seed": 760930003,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0042518191039562225,
+          "anchor_endpoint": 0.0027408888563513756,
+          "local": 0.0019090414280071855,
+          "policy_endpoint": 0.003360999980941415,
+          "recursive": 0.005395215004682541,
+          "total": 0.4683786928653717
+        },
+        "boundary_only": {
+          "anchor": 0.004252821207046509,
+          "anchor_endpoint": 0.0028096043970435858,
+          "local": 0.0019073430448770523,
+          "policy_endpoint": 0.003915588837116957,
+          "recursive": 0.0058387331664562225,
+          "total": 0.46849483251571655
+        },
+        "control": {
+          "anchor": 0.004249264020472765,
+          "anchor_endpoint": 0.0027686806861311197,
+          "local": 0.0019058252219110727,
+          "policy_endpoint": 0.0035768747329711914,
+          "recursive": 0.0054325684905052185,
+          "total": 0.46819037199020386
+        },
+        "local_weight_1": {
+          "anchor": 0.004249264020472765,
+          "anchor_endpoint": 0.0027686806861311197,
+          "local": 0.0019058252219110727,
+          "policy_endpoint": 0.0035768747329711914,
+          "recursive": 0.0054325684905052185,
+          "total": 0.46819037199020386
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0041099367663264275,
+        "anchor_endpoint": 0.0027935130055993795,
+        "local": 0.001980103552341461,
+        "policy_endpoint": 0.0025671077892184258,
+        "recursive": 0.00516339810565114,
+        "total": 0.024964433163404465
+      },
+      "policy": "fixed-750-continuous",
+      "pure": false,
+      "seed": 760930003,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.003953912295401096,
+          "anchor_endpoint": 0.002707245061174035,
+          "local": 0.0019574735779315233,
+          "policy_endpoint": 0.002501835348084569,
+          "recursive": 0.005052955821156502,
+          "total": 0.024627691134810448
+        },
+        "boundary_only": {
+          "anchor": 0.0036999741569161415,
+          "anchor_endpoint": 0.002728774445131421,
+          "local": 0.001936997752636671,
+          "policy_endpoint": 0.0025431346148252487,
+          "recursive": 0.005188298411667347,
+          "total": 0.024558275938034058
+        },
+        "control": {
+          "anchor": 0.0039590271189808846,
+          "anchor_endpoint": 0.002806679578498006,
+          "local": 0.0019603511318564415,
+          "policy_endpoint": 0.0025993373710662127,
+          "recursive": 0.005152503959834576,
+          "total": 0.024756014347076416
+        },
+        "local_weight_1": {
+          "anchor": 0.004194354172796011,
+          "anchor_endpoint": 0.0028140656650066376,
+          "local": 0.0019900209736078978,
+          "policy_endpoint": 0.002602829597890377,
+          "recursive": 0.005208898801356554,
+          "total": 0.02510910853743553
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0041099367663264275,
+        "anchor_endpoint": 0.0027935130055993795,
+        "local": 0.002017700346186757,
+        "policy_endpoint": 0.0027935130055993795,
+        "recursive": 0.005314986687153578,
+        "total": 0.140482559800148
+      },
+      "policy": "fixed-750-micro",
+      "pure": false,
+      "seed": 760930003,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0038830137345939875,
+          "anchor_endpoint": 0.002661340869963169,
+          "local": 0.001985805807635188,
+          "policy_endpoint": 0.002661340869963169,
+          "recursive": 0.005182166583836079,
+          "total": 0.1398306041955948
+        },
+        "boundary_only": {
+          "anchor": 0.003567569423466921,
+          "anchor_endpoint": 0.002685257699340582,
+          "local": 0.0019552232697606087,
+          "policy_endpoint": 0.002685257699340582,
+          "recursive": 0.00530231511220336,
+          "total": 0.13965144753456116
+        },
+        "control": {
+          "anchor": 0.003872392699122429,
+          "anchor_endpoint": 0.0027770735323429108,
+          "local": 0.001986272167414427,
+          "policy_endpoint": 0.0027770735323429108,
+          "recursive": 0.005274853203445673,
+          "total": 0.13991186022758484
+        },
+        "local_weight_1": {
+          "anchor": 0.0041708797216415405,
+          "anchor_endpoint": 0.0027963060420006514,
+          "local": 0.0020261609461158514,
+          "policy_endpoint": 0.0027963060420006514,
+          "recursive": 0.005345767829567194,
+          "total": 0.14038173854351044
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0041099367663264275,
+        "anchor_endpoint": 0.0027935130055993795,
+        "local": 0.0019786504562944174,
+        "policy_endpoint": 0.002665481762960553,
+        "recursive": 0.005196573678404093,
+        "total": 0.5750070810317993
+      },
+      "policy": "fixed-750-macro",
+      "pure": false,
+      "seed": 760930003,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.004024487920105457,
+          "anchor_endpoint": 0.0027281944639980793,
+          "local": 0.001965894363820553,
+          "policy_endpoint": 0.0025922285858541727,
+          "recursive": 0.0051320758648216724,
+          "total": 0.574171245098114
+        },
+        "boundary_only": {
+          "anchor": 0.004083614330738783,
+          "anchor_endpoint": 0.0028276611119508743,
+          "local": 0.001978623913601041,
+          "policy_endpoint": 0.0027159014716744423,
+          "recursive": 0.005303611513227224,
+          "total": 0.5750348567962646
+        },
+        "control": {
+          "anchor": 0.0039530000649392605,
+          "anchor_endpoint": 0.0027987288776785135,
+          "local": 0.0019578509964048862,
+          "policy_endpoint": 0.002678545890375972,
+          "recursive": 0.005178116261959076,
+          "total": 0.5740536451339722
+        },
+        "local_weight_1": {
+          "anchor": 0.004192207008600235,
+          "anchor_endpoint": 0.002808330347761512,
+          "local": 0.0019884395878762007,
+          "policy_endpoint": 0.0026828651316463947,
+          "recursive": 0.005236347671598196,
+          "total": 0.574417769908905
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0020977710373699665,
+        "anchor_endpoint": 0.001905827084556222,
+        "local": 0.002699334640055895,
+        "policy_endpoint": 0.00533722061663866,
+        "recursive": 0.006622861605137587,
+        "total": 0.009322196245193481
+      },
+      "policy": "fixed-50-continuous",
+      "pure": true,
+      "seed": 760930003,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0021049357019364834,
+          "anchor_endpoint": 0.0018548571970313787,
+          "local": 0.00268664606846869,
+          "policy_endpoint": 0.005428600125014782,
+          "recursive": 0.006176067981868982,
+          "total": 0.008862714283168316
+        },
+        "boundary_only": {
+          "anchor": 0.0020998301915824413,
+          "anchor_endpoint": 0.001857555122114718,
+          "local": 0.002659447491168976,
+          "policy_endpoint": 0.004126781597733498,
+          "recursive": 0.006316571030765772,
+          "total": 0.00897601805627346
+        },
+        "control": {
+          "anchor": 0.002101715188473463,
+          "anchor_endpoint": 0.0018768052104860544,
+          "local": 0.002672275062650442,
+          "policy_endpoint": 0.0053542437963187695,
+          "recursive": 0.005814503878355026,
+          "total": 0.008486779406666756
+        },
+        "local_weight_1": {
+          "anchor": 0.002101715188473463,
+          "anchor_endpoint": 0.0018768052104860544,
+          "local": 0.002672275062650442,
+          "policy_endpoint": 0.0053542437963187695,
+          "recursive": 0.005814503878355026,
+          "total": 0.008486779406666756
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0020977710373699665,
+        "anchor_endpoint": 0.001905827084556222,
+        "local": 0.0014720147009938955,
+        "policy_endpoint": 0.0034168551210314035,
+        "recursive": 0.004859639797359705,
+        "total": 0.006331654265522957
+      },
+      "policy": "fixed-250-continuous",
+      "pure": true,
+      "seed": 760930003,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.002101446269080043,
+          "anchor_endpoint": 0.0017461158568039536,
+          "local": 0.0014773861039429903,
+          "policy_endpoint": 0.002698788419365883,
+          "recursive": 0.004500858020037413,
+          "total": 0.005978244356811047
+        },
+        "boundary_only": {
+          "anchor": 0.002065682550892234,
+          "anchor_endpoint": 0.0016359897563233972,
+          "local": 0.001436453778296709,
+          "policy_endpoint": 0.0025389185175299644,
+          "recursive": 0.004622993525117636,
+          "total": 0.006059447303414345
+        },
+        "control": {
+          "anchor": 0.0020879521034657955,
+          "anchor_endpoint": 0.0017670724773779511,
+          "local": 0.001460659084841609,
+          "policy_endpoint": 0.0027704339008778334,
+          "recursive": 0.004360777325928211,
+          "total": 0.005821436643600464
+        },
+        "local_weight_1": {
+          "anchor": 0.0020879521034657955,
+          "anchor_endpoint": 0.0017670724773779511,
+          "local": 0.001460659084841609,
+          "policy_endpoint": 0.0027704339008778334,
+          "recursive": 0.004360777325928211,
+          "total": 0.005821436643600464
+        }
+      }
+    },
+    {
+      "base": {
+        "anchor": 0.0020977710373699665,
+        "anchor_endpoint": 0.001905827084556222,
+        "local": 0.00179108208976686,
+        "policy_endpoint": 0.001905827084556222,
+        "recursive": 0.004422654863446951,
+        "total": 0.022333476692438126
+      },
+      "policy": "fixed-750-continuous",
+      "pure": true,
+      "seed": 760930003,
+      "variants": {
+        "add_endpoint": {
+          "anchor": 0.0018571576802060008,
+          "anchor_endpoint": 0.001640486647374928,
+          "local": 0.0017296975711360574,
+          "policy_endpoint": 0.001640486647374928,
+          "recursive": 0.004201509989798069,
+          "total": 0.021498486399650574
+        },
+        "boundary_only": {
+          "anchor": 0.0014977400423958898,
+          "anchor_endpoint": 0.0017602427396923304,
+          "local": 0.0016732860822230577,
+          "policy_endpoint": 0.0017602427396923304,
+          "recursive": 0.004328704904764891,
+          "total": 0.021061565726995468
+        },
+        "control": {
+          "anchor": 0.001752873882651329,
+          "anchor_endpoint": 0.0018152076518163085,
+          "local": 0.0017106359591707587,
+          "policy_endpoint": 0.0018152076518163085,
+          "recursive": 0.004241195507347584,
+          "total": 0.02134755626320839
+        },
+        "local_weight_1": {
+          "anchor": 0.002028937917202711,
+          "anchor_endpoint": 0.0018280681688338518,
+          "local": 0.0017698340816423297,
+          "policy_endpoint": 0.0018280681688338518,
+          "recursive": 0.004325758665800095,
+          "total": 0.02202409878373146
+        }
+      }
+    }
+  ],
+  "source_plan_identity": "issue-76-local-anchor-v1",
+  "source_text": {
+    "docs/issue-76-joint-interventions-protocol.md": "# Joint local/endpoint retention diagnosis\n\nThe targeted-local stage is complete and independently validated, but pure\nseed 760930001 fails endpoint retention and pure seed 760930002 fails local\nretention. The minimal actual-checkpoint replay is:\n\n```sh\npython -m scripts.diagnose_issue_76_joint_retention\n```\n\nAfter initializing novphy and sourcing env.sh, two executions returned exit 1\nwith identical measurements: seed 1 endpoint 0.0038189456332474946 / reference\n0.003193629835732281 = 1.1958009630667896; seed 2 initial error\n0.00412751967087388 / reference 0.0036573459627106788 = 1.1285559837535106.\nThe maximum permitted ratio is 1.10. In-process times were 0.501 and 0.515\nseconds. The replay omits unrelated pairs and later steps for the local check,\nbut retains all five assigned lineages and the full 15-step recursion for\nthe endpoint check. Its means exactly match the independently validated report.\nNo optimization, new observations or held-out access occurs.\n\n## Ranked hypotheses before new probe outcomes\n\n1. Endpoint error is underweighted by averaging recursive losses across time.\n   Adding one unit-weight endpoint MSE term to the unchanged current objective\n   should improve finite-step endpoint change relative to control.\n2. Horizon-750 local weighting trades off with endpoint accuracy at the current\n   parameters. Reducing its weight from 10 to 1 should improve endpoint change\n   but may worsen local change; measure both rather than calling either a fix.\n3. Mixed-start sampling dilutes boundary accuracy at the newer checkpoint.\n   Boundary-only sampling with the current objective should improve both\n   remaining anchors relative to the same mixed control batch.\n\n## Frozen one-factor probes\n\nAssign all three completed targeted-local seeds and all 36 hybrid/pure\npolicy/seed cells before outcomes. Reuse the exact five assigned training\nlineages, first-shot boundary rows and seeded uniform rows from the earlier\npaired probe: five boundary starts plus one uniform frame per lineage, CPU\ngenerator seeded by model seed. These starts are identical across arms/pairs;\nthis controlled ten-start batch is not a replay of production batch size 32.\n\nFor each cell, compute four temporary clipped AdamW deltas: current weighted\nobjective control; add endpoint MSE with coefficient 1; local weight 1; and\nboundary-only sampling. Keep the saved learning rate and optimizer history.\nThe local-weight-1 variant equals control at horizons 50/250 by construction.\nEndpoint loss recursively predicts the full 11,250-native-step target and\nsupervises only rows with an actually observed endpoint. Missing endpoints\nare excluded, not infilled. Retain current local and symbolic terms otherwise.\n\nMeasure unchanged current mixed objective, horizon-750 local anchor and\nendpoint error, and the updated policy's boundary endpoint error, before and\nafter each variant. Retain every measurement and restore exact parameters\nafter each perturbation. Compare variants against both control and original\nweights. No saved checkpoint writes, candidate selection or fitting occur.\n\nArchive this protocol and source before `--run`. Use a cumulative 600-active-\nsecond CUDA budget with 12 GiB RSS and 8 GiB allocated-CUDA limits; retain the\nearlier replay cost. No new capture, fresh/final access, controller fitting or\nadvancement claim. A subsequent training repair must be separately specified;\none-step counterfactuals are not proof of full-fit or gameplay improvement.\n",
+    "scripts/diagnose_issue_76_finite_step.py": "\"\"\"Measure one-step overshoot on temporary model copies, never saved checkpoints.\"\"\"\nimport argparse\nimport json\nfrom pathlib import Path\n\nimport torch\nfrom torch.nn import functional as F\n\nfrom scripts import diagnose_issue_76_gradient_tradeoff as previous\n\nrun = previous.run\nROOT = run.fit.files.ROOT / \".local-artifacts/issue-76-finite-step-v1\"\nOUTPUT = run.fit.files.ROOT / \"data/issue-76-finite-step/report.json\"\n\n\ndef anchor_loss(model, batch, pair):\n    mask = batch[\"available\"][:, 0] & batch[\"available\"][:, 1]\n    predicted = model.carrier(batch[\"z\"][:, 0], batch[\"action\"], pair)\n    return F.mse_loss(predicted[mask], batch[\"z\"][mask, 1])\n\n\n@torch.no_grad()\ndef measures(model, batch, pair, anchor_batch, anchor_pair):\n    local, recursive, symbolic, _ = previous.terms(model, batch, pair)\n    return dict(local=float(local), recursive=float(recursive),\n                total=float(local + recursive + (0 if symbolic is None else symbolic)),\n                anchor=float(anchor_loss(model, anchor_batch, anchor_pair)))\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--run\", action=\"store_true\")\n    args = parser.parse_args()\n    if not args.run:\n        print(\"No-write: all 36 completed pair/seed cells, 0.1x and 1x saved AdamW delta; no checkpoint writes; 300s CUDA cap.\")\n        return\n    torch.set_num_threads(1)\n    torch.cuda.init()\n    plan = run.fit.files.read(run.ROOT / \"plan.json\")\n    rows = []\n    with run.fit.fitting_budget(ROOT, \"finite-step-probe\", 300, \"cuda\") as budget:\n        for seed in plan[\"seeds\"]:\n            shards = [run.fit.load_shard(Path(plan[\"data_root\"]), e, plan[\"data_binding\"], fitting=True)\n                      for e in plan[\"evaluation\"]]\n            carriers = [run.fit.load_carrier(Path(plan[\"data_root\"]), seed, e, plan[\"data_binding\"])\n                        for e in plan[\"evaluation\"]]\n            anchors = torch.tensor([[i, s[\"segment_ranges\"][0][\"start\"]] for i, s in enumerate(shards)])\n            for pure in (False, True):\n                saved = torch.load(run.fit.model_path(run.ROOT, seed, pure, \"predictor\"),\n                                   map_location=\"cuda\", weights_only=False)\n                model = run.fit.new_predictor(plan, pure, \"cuda\").eval()\n                model.load_state_dict(saved[\"model\"])\n                parameters = tuple(model.parameters())\n                anchor_pair = next(p for p in model.pairs if p.delta == 750 and\n                                   p.abstraction == (previous.Abstraction.CONTINUOUS if pure else previous.Abstraction.MICRO))\n                anchor_batch = run.trajectory_batch(shards, carriers, anchors, 750, symbolic=not pure)\n                anchor_batch = {k: v.cuda() for k, v in anchor_batch.items()}\n                for pair in model.pairs:\n                    budget.check()\n                    batch = run.trajectory_batch(shards, carriers, anchors, pair.delta, symbolic=not pure)\n                    batch = {k: v.cuda() for k, v in batch.items()}\n                    local, recursive, symbolic, _ = previous.terms(model, batch, pair)\n                    total = local + recursive + (0 if symbolic is None else symbolic)\n                    gradients = torch.autograd.grad(total, parameters, allow_unused=True)\n                    direction = previous.adamw_delta(parameters, gradients, saved[\"optimizer\"])\n                    anchor_grad = previous.flatten(torch.autograd.grad(anchor_loss(model, anchor_batch, anchor_pair),\n                                                                     parameters, allow_unused=True), parameters)\n                    row = dict(seed=seed, pure=pure, policy=run.fit.policy_name(pair),\n                               base=measures(model, batch, pair, anchor_batch, anchor_pair),\n                               total_directional_derivative=float(previous.flatten(gradients, parameters).dot(direction)),\n                               anchor_directional_derivative=float(anchor_grad.dot(direction)), perturbations={})\n                    for scale in (.1, 1.):\n                        cursor = 0\n                        with torch.no_grad():\n                            for name, p in model.named_parameters():\n                                size = p.numel()\n                                p.copy_(saved[\"model\"][name] + scale * direction[cursor:cursor + size].reshape_as(p))\n                                cursor += size\n                        row[\"perturbations\"][str(scale)] = measures(model, batch, pair, anchor_batch, anchor_pair)\n                    model.load_state_dict(saved[\"model\"])\n                    assert all(torch.equal(v, saved[\"model\"][k]) for k, v in model.state_dict().items())\n                    rows.append(row)\n                    run.fit.log(f\"finite step {len(rows)}/36\")\n                del model, saved, parameters, gradients, direction, anchor_grad\n        budget.check()\n    value = dict(source_plan_identity=plan[\"identity\"], evaluation=plan[\"evaluation\"], rows=rows,\n                 checkpoint_writes=False, temporary_parameters_restored=True, optimizer_steps_applied=0,\n                 fresh_access=False, budget=run.fit.require_finished_budget(ROOT, \"finite-step-probe\"),\n                 source_text=Path(__file__).read_text(),\n                 interpretation=\"Finite parameter perturbations on five training anchors, not fitted candidates or advancement evidence\")\n    if len(json.dumps(value, indent=2).encode()) > 10 * 2**20:\n        raise ValueError(\"finite-step publication exceeds 10 MiB\")\n    run.source.previous.parent.previous.immutable(OUTPUT, value)\n\n\nif __name__ == \"__main__\":\n    main()\n",
+    "scripts/diagnose_issue_76_gradient_tradeoff.py": "\"\"\"Frozen-weight local/recursive and cross-horizon gradient diagnosis.\"\"\"\nimport argparse\nimport json\nfrom pathlib import Path\n\nimport torch\nfrom torch.nn import functional as F\n\nfrom scripts import run_issue_76_full_duration_dynamics as run\nfrom world_model.model import Abstraction\nfrom world_model.training.native_history_fit import symbolic_loss\n\nROOT = run.fit.files.ROOT / \".local-artifacts/issue-76-gradient-tradeoff-v1\"\nOUTPUT = run.fit.files.ROOT / \"data/issue-76-gradient-tradeoff/report.json\"\n\n\ndef flatten(values, parameters):\n    return torch.cat([(torch.zeros_like(p) if v is None else v).flatten()\n                      for v, p in zip(values, parameters)])\n\n\ndef cosine(a, b):\n    denominator = a.norm() * b.norm()\n    return float(a.dot(b) / denominator) if denominator > 0 else None\n\n\ndef adamw_delta(parameters, gradients, state):\n    \"\"\"Compute, but do not apply, the next clipped AdamW parameter change.\"\"\"\n    norm = flatten(gradients, parameters).norm()\n    clip = (1 / (norm + 1e-6)).clamp(max=1)\n    result, cursor = [], 0\n    for group in state[\"param_groups\"]:\n        beta1, beta2 = group[\"betas\"]\n        for index in group[\"params\"]:\n            p, gradient = parameters[cursor], gradients[cursor]\n            cursor += 1\n            if gradient is None:\n                result.append(torch.zeros_like(p))\n                continue\n            old = state[\"state\"][index]\n            step = float(old[\"step\"]) + 1\n            g = gradient * clip\n            m = old[\"exp_avg\"] * beta1 + g * (1 - beta1)\n            v = old[\"exp_avg_sq\"] * beta2 + g.square() * (1 - beta2)\n            update = (m / (1 - beta1 ** step)) / ((v / (1 - beta2 ** step)).sqrt() + group[\"eps\"])\n            result.append(-group[\"lr\"] * (update + group[\"weight_decay\"] * p.detach()))\n    return flatten(result, parameters)\n\n\ndef terms(model, batch, pair):\n    z, available, action = batch[\"z\"], batch[\"available\"], batch[\"action\"]\n    local, recursive = [], []\n    current = z[:, 0]\n    counts = []\n    for offset in range(1, z.shape[1]):\n        mask = available[:, offset - 1] & available[:, offset]\n        if not bool(mask.any()):\n            break\n        current = model.carrier(current, action, pair)\n        counts.append(int(mask.sum()))\n        if offset <= 4:\n            observed = current if offset == 1 else model.carrier(z[:, offset - 1], action, pair)\n            local.append(F.mse_loss(observed[mask], z[mask, offset]))\n        recursive.append(F.mse_loss(current[mask], z[mask, offset])\n                         + .01 * F.relu(current[mask].abs() - 2).square().mean())\n    symbolic = []\n    if pair.abstraction != Abstraction.CONTINUOUS:\n        name, masks = ((\"relations\", \"relation_mask\") if pair.abstraction == Abstraction.MICRO\n                       else (\"macros\", \"macro_mask\"))\n        for offset in range(5):\n            valid = available[:, offset]\n            if bool(valid.any()):\n                symbolic.append(symbolic_loss(model, z[valid, offset], batch[name][valid, offset],\n                                              batch[masks][valid, offset], pair.abstraction))\n    return torch.stack(local).mean(), torch.stack(recursive).mean(), (\n        torch.stack(symbolic).mean() if symbolic else None), counts\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--run\", action=\"store_true\")\n    args = parser.parse_args()\n    plan = run.fit.files.read(run.ROOT / \"plan.json\")\n    if not args.run:\n        print(\"No-write: 72 pair/checkpoint probes; 5 assigned training anchors; no parameter updates; CUDA cap 600s.\")\n        return\n    torch.set_num_threads(1)\n    torch.cuda.init()\n    rows = []\n    with run.fit.fitting_budget(ROOT, \"gradient-probe\", 600, \"cuda\") as budget:\n        for seed in plan[\"seeds\"]:\n            shards = [run.fit.load_shard(Path(plan[\"data_root\"]), e, plan[\"data_binding\"], fitting=True)\n                      for e in plan[\"evaluation\"]]\n            carriers = [run.fit.load_carrier(Path(plan[\"data_root\"]), seed, e, plan[\"data_binding\"])\n                        for e in plan[\"evaluation\"]]\n            anchors = torch.tensor([[i, s[\"segment_ranges\"][0][\"start\"]] for i, s in enumerate(shards)])\n            for pure in (False, True):\n                for stage, root in ((\"boundary\", run.source.ROOT), (\"full_duration\", run.ROOT)):\n                    budget.check()\n                    saved = torch.load(run.fit.model_path(root, seed, pure, \"predictor\"),\n                                       map_location=\"cuda\", weights_only=False)\n                    model = run.fit.new_predictor(plan, pure, \"cuda\").eval()\n                    model.load_state_dict(saved[\"model\"])\n                    parameters = tuple(model.parameters())\n                    anchor_pair = next(p for p in model.pairs if p.delta == 750 and\n                                       p.abstraction == (Abstraction.CONTINUOUS if pure else Abstraction.MICRO))\n                    anchor_batch = run.trajectory_batch(shards, carriers, anchors, 750, symbolic=not pure)\n                    anchor_batch = {k: v.cuda() for k, v in anchor_batch.items()}\n                    mask = anchor_batch[\"available\"][:, 0] & anchor_batch[\"available\"][:, 1]\n                    prediction = model.carrier(anchor_batch[\"z\"][:, 0], anchor_batch[\"action\"], anchor_pair)\n                    anchor_loss = F.mse_loss(prediction[mask], anchor_batch[\"z\"][mask, 1])\n                    anchor_gradient = flatten(torch.autograd.grad(anchor_loss, parameters, allow_unused=True), parameters)\n                    for pair in model.pairs:\n                        budget.check()\n                        batch = run.trajectory_batch(shards, carriers, anchors, pair.delta, symbolic=not pure)\n                        batch = {k: v.cuda() for k, v in batch.items()}\n                        local, recursive, symbolic, counts = terms(model, batch, pair)\n                        total = local + recursive + (0 if symbolic is None else symbolic)\n                        with torch.no_grad():\n                            official = (run.full_continuous_loss(model, batch[\"z\"], batch[\"available\"], batch[\"action\"], pair)\n                                        if pure else run.full_hybrid_loss(model, batch, pair))\n                            torch.testing.assert_close(total, official)\n                        gl = flatten(torch.autograd.grad(local, parameters, retain_graph=True, allow_unused=True), parameters)\n                        gr = flatten(torch.autograd.grad(recursive, parameters, retain_graph=True, allow_unused=True), parameters)\n                        gradients = torch.autograd.grad(total, parameters, allow_unused=True)\n                        gt = flatten(gradients, parameters)\n                        delta = adamw_delta(parameters, gradients, saved[\"optimizer\"])\n                        rows.append(dict(seed=seed, pure=pure, stage=stage, policy=run.fit.policy_name(pair),\n                            anchor_loss=float(anchor_loss.detach()), local_loss=float(local.detach()),\n                            recursive_loss=float(recursive.detach()), symbolic_loss=None if symbolic is None else float(symbolic.detach()),\n                            adjacent_available_counts=counts, local_gradient_norm=float(gl.norm()), recursive_gradient_norm=float(gr.norm()),\n                            local_recursive_cosine=cosine(gl, gr), anchor_total_gradient_cosine=cosine(anchor_gradient, gt),\n                            anchor_adamw_delta_cosine=cosine(anchor_gradient, delta)))\n                        run.fit.log(f\"gradient tradeoff {len(rows)}/72\")\n                    assert all(torch.equal(v, saved[\"model\"][k]) for k, v in model.state_dict().items())\n                    del model, saved, parameters, anchor_gradient, gradients, gl, gr, gt, delta\n        budget.check()\n    value = dict(source_plan_identity=plan[\"identity\"], evaluation=plan[\"evaluation\"], rows=rows,\n                 weights_unchanged=True, optimization_performed=False, fresh_access=False,\n                 budget=run.fit.require_finished_budget(ROOT, \"gradient-probe\"),\n                 source_text=Path(__file__).read_text(),\n                 interpretation=\"Training-anchor directional derivatives, not a causal fit intervention or advancement test\")\n    if len(json.dumps(value, indent=2).encode()) > 10 * 2**20:\n        raise ValueError(\"gradient publication exceeds 10 MiB\")\n    run.source.previous.parent.previous.immutable(OUTPUT, value)\n\n\nif __name__ == \"__main__\":\n    main()\n",
+    "scripts/diagnose_issue_76_joint_interventions.py": "\"\"\"Paired one-factor local-retention probes; never write predictor checkpoints.\"\"\"\nimport argparse\nfrom pathlib import Path\n\nimport torch\n\nfrom scripts import diagnose_issue_76_gradient_tradeoff as gradients\nfrom scripts import diagnose_issue_76_finite_step as finite\nfrom scripts import run_issue_76_local_anchor as run\n\nROOT = run.fit.files.ROOT / \".local-artifacts/issue-76-joint-interventions-v1\"\nOUTPUT = run.fit.files.ROOT / \"data/issue-76-joint-interventions/report.json\"\nVARIANTS = (\"control\", \"add_endpoint\", \"local_weight_1\", \"boundary_only\")\n\n\ndef endpoint_loss(model, batch, pair):\n    current = batch[\"z\"][:, 0]\n    for _ in range(1, batch[\"z\"].shape[1]):\n        current = model.carrier(current, batch[\"action\"], pair)\n    mask = batch[\"available\"][:, -1]\n    assert bool(mask.any()), \"no observed endpoint in assigned probe batch\"\n    return (current[mask] - batch[\"z\"][mask, -1]).square().mean()\n\n\n@torch.no_grad()\ndef endpoint(model, batch, pair):\n    current = batch[\"z\"][:, 0]\n    for _ in range(1, batch[\"z\"].shape[1]):\n        current = model.carrier(current, batch[\"action\"], pair)\n    mask = batch[\"available\"][:, -1]\n    assert bool(mask.all()), \"assigned first-shot endpoint missing\"\n    return float((current - batch[\"z\"][:, -1]).square().mean())\n\n\n@torch.no_grad()\ndef measure(model, mixed, pair, anchor_batch, anchor_pair, boundary_batch):\n    local, recursive, symbolic, _ = gradients.terms(model, mixed, pair)\n    return dict(local=float(local), recursive=float(recursive),\n                total=float((10 if pair.delta == 750 else 1) * local + recursive + (0 if symbolic is None else symbolic)),\n                anchor=float(finite.anchor_loss(model, anchor_batch, anchor_pair)),\n                anchor_endpoint=endpoint(model, anchor_batch, anchor_pair),\n                policy_endpoint=endpoint(model, boundary_batch, pair))\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--run\", action=\"store_true\")\n    if not parser.parse_args().run:\n        print(\"No-write: 36 paired cells x 4 one-factor variants; 600s CUDA cap; no checkpoint writes.\")\n        return\n    torch.set_num_threads(1)\n    torch.cuda.init()\n    report = run.fit.files.read(run.OUTPUT / \"report.json\")\n    plan = report[\"plan\"]\n    rows, assignments = [], []\n    with run.fit.fitting_budget(ROOT, \"interventions\", 600, \"cuda\") as budget:\n        for seed in plan[\"seeds\"]:\n            shards = [run.fit.load_shard(Path(plan[\"data_root\"]), e, plan[\"data_binding\"], fitting=True)\n                      for e in plan[\"evaluation\"]]\n            carriers = [run.fit.load_carrier(Path(plan[\"data_root\"]), seed, e, plan[\"data_binding\"])\n                        for e in plan[\"evaluation\"]]\n            anchors = torch.tensor([[i, s[\"segment_ranges\"][0][\"start\"]] for i, s in enumerate(shards)])\n            generator = torch.Generator().manual_seed(seed)\n            uniform = torch.tensor([[i, int(torch.randint(len(c), (), generator=generator))]\n                                    for i, c in enumerate(carriers)])\n            indices = torch.cat((anchors, uniform))\n            assignments.append(dict(seed=seed, boundary_rows=anchors.tolist(), uniform_rows=uniform.tolist()))\n            for pure in (False, True):\n                saved = torch.load(run.fit.model_path(run.ROOT, seed, pure, \"predictor\"),\n                                   map_location=\"cuda\", weights_only=False)\n                assert saved[\"complete\"] and saved[\"plan_identity\"] == plan[\"identity\"]\n                model = run.fit.new_predictor(plan, pure, \"cuda\").eval()\n                model.load_state_dict(saved[\"model\"])\n                parameters = tuple(model.parameters())\n                anchor_pair = next(p for p in model.pairs if p.delta == 750 and p.abstraction == (\n                    gradients.Abstraction.CONTINUOUS if pure else gradients.Abstraction.MICRO))\n                anchor_batch = run.source.source.trajectory_batch(shards, carriers, anchors, 750, symbolic=not pure)\n                anchor_batch = {k: v.cuda() for k, v in anchor_batch.items()}\n                for pair in model.pairs:\n                    mixed = run.source.source.trajectory_batch(shards, carriers, indices, pair.delta, symbolic=not pure)\n                    mixed = {k: v.cuda() for k, v in mixed.items()}\n                    boundary = {k: v[:len(anchors)] for k, v in mixed.items()}\n                    base = measure(model, mixed, pair, anchor_batch, anchor_pair, boundary)\n                    row = dict(seed=seed, pure=pure, policy=run.fit.policy_name(pair), base=base, variants={})\n                    for variant in VARIANTS:\n                        budget.check()\n                        batch = boundary if variant == \"boundary_only\" else mixed\n                        local, recursive, symbolic, _ = gradients.terms(model, batch, pair)\n                        weight = 10 if pair.delta == 750 and variant != \"local_weight_1\" else 1\n                        loss = weight * local + recursive\n                        loss = loss + (0 if symbolic is None else symbolic)\n                        if variant == \"add_endpoint\":\n                            loss = loss + endpoint_loss(model, batch, pair)\n                        grad = torch.autograd.grad(loss, parameters, allow_unused=True)\n                        optimizer = saved[\"optimizer\"]\n                        direction = gradients.adamw_delta(parameters, grad, optimizer)\n                        cursor = 0\n                        with torch.no_grad():\n                            for name, parameter in model.named_parameters():\n                                size = parameter.numel()\n                                parameter.copy_(saved[\"model\"][name] + direction[cursor:cursor + size].reshape_as(parameter))\n                                cursor += size\n                        row[\"variants\"][variant] = measure(model, mixed, pair, anchor_batch, anchor_pair, boundary)\n                        model.load_state_dict(saved[\"model\"])\n                        assert all(torch.equal(value, saved[\"model\"][key]) for key, value in model.state_dict().items())\n                    rows.append(row)\n                    run.fit.log(f\"joint interventions {len(rows)}/36\")\n                del model, saved, parameters, grad, direction, optimizer\n        budget.check()\n    run.source.immutable(OUTPUT, dict(source_plan_identity=plan[\"identity\"], evaluation=plan[\"evaluation\"],\n        assignments=assignments, rows=rows, variants=list(VARIANTS), checkpoint_writes=False,\n        temporary_parameters_restored=True, fresh_access=False, advancement_passed=False,\n        budget=run.fit.require_finished_budget(ROOT, \"interventions\"),\n        prior_replay_budget=run.fit.files.read(ROOT.parent / \"issue-76-joint-retention-v1/budgets/replay.json\"),\n        source_text={p: (run.fit.files.ROOT / p).read_text() for p in (\n            \"scripts/diagnose_issue_76_joint_interventions.py\", \"docs/issue-76-joint-interventions-protocol.md\",\n            \"scripts/diagnose_issue_76_gradient_tradeoff.py\", \"scripts/diagnose_issue_76_finite_step.py\")},\n        interpretation=\"Temporary single-batch interventions, not trained candidates or advancement evidence\"))\n\n\nif __name__ == \"__main__\":\n    main()\n"
+  },
+  "temporary_parameters_restored": true,
+  "variants": [
+    "control",
+    "add_endpoint",
+    "local_weight_1",
+    "boundary_only"
+  ]
+}
