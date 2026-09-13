@@ -1,0 +1,132 @@
+{
+  "budget": {
+    "active_seconds": 5.068533040117472,
+    "limit_seconds": 180,
+    "peak_cpu_rss_mib": 1425.671875,
+    "peak_cuda_allocated_mib": 418.73681640625,
+    "peak_cuda_reserved_mib": 446.0,
+    "process_id": 3446611,
+    "running": false,
+    "stopped": false
+  },
+  "fresh_access": false,
+  "member_identity": "issue-76-development-001",
+  "optimization_performed": false,
+  "records": [
+    {
+      "batch_size": 32,
+      "finite_loss_and_gradients": true,
+      "forward_backward_seconds": 0.9373933270107955,
+      "pair": "fixed-50-continuous",
+      "peak_cuda_allocated_mib": 303.93212890625,
+      "pure": false,
+      "recursive_steps": 225
+    },
+    {
+      "batch_size": 32,
+      "finite_loss_and_gradients": true,
+      "forward_backward_seconds": 0.9976836359128356,
+      "pair": "fixed-50-micro",
+      "peak_cuda_allocated_mib": 418.73681640625,
+      "pure": false,
+      "recursive_steps": 225
+    },
+    {
+      "batch_size": 32,
+      "finite_loss_and_gradients": true,
+      "forward_backward_seconds": 0.7611861021723598,
+      "pair": "fixed-50-macro",
+      "peak_cuda_allocated_mib": 321.12109375,
+      "pure": false,
+      "recursive_steps": 225
+    },
+    {
+      "batch_size": 32,
+      "finite_loss_and_gradients": true,
+      "forward_backward_seconds": 0.13993185595609248,
+      "pair": "fixed-250-continuous",
+      "peak_cuda_allocated_mib": 88.66015625,
+      "pure": false,
+      "recursive_steps": 45
+    },
+    {
+      "batch_size": 32,
+      "finite_loss_and_gradients": true,
+      "forward_backward_seconds": 0.19122901000082493,
+      "pair": "fixed-250-micro",
+      "peak_cuda_allocated_mib": 114.607421875,
+      "pure": false,
+      "recursive_steps": 45
+    },
+    {
+      "batch_size": 32,
+      "finite_loss_and_gradients": true,
+      "forward_backward_seconds": 0.1653987350873649,
+      "pair": "fixed-250-macro",
+      "peak_cuda_allocated_mib": 92.22607421875,
+      "pure": false,
+      "recursive_steps": 45
+    },
+    {
+      "batch_size": 32,
+      "finite_loss_and_gradients": true,
+      "forward_backward_seconds": 0.0552916768938303,
+      "pair": "fixed-750-continuous",
+      "peak_cuda_allocated_mib": 52.783203125,
+      "pure": false,
+      "recursive_steps": 15
+    },
+    {
+      "batch_size": 32,
+      "finite_loss_and_gradients": true,
+      "forward_backward_seconds": 0.07059475989080966,
+      "pair": "fixed-750-micro",
+      "peak_cuda_allocated_mib": 63.9208984375,
+      "pure": false,
+      "recursive_steps": 15
+    },
+    {
+      "batch_size": 32,
+      "finite_loss_and_gradients": true,
+      "forward_backward_seconds": 0.06184502807445824,
+      "pair": "fixed-750-macro",
+      "peak_cuda_allocated_mib": 54.07861328125,
+      "pure": false,
+      "recursive_steps": 15
+    },
+    {
+      "batch_size": 32,
+      "finite_loss_and_gradients": true,
+      "forward_backward_seconds": 0.6353022230323404,
+      "pair": "fixed-50-continuous",
+      "peak_cuda_allocated_mib": 359.18896484375,
+      "pure": true,
+      "recursive_steps": 225
+    },
+    {
+      "batch_size": 32,
+      "finite_loss_and_gradients": true,
+      "forward_backward_seconds": 0.127330293180421,
+      "pair": "fixed-250-continuous",
+      "peak_cuda_allocated_mib": 101.9052734375,
+      "pure": true,
+      "recursive_steps": 45
+    },
+    {
+      "batch_size": 32,
+      "finite_loss_and_gradients": true,
+      "forward_backward_seconds": 0.049219686072319746,
+      "pair": "fixed-750-continuous",
+      "peak_cuda_allocated_mib": 59.0263671875,
+      "pure": true,
+      "recursive_steps": 15
+    }
+  ],
+  "seed": 760930001,
+  "source_plan_identity": "issue-76-boundary-dynamics-v1",
+  "source_text": {
+    "scripts/issue_76_full_duration_loss.py": "\"\"\"Extend recursive supervision to the native endpoint; keep local/symbolic terms.\"\"\"\nimport torch\nfrom torch.nn import functional as F\n\nfrom scripts.issue_76_matched_batches import indexed_batch\nfrom world_model.model import Abstraction\nfrom world_model.training.native_history_fit import ENDPOINT, symbolic_loss\n\n\ndef trajectory_batch(shards, carriers, rows, horizon, *, symbolic, endpoint=ENDPOINT):\n    batch = indexed_batch(shards, carriers, rows, horizon, symbolic=symbolic)\n    count = endpoint // horizon + 1\n    values = carriers[0].new_zeros(len(rows), count, carriers[0].shape[-1])\n    available = torch.zeros(len(rows), count, dtype=torch.bool)\n    for entry in rows[:, 0].unique().tolist():\n        shard, carrier = shards[entry], carriers[entry]\n        steps = shard[\"tensors\"][\"fixed_steps\"].tolist()\n        ranges = [(s, {steps[i]: i for i in range(s[\"start\"], s[\"stop\"])})\n                  for s in shard[\"segment_ranges\"]]\n        for row in (rows[:, 0] == entry).nonzero().flatten().tolist():\n            start = int(rows[row, 1])\n            _, lookup = next((s, lookup) for s, lookup in ranges if s[\"start\"] <= start < s[\"stop\"])\n            for offset in range(count):\n                end = lookup.get(steps[start] + offset * horizon)\n                if end is not None:\n                    values[row, offset] = carrier[end]\n                    available[row, offset] = True\n    batch.update(z=values, available=available)\n    return batch\n\n\ndef full_continuous_loss(model, z, available, action, pair):\n    local_terms, recursive_terms = [], []\n    current = z[:, 0]\n    for offset in range(1, z.shape[1]):\n        mask = available[:, offset - 1] & available[:, offset]\n        if not bool(mask.any()):\n            break\n        current = model.carrier(current, action, pair)\n        target = z[:, offset]\n        if offset <= 4:\n            local = current if offset == 1 else model.carrier(z[:, offset - 1], action, pair)\n            local_terms.append(F.mse_loss(local[mask], target[mask]))\n        recursive_terms.append(F.mse_loss(current[mask], target[mask])\n                               + .01 * F.relu(current[mask].abs() - 2).square().mean())\n    if not recursive_terms:\n        return None\n    return torch.stack(local_terms).mean() + torch.stack(recursive_terms).mean()\n\n\ndef full_hybrid_loss(model, batch, pair):\n    loss = full_continuous_loss(model, batch[\"z\"], batch[\"available\"], batch[\"action\"], pair)\n    if loss is None or pair.abstraction == Abstraction.CONTINUOUS:\n        return loss\n    name, mask_name = (\"relations\", \"relation_mask\") if pair.abstraction == Abstraction.MICRO else (\"macros\", \"macro_mask\")\n    terms = []\n    for offset in range(5):\n        valid = batch[\"available\"][:, offset]\n        if bool(valid.any()):\n            terms.append(symbolic_loss(model, batch[\"z\"][valid, offset], batch[name][valid, offset],\n                                       batch[mask_name][valid, offset], pair.abstraction))\n    return loss + torch.stack(terms).mean()\n",
+    "scripts/probe_issue_76_full_duration_resources.py": "\"\"\"One no-update forward/backward per arm/pair to cost full-duration fitting.\"\"\"\nimport gc\nfrom pathlib import Path\nimport time\n\nimport torch\n\nfrom scripts import run_issue_76_boundary_dynamics as source\nfrom scripts.issue_76_full_duration_loss import trajectory_batch, full_continuous_loss, full_hybrid_loss\n\nROOT = source.fit.files.ROOT / \".local-artifacts/issue-76-full-duration-resource-probe\"\nOUTPUT = source.fit.files.ROOT / \"data/issue-76-full-duration-resource-probe/report.json\"\n\n\ndef main():\n    torch.set_num_threads(1)\n    plan = source.fit.files.read(source.ROOT / \"plan.json\")\n    seed, entry = plan[\"seeds\"][0], plan[\"evaluation\"][0]\n    records = []\n    with source.fit.fitting_budget(ROOT, \"probe\", 180, \"cuda\") as budget:\n        shard = source.fit.load_shard(source.previous.parent.ROOT, entry, plan[\"data_binding\"], fitting=True)\n        carrier = source.fit.load_carrier(source.previous.parent.ROOT, seed, entry, plan[\"data_binding\"])\n        original = source.previous.sampled_schedule([len(carrier)], seed, False, 1)\n        rows = source.boundary_schedule(original, [[s[\"start\"] for s in shard[\"segment_ranges\"]]], seed)[0]\n        for pure in (False, True):\n            checkpoint = torch.load(source.fit.model_path(source.ROOT, seed, pure, \"predictor\"),\n                                    map_location=\"cpu\", weights_only=False)\n            if not checkpoint[\"complete\"] or checkpoint[\"plan_identity\"] != plan[\"identity\"]:\n                raise ValueError(\"resource probe requires the complete source-bound checkpoint\")\n            model = source.fit.new_predictor(plan, pure, \"cuda\")\n            model.load_state_dict(checkpoint[\"model\"])\n            model.train()\n            for pair in model.pairs:\n                budget.check()\n                model.zero_grad(set_to_none=True)\n                torch.cuda.reset_peak_memory_stats()\n                torch.cuda.synchronize()\n                began = time.monotonic()\n                batch = trajectory_batch([shard], [carrier], rows, pair.delta, symbolic=not pure)\n                batch = {k: v.cuda() for k, v in batch.items()}\n                loss = (full_continuous_loss(model, batch[\"z\"], batch[\"available\"], batch[\"action\"], pair)\n                        if pure else full_hybrid_loss(model, batch, pair))\n                loss.backward()\n                torch.cuda.synchronize()\n                elapsed = time.monotonic() - began\n                finite = bool(torch.isfinite(loss)) and all(bool(torch.isfinite(p.grad).all())\n                                                          for p in model.parameters() if p.grad is not None)\n                record = dict(pure=pure, pair=source.fit.policy_name(pair), batch_size=len(rows),\n                    recursive_steps=batch[\"z\"].shape[1] - 1, forward_backward_seconds=elapsed,\n                    peak_cuda_allocated_mib=torch.cuda.max_memory_allocated() / 2**20,\n                    finite_loss_and_gradients=finite)\n                records.append(record)\n                print(record, flush=True)\n                if not finite:\n                    raise ValueError(\"full-duration loss or gradients are nonfinite\")\n                budget.check()\n                del loss, batch\n            if not all(torch.equal(value.detach().cpu(), checkpoint[\"model\"][key])\n                       for key, value in model.state_dict().items()):\n                raise ValueError(\"no-update resource probe changed checkpoint weights\")\n            del model, checkpoint\n            gc.collect()\n            torch.cuda.empty_cache()\n    source.previous.parent.previous.immutable(OUTPUT, dict(source_plan_identity=plan[\"identity\"],\n        seed=seed, member_identity=entry[\"member_identity\"], records=records,\n        budget=source.fit.require_finished_budget(ROOT, \"probe\"), optimization_performed=False,\n        fresh_access=False, weights_unchanged=True,\n        source_text={\"scripts/probe_issue_76_full_duration_resources.py\": Path(__file__).read_text(),\n                     \"scripts/issue_76_full_duration_loss.py\": (source.fit.files.ROOT / \"scripts/issue_76_full_duration_loss.py\").read_text()}))\n\n\nif __name__ == \"__main__\":\n    main()\n"
+  },
+  "weights_unchanged": true
+}
