@@ -1,0 +1,2703 @@
+{
+  "active_seconds": 13.222513735992834,
+  "fresh_access": false,
+  "interpretation": "Exploratory existing-training-data diagnosis, not a deployable policy or advancement test",
+  "optimization_performed": false,
+  "rows": [
+    {
+      "family": "type010101",
+      "local": {
+        "controller_label_accuracy": 0.5066666666666667,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 130,
+        "max_teacher_regret": 0.029493890702724457,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0018996861763298512,
+          "fixed-250-macro": 0.0019179590744897723,
+          "fixed-250-micro": 0.001849581254646182,
+          "fixed-50-continuous": 0.0009238276397809386,
+          "fixed-50-macro": 0.0009411493665538728,
+          "fixed-50-micro": 0.0008856432978063822,
+          "fixed-750-continuous": 0.0029372808057814837,
+          "fixed-750-macro": 0.002959716599434614,
+          "fixed-750-micro": 0.0028233127668499947
+        },
+        "mean_teacher_regret": 0.0004952969029545784,
+        "median_best_second_gap": 6.201118230819702e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 22,
+        "regret_above_1e_4": 38,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 24,
+            "fixed-50-continuous": 95,
+            "fixed-750-continuous": 106
+          },
+          "zero_compute_penalty": {
+            "fixed-250-micro": 44,
+            "fixed-50-micro": 146,
+            "fixed-750-micro": 35
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-001",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.41710007190704346,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 2.2088040365911876
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.45674237608909607,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 2.397467995583512
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.32128867506980896,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.8957990378141403
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 10.162572860717773,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 47.39084643827744
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 10.798929214477539,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 50.30581798106182
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 8.914280891418457,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 42.36426401138306
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.06895124912261963,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.42089852538828565
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.07460270076990128,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.44975458785874894
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.04631005600094795,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.3583952520042658
+          }
+        },
+        "unchanged_carrier_mse": 0.02933928556740284
+      },
+      "seed": 760930001,
+      "usable": true
+    },
+    {
+      "family": "type010102",
+      "local": {
+        "controller_label_accuracy": 0.5555555555555556,
+        "controller_predictions": {
+          "fixed-50-continuous": 29,
+          "fixed-750-continuous": 421
+        },
+        "gaps_below_1e_4": 217,
+        "max_teacher_regret": 0.02958095073699951,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.005456515587866306,
+          "fixed-250-macro": 0.005488148424774408,
+          "fixed-250-micro": 0.005370554514229298,
+          "fixed-50-continuous": 0.0044195507653057575,
+          "fixed-50-macro": 0.004448230843991041,
+          "fixed-50-micro": 0.004354993347078562,
+          "fixed-750-continuous": 0.006398441735655069,
+          "fixed-750-macro": 0.006441701669245958,
+          "fixed-750-micro": 0.006186655256897211
+        },
+        "mean_teacher_regret": 0.0008243485353887081,
+        "median_best_second_gap": 0.00010836124420166016,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 66,
+        "regret_above_1e_4": 112,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 93,
+            "fixed-50-continuous": 123,
+            "fixed-750-continuous": 234
+          },
+          "zero_compute_penalty": {
+            "fixed-250-micro": 66,
+            "fixed-50-micro": 316,
+            "fixed-750-micro": 68
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 450
+      },
+      "member_identity": "issue-76-development-071",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.4450346827507019,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 2.3345097853876506
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.48496687412261963,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 2.524478236734368
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.3432733714580536,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.994730171561241
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 10.046792030334473,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 46.86983270155259
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 10.668662071228027,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 49.71961583643902
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 8.733880043029785,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 41.55246019363403
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.09765615314245224,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.5500705934775324
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.10461755096912384,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.5848214137552504
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.07361803203821182,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.4812811441719532
+          }
+        },
+        "unchanged_carrier_mse": 0.05889737606048584
+      },
+      "seed": 760930001,
+      "usable": true
+    },
+    {
+      "family": "type010103",
+      "local": {
+        "controller_label_accuracy": 0.6,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 80,
+        "max_teacher_regret": 0.02949664182960987,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.003209582297131419,
+          "fixed-250-macro": 0.003239692421630025,
+          "fixed-250-micro": 0.003125132294371724,
+          "fixed-50-continuous": 0.003044296521693468,
+          "fixed-50-macro": 0.0030743652023375034,
+          "fixed-50-micro": 0.0029766978695988655,
+          "fixed-750-continuous": 0.004982190206646919,
+          "fixed-750-macro": 0.005024975631386042,
+          "fixed-750-micro": 0.004767328035086393
+        },
+        "mean_teacher_regret": 0.0007890905253589153,
+        "median_best_second_gap": 0.00022868067026138306,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 31,
+        "regret_above_1e_4": 49,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 33,
+            "fixed-50-continuous": 64,
+            "fixed-750-continuous": 128
+          },
+          "zero_compute_penalty": {
+            "fixed-250-micro": 50,
+            "fixed-50-micro": 148,
+            "fixed-750-micro": 27
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-141",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.4525299370288849,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 2.368238429639474
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.49190759658813477,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 2.555711487829186
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.34501174092292786,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 2.0025528341531755
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 10.201704978942871,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 47.56694097029038
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 10.789058685302734,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 50.2614005997752
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 8.889013290405273,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 42.25055980682373
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.09878139197826385,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.5551341682386847
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.10517685115337372,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.5873382645843749
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.07318700104951859,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.47934150472283366
+          }
+        },
+        "unchanged_carrier_mse": 0.055915459990501404
+      },
+      "seed": 760930001,
+      "usable": true
+    },
+    {
+      "family": "type010204",
+      "local": {
+        "controller_label_accuracy": 0.5155555555555555,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 83,
+        "max_teacher_regret": 0.029501138255000114,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.002856612903997302,
+          "fixed-250-macro": 0.002876586513593793,
+          "fixed-250-micro": 0.0027916720137000084,
+          "fixed-50-continuous": 0.00190835096873343,
+          "fixed-50-macro": 0.0019270047778263688,
+          "fixed-50-micro": 0.0018575162393972278,
+          "fixed-750-continuous": 0.0038225860334932804,
+          "fixed-750-macro": 0.0038473112508654594,
+          "fixed-750-micro": 0.00368560291826725
+        },
+        "mean_teacher_regret": 0.0007344360928982496,
+        "median_best_second_gap": 0.00018586218357086182,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 33,
+        "regret_above_1e_4": 66,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 44,
+            "fixed-50-continuous": 76,
+            "fixed-750-continuous": 105
+          },
+          "zero_compute_penalty": {
+            "fixed-250-micro": 55,
+            "fixed-50-micro": 142,
+            "fixed-750-micro": 28
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-211",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.44168755412101746,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 2.3194477065540706
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.48102042078971863,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 2.5067191967363134
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.33408865332603455,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.9533989399671554
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 10.156561851501465,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 47.363796896804054
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 10.729126930236816,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 49.99170770197857
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 8.870063781738281,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 42.165287017822266
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.09616508334875107,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.5433607794058771
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.10266775637865067,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.5760473380981211
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.07141471654176712,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.47136622443795206
+          }
+        },
+        "unchanged_carrier_mse": 0.05767180025577545
+      },
+      "seed": 760930001,
+      "usable": true
+    },
+    {
+      "family": "type010105",
+      "local": {
+        "controller_label_accuracy": 0.36444444444444446,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 145,
+        "max_teacher_regret": 0.029499253258109093,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0017597459955140948,
+          "fixed-250-macro": 0.0017801112262532115,
+          "fixed-250-micro": 0.001700844382867217,
+          "fixed-50-continuous": 0.0013474293518811464,
+          "fixed-50-macro": 0.001366256969049573,
+          "fixed-50-micro": 0.0013022922212257981,
+          "fixed-750-continuous": 0.0015057569835335016,
+          "fixed-750-macro": 0.0015280138468369842,
+          "fixed-750-micro": 0.0013852812116965652
+        },
+        "mean_teacher_regret": 0.0005019078380428255,
+        "median_best_second_gap": 4.3042004108428955e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 16,
+        "regret_above_1e_4": 68,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 52,
+            "fixed-50-continuous": 101,
+            "fixed-750-continuous": 72
+          },
+          "zero_compute_penalty": {
+            "fixed-250-micro": 42,
+            "fixed-50-micro": 153,
+            "fixed-750-micro": 30
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-281",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.4215888977050781,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 2.2290037526823436
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.4607507884502411,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 2.4155058512086645
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.32384487986564636,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.9073019593954086
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 10.15039348602295,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 47.336039252150734
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 10.77197265625,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 50.184513469037896
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 8.910069465637207,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 42.34531259536743
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.07524812966585159,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.4492344878328295
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.08090270310640335,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.4781045983730083
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.05391848087310791,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.3926331639289856
+          }
+        },
+        "unchanged_carrier_mse": 0.0362047478556633
+      },
+      "seed": 760930001,
+      "usable": true
+    },
+    {
+      "family": "type010101",
+      "local": {
+        "controller_label_accuracy": 0.47555555555555556,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 134,
+        "max_teacher_regret": 0.04125986620783806,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0015309012960642576,
+          "fixed-50-continuous": 0.0006052301614545286,
+          "fixed-750-continuous": 0.0025235668290406466
+        },
+        "mean_teacher_regret": 0.0005831890739500523,
+        "median_best_second_gap": 3.7550926208496094e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 22,
+        "regret_above_1e_4": 34,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 23,
+            "fixed-50-continuous": 104,
+            "fixed-750-continuous": 98
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 37,
+            "fixed-50-continuous": 172,
+            "fixed-750-continuous": 16
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-001",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.18180440366268158,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.282294858358114
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 2614.687255859375,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 11768.413526576567
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.01623128168284893,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.2277657815315025
+          }
+        },
+        "unchanged_carrier_mse": 0.02933928556740284
+      },
+      "seed": 760930001,
+      "usable": true
+    },
+    {
+      "family": "type010102",
+      "local": {
+        "controller_label_accuracy": 0.5444444444444444,
+        "controller_predictions": {
+          "fixed-50-continuous": 28,
+          "fixed-750-continuous": 422
+        },
+        "gaps_below_1e_4": 240,
+        "max_teacher_regret": 0.04125206172466278,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.00275755045004189,
+          "fixed-50-continuous": 0.00198059412650764,
+          "fixed-750-continuous": 0.0035197632387280464
+        },
+        "mean_teacher_regret": 0.0007792047690600157,
+        "median_best_second_gap": 7.18235969543457e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 53,
+        "regret_above_1e_4": 91,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 87,
+            "fixed-50-continuous": 133,
+            "fixed-750-continuous": 230
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 84,
+            "fixed-50-continuous": 329,
+            "fixed-750-continuous": 37
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 450
+      },
+      "member_identity": "issue-76-development-071",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.2110215723514557,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.4137721174575975
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 2541.492431640625,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 11439.036817592192
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.034914530813694,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.3118404026203053
+          }
+        },
+        "unchanged_carrier_mse": 0.05889737606048584
+      },
+      "seed": 760930001,
+      "usable": true
+    },
+    {
+      "family": "type010103",
+      "local": {
+        "controller_label_accuracy": 0.6133333333333333,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 77,
+        "max_teacher_regret": 0.041258804500103,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.002055396093055606,
+          "fixed-50-continuous": 0.0018129905220121145,
+          "fixed-750-continuous": 0.003638674272224307
+        },
+        "mean_teacher_regret": 0.0007162471883930266,
+        "median_best_second_gap": 0.0004565715789794922,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 24,
+        "regret_above_1e_4": 41,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 24,
+            "fixed-50-continuous": 72,
+            "fixed-750-continuous": 129
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 38,
+            "fixed-50-continuous": 176,
+            "fixed-750-continuous": 11
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-141",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.22117029130458832,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.4594413527466943
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 2342.80859375,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 10544.95954708438
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.02621256560087204,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.2726815591626065
+          }
+        },
+        "unchanged_carrier_mse": 0.055915459990501404
+      },
+      "seed": 760930001,
+      "usable": true
+    },
+    {
+      "family": "type010204",
+      "local": {
+        "controller_label_accuracy": 0.52,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 118,
+        "max_teacher_regret": 0.04125858470797539,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0020437382627278566,
+          "fixed-50-continuous": 0.0011090436019003391,
+          "fixed-750-continuous": 0.0029838071204721928
+        },
+        "mean_teacher_regret": 0.0007437170133925974,
+        "median_best_second_gap": 8.752942085266113e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 26,
+        "regret_above_1e_4": 57,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 45,
+            "fixed-50-continuous": 71,
+            "fixed-750-continuous": 109
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 57,
+            "fixed-50-continuous": 155,
+            "fixed-750-continuous": 13
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-211",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.21274003386497498,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.4215051942684342
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 2363.990966796875,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 10640.280225795317
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.02289886586368084,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.2577699103452461
+          }
+        },
+        "unchanged_carrier_mse": 0.05767180025577545
+      },
+      "seed": 760930001,
+      "usable": true
+    },
+    {
+      "family": "type010105",
+      "local": {
+        "controller_label_accuracy": 0.4088888888888889,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 172,
+        "max_teacher_regret": 0.04125671088695526,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0010476757306605577,
+          "fixed-50-continuous": 0.0007462758221663535,
+          "fixed-750-continuous": 0.0008867805590853095
+        },
+        "mean_teacher_regret": 0.0005297621828503907,
+        "median_best_second_gap": 3.110617399215698e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 14,
+        "regret_above_1e_4": 50,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 56,
+            "fixed-50-continuous": 85,
+            "fixed-750-continuous": 84
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 38,
+            "fixed-50-continuous": 169,
+            "fixed-750-continuous": 18
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-281",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.1729535162448883,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.2424658649780442
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 2513.47802734375,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 11312.971998256255
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.016156498342752457,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.22742925650106838
+          }
+        },
+        "unchanged_carrier_mse": 0.0362047478556633
+      },
+      "seed": 760930001,
+      "usable": true
+    },
+    {
+      "family": "type010101",
+      "local": {
+        "controller_label_accuracy": 0.4888888888888889,
+        "controller_predictions": {
+          "fixed-50-continuous": 30,
+          "fixed-750-continuous": 195
+        },
+        "gaps_below_1e_4": 131,
+        "max_teacher_regret": 0.044246189296245575,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0017236215062439442,
+          "fixed-250-macro": 0.001710031647235155,
+          "fixed-250-micro": 0.0016645969590172172,
+          "fixed-50-continuous": 0.0009799895342439413,
+          "fixed-50-macro": 0.0009713672334328294,
+          "fixed-50-micro": 0.0009280153317376971,
+          "fixed-750-continuous": 0.0024735250044614077,
+          "fixed-750-macro": 0.0024381245020776987,
+          "fixed-750-micro": 0.0023816516622900963
+        },
+        "mean_teacher_regret": 0.0011371034197509289,
+        "median_best_second_gap": 3.633648157119751e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 27,
+        "regret_above_1e_4": 46,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 32,
+            "fixed-50-continuous": 90,
+            "fixed-750-continuous": 103
+          },
+          "zero_compute_penalty": {
+            "fixed-250-micro": 49,
+            "fixed-50-continuous": 5,
+            "fixed-50-micro": 137,
+            "fixed-750-micro": 34
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-001",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.2252374142408371,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 1.345422077093259
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.2445523589849472,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 1.442612918614842
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.17728525400161743,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.2477836430072784
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 5.126453876495361,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 24.728311009276585
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 5.720852375030518,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 27.454472203550228
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 4.91514778137207,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 24.368165016174316
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.060044560581445694,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.38081842695300294
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.05988794192671776,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.3835381730644231
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.04771891608834267,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.364735122397542
+          }
+        },
+        "unchanged_carrier_mse": 0.047449227422475815
+      },
+      "seed": 760930002,
+      "usable": true
+    },
+    {
+      "family": "type010102",
+      "local": {
+        "controller_label_accuracy": 0.49333333333333335,
+        "controller_predictions": {
+          "fixed-50-continuous": 124,
+          "fixed-750-continuous": 326
+        },
+        "gaps_below_1e_4": 171,
+        "max_teacher_regret": 0.044044580310583115,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.00606122799217701,
+          "fixed-250-macro": 0.006039941683411598,
+          "fixed-250-micro": 0.0059488145634531975,
+          "fixed-50-continuous": 0.004533982835710049,
+          "fixed-50-macro": 0.004522842355072498,
+          "fixed-50-micro": 0.004438985139131546,
+          "fixed-750-continuous": 0.008067320100963116,
+          "fixed-750-macro": 0.007995673455297947,
+          "fixed-750-micro": 0.007871394976973534
+        },
+        "mean_teacher_regret": 0.002532124752178788,
+        "median_best_second_gap": 0.00018545985221862793,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 82,
+        "regret_above_1e_4": 156,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 85,
+            "fixed-50-continuous": 149,
+            "fixed-750-continuous": 216
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 5,
+            "fixed-250-macro": 1,
+            "fixed-250-micro": 64,
+            "fixed-50-continuous": 18,
+            "fixed-50-micro": 310,
+            "fixed-750-continuous": 1,
+            "fixed-750-micro": 51
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 450
+      },
+      "member_identity": "issue-76-development-071",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.230025053024292,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 1.366966451618806
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.25033038854599,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 1.4686140516395345
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.16969667375087738,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.2136350318789482
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 5.450829029083252,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 26.187999195922092
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 5.98982048034668,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 28.664828677472958
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 5.150206565856934,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 25.4259295463562
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.06365876644849777,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.3970823533547373
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.06345352530479431,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.3995832982657676
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.04754263162612915,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.3639418423175812
+          }
+        },
+        "unchanged_carrier_mse": 0.05785180628299713
+      },
+      "seed": 760930002,
+      "usable": true
+    },
+    {
+      "family": "type010103",
+      "local": {
+        "controller_label_accuracy": 0.5066666666666667,
+        "controller_predictions": {
+          "fixed-50-continuous": 25,
+          "fixed-750-continuous": 200
+        },
+        "gaps_below_1e_4": 113,
+        "max_teacher_regret": 0.04425657540559769,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0035141161642968655,
+          "fixed-250-macro": 0.0034945437218993902,
+          "fixed-250-micro": 0.003402481786906719,
+          "fixed-50-continuous": 0.0028300252743065357,
+          "fixed-50-macro": 0.0028217690996825695,
+          "fixed-50-micro": 0.0027391845360398293,
+          "fixed-750-continuous": 0.003121721325442195,
+          "fixed-750-macro": 0.0030561061576008797,
+          "fixed-750-micro": 0.0029447763226926327
+        },
+        "mean_teacher_regret": 0.0010789887746796012,
+        "median_best_second_gap": 9.982287883758545e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 27,
+        "regret_above_1e_4": 57,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 36,
+            "fixed-50-continuous": 86,
+            "fixed-750-continuous": 103
+          },
+          "zero_compute_penalty": {
+            "fixed-250-micro": 43,
+            "fixed-50-continuous": 19,
+            "fixed-50-micro": 133,
+            "fixed-750-continuous": 3,
+            "fixed-750-micro": 27
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-141",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.2603335678577423,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 1.5033547683693325
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.2845020890235901,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 1.622386703788735
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.1999908834695816,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.3499589756131172
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 5.510238170623779,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 26.455340332854465
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 6.050488471984863,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 28.937834639844784
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 5.265689849853516,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 25.94560432434082
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.0696958377957344,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.42424917441730214
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.07193045318126678,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.43772947370989373
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.05310644209384918,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.38897898942232134
+          }
+        },
+        "unchanged_carrier_mse": 0.048682354390621185
+      },
+      "seed": 760930002,
+      "usable": true
+    },
+    {
+      "family": "type010204",
+      "local": {
+        "controller_label_accuracy": 0.5555555555555556,
+        "controller_predictions": {
+          "fixed-50-continuous": 23,
+          "fixed-750-continuous": 202
+        },
+        "gaps_below_1e_4": 102,
+        "max_teacher_regret": 0.04425020515918732,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0025204517878592014,
+          "fixed-250-macro": 0.002495866734534502,
+          "fixed-250-micro": 0.002415365306660533,
+          "fixed-50-continuous": 0.001613536151126027,
+          "fixed-50-macro": 0.0015959268203005195,
+          "fixed-50-micro": 0.0015192105202004313,
+          "fixed-750-continuous": 0.004458601586520672,
+          "fixed-750-macro": 0.0043991608545184135,
+          "fixed-750-micro": 0.004308037925511599
+        },
+        "mean_teacher_regret": 0.0008992463117465377,
+        "median_best_second_gap": 0.00013737007975578308,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 34,
+        "regret_above_1e_4": 63,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 40,
+            "fixed-50-continuous": 75,
+            "fixed-750-continuous": 110
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 1,
+            "fixed-250-micro": 52,
+            "fixed-50-continuous": 10,
+            "fixed-50-micro": 131,
+            "fixed-750-micro": 31
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-211",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.26272088289260864,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 1.514097686026231
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.28868567943573,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 1.6412128606433645
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.20675386488437653,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.3803923919796943
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 5.591342926025391,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 26.820311732161716
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 6.133481979370117,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 29.311305423078426
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 5.596751689910889,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 27.435382604599
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.07658476382493973,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.4552493415487261
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.07964389771223068,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.4724399740992313
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.06054817512631416,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.42246678806841376
+          }
+        },
+        "unchanged_carrier_mse": 0.058265674859285355
+      },
+      "seed": 760930002,
+      "usable": true
+    },
+    {
+      "family": "type010105",
+      "local": {
+        "controller_label_accuracy": 0.5555555555555556,
+        "controller_predictions": {
+          "fixed-50-continuous": 37,
+          "fixed-750-continuous": 188
+        },
+        "gaps_below_1e_4": 156,
+        "max_teacher_regret": 0.044211432337760925,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0010572629980742931,
+          "fixed-250-macro": 0.0010387401562184095,
+          "fixed-250-micro": 0.0009686650009825826,
+          "fixed-50-continuous": 0.0009603857761248946,
+          "fixed-50-macro": 0.0009480506414547563,
+          "fixed-50-micro": 0.0008811331354081631,
+          "fixed-750-continuous": 0.0009803595021367073,
+          "fixed-750-macro": 0.0009339015814475715,
+          "fixed-750-micro": 0.0008595481049269438
+        },
+        "mean_teacher_regret": 0.0009963912889361382,
+        "median_best_second_gap": 5.2228569984436035e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 10,
+        "regret_above_1e_4": 40,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 43,
+            "fixed-50-continuous": 68,
+            "fixed-750-continuous": 114
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 1,
+            "fixed-250-micro": 37,
+            "fixed-50-continuous": 13,
+            "fixed-50-micro": 144,
+            "fixed-750-micro": 30
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-281",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.22055378556251526,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 1.3243457480408107
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.24164503812789917,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 1.4295299747581258
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.16169308125972748,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.1776188656687736
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 5.416440963745117,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 26.033252901900486
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 5.959563732147217,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 28.528673310575375
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 5.235761642456055,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 25.810927391052246
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.052993860095739365,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.34909027476732446
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.0535898357629776,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.3551966953275924
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.03710699453949928,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.3169814754277468
+          }
+        },
+        "unchanged_carrier_mse": 0.04095681384205818
+      },
+      "seed": 760930002,
+      "usable": true
+    },
+    {
+      "family": "type010101",
+      "local": {
+        "controller_label_accuracy": 0.5066666666666667,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 135,
+        "max_teacher_regret": 0.04126022756099701,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0014376036124303937,
+          "fixed-50-continuous": 0.0006962788756936789,
+          "fixed-750-continuous": 0.002181291114538908
+        },
+        "mean_teacher_regret": 0.0005796917248517275,
+        "median_best_second_gap": 2.812594175338745e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 24,
+        "regret_above_1e_4": 34,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 37,
+            "fixed-50-continuous": 82,
+            "fixed-750-continuous": 106
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 40,
+            "fixed-50-continuous": 166,
+            "fixed-750-continuous": 19
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-001",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.17432811856269836,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.2486515754081895
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 1800.1405029296875,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 8102.953138392974
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.032337699085474014,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.3002446598433154
+          }
+        },
+        "unchanged_carrier_mse": 0.047449227422475815
+      },
+      "seed": 760930002,
+      "usable": true
+    },
+    {
+      "family": "type010102",
+      "local": {
+        "controller_label_accuracy": 0.5355555555555556,
+        "controller_predictions": {
+          "fixed-50-continuous": 28,
+          "fixed-750-continuous": 422
+        },
+        "gaps_below_1e_4": 184,
+        "max_teacher_regret": 0.041255250573158264,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.003531415481120348,
+          "fixed-50-continuous": 0.002163544064387679,
+          "fixed-750-continuous": 0.005450496915727854
+        },
+        "mean_teacher_regret": 0.0008393074385821819,
+        "median_best_second_gap": 0.0001821070909500122,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 59,
+        "regret_above_1e_4": 108,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 84,
+            "fixed-50-continuous": 141,
+            "fixed-750-continuous": 225
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 73,
+            "fixed-50-continuous": 335,
+            "fixed-750-continuous": 42
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 450
+      },
+      "member_identity": "issue-76-development-071",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.2186438888311386,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.4480725416161706
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 1961.3406982421875,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 8828.354017299223
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.029243336990475655,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.28632003041582277
+          }
+        },
+        "unchanged_carrier_mse": 0.05785180628299713
+      },
+      "seed": 760930002,
+      "usable": true
+    },
+    {
+      "family": "type010103",
+      "local": {
+        "controller_label_accuracy": 0.5111111111111111,
+        "controller_predictions": {
+          "fixed-50-continuous": 16,
+          "fixed-750-continuous": 209
+        },
+        "gaps_below_1e_4": 121,
+        "max_teacher_regret": 0.041260115802288055,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0023347893729805946,
+          "fixed-50-continuous": 0.0017923209816217422,
+          "fixed-750-continuous": 0.0020155359525233507
+        },
+        "mean_teacher_regret": 0.0005669842357747257,
+        "median_best_second_gap": 7.160753011703491e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 17,
+        "regret_above_1e_4": 43,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 32,
+            "fixed-50-continuous": 89,
+            "fixed-750-continuous": 104
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 51,
+            "fixed-50-continuous": 155,
+            "fixed-750-continuous": 19
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-141",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.18952864408493042,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.3170539402582337
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 1671.1072998046875,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 7522.303724330474
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.02364022098481655,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.2611060083903568
+          }
+        },
+        "unchanged_carrier_mse": 0.048682354390621185
+      },
+      "seed": 760930002,
+      "usable": true
+    },
+    {
+      "family": "type010204",
+      "local": {
+        "controller_label_accuracy": 0.5244444444444445,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 113,
+        "max_teacher_regret": 0.041259802877902985,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0018469711067155004,
+          "fixed-50-continuous": 0.000987536390312016,
+          "fixed-750-continuous": 0.0037367783952504396
+        },
+        "mean_teacher_regret": 0.0008143258164636791,
+        "median_best_second_gap": 9.002536535263062e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 34,
+        "regret_above_1e_4": 58,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 38,
+            "fixed-50-continuous": 79,
+            "fixed-750-continuous": 108
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 47,
+            "fixed-50-continuous": 153,
+            "fixed-750-continuous": 25
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-211",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.2120140939950943,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.4182384648539712
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 1726.3741455078125,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 7771.004529994537
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.02478458359837532,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.26625564015137126
+          }
+        },
+        "unchanged_carrier_mse": 0.058265674859285355
+      },
+      "seed": 760930002,
+      "usable": true
+    },
+    {
+      "family": "type010105",
+      "local": {
+        "controller_label_accuracy": 0.49777777777777776,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 171,
+        "max_teacher_regret": 0.04125978797674179,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0004688345652539283,
+          "fixed-50-continuous": 0.00045434723142534494,
+          "fixed-750-continuous": 0.00045891484478488564
+        },
+        "mean_teacher_regret": 0.0004388856468722224,
+        "median_best_second_gap": 3.039836883544922e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 8,
+        "regret_above_1e_4": 28,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 50,
+            "fixed-50-continuous": 69,
+            "fixed-750-continuous": 106
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 54,
+            "fixed-50-continuous": 140,
+            "fixed-750-continuous": 31
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-281",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.13307872414588928,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.0630293005325486
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 1748.178955078125,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 7869.126173060943
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.012900527566671371,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.2127773880087035
+          }
+        },
+        "unchanged_carrier_mse": 0.04095681384205818
+      },
+      "seed": 760930002,
+      "usable": true
+    },
+    {
+      "family": "type010101",
+      "local": {
+        "controller_label_accuracy": 0.5111111111111111,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 151,
+        "max_teacher_regret": 0.029497206211090088,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0009540398605167866,
+          "fixed-250-macro": 0.0009512953693047166,
+          "fixed-250-micro": 0.0008742847130633891,
+          "fixed-50-continuous": 0.00097656185971573,
+          "fixed-50-macro": 0.0009727778960950673,
+          "fixed-50-micro": 0.0009040093282237649,
+          "fixed-750-continuous": 0.0009041702724061906,
+          "fixed-750-macro": 0.0009043692261911929,
+          "fixed-750-micro": 0.0008053024066612124
+        },
+        "mean_teacher_regret": 0.00034804761526174843,
+        "median_best_second_gap": 2.6579946279525757e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 10,
+        "regret_above_1e_4": 32,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 20,
+            "fixed-50-continuous": 100,
+            "fixed-750-continuous": 105
+          },
+          "zero_compute_penalty": {
+            "fixed-250-micro": 49,
+            "fixed-50-macro": 1,
+            "fixed-50-micro": 146,
+            "fixed-750-micro": 29
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-001",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.4272373914718628,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 2.2544219746328746
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.4101979434490204,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 2.1880180487031713
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.28731396794319153,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.7429128557443618
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 8.656780242919922,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 40.61477965818711
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 10.325547218322754,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 48.17559899836529
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 7.342106342315674,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 35.28947854042053
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.07354599982500076,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.44157490354900075
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.07201643288135529,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.438116382360292
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.05031033977866173,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.3763965290039778
+          }
+        },
+        "unchanged_carrier_mse": 0.03076048567891121
+      },
+      "seed": 760930003,
+      "usable": true
+    },
+    {
+      "family": "type010102",
+      "local": {
+        "controller_label_accuracy": 0.6422222222222222,
+        "controller_predictions": {
+          "fixed-50-continuous": 28,
+          "fixed-750-continuous": 422
+        },
+        "gaps_below_1e_4": 108,
+        "max_teacher_regret": 0.17840448021888733,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.007462339475750923,
+          "fixed-250-macro": 0.007428676355630159,
+          "fixed-250-micro": 0.007319951895624399,
+          "fixed-50-continuous": 0.005524483043700457,
+          "fixed-50-macro": 0.005490453448146582,
+          "fixed-50-micro": 0.005399865098297596,
+          "fixed-750-continuous": 0.009738060645759106,
+          "fixed-750-macro": 0.009699694812297821,
+          "fixed-750-micro": 0.009554218500852585
+        },
+        "mean_teacher_regret": 0.0011881598038598895,
+        "median_best_second_gap": 0.0002254396677017212,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 72,
+        "regret_above_1e_4": 108,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 59,
+            "fixed-50-continuous": 118,
+            "fixed-750-continuous": 273
+          },
+          "zero_compute_penalty": {
+            "fixed-250-macro": 4,
+            "fixed-250-micro": 71,
+            "fixed-50-continuous": 3,
+            "fixed-50-macro": 11,
+            "fixed-50-micro": 323,
+            "fixed-750-micro": 38
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 450
+      },
+      "member_identity": "issue-76-development-071",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.41818201541900635,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 2.2136727823950206
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.39898481965065,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 2.1375589916105047
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.24628637731075287,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.5582886978983879
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 8.526979446411133,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 40.03067607389756
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 10.171462059020996,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 47.48221578150738
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 6.895632743835449,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 33.28034734725952
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.08687157928943634,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.5015400111389609
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.0841483324766159,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.4927099305389648
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.05553540959954262,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.3999093431979418
+          }
+        },
+        "unchanged_carrier_mse": 0.06287168711423874
+      },
+      "seed": 760930003,
+      "usable": true
+    },
+    {
+      "family": "type010103",
+      "local": {
+        "controller_label_accuracy": 0.5644444444444444,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 125,
+        "max_teacher_regret": 0.029498491436243057,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0017315427539870143,
+          "fixed-250-macro": 0.0017217330168932676,
+          "fixed-250-micro": 0.0016119375359266996,
+          "fixed-50-continuous": 0.0016147107817232609,
+          "fixed-50-macro": 0.001607690704986453,
+          "fixed-50-micro": 0.001509682391770184,
+          "fixed-750-continuous": 0.0021886599715799093,
+          "fixed-750-macro": 0.0021781690884381533,
+          "fixed-750-micro": 0.0020434739999473095
+        },
+        "mean_teacher_regret": 0.0004465327656362206,
+        "median_best_second_gap": 5.83156943321228e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 15,
+        "regret_above_1e_4": 31,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 32,
+            "fixed-50-continuous": 74,
+            "fixed-750-continuous": 119
+          },
+          "zero_compute_penalty": {
+            "fixed-250-micro": 43,
+            "fixed-50-continuous": 2,
+            "fixed-50-macro": 5,
+            "fixed-50-micro": 143,
+            "fixed-750-micro": 32
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-141",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.4174138903617859,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 2.2102162196375286
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.3975922763347626,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 2.131292546689011
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.24376024305820465,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.5469210937619209
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 8.647706031799316,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 40.573945708144386
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 10.303298950195312,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 48.0754817917918
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 7.015131950378418,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 33.81809377670288
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.08100470900535583,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.4751390948605986
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.07812221348285675,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.4655923950670486
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.04902958497405052,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.37063313238322737
+          }
+        },
+        "unchanged_carrier_mse": 0.05849175527691841
+      },
+      "seed": 760930003,
+      "usable": true
+    },
+    {
+      "family": "type010204",
+      "local": {
+        "controller_label_accuracy": 0.40444444444444444,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 172,
+        "max_teacher_regret": 0.029503649100661278,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0011865999549627304,
+          "fixed-250-macro": 0.001179859391413629,
+          "fixed-250-micro": 0.001074364292435348,
+          "fixed-50-continuous": 0.0012200473574921489,
+          "fixed-50-macro": 0.0012110834941267967,
+          "fixed-50-micro": 0.0011163268936797976,
+          "fixed-750-continuous": 0.0011120911221951246,
+          "fixed-750-macro": 0.0011079296236857772,
+          "fixed-750-micro": 0.000978819327428937
+        },
+        "mean_teacher_regret": 0.0004019720945507288,
+        "median_best_second_gap": 2.6620924472808838e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 10,
+        "regret_above_1e_4": 46,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 38,
+            "fixed-50-continuous": 107,
+            "fixed-750-continuous": 80
+          },
+          "zero_compute_penalty": {
+            "fixed-250-micro": 58,
+            "fixed-50-continuous": 1,
+            "fixed-50-macro": 1,
+            "fixed-50-micro": 125,
+            "fixed-750-micro": 40
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-211",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.4234672784805298,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 2.237456466171876
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.40047696232795715,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 2.1442736336583867
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.24485531449317932,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.551848915219307
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 8.657035827636719,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 40.6159297894127
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 10.219371795654297,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 47.69780959635723
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 7.014364719390869,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 33.81464123725891
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.08645647764205933,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.4996720537257643
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.08267218619585037,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.4860672722755199
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.05279741436243057,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.3875883646309376
+          }
+        },
+        "unchanged_carrier_mse": 0.06135924905538559
+      },
+      "seed": 760930003,
+      "usable": true
+    },
+    {
+      "family": "type010105",
+      "local": {
+        "controller_label_accuracy": 0.44,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 168,
+        "max_teacher_regret": 0.029495952650904655,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.000985738355666399,
+          "fixed-250-macro": 0.0009858524426817894,
+          "fixed-250-micro": 0.000881928310263902,
+          "fixed-50-continuous": 0.0009291305323131382,
+          "fixed-50-macro": 0.0009196692262776196,
+          "fixed-50-micro": 0.000832140794955194,
+          "fixed-750-continuous": 0.000921588100027293,
+          "fixed-750-macro": 0.000919279467780143,
+          "fixed-750-micro": 0.0007949248538352549
+        },
+        "mean_teacher_regret": 0.00035180323175154626,
+        "median_best_second_gap": 2.7883797883987427e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.007374526932835579,
+          "fixed-250-macro": 0.007602829020470381,
+          "fixed-250-micro": 0.009999999776482582,
+          "fixed-50-continuous": 0.007374526932835579,
+          "fixed-50-macro": 0.007602829020470381,
+          "fixed-50-micro": 0.009999999776482582,
+          "fixed-750-continuous": 0.007374526932835579,
+          "fixed-750-macro": 0.007602829020470381,
+          "fixed-750-micro": 0.009999999776482582
+        },
+        "regret_above_1e_3": 7,
+        "regret_above_1e_4": 36,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 60,
+            "fixed-50-continuous": 74,
+            "fixed-750-continuous": 91
+          },
+          "zero_compute_penalty": {
+            "fixed-250-micro": 40,
+            "fixed-50-macro": 1,
+            "fixed-50-micro": 156,
+            "fixed-750-micro": 28
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-281",
+      "pure": false,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-micro",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.438228964805603,
+            "compute_penalty": 0.33185371300949196,
+            "endpoint_error_plus_cost": 2.3038840546347057
+          },
+          "fixed-250-macro": {
+            "carrier_mse": 0.42059746384620667,
+            "compute_penalty": 0.34212730318257956,
+            "endpoint_error_plus_cost": 2.2348158904905095
+          },
+          "fixed-250-micro": {
+            "carrier_mse": 0.27213069796562195,
+            "compute_penalty": 0.45,
+            "endpoint_error_plus_cost": 1.6745881408452987
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 8.714829444885254,
+            "compute_penalty": 1.6592685650474595,
+            "endpoint_error_plus_cost": 40.876001067031105
+          },
+          "fixed-50-macro": {
+            "carrier_mse": 10.368833541870117,
+            "compute_penalty": 1.7106365159128978,
+            "endpoint_error_plus_cost": 48.37038745432842
+          },
+          "fixed-50-micro": {
+            "carrier_mse": 7.152684211730957,
+            "compute_penalty": 2.25,
+            "endpoint_error_plus_cost": 34.43707895278931
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.08436628431081772,
+            "compute_penalty": 0.1106179043364973,
+            "endpoint_error_plus_cost": 0.49026618373517705
+          },
+          "fixed-750-macro": {
+            "carrier_mse": 0.0827869102358818,
+            "compute_penalty": 0.11404243439419319,
+            "endpoint_error_plus_cost": 0.48658353045566133
+          },
+          "fixed-750-micro": {
+            "carrier_mse": 0.05442217364907265,
+            "compute_penalty": 0.15,
+            "endpoint_error_plus_cost": 0.39489978142082693
+          }
+        },
+        "unchanged_carrier_mse": 0.044503044337034225
+      },
+      "seed": 760930003,
+      "usable": true
+    },
+    {
+      "family": "type010101",
+      "local": {
+        "controller_label_accuracy": 0.56,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 164,
+        "max_teacher_regret": 0.04126005619764328,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0005875855567865074,
+          "fixed-50-continuous": 0.0006063887267373502,
+          "fixed-750-continuous": 0.0005228598602116108
+        },
+        "mean_teacher_regret": 0.0004227277240715921,
+        "median_best_second_gap": 1.9900500774383545e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 6,
+        "regret_above_1e_4": 22,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 17,
+            "fixed-50-continuous": 92,
+            "fixed-750-continuous": 116
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 72,
+            "fixed-50-continuous": 137,
+            "fixed-750-continuous": 16
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-001",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.21804486215114594,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.4453769215562036
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 2012.06884765625,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 9056.630689662505
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.022750932723283768,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.2571042112134593
+          }
+        },
+        "unchanged_carrier_mse": 0.03076048567891121
+      },
+      "seed": 760930003,
+      "usable": true
+    },
+    {
+      "family": "type010102",
+      "local": {
+        "controller_label_accuracy": 0.64,
+        "controller_predictions": {
+          "fixed-50-continuous": 28,
+          "fixed-750-continuous": 422
+        },
+        "gaps_below_1e_4": 139,
+        "max_teacher_regret": 0.04122442007064819,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.004895809106528759,
+          "fixed-50-continuous": 0.0031081766355782747,
+          "fixed-750-continuous": 0.006952650845050812
+        },
+        "mean_teacher_regret": 0.0008002360700629652,
+        "median_best_second_gap": 0.00048041343688964844,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 64,
+        "regret_above_1e_4": 90,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 57,
+            "fixed-50-continuous": 120,
+            "fixed-750-continuous": 273
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 70,
+            "fixed-50-continuous": 342,
+            "fixed-750-continuous": 38
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 450
+      },
+      "member_identity": "issue-76-development-071",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.28295180201530457,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.7374581509449174
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 2440.1962890625,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 10983.20417599063
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.03258734941482544,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.3013680863253968
+          }
+        },
+        "unchanged_carrier_mse": 0.06287168711423874
+      },
+      "seed": 760930003,
+      "usable": true
+    },
+    {
+      "family": "type010103",
+      "local": {
+        "controller_label_accuracy": 0.6133333333333333,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 133,
+        "max_teacher_regret": 0.04125979542732239,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0011809342540800571,
+          "fixed-50-continuous": 0.0010792567627504468,
+          "fixed-750-continuous": 0.0015597668243572116
+        },
+        "mean_teacher_regret": 0.0004973426694050431,
+        "median_best_second_gap": 3.6835670471191406e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 10,
+        "regret_above_1e_4": 27,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 25,
+            "fixed-50-continuous": 72,
+            "fixed-750-continuous": 128
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 43,
+            "fixed-50-continuous": 170,
+            "fixed-750-continuous": 12
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-141",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.2800450623035431,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.7243778222419908
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 2376.7275390625,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 10697.59480099063
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.025796622037887573,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.2708098131291764
+          }
+        },
+        "unchanged_carrier_mse": 0.05849175527691841
+      },
+      "seed": 760930003,
+      "usable": true
+    },
+    {
+      "family": "type010204",
+      "local": {
+        "controller_label_accuracy": 0.35555555555555557,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 182,
+        "max_teacher_regret": 0.041269879788160324,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0007541095837950706,
+          "fixed-50-continuous": 0.0008021442336030304,
+          "fixed-750-continuous": 0.0007176486542448401
+        },
+        "mean_teacher_regret": 0.0004889836418442428,
+        "median_best_second_gap": 1.7970800399780273e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 11,
+        "regret_above_1e_4": 42,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 56,
+            "fixed-50-continuous": 98,
+            "fixed-750-continuous": 71
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 53,
+            "fixed-50-continuous": 148,
+            "fixed-750-continuous": 24
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-211",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.33173272013664246,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.956972282490938
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 2368.087646484375,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 10658.715284389067
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.032757218927145004,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.30213249913083484
+          }
+        },
+        "unchanged_carrier_mse": 0.06135924905538559
+      },
+      "seed": 760930003,
+      "usable": true
+    },
+    {
+      "family": "type010105",
+      "local": {
+        "controller_label_accuracy": 0.43555555555555553,
+        "controller_predictions": {
+          "fixed-50-continuous": 14,
+          "fixed-750-continuous": 211
+        },
+        "gaps_below_1e_4": 192,
+        "max_teacher_regret": 0.041260719299316406,
+        "mean_local_mse": {
+          "fixed-250-continuous": 0.0005333278095349669,
+          "fixed-50-continuous": 0.000508644268848002,
+          "fixed-750-continuous": 0.000485791708342731
+        },
+        "mean_teacher_regret": 0.0004224489093758166,
+        "median_best_second_gap": 1.5847384929656982e-05,
+        "original_per_transition_penalty": {
+          "fixed-250-continuous": 0.010315001010894775,
+          "fixed-50-continuous": 0.010315001010894775,
+          "fixed-750-continuous": 0.010315001010894775
+        },
+        "regret_above_1e_3": 5,
+        "regret_above_1e_4": 24,
+        "teacher_counts": {
+          "original": {
+            "fixed-250-continuous": 71,
+            "fixed-50-continuous": 66,
+            "fixed-750-continuous": 88
+          },
+          "zero_compute_penalty": {
+            "fixed-250-continuous": 48,
+            "fixed-50-continuous": 154,
+            "fixed-750-continuous": 23
+          }
+        },
+        "teacher_reproduced_exactly": true,
+        "teacher_rows": 225
+      },
+      "member_identity": "issue-76-development-281",
+      "pure": true,
+      "recursive": {
+        "available": true,
+        "best_fixed_for_endpoint_error_plus_cost": "fixed-750-continuous",
+        "policies": {
+          "fixed-250-continuous": {
+            "carrier_mse": 0.22650933265686035,
+            "compute_penalty": 0.4641750418760469,
+            "endpoint_error_plus_cost": 1.4834670388319184
+          },
+          "fixed-50-continuous": {
+            "carrier_mse": 2034.2196044921875,
+            "compute_penalty": 2.3208752093802345,
+            "endpoint_error_plus_cost": 9156.309095424223
+          },
+          "fixed-750-continuous": {
+            "carrier_mse": 0.020551590248942375,
+            "compute_penalty": 0.15472501395868232,
+            "endpoint_error_plus_cost": 0.247207170078923
+          }
+        },
+        "unchanged_carrier_mse": 0.044503044337034225
+      },
+      "seed": 760930003,
+      "usable": true
+    }
+  ],
+  "schema": "issue_76_controller_utility_diagnostic_v1",
+  "selected_entries": [
+    {
+      "base_cluster": "issue-76-development-001",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010101",
+      "frames": 601,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-001",
+      "path": "prepared/issue-76-development-001.pt",
+      "preparation_failure": null,
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-071",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010102",
+      "frames": 943,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-071",
+      "path": "prepared/issue-76-development-071.pt",
+      "preparation_failure": null,
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-141",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010103",
+      "frames": 302,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-141",
+      "path": "prepared/issue-76-development-141.pt",
+      "preparation_failure": null,
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-211",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010204",
+      "frames": 601,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-211",
+      "path": "prepared/issue-76-development-211.pt",
+      "preparation_failure": null,
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-281",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010105",
+      "frames": 601,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-281",
+      "path": "prepared/issue-76-development-281.pt",
+      "preparation_failure": null,
+      "usable": true
+    }
+  ],
+  "source_plan_identity": "issue-76-repaired-representation-v1",
+  "source_text": "\"\"\"Read-only model probes on the first assigned training lineage per family.\"\"\"\nfrom collections import Counter\nfrom pathlib import Path\nimport time\n\nimport torch\n\nfrom scripts import run_issue_76_native_refit as fit\nfrom scripts.run_issue_76_repaired_representation import previous\nfrom world_model.training.cnn_hybrid import linear_macs\nfrom world_model.training.native_history_fit import (\n    ENDPOINT, REFERENCE_TRANSITION_MACS, NativeHistoryController,\n    controller_targets, rollout,\n)\n\nROOT = fit.files.ROOT / \".local-artifacts/issue-76-repaired-representation-v1\"\nOUTPUT = fit.files.ROOT / \"data/issue-76-controller-utility-diagnostic/report.json\"\n\n\n@torch.no_grad()\ndef local_costs(model, carrier, fixed_steps, action):\n    keep = [i for i, s in enumerate(fixed_steps)\n            if (s - fixed_steps[0]) % 50 == 0 and s - fixed_steps[0] <= ENDPOINT]\n    z = carrier[keep]\n    steps = [fixed_steps[i] for i in keep]\n    lookup = {s: i for i, s in enumerate(steps)}\n    raw = z.new_full((len(z), len(model.pairs)), torch.inf)\n    for column, pair in enumerate(model.pairs):\n        rows = [i for i, s in enumerate(steps) if s + pair.delta in lookup]\n        if rows:\n            ends = [lookup[steps[i] + pair.delta] for i in rows]\n            predicted = model.carrier(z[rows], action[None].expand(len(rows), -1), pair)\n            raw[rows, column] = (predicted - z[ends]).square().mean(-1)\n    return z, steps, raw\n\n\ndef solve(costs, pairs, steps):\n    lookup = {s: i for i, s in enumerate(steps)}\n    values = costs.new_zeros(len(steps))\n    q = costs.clone()\n    for i in range(len(steps) - 2, -1, -1):\n        for column, pair in enumerate(pairs):\n            end = lookup.get(steps[i] + pair.delta)\n            if end is not None:\n                q[i, column] += values[end]\n        values[i] = q[i].min()\n    if not bool(torch.isfinite(values).all()):\n        raise ValueError(\"teacher has no exact finite endpoint path\")\n    return q[:-1].argmin(-1), values[:-1], q[:-1]\n\n\n@torch.no_grad()\ndef probe(model, controller, shard, carrier):\n    names = [fit.policy_name(p) for p in model.pairs]\n    penalties = carrier.new_tensor([.01 * linear_macs(model, p) / REFERENCE_TRANSITION_MACS\n                                    for p in model.pairs])\n    scales = carrier.new_tensor([p.delta * .0004 for p in model.pairs])\n    counts = {\"original\": Counter(), \"zero_compute_penalty\": Counter()}\n    predictions = Counter()\n    raw_sum, raw_count = torch.zeros(len(names)), torch.zeros(len(names))\n    regrets, gaps = [], []\n    correct = total = 0\n    for segment in shard[\"segment_ranges\"]:\n        start, stop = segment[\"start\"], segment[\"stop\"]\n        fixed_steps = shard[\"tensors\"][\"fixed_steps\"][start:stop].tolist()\n        original = controller_targets(model, carrier[start:stop], fixed_steps, segment[\"action\"])\n        if original is None:\n            continue\n        z, steps, raw = local_costs(model, carrier[start:stop], fixed_steps, segment[\"action\"])\n        finite = torch.isfinite(raw)\n        raw_sum += torch.where(finite, raw, 0).sum(0)\n        raw_count += finite.sum(0)\n        labels, values, q = solve(raw * scales + penalties, model.pairs, steps)\n        if not torch.equal(labels, original[\"labels\"]):\n            raise ValueError(\"diagnostic does not reproduce the unchanged teacher\")\n        zero, _, _ = solve(raw * scales, model.pairs, steps)\n        counts[\"original\"].update(names[i] for i in labels.tolist())\n        counts[\"zero_compute_penalty\"].update(names[i] for i in zero.tolist())\n        predicted = controller(original[\"z\"], original[\"action\"], original[\"remaining\"]).argmax(-1)\n        predictions.update(names[i] for i in predicted.tolist())\n        regrets.extend((q.gather(1, predicted[:, None])[:, 0] - values).tolist())\n        sorted_q = q.sort(-1).values\n        gap = sorted_q[:, 1] - sorted_q[:, 0]\n        gaps.extend(gap[torch.isfinite(gap)].tolist())\n        correct += int((labels == predicted).sum())\n        total += len(labels)\n    r, g = torch.tensor(regrets), torch.tensor(gaps)\n    local = dict(teacher_rows=total, teacher_reproduced_exactly=True,\n                 teacher_counts={k: dict(v) for k, v in counts.items()},\n                 controller_predictions=dict(predictions), controller_label_accuracy=correct / total,\n                 mean_local_mse=dict(zip(names, (raw_sum / raw_count).tolist())),\n                 original_per_transition_penalty=dict(zip(names, penalties.tolist())),\n                 mean_teacher_regret=float(r.mean()), max_teacher_regret=float(r.max()),\n                 regret_above_1e_4=int((r > 1e-4).sum()), regret_above_1e_3=int((r > 1e-3).sum()),\n                 median_best_second_gap=float(g.median()), gaps_below_1e_4=int((g < 1e-4).sum()))\n    segment = shard[\"segment_ranges\"][0]\n    start, stop = segment[\"start\"], segment[\"stop\"]\n    steps = shard[\"tensors\"][\"fixed_steps\"].tolist()\n    ends = [i for i in range(start, stop) if steps[i] == steps[start] + ENDPOINT]\n    recursive = {\"available\": len(ends) == 1, \"policies\": {}}\n    if len(ends) == 1:\n        target = carrier[ends[0]]\n        recursive[\"unchanged_carrier_mse\"] = float((carrier[start] - target).square().mean())\n        for name, pair in zip(names, model.pairs):\n            predicted, work = rollout(model, None, carrier[start], segment[\"action\"], fixed_pair=pair)\n            mse = float((predicted - target).square().mean())\n            cost = .01 * sum(w[\"linear_macs\"] for w in work) / REFERENCE_TRANSITION_MACS\n            recursive[\"policies\"][name] = dict(carrier_mse=mse, compute_penalty=cost,\n                                               endpoint_error_plus_cost=ENDPOINT * .0004 * mse + cost)\n        recursive[\"best_fixed_for_endpoint_error_plus_cost\"] = min(\n            names, key=lambda name: recursive[\"policies\"][name][\"endpoint_error_plus_cost\"])\n    return dict(local=local, recursive=recursive)\n\n\ndef main():\n    torch.set_num_threads(1)\n    plan = fit.files.read(ROOT / \"plan.json\")\n    selected = {}\n    for entry in fit.data_index(ROOT, plan)[\"entries\"]:\n        if entry[\"exposure_role\"] == \"training\":\n            selected.setdefault(entry[\"family\"], entry)\n    began, rows = time.monotonic(), []\n    for seed in plan[\"seeds\"]:\n        for pure in (False, True):\n            model = fit.load_predictor(ROOT, plan, seed, pure, \"cpu\")\n            controller = NativeHistoryController(pure).eval()\n            controller.load_state_dict(torch.load(fit.model_path(ROOT, seed, pure, \"controller\"),\n                                                  map_location=\"cpu\", weights_only=False)[\"model\"])\n            for entry in selected.values():\n                row = dict(seed=seed, pure=pure, member_identity=entry[\"member_identity\"],\n                           family=entry[\"family\"], usable=entry[\"usable\"])\n                if entry[\"usable\"]:\n                    row.update(probe(model, controller, fit.load_shard(ROOT, entry, plan, fitting=True),\n                                     fit.load_carrier(ROOT, seed, entry, plan)))\n                rows.append(row)\n                if time.monotonic() - began > 180:\n                    raise RuntimeError(\"180-second diagnostic ceiling exceeded; no fitting or retry\")\n                print(f\"utility diagnostic {len(rows)}/30\", flush=True)\n    report = dict(schema=\"issue_76_controller_utility_diagnostic_v1\", source_plan_identity=plan[\"identity\"],\n                  selected_entries=list(selected.values()), rows=rows, fresh_access=False,\n                  optimization_performed=False, active_seconds=time.monotonic() - began,\n                  source_text=Path(__file__).read_text(),\n                  interpretation=\"Exploratory existing-training-data diagnosis, not a deployable policy or advancement test\")\n    previous.immutable(OUTPUT, report)\n    print(f\"published {OUTPUT}\", flush=True)\n\n\nif __name__ == \"__main__\":\n    main()\n"
+}
