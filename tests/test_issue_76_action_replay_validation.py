@@ -25,7 +25,8 @@ class ReplayValidationTests(unittest.TestCase):
             image.save(snapshot_root / "agent.png")
             frame = {"fixed_step": 1, "fixed_time_seconds": 1., "agent_observation": {"relative_path": "agent.png"},
                      "capture_metadata": {"viewport": {}, "world_to_observation_transform": {}}}
-            snapshot = {"identity": "snapshot", "exposure_role": "training", "scenario_lineage_identity": "lineage",
+            snapshot = {"identity": "snapshot", "exposure_role": "training", "scenario_lineage_identity": "derived-observation-lineage",
+                        "source_bindings": {"source_scenario_lineage_identity": "lineage"},
                         "observation_configuration": {}, "frame_records": [frame]}
             captured = dict(snapshot, identity="captured", frame_records=[dict(frame, fixed_step=2, fixed_time_seconds=1.1)])
             summary = {"sample_count": 1}

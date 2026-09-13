@@ -46,6 +46,11 @@ def prepare(root=run.ROOT):
     print("Execution source frozen and existing player copied; no capture started.", flush=True)
 
 
+def observation_source_matches(value, lineage):
+    return (value["exposure_role"] == "training"
+            and value["source_bindings"]["source_scenario_lineage_identity"] == lineage)
+
+
 def read_case(root, plan, member):
     result = run.files.read(root / "results" / (member["identity"] + ".json"))
     supervisor = run.files.read(root / "supervision" / (member["identity"] + ".json"))
@@ -68,7 +73,8 @@ def read_case(root, plan, member):
     lineage = member["scenario"]["scenario_manifest"]["scenario_lineage"]["identity"]
     if (snapshot["identity"] != decision["observation_manifest"] or captured["identity"] != segment["observation_manifest"]
             or len(snapshot["frame_records"]) != 1
-            or any(value["exposure_role"] != "training" or value["scenario_lineage_identity"] != lineage for value in (snapshot, captured))):
+            or snapshot["scenario_lineage_identity"] != captured["scenario_lineage_identity"]
+            or any(not observation_source_matches(value, lineage) for value in (snapshot, captured))):
         raise ValueError("decision/capture observation bindings differ")
     trace = NativeSegmentTrace(segment["native_root"])
     if (trace.summary != segment["summary"] or int(trace.manifest["engine_seed"]) != member["engine_seed"]

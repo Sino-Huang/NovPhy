@@ -21,7 +21,20 @@ def load_plan(root=ROOT):
     if (not plan["capture_execution_authorized"] or plan["fresh_access"]
             or not plan["comparability_source_frozen"] or plan["inventory"] != files.read(root / "inventory.json")):
         raise ValueError("complete source-bound replay execution authorization is required")
-    for path, text in plan["source_text"].items():
+    sources = plan["source_text"]
+    correction_path = root / "observation-lineage-correction.json"
+    if correction_path.exists():
+        correction = files.read(correction_path)
+        original_paths = {"scripts/run_issue_76_action_replay.py", "scripts/validate_issue_76_action_replay.py",
+                          "tests/test_issue_76_action_replay_validation.py"}
+        if (correction["identity"] != "issue-76-replay-observation-lineage-correction-v1"
+                or correction["execution_plan_identity"] != plan["identity"]
+                or correction["original_source_text"] != {path: sources[path] for path in original_paths}
+                or set(correction["corrected_source_text"]) != original_paths | {"tests/test_issue_76_observation_lineage_binding.py"}
+                or correction["captures_repeated"] or correction["comparison_limits_changed"] or correction["assignments_changed"]):
+            raise ValueError("observation-lineage correction does not bind the original execution source")
+        sources = {**sources, **correction["corrected_source_text"]}
+    for path, text in sources.items():
         if (files.ROOT / path).read_text() != text:
             raise ValueError(f"replay execution source changed: {path}")
     return plan
