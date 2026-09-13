@@ -1,0 +1,1055 @@
+{
+  "budget": {
+    "active_seconds": 23.56308493297547,
+    "limit_seconds": 300,
+    "peak_cpu_rss_mib": 1507.94921875,
+    "peak_cuda_allocated_mib": 145.2587890625,
+    "peak_cuda_reserved_mib": 164.0,
+    "process_id": 3456543,
+    "running": false,
+    "stopped": false
+  },
+  "checkpoint_writes": false,
+  "evaluation": [
+    {
+      "base_cluster": "issue-76-development-001",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010101",
+      "frames": 601,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-001",
+      "path": "prepared/issue-76-development-001.pt",
+      "preparation_failure": null,
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-071",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010102",
+      "frames": 943,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-071",
+      "path": "prepared/issue-76-development-071.pt",
+      "preparation_failure": null,
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-141",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010103",
+      "frames": 302,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-141",
+      "path": "prepared/issue-76-development-141.pt",
+      "preparation_failure": null,
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-211",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010204",
+      "frames": 601,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-211",
+      "path": "prepared/issue-76-development-211.pt",
+      "preparation_failure": null,
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-281",
+      "collection_complete": true,
+      "exposure_role": "training",
+      "family": "type010105",
+      "frames": 601,
+      "gameplay_success": false,
+      "member_identity": "issue-76-development-281",
+      "path": "prepared/issue-76-development-281.pt",
+      "preparation_failure": null,
+      "usable": true
+    }
+  ],
+  "fresh_access": false,
+  "interpretation": "Finite parameter perturbations on five training anchors, not fitted candidates or advancement evidence",
+  "optimizer_steps_applied": 0,
+  "rows": [
+    {
+      "anchor_directional_derivative": -2.2164003894431517e-05,
+      "base": {
+        "anchor": 0.0028095596935600042,
+        "local": 0.007913202047348022,
+        "recursive": 0.06029286980628967,
+        "total": 0.0682060718536377
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.002807535231113434,
+          "local": 0.007915137335658073,
+          "recursive": 0.05777233839035034,
+          "total": 0.06568747758865356
+        },
+        "1.0": {
+          "anchor": 0.0028065762016922235,
+          "local": 0.007955904118716717,
+          "recursive": 0.05096161738038063,
+          "total": 0.05891752243041992
+        }
+      },
+      "policy": "fixed-50-continuous",
+      "pure": false,
+      "seed": 760930001,
+      "total_directional_derivative": -0.027073822915554047
+    },
+    {
+      "anchor_directional_derivative": -1.6791014786576852e-05,
+      "base": {
+        "anchor": 0.0028095596935600042,
+        "local": 0.007603752426803112,
+        "recursive": 0.05782590061426163,
+        "total": 0.16980227828025818
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.0028080919291824102,
+          "local": 0.007606029976159334,
+          "recursive": 0.05475319176912308,
+          "total": 0.16676563024520874
+        },
+        "1.0": {
+          "anchor": 0.0028139487840235233,
+          "local": 0.007651861757040024,
+          "recursive": 0.04825219884514809,
+          "total": 0.1606217920780182
+        }
+      },
+      "policy": "fixed-50-micro",
+      "pure": false,
+      "seed": 760930001,
+      "total_directional_derivative": -0.03284858539700508
+    },
+    {
+      "anchor_directional_derivative": -1.3998447684571147e-05,
+      "base": {
+        "anchor": 0.0028095596935600042,
+        "local": 0.007761973422020674,
+        "recursive": 0.06721847504377365,
+        "total": 0.6684483289718628
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.0028083526995033026,
+          "local": 0.007763144560158253,
+          "recursive": 0.06405473500490189,
+          "total": 0.6609399914741516
+        },
+        "1.0": {
+          "anchor": 0.0028148996643722057,
+          "local": 0.007794218137860298,
+          "recursive": 0.05487700551748276,
+          "total": 0.6136313080787659
+        }
+      },
+      "policy": "fixed-50-macro",
+      "pure": false,
+      "seed": 760930001,
+      "total_directional_derivative": -0.07763396203517914
+    },
+    {
+      "anchor_directional_derivative": -6.816825771238655e-05,
+      "base": {
+        "anchor": 0.0028095596935600042,
+        "local": 0.004866382107138634,
+        "recursive": 0.02661067247390747,
+        "total": 0.031477056443691254
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.0028029819950461388,
+          "local": 0.004861435852944851,
+          "recursive": 0.025706514716148376,
+          "total": 0.030567951500415802
+        },
+        "1.0": {
+          "anchor": 0.0027653134893625975,
+          "local": 0.004839463159441948,
+          "recursive": 0.022187182679772377,
+          "total": 0.027026645839214325
+        }
+      },
+      "policy": "fixed-250-continuous",
+      "pure": false,
+      "seed": 760930001,
+      "total_directional_derivative": -0.00960829108953476
+    },
+    {
+      "anchor_directional_derivative": -7.123361865524203e-05,
+      "base": {
+        "anchor": 0.0028095596935600042,
+        "local": 0.004830409772694111,
+        "recursive": 0.018410200253129005,
+        "total": 0.12481634318828583
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.002802689326927066,
+          "local": 0.004826274700462818,
+          "recursive": 0.017779843881726265,
+          "total": 0.12417608499526978
+        },
+        "1.0": {
+          "anchor": 0.00276363268494606,
+          "local": 0.004811158403754234,
+          "recursive": 0.016558004543185234,
+          "total": 0.12289293110370636
+        }
+      },
+      "policy": "fixed-250-micro",
+      "pure": false,
+      "seed": 760930001,
+      "total_directional_derivative": -0.006904240697622299
+    },
+    {
+      "anchor_directional_derivative": -2.508645957277622e-05,
+      "base": {
+        "anchor": 0.0028095596935600042,
+        "local": 0.005036152899265289,
+        "recursive": 0.024426257237792015,
+        "total": 0.7197012305259705
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.0028072346467524767,
+          "local": 0.005034521222114563,
+          "recursive": 0.024314871057868004,
+          "total": 0.7126854658126831
+        },
+        "1.0": {
+          "anchor": 0.0028027896769344807,
+          "local": 0.0050352346152067184,
+          "recursive": 0.026297422125935555,
+          "total": 0.6545078158378601
+        }
+      },
+      "policy": "fixed-250-macro",
+      "pure": false,
+      "seed": 760930001,
+      "total_directional_derivative": -0.07071986049413681
+    },
+    {
+      "anchor_directional_derivative": -0.00028832751559093595,
+      "base": {
+        "anchor": 0.0028095596935600042,
+        "local": 0.0010272145736962557,
+        "recursive": 0.009534976445138454,
+        "total": 0.010562190786004066
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.002781717339530587,
+          "local": 0.001010991632938385,
+          "recursive": 0.009256508201360703,
+          "total": 0.010267499834299088
+        },
+        "1.0": {
+          "anchor": 0.0026162066496908665,
+          "local": 0.0009117317968048155,
+          "recursive": 0.007937207818031311,
+          "total": 0.008848940022289753
+        }
+      },
+      "policy": "fixed-750-continuous",
+      "pure": false,
+      "seed": 760930001,
+      "total_directional_derivative": -0.0030857324600219727
+    },
+    {
+      "anchor_directional_derivative": -0.0002724610094446689,
+      "base": {
+        "anchor": 0.0028095596935600042,
+        "local": 0.0009091733954846859,
+        "recursive": 0.007383804768323898,
+        "total": 0.1085546463727951
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.002783023053780198,
+          "local": 0.0008993070805445313,
+          "recursive": 0.00721664447337389,
+          "total": 0.10824114829301834
+        },
+        "1.0": {
+          "anchor": 0.002606575610116124,
+          "local": 0.0008462104015052319,
+          "recursive": 0.006884773261845112,
+          "total": 0.10664816200733185
+        }
+      },
+      "policy": "fixed-750-micro",
+      "pure": false,
+      "seed": 760930001,
+      "total_directional_derivative": -0.0032734349370002747
+    },
+    {
+      "anchor_directional_derivative": -4.130667366553098e-05,
+      "base": {
+        "anchor": 0.0028095596935600042,
+        "local": 0.001016912516206503,
+        "recursive": 0.009004606865346432,
+        "total": 0.7121937274932861
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.0028056171722710133,
+          "local": 0.0010159459197893739,
+          "recursive": 0.009062787517905235,
+          "total": 0.7071183323860168
+        },
+        "1.0": {
+          "anchor": 0.002787083387374878,
+          "local": 0.00102238857652992,
+          "recursive": 0.010393433272838593,
+          "total": 0.6645949482917786
+        }
+      },
+      "policy": "fixed-750-macro",
+      "pure": false,
+      "seed": 760930001,
+      "total_directional_derivative": -0.051101721823215485
+    },
+    {
+      "anchor_directional_derivative": -1.8608308891998604e-05,
+      "base": {
+        "anchor": 0.0060311430133879185,
+        "local": 0.009552264586091042,
+        "recursive": 0.06793901324272156,
+        "total": 0.07749127596616745
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.006029574200510979,
+          "local": 0.009550439193844795,
+          "recursive": 0.06251168251037598,
+          "total": 0.07206211984157562
+        },
+        "1.0": {
+          "anchor": 0.0060415854677557945,
+          "local": 0.009563948027789593,
+          "recursive": 0.05449405312538147,
+          "total": 0.06405799835920334
+        }
+      },
+      "policy": "fixed-50-continuous",
+      "pure": true,
+      "seed": 760930001,
+      "total_directional_derivative": -0.05899213254451752
+    },
+    {
+      "anchor_directional_derivative": -4.102882667211816e-05,
+      "base": {
+        "anchor": 0.0060311430133879185,
+        "local": 0.006452671252191067,
+        "recursive": 0.017617540434002876,
+        "total": 0.02407021075487137
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.006027298513799906,
+          "local": 0.006449180655181408,
+          "recursive": 0.016665713861584663,
+          "total": 0.023114893585443497
+        },
+        "1.0": {
+          "anchor": 0.006015882361680269,
+          "local": 0.006444176193326712,
+          "recursive": 0.01639418862760067,
+          "total": 0.02283836528658867
+        }
+      },
+      "policy": "fixed-250-continuous",
+      "pure": true,
+      "seed": 760930001,
+      "total_directional_derivative": -0.010481351986527443
+    },
+    {
+      "anchor_directional_derivative": -7.485411333618686e-05,
+      "base": {
+        "anchor": 0.0060311430133879185,
+        "local": 0.0017193963285535574,
+        "recursive": 0.007235493045300245,
+        "total": 0.008954889141023159
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.0060239448212087154,
+          "local": 0.001715608173981309,
+          "recursive": 0.007108868565410376,
+          "total": 0.008824476972222328
+        },
+        "1.0": {
+          "anchor": 0.005984883289784193,
+          "local": 0.0017106982413679361,
+          "recursive": 0.007450111676007509,
+          "total": 0.009160810150206089
+        }
+      },
+      "policy": "fixed-750-continuous",
+      "pure": true,
+      "seed": 760930001,
+      "total_directional_derivative": -0.0014729375252500176
+    },
+    {
+      "anchor_directional_derivative": -3.703973925439641e-05,
+      "base": {
+        "anchor": 0.005855752155184746,
+        "local": 0.006595345214009285,
+        "recursive": 0.12005636841058731,
+        "total": 0.12665171921253204
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.005852226633578539,
+          "local": 0.006591147743165493,
+          "recursive": 0.11117993295192719,
+          "total": 0.11777108162641525
+        },
+        "1.0": {
+          "anchor": 0.005836384370923042,
+          "local": 0.006565853953361511,
+          "recursive": 0.07742302119731903,
+          "total": 0.08398887515068054
+        }
+      },
+      "policy": "fixed-50-continuous",
+      "pure": false,
+      "seed": 760930002,
+      "total_directional_derivative": -0.09402155131101608
+    },
+    {
+      "anchor_directional_derivative": -3.8309921364998445e-05,
+      "base": {
+        "anchor": 0.005855752155184746,
+        "local": 0.006537260953336954,
+        "recursive": 0.11732331663370132,
+        "total": 0.22938674688339233
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.005852111149579287,
+          "local": 0.006532059982419014,
+          "recursive": 0.10858196020126343,
+          "total": 0.22065311670303345
+        },
+        "1.0": {
+          "anchor": 0.005836357828229666,
+          "local": 0.0064988997764885426,
+          "recursive": 0.07531824707984924,
+          "total": 0.18748512864112854
+        }
+      },
+      "policy": "fixed-50-micro",
+      "pure": false,
+      "seed": 760930002,
+      "total_directional_derivative": -0.09241191297769547
+    },
+    {
+      "anchor_directional_derivative": -3.7564244848908857e-05,
+      "base": {
+        "anchor": 0.005855752155184746,
+        "local": 0.00664445199072361,
+        "recursive": 0.11679825186729431,
+        "total": 0.2532440423965454
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.0058521791361272335,
+          "local": 0.00664022471755743,
+          "recursive": 0.10768621414899826,
+          "total": 0.24348866939544678
+        },
+        "1.0": {
+          "anchor": 0.005836382508277893,
+          "local": 0.006614928133785725,
+          "recursive": 0.07249141484498978,
+          "total": 0.20264467597007751
+        }
+      },
+      "policy": "fixed-50-macro",
+      "pure": false,
+      "seed": 760930002,
+      "total_directional_derivative": -0.10285331308841705
+    },
+    {
+      "anchor_directional_derivative": -0.00014911327161826193,
+      "base": {
+        "anchor": 0.005855752155184746,
+        "local": 0.004740198142826557,
+        "recursive": 0.019755927845835686,
+        "total": 0.024496126919984818
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.005841107573360205,
+          "local": 0.004730936139822006,
+          "recursive": 0.0189648624509573,
+          "total": 0.023695798590779305
+        },
+        "1.0": {
+          "anchor": 0.005733495112508535,
+          "local": 0.004662528168410063,
+          "recursive": 0.01543405931442976,
+          "total": 0.020096587017178535
+        }
+      },
+      "policy": "fixed-250-continuous",
+      "pure": false,
+      "seed": 760930002,
+      "total_directional_derivative": -0.008407717570662498
+    },
+    {
+      "anchor_directional_derivative": -0.0001762626925483346,
+      "base": {
+        "anchor": 0.005855752155184746,
+        "local": 0.004814221058040857,
+        "recursive": 0.01692075841128826,
+        "total": 0.12903659045696259
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.005838434211909771,
+          "local": 0.004803556017577648,
+          "recursive": 0.016244322061538696,
+          "total": 0.12831556797027588
+        },
+        "1.0": {
+          "anchor": 0.005710680037736893,
+          "local": 0.004724504426121712,
+          "recursive": 0.01350084412842989,
+          "total": 0.1252029538154602
+        }
+      },
+      "policy": "fixed-250-micro",
+      "pure": false,
+      "seed": 760930002,
+      "total_directional_derivative": -0.007585205137729645
+    },
+    {
+      "anchor_directional_derivative": -0.0001168396120192483,
+      "base": {
+        "anchor": 0.005855752155184746,
+        "local": 0.0047894734889268875,
+        "recursive": 0.020341362804174423,
+        "total": 0.38891085982322693
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.005844279658049345,
+          "local": 0.004781996365636587,
+          "recursive": 0.019917858764529228,
+          "total": 0.38537076115608215
+        },
+        "1.0": {
+          "anchor": 0.005759987980127335,
+          "local": 0.0047269556671381,
+          "recursive": 0.01897398754954338,
+          "total": 0.3573246896266937
+        }
+      },
+      "policy": "fixed-250-macro",
+      "pure": false,
+      "seed": 760930002,
+      "total_directional_derivative": -0.03582803159952164
+    },
+    {
+      "anchor_directional_derivative": -0.0008614652324467897,
+      "base": {
+        "anchor": 0.005855752155184746,
+        "local": 0.002835317514836788,
+        "recursive": 0.006214309949427843,
+        "total": 0.009049627929925919
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.00577165512368083,
+          "local": 0.002813073806464672,
+          "recursive": 0.0060429805889725685,
+          "total": 0.00885605439543724
+        },
+        "1.0": {
+          "anchor": 0.005216008052229881,
+          "local": 0.002679594559594989,
+          "recursive": 0.005240879952907562,
+          "total": 0.007920474745333195
+        }
+      },
+      "policy": "fixed-750-continuous",
+      "pure": false,
+      "seed": 760930002,
+      "total_directional_derivative": -0.0020239916630089283
+    },
+    {
+      "anchor_directional_derivative": -0.0009540013270452619,
+      "base": {
+        "anchor": 0.005855752155184746,
+        "local": 0.0028517635073512793,
+        "recursive": 0.005837278440594673,
+        "total": 0.11641636490821838
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.005762770771980286,
+          "local": 0.0028265658766031265,
+          "recursive": 0.005664937198162079,
+          "total": 0.11599554866552353
+        },
+        "1.0": {
+          "anchor": 0.005171438213437796,
+          "local": 0.002675108378753066,
+          "recursive": 0.004969870205968618,
+          "total": 0.11320249736309052
+        }
+      },
+      "policy": "fixed-750-micro",
+      "pure": false,
+      "seed": 760930002,
+      "total_directional_derivative": -0.004316756501793861
+    },
+    {
+      "anchor_directional_derivative": -0.00033547275234013796,
+      "base": {
+        "anchor": 0.005855752155184746,
+        "local": 0.002879575826227665,
+        "recursive": 0.006432411260902882,
+        "total": 0.42848673462867737
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.0058226208202540874,
+          "local": 0.0028705508448183537,
+          "recursive": 0.006438327021896839,
+          "total": 0.42641040682792664
+        },
+        "1.0": {
+          "anchor": 0.005561790429055691,
+          "local": 0.002806238131597638,
+          "recursive": 0.006992413196712732,
+          "total": 0.40970638394355774
+        }
+      },
+      "policy": "fixed-750-macro",
+      "pure": false,
+      "seed": 760930002,
+      "total_directional_derivative": -0.020984511822462082
+    },
+    {
+      "anchor_directional_derivative": 0.00020967672753613442,
+      "base": {
+        "anchor": 0.0365489237010479,
+        "local": 0.44151565432548523,
+        "recursive": 0.2721653878688812,
+        "total": 0.7136810421943665
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.03657025471329689,
+          "local": 0.4390658736228943,
+          "recursive": 0.2594044506549835,
+          "total": 0.6984703540802002
+        },
+        "1.0": {
+          "anchor": 0.03679458796977997,
+          "local": 0.4171062707901001,
+          "recursive": 0.20463678240776062,
+          "total": 0.6217430830001831
+        }
+      },
+      "policy": "fixed-50-continuous",
+      "pure": true,
+      "seed": 760930002,
+      "total_directional_derivative": -0.1583050638437271
+    },
+    {
+      "anchor_directional_derivative": 5.239733945927583e-05,
+      "base": {
+        "anchor": 0.0365489237010479,
+        "local": 0.07099607586860657,
+        "recursive": 0.07700284570455551,
+        "total": 0.14799892902374268
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.03655455261468887,
+          "local": 0.07042402029037476,
+          "recursive": 0.07488120347261429,
+          "total": 0.14530521631240845
+        },
+        "1.0": {
+          "anchor": 0.03664005175232887,
+          "local": 0.06559131294488907,
+          "recursive": 0.06511476635932922,
+          "total": 0.1307060718536377
+        }
+      },
+      "policy": "fixed-250-continuous",
+      "pure": true,
+      "seed": 760930002,
+      "total_directional_derivative": -0.028015438467264175
+    },
+    {
+      "anchor_directional_derivative": -0.00010987975110765547,
+      "base": {
+        "anchor": 0.0365489237010479,
+        "local": 0.010738461278378963,
+        "recursive": 0.020959263667464256,
+        "total": 0.031697724014520645
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.03653876483440399,
+          "local": 0.010723806917667389,
+          "recursive": 0.020090561360120773,
+          "total": 0.030814368277788162
+        },
+        "1.0": {
+          "anchor": 0.0365213006734848,
+          "local": 0.010667684487998486,
+          "recursive": 0.01629079505801201,
+          "total": 0.02695848047733307
+        }
+      },
+      "policy": "fixed-750-continuous",
+      "pure": true,
+      "seed": 760930002,
+      "total_directional_derivative": -0.00929277203977108
+    },
+    {
+      "anchor_directional_derivative": -0.0003745458379853517,
+      "base": {
+        "anchor": 0.013265409506857395,
+        "local": 0.01658487506210804,
+        "recursive": 0.18021006882190704,
+        "total": 0.19679494202136993
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.013228663243353367,
+          "local": 0.01658267341554165,
+          "recursive": 0.17398521304130554,
+          "total": 0.19056788086891174
+        },
+        "1.0": {
+          "anchor": 0.01296176016330719,
+          "local": 0.016610531136393547,
+          "recursive": 0.14253480732440948,
+          "total": 0.15914534032344818
+        }
+      },
+      "policy": "fixed-50-continuous",
+      "pure": false,
+      "seed": 760930003,
+      "total_directional_derivative": -0.06502888351678848
+    },
+    {
+      "anchor_directional_derivative": -0.00041997036896646023,
+      "base": {
+        "anchor": 0.013265409506857395,
+        "local": 0.015896214172244072,
+        "recursive": 0.19846530258655548,
+        "total": 0.3217449486255646
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.013224105350673199,
+          "local": 0.01588108018040657,
+          "recursive": 0.19230473041534424,
+          "total": 0.315581351518631
+        },
+        "1.0": {
+          "anchor": 0.01291443407535553,
+          "local": 0.01578809879720211,
+          "recursive": 0.1620577722787857,
+          "total": 0.28535789251327515
+        }
+      },
+      "policy": "fixed-50-micro",
+      "pure": false,
+      "seed": 760930003,
+      "total_directional_derivative": -0.06440773606300354
+    },
+    {
+      "anchor_directional_derivative": -0.00038152741035446525,
+      "base": {
+        "anchor": 0.013265409506857395,
+        "local": 0.01677238568663597,
+        "recursive": 0.17267273366451263,
+        "total": 0.4477977156639099
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.013227974064648151,
+          "local": 0.01677096262574196,
+          "recursive": 0.16654205322265625,
+          "total": 0.44222936034202576
+        },
+        "1.0": {
+          "anchor": 0.01295558176934719,
+          "local": 0.01680486463010311,
+          "recursive": 0.13637293875217438,
+          "total": 0.41721370816230774
+        }
+      },
+      "policy": "fixed-50-macro",
+      "pure": false,
+      "seed": 760930003,
+      "total_directional_derivative": -0.058774493634700775
+    },
+    {
+      "anchor_directional_derivative": -0.0005288912216201425,
+      "base": {
+        "anchor": 0.013265409506857395,
+        "local": 0.010944055393338203,
+        "recursive": 0.057113029062747955,
+        "total": 0.06805708259344101
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.0132132638245821,
+          "local": 0.01092839427292347,
+          "recursive": 0.055768273770809174,
+          "total": 0.0666966661810875
+        },
+        "1.0": {
+          "anchor": 0.01281079649925232,
+          "local": 0.010837715119123459,
+          "recursive": 0.05012943595647812,
+          "total": 0.06096715107560158
+        }
+      },
+      "policy": "fixed-250-continuous",
+      "pure": false,
+      "seed": 760930003,
+      "total_directional_derivative": -0.014319175854325294
+    },
+    {
+      "anchor_directional_derivative": -0.0005382236558943987,
+      "base": {
+        "anchor": 0.013265409506857395,
+        "local": 0.01078784465789795,
+        "recursive": 0.03957025706768036,
+        "total": 0.15729770064353943
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.013212417252361774,
+          "local": 0.010768814012408257,
+          "recursive": 0.03840702027082443,
+          "total": 0.15609613060951233
+        },
+        "1.0": {
+          "anchor": 0.012809829786419868,
+          "local": 0.010649432428181171,
+          "recursive": 0.03585885465145111,
+          "total": 0.15326231718063354
+        }
+      },
+      "policy": "fixed-250-micro",
+      "pure": false,
+      "seed": 760930003,
+      "total_directional_derivative": -0.01293940469622612
+    },
+    {
+      "anchor_directional_derivative": -0.00048814850742928684,
+      "base": {
+        "anchor": 0.013265409506857395,
+        "local": 0.010982414707541466,
+        "recursive": 0.04531366005539894,
+        "total": 0.41129979491233826
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.013217299245297909,
+          "local": 0.010976504534482956,
+          "recursive": 0.0447092279791832,
+          "total": 0.4105040729045868
+        },
+        "1.0": {
+          "anchor": 0.012847553007304668,
+          "local": 0.010966571047902107,
+          "recursive": 0.04488356038928032,
+          "total": 0.4090039134025574
+        }
+      },
+      "policy": "fixed-250-macro",
+      "pure": false,
+      "seed": 760930003,
+      "total_directional_derivative": -0.008596602827310562
+    },
+    {
+      "anchor_directional_derivative": -0.0008247166406363249,
+      "base": {
+        "anchor": 0.013265409506857395,
+        "local": 0.004311621189117432,
+        "recursive": 0.01710972748696804,
+        "total": 0.021421348676085472
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.013184010982513428,
+          "local": 0.004284433554857969,
+          "recursive": 0.0167176965624094,
+          "total": 0.021002130582928658
+        },
+        "1.0": {
+          "anchor": 0.012548535130918026,
+          "local": 0.0041086128912866116,
+          "recursive": 0.01490530651062727,
+          "total": 0.019013918936252594
+        }
+      },
+      "policy": "fixed-750-continuous",
+      "pure": false,
+      "seed": 760930003,
+      "total_directional_derivative": -0.004390878137201071
+    },
+    {
+      "anchor_directional_derivative": -0.0009459707653149962,
+      "base": {
+        "anchor": 0.013265409506857395,
+        "local": 0.004401340149343014,
+        "recursive": 0.015339185483753681,
+        "total": 0.1282445788383484
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.013172398321330547,
+          "local": 0.004364977590739727,
+          "recursive": 0.014794979244470596,
+          "total": 0.12748798727989197
+        },
+        "1.0": {
+          "anchor": 0.012476593255996704,
+          "local": 0.004127160646021366,
+          "recursive": 0.012987447902560234,
+          "total": 0.12388887256383896
+        }
+      },
+      "policy": "fixed-750-micro",
+      "pure": false,
+      "seed": 760930003,
+      "total_directional_derivative": -0.007936916314065456
+    },
+    {
+      "anchor_directional_derivative": -0.00047776856808923185,
+      "base": {
+        "anchor": 0.013265409506857395,
+        "local": 0.004506067838519812,
+        "recursive": 0.015082934871315956,
+        "total": 0.5581203103065491
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.013218353502452374,
+          "local": 0.0045015327632427216,
+          "recursive": 0.01507430337369442,
+          "total": 0.5571467876434326
+        },
+        "1.0": {
+          "anchor": 0.012859426438808441,
+          "local": 0.004502210300415754,
+          "recursive": 0.016752716153860092,
+          "total": 0.5503424406051636
+        }
+      },
+      "policy": "fixed-750-macro",
+      "pure": false,
+      "seed": 760930003,
+      "total_directional_derivative": -0.009956924244761467
+    },
+    {
+      "anchor_directional_derivative": 0.0001146844879258424,
+      "base": {
+        "anchor": 0.004188457503914833,
+        "local": 0.007237899117171764,
+        "recursive": 0.03664969280362129,
+        "total": 0.04388759285211563
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.004200300667434931,
+          "local": 0.007236560806632042,
+          "recursive": 0.03292630612850189,
+          "total": 0.04016286879777908
+        },
+        "1.0": {
+          "anchor": 0.004340641666203737,
+          "local": 0.007264941930770874,
+          "recursive": 0.04228370636701584,
+          "total": 0.04954864829778671
+        }
+      },
+      "policy": "fixed-50-continuous",
+      "pure": true,
+      "seed": 760930003,
+      "total_directional_derivative": -0.05596975237131119
+    },
+    {
+      "anchor_directional_derivative": 0.00010216211376246065,
+      "base": {
+        "anchor": 0.004188457503914833,
+        "local": 0.004317993763834238,
+        "recursive": 0.014339537359774113,
+        "total": 0.018657531589269638
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.004199686460196972,
+          "local": 0.004300219006836414,
+          "recursive": 0.013594726100564003,
+          "total": 0.017894946038722992
+        },
+        "1.0": {
+          "anchor": 0.0043983361683785915,
+          "local": 0.004194146953523159,
+          "recursive": 0.011280364356935024,
+          "total": 0.015474511310458183
+        }
+      },
+      "policy": "fixed-250-continuous",
+      "pure": true,
+      "seed": 760930003,
+      "total_directional_derivative": -0.008122655563056469
+    },
+    {
+      "anchor_directional_derivative": -0.0008205900667235255,
+      "base": {
+        "anchor": 0.004188457503914833,
+        "local": 0.0019438026938587427,
+        "recursive": 0.005607686936855316,
+        "total": 0.007551489397883415
+      },
+      "perturbations": {
+        "0.1": {
+          "anchor": 0.00410942267626524,
+          "local": 0.0019203004194423556,
+          "recursive": 0.0054077464155852795,
+          "total": 0.007328046951442957
+        },
+        "1.0": {
+          "anchor": 0.0036828487645834684,
+          "local": 0.0018061891896650195,
+          "recursive": 0.004884623922407627,
+          "total": 0.0066908132284879684
+        }
+      },
+      "policy": "fixed-750-continuous",
+      "pure": true,
+      "seed": 760930003,
+      "total_directional_derivative": -0.0023867706768214703
+    }
+  ],
+  "source_plan_identity": "issue-76-full-duration-dynamics-v1",
+  "source_text": "\"\"\"Measure one-step overshoot on temporary model copies, never saved checkpoints.\"\"\"\nimport argparse\nimport json\nfrom pathlib import Path\n\nimport torch\nfrom torch.nn import functional as F\n\nfrom scripts import diagnose_issue_76_gradient_tradeoff as previous\n\nrun = previous.run\nROOT = run.fit.files.ROOT / \".local-artifacts/issue-76-finite-step-v1\"\nOUTPUT = run.fit.files.ROOT / \"data/issue-76-finite-step/report.json\"\n\n\ndef anchor_loss(model, batch, pair):\n    mask = batch[\"available\"][:, 0] & batch[\"available\"][:, 1]\n    predicted = model.carrier(batch[\"z\"][:, 0], batch[\"action\"], pair)\n    return F.mse_loss(predicted[mask], batch[\"z\"][mask, 1])\n\n\n@torch.no_grad()\ndef measures(model, batch, pair, anchor_batch, anchor_pair):\n    local, recursive, symbolic, _ = previous.terms(model, batch, pair)\n    return dict(local=float(local), recursive=float(recursive),\n                total=float(local + recursive + (0 if symbolic is None else symbolic)),\n                anchor=float(anchor_loss(model, anchor_batch, anchor_pair)))\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--run\", action=\"store_true\")\n    args = parser.parse_args()\n    if not args.run:\n        print(\"No-write: all 36 completed pair/seed cells, 0.1x and 1x saved AdamW delta; no checkpoint writes; 300s CUDA cap.\")\n        return\n    torch.set_num_threads(1)\n    torch.cuda.init()\n    plan = run.fit.files.read(run.ROOT / \"plan.json\")\n    rows = []\n    with run.fit.fitting_budget(ROOT, \"finite-step-probe\", 300, \"cuda\") as budget:\n        for seed in plan[\"seeds\"]:\n            shards = [run.fit.load_shard(Path(plan[\"data_root\"]), e, plan[\"data_binding\"], fitting=True)\n                      for e in plan[\"evaluation\"]]\n            carriers = [run.fit.load_carrier(Path(plan[\"data_root\"]), seed, e, plan[\"data_binding\"])\n                        for e in plan[\"evaluation\"]]\n            anchors = torch.tensor([[i, s[\"segment_ranges\"][0][\"start\"]] for i, s in enumerate(shards)])\n            for pure in (False, True):\n                saved = torch.load(run.fit.model_path(run.ROOT, seed, pure, \"predictor\"),\n                                   map_location=\"cuda\", weights_only=False)\n                model = run.fit.new_predictor(plan, pure, \"cuda\").eval()\n                model.load_state_dict(saved[\"model\"])\n                parameters = tuple(model.parameters())\n                anchor_pair = next(p for p in model.pairs if p.delta == 750 and\n                                   p.abstraction == (previous.Abstraction.CONTINUOUS if pure else previous.Abstraction.MICRO))\n                anchor_batch = run.trajectory_batch(shards, carriers, anchors, 750, symbolic=not pure)\n                anchor_batch = {k: v.cuda() for k, v in anchor_batch.items()}\n                for pair in model.pairs:\n                    budget.check()\n                    batch = run.trajectory_batch(shards, carriers, anchors, pair.delta, symbolic=not pure)\n                    batch = {k: v.cuda() for k, v in batch.items()}\n                    local, recursive, symbolic, _ = previous.terms(model, batch, pair)\n                    total = local + recursive + (0 if symbolic is None else symbolic)\n                    gradients = torch.autograd.grad(total, parameters, allow_unused=True)\n                    direction = previous.adamw_delta(parameters, gradients, saved[\"optimizer\"])\n                    anchor_grad = previous.flatten(torch.autograd.grad(anchor_loss(model, anchor_batch, anchor_pair),\n                                                                     parameters, allow_unused=True), parameters)\n                    row = dict(seed=seed, pure=pure, policy=run.fit.policy_name(pair),\n                               base=measures(model, batch, pair, anchor_batch, anchor_pair),\n                               total_directional_derivative=float(previous.flatten(gradients, parameters).dot(direction)),\n                               anchor_directional_derivative=float(anchor_grad.dot(direction)), perturbations={})\n                    for scale in (.1, 1.):\n                        cursor = 0\n                        with torch.no_grad():\n                            for name, p in model.named_parameters():\n                                size = p.numel()\n                                p.copy_(saved[\"model\"][name] + scale * direction[cursor:cursor + size].reshape_as(p))\n                                cursor += size\n                        row[\"perturbations\"][str(scale)] = measures(model, batch, pair, anchor_batch, anchor_pair)\n                    model.load_state_dict(saved[\"model\"])\n                    assert all(torch.equal(v, saved[\"model\"][k]) for k, v in model.state_dict().items())\n                    rows.append(row)\n                    run.fit.log(f\"finite step {len(rows)}/36\")\n                del model, saved, parameters, gradients, direction, anchor_grad\n        budget.check()\n    value = dict(source_plan_identity=plan[\"identity\"], evaluation=plan[\"evaluation\"], rows=rows,\n                 checkpoint_writes=False, temporary_parameters_restored=True, optimizer_steps_applied=0,\n                 fresh_access=False, budget=run.fit.require_finished_budget(ROOT, \"finite-step-probe\"),\n                 source_text=Path(__file__).read_text(),\n                 interpretation=\"Finite parameter perturbations on five training anchors, not fitted candidates or advancement evidence\")\n    if len(json.dumps(value, indent=2).encode()) > 10 * 2**20:\n        raise ValueError(\"finite-step publication exceeds 10 MiB\")\n    run.source.previous.parent.previous.immutable(OUTPUT, value)\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "temporary_parameters_restored": true
+}
