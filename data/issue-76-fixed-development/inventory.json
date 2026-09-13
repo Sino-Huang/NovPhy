@@ -1,0 +1,1677 @@
+{
+  "capacity": {
+    "compute_note": "MACs are not total FLOPs or equal deployment-time evidence",
+    "continuous_parameters": 2139040,
+    "continuous_width": 480,
+    "dead_padding_parameters": 0,
+    "equal_time_endpoint_native_steps": 11250,
+    "fit_executed": false,
+    "fixed_delta_seconds": 0.0004,
+    "history": {
+      "carrier_dim": 288,
+      "common_weights": "same frozen encoder checkpoint for both dynamics arms",
+      "executed_action_dim": 5,
+      "fit_executed": false,
+      "future_observations_allowed": false,
+      "inputs": [
+        "agent_observation_carrier",
+        "executed_action",
+        "agent_timestamp_seconds",
+        "observation_present",
+        "action_executed"
+      ],
+      "memory_dim": 64,
+      "missing_observation": "zero masked visual input; action-only events still update; padding holds memory",
+      "oracle_hit_counts_allowed": false,
+      "reset": "new gameplay episode only; never reset between shots",
+      "schema": "issue_76_native_observed_history_22slot_v1",
+      "time": "log1p seconds since previous valid event; first event has zero elapsed time"
+    },
+    "horizons_native_steps": [
+      50,
+      250,
+      750
+    ],
+    "horizons_seconds": [
+      0.02,
+      0.1,
+      0.3
+    ],
+    "hybrid_parameters": 2120750,
+    "hybrid_width": 384,
+    "linear_macs_per_transition": {
+      "continuous": {
+        "(250, 'continuous')": 2128224,
+        "(50, 'continuous')": 2128224,
+        "(750, 'continuous')": 2128224
+      },
+      "hybrid": {
+        "(250, 'continuous')": 1521536,
+        "(250, 'macro')": 1568640,
+        "(250, 'micro')": 2063232,
+        "(50, 'continuous')": 1521536,
+        "(50, 'macro')": 1568640,
+        "(50, 'micro')": 2063232,
+        "(750, 'continuous')": 1521536,
+        "(750, 'macro')": 1568640,
+        "(750, 'micro')": 2063232
+      }
+    },
+    "relative_parameter_difference": 0.008624307438406224,
+    "schema": "issue_76_native_observed_history_dynamics_22slot_v1",
+    "shared_encoder_cost": "identical standalone fitting and deployment accounting for both arms",
+    "shared_encoder_included_in_arm_counts": false,
+    "state_dim": 352,
+    "width_rule": "nearest total count over 384..512 step8; smaller width breaks ties"
+  },
+  "checkpoint_completion_validation_pending": true,
+  "checkpoint_file_existence_checked": true,
+  "data_plan_identity": "issue-76-repaired-representation-v1",
+  "data_plan_path": "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/plan.json",
+  "data_root": "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1",
+  "entries": [
+    {
+      "base_cluster": "issue-76-development-051",
+      "exposure_role": "calibration",
+      "family": "type010101",
+      "frames": 215,
+      "member_identity": "issue-76-development-051",
+      "path": "prepared/issue-76-development-051.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-052",
+      "exposure_role": "calibration",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-052",
+      "path": "prepared/issue-76-development-052.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-053",
+      "exposure_role": "calibration",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-053",
+      "path": "prepared/issue-76-development-053.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-054",
+      "exposure_role": "calibration",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-054",
+      "path": "prepared/issue-76-development-054.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-055",
+      "exposure_role": "calibration",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-055",
+      "path": "prepared/issue-76-development-055.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-056",
+      "exposure_role": "calibration",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-056",
+      "path": "prepared/issue-76-development-056.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-057",
+      "exposure_role": "calibration",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-057",
+      "path": "prepared/issue-76-development-057.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-058",
+      "exposure_role": "calibration",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-058",
+      "path": "prepared/issue-76-development-058.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-059",
+      "exposure_role": "calibration",
+      "family": "type010101",
+      "frames": 575,
+      "member_identity": "issue-76-development-059",
+      "path": "prepared/issue-76-development-059.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-060",
+      "exposure_role": "calibration",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-060",
+      "path": "prepared/issue-76-development-060.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-061",
+      "exposure_role": "model_selection",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-061",
+      "path": "prepared/issue-76-development-061.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-062",
+      "exposure_role": "model_selection",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-062",
+      "path": "prepared/issue-76-development-062.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-063",
+      "exposure_role": "model_selection",
+      "family": "type010101",
+      "frames": 334,
+      "member_identity": "issue-76-development-063",
+      "path": "prepared/issue-76-development-063.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-064",
+      "exposure_role": "model_selection",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-064",
+      "path": "prepared/issue-76-development-064.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-065",
+      "exposure_role": "model_selection",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-065",
+      "path": "prepared/issue-76-development-065.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-066",
+      "exposure_role": "model_selection",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-066",
+      "path": "prepared/issue-76-development-066.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-067",
+      "exposure_role": "model_selection",
+      "family": "type010101",
+      "frames": 505,
+      "member_identity": "issue-76-development-067",
+      "path": "prepared/issue-76-development-067.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-068",
+      "exposure_role": "model_selection",
+      "family": "type010101",
+      "frames": 176,
+      "member_identity": "issue-76-development-068",
+      "path": "prepared/issue-76-development-068.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-069",
+      "exposure_role": "model_selection",
+      "family": "type010101",
+      "frames": 601,
+      "member_identity": "issue-76-development-069",
+      "path": "prepared/issue-76-development-069.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-070",
+      "exposure_role": "model_selection",
+      "family": "type010101",
+      "frames": 362,
+      "member_identity": "issue-76-development-070",
+      "path": "prepared/issue-76-development-070.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-121",
+      "exposure_role": "calibration",
+      "family": "type010102",
+      "frames": 601,
+      "member_identity": "issue-76-development-121",
+      "path": "prepared/issue-76-development-121.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-122",
+      "exposure_role": "calibration",
+      "family": "type010102",
+      "frames": 601,
+      "member_identity": "issue-76-development-122",
+      "path": "prepared/issue-76-development-122.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-123",
+      "exposure_role": "calibration",
+      "family": "type010102",
+      "frames": 601,
+      "member_identity": "issue-76-development-123",
+      "path": "prepared/issue-76-development-123.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-124",
+      "exposure_role": "calibration",
+      "family": "type010102",
+      "frames": 601,
+      "member_identity": "issue-76-development-124",
+      "path": "prepared/issue-76-development-124.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-125",
+      "exposure_role": "calibration",
+      "family": "type010102",
+      "frames": 1045,
+      "member_identity": "issue-76-development-125",
+      "path": "prepared/issue-76-development-125.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-126",
+      "exposure_role": "calibration",
+      "family": "type010102",
+      "frames": 601,
+      "member_identity": "issue-76-development-126",
+      "path": "prepared/issue-76-development-126.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-127",
+      "exposure_role": "calibration",
+      "family": "type010102",
+      "frames": 601,
+      "member_identity": "issue-76-development-127",
+      "path": "prepared/issue-76-development-127.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-128",
+      "exposure_role": "calibration",
+      "family": "type010102",
+      "frames": 601,
+      "member_identity": "issue-76-development-128",
+      "path": "prepared/issue-76-development-128.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-129",
+      "exposure_role": "calibration",
+      "family": "type010102",
+      "frames": 601,
+      "member_identity": "issue-76-development-129",
+      "path": "prepared/issue-76-development-129.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-130",
+      "exposure_role": "calibration",
+      "family": "type010102",
+      "frames": 601,
+      "member_identity": "issue-76-development-130",
+      "path": "prepared/issue-76-development-130.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-131",
+      "exposure_role": "model_selection",
+      "family": "type010102",
+      "frames": 983,
+      "member_identity": "issue-76-development-131",
+      "path": "prepared/issue-76-development-131.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-132",
+      "exposure_role": "model_selection",
+      "family": "type010102",
+      "frames": 601,
+      "member_identity": "issue-76-development-132",
+      "path": "prepared/issue-76-development-132.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-133",
+      "exposure_role": "model_selection",
+      "family": "type010102",
+      "frames": 1085,
+      "member_identity": "issue-76-development-133",
+      "path": "prepared/issue-76-development-133.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-134",
+      "exposure_role": "model_selection",
+      "family": "type010102",
+      "frames": 1418,
+      "member_identity": "issue-76-development-134",
+      "path": "prepared/issue-76-development-134.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-135",
+      "exposure_role": "model_selection",
+      "family": "type010102",
+      "frames": 601,
+      "member_identity": "issue-76-development-135",
+      "path": "prepared/issue-76-development-135.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-136",
+      "exposure_role": "model_selection",
+      "family": "type010102",
+      "frames": 1244,
+      "member_identity": "issue-76-development-136",
+      "path": "prepared/issue-76-development-136.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-137",
+      "exposure_role": "model_selection",
+      "family": "type010102",
+      "frames": 781,
+      "member_identity": "issue-76-development-137",
+      "path": "prepared/issue-76-development-137.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-138",
+      "exposure_role": "model_selection",
+      "family": "type010102",
+      "frames": 1489,
+      "member_identity": "issue-76-development-138",
+      "path": "prepared/issue-76-development-138.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-139",
+      "exposure_role": "model_selection",
+      "family": "type010102",
+      "frames": 1037,
+      "member_identity": "issue-76-development-139",
+      "path": "prepared/issue-76-development-139.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-140",
+      "exposure_role": "model_selection",
+      "family": "type010102",
+      "frames": 601,
+      "member_identity": "issue-76-development-140",
+      "path": "prepared/issue-76-development-140.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-191",
+      "exposure_role": "calibration",
+      "family": "type010103",
+      "frames": 334,
+      "member_identity": "issue-76-development-191",
+      "path": "prepared/issue-76-development-191.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-192",
+      "exposure_role": "calibration",
+      "family": "type010103",
+      "frames": 0,
+      "member_identity": "issue-76-development-192",
+      "path": "prepared/issue-76-development-192.pt",
+      "usable": false
+    },
+    {
+      "base_cluster": "issue-76-development-193",
+      "exposure_role": "calibration",
+      "family": "type010103",
+      "frames": 601,
+      "member_identity": "issue-76-development-193",
+      "path": "prepared/issue-76-development-193.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-194",
+      "exposure_role": "calibration",
+      "family": "type010103",
+      "frames": 334,
+      "member_identity": "issue-76-development-194",
+      "path": "prepared/issue-76-development-194.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-195",
+      "exposure_role": "calibration",
+      "family": "type010103",
+      "frames": 555,
+      "member_identity": "issue-76-development-195",
+      "path": "prepared/issue-76-development-195.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-196",
+      "exposure_role": "calibration",
+      "family": "type010103",
+      "frames": 193,
+      "member_identity": "issue-76-development-196",
+      "path": "prepared/issue-76-development-196.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-197",
+      "exposure_role": "calibration",
+      "family": "type010103",
+      "frames": 334,
+      "member_identity": "issue-76-development-197",
+      "path": "prepared/issue-76-development-197.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-198",
+      "exposure_role": "calibration",
+      "family": "type010103",
+      "frames": 430,
+      "member_identity": "issue-76-development-198",
+      "path": "prepared/issue-76-development-198.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-199",
+      "exposure_role": "calibration",
+      "family": "type010103",
+      "frames": 601,
+      "member_identity": "issue-76-development-199",
+      "path": "prepared/issue-76-development-199.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-200",
+      "exposure_role": "calibration",
+      "family": "type010103",
+      "frames": 601,
+      "member_identity": "issue-76-development-200",
+      "path": "prepared/issue-76-development-200.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-201",
+      "exposure_role": "model_selection",
+      "family": "type010103",
+      "frames": 601,
+      "member_identity": "issue-76-development-201",
+      "path": "prepared/issue-76-development-201.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-202",
+      "exposure_role": "model_selection",
+      "family": "type010103",
+      "frames": 123,
+      "member_identity": "issue-76-development-202",
+      "path": "prepared/issue-76-development-202.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-203",
+      "exposure_role": "model_selection",
+      "family": "type010103",
+      "frames": 455,
+      "member_identity": "issue-76-development-203",
+      "path": "prepared/issue-76-development-203.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-204",
+      "exposure_role": "model_selection",
+      "family": "type010103",
+      "frames": 447,
+      "member_identity": "issue-76-development-204",
+      "path": "prepared/issue-76-development-204.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-205",
+      "exposure_role": "model_selection",
+      "family": "type010103",
+      "frames": 334,
+      "member_identity": "issue-76-development-205",
+      "path": "prepared/issue-76-development-205.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-206",
+      "exposure_role": "model_selection",
+      "family": "type010103",
+      "frames": 455,
+      "member_identity": "issue-76-development-206",
+      "path": "prepared/issue-76-development-206.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-207",
+      "exposure_role": "model_selection",
+      "family": "type010103",
+      "frames": 601,
+      "member_identity": "issue-76-development-207",
+      "path": "prepared/issue-76-development-207.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-208",
+      "exposure_role": "model_selection",
+      "family": "type010103",
+      "frames": 601,
+      "member_identity": "issue-76-development-208",
+      "path": "prepared/issue-76-development-208.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-209",
+      "exposure_role": "model_selection",
+      "family": "type010103",
+      "frames": 124,
+      "member_identity": "issue-76-development-209",
+      "path": "prepared/issue-76-development-209.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-210",
+      "exposure_role": "model_selection",
+      "family": "type010103",
+      "frames": 601,
+      "member_identity": "issue-76-development-210",
+      "path": "prepared/issue-76-development-210.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-261",
+      "exposure_role": "calibration",
+      "family": "type010204",
+      "frames": 255,
+      "member_identity": "issue-76-development-261",
+      "path": "prepared/issue-76-development-261.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-262",
+      "exposure_role": "calibration",
+      "family": "type010204",
+      "frames": 601,
+      "member_identity": "issue-76-development-262",
+      "path": "prepared/issue-76-development-262.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-263",
+      "exposure_role": "calibration",
+      "family": "type010204",
+      "frames": 601,
+      "member_identity": "issue-76-development-263",
+      "path": "prepared/issue-76-development-263.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-264",
+      "exposure_role": "calibration",
+      "family": "type010204",
+      "frames": 165,
+      "member_identity": "issue-76-development-264",
+      "path": "prepared/issue-76-development-264.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-265",
+      "exposure_role": "calibration",
+      "family": "type010204",
+      "frames": 601,
+      "member_identity": "issue-76-development-265",
+      "path": "prepared/issue-76-development-265.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-266",
+      "exposure_role": "calibration",
+      "family": "type010204",
+      "frames": 472,
+      "member_identity": "issue-76-development-266",
+      "path": "prepared/issue-76-development-266.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-267",
+      "exposure_role": "calibration",
+      "family": "type010204",
+      "frames": 601,
+      "member_identity": "issue-76-development-267",
+      "path": "prepared/issue-76-development-267.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-268",
+      "exposure_role": "calibration",
+      "family": "type010204",
+      "frames": 283,
+      "member_identity": "issue-76-development-268",
+      "path": "prepared/issue-76-development-268.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-269",
+      "exposure_role": "calibration",
+      "family": "type010204",
+      "frames": 601,
+      "member_identity": "issue-76-development-269",
+      "path": "prepared/issue-76-development-269.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-270",
+      "exposure_role": "calibration",
+      "family": "type010204",
+      "frames": 601,
+      "member_identity": "issue-76-development-270",
+      "path": "prepared/issue-76-development-270.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-271",
+      "exposure_role": "model_selection",
+      "family": "type010204",
+      "frames": 601,
+      "member_identity": "issue-76-development-271",
+      "path": "prepared/issue-76-development-271.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-272",
+      "exposure_role": "model_selection",
+      "family": "type010204",
+      "frames": 599,
+      "member_identity": "issue-76-development-272",
+      "path": "prepared/issue-76-development-272.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-273",
+      "exposure_role": "model_selection",
+      "family": "type010204",
+      "frames": 265,
+      "member_identity": "issue-76-development-273",
+      "path": "prepared/issue-76-development-273.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-274",
+      "exposure_role": "model_selection",
+      "family": "type010204",
+      "frames": 601,
+      "member_identity": "issue-76-development-274",
+      "path": "prepared/issue-76-development-274.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-275",
+      "exposure_role": "model_selection",
+      "family": "type010204",
+      "frames": 227,
+      "member_identity": "issue-76-development-275",
+      "path": "prepared/issue-76-development-275.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-276",
+      "exposure_role": "model_selection",
+      "family": "type010204",
+      "frames": 601,
+      "member_identity": "issue-76-development-276",
+      "path": "prepared/issue-76-development-276.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-277",
+      "exposure_role": "model_selection",
+      "family": "type010204",
+      "frames": 245,
+      "member_identity": "issue-76-development-277",
+      "path": "prepared/issue-76-development-277.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-278",
+      "exposure_role": "model_selection",
+      "family": "type010204",
+      "frames": 446,
+      "member_identity": "issue-76-development-278",
+      "path": "prepared/issue-76-development-278.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-279",
+      "exposure_role": "model_selection",
+      "family": "type010204",
+      "frames": 601,
+      "member_identity": "issue-76-development-279",
+      "path": "prepared/issue-76-development-279.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-280",
+      "exposure_role": "model_selection",
+      "family": "type010204",
+      "frames": 601,
+      "member_identity": "issue-76-development-280",
+      "path": "prepared/issue-76-development-280.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-331",
+      "exposure_role": "calibration",
+      "family": "type010105",
+      "frames": 601,
+      "member_identity": "issue-76-development-331",
+      "path": "prepared/issue-76-development-331.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-332",
+      "exposure_role": "calibration",
+      "family": "type010105",
+      "frames": 492,
+      "member_identity": "issue-76-development-332",
+      "path": "prepared/issue-76-development-332.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-333",
+      "exposure_role": "calibration",
+      "family": "type010105",
+      "frames": 601,
+      "member_identity": "issue-76-development-333",
+      "path": "prepared/issue-76-development-333.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-334",
+      "exposure_role": "calibration",
+      "family": "type010105",
+      "frames": 557,
+      "member_identity": "issue-76-development-334",
+      "path": "prepared/issue-76-development-334.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-335",
+      "exposure_role": "calibration",
+      "family": "type010105",
+      "frames": 192,
+      "member_identity": "issue-76-development-335",
+      "path": "prepared/issue-76-development-335.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-336",
+      "exposure_role": "calibration",
+      "family": "type010105",
+      "frames": 601,
+      "member_identity": "issue-76-development-336",
+      "path": "prepared/issue-76-development-336.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-337",
+      "exposure_role": "calibration",
+      "family": "type010105",
+      "frames": 601,
+      "member_identity": "issue-76-development-337",
+      "path": "prepared/issue-76-development-337.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-338",
+      "exposure_role": "calibration",
+      "family": "type010105",
+      "frames": 601,
+      "member_identity": "issue-76-development-338",
+      "path": "prepared/issue-76-development-338.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-339",
+      "exposure_role": "calibration",
+      "family": "type010105",
+      "frames": 452,
+      "member_identity": "issue-76-development-339",
+      "path": "prepared/issue-76-development-339.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-340",
+      "exposure_role": "calibration",
+      "family": "type010105",
+      "frames": 334,
+      "member_identity": "issue-76-development-340",
+      "path": "prepared/issue-76-development-340.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-341",
+      "exposure_role": "model_selection",
+      "family": "type010105",
+      "frames": 293,
+      "member_identity": "issue-76-development-341",
+      "path": "prepared/issue-76-development-341.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-342",
+      "exposure_role": "model_selection",
+      "family": "type010105",
+      "frames": 334,
+      "member_identity": "issue-76-development-342",
+      "path": "prepared/issue-76-development-342.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-343",
+      "exposure_role": "model_selection",
+      "family": "type010105",
+      "frames": 505,
+      "member_identity": "issue-76-development-343",
+      "path": "prepared/issue-76-development-343.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-344",
+      "exposure_role": "model_selection",
+      "family": "type010105",
+      "frames": 601,
+      "member_identity": "issue-76-development-344",
+      "path": "prepared/issue-76-development-344.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-345",
+      "exposure_role": "model_selection",
+      "family": "type010105",
+      "frames": 387,
+      "member_identity": "issue-76-development-345",
+      "path": "prepared/issue-76-development-345.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-346",
+      "exposure_role": "model_selection",
+      "family": "type010105",
+      "frames": 248,
+      "member_identity": "issue-76-development-346",
+      "path": "prepared/issue-76-development-346.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-347",
+      "exposure_role": "model_selection",
+      "family": "type010105",
+      "frames": 445,
+      "member_identity": "issue-76-development-347",
+      "path": "prepared/issue-76-development-347.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-348",
+      "exposure_role": "model_selection",
+      "family": "type010105",
+      "frames": 334,
+      "member_identity": "issue-76-development-348",
+      "path": "prepared/issue-76-development-348.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-349",
+      "exposure_role": "model_selection",
+      "family": "type010105",
+      "frames": 601,
+      "member_identity": "issue-76-development-349",
+      "path": "prepared/issue-76-development-349.pt",
+      "usable": true
+    },
+    {
+      "base_cluster": "issue-76-development-350",
+      "exposure_role": "model_selection",
+      "family": "type010105",
+      "frames": 533,
+      "member_identity": "issue-76-development-350",
+      "path": "prepared/issue-76-development-350.pt",
+      "usable": true
+    }
+  ],
+  "failed_training_qualifications_preserved": true,
+  "fresh_access": false,
+  "identity": "issue-76-fixed-development-v1",
+  "models": [
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/checkpoints/predictor-hybrid-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "repaired-representation",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-repaired-representation-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/checkpoints/predictor-pure-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "repaired-representation",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-repaired-representation-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/checkpoints/predictor-hybrid-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "repaired-representation",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-repaired-representation-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/checkpoints/predictor-pure-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "repaired-representation",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-repaired-representation-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/checkpoints/predictor-hybrid-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "repaired-representation",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-repaired-representation-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/checkpoints/predictor-pure-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "repaired-representation",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-repaired-representation-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-matched-dynamics-v1/checkpoints/predictor-hybrid-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "matched-dynamics",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-matched-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-matched-dynamics-v1/checkpoints/predictor-pure-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "matched-dynamics",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-matched-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-matched-dynamics-v1/checkpoints/predictor-hybrid-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "matched-dynamics",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-matched-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-matched-dynamics-v1/checkpoints/predictor-pure-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "matched-dynamics",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-matched-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-matched-dynamics-v1/checkpoints/predictor-hybrid-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "matched-dynamics",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-matched-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-matched-dynamics-v1/checkpoints/predictor-pure-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "matched-dynamics",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-matched-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-boundary-dynamics-v1/checkpoints/predictor-hybrid-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "boundary-dynamics",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-boundary-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-boundary-dynamics-v1/checkpoints/predictor-pure-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "boundary-dynamics",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-boundary-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-boundary-dynamics-v1/checkpoints/predictor-hybrid-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "boundary-dynamics",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-boundary-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-boundary-dynamics-v1/checkpoints/predictor-pure-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "boundary-dynamics",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-boundary-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-boundary-dynamics-v1/checkpoints/predictor-hybrid-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "boundary-dynamics",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-boundary-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-boundary-dynamics-v1/checkpoints/predictor-pure-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "boundary-dynamics",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-boundary-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-full-duration-dynamics-v1/checkpoints/predictor-hybrid-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "full-duration-dynamics",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-full-duration-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-full-duration-dynamics-v1/checkpoints/predictor-pure-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "full-duration-dynamics",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-full-duration-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-full-duration-dynamics-v1/checkpoints/predictor-hybrid-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "full-duration-dynamics",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-full-duration-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-full-duration-dynamics-v1/checkpoints/predictor-pure-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "full-duration-dynamics",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-full-duration-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-full-duration-dynamics-v1/checkpoints/predictor-hybrid-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "full-duration-dynamics",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-full-duration-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-full-duration-dynamics-v1/checkpoints/predictor-pure-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "full-duration-dynamics",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-full-duration-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-lower-rate-dynamics-v1/checkpoints/predictor-hybrid-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "lower-rate-dynamics",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-lower-rate-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-lower-rate-dynamics-v1/checkpoints/predictor-pure-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "lower-rate-dynamics",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-lower-rate-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-lower-rate-dynamics-v1/checkpoints/predictor-hybrid-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "lower-rate-dynamics",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-lower-rate-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-lower-rate-dynamics-v1/checkpoints/predictor-pure-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "lower-rate-dynamics",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-lower-rate-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-lower-rate-dynamics-v1/checkpoints/predictor-hybrid-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "lower-rate-dynamics",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-lower-rate-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-lower-rate-dynamics-v1/checkpoints/predictor-pure-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "lower-rate-dynamics",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-lower-rate-dynamics-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-boundary-focus-v1/checkpoints/predictor-hybrid-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "boundary-focus",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-boundary-focus-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-boundary-focus-v1/checkpoints/predictor-pure-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "boundary-focus",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-boundary-focus-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-boundary-focus-v1/checkpoints/predictor-hybrid-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "boundary-focus",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-boundary-focus-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-boundary-focus-v1/checkpoints/predictor-pure-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "boundary-focus",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-boundary-focus-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-boundary-focus-v1/checkpoints/predictor-hybrid-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "boundary-focus",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-boundary-focus-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-boundary-focus-v1/checkpoints/predictor-pure-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "boundary-focus",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-boundary-focus-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-local-anchor-v1/checkpoints/predictor-hybrid-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "local-anchor",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-local-anchor-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-local-anchor-v1/checkpoints/predictor-pure-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "local-anchor",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-local-anchor-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-local-anchor-v1/checkpoints/predictor-hybrid-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "local-anchor",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-local-anchor-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-local-anchor-v1/checkpoints/predictor-pure-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "local-anchor",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-local-anchor-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-local-anchor-v1/checkpoints/predictor-hybrid-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "local-anchor",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-local-anchor-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-local-anchor-v1/checkpoints/predictor-pure-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "local-anchor",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-local-anchor-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-endpoint-anchor-v1/checkpoints/predictor-hybrid-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "endpoint-anchor",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-endpoint-anchor-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-endpoint-anchor-v1/checkpoints/predictor-pure-760930001.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "endpoint-anchor",
+      "seed": 760930001,
+      "source_plan_identity": "issue-76-endpoint-anchor-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-endpoint-anchor-v1/checkpoints/predictor-hybrid-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "endpoint-anchor",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-endpoint-anchor-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-endpoint-anchor-v1/checkpoints/predictor-pure-760930002.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "endpoint-anchor",
+      "seed": 760930002,
+      "source_plan_identity": "issue-76-endpoint-anchor-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-endpoint-anchor-v1/checkpoints/predictor-hybrid-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": false,
+      "recipe": "endpoint-anchor",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-endpoint-anchor-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-endpoint-anchor-v1/checkpoints/predictor-pure-760930003.pt"
+      ],
+      "parameter_weights": [
+        1.0
+      ],
+      "pure": true,
+      "recipe": "endpoint-anchor",
+      "seed": 760930003,
+      "source_plan_identity": "issue-76-endpoint-anchor-v1"
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-local-anchor-v1/checkpoints/predictor-hybrid-760930001.pt",
+        "/p/Project/NovPhy/.local-artifacts/issue-76-endpoint-anchor-v1/checkpoints/predictor-hybrid-760930001.pt"
+      ],
+      "parameter_weights": [
+        0.5,
+        0.5
+      ],
+      "pure": false,
+      "recipe": "fixed-midpoint",
+      "seed": 760930001,
+      "source_plan_identities": [
+        "issue-76-local-anchor-v1",
+        "issue-76-endpoint-anchor-v1"
+      ]
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-local-anchor-v1/checkpoints/predictor-pure-760930001.pt",
+        "/p/Project/NovPhy/.local-artifacts/issue-76-endpoint-anchor-v1/checkpoints/predictor-pure-760930001.pt"
+      ],
+      "parameter_weights": [
+        0.5,
+        0.5
+      ],
+      "pure": true,
+      "recipe": "fixed-midpoint",
+      "seed": 760930001,
+      "source_plan_identities": [
+        "issue-76-local-anchor-v1",
+        "issue-76-endpoint-anchor-v1"
+      ]
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-local-anchor-v1/checkpoints/predictor-hybrid-760930002.pt",
+        "/p/Project/NovPhy/.local-artifacts/issue-76-endpoint-anchor-v1/checkpoints/predictor-hybrid-760930002.pt"
+      ],
+      "parameter_weights": [
+        0.5,
+        0.5
+      ],
+      "pure": false,
+      "recipe": "fixed-midpoint",
+      "seed": 760930002,
+      "source_plan_identities": [
+        "issue-76-local-anchor-v1",
+        "issue-76-endpoint-anchor-v1"
+      ]
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-local-anchor-v1/checkpoints/predictor-pure-760930002.pt",
+        "/p/Project/NovPhy/.local-artifacts/issue-76-endpoint-anchor-v1/checkpoints/predictor-pure-760930002.pt"
+      ],
+      "parameter_weights": [
+        0.5,
+        0.5
+      ],
+      "pure": true,
+      "recipe": "fixed-midpoint",
+      "seed": 760930002,
+      "source_plan_identities": [
+        "issue-76-local-anchor-v1",
+        "issue-76-endpoint-anchor-v1"
+      ]
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-local-anchor-v1/checkpoints/predictor-hybrid-760930003.pt",
+        "/p/Project/NovPhy/.local-artifacts/issue-76-endpoint-anchor-v1/checkpoints/predictor-hybrid-760930003.pt"
+      ],
+      "parameter_weights": [
+        0.5,
+        0.5
+      ],
+      "pure": false,
+      "recipe": "fixed-midpoint",
+      "seed": 760930003,
+      "source_plan_identities": [
+        "issue-76-local-anchor-v1",
+        "issue-76-endpoint-anchor-v1"
+      ]
+    },
+    {
+      "checkpoint_paths": [
+        "/p/Project/NovPhy/.local-artifacts/issue-76-local-anchor-v1/checkpoints/predictor-pure-760930003.pt",
+        "/p/Project/NovPhy/.local-artifacts/issue-76-endpoint-anchor-v1/checkpoints/predictor-pure-760930003.pt"
+      ],
+      "parameter_weights": [
+        0.5,
+        0.5
+      ],
+      "pure": true,
+      "recipe": "fixed-midpoint",
+      "seed": 760930003,
+      "source_plan_identities": [
+        "issue-76-local-anchor-v1",
+        "issue-76-endpoint-anchor-v1"
+      ]
+    }
+  ],
+  "optimization_performed": false,
+  "protocol_text": "# Controller-free fixed-policy development evaluation\n\n## Purpose and unchanged boundaries\n\nThe latest training diagnostics establish substantial recursive-error recovery\nbut retain failed local/endpoint qualification checks. Their dispositions stay\nfalse. This separate diagnostic will test transfer to already assigned,\npreviously opened native development partitions; it does not adopt an\nunqualified checkpoint for gameplay, refit a controller or open fresh data.\nThe #76 advancement gate still requires actual adaptive gameplay, strongest\nindependent pure and same-hybrid fixed controls, a strong action prior, useful\nadaptation, practical margins with uncertainty and matched compute.\n\nThe existing native `score_entry` includes adaptive prediction and requires a\nfitted controller; those controllers belong to an older predictor recipe.\nDo not reuse them as if fitted to the new predictors. This evaluation is\nfixed-policy only and must not infer adaptive or action-ranking performance.\n\n## Membership and retained predictor pool\n\nUse every one of the 50 calibration and 50 model-selection assignments in\n`issue-76-repaired-representation-v1/data-index.json`, preserving order,\nbase-cluster identity and all five families. The metadata index has 49 usable\ncalibration assignments and 50 usable model-selection assignments; actual\nendpoint availability is checked only at scoring. Retain the unusable member\nand every missing endpoint. No training or fresh/final member is added.\n\nInclude all three paired seeds and both arms from all eight retained recipes:\nrepaired representation, matched dynamics, boundary dynamics, full-duration\ndynamics, lower rate, boundary focus, local anchor and endpoint anchor.\nAlso include the one independently validated 50/50 local/endpoint parameter\nmidpoint, with no other weights. This is 48 existing saved models and six\ntemporary midpoint instances. Every one of the 48 checkpoint files exists;\ncompletion/source/shape validation is still required before scoring.\nAll recipes use the same repaired shared representation and cached carriers.\nKeep each recipe's nine hybrid fixed pairs and three pure fixed horizons.\nNo pure recipe may be dropped because its training diagnostic failed.\n\n## Access order and measurements\n\nFreeze the metadata inventory first. Implement and test the scoring source\nand immutable execution plan before evaluating any member. Score the entire\ncalibration assignment list for all models/policies before freezing choices.\nFor each arm, choose one common recipe/fixed-pair combination across all three\nseeds by equal-family, equal-seed mean endpoint carrier MSE on calibration;\nties follow listed recipe order then existing pair order. Exclude a choice\nfrom eligibility if it has any prediction failure, but retain its full results.\nDo not select different recipes or pairs by seed or model-selection outcome.\n\nOnly after that complete calibration freeze, score all assigned model-selection\nmembers and every fixed policy, reporting the frozen selections separately.\nThese are strongest controls for this offline prediction metric, not claims\nof strongest gameplay policies. Preserve the complete model/policy matrix\nfor later prospectively specified task-level baseline work.\n\nInitialize from the first shot's actual pre-intervention observation and known\nexecuted action. Use the exact common 11,250-native-step endpoint. No truth\nresets, earlier substitute endpoint, terminal padding or target interpolation.\nReport recursive and observed-context local errors separately at common\nelapsed times 750, 1,500, 3,000, 6,000 and 11,250 native steps when available.\nThe observed-context diagnostic is not used for deployed action selection.\n\nPreserve the existing field metrics: aggregate carrier, visual and memory\nMSE; presence MSE and present-object center MSE against engine evaluation\ntargets; pig and block count absolute errors; absolute carrier-bound excess.\nDo not call latent bound excess a physical violation. The unchanged-carrier\nreference is a prediction reference, not a no-model action prior. These\nsingle recorded-action traces cannot establish counterfactual ranking,\nmulti-shot gameplay success or adaptation headroom by themselves.\n\n## Reporting, costs and validation\n\nReport all assigned and available denominators per role/family/seed, with\nthe inherited 90% model-selection endpoint-coverage requirement left intact.\nUse common available-member comparisons, retain failures, and never use\navailability filtering to favor a model. Record deterministic prediction\nfailures with penalty MSE 1e9 and disqualify them from calibration selection.\nReport per-seed effects and paired lineage-cluster bootstrap intervals\n(10,000 resamples, seed 760940001, 95% intervals) descriptively; three seeds\ndo not establish a seed-robust advancement claim. Repeated policies/frames\non a lineage are not independent replicates.\n\nThe execution plan will enforce at most 900 active CUDA seconds per role,\n300 CPU seconds per role/seed for preparation, and 900 CPU seconds for\nindependent validation, 12 GiB RSS, 8 GiB allocated CUDA and 1 GiB new derived\nartifacts. Batch sizes and actual wall times must be recorded. Batched wall\ntime is not batch-one deployment latency. Charge exact linear-MAC proxies\nand transition counts; do not call MACs full FLOPs or claim matched deployment\ncompute. Preserve all parent/representation costs with shared work counted\nonce. No new collection, optimizer work or fresh access is permitted.\n\nValidate source/role inventories, source checkpoint completion, exact curves,\nselection ordering and decisions before publishing conclusions. This document\nand the metadata inventory do not authorize score execution on their own:\nthe scoring implementation, tests, source-bound execution plan and bounded\nsmoke must be frozen first. Every failed training qualification and every\nunmet gameplay/advancement requirement remains explicitly recorded.\n",
+  "recipes": [
+    "repaired-representation",
+    "matched-dynamics",
+    "boundary-dynamics",
+    "full-duration-dynamics",
+    "lower-rate-dynamics",
+    "boundary-focus",
+    "local-anchor",
+    "endpoint-anchor",
+    "fixed-midpoint"
+  ],
+  "score_execution_authorized": false,
+  "seeds": [
+    760930001,
+    760930002,
+    760930003
+  ],
+  "source_text": "\"\"\"Freeze metadata-only development membership and the complete retained model pool.\"\"\"\nimport argparse\nfrom pathlib import Path\n\nfrom scripts import run_issue_76_endpoint_anchor as source\n\nROOT = source.fit.files.ROOT / \".local-artifacts/issue-76-fixed-development-v1\"\nOUTPUT = source.fit.files.ROOT / \"data/issue-76-fixed-development\"\nSTAGES = (\"repaired-representation\", \"matched-dynamics\", \"boundary-dynamics\", \"full-duration-dynamics\",\n          \"lower-rate-dynamics\", \"boundary-focus\", \"local-anchor\", \"endpoint-anchor\")\nENTRY_FIELDS = (\"member_identity\", \"base_cluster\", \"exposure_role\", \"family\", \"path\", \"frames\", \"usable\")\n\n\ndef make_inventory():\n    parent = source.fit.files.read(source.ROOT / \"plan.json\")\n    data_root = Path(parent[\"data_root\"])\n    index = source.fit.files.read(data_root / \"data-index.json\")\n    assert index[\"plan_identity\"] == parent[\"data_binding\"][\"identity\"]\n    entries = [{key: entry[key] for key in ENTRY_FIELDS} for entry in index[\"entries\"]\n               if entry[\"exposure_role\"] in (\"calibration\", \"model_selection\")]\n    assert all(sum(e[\"exposure_role\"] == role for e in entries) == 50 for role in (\"calibration\", \"model_selection\"))\n    models = []\n    for stage in STAGES:\n        root = source.fit.files.ROOT / \".local-artifacts\" / f\"issue-76-{stage}-v1\"\n        identity = source.fit.files.read(root / \"plan.json\")[\"identity\"]\n        for seed in parent[\"seeds\"]:\n            for pure in (False, True):\n                checkpoint = source.fit.model_path(root, seed, pure, \"predictor\")\n                assert checkpoint.is_file(), f\"missing declared checkpoint: {checkpoint}\"\n                models.append(dict(recipe=stage, seed=seed, pure=pure, source_plan_identity=identity,\n                                   checkpoint_paths=[str(checkpoint)], parameter_weights=[1.]))\n    for seed in parent[\"seeds\"]:\n        for pure in (False, True):\n            paths = [str(source.fit.model_path(source.fit.files.ROOT / \".local-artifacts\" /\n                         f\"issue-76-{stage}-v1\", seed, pure, \"predictor\")) for stage in (\"local-anchor\", \"endpoint-anchor\")]\n            models.append(dict(recipe=\"fixed-midpoint\", seed=seed, pure=pure,\n                               source_plan_identities=[\"issue-76-local-anchor-v1\", \"issue-76-endpoint-anchor-v1\"],\n                               checkpoint_paths=paths, parameter_weights=[.5, .5]))\n    return dict(identity=ROOT.name, data_root=str(data_root), data_plan_identity=index[\"plan_identity\"],\n        data_plan_path=str(data_root / \"plan.json\"), entries=entries, models=models, seeds=parent[\"seeds\"],\n        recipes=[*STAGES, \"fixed-midpoint\"], capacity=parent[\"capacity\"],\n        checkpoint_file_existence_checked=True, checkpoint_completion_validation_pending=True,\n        score_execution_authorized=False, fresh_access=False, optimization_performed=False,\n        failed_training_qualifications_preserved=True,\n        source_text=Path(__file__).read_text(), protocol_text=(source.fit.files.ROOT /\n            \"docs/issue-76-fixed-development-protocol.md\").read_text())\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--prepare\", action=\"store_true\")\n    args = parser.parse_args()\n    if not args.prepare:\n        print(\"No-write: metadata only; 100 assigned development members, 48 saved models and six fixed midpoints.\")\n        return\n    inventory = make_inventory()\n    source.immutable(ROOT / \"inventory.json\", inventory)\n    source.immutable(OUTPUT / \"inventory.json\", inventory)\n    print(dict(assigned_members=len(inventory[\"entries\"]), model_instances=len(inventory[\"models\"]),\n               scoring_performed=False, fresh_access=False), flush=True)\n\n\nif __name__ == \"__main__\":\n    main()\n"
+}
