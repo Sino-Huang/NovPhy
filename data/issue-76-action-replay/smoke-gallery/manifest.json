@@ -1,0 +1,58 @@
+{
+  "advancement_authorized": false,
+  "entries": [
+    {
+      "action": {
+        "drag_x": -80,
+        "drag_y": 10,
+        "release_time_ms": 600,
+        "tap_time_ms": 0
+      },
+      "candidate_ordinal": 0,
+      "censored": true,
+      "decision_png": "issue-76-action-replay-001-a00.png",
+      "display_fps": 50,
+      "frame_count": 601,
+      "member_identity": "issue-76-action-replay-001-a00",
+      "native_outcome": {
+        "clear_evidence": null,
+        "reason": "native_time_window_limit",
+        "success": false
+      },
+      "physical_first_time": 8.374,
+      "physical_last_time": 20.3739986,
+      "source_member_identity": "issue-76-development-001",
+      "source_result_path": "/p/Project/NovPhy/.local-artifacts/issue-76-action-replay-v1/results/issue-76-action-replay-001-a00.json",
+      "video": "issue-76-action-replay-001-a00.webm"
+    },
+    {
+      "action": {
+        "drag_x": -10,
+        "drag_y": -80,
+        "release_time_ms": 600,
+        "tap_time_ms": 0
+      },
+      "candidate_ordinal": 1,
+      "censored": true,
+      "decision_png": "issue-76-action-replay-001-a01.png",
+      "display_fps": 50,
+      "frame_count": 601,
+      "member_identity": "issue-76-action-replay-001-a01",
+      "native_outcome": {
+        "clear_evidence": null,
+        "reason": "native_time_window_limit",
+        "success": false
+      },
+      "physical_first_time": 8.4256,
+      "physical_last_time": 20.4256,
+      "source_member_identity": "issue-76-development-001",
+      "source_result_path": "/p/Project/NovPhy/.local-artifacts/issue-76-action-replay-v1/results/issue-76-action-replay-001-a01.json",
+      "video": "issue-76-action-replay-001-a01.webm"
+    }
+  ],
+  "execution_plan_identity": "issue-76-action-replay-execution-v1",
+  "fresh_access": false,
+  "publication_wall_seconds": 5.250519509892911,
+  "source_text": "\"\"\"Publish original smoke frames and full-rate review clips; no model scoring.\"\"\"\nimport argparse\nimport html\nfrom pathlib import Path\nimport shutil\nimport time\n\nfrom scripts import run_issue_76_action_replay as run\nfrom scripts.run_issue_76_compatibility import encode_video\nfrom scripts.run_issue_76_order_probe import immutable\n\n\ndef publish():\n    plan = run.load_plan()\n    output = run.metadata.OUTPUT / \"smoke-gallery\"\n    target = output / \"manifest.json\"\n    if target.exists():\n        print(\"Retaining completed smoke gallery.\")\n        return\n    validated = run.files.read(run.ROOT / \"smoke-validation.json\")\n    if not validated[\"validated\"] or validated[\"execution_plan_identity\"] != plan[\"identity\"]:\n        raise ValueError(\"the exact replay smoke must be validated before continuation publication\")\n    output.mkdir(parents=True, exist_ok=True)\n    started = time.monotonic()\n    entries, cards = [], []\n    for member in run.selected_members(plan, run.ROOT, True):\n        name = member[\"identity\"]\n        result = run.files.read(run.ROOT / \"results\" / (name + \".json\"))\n        attempt = run.ROOT / \"attempts\" / name\n        snapshot_root = attempt / \"decision-1\"\n        shot_root = attempt / \"shot-1/observation-trace\"\n        snapshot = run.files.read(snapshot_root / run.live.MANIFEST_NAME)\n        captured = run.files.read(shot_root / run.live.MANIFEST_NAME)\n        png, video = output / (name + \".png\"), output / (name + \".webm\")\n        if not png.exists():\n            shutil.copy2(snapshot_root / snapshot[\"frame_records\"][0][\"agent_observation\"][\"relative_path\"], png)\n        frames = [shot_root / frame[\"agent_observation\"][\"relative_path\"] for frame in captured[\"frame_records\"]]\n        if not video.exists():\n            encode_video(frames, 50, video)\n        entry = {\"member_identity\": name, \"source_member_identity\": member[\"source_member_identity\"],\n            \"candidate_ordinal\": member[\"candidate_ordinal\"], \"action\": member[\"actions\"][0],\n            \"decision_png\": png.name, \"video\": video.name, \"frame_count\": len(frames), \"display_fps\": 50,\n            \"physical_first_time\": captured[\"frame_records\"][0][\"fixed_time_seconds\"],\n            \"physical_last_time\": captured[\"frame_records\"][-1][\"fixed_time_seconds\"],\n            \"censored\": result[\"segments\"][0][\"summary\"][\"censored\"], \"native_outcome\": result[\"outcome\"],\n            \"source_result_path\": str(run.ROOT / \"results\" / (name + \".json\"))}\n        entries.append(entry)\n        cards.append(f'<section><h2>{html.escape(name)}</h2><p>Assigned action: {html.escape(str(entry[\"action\"]))}; '\n                     f'censored: {entry[\"censored\"]}. No learned policy selected this action.</p>'\n                     f'<img width=\"640\" src=\"{png.name}\" alt=\"Original pre-decision agent observation\">'\n                     f'<video controls width=\"640\" src=\"{video.name}\"></video></section>')\n    (output / \"index.html\").write_text('<!doctype html><meta charset=\"utf-8\"><title>Training action-replay smoke</title>'\n        '<h1>Two assigned training replays</h1><p>Original pre-decision frames and every recorded shot frame at nominal '\n        '50 fps. The final displayed frame lasts 20 ms; display duration is not an additional physical observation. '\n        'The decision image precedes the video prelaunch frame. No gameplay or advancement advantage is claimed.</p>' + ''.join(cards))\n    immutable(target, {\"execution_plan_identity\": plan[\"identity\"], \"entries\": entries,\n        \"publication_wall_seconds\": time.monotonic() - started, \"source_text\": Path(__file__).read_text(),\n        \"fresh_access\": False, \"trained_policy_tested\": False, \"advancement_authorized\": False})\n    print(\"Smoke review gallery published.\", flush=True)\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--publish\", action=\"store_true\")\n    if parser.parse_args().publish:\n        publish()\n    else:\n        print(\"No-write: original smoke frames and timing-disclosed review video only.\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "trained_policy_tested": false
+}
