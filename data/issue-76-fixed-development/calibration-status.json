@@ -1,0 +1,41 @@
+{
+  "execution_plan_identity": "issue-76-fixed-development-execution-v1",
+  "complete_calibration_cells": 54,
+  "assigned_members_per_seed": 50,
+  "exact_endpoint_members_per_seed": 45,
+  "assigned_model_member_rows": 2700,
+  "scoring_wall_seconds": 67.74834075011313,
+  "preparation_wall_seconds_by_seed": {
+    "760930001": 1.0842642770148814,
+    "760930002": 1.0893745049834251,
+    "760930003": 1.1004979200661182
+  },
+  "calibration_complete_utc": "2026-09-13T20:45:31.303024+00:00",
+  "complete_manifest_path": ".local-artifacts/issue-76-fixed-development-v1/calibration/complete.json",
+  "independent_validation_complete": false,
+  "independent_validation_budget_spent_wall_seconds": 18.188123795902357,
+  "strict_cpu_comparison_failure": {
+    "recipe": "repaired-representation",
+    "seed": 760930002,
+    "pure": true,
+    "member_identity": "issue-76-development-265",
+    "policy": "fixed-50-continuous",
+    "elapsed_native_steps": 6000,
+    "metric": "block_count_absolute_error",
+    "stored": 0.0340266227722168,
+    "independent_cpu": 0.0339810848236084,
+    "independent_cuda_with_numpy_metrics": 0.03402674198150635,
+    "max_cpu_cuda_carrier_component_difference": 0.00013303756713867188,
+    "same_backend_point_matches_original_tolerances": true,
+    "entire_matrix_validated_by_this_point_check": false,
+    "focused_diagnostic_wall_seconds": 1.0598765378817916
+  },
+  "numerical_tolerances_changed": false,
+  "prediction_records_rewritten_or_rescored": false,
+  "calibration_choice_frozen": false,
+  "model_selection_accessed_under_this_protocol": false,
+  "fresh_access": false,
+  "optimization_performed": false,
+  "advancement_authorized": false,
+  "failed_training_qualifications_preserved": true
+}

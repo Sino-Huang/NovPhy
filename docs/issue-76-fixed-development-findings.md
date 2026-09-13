@@ -1,9 +1,12 @@
 # Fixed-policy development evaluator: synthetic preflight
 
-No development predictions have been scored under this protocol. The metadata
-inventory and synthetic preflight both retain `score_execution_authorized=false`.
-All previous failed training qualifications and the unmet #76 gameplay and
-advancement requirements remain unchanged.
+The complete calibration matrix has now been scored under the separately
+frozen execution plan. Independent validation is not complete: its strict CPU
+comparison stopped on a small CPU/CUDA numerical discrepancy. No calibration
+choice is frozen and no model-selection prediction has been opened. All previous
+failed training qualifications and the unmet #76 gameplay and advancement
+requirements remain unchanged. The earlier metadata and synthetic preflight
+retain their original `score_execution_authorized=false` dispositions.
 
 ## Implemented and checked
 
@@ -50,13 +53,46 @@ it also read no development records. The detailed source checkpoint receipts
 are retained at
 `.local-artifacts/issue-76-fixed-development-v1/smoke-checkpoints.json`.
 
-## Remaining before development scoring
+## Calibration execution and unresolved verification
 
-Finish the persistent role-execution driver and complete deduplicated parent
-cost ledger, then freeze the full source-bound execution plan. Evaluate the
-entire calibration matrix and freeze its common choices before opening new
-model-selection predictions. Validate the complete output inventories,
-numerical results, access ordering and descriptive paired uncertainty.
+The [execution plan](../data/issue-76-fixed-development/execution-plan.json) was
+committed and pushed before calibration access. Its ledger preserves 141
+canonical #76 cost receipts, including failed/nonselected branches, and excludes
+seven exact public receipt mirrors from double counting. These receipts record
+86,112.187 seconds of prior job wall-time charges, not kernel hours or full FLOPs;
+unmetered earlier engineering and prior-issue work are not represented as zero.
+
+All 54 calibration model instances completed in 67.748 seconds of phase wall
+time, retaining 50 assignments and 45 exact endpoints per seed. This is 2,700
+assigned model/member rows. Peak RSS was 1,339.0 MiB and peak allocated CUDA
+memory was 18.1 MiB. The three preparation phases took 1.084, 1.089 and 1.100
+seconds. Original scores are retained without a rerun.
+
+Validation first exposed and corrected a JSON object-key ordering assumption;
+see the [technical correction](issue-76-fixed-development-json-correction.md).
+All 28 tests now pass. The corrected independent CPU validator completed the
+first three cells, then stopped on repaired-representation/pure seed 760930002,
+member `issue-76-development-265`, fixed-50 continuous, elapsed native step 6000:
+
+- Stored block-count absolute error: 0.0340266227722168.
+- Independent CPU reconstruction: 0.0339810848236084.
+- Independent CUDA reconstruction with separate NumPy field formulas:
+  0.03402674198150635, within the original tolerance of the stored score.
+- Maximum CPU/CUDA carrier-component difference at that batched point:
+  0.00013303756713867188.
+
+The strict CPU failure is retained; no numerical tolerance was widened. The
+same-backend check establishes the cause at this one point, not validation of
+the entire matrix. The cumulative validation budget retains 18.188 seconds,
+including the failed attempts. The focused arithmetic diagnostic additionally
+took 1.060 seconds wall time. Its compact evidence is in the
+[calibration status receipt](../data/issue-76-fixed-development/calibration-status.json).
+
+Resolve the cross-backend numerical verification requirement before freezing
+calibration choices. Only then score model selection, validate the full matrix,
+and report the predeclared descriptive paired uncertainty. No favorable
+offline result can replace the adaptive gameplay/strong-baseline advancement
+requirements.
 
 Passing this implementation smoke establishes neither development transfer nor
 adaptive gameplay competence. It does not authorize fresh evaluation or #64/#65.
