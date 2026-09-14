@@ -1,0 +1,126 @@
+{
+  "identity": "issue-76-retrospective-count-objective-gap-v1",
+  "source_audit": "issue-76-angular-collection-validation-v1",
+  "scope": "Already-opened training development; retrospective oracle diagnostic, not deployable model predictions",
+  "definition": {
+    "score": "recorded endpoint observed_count_cost = 1000 * active_pigs + active_blocks; unavailable assigned counts use 1e9",
+    "tie": "lowest candidate ordinal",
+    "references_excluded": true,
+    "whole_lineage_comparability_unchanged": true
+  },
+  "groups": [
+    {
+      "source_member_identity": "issue-76-development-001",
+      "paired_ranking_admissible": true,
+      "selected": {
+        "member_identity": "issue-76-angular-replay-001-a05",
+        "candidate_ordinal": 5,
+        "observed_count_cost": 1,
+        "ranking_cost": 1000000000,
+        "ranking_failure": true,
+        "native_level_clear": false,
+        "terminal_reason": null,
+        "invalid_outcome_reason": "native_time_window_limit"
+      },
+      "best_penalized_cost": 1001,
+      "absolute_penalized_regret": 999998999,
+      "count_tied_ordinals": [
+        5,
+        12
+      ]
+    },
+    {
+      "source_member_identity": "issue-76-development-071",
+      "paired_ranking_admissible": false,
+      "selected": {
+        "member_identity": "issue-76-angular-replay-071-a09",
+        "candidate_ordinal": 9,
+        "observed_count_cost": 1004,
+        "ranking_cost": 1004,
+        "ranking_failure": false,
+        "native_level_clear": false,
+        "terminal_reason": "stable_entered",
+        "invalid_outcome_reason": null
+      },
+      "best_penalized_cost": 1004,
+      "absolute_penalized_regret": 0,
+      "count_tied_ordinals": [
+        9
+      ]
+    },
+    {
+      "source_member_identity": "issue-76-development-141",
+      "paired_ranking_admissible": true,
+      "selected": {
+        "member_identity": "issue-76-angular-replay-141-a06",
+        "candidate_ordinal": 6,
+        "observed_count_cost": 6,
+        "ranking_cost": 6,
+        "ranking_failure": false,
+        "native_level_clear": true,
+        "terminal_reason": "level_clear",
+        "invalid_outcome_reason": null
+      },
+      "best_penalized_cost": 6,
+      "absolute_penalized_regret": 0,
+      "count_tied_ordinals": [
+        6
+      ]
+    },
+    {
+      "source_member_identity": "issue-76-development-211",
+      "paired_ranking_admissible": true,
+      "selected": {
+        "member_identity": "issue-76-angular-replay-211-a07",
+        "candidate_ordinal": 7,
+        "observed_count_cost": 1006,
+        "ranking_cost": 1000000000,
+        "ranking_failure": true,
+        "native_level_clear": false,
+        "terminal_reason": null,
+        "invalid_outcome_reason": "native_time_window_limit"
+      },
+      "best_penalized_cost": 1006,
+      "absolute_penalized_regret": 999998994,
+      "count_tied_ordinals": [
+        7,
+        12
+      ]
+    },
+    {
+      "source_member_identity": "issue-76-development-281",
+      "paired_ranking_admissible": true,
+      "selected": {
+        "member_identity": "issue-76-angular-replay-281-a03",
+        "candidate_ordinal": 3,
+        "observed_count_cost": 4,
+        "ranking_cost": 4,
+        "ranking_failure": false,
+        "native_level_clear": true,
+        "terminal_reason": "level_clear",
+        "invalid_outcome_reason": null
+      },
+      "best_penalized_cost": 4,
+      "absolute_penalized_regret": 0,
+      "count_tied_ordinals": [
+        3
+      ]
+    }
+  ],
+  "summary": {
+    "comparable_lineages": 4,
+    "selected_censored_or_failed": 2,
+    "selected_native_clears": 2
+  },
+  "limitations": [
+    "Actual endpoints may differ across actions; this is not an equal-time dynamics accuracy comparison or model-performance bound.",
+    "Oracle future counts are used only in this explanatory diagnostic, never deployment.",
+    "Five already-opened training lineages cannot establish generalization or seed robustness.",
+    "No claim that this is the sole cause of prior model/controller failure."
+  ],
+  "new_captures": 0,
+  "new_model_inference": 0,
+  "new_optimizer_updates": 0,
+  "fresh_access": false,
+  "advancement_authorized": false
+}
