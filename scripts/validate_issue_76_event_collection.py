@@ -6,9 +6,10 @@ import time
 from scripts import run_issue_76_event_development as run
 from scripts.issue_76_event_targets import data_readiness, observed_target
 from scripts import run_issue_76_display_continuation as display
+from scripts import run_issue_76_wall_continuation as wall
 
 
-def audit_group(root, plan, source, assignments, completed_bytes, check_time, amendment=None):
+def audit_group(root, plan, source, assignments, completed_bytes, check_time, amendment=None, wall_amendment=None):
     cases, rows = {}, []
     for assignment in assignments:
         check_time()
@@ -22,6 +23,8 @@ def audit_group(root, plan, source, assignments, completed_bytes, check_time, am
                 raise ValueError("capture is not bound to its sealed accounting record")
             if amendment is not None:
                 display.validate_launch(root, amendment, assignment, result, receipt)
+            if wall_amendment is not None:
+                wall.validate_launch(root, wall_amendment, assignment, result, receipt)
             case = run.validation.read_case(root, plan, member)
             segment, = result["segments"]
             target = observed_target(segment["summary"], run.terminal_evidence(segment), case,
@@ -70,6 +73,13 @@ def validate(root=run.metadata.ROOT, output=run.metadata.OUTPUT):
         raise ValueError("capture budget lacks its display amendment")
     if amendment is not None and amendment["execution_plan_identity"] != plan["identity"]:
         raise ValueError("display amendment belongs to another execution")
+    wall_amendment = wall.load(root) if (root / wall.FILENAME).exists() else None
+    if budget.get("wall_amendment_identity") and (
+            wall_amendment is None or budget["wall_amendment_identity"] != wall_amendment["identity"]):
+        raise ValueError("capture budget lacks its wall-time amendment")
+    if wall_amendment is not None and (wall_amendment["execution_plan_identity"] != plan["identity"]
+            or amendment is None or wall_amendment["display_amendment_identity"] != amendment["identity"]):
+        raise ValueError("wall-time amendment has a different execution or display parent")
     assigned = {row["identity"] for row in inventory["assignments"]}
     completed = set(budget["completed_attempt_bytes"])
     if not completed.issubset(assigned) or (not budget["stopped"] and completed != assigned):
@@ -102,7 +112,8 @@ def validate(root=run.metadata.ROOT, output=run.metadata.OUTPUT):
     groups = []
     for source in inventory["source_members"]:
         assignments = [row for row in inventory["assignments"] if row["source_member_identity"] == source["identity"]]
-        group = audit_group(root, plan, source, assignments, budget["completed_attempt_bytes"], check_time, amendment)
+        group = audit_group(root, plan, source, assignments, budget["completed_attempt_bytes"], check_time,
+                            amendment, wall_amendment)
         run.immutable(root / "validation-groups" / (source["identity"] + ".json"), group)
         groups.append(group)
     rows = [row for group in groups for row in group["rows"]]
@@ -117,6 +128,7 @@ def validate(root=run.metadata.ROOT, output=run.metadata.OUTPUT):
               "all_assigned_records_audited": True, "capture_inventory_completed": completed == assigned,
               "collection_resource_failure": resource_failure,
               "display_amendment_identity": None if amendment is None else amendment["identity"],
+              "wall_amendment_identity": None if wall_amendment is None else wall_amendment["identity"],
               "unattempted_member_identities": sorted(assigned - completed),
               "validated_captures": sum(row["capture_contract_validated"] for row in rows),
               "groups": groups, "data_readiness": readiness, "capture_budget": budget,
