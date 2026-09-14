@@ -40,6 +40,38 @@ Raw captures remain in the local artifact collection. The original-grid negative
 findings are unchanged. This failed pilot is not followed by an automatic angle
 or optimizer sweep; the next workflow needs a separately justified design.
 
+## Existing-trace follow-up: zero pigs without a clear
+
+A targeted post-audit probe of 001-a05 and 001-a12 found actual `pig_removed`,
+`entity_death`, and `entity_destroyed` events, not just an absent visual slot.
+Neither trace records `level_clear`. The probe read event-bearing chunks and
+the final sample of these two already-opened training traces only; it took
+1.691 wall seconds, charged separately against the remaining offline allowance.
+This was not a new capture, full-corpus validation, or model-scoring run.
+
+| Assignment | Pig removed at fixed step | Last observed fixed step | Seconds remaining after removal | Final bird velocity | Final bird angular velocity |
+| --- | ---: | ---: | ---: | --- | ---: |
+| 001-a05 | 22242 | 48065 | 10.3292 | (0.1887809, -0.00561469467) | -47.0008545 degrees/s |
+| 001-a12 | 30142 | 47986 | 7.1376 | (0.134824574, -0.003005545) | -33.3242073 degrees/s |
+
+The current engine source explains why pig removal need not immediately clear
+the level. `ABPig.Die` records removal and calls `ABGameWorld.KillPig`;
+`KillPig` schedules the clear banner when no pigs remain. The banner retries
+while `IsLevelStable()` is false, and only its stable branch records the native
+clear. `GetLevelStability()` sums linear speed of in-world bodies under the
+blocks and birds transforms and requires an exact zero. The native capture's
+separate stability check also rejects the observed moving/rotating birds.
+Relevant source: [ABGameWorld.cs](../tasks/task_template_designer/Assets/Scripts/GameWorld/ABGameWorld.cs)
+and [PhysicalSnapshotRuntime.cs](../tasks/task_template_designer/Assets/Scripts/GroundTruth/PhysicalSnapshotRuntime.cs).
+
+The trace evidence rules out removal occurring only at the last instant and
+supports a settlement-timing limitation. It does not establish the unobserved
+time to eventual clearance, prove every banner precondition in the captured
+player, or prove that a longer window would pass the pilot. The two outcomes
+remain censored with 1e9 penalties. Any later timing experiment must declare
+its own common window and budget before capture; it cannot extend these old
+traces, relabel them as wins, or replace the failed viability decision.
+
 ## Complete assignment table
 
 All releases are 600 ms with tap 0 ms. References are excluded from the twelve
@@ -115,4 +147,3 @@ censored or failed outcomes into usable task outcomes. Cost is the unchanged
 | 281-a10 | grid | (-30, 74) | native_time_window_limit | 1 | 4 | 1e9 | no | yes |
 | 281-a11 | grid | (-21, 77) | native_time_window_limit | 1 | 4 | 1e9 | no | yes |
 | 281-a12 | grid | (-11, 79) | native_time_window_limit | 1 | 4 | 1e9 | no | yes |
-
