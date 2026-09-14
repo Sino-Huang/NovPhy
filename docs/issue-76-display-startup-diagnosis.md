@@ -52,3 +52,27 @@ all remained alive without the fatal error; logs are temporarily retained at
 `/tmp/novphy-display-corrected-8wfk6y9u`. Diagnostic processes were cleaned up.
 The original capture source binding still validates. This separate helper has
 not yet been connected to the running collection.
+
+## Controlled transition boundary
+
+The original collector was stopped on 2026-09-14 after its active-worker list
+became empty at 110 sealed attempts. SIGINT reached its between-wave sleep;
+the process exited with code 130 and no active assignment was interrupted.
+The terminal budget records 2,958.8943494241685 elapsed collection seconds,
+`stopped=true`, and `supervisor_KeyboardInterrupt: ` as its stop reason.
+
+A read-only audit confirmed that all 110 result files, supervisor receipts,
+attempt directories, and sealed byte-accounting entries agree. There are 103
+records marked complete, six startup timeouts, and one native-shot manifest
+deadline failure with partial evidence retained. No receipt has a supervisor
+stop reason. These counts describe collection status, not offline validity.
+The old supervisor is absent and all 24 assigned worker ports are available.
+Exactly 2,490 assignments remain unattempted; none of the 110 may be retried.
+
+The stopped budget has not been reset or resumed. Continuation must first
+archive a source-bound display-only amendment, preserve the boundary budget
+and old receipts/results, bind new assignments to the corrected helper, and
+carry forward elapsed time and retained artifact accounting. Original
+lineages, actions, exposure roles, native clock, no-retry rule, and readiness
+thresholds remain unchanged. No fitting or fresh access follows from this
+engineering correction.
