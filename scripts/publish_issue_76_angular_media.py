@@ -1,8 +1,10 @@
 """Publish retained agent RGB for every angular assignment, including its failure."""
 import argparse
 import html
+import json
 from pathlib import Path
 import shutil
+import subprocess
 import time
 
 from scripts import run_issue_76_angular_replay as angular
@@ -23,7 +25,8 @@ def page(entries):
              "<p>Training-only pilot: viability failed. No model comparison or advancement. "
              "Failed and censored footage is retained, not counted as a win. "
              "Videos contain every retained agent frame at nominal 50 Hz. A shortened final "
-             "capture interval is padded to 20 ms in video playback; exact source timestamps "
+             "capture interval is padded to 20 ms in video playback, and the final frame "
+             "is held for 20 ms; exact source timestamps "
              "are in <a href='manifest.json'>the manifest</a>. "
              "The separate decision image precedes the video and is not prepended to it.</p>"]
     for entry in entries:
@@ -40,7 +43,24 @@ def page(entries):
     return "\n".join(parts) + "\n"
 
 
-def publish(root=angular.metadata.ROOT, output=angular.metadata.OUTPUT / "media"):
+def retained_video(frames, destination):
+    if destination.exists():
+        checked = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0",
+                                  "-count_frames", "-show_entries", "stream=nb_read_frames,width,height",
+                                  "-of", "json", str(destination)], capture_output=True, text=True)
+        streams = json.loads(checked.stdout).get("streams", []) if checked.returncode == 0 else []
+        if (len(streams) == 1 and streams[0].get("nb_read_frames") == str(len(frames))
+                and streams[0].get("width") == 640 and streams[0].get("height") == 480):
+            return "retained_verified_export"
+        preserved = destination.with_suffix(".interrupted.webm")
+        if preserved.exists():
+            raise ValueError("an earlier interrupted export is already preserved")
+        destination.rename(preserved)
+    encode_video(frames, 50, destination)
+    return "encoded_from_retained_frames"
+
+
+def publish(root=angular.metadata.ROOT, output=angular.metadata.OUTPUT / "media", resume=False):
     started = time.monotonic()
     plan = angular.load_plan(root)
     files = angular.supervisor.files
@@ -48,9 +68,12 @@ def publish(root=angular.metadata.ROOT, output=angular.metadata.OUTPUT / "media"
     if not audit["all_assigned_records_audited"]:
         raise ValueError("media requires the completed full-assignment audit")
     allowance = audit["remaining_offline_preparation_seconds"] - 1.691
-    if output.exists():
+    interruption = files.read(output / "interruption.json") if resume else None
+    prior_wall = interruption["prior_wall_seconds_upper_bound"] if interruption else 0
+    allowance -= prior_wall
+    if (output / "manifest.json").exists() or (output.exists() and not resume):
         raise ValueError("do not overwrite or silently re-encode an existing media publication")
-    output.mkdir(parents=True)
+    output.mkdir(parents=True, exist_ok=resume)
     lookup = {row["member_identity"]: (group, row) for group in audit["groups"] for row in group["rows"]}
     entries = []
     for member in plan["inventory"]["members"]:
@@ -72,7 +95,7 @@ def publish(root=angular.metadata.ROOT, output=angular.metadata.OUTPUT / "media"
             shutil.copyfile(frame["source_path"], output / name)
             names[role + "_png"] = name
         video_path = identity + ".webm"
-        encode_video([Path(frame["source_path"]) for frame in frames], 50, output / video_path)
+        export_status = retained_video([Path(frame["source_path"]) for frame in frames], output / video_path)
         entries.append({"member_identity": identity, "capture_validated": row["capture_contract_validated"],
                         "collection_failure": row["recorded_failure"],
                         "outcome": row.get("invalid_outcome_reason") or row["terminal_reason"],
@@ -81,6 +104,7 @@ def publish(root=angular.metadata.ROOT, output=angular.metadata.OUTPUT / "media"
                         "observed_seconds": (frames[-1]["fixed_step"] - frames[0]["fixed_step"]) * .0004,
                         "decision_to_capture_seconds": frames[0]["fixed_time_seconds"] - decision["fixed_time_seconds"],
                         "video_path": video_path, "video_nominal_fps": 50,
+                        "export_status": export_status,
                         "video_final_interval_padding_seconds": (50 - deltas[-1]) * .0004 if deltas else 0,
                         "failed_footage_not_rehabilitated": not row["capture_contract_validated"]})
         print(f"Published retained media {len(entries)}/65: {identity}", flush=True)
@@ -90,6 +114,7 @@ def publish(root=angular.metadata.ROOT, output=angular.metadata.OUTPUT / "media"
     value = {"identity": "issue-76-angular-retained-media-v1", "execution_plan_identity": plan["identity"],
              "audit_identity": audit["identity"], "entries": entries,
              "wall_seconds": elapsed, "prior_targeted_trace_probe_seconds": 1.691,
+             "interruption": interruption, "prior_media_wall_seconds_upper_bound": prior_wall,
              "remaining_offline_seconds": allowance - elapsed,
              "bytes": sum(path.stat().st_size for path in output.iterdir() if path.is_file()),
              "source_text": {name: (files.ROOT / name).read_text() for name in
@@ -103,7 +128,9 @@ def publish(root=angular.metadata.ROOT, output=angular.metadata.OUTPUT / "media"
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--publish", action="store_true")
-    if parser.parse_args().publish:
-        publish()
+    parser.add_argument("--resume", action="store_true")
+    args = parser.parse_args()
+    if args.publish:
+        publish(resume=args.resume)
     else:
         print("No-write: --publish encodes all retained agent frames, not new captures.")

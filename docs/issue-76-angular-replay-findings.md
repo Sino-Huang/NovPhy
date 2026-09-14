@@ -40,6 +40,27 @@ Raw captures remain in the local artifact collection. The original-grid negative
 findings are unchanged. This failed pilot is not followed by an automatic angle
 or optimizer sweep; the next workflow needs a separately justified design.
 
+## Reviewable media
+
+The [self-contained gallery](../data/issue-76-angular-replay/media/index.html)
+and [media manifest](../data/issue-76-angular-replay/media/manifest.json) include
+all 65 assignments, with 195 copied agent PNGs and 65 WebMs. Each assignment
+shows its separate pre-decision observation and first/last capture observations.
+The failed 071-a04 footage remains explicitly invalid; exporting it does not
+rehabilitate its result. Videos retain every captured frame at nominal 50 Hz;
+short final intervals are padded to 20 ms and the final frame is held for 20 ms.
+Exact source timestamps and decision-to-capture gaps are disclosed separately.
+
+The first media process received SIGTERM (exit 143) after reporting 54 exports.
+Its cause is unknown. A conservative 211-second prior-work charge and the
+interruption receipt were preserved. Recovery decoded and retained 55 complete
+videos, encoded only the remaining ten, and finished in 26.889714 seconds.
+Final checks verified all gallery links, exact assignment membership, the
+failed-entry label, and decoded frame counts/dimensions of the ten new videos
+in 1.097792 seconds. No physics capture was repeated. Exported assets occupy
+about 30.34 MB, excluding the gallery and manifest. Representative decision,
+failed-attempt, and clear-endpoint PNGs were visually inspected.
+
 ## Existing-trace follow-up: zero pigs without a clear
 
 A targeted post-audit probe of 001-a05 and 001-a12 found actual `pig_removed`,
