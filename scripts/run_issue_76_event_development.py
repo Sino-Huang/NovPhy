@@ -3,6 +3,7 @@ import argparse
 from collections import deque
 import multiprocessing
 import os
+from pathlib import Path
 import shutil
 import time
 
@@ -27,7 +28,7 @@ def prepare(root=metadata.ROOT, output=metadata.OUTPUT):
     for name, source in inventory["source_text"].items():
         if (files.ROOT / name).read_text() != source:
             raise ValueError("frozen event inventory source changed")
-    original = files.read(inventory["source_collection_plan_path"])
+    original = files.read(Path(inventory["source_collection_plan_path"]))
     if (metadata.select_sources(original["members"]) != inventory["source_members"]
             or metadata.assignments(inventory["source_members"]) != inventory["assignments"]):
         raise ValueError("event inventory no longer matches its outcome-independent source selection")

@@ -132,6 +132,19 @@ class EventSupervisorTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 runner.load_plan(self.root)
 
+    def test_prepare_reads_serialized_source_plan_path(self):
+        source_plan = self.root / "source-plan.json"
+        runner.files.write(source_plan, {"members": self.plan["inventory"]["source_members"]})
+        inventory = {**self.plan["inventory"], "source_text": {},
+                     "source_collection_plan_path": str(source_plan),
+                     "player_source": str(self.root / "player")}
+        inventory["source_members"][0]["actions"] = [self.plan["readiness_action"]]
+        runner.files.write(self.root / "inventory.json", inventory)
+        with patch.object(runner.metadata, "select_sources", return_value=inventory["source_members"]), patch.object(
+                runner.metadata, "assignments", return_value=inventory["assignments"]), patch.object(runner, "SOURCES", ()):
+            runner.prepare(self.root, self.output)
+        self.assertTrue((self.root / "execution-plan.json").is_file())
+
     def test_full_run_requires_exact_smoke_integrity_and_concurrency(self):
         expected = self.plan["inventory"]["smoke_member_identities"]
         report = {"validated": True, "individual_integrity_passed": True,
