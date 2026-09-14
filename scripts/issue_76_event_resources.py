@@ -22,6 +22,7 @@ def check_ports_available(ports):
         for port in ports:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sockets.append(sock)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             sock.bind(("127.0.0.1", port))
     finally:
         for sock in sockets:
