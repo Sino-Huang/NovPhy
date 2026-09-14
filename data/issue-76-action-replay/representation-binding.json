@@ -1,0 +1,69 @@
+{
+  "fresh_access": false,
+  "identity": "issue-76-replay-representation-binding-v1",
+  "inference_performed": false,
+  "input_inventory_identity": "issue-76-replay-scoring-input-inventory-v1",
+  "model_scoring_authorized": false,
+  "receipts": [
+    {
+      "common_checkpoint": "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/checkpoints/common-760930001.pt",
+      "common_completion_budget": {
+        "active_seconds": 264.10288507211953,
+        "limit_seconds": 3600,
+        "peak_cpu_rss_mib": 1972.16015625,
+        "peak_cuda_allocated_mib": 38.396484375,
+        "peak_cuda_reserved_mib": 58.0,
+        "process_id": 3424392,
+        "running": false,
+        "stopped": false
+      },
+      "history_checkpoint": "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/checkpoints/history-760930001.pt",
+      "parser_checkpoint": "/p/Project/NovPhy/.local-artifacts/issue-76-balanced-pig-v1/checkpoints/visual-balanced-760930001.pt",
+      "plan_identity": "issue-76-repaired-representation-v1",
+      "seed": 760930001,
+      "source_weights_equal": true
+    },
+    {
+      "common_checkpoint": "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/checkpoints/common-760930002.pt",
+      "common_completion_budget": {
+        "active_seconds": 266.67585096205585,
+        "limit_seconds": 3600,
+        "peak_cpu_rss_mib": 1998.4296875,
+        "peak_cuda_allocated_mib": 43.9931640625,
+        "peak_cuda_reserved_mib": 62.0,
+        "process_id": 3424392,
+        "running": false,
+        "stopped": false
+      },
+      "history_checkpoint": "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/checkpoints/history-760930002.pt",
+      "parser_checkpoint": "/p/Project/NovPhy/.local-artifacts/issue-76-balanced-pig-v1/checkpoints/visual-balanced-760930002.pt",
+      "plan_identity": "issue-76-repaired-representation-v1",
+      "seed": 760930002,
+      "source_weights_equal": true
+    },
+    {
+      "common_checkpoint": "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/checkpoints/common-760930003.pt",
+      "common_completion_budget": {
+        "active_seconds": 266.95960624003783,
+        "limit_seconds": 3600,
+        "peak_cpu_rss_mib": 1998.4296875,
+        "peak_cuda_allocated_mib": 43.9931640625,
+        "peak_cuda_reserved_mib": 62.0,
+        "process_id": 3424392,
+        "running": false,
+        "stopped": false
+      },
+      "history_checkpoint": "/p/Project/NovPhy/.local-artifacts/issue-76-repaired-representation-v1/checkpoints/history-760930003.pt",
+      "parser_checkpoint": "/p/Project/NovPhy/.local-artifacts/issue-76-balanced-pig-v1/checkpoints/visual-balanced-760930003.pt",
+      "plan_identity": "issue-76-repaired-representation-v1",
+      "seed": 760930003,
+      "source_weights_equal": true
+    }
+  ],
+  "remaining_offline_preparation_seconds": 941.1458226027898,
+  "representation_plan": "issue-76-repaired-representation-v1",
+  "source_text": {
+    "scripts/issue_76_replay_representation.py": "\"\"\"Load the identical completed parser/history source for both replay arms.\"\"\"\nimport argparse\nfrom pathlib import Path\nimport time\n\nimport torch\n\nfrom scripts import run_issue_76_repaired_representation as repaired\nfrom scripts import validate_issue_76_action_replay as replay\nfrom world_model.planning.native_gameplay import NativeObservationHistory\n\n\ndef load_representation(plan, seed, device):\n    fit = repaired.fit\n    path = fit.common_path(repaired.ROOT, seed)\n    saved = torch.load(path, map_location=\"cpu\", weights_only=False)\n    if (saved[\"plan_identity\"] != plan[\"identity\"] or saved[\"seed\"] != seed\n            or saved[\"synthetic\"] or saved[\"auxiliary_deployed\"]\n            or saved[\"parser_source_checkpoint\"] != plan[\"parser_checkpoints\"][str(seed)]):\n        raise ValueError(\"common representation differs from the repaired seed/source\")\n    budget = fit.require_finished_budget(repaired.ROOT, f\"common-{seed}\")\n    parser = repaired.load_parser(plan, seed, \"cpu\")\n    if set(saved[\"parser\"]) != set(parser.state_dict()) or any(\n            not torch.equal(value, saved[\"parser\"][key]) for key, value in parser.state_dict().items()):\n        raise ValueError(\"common parser weights differ from the completed balanced parser\")\n    history_path = repaired.ROOT / \"checkpoints\" / f\"history-{seed}.pt\"\n    history_fit = torch.load(history_path, map_location=\"cpu\", weights_only=False)\n    if (history_fit[\"plan_identity\"] != plan[\"identity\"] or not history_fit[\"complete\"]\n            or history_fit[\"failure\"] is not None or history_fit[\"updates_requested\"] != 500\n            or history_fit[\"updates_completed\"] != 500 or history_fit[\"updates_applied\"] != 496\n            or history_fit[\"updates_skipped\"] != 4):\n        raise ValueError(\"common history is not the completed repaired fit\")\n    history = fit.ObservedHistoryEncoder(carrier_dim=fit.VISUAL_DIM)\n    history.load_state_dict(saved[\"history\"], strict=True)\n    for key, value in history.state_dict().items():\n        if not torch.equal(value, history_fit[\"model\"][\"history.\" + key]) or not torch.isfinite(value).all():\n            raise ValueError(\"common history weights differ from the completed history fit\")\n    representation = NativeObservationHistory(parser.to(device), history.to(device))\n    receipt = {\"seed\": seed, \"common_checkpoint\": str(path), \"plan_identity\": plan[\"identity\"],\n               \"parser_checkpoint\": saved[\"parser_source_checkpoint\"], \"history_checkpoint\": str(history_path),\n               \"common_completion_budget\": budget, \"source_weights_equal\": True}\n    return representation, receipt\n\n\ndef bind(root=replay.run.ROOT):\n    started = time.monotonic()\n    torch.set_num_threads(1)\n    inputs = replay.run.files.read(root / \"scoring-input-inventory.json\")\n    pool = replay.run.files.read(Path(inputs[\"model_pool_source\"]))\n    plan = replay.run.files.read(repaired.ROOT / \"plan.json\")\n    if plan[\"identity\"] != pool[\"data_plan_identity\"]:\n        raise ValueError(\"representation is not the retained model pool's shared data source\")\n    receipts = []\n    for seed in inputs[\"seeds\"]:\n        representation, receipt = load_representation(plan, seed, \"cpu\")\n        receipts.append(receipt)\n        del representation\n    elapsed = time.monotonic() - started\n    value = {\"identity\": \"issue-76-replay-representation-binding-v1\", \"receipts\": receipts,\n             \"source_text\": {\"scripts/issue_76_replay_representation.py\": Path(__file__).read_text()},\n             \"input_inventory_identity\": inputs[\"identity\"], \"representation_plan\": plan[\"identity\"],\n             \"inference_performed\": False, \"model_scoring_authorized\": False, \"fresh_access\": False,\n             \"wall_seconds\": elapsed,\n             \"remaining_offline_preparation_seconds\": inputs[\"remaining_offline_preparation_seconds\"] - elapsed}\n    replay.immutable(root / \"representation-binding.json\", value)\n    replay.immutable(replay.OUTPUT / \"representation-binding.json\", value)\n    print({\"seed_bindings\": len(receipts), \"source_weights_equal\": True, \"wall_seconds\": elapsed})\n\n\nif __name__ == \"__main__\":\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument(\"--bind\", action=\"store_true\")\n    if parser.parse_args().bind:\n        bind()\n    else:\n        print(\"No-write: --bind checks completed representations without inference.\")\n"
+  },
+  "wall_seconds": 0.25286827189847827
+}
