@@ -40,3 +40,15 @@ engineering step is a regression test for a split number/newline message and
 a source-bound transition for the correction, preserving all existing
 results and the original no-retry inventory. Dataset readiness and #76
 advancement remain unproven.
+
+## Separately tested correction
+
+`scripts/issue_76_display_start.py` now provides the complete-line read with a
+single 15-second deadline shared across all partial reads. The split-message
+regression failed against the old helper, then passed against the correction.
+Four tests cover split and complete messages, premature EOF cleanup, and the
+shared deadline. Twelve actual Xvnc-only starts using the corrected module
+all remained alive without the fatal error; logs are temporarily retained at
+`/tmp/novphy-display-corrected-8wfk6y9u`. Diagnostic processes were cleaned up.
+The original capture source binding still validates. This separate helper has
+not yet been connected to the running collection.
