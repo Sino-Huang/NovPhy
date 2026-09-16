@@ -68,6 +68,16 @@ class BalancedNativeTests(unittest.TestCase):
         self.assertEqual(result["backward_scale"], PREDICTOR_BACKWARD_SCALE)
         self.assertTrue(bool(torch.isfinite(model.value).all()))
 
+    def test_finite_large_gradients_do_not_overflow_norm_reduction(self):
+        value = torch.nn.Parameter(torch.full((2,), 1e-30))
+        loss = value.log().sum()
+        self.assertTrue(bool(torch.isfinite(loss)))
+        backward_clipped(loss, [value], backward_scale=PREDICTOR_BACKWARD_SCALE)
+        self.assertTrue(bool(torch.isfinite(value.grad).all()))
+        norm = torch.linalg.vector_norm(value.grad, dtype=torch.float64)
+        torch.testing.assert_close(norm, torch.tensor(1.0, dtype=torch.float64),
+                                   rtol=1e-6, atol=0)
+
     def test_still_nonfinite_gradient_fails_before_optimizer_corruption(self):
         model = torch.nn.Linear(1, 1, bias=False)
         with torch.no_grad():

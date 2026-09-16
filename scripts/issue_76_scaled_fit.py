@@ -12,8 +12,12 @@ from scripts.run_issue_70_parser_repair import atomic_torch
 def backward_clipped(loss, parameters, *, backward_scale):
     parameters = list(parameters)
     (loss * backward_scale).backward()
-    scaled_norm = torch.nn.utils.clip_grad_norm_(
-        parameters, float("inf"), error_if_nonfinite=True)
+    gradients = [parameter.grad for parameter in parameters if parameter.grad is not None]
+    scaled_norm = torch.linalg.vector_norm(torch.stack([
+        torch.linalg.vector_norm(gradient, dtype=torch.float64)
+        for gradient in gradients]))
+    if not bool(torch.isfinite(scaled_norm)):
+        raise RuntimeError("non-finite scaled gradient norm")
     coefficient = (backward_scale / (
         scaled_norm + backward_scale * 1e-6)).clamp(max=1.0)
     for parameter in parameters:
