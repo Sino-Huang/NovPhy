@@ -16,16 +16,20 @@ from scripts.issue_76_full_duration_loss import (
     trajectory_batch,
 )
 from scripts.issue_76_matched_batches import indexed_batch, mixed_schedule, sampled_schedule
+from scripts.issue_76_scaled_fit import backward_clipped, fit_updates as scaled_fit_updates
 from world_model.training.cnn_hybrid import linear_macs
 from world_model.training.native_history_fit import ENDPOINT, REFERENCE_TRANSITION_MACS
 
 
-ROOT = fit.files.ROOT / ".local-artifacts/issue-76-balanced-native-v1"
-OUTPUT = fit.files.ROOT / "data/issue-76-balanced-native"
+FAILED_ROOT = fit.files.ROOT / ".local-artifacts/issue-76-balanced-native-v1"
+ROOT = fit.files.ROOT / ".local-artifacts/issue-76-balanced-native-v2"
+OUTPUT = fit.files.ROOT / "data/issue-76-balanced-native-v2"
+PREDICTOR_BACKWARD_SCALE = 2 ** -16
 SOURCES = (
     "scripts/run_issue_76_balanced_native.py",
     "scripts/issue_76_full_duration_loss.py",
     "scripts/issue_76_matched_batches.py",
+    "scripts/issue_76_scaled_fit.py",
     "tests/test_issue_76_balanced_native.py",
     "docs/issue-76-balanced-native-protocol.md",
 )
@@ -44,6 +48,37 @@ def training_phase(update):
     if not 0 <= update < 12000:
         raise ValueError("balanced-native update is outside the frozen schedule")
     return "local" if update < 6000 else "full_duration"
+
+
+def _failed_v1_audit():
+    plan = fit.files.read(FAILED_ROOT / "plan.json")
+    path = fit.model_path(FAILED_ROOT, 760930003, False, "predictor")
+    saved = torch.load(path, map_location="cpu", weights_only=False)
+    budget = fit.files.read(FAILED_ROOT / "budgets" / "predictor-hybrid-760930003.json")
+    failure = "ValueError: nonfinite fit loss in predictor-hybrid-760930003 update 9115"
+    model_tensors = list(saved["model"].values())
+    nonfinite_model_tensors = sum(
+        not bool(torch.isfinite(value).all()) for value in model_tensors)
+    if (plan["identity"] != FAILED_ROOT.name or saved["plan_identity"] != plan["identity"]
+            or saved["complete"] or saved["failure"] != failure
+            or (saved["updates_completed"], saved["updates_applied"], saved["updates_skipped"])
+               != (9115, 9042, 73)
+            or budget["running"] or budget["stopped"]
+            or (nonfinite_model_tensors, len(model_tensors)) != (40, 45)):
+        raise ValueError("balanced-native v1 numerical failure audit differs")
+    return {
+        "plan_identity": plan["identity"],
+        "checkpoint": str(path),
+        "failed_arm": "hybrid",
+        "failed_seed": 760930003,
+        "updates_completed": saved["updates_completed"],
+        "updates_applied": saved["updates_applied"],
+        "updates_skipped": saved["updates_skipped"],
+        "last_finite_loss": saved["last_loss"],
+        "failure": saved["failure"],
+        "nonfinite_model_tensors": nonfinite_model_tensors,
+        "model_tensors": len(model_tensors),
+    }
 
 
 def _balanced_sources(parent):
@@ -75,8 +110,9 @@ def make_plan():
     index = fit.data_index(fit.ROOT, parent)
     balanced_plan, parsers = _balanced_sources(parent)
     return {
-        "schema": "issue_76_balanced_native_plan_v1",
+        "schema": "issue_76_balanced_native_plan_v2",
         "identity": ROOT.name,
+        "failed_v1_audit": _failed_v1_audit(),
         "parent_plan_identity": parent["identity"],
         "parent_data_root": str(fit.ROOT),
         "entries": index["entries"],
@@ -88,6 +124,7 @@ def make_plan():
         "predictor_phases": {"local_updates": 6000, "full_duration_updates": 6000},
         "batch_size": 32,
         "learning_rates": {"history": .001, "predictor": .0003, "controller": .001},
+        "predictor_backward_scale": PREDICTOR_BACKWARD_SCALE,
         "controller_compute_weight": .0001,
         "limits": {"common_seconds_per_seed": 3600,
                    "predictor_seconds_per_arm_seed": 14400,
@@ -283,10 +320,11 @@ def train_predictors(plan, device):
                                                  batch["action"], pair) if pure
                             else full_hybrid_loss(model, batch, pair))
 
-                result = fit.fit_updates(fit.model_path(ROOT, seed, pure, "predictor"), model,
+                result = scaled_fit_updates(fit.model_path(ROOT, seed, pure, "predictor"), model,
                     plan_identity=plan["identity"], updates=plan["updates"]["predictor"],
                     lr=plan["learning_rates"]["predictor"], make_loss=predictor_loss,
-                    budget=budget, device=device)
+                    budget=budget, device=device,
+                    backward_scale=plan["predictor_backward_scale"])
                 if (result["updates_applied"], result["updates_skipped"]) != (len(schedule), 96):
                     raise ValueError("balanced-native predictor exposure differs")
             del model, result, original, schedule
@@ -488,14 +526,16 @@ def smoke_test(device):
         local_loss = (fit.continuous_loss(model, local["z"], local["available"],
                                           local["action"], pair) if pure
                       else fit.hybrid_loss(model, local, pair))
-        local_loss.backward()
+        backward_clipped(local_loss, model.parameters(),
+                         backward_scale=plan["predictor_backward_scale"])
         model.zero_grad(set_to_none=True)
         full = trajectory_batch(shards, carriers, rows, pair.delta, symbolic=not pure)
         full = {key: value.to(device) for key, value in full.items()}
         full_loss = (full_continuous_loss(model, full["z"], full["available"],
                                           full["action"], pair) if pure
                      else full_hybrid_loss(model, full, pair))
-        full_loss.backward()
+        backward_clipped(full_loss, model.parameters(),
+                         backward_scale=plan["predictor_backward_scale"])
         segment = shards[0]["segment_ranges"][0]
         teacher = controller_targets(model.eval(), carriers[0][segment["start"]:segment["stop"]].to(device),
             shards[0]["tensors"]["fixed_steps"][segment["start"]:segment["stop"]].tolist(),

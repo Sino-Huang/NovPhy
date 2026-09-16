@@ -1,4 +1,4 @@
-# Balanced-perception native dynamics refit
+# Balanced-perception native dynamics refit v2
 
 This is a new engineering candidate after the retained event-ranking failure.
 It does not alter or extend that completed stage.  The failure showed that the
@@ -7,6 +7,18 @@ already completed balanced-pig parser diagnostic passed its predeclared
 outcome-independent semantic criteria on all three seeds.  Reuse exactly those
 three frozen parser checkpoints as the common perception surface for both
 dynamics arms.  No event outcome enters this refit.
+
+The frozen v1 execution completed four predictor cells, then its seed-3 hybrid
+cell failed after update 9,114.  Its forward loss was finite; the audit is
+consistent with float32 backward overflow through the 226-step delta-50
+recursion, followed by unchecked non-finite gradient clipping.  The optimizer
+step made all 40 tensors on the active macro/continuous path and their Adam
+moments non-finite, while the five inactive micro-head tensors remained finite.
+Update 9,115 detected the damage.  The exact input batch was finite and
+bounded, completed seed-1 and seed-2 models differentiated it finitely, CUDA memory was stable,
+and the failed checkpoint is retained.  V2 is an audited new execution, not an
+automatic retry: refit all six predictors from scratch and retain the v1
+failure binding in the frozen plan.
 
 Retain the original native-refit training membership, action encoding,
 22-slot vocabulary, observed-history contract, horizons 50/250/750, three
@@ -25,6 +37,15 @@ the pre-existing full-duration recursive objective through the available
 11,250-native-step window.  Both arms receive the identical update and sampled
 start schedules; the hybrid retains its declared micro/macro auxiliary labels,
 and the pure arm has no symbolic modules or mode embedding.
+
+For predictor backward passes, multiply the scalar loss by `2^-16` before
+automatic differentiation, compute the norm on those scaled gradients, apply
+the equivalent unit-norm clipping coefficient, and divide the clipped
+gradients by `2^-16` before AdamW.  This preserves the intended unit-clipped
+gradient while keeping long-recursion intermediate gradients inside float32.
+Any still-non-finite scaled gradient is a hard retained failure before the
+optimizer step.  Common-history and controller fitting retain their original
+unscaled backward passes.
 
 Fit the existing parameter-matched controllers for 4,000 scheduled updates
 per arm/seed (lr 0.001, batch 32).  Their dynamic-programming teacher remains
