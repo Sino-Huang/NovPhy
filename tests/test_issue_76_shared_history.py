@@ -10,6 +10,27 @@ from scripts.issue_76_shared_player_storage import clone_player, unique_file_byt
 
 
 class SharedHistoryPlayerTests(unittest.TestCase):
+    def test_endpoint_and_aligned_capture_share_the_same_world_renderer(self):
+        aligned = '''    public void Capture(PhysicalSnapshotRuntime runtime)
+    {
+        Camera camera = Camera.main;
+        int width = Screen.width;
+        int height = Screen.height;
+        if (camera == null || width <= 0 || height <= 0) throw new InvalidOperationException();
+        byte[] png = RenderWorldCamera();
+
+        sequence++;
+    }'''
+        endpoint = '''                    Texture2D observationTexture = ScreenCapture.CaptureScreenshotAsTexture();
+                    byte[] canonicalPng = observationTexture.EncodeToPNG();
+                    observationResponse = ObservationCaptureProtocol.BuildCaptureEnvelope();'''
+        changed_aligned = player.aligned_renderer_source(aligned)
+        changed_endpoint = player.endpoint_source(endpoint)
+        self.assertEqual(changed_aligned.count('RenderWorldCamera()'), 1)
+        self.assertIn('byte[] png = RenderCanonicalRgb(camera, width, height)', changed_aligned)
+        self.assertIn('PhysicsCaptureV2AlignedObservationRecorder.RenderCanonicalRgb(', changed_endpoint)
+        self.assertNotIn('CaptureScreenshotAsTexture', changed_endpoint)
+
     def test_history_requires_sealed_order_and_native_timestamp_spacing(self):
         with tempfile.TemporaryDirectory() as temporary:
             aligned = Path(temporary)

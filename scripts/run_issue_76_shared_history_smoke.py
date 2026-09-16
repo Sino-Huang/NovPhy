@@ -11,7 +11,7 @@ from scripts.issue_76_shared_history_capture import capture_one, files
 from scripts.issue_76_shared_player_storage import unique_file_bytes
 from scripts.run_issue_76_compatibility import process_rss, terminate_worker
 
-OUTPUT = files.ROOT / '.local-artifacts/issue-76-shared-history-smoke-v1'
+OUTPUT = files.ROOT / '.local-artifacts/issue-76-shared-history-smoke-v2'
 PROTOCOL = 'docs/issue-76-shared-history-smoke-protocol.md'
 SOURCES = ('scripts/issue_76_shared_history_player.py', 'scripts/issue_76_shared_history_capture.py',
            'scripts/issue_76_shared_player_storage.py', 'scripts/run_issue_76_shared_history_smoke.py',

@@ -1,0 +1,25 @@
+{
+  "schema": "issue_76_capture_path_perception_probe_v1",
+  "comparison": "same native step/world, camera-only history RGB versus HUD-inclusive request-72 RGB",
+  "source_commit": "fce6544",
+  "source_fixture": ".local-artifacts/issue-76-shared-history-smoke-v1/attempts/issue-76-shared-history-smoke-01",
+  "source_images": [
+    "aligned/decision-history-capture-887efc194f6b45ff8b70778b6ce64277/frame_000003.png",
+    "paused-before.png"
+  ],
+  "fixed_step": 30000,
+  "fixed_time_seconds": 13.1419992,
+  "limits": {"wall_seconds": 120, "cpu_threads": 1, "image_count": 2, "parser_count": 3},
+  "image_difference": {"changed_pixels": 6482, "maximum_absolute_channel_difference": 246, "mean_absolute_channel_difference": 1.3158213975694444},
+  "hold_before_after_images_equal": true,
+  "parsers": [
+    {"seed": 760930001, "checkpoint": ".local-artifacts/issue-76-balanced-pig-v1/checkpoints/visual-balanced-760930001.pt", "presence_probability_max_absolute_change": 0.21558991074562073, "center_max_absolute_change": 0.054957449436187744, "pig_probability_world_then_hud": [0.9995811581611633, 0.9996912479400635], "pig_center_world_then_hud": [[0.5054309964179993, 0.5712780356407166], [0.560388445854187, 0.5436865091323853]]},
+    {"seed": 760930002, "checkpoint": ".local-artifacts/issue-76-balanced-pig-v1/checkpoints/visual-balanced-760930002.pt", "presence_probability_max_absolute_change": 0.1198224425315857, "center_max_absolute_change": 0.03124070167541504, "pig_probability_world_then_hud": [0.999872088432312, 0.9998379945755005], "pig_center_world_then_hud": [[0.49855613708496094, 0.5374103784561157], [0.47141778469085693, 0.5277553796768188]]},
+    {"seed": 760930003, "checkpoint": ".local-artifacts/issue-76-balanced-pig-v1/checkpoints/visual-balanced-760930003.pt", "presence_probability_max_absolute_change": 0.08065080642700195, "center_max_absolute_change": 0.02142515778541565, "pig_probability_world_then_hud": [0.999936580657959, 0.9999520778656006], "pig_center_world_then_hud": [[0.467812716960907, 0.5803024172782898], [0.4538710415363312, 0.5630045533180237]]}
+  ],
+  "optimizer_updates": 0,
+  "utility_scoring": false,
+  "fresh_access": false,
+  "advancement_authorized": false,
+  "interpretation": "Measured perception drift under the capture-path mismatch, not proof of the cause of utility failure or a hybrid advantage; preserve all previous negative findings."
+}

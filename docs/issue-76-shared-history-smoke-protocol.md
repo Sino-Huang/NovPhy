@@ -6,6 +6,12 @@ The canonical recovered parent source, player, datasets and failed findings rema
 unchanged. The new build changes observation timing and synchronization only;
 physics timestep, physics rules and recovered gameplay behavior are unchanged.
 
+Version 2 corrects the retained v1 capture-path failure: request 72 and aligned
+history/shot renders use the same world-camera RGB implementation, excluding
+screen-space HUD. This shared observation correction applies to every model arm;
+it neither changes physics nor grants scene/oracle information to policies. V1
+source, numeric plan, both failed attempts and findings remain retained.
+
 Before either rendered attempt, freeze the source, compiled player origin and two
 assignments in `plan.json`. Select the first existing TRAIN member in normal family
 `type010204` by membership order, regardless of its outcomes. Replay that same

@@ -8,7 +8,7 @@ from scripts import run_issue_76_canonical_player as base
 from scripts.issue_76_canonical_instrumentation import replace
 
 PARENT = Path("/home/sukaih/.cache/novphy-canonical-native-v1")
-WORK = Path("/home/sukaih/.cache/novphy-shared-history-v1")
+WORK = Path("/home/sukaih/.cache/novphy-shared-history-v2")
 BARRIER = "tasks/issue_76_canonical/NativeDecisionBarrier.cs"
 
 
@@ -38,6 +38,27 @@ def connection_source(text):
     return text
 
 
+def aligned_renderer_source(text):
+    start = text.index('        if (camera == null || width <= 0 || height <= 0)')
+    end = text.index('        sequence++;', start)
+    render = text[start:end].rstrip()
+    method = ('    public static byte[] RenderCanonicalRgb(Camera camera, int width, int height)\n'
+              '    {\n' + render + '\n        return png;\n    }\n\n')
+    text = text[:start] + '        byte[] png = RenderCanonicalRgb(camera, width, height);\n\n' + text[end:]
+    return replace(text, '    public void Capture(PhysicalSnapshotRuntime runtime)',
+                   method + '    public void Capture(PhysicalSnapshotRuntime runtime)')
+
+
+def endpoint_source(text):
+    start = text.index('                    Texture2D observationTexture = ScreenCapture.CaptureScreenshotAsTexture();')
+    end = text.index('                    observationResponse = ObservationCaptureProtocol.BuildCaptureEnvelope(', start)
+    return text[:start] + '''                    int observationWidth = Screen.width;
+                    int observationHeight = Screen.height;
+                    byte[] canonicalPng = PhysicsCaptureV2AlignedObservationRecorder.RenderCanonicalRgb(
+                        Camera.main, observationWidth, observationHeight);
+''' + text[end:]
+
+
 def prepare(parent=PARENT, work=WORK):
     if work.exists():
         raise ValueError("shared-history work already exists; preserve its source and evidence")
@@ -46,6 +67,8 @@ def prepare(parent=PARENT, work=WORK):
         ('Assets/Scripts/CanonicalCapture/PhysicalSnapshotRuntime.cs', runtime_source),
         ('Assets/Scripts/Assembly-CSharp/ABGameWorld.cs', world_source),
         ('Assets/Scripts/Assembly-CSharp/AIBirdsConnection.cs', connection_source),
+        ('Assets/Scripts/CanonicalCapture/PhysicsCaptureV2AlignedObservationRecorder.cs', aligned_renderer_source),
+        ('Assets/Scripts/CanonicalCapture/PhysicsCaptureProtocol.cs', endpoint_source),
     ):
         before = (parent / 'project' / relative).read_text()
         changes[relative] = {'before': before, 'after': transform(before)}
@@ -63,6 +86,8 @@ def prepare(parent=PARENT, work=WORK):
         'changes': changes, 'barrier_source': (base.ROOT / BARRIER).read_text(),
         'canonical_physics_and_gameplay_rules_changed': False,
         'agent_input': 'RGB, observation time, accepted past actions only',
+        'pixel_contract': 'one shared world-camera RGB renderer for aligned history/shot and request 72; screen-space HUD excluded',
+        'correction': 'v1 timing held physics but endpoint ScreenCapture HUD differed from aligned Camera.Render RGB',
         'fresh_access': False, 'advancement_authorized': False,
     }, indent=2) + '\n')
     print(f"Shared-history source prepared at {work}; no captures started.", flush=True)
