@@ -8,6 +8,7 @@ from scripts.issue_76_fixed_replay_policy import FixedReplayPolicy
 from scripts.issue_76_shared_player_storage import clone_player
 from scripts.native_segment_trace import NativeSegmentTrace
 from scripts.observation_trace import _plain_json, persist_observation_trace
+from scripts.process_lifecycle import cleanup_actions, persist_after_cleanup, record_cleanup_failures
 from src.webui.bridge import ScienceBirdsBridge
 
 files, capture = live.files, live.capture
@@ -149,18 +150,20 @@ def capture_one(output, member, limits):
     except Exception as error:
         result['failure'] = f'{type(error).__name__}: {error}'
     finally:
-        for connection in (bridge, endpoint):
-            if connection is not None:
-                connection.disconnect()
-        capture.old.capture.stop_started_engine(engine)
+        actions = [('connection.disconnect',connection.disconnect)
+                   for connection in (bridge,endpoint) if connection is not None]
+        actions.append(('stop_started_engine',lambda: capture.old.capture.stop_started_engine(engine)))
         if display_process is not None:
-            capture.old.capture.terminate(display_process)
-        for key, value in environment.items():
-            if value is None:
-                os.environ.pop(key, None)
-            else:
-                os.environ[key] = value
+            actions.append(('display.terminate',lambda: capture.old.capture.terminate(display_process)))
+        def restore_environment():
+            for key,value in environment.items():
+                if value is None: os.environ.pop(key,None)
+                else: os.environ[key] = value
+        actions.append(('environment.restore',restore_environment))
+        cleanup_failures = cleanup_actions(actions)
+        record_cleanup_failures(result,cleanup_failures)
     result.update(complete=result['failure'] is None, wall_seconds=time.monotonic() - started)
-    files.write(output / 'results' / (member['identity'] + '.json'), result)
+    persist_after_cleanup(cleanup_failures,
+        lambda: files.write(output / 'results' / (member['identity'] + '.json'), result))
     print(f"Shared-history {member['identity']} complete={result['complete']} failure={result['failure']}", flush=True)
     return result

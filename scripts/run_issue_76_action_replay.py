@@ -10,7 +10,8 @@ import torch
 from scripts import issue_76_live_episode as live
 from scripts import prepare_issue_76_action_replay as metadata
 from scripts.issue_76_fixed_replay_policy import FixedReplayPolicy
-from scripts.run_issue_76_compatibility import process_rss, terminate_worker
+from scripts.run_issue_76_compatibility import process_rss, start_isolated_worker, terminate_worker
+from scripts.process_lifecycle import cleanup_actions
 
 ROOT = metadata.ROOT
 files = live.files
@@ -135,12 +136,13 @@ def run(plan, root=ROOT, *, smoke):
                 break
             budget["active_member"] = member["identity"]
             live._replace_json(budget, budget_path)
-            process = multiprocessing.get_context("spawn").Process(target=worker,
-                args=(root, member, {**limits, "readiness_action": plan["readiness_action"]}))
+            process = None
             beginning = last_log = time.monotonic()
             reason = None
+            cleanup_failures = []
             try:
-                process.start()
+                process = start_isolated_worker(multiprocessing.get_context("spawn"),worker,
+                    (root, member, {**limits, "readiness_action": plan["readiness_action"]}))
                 while process.is_alive():
                     process.join(.5)
                     update()
@@ -159,22 +161,25 @@ def run(plan, root=ROOT, *, smoke):
                 reason = f"supervisor_{type(error).__name__}: {error}"
                 raise
             finally:
-                if process.pid is not None and process.is_alive():
-                    terminate_worker(process)
+                if process is not None:
+                    cleanup_failures = cleanup_actions((("terminate_worker",lambda: terminate_worker(process)),))
+                process_exitcode = None if process is None else process.exitcode
                 if not target.exists():
-                    files.write(target, failed_result(member, attempt, reason or f"worker_exit_{process.exitcode}"))
+                    files.write(target, failed_result(member, attempt, reason or f"worker_exit_{process_exitcode}"))
                 update()
                 budget["artifact_bytes"] = artifact_bytes(root)
                 final_reason = stop_reason(limits, budget, time.monotonic() - beginning, smoke=smoke)
                 files.write(root / "supervision" / (member["identity"] + ".json"), {
                     "member_identity": member["identity"], "execution_plan_identity": plan["identity"],
-                    "worker_exitcode": process.exitcode, "wall_seconds": time.monotonic() - beginning,
+                    "worker_exitcode": process_exitcode, "wall_seconds": time.monotonic() - beginning,
                     "stop_reason": reason or final_reason, "execution_within_limits": not (reason or final_reason),
                     "raw_result_not_rewritten": True})
                 if final_reason in ("collection_wall_limit", "smoke_wall_limit", "aggregate_memory_limit", "artifact_limit"):
                     budget.update(stopped=True, stop_reason=final_reason)
                 budget["active_member"] = None
+                if cleanup_failures: budget["cleanup_failures"] = [f"{type(error).__name__}: {error}" for _,error in cleanup_failures]
                 live._replace_json(budget, budget_path)
+                if cleanup_failures: raise cleanup_failures[0][1]
             print(f"Recorded {member['identity']}; retained without retries.", flush=True)
             if budget["stopped"]:
                 break

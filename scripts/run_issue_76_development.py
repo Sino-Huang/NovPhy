@@ -13,7 +13,8 @@ from scripts import run_issue_76_canonical_smoke as c2
 from scripts import run_issue_76_native_continuation as parent
 from scripts.native_segment_trace import NativeSegmentTrace
 from scripts.observation_trace import validate_observation_trace
-from scripts.run_issue_76_compatibility import process_rss, terminate_worker
+from scripts.run_issue_76_compatibility import process_rss, start_isolated_worker, terminate_worker
+from scripts.process_lifecycle import cleanup_actions
 
 ROOT = files.ROOT
 PROTOCOL = "docs/issue-76-censored-development-protocol.md"
@@ -129,14 +130,15 @@ def run(root, plan, first_only=False):
         if attempt.exists():
             files.write(target, c2.interrupted_result(attempt, member, "interrupted_attempt_no_retry"))
             continue
-        process = multiprocessing.get_context("spawn").Process(target=episode.capture_episode, args=(root, member, cap))
         if initial + time.monotonic() - started >= cap["active_seconds"]:
             budget["stopped"] = True
             c2.capture_budget(budget_path, budget)
             break
-        process.start()
+        process = start_isolated_worker(multiprocessing.get_context("spawn"),episode.capture_episode,(root, member, cap))
         beginning = last_log = time.monotonic()
         stop = None
+        cleanup_failures = []
+        supervisor_error = None
         try:
             while process.is_alive():
                 process.join(.25)
@@ -164,20 +166,34 @@ def run(root, plan, first_only=False):
                     episode.old.log(f"{plan['stage']} episode={member['ordinal']}/{len(plan['members'])} RGB={counts} chunks={chunks} active={budget['active_seconds']:.1f}s RSS={rss:.1f}MiB bytes={budget['artifact_bytes']} ETA={eta}")
                     c2.capture_budget(budget_path, budget)
                     last_log = now
-                if stop:
-                    terminate_worker(process)
-                    break
+                if stop: break
+        except BaseException as error:
+            supervisor_error = error
+            stop = f"supervisor_{type(error).__name__}: {error}"
         finally:
-            if process.is_alive():
-                terminate_worker(process)
-        if not target.exists():
-            files.write(target, c2.interrupted_result(attempt, member, stop or f"worker_exit_{process.exitcode}"))
-        budget["active_seconds"] = initial + time.monotonic() - started
-        budget["artifact_bytes"] = budget["prior_artifact_bytes"] + c2.artifact_bytes(root)
-        budget["stopped"] = stop in ("aggregate_memory_limit", "global_wall_limit", "data_limit")
-        c2.capture_budget(budget_path, budget)
-        value = files.read(target)
-        episode.old.log(f"recorded {member['identity']} collection_complete={value['complete']} gameplay_success={value.get('gameplay_success', False)} failure={value['failure']}")
+            cleanup_failures = cleanup_actions((("terminate_worker",lambda: terminate_worker(process)),))
+            cleanup_records = [f"{type(item).__name__}: {item}" for _,item in cleanup_failures]
+            persistence_failures = []
+            if not target.exists():
+                fallback = c2.interrupted_result(attempt,member,stop or f"worker_exit_{process.exitcode}")
+                if cleanup_records: fallback["cleanup_failures"] = cleanup_records
+                persistence_failures.extend(cleanup_actions((("fallback_result",lambda: files.write(target,fallback)),)))
+            budget["active_seconds"] = initial + time.monotonic() - started
+            budget["artifact_bytes"] = budget["prior_artifact_bytes"] + c2.artifact_bytes(root)
+            budget["stopped"] = stop in ("aggregate_memory_limit", "global_wall_limit", "data_limit")
+            if cleanup_records: budget["cleanup_failures"] = cleanup_records
+            persistence_failures.extend(cleanup_actions((("budget",lambda: c2.capture_budget(budget_path,budget)),)))
+            if target.exists():
+                def log_result():
+                    value = files.read(target)
+                    episode.old.log(f"recorded {member['identity']} collection_complete={value['complete']} gameplay_success={value.get('gameplay_success', False)} failure={value['failure']}")
+                persistence_failures.extend(cleanup_actions((("result_log",log_result),)))
+            secondary = cleanup_failures+persistence_failures
+            if supervisor_error is not None:
+                for name,error in secondary:
+                    supervisor_error.add_note(f"{name} also failed: {type(error).__name__}: {error}")
+                raise supervisor_error
+            if secondary: raise secondary[0][1]
         if budget["stopped"]:
             break
 

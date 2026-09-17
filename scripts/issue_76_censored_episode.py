@@ -11,6 +11,7 @@ from scripts import issue_76_expansion as files
 from scripts import issue_76_episode_capture as old
 from scripts.native_segment_trace import NativeSegmentTrace
 from scripts.observation_trace import load_aligned_observation_captures, persist_observation_trace
+from scripts.process_lifecycle import cleanup_actions, persist_after_cleanup, record_cleanup_failures
 from scripts.run_issue_62_successor_cohort import _replace_json
 
 
@@ -125,16 +126,17 @@ def capture_episode(output, member, limits):
         result["failure"] = f"{type(error).__name__}: {error}"
         old.log(f"native failure retained {member['identity']}: {result['failure']}")
     finally:
-        if bridge is not None:
-            bridge.disconnect()
-        old.capture.stop_started_engine(engine)
-        if display_process is not None:
-            old.capture.terminate(display_process)
+        actions = []
+        if bridge is not None: actions.append(("bridge.disconnect",bridge.disconnect))
+        actions.append(("stop_started_engine",lambda: old.capture.stop_started_engine(engine)))
+        if display_process is not None: actions.append(("display.terminate",lambda: old.capture.terminate(display_process)))
+        cleanup_failures = cleanup_actions(actions)
+        record_cleanup_failures(result,cleanup_failures)
     result["unattempted_shots"] = [i for i in range(1, len(member["actions"]) + 1) if i not in result["attempted_shots"]]
     result["complete"] = result["failure"] is None  # Collection integrity, not gameplay success.
     result["gameplay_success"] = (result["complete"] and result.get("game_state_after") == "WON"
                                   and result.get("stopping_reason") != "native_time_window_limit")
     result["gameplay_failure_penalty"] = 0 if result["gameplay_success"] else 1
     result["wall_seconds"] = time.monotonic() - started
-    files.write(output / "results" / (member["identity"] + ".json"), result)
-
+    persist_after_cleanup(cleanup_failures,
+        lambda: files.write(output / "results" / (member["identity"] + ".json"), result))

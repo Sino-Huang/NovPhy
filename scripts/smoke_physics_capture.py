@@ -34,6 +34,7 @@ from scripts.collect_rollouts import (
 )
 from scripts.slingshot_readiness import prepare_screen_shot
 from scripts.manual_agent import connect_with_retry, prepare_for_play
+from scripts.process_lifecycle import registered_session_popen
 from scripts.rollout_artifacts import validate_physics_shot_artifact
 from scripts.rollout_validation_types import PhysicsArtifactError
 from scripts.smoke_protection import (
@@ -865,9 +866,9 @@ def start_display(log_path: Path) -> tuple[str, subprocess.Popen[bytes]]:
     """Start a private Xvfb display for this run."""
     display = f":{190 + (os.getpid() % 50)}"
     with log_path.open("wb") as log:
-        process = subprocess.Popen(
+        process = registered_session_popen(
             ["Xvnc", display, "-geometry", "1024x768", "-depth", "24", "-SecurityTypes", "None", "-rfbport", "0"],
-            stdout=log, stderr=subprocess.STDOUT, start_new_session=True,
+            popen=subprocess.Popen,stdout=log,stderr=subprocess.STDOUT,
         )
     time.sleep(0.25)
     if process.poll() is not None:

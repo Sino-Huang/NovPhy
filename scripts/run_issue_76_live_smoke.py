@@ -10,7 +10,7 @@ import torch
 
 from scripts import issue_76_live_episode as live
 from scripts import run_issue_76_development as development
-from scripts.run_issue_76_compatibility import process_rss, terminate_worker
+from scripts.run_issue_76_compatibility import process_rss, start_isolated_worker, terminate_worker
 from world_model.planning.native_gameplay import NativeObservationHistory
 from world_model.training.native_history_fit import NativeVisualParser
 from world_model.training.native_history_data import VISUAL_DIM
@@ -89,8 +89,7 @@ def run(plan, first_only=False):
         stop = "interrupted_attempt_no_retry" if attempt.exists() else None
         process = None
         if stop is None:
-            process = multiprocessing.get_context("spawn").Process(target=worker, args=(member, cap))
-            process.start()
+            process = start_isolated_worker(multiprocessing.get_context("spawn"),worker,(member, cap))
             beginning = last_log = time.monotonic()
             try:
                 while process.is_alive():
@@ -111,12 +110,9 @@ def run(plan, first_only=False):
                         live.capture.old.log(f"live smoke {member['ordinal']}/3 active={budget['active_seconds']:.1f}s RSS={budget['peak_cpu_rss_mib']:.1f}MiB bytes={budget['artifact_bytes']}")
                         live._replace_json(budget, budget_path)
                         last_log = now
-                    if stop:
-                        terminate_worker(process)
-                        break
+                    if stop: break
             finally:
-                if process.is_alive():
-                    terminate_worker(process)
+                terminate_worker(process)
         if not target.exists():
             files.write(target, dict(member_identity=member["identity"], complete=False,
                 failure=stop or f"worker_exit_{process.exitcode}", gameplay_success=False,

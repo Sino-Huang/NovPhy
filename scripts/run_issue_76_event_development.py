@@ -12,7 +12,8 @@ from scripts import issue_76_event_validation as validation
 from scripts import prepare_issue_76_event_development as metadata
 from scripts import validate_issue_76_action_replay as previous
 from scripts.issue_76_native_outcomes import terminal_evidence
-from scripts.run_issue_76_compatibility import process_rss, terminate_worker
+from scripts.run_issue_76_compatibility import process_rss, start_isolated_worker, terminate_worker
+from scripts.process_lifecycle import cleanup_actions
 
 files = metadata.files
 immutable = metadata.angular.previous.immutable
@@ -127,6 +128,7 @@ def run(plan, root=metadata.ROOT, output=metadata.OUTPUT, *, smoke):
     initial, initial_smoke, started = budget["active_seconds"], budget["smoke_active_seconds"], time.monotonic()
     budget.update(running=True, supervisor_pid=os.getpid(), active_members=[], stage="smoke" if smoke else "collection")
     context = multiprocessing.get_context("spawn")
+    cleanup_failures = []
 
     def update(scan=False):
         elapsed = time.monotonic() - started
@@ -143,9 +145,11 @@ def run(plan, root=metadata.ROOT, output=metadata.OUTPUT, *, smoke):
         job = active[slot]
         process, row = job["process"], job["row"]
         if process.pid is not None:
-            if process.is_alive():
-                terminate_worker(process)
-            process.join()
+            failures = cleanup_actions(((row["identity"],lambda: terminate_worker(process)),))
+            cleanup_failures.extend(failures)
+            if failures:
+                reason = reason or f"cleanup_{type(failures[0][1]).__name__}: {failures[0][1]}"
+                budget.update(stopped=True,stop_reason=reason)
         elapsed = time.monotonic() - job["started"]
         attempt = root / "attempts" / row["identity"]
         captures, frames = capture_extent(attempt)
@@ -169,6 +173,8 @@ def run(plan, root=metadata.ROOT, output=metadata.OUTPUT, *, smoke):
                    "raw_result_not_rewritten": True, "capture_retries": 0}
         files.write(root / "supervision" / (row["identity"] + ".json"), receipt)
         budget["worker_seconds"] += elapsed
+        if cleanup_failures:
+            budget["cleanup_failures"] = [f"{name}: {type(error).__name__}: {error}" for name,error in cleanup_failures]
         del active[slot]
         update(scan=True)
         print(f"Recorded event assignment {len(ledger.completed)}/{len(plan['inventory']['assignments'])}: {row['identity']}", flush=True)
@@ -197,10 +203,10 @@ def run(plan, root=metadata.ROOT, output=metadata.OUTPUT, *, smoke):
                         break
                     resources.check_ports_available(resources.worker_ports(slot))
                     row = queue.popleft()
-                    process = context.Process(target=resources.worker, args=(root, source[row["source_member_identity"]], row,
-                                              {**limits, "readiness_action": plan["readiness_action"]}, slot))
+                    process = start_isolated_worker(context,resources.worker,
+                        (root, source[row["source_member_identity"]], row,
+                         {**limits, "readiness_action": plan["readiness_action"]}, slot))
                     active[slot] = {"process": process, "row": row, "started": time.monotonic(), "peak_rss": 0.}
-                    process.start()
                     update()
             if budget["stopped"]:
                 break
@@ -251,6 +257,7 @@ def run(plan, root=metadata.ROOT, output=metadata.OUTPUT, *, smoke):
         budget.update(running=False, active_members=[],
                       unattempted_member_identities=[row["identity"] for row in rows if row["identity"] not in ledger.completed])
         resources.live._replace_json(budget, budget_path)
+        if cleanup_failures: raise cleanup_failures[0][1]
     return budget
 
 

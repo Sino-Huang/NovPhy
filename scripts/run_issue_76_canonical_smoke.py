@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 
 from scripts import issue_76_expansion as expansion
 from scripts import issue_76_episode_capture as episode
-from scripts.run_issue_76_compatibility import process_rss, terminate_worker
+from scripts.run_issue_76_compatibility import process_rss, start_isolated_worker, terminate_worker
 
 ROOT = expansion.ROOT
 OUTPUT = ROOT / ".local-artifacts/issue-76-canonical-smoke-v1"
@@ -153,8 +153,7 @@ def run(output, plan, first_only=False):
         if initial + time.monotonic() - started >= cap["active_seconds"]:
             budget["stopped"] = True
             break
-        process = multiprocessing.get_context("spawn").Process(target=episode.capture_episode, args=(output, member, cap))
-        process.start()
+        process = start_isolated_worker(multiprocessing.get_context("spawn"),episode.capture_episode,(output, member, cap))
         beginning = last_log = time.monotonic()
         stop = None
         try:
@@ -185,12 +184,9 @@ def run(output, plan, first_only=False):
                     episode.log(f"episode={member['ordinal']}/4 shots={len(folders)}/{len(member['actions'])} frames={counts} elapsed={now-beginning:.1f}s total={budget['active_seconds']:.1f}s ETA={eta} RSS={rss:.1f}MiB")
                     capture_budget(path, budget)
                     last_log = now
-                if stop:
-                    terminate_worker(process)
-                    break
+                if stop: break
         finally:
-            if process.is_alive():
-                terminate_worker(process)
+            terminate_worker(process)
         if not result.exists():
             expansion.write(result, interrupted_result(root, member, stop or f"worker_exit_{process.exitcode}"))
         budget["active_seconds"] = initial + time.monotonic() - started

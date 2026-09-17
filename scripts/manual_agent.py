@@ -13,12 +13,12 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.webui.bridge import GameState, PlayingMode, ScienceBirdsBridge  # noqa: E402
+from scripts.process_lifecycle import registered_session_popen  # noqa: E402
 from scripts.slingshot_readiness import prepare_screen_shot  # noqa: E402
 
 
@@ -52,6 +52,8 @@ Notes:
   - Keep this prompt open while trying the native Unity window with your mouse.
 """.strip()
 
+ENGINE_STOP_GRACE_SECONDS = 5
+
 
 def connect_with_retry(host: str, port: int, timeout: float, deadline_seconds: float) -> ScienceBirdsBridge:
     deadline = time.time() + deadline_seconds
@@ -83,39 +85,75 @@ def start_engine(game_dir: Path, headless: bool, *, agent_port: int | None = Non
     command.append("--dev")
     log_path = Path(f"/tmp/novphy_game_engine_{int(time.time() * 1000)}.log")
     log_file = log_path.open("ab")
-    process = subprocess.Popen(command, cwd=game_dir, stdout=log_file, stderr=subprocess.STDOUT, start_new_session=True)
-    process.novphy_log_file = log_file
-    process.novphy_process_group = True
+    process = registered_session_popen(command,popen=subprocess.Popen,cwd=game_dir,
+        stdout=log_file,stderr=subprocess.STDOUT)
+    setattr(process, "novphy_log_file", log_file)
+    setattr(process, "novphy_process_group", True)
+    setattr(process, "novphy_process_group_id", process.pid)
     return process
 
 
-def stop_started_engine(engine_process: subprocess.Popen | None) -> None:
-    if engine_process is None or engine_process.poll() is not None:
-        return
-    pgid = None
-    if getattr(engine_process, "novphy_process_group", False):
+def _process_group_members(pgid: int) -> tuple[int, ...]:
+    members = []
+    for proc in Path("/proc").glob("[0-9]*"):
         try:
-            pgid = os.getpgid(engine_process.pid)
-        except (OSError, ProcessLookupError):
-            pgid = None
-    if pgid is not None:
-        try:
-            os.killpg(pgid, signal.SIGTERM)
-        except ProcessLookupError:
+            stat = (proc / "stat").read_text(encoding="ascii")
+            fields = stat[stat.rindex(")") + 1:].split()
+            if int(fields[2]) == pgid and fields[0] != "Z":
+                members.append(int(proc.name))
+        except (OSError, ValueError, IndexError):
             pass
-    else:
-        engine_process.terminate()
+    return tuple(sorted(members))
+
+
+def _wait_for_process_group(pgid: int, timeout: float) -> tuple[int, ...]:
+    deadline = time.monotonic() + timeout
+    while True:
+        members = _process_group_members(pgid)
+        if not members or time.monotonic() >= deadline:
+            return members
+        time.sleep(.05)
+
+
+def stop_started_engine(engine_process: subprocess.Popen | None) -> None:
+    if engine_process is None:
+        return
     try:
-        engine_process.wait(timeout=5)
-    except (subprocess.TimeoutExpired, TimeoutError):
+        pgid = None
+        if getattr(engine_process, "novphy_process_group", False):
+            pgid = getattr(engine_process, "novphy_process_group_id", None)
+            if pgid is None:
+                try:
+                    pgid = os.getpgid(engine_process.pid)
+                except (OSError, ProcessLookupError):
+                    pass
         if pgid is not None:
             try:
-                os.killpg(pgid, signal.SIGKILL)
+                os.killpg(pgid, signal.SIGTERM)
             except ProcessLookupError:
                 pass
-        else:
-            engine_process.kill()
-        engine_process.wait(timeout=5)
+            survivors = _wait_for_process_group(pgid, ENGINE_STOP_GRACE_SECONDS)
+            if survivors:
+                try:
+                    os.killpg(pgid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                survivors = _wait_for_process_group(pgid, ENGINE_STOP_GRACE_SECONDS)
+            if survivors:
+                raise RuntimeError(f"engine process group {pgid} survived SIGKILL: {survivors}")
+            if engine_process.poll() is None:
+                engine_process.wait(timeout=ENGINE_STOP_GRACE_SECONDS)
+        elif engine_process.poll() is None:
+            engine_process.terminate()
+            try:
+                engine_process.wait(timeout=ENGINE_STOP_GRACE_SECONDS)
+            except (subprocess.TimeoutExpired, TimeoutError):
+                engine_process.kill()
+                engine_process.wait(timeout=ENGINE_STOP_GRACE_SECONDS)
+    finally:
+        log_file = getattr(engine_process, "novphy_log_file", None)
+        if log_file is not None and not log_file.closed:
+            log_file.close()
 
 
 def prepare_for_play(

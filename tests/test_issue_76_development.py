@@ -64,6 +64,29 @@ class DevelopmentCollectionTests(unittest.TestCase):
             self.assertFalse(value["complete"])
             self.assertEqual(value["failure"], "interrupted_attempt_no_retry")
 
+    def test_supervisor_interrupt_persists_result_and_budget_before_reraising(self):
+        class InterruptProcess:
+            pid = 999992
+            exitcode = None
+            def is_alive(self): return True
+            def join(self,timeout=None): raise KeyboardInterrupt("development interrupted")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            episode.files.write(root/"budget.json",{"active_seconds":0.,"prior_artifact_bytes":0,
+                "artifact_bytes":0,"peak_cpu_rss_mib":0.,"stopped":False})
+            member = {"identity":"member","ordinal":1,"actions":[{}]}
+            limits = {"active_seconds":10,"rgb_frames_max":10,"episode_seconds":10,
+                      "cpu_rss_mib":10,"artifact_bytes":100}
+            process = InterruptProcess()
+            with patch.object(run,"start_isolated_worker",return_value=process), \
+                    patch.object(run,"terminate_worker",side_effect=RuntimeError("registry retained at fixture")), \
+                    patch.object(episode.old,"log"):
+                with self.assertRaisesRegex(KeyboardInterrupt,"development interrupted"):
+                    run.run(root,{"stage":"fixture","members":[member],"limits":limits},first_only=True)
+            self.assertTrue(run.c2.result_path(root,member).is_file())
+            budget = episode.files.read(root/"budget.json")
+            self.assertIn("registry retained at fixture",budget["cleanup_failures"][0])
+
     def test_progress_publication_preserves_the_frozen_report_exactly(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

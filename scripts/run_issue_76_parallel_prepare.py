@@ -9,7 +9,8 @@ import time
 import torch
 
 from scripts import run_issue_76_automated_refit as execution
-from scripts.run_issue_76_compatibility import terminate_worker
+from scripts.run_issue_76_compatibility import start_isolated_worker, terminate_worker
+from scripts.process_lifecycle import cleanup_actions
 
 fit = execution.fit
 WORKERS = 6
@@ -93,21 +94,22 @@ def prepare_parallel(root, plan):
     active = []
     finished = len(plan["members"]) - len(pending)
     started = last_log = time.monotonic()
+    cleanup_failures = []
     with fit.fitting_budget(root, "data-preparation", execution.SECONDS, "cpu") as budget:
         try:
             while pending or active:
                 budget.check()
                 while pending and len(active) < WORKERS:
                     member = pending.pop(0)
-                    process = context.Process(target=prepare_one, args=(root, collection_root, plan["identity"], member))
-                    process.start()
+                    process = start_isolated_worker(context,prepare_one,(root, collection_root, plan["identity"], member))
                     active.append((member, process))
                 time.sleep(.5)
                 for member, process in list(active):
                     if process.is_alive():
                         continue
-                    process.join()
+                    cleanup_failures.extend(cleanup_actions(((member["identity"],lambda p=process: terminate_worker(p)),)))
                     active.remove((member, process))
+                    if cleanup_failures: raise cleanup_failures[0][1]
                     if process.exitcode != 0:
                         budget.value["stopped"] = True
                         raise RuntimeError(f"preparation worker failed for {member['identity']}: exit {process.exitcode}; no automatic retry")
@@ -126,12 +128,15 @@ def prepare_parallel(root, plan):
                     last_log = now
         finally:
             # A pause/resource stop cannot leave unaccounted writers behind.
-            for _, process in active:
-                terminate_worker(process)
+            cleanup_failures.extend(cleanup_actions(
+                (member["identity"],lambda p=process: terminate_worker(p)) for member,process in active))
             budget.value["parallel_workers"] = WORKERS
+            if cleanup_failures:
+                budget.value["cleanup_failures"] = [f"{name}: {type(error).__name__}: {error}" for name,error in cleanup_failures]
             usage = resource.getrusage(resource.RUSAGE_CHILDREN)
             budget.value["parallel_children_cpu_seconds"] = budget.value.get("parallel_children_cpu_seconds", 0.) + usage.ru_utime + usage.ru_stime
             budget.save()
+            if cleanup_failures: raise cleanup_failures[0][1]
         # Original source validates every retained result and builds all 15 role/family
         # gates in original member order. Workers never create the authoritative index.
         fit._prepare_data(root, plan, collection_root, budget)

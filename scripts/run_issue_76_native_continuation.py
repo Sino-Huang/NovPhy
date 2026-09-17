@@ -12,7 +12,7 @@ from scripts import issue_76_native_episode as episode
 from scripts import issue_76_native_player as player
 from scripts import run_issue_76_canonical_smoke as c2
 from scripts.canonical_native_trace import NativeTrace
-from scripts.run_issue_76_compatibility import process_rss, terminate_worker
+from scripts.run_issue_76_compatibility import process_rss, start_isolated_worker, terminate_worker
 
 ROOT = files.ROOT
 OUTPUT = ROOT / ".local-artifacts/issue-76-native-continuation-v1"
@@ -103,8 +103,7 @@ def run(plan, first_only):
         if initial + time.monotonic() - started >= cap["active_seconds"]:
             budget["stopped"] = True
             break
-        process = multiprocessing.get_context("spawn").Process(target=episode.capture_episode, args=(OUTPUT, member, cap))
-        process.start()
+        process = start_isolated_worker(multiprocessing.get_context("spawn"),episode.capture_episode,(OUTPUT, member, cap))
         beginning = last_log = time.monotonic()
         stop = None
         try:
@@ -135,12 +134,9 @@ def run(plan, first_only):
                     episode.old.log(f"native episode={member['ordinal']}/4 remaining-assignment={position}/3 RGB={counts} chunks={chunks} wall={now-beginning:.1f}s combined={budget['active_seconds']:.1f}s ETA={eta} RSS={rss:.1f}MiB")
                     c2.capture_budget(budget_path, budget)
                     last_log = now
-                if stop:
-                    terminate_worker(process)
-                    break
+                if stop: break
         finally:
-            if process.is_alive():
-                terminate_worker(process)
+            terminate_worker(process)
         if not result.exists():
             files.write(result, c2.interrupted_result(root, member, stop or f"native_worker_exit_{process.exitcode}"))
         budget["active_seconds"] = initial + time.monotonic() - started

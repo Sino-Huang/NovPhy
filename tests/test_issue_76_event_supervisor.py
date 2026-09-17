@@ -33,7 +33,7 @@ class FakeProcess:
 
     def is_alive(self):
         self.checks += 1
-        if self.checks > 1:
+        if self.checks > 2:
             self.exitcode = 0 if self.exitcode is None else self.exitcode
         return self.exitcode is None
 
@@ -67,7 +67,8 @@ class EventSupervisorTests(unittest.TestCase):
 
     def run_smoke(self):
         def terminate(process):
-            process.exitcode = -15
+            if process.exitcode is None:
+                process.exitcode = -15
         with patch.object(runner.multiprocessing, "get_context", return_value=SimpleNamespace(Process=FakeProcess)), patch.object(
                 runner, "process_rss", return_value=1.), patch.object(runner.resources, "check_ports_available"), patch.object(
                 runner.time, "sleep"), patch.object(runner, "terminate_worker", side_effect=terminate):

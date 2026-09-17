@@ -3,19 +3,120 @@ from contextlib import redirect_stdout
 import copy
 from io import StringIO
 import json
+import multiprocessing
 import os
 from pathlib import Path
+import signal
+import subprocess
+import sys
 import tempfile
+import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import xml.etree.ElementTree as ET
 
 from scripts import issue_76_expansion as e
 from scripts import run_issue_76_compatibility as r
 from scripts import issue_76_compatibility_media as media
 from scripts import issue_76_asset_audit as assets
+from scripts import process_lifecycle as lifecycle
 from scripts.issue_76_novelty_inventory import build_inventory
+from scripts.process_lifecycle import (cleanup_actions, persist_after_cleanup,
+    record_cleanup_failures, registered_session_popen, registry_snapshot)
 from tests.test_issue_76_dynamics_diagnostic import VOCABULARY
+
+
+def _pid_is_running(pid):
+    try:
+        os.kill(pid, 0)
+        stat = (Path("/proc") / str(pid) / "stat").read_text(encoding="ascii")
+        return stat[stat.rindex(")") + 2] != "Z"
+    except (OSError, ProcessLookupError):
+        return False
+
+
+def _wait_for(predicate, timeout=2):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if predicate():
+            return True
+        time.sleep(.02)
+    return predicate()
+
+
+def _worker_with_late_grandchild(directory):
+    directory = Path(directory)
+    child_ready = directory / "child.pid"
+    grandchild_pid = directory / "grandchild.pid"
+    grandchild = "import signal,time;signal.signal(signal.SIGTERM,signal.SIG_IGN);time.sleep(300)"
+    child = f"""import os,signal,subprocess,sys,time
+spawned=[]
+ready={str(child_ready)!r}
+pidfile={str(grandchild_pid)!r}
+code={grandchild!r}
+open(ready,'w').write(str(os.getpid()))
+def stop(*_):
+    if not spawned:
+        spawned.append(subprocess.Popen([sys.executable,'-c',code]))
+        open(pidfile,'w').write(str(spawned[0].pid))
+signal.signal(signal.SIGTERM,stop)
+while True:
+    time.sleep(1)
+"""
+    subprocess.Popen([sys.executable, "-c", child])
+    while True:
+        time.sleep(1)
+
+
+def _worker_exits_before_child(directory):
+    pidfile = str(Path(directory) / "orphan.pid")
+    child = (
+        "import os,signal,time;"
+        "signal.signal(signal.SIGTERM,signal.SIG_IGN);"
+        f"open({pidfile!r},'w').write(str(os.getpid()));"
+        "time.sleep(300)"
+    )
+    subprocess.Popen([sys.executable, "-c", child])
+
+
+def _worker_exits_before_detached_child(directory):
+    pidfile = str(Path(directory)/"detached.pid")
+    child = (
+        "import os,signal,time;"
+        "signal.signal(signal.SIGTERM,signal.SIG_IGN);"
+        f"open({pidfile!r},'w').write(str(os.getpid()));"
+        "time.sleep(300)"
+    )
+    registered_session_popen([sys.executable,"-c",child])
+
+
+def _worker_launches_registered_engine(directory):
+    from scripts import manual_agent
+    root = Path(directory)
+    game = root/"game"; game.mkdir()
+    (game/"game_playing_interface.jar").write_text("fixture",encoding="ascii")
+    binary = root/"bin"; binary.mkdir()
+    java = binary/"java"
+    java.write_text("""#!/usr/bin/env python3
+import os,signal,subprocess,sys,time
+open(sys.argv[-1] if sys.argv[-1].endswith('.pid') else os.environ['ENGINE_PID'],'w').write(str(os.getpid()))
+child=subprocess.Popen([sys.executable,'-c',"import signal,time;signal.signal(signal.SIGTERM,signal.SIG_IGN);time.sleep(300)"])
+open(os.environ['ENGINE_CHILD_PID'],'w').write(str(child.pid))
+time.sleep(300)
+""",encoding="ascii")
+    java.chmod(0o755)
+    os.environ["PATH"] = str(binary)+os.pathsep+os.environ["PATH"]
+    os.environ["ENGINE_PID"] = str(root/"engine.pid")
+    os.environ["ENGINE_CHILD_PID"] = str(root/"engine-child.pid")
+    manual_agent.start_engine(game,False)
+    (root/"launch-returned").write_text("yes",encoding="ascii")
+    time.sleep(300)
+
+
+def _term_ignoring_worker(ready):
+    signal.signal(signal.SIGTERM,signal.SIG_IGN)
+    Path(ready).write_text(str(os.getpid()),encoding="ascii")
+    while True: time.sleep(1)
 
 
 class ExpansionTests(unittest.TestCase):
@@ -141,8 +242,269 @@ class CaptureTests(unittest.TestCase):
             result = e.read(r.result_path(output,members[1]))
             self.assertEqual(result["failure"],"interrupted_single_attempt_retained_no_retry")
 
+    def test_supervisor_interrupt_persists_result_and_budget_before_reraising(self):
+        class InterruptProcess:
+            pid = 999991
+            exitcode = None
+            def is_alive(self): return True
+            def join(self,timeout=None): raise KeyboardInterrupt("compatibility interrupted")
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            member = {"identity":"member","ordinal":1,"base_cluster":"base","novelty_level":0,
+                      "generator_family":"fixture","generation_seed":1}
+            limits = {"active_seconds":10,"attempt_seconds":10,"fixed_step_offset_max":10,
+                      "cpu_rss_mib":10,"artifact_bytes":100}
+            args = argparse.Namespace(output=output,device="cpu")
+            process = InterruptProcess()
+            with patch.object(r,"start_isolated_worker",return_value=process), \
+                    patch.object(r,"terminate_worker",side_effect=RuntimeError("registry retained at fixture")), \
+                    patch.object(r,"log"):
+                with self.assertRaisesRegex(KeyboardInterrupt,"compatibility interrupted"):
+                    r.run_smoke(args,{"identity":"plan","members":[member],"limits":limits,"player":{}},True)
+            self.assertTrue(r.result_path(output,member).is_file())
+            budget = e.read(output/"budget.json")
+            self.assertIn("registry retained at fixture",budget["cleanup_failures"][0])
+
     def test_proc_memory_measurement_needs_no_optional_package(self):
         self.assertGreater(r.process_rss(os.getpid()),0)
+
+    def test_registry_append_retries_short_writes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/"registry"; path.write_bytes(b"")
+            real_write = os.write
+            calls = []
+            def short_write(descriptor,data):
+                count = max(1,len(data)//2)
+                calls.append(count)
+                return real_write(descriptor,data[:count])
+            with patch.object(lifecycle.os,"write",side_effect=short_write):
+                lifecycle._append_registry(path,"P short-write-token")
+            self.assertGreater(len(calls),1)
+            self.assertEqual(path.read_text(encoding="ascii"),"P short-write-token\n")
+
+    def test_registry_write_failure_prevents_launch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/"registry"; path.write_bytes(b"")
+            popen = Mock()
+            with patch.dict(os.environ,{lifecycle.REGISTRY_ENV:str(path)}), \
+                    patch.object(lifecycle.os,"write",side_effect=OSError("quota exhausted")):
+                with self.assertRaisesRegex(OSError,"quota exhausted"):
+                    lifecycle.registered_session_popen(["never-exec"],popen=popen)
+            popen.assert_not_called()
+            self.assertEqual(path.read_bytes(),b"")
+
+    def test_pending_registration_does_not_skip_group_kill(self):
+        with tempfile.TemporaryDirectory() as directory:
+            ready = Path(directory)/"ready"
+            worker = r.start_isolated_worker(multiprocessing.get_context("spawn"),_term_ignoring_worker,(ready,))
+            registry = Path(worker.novphy_process_group_registry)
+            try:
+                self.assertTrue(_wait_for(ready.exists))
+                with registry.open("a",encoding="ascii") as stream: stream.write("P never-ready\n")
+                with patch.object(r,"WORKER_STOP_GRACE_SECONDS",.2):
+                    with self.assertRaisesRegex(RuntimeError,f"never-ready.*{registry}"):
+                        r.terminate_worker(worker)
+                self.assertFalse(worker.is_alive())
+                self.assertTrue(registry.exists())
+            finally:
+                if worker.is_alive():
+                    try: os.killpg(worker.pid,signal.SIGKILL)
+                    except ProcessLookupError: pass
+                    worker.join(2)
+
+    def test_terminate_worker_drains_ready_group_registered_after_late_snapshot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            worker_ready = root/"worker-ready"
+            trigger = root/"register-now"
+            child_ready = root/"child-ready"
+            token = "late-ready-token"
+            worker = r.start_isolated_worker(multiprocessing.get_context("spawn"),
+                _term_ignoring_worker,(worker_ready,))
+            registry = Path(worker.novphy_process_group_registry)
+            child = None
+            child_pid = None
+            try:
+                self.assertTrue(_wait_for(worker_ready.exists))
+                with registry.open("a",encoding="ascii") as stream: stream.write(f"P {token}\n")
+                code = """import os,signal,sys,time
+from pathlib import Path
+from scripts.process_lifecycle import _append_registry,process_identity
+registry,token,trigger,ready=sys.argv[1:]
+os.setsid()
+pid=os.getpid()
+signal.signal(signal.SIGTERM,signal.SIG_IGN)
+Path(ready).write_text(str(pid),encoding='ascii')
+while not Path(trigger).exists(): time.sleep(.005)
+_append_registry(registry,f'R {token} {os.getpgrp()} {pid} {process_identity(pid)}')
+Path(ready+'.registered').write_text('yes',encoding='ascii')
+time.sleep(300)
+"""
+                child = subprocess.Popen([sys.executable,"-c",code,str(registry),token,
+                    str(trigger),str(child_ready)])
+                self.assertTrue(_wait_for(child_ready.exists))
+                child_pid = int(child_ready.read_text(encoding="ascii"))
+                self.assertEqual(os.getpgid(child_pid),child_pid)
+                registered = Path(str(child_ready)+".registered")
+                real_worker_groups = r._worker_groups
+                def trigger_after_dead_snapshot(process):
+                    snapshot = real_worker_groups(process)
+                    if not process.is_alive() and not trigger.exists():
+                        trigger.write_text("go",encoding="ascii")
+                        self.assertTrue(_wait_for(registered.exists))
+                    return snapshot
+                error = None
+                with patch.object(r,"_worker_groups",side_effect=trigger_after_dead_snapshot), \
+                        patch.object(r,"WORKER_STOP_GRACE_SECONDS",.2):
+                    try: r.terminate_worker(worker)
+                    except RuntimeError as caught: error = caught
+                self.assertTrue(registered.exists())
+                self.assertTrue(_wait_for(lambda: not _pid_is_running(child_pid)),
+                    f"late-registered process group survived cleanup: {error}")
+                self.assertIsNone(error)
+            finally:
+                if child_pid is not None and _pid_is_running(child_pid):
+                    try: os.killpg(child_pid,signal.SIGKILL)
+                    except ProcessLookupError: pass
+                if child is not None:
+                    try: child.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        child.kill(); child.wait(timeout=2)
+                if worker.is_alive():
+                    try: os.killpg(worker.pid,signal.SIGKILL)
+                    except ProcessLookupError: pass
+                worker.join(2)
+
+    def test_terminate_worker_reaps_term_ignoring_late_grandchild(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            context = multiprocessing.get_context("spawn")
+            worker = r.start_isolated_worker(context,_worker_with_late_grandchild,(directory,))
+            tracked = []
+            try:
+                self.assertTrue(_wait_for((root/"child.pid").exists))
+                tracked.append(int((root/"child.pid").read_text(encoding="ascii")))
+                with patch.object(r,"WORKER_STOP_GRACE_SECONDS",.2):
+                    r.terminate_worker(worker)
+                self.assertTrue(_wait_for((root/"grandchild.pid").exists))
+                tracked.append(int((root/"grandchild.pid").read_text(encoding="ascii")))
+                self.assertTrue(_wait_for(lambda: all(not _pid_is_running(pid) for pid in tracked)))
+            finally:
+                for pid in tracked:
+                    try: os.kill(pid,signal.SIGKILL)
+                    except ProcessLookupError: pass
+                if worker.is_alive(): worker.kill()
+                worker.join(2)
+
+    def test_terminate_worker_reaps_group_after_worker_exits(self):
+        with tempfile.TemporaryDirectory() as directory:
+            context = multiprocessing.get_context("spawn")
+            worker = r.start_isolated_worker(context,_worker_exits_before_child,(directory,))
+            pidfile = Path(directory)/"orphan.pid"
+            child_pid = None
+            try:
+                self.assertTrue(_wait_for(pidfile.exists))
+                child_pid = int(pidfile.read_text(encoding="ascii"))
+                worker.join(2)
+                self.assertFalse(worker.is_alive())
+                self.assertTrue(_pid_is_running(child_pid))
+                with patch.object(r,"WORKER_STOP_GRACE_SECONDS",.2):
+                    r.terminate_worker(worker)
+                self.assertTrue(_wait_for(lambda: not _pid_is_running(child_pid)))
+            finally:
+                if child_pid is not None and _pid_is_running(child_pid):
+                    try: os.killpg(worker.pid,signal.SIGKILL)
+                    except ProcessLookupError: pass
+                if worker.is_alive(): worker.kill()
+                worker.join(2)
+
+    def test_terminate_worker_reaps_registered_detached_group_after_worker_exits(self):
+        with tempfile.TemporaryDirectory() as directory:
+            worker = r.start_isolated_worker(multiprocessing.get_context("spawn"),
+                _worker_exits_before_detached_child,(directory,))
+            pidfile = Path(directory)/"detached.pid"
+            child_pid = None
+            try:
+                self.assertTrue(_wait_for(pidfile.exists))
+                child_pid = int(pidfile.read_text(encoding="ascii"))
+                worker.join(2)
+                self.assertFalse(worker.is_alive())
+                self.assertNotEqual(os.getpgid(child_pid),worker.pid)
+                with patch.object(r,"WORKER_STOP_GRACE_SECONDS",.2): r.terminate_worker(worker)
+                self.assertTrue(_wait_for(lambda: not _pid_is_running(child_pid)))
+            finally:
+                if child_pid is not None and _pid_is_running(child_pid):
+                    try: os.killpg(child_pid,signal.SIGKILL)
+                    except ProcessLookupError: pass
+                if worker.is_alive(): worker.kill()
+                worker.join(2)
+
+    def test_worker_death_during_detached_launch_does_not_orphan_group(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            worker = r.start_isolated_worker(multiprocessing.get_context("spawn"),
+                _worker_launches_registered_engine,(directory,))
+            engine_pid = child_pid = None
+            try:
+                self.assertTrue(_wait_for((root/"engine-child.pid").exists))
+                engine_pid = int((root/"engine.pid").read_text(encoding="ascii"))
+                child_pid = int((root/"engine-child.pid").read_text(encoding="ascii"))
+                worker.kill(); worker.join(2)
+                with patch.object(r,"WORKER_STOP_GRACE_SECONDS",.2): r.terminate_worker(worker)
+                self.assertTrue(_wait_for(lambda: not _pid_is_running(child_pid)))
+            finally:
+                if engine_pid is not None and (_pid_is_running(engine_pid) or (child_pid and _pid_is_running(child_pid))):
+                    try: os.killpg(engine_pid,signal.SIGKILL)
+                    except ProcessLookupError: pass
+                if worker.is_alive(): worker.kill()
+                worker.join(2)
+
+    def test_start_worker_interruption_reaps_started_descendants(self):
+        before = set(Path("/tmp").glob("novphy-worker-groups-*.txt"))
+        with tempfile.TemporaryDirectory() as directory:
+            pidfile = Path(directory)/"orphan.pid"
+            def interrupt_after_child(_pid):
+                self.assertTrue(_wait_for(pidfile.exists))
+                raise KeyboardInterrupt("injected readiness interrupt")
+            with patch("scripts.process_lifecycle.process_identity",side_effect=interrupt_after_child):
+                with self.assertRaisesRegex(KeyboardInterrupt,"readiness interrupt"):
+                    r.start_isolated_worker(multiprocessing.get_context("spawn"),
+                        _worker_exits_before_child,(directory,))
+            child_pid = int(pidfile.read_text(encoding="ascii"))
+            self.assertTrue(_wait_for(lambda: not _pid_is_running(child_pid)))
+        self.assertEqual(set(Path("/tmp").glob("novphy-worker-groups-*.txt")),before)
+
+    def test_terminate_worker_raises_if_worker_survives_kill(self):
+        with tempfile.TemporaryDirectory() as directory:
+            registry = Path(directory)/"groups.txt"; registry.write_text("",encoding="ascii")
+            class StuckWorker:
+                pid = 99999999
+                novphy_process_group_registry = str(registry)
+                def is_alive(self): return True
+                def terminate(self): pass
+                def kill(self): pass
+                def join(self,timeout=None): pass
+            with patch.object(r,"WORKER_STOP_GRACE_SECONDS",0):
+                with self.assertRaisesRegex(RuntimeError,f"survived SIGKILL.*{registry}"):
+                    r.terminate_worker(StuckWorker())
+            self.assertTrue(registry.exists())
+
+    def test_cleanup_runs_all_actions_and_persists_before_reraising(self):
+        events = []
+        result = {"failure":None}
+        first = RuntimeError("engine cleanup failed")
+        def fail(name,error):
+            def action(): events.append(name); raise error
+            return action
+        failures = cleanup_actions((("engine",fail("engine",first)),
+                                    ("display",fail("display",ValueError("display cleanup failed"))),
+                                    ("environment",lambda: events.append("environment"))))
+        record_cleanup_failures(result,failures)
+        with self.assertRaisesRegex(RuntimeError,"engine cleanup failed"):
+            persist_after_cleanup(failures,lambda: events.append(("persist",dict(result))))
+        self.assertEqual(events[:3],["engine","display","environment"])
+        self.assertEqual(events[3][0],"persist")
+        self.assertEqual(len(events[3][1]["cleanup_failures"]),2)
 
     def test_failed_partial_capture_gets_media_without_changing_failure(self):
         with tempfile.TemporaryDirectory() as directory:

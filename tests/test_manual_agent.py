@@ -1,7 +1,10 @@
 import io
 import json
+import os
 import signal
 import subprocess
+import sys
+import time
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
@@ -22,6 +25,60 @@ from scripts.manual_agent import (
     stop_started_engine,
 )
 from scripts.slingshot_readiness import slingshot_observation_from_symbolic_state
+from scripts.process_lifecycle import REGISTRY_ENV, REGISTRY_FAILURE_ENV, registry_snapshot
+
+
+def _pid_is_running(pid):
+    try:
+        os.kill(pid, 0)
+        stat = (Path("/proc") / str(pid) / "stat").read_text(encoding="ascii")
+        return stat[stat.rindex(")") + 2] != "Z"
+    except (OSError, ProcessLookupError):
+        return False
+
+
+def _wait_for(predicate, timeout=2):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if predicate():
+            return True
+        time.sleep(.02)
+    return predicate()
+
+
+def _start_fake_engine(directory, launcher_exits):
+    child_pid_path = Path(directory) / "child.pid"
+    child = (
+        "import os,signal,time;"
+        "signal.signal(signal.SIGTERM,signal.SIG_IGN);"
+        f"open({str(child_pid_path)!r},'w').write(str(os.getpid()));"
+        "time.sleep(300)"
+    )
+    launcher = (
+        "import subprocess,sys;"
+        f"child=subprocess.Popen([sys.executable,'-c',{child!r}]);"
+        + ("" if launcher_exits else "child.wait()")
+    )
+    process = subprocess.Popen([sys.executable, "-c", launcher], start_new_session=True)
+    setattr(process, "novphy_process_group", True)
+    setattr(process, "novphy_process_group_id", process.pid)
+    if not _wait_for(child_pid_path.exists):
+        os.killpg(process.pid, signal.SIGKILL)
+        process.wait(timeout=2)
+        raise RuntimeError("fake engine child did not start")
+    return process, int(child_pid_path.read_text(encoding="ascii"))
+
+
+def _force_stop_fake_engine(process, child_pid):
+    if _pid_is_running(process.pid) or _pid_is_running(child_pid):
+        try:
+            os.killpg(getattr(process, "novphy_process_group_id"), signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+    try:
+        process.wait(timeout=2)
+    except subprocess.TimeoutExpired:
+        pass
 
 
 class FakeBridge:
@@ -443,9 +500,12 @@ class ManualAgentTest(unittest.TestCase):
         self.assertEqual(popen.call_args.args[0], ["java", "-jar", "./game_playing_interface.jar", "--dev"])
         self.assertIsNot(popen.call_args.kwargs["stdout"], subprocess.DEVNULL)
         self.assertEqual(popen.call_args.kwargs["stderr"], subprocess.STDOUT)
+        self.assertTrue(popen.call_args.kwargs["start_new_session"])
         self.assertTrue(opened[0].name.startswith("/tmp/novphy_game_engine_"))
         self.assertFalse(opened[0].closed)
         self.assertTrue(process.novphy_process_group)
+        self.assertEqual(process.novphy_process_group_id,process.pid)
+        opened[0].close()
 
     def test_start_engine_accepts_isolated_worker_ports(self):
         with TemporaryDirectory() as tmp:
@@ -474,6 +534,43 @@ class ManualAgentTest(unittest.TestCase):
                 "--dev",
             ],
         )
+        popen.call_args.kwargs["stdout"].close()
+
+    def test_real_start_engine_records_group_before_dummy_jar_exits(self):
+        with TemporaryDirectory() as tmp:
+            game_dir = Path(tmp)
+            (game_dir/"game_playing_interface.jar").write_text("not a jar",encoding="ascii")
+            process = start_engine(game_dir,headless=True)
+            log_path = Path(process.novphy_log_file.name)
+            try:
+                self.assertTrue(process.novphy_process_group)
+                self.assertEqual(process.novphy_process_group_id,process.pid)
+                process.wait(timeout=5)
+                stop_started_engine(process)
+                self.assertTrue(process.novphy_log_file.closed)
+            finally:
+                if process.poll() is None: process.kill(); process.wait(timeout=2)
+                if not process.novphy_log_file.closed: process.novphy_log_file.close()
+                log_path.unlink(missing_ok=True)
+
+    def test_child_registration_failure_prevents_engine_exec(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp); game = root/"game"; game.mkdir()
+            (game/"game_playing_interface.jar").write_text("fixture",encoding="ascii")
+            binary = root/"bin"; binary.mkdir()
+            marker = root/"java-executed"
+            java = binary/"java"
+            java.write_text(f"#!/bin/sh\ntouch {marker}\nsleep 300\n",encoding="ascii")
+            java.chmod(0o755)
+            registry = root/"groups.txt"; registry.write_text("",encoding="ascii")
+            environment = {REGISTRY_ENV:str(registry),REGISTRY_FAILURE_ENV:"1",
+                           "PATH":str(binary)+os.pathsep+os.environ["PATH"]}
+            with patch.dict(os.environ,environment):
+                process = start_engine(game,headless=False)
+                process.wait(timeout=5)
+                stop_started_engine(process)
+            self.assertFalse(marker.exists())
+            self.assertEqual(registry_snapshot(registry),({},set()))
 
     def test_main_stops_started_engine_when_connection_fails(self):
         class FakeProcess:
@@ -514,6 +611,7 @@ class ManualAgentTest(unittest.TestCase):
             def __init__(self):
                 self.terminated = False
                 self.waited = False
+                self.novphy_log_file = io.BytesIO()
 
             def poll(self):
                 return None
@@ -531,6 +629,45 @@ class ManualAgentTest(unittest.TestCase):
         killpg.assert_called_once_with(2468, signal.SIGTERM)
         self.assertTrue(process.waited)
         self.assertFalse(process.terminated)
+        self.assertTrue(process.novphy_log_file.closed)
+
+    def test_stop_started_engine_reaps_group_while_launcher_is_alive(self):
+        with TemporaryDirectory() as tmp:
+            process, child_pid = _start_fake_engine(tmp, launcher_exits=False)
+            try:
+                with patch("scripts.manual_agent.ENGINE_STOP_GRACE_SECONDS", .2):
+                    stop_started_engine(process)
+                self.assertTrue(_wait_for(lambda: not _pid_is_running(child_pid)))
+            finally:
+                _force_stop_fake_engine(process, child_pid)
+
+    def test_stop_started_engine_reaps_group_after_launcher_exits(self):
+        with TemporaryDirectory() as tmp:
+            process, child_pid = _start_fake_engine(tmp, launcher_exits=True)
+            try:
+                process.wait(timeout=2)
+                self.assertTrue(_pid_is_running(child_pid))
+                with patch("scripts.manual_agent.ENGINE_STOP_GRACE_SECONDS", .2):
+                    stop_started_engine(process)
+                self.assertTrue(_wait_for(lambda: not _pid_is_running(child_pid)))
+            finally:
+                _force_stop_fake_engine(process, child_pid)
+
+    def test_main_startup_failure_reaps_child_after_launcher_exits(self):
+        with TemporaryDirectory() as tmp:
+            process,child_pid = _start_fake_engine(tmp,launcher_exits=True)
+            try:
+                process.wait(timeout=2)
+                with (
+                    patch("sys.argv",["manual_agent.py","--start-engine","--no-prepare"]),
+                    patch("scripts.manual_agent.start_engine",return_value=process),
+                    patch("scripts.manual_agent.connect_with_retry",side_effect=RuntimeError("startup failed")),
+                    patch("scripts.manual_agent.ENGINE_STOP_GRACE_SECONDS",.2),
+                ):
+                    with self.assertRaisesRegex(RuntimeError,"startup failed"): main()
+                self.assertTrue(_wait_for(lambda: not _pid_is_running(child_pid)))
+            finally:
+                _force_stop_fake_engine(process,child_pid)
 
     def test_main_stops_started_engine_when_disconnect_fails(self):
         class DisconnectFailBridge(FakeBridge):
