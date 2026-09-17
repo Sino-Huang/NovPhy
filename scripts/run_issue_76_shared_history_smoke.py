@@ -9,11 +9,12 @@ import time
 from scripts import issue_76_shared_history_player as player
 from scripts.issue_76_shared_history_capture import capture_one, files
 from scripts.issue_76_shared_player_storage import unique_file_bytes
-from scripts.run_issue_76_compatibility import process_rss, terminate_worker
+from scripts.run_issue_76_compatibility import process_rss, start_isolated_worker, terminate_worker
 
-OUTPUT = files.ROOT / '.local-artifacts/issue-76-shared-history-smoke-v2'
+OUTPUT = files.ROOT / '.local-artifacts/issue-76-shared-history-smoke-v4'
 PROTOCOL = 'docs/issue-76-shared-history-smoke-protocol.md'
 SOURCES = ('scripts/issue_76_shared_history_player.py', 'scripts/issue_76_shared_history_capture.py',
+           'scripts/issue_76_display_start.py',
            'scripts/issue_76_shared_player_storage.py', 'scripts/run_issue_76_shared_history_smoke.py',
            'tasks/issue_76_canonical/NativeDecisionBarrier.cs', 'tests/test_issue_76_shared_history.py', PROTOCOL)
 
@@ -85,8 +86,7 @@ def run(output=OUTPUT):
             raise ValueError('unclean smoke attempt must be audited, never silently repeated')
         if shutil.disk_usage(output).free < limits['minimum_free_bytes']:
             raise ValueError('shared-history smoke lacks its declared minimum free storage')
-        process = multiprocessing.get_context('spawn').Process(target=capture_one, args=(output, member, limits))
-        process.start()
+        process = start_isolated_worker(multiprocessing.get_context('spawn'),capture_one,(output, member, limits))
         beginning, stop, peak = time.monotonic(), None, 0.
         try:
             while process.is_alive():
@@ -99,12 +99,9 @@ def run(output=OUTPUT):
                     stop = 'global_wall_limit'
                 elif peak > limits['aggregate_cpu_rss_mib']:
                     stop = 'aggregate_memory_limit'
-                if stop:
-                    terminate_worker(process)
-                    break
+                if stop: break
         finally:
-            if process.is_alive():
-                terminate_worker(process)
+            terminate_worker(process)
         files.write(output / 'receipts' / (member['identity'] + '.json'), {
             'member_identity': member['identity'], 'exit_code': process.exitcode, 'stop': stop,
             'wall_seconds': time.monotonic() - beginning, 'peak_cpu_rss_mib': peak,

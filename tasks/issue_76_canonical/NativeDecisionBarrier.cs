@@ -60,7 +60,15 @@ public static class NativeDecisionBarrier
         if (runtime.Clock.FixedStep < next) return;
         if (runtime.Clock.FixedStep != next)
             throw new InvalidOperationException("native decision history missed its fixed-step capture");
-        if (recorder == null) recorder = PhysicsCaptureV2AlignedObservationRecorder.Create(Path.GetFileName(directory));
+        if (recorder == null)
+        {
+            // Readiness requests intend this same projection. Do not let a
+            // residual camera Lerp finish between fixed-step and endpoint RGB.
+            ABGameplayCamera gameplayCamera = ABSingleton<ABGameWorld>.Instance.GameplayCam;
+            gameplayCamera.SetCameraFullyZoomOut();
+            Camera.main.orthographicSize = gameplayCamera._maxWidth / Camera.main.aspect / 2f;
+            recorder = PhysicsCaptureV2AlignedObservationRecorder.Create(Path.GetFileName(directory));
+        }
         recorder.Capture(runtime);
         captured++;
         if (captured != FrameCount) return;

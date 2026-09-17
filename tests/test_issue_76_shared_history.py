@@ -10,6 +10,26 @@ from scripts.issue_76_shared_player_storage import clone_player, unique_file_byt
 
 
 class SharedHistoryPlayerTests(unittest.TestCase):
+    def test_accepted_segment_does_not_repeat_latest_history_at_zero_dt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / 'next.png').write_bytes(b'next real RGB')
+            (root / capture.MANIFEST_NAME).write_text(json.dumps({'frame_records': [
+                {'fixed_time_seconds': 12, 'agent_observation': {'relative_path': 'already-observed.png'}},
+                {'fixed_time_seconds': 12.02, 'agent_observation': {'relative_path': 'next.png'}},
+            ]}))
+            policy = Mock()
+            action = {'drag_x': -80, 'drag_y': 10, 'tap_time_ms': 0, 'release_time_ms': 1000}
+            capture.consume_shared_segment(root, action, 12, policy)
+            self.assertEqual(policy.method_calls, [
+                unittest.mock.call.executed(action, 12),
+                unittest.mock.call.observe(b'next real RGB', 12.02),
+            ])
+            policy.reset_mock()
+            with self.assertRaisesRegex(ValueError, 'shot clock differs'):
+                capture.consume_shared_segment(root, action, 11, policy)
+            policy.executed.assert_not_called()
+
     def test_endpoint_and_aligned_capture_share_the_same_world_renderer(self):
         aligned = '''    public void Capture(PhysicalSnapshotRuntime runtime)
     {

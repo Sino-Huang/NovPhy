@@ -4,10 +4,11 @@ from pathlib import Path
 import time
 
 from scripts import issue_76_live_episode as live
+from scripts import issue_76_display_start as display_start
 from scripts.issue_76_fixed_replay_policy import FixedReplayPolicy
 from scripts.issue_76_shared_player_storage import clone_player
 from scripts.native_segment_trace import NativeSegmentTrace
-from scripts.observation_trace import _plain_json, persist_observation_trace
+from scripts.observation_trace import MANIFEST_NAME, _plain_json, persist_observation_trace
 from scripts.process_lifecycle import cleanup_actions, persist_after_cleanup, record_cleanup_failures
 from src.webui.bridge import ScienceBirdsBridge
 
@@ -52,6 +53,24 @@ def expose_history(rows, destination, scenario, identity, role, policy):
     return manifest
 
 
+def consume_shared_segment(observation_root, action, decision_timestamp, policy):
+    """The initial shot RGB is already the latest history observation.
+
+    Keep its native truth/metadata binding but do not inject a duplicate zero-dt
+    observation into the streaming encoder. Insert acceptance once, then replay
+    only subsequent real frames for the next decision.
+    """
+    observation_root = Path(observation_root)
+    manifest = files.read(observation_root / MANIFEST_NAME)
+    first = manifest['frame_records'][0]
+    if first['fixed_time_seconds'] != decision_timestamp:
+        raise ValueError('accepted shot clock differs from its latest shared observation')
+    policy.executed(action, decision_timestamp)
+    for frame in manifest['frame_records'][1:]:
+        png = (observation_root / frame['agent_observation']['relative_path']).read_bytes()
+        policy.observe(png, frame['fixed_time_seconds'])
+
+
 def capture_one(output, member, limits):
     output = Path(output)
     root = output / 'attempts' / member['identity']
@@ -73,7 +92,7 @@ def capture_one(output, member, limits):
         _, scenario = files.materialize(member, member['template'], root / 'authority')
         if scenario.to_dict() != member['scenario']:
             raise ValueError('shared-history member differs from its frozen source authority')
-        display, display_process = live.start_display(root / 'display.log')
+        display, display_process = display_start.start_display(root / 'display.log')
         ports = set()
         while len(ports) < 3:
             ports.add(capture.old.capture.free_port())
@@ -145,7 +164,7 @@ def capture_one(output, member, limits):
                       native_launch_offset=launch[0]['fixed_step'] - limits['decision_fixed_step'],
                       requested_release_time_ms=member['actions'][0]['release_time_ms'],
                       native_launch_seconds=(launch[0]['fixed_step'] - limits['decision_fixed_step']) * .0004)
-        live.consume_executed_segment(root / 'shot-1/observation-trace', decision['action'], policy)
+        consume_shared_segment(root / 'shot-1/observation-trace', decision['action'], rows[-1]['fixed_time_seconds'], policy)
         result['policy'] = policy.evidence()
     except Exception as error:
         result['failure'] = f'{type(error).__name__}: {error}'

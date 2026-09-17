@@ -8,7 +8,7 @@ from scripts import run_issue_76_canonical_player as base
 from scripts.issue_76_canonical_instrumentation import replace
 
 PARENT = Path("/home/sukaih/.cache/novphy-canonical-native-v1")
-WORK = Path("/home/sukaih/.cache/novphy-shared-history-v2")
+WORK = Path("/home/sukaih/.cache/novphy-shared-history-v3")
 BARRIER = "tasks/issue_76_canonical/NativeDecisionBarrier.cs"
 
 
@@ -88,6 +88,7 @@ def prepare(parent=PARENT, work=WORK):
         'agent_input': 'RGB, observation time, accepted past actions only',
         'pixel_contract': 'one shared world-camera RGB renderer for aligned history/shot and request 72; screen-space HUD excluded',
         'correction': 'v1 timing held physics but endpoint ScreenCapture HUD differed from aligned Camera.Render RGB',
+        'camera_correction': 'v2 held physics and shared RGB rendering but residual camera convergence changed world-edge pixels; normalize the same fully-zoomed-out size before history',
         'fresh_access': False, 'advancement_authorized': False,
     }, indent=2) + '\n')
     print(f"Shared-history source prepared at {work}; no captures started.", flush=True)
