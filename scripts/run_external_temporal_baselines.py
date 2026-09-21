@@ -369,6 +369,9 @@ def make_plan(args):
             "disclosure": "every contrast is DESCRIPTIVE (paired bootstrap, 10000 draws, seed "
                           "7201); contrasts involving continuous_h5 disclose its issue-74 "
                           "selection optimism",
+            "corpus_variants": {"emitted": ["pooled", N1_CORPUS, N2_CORPUS],
+                                "paired_states": {"pooled": 21, "n1": 4, "n2": 17},
+                                "dispositions_read": "pooled variants only"},
             "reference_issue77_contrasts": "quoted read-only from the frozen issue-77 N1 "
                                            "diagnostic summary at publication"},
         "disposition_rules": {
@@ -1495,16 +1498,18 @@ def main():
                 for seed in SEEDS:
                     for arm in ARMS:
                         log(f"training cell seed={seed} arm={arm} start")
+                        cell_began = time.monotonic()
                         try:
-                            cell_began = time.monotonic()
                             train_cell(args, plan, plan77, source, seed, arm)
                             if arm == "tawm":
                                 train_control(args, plan, plan77, source, seed)
-                            cell_wall = time.monotonic() - cell_began
                         except (ValueError, OSError) as error:
+                            ledger_add(args, f"train/{seed}/{arm}",
+                                       time.monotonic() - cell_began)
                             record_failure(args, f"train/{seed}/{arm}", error)
                             raise
-                        ledger_add(args, f"train/{seed}/{arm}", cell_wall)
+                        ledger_add(args, f"train/{seed}/{arm}",
+                                   time.monotonic() - cell_began)
                         total, _ = ledger_total(args)
                         if total > ALLOWANCE_GPU_SECONDS:
                             message = (f"cumulative active GPU time {total:.0f}s exceeded the "
@@ -1515,8 +1520,10 @@ def main():
         elif args.run_evaluation:
             with eb.gpu_exclusive():
                 eval_began = time.monotonic()
-                run_evaluation(args, plan)
-                ledger_add(args, "run-evaluation", time.monotonic() - eval_began)
+                try:
+                    run_evaluation(args, plan)
+                finally:
+                    ledger_add(args, "run-evaluation", time.monotonic() - eval_began)
                 total, _ = ledger_total(args)
                 if total > ALLOWANCE_GPU_SECONDS:
                     message = (f"cumulative active GPU time {total:.0f}s exceeded the frozen "
