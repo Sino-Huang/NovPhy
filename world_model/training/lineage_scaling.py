@@ -5,7 +5,7 @@ complete training-lineage coverage and the carrier used to represent each state.
 """
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import asdict, dataclass
 from enum import StrEnum
 import hashlib
@@ -71,9 +71,34 @@ class GameplayCheckpointRole(StrEnum):
 
 
 class GameplayPlanningMode(StrEnum):
+    """Planning modes for matched gameplay systems.
+
+    CONTINUOUS_H1/CONTINUOUS_H15/ADAPTIVE are the classic issue-15/#61 modes;
+    every classic consumer (build_matched_gameplay_planners, the #61 runner)
+    pins that triple explicitly. CONTINUOUS_H5 and HYBRID_FIXED are the
+    additive #80 extension: fixed-h5 continuous planning and fixed-mode hybrid
+    planning (the hybrid checkpoint run at fixed horizon 1 with the continuous
+    abstraction, never an adaptive selector).
+    """
+
     CONTINUOUS_H1 = "continuous-h1"
     CONTINUOUS_H15 = "continuous-h15"
     ADAPTIVE = "adaptive"
+    CONTINUOUS_H5 = "continuous-h5"
+    HYBRID_FIXED = "hybrid-fixed"
+
+
+#: The three classic planning modes; classic matched six-system consumers pin
+#: this triple so the additive extension modes never leak into prior artifacts.
+CLASSIC_GAMEPLAY_MODES = (
+    GameplayPlanningMode.CONTINUOUS_H1,
+    GameplayPlanningMode.CONTINUOUS_H15,
+    GameplayPlanningMode.ADAPTIVE,
+)
+
+#: Candidate ordinal of the frozen no-model ordinal-prior arm (#77 "ordinal09"
+#: prior: the candidate with ordinal 8 of the 13-candidate inventory a00..a12).
+NO_MODEL_ORDINAL_PRIOR_ORDINAL = 8
 
 
 def gameplay_checkpoint_file_identity(path: Path) -> str:
@@ -2262,6 +2287,9 @@ class GameplayCheckpointBindings:
     retrained_protocol_identity: str
     adaptive_controller: Path
     adaptive_controller_identity: str
+    hybrid_predictor: Path | None = None
+    hybrid_predictor_identity: str | None = None
+    hybrid_carrier_identity: str | None = None
 
     def __post_init__(self) -> None:
         for value in (
@@ -2306,6 +2334,32 @@ class GameplayCheckpointBindings:
             or not self.adaptive_controller_identity
         ):
             raise LineageScalingError("gameplay checkpoint provenance is incomplete")
+        hybrid_fields = (
+            self.hybrid_predictor,
+            self.hybrid_predictor_identity,
+            self.hybrid_carrier_identity,
+        )
+        if any(value is None for value in hybrid_fields):
+            if any(value is not None for value in hybrid_fields):
+                raise LineageScalingError(
+                    "hybrid gameplay binding requires path, identity, and carrier together"
+                )
+            return
+        if not isinstance(self.hybrid_predictor, Path) or not self.hybrid_predictor.is_absolute():
+            raise LineageScalingError(
+                "hybrid gameplay planning requires an explicit absolute checkpoint path"
+            )
+        if self.hybrid_predictor in (
+            self.legacy_predictor,
+            self.retrained_predictor,
+        ):
+            raise LineageScalingError(
+                "hybrid gameplay checkpoint must be explicit and distinct"
+            )
+        if self.hybrid_predictor_identity != gameplay_checkpoint_file_identity(
+            self.hybrid_predictor
+        ) or self.hybrid_carrier_identity != TemporalVisualCarrierAdapter.identity:
+            raise LineageScalingError("gameplay checkpoint provenance is incomplete")
 
 
 @dataclass(frozen=True, slots=True)
@@ -2323,11 +2377,59 @@ class GameplaySystemSpec:
     protocol_identity: str
 
 
+@dataclass(frozen=True, slots=True)
+class NoModelOrdinalPriorSystem:
+    """The frozen no-model ordinal-prior arm: always candidate ordinal 8.
+
+    It binds no predictor, controller, or seed; its first-shot choice for one
+    state is the inventory's candidate whose ordinal equals prior_ordinal, or
+    a typed absence when that candidate is not admissible for the state.
+    """
+
+    identity: str
+    prior_ordinal: int
+    protocol_identity: str
+
+
+def fixed_mode_pair(mode: GameplayPlanningMode) -> PredictionPair:
+    """Fixed (horizon, continuous-abstraction) pair of one fixed planning mode."""
+    horizons = {
+        GameplayPlanningMode.CONTINUOUS_H1: 1,
+        GameplayPlanningMode.CONTINUOUS_H5: 5,
+        GameplayPlanningMode.HYBRID_FIXED: 1,
+    }
+    if mode not in horizons:
+        raise LineageScalingError(f"planning mode {mode} has no fixed pair")
+    return PredictionPair(horizons[mode], Abstraction.CONTINUOUS)
+
+
+def ordinal_prior_candidate(
+    ordinals: Iterable[int],
+    *,
+    prior_ordinal: int = NO_MODEL_ORDINAL_PRIOR_ORDINAL,
+) -> int | None:
+    """The ordinal-prior choice over one admissible inventory, or typed absence."""
+    ordinals = tuple(ordinals)
+    if not ordinals or len(set(ordinals)) != len(ordinals):
+        raise LineageScalingError("ordinal-prior inventory is empty or has duplicate ordinals")
+    return prior_ordinal if prior_ordinal in ordinals else None
+
+
 def matched_gameplay_systems(
     protocol: MatchedGameplayProtocol,
     checkpoints: GameplayCheckpointBindings,
-) -> tuple[GameplaySystemSpec, ...]:
-    """Expose the same h1, h15, and adaptive MPC systems for both checkpoints."""
+    *,
+    extended: bool = False,
+) -> tuple[GameplaySystemSpec | NoModelOrdinalPriorSystem, ...]:
+    """Expose the same h1, h15, and adaptive MPC systems for both checkpoints.
+
+    With ``extended=False`` (the default, and the only mode the classic #61
+    runner and prior artifacts use) this returns exactly the historical six
+    systems with byte-identical identities. With ``extended=True`` the #80
+    extension appends, symmetrically over both roles, the fixed-h5 continuous
+    mode and the fixed-mode hybrid system (the bound hybrid checkpoint at
+    fixed horizon 1), plus exactly one frozen no-model ordinal-prior arm.
+    """
 
     role_bindings = {
         GameplayCheckpointRole.LEGACY: (
@@ -2352,6 +2454,12 @@ def matched_gameplay_systems(
             checkpoints.adaptive_controller_identity,
         ),
     }
+    if extended:
+        if checkpoints.hybrid_predictor is None:
+            raise LineageScalingError(
+                "extended gameplay systems require a bound hybrid checkpoint"
+            )
+        mode_bindings[GameplayPlanningMode.CONTINUOUS_H5] = (5, None, None)
     systems = []
     for checkpoint_role, (
         predictor,
@@ -2387,6 +2495,43 @@ def matched_gameplay_systems(
                 fixed_horizon=fixed_horizon,
                 protocol_identity=protocol.identity,
             ))
+        if extended:
+            # The extended hybrid system binds the dedicated hybrid checkpoint
+            # instead of the role's own predictor, at fixed horizon 1 with the
+            # continuous abstraction (no adaptive selector, no mode switching).
+            hybrid_system_identity = identity((
+                "lineage-scaled-gameplay-system-v1",
+                checkpoint_role,
+                GameplayPlanningMode.HYBRID_FIXED,
+                str(checkpoints.hybrid_predictor),
+                checkpoints.hybrid_predictor_identity,
+                None,
+                None,
+                protocol.identity,
+            ))
+            systems.append(GameplaySystemSpec(
+                identity=hybrid_system_identity,
+                checkpoint_role=checkpoint_role,
+                mode=GameplayPlanningMode.HYBRID_FIXED,
+                predictor_checkpoint=checkpoints.hybrid_predictor,
+                predictor_checkpoint_identity=checkpoints.hybrid_predictor_identity,
+                carrier_identity=checkpoints.hybrid_carrier_identity,
+                predictor_protocol_identity="historical-issue-15",
+                controller_checkpoint=None,
+                controller_checkpoint_identity=None,
+                fixed_horizon=1,
+                protocol_identity=protocol.identity,
+            ))
+    if extended:
+        systems.append(NoModelOrdinalPriorSystem(
+            identity=identity((
+                "lineage-scaled-no-model-ordinal-prior-system-v1",
+                NO_MODEL_ORDINAL_PRIOR_ORDINAL,
+                protocol.identity,
+            )),
+            prior_ordinal=NO_MODEL_ORDINAL_PRIOR_ORDINAL,
+            protocol_identity=protocol.identity,
+        ))
     return tuple(systems)
 
 
@@ -2556,10 +2701,11 @@ def build_matched_gameplay_planners(
     expected = {
         (checkpoint_role, mode)
         for checkpoint_role in GameplayCheckpointRole
-        for mode in GameplayPlanningMode
+        for mode in CLASSIC_GAMEPLAY_MODES
     }
     if (
         type(systems) is not tuple
+        or any(type(item) is not GameplaySystemSpec for item in systems)
         or {(item.checkpoint_role, item.mode) for item in systems} != expected
         or len(systems) != len(expected)
         or any(item.protocol_identity != protocol.identity for item in systems)
@@ -2675,6 +2821,7 @@ __all__ = [
     "ActionRankingStateResult",
     "CarrierKind",
     "CarrierLineage",
+    "CLASSIC_GAMEPLAY_MODES",
     "ContinuousTransitionExample",
     "FrozenLineageScale",
     "FrozenRankingState",
@@ -2689,6 +2836,8 @@ __all__ = [
     "LoadedGameplayPredictor",
     "MatchedGameplayProtocol",
     "MatchedGameplayPlanner",
+    "NO_MODEL_ORDINAL_PRIOR_ORDINAL",
+    "NoModelOrdinalPriorSystem",
     "PredictionEvaluation",
     "RecursivePredictionResult",
     "TrainingCell",
@@ -2696,6 +2845,7 @@ __all__ = [
     "evaluate_action_ranking",
     "evaluate_continuous_prediction",
     "build_matched_gameplay_planners",
+    "fixed_mode_pair",
     "gameplay_checkpoint_file_identity",
     "gameplay_predictor_protocol_identity",
     "load_action_ranking_bundle",
@@ -2705,6 +2855,7 @@ __all__ = [
     "load_lineage_scaled_checkpoint",
     "load_gameplay_predictor_checkpoint",
     "matched_gameplay_systems",
+    "ordinal_prior_candidate",
     "save_action_ranking_bundle",
     "save_carrier_lineage_bundle",
     "save_lineage_scaling_protocol",
