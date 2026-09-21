@@ -1697,7 +1697,7 @@ def prepare(args):
     plan_file = OUTPUT / "plan.json"
     if plan_file.exists():
         try:
-            check_plan_bound(read(plan_file))
+            plan = check_plan_bound(read(plan_file))
         except ValueError as error:
             records_dir = OUTPUT / "records"
             execution_started = ((OUTPUT / "ledger.json").exists()
