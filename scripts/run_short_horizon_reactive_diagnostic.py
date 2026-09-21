@@ -1057,7 +1057,7 @@ def supervise(args, plan, phase):
                 write(OUTPUT / "markers" / f"{identity}.json",
                       {"identity": identity, "phase": phase,
                        "dispatched_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())})
-                process = start_isolated_worker(context, _execute_cell, (payload,))
+                process = start_isolated_worker(context, execute_cell, (payload,))
                 live.append({"identity": identity, "process": process,
                              "started": time.monotonic(), "peak_rss": 0.0, "stop": None})
                 index += 1
@@ -1658,7 +1658,11 @@ def smoke(args):
     outcomes = read(outcome_path(state["source_member"]))
     lock = gpu_lock()
     try:
-        with tempfile.TemporaryDirectory(prefix="novphy-issue80-smoke-") as directory:
+        # The player clone uses hardlinks, so the smoke tree must live on the
+        # same filesystem as OUTPUT; it is removed afterwards.
+        OUTPUT.mkdir(parents=True, exist_ok=True)
+        directory = tempfile.mkdtemp(prefix="smoke-", dir=OUTPUT)
+        try:
             smoke_output = Path(directory)
             smoke_plan = deepcopy(plan)
             smoke_plan["identity"] = IDENTITY + ":smoke"
@@ -1681,14 +1685,21 @@ def smoke(args):
                                 "success": None if not record.get("outcome") else record["outcome"]["first_shot_success"],
                                 "wall_seconds": record["wall_seconds"]})
                 log(f"smoke {payload['cell']['identity']} failure={record['failure']}")
+        finally:
+            shutil.rmtree(directory, ignore_errors=True)
     finally:
         fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
         lock.close()
     result = {"schema": "issue_80_smoke_v1", "production_evidence": False,
               "records": records, "wall_seconds": time.monotonic() - began}
     write(OUTPUT / "smoke.json", result)
-    log(f"real rendered smoke complete cells={len(records)} wall={result['wall_seconds']:.1f}s; "
-        "no production execution")
+    failed = [rec for rec in records if rec["failure"] is not None]
+    if failed:
+        log(f"smoke FAILED for {len(failed)}/{len(records)} cells; "
+            "fix the execution path before any pilot")
+        return 3
+    log(f"real rendered smoke complete cells={len(records)} "
+        f"wall={result['wall_seconds']:.1f}s; no production execution")
     return 0
 
 
@@ -1700,7 +1711,8 @@ def prepare(args):
             plan = check_plan_bound(read(plan_file))
         except ValueError as error:
             records_dir = OUTPUT / "records"
-            execution_started = ((OUTPUT / "ledger.json").exists()
+            ledger = read(OUTPUT / "ledger.json") if (OUTPUT / "ledger.json").is_file() else {}
+            execution_started = (bool(ledger.get("cells"))
                                  or (records_dir.exists() and any(records_dir.iterdir())))
             if execution_started:
                 raise ValueError(
