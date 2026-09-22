@@ -1,3 +1,5 @@
+> **SUPERSEDED-PENDING-V2 (2026-09-21).** This brief predates the executed issue-15 confirmatory (bounded negative) and the boundary-anatomy reframing. Two of its claims are now factually wrong: the "reserved blank result field" (the confirmatory ran; there IS a result) and the "final authorization pending" / "only after final-evaluation authorization" wording in §C and the caption draft. Panels A–B (cascade + coupled pair + carrier) remain valid; §C must be replaced by the v2 hero per `writing_outline_boundary_paper.md` §6 (family × horizon boundary grid with work-frontier inset). Do not commission artwork from this brief as-is.
+
 # First-Page Teaser Figure Brief: BG-NS-JEPA
 
 ## Audience and Purpose

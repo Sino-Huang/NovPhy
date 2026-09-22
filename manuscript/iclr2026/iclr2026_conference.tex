@@ -1,4 +1,3 @@
-
 \documentclass{article} % For LaTeX2e
 \usepackage{iclr2026_conference,times}
 
@@ -9,44 +8,42 @@
 \usepackage{url}
 \usepackage{enumitem}
 \setlist[itemize]{leftmargin=*, topsep=0pt, itemsep=0pt, parsep=0pt}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\graphicspath{{figures/}}
 
+% =============================================================================
+% FILE MAP (multi-file split, 2026-09-21). No body prose lives in this file.
+%   iclr2026_conference_abstract.tex      -> Abstract (retarget pending)
+%   iclr2026_conference_introduction.tex  -> §1 Introduction; OWNS the teaser float + fig:teaser
+%   iclr2026_conference_related_work.tex  -> §2 Related Work (R1-gated)
+%   iclr2026_conference_method.tex        -> §3 Setting and Formulation + §4 Protocol
+%   iclr2026_conference_experiments.tex   -> §5 Boundary Anatomy (5.1–5.6)
+%   iclr2026_conference_synthesis.tex     -> §6 Boundary Picture; OWNS Table 3 claim registry
+%   iclr2026_conference_discussion.tex    -> §7 Discussion + §8 Conclusion + pre-reference blocks
+%   iclr2026_conference_appendix.tex      -> Appendices A–F; OWNS the \appendix switch
+%   iclr2026_conference_checklist.tex     -> ICLR paper checklist (submission-time)
+% Section semantics bind to manuscript/writing_outline_boundary_paper.md (v1.1);
+% status per manuscript/content_brief.md.
+% LABEL OWNERSHIP (file-scoped prefixes; duplicate labels only WARN, so respect these):
+%   intro: sec:intro, fig:teaser | related: sec:rel, tab:rel | method: sec:mth, fig:mth, tab:mth
+%   experiments: sec:exp, fig:exp, tab:exp | synthesis: sec:syn, fig:syn, tab:syn (tab:syn:registry)
+%   discussion: sec:disc, tab:disc | appendix: sec:app, tab:app, fig:app
+% SHARED FILES: preamble + this map (this file); iclr2026_conference.bib (append-only, one entry per
+% block); figures/ (one asset prefix per owner). Build: latexmk -pdf (pdflatex/bibtex/pdflatex x2);
+% a single pdflatex pass leaves ?? and is not a valid check. Page-limit accounting on the assembled
+% PDF only (floats drift across file boundaries under this style's \topfraction).
+% =============================================================================
 
-\title{Granularity as a Decision: World Models with Joint Horizon--Description Selection}
+\title{When Does Adaptive Granularity Help World Models?\\A Pre-Registered Boundary Anatomy of Joint Horizon--Description Selection}
 
 % Authors must not appear in the submitted version. They should be hidden
 % as long as the \iclrfinalcopy macro remains commented out below.
 % Non-anonymous submissions will be rejected without review.
 
-\author{Antiquus S.~Hippocampus, Natalia Cerebro \& Amelie P. Amygdale \thanks{ Use footnote for providing further information
-about author (webpage, alternative address)---\emph{not} for acknowledging
-funding agencies.  Funding acknowledgements go at the end of the paper.} \\
-Department of Computer Science\\
-Cranberry-Lemon University\\
-Pittsburgh, PA 15213, USA \\
-\texttt{\{hippo,brain,jen\}@cs.cranberry-lemon.edu} \\
-\And
-Ji Q. Ren \& Yevgeny LeNet \\
-Department of Computational Neuroscience \\
-University of the Witwatersrand \\
-Joburg, South Africa \\
-\texttt{\{robot,net\}@wits.ac.za} \\
-\AND
-Coauthor \\
-Affiliation \\
-Address \\
-\texttt{email}
-}
-
-% The \author macro works with any number of authors. There are two commands
+\author{Anonymous submission}
 % used to separate the names and addresses of multiple authors: \And and \AND.
-%
-% Using \And between authors leaves it to \LaTeX{} to determine where to break
-% the lines. Using \AND forces a linebreak at that point. So, if \LaTeX{}
-% puts 3 of 4 authors names on the first line, and the last on the second
-% line, try using \AND instead of \And before the third author name.
 
-\newcommand{\fix}{\marginpar{FIX}}
-\newcommand{\new}{\marginpar{NEW}}
 
 %\iclrfinalcopy % Uncomment for camera-ready version, but NOT for submission.
 \begin{document}
@@ -54,49 +51,29 @@ Address \\
 
 \maketitle
 
-\begin{abstract}
-World models predict the consequences of actions, yet most systems fix the horizon and output description of a prediction at design time. We ask whether granularity should instead be chosen per decision in action-sparse environments, where one intervention can drive a long autonomous cascade. We formulate granularity as one joint request over a prediction horizon and an output-description mode, spanning continuous, micro-level, and macro-level readouts over a continuous latent that remains the sole rollout carrier, and learn a controller that selects the pair per decision. A frozen prospective confirmatory protocol evaluated joint selection against the strongest eligible comparator at each of two compute-support budgets, scoring duration-weighted endpoint carrier MSE paired within six complete sealed rollouts. At the lower budget, joint selection showed zero paired gain against the parameter-matched two-head comparator. At the higher budget, the mean paired gain against the fixed-pair comparator was $-5.2 \times 10^{-4}$ (95\% interval $[-7.1 \times 10^{-4}, -3.6 \times 10^{-4}]$), where gain is comparator error minus candidate error, with no increase in authoritative endpoint physical-violation incidence. Joint granularity selection was not supported by this experiment: adaptivity gave no benefit here, without implying it cannot help elsewhere.
-\end{abstract}
+\input{iclr2026_conference_abstract}
 
-\section{Introduction}
-\label{sec:introduction}
+\input{iclr2026_conference_introduction}
 
-% Paragraph 1: Define world models as learned transition-dynamics approximations and distinguish imagined learning from planning.
-A world model is a learned approximation to an environment's transition dynamics, expressed in an observed or latent state space and conditioned on the current state or history and a candidate action. Such models let an agent predict the consequences of actions and act on those predictions. Dreamer learns behaviors from latent imagined rollouts \citep{hafner2020dreamer,hafner2025dreamerv3}, whereas TD-MPC uses a learned latent model for planning, combining local trajectory optimization with a terminal value estimate rather than learning a policy in imagination \citep{hansen2022tdmpc}. Across these designs, a model must define how far ahead to predict and in what form to express the future.
+\input{iclr2026_conference_related_work}
 
-% Paragraph 2: Motivate granularity as a decision-dependent question while treating fixed predictive targets as rational task-specific choices.
-Different decisions can place different demands on a world model's predictions. Existing methods reasonably fix predictive horizons and targets to suit their intended objectives and downstream uses. Latent-dynamics control methods conventionally fix their temporal targets or planning horizons, reaching further ahead through recursive one-step rollout with value bootstrapping \citep{hafner2020dreamer,hansen2022tdmpc,sobal2025pldm}. Joint-embedding approaches fix the predictive representation and target at training time \citep{assran2023ijepa,bardes2024vjepa}, and recent latent world models built on frozen or end-to-end features inherit that fixed target \citep{zhou2025dinowm,maes2026leworldmodel}. This task-specific design is a widespread default, not a universal rule. When one action-conditioned model must support heterogeneous decisions, it leaves a distinct question open: should prediction horizon and output-description mode be selected jointly at each decision?
+\input{iclr2026_conference_method}
 
-% Paragraph 3: Acknowledge nearest single-axis relaxations and state the narrow joint gap.
-Recent work relaxes one dimension of this contract at a time. Variable-length latent world models vary the temporal offset of each prediction \citep{du2026vlwm}, and surprise signals can set hierarchical chunk boundaries in open-loop video prediction \citep{iiyama2026sunta}. Reliability estimates can adapt rollout depth during imagination \citep{hafez2020improving}. Other lines vary the description side alone: state-dependent scene-representation resolution under a fixed planning horizon \citep{wang2023dynamic}, fixed hierarchical prediction across multiple time scales \citep{shaj2023multi,villarcorrales2022mspred}, per-frame abstraction of action forecasts outside a planning world model \citep{scarafoni2022islands}, and fixed short-detailed versus long-simplified segments within one model-predictive controller \citep{brudigam2021mpc}. \citet{wang2026adajepa} instead adapt model parameters at test time, which is not granularity selection. None of these lines jointly treats horizon and output-description mode as one state-dependent prediction request issued to an action-conditioned world model. That joint treatment is the narrow gap this paper targets.
+\input{iclr2026_conference_experiments}
 
-% Paragraph 4: Distinguish control-schedule temporal abstraction from prediction granularity.
-Temporal abstraction in reinforcement learning answers a different question. Options and their learned variants decide when and for how long the agent acts \citep{sutton1999options,bacon2017optioncritic}, and \citet{biedenkapp2021temporl} learn when to commit to an action repetition. These methods adapt the agent's control schedule, not what the world model predicts or how far ahead the prediction extends. Our question sits on the prediction side of that boundary.
+\input{iclr2026_conference_synthesis}
 
-% Paragraph 5: Introduce the action-sparse persistent-effect setting with physics benchmarks, mismatch as hypothesis.
-The setting that motivates our question is the \emph{action-sparse persistent-effect environment}: actions occur infrequently, while their physical effects continue autonomously for many fixed simulation steps. A single intervention can set off a cascade that moves through collision onset and active rearrangement before settling. Physical-reasoning benchmarks supply concrete instances of such dynamics, from task-oriented physical puzzles \citep{bakhtin2019phyre} to video-based physical prediction and reasoning suites \citep{bear2021physion,yi2020clevrer}. We build on NovPhy, a published benchmark that evaluates how agents detect and adapt to novel physical dynamics across scenarios \citep{pinto2024novphy}. We hypothesize that each phase of such a cascade asks for different prediction granularity: fine temporal resolution and relation-level detail near the intervention, coarse state judgments near settling. We call this hypothesized tension \emph{granularity mismatch}. Whether it harms prediction in practice is an empirical question, not an assumption of this work.
+\input{iclr2026_conference_discussion}
 
-% Paragraph 6: Define requested horizon and output-description mode operationally over the 3 by 3 surface.
-We make granularity operational as two request parameters. The \emph{requested horizon} $\Delta \in \{1, 5, 15\}$ is the declared number of fixed simulation steps that one prediction decision asks the world model to advance. The \emph{output-description mode} $\alpha \in \{\mathrm{continuous}, \mathrm{micro}, \mathrm{macro}\}$ selects which supervised prediction target is queried and scored at that decision: \emph{continuous} exposes the predictive latent used for recursive continuation, \emph{micro} requests fine transition relations such as contact and support, and \emph{macro} requests coarse state or event predicates such as \texttt{steady-state} and \texttt{structure-unstable}. The nine $(\Delta, \alpha)$ pairs form the evaluation surface of this study. A continuous latent always remains the sole rollout carrier. Mode selection changes the readout requested over that carrier, never the recurrent state representation itself, and it implies no switch in spatial resolution or between pixel-level and object-level representations.
-
-% Paragraph 7: Present the proposed controller and carrier, separating published NovPhy from in-progress BG-NS-JEPA.
-Our design pairs this request space with a learned joint-pair controller that selects one $(\Delta, \alpha)$ pair per prediction decision from agent-observable inputs. A deployment-aligned temporal carrier supplies the model with agent observations only, keeps training, model-selection, and evaluation data separate under declared roles, and carries every rollout between decisions. The carrier and the matched training and evaluation tooling around it are implemented infrastructure, not empirical evidence of any benefit. Two names need crisp separation. NovPhy is the published benchmark and supplies the setting \citep{pinto2024novphy}. BG-NS-JEPA is the in-progress world-model program built on that setting, and no published NovPhy finding is a result of this program.
-
-% Paragraph 8: State the falsifiable comparison, exact comparators, and the authorized frozen confirmatory design.
-The central question is whether the learned joint-pair controller improves prediction relative to five comparators under one frozen prospective protocol. Four comparators are controller-free policies: \emph{fixed-pair} holds one horizon--mode pair throughout, \emph{temporal-only} adapts only the horizon, \emph{description-only} adapts only the mode, and \emph{independent-axes} chooses the two axes through separate decisions. The fifth is a parameter-matched two-head controller that factorizes the joint choice across two heads. The protocol evaluates each system at two prospectively calibrated compute-support budgets and declares any configuration exceeding its budget ineligible. The full five-comparator matrix is recorded at each budget, but the frozen decision compares the candidate only with the strongest eligible comparator. The primary estimand is the mean duration-weighted authoritative endpoint carrier MSE over eligible decision states within each complete rollout, with candidate and comparator paired inside the same rollout. The protocol records policy compute per simulated frame and full end-to-end compute per simulated frame for every system. It also constrains the within-rollout incidence of authoritative endpoint physical violations. Effects over six complete sealed rollouts are summarized by paired means with bootstrap intervals.
-
-% Paragraph 9: Report the sealed confirmatory outcome, zero paired gain at the lower budget and negative paired gain at the higher budget, with scope limits.
-The authorized confirmatory run is complete, and its outcome is negative for the candidate. At the lower compute-support budget, where the parameter-matched two-head controller was the strongest eligible comparator, joint selection showed zero paired gain against it (mean endpoint gain 0.0). At the higher budget, where fixed-pair was the strongest eligible comparator, the mean paired gain was $-5.2 \times 10^{-4}$ with a paired 95\% interval of $[-7.1 \times 10^{-4}, -3.6 \times 10^{-4}]$, where gain is the comparator's error minus the candidate's error. Authoritative endpoint physical-violation incidence did not increase at either budget. The frozen decision rule therefore returns \emph{not supported by this experiment}. This disposition is bounded to the tested instance-held-out configurations in the same physics family. It does not address template-held-out generalization, shifted physics, or gameplay success, and it does not assert that joint selection cannot help under other models, budgets, or settings.
-
-% Contribution list: frame the paper as formulation, implemented controller design and infrastructure, and a completed bounded confirmatory protocol.
-The contributions of this paper are a formulation, an implemented controller design with its supporting infrastructure, and a completed confirmatory protocol whose result is bounded and negative.
-\begin{itemize}
-  \item \textbf{Formulation.} We define action-sparse persistent-effect environments and the granularity-mismatch hypothesis, and we cast prediction granularity as one joint per-decision request over nine horizon--mode pairs carried by a single continuous latent.
-  \item \textbf{Implemented controller design and infrastructure.} We implement the joint-pair controller, its parameter-matched two-head factorization, the agent-observable deployment-aligned temporal carrier, and the matched training and evaluation tooling that assembles the comparator systems.
-  \item \textbf{Confirmatory protocol and bounded result.} We froze a prospective common-compute comparison against fixed-pair, temporal-only, description-only, independent-axes, and the two-head controller over six collected and sealed rollouts. Joint selection showed zero paired gain against the strongest comparator at the lower budget and a negative paired gain against fixed-pair at the higher budget, with no increase in authoritative endpoint physical-violation incidence. The hypothesis was not supported by this experiment within the tested scope.
-\end{itemize}
+% Keep Section 6 floats (registry, frontier) inside the main text; do not let
+% them drift past the bibliography into the appendix (review finding M1).
+\clearpage
 
 \bibliography{iclr2026_conference}
 \bibliographystyle{iclr2026_conference}
+
+\input{iclr2026_conference_appendix}
+
+\input{iclr2026_conference_checklist}
 
 \end{document}

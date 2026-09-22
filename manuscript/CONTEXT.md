@@ -48,9 +48,9 @@ _Avoid_: Informal train/test label, folder split.
 
 **Final evaluation**
 
-The sealed role for frozen final metrics. Six rollouts have been collected and sealed, but no final-evaluation metric has been derived or consumed because authorization is pending.
+The sealed role for frozen final metrics. For the issue-15 protocol, the seed-4505 final partition was authorized, collected (six complete sealed rollouts), consumed once, and evaluated under the frozen two-budget protocol with the bounded negative disposition `not_supported_by_this_experiment`. Fresh sealed gameplay evaluation (#64/#65) remains unauthorized; the #76 advancement gate is unmet (pre-access `readiness_or_precision_insufficient` stop, recorded as not achievable).
 
-_Avoid_: Unrun, Unavailable, authorized result.
+_Avoid_: Unrun, generally unavailable, pending-authorization wording for the executed issue-15 result.
 
 **Continuous carrier**
 
@@ -102,7 +102,7 @@ _Avoid_: Agent task success, free-form macro predicate.
 
 **Terminal-outcome accuracy**
 
-The accuracy of a common final-state readout against the engine-defined terminal outcome. It is a Specified endpoint. No final-evaluation result is available while authorization is pending.
+The accuracy of a common final-state readout against the engine-defined terminal outcome. It is a Specified endpoint and remains Unavailable: it was not the executed issue-15 primary estimand (which was authoritative endpoint carrier MSE under teacher forcing), and the common readout and coordinate decoder are uncompleted.
 
 _Avoid_: Implemented result, coordinate displacement error, agent success rate.
 
@@ -136,9 +136,33 @@ Completed implementation/tooling work, closed at commit `40ab258`. It delivers n
 
 _Avoid_: Retraining result, gameplay result, demonstrated effect.
 
+**Boundary-anatomy reframing**
+
+The 2026-09-21 manuscript decision: the paper reports WHEN adaptive granularity helps (horizon-local training effect, nulls, system-specific novelty directions, cost inversion) instead of claiming a method advantage. The binding section plan and claim registry (C1–C10) live in `writing_outline_boundary_paper.md`.
+
+_Avoid_: Method-advantage framing, "BG-NS-JEPA wins", softening the issue-15 negative.
+
+**Horizon-resolved training effect**
+
+The issue-77 N1 diagnostic contrast `hybrid_continuous_h1` vs `continuous_h1` (kind `training_effect`): +0.0887 [+0.0155, +0.2118], descriptive, 4 held-out states. Distinct from symbolic-execution effects, which straddle zero at h=1.
+
+_Avoid_: Calling it a symbol-conditioning or controller advantage.
+
+**Appearance-novelty boundary**
+
+The issue-77 N2 evaluation over matched normal/novel appearance pairs: zero-shot and few-shot conditions reported separately; type010102 effects move in opposite system-specific directions (hybrid-continuous h15 −0.2693 vs hybrid-macro h15 +0.4242).
+
+_Avoid_: Any uniform "novelty helps/hurts hybrids" claim.
+
+**ADD-EXP boundary tickets (#78–#81)**
+
+The 2026-09-21 boundary-evidence follow-ups: #78 external temporal-adaptation baselines **closed 2026-09-21** (method-class `readiness_or_precision_insufficient`; work-reported and training-effect `supported`); #79 CLEVRER out-of-family replication **executed with published dispositions** (component-wise: S1 short-horizon separation and S2 horizon-ordering REPLICATE; S3 growth-shape fails at h15 non-monotone; Q2 regime direction reversed); #80 reactive-control diagnostic **executed with a typed stop** (`readiness_or_precision_insufficient`: first-shot prevalence 0.0000 over 45 valid executions, full 288-cell matrix barred by the frozen precondition — never present the stop as planner-quality evidence); #81 pooled synthesis **unblocked** (all upstreams terminal) but not executed. New open follow-ups: #82 oracle-ceiling zero-floor diagnostic, #83 CLEVRER h15 non-monotonicity decomposition, #84 third-family replication tie-breaker. #78/#79/#80 outcomes feed registry rows C8/C9/C10; #82/#83/#84 feed C14–C16; #81 feeds the synthesis section itself.
+
+_Avoid_: Treating pending tickets as evidence, or letting them reopen #64/#65.
+
 **Issues #62 through #65**
 
-Open successor work. Issue 62 is successor multi-shot cohort generation and data work. Issue 63 is a matched carrier-alignment by training-coverage experiment with no result. Issue 64 is fresh sealed gameplay benchmark generation, contingent on a supported issue-63 candidate and a nonzero pilot, with no benchmark or result yet. Issue 65 is a future sealed matched gameplay test separating retraining and adaptive-granularity claims, with no result. Their outcomes remain `[TODO: result]`.
+#62 completed successor-cohort collection; #63 closed `not_supported_by_this_experiment`; #64/#65 remain open, unauthorized fresh sealed gameplay work — the #76 advancement gate is unmet (pre-access stop). They do not supply a positive adaptive-granularity result.
 
 _Avoid_: Completed experiment, benchmark result, demonstrated effect.
 
@@ -170,7 +194,7 @@ _Avoid_: Implemented result.
 
 **Blocked**
 
-Cannot proceed because an explicit prerequisite or authorization is unmet. Final metric derivation and consumption are Blocked by pending final-evaluation authorization.
+Cannot proceed because an explicit prerequisite or authorization is unmet. Issue-15 final metrics were derived and consumed (bounded negative). What remains Blocked: fresh sealed gameplay (#64/#65) behind the unmet #76 advancement gate.
 
 _Avoid_: Negative result, Unavailable, unrun.
 

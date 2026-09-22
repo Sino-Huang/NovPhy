@@ -1,0 +1,23 @@
+%!TEX root = iclr2026_conference.tex
+% Binds outline §3 Abstract — manuscript/writing_outline_boundary_paper.md (v1.2); status: manuscript/content_brief.md
+% RETARGET APPLIED 2026-09-21: granularity-as-decision framing, teacher-forced estimand qualifier, and the
+% exact #15 numbers and disposition retained from the 2026-09-19 two-sided text; boundary payload added
+% (L1 family-conditionality with both signs, L3 estimand separation, L4 opposite-direction zero-shot
+% novelty effects, L6 cost inversion) and the tempered L7 redirect as the significance close. Every number
+% is a claim-registry row C1–C13 (outline §5) traceable to research_evidence.md. No citations, no labels,
+% single paragraph, no placeholders.
+% REVISED 2026-09-21 post-review (audit findings m4/m5/m6): the #15 higher-budget result is now quoted
+% in the registry gain form, paired gain $-5.2\times10^{-4}$ ($[-7.1, -3.6]\times10^{-4}$), with the sign
+% convention named inline (comparator error minus candidate error), replacing the unsigned error-excess
+% form; "compute-matched" replaced by "compute-support-matched" (method.tex discloses
+% training_compute_matched=false); the external-method decay claim is qualified "in point estimate".
+% Word count held at ~357 (was ~358); all other numbers untouched.
+% PROSE PASS 2026-09-21: evidence-before-claim reordering throughout the boundary payload; long
+% sentences split (confirmatory result, L1 family contrast, L3 estimand separation); claim-first
+% openings replaced with evidence-first sequencing (L3, L6); scope fronted for L4; dangling
+% "this decay pattern" referent replaced with "the horizon-dependent pattern"; redundant "per decision"
+% removed from the controller sentence. No numbers, intervals, dispositions, or technical content altered.
+
+\begin{abstract}
+Each prediction a world model makes carries a granularity: how far ahead it looks, and at what detail the predicted state is read out. Both are normally fixed at design time. We test choosing granularity per decision in action-sparse physical environments, where one intervention triggers a long autonomous cascade. A controller selects one of nine pairs of prediction horizon (1, 5, or 15 simulation steps) and description mode (continuous, micro, or macro readouts over a shared continuous latent). The confirmatory test is a frozen, compute-support-matched protocol: six complete sealed rollouts, two compute-support budgets, and the strongest eligible of five predeclared comparators per budget. The score is duration-weighted authoritative endpoint MSE over eligible teacher-forced decision states. Joint selection tied its parameter-matched factorized counterpart at the lower budget (zero paired gain). At the higher budget, the paired gain against fixing one pair throughout was $-5.2\times10^{-4}$, comparator error minus candidate error (95\% interval $[-7.1, -3.6]\times10^{-4}$). The frozen rule returns \texttt{not\_supported\_by\_this\_experiment}. Authoritative endpoint physical-violation incidence did not increase (recursive-trajectory violations were not measured). Descriptive ranking-regret contrasts decompose the effect by family and horizon. At horizon 1 the training gain is $+0.0887$ $[+0.0155, +0.2118]$ on new rolling/sliding families (4 held-out states). On the original single/multi-force families (24 states), the training gain is null-to-negative at horizon 1 and negative at horizon 5 ($-0.0556$ $[-0.1111, -0.0139]$). On those rolling/sliding families, symbolic-execution contrasts straddle zero at horizon 1 while the training effect excludes it. Macro symbolic execution is positive at horizon 15 ($+0.0944$). Training and symbolic-execution effects are separable estimands. On one family (type010102) under zero-shot appearance novelty, the hybrid's continuous and macro contrasts at horizon 15 move in opposite directions ($-0.2693$ versus $+0.4242$, both descriptive intervals excluding zero). On the 200-state development cohort, the fixed horizon-1 arm costs $\approx$1.79\,s per state versus $\approx$0.37\,s at horizon 5, and the adaptive arm ($\approx$1.01\,s) is never cheapest. External temporal-adaptation methods retrained under our contract reproduce the horizon-dependent pattern in point estimate, with method-class disposition \texttt{readiness\_or\_precision\_insufficient} at 4 held-out states. Adaptive-abstraction claims should therefore report horizon- and family-resolved matched-system curves. Ours are one calibration datapoint, not a verdict on the class.
+\end{abstract}

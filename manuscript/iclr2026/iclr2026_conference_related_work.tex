@@ -1,0 +1,65 @@
+%!TEX root = iclr2026_conference.tex
+% Binds outline §2 — manuscript/writing_outline_boundary_paper.md (v1.2); status: manuscript/content_brief.md
+% REVISED 2026-09-21 post-review (ReviseRelated): Table 1 cells now follow the full-text scout verdicts of
+% 2026-09-21 (manuscript/related_work_r1_verification.md), replacing the earlier abstract-level reads; all
+% placeholder cells and the stale R1 wrapper are resolved. Applied findings: B1 (verdict cells,
+% safe-form keystone, SALT footnote), B2 (SUNTA row and prose), M7 (TAWM temporal and THICK description
+% qualified to Partial; single-latent sentence fixed), M8 (SALT row unverified, mechanism claims held to
+% title level), M9 (STRIPS-WM citation-gap sentence deleted), m10 (WorldBench boundary Partial shown, not '--'),
+% m11 (options-row cell self-labels as control schedule), m13 (this header). Do not turn related work into
+% evidence for the controller (content_brief rule).
+% PROSE PASS 2026-09-21
+% Label prefixes owned by this file: sec:rel, tab:rel, fig:rel.
+
+\section{Related Work}
+\label{sec:rel}
+
+Granularity can enter a world model on the temporal axis, on the description axis, or on both at once. The Introduction surveys fixed designs and presents them as reasonable task-specific choices. This section covers methods that make at least one axis adaptive, the closest joint neighbour, and the evaluation platforms that currently set the standard for judging world models. Table~\ref{tab:rel:matrix} summarizes the positioning, verified against each paper's full text. The one entry without public text is marked unverified.
+
+\subsection{Temporal adaptation of prediction}
+\label{sec:rel:temporal}
+
+Section~\ref{sec:introduction} draws the boundary between prediction-side granularity and the control schedule. The options framework, its learned descendants, and TempoRL sit on the acting side of that line, deciding when and for how long the agent acts \citep{sutton1999options,bacon2017optioncritic,biedenkapp2021temporl}. They adapt the agent's commitment rather than the prediction, so we treat them as the boundary of the survey class rather than as members of it.
+
+Within the prediction side, TAWM conditions predictions on the time-step size $\Delta t$ and trains across a range of step sizes, so a single model serves tasks observed at different temporal grains \citep{nhu2025tawm}. The grain at inference is imposed by the environment's observation rate rather than chosen per decision, so TAWM tolerates rate changes instead of adapting its grain per state. VLWM predicts future latent states conditioned on action sequences of variable length and extends the horizon through a training curriculum \citep{du2026vlwm}. Its planner is tailored to the variable-length predictor. THICK learns a hierarchy over discrete latent dynamics in which parts of the latent state update sparsely, forming invariant contexts whose durations are learned \citep{gumbsch2024thick}. A higher level predicts when those contexts change. SUNTA varies chunk length at inference inside a hierarchical video predictor, splitting the rollout where surprise spikes, and reports prediction staying accurate to 250 steps where the compared baselines degrade within ten \citep{iiyama2026sunta}. Its scope is open-loop video prediction with a fixed output format. TAWM and VLWM express the prediction in a single latent format, while THICK fixes a two-level discrete latent hierarchy. None of the four casts grain selection as an explicit per-decision request over a prediction surface. We retrain TAWM and VLWM under our contract in Section~\ref{sec:exp:external}.
+
+\subsection{Description adaptation}
+\label{sec:rel:description}
+
+The description axis has its own adaptive tradition. VisualPredicator learns abstract world models over an invented first-order predicate language, with an online algorithm that invents predicates and plans over the resulting abstract states \citep{liang2025visualpredicator}. Resolution-adaptive scene representations and per-frame abstraction of action forecasts, both introduced in Section~\ref{sec:introduction}, also adapt what the model expresses \citep{wang2023dynamic,scarafoni2022islands}. On this axis the adaptation selects the state description. The prediction length remains fixed, so the joint request over $(\Delta, \alpha)$ remains open.
+
+\subsection{Joint state and temporal abstraction}
+\label{sec:rel:joint}
+
+SALT addresses state- and temporally-abstracted world models for offline long-horizon decision-making \citep{huang2026salt}, the nearest title-level overlap with our joint request. No public text is available beyond the workshop's poster listing, so the SALT row of Table~\ref{tab:rel:matrix} is marked unverified. Our surface makes the abstraction a per-decision prediction request, selecting which supervised readout is scored and how many steps the carrier advances, and scores that request against fixed-granularity references as a property of prediction.
+
+\subsection{Evaluation zeitgeist}
+\label{sec:rel:eval}
+
+Two 2026 evaluation efforts set the current standard for judging world models. World-in-World benchmarks world models inside a closed loop with a unified online planning strategy and a standardized action interface \citep{zhang2026worldinworld}. Task success rather than visual fidelity is the primary metric. Reported findings include that visual quality alone does not guarantee task success and that more inference-time compute improves closed-loop performance. WorldBench evaluates video-based world models with physics concepts isolated one at a time, at two levels: intuitive concepts such as object permanence, and low-level constants such as friction coefficients and viscosity \citep{upadhyay2026worldbench}. Both platforms target diagnostic criteria over aggregate quality. Neither platform treats granularity as the object of evaluation or asks where an adaptive-granularity advantage stops.
+
+Horizon-resolved or rate-resolved plots do appear individually: VLWM reports success against goal offset, TAWM reports success against the evaluation time step, THICK sweeps corridor length, and SUNTA reports horizon-resolved degradation of open-loop video prediction. These are post-hoc, single-system-suite analyses without frozen protocols, uncertainty discipline, or family resolution, and none reports where the advantage inverts. Across the surveyed class, verified per paper against the full texts (Table~\ref{tab:rel:matrix}), no method reports a pre-registered, matched-system comparison together with a family- and horizon-resolved boundary curve.\footnote{SALT has no public text, so we could not verify its protocol.} The claim is scoped to the surveyed papers with public text. Average-effect comparisons are what the field currently has, and the remainder of the paper reports such curves for one setting under the protocol of Section~\ref{sec:mth:protocol}.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lp{1.55cm}p{1.65cm}p{1.65cm}p{1.9cm}p{2.2cm}@{}}
+\toprule
+Method & Temporal adaptive & Description adaptive & Pre-registered protocol & Matched-system comparison & Family- and horizon-resolved boundary curve \\
+\midrule
+TAWM \citep{nhu2025tawm} & Partial & No & No & Partial & Partial \\
+VLWM \citep{du2026vlwm} & Yes & No & No & Partial & Partial \\
+THICK \citep{gumbsch2024thick} & Yes & Partial & No & No & Partial \\
+SUNTA \citep{iiyama2026sunta} & Yes & No & No & No & Partial \\
+Options line \citep{sutton1999options,bacon2017optioncritic,biedenkapp2021temporl} & Yes (control schedule) & No & -- & -- & -- \\
+VisualPredicator \citep{liang2025visualpredicator} & No & Yes & No & No & No \\
+SALT \citep{huang2026salt} & ? & ? & ? & ? & ? \\
+World-in-World \citep{zhang2026worldinworld} & No & No & -- & Partial & -- \\
+WorldBench \citep{upadhyay2026worldbench} & No & No & No & No & Partial \\
+This paper & Yes & Yes & Yes & Yes & Yes \\
+\bottomrule
+\end{tabular}
+\caption{Positioning matrix. Cells follow full-text verification of the surveyed papers as of September 2026. The SALT row is marked ``?'' because no public text exists. ``Partial'' in the temporal column records that TAWM's inference time step is imposed by the environment's observation rate rather than selected per decision. In the description column it records that THICK's two-level hierarchy is fixed by its architecture. In the matched-system column it records training at equal samples and iterations without inference-work accounting (TAWM), an implementation- and planner-matched comparison on a single seed (VLWM), and a fixed planning strategy with a standardized action interface that holds the decision layer constant across heterogeneous world models (World-in-World). In the boundary column it records resolution short of the full conjunct: success against the evaluation time step (TAWM), success against goal offset with post-hoc oracle-per-cell planner selection (VLWM), a corridor-length sweep of task horizon in one environment (THICK), horizon-resolved degradation of open-loop video prediction without family resolution or work accounting (SUNTA), and concept-resolved failure patterns without a horizon axis (WorldBench). ``--'' marks properties that do not apply to an entry's role: the options line acts on the control schedule and makes no prediction-granularity claim, and World-in-World evaluates rather than trains adaptive-granularity methods. Our TAWM and VLWM ports under one contract appear in Section~\ref{sec:exp:external}.}
+\label{tab:rel:matrix}
+\end{table}

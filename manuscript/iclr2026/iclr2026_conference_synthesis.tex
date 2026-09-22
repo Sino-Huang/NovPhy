@@ -1,0 +1,98 @@
+%!TEX root = iclr2026_conference.tex
+% Binds outline §6 (The Boundary Picture) — manuscript/writing_outline_boundary_paper.md (v1.2);
+% status: manuscript/content_brief.md.
+% REVISED 2026-09-21 post-review (main-text synthesis): registry C1–C13 verbatim from outline §5 plus
+% gated TODO rows C14–C16; work-frontier paragraph and table from the #74 walls; L1–L5 shape paragraph
+% with no numbers outside the registry. Post-review fixes in this pass: M2 (the family×horizon grid is
+% promoted to the teaser; the section-local grid float and its label are deleted, the per-cell sign
+% reading kept as prose), M5 (registry caption softened to claim-level mapping), m8 (all disposition
+% tokens in \texttt{} and the caption narrowed so it asserts no token on tokenless rows).
+% STILL OPEN IN THIS FILE: pooled frontier rows gated by #81; registry rows C14–C16 gated by
+% #83/#84/#82. The teaser grid asset and its per-cell values (#81) are tracked in the introduction
+% file, which owns fig:teaser. Outline §6's mechanism table is not part of this pass (remains
+% #81-gated; outside this file's assignment).
+% NUMBER NOTE: outline v1.2 registry row C12 prints the #74 walls as 1.79/1.37/0.13/1.01 s; the
+% evidence ledger's issue-74 row and outline §1 L6 both give continuous_h5 ≈ 0.37 s. The ledger value
+% (0.37) is used here; discrepancy flagged for the next outline sync.
+% OWNERSHIP: Table 3 (claim registry C1–C16) lives HERE in the main text — the single tex home of the
+% registry; Appendix E (sec:app:registry) carries per-row artifact provenance only. The teaser
+% (fig:teaser) is declared in the introduction file and referenced here, never re-declared.
+% Label prefixes owned by this file: sec:syn, tab:syn (incl. tab:syn:registry, tab:syn:frontier). The
+% fig:syn prefix is retired by the M2 merge; no figure floats remain in this file.
+% PROSE PASS 2026-09-21
+
+\section{The Boundary Picture}
+\label{sec:syn:picture}
+
+Section~\ref{sec:exp:anatomy} resolved the effect family by family and horizon by horizon. This section assembles the picture. The family $\times$ horizon boundary grid, promoted to the teaser (Figure~\ref{fig:teaser}), is the single visual that carries the family-conditionality result. Table~\ref{tab:syn:registry} is the claim registry. To verify any assertion in Sections~\ref{sec:exp:anatomy} and~\ref{sec:syn:picture}, locate its row and read the disposition and scope. Appendix~\ref{sec:app:registry} links each row to its source artifact. Table~\ref{tab:syn:frontier} sets ranking regret against per-state inference cost. [TODO: the teaser's per-cell grid values and the pooled frontier rows are gated by \#81; registry rows C14--C16 are gated by \#83, \#84, and \#82.]
+
+% M2 merge (post-review): the family x horizon boundary grid is promoted to the teaser (fig:teaser,
+% owned by the introduction file). The caption-only float that lived here is deleted; what survives
+% in this section is the per-cell sign reading, kept as prose below. The teaser's asset spec and
+% per-cell values are #81-gated and tracked with the teaser.
+Improvement is reference minus tested and positive is better, the convention recorded in the source artifacts for every improvement quoted in this paper. A positive cell favors the multi-granularity-trained hybrid over its continuous reference. At $h{=}1$ the N1 rows are positive, pooled over the four held-out states against the right-censored $t{=}600$ end-of-window cost ($+0.0887\,[+0.0155, +0.2118]$, row C2). The original-family rows are null-to-negative on the 24 closeout states ($-0.0278\,[-0.0694, 0.0000]$, row C2b), and the CLEVRER row separates at the short horizon (S1 replicates, row C9). At $h{=}5$ the N1 rows are null and the original-family rows are negative ($-0.0556\,[-0.1111, -0.0139]$, row C2b). At $h{=}15$ both family sets are exactly zero (row C3). On CLEVRER the separation shrinks with horizon (S2 replicates) and the continuous arm's growth shape is non-monotone at $h{=}15$ (S3 fails, row C9). The CLEVRER row uses a different estimand, recursive position MSE rather than ranking regret, so the grid does not put the families on a common scale. Read cell by cell, the grid is a sign map.
+
+% Table 3: the claim registry. Single tex home of the registry; per-row provenance in Appendix E.
+\begin{table}[t]
+\centering
+\small
+\caption{The claim registry. Each row pins one assertion to its status, disposition, and scope, so a reader can trace any claim in Sections~\ref{sec:exp:anatomy} and~\ref{sec:syn:picture} to its evidence. Rows C1--C13 are executed. Rows C14--C16 are open and gated by tickets \#83, \#84, and \#82 respectively. Disposition tokens come from the pre-registered vocabulary of Section~\ref{sec:mth:protocol} and appear verbatim on the rows that carry one: \texttt{supported}, \texttt{not\_supported\_by\_this\_experiment}, \texttt{readiness\_or\_precision\_insufficient}. Rows without a token carry scope instead. Intervals are descriptive wherever the source artifact records them as descriptive. Appendix~\ref{sec:app:registry} lists the artifact behind each row.}
+\label{tab:syn:registry}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}p{0.05\textwidth}p{0.41\textwidth}p{0.13\textwidth}p{0.33\textwidth}@{}}
+\toprule
+Row & Claim & Status & Disposition / scope \\
+\midrule
+C1 & Joint granularity selection shows no general endpoint advantage under the frozen two-budget protocol & Verified & \texttt{not\_supported\_by\_this\_experiment} (\#15) \\
+C2 & A hybrid $h{=}1$ training effect exists on the N1 rolling/sliding families & Verified (descriptive) & \texttt{supported}, bounded to 4 held-out states, 2 families \\
+C2b & On the original single/multi-force families the hybrid training effect is null-to-negative at $h1$ and negative at $h5$ & Verified (descriptive) & \texttt{supported} as a boundary condition (24 closeout states); the family-conditionality of C2/C2b is itself the claim \\
+C3 & Hybrid training effects at $h15$ are exactly zero in both family sets; $h5$ is null on N1 and negative on original families & Verified (descriptive) & \texttt{supported}, scope = both sets, per-family stated \\
+C4 & Symbolic-execution effects at $h{=}1$ straddle zero; macro execution at $h15$ is positive (N1) & Verified (descriptive) & \texttt{supported}, bounded to N1 \\
+C5 & Recursive carrier MSE diverges in magnitude at late endpoints, both arms, both families & Verified & \texttt{supported}, as instability observation; growth-shape NOT universal (\#79) \\
+C6 & Appearance novelty moves zero-shot contrasts in system-specific opposite directions (type010102) & Verified (descriptive) & \texttt{supported}, zero-shot only \\
+C6b & Few-shot cross-side changes are interval-excluding in type010102 ($+0.1953$ / $-0.1892$) & Verified (descriptive) & \texttt{supported}, reported separately from C6 \\
+C7 & Adaptation on the novel side degrades $h5$/$h15$ continuous ranking in both families; improves $h1$ only in type010102 & Verified (descriptive) & \texttt{supported} with per-family scope \\
+C8 & The horizon-decay signature belongs to the adaptive-temporal method class & TESTED & \texttt{readiness\_or\_precision\_insufficient} (\#78, 4 states); TAWM/VLWM/reference all decay \\
+C9 & The NovPhy boundary signature replicates out-of-family on CLEVRER & TESTED & \texttt{not\_supported\_by\_this\_experiment} overall (\#79); component-wise: S1 separation REPLICATES, S2 ordering REPLICATES, S3 growth-shape fails at $h15$ (non-monotone), Q2 regime direction reversed \\
+C10 & The $h1$ effect has closed-loop reactive payoff & TESTED (gate stop) & \texttt{readiness\_or\_precision\_insufficient} (\#80): prevalence $0.0000 < 0.10$ floor over 45 valid executions; paired-difference questions unscored by design; \#82 oracle ceiling pending \\
+C11 & At matched development scoring, hybrid adaptive shows no regret advantage over the selected \texttt{continuous\_h5} & Verified (descriptive) & \#74 contrast $-0.0200\,[-0.045, +0.003]$; selection optimism disclosed \\
+C12 & Per-state inference cost is horizon- and system-dependent; hybrid adaptive is never the cheapest arm & Verified & \#74 walls ($\approx$1.79/0.37/0.13/1.01\,s); \#74-family scope stated \\
+C13 & Headroom: prior and uniform regret baselines leave ranking signal on every frozen state & Verified & \#77/\#78 headroom tables (e.g.\ prior $0.492$ / uniform $0.461$ pooled N1) \\
+C14 & The CLEVRER $h15$ non-monotonicity is a regime property (post-settlement) rather than an estimand/endpoint artifact & [TODO: pending \#83] & untested; frozen-checkpoint decomposition \\
+C15 & A third physics family breaks the two-family component tie (NovPhy full signature vs CLEVRER 2/3) & [TODO: pending \#84] & untested; either direction publishable \\
+C16 & The \#80 zero floor is a state-difficulty floor (oracle prevalence 0) rather than $h1$ ranking failure & [TODO: pending \#82] & untested; analysis-only \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% Work frontier: regret vs per-state wall (L6). Walls and the registered contrast come from #74;
+% pooled frontier rows are #81-gated.
+Cost completes the picture. On the \#74 development cohort the per-state inference walls are $\approx$1.79\,s for the pure-continuous $h{=}1$ arm, $\approx$0.37\,s for the selected comparator \texttt{continuous\_h5}, $\approx$0.13\,s for $h{=}15$, and $\approx$1.01\,s for the hybrid adaptive arm, about $2.7\times$ the selected comparator. At matched development scoring the hybrid shows no advantage over the selected comparator ($-0.0200\,[-0.045, +0.003]$, row C11), with the comparator's selection optimism disclosed and training compute not matched. The wall ordering inverts with horizon. At short request horizons the fixed fine-grained arm is the costly one, and the adaptive arm is never the cheapest (row C12), so the common claim that adaptive granularity is expensive is horizon-dependent. Regret does not compensate for the cost. These are development quantities, readiness and development evidence rather than final evaluation.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Work frontier on the \#74 development cohort: mean ranking regret at matched development scoring against the per-state inference wall (200 calibration states, offset-225 rollouts; endpoint semantics differ from the N1 $t{=}600$ endpoints). ``--'' marks quantities outside the registered \#74 row. \texttt{continuous\_h5} was selected on this cohort, so its regret carries selection optimism (row C11); training compute is not matched.}
+\label{tab:syn:frontier}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Arm & Per-state wall (s) & Mean ranking regret \\
+\midrule
+continuous, $h{=}1$ & $\approx$1.79 & -- \\
+continuous, $h{=}5$ (selected) & $\approx$0.37 & 0.329997 \\
+continuous, $h{=}15$ & $\approx$0.13 & -- \\
+hybrid adaptive & $\approx$1.01 & 0.349998 \\
+\midrule
+\multicolumn{3}{@{}l@{}}{[TODO: pooled frontier rows gated by \#81]} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% What the shape says: L1–L5, no numbers outside the registry (rows referenced by ID).
+The shape of the grid ties the first five learnables together. % L1--L5
+The arm that improves $h{=}1$ ranking on the new N1 families is null-to-worse on its own training families at $h{=}1$, negative at $h{=}5$, and exactly zero at $h{=}15$ in both sets (rows C2, C2b, C3). The training effect is family-conditional. % L1
+Training, symbolic-execution, and adaptation contrasts carry different signs within the same cells, so the claim that multi-granularity supervision helps training and the claim that symbolic readouts help execution draw on different rows (C2, C4, C7). The three estimands separate. % L3
+Recursive carrier error grows in magnitude at late endpoints in both arms (C5), readout-level signal is present at exactly the horizon where the carrier is unstable (C4), and the out-of-family test shows the growth shape is not universal (C9). Instability remains a hypothesis rather than a mechanism. % L2
+Zero-shot contrasts move in opposite, system-specific directions (C6), and few-shot changes are reported separately (C6b). Appearance novelty has no uniform direction. % L4
+On both families, adaptation degrades longer-horizon ranking and improves the shortest horizon on only one of them (C7). Adaptation is not a free rescue. % L5
+One reporting rule runs through all five learnables. Cells stand side by side and are never averaged across families, so no cross-family meta-analytic pool enters the paper. Because of that rule the grid, read cell by cell, is the paper's unit of evidence.

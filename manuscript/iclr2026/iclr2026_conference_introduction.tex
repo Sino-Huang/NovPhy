@@ -1,0 +1,103 @@
+%!TEX root = iclr2026_conference.tex
+% Binds outline §1 (Introduction) — manuscript/writing_outline_boundary_paper.md (v1.2); status: manuscript/content_brief.md
+% OWNERSHIP: this file declares the teaser float and owns \label{fig:teaser}; the synthesis section
+% references it (\ref{fig:teaser}) and must not re-declare it. Post-M2 the teaser IS the single
+% family x horizon boundary grid (outline §6: promote the grid to teaser).
+% RETARGETED 2026-09-21 per outline §3: ¶1–4 retained from the critic-hardened draft; ¶5–7 rebalanced
+% from the all-negative calibration toward heterogeneity (when/where, not whether); former ¶8–9 and the
+% contribution list REPLACED by the three-act boundary structure: (a) confirmatory negative (#15);
+% (b) anatomy (#74 + #76-closeout + #77 N1/N2), family- and horizon-conditional, with the L1 both-signs
+% statement and estimand separation; (c) executed external/replication tests (#78 method-class
+% precision-insufficient; #79 component-wise replication with S3 failure and regime reversal; #80 typed
+% prevalence-gate stop). New contribution list per outline §3; significance closes on the tempered L7
+% redirect.
+% REVISED 2026-09-21 post-review: M2 (teaser is now the single boundary-grid float with an \fbox
+% placeholder; grid semantics compressed into the rendered caption; all asset spec in comments), M4
+% (¶10 cost sentence now carries registry C12's registered wording), m3 (24 closeout states), m6 (decay
+% contrast in point estimate), m12 (¶7 evidence sentence drops the §4 ref), B3-share (¶1–7 tightened).
+% Label prefixes owned by this file: sec:intro, fig:teaser.
+% PROSE PASS 2026-09-21
+
+\section{Introduction}
+\label{sec:introduction}
+
+% Teaser float (owned here): the single family x horizon boundary grid (M2 merge, post-review
+% 2026-09-21). The synthesis section deleted its fig:syn:grid float and now references \ref{fig:teaser}.
+% [TODO: asset] teaser v2 spec per outline §6 and the teaser_figure_brief.md v2 rewrite (the brief is
+% still SUPERSEDED-PENDING-V2): 5 rows (N1 rolling type010103, N1 sliding type010105, original
+% type010101, original type010102, CLEVRER position-MSE row) x 3 columns (requested horizon 1, 5, 15);
+% Okabe-Ito fills encode the improvement sign only (blue = positive, interval excludes zero; vermillion
+% = negative, interval excludes zero; white/gray tint = interval touches or covers zero; "0" glyph =
+% point estimate exactly zero); color encodes sign, never method quality (prohibited-claims discipline
+% per brief); work-frontier inset (regret vs per-state wall). N1 cells pool the 4 held-out states;
+% original-family cells pool the 24 closeout states. Per-cell values fill from artifact rows under #81.
+% \includegraphics stays commented until the asset lands.
+\begin{figure}[t]
+  \centering
+  % \includegraphics[width=\textwidth]{teaser_v2_boundary_grid} % TODO asset: teaser brief v2 (outline §6); per-cell values #81-gated
+  \fbox{\parbox[c][2.8cm][c]{0.94\linewidth}{\centering\small
+  Family $\times$ horizon boundary grid. Rows: physical families. Columns: requested horizons $1$, $5$, $15$.\\
+  Cell fill: sign of the hybrid training effect. Inset: work frontier.}}
+  \caption{\emph{The family $\times$ horizon boundary grid.} Each cell gives the sign of the hybrid training effect (ranking-regret improvement, reference minus tested, so positive is better) for one family at one requested horizon: the new rolling and sliding families (four held-out states), the original single- and multi-force families (24 closeout states), and a CLEVRER out-of-family replication row scored in recursive position MSE. The inset sets regret against per-state cost for each arm. All intervals are descriptive.}
+  \label{fig:teaser}
+\end{figure}
+
+% Paragraph 1: Define world models as learned transition-dynamics approximations and distinguish imagined learning from planning.
+A world model is a learned approximation to an environment's transition dynamics in an observed or latent state space, conditioned on the current state or history and a candidate action. Dreamer learns behaviors from latent imagined rollouts \citep{hafner2020dreamer,hafner2025dreamerv3}, whereas TD-MPC plans with a learned latent model, pairing local trajectory optimization with a terminal value estimate \citep{hansen2022tdmpc}. Every design fixes how far ahead to predict and in what form.
+
+% Paragraph 2: Motivate granularity as a decision-dependent question while treating fixed predictive targets as rational task-specific choices.
+Existing methods reasonably fix predictive horizons and targets to suit their intended objectives. Latent-dynamics control methods fix temporal targets or planning horizons and reach further by recursive one-step rollout with value bootstrapping \citep{hafner2020dreamer,hansen2022tdmpc,sobal2025pldm}. Joint-embedding approaches fix the predictive representation and target at training time \citep{assran2023ijepa,bardes2024vjepa}. Recent latent world models on frozen or end-to-end features inherit the same fixed target \citep{zhou2025dinowm,maes2026leworldmodel}. This task-specific design is a widespread default. We ask whether one action-conditioned model serving heterogeneous decisions should instead select prediction horizon and output-description mode jointly at each decision.
+
+% Paragraph 3: Acknowledge nearest single-axis relaxations and state the narrow joint gap.
+Recent work relaxes one dimension of this contract at a time. On the temporal side, variable-length latent world models vary prediction offsets \citep{du2026vlwm}, surprise signals set hierarchical chunk boundaries in open-loop video prediction \citep{iiyama2026sunta}, and reliability estimates adapt rollout depth during imagination \citep{hafez2020improving}. On the description side, published work varies the output form: state-dependent scene resolution \citep{wang2023dynamic}, hierarchical prediction across fixed time scales \citep{shaj2023multi,villarcorrales2022mspred}, per-frame abstraction of action forecasts \citep{scarafoni2022islands}, and short-detailed versus long-simplified segments in one model-predictive controller \citep{brudigam2021mpc}. \citet{wang2026adajepa} adapt model parameters at test time, not granularity selection. None of these lines treats horizon and output-description mode jointly as one state-dependent prediction request to an action-conditioned world model: the narrow gap this paper targets.
+
+% Paragraph 4: Distinguish control-schedule temporal abstraction from prediction granularity.
+Temporal abstraction in reinforcement learning answers a different question. Options and their learned variants decide when and for how long the agent acts \citep{sutton1999options,bacon2017optioncritic}, and \citet{biedenkapp2021temporl} learn when to commit to an action repetition. These methods adapt the agent's control schedule, not what the world model predicts or how far ahead it extends. Our question sits on the prediction side of that boundary.
+
+% Paragraph 5: Introduce the action-sparse persistent-effect setting with physics benchmarks; retargeted
+% close poses granularity mismatch as a heterogeneity hypothesis (when/where, not whether).
+In the \emph{action-sparse persistent-effect environment}, actions occur infrequently while their physical effects continue autonomously for many fixed simulation steps. A single intervention can set off a cascade through collision onset and active rearrangement before settling. We build on NovPhy \citep{pinto2024novphy}, a published physical-reasoning benchmark \citep{bakhtin2019phyre,bear2021physion,yi2020clevrer} evaluating how agents detect and adapt to novel physical dynamics across scenarios. Each cascade phase, we hypothesize, asks for different prediction granularity: fine temporal resolution and relation-level detail near the intervention, coarse state judgments near settling. We call this tension \emph{granularity mismatch} and treat it as a heterogeneity hypothesis. Effects, if any, depend on the decision's phase, the physical family, and the scored horizon. An average over cells can hide either sign.
+
+% Paragraph 6: Define requested horizon and output-description mode operationally over the 3 by 3 surface;
+% retargeted close states the cell-resolved reporting discipline.
+We make granularity operational as two request parameters. The \emph{requested horizon} $\Delta \in \{1, 5, 15\}$ is how many fixed simulation steps one prediction decision asks the model to advance. The \emph{output-description mode} $\alpha \in \{\mathrm{continuous}, \mathrm{micro}, \mathrm{macro}\}$ selects which supervised target is scored at that decision. \emph{Continuous} exposes the predictive latent used for recursive continuation, \emph{micro} requests fine transition relations such as contact and support, and \emph{macro} requests coarse state or event predicates such as \texttt{steady-state} and \texttt{structure-unstable}. The nine $(\Delta, \alpha)$ pairs form our evaluation surface. A continuous latent remains the sole rollout carrier. Mode selection changes only the requested readout, never the recurrent state representation, and implies no switch in spatial resolution or between pixel- and object-level representations. We report effects per cell and per family throughout.
+
+% Paragraph 7: Present the proposed controller and carrier, separating published NovPhy from in-progress
+% BG-NS-JEPA; retargeted close states the paper's where-and-at-what-cost question.
+A learned joint-pair controller selects one $(\Delta, \alpha)$ pair per prediction decision from agent-observable inputs. A deployment-aligned temporal carrier supplies agent observations only, keeps training, model-selection, and evaluation data separate, and carries every rollout between decisions. The carrier and its training and evaluation tooling are implemented infrastructure. The paper's evidence comes from the executed evaluations of Section~\ref{sec:exp:anatomy}. NovPhy is the published benchmark supplying the setting \citep{pinto2024novphy}. BG-NS-JEPA is the in-progress world-model program built on that setting, and no published NovPhy finding is a result of this program. The paper asks where, across physical families and horizons, joint granularity selection changes behavior, and at what cost.
+
+% ===== ACT (a): the confirmatory negative (issue 15; registry C1). Estimand: mean duration-weighted
+% ===== authoritative endpoint carrier MSE under teacher forcing; instance-held-out, same physics family;
+% ===== six complete sealed rollouts; two prospectively calibrated compute budgets.
+% Paragraph 8 (act a): the frozen confirmatory protocol and its negative outcome establish that there is
+% no general advantage to find.
+We first tested the question as posed: whether joint selection improves prediction on average. The test followed a frozen prospective protocol with five predeclared comparators and six complete sealed rollouts (Section~\ref{sec:mth:protocol}). At each of two prospectively calibrated compute-support budgets, it evaluated the candidate against the strongest eligible comparator. The estimand is the mean duration-weighted authoritative endpoint carrier MSE over eligible teacher-forced decision states, paired within each rollout. At the lower budget, where the parameter-matched two-head controller was the strongest eligible comparator, joint selection showed zero paired gain. At the higher budget, where fixed-pair was strongest eligible, the candidate had higher endpoint error: paired mean gain $-5.2 \times 10^{-4}$, paired 95\% interval $[-7.1 \times 10^{-4}, -3.6 \times 10^{-4}]$ (gain is the comparator's error minus the candidate's error). Authoritative endpoint physical-violation incidence did not increase at either budget. The result is negative. The frozen decision rule returns \emph{not\_supported\_by\_this\_experiment}. The disposition is bounded to instance-held-out configurations within the same physics family under teacher forcing and does not address template-held-out generalization, shifted physics, or gameplay success. There is no general advantage to find, and the remaining question is where effects exist, where they invert, and what they cost.
+
+% ===== ACT (b): the anatomy (issues 74 + 76-closeout + 77 N1/N2; registry C2/C2b/C3/C11). Estimands:
+% ===== ranking regret contrasts (matched development scoring; N1 held-out states); all intervals
+% ===== descriptive; t=600 end-of-window (right-censored) semantics per ledger.
+% Paragraph 9 (act b, part 1): family- and horizon-resolved training effects, both signs (L1).
+The rest of the paper answers that question. Under a pre-registered matched-system protocol with sealed memberships, paired descriptive intervals, and reporting of every attempted cell, we measured the effect of hybrid supervision relative to continuous-only supervision, per family and per horizon. At matched development scoring on the original families, the adaptive arm showed no regret advantage over the strongest fixed policy, which had been selected on the same cohort ($-0.0200$, interval $[-0.045, +0.003]$). On the new rolling and sliding families, at four held-out states, the shortest horizon shows a positive training effect in ranking regret ($+0.0887$, $[+0.0155, +0.2118]$). On the original single- and multi-force families, at 24 closeout states, the same contrast is null-to-negative at the shortest horizon ($-0.0278$, $[-0.0694, 0.0000]$) and negative at the intermediate horizon ($-0.0556$, $[-0.1111, -0.0139]$). At the longest horizon the effect is exactly zero in both family sets. The resolved picture is heterogeneous in both directions: the training effect is a property of the family-by-horizon cell rather than of the method, and both signs are part of the finding. Figure~\ref{fig:teaser} shows the grid.
+
+% Paragraph 10 (act b, part 2): estimand separation (L3), novelty directions (L4), cost inversion (L6),
+% with the instability caveat (L2) attached where it binds.
+The same anatomy separates training effects, symbolic-execution effects, and adaptation effects as distinct estimands. At the shortest horizon on the new families, the training effect excludes zero while the symbolic-execution contrasts straddle it. At the longest horizon on those families, the macro symbolic-execution effect on action ranking is positive ($+0.0944$, $[+0.0231, +0.1878]$). Recursive carrier error grows unstable in both arms at this horizon, so we report it as a readout-level effect and treat long-horizon mechanism claims as hypotheses. Within one appearance-novelty family pair, appearance novelty moves zero-shot ranking contrasts in opposite directions at the longest horizon: $-0.2693$ $[-0.5412, -0.0050]$ for the continuous readout against $+0.4242$ $[+0.0915, +0.7657]$ for the macro readout, with few-shot results reported separately (Section~\ref{sec:exp:novelty}). These separated estimands can disagree within one cell, and a single verdict would conflate them. Per-state inference cost depends on the scored horizon and the system. On the development cohort, the pure-continuous arm is the most expensive at the shortest horizon ($\approx$1.79~s per state, against $\approx$1.01~s for the adaptive arm and $\approx$0.37~s for the arm that fixes the intermediate horizon), and the hybrid adaptive arm is never the cheapest arm.
+
+% ===== ACT (c): executed external/replication tests (issues 78/79/80; registry C8/C9/C10). Estimands:
+% ===== ranking regret on the #77 frozen states (#78); recursive position MSE at CLEVRER frames
+% ===== {15,30,60,120} (#79); first-shot success prevalence (#80). Dispositions verbatim.
+% Paragraph 11 (act c): does the boundary belong to the method class, and does it travel.
+Two executed tests then ask whether this boundary belongs to the adaptive-temporal method class and whether it travels. We retrained two external adaptive-temporal methods, TAWM \citep{nhu2025tawm} and VLWM \citep{du2026vlwm}, under the identical budget on the frozen corpus and evaluated ranking regret on the same held-out states. Both reproduce the shortest-versus-longest-horizon decay contrast in point estimate (descriptive per-seed contrasts $+0.2253/+0.2576/+0.2177$ for TAWM and $+0.0591/+0.1000/+0.0494$ for VLWM), and so does the plain continuous reference arm ($+0.1605/+0.2671/+0.1354$). With four held-out states, the method-class question returns \emph{readiness\_or\_precision\_insufficient}. The signature is established under our contract, but it cannot yet be attributed to the class rather than to the implementation recipe the ports share with our reference arm. On CLEVRER \citep{yi2020clevrer}, with component rules frozen in advance, we tested three signature components out-of-family. At the 15-frame endpoint, the short-horizon training-effect separation is $+0.00366$ in recursive position MSE, above the pre-registered $0.0010$ margin. The separation shrinks with horizon, matching the NovPhy shape. At the longest CLEVRER horizon, however, the continuous arm's recursive position MSE is non-monotone across frames (0.00132, 0.00166, 0.00133, and 0.01156 at frames 15, 30, 60, and 120), and the contact-regime contrast reverses direction. The first two components replicate, and the growth-shape component fails. The signature question returns \emph{not\_supported\_by\_this\_experiment}. A reactive closed-loop test stopped at its pre-registered prevalence gate: zero first-shot successes in 45 valid closed-loop executions against a 0.10 floor. Its paired-difference questions went unscored by design, and the typed \emph{readiness\_or\_precision\_insufficient} stop is a protocol bound, recorded as such (Section~\ref{sec:disc}).
+
+% ===== Contribution list per outline §3: formulation; estimand taxonomy as protocol contribution;
+% ===== matched-system boundary anatomy; external/out-of-family tests with honest dispositions.
+We contribute the following.
+\begin{itemize}
+  \item \textbf{Formulation.} Action-sparse persistent-effect environments, joint horizon--description selection as one per-decision request over nine horizon--mode pairs carried by a single continuous latent, and granularity mismatch posed as an empirical question about when and where effects appear.
+  \item \textbf{An estimand taxonomy as a protocol contribution.} Training, symbolic-execution, and adaptation effects are separated estimands that can take different signs within one cell. Every reported number names its estimand, family, and scope (Section~\ref{sec:mth:setting}).
+  \item \textbf{A matched-system boundary anatomy.} A pre-registered protocol with sealed memberships, paired descriptive intervals, and complete reporting of attempted cells yields the family- and horizon-resolved effects above, with both signs, instability evidence stated as hypothesis, and per-state cost accounting (Sections~\ref{sec:exp:development}--\ref{sec:exp:novelty}).
+  \item \textbf{External-method and out-of-family tests with honest dispositions.} TAWM and VLWM ports under the identical contract (method-class attribution \emph{readiness\_or\_precision\_insufficient} at four held-out states), a component-wise CLEVRER replication (two of three components replicate, and the signature disposition is \emph{not\_supported\_by\_this\_experiment}), and a pre-registered closed-loop stop (Sections~\ref{sec:exp:external}, \ref{sec:exp:clevrer}, and~\ref{sec:disc}).
+\end{itemize}
+
+% ===== Significance close: tempered L7 redirect, stated as calibration for the field.
+We offer this work as calibration for the field. Average-effect comparisons are the default currency for adaptive-abstraction methods, and our measurements show that such averages can carry either sign once effects are resolved by family and horizon. Four held-out states also left the method-class question undecided. Claims about adaptive granularity become decidable when methods report horizon- and family-resolved comparisons under matched systems with disclosed work, and we present our curves as one calibration datapoint toward that standard.

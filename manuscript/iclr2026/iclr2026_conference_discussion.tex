@@ -1,0 +1,59 @@
+%!TEX root = iclr2026_conference.tex
+% Binds outline §7 (Discussion) + §8 (Conclusion) + pre-references statement blocks —
+% manuscript/writing_outline_boundary_paper.md (v1.2); status: manuscript/content_brief.md.
+% REVISED 2026-09-21 post-review from executed results. §7 order: (1) the #80 reactive-control paragraph —
+% typed prevalence-gate stop (0.0000, 0/45 valid closed-loop executions vs the 0.10 floor; 288-cell
+% matrix barred by the frozen precondition; readiness_or_precision_insufficient IS the deliverable;
+% framed strictly as a protocol-consistent bound, never planner-quality evidence; [TODO: #82 outcome]);
+% (2) tempered redirect (L7) with the World-In-World closed-loop context; (3) limitations, all eight
+% named items unsoftened; (4) falsifiability written ONLY from filed/executed tickets (more-states
+% extension of #78, #82 oracle ceiling, #83 CLEVRER h15 decomposition, #84 third family).
+% §8 compresses L1–L7 and names open cells with blockers. Reproducibility Statement complete; Ethics
+% and Acknowledgments remain [TODO: submission prep] stubs.
+% NOTE: the redirect is phrased as a reporting requirement; per-paper "no boundary curves reported"
+% claims stay gated by outline prerequisite R1 (§2 verification) and are NOT asserted here.
+% Label prefixes owned by this file: sec:disc, tab:disc.
+% PROSE PASS 2026-09-21
+
+\section{Discussion}
+\label{sec:disc}
+
+% --- (a) The #80 reactive-control paragraph. Registry row C10. Ledger: issue-80 typed stop ---
+% (prevalence gate 0/45; 48-cell pilot; 3 typed decision_failure cells; matrix barred; stop precedes
+% scoring by design; development N1 lineages, zero fresh captures).
+Every boundary result in Section~\ref{sec:exp:anatomy} was measured under teacher forcing. The one executed closed-loop test was the reactive-control diagnostic, run on development N1 lineages with zero fresh captures. The protocol requires pooled first-shot success prevalence of at least $0.10$ before any paired-difference question is scored. The 48-cell pilot (4 states $\times$ 4 systems $\times$ 3 seeds) yielded 45 valid closed-loop executions with zero first-shot successes (prevalence 0.0000), plus three cells ending in typed \texttt{decision\_failure} records of kind \texttt{prior\_candidate\_absent}. The frozen precondition therefore barred the full 288-cell matrix, and the paired questions were left unscored. The runner extensions (fixed-horizon planning, hybrid fixed-mode planning, and an ordinal-prior arm) all landed before the gate check, so missing tooling does not explain the stop. The delivered result is the disposition \texttt{readiness\_or\_precision\_insufficient} on the reactive-payoff claim (Table~\ref{tab:syn:registry}). The gate fires before scoring and binds in advance rather than leaving continuation to discretion. The stop therefore records a protocol bound and carries no information about planner quality in either direction. What the zero leaves open is its cause. Under a state-difficulty floor, even an oracle candidate would not succeed at first shot on these states. Under a ranking failure, an oracle would succeed and the candidate policies would not. A filed oracle-ceiling diagnostic, which requires no new gameplay, is designed to separate the two cases [TODO: ticket~\#82 outcome].
+
+% --- (b) Tempered redirect (L7). Registry rows C8 (signature insufficiency), Q2/Q3 supported. ---
+% NOTE (R1): this paragraph demands a reporting standard; it does not assert what any cited paper
+% fails to report. Per-paper verification lives in Section 2.
+Under one frozen contract, both ported adaptive-temporal methods and the plain continuous reference decay in point estimate between the $h=1$ and $h=15$ requests on the same four held-out states (Section~\ref{sec:exp:external}). The class-level signature question therefore closes as \texttt{readiness\_or\_precision\_insufficient}, while the work-reported and training-effect questions return \texttt{supported} at this scope. The redirect is a reporting standard, not a verdict on the method class: claims that adaptive granularity helps should come with matched-compute, family- and horizon-resolved boundary curves. Our own protocol matches updates and reports every unit of work, and it discloses that training compute is not matched. We offer our curves as a calibration target for future claims in this class. Closed-loop utility evaluation is the companion requirement, and World-In-World makes that case for world models in closed-loop worlds \citep{zhang2026worldinworld}. Fresh sealed gameplay in our program cannot be re-opened, so our closed-loop evidence enters as the bounded diagnostic above rather than as a sealed benchmark run.
+
+% --- (c) Limitations, part 1: coverage and authorization scope. Registry rows C2/C6/C7 scope, ---
+% readiness record 4/45, n2n 34/104 with 70 retained contention-era typed failures, #78 4 states.
+The coverage limitations are recorded in full. Four of 45 scenario-novelty cells are runtime-tested (normal rolling, normal sliding, and two appearance-novelty cells), and the other 41 carry named blockers in the readiness record (Appendix~\ref{sec:app:coverage}). On the normal side of the appearance-novelty pair, contention left 34 of 104 branches admissible, and the 70 contention-era typed failures are retained and reported (Section~\ref{sec:exp:novelty}). Fresh sealed gameplay was never opened. Its advancement gate is unmet on readiness grounds, and re-opening on outcome grounds stays barred. The external-method comparison inherits the four held-out states of the N1 diagnostic, which leaves its class-level question precision-limited.
+
+% --- (c) Limitations, part 2: measurement and estimand scope. Registry rows C1--C5, C9. ---
+Measurement scope imposes its own constraints. All effect intervals are descriptive, computed over 4 held-out N1 states, 24 closeout states, or 48 CLEVRER units per seed (480 windows), and none carries a significance reading. The $t=600$ endpoint is end-of-window right-censored, so long-horizon contrasts stop short of settled cost. The confirmatory estimand, teacher-forced mean duration-weighted authoritative endpoint carrier MSE over eligible decision states (Section~\ref{sec:exp:confirmatory}), leaves terminal-outcome accuracy unavailable in this program. Magnitudes diverge at late endpoints on both arms ($t \ge 150$ on NovPhy and $e=120$ on CLEVRER), so carrier instability bounds every recursive claim. The out-of-family replication on CLEVRER returns an overall signature disposition of \texttt{not\_supported\_by\_this\_experiment}. The short-horizon separation and horizon-ordering components replicate, but the growth component does not (Section~\ref{sec:exp:clevrer}). Zero-shot and few-shot novelty contrasts are reported separately throughout.
+
+% --- (d) Falsifiability from executed results and filed tickets only. Ticket map (do not cite raw ---
+% numbers in prose): more-states extension of #78 -> C8; #84 third family -> C15/C9 scope;
+% #83 CLEVRER h15 decomposition -> C14; #82 oracle ceiling -> C16.
+Each open conclusion has a filed test that can move it in either direction. The external-method comparison currently covers four held-out states. If a matched-system method on additional states maintains a non-decaying advantage, the everyone-decays pattern in point estimate breaks and the signature question reopens as a class-level distinction. If the method instead decays at higher precision, the current bound consolidates. NovPhy reproduced its signature in full and CLEVRER reproduced two of three components with the contact-regime direction reversed, leaving the two-family replication at a tie. If a third family completes all components, the replication claim widens. If it produces a new failure pattern, the claim narrows to the components that travel. If decomposition of the CLEVRER $h=15$ non-monotonicity against frozen checkpoints isolates a contact-regime property, the growth failure resolves as physics. If it does not, the failure resolves as a measurement or endpoint artifact. If the oracle-ceiling diagnostic finds that an oracle candidate succeeds at first shot on the four held-out states, the closed-loop zero reflects candidate ranking. If the oracle also fails, the zero reflects state difficulty. The three filed follow-ups (\#82/\#83/\#84) are executing, the more-states extension of \#78 is a separately scoped continuation, and none is blocked by authorization [TODO: tickets~\#82/\#83/\#84 outcomes amend the matching sentences and registry rows C14--C16].
+
+\section{Conclusion}
+\label{sec:disc:conclusion}
+
+% --- Outline §8: L1–L7 compressed; protocol contribution; open cells with named blockers. ---
+Joint granularity selection shows no general advantage. Its benefits, where they exist, are conditional on the family and the horizon: a positive $h=1$ training effect on the new normal-mechanics families ($+0.0887$, descriptive interval, 4 held-out states), a negative $h=5$ effect on the original families ($-0.0556$, 24 states), and exactly zero at $h=15$ in both. Training, symbolic-execution, and adaptation effects separate into estimands with different signs, and appearance novelty moves zero-shot and few-shot contrasts in system-specific directions that we report separately. Per-state cost inverts with horizon and reference, never favoring the adaptive arm. Late-horizon carrier instability bounds every recursive claim. Both ported adaptive-temporal methods decay in point estimate like the continuous reference at the precision we reached, and adaptation on the novel side does not rescue longer-horizon ranking. The reporting lesson for the field is matched-compute, family- and horizon-resolved curves in place of aggregate verdicts.
+
+The protocol is the second contribution. Frozen plans with typed terminal failures, sealed membership, a fixed disposition vocabulary, and every-attempted-cell reporting turned a failed method hypothesis into a mapped boundary, and the same machinery produced the closed-loop gate stop above. The open cells are named. Forty-one of 45 novelty cells remain untested with recorded blockers (Appendix~\ref{sec:app:coverage}), fresh sealed gameplay stays barred by its unmet advancement gate, the pooled synthesis is unblocked but unexecuted, the three filed follow-ups (\#82/\#83/\#84) are pending, and the more-states extension of \#78 is a separately scoped continuation.
+
+\section*{Reproducibility Statement}
+% Outline/split requirement: point to §4 protocol, Appendix F commands, Table 3 registry. Complete.
+To reproduce any quantitative claim, start from its frozen plan and validated runtime artifacts. Section~\ref{sec:mth:protocol} defines the pre-registered matched-system protocol, including the disposition vocabulary and the every-attempted-cell rule. Per-family validation commands appear in Appendix~\ref{sec:app:repro}. Table~\ref{tab:syn:registry} maps each claim to its registry row, and Appendix~\ref{sec:app:registry} records per-row artifact provenance. Descriptive-interval labels, right-censoring semantics, and scope qualifiers are verifiable against the source artifacts. No number is reported outside its recorded scope.
+
+\section*{Ethics Statement}
+% [TODO: submission prep]
+
+\section*{Acknowledgments and Funding}
+% [TODO: submission prep] Anonymous while \iclrfinalcopy is commented out.
