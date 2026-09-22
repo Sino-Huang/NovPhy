@@ -1,0 +1,10 @@
+table,scope,metric,value,interval_low,interval_high,label
+member_ceiling,bounded,25/46,0.5435,0.3913,0.6957,DESCRIPTIVE
+member_ceiling,n2,5/15,0.3333,0.1333,0.6000,DESCRIPTIVE
+member_ceiling,n2n,0/5,0.0000,0.0000,0.0000,DESCRIPTIVE
+cross_split_top1,zero-shot,13/612,0.0212,,,frozen-arm selection validity
+cross_split_uniform_chance,zero-shot,0.0407,,,,inventory-matched uniform selection
+cross_split_paired_diff,zero-shot,-0.0195,-0.0368,-0.0045,DESCRIPTIVE
+cross_split_top1,few-shot,29/612,0.0474,,,adapted-arm selection validity (not a frozen-system result)
+cross_split_uniform_chance,few-shot,0.0407,,,,inventory-matched uniform selection
+cross_split_paired_diff,few-shot,0.0067,-0.0202,0.0368,DESCRIPTIVE

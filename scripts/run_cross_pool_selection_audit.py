@@ -509,11 +509,11 @@ def recompute_resolution_cell():
         for event in payload.get("events", []):
             events.append(event)
     pig_events = [event for event in events
-                  if "pig" in json.dumps(event) and event.get("kind") in
+                  if "pig" in json.dumps(event) and event.get("event_type") in
                   ("pig_removed", "entity_death", "entity_destroyed")]
     removed = [event for event in events
-               if event.get("kind") == "pig_removed"
-               and "runtime:pig:0000" in json.dumps(event)]
+               if event.get("event_type") == "pig_removed"
+               and "runtime:pig:0000" in event.get("participants", [])]
     return {
         "identity": RESOLUTION_CELL,
         "coverage": coverage,
@@ -521,7 +521,7 @@ def recompute_resolution_cell():
         "result_summary_failure": segment["summary"]["failure"],
         "manifest_status": manifest.get("status"),
         "manifest_failure": manifest.get("failure"),
-        "chunk_events": events,
+        "chunk_events_scanned": len(events),
         "pig_related_events": pig_events,
         "chunk_recomputation": {
             "pig_removed_on_runtime_pig": len(removed) >= 1,
@@ -712,7 +712,9 @@ def condition_summary(rows, states):
             if scored else None,
         },
         "chosen_ordinal_histogram": dict(sorted(
-            Counter(row["chosen_ordinal"] for row in rows).items())),
+            ((str(ordinal), count) for ordinal, count in
+             Counter(row["chosen_ordinal"] for row in rows).items()),
+            key=lambda item: int(item[0]))),
     }
 
 
@@ -804,11 +806,14 @@ def verify_expectations(compute):
     for state, hits in exp_cross["per_state_top1"].items():
         check(f"cross_split.per_state_top1.{state}", pooled_state[state], hits)
 
-    check("constant_ordinal.n1", compute["constant_ordinal"]["n1"]["table"],
-          EXPECTED["constant_ordinal_n1"])
-    check("constant_ordinal.cross_split",
-          compute["constant_ordinal"]["cross_split"]["table"],
-          EXPECTED["constant_ordinal_cross_split"])
+    # the expectations quote a subset of ordinals; the full table is published
+    # and the quoted rows are the pre-declared checks
+    for ordinal, pair in EXPECTED["constant_ordinal_n1"].items():
+        check(f"constant_ordinal.n1.{ordinal}",
+              compute["constant_ordinal"]["n1"]["table"][ordinal], pair)
+    for ordinal, pair in EXPECTED["constant_ordinal_cross_split"].items():
+        check(f"constant_ordinal.cross_split.{ordinal}",
+              compute["constant_ordinal"]["cross_split"]["table"][ordinal], pair)
     return checks
 
 
@@ -991,7 +996,8 @@ def cells_csv(rows):
 
 def constant_csv(compute):
     lines = ["pool,ordinal,successes,opportunities"]
-    for pool, entry in compute["constant_ordinal"].items():
+    for pool in ("n1", "cross_split", "bounded_pool"):
+        entry = compute["constant_ordinal"][pool]
         for ordinal, (successes, opportunities) in sorted(
                 entry["table"].items(), key=lambda kv: int(kv[0][1:])):
             lines.append(f"{pool},{ordinal},{successes},{opportunities}")
@@ -1009,11 +1015,14 @@ def comparisons_csv(compute):
             f"{prevalence['mean']:.4f}",
             f"{prevalence['interval'][0]:.4f}",
             f"{prevalence['interval'][1]:.4f}", INTERVAL_LABEL]))
-    for condition, entry in compute["cross_split"]["per_condition"].items():
+    for condition in CONDITIONS:
+        entry = compute["cross_split"]["per_condition"][condition]
+        label = ("frozen-arm selection validity" if condition == "zero-shot"
+                 else "adapted-arm selection validity (not a frozen-system result)")
         lines.append(",".join([
             "cross_split_top1", condition,
             f"{entry['top1_hits']}/{entry['cells']}",
-            f"{entry['top1_rate']:.4f}", "", "", "frozen-arm selection validity"]))
+            f"{entry['top1_rate']:.4f}", "", "", label]))
         lines.append(",".join([
             "cross_split_uniform_chance", condition,
             f"{entry['uniform_chance']:.4f}", "", "", "",
@@ -1032,6 +1041,10 @@ def findings_md(plan, compute, timings):
     zero = compute["cross_split"]["per_condition"]["zero-shot"]
     few = compute["cross_split"]["per_condition"]["few-shot"]
     resolution = compute["resolution_cell"]
+    checks = compute["verdict"]["expectation_checks"]
+    deltas = [check for check in checks if not check["match"]]
+    constant = compute["constant_ordinal"]
+    a12_cross = constant["cross_split"]["table"]["a12"]
     lines = [
         "# Issue-92 WP3 cross-pool selection-validity audit - findings",
         "",
@@ -1100,6 +1113,46 @@ def findings_md(plan, compute, timings):
         "no successful action exists in the pool, so no selection statement is "
         "estimable",
         "",
+        "## Pre-declared expectation checks",
+        "",
+        f"- {sum(1 for check in checks if check['match'])} of {len(checks)} "
+        f"pre-declared expectations reproduce exactly; {len(deltas)} delta(s) "
+        "published below (never silently absorbed)",
+    ] + [
+        f"- DELTA {delta['path']}: pre-declared {json.dumps(delta['expected'])}, "
+        f"recomputed {json.dumps(delta['actual'])} - the recomputed value is the "
+        "retained-truth publication" for delta in deltas
+    ] + [
+        "",
+        "## Constant-ordinal reference tables (the only admissible baselines)",
+        "",
+        "- N1 (12 sealed ceiling states, WP1 verdict path): "
+        + ", ".join(f"{ordinal} {pair[0]}/{pair[1]}" for ordinal, pair in
+                    sorted(constant["n1"]["table"].items(),
+                           key=lambda kv: -kv[1][0]) if pair[0] > 0 or ordinal in
+                    ("a04", "a08", "a12")),
+        "- cross-split (17 states, availability varies): "
+        + ", ".join(f"{ordinal} {pair[0]}/{pair[1]}" for ordinal, pair in
+                    sorted(constant["cross_split"]["table"].items(),
+                           key=lambda kv: -kv[1][0]) if pair[0] > 0 or ordinal in
+                    ("a08", "a12")),
+        f"- bounded pool (46 measurable members): "
+        + ", ".join(f"{ordinal} {pair[0]}/{pair[1]}" for ordinal, pair in
+                    sorted(constant["bounded_pool"]["table"].items(),
+                           key=lambda kv: -kv[1][0]) if pair[0] > 0),
+        "- (i) on each pool a model-free constant policy beats every frozen "
+        f"ranker: on N1 a04 lands 5 of 12 ceiling states while all frozen "
+        f"systems land 0, and on the cross-split a constant a12 succeeds in "
+        f"{a12_cross[0]} of {a12_cross[1]} states where admissible against the "
+        f"frozen systems' {zero['top1_rate']:.4f} cell rate",
+        "- (ii) no single constant transfers between pools: a04 is the best "
+        "constant on N1 and scores "
+        f"{constant['cross_split']['table']['a04'][0]}/"
+        f"{constant['cross_split']['table']['a04'][1]} on the cross-split; a12 "
+        "is the best constant on the cross-split and scores "
+        f"{constant['n1']['table']['a12'][0]}/{constant['n1']['table']['a12'][1]} "
+        "on N1; a08 is retired as any kind of baseline (0/17 cross-split, 0/12 "
+        "N1)",
         "## Claim boundary",
         "",
         CLAIM_BOUNDARY,

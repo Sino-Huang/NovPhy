@@ -1,0 +1,758 @@
+{
+  "bounded": {
+    "admissible_cells": 575,
+    "ceiling_members": [
+      "issue-76-bounded-transfer-002",
+      "issue-76-bounded-transfer-005",
+      "issue-76-bounded-transfer-006",
+      "issue-76-bounded-transfer-008",
+      "issue-76-bounded-transfer-010",
+      "issue-76-bounded-transfer-011",
+      "issue-76-bounded-transfer-012",
+      "issue-76-bounded-transfer-013",
+      "issue-76-bounded-transfer-015",
+      "issue-76-bounded-transfer-018",
+      "issue-76-bounded-transfer-020",
+      "issue-76-bounded-transfer-021",
+      "issue-76-bounded-transfer-023",
+      "issue-76-bounded-transfer-028",
+      "issue-76-bounded-transfer-032",
+      "issue-76-bounded-transfer-033",
+      "issue-76-bounded-transfer-037",
+      "issue-76-bounded-transfer-038",
+      "issue-76-bounded-transfer-041",
+      "issue-76-bounded-transfer-042",
+      "issue-76-bounded-transfer-043",
+      "issue-76-bounded-transfer-044",
+      "issue-76-bounded-transfer-045",
+      "issue-76-bounded-transfer-046",
+      "issue-76-bounded-transfer-047"
+    ],
+    "failed_cells": 41,
+    "measurable_members": 46,
+    "member_ceiling": 25,
+    "member_prevalence": {
+      "clusters": 46,
+      "draws": 10000,
+      "interval": [
+        0.391304347826087,
+        0.6956521739130435
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.5434782608695652,
+      "quantiles": [
+        0.025,
+        0.975
+      ],
+      "seed": 7201,
+      "units": 46
+    },
+    "ordinal_histogram": {
+      "0": 1,
+      "1": 1,
+      "10": 3,
+      "11": 3,
+      "12": 6,
+      "2": 3,
+      "3": 3,
+      "4": 5,
+      "5": 3,
+      "6": 4
+    },
+    "success_cells": 32,
+    "typed_failures_with_success": 1
+  },
+  "claim_boundary": "cross-pool audit over retained artifacts only; #76's, #77's and the n2-eval pool's published verdicts are inputs and are never recomputed, amended, or reinterpreted beyond the frozen recomputation declared here; #64/#65 stay sealed; the n2-eval system set (12 systems incl. adapted predictors and micro/macro ablations) is never mixed with #87's 4-system set in one rate; zero-shot and few-shot are reported separately and never pooled; no engine access, no rendering, no new data; intervals are DESCRIPTIVE",
+  "constant_ordinal": {
+    "bounded_pool": {
+      "members": 46,
+      "table": {
+        "a00": [
+          1,
+          45
+        ],
+        "a01": [
+          1,
+          45
+        ],
+        "a02": [
+          3,
+          43
+        ],
+        "a03": [
+          3,
+          45
+        ],
+        "a04": [
+          5,
+          44
+        ],
+        "a05": [
+          3,
+          45
+        ],
+        "a06": [
+          4,
+          43
+        ],
+        "a07": [
+          0,
+          45
+        ],
+        "a08": [
+          0,
+          44
+        ],
+        "a09": [
+          0,
+          44
+        ],
+        "a10": [
+          3,
+          44
+        ],
+        "a11": [
+          3,
+          44
+        ],
+        "a12": [
+          6,
+          44
+        ]
+      }
+    },
+    "cross_split": {
+      "states": 17,
+      "table": {
+        "a00": [
+          0,
+          14
+        ],
+        "a01": [
+          0,
+          13
+        ],
+        "a02": [
+          2,
+          13
+        ],
+        "a03": [
+          1,
+          13
+        ],
+        "a04": [
+          1,
+          14
+        ],
+        "a05": [
+          0,
+          14
+        ],
+        "a06": [
+          1,
+          16
+        ],
+        "a07": [
+          0,
+          16
+        ],
+        "a08": [
+          0,
+          17
+        ],
+        "a09": [
+          0,
+          13
+        ],
+        "a10": [
+          1,
+          15
+        ],
+        "a11": [
+          0,
+          16
+        ],
+        "a12": [
+          3,
+          15
+        ]
+      }
+    },
+    "n1": {
+      "sealed_ceiling_states": 12,
+      "table": {
+        "a00": [
+          0,
+          12
+        ],
+        "a01": [
+          0,
+          12
+        ],
+        "a02": [
+          1,
+          12
+        ],
+        "a03": [
+          2,
+          12
+        ],
+        "a04": [
+          5,
+          12
+        ],
+        "a05": [
+          2,
+          12
+        ],
+        "a06": [
+          2,
+          12
+        ],
+        "a07": [
+          0,
+          12
+        ],
+        "a08": [
+          0,
+          12
+        ],
+        "a09": [
+          0,
+          12
+        ],
+        "a10": [
+          0,
+          12
+        ],
+        "a11": [
+          0,
+          10
+        ],
+        "a12": [
+          0,
+          12
+        ]
+      }
+    }
+  },
+  "cross_split": {
+    "per_condition": {
+      "few-shot": {
+        "analogue": {
+          "cells": 153,
+          "top1_hits": 2
+        },
+        "auc": {
+          "cell_unit": {
+            "clusters": 6,
+            "draws": 10000,
+            "interval": [
+              0.21817129629629628,
+              0.3238653900112234
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.27321829405162734,
+            "quantiles": [
+              0.025,
+              0.975
+            ],
+            "seed": 7201,
+            "units": 216
+          },
+          "scored_cells": 216
+        },
+        "cells": 612,
+        "chosen_ordinal_histogram": {
+          "0": 234,
+          "1": 89,
+          "10": 14,
+          "11": 28,
+          "12": 124,
+          "2": 5,
+          "3": 9,
+          "4": 26,
+          "5": 4,
+          "6": 25,
+          "7": 20,
+          "8": 19,
+          "9": 15
+        },
+        "paired_diff": {
+          "clusters": 17,
+          "draws": 10000,
+          "interval": [
+            -0.02023629964806435,
+            0.036827551533433894
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.006661639014580195,
+          "quantiles": [
+            0.025,
+            0.975
+          ],
+          "seed": 7201,
+          "units": 612
+        },
+        "per_state": {
+          "issue-76-bounded-transfer-032": [
+            8,
+            36
+          ],
+          "issue-76-bounded-transfer-033": [
+            1,
+            36
+          ],
+          "issue-76-bounded-transfer-034": [
+            0,
+            36
+          ],
+          "issue-76-bounded-transfer-035": [
+            0,
+            36
+          ],
+          "issue-76-bounded-transfer-036": [
+            0,
+            36
+          ],
+          "issue-76-bounded-transfer-037": [
+            2,
+            36
+          ],
+          "issue-76-bounded-transfer-038": [
+            9,
+            36
+          ],
+          "issue-76-bounded-transfer-039": [
+            0,
+            36
+          ],
+          "issue-77-n2-007": [
+            9,
+            36
+          ],
+          "issue-77-n2-008": [
+            0,
+            36
+          ],
+          "issue-77-n2-014": [
+            0,
+            36
+          ],
+          "issue-77-n2-016": [
+            0,
+            36
+          ],
+          "issue-77-n2n-001": [
+            0,
+            36
+          ],
+          "issue-77-n2n-002": [
+            0,
+            36
+          ],
+          "issue-77-n2n-005": [
+            0,
+            36
+          ],
+          "issue-77-n2n-007": [
+            0,
+            36
+          ],
+          "issue-77-n2n-008": [
+            0,
+            36
+          ]
+        },
+        "states_with_top1": 5,
+        "success_states": [
+          "issue-76-bounded-transfer-032",
+          "issue-76-bounded-transfer-033",
+          "issue-76-bounded-transfer-037",
+          "issue-76-bounded-transfer-038",
+          "issue-77-n2-007"
+        ],
+        "top1_at_ordinal_12": 26,
+        "top1_hits": 29,
+        "top1_rate": 0.04738562091503268,
+        "top3": {
+          "chance": 0.11538461538461503,
+          "hits": 88,
+          "paired_diff": {
+            "clusters": 17,
+            "draws": 10000,
+            "interval": [
+              -0.03481649069884363,
+              0.10922574157868276
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.028406234288587233,
+            "quantiles": [
+              0.025,
+              0.975
+            ],
+            "seed": 7201,
+            "units": 612
+          },
+          "rate": 0.1437908496732026
+        },
+        "uniform_chance": 0.0407239819004524
+      },
+      "zero-shot": {
+        "analogue": {
+          "cells": 153,
+          "top1_hits": 2
+        },
+        "auc": {
+          "cell_unit": {
+            "clusters": 6,
+            "draws": 10000,
+            "interval": [
+              0.07617845117845118,
+              0.3323863636363637
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.20391414141414144,
+            "quantiles": [
+              0.025,
+              0.975
+            ],
+            "seed": 7201,
+            "units": 216
+          },
+          "scored_cells": 216
+        },
+        "cells": 612,
+        "chosen_ordinal_histogram": {
+          "0": 259,
+          "1": 103,
+          "10": 8,
+          "11": 18,
+          "12": 54,
+          "2": 4,
+          "3": 8,
+          "4": 26,
+          "5": 4,
+          "6": 29,
+          "7": 39,
+          "8": 40,
+          "9": 20
+        },
+        "paired_diff": {
+          "clusters": 17,
+          "draws": 10000,
+          "interval": [
+            -0.036827551533433894,
+            -0.004524886877828056
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.019482151835093015,
+          "quantiles": [
+            0.025,
+            0.975
+          ],
+          "seed": 7201,
+          "units": 612
+        },
+        "per_state": {
+          "issue-76-bounded-transfer-032": [
+            5,
+            36
+          ],
+          "issue-76-bounded-transfer-033": [
+            0,
+            36
+          ],
+          "issue-76-bounded-transfer-034": [
+            0,
+            36
+          ],
+          "issue-76-bounded-transfer-035": [
+            0,
+            36
+          ],
+          "issue-76-bounded-transfer-036": [
+            0,
+            36
+          ],
+          "issue-76-bounded-transfer-037": [
+            2,
+            36
+          ],
+          "issue-76-bounded-transfer-038": [
+            3,
+            36
+          ],
+          "issue-76-bounded-transfer-039": [
+            0,
+            36
+          ],
+          "issue-77-n2-007": [
+            3,
+            36
+          ],
+          "issue-77-n2-008": [
+            0,
+            36
+          ],
+          "issue-77-n2-014": [
+            0,
+            36
+          ],
+          "issue-77-n2-016": [
+            0,
+            36
+          ],
+          "issue-77-n2n-001": [
+            0,
+            36
+          ],
+          "issue-77-n2n-002": [
+            0,
+            36
+          ],
+          "issue-77-n2n-005": [
+            0,
+            36
+          ],
+          "issue-77-n2n-007": [
+            0,
+            36
+          ],
+          "issue-77-n2n-008": [
+            0,
+            36
+          ]
+        },
+        "states_with_top1": 4,
+        "success_states": [
+          "issue-76-bounded-transfer-032",
+          "issue-76-bounded-transfer-037",
+          "issue-76-bounded-transfer-038",
+          "issue-77-n2-007"
+        ],
+        "top1_at_ordinal_12": 11,
+        "top1_hits": 13,
+        "top1_rate": 0.021241830065359478,
+        "top3": {
+          "chance": 0.11538461538461503,
+          "hits": 74,
+          "paired_diff": {
+            "clusters": 17,
+            "draws": 10000,
+            "interval": [
+              -0.0761689291101056,
+              0.10507792860734037
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.005530417295123178,
+            "quantiles": [
+              0.025,
+              0.975
+            ],
+            "seed": 7201,
+            "units": 612
+          },
+          "rate": 0.12091503267973856
+        },
+        "uniform_chance": 0.0407239819004524
+      }
+    },
+    "states": [
+      "issue-76-bounded-transfer-032",
+      "issue-76-bounded-transfer-033",
+      "issue-76-bounded-transfer-034",
+      "issue-76-bounded-transfer-035",
+      "issue-76-bounded-transfer-036",
+      "issue-76-bounded-transfer-037",
+      "issue-76-bounded-transfer-038",
+      "issue-76-bounded-transfer-039",
+      "issue-77-n2-007",
+      "issue-77-n2-008",
+      "issue-77-n2-014",
+      "issue-77-n2-016",
+      "issue-77-n2n-001",
+      "issue-77-n2n-002",
+      "issue-77-n2n-005",
+      "issue-77-n2n-007",
+      "issue-77-n2n-008"
+    ]
+  },
+  "gpu_seconds_total": 0.0,
+  "guards": [
+    {
+      "actual": 1224,
+      "expected": 1224,
+      "guard": "cells_total",
+      "passed": true
+    },
+    {
+      "actual": {
+        "few-shot": 612,
+        "zero-shot": 612
+      },
+      "expected": 612,
+      "guard": "cells_per_condition",
+      "passed": true
+    },
+    {
+      "actual": 17,
+      "expected": 17,
+      "guard": "cross_split_states",
+      "passed": true
+    },
+    {
+      "actual": 3,
+      "expected": 3,
+      "guard": "oracle_pools",
+      "passed": true
+    },
+    {
+      "actual": 13608,
+      "guard": "eval_candidates_joined",
+      "passed": true
+    }
+  ],
+  "identity": "issue-92-cross-pool-audit-v1",
+  "n2": {
+    "admissible_cells": 186,
+    "ceiling_members": [
+      "issue-77-n2-004",
+      "issue-77-n2-005",
+      "issue-77-n2-006",
+      "issue-77-n2-007",
+      "issue-77-n2-008"
+    ],
+    "failed_cells": 22,
+    "measurable_members": 15,
+    "member_ceiling": 5,
+    "member_prevalence": {
+      "clusters": 15,
+      "draws": 10000,
+      "interval": [
+        0.13333333333333333,
+        0.6
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.3333333333333333,
+      "quantiles": [
+        0.025,
+        0.975
+      ],
+      "seed": 7201,
+      "units": 15
+    },
+    "ordinal_histogram": {
+      "11": 2,
+      "12": 2,
+      "4": 2,
+      "6": 1
+    },
+    "success_cells": 7,
+    "type010102_measurable": 7,
+    "type010102_successes": 0,
+    "typed_failures_with_success": 0
+  },
+  "n2n": {
+    "admissible_cells": 34,
+    "ceiling_members": [],
+    "failed_cells": 70,
+    "measurable_members": 5,
+    "member_ceiling": 0,
+    "member_prevalence": {
+      "clusters": 5,
+      "draws": 10000,
+      "interval": [
+        0.0,
+        0.0
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.0,
+      "quantiles": [
+        0.025,
+        0.975
+      ],
+      "seed": 7201,
+      "units": 5
+    },
+    "ordinal_histogram": {},
+    "success_cells": 0,
+    "typed_failures_with_success": 0
+  },
+  "phases": {
+    "compute_statistics": {
+      "peak_rss_mib": 706.0,
+      "seconds": 1.5924946861341596
+    },
+    "load_and_join": {
+      "peak_rss_mib": 706.0,
+      "seconds": 16.430688119959086
+    }
+  },
+  "plan_identity": "issue-92-cross-pool-audit-v1",
+  "question_dispositions": {
+    "q1_bounded_breadth": "supported",
+    "q2_cross_split_selection": "supported",
+    "q3_n2_typed_coverage": "supported"
+  },
+  "resolution_cell": {
+    "chunk_events_scanned": 205,
+    "chunk_recomputation": {
+      "pig_removed_events": 1,
+      "pig_removed_on_runtime_pig": true
+    },
+    "coverage": {
+      "operationally_valid": false,
+      "paired_views_exist": true,
+      "status": "failed",
+      "stop_kind": null,
+      "study_role": "readout_train"
+    },
+    "exclusion_rule": "coverage-admissible join: under the #85/#87 semantics the cell carries no success value and is excluded from the ceiling; the cell, its evidence and this rule are published, never assumed away",
+    "identity": "issue-76-bounded-transfer-002-a10",
+    "manifest_failure": "native_time_window_limit",
+    "manifest_status": "failed",
+    "pig_related_events": [
+      {
+        "event_id": "event:41010:entity_death:0004",
+        "event_type": "entity_death",
+        "fixed_step": 41010,
+        "participants": [
+          "runtime:pig:0000"
+        ],
+        "payload": {}
+      },
+      {
+        "event_id": "event:41010:entity_destroyed:0006",
+        "event_type": "entity_destroyed",
+        "fixed_step": 41010,
+        "participants": [
+          "runtime:pig:0000"
+        ],
+        "payload": {}
+      },
+      {
+        "event_id": "event:41010:pig_removed:0003",
+        "event_type": "pig_removed",
+        "fixed_step": 41010,
+        "participants": [
+          "runtime:pig:0000"
+        ],
+        "payload": {}
+      }
+    ],
+    "result_summary_event_counts": {
+      "bird_exhaustion": 1,
+      "bird_launched": 1,
+      "collision": 199,
+      "entity_death": 1,
+      "entity_destroyed": 1,
+      "pig_removed": 1,
+      "stable_exited": 1
+    },
+    "result_summary_failure": "native_time_window_limit"
+  },
+  "schema": "issue_92_cross_pool_audit_summary_v1",
+  "version": 1,
+  "wall_seconds_total": 18.023182806093246
+}
