@@ -1,0 +1,387 @@
+{
+  "binding": {
+    "ceiling_states": "the 12 sealed ceiling states cited from #89's published ceiling_reestimate.per_state (indicator 1, not typed-unmeasurable); never recomputed",
+    "rule": "the arm's closed-loop outcome on a ceiling cell is the engine-truth verdict first_shot_success of its chosen candidate, bound by candidate identity (the #87 binding rule)",
+    "success_band": "the N1 success band = sorted union of engine-truth successful ordinals over the sealed ceiling states, computed from the union verdict table (the WP1 definition)",
+    "verdict_table": "the #87+#89 union engine-truth verdict table keyed by (state, ordinal), built read-only from the retained oracle records (identical construction to #92 WP1's frozen join)"
+  },
+  "caps": {
+    "derived_bytes_budget": 52428800,
+    "gpu_cap_seconds": 10800.0,
+    "gpu_scope": "cumulative cuda-bracketed GPU seconds of the run phase (3-GPU-hour cap)",
+    "stop": "readiness_or_precision_insufficient",
+    "wall_cap_seconds": 3600.0,
+    "wall_scope": "cumulative measured wall of the run phase; the dry run, the smoke and the freeze publish no experiment wall time"
+  },
+  "changelog": [
+    {
+      "change": "initial and terminal freeze: arms, endpoints, decision rule, binding, margins, disposition mapping, guards, caps and the smoke evidence are published before any experiment statistic exists",
+      "evidence": "smoke.json controls passed and are embedded below; no selection statistic has been computed at freeze time",
+      "version": 1,
+      "why": "standard freeze rule of the shared ADD-EXP protocol; #87 is terminal/version 3 and admits no outcome-conditioned modification, so the lookahead control is a separately frozen ticket"
+    }
+  ],
+  "claim_boundary": "decision-only rollouts of the frozen issue-77 N1 dynamics checkpoints from the sealed #87 anchors; no engine access, no rendering, no retraining, no gameplay; #87/#89/#90 published verdicts are inputs and are never recomputed, amended, or reinterpreted; #64/#65 stay sealed; single-shot, decision-only, development-lineage scoped; the cohort-v2 CEMPlanner gameplay-planning path is not admissible on this budget (it proposes continuous actions outside the frozen inventory, so the candidate-identity binding fails, and it binds a different predictor lineage); intervals are DESCRIPTIVE",
+  "claim_boundary_adaptive": "The adaptive arm selects its own prediction horizon and abstraction at each rollout step from a controller trained by dynamic programming on the same frozen world-model corpus; it does not learn from task outcomes, does not adapt within or across episodes, and chooses only among the frozen candidate inventory. The record therefore bounds decision-time horizon adaptivity, not policy learning.",
+  "decision_rule": {
+    "endpoints": {
+      "225": "the frozen 225-step deployment endpoint",
+      "600": "the 600-step endpoint reaching the 601-frame observed window"
+    },
+    "implementation": "batched per-(state, arm, seed) execution, verified at smoke to reproduce the B=1 reference (matched_dynamics.rollout / #87 ReactiveSelector) on the smoke cells",
+    "rollout": "every candidate of the state's frozen #87 inventory is rolled from the sealed anchor carrier to the arm's endpoint in carrier steps: fixed arms use PredictionPair(delta, Abstraction.CONTINUOUS) for delta in {1, 5, 15} (the hybrid checkpoint runs its continuous-mode pair, exactly as #87's hybrid-fixed-h1); adaptive arms choose the pair per step from the frozen MatchedController over the same checkpoint (fixed_pair=None semantics of world_model.training.matched_dynamics.rollout); the action tensor is the #87 normalization (drag/480, release_ms/1000, tap_ms/1000, 1.0); the predicted cost is the frozen TaskObjective count cost of the endpoint carrier",
+    "selection": "argmin predicted cost over finite candidates, ties to the lower ordinal (the #87 rule); a candidate whose carrier goes nonfinite is a pre-declared typed failure: retained, never retried, inherits no success value; a cell whose candidates all fail is typed all_candidate_predictions_failed"
+  },
+  "disposition_mapping": {
+    "not_supported_by_this_experiment": "any endpoint arm attains a pooled rate >= 0.5 (the spine is then restated as 'short-horizon reactive rankers fail; endpoint planning recovers X' \u2014 a reframe, not a retraction)",
+    "readiness_or_precision_insufficient": "anchor or verdict resolution failure on any ceiling cell, or nonfinite-rollout typed failures beyond the frozen share guard, or a precision guard tripped, or any arm below 0.5 whose interval covers 0.5 with no arm at 0.5",
+    "supported": "every endpoint arm's pooled successful-selection rate over the 36 ceiling cells is < 0.5 AND its member-clustered descriptive interval lies entirely below 0.5"
+  },
+  "frozen_at": "2026-09-22T16:44:41Z",
+  "frozen_before_scoring_run": true,
+  "identity": "issue-92-lookahead-control-v1",
+  "inputs": [
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/plan.json",
+      "identity_fields": [
+        "identity",
+        "version",
+        "status"
+      ],
+      "name": "issue_87_plan",
+      "role": "membership, inventories, dynamics-checkpoint bindings, decision cells; anchors inherited verbatim",
+      "schema": "issue_87_closed_loop_oracle_plan_v1",
+      "sha256_at_freeze": "sha256:689ec148564491291b372c02e7aa6f828480ea8200dc6c51e214f641ab5670ac"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/records",
+      "identity_fields": [
+        "plan_identity",
+        "plan_version",
+        "schema"
+      ],
+      "name": "issue_87_records",
+      "role": "the union verdict table (#87 side) and the replication-control reference record",
+      "schema": "issue_87_decision_record_v1",
+      "sha256_at_freeze": "directory:577 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts",
+      "identity_fields": [],
+      "name": "issue_87_attempts",
+      "role": "the sealed decision-frame.png anchors (read at smoke/run; byte-verified against the retained anchor sha256 at smoke)",
+      "schema": "directory",
+      "sha256_at_freeze": "directory:123086 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1/records",
+      "identity_fields": [
+        "plan_identity",
+        "plan_version",
+        "schema"
+      ],
+      "name": "issue_89_records",
+      "role": "the union verdict table (#89 completion side)",
+      "schema": "issue_89_oracle_completion_record_v1",
+      "sha256_at_freeze": "directory:55 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1/summary.json",
+      "identity_fields": [
+        "identity",
+        "plan_identity",
+        "schema"
+      ],
+      "name": "issue_89_summary",
+      "role": "the sealed ceiling-state set and typed-unmeasurable declaration, cited; never recomputed",
+      "schema": "issue_89_oracle_completion_report_v1",
+      "sha256_at_freeze": "sha256:42ef6575d66a2273c9880eac4da9199d862dfb88147c4cc20beef194e1358f5e"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1",
+      "identity_fields": [],
+      "name": "issue_77_n1_dynamics",
+      "role": "the frozen predictor.pt/controller.pt checkpoints (payload binding verified at load: plan identity, seed, arm, component)",
+      "schema": "directory",
+      "sha256_at_freeze": "directory:2 json files"
+    }
+  ],
+  "limitations": [
+    "decision-only endpoint arms: the rollout never touches the engine, so the arms measure selection from imagined rollouts, not executed gameplay",
+    "the 225-step endpoint reaches the outcome horizon on only a subset of the successful slots; the 600-step endpoint covers all of them (coverage published from the retained engine-channel event steps)",
+    "the adaptive arm bounds decision-time horizon adaptivity, not policy learning (claim-boundary sentence carried verbatim)",
+    "the union verdict table is single-shot per (state, ordinal); per-slot execution variance is unobserved beyond the measured determinism statement of #92 WP1",
+    "no content hash is recomputed after the freeze and no full-corpus integrity pass runs anywhere; inputs are verified at read time by their carried schema/identity/plan_identity fields"
+  ],
+  "margin": {
+    "rate": 0.5,
+    "rule": "#87's own 0.5 margin reused verbatim; not a new tunable"
+  },
+  "motivation": "the #87 decision rule rolls each candidate only pair.delta carrier steps (1 agent frame for *-fixed-h1, 25 for *-fixed-h5) while the engine-truth outcomes resolve 97.8-400.9 agent frames after the same sealed decision frame; no #87 arm ever rolls far enough to reach the moment the outcome is decided, so the zero-selection result is confounded with a lookahead of ~0.3-7% of the outcome horizon; this ticket adds decision-only endpoint arms at the frozen 225-step deployment endpoint and the 600-step (601-frame) observed-window endpoint",
+  "power_note": "each sealed ceiling state has one successful ordinal among 9-13, so a single arm's 0/36 has p approximately (12/13)^36 = 0.056 under a uniform-selection null; the informative statistic is the joint ordinal-band evidence, never a single arm's count",
+  "precision_guards": {
+    "anchors_resolved": 23,
+    "ceiling_cells_per_arm": 36,
+    "ceiling_verdict_resolution": 1.0,
+    "nonfinite_share_max": 0.1,
+    "records_written": 1104,
+    "rule": "each guard is evaluated on the retained records; any failed guard maps the disposition to readiness_or_precision_insufficient before the rate rules are read"
+  },
+  "protocol_policy": "single terminal protocol version: the full protocol is frozen with actual numeric margins before the scoring run and executed exactly once; the dry run computes no statistic; --validate re-derives every published table from the retained records",
+  "question": "when every candidate is rolled to the endpoint that reaches the outcome horizon, does any frozen arm \u2014 fixed or learned-adaptive, continuous or hybrid \u2014 select the engine-truth successful candidate on the sealed ceiling states?",
+  "role": "terminal",
+  "schema": "issue_92_lookahead_control_plan_v1",
+  "smoke_cells": {
+    "adaptive_cells": [
+      {
+        "assertions": "anchor sha256 equality (file hash == retained record anchor), recorded horizon trace covering the endpoint, chosen ordinal resolved in the union verdict table, and B=1-reference equivalence of the batched implementation (matched_dynamics.rollout): identical exclusion sets, identical chosen ordinal, endpoint costs within 1e-03",
+        "cell": "continuous-adaptive-e225--seed20260908--issue-77-n1-001-a00"
+      },
+      {
+        "assertions": "same as the continuous-adaptive cell",
+        "cell": "hybrid-adaptive-e225--seed20260908--issue-77-n1-001-a00"
+      }
+    ],
+    "evidence": {
+      "checks": [
+        {
+          "cell": "continuous-fixed-h1--seed20260908--issue-77-n1-001-a00",
+          "chosen_ordinal_fresh": 9,
+          "chosen_ordinal_retained": 9,
+          "control": "replication_control",
+          "ok": true,
+          "ranking_byte_match": true
+        },
+        {
+          "control": "anchor_sha256_equality",
+          "file_sha256": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c",
+          "ok": true,
+          "record_anchor_sha256": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c"
+        },
+        {
+          "batched_costs": [
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            3.927488088607788,
+            3.6082537174224854,
+            3.298295021057129,
+            3.0,
+            3.0
+          ],
+          "batched_equals_reference": true,
+          "cell": "continuous-adaptive-e225--seed20260908--issue-77-n1-001-a00",
+          "chosen_ordinal": 10,
+          "control": "adaptive_cell_continuous",
+          "cost_tolerance": 0.001,
+          "failure": null,
+          "first_shot_success": false,
+          "gpu_seconds": 0.3449549241922796,
+          "horizon_histogram": {
+            "1": 2355,
+            "15": 23
+          },
+          "max_abs_cost_delta": 6.914138793945312e-05,
+          "ok": true,
+          "reference_chosen_ordinal": 10,
+          "reference_costs": [
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            3.9274609088897705,
+            3.6083192825317383,
+            3.2983641624450684,
+            3.0,
+            3.0
+          ],
+          "trace_covers_endpoint": true,
+          "union_verdict_resolved": true
+        },
+        {
+          "batched_costs": [
+            2.6797220706939697,
+            2.674762010574341,
+            2.6587181091308594,
+            2.6270036697387695,
+            2.6284408569335938,
+            2.564507007598877,
+            2.661045551300049,
+            2.583552360534668,
+            2.760885715484619,
+            2.770860195159912,
+            2.77590274810791,
+            2.749197483062744
+          ],
+          "batched_equals_reference": true,
+          "cell": "hybrid-adaptive-e225--seed20260908--issue-77-n1-001-a00",
+          "chosen_ordinal": 5,
+          "control": "adaptive_cell_hybrid",
+          "cost_tolerance": 0.001,
+          "failure": null,
+          "first_shot_success": false,
+          "gpu_seconds": 0.1467422591522336,
+          "horizon_histogram": {
+            "1": 355,
+            "5": 469
+          },
+          "max_abs_cost_delta": 4.5299530029296875e-06,
+          "ok": true,
+          "reference_chosen_ordinal": 5,
+          "reference_costs": [
+            2.679717540740967,
+            2.674762725830078,
+            2.658719062805176,
+            2.6270041465759277,
+            2.628438949584961,
+            2.5645065307617188,
+            2.661046028137207,
+            2.5835518836975098,
+            2.7608883380889893,
+            2.770859956741333,
+            2.7759008407592773,
+            2.7491989135742188
+          ],
+          "trace_covers_endpoint": true,
+          "union_verdict_resolved": true
+        }
+      ],
+      "device": "cuda",
+      "identity": "issue-92-lookahead-control-v1",
+      "ok": true,
+      "run_at": "2026-09-22T16:44:31Z",
+      "schema": "issue_92_lookahead_control_smoke_v1",
+      "seed": 20260908,
+      "state": "issue-77-n1-001-a00"
+    },
+    "replication_control": {
+      "assertion": "fresh rollout via the exact #87 ReactiveSelector path byte-matches the retained #87 decision record: chosen ordinal and every ranking row (ordinal, predicted_cost, excluded)",
+      "cell": "continuous-fixed-h1--seed20260908--issue-77-n1-001-a00"
+    },
+    "stop_rule": "abort before the terminal freeze if any control differs; the smoke evidence is embedded in this plan"
+  },
+  "statistics": {
+    "compute_accounting": "per arm: transition calls, controller calls, linear MACs, GPU seconds, wall seconds; receipts per cell",
+    "endpoint_coverage": "per successful slot (13 over the sealed ceiling states and the excluded 005-a07): the outcome resolution offset in agent frames from the retained engine-channel pig-removal event steps ((event fixed_step - 30000)/50); per endpoint, the share of slots whose resolution is reached",
+    "interval": "member-clustered percentile bootstrap over the 7 ceiling members, 10000 draws, PCG64 seed 7201, quantiles [0.025, 0.975], labelled DESCRIPTIVE",
+    "ordinal_band_evidence": "per arm: chosen-ordinal histogram over the 36 ceiling cells and the share inside the success band; published with the power note; the joint band evidence is the informative statistic, never a single arm's count",
+    "pooled_rate": "per arm: pooled successful-selection rate over the 12 sealed ceiling states x 3 seeds = 36 cells"
+  },
+  "universe": {
+    "arms": [
+      {
+        "endpoint": 225,
+        "family": "continuous",
+        "identity": "continuous-fixed-h1-e225",
+        "mode": "fixed-h1"
+      },
+      {
+        "endpoint": 600,
+        "family": "continuous",
+        "identity": "continuous-fixed-h1-e600",
+        "mode": "fixed-h1"
+      },
+      {
+        "endpoint": 225,
+        "family": "continuous",
+        "identity": "continuous-fixed-h5-e225",
+        "mode": "fixed-h5"
+      },
+      {
+        "endpoint": 600,
+        "family": "continuous",
+        "identity": "continuous-fixed-h5-e600",
+        "mode": "fixed-h5"
+      },
+      {
+        "endpoint": 225,
+        "family": "continuous",
+        "identity": "continuous-fixed-h15-e225",
+        "mode": "fixed-h15"
+      },
+      {
+        "endpoint": 600,
+        "family": "continuous",
+        "identity": "continuous-fixed-h15-e600",
+        "mode": "fixed-h15"
+      },
+      {
+        "endpoint": 225,
+        "family": "continuous",
+        "identity": "continuous-adaptive-e225",
+        "mode": "adaptive"
+      },
+      {
+        "endpoint": 600,
+        "family": "continuous",
+        "identity": "continuous-adaptive-e600",
+        "mode": "adaptive"
+      },
+      {
+        "endpoint": 225,
+        "family": "hybrid",
+        "identity": "hybrid-fixed-h1-e225",
+        "mode": "fixed-h1"
+      },
+      {
+        "endpoint": 600,
+        "family": "hybrid",
+        "identity": "hybrid-fixed-h1-e600",
+        "mode": "fixed-h1"
+      },
+      {
+        "endpoint": 225,
+        "family": "hybrid",
+        "identity": "hybrid-fixed-h5-e225",
+        "mode": "fixed-h5"
+      },
+      {
+        "endpoint": 600,
+        "family": "hybrid",
+        "identity": "hybrid-fixed-h5-e600",
+        "mode": "fixed-h5"
+      },
+      {
+        "endpoint": 225,
+        "family": "hybrid",
+        "identity": "hybrid-fixed-h15-e225",
+        "mode": "fixed-h15"
+      },
+      {
+        "endpoint": 600,
+        "family": "hybrid",
+        "identity": "hybrid-fixed-h15-e600",
+        "mode": "fixed-h15"
+      },
+      {
+        "endpoint": 225,
+        "family": "hybrid",
+        "identity": "hybrid-adaptive-e225",
+        "mode": "adaptive"
+      },
+      {
+        "endpoint": 600,
+        "family": "hybrid",
+        "identity": "hybrid-adaptive-e600",
+        "mode": "adaptive"
+      }
+    ],
+    "ceiling_cells_per_arm": 36,
+    "cells_total": 1104,
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "states": "the 23 sealed anchor-bearing states of the #87 membership; issue-77-n1-005-a07 is excluded under #89's frozen typed-unmeasurable declaration (no executed oracle anchor)"
+  },
+  "validation_command": "python -u -m scripts.run_lookahead_control --validate",
+  "version": 1
+}

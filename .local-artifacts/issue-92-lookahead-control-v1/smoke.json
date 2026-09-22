@@ -1,0 +1,119 @@
+{
+  "checks": [
+    {
+      "cell": "continuous-fixed-h1--seed20260908--issue-77-n1-001-a00",
+      "chosen_ordinal_fresh": 9,
+      "chosen_ordinal_retained": 9,
+      "control": "replication_control",
+      "ok": true,
+      "ranking_byte_match": true
+    },
+    {
+      "control": "anchor_sha256_equality",
+      "file_sha256": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c",
+      "ok": true,
+      "record_anchor_sha256": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c"
+    },
+    {
+      "batched_costs": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        3.927488088607788,
+        3.6082537174224854,
+        3.298295021057129,
+        3.0,
+        3.0
+      ],
+      "batched_equals_reference": true,
+      "cell": "continuous-adaptive-e225--seed20260908--issue-77-n1-001-a00",
+      "chosen_ordinal": 10,
+      "control": "adaptive_cell_continuous",
+      "cost_tolerance": 0.001,
+      "failure": null,
+      "first_shot_success": false,
+      "gpu_seconds": 0.3449549241922796,
+      "horizon_histogram": {
+        "1": 2355,
+        "15": 23
+      },
+      "max_abs_cost_delta": 6.914138793945312e-05,
+      "ok": true,
+      "reference_chosen_ordinal": 10,
+      "reference_costs": [
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        4.0,
+        3.9274609088897705,
+        3.6083192825317383,
+        3.2983641624450684,
+        3.0,
+        3.0
+      ],
+      "trace_covers_endpoint": true,
+      "union_verdict_resolved": true
+    },
+    {
+      "batched_costs": [
+        2.6797220706939697,
+        2.674762010574341,
+        2.6587181091308594,
+        2.6270036697387695,
+        2.6284408569335938,
+        2.564507007598877,
+        2.661045551300049,
+        2.583552360534668,
+        2.760885715484619,
+        2.770860195159912,
+        2.77590274810791,
+        2.749197483062744
+      ],
+      "batched_equals_reference": true,
+      "cell": "hybrid-adaptive-e225--seed20260908--issue-77-n1-001-a00",
+      "chosen_ordinal": 5,
+      "control": "adaptive_cell_hybrid",
+      "cost_tolerance": 0.001,
+      "failure": null,
+      "first_shot_success": false,
+      "gpu_seconds": 0.1467422591522336,
+      "horizon_histogram": {
+        "1": 355,
+        "5": 469
+      },
+      "max_abs_cost_delta": 4.5299530029296875e-06,
+      "ok": true,
+      "reference_chosen_ordinal": 5,
+      "reference_costs": [
+        2.679717540740967,
+        2.674762725830078,
+        2.658719062805176,
+        2.6270041465759277,
+        2.628438949584961,
+        2.5645065307617188,
+        2.661046028137207,
+        2.5835518836975098,
+        2.7608883380889893,
+        2.770859956741333,
+        2.7759008407592773,
+        2.7491989135742188
+      ],
+      "trace_covers_endpoint": true,
+      "union_verdict_resolved": true
+    }
+  ],
+  "device": "cuda",
+  "identity": "issue-92-lookahead-control-v1",
+  "ok": true,
+  "run_at": "2026-09-22T16:44:31Z",
+  "schema": "issue_92_lookahead_control_smoke_v1",
+  "seed": 20260908,
+  "state": "issue-77-n1-001-a00"
+}
