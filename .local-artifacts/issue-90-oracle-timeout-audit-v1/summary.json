@@ -1,0 +1,1413 @@
+{
+  "association_context": {
+    "ci_high": 1.0,
+    "ci_low": 1.0,
+    "definition": "within the executed stratum: published engine-truth success rate of slots whose frozen replay removed a pig minus the rate of the rest, with the same state-clustered interval",
+    "difference": 1.0,
+    "dropped_draws": 2,
+    "label": "DESCRIPTIVE",
+    "n_indicator_false": 227,
+    "n_indicator_true": 7,
+    "role": "DESCRIPTIVE association context for the semantics of the frozen indicators; never a verdict input",
+    "states_indicator_false": 23,
+    "states_indicator_true": 7,
+    "usable_draws": 9998,
+    "value_indicator_false": 0.0,
+    "value_indicator_true": 1.0
+  },
+  "audit_verdict": "indeterminate",
+  "bias_direction": [
+    {
+      "ci_high": 0.09561720353649468,
+      "ci_low": -0.08837373955792713,
+      "contrast_id": "d1_normalized_cost_position",
+      "covariate": "normalized_cost_position",
+      "difference": -0.0017485603971422181,
+      "direction": "no_shift",
+      "label": "DESCRIPTIVE",
+      "margin": 0.1,
+      "role": "verdict_relevant",
+      "shift": "no_shift",
+      "statement": "no frozen bias direction is stated: this contrast shows no shift under the frozen margin and interval rule, so the timeout stratum is not distinguishable from the executed stratum on this covariate"
+    },
+    {
+      "ci_high": 7.102048224611183,
+      "ci_low": -32.81903494582289,
+      "contrast_id": "d2_frozen_replay_count_cost",
+      "covariate": "frozen_replay_count_cost",
+      "difference": -8.59680472791959,
+      "direction": "timeout_lower",
+      "label": "DESCRIPTIVE",
+      "margin": 4.228764791041613,
+      "role": "verdict_relevant",
+      "shift": "borderline",
+      "statement": "the raw frozen end-of-window count cost is lower for timed-out slots (more frozen progress); the unmeasured slots are disproportionately the better ones, so the published ceiling is plausibly understated"
+    },
+    {
+      "ci_high": 0.1390461997019374,
+      "ci_low": -0.0058551565041044295,
+      "contrast_id": "d3_frozen_replay_pig_removed",
+      "covariate": "frozen_replay_pig_removed",
+      "difference": 0.06623931623931624,
+      "direction": "no_shift",
+      "label": "DESCRIPTIVE",
+      "margin": 0.1,
+      "role": "verdict_relevant",
+      "shift": "no_shift",
+      "statement": "no frozen bias direction is stated: this contrast shows no shift under the frozen margin and interval rule, so the timeout stratum is not distinguishable from the executed stratum on this covariate"
+    },
+    {
+      "ci_high": 0.2868205404305467,
+      "ci_low": -0.08943685591376882,
+      "contrast_id": "d4_type010105_share",
+      "covariate": "is_type010105",
+      "difference": 0.10897435897435892,
+      "direction": "no_shift",
+      "label": "DESCRIPTIVE",
+      "margin": 0.15,
+      "role": "verdict_relevant",
+      "shift": "no_shift",
+      "statement": "no frozen bias direction is stated: this contrast shows no shift under the frozen margin and interval rule, so the timeout stratum is not distinguishable from the executed stratum on this covariate"
+    },
+    {
+      "ci_high": 0.23771136915604124,
+      "ci_low": -0.15621010773938543,
+      "contrast_id": "d5_state_best_observed_pig_removed",
+      "covariate": "state_best_observed_pig_removed",
+      "difference": 0.042735042735042694,
+      "direction": "no_shift",
+      "label": "DESCRIPTIVE",
+      "margin": 0.1,
+      "role": "verdict_relevant",
+      "shift": "no_shift",
+      "statement": "no frozen bias direction is stated: this contrast shows no shift under the frozen margin and interval rule, so the timeout stratum is not distinguishable from the executed stratum on this covariate"
+    },
+    {
+      "ci_high": 0.9322013442340485,
+      "ci_low": -0.8599335405352351,
+      "contrast_id": "d6_ordinal_position",
+      "covariate": "ordinal",
+      "difference": 0.10042735042735007,
+      "direction": "no_shift",
+      "label": "DESCRIPTIVE",
+      "margin": 1.0,
+      "role": "descriptive_only",
+      "shift": "descriptive_no_shift",
+      "statement": "no bias direction is defined for an inventory position; the descriptive contrast is reported for completeness only"
+    }
+  ],
+  "bootstrap": {
+    "draws": 10000,
+    "label": "DESCRIPTIVE",
+    "quantiles": [
+      0.025,
+      0.975
+    ],
+    "seed": 9001,
+    "unit": "state identity (every slot of a resampled state moves together)"
+  },
+  "caps": {
+    "derived_bytes_budget": 104857600,
+    "gpu_cap_seconds": 0.0,
+    "gpu_scope": "no GPU work of any kind in this ticket; the shared flock is still held for every wall-time-measured phase",
+    "stop": "readiness_or_precision_insufficient",
+    "wall_cap_seconds": 360.0,
+    "wall_scope": "cumulative measured wall of the audit phases (run plus publish plus validate); the dry run and the freeze publish no wall time"
+  },
+  "cited_cross_check": {
+    "cited_fields": [
+      "completion_pass.inventory",
+      "ceiling_reestimate.pooled",
+      "records/*.json outcome.first_shot_success",
+      "records/*.json issue87_typed_failure"
+    ],
+    "label": "CITED PUBLISHED CROSS-CHECK (never recomputed from engine evidence; never a verdict input)",
+    "published_inventory": {
+      "executed": 54,
+      "residual_typed_failures_outside_declaration": [],
+      "scheduled_cells": 55,
+      "successful_cells": 6,
+      "typed_failures": 1,
+      "unreachability_declaration": {
+        "consequence": "the ceiling questions are dispositioned over the 23 measured states with this exclusion declared",
+        "declaration": "typed_unmeasurable",
+        "media": "data/issue-89-oracle-completion/cells/",
+        "rule": "frozen up front: if any issue-77-n1-005-a07 slot fails again with the sealed-frame stability signature ('sealed pre-decision state/RGB advanced during readiness or hold'), the state is declared typed-unmeasurable (the level physics is not static at the sealed decision step 30000, so verdicts cannot bind to the sealed pre-decision state); the stability evidence (paused before/after frames + records) and media are published, and the ceiling questions are dispositioned over the 23 measured states with the exclusion declared; the declaration triggers on the signature REGARDLESS of the other slots' verdicts",
+        "signature": "sealed pre-decision state/RGB advanced during readiness or hold",
+        "stability_failures": [
+          {
+            "failure": "ValueError: sealed pre-decision state/RGB advanced during readiness or hold",
+            "identity": "oracle--issue-77-n1-005-a07--a02",
+            "ordinal": 2
+          }
+        ],
+        "state": "issue-77-n1-005-a07"
+      }
+    },
+    "published_pooled_ceiling": {
+      "ceiling_states": 12,
+      "descriptive": {
+        "descriptive_95_percent_interval": [
+          0.30434782608695654,
+          0.7391304347826086
+        ],
+        "mean": 0.5217391304347826
+      },
+      "label": "DESCRIPTIVE",
+      "measured_states": 23,
+      "prevalence": 0.5217391304347826,
+      "states": 24,
+      "typed_unmeasurable_states": [
+        "issue-77-n1-005-a07"
+      ],
+      "unmeasured_states": []
+    },
+    "source_identity": "issue-89-oracle-completion-v1",
+    "source_schema": "issue_89_oracle_completion_report_v1",
+    "successes_by_origin_stratum": {
+      "other": {
+        "slots": 0,
+        "successes": 0
+      },
+      "stability": {
+        "slots": 3,
+        "successes": 1
+      },
+      "timeout": {
+        "slots": 52,
+        "successes": 5
+      }
+    }
+  },
+  "claim_boundary": "descriptive audit of the published #87 oracle pass only; no re-execution, no rendering, no new data, zero GPU work; cannot reopen #87's or #89's published dispositions; no causal claim about the timeout mechanism beyond the frozen covariate set; intervals are DESCRIPTIVE",
+  "compute": {
+    "gpu_seconds_total": 0.0,
+    "phases": {
+      "compute_statistics": {
+        "peak_rss_mib": 686.41015625,
+        "seconds": 0.08879995020106435
+      },
+      "join_and_covariates": {
+        "peak_rss_mib": 686.41015625,
+        "seconds": 0.3121783807873726
+      }
+    },
+    "wall_seconds_total": 0.40097833098843694
+  },
+  "contrasts": [
+    {
+      "ci_high": 0.09561720353649468,
+      "ci_low": -0.08837373955792713,
+      "contrast_id": "d1_normalized_cost_position",
+      "covariate": "normalized_cost_position",
+      "difference": -0.0017485603971422181,
+      "dropped_draws": 0,
+      "exceeds_margin": false,
+      "interval_excludes_zero": false,
+      "kind": "mean",
+      "label": "DESCRIPTIVE",
+      "margin": 0.1,
+      "n_reference": 234,
+      "n_target": 52,
+      "reference_stratum": "executed",
+      "role": "verdict_relevant",
+      "shift": "no_shift",
+      "states_reference": 23,
+      "states_target": 18,
+      "target_stratum": "timeout",
+      "unit": "fraction of the state's own frozen candidate cost span",
+      "usable_draws": 10000,
+      "value_reference": 0.5154438085654023,
+      "value_target": 0.5136952481682601
+    },
+    {
+      "ci_high": 7.102048224611183,
+      "ci_low": -32.81903494582289,
+      "contrast_id": "d2_frozen_replay_count_cost",
+      "covariate": "frozen_replay_count_cost",
+      "difference": -8.59680472791959,
+      "dropped_draws": 0,
+      "exceeds_margin": true,
+      "interval_excludes_zero": false,
+      "kind": "mean",
+      "label": "DESCRIPTIVE",
+      "margin": 4.228764791041613,
+      "n_reference": 234,
+      "n_target": 52,
+      "reference_stratum": "executed",
+      "role": "verdict_relevant",
+      "shift": "borderline",
+      "states_reference": 23,
+      "states_target": 18,
+      "target_stratum": "timeout",
+      "unit": "task-objective units (1000 * pig presence + block presence) at the frozen replay's observed window endpoint",
+      "usable_draws": 10000,
+      "value_reference": 77.04433522965664,
+      "value_target": 68.44753050173705
+    },
+    {
+      "ci_high": 0.1390461997019374,
+      "ci_low": -0.0058551565041044295,
+      "contrast_id": "d3_frozen_replay_pig_removed",
+      "covariate": "frozen_replay_pig_removed",
+      "difference": 0.06623931623931624,
+      "dropped_draws": 0,
+      "exceeds_margin": false,
+      "interval_excludes_zero": false,
+      "kind": "rate",
+      "label": "DESCRIPTIVE",
+      "margin": 0.1,
+      "n_reference": 234,
+      "n_target": 52,
+      "reference_stratum": "executed",
+      "role": "verdict_relevant",
+      "shift": "no_shift",
+      "states_reference": 23,
+      "states_target": 18,
+      "target_stratum": "timeout",
+      "unit": "boolean engine-truth removal event in the frozen replay",
+      "usable_draws": 10000,
+      "value_reference": 0.029914529914529916,
+      "value_target": 0.09615384615384616
+    },
+    {
+      "ci_high": 0.2868205404305467,
+      "ci_low": -0.08943685591376882,
+      "contrast_id": "d4_type010105_share",
+      "covariate": "is_type010105",
+      "difference": 0.10897435897435892,
+      "dropped_draws": 0,
+      "exceeds_margin": false,
+      "interval_excludes_zero": false,
+      "kind": "rate",
+      "label": "DESCRIPTIVE",
+      "margin": 0.15,
+      "n_reference": 234,
+      "n_target": 52,
+      "reference_stratum": "executed",
+      "role": "verdict_relevant",
+      "shift": "no_shift",
+      "states_reference": 23,
+      "states_target": 18,
+      "target_stratum": "timeout",
+      "unit": "boolean family indicator (type010105 versus type010103)",
+      "usable_draws": 10000,
+      "value_reference": 0.5256410256410257,
+      "value_target": 0.6346153846153846
+    },
+    {
+      "ci_high": 0.23771136915604124,
+      "ci_low": -0.15621010773938543,
+      "contrast_id": "d5_state_best_observed_pig_removed",
+      "covariate": "state_best_observed_pig_removed",
+      "difference": 0.042735042735042694,
+      "dropped_draws": 0,
+      "exceeds_margin": false,
+      "interval_excludes_zero": false,
+      "kind": "rate",
+      "label": "DESCRIPTIVE",
+      "margin": 0.1,
+      "n_reference": 234,
+      "n_target": 52,
+      "reference_stratum": "executed",
+      "role": "verdict_relevant",
+      "shift": "no_shift",
+      "states_reference": 23,
+      "states_target": 18,
+      "target_stratum": "timeout",
+      "unit": "boolean state-level indicator, constant within a state",
+      "usable_draws": 10000,
+      "value_reference": 0.5341880341880342,
+      "value_target": 0.5769230769230769
+    },
+    {
+      "ci_high": 0.9322013442340485,
+      "ci_low": -0.8599335405352351,
+      "contrast_id": "d6_ordinal_position",
+      "covariate": "ordinal",
+      "difference": 0.10042735042735007,
+      "dropped_draws": 0,
+      "exceeds_margin": false,
+      "interval_excludes_zero": false,
+      "kind": "mean",
+      "label": "DESCRIPTIVE",
+      "margin": 1.0,
+      "n_reference": 234,
+      "n_target": 52,
+      "reference_stratum": "executed",
+      "role": "descriptive_only",
+      "shift": "descriptive_no_shift",
+      "states_reference": 23,
+      "states_target": 18,
+      "target_stratum": "timeout",
+      "unit": "0-based candidate ordinal in the state's admissible inventory",
+      "usable_draws": 10000,
+      "value_reference": 5.918803418803419,
+      "value_target": 6.019230769230769
+    }
+  ],
+  "covariates": {
+    "dispatch_burst_size": {
+      "role": "mechanism_inventory_only",
+      "source": "derived: number of oracle slots dispatched within 5 seconds of this slot's dispatch timestamp, including itself",
+      "unit": "slot count"
+    },
+    "dispatch_index": {
+      "role": "mechanism_inventory_only",
+      "source": "derived: 0-based rank of dispatched_at_utc over the 289 slots, ties broken by slot identity",
+      "unit": "dispatch rank"
+    },
+    "engine_wall_seconds": {
+      "role": "mechanism_inventory_only",
+      "source": "issue-87 oracle records[].execution.engine_wall_seconds (executed slots only)",
+      "unit": "seconds"
+    },
+    "frozen_replay_count_cost": {
+      "role": "outcome_linked_lower_is_better_progress",
+      "source": "issue-80 candidate-outcomes/<source_member>.json realized_count_cost of the row with this ordinal",
+      "unit": "task-objective units (1000 * pig presence + block presence) at the frozen replay's observed window endpoint"
+    },
+    "frozen_replay_pig_removed": {
+      "role": "outcome_linked_engine_truth_removal_event",
+      "source": "issue-77 N1 results/<branch identity>.json segments[0].summary.event_counts.pig_removed greater than 0",
+      "unit": "boolean engine-truth removal event in the frozen replay"
+    },
+    "is_type010105": {
+      "role": "outcome_linked_family_mechanics",
+      "source": "issue-87 plan.json states[].generator_family",
+      "unit": "boolean family indicator (type010105 versus type010103)"
+    },
+    "live_at_dispatch": {
+      "role": "mechanism_inventory_only",
+      "source": "derived: number of oracle slots whose [dispatched_at_utc, dispatched_at_utc + wall_seconds] interval covers this slot's dispatched_at_utc, over the 4 concurrent workers",
+      "unit": "worker count 1 to 4"
+    },
+    "minutes_since_first_dispatch": {
+      "role": "mechanism_inventory_only",
+      "source": "derived: (this dispatch timestamp - the first dispatch timestamp)/60",
+      "unit": "minutes"
+    },
+    "normalized_cost_position": {
+      "role": "outcome_linked_lower_is_better_progress",
+      "source": "issue-80 candidate-outcomes/<source_member>.json: (cost - min)/(max - min) over the state's admissible inventory, 0 when the span is zero, following the frozen #72 normalized-regret convention",
+      "unit": "fraction of the state's own frozen candidate cost span"
+    },
+    "ordinal": {
+      "role": "inventory_position_not_outcome_linked_by_itself",
+      "source": "issue-87 plan.json oracle_cells[].ordinal",
+      "unit": "0-based candidate ordinal in the state's admissible inventory"
+    },
+    "peak_cpu_rss_mib": {
+      "role": "mechanism_inventory_only",
+      "source": "issue-87 receipts/<slot identity>.json peak_cpu_rss_mib",
+      "unit": "MiB"
+    },
+    "state_best_observed_pig_removed": {
+      "role": "outcome_linked_engine_truth_removal_event",
+      "source": "true when any admissible slot of the same state carries frozen_replay_pig_removed (the #73-style best-observed pig-removal indicator, computed from frozen #77 evidence)",
+      "unit": "boolean state-level indicator, constant within a state"
+    },
+    "wall_seconds": {
+      "role": "mechanism_inventory_only",
+      "source": "issue-87 oracle records[].wall_seconds",
+      "unit": "seconds; for a timeout slot this is the timeout bound, so the field is mechanism inventory and never part of a covariate shift claim"
+    }
+  },
+  "frozen_at": "2026-09-22T11:23:03Z",
+  "headroom_precedent": {
+    "rule": "the #77 diagnostic headroom block is the published precedent for the best-observed pig-removal indicator; it covers the 4 N1 held-out evaluation base states only, so it is cited and never used as the slot-level covariate",
+    "source": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-diagnostic-v1/summary.json",
+    "states": [
+      {
+        "family": "type010103",
+        "pig_removed_opportunity": false,
+        "state": "issue-77-n1-007"
+      },
+      {
+        "family": "type010103",
+        "pig_removed_opportunity": false,
+        "state": "issue-77-n1-008"
+      },
+      {
+        "family": "type010105",
+        "pig_removed_opportunity": true,
+        "state": "issue-77-n1-014"
+      },
+      {
+        "family": "type010105",
+        "pig_removed_opportunity": true,
+        "state": "issue-77-n1-016"
+      }
+    ]
+  },
+  "hygiene": {
+    "content_hashes": "no content hash is recomputed after the freeze and no full-corpus integrity pass runs; inputs are verified at read time by their carried schema/identity/plan_identity fields",
+    "dry_run": "the --dry-run mode computes NO statistic of any kind (structural inventory only), before or after the freeze",
+    "flock": "the exclusive flock on /tmp/novphy-addexp-gpu.lock is held for --run, --publish and --validate and released immediately after each",
+    "freeze": "the full protocol with numeric margins is published by --prepare before --run exists",
+    "gpu": "no GPU work of any kind in this ticket"
+  },
+  "identity": "issue-90-oracle-timeout-audit-v1",
+  "join_status_counts": {
+    "issue_73_headroom_registry": {
+      "unjoinable:registry_disjoint_from_issue_77_membership": 289
+    },
+    "issue_77_n1_coverage": {
+      "joined": 289
+    },
+    "issue_77_n1_replay": {
+      "joined": 289
+    },
+    "issue_80_candidate_table": {
+      "joined": 289
+    },
+    "issue_87_dispatch_marker": {
+      "joined": 289
+    },
+    "issue_87_receipt": {
+      "joined": 289
+    }
+  },
+  "limitations": [
+    "development/exposed N1 lineages only; not the sealed #64/#65 benchmark",
+    "the frozen covariates are engine truth for the frozen #77 replay, not for the #87 execution that timed out; per-slot execution variance between the two runs is unobserved",
+    "states sharing a source member share one physical initial state and candidate table, so the 24 state identities carry fewer independent initial states; the state-clustered bootstrap is descriptive only",
+    "the cold-start reading is inferred from published dispatch timestamps and per-cell wall seconds at one-second resolution; engine boot timestamps are not published, so live_at_dispatch is a proxy",
+    "unobserved-confounder residual risk: any covariate not in the frozen list (per-worker engine identity, host load outside the published timestamps, port-level collisions) is unmeasured, and a timeout mechanism that acts through such a covariate would not be detected here",
+    "no content hash is recomputed after the freeze and no full-corpus integrity pass runs anywhere; inputs are verified at read time by their carried schema/identity/plan_identity fields"
+  ],
+  "mechanism_inventory": {
+    "all_workers_live_dispatch_share": {
+      "ci_high": -0.48755481634182907,
+      "ci_low": -0.7048167480778437,
+      "definition": "share of slots dispatched while 4 oracle slots were live, derived from the published dispatch timestamps and per-cell wall seconds",
+      "difference": -0.5961538461538461,
+      "label": "DESCRIPTIVE mechanism inventory (never a verdict input)",
+      "reference": {
+        "n_reference": 234,
+        "states_reference": 23,
+        "value_reference": 0.6153846153846154
+      },
+      "target": {
+        "n_target": 52,
+        "states_target": 18,
+        "value_target": 0.019230769230769232
+      },
+      "usable_draws": 10000
+    },
+    "executed": {
+      "dispatch_burst_size": {
+        "max": 4.0,
+        "mean": 1.2393162393162394,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 234
+      },
+      "dispatch_index": {
+        "max": 288.0,
+        "mean": 142.51282051282053,
+        "median": 138.5,
+        "min": 3.0,
+        "n": 234
+      },
+      "engine_wall_seconds": {
+        "max": 188.6542230490595,
+        "mean": 111.23848924495908,
+        "median": 119.74833939736709,
+        "min": 23.367721141781658,
+        "n": 234
+      },
+      "frozen_terminal_kind_histogram": {
+        "native_clear": 5,
+        "native_fail": 35,
+        "right_censored": 132,
+        "stable_without_clear": 62
+      },
+      "live_at_dispatch": {
+        "max": 4.0,
+        "mean": 3.5555555555555554,
+        "median": 4.0,
+        "min": 1.0,
+        "n": 234
+      },
+      "live_at_dispatch_histogram": {
+        "1": 1,
+        "2": 12,
+        "3": 77,
+        "4": 144
+      },
+      "minutes_since_first_dispatch": {
+        "max": 261.31666666666666,
+        "mean": 124.59878917378919,
+        "median": 117.51666666666667,
+        "min": 0.06666666666666667,
+        "n": 234
+      },
+      "peak_cpu_rss_mib": {
+        "max": 3101.7734375,
+        "mean": 1476.0311999198718,
+        "median": 1090.099609375,
+        "min": 1001.23828125,
+        "n": 234
+      },
+      "published_successes": 7,
+      "slots": 234,
+      "source_members": 14,
+      "states": 23,
+      "wall_seconds": {
+        "max": 322.4131517740898,
+        "mean": 173.96563784819313,
+        "median": 182.7630738208536,
+        "min": 62.81694546015933,
+        "n": 234
+      }
+    },
+    "stability": {
+      "dispatch_burst_size": {
+        "max": 1.0,
+        "mean": 1.0,
+        "median": 1.0,
+        "min": 1.0,
+        "n": 3
+      },
+      "dispatch_index": {
+        "max": 53.0,
+        "mean": 52.0,
+        "median": 52.0,
+        "min": 51.0,
+        "n": 3
+      },
+      "engine_wall_seconds": {
+        "max": null,
+        "mean": null,
+        "median": null,
+        "min": null,
+        "n": 0
+      },
+      "frozen_terminal_kind_histogram": {
+        "native_clear": 1,
+        "native_fail": 1,
+        "stable_without_clear": 1
+      },
+      "live_at_dispatch": {
+        "max": 4.0,
+        "mean": 3.3333333333333335,
+        "median": 4.0,
+        "min": 2.0,
+        "n": 3
+      },
+      "live_at_dispatch_histogram": {
+        "2": 1,
+        "4": 2
+      },
+      "minutes_since_first_dispatch": {
+        "max": 46.7,
+        "mean": 45.50555555555555,
+        "median": 45.733333333333334,
+        "min": 44.083333333333336,
+        "n": 3
+      },
+      "peak_cpu_rss_mib": {
+        "max": 993.078125,
+        "mean": 986.5520833333334,
+        "median": 990.51953125,
+        "min": 976.05859375,
+        "n": 3
+      },
+      "published_successes": 0,
+      "slots": 3,
+      "source_members": 1,
+      "states": 1,
+      "wall_seconds": {
+        "max": 74.9096057722345,
+        "mean": 60.88176872938251,
+        "median": 74.59002712694928,
+        "min": 33.145673288963735,
+        "n": 3
+      }
+    },
+    "timeout": {
+      "dispatch_burst_size": {
+        "max": 4.0,
+        "mean": 2.3846153846153846,
+        "median": 2.0,
+        "min": 1.0,
+        "n": 52
+      },
+      "dispatch_index": {
+        "max": 270.0,
+        "mean": 156.0,
+        "median": 168.0,
+        "min": 0.0,
+        "n": 52
+      },
+      "engine_wall_seconds": {
+        "max": null,
+        "mean": null,
+        "median": null,
+        "min": null,
+        "n": 0
+      },
+      "frozen_terminal_kind_histogram": {
+        "native_clear": 2,
+        "native_fail": 5,
+        "right_censored": 29,
+        "stable_without_clear": 16
+      },
+      "live_at_dispatch": {
+        "max": 4.0,
+        "mean": 2.5384615384615383,
+        "median": 3.0,
+        "min": 1.0,
+        "n": 52
+      },
+      "live_at_dispatch_histogram": {
+        "1": 2,
+        "2": 21,
+        "3": 28,
+        "4": 1
+      },
+      "minutes_since_first_dispatch": {
+        "max": 244.63333333333333,
+        "mean": 138.04487179487177,
+        "median": 148.41666666666669,
+        "min": 0.0,
+        "n": 52
+      },
+      "peak_cpu_rss_mib": {
+        "max": 994.9453125,
+        "mean": 955.5048828125,
+        "median": 954.2578125,
+        "min": 951.5078125,
+        "n": 52
+      },
+      "published_successes": 0,
+      "slots": 52,
+      "source_members": 14,
+      "states": 18,
+      "wall_seconds": {
+        "max": 191.377545428928,
+        "mean": 189.06244080068652,
+        "median": 191.25067132920958,
+        "min": 77.09603900462389,
+        "n": 52
+      }
+    }
+  },
+  "per_state": {
+    "issue-77-n1-001-a00": {
+      "best_observed_pig_removal": true,
+      "executed": 8,
+      "family": "type010103",
+      "frozen_cost_mean": 51.598394791285195,
+      "frozen_cost_median": 53.748721688985825,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "native_clear": 1,
+        "native_fail": 3,
+        "right_censored": 8
+      },
+      "published_successes": 1,
+      "slots": 12,
+      "source_member": "issue-77-n1-001",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [
+        "oracle--issue-77-n1-001-a00--a00",
+        "oracle--issue-77-n1-001-a00--a01",
+        "oracle--issue-77-n1-001-a00--a02",
+        "oracle--issue-77-n1-001-a00--a05"
+      ],
+      "timeouts": 4
+    },
+    "issue-77-n1-001-a07": {
+      "best_observed_pig_removal": true,
+      "executed": 12,
+      "family": "type010103",
+      "frozen_cost_mean": 51.598394791285195,
+      "frozen_cost_median": 53.748721688985825,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "native_clear": 1,
+        "native_fail": 3,
+        "right_censored": 8
+      },
+      "published_successes": 1,
+      "slots": 12,
+      "source_member": "issue-77-n1-001",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [],
+      "timeouts": 0
+    },
+    "issue-77-n1-003-a00": {
+      "best_observed_pig_removal": false,
+      "executed": 9,
+      "family": "type010103",
+      "frozen_cost_mean": 44.31833418541484,
+      "frozen_cost_median": 42.184896141290665,
+      "frozen_pig_removal_indicator_slots": 0,
+      "frozen_terminal_kinds": {
+        "native_fail": 5,
+        "right_censored": 3,
+        "stable_without_clear": 1
+      },
+      "published_successes": 0,
+      "slots": 9,
+      "source_member": "issue-77-n1-003",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [],
+      "timeouts": 0
+    },
+    "issue-77-n1-003-a10": {
+      "best_observed_pig_removal": false,
+      "executed": 7,
+      "family": "type010103",
+      "frozen_cost_mean": 44.31833418541484,
+      "frozen_cost_median": 42.184896141290665,
+      "frozen_pig_removal_indicator_slots": 0,
+      "frozen_terminal_kinds": {
+        "native_fail": 5,
+        "right_censored": 3,
+        "stable_without_clear": 1
+      },
+      "published_successes": 0,
+      "slots": 9,
+      "source_member": "issue-77-n1-003",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [
+        "oracle--issue-77-n1-003-a10--a05",
+        "oracle--issue-77-n1-003-a10--a11"
+      ],
+      "timeouts": 2
+    },
+    "issue-77-n1-004-a07": {
+      "best_observed_pig_removal": false,
+      "executed": 5,
+      "family": "type010103",
+      "frozen_cost_mean": 88.80119251542621,
+      "frozen_cost_median": 89.29847532510757,
+      "frozen_pig_removal_indicator_slots": 0,
+      "frozen_terminal_kinds": {
+        "native_fail": 3,
+        "right_censored": 3,
+        "stable_without_clear": 3
+      },
+      "published_successes": 0,
+      "slots": 9,
+      "source_member": "issue-77-n1-004",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [
+        "oracle--issue-77-n1-004-a07--a04",
+        "oracle--issue-77-n1-004-a07--a05",
+        "oracle--issue-77-n1-004-a07--a08",
+        "oracle--issue-77-n1-004-a07--a11"
+      ],
+      "timeouts": 4
+    },
+    "issue-77-n1-005-a07": {
+      "best_observed_pig_removal": true,
+      "executed": 0,
+      "family": "type010103",
+      "frozen_cost_mean": 77.04024168848991,
+      "frozen_cost_median": 79.12645530700684,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "native_clear": 1,
+        "native_fail": 1,
+        "right_censored": 1,
+        "stable_without_clear": 1
+      },
+      "published_successes": 0,
+      "slots": 4,
+      "source_member": "issue-77-n1-005",
+      "stability_slots": [
+        "oracle--issue-77-n1-005-a07--a01",
+        "oracle--issue-77-n1-005-a07--a02",
+        "oracle--issue-77-n1-005-a07--a07"
+      ],
+      "stability_violations": 3,
+      "study_role": "controller_only",
+      "timeout_slots": [
+        "oracle--issue-77-n1-005-a07--a08"
+      ],
+      "timeouts": 1
+    },
+    "issue-77-n1-006-a05": {
+      "best_observed_pig_removal": true,
+      "executed": 12,
+      "family": "type010103",
+      "frozen_cost_mean": 70.3164460338079,
+      "frozen_cost_median": 71.07304728031158,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "native_fail": 3,
+        "right_censored": 5,
+        "stable_without_clear": 5
+      },
+      "published_successes": 1,
+      "slots": 13,
+      "source_member": "issue-77-n1-006",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [
+        "oracle--issue-77-n1-006-a05--a09"
+      ],
+      "timeouts": 1
+    },
+    "issue-77-n1-006-a11": {
+      "best_observed_pig_removal": true,
+      "executed": 12,
+      "family": "type010103",
+      "frozen_cost_mean": 70.3164460338079,
+      "frozen_cost_median": 71.07304728031158,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "native_fail": 3,
+        "right_censored": 5,
+        "stable_without_clear": 5
+      },
+      "published_successes": 1,
+      "slots": 13,
+      "source_member": "issue-77-n1-006",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [
+        "oracle--issue-77-n1-006-a11--a06"
+      ],
+      "timeouts": 1
+    },
+    "issue-77-n1-007-a05": {
+      "best_observed_pig_removal": false,
+      "executed": 11,
+      "family": "type010103",
+      "frozen_cost_mean": 68.47804922782458,
+      "frozen_cost_median": 68.15492224693298,
+      "frozen_pig_removal_indicator_slots": 0,
+      "frozen_terminal_kinds": {
+        "right_censored": 8,
+        "stable_without_clear": 5
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-007",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "held_out_evaluation",
+      "timeout_slots": [
+        "oracle--issue-77-n1-007-a05--a02",
+        "oracle--issue-77-n1-007-a05--a11"
+      ],
+      "timeouts": 2
+    },
+    "issue-77-n1-007-a12": {
+      "best_observed_pig_removal": false,
+      "executed": 10,
+      "family": "type010103",
+      "frozen_cost_mean": 68.47804922782458,
+      "frozen_cost_median": 68.15492224693298,
+      "frozen_pig_removal_indicator_slots": 0,
+      "frozen_terminal_kinds": {
+        "right_censored": 8,
+        "stable_without_clear": 5
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-007",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "held_out_evaluation",
+      "timeout_slots": [
+        "oracle--issue-77-n1-007-a12--a02",
+        "oracle--issue-77-n1-007-a12--a06",
+        "oracle--issue-77-n1-007-a12--a11"
+      ],
+      "timeouts": 3
+    },
+    "issue-77-n1-008-a05": {
+      "best_observed_pig_removal": false,
+      "executed": 12,
+      "family": "type010103",
+      "frozen_cost_mean": 60.444360921016106,
+      "frozen_cost_median": 63.39050477743149,
+      "frozen_pig_removal_indicator_slots": 0,
+      "frozen_terminal_kinds": {
+        "native_fail": 1,
+        "right_censored": 9,
+        "stable_without_clear": 3
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-008",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "held_out_evaluation",
+      "timeout_slots": [
+        "oracle--issue-77-n1-008-a05--a04"
+      ],
+      "timeouts": 1
+    },
+    "issue-77-n1-008-a12": {
+      "best_observed_pig_removal": false,
+      "executed": 13,
+      "family": "type010103",
+      "frozen_cost_mean": 60.444360921016106,
+      "frozen_cost_median": 63.39050477743149,
+      "frozen_pig_removal_indicator_slots": 0,
+      "frozen_terminal_kinds": {
+        "native_fail": 1,
+        "right_censored": 9,
+        "stable_without_clear": 3
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-008",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "held_out_evaluation",
+      "timeout_slots": [],
+      "timeouts": 0
+    },
+    "issue-77-n1-009-a00": {
+      "best_observed_pig_removal": false,
+      "executed": 13,
+      "family": "type010105",
+      "frozen_cost_mean": 255.3652412547515,
+      "frozen_cost_median": 65.89281702041626,
+      "frozen_pig_removal_indicator_slots": 0,
+      "frozen_terminal_kinds": {
+        "right_censored": 9,
+        "stable_without_clear": 4
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-009",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [],
+      "timeouts": 0
+    },
+    "issue-77-n1-009-a09": {
+      "best_observed_pig_removal": false,
+      "executed": 9,
+      "family": "type010105",
+      "frozen_cost_mean": 255.3652412547515,
+      "frozen_cost_median": 65.89281702041626,
+      "frozen_pig_removal_indicator_slots": 0,
+      "frozen_terminal_kinds": {
+        "right_censored": 9,
+        "stable_without_clear": 4
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-009",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [
+        "oracle--issue-77-n1-009-a09--a00",
+        "oracle--issue-77-n1-009-a09--a03",
+        "oracle--issue-77-n1-009-a09--a07",
+        "oracle--issue-77-n1-009-a09--a09"
+      ],
+      "timeouts": 4
+    },
+    "issue-77-n1-010-a06": {
+      "best_observed_pig_removal": true,
+      "executed": 9,
+      "family": "type010105",
+      "frozen_cost_mean": 62.80998505995824,
+      "frozen_cost_median": 68.0274338722229,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "right_censored": 9,
+        "stable_without_clear": 4
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-010",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "controller_only",
+      "timeout_slots": [
+        "oracle--issue-77-n1-010-a06--a02",
+        "oracle--issue-77-n1-010-a06--a06",
+        "oracle--issue-77-n1-010-a06--a07",
+        "oracle--issue-77-n1-010-a06--a11"
+      ],
+      "timeouts": 4
+    },
+    "issue-77-n1-011-a02": {
+      "best_observed_pig_removal": true,
+      "executed": 10,
+      "family": "type010105",
+      "frozen_cost_mean": 52.26799728090946,
+      "frozen_cost_median": 52.2774258852005,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "native_clear": 1,
+        "native_fail": 3,
+        "right_censored": 5,
+        "stable_without_clear": 4
+      },
+      "published_successes": 1,
+      "slots": 13,
+      "source_member": "issue-77-n1-011",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [
+        "oracle--issue-77-n1-011-a02--a02",
+        "oracle--issue-77-n1-011-a02--a05",
+        "oracle--issue-77-n1-011-a02--a10"
+      ],
+      "timeouts": 3
+    },
+    "issue-77-n1-011-a11": {
+      "best_observed_pig_removal": true,
+      "executed": 11,
+      "family": "type010105",
+      "frozen_cost_mean": 52.26799728090946,
+      "frozen_cost_median": 52.2774258852005,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "native_clear": 1,
+        "native_fail": 3,
+        "right_censored": 5,
+        "stable_without_clear": 4
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-011",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [
+        "oracle--issue-77-n1-011-a11--a04",
+        "oracle--issue-77-n1-011-a11--a10"
+      ],
+      "timeouts": 2
+    },
+    "issue-77-n1-012-a08": {
+      "best_observed_pig_removal": true,
+      "executed": 13,
+      "family": "type010105",
+      "frozen_cost_mean": 64.4131061732769,
+      "frozen_cost_median": 65.50029790401459,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "native_clear": 1,
+        "native_fail": 1,
+        "right_censored": 8,
+        "stable_without_clear": 3
+      },
+      "published_successes": 1,
+      "slots": 13,
+      "source_member": "issue-77-n1-012",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [],
+      "timeouts": 0
+    },
+    "issue-77-n1-013-a04": {
+      "best_observed_pig_removal": false,
+      "executed": 11,
+      "family": "type010105",
+      "frozen_cost_mean": 67.40065332559439,
+      "frozen_cost_median": 66.0530138015747,
+      "frozen_pig_removal_indicator_slots": 0,
+      "frozen_terminal_kinds": {
+        "native_fail": 2,
+        "right_censored": 8,
+        "stable_without_clear": 3
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-013",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "predictor_train",
+      "timeout_slots": [
+        "oracle--issue-77-n1-013-a04--a06",
+        "oracle--issue-77-n1-013-a04--a09"
+      ],
+      "timeouts": 2
+    },
+    "issue-77-n1-014-a01": {
+      "best_observed_pig_removal": true,
+      "executed": 8,
+      "family": "type010105",
+      "frozen_cost_mean": 50.68589606193396,
+      "frozen_cost_median": 49.14430743455887,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "right_censored": 10,
+        "stable_without_clear": 3
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-014",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "held_out_evaluation",
+      "timeout_slots": [
+        "oracle--issue-77-n1-014-a01--a01",
+        "oracle--issue-77-n1-014-a01--a04",
+        "oracle--issue-77-n1-014-a01--a08",
+        "oracle--issue-77-n1-014-a01--a09",
+        "oracle--issue-77-n1-014-a01--a12"
+      ],
+      "timeouts": 5
+    },
+    "issue-77-n1-014-a10": {
+      "best_observed_pig_removal": true,
+      "executed": 7,
+      "family": "type010105",
+      "frozen_cost_mean": 50.68589606193396,
+      "frozen_cost_median": 49.14430743455887,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "right_censored": 10,
+        "stable_without_clear": 3
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-014",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "held_out_evaluation",
+      "timeout_slots": [
+        "oracle--issue-77-n1-014-a10--a00",
+        "oracle--issue-77-n1-014-a10--a03",
+        "oracle--issue-77-n1-014-a10--a04",
+        "oracle--issue-77-n1-014-a10--a07",
+        "oracle--issue-77-n1-014-a10--a08",
+        "oracle--issue-77-n1-014-a10--a12"
+      ],
+      "timeouts": 6
+    },
+    "issue-77-n1-015-a06": {
+      "best_observed_pig_removal": false,
+      "executed": 9,
+      "family": "type010105",
+      "frozen_cost_mean": 51.54071839268391,
+      "frozen_cost_median": 56.32390037178993,
+      "frozen_pig_removal_indicator_slots": 0,
+      "frozen_terminal_kinds": {
+        "native_fail": 2,
+        "right_censored": 6,
+        "stable_without_clear": 5
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-015",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "controller_only",
+      "timeout_slots": [
+        "oracle--issue-77-n1-015-a06--a03",
+        "oracle--issue-77-n1-015-a06--a06",
+        "oracle--issue-77-n1-015-a06--a08",
+        "oracle--issue-77-n1-015-a06--a11"
+      ],
+      "timeouts": 4
+    },
+    "issue-77-n1-016-a03": {
+      "best_observed_pig_removal": true,
+      "executed": 10,
+      "family": "type010105",
+      "frozen_cost_mean": 38.010280820039604,
+      "frozen_cost_median": 36.94234025478363,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "native_clear": 1,
+        "native_fail": 1,
+        "right_censored": 6,
+        "stable_without_clear": 5
+      },
+      "published_successes": 0,
+      "slots": 13,
+      "source_member": "issue-77-n1-016",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "held_out_evaluation",
+      "timeout_slots": [
+        "oracle--issue-77-n1-016-a03--a03",
+        "oracle--issue-77-n1-016-a03--a05",
+        "oracle--issue-77-n1-016-a03--a07"
+      ],
+      "timeouts": 3
+    },
+    "issue-77-n1-016-a12": {
+      "best_observed_pig_removal": true,
+      "executed": 13,
+      "family": "type010105",
+      "frozen_cost_mean": 38.010280820039604,
+      "frozen_cost_median": 36.94234025478363,
+      "frozen_pig_removal_indicator_slots": 1,
+      "frozen_terminal_kinds": {
+        "native_clear": 1,
+        "native_fail": 1,
+        "right_censored": 6,
+        "stable_without_clear": 5
+      },
+      "published_successes": 1,
+      "slots": 13,
+      "source_member": "issue-77-n1-016",
+      "stability_slots": [],
+      "stability_violations": 0,
+      "study_role": "held_out_evaluation",
+      "timeout_slots": [],
+      "timeouts": 0
+    }
+  },
+  "plan_identity": "issue-90-oracle-timeout-audit-v1",
+  "plan_version": 1,
+  "precision_guards": {
+    "min_executed_slots": 100,
+    "min_join_fraction": 0.95,
+    "min_timeout_slots": 20,
+    "min_timeout_states": 8,
+    "min_usable_draws_fraction": 0.9,
+    "rule": "each guard is evaluated on the frozen slot table; any failed guard maps the audit verdict to indeterminate before the shift rules are read"
+  },
+  "protocol_chronology": [
+    {
+      "change": "initial and terminal freeze: covariates, join keys, statistics, numeric margins, verdict mapping, bias-direction rules, precision guards and caps are published before any audit statistic exists",
+      "evidence": "no audit statistic has been computed at freeze time; the only quantity derived here is the raw-cost margin formula evaluated on the frozen candidate table, which involves no stratum and no contrast",
+      "version": 1,
+      "why": "standard freeze rule of the shared ADD-EXP protocol; the dry run is a structural inventory only and computes no statistic of any kind"
+    }
+  ],
+  "published_context": {
+    "issue_87_by_family": {
+      "type010103": {
+        "ceiling_states": 4,
+        "prevalence": 0.36363636363636365,
+        "states": 12
+      },
+      "type010105": {
+        "ceiling_states": 3,
+        "prevalence": 0.25,
+        "states": 12
+      }
+    },
+    "issue_87_pooled_ceiling": {
+      "ceiling_states": 7,
+      "measured_states": 23,
+      "prevalence": 0.30434782608695654,
+      "states": 24,
+      "unmeasured_states": [
+        "issue-77-n1-005-a07"
+      ]
+    },
+    "rule": "published numbers cited verbatim as context; never recomputed or amended"
+  },
+  "question_dispositions": {
+    "q1_covariate_shift": "readiness_or_precision_insufficient",
+    "q2_audit_verdict": "indeterminate"
+  },
+  "questions": {
+    "q1_covariate_shift": "do the 52 timed-out slots differ from the 234 executed slots on the frozen pre-execution covariates (frozen replay count cost distribution, state type, ordinal position, frozen-replay and best-observed pig-removal indicators), with descriptive state-clustered intervals over states",
+    "q2_audit_verdict": "under the frozen mapping with pre-declared margins, is the timeout mechanism outcome_blind, outcome_correlated, or indeterminate, and what does the observed correlation, if any, imply for the direction of #87's ceiling bias (typed, descriptive)"
+  },
+  "schema": "issue_90_oracle_timeout_audit_report_v1",
+  "stability_stratum": {
+    "frozen_covariates": [
+      {
+        "family": "type010103",
+        "frozen_replay_count_cost": 82.47732925415039,
+        "frozen_replay_pig_removed": false,
+        "frozen_replay_terminal_kind": "stable_without_clear",
+        "live_at_dispatch": 4,
+        "minutes_since_first_dispatch": 44.083333333333336,
+        "normalized_cost_position": 1.0,
+        "ordinal": 1,
+        "slot_identity": "oracle--issue-77-n1-005-a07--a01",
+        "source_member": "issue-77-n1-005",
+        "state_best_observed_pig_removed": true,
+        "state_identity": "issue-77-n1-005-a07"
+      },
+      {
+        "family": "type010103",
+        "frozen_replay_count_cost": 76.56465220451355,
+        "frozen_replay_pig_removed": false,
+        "frozen_replay_terminal_kind": "native_fail",
+        "live_at_dispatch": 4,
+        "minutes_since_first_dispatch": 45.733333333333334,
+        "normalized_cost_position": 0.6070423804066183,
+        "ordinal": 2,
+        "slot_identity": "oracle--issue-77-n1-005-a07--a02",
+        "source_member": "issue-77-n1-005",
+        "state_best_observed_pig_removed": true,
+        "state_identity": "issue-77-n1-005-a07"
+      },
+      {
+        "family": "type010103",
+        "frozen_replay_count_cost": 81.68825840950012,
+        "frozen_replay_pig_removed": true,
+        "frozen_replay_terminal_kind": "native_clear",
+        "live_at_dispatch": 2,
+        "minutes_since_first_dispatch": 46.7,
+        "normalized_cost_position": 0.9475582044814449,
+        "ordinal": 7,
+        "slot_identity": "oracle--issue-77-n1-005-a07--a07",
+        "source_member": "issue-77-n1-005",
+        "state_best_observed_pig_removed": true,
+        "state_identity": "issue-77-n1-005-a07"
+      }
+    ],
+    "interval_eligible": false,
+    "mechanism": "the physics is not static at the sealed decision step 30000; distinct from the connect/barrier/readiness timeout mechanism",
+    "ordinals": [
+      1,
+      2,
+      7
+    ],
+    "signature": "sealed pre-decision state/RGB advanced during readiness or hold",
+    "slots": [
+      "oracle--issue-77-n1-005-a07--a01",
+      "oracle--issue-77-n1-005-a07--a02",
+      "oracle--issue-77-n1-005-a07--a07"
+    ],
+    "states": [
+      "issue-77-n1-005-a07"
+    ],
+    "typed_note": "reported as its own typed stratum with its frozen covariates; no interval is computed for a single-state stratum of 3 slots, and it is never pooled into the timeout contrast"
+  },
+  "strata": {
+    "executed": 234,
+    "stability": 3,
+    "timeout": 52
+  },
+  "validation_command": "python -u -m scripts.run_oracle_timeout_audit --validate",
+  "verdict_detail": {
+    "audit_verdict": "indeterminate",
+    "borderline_contrasts": [
+      "d2_frozen_replay_count_cost"
+    ],
+    "guard_failures": [],
+    "join_coverage": 1.0,
+    "q1_covariate_shift": "readiness_or_precision_insufficient",
+    "shifted_contrasts": [],
+    "strata": {
+      "executed": 234,
+      "stability": 3,
+      "timeout": 52
+    },
+    "timeout_states": 18,
+    "usable_draws_fraction_min": 1.0
+  }
+}

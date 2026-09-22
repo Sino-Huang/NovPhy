@@ -1,0 +1,704 @@
+{
+  "archived_release": false,
+  "capacity": {
+    "active_capacity_matched": false,
+    "continuous_parameters": 1862396,
+    "continuous_width": 456,
+    "hybrid_parameters": 1837690,
+    "padding_parameters": 0,
+    "relative_difference": 0.013444052043598213,
+    "rule": "nearest total parameter count; widths 384..512 step8, smaller breaks ties",
+    "tolerance": 0.02
+  },
+  "category": "ADD-EXP out-of-family replication of the horizon-decay boundary on CLEVRER (issue #79)",
+  "claim_boundary": "mechanism-shape replication only; not 'the negative result generalizes'; a non-replication does not falsify the NovPhy boundary and vice versa; the two families are reported separately; no CLEVRER leaderboard/VQA or perception claim; no Physion; no new NovPhy captures; #64/#65 sealed; prior dispositions unchanged; descriptive intervals only",
+  "compute": {
+    "accounting": [
+      "per-unit rollout wall seconds",
+      "transition step counts per system and endpoint",
+      "declared linear MACs per transition (not FLOPs)",
+      "active parameter counts per arm/pair kind",
+      "training wall seconds per fit"
+    ],
+    "allowance_gpu_hours": 6.0,
+    "compute_matching": "updates, batch size and pair cycle are identical by construction; wall time and active parameters differ (the hybrid executes symbolic heads/adapters) and are recorded, not equalized; inference is NOT equalized",
+    "derived_artifacts_cap_gib": 5,
+    "gpu_lock": "exclusive fcntl.flock on /tmp/novphy-addexp-gpu.lock held for the whole --train and --run-evaluation phases",
+    "stop_rule": "if measured training+evaluation wall exceeds 6.0 GPU-hours, stop executing cells, retain the remaining cells as typed failures compute_allowance_exceeded, and dispose readiness_or_precision_insufficient"
+  },
+  "data": {
+    "annotation_zips": {
+      "train": {
+        "bytes": 156761889,
+        "path": "/p/Project/NovPhy/data/clevrer/annotations/annotation_train.zip",
+        "sha256": "e7f9185ad3dde8139b839b00f0f75483374dd0325a3cbec2dac882078497784c"
+      },
+      "validation": {
+        "bytes": 78386966,
+        "path": "/p/Project/NovPhy/data/clevrer/annotations/annotation_validation.zip",
+        "sha256": "d89e74714dff7a1117fd113b54af99fbbc51583ebd742c788c484d708eb426d2"
+      }
+    },
+    "clips": "128 frames, 5 s, 480x320; membership uses validation annotations only",
+    "source": "official CLEVRER release, data.csail.mit.edu/clevrer, CC0 license",
+    "splits": "train 0-9999 and validation 10000-14999 ship annotations; test ships none",
+    "videos_downloaded": false
+  },
+  "decision_rules": {
+    "q1_signature": {
+      "components": [
+        "S1 training-effect position_mse difference (reference minus tested, positive favors hybrid) is positive at h=1, endpoint 15, and exceeds 5% of the continuous-arm mean position_mse at h=1 endpoint 15",
+        "S2 the h=15 training-effect difference is smaller than the h=1 difference at endpoint 15 (separation shrinks or reverses with horizon)",
+        "S3 continuous-arm recursive position_mse grows monotonically across endpoints 15,30,60,120 at every horizon"
+      ],
+      "disposition_rule": "supported iff S1-S3 all hold; otherwise not_supported_by_this_experiment",
+      "incomplete_rule": "missing cells, typed failures or absent metric values at the rule's endpoints -> readiness_or_precision_insufficient",
+      "question": "does the NovPhy boundary signature replicate on CLEVRER rollouts"
+    },
+    "q2_regime": {
+      "direction": "D > 0 means the micro effect is more favorable when early contact is active",
+      "disposition_rule": "supported iff D exceeds the margin at h=5 or h=15; otherwise not_supported_by_this_experiment",
+      "measure": "units are strata by the early cascade window: contact-active = at least one collision event inside (context, context+30]; D(endpoint=120, h) = symbolic-execution contrast (reference minus tested, positive favors micro) in the contact-active stratum minus the same contrast in the contact-still stratum",
+      "practical_margin": "D must exceed 5% of the contact-still stratum mean position_mse of the hybrid continuous pair at the same h, endpoint 120",
+      "precision_rule": "either stratum below 8 units at endpoint 120 -> readiness_or_precision_insufficient",
+      "question": "does contact activity predict where the micro symbolic-execution effect changes prediction quality"
+    },
+    "tokens": [
+      "supported",
+      "not_supported_by_this_experiment",
+      "readiness_or_precision_insufficient"
+    ]
+  },
+  "design": {
+    "arms": {
+      "continuous": "ContinuousDynamics at frozen width 456; no symbolic modules",
+      "hybrid": "CNNHybridPredictor port; micro contact+velocity-bin symbolic conditioning; macro head and adapter receive no CLEVRER gradient and are never evaluated (unsupported Phase 0)"
+    },
+    "comparator_disclosure": "continuous_h5 selection optimism (#74, selection_optimism=true) attaches to the NovPhy family only; here both arms are retrained from scratch with no policy selection and every contrast discloses independent training",
+    "endpoint_grid": {
+      "contexts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "divisibility_rule": "every endpoint divisible by all horizons and context+endpoint within the 128-frame clip; the NovPhy {15..600} grid does not transfer because 600 exceeds the clip; divisibility is the freezing rule",
+      "endpoints": [
+        15,
+        30,
+        60,
+        120
+      ],
+      "horizons": [
+        1,
+        5,
+        15
+      ]
+    },
+    "estimands": {
+      "dropped": "planning/ranking regret is NOT an estimand on CLEVRER (no candidate inventory); no shots/success claims; the macro arm is unsupported and its estimand dropped",
+      "metrics": [
+        "position_mse (mask inside_camera_view at target frame)",
+        "velocity_mse (same mask)",
+        "carrier_mse",
+        "presence_mse",
+        "kind_mse"
+      ],
+      "recursive": "fixed-pair rollout from the true carrier at each eval context; one shared initial carrier, predictions feed the next transition, no truth resets",
+      "regime": "contact-active = at least one collision event inside the early cascade window (context, context+30]; strata contrasts of the symbolic-execution effect per horizon and endpoint; minimum 8 units per stratum",
+      "symbolic_execution": "hybrid fixed micro pair h vs hybrid fixed continuous pair h (same checkpoint)",
+      "training_effect": "hybrid fixed continuous pair h vs independently trained continuous arm at h",
+      "zero_shot_pooling": "no zero-shot or adapted conditions exist here; both arms retrained from scratch"
+    },
+    "intervals": "paired bootstrap over paired (scene, context) units, mean-over-seeds reference-minus-tested differences, 10000 resamples, rng 7201; DESCRIPTIVE only, no inferential superiority claim",
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "systems": [
+      "continuous_h1",
+      "continuous_h5",
+      "continuous_h15",
+      "hybrid_continuous_h1",
+      "hybrid_continuous_h5",
+      "hybrid_continuous_h15",
+      "hybrid_micro_h1",
+      "hybrid_micro_h5",
+      "hybrid_micro_h15"
+    ],
+    "training": {
+      "batch_size": 64,
+      "grad_clip": 1.0,
+      "identical_minibatches": "both arms of one seed share the generator seed and the frozen window order; windows draw with one per-seed generator exactly as issue-74",
+      "learning_rate": 0.0001,
+      "objective": {
+        "dropped": "none; the issue-74 objective contains no action-dependent penalty term; the action enters only as the constant null-action conditioning input held for both arms",
+        "hybrid_symbolic": "0.1 x micro symbolic losses: pos-weight-5 relations BCE over the contact and velocity-bin channels plus availability BCE, at predicted and observed contexts",
+        "retained": [
+          "local carrier MSE at four requested-horizon transitions",
+          "recursive MSE along the unrolled carrier",
+          "0.01 carrier bound penalty relu(|z|-2)^2 (issue-74 weight)"
+        ]
+      },
+      "pair_cycle": "step % 6 over frozen issue-71 PAIRS order minus macro: [[1, 'continuous'], [1, 'micro'], [5, 'continuous'], [5, 'micro'], [15, 'continuous'], [15, 'micro']]; the continuous arm uses the same delta with continuous abstraction",
+      "selection": "last update, no best-validation checkpoint",
+      "steps": 9000,
+      "unroll": 4,
+      "weight_decay": 0.0001
+    }
+  },
+  "final_evaluation_opened": false,
+  "fresh_evaluation_opened": false,
+  "identity": "issue-79-clevrer-boundary-v1",
+  "issue_64_authorized": false,
+  "membership": {
+    "eval_units_per_seed": 48,
+    "rule": "first 12 collision-complete scenes in ascending scene_index within the validation-split annotations; collision-complete = contiguous 128-frame trajectory for every declared object and at least one collision event; no outcome-based selection",
+    "scan": {
+      "scanned": 12,
+      "skipped": []
+    },
+    "scenes": [
+      {
+        "collisions": 2,
+        "object_property": [
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 0,
+            "shape": "cube"
+          },
+          {
+            "color": "blue",
+            "material": "rubber",
+            "object_id": 1,
+            "shape": "cylinder"
+          },
+          {
+            "color": "yellow",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cube"
+          },
+          {
+            "color": "gray",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "sphere"
+          }
+        ],
+        "objects": 4,
+        "scene_index": 10000,
+        "video_filename": "video_10000.mp4"
+      },
+      {
+        "collisions": 3,
+        "object_property": [
+          {
+            "color": "yellow",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "sphere"
+          },
+          {
+            "color": "green",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "yellow",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cylinder"
+          },
+          {
+            "color": "gray",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "cube"
+          },
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 4,
+            "shape": "cube"
+          }
+        ],
+        "objects": 5,
+        "scene_index": 10001,
+        "video_filename": "video_10001.mp4"
+      },
+      {
+        "collisions": 4,
+        "object_property": [
+          {
+            "color": "green",
+            "material": "metal",
+            "object_id": 0,
+            "shape": "cube"
+          },
+          {
+            "color": "gray",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "blue",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cylinder"
+          },
+          {
+            "color": "gray",
+            "material": "rubber",
+            "object_id": 3,
+            "shape": "sphere"
+          },
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 4,
+            "shape": "cylinder"
+          },
+          {
+            "color": "cyan",
+            "material": "rubber",
+            "object_id": 5,
+            "shape": "cube"
+          }
+        ],
+        "objects": 6,
+        "scene_index": 10002,
+        "video_filename": "video_10002.mp4"
+      },
+      {
+        "collisions": 2,
+        "object_property": [
+          {
+            "color": "yellow",
+            "material": "metal",
+            "object_id": 0,
+            "shape": "cube"
+          },
+          {
+            "color": "blue",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "yellow",
+            "material": "rubber",
+            "object_id": 2,
+            "shape": "sphere"
+          },
+          {
+            "color": "yellow",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "cylinder"
+          }
+        ],
+        "objects": 4,
+        "scene_index": 10003,
+        "video_filename": "video_10003.mp4"
+      },
+      {
+        "collisions": 3,
+        "object_property": [
+          {
+            "color": "yellow",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "cube"
+          },
+          {
+            "color": "blue",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "cube"
+          },
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "sphere"
+          },
+          {
+            "color": "blue",
+            "material": "rubber",
+            "object_id": 3,
+            "shape": "cylinder"
+          }
+        ],
+        "objects": 4,
+        "scene_index": 10004,
+        "video_filename": "video_10004.mp4"
+      },
+      {
+        "collisions": 2,
+        "object_property": [
+          {
+            "color": "brown",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "sphere"
+          },
+          {
+            "color": "red",
+            "material": "rubber",
+            "object_id": 1,
+            "shape": "cylinder"
+          },
+          {
+            "color": "red",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cube"
+          },
+          {
+            "color": "yellow",
+            "material": "rubber",
+            "object_id": 3,
+            "shape": "cube"
+          },
+          {
+            "color": "cyan",
+            "material": "metal",
+            "object_id": 4,
+            "shape": "sphere"
+          }
+        ],
+        "objects": 5,
+        "scene_index": 10005,
+        "video_filename": "video_10005.mp4"
+      },
+      {
+        "collisions": 1,
+        "object_property": [
+          {
+            "color": "gray",
+            "material": "metal",
+            "object_id": 0,
+            "shape": "sphere"
+          },
+          {
+            "color": "purple",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "cylinder"
+          },
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cube"
+          },
+          {
+            "color": "green",
+            "material": "rubber",
+            "object_id": 3,
+            "shape": "cube"
+          }
+        ],
+        "objects": 4,
+        "scene_index": 10006,
+        "video_filename": "video_10006.mp4"
+      },
+      {
+        "collisions": 2,
+        "object_property": [
+          {
+            "color": "gray",
+            "material": "metal",
+            "object_id": 0,
+            "shape": "cylinder"
+          },
+          {
+            "color": "red",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cylinder"
+          },
+          {
+            "color": "blue",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "cube"
+          },
+          {
+            "color": "gray",
+            "material": "rubber",
+            "object_id": 4,
+            "shape": "cube"
+          },
+          {
+            "color": "green",
+            "material": "rubber",
+            "object_id": 5,
+            "shape": "sphere"
+          }
+        ],
+        "objects": 6,
+        "scene_index": 10007,
+        "video_filename": "video_10007.mp4"
+      },
+      {
+        "collisions": 2,
+        "object_property": [
+          {
+            "color": "gray",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "cylinder"
+          },
+          {
+            "color": "purple",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "cylinder"
+          },
+          {
+            "color": "cyan",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cube"
+          },
+          {
+            "color": "purple",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "sphere"
+          },
+          {
+            "color": "green",
+            "material": "metal",
+            "object_id": 4,
+            "shape": "sphere"
+          },
+          {
+            "color": "purple",
+            "material": "rubber",
+            "object_id": 5,
+            "shape": "cylinder"
+          }
+        ],
+        "objects": 6,
+        "scene_index": 10008,
+        "video_filename": "video_10008.mp4"
+      },
+      {
+        "collisions": 3,
+        "object_property": [
+          {
+            "color": "green",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "cube"
+          },
+          {
+            "color": "blue",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "yellow",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "sphere"
+          },
+          {
+            "color": "red",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "sphere"
+          }
+        ],
+        "objects": 4,
+        "scene_index": 10009,
+        "video_filename": "video_10009.mp4"
+      },
+      {
+        "collisions": 3,
+        "object_property": [
+          {
+            "color": "blue",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "cylinder"
+          },
+          {
+            "color": "cyan",
+            "material": "rubber",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "red",
+            "material": "rubber",
+            "object_id": 2,
+            "shape": "cylinder"
+          },
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "cube"
+          },
+          {
+            "color": "red",
+            "material": "metal",
+            "object_id": 4,
+            "shape": "cube"
+          }
+        ],
+        "objects": 5,
+        "scene_index": 10010,
+        "video_filename": "video_10010.mp4"
+      },
+      {
+        "collisions": 3,
+        "object_property": [
+          {
+            "color": "brown",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "sphere"
+          },
+          {
+            "color": "red",
+            "material": "rubber",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "red",
+            "material": "rubber",
+            "object_id": 2,
+            "shape": "cube"
+          },
+          {
+            "color": "green",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "cylinder"
+          },
+          {
+            "color": "purple",
+            "material": "rubber",
+            "object_id": 4,
+            "shape": "sphere"
+          }
+        ],
+        "objects": 5,
+        "scene_index": 10011,
+        "video_filename": "video_10011.mp4"
+      }
+    ],
+    "training_windows": 480,
+    "windows_per_scene": 40
+  },
+  "representation": {
+    "availability_mask": "inside_camera_view in columns 7 and 10; unavailable fields zeroed; all masked estimands",
+    "carrier": "unchanged issue-71 236-value layout: 2 global values + 18 slots x 13 columns",
+    "identity": "clevrer-annotation-feature-carrier-v1",
+    "kind_vocabulary": [
+      "cube",
+      "cylinder",
+      "sphere"
+    ],
+    "macro_note": "no supports/structure-unstable referent on CLEVRER; macro pairs are never trained and never evaluated; the macro estimand is DROPPED, no invented vocabulary",
+    "macro_status": "unsupported",
+    "micro_predicates": {
+      "contact": "collision events (frame_id, object_ids) label symmetric channel 0",
+      "velocity_bin": "same speed tier at frozen edges [0.3499, 1.6807], symmetric channel 1"
+    },
+    "null_action": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "parser_symmetry": "identical frozen annotation-to-carrier builder for both arms; engine features in, predicates out; no learned perception on either side",
+    "position_scale": 5.0,
+    "prior_elapsed_seconds": 0.0390625,
+    "slot_columns": [
+      [
+        "presence",
+        0
+      ],
+      [
+        "presence_mask",
+        1
+      ],
+      [
+        "kind_code",
+        2
+      ],
+      [
+        "kind_confidence",
+        3
+      ],
+      [
+        "kind_mask",
+        4
+      ],
+      [
+        "position_x",
+        5
+      ],
+      [
+        "position_y",
+        6
+      ],
+      [
+        "position_mask",
+        7
+      ],
+      [
+        "velocity_x",
+        8
+      ],
+      [
+        "velocity_y",
+        9
+      ],
+      [
+        "velocity_mask",
+        10
+      ],
+      [
+        "expected_kind_probability",
+        11
+      ],
+      [
+        "slot_valid_mask",
+        12
+      ]
+    ],
+    "slot_contract": "18 fixed slots; declared CLEVRER objects occupy slots 0..n-1 in object_id order for every frame; remaining slots stay zero; identical builder for both arms (symmetric Phase-0 declaration)",
+    "speed_tier_edges": [
+      0.3499,
+      1.6807
+    ],
+    "unmapped_fields": "vertical location/velocity, orientation matrices and angular velocities are parsed into per-scene shards for the parser-contract record with no carrier column referent",
+    "velocity_scale": 3.0
+  },
+  "schema": "issue_79_clevrer_boundary_v1",
+  "source_revision": "ac2a4e1f875c26c6e7c092dd3616db42e14dcd04",
+  "source_text": {
+    "scripts/run_clevrer_boundary_replication.py": "\"\"\"Issue-79 ADD-EXP: out-of-family replication of the horizon-decay boundary on CLEVRER.\n\nOut-of-family replication test: two arms retrained from scratch on the frozen\nCLEVRER annotation-derived carrier (pure continuous vs micro-symbolic hybrid),\nthree paired seeds, 9000 identical updates. Estimands are recursive state\nerrors at the frozen endpoint grid, training-effect contrasts per horizon, the\nmicro symbolic-execution effect within the hybrid checkpoint, and the\ncontact-activity regime analysis. Planning/ranking regret is NOT an estimand on\nCLEVRER (no candidate inventory); the macro arm is unsupported (Phase 0) and\nits estimand is dropped. Descriptive paired-bootstrap intervals only.\n\nModes (mutually exclusive): --dry-run (no writes), --smoke-test (bounded real\none-scene pass, CPU, temporary weights), --prepare (download checks, bounded\nparsing, Phase-0 freeze), --train (GPU lock held for the whole phase),\n--run-evaluation (GPU lock held for the whole phase), --publish, --validate.\nExact validation command: python -u -m scripts.run_clevrer_boundary_replication --validate\n\"\"\"\nfrom __future__ import annotations\n\nimport argparse\nimport contextlib\nimport copy\nimport csv\nimport fcntl\nimport hashlib\nimport io\nimport json\nfrom pathlib import Path\nimport resource\nimport subprocess\nimport tempfile\nimport time\nfrom collections import Counter\n\nimport numpy as np\nimport torch\n\nfrom world_model.model import Abstraction, PredictionPair\nfrom world_model.training import clevrer_boundary as clevrer\nfrom world_model.training.cnn_hybrid import DIM, PAIRS, CNNHybridPredictor, linear_macs, training_loss\nfrom world_model.training.matched_dynamics import (\n    ContinuousDynamics, active_capacity, capacity_contract, continuous_loss,\n)\n\nROOT = Path(__file__).resolve().parents[1]\nOUTPUT = ROOT / \".local-artifacts/issue-79-clevrer-boundary-v1\"\nDATA = ROOT / \"data/clevrer\"\nANNOTATIONS = DATA / \"annotations\"\nZIPS = {\"train\": ANNOTATIONS / \"annotation_train.zip\",\n        \"validation\": ANNOTATIONS / \"annotation_validation.zip\"}\nZIP_FACTS = {\n    \"train\": {\"bytes\": 156761889,\n              \"sha256\": \"e7f9185ad3dde8139b839b00f0f75483374dd0325a3cbec2dac882078497784c\"},\n    \"validation\": {\"bytes\": 78386966,\n                   \"sha256\": \"d89e74714dff7a1117fd113b54af99fbbc51583ebd742c788c484d708eb426d2\"},\n}\nSEEDS = (20260908, 20260909, 20260910)\nARMS = (\"continuous\", \"hybrid\")\nPAIRS_CLEVRER = tuple(p for p in PAIRS if p.abstraction != Abstraction.MACRO)\nSYSTEMS = {f\"continuous_h{h}\": (\"continuous\", PredictionPair(h, Abstraction.CONTINUOUS))\n           for h in clevrer.HORIZONS}\nSYSTEMS.update({f\"hybrid_continuous_h{h}\": (\"hybrid\", PredictionPair(h, Abstraction.CONTINUOUS))\n                for h in clevrer.HORIZONS})\nSYSTEMS.update({f\"hybrid_micro_h{h}\": (\"hybrid\", PredictionPair(h, Abstraction.MICRO))\n                for h in clevrer.HORIZONS})\nSCHEMA = \"issue_79_clevrer_boundary_v1\"\nIDENTITY = \"issue-79-clevrer-boundary-v1\"\nFILES = (\"scripts/run_clevrer_boundary_replication.py\", \"world_model/training/clevrer_boundary.py\")\nGPU_LOCK = Path(\"/tmp/novphy-addexp-gpu.lock\")\nGPU_HOURS_ALLOWANCE = 6.0\nARTIFACTS_CAP_GIB = 5\nREGIME_MINIMUM_UNITS = 8\nREGIME_WINDOW = 30\nRELATIVE_MARGIN = .05\nUNTRAINED_HYBRID_PARAMETERS = (\"macro_head\", \"macro_adapter\")\nDISPOSITION_TOKENS = (\"supported\", \"not_supported_by_this_experiment\", \"readiness_or_precision_insufficient\")\n\n\ndef log(message):\n    print(f\"[issue-79] {message}\", flush=True)\n\n\ndef read(path):\n    return json.loads(path.read_text())\n\n\ndef write(path, value):\n    path.parent.mkdir(parents=True, exist_ok=True)\n    temporary = path.with_suffix(path.suffix + \".tmp\")\n    temporary.write_text(json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + \"\\n\")\n    temporary.replace(path)\n\n\ndef atomic_torch(path, value):\n    path.parent.mkdir(parents=True, exist_ok=True)\n    temporary = path.with_suffix(path.suffix + \".tmp\")\n    torch.save(value, temporary)\n    temporary.replace(path)\n\n\ndef memory(device):\n    return {\"peak_cpu_rss_mib\": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024,\n            \"peak_cuda_allocated_mib\": torch.cuda.max_memory_allocated(device) / 2 ** 20\n            if str(device).startswith(\"cuda\") else 0.}\n\n\n@contextlib.contextmanager\ndef gpu_lock():\n    \"\"\"Exclusive single-GPU lock for wall-time-measured phases (open once, hold).\"\"\"\n    handle = open(GPU_LOCK, \"a+b\")\n    try:\n        fcntl.flock(handle, fcntl.LOCK_EX)\n        yield handle\n    finally:\n        fcntl.flock(handle, fcntl.LOCK_UN)\n        handle.close()\n\n\ndef paired_interval(values):\n    \"\"\"Paired bootstrap over paired units; DESCRIPTIVE (issue-72 convention, rng 7201).\"\"\"\n    values = np.asarray(values, dtype=float)\n    rng = np.random.default_rng(7201)\n    draws = values[rng.integers(len(values), size=(10000, len(values)))].mean(1)\n    return {\"mean\": float(values.mean()), \"paired_units\": int(len(values)),\n            \"descriptive_95_percent_interval\": np.quantile(draws, [.025, .975]).tolist()}\n\n\n# ---------------------------------------------------------------- plan\n\n\ndef data_path(args):\n    return args.output / \"clevrer-data.json\"\n\n\ndef load_data(args):\n    data = read(data_path(args))\n    if data[\"schema\"] != \"issue_79_clevrer_data_v1\":\n        raise ValueError(\"clevrer derived-data schema differs\")\n    if data[\"zip_facts\"] != ZIP_FACTS:\n        raise ValueError(\"CLEVRER annotation archives differ from the verified release\")\n    return data\n\n\ndef make_plan(args):\n    clevrer.check_eval_grid()\n    if not data_path(args).exists():\n        raise ValueError(\"requires --prepare: no frozen CLEVRER derived data (Phase 0 blocks training)\")\n    data = load_data(args)\n    capacity = capacity_contract()\n    return {\n        \"schema\": SCHEMA, \"identity\": IDENTITY,\n        \"category\": \"ADD-EXP out-of-family replication of the horizon-decay boundary on CLEVRER (issue #79)\",\n        \"data\": {\n            \"source\": \"official CLEVRER release, data.csail.mit.edu/clevrer, CC0 license\",\n            \"annotation_zips\": {name: {\"path\": str(path.resolve()), **ZIP_FACTS[name]}\n                                for name, path in ZIPS.items()},\n            \"videos_downloaded\": False,\n            \"splits\": \"train 0-9999 and validation 10000-14999 ship annotations; test ships none\",\n            \"clips\": \"128 frames, 5 s, 480x320; membership uses validation annotations only\",\n        },\n        \"representation\": {\n            \"identity\": clevrer.IDENTITY,\n            \"carrier\": \"unchanged issue-71 236-value layout: 2 global values + 18 slots x 13 columns\",\n            \"slot_columns\": [list(pair) for pair in clevrer.SLOT_COLUMNS],\n            \"slot_contract\": clevrer.SLOT_CONTRACT,\n            \"kind_vocabulary\": list(clevrer.KIND_VOCABULARY),\n            \"position_scale\": clevrer.POS_SCALE,\n            \"velocity_scale\": data[\"velocity_scale\"],\n            \"speed_tier_edges\": data[\"speed_tier_edges\"],\n            \"prior_elapsed_seconds\": clevrer.PRIOR_ELAPSED_SECONDS,\n            \"null_action\": list(clevrer.NULL_ACTION),\n            \"availability_mask\": \"inside_camera_view in columns 7 and 10; unavailable fields zeroed; all masked estimands\",\n            \"micro_predicates\": {\n                \"contact\": \"collision events (frame_id, object_ids) label symmetric channel 0\",\n                \"velocity_bin\": f\"same speed tier at frozen edges {data['speed_tier_edges']}, symmetric channel 1\"},\n            \"macro_status\": \"unsupported\",\n            \"macro_note\": (\"no supports/structure-unstable referent on CLEVRER; macro pairs are never trained\"\n                           \" and never evaluated; the macro estimand is DROPPED, no invented vocabulary\"),\n            \"unmapped_fields\": (\"vertical location/velocity, orientation matrices and angular velocities are parsed\"\n                                \" into per-scene shards for the parser-contract record with no carrier column referent\"),\n            \"parser_symmetry\": (\"identical frozen annotation-to-carrier builder for both arms; engine features in,\"\n                                \" predicates out; no learned perception on either side\"),\n        },\n        \"membership\": data[\"membership\"],\n        \"capacity\": capacity,\n        \"design\": {\n            \"arms\": {\n                \"continuous\": f\"ContinuousDynamics at frozen width {capacity['continuous_width']}; no symbolic modules\",\n                \"hybrid\": (\"CNNHybridPredictor port; micro contact+velocity-bin symbolic conditioning; macro head and\"\n                           \" adapter receive no CLEVRER gradient and are never evaluated (unsupported Phase 0)\")},\n            \"seeds\": list(SEEDS),\n            \"training\": {\n                \"steps\": 9000, \"batch_size\": 64, \"learning_rate\": .0001, \"weight_decay\": .0001, \"grad_clip\": 1.,\n                \"unroll\": 4,\n                \"pair_cycle\": (\"step %% %d over frozen issue-71 PAIRS order minus macro: %s; the continuous arm uses\"\n                               \" the same delta with continuous abstraction\" %\n                               (len(PAIRS_CLEVRER), [list(p.identity) for p in PAIRS_CLEVRER])),\n                \"identical_minibatches\": (\"both arms of one seed share the generator seed and the frozen window order;\"\n                                          \" windows draw with one per-seed generator exactly as issue-74\"),\n                \"objective\": {\n                    \"retained\": [\"local carrier MSE at four requested-horizon transitions\",\n                                 \"recursive MSE along the unrolled carrier\",\n                                 \"0.01 carrier bound penalty relu(|z|-2)^2 (issue-74 weight)\"],\n                    \"hybrid_symbolic\": (\"0.1 x micro symbolic losses: pos-weight-5 relations BCE over the contact and\"\n                                        \" velocity-bin channels plus availability BCE, at predicted and observed contexts\"),\n                    \"dropped\": (\"none; the issue-74 objective contains no action-dependent penalty term; the action\"\n                                \" enters only as the constant null-action conditioning input held for both arms\")},\n                \"selection\": \"last update, no best-validation checkpoint\"},\n            \"endpoint_grid\": {\n                \"endpoints\": list(clevrer.ENDPOINTS), \"horizons\": list(clevrer.HORIZONS),\n                \"contexts\": list(clevrer.EVAL_CONTEXTS),\n                \"divisibility_rule\": (\"every endpoint divisible by all horizons and context+endpoint within the\"\n                                      \" 128-frame clip; the NovPhy {15..600} grid does not transfer because 600\"\n                                      \" exceeds the clip; divisibility is the freezing rule\")},\n            \"systems\": list(SYSTEMS),\n            \"estimands\": {\n                \"recursive\": (\"fixed-pair rollout from the true carrier at each eval context; one shared initial\"\n                              \" carrier, predictions feed the next transition, no truth resets\"),\n                \"metrics\": [\"position_mse (mask inside_camera_view at target frame)\",\n                            \"velocity_mse (same mask)\", \"carrier_mse\", \"presence_mse\", \"kind_mse\"],\n                \"training_effect\": \"hybrid fixed continuous pair h vs independently trained continuous arm at h\",\n                \"symbolic_execution\": \"hybrid fixed micro pair h vs hybrid fixed continuous pair h (same checkpoint)\",\n                \"regime\": (\"contact-active = at least one collision event inside the early cascade window\"\n                           f\" (context, context+{REGIME_WINDOW}]; strata contrasts of the symbolic-execution effect\"\n                           f\" per horizon and endpoint; minimum {REGIME_MINIMUM_UNITS} units per stratum\"),\n                \"dropped\": (\"planning/ranking regret is NOT an estimand on CLEVRER (no candidate inventory); no\"\n                            \" shots/success claims; the macro arm is unsupported and its estimand dropped\"),\n                \"zero_shot_pooling\": \"no zero-shot or adapted conditions exist here; both arms retrained from scratch\"},\n            \"intervals\": (\"paired bootstrap over paired (scene, context) units, mean-over-seeds reference-minus-tested\"\n                          \" differences, 10000 resamples, rng 7201; DESCRIPTIVE only, no inferential superiority claim\"),\n            \"comparator_disclosure\": (\"continuous_h5 selection optimism (#74, selection_optimism=true) attaches to the\"\n                                      \" NovPhy family only; here both arms are retrained from scratch with no policy\"\n                                      \" selection and every contrast discloses independent training\"),\n        },\n        \"compute\": {\n            \"allowance_gpu_hours\": GPU_HOURS_ALLOWANCE,\n            \"stop_rule\": (\"if measured training+evaluation wall exceeds 6.0 GPU-hours, stop executing cells, retain\"\n                          \" the remaining cells as typed failures compute_allowance_exceeded, and dispose\"\n                          \" readiness_or_precision_insufficient\"),\n            \"gpu_lock\": f\"exclusive fcntl.flock on {GPU_LOCK} held for the whole --train and --run-evaluation phases\",\n            \"accounting\": [\"per-unit rollout wall seconds\", \"transition step counts per system and endpoint\",\n                           \"declared linear MACs per transition (not FLOPs)\", \"active parameter counts per arm/pair kind\",\n                           \"training wall seconds per fit\"],\n            \"compute_matching\": (\"updates, batch size and pair cycle are identical by construction; wall time and\"\n                                 \" active parameters differ (the hybrid executes symbolic heads/adapters) and are\"\n                                 \" recorded, not equalized; inference is NOT equalized\"),\n            \"derived_artifacts_cap_gib\": ARTIFACTS_CAP_GIB,\n        },\n        \"decision_rules\": {\n            \"tokens\": list(DISPOSITION_TOKENS),\n            \"q1_signature\": {\n                \"question\": \"does the NovPhy boundary signature replicate on CLEVRER rollouts\",\n                \"components\": [\n                    \"S1 training-effect position_mse difference (reference minus tested, positive favors hybrid) is positive at h=1, endpoint 15, and exceeds 5% of the continuous-arm mean position_mse at h=1 endpoint 15\",\n                    \"S2 the h=15 training-effect difference is smaller than the h=1 difference at endpoint 15 (separation shrinks or reverses with horizon)\",\n                    \"S3 continuous-arm recursive position_mse grows monotonically across endpoints 15,30,60,120 at every horizon\"],\n                \"disposition_rule\": \"supported iff S1-S3 all hold; otherwise not_supported_by_this_experiment\",\n                \"incomplete_rule\": (\"missing cells, typed failures or absent metric values at the rule's endpoints\"\n                                    \" -> readiness_or_precision_insufficient\")},\n            \"q2_regime\": {\n                \"question\": \"does contact activity predict where the micro symbolic-execution effect changes prediction quality\",\n                \"measure\": (\"units are strata by the early cascade window: contact-active = at least one collision\"\n                            f\" event inside (context, context+{REGIME_WINDOW}];\"\n                            \" D(endpoint=120, h) = symbolic-execution contrast (reference minus tested, positive\"\n                            \" favors micro) in the contact-active stratum minus the same contrast in the\"\n                            \" contact-still stratum\"),\n                \"direction\": \"D > 0 means the micro effect is more favorable when early contact is active\",\n                \"practical_margin\": (\"D must exceed 5% of the contact-still stratum mean position_mse of the hybrid\"\n                                     \" continuous pair at the same h, endpoint 120\"),\n                \"disposition_rule\": \"supported iff D exceeds the margin at h=5 or h=15; otherwise not_supported_by_this_experiment\",\n                \"precision_rule\": f\"either stratum below {REGIME_MINIMUM_UNITS} units at endpoint 120 -> readiness_or_precision_insufficient\"},\n        },\n        \"claim_boundary\": (\"mechanism-shape replication only; not 'the negative result generalizes'; a non-replication\"\n                           \" does not falsify the NovPhy boundary and vice versa; the two families are reported\"\n                           \" separately; no CLEVRER leaderboard/VQA or perception claim; no Physion; no new NovPhy\"\n                           \" captures; #64/#65 sealed; prior dispositions unchanged; descriptive intervals only\"),\n        \"source_revision\": subprocess.check_output([\"git\", \"rev-parse\", \"HEAD\"], cwd=ROOT, text=True).strip(),\n        \"source_text\": {path: (ROOT / path).read_text() for path in FILES},\n        \"archived_release\": False, \"fresh_evaluation_opened\": False,\n        \"final_evaluation_opened\": False, \"issue_64_authorized\": False,\n    }\n\n\ndef load_plan(args):\n    plan = read(args.output / \"plan.json\")\n    current = make_plan(args)\n    current[\"source_revision\"] = plan[\"source_revision\"]\n    if plan != current:\n        raise ValueError(\"frozen issue-79 source/settings differ; retain old output and explicitly version any change\")\n    return plan\n\n\n# ---------------------------------------------------------------- prepare\n\n\ndef digest(path):\n    sha = hashlib.sha256()\n    with open(path, \"rb\") as handle:\n        for block in iter(lambda: handle.read(1 << 22), b\"\"):\n            sha.update(block)\n    return sha.hexdigest()\n\n\ndef verify_zips():\n    for name, path in ZIPS.items():\n        if not path.exists():\n            raise ValueError(f\"missing {name} annotation archive at {path}; download from \"\n                             f\"https://data.csail.mit.edu/clevrer/annotations/\")\n        if path.stat().st_size != ZIP_FACTS[name][\"bytes\"] or digest(path) != ZIP_FACTS[name][\"sha256\"]:\n            raise ValueError(f\"{name} annotation archive does not match the verified release digest\")\n\n\ndef prepare(args):\n    \"\"\"Phase 0: bounded parsing, derived facts, membership, and the freeze.\"\"\"\n    verify_zips()\n    if (args.output / \"plan.json\").exists():\n        load_plan(args)\n        log(\"frozen plan already present and validated; no re-freeze\")\n        return\n    members, scan = clevrer.select_membership(ZIPS[\"validation\"])\n    velocity_scale = clevrer.frozen_velocity_scale(tuple(members))\n    tier_edges = list(clevrer.frozen_tier_edges(tuple(members)))\n    shards = args.output / \"shards\"\n    membership = []\n    for scene in members:\n        clip = clevrer.clip_carriers(scene, velocity_scale)\n        relations, mask = clevrer.clip_relations(scene, tier_edges)\n        windows = clevrer.training_windows(clip, relations, mask)\n        atomic_torch(shards / f\"scene-{scene.scene_index}.pt\", {\n            \"schema\": \"issue_79_clevrer_scene_v1\", \"scene_index\": scene.scene_index,\n            \"video_filename\": scene.video_filename, \"identity\": clevrer.IDENTITY,\n            \"velocity_scale\": velocity_scale, \"speed_tier_edges\": tier_edges,\n            \"objects\": [dict(obj) for obj in scene.objects],\n            \"clip\": clip, \"windows\": windows,\n            \"vertical_location\": scene.location[:, :, 2],\n            \"vertical_velocity\": scene.velocity[:, :, 2],\n            \"orientation\": scene.orientation, \"angular_velocity\": scene.angular_velocity,\n            \"collision_frames\": scene.collision_frames, \"collision_pairs\": scene.collision_pairs})\n        membership.append({\"scene_index\": scene.scene_index, \"video_filename\": scene.video_filename,\n                           \"objects\": len(scene.objects), \"collisions\": int(len(scene.collision_frames)),\n                           \"object_property\": [dict(obj) for obj in scene.objects]})\n    data = {\"schema\": \"issue_79_clevrer_data_v1\", \"identity\": \"issue-79-clevrer-data-v1\",\n            \"zip_facts\": ZIP_FACTS, \"velocity_scale\": velocity_scale, \"speed_tier_edges\": tier_edges,\n            \"membership\": {\"rule\": (\"first 12 collision-complete scenes in ascending scene_index within the\"\n                                    \" validation-split annotations; collision-complete = contiguous 128-frame\"\n                                    \" trajectory for every declared object and at least one collision event; no\"\n                                    \" outcome-based selection\"),\n                           \"scenes\": membership, \"windows_per_scene\": clevrer.WINDOWS_PER_SCENE,\n                           \"training_windows\": len(members) * clevrer.WINDOWS_PER_SCENE,\n                           \"eval_units_per_seed\": len(members) * len(clevrer.EVAL_CONTEXTS),\n                           \"scan\": scan}}\n    write(data_path(args), data)\n    write(args.output / \"plan.json\", make_plan(args))\n    log(f\"Phase-0 freeze complete: scenes={[m['scene_index'] for m in membership]} \"\n        f\"velocity_scale={velocity_scale} tier_edges={tier_edges}\")\n\n\n# ---------------------------------------------------------------- shards/pool\n\n\ndef scene_shard(args, plan, scene_index):\n    shard = torch.load(args.output / \"shards\" / f\"scene-{scene_index}.pt\",\n                       map_location=\"cpu\", weights_only=True)\n    if shard[\"schema\"] != \"issue_79_clevrer_scene_v1\" or shard[\"identity\"] != plan[\"representation\"][\"identity\"] \\\n            or shard[\"velocity_scale\"] != plan[\"representation\"][\"velocity_scale\"] \\\n            or shard[\"speed_tier_edges\"] != plan[\"representation\"][\"speed_tier_edges\"]:\n        raise ValueError(f\"scene shard {scene_index} source/representation differs from the frozen plan\")\n    return shard\n\n\n_POOLS = {}\n\n\ndef pool(args, plan, arm):\n    \"\"\"Frozen 480-window training pool; identical window order for both arms.\"\"\"\n    if arm in _POOLS:\n        return _POOLS[arm]\n    stacks = None\n    for record in plan[\"membership\"][\"scenes\"]:\n        windows = scene_shard(args, plan, record[\"scene_index\"])[\"windows\"]\n        keys = (\"z\", \"action\", \"length\") if arm == \"continuous\" else \\\n            (\"z\", \"action\", \"length\", \"relations\", \"relations_mask\")\n        rows = {k: windows[k] for k in keys}\n        stacks = {k: torch.cat([stacks[k], rows[k]]) for k in keys} if stacks else rows\n    _POOLS[arm] = stacks\n    return stacks\n\n\ndef sample(data, batch_size, generator, device):\n    indices = torch.randint(len(data[\"z\"]), (batch_size,), generator=generator)\n    return {k: v[indices].to(device) for k, v in data.items()}\n\n\ndef loss_for(model, batch, pair):\n    if isinstance(model, ContinuousDynamics):\n        return continuous_loss(model, batch[\"z\"], batch[\"action\"], batch[\"length\"], pair)\n    return training_loss(model, batch, pair, True)\n\n\n# ---------------------------------------------------------------- training\n\n\ndef cell(args, seed, arm):\n    return args.output / f\"seed-{seed}\" / arm\n\n\ndef new_model(plan, arm):\n    return ContinuousDynamics(plan[\"capacity\"][\"continuous_width\"]) if arm == \"continuous\" else CNNHybridPredictor()\n\n\ndef binding(plan, seed, arm, component):\n    return {\"plan_identity\": plan[\"identity\"], \"capacity\": plan[\"capacity\"], \"representation\": plan[\"representation\"],\n            \"membership_scenes\": [m[\"scene_index\"] for m in plan[\"membership\"][\"scenes\"]],\n            \"design\": plan[\"design\"], \"seed\": seed, \"arm\": arm, \"component\": component}\n\n\ndef eval_binding(plan, seed, system):\n    return {\"plan_identity\": plan[\"identity\"], \"representation_identity\": plan[\"representation\"][\"identity\"],\n            \"velocity_scale\": plan[\"representation\"][\"velocity_scale\"],\n            \"speed_tier_edges\": plan[\"representation\"][\"speed_tier_edges\"],\n            \"membership_scenes\": [m[\"scene_index\"] for m in plan[\"membership\"][\"scenes\"]],\n            \"training\": {\"steps\": plan[\"design\"][\"training\"][\"steps\"], \"seeds\": plan[\"design\"][\"seeds\"]},\n            \"seed\": seed, \"system\": system}\n\n\ndef check_binding(value, expected):\n    if value[\"binding\"] != expected:\n        raise ValueError(\"checkpoint/record source/representation/training binding differs\")\n\n\ndef expected_pair_counts(plan, arm):\n    \"\"\"Counts implied by the frozen cycle: each cycle slot trains once per pass.\"\"\"\n    steps = plan[\"design\"][\"training\"][\"steps\"]\n    counts = Counter()\n    for step in range(steps):\n        selected = PAIRS_CLEVRER[step % len(PAIRS_CLEVRER)]\n        pair = PredictionPair(selected.delta, Abstraction.CONTINUOUS) if arm == \"continuous\" else selected\n        counts[str(pair.identity)] += 1\n    return dict(counts)\n\n\ndef expected_gradient_parameters(plan, arm):\n    \"\"\"Hybrid macro head/adapter are declared untrained (unsupported Phase 0).\"\"\"\n    names = {name for name, _ in new_model(plan, arm).named_parameters()}\n    if arm == \"hybrid\":\n        names = {name for name in names if not name.startswith(UNTRAINED_HYBRID_PARAMETERS)}\n    return names\n\n\ndef measured_gpu_wall(args):\n    \"\"\"Wall seconds already spent on fits and evaluation cells (the stop-rule budget).\"\"\"\n    total = 0.\n    for seed in SEEDS:\n        for arm in ARMS:\n            progress = cell(args, seed, arm) / \"predictor-progress.pt\"\n            if progress.exists():\n                total += float(torch.load(progress, map_location=\"cpu\", weights_only=True)[\"wall_seconds\"])\n    if (args.output / \"eval\").exists():\n        for path in sorted((args.output / \"eval\").rglob(\"*.pt\")):\n            total += float(torch.load(path, map_location=\"cpu\", weights_only=True)[\"wall_seconds\"])\n    return total\n\n\ndef train_cell(args, plan, seed, arm, stop_after=None):\n    \"\"\"Resume optimizer/sampler exactly; stop_after is for the bounded smoke only.\"\"\"\n    root = cell(args, seed, arm)\n    target = root / \"predictor.pt\"\n    if target.exists():\n        load_predictor(args, plan, seed, arm)\n        log(f\"seed={seed} arm={arm} predictor reused\")\n        return\n    torch.manual_seed(seed)\n    model = new_model(plan, arm).to(args.device)\n    initial = {n: p.detach().cpu().clone() for n, p in model.named_parameters()}\n    recipe = plan[\"design\"][\"training\"]\n    optim = torch.optim.AdamW(model.parameters(), lr=recipe[\"learning_rate\"], weight_decay=recipe[\"weight_decay\"])\n    generator = torch.Generator().manual_seed(seed)\n    expected = binding(plan, seed, arm, \"predictor\")\n    start, prior, gradients, counts, saved = 0, 0., set(), Counter(), None\n    progress = root / \"predictor-progress.pt\"\n    if progress.exists():\n        saved = torch.load(progress, map_location=\"cpu\", weights_only=True)\n        check_binding(saved, expected)\n        model.load_state_dict(saved[\"model\"], strict=True)\n        optim.load_state_dict(saved[\"optimizer\"])\n        generator.set_state(saved[\"generator\"])\n        start, prior = saved[\"step\"], saved[\"wall_seconds\"]\n        gradients, counts = set(saved[\"gradient_parameters\"]), Counter(saved[\"pair_counts\"])\n    data = pool(args, plan, arm)\n    began = time.monotonic()\n    finish = min(recipe[\"steps\"], stop_after if stop_after is not None else recipe[\"steps\"])\n    for step in range(start, finish):\n        batch = sample(data, recipe[\"batch_size\"], generator, args.device)\n        selected = PAIRS_CLEVRER[step % len(PAIRS_CLEVRER)]\n        pair = PredictionPair(selected.delta, Abstraction.CONTINUOUS) if arm == \"continuous\" else selected\n        optim.zero_grad(set_to_none=True)\n        loss = loss_for(model, batch, pair)\n        if not bool(torch.isfinite(loss)):\n            raise ValueError(f\"nonfinite training loss seed={seed} arm={arm} step={step + 1}\")\n        loss.backward()\n        gradients.update(n for n, p in model.named_parameters()\n                         if p.grad is not None and bool((p.grad != 0).any()))\n        torch.nn.utils.clip_grad_norm_(model.parameters(), recipe[\"grad_clip\"])\n        optim.step()\n        counts[str(pair.identity)] += 1\n        if (step + 1) % 90 == 0 or step + 1 == finish:\n            elapsed = prior + time.monotonic() - began\n            saved = {\"binding\": expected, \"model\": model.state_dict(), \"optimizer\": optim.state_dict(),\n                     \"generator\": generator.get_state(), \"step\": step + 1, \"wall_seconds\": elapsed,\n                     \"gradient_parameters\": sorted(gradients), \"pair_counts\": dict(counts),\n                     \"changed_parameters\": [n for n, p in model.named_parameters()\n                                            if not torch.equal(p.detach().cpu(), initial[n])],\n                     \"optimizer_examples\": (step + 1) * recipe[\"batch_size\"], \"memory\": memory(args.device)}\n            atomic_torch(progress, saved)\n            log(f\"train seed={seed} arm={arm} step={step + 1}/{recipe['steps']} \"\n                f\"loss={float(loss.detach()):.6f} elapsed={elapsed:.1f}s \"\n                f\"eta={elapsed / (step + 1) * (recipe['steps'] - step - 1):.1f}s memory={saved['memory']}\")\n    if finish == recipe[\"steps\"]:\n        if saved is None or saved[\"step\"] != recipe[\"steps\"]:\n            raise ValueError(f\"seed={seed} arm={arm}: training finished without a final checkpoint\")\n        if set(saved[\"gradient_parameters\"]) != expected_gradient_parameters(plan, arm):\n            raise ValueError(f\"seed={seed} arm={arm}: gradient coverage differs from the declared trainable set\")\n        if set(saved[\"changed_parameters\"]) != expected_gradient_parameters(plan, arm):\n            raise ValueError(f\"seed={seed} arm={arm}: parameters changed outside the declared trainable set\")\n        if saved[\"pair_counts\"] != expected_pair_counts(plan, arm):\n            raise ValueError(f\"seed={seed} arm={arm}: pair coverage differs from the frozen cycle\")\n        atomic_torch(target, saved)\n\n\ndef load_predictor(args, plan, seed, arm):\n    value = torch.load(cell(args, seed, arm) / \"predictor.pt\", map_location=\"cpu\", weights_only=True)\n    check_binding(value, binding(plan, seed, arm, \"predictor\"))\n    model = new_model(plan, arm).to(args.device)\n    model.load_state_dict(value[\"model\"], strict=True)\n    if value[\"step\"] != plan[\"design\"][\"training\"][\"steps\"] or value[\"pair_counts\"] != expected_pair_counts(plan, arm) \\\n            or set(value[\"gradient_parameters\"]) != expected_gradient_parameters(plan, arm) \\\n            or set(value[\"changed_parameters\"]) != expected_gradient_parameters(plan, arm):\n        raise ValueError(\"incomplete predictor budget/coverage/gradients/updates\")\n    return model.eval(), value\n\n\ndef train(args, plan):\n    \"\"\"All six fits under one exclusive GPU lock, with the frozen stop rule.\"\"\"\n    if args.device != \"cuda\":\n        raise ValueError(\"--train measures wall time on the shared GPU; pass --device cuda\")\n    with gpu_lock():\n        torch.cuda.reset_peak_memory_stats(args.device)\n        phase_started = time.monotonic()\n        for seed in SEEDS:\n            for arm in ARMS:\n                spent = measured_gpu_wall(args)\n                if spent >= plan[\"compute\"][\"allowance_gpu_hours\"] * 3600:\n                    record_stop(args, f\"training stop before seed={seed} arm={arm}: \"\n                                      f\"{spent / 3600:.2f} GPU-h measured exceeds the allowance\")\n                    return\n                train_cell(args, plan, seed, arm)\n        log(f\"training phase complete wall={time.monotonic() - phase_started:.1f}s memory={memory(args.device)}\")\n\n\nSTOP = \"stop-rule.json\"\n\n\ndef record_stop(args, message):\n    write(args.output / STOP, {\"schema\": \"issue_79_stop_rule_v1\", \"reason\": \"compute_allowance_exceeded\",\n                               \"measured_gpu_wall_seconds\": measured_gpu_wall(args),\n                               \"allowance_gpu_hours\": GPU_HOURS_ALLOWANCE, \"message\": message})\n    log(message)\n\n\n# ---------------------------------------------------------------- evaluation\n\n\ndef eval_path(args, seed, system, scene_index, context):\n    return args.output / \"eval\" / f\"seed-{seed}\" / system / f\"scene-{scene_index}-t{context}.pt\"\n\n\n@torch.no_grad()\ndef rollout_errors(model, clip, context, pair, device):\n    \"\"\"Fixed-pair recursive rollout from the true carrier; per-endpoint field errors.\n\n    One shared initial carrier; predictions feed the next transition; no truth\n    resets. The rollout walks the endpoint grid cumulatively (15->30->60->120).\n    \"\"\"\n    carrier = clip[context].to(device)\n    trace, steps, wall = {}, 0, 0.\n    null = torch.zeros((1, 5), device=device)\n    for endpoint in clevrer.ENDPOINTS:\n        while steps < endpoint:\n            began = time.monotonic()\n            carrier = model.carrier(carrier[None], null, pair)[0]\n            wall += time.monotonic() - began\n            steps += pair.delta\n            if not bool(torch.isfinite(carrier).all()):\n                raise ValueError(\"nonfinite recursive carrier\")\n        if steps != endpoint:\n            raise ValueError(\"fixed pair does not land exactly on the endpoint\")\n        trace[str(endpoint)] = {\"errors\": clevrer.field_errors(carrier.cpu(), clip[context + endpoint]),\n                                \"steps\": steps // pair.delta}\n    return {\"errors\": trace, \"rollout_wall_seconds\": wall, \"transition_calls\": steps // pair.delta,\n            \"linear_macs_per_step\": linear_macs(model, pair)}\n\n\ndef active_capacity_counts(model, pair, device):\n    \"\"\"Parameters in executed leaf operators for one carrier, counted once per system.\"\"\"\n    return active_capacity(model, torch.zeros((2, DIM), device=device),\n                           torch.zeros((2, 5), device=device), pair)\n\n\ndef run_evaluation(args, plan):\n    \"\"\"Every scheduled (seed, system, scene, context) cell; GPU lock held throughout.\"\"\"\n    if args.device != \"cuda\":\n        raise ValueError(\"--run-evaluation measures wall time on the shared GPU; pass --device cuda\")\n    with gpu_lock():\n        torch.cuda.reset_peak_memory_stats(args.device)\n        phase_started = time.monotonic()\n        units = [(record[\"scene_index\"], context) for record in plan[\"membership\"][\"scenes\"]\n                 for context in clevrer.EVAL_CONTEXTS]\n        active, clips = {}, {}\n        total = len(SEEDS) * len(SYSTEMS) * len(units)\n        done, failures = 0, Counter()\n        budget = plan[\"compute\"][\"allowance_gpu_hours\"] * 3600\n        spent_before_phase = measured_gpu_wall(args)\n        phase_wall = 0.\n        for seed in SEEDS:\n            models = {arm: load_predictor(args, plan, seed, arm)[0] for arm in ARMS}\n            for system, (arm, pair) in SYSTEMS.items():\n                if (arm, str(pair.identity)) not in active:\n                    active[(arm, str(pair.identity))] = active_capacity_counts(models[arm], pair, args.device)\n                for scene_index, context in units:\n                    if scene_index not in clips:\n                        clips[scene_index] = scene_shard(args, plan, scene_index)[\"clip\"]\n                    done += 1\n                    if spent_before_phase + phase_wall >= budget:\n                        record_stop(args, f\"evaluation stop before seed={seed} system={system} \"\n                                          f\"scene={scene_index} context={context}: \"\n                                          f\"{(spent_before_phase + phase_wall) / 3600:.2f} GPU-h measured \"\n                                          f\"exceeds the allowance; remaining cells retained as typed failures\")\n                        return\n                    path = eval_path(args, seed, system, scene_index, context)\n                    if path.exists():\n                        record = torch.load(path, map_location=\"cpu\", weights_only=True)\n                        check_binding(record, eval_binding(plan, seed, system))\n                        continue\n                    began = time.monotonic()\n                    try:\n                        result, failure = rollout_errors(models[arm], clips[scene_index], context, pair,\n                                                         args.device), None\n                    except ValueError as error:\n                        result, failure = None, str(error)\n                    wall = time.monotonic() - began\n                    phase_wall += wall\n                    atomic_torch(path, {\"binding\": eval_binding(plan, seed, system),\n                                        \"scene_index\": scene_index, \"context\": context,\n                                        \"horizon\": pair.delta, \"system\": system, \"arm\": arm,\n                                        \"pair\": list(pair.identity),\n                                        \"active_parameters\": active[(arm, str(pair.identity))],\n                                        \"result\": result, \"failure\": failure, \"wall_seconds\": wall})\n                    if failure:\n                        failures[system] += 1\n                    if done % 60 == 0 or done == total:\n                        elapsed = time.monotonic() - phase_started\n                        log(f\"eval cells={done}/{total} elapsed={elapsed:.1f}s \"\n                            f\"eta={elapsed / done * (total - done):.1f}s typed_failures={sum(failures.values())}\")\n        log(f\"evaluation phase complete wall={time.monotonic() - phase_started:.1f}s \"\n            f\"typed_failures={dict(failures)} memory={memory(args.device)}\")\n\n\n# ---------------------------------------------------------------- publication\n\n\ndef average_units(values):\n    present = [v for v in values if v and \"carrier_mse\" in v]\n    if not present:\n        return {\"available_units\": 0}\n    result = {\"available_units\": len(present)}\n    for key in present[0]:\n        items = [v[key] for v in present if v.get(key) is not None]\n        result[key] = float(np.mean(items)) if items else None\n    return result\n\n\ndef publication(args, plan):\n    units = [(record[\"scene_index\"], context) for record in plan[\"membership\"][\"scenes\"]\n             for context in clevrer.EVAL_CONTEXTS]\n    expected = len(SEEDS) * len(SYSTEMS) * len(units)\n    found, records, failures = 0, {}, Counter()\n    for seed in SEEDS:\n        for system in SYSTEMS:\n            for scene_index, context in units:\n                path = eval_path(args, seed, system, scene_index, context)\n                if not path.exists():\n                    continue\n                record = torch.load(path, map_location=\"cpu\", weights_only=True)\n                check_binding(record, eval_binding(plan, seed, system))\n                if record[\"scene_index\"] != scene_index or record[\"context\"] != context:\n                    raise ValueError(\"evaluation record identity differs from its path\")\n                found += 1\n                records[(seed, system, scene_index, context)] = record\n                if record[\"failure\"]:\n                    failures[system] += 1\n    stop_rule = read(args.output / STOP)[\"reason\"] if (args.output / STOP).exists() else None\n    common = {\"schema\": \"issue_79_clevrer_boundary_report_v1\", \"identity\": \"issue-79-clevrer-boundary-report-v1\",\n              \"plan_identity\": plan[\"identity\"], \"definitions\": plan[\"design\"],\n              \"membership\": plan[\"membership\"], \"representation\": plan[\"representation\"],\n              \"compute\": compute_section(args, plan, records), \"stop_rule\": stop_rule,\n              \"inventory\": {\"scheduled_cells\": expected, \"executed_cells\": found,\n                            \"typed_failure_cells\": int(sum(failures.values())),\n                            \"missing_cells\": expected - found},\n              \"claim_boundary\": plan[\"claim_boundary\"],\n              \"limitations\": [\n                  \"out-of-family replication: mechanism-shape evidence only, no leaderboard/VQA or perception claim\",\n                  \"engine-annotation features in, no visual perception on either arm; shared frozen parser contract\",\n                  \"descriptive paired bootstrap over 48 (scene, context) units per seed; no inferential superiority claim\",\n                  \"inference and symbolic-head work are not equalized across arms; recorded, not matched\",\n                  \"macro arm unsupported on CLEVRER; its estimand dropped (Phase 0)\"],\n              \"archived_release\": False, \"fresh_evaluation_opened\": False,\n              \"final_evaluation_opened\": False, \"issue_64_authorized\": False}\n    if found != expected:\n        common[\"diagnostics_complete\"] = False\n        common[\"dispositions\"] = {\"question_1_signature\": \"readiness_or_precision_insufficient\",\n                                  \"question_2_regime\": \"readiness_or_precision_insufficient\"}\n        return common\n    per_seed, per_unit = {}, {}\n    for seed in SEEDS:\n        seed_rows = {}\n        for system, (arm, pair) in SYSTEMS.items():\n            rows = {}\n            for scene_index, context in units:\n                record = records[(seed, system, scene_index, context)]\n                rows[(scene_index, context)] = {} if record[\"failure\"] else \\\n                    {str(endpoint): record[\"result\"][\"errors\"][str(endpoint)][\"errors\"]\n                     for endpoint in clevrer.ENDPOINTS}\n            per_unit[(seed, system)] = rows\n            first = records[(seed, system, units[0][0], units[0][1])]\n            seed_rows[system] = {\n                \"curves\": {str(endpoint): average_units([rows[unit].get(str(endpoint)) for unit in units])\n                           for endpoint in clevrer.ENDPOINTS},\n                \"typed_failures\": int(failures[system]),\n                \"mean_rollout_wall_seconds\": float(np.mean([records[(seed, system, s, c)][\"wall_seconds\"]\n                                                            for s, c in units])),\n                \"transition_calls_per_endpoint\": {str(endpoint): endpoint // pair.delta\n                                                  for endpoint in clevrer.ENDPOINTS},\n                \"linear_macs_per_step\": first[\"result\"][\"linear_macs_per_step\"] if first[\"result\"] else None,\n                \"active_parameters\": first[\"active_parameters\"]}\n        per_seed[str(seed)] = seed_rows\n    contrasts = summarize_contrasts(per_unit, units)\n    regime = regime_analysis(args, plan, per_unit, units)\n    dispositions = decide(plan, contrasts, regime, per_seed, sum(failures.values()))\n    return {**common, \"diagnostics_complete\": True, \"per_seed\": per_seed, \"contrasts\": contrasts,\n            \"regime\": regime, \"dispositions\": dispositions}\n\n\ndef error_lookup(per_unit, seeds, system, unit, endpoint, metric):\n    values = [per_unit[(seed, system)][unit].get(str(endpoint), {}).get(metric) for seed in seeds]\n    return float(np.mean(values)) if values and all(v is not None for v in values) else None\n\n\ndef summarize_contrasts(per_unit, units):\n    \"\"\"Paired training-effect and symbolic-execution contrasts per (h, endpoint).\"\"\"\n    result = []\n    for kind, tested_template, reference_template in (\n            (\"training_effect\", \"hybrid_continuous_h{h}\", \"continuous_h{h}\"),\n            (\"symbolic_execution\", \"hybrid_micro_h{h}\", \"hybrid_continuous_h{h}\")):\n        for horizon in clevrer.HORIZONS:\n            tested, reference = tested_template.format(h=horizon), reference_template.format(h=horizon)\n            for endpoint in clevrer.ENDPOINTS:\n                entry = {\"kind\": kind, \"horizon\": horizon, \"endpoint\": endpoint,\n                         \"tested\": tested, \"reference\": reference, \"positive_favors\": tested,\n                         \"scope\": \"descriptive; arms independently trained; intervals descriptive only\"}\n                for metric in (\"position_mse\", \"velocity_mse\", \"carrier_mse\"):\n                    differences = []\n                    for unit in units:\n                        across = []\n                        for seed in SEEDS:\n                            a = error_lookup(per_unit, [seed], reference, unit, endpoint, metric)\n                            b = error_lookup(per_unit, [seed], tested, unit, endpoint, metric)\n                            if a is not None and b is not None:\n                                across.append(a - b)\n                        if len(across) == len(SEEDS):\n                            differences.append(float(np.mean(across)))\n                    entry[metric] = paired_interval(differences) if differences else {\"paired_units\": 0}\n                result.append(entry)\n    return result\n\n\ndef regime_analysis(args, plan, per_unit, units):\n    \"\"\"Contact-activity strata of the symbolic-execution effect (question 2).\"\"\"\n    events = {record[\"scene_index\"]: scene_shard(args, plan, record[\"scene_index\"])[\"collision_frames\"]\n              for record in plan[\"membership\"][\"scenes\"]}\n    result = []\n    for horizon in clevrer.HORIZONS:\n        for endpoint in clevrer.ENDPOINTS:\n            strata = {\"contact_active\": [], \"contact_still\": []}\n            for scene_index, context in units:\n                differences = []\n                for seed in SEEDS:\n                    a = error_lookup(per_unit, [seed], f\"hybrid_continuous_h{horizon}\", (scene_index, context),\n                                     endpoint, \"position_mse\")\n                    b = error_lookup(per_unit, [seed], f\"hybrid_micro_h{horizon}\", (scene_index, context),\n                                     endpoint, \"position_mse\")\n                    if a is not None and b is not None:\n                        differences.append(a - b)\n                if len(differences) == len(SEEDS):\n                    flag = clevrer.interval_active(events[scene_index], context, REGIME_WINDOW)\n                    strata[\"contact_active\" if flag else \"contact_still\"].append(float(np.mean(differences)))\n            row = {\"horizon\": horizon, \"endpoint\": endpoint,\n                   \"active\": paired_interval(strata[\"contact_active\"]) if strata[\"contact_active\"]\n                   else {\"paired_units\": 0},\n                   \"still\": paired_interval(strata[\"contact_still\"]) if strata[\"contact_still\"]\n                   else {\"paired_units\": 0}}\n            if row[\"active\"][\"paired_units\"] and row[\"still\"][\"paired_units\"]:\n                row[\"difference_active_minus_still\"] = row[\"active\"][\"mean\"] - row[\"still\"][\"mean\"]\n            result.append(row)\n    return result\n\n\ndef decide(plan, contrasts, regime, per_seed, typed_failures):\n    \"\"\"Frozen decision rules from plan['decision_rules']; descriptive tokens only.\"\"\"\n    insufficient = \"readiness_or_precision_insufficient\"\n    if typed_failures:\n        return {\"question_1_signature\": insufficient, \"question_2_regime\": insufficient,\n                \"question_1_detail\": {\"reason\": \"typed evaluation failures present\", \"cells\": typed_failures},\n                \"question_2_detail\": {\"reason\": \"typed evaluation failures present\", \"cells\": typed_failures}}\n    by_key = {(c[\"kind\"], c[\"horizon\"], c[\"endpoint\"]): c for c in contrasts}\n\n    def mean_curve(system, endpoint):\n        values = [per_seed[str(seed)][system][\"curves\"][str(endpoint)].get(\"position_mse\") for seed in SEEDS]\n        return float(np.mean(values)) if all(v is not None for v in values) else None\n\n    curves = {h: {str(endpoint): mean_curve(f\"continuous_h{h}\", endpoint) for endpoint in clevrer.ENDPOINTS}\n              for h in clevrer.HORIZONS}\n    q1 = {\"components\": {}, \"disposition\": \"not_supported_by_this_experiment\"}\n    s1_entry = by_key[(\"training_effect\", 1, 15)][\"position_mse\"]\n    s1 = s1_entry[\"mean\"] if s1_entry.get(\"paired_units\") else None\n    margin_base = curves[1][\"15\"]\n    margin = RELATIVE_MARGIN * margin_base if margin_base is not None else None\n    q1[\"components\"][\"S1\"] = {\"difference\": s1, \"margin\": margin,\n                              \"holds\": s1 is not None and margin is not None and s1 > 0 and s1 > margin}\n    s15_entry = by_key[(\"training_effect\", 15, 15)][\"position_mse\"]\n    s15 = s15_entry[\"mean\"] if s15_entry.get(\"paired_units\") else None\n    q1[\"components\"][\"S2\"] = {\"h1_difference\": s1, \"h15_difference\": s15,\n                              \"holds\": s1 is not None and s15 is not None and s15 < s1}\n    q1[\"components\"][\"S3\"] = {\"curves\": {str(h): curves[h] for h in clevrer.HORIZONS},\n                              \"holds\": all(curves[h][str(a)] is not None and curves[h][str(b)] is not None\n                                           and curves[h][str(b)] > curves[h][str(a)]\n                                           for h in clevrer.HORIZONS\n                                           for a, b in zip(clevrer.ENDPOINTS[:-1], clevrer.ENDPOINTS[1:]))}\n    q1[\"disposition\"] = \"supported\" if all(part.get(\"holds\") for part in q1[\"components\"].values()) \\\n        else \"not_supported_by_this_experiment\"\n    primary = [row for row in regime if row[\"endpoint\"] == 120]\n    q2 = {\"rows_at_120\": primary, \"disposition\": \"not_supported_by_this_experiment\"}\n    if any(row[\"active\"][\"paired_units\"] < REGIME_MINIMUM_UNITS or row[\"still\"][\"paired_units\"] < REGIME_MINIMUM_UNITS\n           for row in primary):\n        q2[\"disposition\"] = insufficient\n        q2[\"reason\"] = \"a contact stratum is below the frozen minimum unit count\"\n        return {\"question_1_signature\": q1[\"disposition\"], \"question_2_regime\": q2[\"disposition\"],\n                \"question_1_detail\": q1, \"question_2_detail\": q2}\n    margins, holds = {}, []\n    for row in primary:\n        base = mean_curve(f\"hybrid_continuous_h{row['horizon']}\", 120)\n        margin = RELATIVE_MARGIN * base if base is not None else None\n        margins[str(row[\"horizon\"])] = margin\n        difference = row.get(\"difference_active_minus_still\")\n        holds.append(difference is not None and margin is not None and difference > margin)\n    q2[\"margins\"] = margins\n    q2[\"disposition\"] = \"supported\" if any(holds) else \"not_supported_by_this_experiment\"\n    return {\"question_1_signature\": q1[\"disposition\"], \"question_2_regime\": q2[\"disposition\"],\n            \"question_1_detail\": q1, \"question_2_detail\": q2}\n\n\ndef compute_section(args, plan, records):\n    \"\"\"Compute accounting: wall, steps, active parameters; inference not equalized.\"\"\"\n    fits = []\n    for seed in SEEDS:\n        for arm in ARMS:\n            path = cell(args, seed, arm) / \"predictor.pt\"\n            if path.exists():\n                value = torch.load(path, map_location=\"cpu\", weights_only=True)\n                fits.append({\"seed\": seed, \"arm\": arm, \"wall_seconds\": value[\"wall_seconds\"],\n                             \"steps\": value[\"step\"], \"optimizer_examples\": value[\"optimizer_examples\"],\n                             \"memory\": value[\"memory\"]})\n    active = {}\n    for (_, system, _, _), record in records.items():\n        active[f\"{system}|h{record['pair'][0]}|{record['pair'][1]}\"] = record[\"active_parameters\"]\n    return {\"fits\": fits, \"training_wall_seconds\": sum(f[\"wall_seconds\"] for f in fits),\n            \"evaluation_wall_seconds\": sum(record[\"wall_seconds\"] for record in records.values()),\n            \"allowance_gpu_hours\": plan[\"compute\"][\"allowance_gpu_hours\"],\n            \"active_parameters_per_system\": active,\n            \"units_per_arm\": {arm: sum(1 for (_, _, _, _), record in records.items()\n                                       if record[\"arm\"] == arm and not record[\"failure\"]) for arm in ARMS},\n            \"inference_equalized\": False,\n            \"note\": (\"candidate counts do not exist on CLEVRER (no planning estimand); units, steps, wall and active\"\n                     \" parameters are reported per arm; inference is not equalized\")}\n\n\ndef compact_report(result):\n    return {k: v for k, v in result.items() if k not in (\"per_unit\",)}\n\n\ndef comparisons_csv(result):\n    stream = io.StringIO()\n    writer = csv.writer(stream)\n    writer.writerow((\"seed\", \"system\", \"endpoint_frames\", \"kind\", \"metric\", \"value\", \"available_units\"))\n    for seed, systems in result.get(\"per_seed\", {}).items():\n        for name, system in systems.items():\n            for endpoint, metrics in system[\"curves\"].items():\n                for metric, value in metrics.items():\n                    if metric != \"available_units\":\n                        writer.writerow((seed, name, endpoint, \"recursive\", metric, value,\n                                         metrics[\"available_units\"]))\n    writer.writerow(())\n    writer.writerow((\"contrast_tested\", \"reference\", \"kind\", \"horizon\", \"endpoint_frames\", \"metric\",\n                     \"mean_difference\", \"interval_low\", \"interval_high\", \"paired_units\"))\n    for contrast in result.get(\"contrasts\", []):\n        for metric in (\"position_mse\", \"velocity_mse\", \"carrier_mse\"):\n            entry = contrast[metric]\n            if entry.get(\"paired_units\"):\n                low, high = entry[\"descriptive_95_percent_interval\"]\n                writer.writerow((contrast[\"tested\"], contrast[\"reference\"], contrast[\"kind\"], contrast[\"horizon\"],\n                                 contrast[\"endpoint\"], metric, entry[\"mean\"], low, high, entry[\"paired_units\"]))\n    writer.writerow(())\n    writer.writerow((\"kind\", \"horizon\", \"endpoint_frames\", \"stratum\", \"mean_difference\", \"interval_low\",\n                     \"interval_high\", \"paired_units\"))\n    for row in result.get(\"regime\", []):\n        for stratum in (\"active\", \"still\"):\n            entry = row[stratum]\n            if entry.get(\"paired_units\"):\n                low, high = entry[\"descriptive_95_percent_interval\"]\n                writer.writerow((\"symbolic_execution_regime\", row[\"horizon\"], row[\"endpoint\"], stratum,\n                                 entry[\"mean\"], low, high, entry[\"paired_units\"]))\n    writer.writerow(())\n    writer.writerow((\"seed\", \"arm\", \"fit_wall_seconds\", \"steps\", \"optimizer_examples\"))\n    for fit in result.get(\"compute\", {}).get(\"fits\", []):\n        writer.writerow((fit[\"seed\"], fit[\"arm\"], fit[\"wall_seconds\"], fit[\"steps\"], fit[\"optimizer_examples\"]))\n    return stream.getvalue()\n\n\ndef findings_md(result):\n    lines = [\"# Issue-79 CLEVRER boundary replication - findings\", \"\"]\n    lines.append(f\"Diagnostics complete: {result['diagnostics_complete']}. Claim boundary: {result['claim_boundary']}\")\n    lines.append(\"\")\n    lines.append(\"Endpoint semantics: CLEVRER annotation frames; recursive fixed-pair rollouts from each eval\"\n                 \" context; no planning/ranking-regret estimand and no candidate inventory on CLEVRER.\")\n    lines.append(\"\")\n    if not result.get(\"per_seed\"):\n        lines.append(\"Diagnostics incomplete; no outcome numbers reported.\")\n        lines.append(f\"- inventory: {result['inventory']}\")\n        if result.get(\"stop_rule\"):\n            lines.append(f\"- stop rule: {result['stop_rule']}\")\n        lines.append(f\"- dispositions: {result['dispositions']}\")\n        return \"\\n\".join(lines) + \"\\n\"\n    lines.append(\"## Membership\")\n    lines.append(\"\")\n    lines.append(\"| Scene | Objects | Collisions | Windows |\")\n    lines.append(\"| --- | --- | --- | --- |\")\n    for scene in result[\"membership\"][\"scenes\"]:\n        lines.append(f\"| {scene['scene_index']} | {scene['objects']} | {scene['collisions']} | \"\n                     f\"{result['membership']['windows_per_scene']} |\")\n    lines.append(\"\")\n    lines.append(\"## Recursive position MSE (mean over units; seeds listed individually)\")\n    lines.append(\"\")\n    lines.append(\"| System | Seed | e=15 | e=30 | e=60 | e=120 | Typed failures |\")\n    lines.append(\"| --- | --- | --- | --- | --- | --- | --- |\")\n    for seed, systems in result[\"per_seed\"].items():\n        for name, system in systems.items():\n            cells = [system[\"curves\"][str(endpoint)].get(\"position_mse\") for endpoint in clevrer.ENDPOINTS]\n            cells = [\"n/a\" if value is None else f\"{value:.4f}\" for value in cells]\n            lines.append(f\"| {name} | {seed} | {cells[0]} | {cells[1]} | {cells[2]} | {cells[3]} | \"\n                         f\"{system['typed_failures']} |\")\n    lines.append(\"\")\n    lines.append(\"## Paired contrasts on position MSE (positive favors the tested system; DESCRIPTIVE)\")\n    lines.append(\"\")\n    lines.append(\"| Tested | Reference | Kind | h | Endpoint | Difference | Descriptive 95% interval |\")\n    lines.append(\"| --- | --- | --- | --- | --- | --- | --- |\")\n    for contrast in result[\"contrasts\"]:\n        entry = contrast[\"position_mse\"]\n        if not entry.get(\"paired_units\"):\n            continue\n        low, high = entry[\"descriptive_95_percent_interval\"]\n        lines.append(f\"| {contrast['tested']} | {contrast['reference']} | {contrast['kind']} | \"\n                     f\"{contrast['horizon']} | {contrast['endpoint']} | {entry['mean']:+.4f} | \"\n                     f\"[{low:+.4f}, {high:+.4f}] |\")\n    lines.append(\"\")\n    lines.append(\"## Contact-activity regime of the micro symbolic-execution effect (DESCRIPTIVE)\")\n    lines.append(\"\")\n    lines.append(\"| h | Endpoint | Active units | Active difference | Still units | Still difference | \"\n                 \"Active-minus-still |\")\n    lines.append(\"| --- | --- | --- | --- | --- | --- | --- |\")\n    for row in result[\"regime\"]:\n        active, still = row[\"active\"], row[\"still\"]\n        difference = row.get(\"difference_active_minus_still\")\n\n        def cell(entry):\n            return \"n/a\" if not entry.get(\"paired_units\") else f\"{entry['mean']:+.4f}\"\n        lines.append(f\"| {row['horizon']} | {row['endpoint']} | {active['paired_units']} | \"\n                     f\"{cell(active)} | {still['paired_units']} | {cell(still)} | \"\n                     + (f\"{difference:+.4f}\" if difference is not None else \"n/a\") + \" |\")\n    lines.append(\"\")\n    lines.append(\"## Dispositions\")\n    lines.append(\"\")\n    for key, label in ((\"question_1_signature\", \"Q1 signature replication\"),\n                       (\"question_2_regime\", \"Q2 contact-activity regime\")):\n        detail = result[\"dispositions\"].get(f\"{key.split('_')[0]}_{key.split('_')[1]}_detail\", {})\n        suffix = f\" ({detail['reason']})\" if detail.get(\"reason\") else \"\"\n        lines.append(f\"- {label}: **{result['dispositions'][key]}**{suffix}\")\n    lines.append(\"\")\n    lines.append(\"Both families are reported separately: a CLEVRER non-replication does not falsify the NovPhy\"\n                 \" boundary, and vice versa.\")\n    lines.append(\"\")\n    lines.append(\"## Limitations\")\n    lines.append(\"\")\n    for item in result[\"limitations\"]:\n        lines.append(f\"- {item}\")\n    return \"\\n\".join(lines) + \"\\n\"\n\n\ndef publish(args, plan):\n    result = publication(args, plan)\n    write(args.output / \"summary.json\", compact_report(result))\n    (args.output / \"comparisons.csv\").write_text(comparisons_csv(result))\n    (args.output / \"findings.md\").write_text(findings_md(result))\n    log(f\"published diagnostics_complete={result['diagnostics_complete']} \"\n        f\"dispositions={result['dispositions']}\")\n\n\n# ---------------------------------------------------------------- smoke / dry-run\n\n\ndef smoke(args):\n    \"\"\"Bounded real pass: one scene end-to-end, temporary weights, production_evidence false.\"\"\"\n    began = time.monotonic()\n    verify_zips()\n    members, _ = clevrer.select_membership(ZIPS[\"validation\"], count=1, scan_limit=64)\n    scene = members[0]\n    velocity_scale = clevrer.frozen_velocity_scale(tuple(members))\n    tier_edges = list(clevrer.frozen_tier_edges(tuple(members)))\n    clip = clevrer.clip_carriers(scene, velocity_scale)\n    relations, mask = clevrer.clip_relations(scene, tier_edges)\n    windows = clevrer.training_windows(clip, relations, mask)\n    plan = {\"schema\": SCHEMA, \"identity\": IDENTITY + \":smoke\", \"capacity\": capacity_contract(),\n            \"representation\": {\"identity\": clevrer.IDENTITY, \"velocity_scale\": velocity_scale,\n                               \"speed_tier_edges\": tier_edges},\n            \"design\": {\"training\": {\"steps\": 9000, \"batch_size\": 16, \"learning_rate\": .0001,\n                                    \"weight_decay\": .0001, \"grad_clip\": 1.}}}\n    torch.manual_seed(SEEDS[0])\n    cells = []\n    for arm in ARMS:\n        model = new_model(plan, arm)\n        optim = torch.optim.AdamW(model.parameters(), lr=.0001)\n        pair_counts = Counter()\n        loss = None\n        for step in range(12):\n            batch = sample(windows, 16, torch.Generator().manual_seed(SEEDS[0] + step), \"cpu\")\n            selected = PAIRS_CLEVRER[step % len(PAIRS_CLEVRER)]\n            pair = PredictionPair(selected.delta, Abstraction.CONTINUOUS) if arm == \"continuous\" else selected\n            optim.zero_grad(set_to_none=True)\n            loss = loss_for(model, batch, pair)\n            loss.backward()\n            optim.step()\n            pair_counts[str(pair.identity)] += 1\n        errors = rollout_errors(model.eval(), clip, 0, PAIRS_CLEVRER[0], \"cpu\")\n        cells.append({\"arm\": arm, \"final_loss_finite\": bool(torch.isfinite(loss)),\n                      \"pair_counts\": dict(pair_counts), \"endpoint_errors\": errors[\"errors\"]})\n    with tempfile.TemporaryDirectory(prefix=\"novphy-issue79-smoke-\") as directory:\n        write(Path(directory) / \"smoke-evidence.json\", {\"cells\": cells})\n        if read(Path(directory) / \"smoke-evidence.json\")[\"cells\"] != cells:\n            raise ValueError(\"smoke evidence JSON round trip differs\")\n    result = {\"schema\": \"issue_79_clevrer_smoke_v1\", \"production_evidence\": False,\n              \"scene_index\": scene.scene_index, \"windows\": {k: list(v.shape) for k, v in windows.items()},\n              \"velocity_scale\": velocity_scale, \"speed_tier_edges\": tier_edges,\n              \"cells\": cells, \"wall_seconds\": time.monotonic() - began, \"memory\": memory(args.device)}\n    write(args.output / \"smoke.json\", result)\n    log(f\"real smoke complete scene={scene.scene_index} wall={result['wall_seconds']:.1f}s; \"\n        \"temporary weights removed, no production training\")\n\n\ndef dry_run(args):\n    \"\"\"No-write readiness report; exits 0 with or without downloaded data.\"\"\"\n    present = {name: path.exists() for name, path in ZIPS.items()}\n    log(f\"no-write dry-run: modes=prepare,train,run-evaluation,publish,validate; \"\n        f\"archives_present={present}; output={args.output}\")\n    if all(present.values()):\n        try:\n            verify_zips()\n            members, scan = clevrer.select_membership(ZIPS[\"validation\"])\n            log(f\"dry-run membership preview: scenes={[s.scene_index for s in members]} \"\n                f\"scanned={scan['scanned']} windows={len(members) * clevrer.WINDOWS_PER_SCENE} \"\n                f\"units_per_seed={len(members) * len(clevrer.EVAL_CONTEXTS)}\")\n        except (ValueError, clevrer.ClevrerBoundaryError) as error:\n            log(f\"dry-run membership preview blocked: {error}\")\n    else:\n        log(\"dry-run: archives missing; --prepare will download-check, parse and freeze Phase 0\")\n    log(f\"dry-run planned cells: fits={len(SEEDS) * len(ARMS)} steps_each=9000; \"\n        f\"eval_cells={len(SEEDS) * len(SYSTEMS) * 12 * len(clevrer.EVAL_CONTEXTS)}; \"\n        f\"allowance={GPU_HOURS_ALLOWANCE} GPU-h; lock={GPU_LOCK}\")\n    return 0\n\n\n# ---------------------------------------------------------------- main\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n    modes = parser.add_mutually_exclusive_group(required=True)\n    for mode in (\"dry-run\", \"smoke-test\", \"prepare\", \"train\", \"run-evaluation\", \"publish\", \"validate\"):\n        modes.add_argument(\"--\" + mode, action=\"store_true\")\n    parser.add_argument(\"--device\", choices=(\"cpu\", \"cuda\"), default=\"cpu\")\n    parser.add_argument(\"--output\", type=Path, default=OUTPUT)\n    args = parser.parse_args()\n    torch.set_num_threads(2)\n    try:\n        if args.dry_run:\n            return dry_run(args)\n        if args.smoke_test:\n            smoke(args)\n            return 0\n        if args.prepare:\n            prepare(args)\n            return 0\n        plan = load_plan(args)\n        if args.train:\n            train(args, plan)\n        elif args.run_evaluation:\n            run_evaluation(args, plan)\n        elif args.publish:\n            publish(args, plan)\n        else:\n            result = publication(args, plan)\n            if compact_report(result) != read(args.output / \"summary.json\") \\\n                    or comparisons_csv(result).encode(\"utf-8\") != (args.output / \"comparisons.csv\").read_bytes() \\\n                    or findings_md(result) != (args.output / \"findings.md\").read_text():\n                raise ValueError(\"published issue-79 tables differ from bound source evidence\")\n            log(\"exact saved-evidence validation passed\")\n        return 0\n    except (ValueError, OSError, clevrer.ClevrerBoundaryError) as error:\n        log(f\"error: {error}\")\n        return 1\n\n\nif __name__ == \"__main__\":\n    raise SystemExit(main())\n",
+    "world_model/training/clevrer_boundary.py": "\"\"\"Frozen CLEVRER representation and horizon-boundary estimands for issue #79.\n\nPhase-0 mapping (declared before any training; real numbers are published in the\nfrozen plan by ``scripts.run_clevrer_boundary_replication --prepare``):\n\n- The carrier reuses the unchanged issue-71 layout: 2 global values plus 18\n  slots of 13 columns. Slot columns follow the deployment-carrier semantics:\n  ``0`` presence, ``1`` presence mask, ``2`` kind code, ``3`` kind confidence,\n  ``4`` kind mask, ``5`` position x, ``6`` position y, ``7`` position mask,\n  ``8`` velocity x, ``9`` velocity y, ``10`` velocity mask, ``11`` expected-kind\n  probability, ``12`` slot-valid mask. The same builder serves both arms.\n- CLEVRER ground plane is x-y (z is the near-constant vertical axis); carrier\n  positions carry x/SPEED-independent POS_SCALE and y/POS_SCALE, velocities\n  carry vx/VEL_SCALE and vy/VEL_SCALE. Vertical location/velocity, orientation\n  matrices, and angular velocities are parsed into the per-scene shards for the\n  parser-contract record but have no carrier column referent (declared).\n- Presence is engine existence (every declared object occupies its slot for all\n  128 frames); the ``inside_camera_view`` flag is the availability mask in\n  columns 7 and 10 and in every masked estimand. Unavailable fields are zeroed\n  exactly as the deployment carrier does.\n- Micro predicates: channel 0 ``contact`` from collision events (symmetric),\n  channel 1 ``velocity-bin`` (symmetric same-tier indicator). The macro arm is\n  ``unsupported`` on CLEVRER (no supports/structure referent) and its estimand\n  is dropped: macro pairs are never trained and never evaluated.\n- Actions: CLEVRER cascades have no mid-cascade agent action; a null-action\n  tensor (zeros, 5-wide) is held constant for both arms.\n\"\"\"\nfrom __future__ import annotations\n\nimport json\nimport zipfile\nfrom dataclasses import dataclass\n\nimport numpy as np\nimport torch\n\nfrom world_model.training.cnn_hybrid import DIM, SLOTS\n\nFRAMES_PER_CLIP = 128\nCLIP_SECONDS = 5.0\nPRIOR_ELAPSED_SECONDS = CLIP_SECONDS / FRAMES_PER_CLIP\nKIND_VOCABULARY = (\"cube\", \"cylinder\", \"sphere\")\nPOS_SCALE = 5.0\nMEMBER_SCENES = 12\nWINDOWS_PER_SCENE = 40\nWINDOW_STARTS = tuple(range(WINDOWS_PER_SCENE))\nWINDOW_LENGTH = 61\nEVAL_CONTEXTS = (0, 1, 2, 3)\nENDPOINTS = (15, 30, 60, 120)\nHORIZONS = (1, 5, 15)\nNULL_ACTION = (0., 0., 0., 0., 0.)\nCONTACT_CHANNEL, VELOCITY_BIN_CHANNEL = 0, 1\nSLOT_COLUMNS = (\n    (\"presence\", 0), (\"presence_mask\", 1), (\"kind_code\", 2), (\"kind_confidence\", 3),\n    (\"kind_mask\", 4), (\"position_x\", 5), (\"position_y\", 6), (\"position_mask\", 7),\n    (\"velocity_x\", 8), (\"velocity_y\", 9), (\"velocity_mask\", 10),\n    (\"expected_kind_probability\", 11), (\"slot_valid_mask\", 12),\n)\nPOSITION_COLUMNS, VELOCITY_COLUMNS = (5, 6), (8, 9)\nKIND_COLUMNS = (2, 11)\nENTITY_FEATURES = 13\nIDENTITY = \"clevrer-annotation-feature-carrier-v1\"\nSLOT_CONTRACT = (\"18 fixed slots; declared CLEVRER objects occupy slots 0..n-1 in\"\n                 \" object_id order for every frame; remaining slots stay zero;\"\n                 \" identical builder for both arms (symmetric Phase-0 declaration)\")\n\n\nclass ClevrerBoundaryError(ValueError):\n    \"\"\"Typed blocker for representation or membership failures.\"\"\"\n\n\n# ---------------------------------------------------------------- annotations\n\n\n@dataclass(frozen=True)\nclass SceneAnnotations:\n    \"\"\"One parsed CLEVRER annotation JSON, tensor form.\"\"\"\n\n    scene_index: int\n    video_filename: str\n    objects: tuple[dict, ...]\n    location: torch.Tensor          # (frames, n, 3)\n    orientation: torch.Tensor       # (frames, n, 3) euler angles\n    velocity: torch.Tensor          # (frames, n, 3)\n    angular_velocity: torch.Tensor  # (frames, n, 3)\n    inside_camera_view: torch.Tensor  # (frames, n) bool\n    collision_frames: torch.Tensor    # (events,) long\n    collision_pairs: torch.Tensor     # (events, 2) long\n\n\ndef parse_scene(payload: dict) -> SceneAnnotations:\n    \"\"\"Tensorize one annotation dict; typed failure on contract violations.\"\"\"\n    for key in (\"scene_index\", \"video_filename\", \"object_property\", \"motion_trajectory\", \"collision\"):\n        if key not in payload:\n            raise ClevrerBoundaryError(f\"scene {payload.get('scene_index')}: missing field {key}\")\n    objects = tuple(payload[\"object_property\"])\n    count = len(objects)\n    if count == 0:\n        raise ClevrerBoundaryError(f\"scene {payload['scene_index']}: no declared objects\")\n    for obj in objects:\n        if obj.get(\"shape\") not in KIND_VOCABULARY:\n            raise ClevrerBoundaryError(\n                f\"scene {payload['scene_index']}: shape {obj.get('shape')!r} outside frozen vocabulary\")\n    frames = payload[\"motion_trajectory\"]\n    if len(frames) != FRAMES_PER_CLIP or [f[\"frame_id\"] for f in frames] != list(range(FRAMES_PER_CLIP)):\n        raise ClevrerBoundaryError(\n            f\"scene {payload['scene_index']}: motion trajectory is not {FRAMES_PER_CLIP} contiguous frames\")\n    location = torch.zeros((FRAMES_PER_CLIP, count, 3))\n    orientation = torch.zeros((FRAMES_PER_CLIP, count, 3))\n    velocity = torch.zeros((FRAMES_PER_CLIP, count, 3))\n    angular = torch.zeros((FRAMES_PER_CLIP, count, 3))\n    visible = torch.zeros((FRAMES_PER_CLIP, count), dtype=torch.bool)\n    for frame in frames:\n        time = frame[\"frame_id\"]\n        seen = set()\n        for entry in frame[\"objects\"]:\n            index = entry[\"object_id\"]\n            if not 0 <= index < count or index in seen:\n                raise ClevrerBoundaryError(\n                    f\"scene {payload['scene_index']}: object {index} missing or duplicated at frame {time}\")\n            seen.add(index)\n            location[time, index] = torch.tensor(entry[\"location\"])\n            orientation[time, index] = torch.tensor(entry[\"orientation\"])\n            velocity[time, index] = torch.tensor(entry[\"velocity\"])\n            angular[time, index] = torch.tensor(entry[\"angular_velocity\"])\n            visible[time, index] = bool(entry[\"inside_camera_view\"])\n        if len(seen) != count:\n            raise ClevrerBoundaryError(\n                f\"scene {payload['scene_index']}: frame {time} declares {len(seen)} of {count} objects\")\n    events = payload[\"collision\"]\n    pairs, times = [], []\n    for event in events:\n        first, second = event[\"object_ids\"]\n        if not (0 <= first < count and 0 <= second < count) or first == second:\n            raise ClevrerBoundaryError(\n                f\"scene {payload['scene_index']}: collision pair {event['object_ids']} violates slot contract\")\n        if not 0 <= event[\"frame_id\"] < FRAMES_PER_CLIP:\n            raise ClevrerBoundaryError(\n                f\"scene {payload['scene_index']}: collision frame {event['frame_id']} outside clip\")\n        pairs.append((first, second))\n        times.append(event[\"frame_id\"])\n    return SceneAnnotations(int(payload[\"scene_index\"]), str(payload[\"video_filename\"]), objects,\n                            location, orientation, velocity, angular, visible,\n                            torch.tensor(times, dtype=torch.long), torch.tensor(pairs, dtype=torch.long))\n\n\ndef collision_complete(scene: SceneAnnotations) -> bool:\n    \"\"\"Frozen membership predicate: contiguous full trajectories and >= 1 collision.\"\"\"\n    return bool(len(scene.collision_frames) >= 1)\n\n\ndef iter_validation_annotations(zip_path):\n    \"\"\"Bounded-memory ascending scan of the validation annotation zip.\"\"\"\n    with zipfile.ZipFile(zip_path) as archive:\n        for name in sorted(entry for entry in archive.namelist() if entry.endswith(\".json\")):\n            yield name, json.loads(archive.read(name))\n\n\ndef select_membership(zip_path, *, count=MEMBER_SCENES, scan_limit=15000):\n    \"\"\"First ``count`` collision-complete validation scenes, ascending index.\n\n    Typed failures for skipped scenes are returned, never silently dropped.\n    \"\"\"\n    members, skipped, scanned = [], [], 0\n    for name, payload in iter_validation_annotations(zip_path):\n        if scanned >= scan_limit or len(members) == count:\n            break\n        scanned += 1\n        index = int(payload.get(\"scene_index\", -1))\n        try:\n            scene = parse_scene(payload)\n        except ClevrerBoundaryError as error:\n            skipped.append({\"scene_index\": index, \"reason\": str(error)})\n            continue\n        if not collision_complete(scene):\n            skipped.append({\"scene_index\": index, \"reason\": \"no collision event (not collision-complete)\"})\n            continue\n        members.append(scene)\n    if len(members) != count:\n        raise ClevrerBoundaryError(\n            f\"membership incomplete: {len(members)} collision-complete scenes within the scanned prefix\")\n    return members, {\"scanned\": scanned, \"skipped\": skipped}\n\n\n# ---------------------------------------------------------------- carrier\n\n\ndef speed_tiers(speeds: torch.Tensor, edges) -> torch.Tensor:\n    \"\"\"Frozen tier index per speed; ``edges`` are ascending tier boundaries.\"\"\"\n    return sum(speeds >= edge for edge in edges)\n\n\ndef frozen_velocity_scale(scenes: tuple[SceneAnnotations, ...]) -> float:\n    \"\"\"Smallest multiple of 0.5 at or above the membership maximum speed.\"\"\"\n    peak = max(float(scene.velocity.norm(dim=-1).max()) for scene in scenes)\n    return float(np.ceil(peak * 2.0) / 2.0)\n\n\ndef frozen_tier_edges(scenes: tuple[SceneAnnotations, ...]) -> tuple[float, float]:\n    \"\"\"Tertile boundaries of per-object speeds over membership frames 0..99.\"\"\"\n    speeds = torch.cat([scene.velocity[:100].norm(dim=-1).reshape(-1) for scene in scenes])\n    lower, upper = np.quantile(speeds.numpy(), [1 / 3, 2 / 3])\n    return (round(float(lower), 4), round(float(upper), 4))\n\n\ndef clip_carriers(scene: SceneAnnotations, velocity_scale: float) -> torch.Tensor:\n    \"\"\"(FRAMES_PER_CLIP, DIM) carrier clip from one scene; both arms share it.\"\"\"\n    count = len(scene.objects)\n    if count > SLOTS:\n        raise ClevrerBoundaryError(f\"scene {scene.scene_index}: {count} objects exceed the {SLOTS}-slot contract\")\n    clip = torch.zeros((FRAMES_PER_CLIP, DIM))\n    clip[:, 0] = 1.0\n    clip[:, 1] = PRIOR_ELAPSED_SECONDS\n    visible = scene.inside_camera_view\n    kinds = torch.tensor([KIND_VOCABULARY.index(obj[\"shape\"]) for obj in scene.objects])\n    for slot in range(count):\n        base = 2 + slot * ENTITY_FEATURES\n        clip[:, base + 0] = 1.0\n        clip[:, base + 1] = 1.0\n        clip[:, base + 2] = kinds[slot].item() / (len(KIND_VOCABULARY) - 1)\n        clip[:, base + 3] = 1.0\n        clip[:, base + 4] = 1.0\n        clip[:, base + 5] = torch.where(visible[:, slot], scene.location[:, slot, 0] / POS_SCALE, 0.)\n        clip[:, base + 6] = torch.where(visible[:, slot], scene.location[:, slot, 1] / POS_SCALE, 0.)\n        clip[:, base + 7] = visible[:, slot].float()\n        clip[:, base + 8] = torch.where(visible[:, slot], scene.velocity[:, slot, 0] / velocity_scale, 0.)\n        clip[:, base + 9] = torch.where(visible[:, slot], scene.velocity[:, slot, 1] / velocity_scale, 0.)\n        clip[:, base + 10] = visible[:, slot].float()\n        clip[:, base + 11] = 1.0\n        clip[:, base + 12] = 1.0\n    return clip\n\n\ndef clip_relations(scene: SceneAnnotations, tier_edges) -> tuple[torch.Tensor, torch.Tensor]:\n    \"\"\"(FRAMES_PER_CLIP, SLOTS, SLOTS, 2) micro labels and label mask.\"\"\"\n    count = len(scene.objects)\n    relations = torch.zeros((FRAMES_PER_CLIP, SLOTS, SLOTS, 2))\n    mask = torch.zeros((FRAMES_PER_CLIP, SLOTS, SLOTS, 2), dtype=torch.bool)\n    declared = torch.zeros(SLOTS, dtype=torch.bool)\n    declared[:count] = True\n    pair_mask = declared[None, :] & declared[:, None] & ~torch.eye(SLOTS, dtype=torch.bool)\n    mask[:] = pair_mask[None, :, :, None]\n    tiers = torch.full((FRAMES_PER_CLIP, SLOTS), -1, dtype=torch.long)\n    tiers[:, :count] = speed_tiers(scene.velocity[:, :count].norm(dim=-1), tier_edges)\n    same = (tiers[:, :, None] == tiers[:, None, :]) & pair_mask[None]\n    relations[:, :, :, VELOCITY_BIN_CHANNEL] = same.float()\n    for time, (first, second) in zip(scene.collision_frames.tolist(), scene.collision_pairs.tolist()):\n        relations[time, first, second, CONTACT_CHANNEL] = 1.0\n        relations[time, second, first, CONTACT_CHANNEL] = 1.0\n    return relations, mask\n\n\n# ---------------------------------------------------------------- windows\n\n\ndef training_windows(clip: torch.Tensor, relations: torch.Tensor, relations_mask: torch.Tensor):\n    \"\"\"40 windows of WINDOW_LENGTH frames at the frozen starts, window order frozen.\"\"\"\n    z, labels, masks = [], [], []\n    for start in WINDOW_STARTS:\n        stop = start + WINDOW_LENGTH\n        if stop > FRAMES_PER_CLIP:\n            raise ClevrerBoundaryError(f\"window start {start} exceeds the {FRAMES_PER_CLIP}-frame clip\")\n        z.append(clip[start:stop])\n        labels.append(relations[start:stop])\n        masks.append(relations_mask[start:stop])\n    window = {\"z\": torch.stack(z), \"action\": torch.zeros((len(WINDOW_STARTS), 5)),\n              \"length\": torch.full((len(WINDOW_STARTS),), WINDOW_LENGTH - 1, dtype=torch.long),\n              \"relations\": torch.stack(labels), \"relations_mask\": torch.stack(masks)}\n    return window\n\n\ndef check_eval_grid():\n    \"\"\"Frozen divisibility and clip-bound rule for every (context, endpoint, horizon).\"\"\"\n    for context in EVAL_CONTEXTS:\n        for endpoint in ENDPOINTS:\n            if context + endpoint > FRAMES_PER_CLIP - 1:\n                raise ClevrerBoundaryError(f\"context {context} + endpoint {endpoint} leaves the clip\")\n            for horizon in HORIZONS:\n                if endpoint % horizon:\n                    raise ClevrerBoundaryError(f\"endpoint {endpoint} not divisible by horizon {horizon}\")\n\n\n# ---------------------------------------------------------------- estimands\n\n\ndef field_errors(prediction: torch.Tensor, target: torch.Tensor) -> dict:\n    \"\"\"Recursive-endpoint field errors: position/velocity under the camera mask.\"\"\"\n    if prediction.shape != (DIM,) or target.shape != (DIM,):\n        raise ClevrerBoundaryError(\"estimand requires one full carrier per unit\")\n    slots_p = prediction[2:].reshape(SLOTS, ENTITY_FEATURES)\n    slots_t = target[2:].reshape(SLOTS, ENTITY_FEATURES)\n    result = {\"carrier_mse\": float((prediction - target).square().mean()),\n              \"presence_mse\": float((slots_p[:, 0] - slots_t[:, 0]).square().mean())}\n    for name, columns, mask_column in ((\"position\", POSITION_COLUMNS, 7), (\"velocity\", VELOCITY_COLUMNS, 10),\n                                       (\"kind\", KIND_COLUMNS, 12)):\n        mask = slots_t[:, mask_column] > .5\n        squared = (slots_p[:, columns] - slots_t[:, columns]).square()\n        result[name + \"_available_values\"] = int(mask.sum()) * len(columns)\n        result[name + \"_mse\"] = float(squared[mask].mean()) if bool(mask.any()) else None\n    if any(isinstance(value, float) and not np.isfinite(value) for value in result.values()):\n        raise ClevrerBoundaryError(\"nonfinite error statistic; do not serialize as favorable missing data\")\n    return result\n\n\ndef interval_active(collision_frames: torch.Tensor, context: int, endpoint: int) -> bool:\n    \"\"\"Contact-active regime flag: any collision event inside (context, context+endpoint].\"\"\"\n    return bool(((collision_frames > context) & (collision_frames <= context + endpoint)).any())\n"
+  }
+}

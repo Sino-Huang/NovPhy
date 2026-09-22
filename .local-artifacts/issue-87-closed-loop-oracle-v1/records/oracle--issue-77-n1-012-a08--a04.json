@@ -1,0 +1,92 @@
+{
+  "cell": {
+    "action": {
+      "drag_x": -72,
+      "drag_y": 35,
+      "release_time_ms": 1000,
+      "tap_time_ms": 0
+    },
+    "branch_identity": "issue-77-n1-012-a04",
+    "engine_seed": 764100012,
+    "frozen_replay_count_cost": 66.67400324344635,
+    "identity": "oracle--issue-77-n1-012-a08--a04",
+    "ordinal": 4,
+    "seed": 20260908,
+    "state": "issue-77-n1-012-a08"
+  },
+  "cell_kind": "oracle",
+  "decision_frame": {
+    "decision_compute": "none (frozen candidate; oracle pass uses no predictor scoring)",
+    "fixed_step": 30000,
+    "fixed_time_seconds": 13.1463995,
+    "frame_identity": "agent-observation-v1:sha256:292699af91d95d35fd74c22e4f21bb677b6d7e0e0fcf1276d45103d966d03e84",
+    "observed_frames": 3,
+    "sha256": "sha256:c5cec4f353e58bd70fdc8c05243df849ded473a9a1f47c4ce9f8e43a8d327f84"
+  },
+  "engine_channel": {
+    "bird_launches": 1,
+    "consistency": "agreement",
+    "pig_contact": true,
+    "pig_identity_failures": 0,
+    "pig_lifecycle_destroyed": [
+      "runtime:pig:0000"
+    ],
+    "pig_removed": true,
+    "pig_removed_events": [
+      {
+        "event_type": "entity_death",
+        "fixed_step": 36239,
+        "participants": [
+          "runtime:pig:0000"
+        ]
+      },
+      {
+        "event_type": "entity_destroyed",
+        "fixed_step": 36239,
+        "participants": [
+          "runtime:pig:0000"
+        ]
+      },
+      {
+        "event_type": "pig_removed",
+        "fixed_step": 36239,
+        "participants": [
+          "runtime:pig:0000"
+        ]
+      }
+    ],
+    "structure_destroyed": false,
+    "structure_destroyed_events": 0
+  },
+  "execution": {
+    "censored": false,
+    "engine_wall_seconds": 55.635560888797045,
+    "first_fixed_step": 30000,
+    "frame_count": 276,
+    "frozen_replay_count_cost": 66.67400324344635,
+    "last_fixed_step": 43742,
+    "native_root": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-012-a08--a04/aligned/capture-v2:5dba806eaa384b018a3c9a3c32fd1128",
+    "observation_manifest": "observation-trace-manifest-v1:sha256:19efee3c73e9b4d5b666f89cca6ae11123a3ce07d62ad61c46656bb8cf27e78c",
+    "segment_identity": "oracle--issue-77-n1-012-a08--a04:shot-1",
+    "terminal_reason": "level_clear"
+  },
+  "failure": null,
+  "failure_kind": null,
+  "fresh_scenario_lineage": false,
+  "issue_64_authorized": false,
+  "outcome": {
+    "first_shot_success": true,
+    "shots_to_success": 1
+  },
+  "plan_identity": "issue-87-closed-loop-oracle-v1",
+  "plan_version": 3,
+  "ports": {
+    "agent": 28703,
+    "game": 28704,
+    "physics": 28705
+  },
+  "schema": "issue_87_closed_loop_oracle_record_v1",
+  "seed": 20260908,
+  "state_identity": "issue-77-n1-012-a08",
+  "wall_seconds": 103.248824252747
+}

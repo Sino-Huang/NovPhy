@@ -1,0 +1,121 @@
+{
+  "anomalies": [],
+  "blocker": null,
+  "cells": [
+    {
+      "branch_identity": "issue-77-n1-010-a02",
+      "consistency": "agreement",
+      "executed": true,
+      "expectation": true,
+      "expectation_matched": true,
+      "failure": null,
+      "identity": "verification--positive--issue-77-n1-010-a06",
+      "ordinal": 2,
+      "pig_lifecycle_destroyed": true,
+      "pig_removed": true,
+      "role": "positive",
+      "state": "issue-77-n1-010-a06"
+    },
+    {
+      "branch_identity": "issue-77-n1-016-a03",
+      "consistency": "agreement",
+      "executed": true,
+      "expectation": true,
+      "expectation_matched": true,
+      "failure": null,
+      "identity": "verification--positive--issue-77-n1-016-a12",
+      "ordinal": 3,
+      "pig_lifecycle_destroyed": true,
+      "pig_removed": true,
+      "role": "positive",
+      "state": "issue-77-n1-016-a12"
+    },
+    {
+      "branch_identity": "issue-77-n1-001-a00",
+      "consistency": "agreement",
+      "executed": true,
+      "expectation": false,
+      "expectation_matched": true,
+      "failure": null,
+      "identity": "verification--negative--issue-77-n1-001-a00",
+      "ordinal": 0,
+      "pig_lifecycle_destroyed": false,
+      "pig_removed": false,
+      "role": "negative",
+      "state": "issue-77-n1-001-a00"
+    },
+    {
+      "branch_identity": "issue-77-n1-009-a00",
+      "consistency": "agreement",
+      "executed": true,
+      "expectation": false,
+      "expectation_matched": true,
+      "failure": null,
+      "identity": "verification--negative--issue-77-n1-009-a00",
+      "ordinal": 0,
+      "pig_lifecycle_destroyed": false,
+      "pig_removed": false,
+      "role": "negative",
+      "state": "issue-77-n1-009-a00"
+    }
+  ],
+  "controls_execution_run_end_utc": "2026-09-21T16:19:11Z",
+  "detection_rule": "engine-truth first-shot success is read from the game's own state stream of the executed shot segment (the engine's canonical native fixed-step capture written during rendered play; no parser-derived cost enters the verdict). Primary event leg: pig_removed = the segment records at least one native macro event of type 'pig_removed', 'entity_death' or 'entity_destroyed' with at least one participant whose identity starts 'runtime:pig:' (the game's own pig-removal/death/destruction hooks). structure_destroyed is the same rule over 'runtime:block:' participants. Lifecycle leg (confirmatory): at least one 'runtime:pig:' entity whose per-sample lifecycle in the fixed-step state stream is 'destroyed'. The published verdict is the event leg; the lifecycle leg is published alongside for agreement review against the retained frames",
+  "executed_at_receipt": "derived from the retained control records: earliest record mtime minus its wall_seconds; run end = latest record mtime",
+  "executed_at_utc": "2026-09-21T16:10:18Z",
+  "failed_harness": {
+    "archive_dir": "failed-harness/20260921T160828Z",
+    "cells": 4,
+    "note": "broken-harness run (KeyError before any shot); see verification-harness-recovery.json",
+    "wall_seconds": 125.01920791924931
+  },
+  "failure_modes": "declared failure modes: (1) a death event with an unresolvable participant identity (empty participants) would hide which entity died - detected by the lifecycle leg and typed as a channel anomaly; (2) a pig killed at the very end of the bounded native window may fire its death event before the registry marks the entity destroyed - event leg true with lifecycle leg false is a declared timing mode, recorded, NOT an anomaly; (3) the state stream records a destroyed pig while the event leg is silent - the actual missing-event failure mode - typed as a channel anomaly on that cell; (4) window censoring before any pig death leaves both legs false: the pig survived within the bounded window, not an anomaly",
+  "failures": [],
+  "identity": "issue-85-engine-outcome-reactive-v1",
+  "media_disagreements": [],
+  "media_missing": [],
+  "media_review": {
+    "cells": [
+      {
+        "agrees": true,
+        "identity": "verification--positive--issue-77-n1-010-a06",
+        "notes": "decision frame: single green pig on the lower wooden platform; final frame: pig gone, only blocks and the resting bird remain. Agrees with channel pig_removed=true.",
+        "pig_visible_in_final_frame": false
+      },
+      {
+        "agrees": true,
+        "identity": "verification--positive--issue-77-n1-016-a12",
+        "notes": "decision frame: green pig between the two wooden platforms next to the gray stone; final frame: that spot is empty, pig gone. Agrees with channel pig_removed=true.",
+        "pig_visible_in_final_frame": false
+      },
+      {
+        "agrees": true,
+        "identity": "verification--negative--issue-77-n1-001-a00",
+        "notes": "decision frame: green pig on the lower end of the Z-shaped ramp; final frame: the low shot passed without touching it and the pig is still in place. Agrees with channel pig_removed=false.",
+        "pig_visible_in_final_frame": true
+      },
+      {
+        "agrees": true,
+        "identity": "verification--negative--issue-77-n1-009-a00",
+        "notes": "decision frame: green pig between the tower platforms; final frame: the shot arced past the tower and the pig is still in place. Agrees with channel pig_removed=false.",
+        "pig_visible_in_final_frame": true
+      }
+    ],
+    "reviewed_at_utc": "2026-09-21T16:25:32Z",
+    "reviewed_by": "Engine85 ticket owner (vision inspection of the published gallery: decision.png, final.png and shot.webm per control)",
+    "rule": "the owner reviews the retained decision frame, final canonical frame and shot WebM per control (vision inspection of the published gallery) and records pig_visible_in_final_frame per control; positives must show the pig gone, negatives the pig visible, agreeing with the channel verdict",
+    "schema": "issue_85_channel_media_review_v1"
+  },
+  "media_review_pending": false,
+  "mode_wall_seconds": 0.0030804830603301525,
+  "mode_wall_seconds_note": "wall of this --smoke-test invocation including any resume pass; never used as an execution wall",
+  "negatives_matched": true,
+  "pass_rule": "every scheduled verification execution runs exactly once and is retained whatever the outcome (typed execution failures retained, never retried); the channel is verified iff (a) every control produced a valid executed segment with exactly one native launch, (b) every negative control's event-leg verdict is False, (c) at least one positive control's event-leg verdict is True (one positive removal demonstrates the closed-loop channel end to end; the second positive bounds execution variance), and (d) no control shows a channel anomaly. The recorded media review of the retained gallery (data/issue-85-engine-outcome-reactive/channel-verification-media-review.json) must additionally agree with every control's channel verdict - positives: the pig is gone in the final retained frame; negatives: the pig is visible at the end - before verified may be true. Otherwise the channel is unverified and the ticket publishes readiness_or_precision_insufficient naming the blocker - terminal, complete",
+  "plan_identity": "issue-85-engine-outcome-reactive-v1",
+  "positives_matched": true,
+  "review_rule": "each control retains its decision frame, shot WebM and final canonical frame under data/ so the published verdict is reviewable against the retained frames: positives must show the pig disappearing, negatives the pig surviving at the end of the window",
+  "schema": "issue_85_channel_verification_v1",
+  "verified": true,
+  "wall_seconds": 533.2075206488371,
+  "wall_seconds_scope": "real executed Phase-A control wall: sum of the four control records' wall_seconds from the executing run"
+}

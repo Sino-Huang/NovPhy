@@ -1,0 +1,121 @@
+{
+  "cell": {
+    "identity": "verification--positive--issue-77-n1-016-a12",
+    "seed": 20260908,
+    "state": "issue-77-n1-016-a12",
+    "system": "channel-verification"
+  },
+  "chosen": {
+    "action": {
+      "drag_x": -76,
+      "drag_y": 26,
+      "release_time_ms": 1000,
+      "tap_time_ms": 0
+    },
+    "branch_identity": "issue-77-n1-016-a03",
+    "ordinal": 3
+  },
+  "decision": {
+    "actuator_readiness": {
+      "action_selection": "prospectively fixed; slingshot anchor only",
+      "speed": 1,
+      "stable_observations": 2
+    },
+    "branch_identity": "issue-77-n1-016-a03",
+    "candidate_count": 13,
+    "chosen": {
+      "action": {
+        "drag_x": -76,
+        "drag_y": 26,
+        "release_time_ms": 1000,
+        "tap_time_ms": 0
+      },
+      "branch_identity": "issue-77-n1-016-a03",
+      "ordinal": 3
+    },
+    "failure": null,
+    "gpu_seconds": 0.0,
+    "inference_not_equalized": false,
+    "kind": "verification_action",
+    "linear_macs": 0,
+    "ordinal": 3,
+    "perception_seconds": 0.0,
+    "prior_fallback_used": false,
+    "ranking": [],
+    "transition_calls": 0,
+    "wall_seconds": 0.0
+  },
+  "engine_channel": {
+    "bird_launches": 1,
+    "consistency": "agreement",
+    "pig_contact": true,
+    "pig_identity_failures": 0,
+    "pig_lifecycle_destroyed": [
+      "runtime:pig:0000"
+    ],
+    "pig_removed": true,
+    "pig_removed_events": [
+      {
+        "event_type": "entity_death",
+        "fixed_step": 36118,
+        "participants": [
+          "runtime:pig:0000"
+        ]
+      },
+      {
+        "event_type": "entity_destroyed",
+        "fixed_step": 36118,
+        "participants": [
+          "runtime:pig:0000"
+        ]
+      },
+      {
+        "event_type": "pig_removed",
+        "fixed_step": 36118,
+        "participants": [
+          "runtime:pig:0000"
+        ]
+      }
+    ],
+    "structure_destroyed": false,
+    "structure_destroyed_events": 0
+  },
+  "execution": {
+    "censored": false,
+    "engine_wall_seconds": 47.00553040485829,
+    "first_fixed_step": 30000,
+    "frame_count": 474,
+    "last_fixed_step": 53625,
+    "native_root": "/p/Project/NovPhy/.local-artifacts/issue-85-engine-outcome-reactive-v1/attempts/verification--positive--issue-77-n1-016-a12/aligned/capture-v2:bc2366ea8e8d48ffa93dd0b7af7359ea",
+    "observation_manifest": "observation-trace-manifest-v1:sha256:cbd64c3b459fe1245674cbbe0acf3f8de97a0769f6a52ff438bf57edf5aebcbc",
+    "segment_identity": "verification--positive--issue-77-n1-016-a12:shot-1",
+    "terminal_reason": "level_clear"
+  },
+  "failure": null,
+  "failure_kind": null,
+  "fresh_scenario_lineage": false,
+  "issue_64_authorized": false,
+  "outcome": {
+    "expectation_matched": true,
+    "first_shot_success": true,
+    "shots_to_success": 1
+  },
+  "plan_identity": "issue-85-engine-outcome-reactive-v1",
+  "ports": {
+    "agent": 33675,
+    "game": 43221,
+    "physics": 60765
+  },
+  "schema": "issue_85_engine_outcome_reactive_record_v1",
+  "seed": 20260908,
+  "state_identity": "issue-77-n1-016-a12",
+  "system": "channel-verification",
+  "verification": {
+    "branch_identity": "issue-77-n1-016-a03",
+    "expectation": true,
+    "ordinal": 3,
+    "role": "positive",
+    "state": "issue-77-n1-016-a12"
+  },
+  "wall_seconds": 99.0461192659568
+}

@@ -1,0 +1,138 @@
+{
+  "archived_release": false,
+  "caps": {
+    "gpu_cap_seconds": 7200,
+    "wall_cap_seconds": 86400
+  },
+  "claim_boundary": "bounded non-final diagnostic on development lineages; no multi-shot, adaptation, zero-shot, or complete-gameplay claim; cannot reopen #64/#65/#72/#75/#15; descriptive intervals only",
+  "comparator_disclosure": "continuous_h5 is the #74 selected comparator with selection_optimism=true (selection on development evidence); disclosed in every contrast",
+  "definitions": {
+    "action_encoding": "drag/480, true 1000 ms hold, tap/1000, bias 1 (equals training)",
+    "caps": {
+      "gpu_cap_seconds": 7200,
+      "gpu_scope": "cumulative synchronized decision wall (perception plus ranking) on cuda across all executions",
+      "wall_cap_seconds": 86400,
+      "wall_scope": "cumulative elapsed wall of the pilot+run execution phases"
+    },
+    "claim_boundary": "bounded non-final diagnostic on development lineages; no multi-shot, adaptation, zero-shot, or complete-gameplay claim; cannot reopen #64/#65/#72/#75/#15; descriptive intervals only",
+    "comparator_disclosure": "continuous_h5 is the #74 selected comparator with selection_optimism=true (selection on development evidence); disclosed in every contrast",
+    "compute_accounting": "per state wall time AND active-parameter/step counts AND candidate counts for every arm; candidate count alone is never compute matching; inference is NOT equalized across arms and is recorded as such (#74 training_compute_matched=false)",
+    "decision": "reactive: parse the sealed pre-decision frame with the frozen issue-70 adapter as a single-frame temporal context (identical to the #77 per-state ranking context), roll every admissible candidate to the system's fixed pair, choose argmin predicted count cost with ties broken by lower ordinal; candidates with nonfinite predictions are excluded; a typed decision failure is terminal and executes no shot",
+    "disposition_rule": {
+      "not_supported_by_this_experiment": "anything else after complete execution",
+      "readiness_or_precision_insufficient": "pilot gate failed, or a cap stop, or incomplete execution inventory",
+      "supported": "pooled mean paired difference > 0 AND descriptive 95% interval entirely above 0 (pre-declared practical margin: the interval-exclusion rule itself)"
+    },
+    "estimand": "normalized ranking regret of the executed shot's realized end-of-window count cost (observed offset 600, terminal-absorbed; one frame = 50 native steps; right-censored, NOT a settled cost) against the state's frozen candidate outcome table recorded by the issue-77 N1 campaign; executed costs may fall outside [0,1] under execution variance and are recorded unclipped",
+    "families": {
+      "type010103": "rolling",
+      "type010105": "sliding"
+    },
+    "first_shot_success": "the executed shot segment's engine events record at least one pig death or destruction (interaction_coverage pig_removed); typed failures carry no success value",
+    "membership_rule": "N1 (issue-77-n1-v1) coverage-admissible branch identities, sorted and evenly spaced as pool[round(i*(len(pool)-1)/11)] for i in 0..11 per family; state identity = branch identity; initial state = source-member decision state at native fixed step 30000",
+    "pilot_gate": {
+      "cells": 48,
+      "metric": "pooled first-shot success prevalence over pilot cells with a valid executed segment; typed failures excluded from numerator and denominator and reported",
+      "minimum_valid_executions": 24,
+      "prevalence_floor": 0.1,
+      "state_rule": "the two lowest-identity selected states of each family with distinct source members (four distinct physical initial states)",
+      "states": 4
+    },
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "shots_to_success": "single-shot protocol: 1 when the first shot succeeds, otherwise null; no multi-shot competence claim",
+    "states_per_family": 12,
+    "systems": {
+      "continuous-fixed-h1": {
+        "arm": "continuous",
+        "kind": "model",
+        "pair": {
+          "abstraction": "continuous",
+          "delta": 1
+        }
+      },
+      "continuous-fixed-h5": {
+        "arm": "continuous",
+        "kind": "model",
+        "pair": {
+          "abstraction": "continuous",
+          "delta": 5
+        }
+      },
+      "hybrid-fixed-h1": {
+        "arm": "hybrid",
+        "kind": "model",
+        "pair": {
+          "abstraction": "continuous",
+          "delta": 1
+        }
+      },
+      "no-model-ordinal-prior": {
+        "kind": "no-model-ordinal-prior",
+        "prior_ordinal": 8
+      }
+    },
+    "uncertainty": {
+      "draws": 10000,
+      "note": "seed differences averaged before resampling; descriptive only; this diagnostic cannot support a confirmatory claim",
+      "seed": 7201,
+      "unit": "state"
+    },
+    "wall_context": {
+      "hybrid_adaptive_1_01_seconds_is_context_only": "this ticket contains no adaptive system; at h=1 the continuous baseline is the MORE expensive arm (4.8x continuous_h5); no adaptive-penalty narrative may be attached to these results",
+      "issue_74_fixed_mode_seconds_per_state": {
+        "continuous_h1": 1.79,
+        "continuous_h15": 0.13,
+        "continuous_h5": 0.37
+      }
+    }
+  },
+  "diagnostics_complete": false,
+  "execution_ledger_status": "complete",
+  "final_evaluation_opened": false,
+  "fresh_evaluation_opened": false,
+  "gpu_seconds_elapsed": 25.935208067065105,
+  "identity": "issue-80-reactive-report-v1",
+  "issue_64_authorized": false,
+  "limitations": [
+    "development/exposed N1 lineages only; zero fresh captures; not the sealed #64/#65 benchmark",
+    "regret references the t=600 end-of-window replay cost: right-censored, not a settled cost",
+    "states sharing a source member share one physical initial state and candidate table; the paired bootstrap over 24 state identities is descriptive only",
+    "inference is NOT equalized across arms; per-arm decision compute is reported",
+    "no adaptive system is present; #74 hybrid_adaptive wall context carries no penalty narrative"
+  ],
+  "pilot_gate": {
+    "cells": 48,
+    "disposition_if_failed": "readiness_or_precision_insufficient",
+    "floor": 0.1,
+    "minimum_valid_executions": 24,
+    "passed": false,
+    "plan_identity": "issue-80-reactive-diagnostic-v1",
+    "prevalence": 0.0,
+    "schema": "issue_80_pilot_gate_v1",
+    "successes": 0,
+    "typed_failures": [
+      {
+        "failure": "decision_failure: prior_candidate_absent",
+        "identity": "no-model-ordinal-prior--seed20260908--issue-77-n1-003-a00"
+      },
+      {
+        "failure": "decision_failure: prior_candidate_absent",
+        "identity": "no-model-ordinal-prior--seed20260909--issue-77-n1-003-a00"
+      },
+      {
+        "failure": "decision_failure: prior_candidate_absent",
+        "identity": "no-model-ordinal-prior--seed20260910--issue-77-n1-003-a00"
+      }
+    ],
+    "valid_executions": 45
+  },
+  "plan_identity": "issue-80-reactive-diagnostic-v1",
+  "schema": "issue_80_reactive_report_v1",
+  "stopExplanation": "the mandatory nonzero-prevalence pilot gate failed before the full run",
+  "ticket_disposition": "readiness_or_precision_insufficient",
+  "wall_seconds_elapsed": 2552.9359093362
+}

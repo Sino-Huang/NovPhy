@@ -1,0 +1,183 @@
+{
+  "cells": [
+    {
+      "arm": "continuous",
+      "endpoint_errors": {
+        "120": {
+          "errors": {
+            "carrier_mse": 4574.6298828125,
+            "kind_available_values": 20,
+            "kind_mse": 3436.810546875,
+            "position_available_values": 20,
+            "position_mse": 7808.49072265625,
+            "presence_mse": 4651.41845703125,
+            "velocity_available_values": 20,
+            "velocity_mse": 3549.514892578125
+          },
+          "steps": 120
+        },
+        "15": {
+          "errors": {
+            "carrier_mse": 26.678979873657227,
+            "kind_available_values": 20,
+            "kind_mse": 21.595178604125977,
+            "position_available_values": 20,
+            "position_mse": 25.0037784576416,
+            "presence_mse": 36.449398040771484,
+            "velocity_available_values": 20,
+            "velocity_mse": 16.352842330932617
+          },
+          "steps": 15
+        },
+        "30": {
+          "errors": {
+            "carrier_mse": 188.93353271484375,
+            "kind_available_values": 20,
+            "kind_mse": 149.36264038085938,
+            "position_available_values": 20,
+            "position_mse": 243.95132446289062,
+            "presence_mse": 224.2056884765625,
+            "velocity_available_values": 20,
+            "velocity_mse": 114.53907775878906
+          },
+          "steps": 30
+        },
+        "60": {
+          "errors": {
+            "carrier_mse": 996.2886352539062,
+            "kind_available_values": 20,
+            "kind_mse": 759.3739013671875,
+            "position_available_values": 20,
+            "position_mse": 1533.966064453125,
+            "presence_mse": 1086.65771484375,
+            "velocity_available_values": 20,
+            "velocity_mse": 677.2177124023438
+          },
+          "steps": 60
+        }
+      },
+      "final_loss_finite": true,
+      "pair_counts": {
+        "(1, 'continuous')": 4,
+        "(15, 'continuous')": 4,
+        "(5, 'continuous')": 4
+      }
+    },
+    {
+      "arm": "hybrid",
+      "endpoint_errors": {
+        "120": {
+          "errors": {
+            "carrier_mse": 3918.796142578125,
+            "kind_available_values": 20,
+            "kind_mse": 6612.83349609375,
+            "position_available_values": 20,
+            "position_mse": 4501.9521484375,
+            "presence_mse": 3695.630615234375,
+            "velocity_available_values": 20,
+            "velocity_mse": 2317.941650390625
+          },
+          "steps": 120
+        },
+        "15": {
+          "errors": {
+            "carrier_mse": 28.89672088623047,
+            "kind_available_values": 20,
+            "kind_mse": 37.17319107055664,
+            "position_available_values": 20,
+            "position_mse": 48.73756790161133,
+            "presence_mse": 27.088937759399414,
+            "velocity_available_values": 20,
+            "velocity_mse": 20.2028751373291
+          },
+          "steps": 15
+        },
+        "30": {
+          "errors": {
+            "carrier_mse": 165.31187438964844,
+            "kind_available_values": 20,
+            "kind_mse": 218.0231170654297,
+            "position_available_values": 20,
+            "position_mse": 246.13040161132812,
+            "presence_mse": 175.3917236328125,
+            "velocity_available_values": 20,
+            "velocity_mse": 93.84869384765625
+          },
+          "steps": 30
+        },
+        "60": {
+          "errors": {
+            "carrier_mse": 832.3577880859375,
+            "kind_available_values": 20,
+            "kind_mse": 1250.233154296875,
+            "position_available_values": 20,
+            "position_mse": 1057.323974609375,
+            "presence_mse": 852.6111450195312,
+            "velocity_available_values": 20,
+            "velocity_mse": 460.00848388671875
+          },
+          "steps": 60
+        }
+      },
+      "final_loss_finite": true,
+      "pair_counts": {
+        "(1, 'continuous')": 2,
+        "(1, 'micro')": 2,
+        "(15, 'continuous')": 2,
+        "(15, 'micro')": 2,
+        "(5, 'continuous')": 2,
+        "(5, 'micro')": 2
+      }
+    }
+  ],
+  "frames": 151,
+  "kind_vocabulary": [
+    "b03_animal_dog_rtstand_1228",
+    "coffee_maker",
+    "cube",
+    "vase_01",
+    "vase_05"
+  ],
+  "memory": {
+    "peak_cpu_rss_mib": 840.62890625,
+    "peak_cuda_allocated_mib": 0.0
+  },
+  "position_scale": 2.0,
+  "production_evidence": false,
+  "schema": "issue_84_physion_smoke_v1",
+  "speed_tier_edges": [
+    0.0,
+    0.0009
+  ],
+  "stimulus_name": "pilot_dominoes_SJ020_d3chairs_o1plants_tdwroom_0032",
+  "velocity_scale": 2.0,
+  "wall_seconds": 15.752175827976316,
+  "windows": {
+    "action": [
+      40,
+      5
+    ],
+    "length": [
+      40
+    ],
+    "relations": [
+      40,
+      61,
+      18,
+      18,
+      2
+    ],
+    "relations_mask": [
+      40,
+      61,
+      18,
+      18,
+      2
+    ],
+    "z": [
+      40,
+      61,
+      236
+    ]
+  }
+}

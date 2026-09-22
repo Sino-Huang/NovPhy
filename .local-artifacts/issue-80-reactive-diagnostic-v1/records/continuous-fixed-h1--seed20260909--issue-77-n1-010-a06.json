@@ -1,0 +1,154 @@
+{
+  "cell": {
+    "identity": "continuous-fixed-h1--seed20260909--issue-77-n1-010-a06",
+    "seed": 20260909,
+    "state": "issue-77-n1-010-a06",
+    "system": "continuous-fixed-h1"
+  },
+  "chosen": {
+    "action": {
+      "drag_x": -55,
+      "drag_y": 59,
+      "release_time_ms": 1000,
+      "tap_time_ms": 0
+    },
+    "branch_identity": "issue-77-n1-010-a07",
+    "ordinal": 7
+  },
+  "decision": {
+    "actuator_readiness": {
+      "action_selection": "prospectively fixed; slingshot anchor only",
+      "speed": 1,
+      "stable_observations": 2
+    },
+    "candidate_count": 13,
+    "chosen": {
+      "action": {
+        "drag_x": -55,
+        "drag_y": 59,
+        "release_time_ms": 1000,
+        "tap_time_ms": 0
+      },
+      "branch_identity": "issue-77-n1-010-a07",
+      "ordinal": 7
+    },
+    "failure": null,
+    "gpu_seconds": 0.6012033962178975,
+    "inference_not_equalized": true,
+    "linear_macs": 24078600,
+    "perception_seconds": 0.39004962309263647,
+    "ranking": [
+      {
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 112.2870444059372
+      },
+      {
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 112.38220244646072
+      },
+      {
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 112.13862663507462
+      },
+      {
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 111.92625385522842
+      },
+      {
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 111.78730946779251
+      },
+      {
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 111.68473720550537
+      },
+      {
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 111.68237161636353
+      },
+      {
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 111.64781993627548
+      },
+      {
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 111.75041288137436
+      },
+      {
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 111.88498318195343
+      },
+      {
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 112.088230073452
+      },
+      {
+        "excluded": false,
+        "ordinal": 11,
+        "predicted_cost": 112.32348412275314
+      },
+      {
+        "excluded": false,
+        "ordinal": 12,
+        "predicted_cost": 112.62777239084244
+      }
+    ],
+    "selected_predicted_cost": 111.64781993627548,
+    "transition_calls": 13,
+    "wall_seconds": 0.21115377312526107
+  },
+  "execution": {
+    "censored": false,
+    "end_of_window_parser_calls": 2,
+    "engine_wall_seconds": 73.40250336006284,
+    "first_fixed_step": 30000,
+    "frame_count": 316,
+    "interaction_coverage": {
+      "block_contact": false,
+      "pig_contact": false,
+      "pig_removed": false
+    },
+    "last_fixed_step": 45714,
+    "native_root": "/p/Project/NovPhy/.local-artifacts/issue-80-reactive-diagnostic-v1/attempts/continuous-fixed-h1--seed20260909--issue-77-n1-010-a06/aligned/capture-v2:6454550833044f30b7acfbfa1e52915d",
+    "observation_manifest": "observation-trace-manifest-v1:sha256:1b520773ffefb3654bbd1150f3c2393a699056b7d4d452f4dec449900d4fbcc8",
+    "realized_end_of_window_count_cost": 68.02362537384033,
+    "segment_identity": "continuous-fixed-h1--seed20260909--issue-77-n1-010-a06:shot-1",
+    "terminal_reason": "stable_entered"
+  },
+  "failure": null,
+  "failure_kind": null,
+  "fresh_scenario_lineage": false,
+  "issue_64_authorized": false,
+  "outcome": {
+    "all_tied": false,
+    "chosen_frozen_cost": 68.0274338722229,
+    "chosen_frozen_regret": 0.8969783255044741,
+    "first_shot_success": false,
+    "informative": true,
+    "realized_count_cost": 68.02362537384033,
+    "regret": 0.8968797792158437,
+    "shots_to_success": null
+  },
+  "plan_identity": "issue-80-reactive-diagnostic-v1",
+  "ports": {
+    "agent": 48385,
+    "game": 52285,
+    "physics": 57987
+  },
+  "schema": "issue_80_reactive_diagnostic_v1",
+  "seed": 20260909,
+  "state_identity": "issue-77-n1-010-a06",
+  "system": "continuous-fixed-h1",
+  "wall_seconds": 122.02819163911045
+}

@@ -1,0 +1,390 @@
+{
+  "bias_direction_conventions": {
+    "direction_tokens": [
+      "timeout_higher",
+      "timeout_lower",
+      "no_shift"
+    ],
+    "label": "DESCRIPTIVE",
+    "no_shift": "no frozen bias direction is stated for a contrast with no shift",
+    "ordinal": "the ordinal contrast has no bias-direction rule: an inventory position is not outcome-linked by itself"
+  },
+  "bias_direction_rules": {
+    "frozen_replay_count_cost|timeout_higher": "the raw frozen end-of-window count cost is higher for timed-out slots (less frozen progress); the hidden-success risk of #87's ceiling is correspondingly lower and the ceiling is a plausible lower bound on the states it covers",
+    "frozen_replay_count_cost|timeout_lower": "the raw frozen end-of-window count cost is lower for timed-out slots (more frozen progress); the unmeasured slots are disproportionately the better ones, so the published ceiling is plausibly understated",
+    "frozen_replay_pig_removed|timeout_higher": "the timeout stratum over-represents slots whose frozen replay removed a pig (same action, same decision state, same engine seed); under the frozen semantics those are the more successful slots, so #87's published ceiling is plausibly a downward-biased lower bound and the ceiling-state conditioning set of #87's Q2 is biased toward states in which engine-truth success is less likely",
+    "frozen_replay_pig_removed|timeout_lower": "the timeout stratum under-represents slots whose frozen replay removed a pig; the timed-out slots are then the less successful ones, so the published ceiling is not detectably depressed by the timeouts and #87's Q2 conditioning set is not detectably enriched in easier states by them",
+    "is_type010105|timeout_higher": "the timeout stratum over-represents type010105 states, whose published ceiling prevalence (3 of 12, 0.25) is lower than type010103's (4 of 12, 0.363636); under the frozen carry-over assumption the measured pooled ceiling is then plausibly biased upward relative to the full 24-state inventory",
+    "is_type010105|timeout_lower": "the timeout stratum over-represents type010103 states, whose published ceiling prevalence (4 of 12, 0.363636) is higher than type010105's (3 of 12, 0.25); under the frozen carry-over assumption the measured pooled ceiling is then plausibly biased downward relative to the full 24-state inventory",
+    "normalized_cost_position|timeout_higher": "timed-out slots sit higher inside their own state's frozen candidate cost span (less frozen progress, since the count cost is the task objective and lower is better); the hidden-success risk of #87's ceiling is correspondingly lower and the ceiling is a plausible lower bound on the states it covers",
+    "normalized_cost_position|timeout_lower": "timed-out slots sit lower inside their own state's frozen candidate cost span (more frozen progress); the slots #87 failed to measure are disproportionately the better ones, so the published ceiling is plausibly understated and the Q2 conditioning set is biased toward less successful states",
+    "state_best_observed_pig_removed|timeout_higher": "the timeout stratum over-represents states carrying at least one frozen-replay pig-removal candidate (the best-observed pig-removal indicator); the unmeasured states are therefore disproportionately states with frozen removal evidence, which biases #87's published ceiling downward and its Q2 conditioning set toward states without such evidence",
+    "state_best_observed_pig_removed|timeout_lower": "the timeout stratum under-represents states carrying a frozen-replay pig-removal candidate; the unmeasured states are the ones without frozen removal evidence, so the published ceiling is not detectably depressed by the timeouts and the Q2 conditioning set is not detectably enriched in easier states by them"
+  },
+  "caps": {
+    "derived_bytes_budget": 104857600,
+    "gpu_cap_seconds": 0.0,
+    "gpu_scope": "no GPU work of any kind in this ticket; the shared flock is still held for every wall-time-measured phase",
+    "stop": "readiness_or_precision_insufficient",
+    "wall_cap_seconds": 360.0,
+    "wall_scope": "cumulative measured wall of the audit phases (run plus publish plus validate); the dry run and the freeze publish no wall time"
+  },
+  "changelog": [
+    {
+      "change": "initial and terminal freeze: covariates, join keys, statistics, numeric margins, verdict mapping, bias-direction rules, precision guards and caps are published before any audit statistic exists",
+      "evidence": "no audit statistic has been computed at freeze time; the only quantity derived here is the raw-cost margin formula evaluated on the frozen candidate table, which involves no stratum and no contrast",
+      "version": 1,
+      "why": "standard freeze rule of the shared ADD-EXP protocol; the dry run is a structural inventory only and computes no statistic of any kind"
+    }
+  ],
+  "cited_cross_check": {
+    "attribution_limit": "a different execution infrastructure cannot be separated from slot selection by this row; it is a directional cross-check only",
+    "published_aggregates": "issue-89 summary.json completion_pass.inventory and ceiling_reestimate.pooled are cited verbatim",
+    "rule": "the issue-89 completion pass re-executed the 55 typed-failure slots of #87 under a separately frozen infrastructure protocol; its published per-slot verdicts (record fields engine_channel.pig_removed and outcome.first_shot_success, with the originating #87 failure text in issue87_typed_failure) are cited here verbatim and tallied by #87 failure stratum; the tally is never recomputed from engine evidence and is never a verdict input",
+    "source": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1"
+  },
+  "claim_boundary": "descriptive audit of the published #87 oracle pass only; no re-execution, no rendering, no new data, zero GPU work; cannot reopen #87's or #89's published dispositions; no causal claim about the timeout mechanism beyond the frozen covariate set; intervals are DESCRIPTIVE",
+  "contrasts": [
+    {
+      "covariate": "normalized_cost_position",
+      "id": "d1_normalized_cost_position",
+      "kind": "mean",
+      "margin": 0.1,
+      "verdict_relevant": true
+    },
+    {
+      "covariate": "frozen_replay_count_cost",
+      "id": "d2_frozen_replay_count_cost",
+      "kind": "mean",
+      "margin": 4.228764791041613,
+      "verdict_relevant": true
+    },
+    {
+      "covariate": "frozen_replay_pig_removed",
+      "id": "d3_frozen_replay_pig_removed",
+      "kind": "rate",
+      "margin": 0.1,
+      "verdict_relevant": true
+    },
+    {
+      "covariate": "is_type010105",
+      "id": "d4_type010105_share",
+      "kind": "rate",
+      "margin": 0.15,
+      "verdict_relevant": true
+    },
+    {
+      "covariate": "state_best_observed_pig_removed",
+      "id": "d5_state_best_observed_pig_removed",
+      "kind": "rate",
+      "margin": 0.1,
+      "verdict_relevant": true
+    },
+    {
+      "covariate": "ordinal",
+      "id": "d6_ordinal_position",
+      "kind": "mean",
+      "margin": 1.0,
+      "verdict_relevant": false
+    }
+  ],
+  "covariates": {
+    "dispatch_burst_size": {
+      "role": "mechanism_inventory_only",
+      "source": "derived: number of oracle slots dispatched within 5 seconds of this slot's dispatch timestamp, including itself",
+      "unit": "slot count"
+    },
+    "dispatch_index": {
+      "role": "mechanism_inventory_only",
+      "source": "derived: 0-based rank of dispatched_at_utc over the 289 slots, ties broken by slot identity",
+      "unit": "dispatch rank"
+    },
+    "engine_wall_seconds": {
+      "role": "mechanism_inventory_only",
+      "source": "issue-87 oracle records[].execution.engine_wall_seconds (executed slots only)",
+      "unit": "seconds"
+    },
+    "frozen_replay_count_cost": {
+      "role": "outcome_linked_lower_is_better_progress",
+      "source": "issue-80 candidate-outcomes/<source_member>.json realized_count_cost of the row with this ordinal",
+      "unit": "task-objective units (1000 * pig presence + block presence) at the frozen replay's observed window endpoint"
+    },
+    "frozen_replay_pig_removed": {
+      "role": "outcome_linked_engine_truth_removal_event",
+      "source": "issue-77 N1 results/<branch identity>.json segments[0].summary.event_counts.pig_removed greater than 0",
+      "unit": "boolean engine-truth removal event in the frozen replay"
+    },
+    "is_type010105": {
+      "role": "outcome_linked_family_mechanics",
+      "source": "issue-87 plan.json states[].generator_family",
+      "unit": "boolean family indicator (type010105 versus type010103)"
+    },
+    "live_at_dispatch": {
+      "role": "mechanism_inventory_only",
+      "source": "derived: number of oracle slots whose [dispatched_at_utc, dispatched_at_utc + wall_seconds] interval covers this slot's dispatched_at_utc, over the 4 concurrent workers",
+      "unit": "worker count 1 to 4"
+    },
+    "minutes_since_first_dispatch": {
+      "role": "mechanism_inventory_only",
+      "source": "derived: (this dispatch timestamp - the first dispatch timestamp)/60",
+      "unit": "minutes"
+    },
+    "normalized_cost_position": {
+      "role": "outcome_linked_lower_is_better_progress",
+      "source": "issue-80 candidate-outcomes/<source_member>.json: (cost - min)/(max - min) over the state's admissible inventory, 0 when the span is zero, following the frozen #72 normalized-regret convention",
+      "unit": "fraction of the state's own frozen candidate cost span"
+    },
+    "ordinal": {
+      "role": "inventory_position_not_outcome_linked_by_itself",
+      "source": "issue-87 plan.json oracle_cells[].ordinal",
+      "unit": "0-based candidate ordinal in the state's admissible inventory"
+    },
+    "peak_cpu_rss_mib": {
+      "role": "mechanism_inventory_only",
+      "source": "issue-87 receipts/<slot identity>.json peak_cpu_rss_mib",
+      "unit": "MiB"
+    },
+    "state_best_observed_pig_removed": {
+      "role": "outcome_linked_engine_truth_removal_event",
+      "source": "true when any admissible slot of the same state carries frozen_replay_pig_removed (the #73-style best-observed pig-removal indicator, computed from frozen #77 evidence)",
+      "unit": "boolean state-level indicator, constant within a state"
+    },
+    "wall_seconds": {
+      "role": "mechanism_inventory_only",
+      "source": "issue-87 oracle records[].wall_seconds",
+      "unit": "seconds; for a timeout slot this is the timeout bound, so the field is mechanism inventory and never part of a covariate shift claim"
+    }
+  },
+  "frozen_at": "2026-09-22T11:23:03Z",
+  "frozen_before_scoring_run": true,
+  "frozen_semantics": "frozen replay evidence: for every audited slot the #77 N1 campaign replayed the same action from the same source-member decision state (native fixed step 30000, engine seed 764100001) BEFORE #87 executed anything, so the frozen pig-removal event, the frozen terminal kind and the frozen count cost are engine-truth pre-execution properties of the slot; the frozen count cost is the task objective (1000 * pig presence + block presence) at the frozen replay's observed window endpoint, where lower means more progress",
+  "identity": "issue-90-oracle-timeout-audit-v1",
+  "inputs": [
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/plan.json",
+      "identity_fields": [
+        "identity",
+        "plan_identity",
+        "version",
+        "status"
+      ],
+      "name": "issue_87_plan",
+      "role": "slot inventory, membership, oracle seed, published protocol",
+      "schema": "issue_87_closed_loop_oracle_plan_v1",
+      "sha256_at_freeze": "sha256:689ec148564491291b372c02e7aa6f828480ea8200dc6c51e214f641ab5670ac"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/ledger.json",
+      "identity_fields": [
+        "identity",
+        "plan_identity",
+        "status"
+      ],
+      "name": "issue_87_ledger",
+      "role": "per-cell execution status and stop",
+      "schema": "issue_87_closed_loop_oracle_ledger_v1",
+      "sha256_at_freeze": "sha256:c5cfcc1a35767ccad6d83ff1229029f8bec9705e4de362e27376a6e1565fd344"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/records",
+      "identity_fields": [
+        "plan_identity",
+        "plan_version",
+        "schema"
+      ],
+      "name": "issue_87_records",
+      "role": "the 289 terminal slots: failure kind, wall seconds, engine channel",
+      "schema": "issue_87_closed_loop_oracle_record_v1",
+      "sha256_at_freeze": "directory:577 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/markers",
+      "identity_fields": [
+        "identity",
+        "phase"
+      ],
+      "name": "issue_87_markers",
+      "role": "per-slot dispatch timestamps (mechanism inventory)",
+      "schema": "issue_87_oracle_dispatch_marker_v1",
+      "sha256_at_freeze": "directory:289 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/receipts",
+      "identity_fields": [
+        "identity",
+        "phase"
+      ],
+      "name": "issue_87_receipts",
+      "role": "per-slot peak RSS (mechanism inventory)",
+      "schema": "issue_87_cell_receipt_v1",
+      "sha256_at_freeze": "directory:577 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-80-reactive-diagnostic-v1/candidate-outcomes",
+      "identity_fields": [
+        "member_identity",
+        "plan_identity",
+        "schema"
+      ],
+      "name": "issue_80_candidate_outcomes",
+      "role": "frozen candidate table: count cost and action per source member",
+      "schema": "issue_80_candidate_outcomes_v1",
+      "sha256_at_freeze": "directory:15 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-v1/coverage.json",
+      "identity_fields": [
+        "plan_identity",
+        "schema"
+      ],
+      "name": "issue_77_n1_coverage",
+      "role": "frozen N1 branch admissibility, candidate ordinal, terminal kind",
+      "schema": "issue_77_n1_coverage_v1",
+      "sha256_at_freeze": "sha256:aa86f1952382bdb35c93be08a9ddffdcceb8d901058e45f3efa7d68db5f03ef6"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-v1/results",
+      "identity_fields": [
+        "member_identity",
+        "base_cluster",
+        "schema"
+      ],
+      "name": "issue_77_n1_results",
+      "role": "frozen N1 replay summary: engine-truth pig-removal event count",
+      "schema": "issue_76_bounded_transfer_capture_v1",
+      "sha256_at_freeze": "directory:208 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-diagnostic-v1/summary.json",
+      "identity_fields": [
+        "identity",
+        "plan_identity",
+        "schema"
+      ],
+      "name": "issue_77_n1_diagnostic_summary",
+      "role": "published N1 headroom block (precedent for the best-observed indicator)",
+      "schema": "issue_77_n1_diagnostic_report_v1",
+      "sha256_at_freeze": "sha256:4609908d9cbbdcf25a75b9058061b99da3976e9bee9bfa8d827acd76be10ebc5"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-73-headroom-v1/plan.json",
+      "identity_fields": [
+        "identity",
+        "schema"
+      ],
+      "name": "issue_73_headroom_plan",
+      "role": "headroom registry identities (join attempt; typed unjoinable)",
+      "schema": "issue_73_readonly_diagnostic_v1",
+      "sha256_at_freeze": "sha256:e364357172d84d5d4fbe109a0e06bb86c7f148767c0de506c0b29ab380c95a9e"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1/summary.json",
+      "identity_fields": [
+        "identity",
+        "plan_identity",
+        "schema"
+      ],
+      "name": "issue_89_completion_summary",
+      "role": "cited published cross-check only; never recomputed",
+      "schema": "issue_89_oracle_completion_report_v1",
+      "sha256_at_freeze": "sha256:42ef6575d66a2273c9880eac4da9199d862dfb88147c4cc20beef194e1358f5e"
+    }
+  ],
+  "join_keys": {
+    "dispatch": "issue-87 markers/<slot identity>.json dispatched_at_utc and receipts/<slot identity>.json peak_cpu_rss_mib",
+    "frozen_candidate_table": "issue-80 candidate-outcomes/<source_member>.json row with the same ordinal (branch identity, action and count cost must agree with the issue-87 cell)",
+    "frozen_replay": "issue-77 N1 coverage branch keyed by the slot's branch identity, plus results/<branch identity>.json",
+    "headroom": "issue-73 headroom registry keyed by its own state identity (typed unjoinable: the #73 registry holds issue-68 production-v2 calibration identities, disjoint from the issue-77 N1 membership identities, so the best-observed pig-removal indicator is computed from frozen #77 evidence instead, as the frozen substitution records)",
+    "slot_identity": "issue-87 oracle cell identity = state identity x candidate ordinal",
+    "state_to_source_member": "issue-87 plan.json states[].source_member"
+  },
+  "limitations": [
+    "development/exposed N1 lineages only; not the sealed #64/#65 benchmark",
+    "the frozen covariates are engine truth for the frozen #77 replay, not for the #87 execution that timed out; per-slot execution variance between the two runs is unobserved",
+    "states sharing a source member share one physical initial state and candidate table, so the 24 state identities carry fewer independent initial states; the state-clustered bootstrap is descriptive only",
+    "the cold-start reading is inferred from published dispatch timestamps and per-cell wall seconds at one-second resolution; engine boot timestamps are not published, so live_at_dispatch is a proxy",
+    "unobserved-confounder residual risk: any covariate not in the frozen list (per-worker engine identity, host load outside the published timestamps, port-level collisions) is unmeasured, and a timeout mechanism that acts through such a covariate would not be detected here",
+    "no content hash is recomputed after the freeze and no full-corpus integrity pass runs anywhere; inputs are verified at read time by their carried schema/identity/plan_identity fields"
+  ],
+  "precision_guards": {
+    "min_executed_slots": 100,
+    "min_join_fraction": 0.95,
+    "min_timeout_slots": 20,
+    "min_timeout_states": 8,
+    "min_usable_draws_fraction": 0.9,
+    "rule": "each guard is evaluated on the frozen slot table; any failed guard maps the audit verdict to indeterminate before the shift rules are read"
+  },
+  "protocol_policy": "single terminal protocol version: the full protocol is frozen with actual numeric margins before the scoring run and executed exactly once; the dry run computes no statistic; --validate recomputes every published table",
+  "published_context": {
+    "issue_87_by_family": {
+      "type010103": {
+        "ceiling_states": 4,
+        "prevalence": 0.36363636363636365,
+        "states": 12
+      },
+      "type010105": {
+        "ceiling_states": 3,
+        "prevalence": 0.25,
+        "states": 12
+      }
+    },
+    "issue_87_pooled_ceiling": {
+      "ceiling_states": 7,
+      "measured_states": 23,
+      "prevalence": 0.30434782608695654,
+      "states": 24,
+      "unmeasured_states": [
+        "issue-77-n1-005-a07"
+      ]
+    },
+    "rule": "published numbers cited verbatim as context; never recomputed or amended"
+  },
+  "questions": {
+    "q1_covariate_shift": "do the 52 timed-out slots differ from the 234 executed slots on the frozen pre-execution covariates (frozen replay count cost distribution, state type, ordinal position, frozen-replay and best-observed pig-removal indicators), with descriptive state-clustered intervals over states",
+    "q2_audit_verdict": "under the frozen mapping with pre-declared margins, is the timeout mechanism outcome_blind, outcome_correlated, or indeterminate, and what does the observed correlation, if any, imply for the direction of #87's ceiling bias (typed, descriptive)"
+  },
+  "role": "terminal",
+  "schema": "issue_90_oracle_timeout_audit_plan_v1",
+  "statistics": {
+    "association_context": "within the executed stratum only: the published engine-truth success rate of slots whose frozen replay removed a pig minus the rate of the rest, with the same clustered interval; context for the semantics of the indicators and NEVER a verdict input",
+    "contrast": "value(target stratum mean) minus value(reference stratum mean), where the mean runs over the slots of the stratum and boolean covariates are averaged as rates",
+    "interval": "state-clustered percentile bootstrap, 10000 draws, PCG64 seed 9001, unit state identity (every slot of a resampled state moves together), quantiles [0.025, 0.975], labelled DESCRIPTIVE; draws in which either side is empty are dropped and counted",
+    "mechanism_inventory": "per stratum: slot, state and source-member counts, dispatch index and minutes since first dispatch, live_at_dispatch distribution and all-workers-live share, dispatch burst size, per-cell wall seconds, engine wall seconds (executed slots), peak RSS, frozen terminal kind histogram, published success count; DESCRIPTIVE only and never a verdict input",
+    "raw_cost_margin": 4.228764791041613,
+    "raw_cost_margin_formula": "0.25 times the median over the 24 states of (max minus min) of the frozen candidate count cost over the state's admissible inventory; materialized at freeze from the frozen #80 table alone"
+  },
+  "universe": {
+    "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1",
+    "reference_stratum": "executed",
+    "scheduled_slots": 289,
+    "stability_is_separate": "the 3 sealed-frame stability violations are a separate typed stratum (different mechanism: the physics is not static at the sealed decision step 30000) and are NEVER pooled into the timeout contrast; they are reported with their frozen covariates and typed as interval-ineligible",
+    "strata": [
+      "executed",
+      "timeout",
+      "stability"
+    ],
+    "stratum_rules": {
+      "executed": "the issue-87 oracle record failure_kind is null",
+      "stability": "the issue-87 oracle record failure_kind is execution_failure and the failure text equals 'ValueError: sealed pre-decision state/RGB advanced during readiness or hold'",
+      "timeout": "the issue-87 oracle record failure_kind is execution_failure and the failure text starts with TimeoutError"
+    },
+    "target_stratum": "timeout"
+  },
+  "validation_command": "python -u -m scripts.run_oracle_timeout_audit --validate",
+  "verdict_mapping": {
+    "borderline_rule": "a verdict-relevant contrast is borderline iff the absolute difference is at least its margin AND its interval includes 0",
+    "dispositions": {
+      "q1_covariate_shift": {
+        "not_supported_by_this_experiment": "the audit verdict is outcome_blind",
+        "readiness_or_precision_insufficient": "the audit verdict is indeterminate",
+        "supported": "the audit verdict is outcome_correlated"
+      },
+      "q2_audit_verdict": "reported directly with the frozen audit verdict token"
+    },
+    "indeterminate": "a precision guard tripped OR a verdict-relevant contrast is borderline",
+    "outcome_blind": "no precision guard tripped AND no verdict-relevant contrast shows a shift AND no verdict-relevant contrast is borderline",
+    "outcome_correlated": "no precision guard tripped AND at least one verdict-relevant contrast shows a shift",
+    "shift_rule": "a verdict-relevant contrast shows a shift iff the absolute difference is at least its margin AND its descriptive interval excludes 0"
+  },
+  "version": 1
+}

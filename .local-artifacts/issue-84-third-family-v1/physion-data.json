@@ -1,0 +1,239 @@
+{
+  "download": {
+    "prefix_bytes": 2147483648,
+    "prefix_sha256": "c37b8e3e4ca6ce32809a20aace1e775617d6c87ce53f4b368655cb3a14fe552f"
+  },
+  "identity": "issue-84-physion-data-v1",
+  "kind_vocabulary": [
+    "adirondack_chair",
+    "atmosphere_nodo",
+    "b03_animal_dog_rtstand_1228",
+    "b05_02_139",
+    "chair_thonet_marshall",
+    "coffee_maker",
+    "cube",
+    "dagger",
+    "skillet_closed",
+    "vase_01",
+    "vase_02",
+    "vase_03",
+    "vase_05",
+    "vase_06"
+  ],
+  "membership": {
+    "eval_units_per_seed": 48,
+    "rule": "first 12 frame-complete trials in the release's stored member order within the frozen 2147483648-byte prefix; frame-complete = frame-complete: contiguous frames 0000..n-1 with n >= 124, the frozen static object_ids present densely in every frame, finite positions and velocities, and at least one object-object collision event; no outcome-based selection",
+    "scan": {
+      "members_scanned": 12,
+      "skipped": []
+    },
+    "scenes": [
+      {
+        "collision_events": 334,
+        "frames": 151,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "coffee_maker",
+          "vase_05",
+          "b03_animal_dog_rtstand_1228",
+          "vase_01"
+        ],
+        "objects": 10,
+        "scene_index": 0,
+        "stimulus_name": "pilot_dominoes_SJ020_d3chairs_o1plants_tdwroom_0032"
+      },
+      {
+        "collision_events": 425,
+        "frames": 207,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "chair_thonet_marshall",
+          "vase_01",
+          "vase_06",
+          "vase_03"
+        ],
+        "objects": 10,
+        "scene_index": 1,
+        "stimulus_name": "pilot_dominoes_SJ020_d3chairs_o1plants_tdwroom_0156"
+      },
+      {
+        "collision_events": 269,
+        "frames": 170,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "skillet_closed"
+        ],
+        "objects": 5,
+        "scene_index": 2,
+        "stimulus_name": "pilot_dominoes_1mid_J025R45_o1full_tdwroom_0118"
+      },
+      {
+        "collision_events": 73,
+        "frames": 151,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube"
+        ],
+        "objects": 6,
+        "scene_index": 3,
+        "stimulus_name": "pilot_dominoes_4midRM1_tdwroom_2_0040"
+      },
+      {
+        "collision_events": 780,
+        "frames": 242,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube"
+        ],
+        "objects": 7,
+        "scene_index": 4,
+        "stimulus_name": "pilot_dominoes_4mid_boxroom_0020"
+      },
+      {
+        "collision_events": 462,
+        "frames": 178,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube"
+        ],
+        "objects": 6,
+        "scene_index": 5,
+        "stimulus_name": "pilot_dominoes_default_boxroom_0009"
+      },
+      {
+        "collision_events": 157,
+        "frames": 151,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "dagger"
+        ],
+        "objects": 5,
+        "scene_index": 6,
+        "stimulus_name": "pilot_dominoes_1mid_J025R45_o1full_tdwroom_0153"
+      },
+      {
+        "collision_events": 280,
+        "frames": 182,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube"
+        ],
+        "objects": 6,
+        "scene_index": 7,
+        "stimulus_name": "pilot_dominoes_default_boxroom_0126"
+      },
+      {
+        "collision_events": 105,
+        "frames": 151,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "b05_02_139"
+        ],
+        "objects": 5,
+        "scene_index": 8,
+        "stimulus_name": "pilot_dominoes_1mid_J025R45_o1full_tdwroom_0037"
+      },
+      {
+        "collision_events": 290,
+        "frames": 151,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube"
+        ],
+        "objects": 6,
+        "scene_index": 9,
+        "stimulus_name": "pilot_dominoes_default_boxroom_0042"
+      },
+      {
+        "collision_events": 345,
+        "frames": 211,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "adirondack_chair",
+          "vase_05",
+          "vase_02",
+          "atmosphere_nodo"
+        ],
+        "objects": 10,
+        "scene_index": 10,
+        "stimulus_name": "pilot_dominoes_SJ020_d3chairs_o1plants_tdwroom_0079"
+      },
+      {
+        "collision_events": 359,
+        "frames": 170,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube"
+        ],
+        "objects": 6,
+        "scene_index": 11,
+        "stimulus_name": "pilot_dominoes_4midRM1_tdwroom_0036"
+      }
+    ],
+    "training_windows": 480,
+    "windows_per_trial": 40
+  },
+  "position_scale": 2.0,
+  "release": {
+    "bytes_total": 40538620810,
+    "etag": "\"89bcf175ded62905512c7f6462b9558d-2417\"",
+    "family": "physion-dominoes",
+    "last_modified": "Fri, 23 Jul 2021 01:11:09 GMT",
+    "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/Dominoes_dynamics_training_HDF5s.tar.gz"
+  },
+  "schema": "issue_84_physion_data_v1",
+  "speed_tier_edges": [
+    0.0,
+    0.0044
+  ],
+  "velocity_scale": 2.5
+}

@@ -1,0 +1,156 @@
+{
+  "cell": {
+    "identity": "hybrid-fixed-h1--seed20260910--issue-77-n1-001-a00",
+    "seed": 20260910,
+    "state": "issue-77-n1-001-a00",
+    "system": "hybrid-fixed-h1"
+  },
+  "chosen": {
+    "action": {
+      "drag_x": -39,
+      "drag_y": 70,
+      "release_time_ms": 1000,
+      "tap_time_ms": 0
+    },
+    "branch_identity": "issue-77-n1-001-a09",
+    "ordinal": 9
+  },
+  "decision": {
+    "actuator_readiness": {
+      "action_selection": "prospectively fixed; slingshot anchor only",
+      "speed": 1,
+      "stable_observations": 2
+    },
+    "candidate_count": 12,
+    "chosen": {
+      "action": {
+        "drag_x": -39,
+        "drag_y": 70,
+        "release_time_ms": 1000,
+        "tap_time_ms": 0
+      },
+      "branch_identity": "issue-77-n1-001-a09",
+      "ordinal": 9
+    },
+    "failure": null,
+    "gpu_seconds": 0.5766293611377478,
+    "inference_not_equalized": true,
+    "linear_macs": 17189376,
+    "perception_seconds": 0.3782296101562679,
+    "prior_fallback_used": false,
+    "ranking": [
+      {
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 62.3508495092392
+      },
+      {
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 62.47454077005386
+      },
+      {
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 62.117816507816315
+      },
+      {
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 61.79649317264557
+      },
+      {
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 61.526531398296356
+      },
+      {
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 61.27849727869034
+      },
+      {
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 61.140606462955475
+      },
+      {
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 60.95221424102783
+      },
+      {
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 60.90511429309845
+      },
+      {
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 60.89939874410629
+      },
+      {
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 60.96476936340332
+      },
+      {
+        "excluded": false,
+        "ordinal": 12,
+        "predicted_cost": 61.25698983669281
+      }
+    ],
+    "selected_predicted_cost": 60.89939874410629,
+    "transition_calls": 12,
+    "wall_seconds": 0.19839975098147988
+  },
+  "engine_channel": {
+    "bird_launches": 1,
+    "consistency": "agreement",
+    "pig_contact": false,
+    "pig_identity_failures": 0,
+    "pig_lifecycle_destroyed": [],
+    "pig_removed": false,
+    "pig_removed_events": [],
+    "structure_destroyed": true,
+    "structure_destroyed_events": 2
+  },
+  "execution": {
+    "censored": true,
+    "end_of_window_parser_calls": 2,
+    "engine_wall_seconds": 150.84947085101157,
+    "first_fixed_step": 30000,
+    "frame_count": 601,
+    "last_fixed_step": 60000,
+    "native_root": "/p/Project/NovPhy/.local-artifacts/issue-85-engine-outcome-reactive-v1/attempts/hybrid-fixed-h1--seed20260910--issue-77-n1-001-a00/aligned/capture-v2:d996b757428748018ac305c4e926c028",
+    "observation_manifest": "observation-trace-manifest-v1:sha256:3d3c5537d076550b28da149aee02ba93ffb0bccc10413183b5c993678450e01c",
+    "realized_end_of_window_count_cost": 53.03142163157463,
+    "segment_identity": "hybrid-fixed-h1--seed20260910--issue-77-n1-001-a00:shot-1",
+    "terminal_reason": null
+  },
+  "failure": null,
+  "failure_kind": null,
+  "fresh_scenario_lineage": false,
+  "issue_64_authorized": false,
+  "outcome": {
+    "all_tied": false,
+    "chosen_frozen_cost": 53.040525406599045,
+    "chosen_frozen_regret": 0.7671002554341931,
+    "first_shot_success": false,
+    "informative": true,
+    "realized_count_cost": 53.03142163157463,
+    "regret": 0.7666179017384008,
+    "shots_to_success": null
+  },
+  "plan_identity": "issue-85-engine-outcome-reactive-v1",
+  "ports": {
+    "agent": 42901,
+    "game": 55099,
+    "physics": 60959
+  },
+  "schema": "issue_85_engine_outcome_reactive_record_v1",
+  "seed": 20260910,
+  "state_identity": "issue-77-n1-001-a00",
+  "system": "hybrid-fixed-h1",
+  "wall_seconds": 220.7347441778984
+}

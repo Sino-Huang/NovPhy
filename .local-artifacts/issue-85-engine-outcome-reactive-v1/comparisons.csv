@@ -1,0 +1,31 @@
+seed,system,executed,mean_regret,success_fraction,successes,mean_realized_count_cost,decision_failures,execution_failures,candidate_counts,transition_calls,linear_macs,mean_decision_wall_seconds,mean_engine_wall_seconds
+
+contrast_tested,reference,metric,mean,descriptive_95_low,descriptive_95_high,paired_states,label
+
+phase_c_proxy_vs_engine,cells_compared,both_success,proxy_only,engine_only,both_failure,agreement,label
+realized_cost<=82_published_threshold,47,0,42,0,5,0.10638297872340426,DESCRIPTIVE
+realized_cost<=82_published_threshold[continuous-fixed-h1],12,0,11,0,1,0.08333333333333333,DESCRIPTIVE
+realized_cost<=82_published_threshold[continuous-fixed-h5],12,0,11,0,1,0.08333333333333333,DESCRIPTIVE
+realized_cost<=82_published_threshold[hybrid-fixed-h1],11,0,11,0,0,0.0,DESCRIPTIVE
+realized_cost<=82_published_threshold[no-model-ordinal-prior],12,0,9,0,3,0.25,DESCRIPTIVE
+phase_c_paired_state_differences(proxy-engine),4,0.8958333333333334,0.6875000000000001,1.0,4,,DESCRIPTIVE
+
+pilot_compute_accounting,seed,system,executed,successes,candidate_counts,transition_calls,linear_macs,mean_decision_wall_seconds,mean_engine_wall_seconds,mean_wall_seconds
+pilot_compute_accounting,20260908,hybrid-fixed-h1,4,0,9 12 13,47,67325056,0.5460481237387285,112.60382905974984,183.21939944295445
+pilot_compute_accounting,20260908,continuous-fixed-h1,4,0,9 12 13,47,87053400,0.5264589286525734,129.63388124166522,199.67634299577912
+pilot_compute_accounting,20260908,continuous-fixed-h5,4,0,9 12 13,235,435267000,0.536884532251861,130.45643532800023,198.12685855169548
+pilot_compute_accounting,20260908,no-model-ordinal-prior,4,0,9 12 13,0,0,0.3667242764495313,117.8621442815056,187.32600086199818
+pilot_compute_accounting,20260909,hybrid-fixed-h1,3,0,9 13,35,50135680,0.564475580273817,129.40403451165184,200.73323706164956
+pilot_compute_accounting,20260909,continuous-fixed-h1,4,0,9 12 13,47,87053400,0.5382101575960405,128.34679377172142,207.44128870003624
+pilot_compute_accounting,20260909,continuous-fixed-h5,4,0,9 12 13,235,435267000,0.652869284094777,129.80712764238706,198.00778416800313
+pilot_compute_accounting,20260909,no-model-ordinal-prior,4,0,9 12 13,0,0,0.4003066240111366,123.79667176830117,194.73131201625802
+pilot_compute_accounting,20260910,hybrid-fixed-h1,4,0,9 12 13,47,67325056,0.6159005960798822,114.48024406604236,190.32457316224463
+pilot_compute_accounting,20260910,continuous-fixed-h1,4,0,9 12 13,47,87053400,0.5120509408297949,136.9880951027153,205.30310189700685
+pilot_compute_accounting,20260910,continuous-fixed-h5,4,0,9 12 13,235,435267000,0.5771315858000889,128.88808560854523,198.7975544751971
+pilot_compute_accounting,20260910,no-model-ordinal-prior,4,0,9 12 13,0,0,0.41268797405064106,120.11261160898721,194.3584473465453
+pilot_frozen_predictor_parameters,continuous,20260908:1862396 20260909:1862396 20260910:1862396
+pilot_frozen_predictor_parameters,hybrid,20260908:1837690 20260909:1837690 20260910:1837690
+pilot_active_predictor_parameters,continuous-fixed-h1,20260908:1862396 20260909:1862396 20260910:1862396
+pilot_active_predictor_parameters,continuous-fixed-h5,20260908:1862396 20260909:1862396 20260910:1862396
+pilot_active_predictor_parameters,hybrid-fixed-h1,20260908:1441516 20260909:1441516 20260910:1441516
+pilot_active_predictor_parameters,no-model-ordinal-prior,20260908:0 20260909:0 20260910:0

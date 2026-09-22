@@ -1,0 +1,3288 @@
+{
+  "archived_release": false,
+  "claim_boundary": "mechanism-shape replication only, either direction is a valid publishable outcome; a third non-replication does not falsify the NovPhy boundary and a replication does not confirm it; the three families (NovPhy #77, CLEVRER #79, Physion-Dominoes #84) are reported separately and no prior published verdict is recomputed or amended; no leaderboard/VQA/perception claim; no new NovPhy captures; no sealed/final lineage access; #64/#65 remain unauthorized; descriptive intervals only",
+  "compute": {
+    "active_parameters_per_system": {
+      "continuous_h15|h15|continuous": 1862396,
+      "continuous_h1|h1|continuous": 1862396,
+      "continuous_h5|h5|continuous": 1862396,
+      "hybrid_continuous_h15|h15|continuous": 1441516,
+      "hybrid_continuous_h1|h1|continuous": 1441516,
+      "hybrid_continuous_h5|h5|continuous": 1441516,
+      "hybrid_micro_h15|h15|micro": 1805302,
+      "hybrid_micro_h1|h1|micro": 1805302,
+      "hybrid_micro_h5|h5|micro": 1805302
+    },
+    "allowance_gpu_hours": 6.0,
+    "evaluation_wall_seconds": 55.669624969828874,
+    "fits": [
+      {
+        "arm": "continuous",
+        "memory": {
+          "peak_cpu_rss_mib": 1636.65234375,
+          "peak_cuda_allocated_mib": 64.77294921875
+        },
+        "optimizer_examples": 576000,
+        "seed": 20260908,
+        "steps": 9000,
+        "wall_seconds": 204.5789674250409
+      },
+      {
+        "arm": "hybrid",
+        "memory": {
+          "peak_cpu_rss_mib": 1892.765625,
+          "peak_cuda_allocated_mib": 105.375
+        },
+        "optimizer_examples": 576000,
+        "seed": 20260908,
+        "steps": 9000,
+        "wall_seconds": 308.4307211181149
+      },
+      {
+        "arm": "continuous",
+        "memory": {
+          "peak_cpu_rss_mib": 1892.765625,
+          "peak_cuda_allocated_mib": 105.375
+        },
+        "optimizer_examples": 576000,
+        "seed": 20260909,
+        "steps": 9000,
+        "wall_seconds": 230.43892674311064
+      },
+      {
+        "arm": "hybrid",
+        "memory": {
+          "peak_cpu_rss_mib": 1892.765625,
+          "peak_cuda_allocated_mib": 105.375
+        },
+        "optimizer_examples": 576000,
+        "seed": 20260909,
+        "steps": 9000,
+        "wall_seconds": 510.9067212701775
+      },
+      {
+        "arm": "continuous",
+        "memory": {
+          "peak_cpu_rss_mib": 1892.765625,
+          "peak_cuda_allocated_mib": 105.375
+        },
+        "optimizer_examples": 576000,
+        "seed": 20260910,
+        "steps": 9000,
+        "wall_seconds": 379.65312997996807
+      },
+      {
+        "arm": "hybrid",
+        "memory": {
+          "peak_cpu_rss_mib": 1892.765625,
+          "peak_cuda_allocated_mib": 105.375
+        },
+        "optimizer_examples": 576000,
+        "seed": 20260910,
+        "steps": 9000,
+        "wall_seconds": 306.82336019189097
+      }
+    ],
+    "inference_equalized": false,
+    "note": "candidate counts do not exist on Physion-Dominoes (no planning estimand); units, steps, wall and active parameters are reported per arm; inference is not equalized",
+    "training_wall_seconds": 1940.831826728303,
+    "units_per_arm": {
+      "continuous": 432,
+      "hybrid": 864
+    }
+  },
+  "contrasts": [
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          0.0016082343877011833,
+          0.0019428530701083625
+        ],
+        "mean": 0.001773427987548833,
+        "paired_units": 48
+      },
+      "endpoint": 15,
+      "horizon": 1,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00010419133799991365,
+          0.00022460199789849054
+        ],
+        "mean": 6.471482791110047e-05,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h1",
+      "reference": "continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.004820373897625055,
+          0.00772880566081666
+        ],
+        "mean": 0.006290103042071375,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          0.00719701034556945,
+          0.008363968963708935
+        ],
+        "mean": 0.007762916004543918,
+        "paired_units": 48
+      },
+      "endpoint": 30,
+      "horizon": 1,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00030992191508024287,
+          0.002213582505484938
+        ],
+        "mean": 0.0010225294455368488,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h1",
+      "reference": "continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.012130126411567388,
+          0.01564091831314727
+        ],
+        "mean": 0.013811974857364677,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          0.042344452432977665,
+          0.05996281845857286
+        ],
+        "mean": 0.05112036928120587,
+        "paired_units": 48
+      },
+      "endpoint": 60,
+      "horizon": 1,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.07202436213071146,
+          -0.013557117760905815
+        ],
+        "mean": -0.041559891464809574,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h1",
+      "reference": "continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.08610565893274422,
+          -0.05542525246273727
+        ],
+        "mean": -0.07106360511129929,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -46.47084100180202,
+          -37.1864775247044
+        ],
+        "mean": -41.549061589770844,
+        "paired_units": 48
+      },
+      "endpoint": 120,
+      "horizon": 1,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          3.8383498754766263,
+          25.970973922808962
+        ],
+        "mean": 15.236829068925646,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h1",
+      "reference": "continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -100.16353034277758,
+          -82.31297490066953
+        ],
+        "mean": -90.81424535645378,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          8.73637747998954e-05,
+          9.803354426417678e-05
+        ],
+        "mean": 9.257869957461178e-05,
+        "paired_units": 48
+      },
+      "endpoint": 15,
+      "horizon": 5,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          0.0001188493308695292,
+          0.0001377755183139268
+        ],
+        "mean": 0.00012840722923910004,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h5",
+      "reference": "continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          5.912866222893678e-05,
+          0.00021000428861649801
+        ],
+        "mean": 0.0001356127474233896,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          0.00037478818345941056,
+          0.0004188588851825949
+        ],
+        "mean": 0.0003973150511834926,
+        "paired_units": 48
+      },
+      "endpoint": 30,
+      "horizon": 5,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          0.00033374169721709116,
+          0.0003847760475436088
+        ],
+        "mean": 0.00035943635773744766,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h5",
+      "reference": "continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.0007217528429666547,
+          0.0011894707415598938
+        ],
+        "mean": 0.0009575304009356638,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          0.0013464972117112162,
+          0.001477105074769093
+        ],
+        "mean": 0.0014104693174077614,
+        "paired_units": 48
+      },
+      "endpoint": 60,
+      "horizon": 5,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          0.0006489565885607994,
+          0.0008166868070475173
+        ],
+        "mean": 0.000734617839851934,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h5",
+      "reference": "continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.002421707605632643,
+          0.003629837106745981
+        ],
+        "mean": 0.0030189893805072643,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          0.005429938314450232,
+          0.006174576475880005
+        ],
+        "mean": 0.005795072043030006,
+        "paired_units": 48
+      },
+      "endpoint": 120,
+      "horizon": 5,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          0.0014747061124782905,
+          0.002540576389744981
+        ],
+        "mean": 0.0020409593352168384,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h5",
+      "reference": "continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.00468644126930384,
+          0.0069947646820057545
+        ],
+        "mean": 0.005823939411331796,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -4.185782770744279e-06,
+          8.707997721065411e-06
+        ],
+        "mean": 2.246171738483503e-06,
+        "paired_units": 48
+      },
+      "endpoint": 15,
+      "horizon": 15,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -2.0202889820729473e-05,
+          -1.2299674615690039e-05
+        ],
+        "mean": -1.6215955633293157e-05,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h15",
+      "reference": "continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.0002558962366859103,
+          0.000508169429598916
+        ],
+        "mean": 0.00037871030253376777,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          9.551644766108641e-06,
+          1.8775746995440075e-05
+        ],
+        "mean": 1.4128728909983894e-05,
+        "paired_units": 48
+      },
+      "endpoint": 30,
+      "horizon": 15,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -3.076372174588313e-05,
+          -1.4048432347458909e-05
+        ],
+        "mean": -2.238186770379495e-05,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h15",
+      "reference": "continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.0005044720038313243,
+          0.0006913175235947873
+        ],
+        "mean": 0.0005954852252519535,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -2.7452593531052117e-05,
+          1.628693578620893e-05
+        ],
+        "mean": -5.688509595024193e-06,
+        "paired_units": 48
+      },
+      "endpoint": 60,
+      "horizon": 15,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -5.263863836893911e-05,
+          -3.1127251480079906e-05
+        ],
+        "mean": -4.194840009101123e-05,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h15",
+      "reference": "continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          9.710587184801827e-05,
+          0.0009091576109413935
+        ],
+        "mean": 0.0004998370374475295,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -7.087622562822718e-05,
+          -1.0642854815361926e-05
+        ],
+        "mean": -4.0583087765197786e-05,
+        "paired_units": 48
+      },
+      "endpoint": 120,
+      "horizon": 15,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00018424399086648514,
+          -0.00010021652250947634
+        ],
+        "mean": -0.00014022806600324757,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h15",
+      "reference": "continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0008836681894182321,
+          -2.7611892735674536e-05
+        ],
+        "mean": -0.0004407663016334279,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0025636499254889917,
+          -0.0021860936722886337
+        ],
+        "mean": -0.0023693278425424877,
+        "paired_units": 48
+      },
+      "endpoint": 15,
+      "horizon": 1,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.004572467286521311,
+          -0.0037630334379274346
+        ],
+        "mean": -0.0041610500953134354,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h1",
+      "reference": "hybrid_continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0030248051346764746,
+          -0.0015337811670987217
+        ],
+        "mean": -0.002253030829403239,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.022181483947820702,
+          -0.01993254637248659
+        ],
+        "mean": -0.021104109454123925,
+        "paired_units": 48
+      },
+      "endpoint": 30,
+      "horizon": 1,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0410633781695247,
+          -0.036358413845462366
+        ],
+        "mean": -0.03872207132452685,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h1",
+      "reference": "hybrid_continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.019761650891612387,
+          -0.014737443511128531
+        ],
+        "mean": -0.017198146573112656,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.3130088901121376,
+          -0.23798089676743583
+        ],
+        "mean": -0.27503373463534647,
+        "paired_units": 48
+      },
+      "endpoint": 60,
+      "horizon": 1,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.2492581628314737,
+          -0.08820602005451092
+        ],
+        "mean": -0.16979861228416362,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h1",
+      "reference": "hybrid_continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.2777071754008325,
+          -0.1462887272995431
+        ],
+        "mean": -0.20949284170961216,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          65.07729063828785,
+          84.2096604069074
+        ],
+        "mean": 74.67602083418105,
+        "paired_units": 48
+      },
+      "endpoint": 120,
+      "horizon": 1,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          1.8540329780843519,
+          38.95784994297557
+        ],
+        "mean": 20.719832526312935,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h1",
+      "reference": "hybrid_continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          48.42561228076617,
+          77.36373954084183
+        ],
+        "mean": 62.56336839993795,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00019641028097541698,
+          -0.00016525840194642823
+        ],
+        "mean": -0.00018121361649213618,
+        "paired_units": 48
+      },
+      "endpoint": 15,
+      "horizon": 5,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0002317116077676929,
+          -0.00016256008288072126
+        ],
+        "mean": -0.00019601659881926837,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h5",
+      "reference": "hybrid_continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0008232695562734685,
+          -0.00028884770190416024
+        ],
+        "mean": -0.0005710135699498804,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00022499840103288685,
+          -0.0001716658287781077
+        ],
+        "mean": -0.00019802925130029002,
+        "paired_units": 48
+      },
+      "endpoint": 30,
+      "horizon": 5,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0003933108132110242,
+          -0.0002473630378744929
+        ],
+        "mean": -0.00031851953291253367,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h5",
+      "reference": "hybrid_continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0005507062636752381,
+          -0.0002127933724801147
+        ],
+        "mean": -0.0003919685518162118,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0011064527607636087,
+          -0.0009503393916626616
+        ],
+        "mean": -0.0010235861538805894,
+        "paired_units": 48
+      },
+      "endpoint": 60,
+      "horizon": 5,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.002298727756816435,
+          -0.0018317313134401858
+        ],
+        "mean": -0.00206295136821508,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h5",
+      "reference": "hybrid_continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0016974602071261162,
+          -0.0012536510885588037
+        ],
+        "mean": -0.0014759984139042597,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.008957896819548398,
+          -0.00796679379879303
+        ],
+        "mean": -0.008455264204207601,
+        "paired_units": 48
+      },
+      "endpoint": 120,
+      "horizon": 5,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.019775161757570457,
+          -0.0179832931086518
+        ],
+        "mean": -0.018842738170254354,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h5",
+      "reference": "hybrid_continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.008875041579408893,
+          -0.006731579833487759
+        ],
+        "mean": -0.0077483261411543936,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0026570409300388878,
+          -0.0022843911568590633
+        ],
+        "mean": -0.002467910098516768,
+        "paired_units": 48
+      },
+      "endpoint": 15,
+      "horizon": 15,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00275469309741791,
+          -0.0022610781864174437
+        ],
+        "mean": -0.0025010638636615568,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h15",
+      "reference": "hybrid_continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.007185888723865395,
+          -0.004999079810666747
+        ],
+        "mean": -0.006079377076073595,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -9.994229603257229e-05,
+          1.647936855230606e-05
+        ],
+        "mean": -4.036764676129678e-05,
+        "paired_units": 48
+      },
+      "endpoint": 30,
+      "horizon": 15,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00026017357597475486,
+          -0.00018474803085047773
+        ],
+        "mean": -0.00022077873001712252,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h15",
+      "reference": "hybrid_continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.0023189650672874353,
+          0.00357654934818533
+        ],
+        "mean": 0.0029496699308866584,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -3.539489314587424e-05,
+          3.611297899321167e-05
+        ],
+        "mean": 1.4711305185402257e-06,
+        "paired_units": 48
+      },
+      "endpoint": 60,
+      "horizon": 15,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0002613472138313632,
+          -0.0001831755804447413
+        ],
+        "mean": -0.00022188754701346625,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h15",
+      "reference": "hybrid_continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.0021443270294589133,
+          0.003044274641747001
+        ],
+        "mean": 0.0026013265127807646,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00042468735960533697,
+          -0.0003301635118987179
+        ],
+        "mean": -0.00037537956046031066,
+        "paired_units": 48
+      },
+      "endpoint": 120,
+      "horizon": 15,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0008408873061701645,
+          -0.0005894161157963632
+        ],
+        "mean": -0.0007143222543769904,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h15",
+      "reference": "hybrid_continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0007383043893949232,
+          -0.00025860059367409523
+        ],
+        "mean": -0.0004962813844839629,
+        "paired_units": 48
+      }
+    }
+  ],
+  "definitions": {
+    "arms": {
+      "continuous": "ContinuousDynamics at frozen width 456; no symbolic modules",
+      "hybrid": "CNNHybridPredictor port; micro contact+velocity-bin symbolic conditioning; macro head and adapter receive no gradient and are never evaluated (unsupported Phase 0)"
+    },
+    "comparator_disclosure": "both arms are retrained from scratch with no policy selection and every contrast discloses independent training; no selection optimism attaches to this family",
+    "endpoint_grid": {
+      "contexts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "divisibility_rule": "every endpoint divisible by all horizons and context+endpoint within the trial; the membership minimum of 124 frames makes the {15,30,60,120} x {0,1,2,3} grid valid for every member; the NovPhy {15..600} grid does not transfer; divisibility plus the trial bound is the freezing rule",
+      "endpoints": [
+        15,
+        30,
+        60,
+        120
+      ],
+      "horizons": [
+        1,
+        5,
+        15
+      ]
+    },
+    "estimands": {
+      "dropped": "planning/ranking regret is NOT an estimand (no candidate inventory); no shots/success claims; the macro arm is unsupported and its estimand dropped; released readout labels (target/zone) are not estimands",
+      "metrics": [
+        "position_mse (all-frames availability rule)",
+        "velocity_mse (same rule)",
+        "carrier_mse",
+        "presence_mse",
+        "kind_mse"
+      ],
+      "recursive": "fixed-pair rollout from the true carrier at each eval context; one shared initial carrier, predictions feed the next transition, no truth resets",
+      "regime": "contact-active = at least one object-object collision event inside the early cascade window (context, context+30]; strata contrasts of the symbolic-execution effect per horizon and endpoint; minimum 8 units per stratum",
+      "symbolic_execution": "hybrid fixed micro pair h vs hybrid fixed continuous pair h (same checkpoint)",
+      "training_effect": "hybrid fixed continuous pair h vs independently trained continuous arm at h",
+      "zero_shot_pooling": "no zero-shot or adapted conditions exist here; both arms retrained from scratch"
+    },
+    "intervals": "paired bootstrap over paired (trial, context) units, mean-over-seeds reference-minus-tested differences, 10000 resamples, rng 7201; DESCRIPTIVE only, no inferential superiority claim",
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "systems": [
+      "continuous_h1",
+      "continuous_h5",
+      "continuous_h15",
+      "hybrid_continuous_h1",
+      "hybrid_continuous_h5",
+      "hybrid_continuous_h15",
+      "hybrid_micro_h1",
+      "hybrid_micro_h5",
+      "hybrid_micro_h15"
+    ],
+    "training": {
+      "batch_size": 64,
+      "grad_clip": 1.0,
+      "identical_minibatches": "both arms of one seed share the generator seed and the frozen window order; windows draw with one per-seed generator exactly as issue-74",
+      "learning_rate": 0.0001,
+      "objective": {
+        "dropped": "none; the issue-74 objective contains no action-dependent penalty term; the action enters only as the constant null-action conditioning input held for both arms",
+        "hybrid_symbolic": "0.1 x micro symbolic losses: pos-weight-5 relations BCE over the contact and velocity-bin channels plus availability BCE, at predicted and observed contexts",
+        "retained": [
+          "local carrier MSE at four requested-horizon transitions",
+          "recursive MSE along the unrolled carrier",
+          "0.01 carrier bound penalty relu(|z|-2)^2 (issue-74 weight)"
+        ]
+      },
+      "pair_cycle": "step % 6 over frozen issue-71 PAIRS order minus macro: [[1, 'continuous'], [1, 'micro'], [5, 'continuous'], [5, 'micro'], [15, 'continuous'], [15, 'micro']]; the continuous arm uses the same delta with continuous abstraction",
+      "selection": "last update, no best-validation checkpoint",
+      "steps": 9000,
+      "unroll": 4,
+      "weight_decay": 0.0001
+    }
+  },
+  "diagnostics_complete": true,
+  "dispositions": {
+    "question_1_detail": {
+      "components": {
+        "S1": {
+          "difference": 6.471482791110047e-05,
+          "holds": false,
+          "margin": 0.00024976621360919024
+        },
+        "S2": {
+          "h15_difference": -1.6215955633293157e-05,
+          "h1_difference": 6.471482791110047e-05,
+          "holds": true
+        },
+        "S3": {
+          "curves": {
+            "1": {
+              "120": 182.60046063529117,
+              "15": 0.004995324272183805,
+              "30": 0.03201370220631361,
+              "60": 0.6460376330133942
+            },
+            "15": {
+              "120": 0.0011376740064103312,
+              "15": 4.2519579324107326e-05,
+              "30": 0.00012143631501102289,
+              "60": 0.0003447396701530023
+            },
+            "5": {
+              "120": 0.017636526298398774,
+              "15": 0.0003217970772513783,
+              "30": 0.001087207985417788,
+              "60": 0.0036896559678199184
+            }
+          },
+          "holds": true
+        }
+      },
+      "disposition": "not_supported_by_this_experiment"
+    },
+    "question_1_signature": "not_supported_by_this_experiment",
+    "question_2_detail": {
+      "disposition": "supported",
+      "margins": {
+        "1": 8.368181578318278,
+        "15": 6.389510362067893e-05,
+        "5": 0.0007797783481590967
+      },
+      "rows_at_120": [
+        {
+          "active": {
+            "descriptive_95_percent_interval": [
+              43.66401700337729,
+              65.8846816044762
+            ],
+            "mean": 54.79960101899647,
+            "paired_units": 35
+          },
+          "difference_active_minus_still": 125.83299135760073,
+          "endpoint": 120,
+          "horizon": 1,
+          "still": {
+            "descriptive_95_percent_interval": [
+              -86.00650751407332,
+              -46.4785218801254
+            ],
+            "mean": -71.03339033860426,
+            "paired_units": 13
+          }
+        },
+        {
+          "active": {
+            "descriptive_95_percent_interval": [
+              -0.019831909677900727,
+              -0.01746624998260467
+            ],
+            "mean": -0.018575483724652297,
+            "paired_units": 35
+          },
+          "difference_active_minus_still": 0.0009867856452998973,
+          "endpoint": 120,
+          "horizon": 5,
+          "still": {
+            "descriptive_95_percent_interval": [
+              -0.02025714909407095,
+              -0.018770619040020763
+            ],
+            "mean": -0.019562269369952194,
+            "paired_units": 13
+          }
+        },
+        {
+          "active": {
+            "descriptive_95_percent_interval": [
+              -0.0007437343686580701,
+              -0.0004465431219432504
+            ],
+            "mean": -0.0005916553230712279,
+            "paired_units": 35
+          },
+          "difference_active_minus_still": 0.0004529240540520462,
+          "endpoint": 120,
+          "horizon": 15,
+          "still": {
+            "descriptive_95_percent_interval": [
+              -0.0011817202385058269,
+              -0.0009228485969241517
+            ],
+            "mean": -0.0010445793771232741,
+            "paired_units": 13
+          }
+        }
+      ]
+    },
+    "question_2_regime": "supported"
+  },
+  "final_evaluation_opened": false,
+  "fresh_evaluation_opened": false,
+  "identity": "issue-84-third-family-report-v1",
+  "inventory": {
+    "executed_cells": 1296,
+    "missing_cells": 0,
+    "scheduled_cells": 1296,
+    "typed_failure_cells": 0
+  },
+  "issue_64_authorized": false,
+  "limitations": [
+    "third-family replication: mechanism-shape evidence only, no leaderboard/VQA or perception claim; the three families are reported separately and none falsifies another",
+    "engine-annotation features in, no visual perception on either arm; shared frozen parser contract",
+    "descriptive paired bootstrap over 48 (trial, context) units per seed; no inferential superiority claim",
+    "inference and symbolic-head work are not equalized across arms; recorded, not matched",
+    "macro arm unsupported on Physion-Dominoes; its estimand dropped (Phase 0)",
+    "carrier positions are engine transform origins and velocities are center-of-mass readouts; both carried verbatim under their published semantics",
+    "frozen lower speed-tier edge is 0.0 on this family, so the velocity-bin micro channel is an at-rest/moving indicator; disclosed, not retuned"
+  ],
+  "membership": {
+    "eval_units_per_seed": 48,
+    "rule": "first 12 frame-complete trials in the release's stored member order within the frozen 2147483648-byte prefix; frame-complete = frame-complete: contiguous frames 0000..n-1 with n >= 124, the frozen static object_ids present densely in every frame, finite positions and velocities, and at least one object-object collision event; no outcome-based selection",
+    "scan": {
+      "members_scanned": 12,
+      "skipped": []
+    },
+    "scenes": [
+      {
+        "collision_events": 334,
+        "frames": 151,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "coffee_maker",
+          "vase_05",
+          "b03_animal_dog_rtstand_1228",
+          "vase_01"
+        ],
+        "objects": 10,
+        "scene_index": 0,
+        "stimulus_name": "pilot_dominoes_SJ020_d3chairs_o1plants_tdwroom_0032"
+      },
+      {
+        "collision_events": 425,
+        "frames": 207,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "chair_thonet_marshall",
+          "vase_01",
+          "vase_06",
+          "vase_03"
+        ],
+        "objects": 10,
+        "scene_index": 1,
+        "stimulus_name": "pilot_dominoes_SJ020_d3chairs_o1plants_tdwroom_0156"
+      },
+      {
+        "collision_events": 269,
+        "frames": 170,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "skillet_closed"
+        ],
+        "objects": 5,
+        "scene_index": 2,
+        "stimulus_name": "pilot_dominoes_1mid_J025R45_o1full_tdwroom_0118"
+      },
+      {
+        "collision_events": 73,
+        "frames": 151,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube"
+        ],
+        "objects": 6,
+        "scene_index": 3,
+        "stimulus_name": "pilot_dominoes_4midRM1_tdwroom_2_0040"
+      },
+      {
+        "collision_events": 780,
+        "frames": 242,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube"
+        ],
+        "objects": 7,
+        "scene_index": 4,
+        "stimulus_name": "pilot_dominoes_4mid_boxroom_0020"
+      },
+      {
+        "collision_events": 462,
+        "frames": 178,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube"
+        ],
+        "objects": 6,
+        "scene_index": 5,
+        "stimulus_name": "pilot_dominoes_default_boxroom_0009"
+      },
+      {
+        "collision_events": 157,
+        "frames": 151,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "dagger"
+        ],
+        "objects": 5,
+        "scene_index": 6,
+        "stimulus_name": "pilot_dominoes_1mid_J025R45_o1full_tdwroom_0153"
+      },
+      {
+        "collision_events": 280,
+        "frames": 182,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube"
+        ],
+        "objects": 6,
+        "scene_index": 7,
+        "stimulus_name": "pilot_dominoes_default_boxroom_0126"
+      },
+      {
+        "collision_events": 105,
+        "frames": 151,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "b05_02_139"
+        ],
+        "objects": 5,
+        "scene_index": 8,
+        "stimulus_name": "pilot_dominoes_1mid_J025R45_o1full_tdwroom_0037"
+      },
+      {
+        "collision_events": 290,
+        "frames": 151,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube"
+        ],
+        "objects": 6,
+        "scene_index": 9,
+        "stimulus_name": "pilot_dominoes_default_boxroom_0042"
+      },
+      {
+        "collision_events": 345,
+        "frames": 211,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "adirondack_chair",
+          "vase_05",
+          "vase_02",
+          "atmosphere_nodo"
+        ],
+        "objects": 10,
+        "scene_index": 10,
+        "stimulus_name": "pilot_dominoes_SJ020_d3chairs_o1plants_tdwroom_0079"
+      },
+      {
+        "collision_events": 359,
+        "frames": 170,
+        "model_names": [
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube",
+          "cube"
+        ],
+        "objects": 6,
+        "scene_index": 11,
+        "stimulus_name": "pilot_dominoes_4midRM1_tdwroom_0036"
+      }
+    ],
+    "training_windows": 480,
+    "windows_per_trial": 40
+  },
+  "per_seed": {
+    "20260908": {
+      "continuous_h1": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 256.1460199356079,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 552.5047016143799,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 345.12887986501056,
+            "presence_mse": 273.27694574991864,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 91.22578128178914
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.00747865837183781,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.006996725094116603,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.007331938133575022,
+            "presence_mse": 0.006296447943896055,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.020400536624947563
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.03463597634496788,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.03667579257550339,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.036222918735196195,
+            "presence_mse": 0.03040317042420308,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.03256097300133357
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.6034816304842631,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.5030909975369772,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.8520386752982935,
+            "presence_mse": 0.5746652881304423,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.3298502080142498
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.08044875571795274,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "continuous_h15": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.0015754823180031963,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0014821720396867022,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0017628800608993818,
+            "presence_mse": 0.0012161974955233745,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0043298800543804345
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.00036412450375185773,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 3.159177814874662e-05,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 4.225005939891465e-05,
+            "presence_mse": 1.9624776314230985e-05,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.005703853046725271
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0005900899486732669,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00011758394005786006,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00013714425676880637,
+            "presence_mse": 7.658548868979172e-05,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.008643268197677875
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0007316492058938214,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.000421698920642181,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0004820133835892193,
+            "presence_mse": 0.0003017047274624929,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.006820436824151936
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.006474755801415692,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "continuous_h5": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.021351031959056854,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.02347923400035749,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.023565901909023523,
+            "presence_mse": 0.019894091916891437,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.018310905240165692
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0005798967019169746,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0004266151536285179,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0005215253337761775,
+            "presence_mse": 0.0003183147697806514,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.003947388776092946
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0016603488935894954,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.001479809206405965,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0017982611704307299,
+            "presence_mse": 0.001231563384256636,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0070577980344144935
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.005066593167915319,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.005158419070842986,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0061041768543267,
+            "presence_mse": 0.004789031954715028,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.007857711825636216
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.017448590534816805,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h1": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 115.5721333026886,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 112.94597474733989,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 90.94236183166504,
+            "presence_mse": 98.26894744237264,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 36.245978355407715
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0033528347460863492,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.004423953578225337,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.002850007760571316,
+            "presence_mse": 0.004108689458613905,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.008634827856440097
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.014079336523233602,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.022310915325457852,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.015884279060022283,
+            "presence_mse": 0.017479765830406297,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.010969881938459972
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.18777503290524086,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.4523924943059683,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.22939776411900917,
+            "presence_mse": 0.1790002303508421,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.07049101024555664
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.09059156854830992,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h15": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.0010146026785757083,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0012668812147846136,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0007319796962595623,
+            "presence_mse": 0.0012263636490388308,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0034746606894865786
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.00036246745681485965,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 3.0084506268697925e-05,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 5.63702996127328e-05,
+            "presence_mse": 3.680277495732298e-05,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.005328854461064718
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0005539887618700353,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00010339616195172614,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00011313903788353248,
+            "presence_mse": 0.0001141585134973866,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.008131062738054121
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0006407922167757837,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0003696215098898392,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00024326380450171806,
+            "presence_mse": 0.0003831501805204122,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.007121976736622552
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.007391600859894727,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h5": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.007555437788444881,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.011202655965462327,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.008466241076045359,
+            "presence_mse": 0.009387144159215191,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.006630091724218801
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.000350160926245735,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0002229984026295521,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00011532576847154512,
+            "presence_mse": 0.00022877315435228715,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.00345877592129303
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0007693908337387256,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0007973179902667956,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0004102120628886041,
+            "presence_mse": 0.0007680991948291194,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.004972319286025595
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0020053427918658904,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0027061543805757537,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0016441158077213913,
+            "presence_mse": 0.002480530172761064,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.004930836522059205
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.019503541363519616,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h1": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 88.60216188430786,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 103.14186573028564,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 118.56863021850586,
+            "presence_mse": 65.61461154619853,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 44.8700547615687
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.00584174554872637,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.004914708367626493,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.007250183455956479,
+            "presence_mse": 0.009040558390552178,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.011587882220434645
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.036816484721687935,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.04133636686795702,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.05004974834931394,
+            "presence_mse": 0.060359901981428266,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0212189993277813
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.6513148757318655,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.7098983923594157,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 1.0564346214135487,
+            "presence_mse": 0.6893561954299608,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.35738783205548924
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.12673183564038482,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h15": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.0014381787198847935,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0014670376622234471,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0016131277467745047,
+            "presence_mse": 0.001439600722126973,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.004605640722729731
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0027448379381288155,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0003665883053448245,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.003050345299319209,
+            "presence_mse": 0.002132096614028948,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.012404148175846785
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0005404440908023389,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00017435711864285017,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0002588235108002361,
+            "presence_mse": 0.0006896696522744605,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.004807988045892368
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0006265794709179318,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00035231668637910235,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0004832756079243457,
+            "presence_mse": 0.0006688473865021175,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0044053141682525165
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.009153017551094914,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h5": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.016234461509156972,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.018416070476329576,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.02604943603121986,
+            "presence_mse": 0.024473306257277727,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.013027229879905159
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0004878713152720593,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0002434100233585923,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0002204341693262298,
+            "presence_mse": 0.0007599712049947508,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.003684010766543603
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0009618933205880845,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0006761836472530073,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0008198226284245417,
+            "presence_mse": 0.0012128634261898696,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.005114297826366965
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0030408396026662863,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.002940435314182347,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0038561501084283614,
+            "presence_mse": 0.004378032477688976,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.004930571250345868
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.026395181334616307,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      }
+    },
+    "20260909": {
+      "continuous_h1": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 90.62963660558064,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 136.5580554008484,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 64.29161008199056,
+            "presence_mse": 121.17932367324829,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 56.05890925725301
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.005091289116535336,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.006304317037574947,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.002938569765926028,
+            "presence_mse": 0.0037539563248477257,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.012472862188587897
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.025165526700826984,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.029557616624515504,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.020931539125740528,
+            "presence_mse": 0.016357000354522217,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.01984181769269829
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.40483940206468105,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.542291471734643,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.3806589487940073,
+            "presence_mse": 0.3856019812325637,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.24835993194331726
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.08550854489537112,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "continuous_h15": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.0008845693591865711,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0010865594983139697,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00042922926756242913,
+            "presence_mse": 0.0008485015411376177,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0025351903022965416
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0003360936103338948,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 2.1910130385549564e-05,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 2.619396548197983e-05,
+            "presence_mse": 1.9032343364718447e-05,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.005435735118453522
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0005154903309024424,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 8.283270866134747e-05,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 6.014835995908167e-05,
+            "presence_mse": 7.02902547497312e-05,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.008185444220240848
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0005541838145290967,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00030382741715584416,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00012510468362355218,
+            "presence_mse": 0.0002494148487433752,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.006553898301111379
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.006880860702949576,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "continuous_h5": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.012182907958049327,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.014542619270893434,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.009072569121296207,
+            "presence_mse": 0.008516788899820918,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0077767399391935514
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.00038145291788775165,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0002933293520375931,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0001377627401476881,
+            "presence_mse": 0.00021332155120035168,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0033926252423649808
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.000935557475410557,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0010267053815672018,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0004609212276894444,
+            "presence_mse": 0.000726180761072707,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.005000076086920065
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0027547551774963117,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0035888745333068073,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0015488872401571523,
+            "presence_mse": 0.002380484191235155,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.005013608618658812
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.017956866533495486,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h1": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 147.21827507019043,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 246.1520675023397,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 137.29608090718588,
+            "presence_mse": 117.54138104120891,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 81.23326496283214
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.004850408508597563,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.008330324169946834,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.005720988473816154,
+            "presence_mse": 0.007223706023069099,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.009673149295849726
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.026319117130090792,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.04955597726317743,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.03617504029534757,
+            "presence_mse": 0.0462383379538854,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.01404722589844217
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.42759180068969727,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.6777185164391994,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.5586188087860743,
+            "presence_mse": 0.491522416472435,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.29081520282973844
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.09267445331109532,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h15": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.0013364221328326191,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0019611980557480515,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0011877308958598103,
+            "presence_mse": 0.001760703707986977,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.003532091565527177
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.000338411858137988,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 3.317806696638096e-05,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 4.561061998250201e-05,
+            "presence_mse": 4.548037850327091e-05,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.005075542239258842
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0005412079535744851,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00011735930744786553,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00011701237205367458,
+            "presence_mse": 0.00014177045325898993,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.007796497112091553
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0006682063861565742,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0004499549340835074,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00032669713164068526,
+            "presence_mse": 0.0004769360130012501,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.006286142541891119
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.007436652774534498,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h5": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.013561873638536781,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.025958572630770504,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.017789432604331523,
+            "presence_mse": 0.02325110277161002,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.007167332437044631
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.00040850166139231686,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0002449111868069546,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00017146581133905178,
+            "presence_mse": 0.00029788524534524186,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.003766993942311577
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0009423639360951105,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0010195686894197327,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0007030243505141698,
+            "presence_mse": 0.001051056967601956,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.005321718235791195
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0027893395260131606,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.004826290620258078,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0031967374622278535,
+            "presence_mse": 0.0042415536687864614,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.004034183613839559
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.01943928220134694,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h1": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 189.89009857177734,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 253.24401458104452,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 252.66396697362265,
+            "presence_mse": 211.9488116900126,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 165.42788577079773
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.006892597574430208,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.011026280233636498,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.007567138663337876,
+            "presence_mse": 0.008323027199367061,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.012471072594053112
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.04789370011227826,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0779871391908576,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.07828157426168521,
+            "presence_mse": 0.06365686969365925,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.04274344368604943
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.7788060723493496,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.8187394166986147,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.6444258571912845,
+            "presence_mse": 0.889436750051876,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.7929952405393124
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.12769448670345204,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h15": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.0017894301393729013,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0023562397182104178,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0020255229610484093,
+            "presence_mse": 0.0019763925908288607,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.004141536252670146
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0027110120960666486,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.000615988801655476,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.002502763677815286,
+            "presence_mse": 0.0017037954166880809,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.009562435938278213
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0006547359735122882,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0005051560974607128,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00043197521699767094,
+            "presence_mse": 0.0007277979451221958,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.005436567832172538
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0006746522794855991,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0007003978134889621,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0006325755496921678,
+            "presence_mse": 0.0006907120017179599,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0034613988173077814
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.00996556072398865,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h5": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.02224420174024999,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.04113312919313709,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.038036947565463684,
+            "presence_mse": 0.029741641677295167,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.016703478147974238
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0006003784801578149,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00046750548729808844,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00037943898344868404,
+            "presence_mse": 0.0007147977339627687,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.004025186672758234
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0011397882359839666,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.001224008432473056,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0008747553438297473,
+            "presence_mse": 0.0012222319443632539,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0054777620583384605
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.003853206920515125,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.006138673716729197,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.004586280309013091,
+            "presence_mse": 0.004935131471332473,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.006095842395249444
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.02649582933130053,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      }
+    },
+    "20260910": {
+      "continuous_h1": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 107.57790629069011,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 217.03260978062949,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 138.38089195887247,
+            "presence_mse": 83.04925974210103,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 40.94506482283274
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.006592714479969193,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.011998898621338109,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.004715464917050364,
+            "presence_mse": 0.00582844217812332,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0157880174034896
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.034802626740808286,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.062107936246320605,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.03888664875800411,
+            "presence_mse": 0.0400336179882288,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.030550157534889877
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.4423227186004321,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.6942128812273344,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.7054152749478817,
+            "presence_mse": 0.6927969418466091,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.16989243930826584
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.08456019229197409,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "continuous_h15": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.0013470332366220343,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.002338459868042264,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0012209126907691825,
+            "presence_mse": 0.0009501306631136686,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0031157653696330576
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.00036972999369785003,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 3.8783370807019914e-05,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 5.91147130914275e-05,
+            "presence_mse": 1.825223432661005e-05,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0057629202065072604
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.000597513047978282,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00015323491228021643,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00016701632830518065,
+            "presence_mse": 6.814954955795353e-05,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.008756877214182168
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0007077022055455018,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0005999213826726191,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00042710094324623543,
+            "presence_mse": 0.0002497952042782951,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.007390119164483622
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.007193382965245594,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "continuous_h5": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.020533759224539,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.03885532337396095,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.020271107864876587,
+            "presence_mse": 0.021256660111248493,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.013521003672697892
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0004949285394104663,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0005572930452520571,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00030610315783026937,
+            "presence_mse": 0.0002949443951365538,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.0036596070688877567
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0013698306453685898,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0021443679094469794,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0010024415581331898,
+            "presence_mse": 0.0010512468761589844,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.006313788510548572
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.004423503909492865,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00838753889547661,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.003415903808975903,
+            "presence_mse": 0.003974552382715046,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.009157893514687506
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.018192558083683252,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h1": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 316.2103392283122,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 250.93526617685953,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 273.8524519602458,
+            "presence_mse": 376.9425754547119,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 343.1932481129964
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.005639134751011928,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.01214819255983457,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.006220832098430644,
+            "presence_mse": 0.005673200978587071,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.011483129938521111
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.030916928119647007,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.07533193239942193,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.04091419892696043,
+            "presence_mse": 0.03024260571692139,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.016499915819925565
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.6819158097108206,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.943306464701891,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 1.2747760005295277,
+            "presence_mse": 1.1944434804220994,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.5999871815244356
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.09090564740957537,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h15": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.0015778093656990677,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.002967819367768243,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0019139956251213637,
+            "presence_mse": 0.0020044266275363043,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.004296382376196561
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0003623302776153044,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 5.3173924773849045e-05,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 7.422568527696664e-05,
+            "presence_mse": 5.8757312520659376e-05,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.005361980763761191
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0005655104253795192,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00019140413617909266,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00020130313820724646,
+            "presence_mse": 0.0001752241447926887,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.007871574106199356
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0007016021518211346,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.000730333819471222,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0005901032745896373,
+            "presence_mse": 0.0006078132785963438,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.005856823898890677
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.007379960554923552,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h5": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.015565171585573504,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.03925822547171265,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.020531027209168922,
+            "presence_mse": 0.013912901437530914,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.008339406456798315
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.00041987947285330546,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00040473012207561016,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00029337796422623796,
+            "presence_mse": 0.00034619798195005086,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.003367012981470907
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0010620370909843284,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0016028757939542022,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.001070078469638247,
+            "presence_mse": 0.0011803637474561886,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.005205033907259349
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.003218761984802162,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.007118028433372577,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.004024261113954708,
+            "presence_mse": 0.003791743797288897,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.004007225681561977
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.019553822193605203,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h1": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 76.48042464256287,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 80.65660730997722,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 68.69879992802937,
+            "presence_mse": 75.61297941207886,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 62.68444569905599
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.008216018410166726,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.01200068261823617,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.012457656499464065,
+            "presence_mse": 0.007064395632672434,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.012491244764532894
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.049917525301376976,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.06358930359904964,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.08080840964491169,
+            "presence_mse": 0.037305665493477136,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.029149020362334948
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.6922628991305828,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.8251439382632574,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.8713279316822687,
+            "presence_mse": 0.5578008349984884,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.43938884713376564
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.11969738389113142,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h15": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.0018273639992306319,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.003269757866898241,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0023380222725487934,
+            "presence_mse": 0.0018727626084000804,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.004044801809262329
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0030110898539229916,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0004354725497250911,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.002126289218722377,
+            "presence_mse": 0.0026049308204771173,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.012037924578180537
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0005866300167933028,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.000240548297673134,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.00040299201039791416,
+            "presence_mse": 0.0005840153765651243,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.00470556828562015
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0007049556127943409,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0008079321681483028,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0007098756941559259,
+            "presence_mse": 0.0007246635747530187,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.003594250653501755
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.009252666039780403,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h5": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.023569612375771005,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.03551776932242016,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.03922853180362532,
+            "presence_mse": 0.02195722850350042,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.01565110101364553
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0006339331145378916,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00031894912990537705,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.000568346187719726,
+            "presence_mse": 0.0007608652619334558,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.004596626115623319
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0012661980581469834,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.0015493420845208068,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.001444295509524333,
+            "presence_mse": 0.0011792423465522006,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.006082917199819349
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.00419015624114157,
+            "kind_available_values": 13.666666666666666,
+            "kind_mse": 0.00747209651550899,
+            "position_available_values": 13.666666666666666,
+            "position_mse": 0.0066115380711077405,
+            "presence_mse": 0.004087711888132617,
+            "velocity_available_values": 13.666666666666666,
+            "velocity_mse": 0.006373827413578208
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.02485685557864296,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      }
+    }
+  },
+  "phase_0": {
+    "candidate_1_physion_dominoes": {
+      "criteria_verdicts": {
+        "i": "verified: per-frame objects/positions (engine transform origins, world y-up meters), objects/rotations (world quaternions xyzw), objects/velocities (center-of-mass, m/s), objects/angular_velocities at a stable frame rate dt=0.01 s; dt verified from released free-fall readouts dv_y = -0.098 m/s per frame = 9.81 * dt",
+        "ii": "verified: every frame carries a collisions group with object_ids pairs, contact points, contact normals, relative velocities and enter/stay/exit states (states observed on the verified members); contact-from-events + velocity-bin is realizable from released fields",
+        "iii": "verified: trials are >= 124 frames (frozen membership minimum; frame counts on the verified prefix members range 151-207); the frozen divisibility-compliant endpoint grid 15/30/60/120 at contexts 0-3 fits every member; 40 windows of 61 frames per trial mirror the #79 scale",
+        "iv": "verified: each released hdf5 is self-contained (static object facts plus the full frame trajectory and events), so the frozen membership needs no regeneration; the official generator (github.com/neuroailab/tdw_physics, ThreeDWorld) exists and is not required",
+        "v": "declared all-frames rule: the release is dense (every declared object in every frame; enforced by the membership predicate); no partial-availability masks exist to import"
+      },
+      "download_rule": "bounded immutable prefix: first 2147483648 bytes of the release via HTTP ranged GET; ETag re-verified at download; prefix sha256 recorded in the download manifest; no video files are used",
+      "event_annotation_check": "per-family event annotations verified directly on released members: object-object collision events present in every verified trial (269-425 events over the first three members)",
+      "family": "Physion scenario family Dominoes (dynamics-training HDF5 release)",
+      "macro_note": "no support-structure referent exists in the released annotations (collision events only); the macro arm is recorded unsupported and its estimand DROPPED; no support relation is invented from geometry or persistent contacts",
+      "macro_status": "unsupported",
+      "micro_vocabulary": "contact channel from per-frame object-object collision events (any recorded enter/stay/exit state labels that frame, symmetric); velocity-bin channel from frozen tertile edges of released center-of-mass speeds",
+      "pinned_source": {
+        "bytes_total": 40538620810,
+        "etag": "\"89bcf175ded62905512c7f6462b9558d-2417\"",
+        "family": "physion-dominoes",
+        "last_modified": "Fri, 23 Jul 2021 01:11:09 GMT",
+        "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/Dominoes_dynamics_training_HDF5s.tar.gz"
+      },
+      "published_index": "the archive's stored member order (immutable S3 object); membership scans it ascending under the frozen byte cap",
+      "reference": "Physion: Evaluating Physical Prediction from Vision in Humans and Machines, NeurIPS 2021 Datasets & Benchmarks; release hosted on the official S3 bucket",
+      "status": "selected"
+    },
+    "candidate_2_shapestacks": {
+      "availability_note": "the release server shapestacks-file.robots.ox.ac.uk did not answer any request at Phase-0 time (connection failure on manual and meta downloads); criterion (i) fails structurally regardless, since no per-frame state is part of the documented release",
+      "failed_criteria": [
+        "i"
+      ],
+      "family": "ShapeStacks (ECCV 2018, Groth et al.)",
+      "status": "rejected",
+      "verdict": "readiness failure on criterion (i): the published release contains MuJoCo world definitions, static meta information, RGB, violation/instance segmentation and depth images only - no per-frame object-state time series (no trajectories, no velocities) exists to download",
+      "verdict_token": "not_selected_criterion_i"
+    },
+    "criteria": {
+      "i": "published, downloadable per-frame object state (position, velocity, orientation) at a stable frame rate",
+      "ii": "event/contact annotations sufficient for the frozen micro-predicate vocabulary (contact from events + a velocity-derived bin)",
+      "iii": "windows of >= 120 frames, or a frozen divisibility-compliant endpoint grid within available length",
+      "iv": "no regeneration dependency: official simulation code exists OR released annotations are complete for the frozen membership",
+      "v": "per-frame availability mask or a declared all-frames rule"
+    },
+    "selection_rule": "family short-list verified in order against all five mandatory criteria; first candidate family passing every criterion is frozen; selection is by data readiness only, never by outcomes",
+    "terminal_blocker_rule": "had no candidate passed, readiness_or_precision_insufficient naming the failed criterion per candidate would have been the complete deliverable"
+  },
+  "plan_identity": "issue-84-third-family-v1",
+  "regime": [
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.004188043963042133,
+          -0.0032424772359497312
+        ],
+        "mean": -0.0037036304894302575,
+        "paired_units": 35
+      },
+      "difference_active_minus_still": 0.001688933929414813,
+      "endpoint": 15,
+      "horizon": 1,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.005497868428191838,
+          -0.005280695864423296
+        ],
+        "mean": -0.0053925644188450705,
+        "paired_units": 13
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.044589261049626475,
+          -0.04054268912345703
+        ],
+        "mean": -0.04264988236661468,
+        "paired_units": 35
+      },
+      "difference_active_minus_still": -0.014502686924631997,
+      "endpoint": 30,
+      "horizon": 1,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.029592221701899783,
+          -0.027286590546823277
+        ],
+        "mean": -0.028147195441982686,
+        "paired_units": 13
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.36390980155340263,
+          -0.25211689454104214
+        ],
+        "mean": -0.3094702668133236,
+        "paired_units": 35
+      },
+      "difference_active_minus_still": -0.5157107244153599,
+      "endpoint": 60,
+      "horizon": 1,
+      "still": {
+        "descriptive_95_percent_interval": [
+          0.08554017465466109,
+          0.2830194847323955
+        ],
+        "mean": 0.20624045760203633,
+        "paired_units": 13
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          43.66401700337729,
+          65.8846816044762
+        ],
+        "mean": 54.79960101899647,
+        "paired_units": 35
+      },
+      "difference_active_minus_still": 125.83299135760073,
+      "endpoint": 120,
+      "horizon": 1,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -86.00650751407332,
+          -46.4785218801254
+        ],
+        "mean": -71.03339033860426,
+        "paired_units": 13
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.00021235817934818135,
+          -0.00012896260052955422
+        ],
+        "mean": -0.00016856538800528228,
+        "paired_units": 35
+      },
+      "difference_active_minus_still": 0.00010135831685164075,
+      "endpoint": 15,
+      "horizon": 5,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.0003145988811947739,
+          -0.00023656285079479673
+        ],
+        "mean": -0.00026992370485692303,
+        "paired_units": 13
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.00030401750168017485,
+          -0.00014975422626732675
+        ],
+        "mean": -0.0002225204641165744,
+        "paired_units": 35
+      },
+      "difference_active_minus_still": 0.00035445810016969577,
+      "endpoint": 30,
+      "horizon": 5,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.0006309299022504068,
+          -0.0005322014735354922
+        ],
+        "mean": -0.0005769785642862702,
+        "paired_units": 13
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.0020412415521319153,
+          -0.0015255349319583426
+        ],
+        "mean": -0.0017736586620144188,
+        "paired_units": 35
+      },
+      "difference_active_minus_still": 0.0010681576844332097,
+      "endpoint": 60,
+      "horizon": 5,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.002954082860154673,
+          -0.002732603425661532
+        ],
+        "mean": -0.0028418163464476284,
+        "paired_units": 13
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.019831909677900727,
+          -0.01746624998260467
+        ],
+        "mean": -0.018575483724652297,
+        "paired_units": 35
+      },
+      "difference_active_minus_still": 0.0009867856452998973,
+      "endpoint": 120,
+      "horizon": 5,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.02025714909407095,
+          -0.018770619040020763
+        ],
+        "mean": -0.019562269369952194,
+        "paired_units": 13
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.0025073313673467405,
+          -0.0020883735490204868
+        ],
+        "mean": -0.0022932746220855433,
+        "paired_units": 35
+      },
+      "difference_active_minus_still": 0.0007672218150498963,
+      "endpoint": 15,
+      "horizon": 15,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.003676037175185999,
+          -0.0024609867647506275
+        ],
+        "mean": -0.0030604964371354396,
+        "paired_units": 13
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.00027164285855958177,
+          -0.00017149388069377723
+        ],
+        "mean": -0.00021916102171720317,
+        "paired_units": 35
+      },
+      "difference_active_minus_still": 5.973076799702332e-06,
+      "endpoint": 30,
+      "horizon": 15,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.00026325102250479966,
+          -0.0001993546430989786
+        ],
+        "mean": -0.0002251340985169055,
+        "paired_units": 13
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.0002254956152527094,
+          -0.000136163635621155
+        ],
+        "mean": -0.0001789378758985549,
+        "paired_units": 35
+      },
+      "difference_active_minus_still": 0.00015858340103967262,
+      "endpoint": 60,
+      "horizon": 15,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.00036928716696983877,
+          -0.00031133233938957205
+        ],
+        "mean": -0.00033752127693822753,
+        "paired_units": 13
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.0007437343686580701,
+          -0.0004465431219432504
+        ],
+        "mean": -0.0005916553230712279,
+        "paired_units": 35
+      },
+      "difference_active_minus_still": 0.0004529240540520462,
+      "endpoint": 120,
+      "horizon": 15,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.0011817202385058269,
+          -0.0009228485969241517
+        ],
+        "mean": -0.0010445793771232741,
+        "paired_units": 13
+      }
+    }
+  ],
+  "representation": {
+    "availability_mask": "declared all-frames rule: the release is dense, every declared object is present and available in every frame; masks are constant 1 and all masked estimands use them as such",
+    "carrier": "unchanged issue-71 236-value layout: 2 global values + 18 slots x 13 columns",
+    "frame_dt_seconds": 0.01,
+    "ground_axes": [
+      "x",
+      "z"
+    ],
+    "identity": "physion-dominoes-annotation-feature-carrier-v1",
+    "kind_vocabulary": [
+      "adirondack_chair",
+      "atmosphere_nodo",
+      "b03_animal_dog_rtstand_1228",
+      "b05_02_139",
+      "chair_thonet_marshall",
+      "coffee_maker",
+      "cube",
+      "dagger",
+      "skillet_closed",
+      "vase_01",
+      "vase_02",
+      "vase_03",
+      "vase_05",
+      "vase_06"
+    ],
+    "macro_note": "no support-structure referent in the released annotations; macro pairs are never trained and never evaluated; the macro estimand is DROPPED, no invented vocabulary",
+    "macro_status": "unsupported",
+    "micro_predicates": {
+      "contact": "per-frame object-object collision events label symmetric channel 0 (any recorded enter/stay/exit state)",
+      "velocity_bin": "same speed tier at frozen edges [0.0, 0.0044], symmetric channel 1",
+      "velocity_bin_disclosure": "the frozen lower tertile edge is 0.0 on this family: at rest more than a third of (object, frame) CoM speeds are exactly 0, so tier 0 is unreachable and the velocity-bin channel is an at-rest/moving indicator rather than a three-occupied-tier partition; the edges are frozen by the Phase-0 rule before scoring and are NOT retuned after seeing the numbers"
+    },
+    "null_action": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "parser_symmetry": "identical frozen annotation-to-carrier builder for both arms; engine features in, predicates out; no learned perception on either side",
+    "position_scale": 2.0,
+    "position_semantics": "engine transform origins (base pivots), carried verbatim",
+    "prior_elapsed_seconds": 0.01,
+    "slot_columns": [
+      [
+        "presence",
+        0
+      ],
+      [
+        "presence_mask",
+        1
+      ],
+      [
+        "kind_code",
+        2
+      ],
+      [
+        "kind_confidence",
+        3
+      ],
+      [
+        "kind_mask",
+        4
+      ],
+      [
+        "position_x",
+        5
+      ],
+      [
+        "position_y",
+        6
+      ],
+      [
+        "position_mask",
+        7
+      ],
+      [
+        "velocity_x",
+        8
+      ],
+      [
+        "velocity_y",
+        9
+      ],
+      [
+        "velocity_mask",
+        10
+      ],
+      [
+        "expected_kind_probability",
+        11
+      ],
+      [
+        "slot_valid_mask",
+        12
+      ]
+    ],
+    "slot_contract": "18 fixed slots; the declared dominoes-trial objects occupy slots 0..n-1 in static object_ids order for every frame; remaining slots stay zero; identical builder for both arms (symmetric Phase-0 declaration)",
+    "speed_tier_edges": [
+      0.0,
+      0.0044
+    ],
+    "unmapped_fields": "vertical position/velocity (y), orientation quaternions and angular velocities are parsed into per-trial shards for the parser-contract record with no carrier column referent",
+    "velocity_scale": 2.5,
+    "velocity_semantics": "center-of-mass velocities, carried verbatim",
+    "vertical_axis": "y"
+  },
+  "schema": "issue_84_third_family_report_v1",
+  "stop_rule": null
+}

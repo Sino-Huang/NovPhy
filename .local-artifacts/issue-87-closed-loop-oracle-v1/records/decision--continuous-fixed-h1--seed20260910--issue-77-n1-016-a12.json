@@ -1,0 +1,129 @@
+{
+  "anchor": {
+    "cell": "oracle--issue-77-n1-016-a12--a00",
+    "fixed_step": 30000,
+    "fixed_time_seconds": 13.1743994,
+    "frame_agreement": {
+      "byte_differing": 0,
+      "byte_identical": 13,
+      "cells_compared": 13,
+      "frame_missing": 0
+    },
+    "observation_identity": "agent-observation-v1:sha256:4ef08fa5709c0694009cf4deaea39dae5e7bdc364a31c238ac3f91200bd5a6e9",
+    "ordinal": 0,
+    "sha256": "sha256:f4377b30ed5f319774af8671d7baa3dac03a2f8b669450df0e47cae940620482"
+  },
+  "binding": {
+    "chosen_branch_identity": "issue-77-n1-016-a07",
+    "first_shot_success": false,
+    "oracle_cell": "oracle--issue-77-n1-016-a12--a07",
+    "oracle_failure": null,
+    "rule": "the system's closed-loop outcome is the engine-truth verdict of its chosen candidate from the oracle pass, bound by candidate identity"
+  },
+  "carrier_sha256": "sha256:f4377b30ed5f319774af8671d7baa3dac03a2f8b669450df0e47cae940620482",
+  "cell": {
+    "identity": "decision--continuous-fixed-h1--seed20260910--issue-77-n1-016-a12",
+    "seed": 20260910,
+    "state": "issue-77-n1-016-a12",
+    "system": "continuous-fixed-h1"
+  },
+  "cell_kind": "decision",
+  "decision": {
+    "candidate_count": 13,
+    "chosen": {
+      "action": {
+        "drag_x": -55,
+        "drag_y": 59,
+        "release_time_ms": 1000,
+        "tap_time_ms": 0
+      },
+      "branch_identity": "issue-77-n1-016-a07",
+      "ordinal": 7
+    },
+    "failure": null,
+    "gpu_seconds": 0.017092416994273663,
+    "linear_macs": 24078600,
+    "perception_seconds": 0.005021783988922834,
+    "prior_fallback_used": false,
+    "ranking": [
+      {
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 76.23035234212875
+      },
+      {
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 76.32025796175003
+      },
+      {
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 76.07075476646423
+      },
+      {
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 75.85103088617325
+      },
+      {
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 75.68089842796326
+      },
+      {
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 75.53556817770004
+      },
+      {
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 75.47495770454407
+      },
+      {
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 75.3840457201004
+      },
+      {
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 75.40329658985138
+      },
+      {
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 75.45270001888275
+      },
+      {
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 75.55735641717911
+      },
+      {
+        "excluded": false,
+        "ordinal": 11,
+        "predicted_cost": 75.69222432374954
+      },
+      {
+        "excluded": false,
+        "ordinal": 12,
+        "predicted_cost": 75.88252460956573
+      }
+    ],
+    "selected_predicted_cost": 75.3840457201004,
+    "transition_calls": 13,
+    "wall_seconds": 0.012070633005350828
+  },
+  "failure": null,
+  "failure_kind": null,
+  "issue_64_authorized": false,
+  "plan_identity": "issue-87-closed-loop-oracle-v1",
+  "plan_version": 3,
+  "schema": "issue_87_decision_record_v1",
+  "seed": 20260910,
+  "state_identity": "issue-77-n1-016-a12",
+  "system": "continuous-fixed-h1",
+  "wall_seconds": 0.01736899232491851
+}

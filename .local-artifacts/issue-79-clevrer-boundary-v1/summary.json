@@ -1,0 +1,3474 @@
+{
+  "archived_release": false,
+  "claim_boundary": "mechanism-shape replication only; not 'the negative result generalizes'; a non-replication does not falsify the NovPhy boundary and vice versa; the two families are reported separately; no CLEVRER leaderboard/VQA or perception claim; no Physion; no new NovPhy captures; #64/#65 sealed; prior dispositions unchanged; descriptive intervals only",
+  "compute": {
+    "active_parameters_per_system": {
+      "continuous_h15|h15|continuous": 1862396,
+      "continuous_h1|h1|continuous": 1862396,
+      "continuous_h5|h5|continuous": 1862396,
+      "hybrid_continuous_h15|h15|continuous": 1441516,
+      "hybrid_continuous_h1|h1|continuous": 1441516,
+      "hybrid_continuous_h5|h5|continuous": 1441516,
+      "hybrid_micro_h15|h15|micro": 1805302,
+      "hybrid_micro_h1|h1|micro": 1805302,
+      "hybrid_micro_h5|h5|micro": 1805302
+    },
+    "allowance_gpu_hours": 6.0,
+    "evaluation_wall_seconds": 52.64510086970404,
+    "fits": [
+      {
+        "arm": "continuous",
+        "memory": {
+          "peak_cpu_rss_mib": 1613.3125,
+          "peak_cuda_allocated_mib": 64.77294921875
+        },
+        "optimizer_examples": 576000,
+        "seed": 20260908,
+        "steps": 9000,
+        "wall_seconds": 197.74596921587363
+      },
+      {
+        "arm": "hybrid",
+        "memory": {
+          "peak_cpu_rss_mib": 1869.3046875,
+          "peak_cuda_allocated_mib": 105.375
+        },
+        "optimizer_examples": 576000,
+        "seed": 20260908,
+        "steps": 9000,
+        "wall_seconds": 301.69634252320975
+      },
+      {
+        "arm": "continuous",
+        "memory": {
+          "peak_cpu_rss_mib": 1869.3046875,
+          "peak_cuda_allocated_mib": 105.375
+        },
+        "optimizer_examples": 576000,
+        "seed": 20260909,
+        "steps": 9000,
+        "wall_seconds": 196.33065642486326
+      },
+      {
+        "arm": "hybrid",
+        "memory": {
+          "peak_cpu_rss_mib": 1869.3046875,
+          "peak_cuda_allocated_mib": 105.375
+        },
+        "optimizer_examples": 576000,
+        "seed": 20260909,
+        "steps": 9000,
+        "wall_seconds": 302.240623021964
+      },
+      {
+        "arm": "continuous",
+        "memory": {
+          "peak_cpu_rss_mib": 1869.3046875,
+          "peak_cuda_allocated_mib": 105.375
+        },
+        "optimizer_examples": 576000,
+        "seed": 20260910,
+        "steps": 9000,
+        "wall_seconds": 194.06017730315216
+      },
+      {
+        "arm": "hybrid",
+        "memory": {
+          "peak_cpu_rss_mib": 1869.3046875,
+          "peak_cuda_allocated_mib": 105.375
+        },
+        "optimizer_examples": 576000,
+        "seed": 20260910,
+        "steps": 9000,
+        "wall_seconds": 302.5051656079013
+      }
+    ],
+    "inference_equalized": false,
+    "note": "candidate counts do not exist on CLEVRER (no planning estimand); units, steps, wall and active parameters are reported per arm; inference is not equalized",
+    "training_wall_seconds": 1494.578934096964,
+    "units_per_arm": {
+      "continuous": 432,
+      "hybrid": 864
+    }
+  },
+  "contrasts": [
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00022845849105376852,
+          0.0010498921252696566
+        ],
+        "mean": 0.0004041377784839521,
+        "paired_units": 48
+      },
+      "endpoint": 15,
+      "horizon": 1,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          0.0013054096830678141,
+          0.00601493796549322
+        ],
+        "mean": 0.003663336865025081,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h1",
+      "reference": "continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0339116447412784,
+          -0.008302698813592241
+        ],
+        "mean": -0.02078306201534966,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00021956419708052014,
+          0.0025361215870361767
+        ],
+        "mean": 0.001201049993849463,
+        "paired_units": 48
+      },
+      "endpoint": 30,
+      "horizon": 1,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          0.0030617766080669982,
+          0.025583545596034825
+        ],
+        "mean": 0.01545397766555349,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h1",
+      "reference": "continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.028915904866557363,
+          0.07893106213434495
+        ],
+        "mean": 0.05344389316936334,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.037109685806919715,
+          -0.017974166009419913
+        ],
+        "mean": -0.027359253985600337,
+        "paired_units": 48
+      },
+      "endpoint": 60,
+      "horizon": 1,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          0.03330539472129506,
+          0.10900524081856322
+        ],
+        "mean": 0.07192529626708065,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h1",
+      "reference": "continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.027198592416890377,
+          0.16482018423525407
+        ],
+        "mean": 0.09303016864901616,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          2.846837902876238,
+          4.371947198257678
+        ],
+        "mean": 3.5883980426523423,
+        "paired_units": 48
+      },
+      "endpoint": 120,
+      "horizon": 1,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          8.769031470926064,
+          12.432980423679368
+        ],
+        "mean": 10.550370202710232,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h1",
+      "reference": "continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -1.8890586701480463,
+          1.3761989358967786
+        ],
+        "mean": -0.19776919918755695,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0005561665490101101,
+          -0.0001632787196538428
+        ],
+        "mean": -0.0003516254564601695,
+        "paired_units": 48
+      },
+      "endpoint": 15,
+      "horizon": 5,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00039688665532998537,
+          0.00036451885389902195
+        ],
+        "mean": -2.459320704575574e-05,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h5",
+      "reference": "continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.010491653223978877,
+          -0.0029976150993964753
+        ],
+        "mean": -0.00641557951550769,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0011018364143435772,
+          0.000436856472656978
+        ],
+        "mean": -0.0003608842699678563,
+        "paired_units": 48
+      },
+      "endpoint": 30,
+      "horizon": 5,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0027551545549512313,
+          0.0004926491207495723
+        ],
+        "mean": -0.0009104188922922024,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h5",
+      "reference": "continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.01159210898707291,
+          0.01846428526735811
+        ],
+        "mean": 0.0027095435774147822,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          0.0006001796999044017,
+          0.001149085238487007
+        ],
+        "mean": 0.0008658320600968888,
+        "paired_units": 48
+      },
+      "endpoint": 60,
+      "horizon": 5,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          0.0026545663839846793,
+          0.007833128614568825
+        ],
+        "mean": 0.005022768037532741,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h5",
+      "reference": "continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.007708919268285777,
+          0.012367723378419113
+        ],
+        "mean": 0.01000665545062576,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0028299580035511295,
+          -0.000665077201362389
+        ],
+        "mean": -0.0017408810866375763,
+        "paired_units": 48
+      },
+      "endpoint": 120,
+      "horizon": 5,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0002561405220250081,
+          0.005161444843785527
+        ],
+        "mean": 0.0027219739923667573,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h5",
+      "reference": "continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.006337979594374902,
+          0.025552954783213656
+        ],
+        "mean": 0.016078930597157322,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00029468484603461956,
+          -8.708921836336639e-05
+        ],
+        "mean": -0.00018916193014067377,
+        "paired_units": 48
+      },
+      "endpoint": 15,
+      "horizon": 15,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0004176105673650454,
+          0.00025449915213597595
+        ],
+        "mean": -5.9716273072909746e-05,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h15",
+      "reference": "continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0029072507512024814,
+          -0.0003414208673082917
+        ],
+        "mean": -0.0015015149513020432,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0006659777008786074,
+          -0.00020922995520070096
+        ],
+        "mean": -0.0004257005007780713,
+        "paired_units": 48
+      },
+      "endpoint": 30,
+      "horizon": 15,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0005066275442598252,
+          0.00015846996856352133
+        ],
+        "mean": -0.00019229974340204437,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h15",
+      "reference": "continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.003955585430773883,
+          0.0006170170593526967
+        ],
+        "mean": -0.001560234090397393,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00024285071380189844,
+          -9.567191172108222e-05
+        ],
+        "mean": -0.00016304971440048472,
+        "paired_units": 48
+      },
+      "endpoint": 60,
+      "horizon": 15,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00015070088796910065,
+          0.0001403193562042461
+        ],
+        "mean": -2.9334348710108405e-06,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h15",
+      "reference": "continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0006124806734305821,
+          -2.280066529591651e-05
+        ],
+        "mean": -0.0003135387751171948,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0010935701700064881,
+          -0.0006353301111125297
+        ],
+        "mean": -0.0008619090723287729,
+        "paired_units": 48
+      },
+      "endpoint": 120,
+      "horizon": 15,
+      "kind": "training_effect",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.007446730376957727,
+          -0.0038786080962179567
+        ],
+        "mean": -0.0054749053298211135,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_continuous_h15",
+      "reference": "continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_continuous_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.003720022428145361,
+          0.000907789798576333
+        ],
+        "mean": -0.0012976623515391517,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0022273534072155604,
+          -0.0015101954525259015
+        ],
+        "mean": -0.0018583508111381282,
+        "paired_units": 48
+      },
+      "endpoint": 15,
+      "horizon": 1,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0034294650442360667,
+          0.00019907031845731459
+        ],
+        "mean": -0.0016741119587903896,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h1",
+      "reference": "hybrid_continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0015644156433861807,
+          0.004215301124976475
+        ],
+        "mean": 0.00123688422738471,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.005618282261679673,
+          -0.0041141564973966325
+        ],
+        "mean": -0.004871784981029729,
+        "paired_units": 48
+      },
+      "endpoint": 30,
+      "horizon": 1,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.013782716161222196,
+          -0.0016769234312556003
+        ],
+        "mean": -0.007661412644665688,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h1",
+      "reference": "hybrid_continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.014978209394677025,
+          0.015458115602895202
+        ],
+        "mean": -0.0003414928602675597,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.021032800547416425,
+          -0.00820492628651361
+        ],
+        "mean": -0.014868024167501265,
+        "paired_units": 48
+      },
+      "endpoint": 60,
+      "horizon": 1,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.11542399498284796,
+          -0.05799618420359265
+        ],
+        "mean": -0.08690662826928829,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h1",
+      "reference": "hybrid_continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          0.05237931647700154,
+          0.13819817272791016
+        ],
+        "mean": 0.09328215755522251,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          0.9826007678690885,
+          1.539214685600665
+        ],
+        "mean": 1.2433337974879477,
+        "paired_units": 48
+      },
+      "endpoint": 120,
+      "horizon": 1,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -1.34067886557637,
+          -0.453948606338559
+        ],
+        "mean": -0.9013541003482208,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h1",
+      "reference": "hybrid_continuous_h1",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h1",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          3.8930896300408575,
+          6.926045171988922
+        ],
+        "mean": 5.351835603929229,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -4.0115408733577676e-05,
+          0.00022153298177727263
+        ],
+        "mean": 8.705543890149176e-05,
+        "paired_units": 48
+      },
+      "endpoint": 15,
+      "horizon": 5,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00020116745306242797,
+          3.278724359461187e-05
+        ],
+        "mean": -8.300941105214103e-05,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h5",
+      "reference": "hybrid_continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0006187538463260959,
+          0.0023334483539707027
+        ],
+        "mean": 0.0007101701044626277,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.000155187275433693,
+          0.0002766362738131847
+        ],
+        "mean": 4.390897690124501e-05,
+        "paired_units": 48
+      },
+      "endpoint": 30,
+      "horizon": 5,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00027305744610607184,
+          0.0015178977359482813
+        ],
+        "mean": 0.0004972053569266184,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h5",
+      "reference": "hybrid_continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00010265005346607498,
+          0.0056968852295540265
+        ],
+        "mean": 0.0027418631394135044,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0008912701665394707,
+          -0.0005581004715673368
+        ],
+        "mean": -0.000716497854834112,
+        "paired_units": 48
+      },
+      "endpoint": 60,
+      "horizon": 5,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.003600073026735925,
+          -0.0016138842450244635
+        ],
+        "mean": -0.0025659929237412545,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h5",
+      "reference": "hybrid_continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0031331848440459,
+          -0.0011415794207601318
+        ],
+        "mean": -0.002111406388899518,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.002370593428107289,
+          -0.0013381428083650664
+        ],
+        "mean": -0.0018525736393510467,
+        "paired_units": 48
+      },
+      "endpoint": 120,
+      "horizon": 5,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.007574214821054031,
+          0.001017500422797939
+        ],
+        "mean": -0.003237833236602859,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h5",
+      "reference": "hybrid_continuous_h5",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h5",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.002216063539728768,
+          0.009118609421764429
+        ],
+        "mean": 0.003388003818044025,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0009324716970670325,
+          -0.0006937293814139088
+        ],
+        "mean": -0.0008133029455671526,
+        "paired_units": 48
+      },
+      "endpoint": 15,
+      "horizon": 15,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0014711385798326167,
+          -0.0008876066243317384
+        ],
+        "mean": -0.0011824571496769447,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h15",
+      "reference": "hybrid_continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0012774163151587144,
+          0.0024547014060342705
+        ],
+        "mean": 0.00039307273204435147,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -6.40566579729946e-05,
+          0.00031551193623171356
+        ],
+        "mean": 0.00010775872154529981,
+        "paired_units": 48
+      },
+      "endpoint": 30,
+      "horizon": 15,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0005199060487812959,
+          -0.0001248348537653025
+        ],
+        "mean": -0.00032187046852211805,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h15",
+      "reference": "hybrid_continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.001203686422781579,
+          0.001956083376828448
+        ],
+        "mean": 0.00015718309562847343,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00010061959665613863,
+          -2.9600607629415934e-05
+        ],
+        "mean": -6.756961940684252e-05,
+        "paired_units": 48
+      },
+      "endpoint": 60,
+      "horizon": 15,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0004835246954630495,
+          -0.0001531812621951506
+        ],
+        "mean": -0.00031890291375526024,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h15",
+      "reference": "hybrid_continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.00035408891645703175,
+          0.0002578802021111588
+        ],
+        "mean": -5.208239013477896e-05,
+        "paired_units": 48
+      }
+    },
+    {
+      "carrier_mse": {
+        "descriptive_95_percent_interval": [
+          -0.001174123266698896,
+          -0.0007490127816304772
+        ],
+        "mean": -0.0009524823383091846,
+        "paired_units": 48
+      },
+      "endpoint": 120,
+      "horizon": 15,
+      "kind": "symbolic_execution",
+      "position_mse": {
+        "descriptive_95_percent_interval": [
+          -0.0029770123947350335,
+          -0.0008079763609000825
+        ],
+        "mean": -0.001994745954612477,
+        "paired_units": 48
+      },
+      "positive_favors": "hybrid_micro_h15",
+      "reference": "hybrid_continuous_h15",
+      "scope": "descriptive; arms independently trained; intervals descriptive only",
+      "tested": "hybrid_micro_h15",
+      "velocity_mse": {
+        "descriptive_95_percent_interval": [
+          -0.006024792408344283,
+          -0.0021035104930989396
+        ],
+        "mean": -0.003975189339447145,
+        "paired_units": 48
+      }
+    }
+  ],
+  "definitions": {
+    "arms": {
+      "continuous": "ContinuousDynamics at frozen width 456; no symbolic modules",
+      "hybrid": "CNNHybridPredictor port; micro contact+velocity-bin symbolic conditioning; macro head and adapter receive no CLEVRER gradient and are never evaluated (unsupported Phase 0)"
+    },
+    "comparator_disclosure": "continuous_h5 selection optimism (#74, selection_optimism=true) attaches to the NovPhy family only; here both arms are retrained from scratch with no policy selection and every contrast discloses independent training",
+    "endpoint_grid": {
+      "contexts": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "divisibility_rule": "every endpoint divisible by all horizons and context+endpoint within the 128-frame clip; the NovPhy {15..600} grid does not transfer because 600 exceeds the clip; divisibility is the freezing rule",
+      "endpoints": [
+        15,
+        30,
+        60,
+        120
+      ],
+      "horizons": [
+        1,
+        5,
+        15
+      ]
+    },
+    "estimands": {
+      "dropped": "planning/ranking regret is NOT an estimand on CLEVRER (no candidate inventory); no shots/success claims; the macro arm is unsupported and its estimand dropped",
+      "metrics": [
+        "position_mse (mask inside_camera_view at target frame)",
+        "velocity_mse (same mask)",
+        "carrier_mse",
+        "presence_mse",
+        "kind_mse"
+      ],
+      "recursive": "fixed-pair rollout from the true carrier at each eval context; one shared initial carrier, predictions feed the next transition, no truth resets",
+      "regime": "contact-active = at least one collision event inside the early cascade window (context, context+30]; strata contrasts of the symbolic-execution effect per horizon and endpoint; minimum 8 units per stratum",
+      "symbolic_execution": "hybrid fixed micro pair h vs hybrid fixed continuous pair h (same checkpoint)",
+      "training_effect": "hybrid fixed continuous pair h vs independently trained continuous arm at h",
+      "zero_shot_pooling": "no zero-shot or adapted conditions exist here; both arms retrained from scratch"
+    },
+    "intervals": "paired bootstrap over paired (scene, context) units, mean-over-seeds reference-minus-tested differences, 10000 resamples, rng 7201; DESCRIPTIVE only, no inferential superiority claim",
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "systems": [
+      "continuous_h1",
+      "continuous_h5",
+      "continuous_h15",
+      "hybrid_continuous_h1",
+      "hybrid_continuous_h5",
+      "hybrid_continuous_h15",
+      "hybrid_micro_h1",
+      "hybrid_micro_h5",
+      "hybrid_micro_h15"
+    ],
+    "training": {
+      "batch_size": 64,
+      "grad_clip": 1.0,
+      "identical_minibatches": "both arms of one seed share the generator seed and the frozen window order; windows draw with one per-seed generator exactly as issue-74",
+      "learning_rate": 0.0001,
+      "objective": {
+        "dropped": "none; the issue-74 objective contains no action-dependent penalty term; the action enters only as the constant null-action conditioning input held for both arms",
+        "hybrid_symbolic": "0.1 x micro symbolic losses: pos-weight-5 relations BCE over the contact and velocity-bin channels plus availability BCE, at predicted and observed contexts",
+        "retained": [
+          "local carrier MSE at four requested-horizon transitions",
+          "recursive MSE along the unrolled carrier",
+          "0.01 carrier bound penalty relu(|z|-2)^2 (issue-74 weight)"
+        ]
+      },
+      "pair_cycle": "step % 6 over frozen issue-71 PAIRS order minus macro: [[1, 'continuous'], [1, 'micro'], [5, 'continuous'], [5, 'micro'], [15, 'continuous'], [15, 'micro']]; the continuous arm uses the same delta with continuous abstraction",
+      "selection": "last update, no best-validation checkpoint",
+      "steps": 9000,
+      "unroll": 4,
+      "weight_decay": 0.0001
+    }
+  },
+  "diagnostics_complete": true,
+  "dispositions": {
+    "question_1_detail": {
+      "components": {
+        "S1": {
+          "difference": 0.003663336865025081,
+          "holds": true,
+          "margin": 0.0010093385783774365
+        },
+        "S2": {
+          "h15_difference": -5.9716273072909746e-05,
+          "h1_difference": 0.003663336865025081,
+          "holds": true
+        },
+        "S3": {
+          "curves": {
+            "1": {
+              "120": 13.532652283708254,
+              "15": 0.02018677156754873,
+              "30": 0.0910336427623406,
+              "60": 0.37074259779829943
+            },
+            "15": {
+              "120": 0.01155596257659555,
+              "15": 0.0013165438332028618,
+              "30": 0.0016575059394704616,
+              "60": 0.0013341562573461689
+            },
+            "5": {
+              "120": 0.047125266515649855,
+              "15": 0.0018876115787457414,
+              "30": 0.004062550330975985,
+              "60": 0.011444972157025605
+            }
+          },
+          "holds": false
+        }
+      },
+      "disposition": "not_supported_by_this_experiment"
+    },
+    "question_1_signature": "not_supported_by_this_experiment",
+    "question_2_detail": {
+      "disposition": "not_supported_by_this_experiment",
+      "margins": {
+        "1": 0.1491141040499012,
+        "15": 0.0008515433953208331,
+        "5": 0.002220164626164155
+      },
+      "rows_at_120": [
+        {
+          "active": {
+            "descriptive_95_percent_interval": [
+              -1.6722839697160654,
+              -0.1877528692906102
+            ],
+            "mean": -0.9552252578238646,
+            "paired_units": 24
+          },
+          "difference_active_minus_still": -0.10774231495128728,
+          "endpoint": 120,
+          "horizon": 1,
+          "still": {
+            "descriptive_95_percent_interval": [
+              -1.3352388386821583,
+              -0.37296865265816453
+            ],
+            "mean": -0.8474829428725773,
+            "paired_units": 24
+          }
+        },
+        {
+          "active": {
+            "descriptive_95_percent_interval": [
+              -0.013044873086295814,
+              -0.0012949592948037515
+            ],
+            "mean": -0.007043172928711607,
+            "paired_units": 24
+          },
+          "difference_active_minus_still": -0.007610679384217494,
+          "endpoint": 120,
+          "horizon": 5,
+          "still": {
+            "descriptive_95_percent_interval": [
+              -0.005287561186317664,
+              0.005807971997678073
+            ],
+            "mean": 0.0005675064555058871,
+            "paired_units": 24
+          }
+        },
+        {
+          "active": {
+            "descriptive_95_percent_interval": [
+              -0.003949592230330584,
+              -0.0019496942585748105
+            ],
+            "mean": -0.0030028317511702576,
+            "paired_units": 24
+          },
+          "difference_active_minus_still": -0.0020161715931155616,
+          "endpoint": 120,
+          "horizon": 15,
+          "still": {
+            "descriptive_95_percent_interval": [
+              -0.002580583555714434,
+              0.0010730621912645997
+            ],
+            "mean": -0.0009866601580546962,
+            "paired_units": 24
+          }
+        }
+      ]
+    },
+    "question_2_regime": "not_supported_by_this_experiment"
+  },
+  "final_evaluation_opened": false,
+  "fresh_evaluation_opened": false,
+  "identity": "issue-79-clevrer-boundary-report-v1",
+  "inventory": {
+    "executed_cells": 1296,
+    "missing_cells": 0,
+    "scheduled_cells": 1296,
+    "typed_failure_cells": 0
+  },
+  "issue_64_authorized": false,
+  "limitations": [
+    "out-of-family replication: mechanism-shape evidence only, no leaderboard/VQA or perception claim",
+    "engine-annotation features in, no visual perception on either arm; shared frozen parser contract",
+    "descriptive paired bootstrap over 48 (scene, context) units per seed; no inferential superiority claim",
+    "inference and symbolic-head work are not equalized across arms; recorded, not matched",
+    "macro arm unsupported on CLEVRER; its estimand dropped (Phase 0)"
+  ],
+  "membership": {
+    "eval_units_per_seed": 48,
+    "rule": "first 12 collision-complete scenes in ascending scene_index within the validation-split annotations; collision-complete = contiguous 128-frame trajectory for every declared object and at least one collision event; no outcome-based selection",
+    "scan": {
+      "scanned": 12,
+      "skipped": []
+    },
+    "scenes": [
+      {
+        "collisions": 2,
+        "object_property": [
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 0,
+            "shape": "cube"
+          },
+          {
+            "color": "blue",
+            "material": "rubber",
+            "object_id": 1,
+            "shape": "cylinder"
+          },
+          {
+            "color": "yellow",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cube"
+          },
+          {
+            "color": "gray",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "sphere"
+          }
+        ],
+        "objects": 4,
+        "scene_index": 10000,
+        "video_filename": "video_10000.mp4"
+      },
+      {
+        "collisions": 3,
+        "object_property": [
+          {
+            "color": "yellow",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "sphere"
+          },
+          {
+            "color": "green",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "yellow",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cylinder"
+          },
+          {
+            "color": "gray",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "cube"
+          },
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 4,
+            "shape": "cube"
+          }
+        ],
+        "objects": 5,
+        "scene_index": 10001,
+        "video_filename": "video_10001.mp4"
+      },
+      {
+        "collisions": 4,
+        "object_property": [
+          {
+            "color": "green",
+            "material": "metal",
+            "object_id": 0,
+            "shape": "cube"
+          },
+          {
+            "color": "gray",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "blue",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cylinder"
+          },
+          {
+            "color": "gray",
+            "material": "rubber",
+            "object_id": 3,
+            "shape": "sphere"
+          },
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 4,
+            "shape": "cylinder"
+          },
+          {
+            "color": "cyan",
+            "material": "rubber",
+            "object_id": 5,
+            "shape": "cube"
+          }
+        ],
+        "objects": 6,
+        "scene_index": 10002,
+        "video_filename": "video_10002.mp4"
+      },
+      {
+        "collisions": 2,
+        "object_property": [
+          {
+            "color": "yellow",
+            "material": "metal",
+            "object_id": 0,
+            "shape": "cube"
+          },
+          {
+            "color": "blue",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "yellow",
+            "material": "rubber",
+            "object_id": 2,
+            "shape": "sphere"
+          },
+          {
+            "color": "yellow",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "cylinder"
+          }
+        ],
+        "objects": 4,
+        "scene_index": 10003,
+        "video_filename": "video_10003.mp4"
+      },
+      {
+        "collisions": 3,
+        "object_property": [
+          {
+            "color": "yellow",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "cube"
+          },
+          {
+            "color": "blue",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "cube"
+          },
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "sphere"
+          },
+          {
+            "color": "blue",
+            "material": "rubber",
+            "object_id": 3,
+            "shape": "cylinder"
+          }
+        ],
+        "objects": 4,
+        "scene_index": 10004,
+        "video_filename": "video_10004.mp4"
+      },
+      {
+        "collisions": 2,
+        "object_property": [
+          {
+            "color": "brown",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "sphere"
+          },
+          {
+            "color": "red",
+            "material": "rubber",
+            "object_id": 1,
+            "shape": "cylinder"
+          },
+          {
+            "color": "red",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cube"
+          },
+          {
+            "color": "yellow",
+            "material": "rubber",
+            "object_id": 3,
+            "shape": "cube"
+          },
+          {
+            "color": "cyan",
+            "material": "metal",
+            "object_id": 4,
+            "shape": "sphere"
+          }
+        ],
+        "objects": 5,
+        "scene_index": 10005,
+        "video_filename": "video_10005.mp4"
+      },
+      {
+        "collisions": 1,
+        "object_property": [
+          {
+            "color": "gray",
+            "material": "metal",
+            "object_id": 0,
+            "shape": "sphere"
+          },
+          {
+            "color": "purple",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "cylinder"
+          },
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cube"
+          },
+          {
+            "color": "green",
+            "material": "rubber",
+            "object_id": 3,
+            "shape": "cube"
+          }
+        ],
+        "objects": 4,
+        "scene_index": 10006,
+        "video_filename": "video_10006.mp4"
+      },
+      {
+        "collisions": 2,
+        "object_property": [
+          {
+            "color": "gray",
+            "material": "metal",
+            "object_id": 0,
+            "shape": "cylinder"
+          },
+          {
+            "color": "red",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cylinder"
+          },
+          {
+            "color": "blue",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "cube"
+          },
+          {
+            "color": "gray",
+            "material": "rubber",
+            "object_id": 4,
+            "shape": "cube"
+          },
+          {
+            "color": "green",
+            "material": "rubber",
+            "object_id": 5,
+            "shape": "sphere"
+          }
+        ],
+        "objects": 6,
+        "scene_index": 10007,
+        "video_filename": "video_10007.mp4"
+      },
+      {
+        "collisions": 2,
+        "object_property": [
+          {
+            "color": "gray",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "cylinder"
+          },
+          {
+            "color": "purple",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "cylinder"
+          },
+          {
+            "color": "cyan",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "cube"
+          },
+          {
+            "color": "purple",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "sphere"
+          },
+          {
+            "color": "green",
+            "material": "metal",
+            "object_id": 4,
+            "shape": "sphere"
+          },
+          {
+            "color": "purple",
+            "material": "rubber",
+            "object_id": 5,
+            "shape": "cylinder"
+          }
+        ],
+        "objects": 6,
+        "scene_index": 10008,
+        "video_filename": "video_10008.mp4"
+      },
+      {
+        "collisions": 3,
+        "object_property": [
+          {
+            "color": "green",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "cube"
+          },
+          {
+            "color": "blue",
+            "material": "metal",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "yellow",
+            "material": "metal",
+            "object_id": 2,
+            "shape": "sphere"
+          },
+          {
+            "color": "red",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "sphere"
+          }
+        ],
+        "objects": 4,
+        "scene_index": 10009,
+        "video_filename": "video_10009.mp4"
+      },
+      {
+        "collisions": 3,
+        "object_property": [
+          {
+            "color": "blue",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "cylinder"
+          },
+          {
+            "color": "cyan",
+            "material": "rubber",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "red",
+            "material": "rubber",
+            "object_id": 2,
+            "shape": "cylinder"
+          },
+          {
+            "color": "brown",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "cube"
+          },
+          {
+            "color": "red",
+            "material": "metal",
+            "object_id": 4,
+            "shape": "cube"
+          }
+        ],
+        "objects": 5,
+        "scene_index": 10010,
+        "video_filename": "video_10010.mp4"
+      },
+      {
+        "collisions": 3,
+        "object_property": [
+          {
+            "color": "brown",
+            "material": "rubber",
+            "object_id": 0,
+            "shape": "sphere"
+          },
+          {
+            "color": "red",
+            "material": "rubber",
+            "object_id": 1,
+            "shape": "sphere"
+          },
+          {
+            "color": "red",
+            "material": "rubber",
+            "object_id": 2,
+            "shape": "cube"
+          },
+          {
+            "color": "green",
+            "material": "metal",
+            "object_id": 3,
+            "shape": "cylinder"
+          },
+          {
+            "color": "purple",
+            "material": "rubber",
+            "object_id": 4,
+            "shape": "sphere"
+          }
+        ],
+        "objects": 5,
+        "scene_index": 10011,
+        "video_filename": "video_10011.mp4"
+      }
+    ],
+    "training_windows": 480,
+    "windows_per_scene": 40
+  },
+  "per_seed": {
+    "20260908": {
+      "continuous_h1": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 7.509951904416084,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 14.542297154664993,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 11.690689285596212,
+            "presence_mse": 8.239877422650656,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 6.392532895008723
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0109629337869895,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.006123271896891917,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.013336763872454563,
+            "presence_mse": 0.006808316519406314,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.05875314176470662
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.029200763169986505,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.03158511194245269,
+            "position_available_values": 8.375,
+            "position_mse": 0.034976305711703994,
+            "presence_mse": 0.03301390656270087,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.10820056653271119
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.14247560190657774,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.24113291098425785,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.1419781141448766,
+            "presence_mse": 0.15234632324427366,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.3535426860519995
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.08018786749259259,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "continuous_h15": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.005689226833055727,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0014521453085762914,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.009496873045767037,
+            "presence_mse": 0.0015459002982728027,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.017947875671476748
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.002715485508057706,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 8.499788543758768e-05,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0013247200589224424,
+            "presence_mse": 6.85723442378124e-05,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.003205671311434344
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0018788603677724798,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0001395621312667572,
+            "position_available_values": 8.375,
+            "position_mse": 0.001449253230020986,
+            "presence_mse": 0.0001515876541210067,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.018602590935188346
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0006869102902176868,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0003914731987606501,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.0009416800779339004,
+            "presence_mse": 0.00039767766429577023,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.0031981296797312098
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.006335058074910194,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "continuous_h5": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.02158812511091431,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.020277025740748893,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.03701864668012907,
+            "presence_mse": 0.020402116778617103,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.05423531440707544
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0029309800993360113,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0003479367963639864,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0016383994443458505,
+            "presence_mse": 0.0002317691399487861,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.005206794799354005
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0025779667970103524,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.001132672234234633,
+            "position_available_values": 8.375,
+            "position_mse": 0.002636194746931627,
+            "presence_mse": 0.0008889587813124914,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.023381468141451478
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.004084287516889162,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0038661466678604484,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.005024151997834754,
+            "presence_mse": 0.003946858307851168,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.016555309909260057
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.016759914899012074,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h1": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 2.8559919645388923,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 2.381802298128605,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 2.800599656999111,
+            "presence_mse": 2.122364930808544,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 6.415796027829249
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.007609287412681927,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.003284401711425744,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0070891558316361625,
+            "presence_mse": 0.005103874835185707,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.030321558374756325
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.02602976591636737,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.018193780987833936,
+            "position_available_values": 8.375,
+            "position_mse": 0.049419264076277614,
+            "presence_mse": 0.016062164853792638,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.09525872541901965
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.15338938139999905,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.13711040164344013,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.182751283980906,
+            "presence_mse": 0.08305135757351916,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.39456228259950876
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.08672402093361598,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h15": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.006249220825945183,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.001718227524785713,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.019135626634427656,
+            "presence_mse": 0.0022584453618037514,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.021570947525712352
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0028592124278172073,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 6.622962420503124e-05,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0013369239650273812,
+            "presence_mse": 0.00014764286288482253,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.005570625852669764
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0022153670597617747,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00015458611596841365,
+            "position_available_values": 8.375,
+            "position_mse": 0.0015798367121533374,
+            "presence_mse": 0.00027803648057063884,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.01987796814379787
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0009154573090199847,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00030796572112497717,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.0009533275397188845,
+            "presence_mse": 0.0005693617198024489,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.0033275684387869355
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.006806330571028714,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h5": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.020678348509439577,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.014958150840053955,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.047352977679111063,
+            "presence_mse": 0.012680779667183137,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.04634316086109417
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0031675668609144245,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00021364543590607354,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0012553986392352574,
+            "presence_mse": 0.00037348265808153275,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.005875599662734506
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.001997395055999126,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0005353769514234349,
+            "position_available_values": 8.375,
+            "position_mse": 0.002044005943389493,
+            "presence_mse": 0.0010696456690008442,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.01772724331385689
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0033021450362866744,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0016944798347443186,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.004635031446620512,
+            "presence_mse": 0.003215101566941788,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.01368152160042276
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.01807287423677432,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h1": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 1.767826351026694,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 1.709263841311137,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 1.1851722939560811,
+            "presence_mse": 1.0126700444767873,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 2.020754463970661
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.010796562351364022,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.005479654762893915,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.010887978055203954,
+            "presence_mse": 0.005824224038709265,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.04357130210458612
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0361847891084229,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.031550018524285406,
+            "position_available_values": 8.375,
+            "position_mse": 0.06251735952294742,
+            "presence_mse": 0.023034551471937448,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.12761704181320965
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.1847818105792006,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.1724194906031092,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.2361129803272585,
+            "presence_mse": 0.10387727998507519,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.4376567844301462
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.11662326436877872,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h15": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.006949678099772427,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.002066997784519723,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.019221277218700077,
+            "presence_mse": 0.0028768025197981237,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.02427678463573102
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0036813874382157032,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00042411580216139555,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0026889880221763938,
+            "presence_mse": 0.0007892890071161673,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.004622964706262185
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.00213518214392631,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00017446133779230877,
+            "position_available_values": 8.375,
+            "position_mse": 0.0017479249121000369,
+            "presence_mse": 0.0007893556042593749,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.017722838654056734
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0009380256560689304,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0003357658060849644,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.0012739846788463183,
+            "presence_mse": 0.000848190104685879,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.0029770757858689953
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.008957729461447647,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h5": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.023917117156088352,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.02221698946474741,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.04756451630964875,
+            "presence_mse": 0.01416284911101684,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.048302647560679667
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0029371670995412083,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00021601228490908397,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0012839711610771094,
+            "presence_mse": 0.0006323190997742737,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.0045162802331712255
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0021194212701326856,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0005541771670323214,
+            "position_available_values": 8.375,
+            "position_mse": 0.001955219172183812,
+            "presence_mse": 0.0012700987354037352,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.01661050431478846
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.003669428920450931,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0024146642293392992,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.006095342008241762,
+            "presence_mse": 0.00347644452995155,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.012654469872359186
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.02478966860023017,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      }
+    },
+    "20260909": {
+      "continuous_h1": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 13.844363788763681,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 8.936329066753387,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 25.3872967561086,
+            "presence_mse": 16.584931125243504,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 20.38449505964915
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.01748993742512539,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.007630527543369681,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.03767472233933707,
+            "presence_mse": 0.007639133672152336,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.0854461791459471
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.06799973213734727,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.06267084646970034,
+            "position_available_values": 8.375,
+            "position_mse": 0.17471968584383527,
+            "presence_mse": 0.04145902511663735,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.41480118595063686
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.3574773818254471,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.6502644680440426,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.6825847048312426,
+            "presence_mse": 0.29943649284541607,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 1.58737862855196
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.07950247904712644,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "continuous_h15": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.006303809655946679,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0014406479337291482,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.012047979757577801,
+            "presence_mse": 0.0015258084701296564,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.018844439133924123
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.002689163313334575,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 8.138762264782902e-05,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.001502819439186472,
+            "presence_mse": 7.894605838979866e-05,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.0041095480836096
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.002001903765631141,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0001222760943164758,
+            "position_available_values": 8.375,
+            "position_mse": 0.001900662782039338,
+            "presence_mse": 0.00014517994456279362,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.021799202735564904
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0008181003055748685,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00027947012555766076,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.0018126434727795033,
+            "presence_mse": 0.00042864708666456863,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.003581291657004234
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.006410578183325318,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "continuous_h5": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.0350537458434701,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.02827452860462169,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.06338013176961492,
+            "presence_mse": 0.024305654728474718,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.14908108192806444
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.003440285214310279,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0003116512146637736,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0031119006113537275,
+            "presence_mse": 0.00034509951607712236,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.007446949423562425
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.004545813858082208,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0009455163126403932,
+            "position_available_values": 8.375,
+            "position_mse": 0.006856093794340268,
+            "presence_mse": 0.0012517759229619212,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.05344874778529629
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.008366157640314972,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0038380066592556736,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.02437626364796112,
+            "presence_mse": 0.005061585708366086,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.045860848758214466
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.01695897555813038,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h1": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 4.886906713247299,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 5.568512653311093,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 2.5099367362757525,
+            "presence_mse": 4.419653120140235,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 13.55313883225123
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.011083484743721783,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0071606838585770065,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.018297734738249954,
+            "presence_mse": 0.007971337841202816,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.0458833685843274
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.03992577448176841,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.03756615572880643,
+            "position_available_values": 8.375,
+            "position_mse": 0.07465451137007524,
+            "presence_mse": 0.030014685937203467,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.16587613980906704
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.24852644900480905,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.28126423464467126,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.24649831326678395,
+            "presence_mse": 0.24748111609369516,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.935969611008962
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.08657898146096461,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h15": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.007414253806928173,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0024817769590299577,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.015680033354631934,
+            "presence_mse": 0.0026328813061506176,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.02032183069968596
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0028528861424395777,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00011290966669245488,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0015736386536294351,
+            "presence_mse": 0.00021203413749996494,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.004885426595137687
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.002174369149239889,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00020660835093622154,
+            "position_available_values": 8.375,
+            "position_mse": 0.00233521865872414,
+            "presence_mse": 0.0003696473040690762,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.021185954174143262
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0008348088328299733,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00046898773446931347,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.0011692255620043095,
+            "presence_mse": 0.0006527641738405995,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.003133797741611488
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.006791207944237006,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h5": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.030961967810677987,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.025202628147477906,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.05371238640509546,
+            "presence_mse": 0.0171103774337098,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.08605622352721791
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0032022066285814312,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0004063237893205951,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0018968327112816041,
+            "presence_mse": 0.0005666243190110739,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.00888000246535133
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.002988284102078372,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0009981645841132074,
+            "position_available_values": 8.375,
+            "position_mse": 0.007674305835583557,
+            "presence_mse": 0.001400391442681818,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.028585757594555616
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.004526927533637111,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0035229638112165653,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.005290336592831106,
+            "presence_mse": 0.003604895503182585,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.012228728795889765
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.01839626854052767,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h1": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 4.2130042761564255,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 3.476762985189756,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 6.3427529980738955,
+            "presence_mse": 2.0504126648108163,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 7.0116923948129015
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.013337783787089089,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.009080347881536,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.017919007533540327,
+            "presence_mse": 0.006719341511294867,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.05369542529418444
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.049542032880708575,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.048190319716619946,
+            "position_available_values": 8.375,
+            "position_mse": 0.08270408818498254,
+            "presence_mse": 0.026081756688654423,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.14678353032407662
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.2963825718810161,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.280813022206227,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.43191507924348116,
+            "presence_mse": 0.15745390532538295,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.5570396563659111
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.11696504957702321,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h15": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.00881232609875345,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0035055750704486854,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.0205510132946074,
+            "presence_mse": 0.003369092461070977,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.026754767750389874
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0036309682097150167,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00034816469375679543,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0025501308773527853,
+            "presence_mse": 0.0009357680070631128,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.005119486635521753
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.002317779577424517,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0003031049545825226,
+            "position_available_values": 8.375,
+            "position_mse": 0.002837416625576831,
+            "presence_mse": 0.0007627836409180114,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.021986570764662854
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0009799031734776993,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0005807566625056401,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.0016557570318885457,
+            "presence_mse": 0.0007755699674210822,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.004072227774789401
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.00914489753874174,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h5": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.0326658133805419,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.026627075237532456,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.04841880356737723,
+            "presence_mse": 0.016817917465232313,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.07101446721935645
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.003021918122006658,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00038743646882721805,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0019959700390851745,
+            "presence_mse": 0.0009559703952011963,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.007789829634324026
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.002684578714251984,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0010039170392701635,
+            "position_available_values": 8.375,
+            "position_mse": 0.0045402429229094805,
+            "presence_mse": 0.0014932459550133597,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.023710648907581344
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.005879199714399874,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.004112138526882821,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.009086613138303315,
+            "presence_mse": 0.0035399035114096478,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.01719070617885639
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.02453156711029199,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      }
+    },
+    "20260910": {
+      "continuous_h1": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 1.7407356947660446,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 2.868961783746878,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 3.51997080941995,
+            "presence_mse": 1.3738011308014393,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 2.3706920923044286
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.009455149634353196,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.005782391187191631,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.009548828490854552,
+            "presence_mse": 0.005654195265378803,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.025878089169661205
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.02843641982569049,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.03075844810033838,
+            "position_available_values": 8.375,
+            "position_mse": 0.06340493673148255,
+            "presence_mse": 0.019371627616540838,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.09632286770890157
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.12068361913164456,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.19014846083397666,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.2876649744187792,
+            "presence_mse": 0.09979260247200727,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.2922310084104538
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.07925193450258423,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "continuous_h15": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.006024380658345763,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0016790386119585794,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.013123034926441809,
+            "presence_mse": 0.0016898456330333527,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.02035885168394695
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0027569271906031645,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 7.564726244405999e-05,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0011220920014996711,
+            "presence_mse": 6.713234256494616e-05,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.0033970657808595206
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.002106274844663858,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0001426062531209027,
+            "position_available_values": 8.375,
+            "position_mse": 0.0016226018063510612,
+            "presence_mse": 0.00011777196535452579,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.022583881617417017
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.000844342986359455,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00034284754110558424,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.0012481452213251032,
+            "presence_mse": 0.00040655003491944325,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.0024399532712777727
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.006397695920895785,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "continuous_h5": {
+        "active_parameters": 1862396,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.01822082440291221,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.016151093140554924,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.04097702109720558,
+            "presence_mse": 0.013995671838832399,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.03289398752773801
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0033221230223716702,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0002252667795043332,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0009125346805376466,
+            "presence_mse": 0.00032953657985975343,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.0035666646575312675
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0021564340301362486,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0007198392528759238,
+            "position_available_values": 8.375,
+            "position_mse": 0.0026953624516560617,
+            "presence_mse": 0.0010373687291576061,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.02015435053423668
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.003323804029302361,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0026017249692813493,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.004934500825280945,
+            "presence_mse": 0.0037660849096331126,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.008787908035931954
+          }
+        },
+        "linear_macs_per_step": 1852200,
+        "mean_rollout_wall_seconds": 0.016698202710055437,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h1": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 4.586958582202594,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 4.9982614914576216,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 3.6363098497192063,
+            "presence_mse": 2.5625444427132607,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 9.77209278444449
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.018002835354612518,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00789030771314477,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.024183413537684828,
+            "presence_mse": 0.012362297866881514,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.1562216691672802
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.05607822475334009,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.03026231052353978,
+            "position_available_values": 8.375,
+            "position_mse": 0.10266521984400849,
+            "presence_mse": 0.05521952182364961,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.1978580754560729
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.3007985344156623,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.16214471737233302,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.4672023073459665,
+            "presence_mse": 0.2810476211210092,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.6235299234588941
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.08903620336786844,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h15": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.006939669731461133,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.003001002517218391,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.016276943730190396,
+            "presence_mse": 0.0025833042066854737,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.01915137531856696
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.003016963232160682,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0001254777022647128,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0012182177001704986,
+            "presence_mse": 0.00012975834132096983,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.004760777582002144
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0028744042714000293,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00025359367070147226,
+            "position_available_values": 8.375,
+            "position_mse": 0.001634361677740041,
+            "presence_mse": 0.0002395085149752655,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.026602455241421314
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0010882365835035064,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0006587445902065762,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.0018887159749283455,
+            "presence_mse": 0.0005429909154675746,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.0036986247529663765
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.006898556603118777,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "hybrid_continuous_h5": {
+        "active_parameters": 1441516,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.028445022297091782,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.019941385408552986,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.03214451348564277,
+            "presence_mse": 0.021681313829806943,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.055574207683093846
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0043784912159026135,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00043321238899807213,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.0025843830068576303,
+            "presence_mse": 0.0005357344877362872,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.020711545298884932
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.005377188337054879,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0013861099432688206,
+            "position_available_values": 8.375,
+            "position_mse": 0.005200595890831512,
+            "presence_mse": 0.0014503969420426681,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.042542934820327595
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.005347680436292042,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00528416639038672,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.009341244319026979,
+            "presence_mse": 0.004636862451055397,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.01527384995521667
+          }
+        },
+        "linear_macs_per_step": 1432448,
+        "mean_rollout_wall_seconds": 0.018328310713210765,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h1": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 2.619025240341822,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 2.9173667232195535,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 4.122983252008756,
+            "presence_mse": 1.2697355151176453,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 4.653073973953724
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.018136313805977505,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.006877932833352436,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.025785654395197827,
+            "presence_mse": 0.006320720640360378,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.13144921604543924
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.05092229810543358,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.028441133598486584,
+            "position_available_values": 8.375,
+            "position_mse": 0.10450178551642846,
+            "presence_mse": 0.026753560659320403,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.185616847127676
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.2661540548627575,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.19983823744890591,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.48914372983078164,
+            "presence_mse": 0.1568783074617386,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.6795189036056399
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.11657841497314318,
+        "transition_calls_per_endpoint": {
+          "120": 120,
+          "15": 15,
+          "30": 30,
+          "60": 60
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h15": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.0076985871807361645,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.003218411611063251,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.017304551069779944,
+            "presence_mse": 0.0025689427178197852,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.021938169176185813
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.0038566149911882044,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0004457903067608034,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.00243703286832897,
+            "presence_mse": 0.0008632495040122498,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.004295160491892602
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0024879025944149666,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.00033675610423718655,
+            "position_available_values": 8.375,
+            "position_mse": 0.0019296869165070045,
+            "presence_mse": 0.0006949414176536569,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.027485418853757437
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.0011232827540273622,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0006339943238344858,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.002038236107182456,
+            "presence_mse": 0.0008346346961237335,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.003266934543110741
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.008999998268942969,
+        "transition_calls_per_endpoint": {
+          "120": 8,
+          "15": 1,
+          "30": 2,
+          "60": 4
+        },
+        "typed_failures": 0
+      },
+      "hybrid_micro_h5": {
+        "active_parameters": 1805302,
+        "curves": {
+          "120": {
+            "available_units": 48,
+            "carrier_mse": 0.029060128998632234,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.019649690599180758,
+            "position_available_values": 8.708333333333334,
+            "position_mse": 0.046940057402631886,
+            "presence_mse": 0.01622940180823207,
+            "velocity_available_values": 8.708333333333334,
+            "velocity_mse": 0.05849246583723774
+          },
+          "15": {
+            "available_units": 48,
+            "carrier_mse": 0.004528013167146128,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0005194301350760119,
+            "position_available_values": 7.333333333333333,
+            "position_mse": 0.002705701390368631,
+            "presence_mse": 0.0007500259677423552,
+            "velocity_available_values": 7.333333333333333,
+            "velocity_mse": 0.021030527246087633
+          },
+          "30": {
+            "available_units": 48,
+            "carrier_mse": 0.0054271405800439725,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.0015597713900206145,
+            "position_available_values": 8.375,
+            "position_mse": 0.006931829503931415,
+            "presence_mse": 0.0012728599006853376,
+            "velocity_available_values": 8.375,
+            "velocity_mse": 0.04030919308812978
+          },
+          "60": {
+            "available_units": 48,
+            "carrier_mse": 0.005777617935867359,
+            "kind_available_values": 9.666666666666666,
+            "kind_mse": 0.004984511351115846,
+            "position_available_values": 8.833333333333334,
+            "position_mse": 0.011782635983157283,
+            "presence_mse": 0.0036503236818437776,
+            "velocity_available_values": 8.833333333333334,
+            "velocity_mse": 0.01767314346701217
+          }
+        },
+        "linear_macs_per_step": 1795456,
+        "mean_rollout_wall_seconds": 0.024046884126922425,
+        "transition_calls_per_endpoint": {
+          "120": 24,
+          "15": 3,
+          "30": 6,
+          "60": 12
+        },
+        "typed_failures": 0
+      }
+    }
+  },
+  "plan_identity": "issue-79-clevrer-boundary-v1",
+  "regime": [
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.0030061090937427556,
+          0.0032766122025754546
+        ],
+        "mean": -1.8100457964465168e-05,
+        "paired_units": 24
+      },
+      "difference_active_minus_still": 0.0033120230016518482,
+      "endpoint": 15,
+      "horizon": 1,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.00503316529209567,
+          -0.0016612037301658553
+        ],
+        "mean": -0.0033301234596163133,
+        "paired_units": 24
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.01671891419714989,
+          0.0029984702000446168
+        ],
+        "mean": -0.006930156002959442,
+        "paired_units": 24
+      },
+      "difference_active_minus_still": 0.0014625132834124909,
+      "endpoint": 30,
+      "horizon": 1,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.01564324172892763,
+          -0.0022187826259242867
+        ],
+        "mean": -0.008392669286371933,
+        "paired_units": 24
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.1416404691731764,
+          -0.04386100578639243
+        ],
+        "mean": -0.09205804837660658,
+        "paired_units": 24
+      },
+      "difference_active_minus_still": -0.010302840214636608,
+      "endpoint": 60,
+      "horizon": 1,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.10964256658917292,
+          -0.051985935320974244
+        ],
+        "mean": -0.08175520816196997,
+        "paired_units": 24
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -1.6722839697160654,
+          -0.1877528692906102
+        ],
+        "mean": -0.9552252578238646,
+        "paired_units": 24
+      },
+      "difference_active_minus_still": -0.10774231495128728,
+      "endpoint": 120,
+      "horizon": 1,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -1.3352388386821583,
+          -0.37296865265816453
+        ],
+        "mean": -0.8474829428725773,
+        "paired_units": 24
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.00010860768800032223,
+          0.00023868467843486638
+        ],
+        "mean": 6.508900979598466e-05,
+        "paired_units": 24
+      },
+      "difference_active_minus_still": 0.0002961968416962514,
+      "endpoint": 15,
+      "horizon": 5,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.00037275317146041843,
+          -9.624175907245253e-05
+        ],
+        "mean": -0.00023110783190026673,
+        "paired_units": 24
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.00025024008896758063,
+          0.00320151371041801
+        ],
+        "mean": 0.0012366746676788249,
+        "paired_units": 24
+      },
+      "difference_active_minus_still": 0.0014789386215044132,
+      "endpoint": 30,
+      "horizon": 5,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.0005435647578855828,
+          9.91517156257436e-05
+        ],
+        "mean": -0.00024226395382558825,
+        "paired_units": 24
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.004344261611327562,
+          -0.0008586341123696518
+        ],
+        "mean": -0.002541120457559979,
+        "paired_units": 24
+      },
+      "difference_active_minus_still": 4.974493236255132e-05,
+      "endpoint": 60,
+      "horizon": 5,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.0035990773213901168,
+          -0.0017821177747161226
+        ],
+        "mean": -0.0025908653899225304,
+        "paired_units": 24
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.013044873086295814,
+          -0.0012949592948037515
+        ],
+        "mean": -0.007043172928711607,
+        "paired_units": 24
+      },
+      "difference_active_minus_still": -0.007610679384217494,
+      "endpoint": 120,
+      "horizon": 5,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.005287561186317664,
+          0.005807971997678073
+        ],
+        "mean": 0.0005675064555058871,
+        "paired_units": 24
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.0019118876795295766,
+          -0.0010087811060151984
+        ],
+        "mean": -0.0014553631103303311,
+        "paired_units": 24
+      },
+      "difference_active_minus_still": -0.0005458119213067727,
+      "endpoint": 15,
+      "horizon": 15,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.0012461609559914501,
+          -0.0005549749313356895
+        ],
+        "mean": -0.0009095511890235584,
+        "paired_units": 24
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.0007864133567788182,
+          -0.0002729236449391061
+        ],
+        "mean": -0.0005016511234619733,
+        "paired_units": 24
+      },
+      "difference_active_minus_still": -0.00035956130987971043,
+      "endpoint": 30,
+      "horizon": 15,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.00042577846649389053,
+          0.00014908510854891367
+        ],
+        "mean": -0.00014208981358226287,
+        "paired_units": 24
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.0005947662762486693,
+          -0.00017729359314620937
+        ],
+        "mean": -0.00037866380221708416,
+        "paired_units": 24
+      },
+      "difference_active_minus_still": -0.00011952177692364785,
+      "endpoint": 60,
+      "horizon": 15,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.0005142314713793893,
+          -1.7900710291643122e-06
+        ],
+        "mean": -0.0002591420252934363,
+        "paired_units": 24
+      }
+    },
+    {
+      "active": {
+        "descriptive_95_percent_interval": [
+          -0.003949592230330584,
+          -0.0019496942585748105
+        ],
+        "mean": -0.0030028317511702576,
+        "paired_units": 24
+      },
+      "difference_active_minus_still": -0.0020161715931155616,
+      "endpoint": 120,
+      "horizon": 15,
+      "still": {
+        "descriptive_95_percent_interval": [
+          -0.002580583555714434,
+          0.0010730621912645997
+        ],
+        "mean": -0.0009866601580546962,
+        "paired_units": 24
+      }
+    }
+  ],
+  "representation": {
+    "availability_mask": "inside_camera_view in columns 7 and 10; unavailable fields zeroed; all masked estimands",
+    "carrier": "unchanged issue-71 236-value layout: 2 global values + 18 slots x 13 columns",
+    "identity": "clevrer-annotation-feature-carrier-v1",
+    "kind_vocabulary": [
+      "cube",
+      "cylinder",
+      "sphere"
+    ],
+    "macro_note": "no supports/structure-unstable referent on CLEVRER; macro pairs are never trained and never evaluated; the macro estimand is DROPPED, no invented vocabulary",
+    "macro_status": "unsupported",
+    "micro_predicates": {
+      "contact": "collision events (frame_id, object_ids) label symmetric channel 0",
+      "velocity_bin": "same speed tier at frozen edges [0.3499, 1.6807], symmetric channel 1"
+    },
+    "null_action": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "parser_symmetry": "identical frozen annotation-to-carrier builder for both arms; engine features in, predicates out; no learned perception on either side",
+    "position_scale": 5.0,
+    "prior_elapsed_seconds": 0.0390625,
+    "slot_columns": [
+      [
+        "presence",
+        0
+      ],
+      [
+        "presence_mask",
+        1
+      ],
+      [
+        "kind_code",
+        2
+      ],
+      [
+        "kind_confidence",
+        3
+      ],
+      [
+        "kind_mask",
+        4
+      ],
+      [
+        "position_x",
+        5
+      ],
+      [
+        "position_y",
+        6
+      ],
+      [
+        "position_mask",
+        7
+      ],
+      [
+        "velocity_x",
+        8
+      ],
+      [
+        "velocity_y",
+        9
+      ],
+      [
+        "velocity_mask",
+        10
+      ],
+      [
+        "expected_kind_probability",
+        11
+      ],
+      [
+        "slot_valid_mask",
+        12
+      ]
+    ],
+    "slot_contract": "18 fixed slots; declared CLEVRER objects occupy slots 0..n-1 in object_id order for every frame; remaining slots stay zero; identical builder for both arms (symmetric Phase-0 declaration)",
+    "speed_tier_edges": [
+      0.3499,
+      1.6807
+    ],
+    "unmapped_fields": "vertical location/velocity, orientation matrices and angular velocities are parsed into per-scene shards for the parser-contract record with no carrier column referent",
+    "velocity_scale": 3.0
+  },
+  "schema": "issue_79_clevrer_boundary_report_v1",
+  "stop_rule": null
+}

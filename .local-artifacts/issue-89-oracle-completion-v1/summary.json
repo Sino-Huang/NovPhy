@@ -1,0 +1,814 @@
+{
+  "archived_release": false,
+  "caps": {
+    "gpu_cap_seconds": 1800,
+    "gpu_scope": "cumulative synchronized decision wall on cuda; this ticket executes NO decision pass, so the cap is a guard only",
+    "stop": "readiness_or_precision_insufficient",
+    "wall_cap_seconds": 28800,
+    "wall_scope": "cumulative elapsed wall across ALL protocol versions and phases (smoke + completion)"
+  },
+  "ceiling_reestimate": {
+    "comparison": {
+      "completed_ceiling": {
+        "ceiling_states": 12,
+        "descriptive": {
+          "descriptive_95_percent_interval": [
+            0.30434782608695654,
+            0.7391304347826086
+          ],
+          "mean": 0.5217391304347826
+        },
+        "measured_states": 23,
+        "prevalence": 0.5217391304347826
+      },
+      "delta_ceiling_states": 5,
+      "delta_prevalence": 0.21739130434782605,
+      "issue87_published_partial_ceiling": {
+        "ceiling_states": 7,
+        "descriptive": {
+          "descriptive_95_percent_interval": [
+            0.13043478260869565,
+            0.5217391304347826
+          ],
+          "mean": 0.30434782608695654
+        },
+        "measured_states": 23,
+        "prevalence": 0.30434782608695654,
+        "unmeasured_states": [
+          "issue-77-n1-005-a07"
+        ]
+      },
+      "note": "issue-87's partial ceiling covered 23 measured states with issue-77-n1-005-a07 unmeasured; this completion pass adds the 55 missing slots; the comparison is descriptive"
+    },
+    "per_state": {
+      "issue-77-n1-001-a00": {
+        "candidates": 12,
+        "completion_executed": 4,
+        "completion_scheduled": 4,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 12,
+        "family": "type010103",
+        "indicator": 1,
+        "issue87_executed": 8,
+        "issue87_successes": 1,
+        "issue87_successful_ordinals": [
+          6
+        ],
+        "issue87_typed_failures": 4,
+        "source_member": "issue-77-n1-001",
+        "state": "issue-77-n1-001-a00",
+        "successes": 1,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-001-a07": {
+        "candidates": 12,
+        "completion_executed": 0,
+        "completion_scheduled": 0,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 12,
+        "family": "type010103",
+        "indicator": 1,
+        "issue87_executed": 12,
+        "issue87_successes": 1,
+        "issue87_successful_ordinals": [
+          6
+        ],
+        "issue87_typed_failures": 0,
+        "source_member": "issue-77-n1-001",
+        "state": "issue-77-n1-001-a07",
+        "successes": 1,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-003-a00": {
+        "candidates": 9,
+        "completion_executed": 0,
+        "completion_scheduled": 0,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 9,
+        "family": "type010103",
+        "indicator": 0,
+        "issue87_executed": 9,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 0,
+        "source_member": "issue-77-n1-003",
+        "state": "issue-77-n1-003-a00",
+        "successes": 0,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-003-a10": {
+        "candidates": 9,
+        "completion_executed": 2,
+        "completion_scheduled": 2,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 9,
+        "family": "type010103",
+        "indicator": 0,
+        "issue87_executed": 7,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 2,
+        "source_member": "issue-77-n1-003",
+        "state": "issue-77-n1-003-a10",
+        "successes": 0,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-004-a07": {
+        "candidates": 9,
+        "completion_executed": 4,
+        "completion_scheduled": 4,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 9,
+        "family": "type010103",
+        "indicator": 0,
+        "issue87_executed": 5,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 4,
+        "source_member": "issue-77-n1-004",
+        "state": "issue-77-n1-004-a07",
+        "successes": 0,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-005-a07": {
+        "candidates": 4,
+        "completion_executed": 3,
+        "completion_scheduled": 4,
+        "completion_successes": 1,
+        "completion_successful_ordinals": [
+          7
+        ],
+        "completion_typed_failures": 1,
+        "executed": 3,
+        "family": "type010103",
+        "indicator": null,
+        "issue87_executed": 0,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 4,
+        "source_member": "issue-77-n1-005",
+        "state": "issue-77-n1-005-a07",
+        "successes": 1,
+        "typed_unmeasurable": true
+      },
+      "issue-77-n1-006-a05": {
+        "candidates": 13,
+        "completion_executed": 1,
+        "completion_scheduled": 1,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010103",
+        "indicator": 1,
+        "issue87_executed": 12,
+        "issue87_successes": 1,
+        "issue87_successful_ordinals": [
+          5
+        ],
+        "issue87_typed_failures": 1,
+        "source_member": "issue-77-n1-006",
+        "state": "issue-77-n1-006-a05",
+        "successes": 1,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-006-a11": {
+        "candidates": 13,
+        "completion_executed": 1,
+        "completion_scheduled": 1,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010103",
+        "indicator": 1,
+        "issue87_executed": 12,
+        "issue87_successes": 1,
+        "issue87_successful_ordinals": [
+          5
+        ],
+        "issue87_typed_failures": 1,
+        "source_member": "issue-77-n1-006",
+        "state": "issue-77-n1-006-a11",
+        "successes": 1,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-007-a05": {
+        "candidates": 13,
+        "completion_executed": 2,
+        "completion_scheduled": 2,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010103",
+        "indicator": 0,
+        "issue87_executed": 11,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 2,
+        "source_member": "issue-77-n1-007",
+        "state": "issue-77-n1-007-a05",
+        "successes": 0,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-007-a12": {
+        "candidates": 13,
+        "completion_executed": 3,
+        "completion_scheduled": 3,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010103",
+        "indicator": 0,
+        "issue87_executed": 10,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 3,
+        "source_member": "issue-77-n1-007",
+        "state": "issue-77-n1-007-a12",
+        "successes": 0,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-008-a05": {
+        "candidates": 13,
+        "completion_executed": 1,
+        "completion_scheduled": 1,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010103",
+        "indicator": 0,
+        "issue87_executed": 12,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 1,
+        "source_member": "issue-77-n1-008",
+        "state": "issue-77-n1-008-a05",
+        "successes": 0,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-008-a12": {
+        "candidates": 13,
+        "completion_executed": 0,
+        "completion_scheduled": 0,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010103",
+        "indicator": 0,
+        "issue87_executed": 13,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 0,
+        "source_member": "issue-77-n1-008",
+        "state": "issue-77-n1-008-a12",
+        "successes": 0,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-009-a00": {
+        "candidates": 13,
+        "completion_executed": 0,
+        "completion_scheduled": 0,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010105",
+        "indicator": 0,
+        "issue87_executed": 13,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 0,
+        "source_member": "issue-77-n1-009",
+        "state": "issue-77-n1-009-a00",
+        "successes": 0,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-009-a09": {
+        "candidates": 13,
+        "completion_executed": 4,
+        "completion_scheduled": 4,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010105",
+        "indicator": 0,
+        "issue87_executed": 9,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 4,
+        "source_member": "issue-77-n1-009",
+        "state": "issue-77-n1-009-a09",
+        "successes": 0,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-010-a06": {
+        "candidates": 13,
+        "completion_executed": 4,
+        "completion_scheduled": 4,
+        "completion_successes": 1,
+        "completion_successful_ordinals": [
+          2
+        ],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010105",
+        "indicator": 1,
+        "issue87_executed": 9,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 4,
+        "source_member": "issue-77-n1-010",
+        "state": "issue-77-n1-010-a06",
+        "successes": 1,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-011-a02": {
+        "candidates": 13,
+        "completion_executed": 3,
+        "completion_scheduled": 3,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010105",
+        "indicator": 1,
+        "issue87_executed": 10,
+        "issue87_successes": 1,
+        "issue87_successful_ordinals": [
+          4
+        ],
+        "issue87_typed_failures": 3,
+        "source_member": "issue-77-n1-011",
+        "state": "issue-77-n1-011-a02",
+        "successes": 1,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-011-a11": {
+        "candidates": 13,
+        "completion_executed": 2,
+        "completion_scheduled": 2,
+        "completion_successes": 1,
+        "completion_successful_ordinals": [
+          4
+        ],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010105",
+        "indicator": 1,
+        "issue87_executed": 11,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 2,
+        "source_member": "issue-77-n1-011",
+        "state": "issue-77-n1-011-a11",
+        "successes": 1,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-012-a08": {
+        "candidates": 13,
+        "completion_executed": 0,
+        "completion_scheduled": 0,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010105",
+        "indicator": 1,
+        "issue87_executed": 13,
+        "issue87_successes": 1,
+        "issue87_successful_ordinals": [
+          4
+        ],
+        "issue87_typed_failures": 0,
+        "source_member": "issue-77-n1-012",
+        "state": "issue-77-n1-012-a08",
+        "successes": 1,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-013-a04": {
+        "candidates": 13,
+        "completion_executed": 2,
+        "completion_scheduled": 2,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010105",
+        "indicator": 0,
+        "issue87_executed": 11,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 2,
+        "source_member": "issue-77-n1-013",
+        "state": "issue-77-n1-013-a04",
+        "successes": 0,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-014-a01": {
+        "candidates": 13,
+        "completion_executed": 5,
+        "completion_scheduled": 5,
+        "completion_successes": 1,
+        "completion_successful_ordinals": [
+          4
+        ],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010105",
+        "indicator": 1,
+        "issue87_executed": 8,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 5,
+        "source_member": "issue-77-n1-014",
+        "state": "issue-77-n1-014-a01",
+        "successes": 1,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-014-a10": {
+        "candidates": 13,
+        "completion_executed": 6,
+        "completion_scheduled": 6,
+        "completion_successes": 1,
+        "completion_successful_ordinals": [
+          4
+        ],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010105",
+        "indicator": 1,
+        "issue87_executed": 7,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 6,
+        "source_member": "issue-77-n1-014",
+        "state": "issue-77-n1-014-a10",
+        "successes": 1,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-015-a06": {
+        "candidates": 13,
+        "completion_executed": 4,
+        "completion_scheduled": 4,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010105",
+        "indicator": 0,
+        "issue87_executed": 9,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 4,
+        "source_member": "issue-77-n1-015",
+        "state": "issue-77-n1-015-a06",
+        "successes": 0,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-016-a03": {
+        "candidates": 13,
+        "completion_executed": 3,
+        "completion_scheduled": 3,
+        "completion_successes": 1,
+        "completion_successful_ordinals": [
+          3
+        ],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010105",
+        "indicator": 1,
+        "issue87_executed": 10,
+        "issue87_successes": 0,
+        "issue87_successful_ordinals": [],
+        "issue87_typed_failures": 3,
+        "source_member": "issue-77-n1-016",
+        "state": "issue-77-n1-016-a03",
+        "successes": 1,
+        "typed_unmeasurable": false
+      },
+      "issue-77-n1-016-a12": {
+        "candidates": 13,
+        "completion_executed": 0,
+        "completion_scheduled": 0,
+        "completion_successes": 0,
+        "completion_successful_ordinals": [],
+        "completion_typed_failures": 0,
+        "executed": 13,
+        "family": "type010105",
+        "indicator": 1,
+        "issue87_executed": 13,
+        "issue87_successes": 1,
+        "issue87_successful_ordinals": [
+          3
+        ],
+        "issue87_typed_failures": 0,
+        "source_member": "issue-77-n1-016",
+        "state": "issue-77-n1-016-a12",
+        "successes": 1,
+        "typed_unmeasurable": false
+      }
+    },
+    "pooled": {
+      "ceiling_states": 12,
+      "descriptive": {
+        "descriptive_95_percent_interval": [
+          0.30434782608695654,
+          0.7391304347826086
+        ],
+        "mean": 0.5217391304347826
+      },
+      "label": "DESCRIPTIVE",
+      "measured_states": 23,
+      "prevalence": 0.5217391304347826,
+      "states": 24,
+      "typed_unmeasurable_states": [
+        "issue-77-n1-005-a07"
+      ],
+      "unmeasured_states": []
+    }
+  },
+  "changelog": [
+    {
+      "change": "terminal freeze after the plan-v2 rendered smoke",
+      "evidence": "development/v2 records + data/issue-89-oracle-completion/development/v2",
+      "version": 3,
+      "what": "NO protocol element changed relative to plan-v2: the 55-slot completion membership, oracle seed 20260908, the inherited #85 detection rule, the corrected cold-start mitigation (staggered starts + extended bounds, no probes), the unreachability branch, the disposition mapping, workers, port range, and caps are byte-identical. What CHANGES with v3 is the status: development -> terminal, so this version is frozen with actual numeric values BEFORE its own scoring run, is executed exactly once, and admits no further outcome-conditioned modification. Reviewed smoke evidence embedded: 2/2 smoke cells executed real-rendered under the frozen mitigation, 2/2 matched their frozen structural expectations; channel verdicts and gallery media retained",
+      "why": "the v2 smoke validated the corrected oracle harness end to end (real rendered execution under the frozen mitigation, channel verdict or protocol-covered stability signature, gallery media retention), so no instrument change is needed and the terminal version can be frozen before any terminal outcome exists"
+    }
+  ],
+  "claim_boundary": "bounded completion measurement on development/exposed lineages; zero fresh captures; no multi-shot, adaptation, zero-shot, or complete-gameplay claim; cannot reopen #64/#65/#72/#75/#15/#76; the #80/#82/#85/#87 published outcomes are read-only inputs, never re-run, amended, or reinterpreted; this ticket APPENDS the missing slots, it does not re-run #87; no system decision pass; descriptive intervals only",
+  "completion_pass": {
+    "inventory": {
+      "executed": 54,
+      "residual_typed_failures_outside_declaration": [],
+      "scheduled_cells": 55,
+      "successful_cells": 6,
+      "typed_failures": 1,
+      "unreachability_declaration": {
+        "consequence": "the ceiling questions are dispositioned over the 23 measured states with this exclusion declared",
+        "declaration": "typed_unmeasurable",
+        "media": "data/issue-89-oracle-completion/cells/",
+        "rule": "frozen up front: if any issue-77-n1-005-a07 slot fails again with the sealed-frame stability signature ('sealed pre-decision state/RGB advanced during readiness or hold'), the state is declared typed-unmeasurable (the level physics is not static at the sealed decision step 30000, so verdicts cannot bind to the sealed pre-decision state); the stability evidence (paused before/after frames + records) and media are published, and the ceiling questions are dispositioned over the 23 measured states with the exclusion declared; the declaration triggers on the signature REGARDLESS of the other slots' verdicts",
+        "signature": "sealed pre-decision state/RGB advanced during readiness or hold",
+        "stability_failures": [
+          {
+            "failure": "ValueError: sealed pre-decision state/RGB advanced during readiness or hold",
+            "identity": "oracle--issue-77-n1-005-a07--a02",
+            "ordinal": 2
+          }
+        ],
+        "state": "issue-77-n1-005-a07"
+      }
+    }
+  },
+  "definitions": {
+    "caps": {
+      "gpu_cap_seconds": 1800,
+      "gpu_scope": "cumulative synchronized decision wall on cuda; this ticket executes NO decision pass, so the cap is a guard only",
+      "stop": "readiness_or_precision_insufficient",
+      "wall_cap_seconds": 28800,
+      "wall_scope": "cumulative elapsed wall across ALL protocol versions and phases (smoke + completion)"
+    },
+    "ceiling_reestimate_rule": "per-state oracle indicators are UPDATED by joining this pass's channel verdicts to the issue-87 published per-state ledger rows (side-by-side, never overwriting): a state is measured when at least one of its candidates has a channel verdict (issue-87 or this pass) and its indicator is 1 when at least one executed candidate succeeded; issue-77-n1-005-a07 is either measured by this pass or excluded under the frozen typed-unmeasurable declaration; pooled prevalence over the measured states with a descriptive paired-bootstrap interval; an explicit comparison row to issue-87's published partial ceiling is reported",
+    "claim_boundary": "bounded completion measurement on development/exposed lineages; zero fresh captures; no multi-shot, adaptation, zero-shot, or complete-gameplay claim; cannot reopen #64/#65/#72/#75/#15/#76; the #80/#82/#85/#87 published outcomes are read-only inputs, never re-run, amended, or reinterpreted; this ticket APPENDS the missing slots, it does not re-run #87; no system decision pass; descriptive intervals only",
+    "cold_start_mitigation": {
+      "motivation": "the issue-87 ledger shows 52 of 55 typed failures are connect/barrier timeouts clustered in cold-start windows of the 4 concurrent engine workers; the mitigation changes execution infrastructure only, never the measurement instruments. The plan-v1 bare-TCP port warm-up probes were REMOVED in v2 after the plan-v1 smoke showed they poison the engine session: the jar registers an anonymous probe as an agent and assigns the game window to the dead probe client, starving the real bridge (both v1 smoke cells timed out at the 600s socket bound with '2 agent/s has been connected' in the engine log)",
+      "rule": "protocol content frozen before the scoring run: (1) serialized/staggered engine cold starts - the supervisor dispatches a new worker no sooner than 45s after the previous dispatch, so concurrent engine cold starts cannot collide; (2) extended connect/readiness bounds: agent socket 600s, agent connect deadline 600s, physics socket 120s, prepare-for-play 300s, native decision barrier readiness 600s, attempt wall 2400s"
+    },
+    "completion_pass": "every scheduled completion slot is executed exactly once in the real rendered engine from the state's frozen initial condition (source-member decision state at native fixed step 30000), the candidate's frozen action is executed as the single first shot, and engine-truth first-shot success is read with the inherited #85 detection rule; typed failures are retained and carry no success value",
+    "compute_accounting": "per completion cell: execution wall and engine wall; this ticket executes no predictor scoring, so decision compute is zero by construction",
+    "disposition_rule": {
+      "q1_slot_completion": {
+        "not_supported_by_this_experiment": "the completion pass ran to completion (no cap stop) but residual typed terminal failures remain outside the frozen typed-unmeasurable declaration: the completion objective was not achieved by this experiment; the failures are reported",
+        "readiness_or_precision_insufficient": "a cap stop occurred or the completion inventory is incomplete",
+        "supported": "the completion ledger is complete AND every scheduled slot carries an engine-truth channel verdict OR is a issue-77-n1-005-a07 slot covered by the frozen typed-unmeasurable declaration (zero residual typed terminal failures outside the declaration)"
+      },
+      "q2_ceiling_reestimate": {
+        "not_supported_by_this_experiment": "complete measurement (as above) with pooled prevalence = 0: no admissible candidate succeeded anywhere, a measured state-difficulty floor (a valid null, reported)",
+        "readiness_or_precision_insufficient": "prevalence > 0 but the descriptive interval contains 0 (precision), or a state is unmeasured without the frozen declaration, or the inventory is incomplete, or a cap stop occurred (readiness)",
+        "supported": "every one of the 24 states is measured OR (23 states measured AND issue-77-n1-005-a07 excluded under the frozen typed-unmeasurable declaration) AND the pooled prevalence over the measured states is > 0 AND the descriptive 95% paired bootstrap interval over the per-state indicators excludes 0 (lower bound > 0; the interval-exclusion rule is the pre-declared practical margin): the closed-loop oracle ceiling is measurably nonzero"
+      }
+    },
+    "engine_channel": {
+      "detection_rule": "engine-truth first-shot success is read from the game's own state stream of the executed shot segment (the engine's canonical native fixed-step capture written during rendered play; no parser-derived cost enters the verdict). Primary event leg: pig_removed = the segment records at least one native macro event of type 'pig_removed', 'entity_death' or 'entity_destroyed' with at least one participant whose identity starts 'runtime:pig:' (the game's own pig-removal/death/destruction hooks). structure_destroyed is the same rule over 'runtime:block:' participants. Lifecycle leg (confirmatory): at least one 'runtime:pig:' entity whose per-sample lifecycle in the fixed-step state stream is 'destroyed'. The published verdict is the event leg; the lifecycle leg is published alongside for agreement review against the retained frames",
+      "failure_modes": "declared failure modes: (1) a death event with an unresolvable participant identity (empty participants) would hide which entity died - detected by the lifecycle leg and typed as a channel anomaly; (2) a pig killed at the very end of the bounded native window may fire its death event before the registry marks the entity destroyed - event leg true with lifecycle leg false is a declared timing mode, recorded, NOT an anomaly; (3) the state stream records a destroyed pig while the event leg is silent - the actual missing-event failure mode - typed as a channel anomaly on that cell; (4) window censoring before any pig death leaves both legs false: the pig survived within the bounded window, not an anomaly",
+      "first_shot_success": "the executed shot segment's engine-side channel verdict pig_removed; typed failures carry no success value",
+      "inheritance": "inherited VERBATIM from the published issue-85 engine-truth outcome channel (world_model/training/engine_outcome_reactive_diagnostic.py: CHANNEL_DETECTION_RULE; pig_removed/entity_death/entity_destroyed native macro events with runtime:pig: participants + lifecycle confirmatory leg), exactly as inherited by the frozen issue-87 terminal plan; the channel was verified with media review in issue-85 Phase A (issue-85 channel-verification.json: verified=true) and is NOT amended by this ticket",
+      "shots_to_success": "single-shot protocol: 1 when the first shot succeeds, otherwise null; no multi-shot competence claim"
+    },
+    "membership_rule": "exactly the 55 typed-failure oracle slot identities of the issue-87 terminal ledger (51 connect/barrier timeout slots on measured states + the 4 slots of issue-77-n1-005-a07), with candidate actions, engine seeds and frozen replay count costs VERBATIM from the issue-87 frozen terminal plan; same oracle seed 20260908; the issue-87 artifacts are READ-ONLY inputs bound by sha256; issue-87's executed cells are NEVER re-executed; only the execution infrastructure changes",
+    "oracle_seed": 20260908,
+    "protocol_policy": "bounded completion ticket: the FULL protocol (slot inventory bound to the issue-87 terminal ledger, cold-start mitigation, unreachability branch, disposition mapping, caps) is frozen BEFORE its scoring run; plan-v1 (development) is frozen before the bounded rendered smoke; the terminal plan-v2 is frozen with actual numeric values BEFORE its scoring run and executed exactly once; development outcomes are labelled EXPLORATORY and may not be cited as answers",
+    "questions": {
+      "q1_slot_completion": "engine-truth first-shot-success verdicts for the 55 typed-failure oracle slots of the issue-87 frozen inventory, each either executed with a channel verdict or covered by the frozen typed-unmeasurable declaration",
+      "q2_ceiling_reestimate": "per-state oracle indicators and pooled prevalence over all 24 states (or 23 measured states plus one typed-unmeasurable declaration), with a descriptive interval over states; does the nonzero-ceiling question now reach supported under the frozen disposition mapping"
+    },
+    "uncertainty": {
+      "draws": 10000,
+      "note": "descriptive paired bootstrap over state identities; the oracle pass uses the single frozen seed 20260908; cannot support a confirmatory claim",
+      "seed": 7201,
+      "unit": "state"
+    },
+    "unreachability_branch": {
+      "rule": "frozen up front: if any issue-77-n1-005-a07 slot fails again with the sealed-frame stability signature ('sealed pre-decision state/RGB advanced during readiness or hold'), the state is declared typed-unmeasurable (the level physics is not static at the sealed decision step 30000, so verdicts cannot bind to the sealed pre-decision state); the stability evidence (paused before/after frames + records) and media are published, and the ceiling questions are dispositioned over the 23 measured states with the exclusion declared; the declaration triggers on the signature REGARDLESS of the other slots' verdicts",
+      "signature": "sealed pre-decision state/RGB advanced during readiness or hold",
+      "state": "issue-77-n1-005-a07"
+    }
+  },
+  "development_versions": [
+    {
+      "changelog": [
+        {
+          "change": "initial protocol draft",
+          "evidence": "none yet (initial freeze, before the smoke)",
+          "version": 1,
+          "what": "completion pass over exactly the 55 typed-failure oracle slots of the issue-87 terminal ledger (slot identities, actions, seed 20260908 and the inherited #85 detection rule verbatim; only execution infrastructure changes); frozen cold-start mitigation (staggered engine starts 45s, port warm-up probes 300s, extended connect/readiness bounds); frozen unreachability branch for issue-77-n1-005-a07; frozen disposition mapping; bounded 2-cell rendered smoke (1 former-timeout slot + 1 issue-77-n1-005-a07 slot); global caps 28800s wall / 1800s GPU; ports 28700+; 4 isolated workers",
+          "why": "open the ticket under the frozen-before-scoring policy: nothing is yet observed, so v1 fixes the inherited measurement instruments, the mitigation, the unreachability branch and the bounded smoke that validates the harness before any long run"
+        }
+      ],
+      "label": "EXPLORATORY",
+      "may_not_be_cited_as_answers": true,
+      "note": "development-version outcomes, retained verbatim; the ticket's dispositions come only from the terminal version",
+      "plan_path": ".local-artifacts/issue-89-oracle-completion-v1/protocols/plan-v1.json",
+      "smoke_cells": [
+        {
+          "completion_identity": "oracle--issue-77-n1-001-a00--a00",
+          "executed": false,
+          "expectation": "channel_verdict",
+          "expectation_matched": false,
+          "failure": "TimeoutError: timed out",
+          "identity": "smoke-v1--issue-77-n1-001-a00--a00",
+          "ordinal": 0,
+          "pig_removed": null,
+          "state": "issue-77-n1-001-a00",
+          "wall_seconds": 620.6576909269206
+        },
+        {
+          "completion_identity": "oracle--issue-77-n1-005-a07--a01",
+          "executed": false,
+          "expectation": "channel_verdict_or_stability_signature",
+          "expectation_matched": false,
+          "failure": "TimeoutError: timed out",
+          "identity": "smoke-v1--issue-77-n1-005-a07--a01",
+          "ordinal": 1,
+          "pig_removed": null,
+          "state": "issue-77-n1-005-a07",
+          "wall_seconds": 620.6302582039498
+        }
+      ],
+      "status": "development",
+      "version": 1
+    },
+    {
+      "changelog": [
+        {
+          "change": "development amendment after the plan-v1 rendered smoke: cold-start mitigation corrected (probe removal only)",
+          "evidence": "0/2 smoke cells executed real-rendered under the frozen mitigation, 0/2 matched their frozen structural expectations; channel verdicts and gallery media retained",
+          "version": 2,
+          "what": "the bare-TCP port warm-up probes of plan-v1 are REMOVED: the v1 smoke showed they poison the engine session - the jar registers an anonymous probe connection as an agent and assigns the game window to the dead probe client, starving the real bridge (both v1 smoke cells typed-failed with TimeoutError at the 600s socket bound, wall ~622s each; engine logs show '2 agent/s has been connected'). The mitigation is now: serialized/staggered engine cold starts (45s dispatch spacing) plus the extended connect/readiness bounds, byte-identical to v1. NO other protocol element changed: the 55-slot completion membership, oracle seed 20260908, the inherited #85 detection rule, the unreachability branch, the disposition mapping, workers, port range, and caps are byte-identical. The v2 smoke re-validates the corrected harness on the same 2 frozen smoke slots before the terminal freeze. v1 is retained verbatim with its outcomes labelled EXPLORATORY.",
+          "why": "a frozen mitigation element was shown to be self-defeating by the v1 smoke; correcting it during development (before any terminal freeze) preserves the freeze-before-scoring guarantee for the terminal version"
+        }
+      ],
+      "label": "EXPLORATORY",
+      "may_not_be_cited_as_answers": true,
+      "note": "development-version outcomes, retained verbatim; the ticket's dispositions come only from the terminal version",
+      "plan_path": ".local-artifacts/issue-89-oracle-completion-v1/protocols/plan-v2.json",
+      "smoke_cells": [
+        {
+          "completion_identity": "oracle--issue-77-n1-001-a00--a00",
+          "executed": true,
+          "expectation": "channel_verdict",
+          "expectation_matched": true,
+          "failure": null,
+          "identity": "smoke-v2--issue-77-n1-001-a00--a00",
+          "ordinal": 0,
+          "pig_removed": false,
+          "state": "issue-77-n1-001-a00",
+          "wall_seconds": 152.73391184024513
+        },
+        {
+          "completion_identity": "oracle--issue-77-n1-005-a07--a01",
+          "executed": true,
+          "expectation": "channel_verdict_or_stability_signature",
+          "expectation_matched": true,
+          "failure": null,
+          "identity": "smoke-v2--issue-77-n1-005-a07--a01",
+          "ordinal": 1,
+          "pig_removed": false,
+          "state": "issue-77-n1-005-a07",
+          "wall_seconds": 65.15622422797605
+        }
+      ],
+      "status": "development",
+      "version": 2
+    }
+  ],
+  "engine_channel": {
+    "detection_rule": "engine-truth first-shot success is read from the game's own state stream of the executed shot segment (the engine's canonical native fixed-step capture written during rendered play; no parser-derived cost enters the verdict). Primary event leg: pig_removed = the segment records at least one native macro event of type 'pig_removed', 'entity_death' or 'entity_destroyed' with at least one participant whose identity starts 'runtime:pig:' (the game's own pig-removal/death/destruction hooks). structure_destroyed is the same rule over 'runtime:block:' participants. Lifecycle leg (confirmatory): at least one 'runtime:pig:' entity whose per-sample lifecycle in the fixed-step state stream is 'destroyed'. The published verdict is the event leg; the lifecycle leg is published alongside for agreement review against the retained frames",
+    "failure_modes": "declared failure modes: (1) a death event with an unresolvable participant identity (empty participants) would hide which entity died - detected by the lifecycle leg and typed as a channel anomaly; (2) a pig killed at the very end of the bounded native window may fire its death event before the registry marks the entity destroyed - event leg true with lifecycle leg false is a declared timing mode, recorded, NOT an anomaly; (3) the state stream records a destroyed pig while the event leg is silent - the actual missing-event failure mode - typed as a channel anomaly on that cell; (4) window censoring before any pig death leaves both legs false: the pig survived within the bounded window, not an anomaly",
+    "first_shot_success": "the executed shot segment's engine-side channel verdict pig_removed; typed failures carry no success value",
+    "inheritance": "inherited VERBATIM from the published issue-85 engine-truth outcome channel (world_model/training/engine_outcome_reactive_diagnostic.py: CHANNEL_DETECTION_RULE; pig_removed/entity_death/entity_destroyed native macro events with runtime:pig: participants + lifecycle confirmatory leg), exactly as inherited by the frozen issue-87 terminal plan; the channel was verified with media review in issue-85 Phase A (issue-85 channel-verification.json: verified=true) and is NOT amended by this ticket",
+    "shots_to_success": "single-shot protocol: 1 when the first shot succeeds, otherwise null; no multi-shot competence claim"
+  },
+  "execution_ledger_status": "complete",
+  "final_evaluation_opened": false,
+  "fresh_evaluation_opened": false,
+  "gpu_seconds_elapsed": 0.0,
+  "identity": "issue-89-oracle-completion-v1",
+  "issue87_binding": {
+    "identity": "issue-87-closed-loop-oracle-v1",
+    "ledger_sha256": "sha256:c5cfcc1a35767ccad6d83ff1229029f8bec9705e4de362e27376a6e1565fd344",
+    "plan_sha256": "sha256:689ec148564491291b372c02e7aa6f828480ea8200dc6c51e214f641ab5670ac",
+    "rule": "READ-ONLY inputs; the issue-87 published outcomes are inputs, never amended, reinterpreted, or re-executed",
+    "summary_sha256": "sha256:eaea0a3d20b313d7d79c0eeaefbcd170e3c0b101d5a58bd72fdfe436c9ba7c5c",
+    "terminal_version": 3,
+    "typed_failure_slots": 55
+  },
+  "issue_64_authorized": false,
+  "limitations": [
+    "development/exposed N1 lineages only; zero fresh captures; not the sealed #64/#65 benchmark",
+    "the engine-truth verdict covers the bounded native shot window per executed shot",
+    "the oracle pass uses the single frozen seed 20260908; per-state indicators are one engine-truth draw per candidate slot",
+    "states sharing a source member share one physical initial state and candidate table; the paired bootstrap over state identities is descriptive only",
+    "this ticket APPENDS the 55 missing slots of #87; #87's published outcomes are read-only inputs, never amended or reinterpreted; no system decision pass here",
+    "a typed-unmeasurable declaration for issue-77-n1-005-a07 excludes that state from the ceiling estimate with the exclusion declared"
+  ],
+  "plan_identity": "issue-89-oracle-completion-v1",
+  "protocol_versions": [
+    {
+      "changelog": [
+        {
+          "change": "initial protocol draft",
+          "evidence": "none yet (initial freeze, before the smoke)",
+          "version": 1,
+          "what": "completion pass over exactly the 55 typed-failure oracle slots of the issue-87 terminal ledger (slot identities, actions, seed 20260908 and the inherited #85 detection rule verbatim; only execution infrastructure changes); frozen cold-start mitigation (staggered engine starts 45s, port warm-up probes 300s, extended connect/readiness bounds); frozen unreachability branch for issue-77-n1-005-a07; frozen disposition mapping; bounded 2-cell rendered smoke (1 former-timeout slot + 1 issue-77-n1-005-a07 slot); global caps 28800s wall / 1800s GPU; ports 28700+; 4 isolated workers",
+          "why": "open the ticket under the frozen-before-scoring policy: nothing is yet observed, so v1 fixes the inherited measurement instruments, the mitigation, the unreachability branch and the bounded smoke that validates the harness before any long run"
+        }
+      ],
+      "frozen_at_utc": "2026-09-22T09:07:25Z",
+      "path": ".local-artifacts/issue-89-oracle-completion-v1/protocols/plan-v1.json",
+      "retained": true,
+      "status": "development",
+      "version": 1
+    },
+    {
+      "changelog": [
+        {
+          "change": "development amendment after the plan-v1 rendered smoke: cold-start mitigation corrected (probe removal only)",
+          "evidence": "0/2 smoke cells executed real-rendered under the frozen mitigation, 0/2 matched their frozen structural expectations; channel verdicts and gallery media retained",
+          "version": 2,
+          "what": "the bare-TCP port warm-up probes of plan-v1 are REMOVED: the v1 smoke showed they poison the engine session - the jar registers an anonymous probe connection as an agent and assigns the game window to the dead probe client, starving the real bridge (both v1 smoke cells typed-failed with TimeoutError at the 600s socket bound, wall ~622s each; engine logs show '2 agent/s has been connected'). The mitigation is now: serialized/staggered engine cold starts (45s dispatch spacing) plus the extended connect/readiness bounds, byte-identical to v1. NO other protocol element changed: the 55-slot completion membership, oracle seed 20260908, the inherited #85 detection rule, the unreachability branch, the disposition mapping, workers, port range, and caps are byte-identical. The v2 smoke re-validates the corrected harness on the same 2 frozen smoke slots before the terminal freeze. v1 is retained verbatim with its outcomes labelled EXPLORATORY.",
+          "why": "a frozen mitigation element was shown to be self-defeating by the v1 smoke; correcting it during development (before any terminal freeze) preserves the freeze-before-scoring guarantee for the terminal version"
+        }
+      ],
+      "frozen_at_utc": "2026-09-22T09:44:34Z",
+      "path": ".local-artifacts/issue-89-oracle-completion-v1/protocols/plan-v2.json",
+      "retained": true,
+      "status": "development",
+      "version": 2
+    },
+    {
+      "changelog": [
+        {
+          "change": "terminal freeze after the plan-v2 rendered smoke",
+          "evidence": "development/v2 records + data/issue-89-oracle-completion/development/v2",
+          "version": 3,
+          "what": "NO protocol element changed relative to plan-v2: the 55-slot completion membership, oracle seed 20260908, the inherited #85 detection rule, the corrected cold-start mitigation (staggered starts + extended bounds, no probes), the unreachability branch, the disposition mapping, workers, port range, and caps are byte-identical. What CHANGES with v3 is the status: development -> terminal, so this version is frozen with actual numeric values BEFORE its own scoring run, is executed exactly once, and admits no further outcome-conditioned modification. Reviewed smoke evidence embedded: 2/2 smoke cells executed real-rendered under the frozen mitigation, 2/2 matched their frozen structural expectations; channel verdicts and gallery media retained",
+          "why": "the v2 smoke validated the corrected oracle harness end to end (real rendered execution under the frozen mitigation, channel verdict or protocol-covered stability signature, gallery media retention), so no instrument change is needed and the terminal version can be frozen before any terminal outcome exists"
+        }
+      ],
+      "frozen_at_utc": "2026-09-22T09:50:17Z",
+      "path": ".local-artifacts/issue-89-oracle-completion-v1/protocols/plan-v3.json",
+      "retained": true,
+      "status": "terminal",
+      "version": 3
+    }
+  ],
+  "question_dispositions": {
+    "q1_reason": "every scheduled slot carries an engine-truth channel verdict or is covered by the frozen typed-unmeasurable declaration",
+    "q1_slot_completion": "supported",
+    "q2_ceiling_reestimate": "supported",
+    "q2_reason": "pooled prevalence 0.5217 > 0 and the descriptive 95% interval [0.3043, 0.7391] excludes 0 over the 23 measured states with ['issue-77-n1-005-a07'] excluded under the frozen typed-unmeasurable declaration"
+  },
+  "schema": "issue_89_oracle_completion_report_v1",
+  "terminal_frozen_at_utc": "2026-09-22T09:50:17Z",
+  "terminal_version": 3,
+  "ticket_disposition": "supported",
+  "wall_seconds_elapsed": 4449.873958815355
+}

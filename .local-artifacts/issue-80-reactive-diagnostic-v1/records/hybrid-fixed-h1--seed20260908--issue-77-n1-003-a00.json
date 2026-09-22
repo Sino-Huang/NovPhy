@@ -1,0 +1,134 @@
+{
+  "cell": {
+    "identity": "hybrid-fixed-h1--seed20260908--issue-77-n1-003-a00",
+    "seed": 20260908,
+    "state": "issue-77-n1-003-a00",
+    "system": "hybrid-fixed-h1"
+  },
+  "chosen": {
+    "action": {
+      "drag_x": -21,
+      "drag_y": 77,
+      "release_time_ms": 1000,
+      "tap_time_ms": 0
+    },
+    "branch_identity": "issue-77-n1-003-a11",
+    "ordinal": 11
+  },
+  "decision": {
+    "actuator_readiness": {
+      "action_selection": "prospectively fixed; slingshot anchor only",
+      "speed": 1,
+      "stable_observations": 2
+    },
+    "candidate_count": 9,
+    "chosen": {
+      "action": {
+        "drag_x": -21,
+        "drag_y": 77,
+        "release_time_ms": 1000,
+        "tap_time_ms": 0
+      },
+      "branch_identity": "issue-77-n1-003-a11",
+      "ordinal": 11
+    },
+    "failure": null,
+    "gpu_seconds": 0.6133968972135335,
+    "inference_not_equalized": true,
+    "linear_macs": 12892032,
+    "perception_seconds": 0.37900023302063346,
+    "ranking": [
+      {
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 50.17639207839966
+      },
+      {
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 50.345441699028015
+      },
+      {
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 49.770113468170166
+      },
+      {
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 49.25360357761383
+      },
+      {
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 48.195510149002075
+      },
+      {
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 47.29201006889343
+      },
+      {
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 46.58750903606415
+      },
+      {
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 46.311909794807434
+      },
+      {
+        "excluded": false,
+        "ordinal": 11,
+        "predicted_cost": 46.0911283493042
+      }
+    ],
+    "selected_predicted_cost": 46.0911283493042,
+    "transition_calls": 9,
+    "wall_seconds": 0.23439666419290006
+  },
+  "execution": {
+    "censored": true,
+    "end_of_window_parser_calls": 2,
+    "engine_wall_seconds": 172.83966943481937,
+    "first_fixed_step": 30000,
+    "frame_count": 601,
+    "interaction_coverage": {
+      "block_contact": false,
+      "pig_contact": false,
+      "pig_removed": false
+    },
+    "last_fixed_step": 60000,
+    "native_root": "/p/Project/NovPhy/.local-artifacts/issue-80-reactive-diagnostic-v1/attempts/hybrid-fixed-h1--seed20260908--issue-77-n1-003-a00/aligned/capture-v2:f6ff963ce6394c4497a9b1116bff68b3",
+    "observation_manifest": "observation-trace-manifest-v1:sha256:058e84b733f45fae4eb3be5a47a0cec0b1ab916bf52946c386d56a6d8a942c58",
+    "realized_end_of_window_count_cost": 44.938908994197845,
+    "segment_identity": "hybrid-fixed-h1--seed20260908--issue-77-n1-003-a00:shot-1",
+    "terminal_reason": null
+  },
+  "failure": null,
+  "failure_kind": null,
+  "fresh_scenario_lineage": false,
+  "issue_64_authorized": false,
+  "outcome": {
+    "all_tied": false,
+    "chosen_frozen_cost": 44.938908994197845,
+    "chosen_frozen_regret": 0.3959935539730647,
+    "first_shot_success": false,
+    "informative": true,
+    "realized_count_cost": 44.938908994197845,
+    "regret": 0.3959935539730647,
+    "shots_to_success": null
+  },
+  "plan_identity": "issue-80-reactive-diagnostic-v1",
+  "ports": {
+    "agent": 38535,
+    "game": 45471,
+    "physics": 48933
+  },
+  "schema": "issue_80_reactive_diagnostic_v1",
+  "seed": 20260908,
+  "state_identity": "issue-77-n1-003-a00",
+  "system": "hybrid-fixed-h1",
+  "wall_seconds": 260.32853073999286
+}

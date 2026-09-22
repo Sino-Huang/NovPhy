@@ -1,0 +1,69 @@
+row_type,contrast_id,covariate,kind,role,unit,target_stratum,reference_stratum,n_target,n_reference,states_target,states_reference,value_target,value_reference,difference,ci_low,ci_high,margin,interval_excludes_zero,exceeds_margin,shift,label
+contrast,d1_normalized_cost_position,normalized_cost_position,mean,verdict_relevant,fraction of the state's own frozen candidate cost span,timeout,executed,52,234,18,23,0.5136952481682601,0.5154438085654023,-0.0017485603971422181,-0.08837373955792713,0.09561720353649468,0.1,false,false,no_shift,DESCRIPTIVE
+contrast,d2_frozen_replay_count_cost,frozen_replay_count_cost,mean,verdict_relevant,task-objective units (1000 * pig presence + block presence) at the frozen replay's observed window endpoint,timeout,executed,52,234,18,23,68.44753050173705,77.04433522965664,-8.59680472791959,-32.81903494582289,7.102048224611183,4.228764791041613,false,true,borderline,DESCRIPTIVE
+contrast,d3_frozen_replay_pig_removed,frozen_replay_pig_removed,rate,verdict_relevant,boolean engine-truth removal event in the frozen replay,timeout,executed,52,234,18,23,0.09615384615384616,0.029914529914529916,0.06623931623931624,-0.0058551565041044295,0.1390461997019374,0.1,false,false,no_shift,DESCRIPTIVE
+contrast,d4_type010105_share,is_type010105,rate,verdict_relevant,boolean family indicator (type010105 versus type010103),timeout,executed,52,234,18,23,0.6346153846153846,0.5256410256410257,0.10897435897435892,-0.08943685591376882,0.2868205404305467,0.15,false,false,no_shift,DESCRIPTIVE
+contrast,d5_state_best_observed_pig_removed,state_best_observed_pig_removed,rate,verdict_relevant,"boolean state-level indicator, constant within a state",timeout,executed,52,234,18,23,0.5769230769230769,0.5341880341880342,0.042735042735042694,-0.15621010773938543,0.23771136915604124,0.1,false,false,no_shift,DESCRIPTIVE
+contrast,d6_ordinal_position,ordinal,mean,descriptive_only,0-based candidate ordinal in the state's admissible inventory,timeout,executed,52,234,18,23,6.019230769230769,5.918803418803419,0.10042735042735007,-0.8599335405352351,0.9322013442340485,1.0,false,false,descriptive_no_shift,DESCRIPTIVE
+bias_direction,d1_normalized_cost_position,normalized_cost_position,,verdict_relevant,,,,,,,,,,-0.0017485603971422181,-0.08837373955792713,0.09561720353649468,0.1,,,no_shift,DESCRIPTIVE
+bias_direction,d2_frozen_replay_count_cost,frozen_replay_count_cost,,verdict_relevant,,,,,,,,,,-8.59680472791959,-32.81903494582289,7.102048224611183,4.228764791041613,,,timeout_lower,DESCRIPTIVE
+bias_direction,d3_frozen_replay_pig_removed,frozen_replay_pig_removed,,verdict_relevant,,,,,,,,,,0.06623931623931624,-0.0058551565041044295,0.1390461997019374,0.1,,,no_shift,DESCRIPTIVE
+bias_direction,d4_type010105_share,is_type010105,,verdict_relevant,,,,,,,,,,0.10897435897435892,-0.08943685591376882,0.2868205404305467,0.15,,,no_shift,DESCRIPTIVE
+bias_direction,d5_state_best_observed_pig_removed,state_best_observed_pig_removed,,verdict_relevant,,,,,,,,,,0.042735042735042694,-0.15621010773938543,0.23771136915604124,0.1,,,no_shift,DESCRIPTIVE
+bias_direction,d6_ordinal_position,ordinal,,descriptive_only,,,,,,,,,,0.10042735042735007,-0.8599335405352351,0.9322013442340485,1.0,,,no_shift,DESCRIPTIVE
+mechanism_stratum,,,,mechanism_inventory_only,slots,executed,,234,,23,,14,,,,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,wall_seconds,executed,,234,,,,173.96563784819313,182.7630738208536,62.81694546015933,322.4131517740898,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,engine_wall_seconds,executed,,234,,,,111.23848924495908,119.74833939736709,23.367721141781658,188.6542230490595,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,peak_cpu_rss_mib,executed,,234,,,,1476.0311999198718,1090.099609375,1001.23828125,3101.7734375,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,minutes_since_first_dispatch,executed,,234,,,,124.59878917378919,117.51666666666667,0.06666666666666667,261.31666666666666,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,dispatch_index,executed,,234,,,,142.51282051282053,138.5,3.0,288.0,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,live_at_dispatch,executed,,234,,,,3.5555555555555554,4.0,1.0,4.0,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,dispatch_burst_size,executed,,234,,,,1.2393162393162394,1.0,1.0,4.0,,,,,descriptive,DESCRIPTIVE
+mechanism_stratum,,,,mechanism_inventory_only,slots,timeout,,52,,18,,14,,,,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,wall_seconds,timeout,,52,,,,189.06244080068652,191.25067132920958,77.09603900462389,191.377545428928,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,engine_wall_seconds,timeout,,0,,,,,,None,None,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,peak_cpu_rss_mib,timeout,,52,,,,955.5048828125,954.2578125,951.5078125,994.9453125,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,minutes_since_first_dispatch,timeout,,52,,,,138.04487179487177,148.41666666666669,0.0,244.63333333333333,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,dispatch_index,timeout,,52,,,,156.0,168.0,0.0,270.0,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,live_at_dispatch,timeout,,52,,,,2.5384615384615383,3.0,1.0,4.0,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,dispatch_burst_size,timeout,,52,,,,2.3846153846153846,2.0,1.0,4.0,,,,,descriptive,DESCRIPTIVE
+mechanism_stratum,,,,mechanism_inventory_only,slots,stability,,3,,1,,1,,,,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,wall_seconds,stability,,3,,,,60.88176872938251,74.59002712694928,33.145673288963735,74.9096057722345,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,engine_wall_seconds,stability,,0,,,,,,None,None,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,peak_cpu_rss_mib,stability,,3,,,,986.5520833333334,990.51953125,976.05859375,993.078125,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,minutes_since_first_dispatch,stability,,3,,,,45.50555555555555,45.733333333333334,44.083333333333336,46.7,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,dispatch_index,stability,,3,,,,52.0,52.0,51.0,53.0,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,live_at_dispatch,stability,,3,,,,3.3333333333333335,4.0,2.0,4.0,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,dispatch_burst_size,stability,,3,,,,1.0,1.0,1.0,1.0,,,,,descriptive,DESCRIPTIVE
+mechanism_measure,,,,mechanism_inventory_only,all_workers_live_dispatch_share,timeout,executed,52,234,18,23,0.019230769230769232,0.6153846153846154,-0.5961538461538461,-0.7048167480778437,-0.48755481634182907,,,,descriptive,DESCRIPTIVE
+association_context,,frozen_replay_pig_removed,rate,descriptive_only,published success rate,indicator_true,indicator_false,7,227,7,23,1.0,0.0,1.0,1.0,1.0,,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-001-a00,type010103,12,8,,,51.598394791285195,53.748721688985825,4,0,1,True,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-001-a07,type010103,12,12,,,51.598394791285195,53.748721688985825,0,0,1,True,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-003-a00,type010103,9,9,,,44.31833418541484,42.184896141290665,0,0,0,False,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-003-a10,type010103,9,7,,,44.31833418541484,42.184896141290665,2,0,0,False,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-004-a07,type010103,9,5,,,88.80119251542621,89.29847532510757,4,0,0,False,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-005-a07,type010103,4,0,,,77.04024168848991,79.12645530700684,1,3,1,True,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-006-a05,type010103,13,12,,,70.3164460338079,71.07304728031158,1,0,1,True,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-006-a11,type010103,13,12,,,70.3164460338079,71.07304728031158,1,0,1,True,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-007-a05,type010103,13,11,,,68.47804922782458,68.15492224693298,2,0,0,False,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-007-a12,type010103,13,10,,,68.47804922782458,68.15492224693298,3,0,0,False,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-008-a05,type010103,13,12,,,60.444360921016106,63.39050477743149,1,0,0,False,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-008-a12,type010103,13,13,,,60.444360921016106,63.39050477743149,0,0,0,False,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-009-a00,type010105,13,13,,,255.3652412547515,65.89281702041626,0,0,0,False,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-009-a09,type010105,13,9,,,255.3652412547515,65.89281702041626,4,0,0,False,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-010-a06,type010105,13,9,,,62.80998505995824,68.0274338722229,4,0,1,True,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-011-a02,type010105,13,10,,,52.26799728090946,52.2774258852005,3,0,1,True,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-011-a11,type010105,13,11,,,52.26799728090946,52.2774258852005,2,0,1,True,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-012-a08,type010105,13,13,,,64.4131061732769,65.50029790401459,0,0,1,True,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-013-a04,type010105,13,11,,,67.40065332559439,66.0530138015747,2,0,0,False,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-014-a01,type010105,13,8,,,50.68589606193396,49.14430743455887,5,0,1,True,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-014-a10,type010105,13,7,,,50.68589606193396,49.14430743455887,6,0,1,True,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-015-a06,type010105,13,9,,,51.54071839268391,56.32390037178993,4,0,0,False,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-016-a03,type010105,13,10,,,38.010280820039604,36.94234025478363,3,0,1,True,,,descriptive,DESCRIPTIVE
+per_state,,,,,slots,issue-77-n1-016-a12,type010105,13,13,,,38.010280820039604,36.94234025478363,0,0,1,True,,,descriptive,DESCRIPTIVE
+cited_cross_check,,,,cited_published_never_recomputed,slots,other,,0,0,,,,,,,,,,,descriptive,DESCRIPTIVE
+cited_cross_check,,,,cited_published_never_recomputed,slots,stability,,3,1,,,,,,,,,,,descriptive,DESCRIPTIVE
+cited_cross_check,,,,cited_published_never_recomputed,slots,timeout,,52,5,,,,,,,,,,,descriptive,DESCRIPTIVE
+stability_stratum,,,,separate_typed_stratum,slot,oracle--issue-77-n1-005-a07--a01,issue-77-n1-005-a07,1,,,,82.47732925415039,1.0,False,,,,,,,,
+stability_stratum,,,,separate_typed_stratum,slot,oracle--issue-77-n1-005-a07--a02,issue-77-n1-005-a07,2,,,,76.56465220451355,0.6070423804066183,False,,,,,,,,
+stability_stratum,,,,separate_typed_stratum,slot,oracle--issue-77-n1-005-a07--a07,issue-77-n1-005-a07,7,,,,81.68825840950012,0.9475582044814449,True,,,,,,,,

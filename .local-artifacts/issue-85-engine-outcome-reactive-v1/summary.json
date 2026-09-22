@@ -1,0 +1,1146 @@
+{
+  "archived_release": false,
+  "caps": {
+    "gpu_cap_seconds": 10800,
+    "wall_cap_seconds": 86400
+  },
+  "channel_verification": {
+    "blocker": null,
+    "cells": [
+      {
+        "branch_identity": "issue-77-n1-010-a02",
+        "consistency": "agreement",
+        "executed": true,
+        "expectation": true,
+        "expectation_matched": true,
+        "failure": null,
+        "identity": "verification--positive--issue-77-n1-010-a06",
+        "ordinal": 2,
+        "pig_lifecycle_destroyed": true,
+        "pig_removed": true,
+        "role": "positive",
+        "state": "issue-77-n1-010-a06"
+      },
+      {
+        "branch_identity": "issue-77-n1-016-a03",
+        "consistency": "agreement",
+        "executed": true,
+        "expectation": true,
+        "expectation_matched": true,
+        "failure": null,
+        "identity": "verification--positive--issue-77-n1-016-a12",
+        "ordinal": 3,
+        "pig_lifecycle_destroyed": true,
+        "pig_removed": true,
+        "role": "positive",
+        "state": "issue-77-n1-016-a12"
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a00",
+        "consistency": "agreement",
+        "executed": true,
+        "expectation": false,
+        "expectation_matched": true,
+        "failure": null,
+        "identity": "verification--negative--issue-77-n1-001-a00",
+        "ordinal": 0,
+        "pig_lifecycle_destroyed": false,
+        "pig_removed": false,
+        "role": "negative",
+        "state": "issue-77-n1-001-a00"
+      },
+      {
+        "branch_identity": "issue-77-n1-009-a00",
+        "consistency": "agreement",
+        "executed": true,
+        "expectation": false,
+        "expectation_matched": true,
+        "failure": null,
+        "identity": "verification--negative--issue-77-n1-009-a00",
+        "ordinal": 0,
+        "pig_lifecycle_destroyed": false,
+        "pig_removed": false,
+        "role": "negative",
+        "state": "issue-77-n1-009-a00"
+      }
+    ],
+    "pass_rule": "every scheduled verification execution runs exactly once and is retained whatever the outcome (typed execution failures retained, never retried); the channel is verified iff (a) every control produced a valid executed segment with exactly one native launch, (b) every negative control's event-leg verdict is False, (c) at least one positive control's event-leg verdict is True (one positive removal demonstrates the closed-loop channel end to end; the second positive bounds execution variance), and (d) no control shows a channel anomaly. The recorded media review of the retained gallery (data/issue-85-engine-outcome-reactive/channel-verification-media-review.json) must additionally agree with every control's channel verdict - positives: the pig is gone in the final retained frame; negatives: the pig is visible at the end - before verified may be true. Otherwise the channel is unverified and the ticket publishes readiness_or_precision_insufficient naming the blocker - terminal, complete",
+    "verified": true
+  },
+  "claim_boundary": "bounded non-final diagnostic on development lineages; no multi-shot, adaptation, zero-shot, or complete-gameplay claim; cannot reopen #64/#65/#72/#75/#15; the #80/#82 published typed outcomes are never re-run, amended, or reinterpreted; this is a NEW experiment with a NEW predicate; descriptive intervals only",
+  "definitions": {
+    "action_encoding": "drag/480, true 1000 ms hold, tap/1000, bias 1 (equals training)",
+    "caps": {
+      "gpu_cap_seconds": 10800,
+      "gpu_scope": "cumulative synchronized decision wall (perception plus ranking) on cuda across all executions",
+      "wall_cap_seconds": 86400,
+      "wall_scope": "cumulative elapsed wall of the pilot+run execution phases"
+    },
+    "claim_boundary": "bounded non-final diagnostic on development lineages; no multi-shot, adaptation, zero-shot, or complete-gameplay claim; cannot reopen #64/#65/#72/#75/#15; the #80/#82 published typed outcomes are never re-run, amended, or reinterpreted; this is a NEW experiment with a NEW predicate; descriptive intervals only",
+    "compute_accounting": "per state wall time AND active-parameter/step counts AND candidate counts for every arm; published per-arm frozen predictor parameter counts, transition calls and linear MACs; inference is NOT equalized across arms and is recorded as such",
+    "decision": "reactive, identical to #80: parse the sealed pre-decision frame with the frozen issue-70 adapter as a single-frame temporal context, roll every admissible candidate to the system's fixed pair, choose argmin predicted count cost with ties broken by lower ordinal; candidates with nonfinite predictions are excluded; the prior arm executes its pre-declared fallback ordinal and parses the frame for identical perception accounting; a typed decision failure is terminal and executes no shot",
+    "disposition_rule": {
+      "not_supported_by_this_experiment": "Q1: anything else after complete execution (negative or null results are valid outcomes and MUST be reported); Q2: never (a measurement, not a hypothesis)",
+      "readiness_or_precision_insufficient": "channel verification failed, pilot gate failed, a cap stop, or incomplete execution inventory",
+      "supported": "Q1: the pre-declared primary contrast (success hybrid-fixed-h1 vs continuous-fixed-h5) has pooled mean > 0 AND descriptive 95% interval entirely above 0 (the practical margin is the interval-exclusion rule itself); Q2: the pilot proxy-vs-engine agreement table is complete over >= 24 valid pilot cells (a measurement question; its value may be any)"
+    },
+    "engine_channel": {
+      "detection_rule": "engine-truth first-shot success is read from the game's own state stream of the executed shot segment (the engine's canonical native fixed-step capture written during rendered play; no parser-derived cost enters the verdict). Primary event leg: pig_removed = the segment records at least one native macro event of type 'pig_removed', 'entity_death' or 'entity_destroyed' with at least one participant whose identity starts 'runtime:pig:' (the game's own pig-removal/death/destruction hooks). structure_destroyed is the same rule over 'runtime:block:' participants. Lifecycle leg (confirmatory): at least one 'runtime:pig:' entity whose per-sample lifecycle in the fixed-step state stream is 'destroyed'. The published verdict is the event leg; the lifecycle leg is published alongside for agreement review against the retained frames",
+      "failure_modes": "declared failure modes: (1) a death event with an unresolvable participant identity (empty participants) would hide which entity died - detected by the lifecycle leg and typed as a channel anomaly; (2) a pig killed at the very end of the bounded native window may fire its death event before the registry marks the entity destroyed - event leg true with lifecycle leg false is a declared timing mode, recorded, NOT an anomaly; (3) the state stream records a destroyed pig while the event leg is silent - the actual missing-event failure mode - typed as a channel anomaly on that cell; (4) window censoring before any pig death leaves both legs false: the pig survived within the bounded window, not an anomaly",
+      "first_shot_success": "the executed shot segment's engine-side channel verdict pig_removed (the game's own pig death/destruction events during rendered play); typed failures carry no success value",
+      "no_parser_reliance": "the verdict never reads parser-derived cost; the realized end-of-window count cost is recorded only as accounting context and for the Phase-C proxy cross-check",
+      "shots_to_success": "single-shot protocol: 1 when the first shot succeeds, otherwise null; no multi-shot competence claim"
+    },
+    "estimand": "paired first-shot ENGINE-TRUTH outcome (pig_removed) differences and normalized ranking regret differences of the executed shot's realized end-of-window count cost (observed offset 600, terminal-absorbed; one frame = 50 native steps; right-censored, NOT a settled cost) against the state's frozen candidate outcome table recorded by the issue-77 N1 campaign; executed costs may fall outside [0,1] under execution variance and are recorded unclipped",
+    "families": {
+      "type010103": "rolling",
+      "type010105": "sliding"
+    },
+    "membership_rule": "the #80 frozen 24-state membership verbatim (12 type010103 + 12 type010105; identities, inventories, engine seeds and scenario authorities bound by the issue-80 plan file identity), re-executed as gameplay; prior arm choice per state = ordinal 8 when admissible, else the admissible ordinal nearest 8 with ties to the lower ordinal",
+    "phase_c_cross_check": "on the pilot executions, the #82 replay-cost proxy predicate (realized end-of-window count cost <= the published candidate threshold 81.68825840950012) is evaluated against engine truth and the agreement/divergence table is published (DESCRIPTIVE; the threshold is never re-fit)",
+    "pilot_gate": {
+      "cells": 48,
+      "if_cleared": "the full 288-cell matrix runs",
+      "if_failed": "publish readiness_or_precision_insufficient BEFORE the full run - terminal, complete",
+      "metric": "pooled ENGINE-TRUTH first-shot success prevalence over pilot cells with a valid executed segment; typed failures excluded from numerator and denominator and reported",
+      "minimum_valid_executions": 24,
+      "prevalence_floor": 0.1,
+      "state_rule": "the two lowest-identity selected states of each family with distinct source members (four distinct physical initial states); identical to the #80 pilot shape",
+      "states": 4
+    },
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "states_per_family": 12,
+    "systems": {
+      "continuous-fixed-h1": {
+        "arm": "continuous",
+        "kind": "model",
+        "pair": {
+          "abstraction": "continuous",
+          "delta": 1
+        }
+      },
+      "continuous-fixed-h5": {
+        "arm": "continuous",
+        "kind": "model",
+        "pair": {
+          "abstraction": "continuous",
+          "delta": 5
+        }
+      },
+      "hybrid-fixed-h1": {
+        "arm": "hybrid",
+        "kind": "model",
+        "pair": {
+          "abstraction": "continuous",
+          "delta": 1
+        }
+      },
+      "no-model-ordinal-prior": {
+        "fallback_rule": "the no-model ordinal prior executes the frozen candidate ordinal 8 when admissible; when ordinal 8 is a typed-dropped branch of the state, it falls back to the admissible ordinal nearest 8 by absolute distance, ties broken by the lower ordinal (the #82-recorded fallback rule, pre-declared here before any outcome; the #80 pilot record is never amended)",
+        "kind": "no-model-ordinal-prior",
+        "prior_ordinal": 8
+      }
+    },
+    "uncertainty": {
+      "draws": 10000,
+      "note": "seed differences averaged before resampling; descriptive only; this diagnostic cannot support a confirmatory claim",
+      "seed": 7201,
+      "unit": "state"
+    },
+    "verification_set": {
+      "expectations": "frozen per control; no outcome-conditioned replacement",
+      "media_review": {
+        "file": "data/issue-85-engine-outcome-reactive/channel-verification-media-review.json",
+        "rule": "the owner reviews the retained decision frame, final canonical frame and shot WebM per control (vision inspection of the published gallery) and records pig_visible_in_final_frame per control; positives must show the pig gone, negatives the pig visible, agreeing with the channel verdict",
+        "schema": "issue_85_channel_media_review_v1"
+      },
+      "pass_rule": "every scheduled verification execution runs exactly once and is retained whatever the outcome (typed execution failures retained, never retried); the channel is verified iff (a) every control produced a valid executed segment with exactly one native launch, (b) every negative control's event-leg verdict is False, (c) at least one positive control's event-leg verdict is True (one positive removal demonstrates the closed-loop channel end to end; the second positive bounds execution variance), and (d) no control shows a channel anomaly. The recorded media review of the retained gallery (data/issue-85-engine-outcome-reactive/channel-verification-media-review.json) must additionally agree with every control's channel verdict - positives: the pig is gone in the final retained frame; negatives: the pig is visible at the end - before verified may be true. Otherwise the channel is unverified and the ticket publishes readiness_or_precision_insufficient naming the blocker - terminal, complete",
+      "review_rule": "each control retains its decision frame, shot WebM and final canonical frame under data/ so the published verdict is reviewable against the retained frames: positives must show the pig disappearing, negatives the pig surviving at the end of the window",
+      "seed": 20260908
+    },
+    "wall_context": {
+      "issue_74_fixed_mode_seconds_per_state": {
+        "continuous_h1": 1.79,
+        "continuous_h15": 0.13,
+        "continuous_h5": 0.37
+      },
+      "note": "no adaptive system is present in this ticket; the #74 hybrid_adaptive wall context carries no penalty narrative"
+    }
+  },
+  "diagnostics_complete": false,
+  "engine_channel": {
+    "detection_rule": "engine-truth first-shot success is read from the game's own state stream of the executed shot segment (the engine's canonical native fixed-step capture written during rendered play; no parser-derived cost enters the verdict). Primary event leg: pig_removed = the segment records at least one native macro event of type 'pig_removed', 'entity_death' or 'entity_destroyed' with at least one participant whose identity starts 'runtime:pig:' (the game's own pig-removal/death/destruction hooks). structure_destroyed is the same rule over 'runtime:block:' participants. Lifecycle leg (confirmatory): at least one 'runtime:pig:' entity whose per-sample lifecycle in the fixed-step state stream is 'destroyed'. The published verdict is the event leg; the lifecycle leg is published alongside for agreement review against the retained frames",
+    "failure_modes": "declared failure modes: (1) a death event with an unresolvable participant identity (empty participants) would hide which entity died - detected by the lifecycle leg and typed as a channel anomaly; (2) a pig killed at the very end of the bounded native window may fire its death event before the registry marks the entity destroyed - event leg true with lifecycle leg false is a declared timing mode, recorded, NOT an anomaly; (3) the state stream records a destroyed pig while the event leg is silent - the actual missing-event failure mode - typed as a channel anomaly on that cell; (4) window censoring before any pig death leaves both legs false: the pig survived within the bounded window, not an anomaly",
+    "first_shot_success": "the executed shot segment's engine-side channel verdict pig_removed (the game's own pig death/destruction events during rendered play); typed failures carry no success value",
+    "no_parser_reliance": "the verdict never reads parser-derived cost; the realized end-of-window count cost is recorded only as accounting context and for the Phase-C proxy cross-check",
+    "shots_to_success": "single-shot protocol: 1 when the first shot succeeds, otherwise null; no multi-shot competence claim"
+  },
+  "execution_ledger_status": "complete",
+  "final_evaluation_opened": false,
+  "fresh_evaluation_opened": false,
+  "gpu_seconds_elapsed": 24.434518835041672,
+  "identity": "issue-85-engine-outcome-reactive-v1",
+  "issue_64_authorized": false,
+  "limitations": [
+    "development/exposed N1 lineages only; zero fresh captures; not the sealed #64/#65 benchmark",
+    "the engine-truth verdict covers the bounded 12 s native shot window per executed shot",
+    "regret references the t=600 end-of-window replay cost: right-censored, not a settled cost",
+    "states sharing a source member share one physical initial state and candidate table; the paired bootstrap over 24 state identities is descriptive only",
+    "inference is NOT equalized across arms; per-arm decision compute is reported",
+    "no adaptive system is present; the #74 hybrid_adaptive wall context carries no penalty narrative"
+  ],
+  "phase_c_proxy_cross_check": {
+    "agreement": 0.10638297872340426,
+    "cells_compared": 47,
+    "cells_excluded": 1,
+    "counts": {
+      "both_failure": 5,
+      "both_success": 0,
+      "engine_only": 0,
+      "proxy_only": 42
+    },
+    "paired_state_differences": {
+      "descriptive": {
+        "descriptive_95_percent_interval": [
+          0.6875000000000001,
+          1.0
+        ],
+        "mean": 0.8958333333333334
+      },
+      "label": "DESCRIPTIVE",
+      "paired_states": 4,
+      "positive_means": "proxy over-calls success relative to engine truth",
+      "scope": "descriptive paired bootstrap over pilot state identities; seeds averaged first; frozen settings (10000 draws, seed 7201)",
+      "unit": "state"
+    },
+    "per_system": {
+      "continuous-fixed-h1": {
+        "both_failure": 1,
+        "both_success": 0,
+        "cells": 12,
+        "engine_only": 0,
+        "proxy_only": 11
+      },
+      "continuous-fixed-h5": {
+        "both_failure": 1,
+        "both_success": 0,
+        "cells": 12,
+        "engine_only": 0,
+        "proxy_only": 11
+      },
+      "hybrid-fixed-h1": {
+        "both_failure": 0,
+        "both_success": 0,
+        "cells": 11,
+        "engine_only": 0,
+        "proxy_only": 11
+      },
+      "no-model-ordinal-prior": {
+        "both_failure": 3,
+        "both_success": 0,
+        "cells": 12,
+        "engine_only": 0,
+        "proxy_only": 9
+      }
+    },
+    "proxy_threshold": 81.68825840950012,
+    "proxy_threshold_source": "issue-82-zero-floor-oracle-v1 summary.json binding.stage1.candidate_threshold (the least inclusive bound over the 8 observed replay-side pig removals)",
+    "rule": "proxy success = executed realized end-of-window count cost <= the #82 published candidate threshold 81.68825840950012; engine truth = the engine-side channel verdict; DESCRIPTIVE"
+  },
+  "pilot_compute_accounting": {
+    "active_parameter_counts": {
+      "continuous-fixed-h1": {
+        "20260908": 1862396,
+        "20260909": 1862396,
+        "20260910": 1862396
+      },
+      "continuous-fixed-h5": {
+        "20260908": 1862396,
+        "20260909": 1862396,
+        "20260910": 1862396
+      },
+      "hybrid-fixed-h1": {
+        "20260908": 1441516,
+        "20260909": 1441516,
+        "20260910": 1441516
+      },
+      "no-model-ordinal-prior": {
+        "20260908": 0,
+        "20260909": 0,
+        "20260910": 0
+      }
+    },
+    "parameter_counts": {
+      "continuous": {
+        "20260908": 1862396,
+        "20260909": 1862396,
+        "20260910": 1862396
+      },
+      "hybrid": {
+        "20260908": 1837690,
+        "20260909": 1837690,
+        "20260910": 1837690
+      }
+    },
+    "per_cell": {
+      "continuous-fixed-h1--seed20260908--issue-77-n1-001-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 12,
+        "decision_wall_seconds": 0.5468386891297996,
+        "engine_wall_seconds": 144.0610151658766,
+        "failure_kind": null,
+        "linear_macs": 22226400,
+        "transition_calls": 12,
+        "wall_seconds": 224.14292200095952
+      },
+      "continuous-fixed-h1--seed20260908--issue-77-n1-003-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 9,
+        "decision_wall_seconds": 0.476969582028687,
+        "engine_wall_seconds": 86.35390774300322,
+        "failure_kind": null,
+        "linear_macs": 16669800,
+        "transition_calls": 9,
+        "wall_seconds": 151.47428767895326
+      },
+      "continuous-fixed-h1--seed20260908--issue-77-n1-009-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5609979836735874,
+        "engine_wall_seconds": 166.28696732292883,
+        "failure_kind": null,
+        "linear_macs": 24078600,
+        "transition_calls": 13,
+        "wall_seconds": 242.44553589005955
+      },
+      "continuous-fixed-h1--seed20260908--issue-77-n1-010-a06": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5210294597782195,
+        "engine_wall_seconds": 121.83363473485224,
+        "failure_kind": null,
+        "linear_macs": 24078600,
+        "transition_calls": 13,
+        "wall_seconds": 180.64262641314417
+      },
+      "continuous-fixed-h1--seed20260909--issue-77-n1-001-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 12,
+        "decision_wall_seconds": 0.5017080961260945,
+        "engine_wall_seconds": 152.93511039810255,
+        "failure_kind": null,
+        "linear_macs": 22226400,
+        "transition_calls": 12,
+        "wall_seconds": 229.59687832486816
+      },
+      "continuous-fixed-h1--seed20260909--issue-77-n1-003-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 9,
+        "decision_wall_seconds": 0.551276212092489,
+        "engine_wall_seconds": 125.66512720799074,
+        "failure_kind": null,
+        "linear_macs": 16669800,
+        "transition_calls": 9,
+        "wall_seconds": 239.30454828310758
+      },
+      "continuous-fixed-h1--seed20260909--issue-77-n1-009-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5484084191266447,
+        "engine_wall_seconds": 172.57873668288812,
+        "failure_kind": null,
+        "linear_macs": 24078600,
+        "transition_calls": 13,
+        "wall_seconds": 248.61076144012623
+      },
+      "continuous-fixed-h1--seed20260909--issue-77-n1-010-a06": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5514479030389339,
+        "engine_wall_seconds": 62.20820079790428,
+        "failure_kind": null,
+        "linear_macs": 24078600,
+        "transition_calls": 13,
+        "wall_seconds": 112.252966752043
+      },
+      "continuous-fixed-h1--seed20260910--issue-77-n1-001-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 12,
+        "decision_wall_seconds": 0.49659278406761587,
+        "engine_wall_seconds": 157.93389076995663,
+        "failure_kind": null,
+        "linear_macs": 22226400,
+        "transition_calls": 12,
+        "wall_seconds": 231.09788927901536
+      },
+      "continuous-fixed-h1--seed20260910--issue-77-n1-003-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 9,
+        "decision_wall_seconds": 0.5183785422705114,
+        "engine_wall_seconds": 120.54606849094853,
+        "failure_kind": null,
+        "linear_macs": 16669800,
+        "transition_calls": 9,
+        "wall_seconds": 194.6852072509937
+      },
+      "continuous-fixed-h1--seed20260910--issue-77-n1-009-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5028367300983518,
+        "engine_wall_seconds": 163.5173717259895,
+        "failure_kind": null,
+        "linear_macs": 24078600,
+        "transition_calls": 13,
+        "wall_seconds": 240.4119352081325
+      },
+      "continuous-fixed-h1--seed20260910--issue-77-n1-010-a06": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5303957068827003,
+        "engine_wall_seconds": 105.95504942396656,
+        "failure_kind": null,
+        "linear_macs": 24078600,
+        "transition_calls": 13,
+        "wall_seconds": 155.01737584988587
+      },
+      "continuous-fixed-h5--seed20260908--issue-77-n1-001-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 12,
+        "decision_wall_seconds": 0.5036292760632932,
+        "engine_wall_seconds": 148.61290308390744,
+        "failure_kind": null,
+        "linear_macs": 111132000,
+        "transition_calls": 60,
+        "wall_seconds": 220.6083454838954
+      },
+      "continuous-fixed-h5--seed20260908--issue-77-n1-003-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 9,
+        "decision_wall_seconds": 0.5484199959319085,
+        "engine_wall_seconds": 91.30683912010863,
+        "failure_kind": null,
+        "linear_macs": 83349000,
+        "transition_calls": 45,
+        "wall_seconds": 153.03278778283857
+      },
+      "continuous-fixed-h5--seed20260908--issue-77-n1-009-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5263876928947866,
+        "engine_wall_seconds": 160.21704478096217,
+        "failure_kind": null,
+        "linear_macs": 120393000,
+        "transition_calls": 65,
+        "wall_seconds": 235.65904913609847
+      },
+      "continuous-fixed-h5--seed20260908--issue-77-n1-010-a06": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5691011641174555,
+        "engine_wall_seconds": 121.68895432702266,
+        "failure_kind": null,
+        "linear_macs": 120393000,
+        "transition_calls": 65,
+        "wall_seconds": 183.20725180394948
+      },
+      "continuous-fixed-h5--seed20260909--issue-77-n1-001-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 12,
+        "decision_wall_seconds": 0.5622150569688529,
+        "engine_wall_seconds": 155.7298011078965,
+        "failure_kind": null,
+        "linear_macs": 111132000,
+        "transition_calls": 60,
+        "wall_seconds": 233.0343848359771
+      },
+      "continuous-fixed-h5--seed20260909--issue-77-n1-003-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 9,
+        "decision_wall_seconds": 0.9029686222784221,
+        "engine_wall_seconds": 128.18172464286909,
+        "failure_kind": null,
+        "linear_macs": 83349000,
+        "transition_calls": 45,
+        "wall_seconds": 202.01276000891812
+      },
+      "continuous-fixed-h5--seed20260909--issue-77-n1-009-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5547577301040292,
+        "engine_wall_seconds": 160.20050146384165,
+        "failure_kind": null,
+        "linear_macs": 120393000,
+        "transition_calls": 65,
+        "wall_seconds": 235.24918758007698
+      },
+      "continuous-fixed-h5--seed20260909--issue-77-n1-010-a06": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5915357270278037,
+        "engine_wall_seconds": 75.11648335494101,
+        "failure_kind": null,
+        "linear_macs": 120393000,
+        "transition_calls": 65,
+        "wall_seconds": 121.7348042470403
+      },
+      "continuous-fixed-h5--seed20260910--issue-77-n1-001-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 12,
+        "decision_wall_seconds": 0.6481754500418901,
+        "engine_wall_seconds": 146.96178602799773,
+        "failure_kind": null,
+        "linear_macs": 111132000,
+        "transition_calls": 60,
+        "wall_seconds": 227.4526526068803
+      },
+      "continuous-fixed-h5--seed20260910--issue-77-n1-003-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 9,
+        "decision_wall_seconds": 0.5539600779302418,
+        "engine_wall_seconds": 123.66427315515466,
+        "failure_kind": null,
+        "linear_macs": 83349000,
+        "transition_calls": 45,
+        "wall_seconds": 201.8725180439651
+      },
+      "continuous-fixed-h5--seed20260910--issue-77-n1-009-a00": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5555058000609279,
+        "engine_wall_seconds": 166.30467952997424,
+        "failure_kind": null,
+        "linear_macs": 120393000,
+        "transition_calls": 65,
+        "wall_seconds": 239.8060687291436
+      },
+      "continuous-fixed-h5--seed20260910--issue-77-n1-010-a06": {
+        "active_predictor_parameters": 1862396,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5508850151672959,
+        "engine_wall_seconds": 78.62160372105427,
+        "failure_kind": null,
+        "linear_macs": 120393000,
+        "transition_calls": 65,
+        "wall_seconds": 126.05897852079943
+      },
+      "hybrid-fixed-h1--seed20260908--issue-77-n1-001-a00": {
+        "active_predictor_parameters": 1441516,
+        "candidate_count": 12,
+        "decision_wall_seconds": 0.5648354801815003,
+        "engine_wall_seconds": 122.66992288501933,
+        "failure_kind": null,
+        "linear_macs": 17189376,
+        "transition_calls": 12,
+        "wall_seconds": 197.64943698281422
+      },
+      "hybrid-fixed-h1--seed20260908--issue-77-n1-003-a00": {
+        "active_predictor_parameters": 1441516,
+        "candidate_count": 9,
+        "decision_wall_seconds": 0.5282859581056982,
+        "engine_wall_seconds": 157.2642800239846,
+        "failure_kind": null,
+        "linear_macs": 12892032,
+        "transition_calls": 9,
+        "wall_seconds": 234.48247812595218
+      },
+      "hybrid-fixed-h1--seed20260908--issue-77-n1-009-a00": {
+        "active_predictor_parameters": 1441516,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5249299057759345,
+        "engine_wall_seconds": 74.64480357198045,
+        "failure_kind": null,
+        "linear_macs": 18621824,
+        "transition_calls": 13,
+        "wall_seconds": 142.61082516703755
+      },
+      "hybrid-fixed-h1--seed20260908--issue-77-n1-010-a06": {
+        "active_predictor_parameters": 1441516,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5661411508917809,
+        "engine_wall_seconds": 95.83630975801498,
+        "failure_kind": null,
+        "linear_macs": 18621824,
+        "transition_calls": 13,
+        "wall_seconds": 158.13485749601386
+      },
+      "hybrid-fixed-h1--seed20260909--issue-77-n1-001-a00": {
+        "active_predictor_parameters": 0,
+        "candidate_count": null,
+        "decision_wall_seconds": 0.0,
+        "engine_wall_seconds": null,
+        "failure_kind": "execution_failure",
+        "linear_macs": null,
+        "transition_calls": null,
+        "wall_seconds": 78.48748889588751
+      },
+      "hybrid-fixed-h1--seed20260909--issue-77-n1-003-a00": {
+        "active_predictor_parameters": 1441516,
+        "candidate_count": 9,
+        "decision_wall_seconds": 0.5836365958675742,
+        "engine_wall_seconds": 176.94584227493033,
+        "failure_kind": null,
+        "linear_macs": 12892032,
+        "transition_calls": 9,
+        "wall_seconds": 262.0653350960929
+      },
+      "hybrid-fixed-h1--seed20260909--issue-77-n1-009-a00": {
+        "active_predictor_parameters": 1441516,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5117838280275464,
+        "engine_wall_seconds": 90.9034820520319,
+        "failure_kind": null,
+        "linear_macs": 18621824,
+        "transition_calls": 13,
+        "wall_seconds": 154.84580718097277
+      },
+      "hybrid-fixed-h1--seed20260909--issue-77-n1-010-a06": {
+        "active_predictor_parameters": 1441516,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5980063169263303,
+        "engine_wall_seconds": 120.3627792079933,
+        "failure_kind": null,
+        "linear_macs": 18621824,
+        "transition_calls": 13,
+        "wall_seconds": 185.28856890788302
+      },
+      "hybrid-fixed-h1--seed20260910--issue-77-n1-001-a00": {
+        "active_predictor_parameters": 1441516,
+        "candidate_count": 12,
+        "decision_wall_seconds": 0.5766293611377478,
+        "engine_wall_seconds": 150.84947085101157,
+        "failure_kind": null,
+        "linear_macs": 17189376,
+        "transition_calls": 12,
+        "wall_seconds": 220.7347441778984
+      },
+      "hybrid-fixed-h1--seed20260910--issue-77-n1-003-a00": {
+        "active_predictor_parameters": 1441516,
+        "candidate_count": 9,
+        "decision_wall_seconds": 0.7526615601964295,
+        "engine_wall_seconds": 98.24586391006596,
+        "failure_kind": null,
+        "linear_macs": 12892032,
+        "transition_calls": 9,
+        "wall_seconds": 158.67927613900974
+      },
+      "hybrid-fixed-h1--seed20260910--issue-77-n1-009-a00": {
+        "active_predictor_parameters": 1441516,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5609981731977314,
+        "engine_wall_seconds": 140.67379859508947,
+        "failure_kind": null,
+        "linear_macs": 18621824,
+        "transition_calls": 13,
+        "wall_seconds": 266.89422011515126
+      },
+      "hybrid-fixed-h1--seed20260910--issue-77-n1-010-a06": {
+        "active_predictor_parameters": 1441516,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.5733132897876203,
+        "engine_wall_seconds": 68.15184290800244,
+        "failure_kind": null,
+        "linear_macs": 18621824,
+        "transition_calls": 13,
+        "wall_seconds": 114.99005221691914
+      },
+      "no-model-ordinal-prior--seed20260908--issue-77-n1-001-a00": {
+        "active_predictor_parameters": 0,
+        "candidate_count": 12,
+        "decision_wall_seconds": 0.355026267003268,
+        "engine_wall_seconds": 146.7701175911352,
+        "failure_kind": null,
+        "linear_macs": 0,
+        "transition_calls": 0,
+        "wall_seconds": 220.54608652717434
+      },
+      "no-model-ordinal-prior--seed20260908--issue-77-n1-003-a00": {
+        "active_predictor_parameters": 0,
+        "candidate_count": 9,
+        "decision_wall_seconds": 0.33650838886387646,
+        "engine_wall_seconds": 100.17847264511511,
+        "failure_kind": null,
+        "linear_macs": 0,
+        "transition_calls": 0,
+        "wall_seconds": 174.3328250159975
+      },
+      "no-model-ordinal-prior--seed20260908--issue-77-n1-009-a00": {
+        "active_predictor_parameters": 0,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.3655960951000452,
+        "engine_wall_seconds": 150.8728251438588,
+        "failure_kind": null,
+        "linear_macs": 0,
+        "transition_calls": 0,
+        "wall_seconds": 228.12042367388494
+      },
+      "no-model-ordinal-prior--seed20260908--issue-77-n1-010-a06": {
+        "active_predictor_parameters": 0,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.4097663548309356,
+        "engine_wall_seconds": 73.62716174591333,
+        "failure_kind": null,
+        "linear_macs": 0,
+        "transition_calls": 0,
+        "wall_seconds": 126.30466823093593
+      },
+      "no-model-ordinal-prior--seed20260909--issue-77-n1-001-a00": {
+        "active_predictor_parameters": 0,
+        "candidate_count": 12,
+        "decision_wall_seconds": 0.4608401791192591,
+        "engine_wall_seconds": 134.33564016013406,
+        "failure_kind": null,
+        "linear_macs": 0,
+        "transition_calls": 0,
+        "wall_seconds": 214.03870560904033
+      },
+      "no-model-ordinal-prior--seed20260909--issue-77-n1-003-a00": {
+        "active_predictor_parameters": 0,
+        "candidate_count": 9,
+        "decision_wall_seconds": 0.3895239820703864,
+        "engine_wall_seconds": 118.45535743306391,
+        "failure_kind": null,
+        "linear_macs": 0,
+        "transition_calls": 0,
+        "wall_seconds": 195.06746699102223
+      },
+      "no-model-ordinal-prior--seed20260909--issue-77-n1-009-a00": {
+        "active_predictor_parameters": 0,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.3926736197900027,
+        "engine_wall_seconds": 157.81344989105128,
+        "failure_kind": null,
+        "linear_macs": 0,
+        "transition_calls": 0,
+        "wall_seconds": 233.42600228707306
+      },
+      "no-model-ordinal-prior--seed20260909--issue-77-n1-010-a06": {
+        "active_predictor_parameters": 0,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.35818871506489813,
+        "engine_wall_seconds": 84.58223958895542,
+        "failure_kind": null,
+        "linear_macs": 0,
+        "transition_calls": 0,
+        "wall_seconds": 136.39307317789644
+      },
+      "no-model-ordinal-prior--seed20260910--issue-77-n1-001-a00": {
+        "active_predictor_parameters": 0,
+        "candidate_count": 12,
+        "decision_wall_seconds": 0.5468001870904118,
+        "engine_wall_seconds": 131.54159464593977,
+        "failure_kind": null,
+        "linear_macs": 0,
+        "transition_calls": 0,
+        "wall_seconds": 213.90323340706527
+      },
+      "no-model-ordinal-prior--seed20260910--issue-77-n1-003-a00": {
+        "active_predictor_parameters": 0,
+        "candidate_count": 9,
+        "decision_wall_seconds": 0.3672656840644777,
+        "engine_wall_seconds": 115.21956963394769,
+        "failure_kind": null,
+        "linear_macs": 0,
+        "transition_calls": 0,
+        "wall_seconds": 197.31333639100194
+      },
+      "no-model-ordinal-prior--seed20260910--issue-77-n1-009-a00": {
+        "active_predictor_parameters": 0,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.3521144110709429,
+        "engine_wall_seconds": 150.4473279081285,
+        "failure_kind": null,
+        "linear_macs": 0,
+        "transition_calls": 0,
+        "wall_seconds": 227.0628199961502
+      },
+      "no-model-ordinal-prior--seed20260910--issue-77-n1-010-a06": {
+        "active_predictor_parameters": 0,
+        "candidate_count": 13,
+        "decision_wall_seconds": 0.3845716139767319,
+        "engine_wall_seconds": 83.24195424793288,
+        "failure_kind": null,
+        "linear_macs": 0,
+        "transition_calls": 0,
+        "wall_seconds": 139.15439959196374
+      }
+    },
+    "per_seed": {
+      "20260908": {
+        "continuous-fixed-h1": {
+          "candidate_counts": [
+            9,
+            12,
+            13
+          ],
+          "decision_failures": 0,
+          "executed": 4,
+          "execution_failures": 0,
+          "linear_macs": 87053400,
+          "mean_decision_wall_seconds": 0.5264589286525734,
+          "mean_engine_wall_seconds": 129.63388124166522,
+          "mean_realized_count_cost": 47.442980103194714,
+          "mean_regret": 0.2913599652051987,
+          "mean_wall_seconds": 199.67634299577912,
+          "not_executed": 0,
+          "states": 4,
+          "success_fraction": 0.0,
+          "successes": 0,
+          "transition_calls": 47
+        },
+        "continuous-fixed-h5": {
+          "candidate_counts": [
+            9,
+            12,
+            13
+          ],
+          "decision_failures": 0,
+          "executed": 4,
+          "execution_failures": 0,
+          "linear_macs": 435267000,
+          "mean_decision_wall_seconds": 0.536884532251861,
+          "mean_engine_wall_seconds": 130.45643532800023,
+          "mean_realized_count_cost": 47.443857461214066,
+          "mean_regret": 0.2913590935071316,
+          "mean_wall_seconds": 198.12685855169548,
+          "not_executed": 0,
+          "states": 4,
+          "success_fraction": 0.0,
+          "successes": 0,
+          "transition_calls": 235
+        },
+        "hybrid-fixed-h1": {
+          "candidate_counts": [
+            9,
+            12,
+            13
+          ],
+          "decision_failures": 0,
+          "executed": 4,
+          "execution_failures": 0,
+          "linear_macs": 67325056,
+          "mean_decision_wall_seconds": 0.5460481237387285,
+          "mean_engine_wall_seconds": 112.60382905974984,
+          "mean_realized_count_cost": 56.02519314736128,
+          "mean_regret": 0.5490172251458514,
+          "mean_wall_seconds": 183.21939944295445,
+          "not_executed": 0,
+          "states": 4,
+          "success_fraction": 0.0,
+          "successes": 0,
+          "transition_calls": 47
+        },
+        "no-model-ordinal-prior": {
+          "candidate_counts": [
+            9,
+            12,
+            13
+          ],
+          "decision_failures": 0,
+          "executed": 4,
+          "execution_failures": 0,
+          "linear_macs": 0,
+          "mean_decision_wall_seconds": 0.3667242764495313,
+          "mean_engine_wall_seconds": 117.8621442815056,
+          "mean_realized_count_cost": 78.2255562916398,
+          "mean_regret": 0.4086083306604798,
+          "mean_wall_seconds": 187.32600086199818,
+          "not_executed": 0,
+          "states": 4,
+          "success_fraction": 0.0,
+          "successes": 0,
+          "transition_calls": 0
+        }
+      },
+      "20260909": {
+        "continuous-fixed-h1": {
+          "candidate_counts": [
+            9,
+            12,
+            13
+          ],
+          "decision_failures": 0,
+          "executed": 4,
+          "execution_failures": 0,
+          "linear_macs": 87053400,
+          "mean_decision_wall_seconds": 0.5382101575960405,
+          "mean_engine_wall_seconds": 128.34679377172142,
+          "mean_realized_count_cost": 49.82041396945715,
+          "mean_regret": 0.24039623393607534,
+          "mean_wall_seconds": 207.44128870003624,
+          "not_executed": 0,
+          "states": 4,
+          "success_fraction": 0.0,
+          "successes": 0,
+          "transition_calls": 47
+        },
+        "continuous-fixed-h5": {
+          "candidate_counts": [
+            9,
+            12,
+            13
+          ],
+          "decision_failures": 0,
+          "executed": 4,
+          "execution_failures": 0,
+          "linear_macs": 435267000,
+          "mean_decision_wall_seconds": 0.652869284094777,
+          "mean_engine_wall_seconds": 129.80712764238706,
+          "mean_realized_count_cost": 75.56255620718002,
+          "mean_regret": 0.26783304268036495,
+          "mean_wall_seconds": 198.00778416800313,
+          "not_executed": 0,
+          "states": 4,
+          "success_fraction": 0.0,
+          "successes": 0,
+          "transition_calls": 235
+        },
+        "hybrid-fixed-h1": {
+          "candidate_counts": [
+            9,
+            13
+          ],
+          "decision_failures": 0,
+          "executed": 3,
+          "execution_failures": 1,
+          "linear_macs": 50135680,
+          "mean_decision_wall_seconds": 0.564475580273817,
+          "mean_engine_wall_seconds": 129.40403451165184,
+          "mean_realized_count_cost": 56.557611018419266,
+          "mean_regret": 0.451262477266825,
+          "mean_wall_seconds": 200.73323706164956,
+          "not_executed": 0,
+          "states": 4,
+          "success_fraction": 0.0,
+          "successes": 0,
+          "transition_calls": 35
+        },
+        "no-model-ordinal-prior": {
+          "candidate_counts": [
+            9,
+            12,
+            13
+          ],
+          "decision_failures": 0,
+          "executed": 4,
+          "execution_failures": 0,
+          "linear_macs": 0,
+          "mean_decision_wall_seconds": 0.4003066240111366,
+          "mean_engine_wall_seconds": 123.79667176830117,
+          "mean_realized_count_cost": 78.18046874552965,
+          "mean_regret": 0.4069757539436337,
+          "mean_wall_seconds": 194.73131201625802,
+          "not_executed": 0,
+          "states": 4,
+          "success_fraction": 0.0,
+          "successes": 0,
+          "transition_calls": 0
+        }
+      },
+      "20260910": {
+        "continuous-fixed-h1": {
+          "candidate_counts": [
+            9,
+            12,
+            13
+          ],
+          "decision_failures": 0,
+          "executed": 4,
+          "execution_failures": 0,
+          "linear_macs": 87053400,
+          "mean_decision_wall_seconds": 0.5120509408297949,
+          "mean_engine_wall_seconds": 136.9880951027153,
+          "mean_realized_count_cost": 75.56804992258549,
+          "mean_regret": 0.26809831054075395,
+          "mean_wall_seconds": 205.30310189700685,
+          "not_executed": 0,
+          "states": 4,
+          "success_fraction": 0.0,
+          "successes": 0,
+          "transition_calls": 47
+        },
+        "continuous-fixed-h5": {
+          "candidate_counts": [
+            9,
+            12,
+            13
+          ],
+          "decision_failures": 0,
+          "executed": 4,
+          "execution_failures": 0,
+          "linear_macs": 435267000,
+          "mean_decision_wall_seconds": 0.5771315858000889,
+          "mean_engine_wall_seconds": 128.88808560854523,
+          "mean_realized_count_cost": 49.835840947926044,
+          "mean_regret": 0.24091852861138208,
+          "mean_wall_seconds": 198.7975544751971,
+          "not_executed": 0,
+          "states": 4,
+          "success_fraction": 0.0,
+          "successes": 0,
+          "transition_calls": 235
+        },
+        "hybrid-fixed-h1": {
+          "candidate_counts": [
+            9,
+            12,
+            13
+          ],
+          "decision_failures": 0,
+          "executed": 4,
+          "execution_failures": 0,
+          "linear_macs": 67325056,
+          "mean_decision_wall_seconds": 0.6159005960798822,
+          "mean_engine_wall_seconds": 114.48024406604236,
+          "mean_realized_count_cost": 53.416280157864094,
+          "mean_regret": 0.42833612303549407,
+          "mean_wall_seconds": 190.32457316224463,
+          "not_executed": 0,
+          "states": 4,
+          "success_fraction": 0.0,
+          "successes": 0,
+          "transition_calls": 47
+        },
+        "no-model-ordinal-prior": {
+          "candidate_counts": [
+            9,
+            12,
+            13
+          ],
+          "decision_failures": 0,
+          "executed": 4,
+          "execution_failures": 0,
+          "linear_macs": 0,
+          "mean_decision_wall_seconds": 0.41268797405064106,
+          "mean_engine_wall_seconds": 120.11261160898721,
+          "mean_realized_count_cost": 79.1350824162364,
+          "mean_regret": 0.4086862571943308,
+          "mean_wall_seconds": 194.3584473465453,
+          "not_executed": 0,
+          "states": 4,
+          "success_fraction": 0.0,
+          "successes": 0,
+          "transition_calls": 0
+        }
+      }
+    },
+    "pooled": {
+      "continuous-fixed-h1": {
+        "candidate_counts": [
+          9,
+          12,
+          13
+        ],
+        "decision_failures": 0,
+        "executed": 12,
+        "execution_failures": 0,
+        "linear_macs": 261160200,
+        "mean_decision_wall_seconds": 0.5255733423594696,
+        "mean_engine_wall_seconds": 131.65625670536733,
+        "mean_realized_count_cost": 57.61048133174578,
+        "mean_regret": 0.2666181698940093,
+        "mean_wall_seconds": 204.14024453094075,
+        "not_executed": 0,
+        "states": 12,
+        "success_fraction": 0.0,
+        "successes": 0,
+        "transition_calls": 141
+      },
+      "continuous-fixed-h5": {
+        "candidate_counts": [
+          9,
+          12,
+          13
+        ],
+        "decision_failures": 0,
+        "executed": 12,
+        "execution_failures": 0,
+        "linear_macs": 1305801000,
+        "mean_decision_wall_seconds": 0.5889618007155756,
+        "mean_engine_wall_seconds": 129.7172161929775,
+        "mean_realized_count_cost": 57.61408487210671,
+        "mean_regret": 0.26670355493295955,
+        "mean_wall_seconds": 198.31073239829857,
+        "not_executed": 0,
+        "states": 12,
+        "success_fraction": 0.0,
+        "successes": 0,
+        "transition_calls": 705
+      },
+      "hybrid-fixed-h1": {
+        "candidate_counts": [
+          9,
+          12,
+          13
+        ],
+        "decision_failures": 0,
+        "executed": 11,
+        "execution_failures": 1,
+        "linear_macs": 184785792,
+        "mean_decision_wall_seconds": 0.5764746927359904,
+        "mean_engine_wall_seconds": 117.86803600346585,
+        "mean_realized_count_cost": 55.221702388741754,
+        "mean_regret": 0.4784728022296234,
+        "mean_wall_seconds": 190.57960014597683,
+        "not_executed": 0,
+        "states": 12,
+        "success_fraction": 0.0,
+        "successes": 0,
+        "transition_calls": 129
+      },
+      "no-model-ordinal-prior": {
+        "candidate_counts": [
+          9,
+          12,
+          13
+        ],
+        "decision_failures": 0,
+        "executed": 12,
+        "execution_failures": 0,
+        "linear_macs": 0,
+        "mean_decision_wall_seconds": 0.393239624837103,
+        "mean_engine_wall_seconds": 120.59047588626466,
+        "mean_realized_count_cost": 78.51370248446862,
+        "mean_regret": 0.4080901139328148,
+        "mean_wall_seconds": 192.1385867416005,
+        "not_executed": 0,
+        "states": 12,
+        "success_fraction": 0.0,
+        "successes": 0,
+        "transition_calls": 0
+      }
+    },
+    "scope": "the 48 executed-or-typed-failure pilot cells; Q1 scoring and the full matrix stay barred by the failed gate"
+  },
+  "pilot_gate": {
+    "cells": 48,
+    "disposition_if_failed": "readiness_or_precision_insufficient",
+    "floor": 0.1,
+    "metric": "engine-truth pig_removed first-shot success",
+    "minimum_valid_executions": 24,
+    "passed": false,
+    "plan_identity": "issue-85-engine-outcome-reactive-v1",
+    "prevalence": 0.0,
+    "schema": "issue_85_pilot_gate_v1",
+    "successes": 0,
+    "typed_failures": [
+      {
+        "failure": "TimeoutError: Science Birds did not reach PLAYING before timeout",
+        "identity": "hybrid-fixed-h1--seed20260909--issue-77-n1-001-a00"
+      }
+    ],
+    "valid_executions": 47
+  },
+  "plan_identity": "issue-85-engine-outcome-reactive-v1",
+  "question_dispositions": {
+    "q1_engine_truth_reactive_differences": "readiness_or_precision_insufficient",
+    "q2_proxy_engine_agreement": "supported"
+  },
+  "schema": "issue_85_engine_outcome_reactive_report_v1",
+  "stopExplanation": "the mandatory engine-truth prevalence pilot gate failed before the full run",
+  "ticket_disposition": "readiness_or_precision_insufficient",
+  "wall_seconds_elapsed": 2486.917561378097
+}

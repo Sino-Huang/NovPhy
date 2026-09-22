@@ -1,0 +1,149 @@
+{
+  "cell": {
+    "identity": "continuous-fixed-h5--seed20260908--issue-77-n1-001-a00",
+    "seed": 20260908,
+    "state": "issue-77-n1-001-a00",
+    "system": "continuous-fixed-h5"
+  },
+  "chosen": {
+    "action": {
+      "drag_x": -39,
+      "drag_y": 70,
+      "release_time_ms": 1000,
+      "tap_time_ms": 0
+    },
+    "branch_identity": "issue-77-n1-001-a09",
+    "ordinal": 9
+  },
+  "decision": {
+    "actuator_readiness": {
+      "action_selection": "prospectively fixed; slingshot anchor only",
+      "speed": 1,
+      "stable_observations": 2
+    },
+    "candidate_count": 12,
+    "chosen": {
+      "action": {
+        "drag_x": -39,
+        "drag_y": 70,
+        "release_time_ms": 1000,
+        "tap_time_ms": 0
+      },
+      "branch_identity": "issue-77-n1-001-a09",
+      "ordinal": 9
+    },
+    "failure": null,
+    "gpu_seconds": 0.62794074206613,
+    "inference_not_equalized": true,
+    "linear_macs": 111132000,
+    "perception_seconds": 0.4196723699569702,
+    "ranking": [
+      {
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 68.17295551300049
+      },
+      {
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 68.6844265460968
+      },
+      {
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 67.13832968473434
+      },
+      {
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 65.7633501291275
+      },
+      {
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 64.54759669303894
+      },
+      {
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 63.41179955005646
+      },
+      {
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 62.69607490301132
+      },
+      {
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 61.810932755470276
+      },
+      {
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 61.424447536468506
+      },
+      {
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 61.20842295885086
+      },
+      {
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 61.24159127473831
+      },
+      {
+        "excluded": false,
+        "ordinal": 12,
+        "predicted_cost": 61.894434094429016
+      }
+    ],
+    "selected_predicted_cost": 61.20842295885086,
+    "transition_calls": 60,
+    "wall_seconds": 0.20826837210915983
+  },
+  "execution": {
+    "censored": true,
+    "end_of_window_parser_calls": 2,
+    "engine_wall_seconds": 153.086469684029,
+    "first_fixed_step": 30000,
+    "frame_count": 601,
+    "interaction_coverage": {
+      "block_contact": true,
+      "pig_contact": false,
+      "pig_removed": false
+    },
+    "last_fixed_step": 60000,
+    "native_root": "/p/Project/NovPhy/.local-artifacts/issue-80-reactive-diagnostic-v1/attempts/continuous-fixed-h5--seed20260908--issue-77-n1-001-a00/aligned/capture-v2:700391e683bd4d65a7bec61809377f17",
+    "observation_manifest": "observation-trace-manifest-v1:sha256:885fa317df240cee13a2a6e11d98fd2057b5b73195659fd08c469f09b4cfcef4",
+    "realized_end_of_window_count_cost": 53.040525406599045,
+    "segment_identity": "continuous-fixed-h5--seed20260908--issue-77-n1-001-a00:shot-1",
+    "terminal_reason": null
+  },
+  "failure": null,
+  "failure_kind": null,
+  "fresh_scenario_lineage": false,
+  "issue_64_authorized": false,
+  "outcome": {
+    "all_tied": false,
+    "chosen_frozen_cost": 53.040525406599045,
+    "chosen_frozen_regret": 0.7671002554341931,
+    "first_shot_success": false,
+    "informative": true,
+    "realized_count_cost": 53.040525406599045,
+    "regret": 0.7671002554341931,
+    "shots_to_success": null
+  },
+  "plan_identity": "issue-80-reactive-diagnostic-v1",
+  "ports": {
+    "agent": 34267,
+    "game": 51323,
+    "physics": 60305
+  },
+  "schema": "issue_80_reactive_diagnostic_v1",
+  "seed": 20260908,
+  "state_identity": "issue-77-n1-001-a00",
+  "system": "continuous-fixed-h5",
+  "wall_seconds": 229.1192666119896
+}

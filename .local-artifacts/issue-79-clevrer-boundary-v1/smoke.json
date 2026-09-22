@@ -1,0 +1,174 @@
+{
+  "cells": [
+    {
+      "arm": "continuous",
+      "endpoint_errors": {
+        "120": {
+          "errors": {
+            "carrier_mse": 3268.382568359375,
+            "kind_available_values": 8,
+            "kind_mse": 1906.595947265625,
+            "position_available_values": 8,
+            "position_mse": 7146.3994140625,
+            "presence_mse": 4026.85546875,
+            "velocity_available_values": 8,
+            "velocity_mse": 2112.75390625
+          },
+          "steps": 120
+        },
+        "15": {
+          "errors": {
+            "carrier_mse": 28.45549201965332,
+            "kind_available_values": 8,
+            "kind_mse": 18.117252349853516,
+            "position_available_values": 6,
+            "position_mse": 33.532264709472656,
+            "presence_mse": 37.20683670043945,
+            "velocity_available_values": 6,
+            "velocity_mse": 27.7645320892334
+          },
+          "steps": 15
+        },
+        "30": {
+          "errors": {
+            "carrier_mse": 156.7281951904297,
+            "kind_available_values": 8,
+            "kind_mse": 63.82517623901367,
+            "position_available_values": 6,
+            "position_mse": 218.69688415527344,
+            "presence_mse": 208.9706268310547,
+            "velocity_available_values": 6,
+            "velocity_mse": 170.3149871826172
+          },
+          "steps": 30
+        },
+        "60": {
+          "errors": {
+            "carrier_mse": 738.5670166015625,
+            "kind_available_values": 8,
+            "kind_mse": 324.4732971191406,
+            "position_available_values": 8,
+            "position_mse": 1388.621337890625,
+            "presence_mse": 959.8375854492188,
+            "velocity_available_values": 8,
+            "velocity_mse": 731.0264892578125
+          },
+          "steps": 60
+        }
+      },
+      "final_loss_finite": true,
+      "pair_counts": {
+        "(1, 'continuous')": 4,
+        "(15, 'continuous')": 4,
+        "(5, 'continuous')": 4
+      }
+    },
+    {
+      "arm": "hybrid",
+      "endpoint_errors": {
+        "120": {
+          "errors": {
+            "carrier_mse": 2992.423095703125,
+            "kind_available_values": 8,
+            "kind_mse": 4486.9130859375,
+            "position_available_values": 8,
+            "position_mse": 850.3434448242188,
+            "presence_mse": 4304.5810546875,
+            "velocity_available_values": 8,
+            "velocity_mse": 1096.564453125
+          },
+          "steps": 120
+        },
+        "15": {
+          "errors": {
+            "carrier_mse": 28.954072952270508,
+            "kind_available_values": 8,
+            "kind_mse": 33.38931655883789,
+            "position_available_values": 6,
+            "position_mse": 33.156246185302734,
+            "presence_mse": 30.930471420288086,
+            "velocity_available_values": 6,
+            "velocity_mse": 21.29462242126465
+          },
+          "steps": 15
+        },
+        "30": {
+          "errors": {
+            "carrier_mse": 166.43478393554688,
+            "kind_available_values": 8,
+            "kind_mse": 241.34237670898438,
+            "position_available_values": 6,
+            "position_mse": 161.1720428466797,
+            "presence_mse": 242.61199951171875,
+            "velocity_available_values": 6,
+            "velocity_mse": 105.81568145751953
+          },
+          "steps": 30
+        },
+        "60": {
+          "errors": {
+            "carrier_mse": 742.6441040039062,
+            "kind_available_values": 8,
+            "kind_mse": 1119.4456787109375,
+            "position_available_values": 8,
+            "position_mse": 378.43572998046875,
+            "presence_mse": 1196.811767578125,
+            "velocity_available_values": 8,
+            "velocity_mse": 392.5034484863281
+          },
+          "steps": 60
+        }
+      },
+      "final_loss_finite": true,
+      "pair_counts": {
+        "(1, 'continuous')": 2,
+        "(1, 'micro')": 2,
+        "(15, 'continuous')": 2,
+        "(15, 'micro')": 2,
+        "(5, 'continuous')": 2,
+        "(5, 'micro')": 2
+      }
+    }
+  ],
+  "memory": {
+    "peak_cpu_rss_mib": 807.78125,
+    "peak_cuda_allocated_mib": 0.0
+  },
+  "production_evidence": false,
+  "scene_index": 10000,
+  "schema": "issue_79_clevrer_smoke_v1",
+  "speed_tier_edges": [
+    0.9665,
+    2.2323
+  ],
+  "velocity_scale": 3.0,
+  "wall_seconds": 2.408612424042076,
+  "windows": {
+    "action": [
+      40,
+      5
+    ],
+    "length": [
+      40
+    ],
+    "relations": [
+      40,
+      61,
+      18,
+      18,
+      2
+    ],
+    "relations_mask": [
+      40,
+      61,
+      18,
+      18,
+      2
+    ],
+    "z": [
+      40,
+      61,
+      236
+    ]
+  }
+}

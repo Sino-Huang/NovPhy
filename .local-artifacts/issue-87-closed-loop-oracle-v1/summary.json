@@ -1,0 +1,998 @@
+{
+  "archived_release": false,
+  "caps": {
+    "gpu_cap_seconds": 10800,
+    "gpu_scope": "cumulative synchronized decision wall (perception plus ranking) on cuda; oracle executions use no cuda decision work",
+    "stop": "readiness_or_precision_insufficient",
+    "wall_cap_seconds": 86400,
+    "wall_scope": "cumulative elapsed wall across ALL protocol versions and phases (smoke + oracle + decision)"
+  },
+  "changelog": [
+    {
+      "change": "terminal freeze after the plan-v1 rendered smoke",
+      "evidence": "development/v1 records + data/issue-87-closed-loop-oracle/development/v1",
+      "version": 2,
+      "what": "NO protocol element changed relative to plan-v1: the membership, the oracle slot inventory (289 scheduled candidate cells), oracle seed 20260908, the inherited #85 detection rule, the #85 reactive decision rule, the anchor rule, workers, port range, and caps are byte-identical. The pre-declared analysis margins were already fixed in plan-v1 (Q2 ranking-gap margin 0.5, Q1 interval-exclusion rule). What CHANGES with v2 is the status: development -> terminal, so this version is frozen with actual numeric values BEFORE its own scoring run, is executed exactly once, and admits no further outcome-conditioned modification. Reviewed smoke evidence embedded: 2/2 smoke cells executed real-rendered, 2/2 matched their frozen #85 expectations; channel verdicts and gallery media retained",
+      "why": "the smoke validated the oracle harness end to end (real rendered execution, channel verdict, gallery media retention), so no instrument change is needed and the terminal version can be frozen before any terminal outcome exists"
+    },
+    {
+      "change": "terminal freeze CORRECTION before the scoring run: supersedes plan-v2 on a bookkeeping defect only",
+      "evidence": "development/v1 records + data/issue-87-closed-loop-oracle/development/v1",
+      "version": 3,
+      "what": "NO scientific or protocol element changed relative to plan-v2 (membership, 289-slot oracle inventory, oracle seed, detection rule, decision rule, anchor rule, margins, caps, workers, ports are byte-identical). The ONLY defect: plan-v2's embedded smoke evidence was read from the wrong records directory and reported '0/2 smoke cells executed, 0/2 matched' when the retained development records show 2/2 smoke cells executed real-rendered, 2/2 matched their frozen #85 expectations; channel verdicts and gallery media retained. plan-v2 is retained verbatim at protocols/plan-v2.json with its factual error; this version is the terminal freeze, made BEFORE any scoring-run execution exists (zero terminal oracle records at freeze time).",
+      "why": "a frozen plan must not carry a factually wrong evidence field; correcting it before the scoring run preserves the freeze-before-outcome guarantee instead of compromising it"
+    }
+  ],
+  "claim_boundary": "bounded non-final diagnostic on development/exposed lineages; zero fresh captures; no multi-shot, adaptation, zero-shot, or complete-gameplay claim; cannot reopen #64/#65/#72/#75/#15/#76; the #80/#82/#85 published outcomes are read-only inputs, never re-run, amended, or reinterpreted; descriptive intervals only",
+  "decision_pass": {
+    "ceiling_states": [
+      "issue-77-n1-001-a00",
+      "issue-77-n1-001-a07",
+      "issue-77-n1-006-a05",
+      "issue-77-n1-006-a11",
+      "issue-77-n1-011-a02",
+      "issue-77-n1-012-a08",
+      "issue-77-n1-016-a12"
+    ],
+    "compute_accounting": {
+      "active_parameter_counts": {
+        "continuous-fixed-h1": {
+          "20260908": 1862396,
+          "20260909": 1862396,
+          "20260910": 1862396
+        },
+        "continuous-fixed-h5": {
+          "20260908": 1862396,
+          "20260909": 1862396,
+          "20260910": 1862396
+        },
+        "hybrid-fixed-h1": {
+          "20260908": 1441516,
+          "20260909": 1441516,
+          "20260910": 1441516
+        },
+        "no-model-ordinal-prior": {
+          "20260908": 0,
+          "20260909": 0,
+          "20260910": 0
+        }
+      },
+      "frozen_predictor_parameters": {
+        "continuous": {
+          "20260908": 1862396,
+          "20260909": 1862396,
+          "20260910": 1862396
+        },
+        "hybrid": {
+          "20260908": 1837690,
+          "20260909": 1837690,
+          "20260910": 1837690
+        }
+      },
+      "note": "decision pass is DECISION-ONLY (no gameplay); the prior arm parses the anchor frame for identical perception accounting but performs no model transitions",
+      "per_system": {
+        "continuous-fixed-h1": {
+          "candidate_count_max": 13,
+          "candidate_count_min": 9,
+          "cells": 69,
+          "decision_failures": 3,
+          "gpu_seconds": 1.049243129324168,
+          "linear_macs": 1583631000,
+          "perception_seconds": 0.30313070490956306,
+          "ranking_wall_seconds": 0.7461124244146049,
+          "transition_calls": 855,
+          "wall_seconds": 1.2731021312065423
+        },
+        "continuous-fixed-h5": {
+          "candidate_count_max": 13,
+          "candidate_count_min": 9,
+          "cells": 69,
+          "decision_failures": 3,
+          "gpu_seconds": 3.3697199230082333,
+          "linear_macs": 7918155000,
+          "perception_seconds": 0.3001042236573994,
+          "ranking_wall_seconds": 3.069615699350834,
+          "transition_calls": 4275,
+          "wall_seconds": 3.4307206789962947
+        },
+        "hybrid-fixed-h1": {
+          "candidate_count_max": 13,
+          "candidate_count_min": 9,
+          "cells": 69,
+          "decision_failures": 3,
+          "gpu_seconds": 1.461809555068612,
+          "linear_macs": 1224743040,
+          "perception_seconds": 0.5258683837018907,
+          "ranking_wall_seconds": 0.9359411713667214,
+          "transition_calls": 855,
+          "wall_seconds": 1.650035597383976
+        },
+        "no-model-ordinal-prior": {
+          "candidate_count_max": 13,
+          "candidate_count_min": 9,
+          "cells": 69,
+          "decision_failures": 3,
+          "gpu_seconds": 0.29769275803118944,
+          "linear_macs": 0,
+          "perception_seconds": 0.29769275803118944,
+          "ranking_wall_seconds": 0.0,
+          "transition_calls": 0,
+          "wall_seconds": 0.332052162848413
+        }
+      }
+    },
+    "per_system": {
+      "continuous-fixed-h1": {
+        "ceiling_states": 7,
+        "cells": 20,
+        "rate": 0.0,
+        "successes": 0,
+        "typed_or_failed_cells": 1
+      },
+      "continuous-fixed-h5": {
+        "ceiling_states": 7,
+        "cells": 21,
+        "rate": 0.0,
+        "successes": 0,
+        "typed_or_failed_cells": 0
+      },
+      "hybrid-fixed-h1": {
+        "ceiling_states": 7,
+        "cells": 20,
+        "rate": 0.0,
+        "successes": 0,
+        "typed_or_failed_cells": 1
+      },
+      "no-model-ordinal-prior": {
+        "ceiling_states": 7,
+        "cells": 21,
+        "rate": 0.0,
+        "successes": 0,
+        "typed_or_failed_cells": 0
+      }
+    },
+    "per_system_all_states": {
+      "continuous-fixed-h1": {
+        "cells": 57,
+        "successes": 0
+      },
+      "continuous-fixed-h5": {
+        "cells": 58,
+        "successes": 0
+      },
+      "hybrid-fixed-h1": {
+        "cells": 58,
+        "successes": 0
+      },
+      "no-model-ordinal-prior": {
+        "cells": 57,
+        "successes": 0
+      }
+    },
+    "per_system_descriptive_intervals": {
+      "continuous-fixed-h1": {
+        "descriptive_95_percent_interval": [
+          0.0,
+          0.0
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.0,
+        "paired_states": 6
+      },
+      "continuous-fixed-h5": {
+        "descriptive_95_percent_interval": [
+          0.0,
+          0.0
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.0,
+        "paired_states": 7
+      },
+      "hybrid-fixed-h1": {
+        "descriptive_95_percent_interval": [
+          0.0,
+          0.0
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.0,
+        "paired_states": 6
+      },
+      "model_systems_pooled": {
+        "descriptive_95_percent_interval": [
+          0.0,
+          0.0
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.0,
+        "paired_states": 5
+      },
+      "no-model-ordinal-prior": {
+        "descriptive_95_percent_interval": [
+          0.0,
+          0.0
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.0,
+        "paired_states": 7
+      }
+    }
+  },
+  "decision_rule": "the #85 reactive decision rule, inherited verbatim: single-frame parse of the sealed pre-decision frame with the frozen issue-70 adapter, roll every admissible candidate to the system's fixed pair, choose argmin predicted count cost with ties broken by lower ordinal; candidates with nonfinite predictions are excluded; the no-model prior arm executes the #82 fallback rule (ordinal 8 when admissible, else the admissible ordinal nearest 8, ties to the lower ordinal); a typed decision failure is terminal and executes no shot",
+  "definitions": {
+    "caps": {
+      "gpu_cap_seconds": 10800,
+      "gpu_scope": "cumulative synchronized decision wall (perception plus ranking) on cuda; oracle executions use no cuda decision work",
+      "stop": "readiness_or_precision_insufficient",
+      "wall_cap_seconds": 86400,
+      "wall_scope": "cumulative elapsed wall across ALL protocol versions and phases (smoke + oracle + decision)"
+    },
+    "claim_boundary": "bounded non-final diagnostic on development/exposed lineages; zero fresh captures; no multi-shot, adaptation, zero-shot, or complete-gameplay claim; cannot reopen #64/#65/#72/#75/#15/#76; the #80/#82/#85 published outcomes are read-only inputs, never re-run, amended, or reinterpreted; descriptive intervals only",
+    "compute_accounting": "per decision cell: wall time, perception wall, transition calls, linear MACs, candidate counts, active-parameter counts; per oracle cell: execution wall; candidate count alone is never compute matching; inference is NOT equalized across arms and is recorded as such",
+    "decision_anchor_rule": "per state, the sealed pre-decision frame is the decision frame of the state's lowest-ordinal oracle cell that produced a valid executed segment (outcome-blind: selection never reads success/failure); the frame is byte-verified against the shot's first native frame; cross-candidate byte agreement of every executed oracle cell's decision frame is recorded per state; a state with no executed oracle cell is a typed decision failure for all of its system cells",
+    "decision_pass": "DECISION-ONLY: per system x seed x state the frozen predictors score the state's candidate inventory (the #85 reactive rule); NO gameplay is executed for system cells; the system's closed-loop outcome is the engine-truth verdict of its chosen candidate from the oracle pass, bound by candidate identity; if the chosen candidate's oracle cell is a typed failure the system cell inherits that typed failure (no success value)",
+    "decision_rule": "the #85 reactive decision rule, inherited verbatim: single-frame parse of the sealed pre-decision frame with the frozen issue-70 adapter, roll every admissible candidate to the system's fixed pair, choose argmin predicted count cost with ties broken by lower ordinal; candidates with nonfinite predictions are excluded; the no-model prior arm executes the #82 fallback rule (ordinal 8 when admissible, else the admissible ordinal nearest 8, ties to the lower ordinal); a typed decision failure is terminal and executes no shot",
+    "disposition_rule": {
+      "q1_closed_loop_oracle_ceiling_nonzero": {
+        "not_supported_by_this_experiment": "complete execution with oracle prevalence = 0: no admissible candidate succeeded anywhere, a measured state-difficulty floor (a valid null, reported)",
+        "readiness_or_precision_insufficient": "prevalence > 0 but the descriptive interval contains 0 (precision), or the execution inventory is incomplete or a cap stop occurred (readiness)",
+        "supported": "oracle prevalence over the 24 states > 0 AND the descriptive 95% paired bootstrap interval over the per-state indicators excludes 0 (lower bound > 0; the interval-exclusion rule is the pre-declared practical margin): the closed-loop oracle ceiling is measurably nonzero, so the #85 zero floor is not purely a state-difficulty floor on this membership"
+      },
+      "q2_ranking_gap_on_ceiling_states": {
+        "not_supported_by_this_experiment": "at least one ceiling state exists and the margin condition is not met after complete execution (the systems select successful candidates too often on this membership for a ranking-gap reading; a valid null)",
+        "prior_arm_role": "the no-model ordinal prior arm is REPORTED in the same selection table but is not part of the Q2 margin rule, which is about predictor-guided h=1 ranking",
+        "readiness_or_precision_insufficient": "no ceiling state exists (the conditional estimand has empty support), or the decision inventory is incomplete or a cap stop occurred",
+        "supported": "at least one ceiling state exists AND every model system (hybrid-fixed-h1, continuous-fixed-h1, continuous-fixed-h5) has a pooled successful-selection rate over ceiling states x 3 seeds < 0.5 AND the pooled-across-model-systems paired descriptive 95% interval over ceiling states lies entirely below 0.5 (the pre-declared numeric margin is 0.5): the systems' h=1 ranking demonstrably misses successful candidates that exist"
+      }
+    },
+    "engine_channel": {
+      "detection_rule": "engine-truth first-shot success is read from the game's own state stream of the executed shot segment (the engine's canonical native fixed-step capture written during rendered play; no parser-derived cost enters the verdict). Primary event leg: pig_removed = the segment records at least one native macro event of type 'pig_removed', 'entity_death' or 'entity_destroyed' with at least one participant whose identity starts 'runtime:pig:' (the game's own pig-removal/death/destruction hooks). structure_destroyed is the same rule over 'runtime:block:' participants. Lifecycle leg (confirmatory): at least one 'runtime:pig:' entity whose per-sample lifecycle in the fixed-step state stream is 'destroyed'. The published verdict is the event leg; the lifecycle leg is published alongside for agreement review against the retained frames",
+      "failure_modes": "declared failure modes: (1) a death event with an unresolvable participant identity (empty participants) would hide which entity died - detected by the lifecycle leg and typed as a channel anomaly; (2) a pig killed at the very end of the bounded native window may fire its death event before the registry marks the entity destroyed - event leg true with lifecycle leg false is a declared timing mode, recorded, NOT an anomaly; (3) the state stream records a destroyed pig while the event leg is silent - the actual missing-event failure mode - typed as a channel anomaly on that cell; (4) window censoring before any pig death leaves both legs false: the pig survived within the bounded window, not an anomaly",
+      "first_shot_success": "the executed shot segment's engine-side channel verdict pig_removed; typed failures carry no success value",
+      "inheritance": "inherited VERBATIM from the published issue-85 engine-truth outcome channel (world_model/training/engine_outcome_reactive_diagnostic.py: CHANNEL_DETECTION_RULE; pig_removed/entity_death/entity_destroyed native macro events with runtime:pig: participants + lifecycle confirmatory leg). The channel was verified with media review in issue-85 Phase A (issue-85 channel-verification.json: verified=true) and is NOT amended by any protocol version of this ticket",
+      "shots_to_success": "single-shot protocol: 1 when the first shot succeeds, otherwise null; no multi-shot competence claim"
+    },
+    "membership_rule": "the #80 frozen 24-state membership verbatim (12 type010103 + 12 type010105; identities, inventories, engine seeds and scenario authorities bound by the issue-80 plan file identity); per-state candidate counts are the #80 admissible inventories, which have the #77 typed branch failures removed exactly as recorded (24 x 13 nominal slots - 23 recorded typed drops = 289 oracle candidate slots; the issuing ticket's '~264' is an estimate, the recorded reduction is authoritative)",
+    "oracle_pass": "every scheduled (state, admissible candidate) slot is executed exactly once in the real rendered engine from the state's frozen initial condition (source-member decision state at native fixed step 30000), the candidate's frozen action is executed as the single first shot, and engine-truth first-shot success is read with the inherited #85 detection rule; typed failures are retained and carry no success value",
+    "oracle_seed": 20260908,
+    "protocol_policy": "owner-directed iterative protocol: development versions may be amended after inspecting intermediate results; every version is retained verbatim with a changelog; development outcomes are labelled EXPLORATORY and may not be cited as answers; the terminal version is frozen with actual numeric values BEFORE its own scoring run and executed exactly once",
+    "questions": {
+      "q1_closed_loop_oracle_ceiling_nonzero": "on how many of the 24 frozen states does at least one admissible candidate achieve engine-truth first-shot success in closed loop; pooled prevalence with a descriptive interval over states (paired bootstrap, seeds are the single oracle seed)",
+      "q2_ranking_gap_on_ceiling_states": "conditional on a state having at least one engine-truth-successful candidate, how often does each frozen system select a successful candidate (per seed and pooled, descriptive bootstrap over ceiling states)"
+    },
+    "uncertainty": {
+      "draws": 10000,
+      "note": "descriptive paired bootstrap over state identities; seeds averaged first where present; cannot support a confirmatory claim",
+      "seed": 7201,
+      "unit": "state"
+    }
+  },
+  "development_versions": [
+    {
+      "changelog": [
+        {
+          "change": "initial protocol draft",
+          "evidence": "none yet (initial freeze, before the smoke)",
+          "version": 1,
+          "what": "oracle pass over every admissible candidate of the #80 frozen membership at seed 20260908 with the inherited #85 detection rule; DECISION-ONLY reactive scoring per system x seed x state anchored on each state's sealed pre-decision frame; bounded 2-cell rendered smoke on published #85 positive/negative slots; global caps 24 worker-hours wall / 3 GPU-hours active decision work; ports 28700+; 4 isolated workers",
+          "why": "open the ticket under the iterative policy: nothing is yet observed, so v1 fixes the inherited measurement instruments and the bounded smoke that validates the harness before any long run"
+        }
+      ],
+      "label": "EXPLORATORY",
+      "may_not_be_cited_as_answers": true,
+      "note": "development-version outcomes, retained verbatim; the ticket's dispositions come only from the terminal version",
+      "plan_path": ".local-artifacts/issue-87-closed-loop-oracle-v1/protocols/plan-v1.json",
+      "smoke_cells": [
+        {
+          "executed": true,
+          "expectation": true,
+          "expectation_matched": true,
+          "failure": null,
+          "identity": "smoke-v1--issue-77-n1-010-a06--a02",
+          "ordinal": 2,
+          "pig_removed": true,
+          "state": "issue-77-n1-010-a06",
+          "wall_seconds": 126.62213598005474
+        },
+        {
+          "executed": true,
+          "expectation": false,
+          "expectation_matched": true,
+          "failure": null,
+          "identity": "smoke-v1--issue-77-n1-009-a00--a00",
+          "ordinal": 0,
+          "pig_removed": false,
+          "state": "issue-77-n1-009-a00",
+          "wall_seconds": 156.95447536511347
+        }
+      ],
+      "status": "development",
+      "version": 1
+    }
+  ],
+  "engine_channel": {
+    "detection_rule": "engine-truth first-shot success is read from the game's own state stream of the executed shot segment (the engine's canonical native fixed-step capture written during rendered play; no parser-derived cost enters the verdict). Primary event leg: pig_removed = the segment records at least one native macro event of type 'pig_removed', 'entity_death' or 'entity_destroyed' with at least one participant whose identity starts 'runtime:pig:' (the game's own pig-removal/death/destruction hooks). structure_destroyed is the same rule over 'runtime:block:' participants. Lifecycle leg (confirmatory): at least one 'runtime:pig:' entity whose per-sample lifecycle in the fixed-step state stream is 'destroyed'. The published verdict is the event leg; the lifecycle leg is published alongside for agreement review against the retained frames",
+    "failure_modes": "declared failure modes: (1) a death event with an unresolvable participant identity (empty participants) would hide which entity died - detected by the lifecycle leg and typed as a channel anomaly; (2) a pig killed at the very end of the bounded native window may fire its death event before the registry marks the entity destroyed - event leg true with lifecycle leg false is a declared timing mode, recorded, NOT an anomaly; (3) the state stream records a destroyed pig while the event leg is silent - the actual missing-event failure mode - typed as a channel anomaly on that cell; (4) window censoring before any pig death leaves both legs false: the pig survived within the bounded window, not an anomaly",
+    "first_shot_success": "the executed shot segment's engine-side channel verdict pig_removed; typed failures carry no success value",
+    "inheritance": "inherited VERBATIM from the published issue-85 engine-truth outcome channel (world_model/training/engine_outcome_reactive_diagnostic.py: CHANNEL_DETECTION_RULE; pig_removed/entity_death/entity_destroyed native macro events with runtime:pig: participants + lifecycle confirmatory leg). The channel was verified with media review in issue-85 Phase A (issue-85 channel-verification.json: verified=true) and is NOT amended by any protocol version of this ticket",
+    "shots_to_success": "single-shot protocol: 1 when the first shot succeeds, otherwise null; no multi-shot competence claim"
+  },
+  "execution_ledger_status": "complete",
+  "final_evaluation_opened": false,
+  "fresh_evaluation_opened": false,
+  "gpu_seconds_elapsed": 6.178465365432203,
+  "identity": "issue-87-closed-loop-oracle-v1",
+  "issue_64_authorized": false,
+  "limitations": [
+    "development/exposed N1 lineages only; zero fresh captures; not the sealed #64/#65 benchmark",
+    "the engine-truth verdict covers the bounded native shot window per executed shot",
+    "the oracle pass uses the single frozen seed 20260908; per-state indicators are one engine-truth draw per candidate slot",
+    "states sharing a source member share one physical initial state and candidate table; the paired bootstrap over 24 state identities is descriptive only",
+    "inference is NOT equalized across arms; per-arm decision compute is reported; the decision pass is DECISION-ONLY (no gameplay for system cells)",
+    "the shared-GPU flock was not taken (batch coordination with the concurrent issue-88 ticket); GPU use is bounded to the short decision pass"
+  ],
+  "oracle_pass": {
+    "by_family": {
+      "type010103": {
+        "ceiling_states": 4,
+        "executed_cells": 111,
+        "measured_states": 11,
+        "prevalence": 0.36363636363636365,
+        "states": 12,
+        "successful_cells": 4,
+        "typed_failure_cells": 22
+      },
+      "type010105": {
+        "ceiling_states": 3,
+        "executed_cells": 123,
+        "measured_states": 12,
+        "prevalence": 0.25,
+        "states": 12,
+        "successful_cells": 3,
+        "typed_failure_cells": 33
+      }
+    },
+    "inventory": {
+      "executed": 234,
+      "scheduled_cells": 289,
+      "successful_cells": 7,
+      "typed_failures": 55
+    },
+    "pooled": {
+      "ceiling_states": 7,
+      "descriptive": {
+        "descriptive_95_percent_interval": [
+          0.13043478260869565,
+          0.5217391304347826
+        ],
+        "mean": 0.30434782608695654
+      },
+      "label": "DESCRIPTIVE",
+      "measured_states": 23,
+      "prevalence": 0.30434782608695654,
+      "states": 24,
+      "unmeasured_states": [
+        "issue-77-n1-005-a07"
+      ]
+    }
+  },
+  "oracle_per_state": {
+    "issue-77-n1-001-a00": {
+      "candidates": 12,
+      "executed": 8,
+      "family": "type010103",
+      "indicator": 1,
+      "source_member": "issue-77-n1-001",
+      "state": "issue-77-n1-001-a00",
+      "successes": 1,
+      "successful_ordinals": [
+        6
+      ],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 0
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 1
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 2
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 5
+        }
+      ]
+    },
+    "issue-77-n1-001-a07": {
+      "candidates": 12,
+      "executed": 12,
+      "family": "type010103",
+      "indicator": 1,
+      "source_member": "issue-77-n1-001",
+      "state": "issue-77-n1-001-a07",
+      "successes": 1,
+      "successful_ordinals": [
+        6
+      ],
+      "typed_failures": []
+    },
+    "issue-77-n1-003-a00": {
+      "candidates": 9,
+      "executed": 9,
+      "family": "type010103",
+      "indicator": 0,
+      "source_member": "issue-77-n1-003",
+      "state": "issue-77-n1-003-a00",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": []
+    },
+    "issue-77-n1-003-a10": {
+      "candidates": 9,
+      "executed": 7,
+      "family": "type010103",
+      "indicator": 0,
+      "source_member": "issue-77-n1-003",
+      "state": "issue-77-n1-003-a10",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 5
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 11
+        }
+      ]
+    },
+    "issue-77-n1-004-a07": {
+      "candidates": 9,
+      "executed": 5,
+      "family": "type010103",
+      "indicator": 0,
+      "source_member": "issue-77-n1-004",
+      "state": "issue-77-n1-004-a07",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 4
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 5
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 8
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 11
+        }
+      ]
+    },
+    "issue-77-n1-005-a07": {
+      "candidates": 4,
+      "executed": 0,
+      "family": "type010103",
+      "indicator": null,
+      "source_member": "issue-77-n1-005",
+      "state": "issue-77-n1-005-a07",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "ValueError: sealed pre-decision state/RGB advanced during readiness or hold",
+          "ordinal": 1
+        },
+        {
+          "failure": "ValueError: sealed pre-decision state/RGB advanced during readiness or hold",
+          "ordinal": 2
+        },
+        {
+          "failure": "ValueError: sealed pre-decision state/RGB advanced during readiness or hold",
+          "ordinal": 7
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 8
+        }
+      ]
+    },
+    "issue-77-n1-006-a05": {
+      "candidates": 13,
+      "executed": 12,
+      "family": "type010103",
+      "indicator": 1,
+      "source_member": "issue-77-n1-006",
+      "state": "issue-77-n1-006-a05",
+      "successes": 1,
+      "successful_ordinals": [
+        5
+      ],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 9
+        }
+      ]
+    },
+    "issue-77-n1-006-a11": {
+      "candidates": 13,
+      "executed": 12,
+      "family": "type010103",
+      "indicator": 1,
+      "source_member": "issue-77-n1-006",
+      "state": "issue-77-n1-006-a11",
+      "successes": 1,
+      "successful_ordinals": [
+        5
+      ],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 6
+        }
+      ]
+    },
+    "issue-77-n1-007-a05": {
+      "candidates": 13,
+      "executed": 11,
+      "family": "type010103",
+      "indicator": 0,
+      "source_member": "issue-77-n1-007",
+      "state": "issue-77-n1-007-a05",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: Science Birds did not reach PLAYING before timeout",
+          "ordinal": 2
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 11
+        }
+      ]
+    },
+    "issue-77-n1-007-a12": {
+      "candidates": 13,
+      "executed": 10,
+      "family": "type010103",
+      "indicator": 0,
+      "source_member": "issue-77-n1-007",
+      "state": "issue-77-n1-007-a12",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 2
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 6
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 11
+        }
+      ]
+    },
+    "issue-77-n1-008-a05": {
+      "candidates": 13,
+      "executed": 12,
+      "family": "type010103",
+      "indicator": 0,
+      "source_member": "issue-77-n1-008",
+      "state": "issue-77-n1-008-a05",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 4
+        }
+      ]
+    },
+    "issue-77-n1-008-a12": {
+      "candidates": 13,
+      "executed": 13,
+      "family": "type010103",
+      "indicator": 0,
+      "source_member": "issue-77-n1-008",
+      "state": "issue-77-n1-008-a12",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": []
+    },
+    "issue-77-n1-009-a00": {
+      "candidates": 13,
+      "executed": 13,
+      "family": "type010105",
+      "indicator": 0,
+      "source_member": "issue-77-n1-009",
+      "state": "issue-77-n1-009-a00",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": []
+    },
+    "issue-77-n1-009-a09": {
+      "candidates": 13,
+      "executed": 9,
+      "family": "type010105",
+      "indicator": 0,
+      "source_member": "issue-77-n1-009",
+      "state": "issue-77-n1-009-a09",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 0
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 3
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 7
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 9
+        }
+      ]
+    },
+    "issue-77-n1-010-a06": {
+      "candidates": 13,
+      "executed": 9,
+      "family": "type010105",
+      "indicator": 0,
+      "source_member": "issue-77-n1-010",
+      "state": "issue-77-n1-010-a06",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 2
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 6
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 7
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 11
+        }
+      ]
+    },
+    "issue-77-n1-011-a02": {
+      "candidates": 13,
+      "executed": 10,
+      "family": "type010105",
+      "indicator": 1,
+      "source_member": "issue-77-n1-011",
+      "state": "issue-77-n1-011-a02",
+      "successes": 1,
+      "successful_ordinals": [
+        4
+      ],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 2
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 5
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 10
+        }
+      ]
+    },
+    "issue-77-n1-011-a11": {
+      "candidates": 13,
+      "executed": 11,
+      "family": "type010105",
+      "indicator": 0,
+      "source_member": "issue-77-n1-011",
+      "state": "issue-77-n1-011-a11",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 4
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 10
+        }
+      ]
+    },
+    "issue-77-n1-012-a08": {
+      "candidates": 13,
+      "executed": 13,
+      "family": "type010105",
+      "indicator": 1,
+      "source_member": "issue-77-n1-012",
+      "state": "issue-77-n1-012-a08",
+      "successes": 1,
+      "successful_ordinals": [
+        4
+      ],
+      "typed_failures": []
+    },
+    "issue-77-n1-013-a04": {
+      "candidates": 13,
+      "executed": 11,
+      "family": "type010105",
+      "indicator": 0,
+      "source_member": "issue-77-n1-013",
+      "state": "issue-77-n1-013-a04",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 6
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 9
+        }
+      ]
+    },
+    "issue-77-n1-014-a01": {
+      "candidates": 13,
+      "executed": 8,
+      "family": "type010105",
+      "indicator": 0,
+      "source_member": "issue-77-n1-014",
+      "state": "issue-77-n1-014-a01",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 1
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 4
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 8
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 9
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 12
+        }
+      ]
+    },
+    "issue-77-n1-014-a10": {
+      "candidates": 13,
+      "executed": 7,
+      "family": "type010105",
+      "indicator": 0,
+      "source_member": "issue-77-n1-014",
+      "state": "issue-77-n1-014-a10",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 0
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 3
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 4
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 7
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 8
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 12
+        }
+      ]
+    },
+    "issue-77-n1-015-a06": {
+      "candidates": 13,
+      "executed": 9,
+      "family": "type010105",
+      "indicator": 0,
+      "source_member": "issue-77-n1-015",
+      "state": "issue-77-n1-015-a06",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 3
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 6
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 8
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 11
+        }
+      ]
+    },
+    "issue-77-n1-016-a03": {
+      "candidates": 13,
+      "executed": 10,
+      "family": "type010105",
+      "indicator": 0,
+      "source_member": "issue-77-n1-016",
+      "state": "issue-77-n1-016-a03",
+      "successes": 0,
+      "successful_ordinals": [],
+      "typed_failures": [
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 3
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 5
+        },
+        {
+          "failure": "TimeoutError: timed out",
+          "ordinal": 7
+        }
+      ]
+    },
+    "issue-77-n1-016-a12": {
+      "candidates": 13,
+      "executed": 13,
+      "family": "type010105",
+      "indicator": 1,
+      "source_member": "issue-77-n1-016",
+      "state": "issue-77-n1-016-a12",
+      "successes": 1,
+      "successful_ordinals": [
+        3
+      ],
+      "typed_failures": []
+    }
+  },
+  "plan_identity": "issue-87-closed-loop-oracle-v1",
+  "prior_arm": {
+    "choices": {
+      "issue-77-n1-001-a00": 8,
+      "issue-77-n1-001-a07": 8,
+      "issue-77-n1-003-a00": 7,
+      "issue-77-n1-003-a10": 7,
+      "issue-77-n1-004-a07": 8,
+      "issue-77-n1-005-a07": 8,
+      "issue-77-n1-006-a05": 8,
+      "issue-77-n1-006-a11": 8,
+      "issue-77-n1-007-a05": 8,
+      "issue-77-n1-007-a12": 8,
+      "issue-77-n1-008-a05": 8,
+      "issue-77-n1-008-a12": 8,
+      "issue-77-n1-009-a00": 8,
+      "issue-77-n1-009-a09": 8,
+      "issue-77-n1-010-a06": 8,
+      "issue-77-n1-011-a02": 8,
+      "issue-77-n1-011-a11": 8,
+      "issue-77-n1-012-a08": 8,
+      "issue-77-n1-013-a04": 8,
+      "issue-77-n1-014-a01": 8,
+      "issue-77-n1-014-a10": 8,
+      "issue-77-n1-015-a06": 8,
+      "issue-77-n1-016-a03": 8,
+      "issue-77-n1-016-a12": 8
+    },
+    "fallback_rule": "the no-model ordinal prior executes the frozen candidate ordinal 8 when admissible; when ordinal 8 is a typed-dropped branch of the state, it falls back to the admissible ordinal nearest 8 by absolute distance, ties broken by the lower ordinal (the #82-recorded fallback rule, pre-declared here before any outcome; the #80 pilot record is never amended)",
+    "fallback_states": [
+      "issue-77-n1-003-a00",
+      "issue-77-n1-003-a10"
+    ]
+  },
+  "protocol_versions": [
+    {
+      "changelog": [
+        {
+          "change": "initial protocol draft",
+          "evidence": "none yet (initial freeze, before the smoke)",
+          "version": 1,
+          "what": "oracle pass over every admissible candidate of the #80 frozen membership at seed 20260908 with the inherited #85 detection rule; DECISION-ONLY reactive scoring per system x seed x state anchored on each state's sealed pre-decision frame; bounded 2-cell rendered smoke on published #85 positive/negative slots; global caps 24 worker-hours wall / 3 GPU-hours active decision work; ports 28700+; 4 isolated workers",
+          "why": "open the ticket under the iterative policy: nothing is yet observed, so v1 fixes the inherited measurement instruments and the bounded smoke that validates the harness before any long run"
+        }
+      ],
+      "frozen_at_utc": "2026-09-22T02:17:27Z",
+      "path": ".local-artifacts/issue-87-closed-loop-oracle-v1/protocols/plan-v1.json",
+      "retained": true,
+      "status": "development",
+      "version": 1
+    },
+    {
+      "changelog": [
+        {
+          "change": "terminal freeze after the plan-v1 rendered smoke",
+          "evidence": "development/v1 records + data/issue-87-closed-loop-oracle/development/v1",
+          "version": 2,
+          "what": "NO protocol element changed relative to plan-v1: the membership, the oracle slot inventory (289 scheduled candidate cells), oracle seed 20260908, the inherited #85 detection rule, the #85 reactive decision rule, the anchor rule, workers, port range, and caps are byte-identical. The pre-declared analysis margins were already fixed in plan-v1 (Q2 ranking-gap margin 0.5, Q1 interval-exclusion rule). What CHANGES with v2 is the status: development -> terminal, so this version is frozen with actual numeric values BEFORE its own scoring run, is executed exactly once, and admits no further outcome-conditioned modification. Reviewed smoke evidence embedded: 0/2 smoke cells executed real-rendered, 0/2 matched their frozen #85 expectations; channel verdicts and gallery media retained",
+          "why": "the smoke validated the oracle harness end to end (real rendered execution, channel verdict, gallery media retention), so no instrument change is needed and the terminal version can be frozen before any terminal outcome exists"
+        }
+      ],
+      "frozen_at_utc": "2026-09-22T02:41:38Z",
+      "path": ".local-artifacts/issue-87-closed-loop-oracle-v1/protocols/plan-v2.json",
+      "retained": true,
+      "status": "terminal",
+      "version": 2
+    },
+    {
+      "changelog": [
+        {
+          "change": "terminal freeze after the plan-v1 rendered smoke",
+          "evidence": "development/v1 records + data/issue-87-closed-loop-oracle/development/v1",
+          "version": 2,
+          "what": "NO protocol element changed relative to plan-v1: the membership, the oracle slot inventory (289 scheduled candidate cells), oracle seed 20260908, the inherited #85 detection rule, the #85 reactive decision rule, the anchor rule, workers, port range, and caps are byte-identical. The pre-declared analysis margins were already fixed in plan-v1 (Q2 ranking-gap margin 0.5, Q1 interval-exclusion rule). What CHANGES with v2 is the status: development -> terminal, so this version is frozen with actual numeric values BEFORE its own scoring run, is executed exactly once, and admits no further outcome-conditioned modification. Reviewed smoke evidence embedded: 2/2 smoke cells executed real-rendered, 2/2 matched their frozen #85 expectations; channel verdicts and gallery media retained",
+          "why": "the smoke validated the oracle harness end to end (real rendered execution, channel verdict, gallery media retention), so no instrument change is needed and the terminal version can be frozen before any terminal outcome exists"
+        },
+        {
+          "change": "terminal freeze CORRECTION before the scoring run: supersedes plan-v2 on a bookkeeping defect only",
+          "evidence": "development/v1 records + data/issue-87-closed-loop-oracle/development/v1",
+          "version": 3,
+          "what": "NO scientific or protocol element changed relative to plan-v2 (membership, 289-slot oracle inventory, oracle seed, detection rule, decision rule, anchor rule, margins, caps, workers, ports are byte-identical). The ONLY defect: plan-v2's embedded smoke evidence was read from the wrong records directory and reported '0/2 smoke cells executed, 0/2 matched' when the retained development records show 2/2 smoke cells executed real-rendered, 2/2 matched their frozen #85 expectations; channel verdicts and gallery media retained. plan-v2 is retained verbatim at protocols/plan-v2.json with its factual error; this version is the terminal freeze, made BEFORE any scoring-run execution exists (zero terminal oracle records at freeze time).",
+          "why": "a frozen plan must not carry a factually wrong evidence field; correcting it before the scoring run preserves the freeze-before-outcome guarantee instead of compromising it"
+        }
+      ],
+      "frozen_at_utc": "2026-09-22T02:45:51Z",
+      "path": ".local-artifacts/issue-87-closed-loop-oracle-v1/protocols/plan-v3.json",
+      "retained": true,
+      "status": "terminal",
+      "version": 3
+    }
+  ],
+  "question_dispositions": {
+    "q1_closed_loop_oracle_ceiling_nonzero": "readiness_or_precision_insufficient",
+    "q1_reason": "no candidate executed on 1 state(s): ['issue-77-n1-005-a07']",
+    "q2_ranking_gap_on_ceiling_states": "supported",
+    "q2_reason": "every model system's pooled successful-selection rate over ceiling states x 3 seeds is < 0.5 and the pooled descriptive interval [0.0000, 0.0000] lies entirely below 0.5"
+  },
+  "schema": "issue_87_closed_loop_oracle_report_v1",
+  "terminal_frozen_at_utc": "2026-09-22T02:45:51Z",
+  "terminal_version": 3,
+  "ticket_disposition": "readiness_or_precision_insufficient",
+  "wall_seconds_elapsed": 16465.90353977587
+}

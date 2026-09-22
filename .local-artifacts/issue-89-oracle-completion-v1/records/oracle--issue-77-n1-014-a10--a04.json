@@ -1,0 +1,94 @@
+{
+  "cell": {
+    "action": {
+      "drag_x": -72,
+      "drag_y": 35,
+      "release_time_ms": 1000,
+      "tap_time_ms": 0
+    },
+    "branch_identity": "issue-77-n1-014-a04",
+    "engine_seed": 764100014,
+    "frozen_replay_count_cost": 75.39221978187561,
+    "identity": "oracle--issue-77-n1-014-a10--a04",
+    "issue87_typed_failure": "TimeoutError: timed out",
+    "ordinal": 4,
+    "seed": 20260908,
+    "state": "issue-77-n1-014-a10"
+  },
+  "cell_kind": "completion",
+  "decision_frame": {
+    "decision_compute": "none (frozen candidate; completion pass uses no predictor scoring)",
+    "fixed_step": 30000,
+    "fixed_time_seconds": 13.1692,
+    "frame_identity": "agent-observation-v1:sha256:622267d2b4f4b0710027519171938eead7c689b24a8902327e8b197446fbea71",
+    "observed_frames": 3,
+    "sha256": "sha256:f9fc9e59714b0e6d4c01df85b3537b65cd5c9963d0c9de3325f9966e760a262d"
+  },
+  "engine_channel": {
+    "bird_launches": 1,
+    "consistency": "agreement",
+    "pig_contact": true,
+    "pig_identity_failures": 0,
+    "pig_lifecycle_destroyed": [
+      "runtime:pig:0000"
+    ],
+    "pig_removed": true,
+    "pig_removed_events": [
+      {
+        "event_type": "entity_death",
+        "fixed_step": 35165,
+        "participants": [
+          "runtime:pig:0000"
+        ]
+      },
+      {
+        "event_type": "entity_destroyed",
+        "fixed_step": 35165,
+        "participants": [
+          "runtime:pig:0000"
+        ]
+      },
+      {
+        "event_type": "pig_removed",
+        "fixed_step": 35165,
+        "participants": [
+          "runtime:pig:0000"
+        ]
+      }
+    ],
+    "structure_destroyed": false,
+    "structure_destroyed_events": 0
+  },
+  "execution": {
+    "censored": true,
+    "engine_wall_seconds": 128.28159657493234,
+    "first_fixed_step": 30000,
+    "frame_count": 601,
+    "frozen_replay_count_cost": 75.39221978187561,
+    "last_fixed_step": 60000,
+    "native_root": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1/attempts/oracle--issue-77-n1-014-a10--a04/aligned/capture-v2:cad139fc9b9d4fe694c3f4c1402ee01e",
+    "observation_manifest": "observation-trace-manifest-v1:sha256:16b9b78b0185645b5b79a3ebba0a08d7d11d456031786c9d2970416e3ed4db62",
+    "segment_identity": "oracle--issue-77-n1-014-a10--a04:shot-1",
+    "terminal_reason": null
+  },
+  "failure": null,
+  "failure_kind": null,
+  "fresh_scenario_lineage": false,
+  "issue87_typed_failure": "TimeoutError: timed out",
+  "issue_64_authorized": false,
+  "outcome": {
+    "first_shot_success": true,
+    "shots_to_success": 1
+  },
+  "plan_identity": "issue-89-oracle-completion-v1",
+  "plan_version": 3,
+  "ports": {
+    "agent": 28703,
+    "game": 28704,
+    "physics": 28705
+  },
+  "schema": "issue_89_oracle_completion_record_v1",
+  "seed": 20260908,
+  "state_identity": "issue-77-n1-014-a10",
+  "wall_seconds": 185.89612107397988
+}

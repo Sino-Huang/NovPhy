@@ -1,0 +1,141 @@
+{
+  "cell": {
+    "identity": "continuous-fixed-h5--seed20260908--issue-77-n1-003-a00",
+    "seed": 20260908,
+    "state": "issue-77-n1-003-a00",
+    "system": "continuous-fixed-h5"
+  },
+  "chosen": {
+    "action": {
+      "drag_x": -39,
+      "drag_y": 70,
+      "release_time_ms": 1000,
+      "tap_time_ms": 0
+    },
+    "branch_identity": "issue-77-n1-003-a09",
+    "ordinal": 9
+  },
+  "decision": {
+    "actuator_readiness": {
+      "action_selection": "prospectively fixed; slingshot anchor only",
+      "speed": 1,
+      "stable_observations": 2
+    },
+    "candidate_count": 9,
+    "chosen": {
+      "action": {
+        "drag_x": -39,
+        "drag_y": 70,
+        "release_time_ms": 1000,
+        "tap_time_ms": 0
+      },
+      "branch_identity": "issue-77-n1-003-a09",
+      "ordinal": 9
+    },
+    "failure": null,
+    "gpu_seconds": 0.5484199959319085,
+    "inference_not_equalized": true,
+    "linear_macs": 83349000,
+    "perception_seconds": 0.3667472559027374,
+    "prior_fallback_used": false,
+    "ranking": [
+      {
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 33.125463366508484
+      },
+      {
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 33.628270387649536
+      },
+      {
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 32.10335357487202
+      },
+      {
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 30.746236637234688
+      },
+      {
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 28.4135070592165
+      },
+      {
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 26.812921196222305
+      },
+      {
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 26.18655362725258
+      },
+      {
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 26.199810296297073
+      },
+      {
+        "excluded": false,
+        "ordinal": 11,
+        "predicted_cost": 26.37991264462471
+      }
+    ],
+    "selected_predicted_cost": 26.18655362725258,
+    "transition_calls": 45,
+    "wall_seconds": 0.1816727400291711
+  },
+  "engine_channel": {
+    "bird_launches": 1,
+    "consistency": "agreement",
+    "pig_contact": false,
+    "pig_identity_failures": 0,
+    "pig_lifecycle_destroyed": [],
+    "pig_removed": false,
+    "pig_removed_events": [],
+    "structure_destroyed": false,
+    "structure_destroyed_events": 0
+  },
+  "execution": {
+    "censored": false,
+    "end_of_window_parser_calls": 2,
+    "engine_wall_seconds": 91.30683912010863,
+    "first_fixed_step": 30000,
+    "frame_count": 356,
+    "last_fixed_step": 47722,
+    "native_root": "/p/Project/NovPhy/.local-artifacts/issue-85-engine-outcome-reactive-v1/attempts/continuous-fixed-h5--seed20260908--issue-77-n1-003-a00/aligned/capture-v2:05b475e6984b4a3c8a21db3f7e3c5172",
+    "observation_manifest": "observation-trace-manifest-v1:sha256:0df4ef057ec2ce32c8ec89ef45d4e08607e9bf2dfce45fcff334025bbe841e18",
+    "realized_end_of_window_count_cost": 42.06297332048416,
+    "segment_identity": "continuous-fixed-h5--seed20260908--issue-77-n1-003-a00:shot-1",
+    "terminal_reason": "level_fail"
+  },
+  "failure": null,
+  "failure_kind": null,
+  "fresh_scenario_lineage": false,
+  "issue_64_authorized": false,
+  "outcome": {
+    "all_tied": false,
+    "chosen_frozen_cost": 42.06297332048416,
+    "chosen_frozen_regret": 0.04682246760219151,
+    "first_shot_success": false,
+    "informative": true,
+    "realized_count_cost": 42.06297332048416,
+    "regret": 0.04682246760219151,
+    "shots_to_success": null
+  },
+  "plan_identity": "issue-85-engine-outcome-reactive-v1",
+  "ports": {
+    "agent": 37669,
+    "game": 44613,
+    "physics": 49015
+  },
+  "schema": "issue_85_engine_outcome_reactive_record_v1",
+  "seed": 20260908,
+  "state_identity": "issue-77-n1-003-a00",
+  "system": "continuous-fixed-h5",
+  "wall_seconds": 153.03278778283857
+}
