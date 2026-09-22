@@ -1,0 +1,913 @@
+{
+  "accounting": {
+    "completed_ceiling": {
+      "bound": 144,
+      "cells": 144,
+      "successes": 0,
+      "typed_decision_failures": 0
+    },
+    "issue87_only_decision_accounting": {
+      "bound": 230,
+      "cells": 288,
+      "typed_decision_failures": 12,
+      "unbound": 46
+    },
+    "membership": {
+      "duplicate_pairs": 9,
+      "source_members": 15,
+      "states": 24
+    },
+    "oracle_seed_label": {
+      "engine_seeds_per_member": {
+        "issue-77-n1-001": [
+          764100001
+        ],
+        "issue-77-n1-003": [
+          764100003
+        ],
+        "issue-77-n1-004": [
+          764100004
+        ],
+        "issue-77-n1-005": [
+          764100005
+        ],
+        "issue-77-n1-006": [
+          764100006
+        ],
+        "issue-77-n1-007": [
+          764100007
+        ],
+        "issue-77-n1-008": [
+          764100008
+        ],
+        "issue-77-n1-009": [
+          764100009
+        ],
+        "issue-77-n1-010": [
+          764100010
+        ],
+        "issue-77-n1-011": [
+          764100011
+        ],
+        "issue-77-n1-012": [
+          764100012
+        ],
+        "issue-77-n1-013": [
+          764100013
+        ],
+        "issue-77-n1-014": [
+          764100014
+        ],
+        "issue-77-n1-015": [
+          764100015
+        ],
+        "issue-77-n1-016": [
+          764100016
+        ]
+      },
+      "seed_field_values": [
+        20260908,
+        20260909,
+        20260910
+      ]
+    },
+    "partial_ceiling": {
+      "bound": 82,
+      "cells": 84,
+      "states": [
+        "issue-77-n1-001-a00",
+        "issue-77-n1-001-a07",
+        "issue-77-n1-006-a05",
+        "issue-77-n1-006-a11",
+        "issue-77-n1-011-a02",
+        "issue-77-n1-012-a08",
+        "issue-77-n1-016-a12"
+      ],
+      "unbindable": 2
+    },
+    "unmeasured_slot": [
+      [
+        [
+          "issue-77-n1-005-a07",
+          2
+        ]
+      ]
+    ]
+  },
+  "chance_references": {
+    "breadth_extrapolation_estimate": {
+      "at_15_members": 0.29653990643245537,
+      "at_30_members": 0.08793591610696937,
+      "formula": "miss_all(m) approx miss_all(7)^(m/7)",
+      "label": "ESTIMATE"
+    },
+    "member_clustered_12cell": 0.0011057720763484645,
+    "member_terms": {
+      "issue-77-n1-001": {
+        "k": 1,
+        "n": 12,
+        "states": 2
+      },
+      "issue-77-n1-006": {
+        "k": 1,
+        "n": 13,
+        "states": 2
+      },
+      "issue-77-n1-010": {
+        "k": 1,
+        "n": 13,
+        "states": 1
+      },
+      "issue-77-n1-011": {
+        "k": 1,
+        "n": 13,
+        "states": 2
+      },
+      "issue-77-n1-012": {
+        "k": 1,
+        "n": 13,
+        "states": 1
+      },
+      "issue-77-n1-014": {
+        "k": 1,
+        "n": 13,
+        "states": 2
+      },
+      "issue-77-n1-016": {
+        "k": 1,
+        "n": 13,
+        "states": 2
+      }
+    },
+    "one_system_3seeds": 0.18235446628667001,
+    "single_draw_miss_all": 0.5670727803814074,
+    "uniform_1of13_miss_all_7": 0.5710383243001586
+  },
+  "cited_cross_checks": {
+    "issue_89_pooled_ceiling": {
+      "ceiling_states": 12,
+      "descriptive": {
+        "descriptive_95_percent_interval": [
+          0.30434782608695654,
+          0.7391304347826086
+        ],
+        "mean": 0.5217391304347826
+      },
+      "label": "DESCRIPTIVE",
+      "measured_states": 23,
+      "prevalence": 0.5217391304347826,
+      "states": 24,
+      "typed_unmeasurable_states": [
+        "issue-77-n1-005-a07"
+      ],
+      "unmeasured_states": []
+    },
+    "issue_89_typed_unmeasurable": [
+      "issue-77-n1-005-a07"
+    ],
+    "issue_90_audit_verdict": "indeterminate",
+    "issue_90_question_dispositions": {
+      "q1_covariate_shift": "readiness_or_precision_insufficient",
+      "q2_audit_verdict": "indeterminate"
+    }
+  },
+  "determinism": {
+    "branch_agreement": 176,
+    "branches_joined": 176,
+    "branches_without_replay": [],
+    "channel_anomalies": 0,
+    "duplicate_discordant_entries": 0,
+    "duplicate_pairs": 9,
+    "slot_agreement": 288,
+    "unique_branches": 176,
+    "verdict_slots_joined": 288
+  },
+  "exposure_split": {
+    "calibration": {
+      "auc_mean": 0.34259259259259267,
+      "ceiling_members": [
+        "issue-77-n1-014",
+        "issue-77-n1-016"
+      ],
+      "cells": 36,
+      "label": "DESCRIPTIVE",
+      "top1_hits": 0,
+      "top3_hits": 0,
+      "top3_rate": 0.0
+    },
+    "training": {
+      "auc_mean": 0.48379629629629634,
+      "ceiling_members": [
+        "issue-77-n1-001",
+        "issue-77-n1-006",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012"
+      ],
+      "cells": 72,
+      "label": "DESCRIPTIVE",
+      "top1_hits": 0,
+      "top3_hits": 6,
+      "top3_rate": 0.08333333333333333
+    }
+  },
+  "identity": "issue-92-selection-validity-v1",
+  "ordering_mechanism": {
+    "mechanism_sentence": "the frozen predictors learn state difficulty but order actions within a state by the sweep coordinate, which is why the successful action is never ranked first and discriminates at or below chance on the engine-truth channel",
+    "monotonicity": {
+      "drag_x": {
+        "cells": 207,
+        "per_system": {
+          "continuous-fixed-h1": 0.4924351288532529,
+          "continuous-fixed-h5": 0.6129606597960531,
+          "hybrid-fixed-h1": 0.998625428903524
+        },
+        "pooled": 0.8775799223697635
+      },
+      "drag_y": {
+        "cells": 207,
+        "per_system": {
+          "continuous-fixed-h1": 0.4945054945054945,
+          "continuous-fixed-h5": 0.6153846153846153,
+          "hybrid-fixed-h1": 1.0
+        },
+        "pooled": 0.8791208791208791
+      },
+      "ordinal": {
+        "cells": 207,
+        "per_system": {
+          "continuous-fixed-h1": 0.48901098901098894,
+          "continuous-fixed-h5": 0.6083916083916086,
+          "hybrid-fixed-h1": 0.9945054945054945
+        },
+        "pooled": 0.8736263736263737
+      }
+    },
+    "variance_decomposition": {
+      "between_actions": 0.004005272853602414,
+      "between_states": 0.35992925545194215,
+      "residual": 0.6360654716944554,
+      "rows": 2565
+    }
+  },
+  "phases": {
+    "compute_statistics": {
+      "peak_rss_mib": 576.12890625,
+      "seconds": 0.01473309425637126
+    },
+    "join_and_scores": {
+      "peak_rss_mib": 576.12890625,
+      "seconds": 0.2453214912675321
+    },
+    "per_cell_scores": {
+      "peak_rss_mib": 576.12890625,
+      "seconds": 0.12915614806115627
+    }
+  },
+  "plan_identity": "issue-92-selection-validity-v1",
+  "precision_guards": {
+    "bootstrap_usable_min_fraction": {
+      "floor": 0.9,
+      "ok": true,
+      "value": 1.0
+    },
+    "ceiling_model_cells": {
+      "floor": 100,
+      "ok": true,
+      "value": 108
+    },
+    "duplicate_discordant_entries": {
+      "floor": 0,
+      "ok": true,
+      "value": 0
+    },
+    "duplicate_pairs": {
+      "floor": 9,
+      "ok": true,
+      "value": 9
+    },
+    "replay_join_min_fraction": {
+      "floor": 0.99,
+      "ok": true,
+      "value": 1.0
+    },
+    "scored_model_cells": {
+      "floor": 200,
+      "ok": true,
+      "value": 207
+    },
+    "verdict_slots": {
+      "floor": 288,
+      "ok": true,
+      "value": 288
+    }
+  },
+  "schema": "issue_92_selection_validity_compute_v1",
+  "selection_validity": {
+    "auc_cell_unit": {
+      "clusters": 108,
+      "draws": 10000,
+      "interval": [
+        0.40453142536475867,
+        0.47096134960718306
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.43672839506172845,
+      "quantiles": [
+        0.025,
+        0.975
+      ],
+      "seed": 7201,
+      "units": 108
+    },
+    "auc_member_clustered": {
+      "clusters": 7,
+      "draws": 10000,
+      "interval": [
+        0.31349206349206343,
+        0.5251653439153435
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.41798941798941797,
+      "quantiles": [
+        0.025,
+        0.975
+      ],
+      "seed": 7201,
+      "units": 108
+    },
+    "ceiling_model_cells": 108,
+    "chosen_in_band_cells": 0,
+    "chosen_support": {
+      "10": 10,
+      "11": 6,
+      "12": 44,
+      "7": 90,
+      "8": 12,
+      "9": 45
+    },
+    "prior": {
+      "ceiling_cells": 36,
+      "chosen_ordinals": {
+        "8": 36
+      },
+      "top1_hits": 0
+    },
+    "region_success_counts": {
+      "ordinals_0_1": {
+        "slots": 24,
+        "successes": 0
+      },
+      "ordinals_2_6": {
+        "slots": 60,
+        "successes": 12
+      },
+      "ordinals_7_12": {
+        "slots": 70,
+        "successes": 0
+      }
+    },
+    "scored_model_cells": 207,
+    "success_band": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "top1": {
+      "cells": 108,
+      "chance_rate": 0.07799145299145298,
+      "hits": 0,
+      "paired_difference": {
+        "clusters": 7,
+        "draws": 10000,
+        "interval": [
+          -0.07967032967032968,
+          -0.07692307692307694
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.07783882783882785,
+        "quantiles": [
+          0.025,
+          0.975
+        ],
+        "seed": 7201,
+        "units": 108
+      },
+      "rate": 0.0
+    },
+    "top3": {
+      "cells": 108,
+      "chance_rate": 0.23397435897435895,
+      "hits": 6,
+      "paired_difference": {
+        "clusters": 7,
+        "draws": 10000,
+        "interval": [
+          -0.23076923076923078,
+          -0.12789987789987786
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.18589743589743588,
+        "quantiles": [
+          0.025,
+          0.975
+        ],
+        "seed": 7201,
+        "units": 108
+      },
+      "rate": 0.05555555555555555
+    }
+  },
+  "unit_of_analysis": {
+    "ceiling_members": 7,
+    "duplicate_evidence": [
+      {
+        "decision_anchor_sha256_identical": true,
+        "engine_seed_identical": true,
+        "inventory_byte_identical": true,
+        "member": "issue-77-n1-001",
+        "states": [
+          "issue-77-n1-001-a00",
+          "issue-77-n1-001-a07"
+        ],
+        "verdict_discordant_entries": 0
+      },
+      {
+        "decision_anchor_sha256_identical": true,
+        "engine_seed_identical": true,
+        "inventory_byte_identical": true,
+        "member": "issue-77-n1-003",
+        "states": [
+          "issue-77-n1-003-a00",
+          "issue-77-n1-003-a10"
+        ],
+        "verdict_discordant_entries": 0
+      },
+      {
+        "decision_anchor_sha256_identical": true,
+        "engine_seed_identical": true,
+        "inventory_byte_identical": true,
+        "member": "issue-77-n1-006",
+        "states": [
+          "issue-77-n1-006-a05",
+          "issue-77-n1-006-a11"
+        ],
+        "verdict_discordant_entries": 0
+      },
+      {
+        "decision_anchor_sha256_identical": true,
+        "engine_seed_identical": true,
+        "inventory_byte_identical": true,
+        "member": "issue-77-n1-007",
+        "states": [
+          "issue-77-n1-007-a05",
+          "issue-77-n1-007-a12"
+        ],
+        "verdict_discordant_entries": 0
+      },
+      {
+        "decision_anchor_sha256_identical": true,
+        "engine_seed_identical": true,
+        "inventory_byte_identical": true,
+        "member": "issue-77-n1-008",
+        "states": [
+          "issue-77-n1-008-a05",
+          "issue-77-n1-008-a12"
+        ],
+        "verdict_discordant_entries": 0
+      },
+      {
+        "decision_anchor_sha256_identical": true,
+        "engine_seed_identical": true,
+        "inventory_byte_identical": true,
+        "member": "issue-77-n1-009",
+        "states": [
+          "issue-77-n1-009-a00",
+          "issue-77-n1-009-a09"
+        ],
+        "verdict_discordant_entries": 0
+      },
+      {
+        "decision_anchor_sha256_identical": true,
+        "engine_seed_identical": true,
+        "inventory_byte_identical": true,
+        "member": "issue-77-n1-011",
+        "states": [
+          "issue-77-n1-011-a02",
+          "issue-77-n1-011-a11"
+        ],
+        "verdict_discordant_entries": 0
+      },
+      {
+        "decision_anchor_sha256_identical": true,
+        "engine_seed_identical": true,
+        "inventory_byte_identical": true,
+        "member": "issue-77-n1-014",
+        "states": [
+          "issue-77-n1-014-a01",
+          "issue-77-n1-014-a10"
+        ],
+        "verdict_discordant_entries": 0
+      },
+      {
+        "decision_anchor_sha256_identical": true,
+        "engine_seed_identical": true,
+        "inventory_byte_identical": true,
+        "member": "issue-77-n1-016",
+        "states": [
+          "issue-77-n1-016-a03",
+          "issue-77-n1-016-a12"
+        ],
+        "verdict_discordant_entries": 0
+      }
+    ],
+    "duplicate_pairs": [
+      "issue-77-n1-001",
+      "issue-77-n1-003",
+      "issue-77-n1-006",
+      "issue-77-n1-007",
+      "issue-77-n1-008",
+      "issue-77-n1-009",
+      "issue-77-n1-011",
+      "issue-77-n1-014",
+      "issue-77-n1-016"
+    ],
+    "measurable_members": 14,
+    "member_ceiling": {
+      "clusters": 14,
+      "draws": 10000,
+      "interval": [
+        0.21428571428571427,
+        0.7857142857142857
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.5,
+      "quantiles": [
+        0.025,
+        0.975
+      ],
+      "seed": 7201,
+      "units": 14
+    },
+    "members": {
+      "issue-77-n1-001": {
+        "ceiling": true,
+        "engine_seeds": [
+          764100001
+        ],
+        "exposure_role": "training",
+        "family": "type010103",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-001-a00": {
+            "ceiling_indicator": true,
+            "successes": [
+              6
+            ],
+            "typed_unmeasurable": false,
+            "verdict_slots": 12
+          },
+          "issue-77-n1-001-a07": {
+            "ceiling_indicator": true,
+            "successes": [
+              6
+            ],
+            "typed_unmeasurable": false,
+            "verdict_slots": 12
+          }
+        }
+      },
+      "issue-77-n1-003": {
+        "ceiling": false,
+        "engine_seeds": [
+          764100003
+        ],
+        "exposure_role": "training",
+        "family": "type010103",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-003-a00": {
+            "ceiling_indicator": false,
+            "successes": [],
+            "typed_unmeasurable": false,
+            "verdict_slots": 9
+          },
+          "issue-77-n1-003-a10": {
+            "ceiling_indicator": false,
+            "successes": [],
+            "typed_unmeasurable": false,
+            "verdict_slots": 9
+          }
+        }
+      },
+      "issue-77-n1-004": {
+        "ceiling": false,
+        "engine_seeds": [
+          764100004
+        ],
+        "exposure_role": "training",
+        "family": "type010103",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-004-a07": {
+            "ceiling_indicator": false,
+            "successes": [],
+            "typed_unmeasurable": false,
+            "verdict_slots": 9
+          }
+        }
+      },
+      "issue-77-n1-005": {
+        "ceiling": false,
+        "engine_seeds": [
+          764100005
+        ],
+        "exposure_role": "training",
+        "family": "type010103",
+        "measurable": false,
+        "states": {
+          "issue-77-n1-005-a07": {
+            "ceiling_indicator": false,
+            "successes": [
+              7
+            ],
+            "typed_unmeasurable": true,
+            "verdict_slots": 3
+          }
+        }
+      },
+      "issue-77-n1-006": {
+        "ceiling": true,
+        "engine_seeds": [
+          764100006
+        ],
+        "exposure_role": "training",
+        "family": "type010103",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-006-a05": {
+            "ceiling_indicator": true,
+            "successes": [
+              5
+            ],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          },
+          "issue-77-n1-006-a11": {
+            "ceiling_indicator": true,
+            "successes": [
+              5
+            ],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          }
+        }
+      },
+      "issue-77-n1-007": {
+        "ceiling": false,
+        "engine_seeds": [
+          764100007
+        ],
+        "exposure_role": "calibration",
+        "family": "type010103",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-007-a05": {
+            "ceiling_indicator": false,
+            "successes": [],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          },
+          "issue-77-n1-007-a12": {
+            "ceiling_indicator": false,
+            "successes": [],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          }
+        }
+      },
+      "issue-77-n1-008": {
+        "ceiling": false,
+        "engine_seeds": [
+          764100008
+        ],
+        "exposure_role": "calibration",
+        "family": "type010103",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-008-a05": {
+            "ceiling_indicator": false,
+            "successes": [],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          },
+          "issue-77-n1-008-a12": {
+            "ceiling_indicator": false,
+            "successes": [],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          }
+        }
+      },
+      "issue-77-n1-009": {
+        "ceiling": false,
+        "engine_seeds": [
+          764100009
+        ],
+        "exposure_role": "training",
+        "family": "type010105",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-009-a00": {
+            "ceiling_indicator": false,
+            "successes": [],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          },
+          "issue-77-n1-009-a09": {
+            "ceiling_indicator": false,
+            "successes": [],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          }
+        }
+      },
+      "issue-77-n1-010": {
+        "ceiling": true,
+        "engine_seeds": [
+          764100010
+        ],
+        "exposure_role": "training",
+        "family": "type010105",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-010-a06": {
+            "ceiling_indicator": true,
+            "successes": [
+              2
+            ],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          }
+        }
+      },
+      "issue-77-n1-011": {
+        "ceiling": true,
+        "engine_seeds": [
+          764100011
+        ],
+        "exposure_role": "training",
+        "family": "type010105",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-011-a02": {
+            "ceiling_indicator": true,
+            "successes": [
+              4
+            ],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          },
+          "issue-77-n1-011-a11": {
+            "ceiling_indicator": true,
+            "successes": [
+              4
+            ],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          }
+        }
+      },
+      "issue-77-n1-012": {
+        "ceiling": true,
+        "engine_seeds": [
+          764100012
+        ],
+        "exposure_role": "training",
+        "family": "type010105",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-012-a08": {
+            "ceiling_indicator": true,
+            "successes": [
+              4
+            ],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          }
+        }
+      },
+      "issue-77-n1-013": {
+        "ceiling": false,
+        "engine_seeds": [
+          764100013
+        ],
+        "exposure_role": "training",
+        "family": "type010105",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-013-a04": {
+            "ceiling_indicator": false,
+            "successes": [],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          }
+        }
+      },
+      "issue-77-n1-014": {
+        "ceiling": true,
+        "engine_seeds": [
+          764100014
+        ],
+        "exposure_role": "calibration",
+        "family": "type010105",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-014-a01": {
+            "ceiling_indicator": true,
+            "successes": [
+              4
+            ],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          },
+          "issue-77-n1-014-a10": {
+            "ceiling_indicator": true,
+            "successes": [
+              4
+            ],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          }
+        }
+      },
+      "issue-77-n1-015": {
+        "ceiling": false,
+        "engine_seeds": [
+          764100015
+        ],
+        "exposure_role": "training",
+        "family": "type010105",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-015-a06": {
+            "ceiling_indicator": false,
+            "successes": [],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          }
+        }
+      },
+      "issue-77-n1-016": {
+        "ceiling": true,
+        "engine_seeds": [
+          764100016
+        ],
+        "exposure_role": "calibration",
+        "family": "type010105",
+        "measurable": true,
+        "states": {
+          "issue-77-n1-016-a03": {
+            "ceiling_indicator": true,
+            "successes": [
+              3
+            ],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          },
+          "issue-77-n1-016-a12": {
+            "ceiling_indicator": true,
+            "successes": [
+              3
+            ],
+            "typed_unmeasurable": false,
+            "verdict_slots": 13
+          }
+        }
+      }
+    }
+  },
+  "verdict": {
+    "guards_ok": true,
+    "q1_conditions": {
+      "auc_shift": true,
+      "disjoint_supports": true,
+      "member_clustered_interval_covers_half": true,
+      "top3_shift": true
+    },
+    "q2_conditions": {
+      "action_share": true,
+      "monotonicity": true
+    },
+    "q3_conditions": {
+      "agreement_complete": true
+    },
+    "question_dispositions": {
+      "q1_selection_validity": "supported",
+      "q2_ordering_mechanism": "supported",
+      "q3_determinism": "supported"
+    }
+  }
+}

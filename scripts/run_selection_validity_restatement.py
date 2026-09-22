@@ -226,6 +226,12 @@ def sha256_of(path):
     return f"sha256:{digest.hexdigest()}"
 
 
+def _int_keyed(mapping):
+    """Deterministic {int: count} rendering, stable across a JSON round trip."""
+    return "{" + ", ".join(f"{int(key)}: {mapping[key]}"
+                           for key in sorted(mapping, key=lambda k: int(k))) + "}"
+
+
 class GPULock:
     """Exclusive advisory lock held for one wall-time-measured phase."""
 
@@ -738,7 +744,7 @@ def build_verdicts(plan87, oracles87, records89):
         else:
             typed_failures[key] = record.get("failure")
     scheduled = {(cell["state"], cell["ordinal"]) for cell in plan87["oracle_cells"]}
-    unmeasured = sorted(key for key in scheduled if key not in verdicts)
+    unmeasured = sorted([list(key)] for key in scheduled if key not in verdicts)
     return verdicts, channel, typed_failures, unmeasured
 
 
@@ -863,11 +869,17 @@ def attach_actions(rows, plan87):
 def score_rows(rows):
     """Per-cell scores: Spearman monotonicity, AUC, top-k against own-state truth."""
     for row in rows:
-        if row["typed_failure"] or not row["ordinals"]:
+        if row["typed_failure"]:
             row.update({"spearman_ordinal": None, "spearman_drag_x": None,
                         "spearman_drag_y": None, "auc": None, "top1_hit": None,
                         "top3_hit": None, "chance_top1": None, "chance_top3": None,
-                        "chosen_in_success_band": None})
+                        "chosen_ordinal_effective": None})
+            continue
+        if not row["ordinals"]:
+            row.update({"spearman_ordinal": None, "spearman_drag_x": None,
+                        "spearman_drag_y": None, "auc": None, "top1_hit": None,
+                        "top3_hit": None, "chance_top1": None, "chance_top3": None,
+                        "chosen_ordinal_effective": row["chosen_ordinal"]})
             continue
         costs = row["costs"]
         ordinals = row["ordinals"]
@@ -947,8 +959,8 @@ def bootstrap_interval(values, clusters=None):
             "clusters": len(cluster_ids), "units": len(values)}
 
 
-def compute_tables(plan, rows, members, verdicts, channel, typed_failures, unmeasured,
-                   replays, summary89, summary90, decisions):
+def compute_tables(plan, plan87, rows, members, verdicts, channel, typed_failures,
+                   unmeasured, replays, summary89, summary90, decisions):
     scored = [row for row in rows
               if not row["typed_failure"] and row["system"] != PRIOR_SYSTEM]
     ceiling = [row for row in scored if row["ceiling_state"]]
@@ -1023,7 +1035,8 @@ def compute_tables(plan, rows, members, verdicts, channel, typed_failures, unmea
               if row["chosen_ordinal_effective"] is not None]
     chosen_in_band = [row for row in scored
                       if row["chosen_ordinal_effective"] in success_band]
-    chosen_support = dict(sorted(Counter(chosen).items()))
+    chosen_support = {str(key): value
+                      for key, value in sorted(Counter(chosen).items())}
     region_counts = {}
     for lo, hi in ((0, 1), (2, 6), (7, 12)):
         slots = hits = 0
@@ -1055,8 +1068,8 @@ def compute_tables(plan, rows, members, verdicts, channel, typed_failures, unmea
             "top1_hits": sum(1 for row in ceiling_prior
                              if row["chosen_ordinal_effective"]
                              in set(row["successes"])),
-            "chosen_ordinals": dict(sorted(Counter(
-                row["chosen_ordinal_effective"] for row in ceiling_prior).items())),
+            "chosen_ordinals": {str(key): value for key, value in sorted(Counter(
+                row["chosen_ordinal_effective"] for row in ceiling_prior).items())},
         },
     }
 
@@ -1498,7 +1511,7 @@ def findings_md(plan, compute, timings):
     add("## 1. Unit of analysis (the correction every headline number depends on)")
     add("")
     add(f"The #87 membership is **{acc['membership']['states']} states over "
-        f"**{acc['membership']['source_members']} source members**; "
+        f"{acc['membership']['source_members']} source members**; "
         f"{acc['membership']['duplicate_pairs']} members carry two states that are "
         "byte-identical duplicates — same frozen inventory element-for-element, same "
         "engine seed, same decision anchor — and their per-ordinal engine-truth "
@@ -1557,7 +1570,7 @@ def findings_md(plan, compute, timings):
     add(f"- success band (engine-truth successful ordinals over the 12 sealed ceiling "
         f"states) = **{sel['success_band']}**; the systems' chosen ordinals lie in the "
         f"band in **{sel['chosen_in_band_cells']} of {sel['scored_model_cells']}** "
-        f"scored model cells; chosen support {sel['chosen_support']}")
+        f"scored model cells; chosen support {_int_keyed(sel['chosen_support'])}")
     add(f"- region counts on the sealed ceiling states: ordinals 0-1: "
         f"{sel['region_success_counts']['ordinals_0_1']['successes']}/"
         f"{sel['region_success_counts']['ordinals_0_1']['slots']} successes; ordinals "
@@ -1566,7 +1579,7 @@ def findings_md(plan, compute, timings):
         f"{sel['region_success_counts']['ordinals_7_12']['successes']}/"
         f"{sel['region_success_counts']['ordinals_7_12']['slots']}")
     add(f"- no-model ordinal prior (execution detail): chose ordinals "
-        f"{sel['prior']['chosen_ordinals']} on the ceiling states with "
+        f"{_int_keyed(sel['prior']['chosen_ordinals'])} on the ceiling states with "
         f"{sel['prior']['top1_hits']}/{sel['prior']['ceiling_cells']} top-1 hits; its "
         "own ordinal 8 = (-47, 65) sits in the high-arc band and scores zero — the "
         "prior is retired as any kind of baseline")
@@ -1766,7 +1779,7 @@ def run_audit(output, write=True):
     rows, timing = measured(score_rows, rows)
     timings["per_cell_scores"] = timing
     compute, timings["compute_statistics"] = measured(
-        compute_tables, plan, rows, members, verdicts, channel, typed_failures,
+        compute_tables, plan, plan87, rows, members, verdicts, channel, typed_failures,
         unmeasured, replays, summary89, summary90, decisions)
     total = sum(entry["seconds"] for entry in timings.values())
     if total > WALL_CAP_SECONDS:

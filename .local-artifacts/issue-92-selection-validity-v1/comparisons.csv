@@ -1,0 +1,27 @@
+id,statistic,unit,value,interval_low,interval_high,interval_label,margin,verdict_relevant,detail
+u1_member_ceiling,member-unit ceiling prevalence,members,0.5,0.21428571428571427,0.7857142857142857,DESCRIPTIVE,,False,7 of 14 measurable members
+c1_single_draw_miss_all,one uniform top-1 draw per ceiling member misses everywhere,probability,0.5670727803814074,,,,,False,frozen product formula
+c2_member_clustered_12cell,member-clustered 12-cell pooled miss chance,probability,0.0011057720763484645,,,,,False,4 systems x 3 seeds per member
+c3_one_system_3seeds,member-clustered 3-cell pooled miss chance,probability,0.18235446628667001,,,,,False,one system x 3 seeds
+c4_uniform_1of13,(12/13)^7 inventory-size-only reference,probability,0.5710383243001586,,,,,False,
+c5_breadth_15,ESTIMATE miss-all at 15 ceiling members,probability,0.29653990643245537,,,ESTIMATE,,False,sqrt-free power extrapolation of the measured per-member miss
+c6_breadth_30,ESTIMATE miss-all at 30 ceiling members,probability,0.08793591610696937,,,ESTIMATE,,False,
+a1_auc_cell_unit,"selection AUC, cell-unit mean over 108 model cells",AUC,0.43672839506172845,0.40453142536475867,0.47096134960718306,DESCRIPTIVE,0.05,True,P(successful ordinal receives lower predicted cost)
+a2_auc_member_clustered,"selection AUC, member-clustered over 7 members",AUC,0.41798941798941797,0.31349206349206343,0.5251653439153435,DESCRIPTIVE,,True,stop rule: published as-is if the interval covers 0.5
+k1_top1,top-1 successful-selection rate vs chance,rate,0.0,,,,,True,0/108; chance 0.0780
+k2_top3,top-3 successful-selection rate vs chance,rate,0.05555555555555555,,,,,True,6/108; chance 0.2340
+k3_top3_paired,top-3 paired difference (hit minus own-state chance),rate difference,-0.18589743589743588,-0.23076923076923078,-0.12789987789987786,DESCRIPTIVE,0.1,True,member-clustered
+k4_top1_paired,top-1 paired difference (hit minus own-state chance),rate difference,-0.07783882783882785,-0.07967032967032968,-0.07692307692307694,DESCRIPTIVE,,False,member-clustered
+o1_disjoint,scored model cells whose chosen ordinal lies in the success band,cells,0,,,,,True,"of 207; band [2, 3, 4, 5, 6]"
+o2_region_0_1,successes at ordinals 0-1 over sealed ceiling states,slots,0,,,,,False,of 24 verdict slots
+o3_region_7_12,successes at ordinals 7-12 over sealed ceiling states,slots,0,,,,,False,of 70 verdict slots
+m1_spearman_ordinal,median |Spearman rho| ordinal vs predicted cost,correlation,0.8736263736263737,,,,0.5,True,over 207 scored model cells
+m2_spearman_drag_x,median |Spearman rho| drag_x vs predicted cost,correlation,0.8775799223697635,,,,,False,
+m3_spearman_drag_y,median |Spearman rho| drag_y vs predicted cost,correlation,0.8791208791208791,,,,,False,
+v1_between_states,predicted-cost variance share between states,share,0.35992925545194215,,,,,False,marginal two-way share
+v2_between_actions,predicted-cost variance share between actions,share,0.004005272853602414,,,,0.05,True,marginal two-way share
+v3_residual,predicted-cost variance residual share,share,0.6360654716944554,,,,,False,
+d1_branch_agreement,"frozen replay vs closed-loop verdict agreement, unique branches",branches,176,,,,,True,of 176 joined
+d2_slot_agreement,"frozen replay vs closed-loop verdict agreement, verdict slots",slots,288,,,,,True,of 288 joined
+d3_channel_anomalies,engine-channel consistency anomalies,records,0,,,,,True,
+d4_duplicate_discordant,discordant verdict entries across duplicate pairs,entries,0,,,,,True,9 pairs
