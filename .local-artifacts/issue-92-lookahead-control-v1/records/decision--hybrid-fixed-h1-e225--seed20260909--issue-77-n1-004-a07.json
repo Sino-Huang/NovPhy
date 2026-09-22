@@ -1,0 +1,85 @@
+{
+  "anchor": {
+    "cell": "oracle--issue-77-n1-004-a07--a01",
+    "fixed_step": 30000,
+    "sha256": "sha256:df06fe27a72e5fd9bc249bab01bd361ec3f91f09edd5e02c574ec88bc93f5691"
+  },
+  "binding": {
+    "chosen_branch_identity": "issue-77-n1-004-a08",
+    "first_shot_success": false,
+    "rule": "the arm's closed-loop outcome is the engine-truth verdict of its chosen candidate from the #87+#89 union verdict table, bound by candidate identity",
+    "verdict_resolved": true
+  },
+  "cell": {
+    "arm": "hybrid-fixed-h1-e225",
+    "endpoint": 225,
+    "family": "hybrid",
+    "identity": "decision--hybrid-fixed-h1-e225--seed20260909--issue-77-n1-004-a07",
+    "mode": "fixed-h1",
+    "seed": 20260909,
+    "state": "issue-77-n1-004-a07"
+  },
+  "cell_kind": "decision",
+  "decision": {
+    "candidate_count": 9,
+    "chosen_ordinal": 8,
+    "controller_calls": 0,
+    "failure": null,
+    "gpu_seconds": 0.30076621286571026,
+    "horizon_trace": null,
+    "ranking": [
+      {
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 1003.0
+      },
+      {
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 1003.0
+      },
+      {
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 1003.0
+      },
+      {
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 1003.0
+      },
+      {
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 1003.0
+      },
+      {
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 825.1962451934814
+      },
+      {
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 3.0
+      },
+      {
+        "excluded": false,
+        "ordinal": 11,
+        "predicted_cost": 3.0
+      },
+      {
+        "excluded": false,
+        "ordinal": 12,
+        "predicted_cost": 3.0
+      }
+    ],
+    "selected_predicted_cost": 3.0,
+    "transition_calls": 2025
+  },
+  "issue_64_authorized": false,
+  "plan_identity": "issue-92-lookahead-control-v1",
+  "plan_version": 1,
+  "schema": "issue_92_lookahead_control_decision_v1",
+  "wall_seconds": 0.30318942107260227
+}

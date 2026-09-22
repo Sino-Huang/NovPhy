@@ -1,0 +1,85 @@
+{
+  "anchor": {
+    "cell": "oracle--issue-77-n1-003-a10--a00",
+    "fixed_step": 30000,
+    "sha256": "sha256:1816e5b7dbae14009983f061254fd7472f8f7039c97a7728fae83e503135fca5"
+  },
+  "binding": {
+    "chosen_branch_identity": "issue-77-n1-003-a01",
+    "first_shot_success": false,
+    "rule": "the arm's closed-loop outcome is the engine-truth verdict of its chosen candidate from the #87+#89 union verdict table, bound by candidate identity",
+    "verdict_resolved": true
+  },
+  "cell": {
+    "arm": "continuous-fixed-h15-e225",
+    "endpoint": 225,
+    "family": "continuous",
+    "identity": "decision--continuous-fixed-h15-e225--seed20260909--issue-77-n1-003-a10",
+    "mode": "fixed-h15",
+    "seed": 20260909,
+    "state": "issue-77-n1-003-a10"
+  },
+  "cell_kind": "decision",
+  "decision": {
+    "candidate_count": 9,
+    "chosen_ordinal": 1,
+    "controller_calls": 0,
+    "failure": null,
+    "gpu_seconds": 0.01711885491386056,
+    "horizon_trace": null,
+    "ranking": [
+      {
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 1.3564820289611816
+      },
+      {
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 1.3557357788085938
+      },
+      {
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 1.358062744140625
+      },
+      {
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 1.360141634941101
+      },
+      {
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 1.363905668258667
+      },
+      {
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 1.3666815757751465
+      },
+      {
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 1.3681354522705078
+      },
+      {
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 1.3684061765670776
+      },
+      {
+        "excluded": false,
+        "ordinal": 11,
+        "predicted_cost": 1.3684269189834595
+      }
+    ],
+    "selected_predicted_cost": 1.3557357788085938,
+    "transition_calls": 135
+  },
+  "issue_64_authorized": false,
+  "plan_identity": "issue-92-lookahead-control-v1",
+  "plan_version": 1,
+  "schema": "issue_92_lookahead_control_decision_v1",
+  "wall_seconds": 0.01953239180147648
+}
