@@ -1,0 +1,696 @@
+{
+  "caps": {
+    "artifact_bytes_cap": 8589934592,
+    "gpu_cap_seconds": 1800.0,
+    "gpu_scope": "cumulative cuda-bracketed GPU seconds of the rescore phase",
+    "minimum_free_bytes": 21474836480,
+    "stop": "readiness_or_precision_insufficient",
+    "wall_cap_seconds": 14400.0,
+    "wall_scope": "cumulative measured wall of the run phase"
+  },
+  "changelog": [
+    {
+      "change": "initial and terminal freeze: slot inventory, second-seed constant, comparisons, stop rules, disposition mapping, guards, caps and the smoke evidence are published before any experiment cell is executed",
+      "evidence": "smoke.json infrastructure assertions passed and are embedded below; no experiment verdict exists at freeze time",
+      "version": 1,
+      "why": "standard freeze rule of the shared ADD-EXP protocol; the probe is re-scoped from repeat-draw variance to cross-seed invariance per ticket #92 (the env seed is a canonical-capture label, not an outcome draw)"
+    }
+  ],
+  "claim_boundary": "re-execution of 26 frozen (state, ordinal) slots at one frozen second seed value with the scenario authority, decision step, inventory and actions unchanged; single-shot, decision-only re-scoring, development/exposed N1 lineages only; #64/#65 stay sealed; #87/#89/#90 published verdicts are inputs and are never recomputed, amended, or reinterpreted; no retraining, no method changes, no multi-shot or complete-gameplay claim; capture-channel and selection comparisons are DESCRIPTIVE",
+  "comparisons": {
+    "capture": "per slot: the second-seed decision-frame.png bytes vs the owning pool's retained decision frame; byte equality reported DESCRIPTIVELY; frames differing while verdicts agree is the informative separation",
+    "selection": "per distinct state in the composition: the 12 #87 model cells (4 systems x 3 seeds) re-scored on the retained first-seed anchor frame and on the second-seed decision frame; chosen-ordinal agreement reported DESCRIPTIVELY",
+    "verdict": "per slot: the second-seed engine-truth first-shot-success verdict (the #85-published detection rule, inherited verbatim) vs the retained union-table verdict; a flip in either direction fires the stop rule"
+  },
+  "disposition_mapping": {
+    "not_supported_by_this_experiment": "any verdict flip; determinism is falsified and the ceiling becomes seed-conditional (restatement obligation)",
+    "readiness_or_precision_insufficient": "caps exceeded, or any slot without a second-seed verdict and no flip observed",
+    "supported": "all 26 slots produced second-seed verdicts and all 26 agree with the retained verdicts (measured invariance; the item closes)"
+  },
+  "execution_protocol": {
+    "bounds": {
+      "agent_connect_deadline_seconds": 600,
+      "agent_socket_seconds": 600,
+      "attempt_wall_seconds": 2400,
+      "history_ready_seconds": 600,
+      "physics_socket_seconds": 120,
+      "prepare_for_play_seconds": 300,
+      "worker_rss_mib": 4096
+    },
+    "cold_start_mitigation": "serialized execution: one isolated worker at a time (spawn context), so concurrent engine cold starts cannot collide; extended connect/readiness bounds inherited verbatim from #89's frozen v2 mitigation",
+    "instruments": "the #85-published channel scan inherited verbatim (scripts.run_engine_outcome_reactive_diagnostic.channel_scan); decision fixed step 30000; native stride 50; shot window 180 s; inference hold 2 s; the capture-segment member authority is presented with the second seed substituted, so the native manifest's recorded engine_seed binds the dispatched seed and is published per slot as the dispatch proof; the scenario authority is unchanged",
+    "typed_failures": "connect/readiness/stability failures are retained as typed execution failures, never silently retried; a slot without a verdict maps to readiness_or_precision_insufficient unless a flip already settled the question"
+  },
+  "frozen_at": "2026-09-22T17:47:24Z",
+  "frozen_before_scoring_run": true,
+  "identity": "issue-92-cross-seed-invariance-v1",
+  "inputs": [
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/plan.json",
+      "name": "issue_87_plan",
+      "role": "membership, inventories, engine seeds, anchors",
+      "schema": "issue_87_closed_loop_oracle_plan_v1"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/records",
+      "name": "issue_87_records",
+      "role": "the union verdict table (#87 side) and retained decision frames",
+      "schema": "directory"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1/records",
+      "name": "issue_89_records",
+      "role": "the union verdict table (#89 completion side) and retained decision frames of the completed slots",
+      "schema": "directory"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1/summary.json",
+      "name": "issue_89_summary",
+      "role": "the sealed ceiling-state set, cited; never recomputed",
+      "schema": "issue_89_oracle_completion_report_v1"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-v1/player",
+      "name": "issue_77_n1_player",
+      "role": "the frozen N1 campaign player",
+      "schema": "directory"
+    }
+  ],
+  "limitations": [
+    "one second seed value: the probe measures invariance across one frozen perturbation of the Unity RNG, not a distribution over seeds",
+    "NOVPHY_ENVIRONMENT_SEED initializes the Unity RNG only; whatever the episode does not randomize is unchanged by construction, so byte-identical frames are a possible and informative outcome",
+    "the re-scoring covers the 12 #87 model cells on the composition's distinct states; it is a selection-channel reading, not a new selection-validity estimate",
+    "the remaining scope caps (single-shot, decision-only, development lineages, sealed benchmark untouched) stay as disclosed limitations"
+  ],
+  "motivation": "the primary determinism measurement (176/176 unique branches, 288/288 executed slots, zero channel anomalies) is published by #92 WP1 at zero engine cost; this probe adds the cross-seed axis: NOVPHY_ENVIRONMENT_SEED initializes the Unity RNG (CanonicalCaptureSeed.cs) and is the only engine-visible seed, so a second value perturbs the capture channel while the frozen scenario authority holds the level, inventory, decision step and action fixed",
+  "player_root": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-v1/player",
+  "precision_guards": {
+    "frame_comparisons_present": 26,
+    "rescore_cells": "12 model cells x 2 frames x the composition's distinct states",
+    "rule": "each guard is evaluated on the retained records; a failed guard maps the disposition to readiness_or_precision_insufficient before the agreement rules are read",
+    "slots_executed": 26,
+    "verdicts_present": 26
+  },
+  "protocol_policy": "single terminal protocol version: the full protocol is frozen with actual numeric values before the scoring run and executed exactly once; the dry run computes no statistic; --validate re-derives every published table from the retained records",
+  "question": "do the engine-truth verdicts of the 26 frozen slots survive one frozen second value of NOVPHY_ENVIRONMENT_SEED, and do the captured decision frames and the re-scored selections differ where the verdicts do not?",
+  "role": "terminal",
+  "schema": "issue_92_cross_seed_invariance_plan_v1",
+  "second_seed": {
+    "constant": 1000000000,
+    "first_seed_rule": "state.engine_seed = 764100001 + member ordinal (#87's frozen binding, inherited verbatim)",
+    "rule": "engine_seed_second = state.engine_seed + 1000000000",
+    "seed_label_disclosure": "ORACLE_SEED = 20260908 is a #74 matched training-seed label written only into metadata/identity strings; the engine receives exactly one seed per execution (NOVPHY_ENVIRONMENT_SEED); re-running the slots at 'seed 20260909' would dispatch byte-identical engine invocations"
+  },
+  "smoke": {
+    "assertions": "infrastructure only: both cells produce a channel-scan verdict, a captured decision frame, and a retained-frame comparison; verdict agreement is the experiment's result and is never asserted at smoke",
+    "cells": [
+      "smoke--issue-77-n1-001-a07--a06",
+      "smoke--issue-77-n1-013-a04--a01"
+    ],
+    "evidence": {
+      "checks": [
+        {
+          "cell": "smoke--issue-77-n1-001-a07--a06",
+          "channel_scan_complete": true,
+          "engine_seed_second": 1764100001,
+          "failure": null,
+          "frame_byte_equal": true,
+          "frame_captured": true,
+          "frame_comparison_recorded": true,
+          "kind": "smoke_success",
+          "ok": true,
+          "second_seed_verdict": true,
+          "verdict_produced": true,
+          "wall_seconds": 148.35227553825825
+        },
+        {
+          "cell": "smoke--issue-77-n1-013-a04--a01",
+          "channel_scan_complete": true,
+          "engine_seed_second": 1764100013,
+          "failure": null,
+          "frame_byte_equal": true,
+          "frame_captured": true,
+          "frame_comparison_recorded": true,
+          "kind": "smoke_control",
+          "ok": true,
+          "second_seed_verdict": false,
+          "verdict_produced": true,
+          "wall_seconds": 143.32843499304727
+        }
+      ],
+      "identity": "issue-92-cross-seed-invariance-v1",
+      "ok": true,
+      "run_at": "2026-09-22T17:27:38Z",
+      "schema": "issue_92_cross_seed_invariance_smoke_v1"
+    },
+    "stop_rule": "abort before the terminal freeze if an infrastructure assertion fails; the smoke evidence is embedded in this plan"
+  },
+  "stop_rules": {
+    "caps": "wall, GPU, artifact or free-storage caps halt with readiness_or_precision_insufficient",
+    "verdict_flip": "any slot whose second-seed verdict differs from its retained verdict halts the run after the cell completes; remaining cells are typed not_executed; disposition not_supported_by_this_experiment with the seed-conditional restatement obligation recorded"
+  },
+  "universe": {
+    "anchor_rule": "one anchor slot per measurable member: the member's lowest state identity's anchor cell from the retained #87 decision records (lowest-ordinal executed oracle cell)",
+    "composition": "14 member anchors + 7 success ordinals + 5 controls = 26 slots (fixed and pre-declared by ticket #92), plus 2 development-tagged smoke cells outside the 26",
+    "control_rule": "one control slot on each of the 5 lowest-identity non-ceiling measurable members: the member's lowest state identity's executed union-failure slot with the lowest ordinal excluding the anchor ordinal",
+    "slots": [
+      {
+        "branch_identity": "issue-77-n1-001-a03",
+        "engine_seed_first": 764100001,
+        "engine_seed_second": 1764100001,
+        "identity": "seed2--issue-77-n1-001-a00--a03",
+        "kind": "anchor",
+        "member": "issue-77-n1-001",
+        "ordinal": 3,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-001-a00--a03/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-001-a00",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-001-a00--a03",
+          "sha256": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-003-a00",
+        "engine_seed_first": 764100003,
+        "engine_seed_second": 1764100003,
+        "identity": "seed2--issue-77-n1-003-a00--a00",
+        "kind": "anchor",
+        "member": "issue-77-n1-003",
+        "ordinal": 0,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-003-a00--a00/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-003-a00",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-003-a00--a00",
+          "sha256": "sha256:1816e5b7dbae14009983f061254fd7472f8f7039c97a7728fae83e503135fca5"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-004-a01",
+        "engine_seed_first": 764100004,
+        "engine_seed_second": 1764100004,
+        "identity": "seed2--issue-77-n1-004-a07--a01",
+        "kind": "anchor",
+        "member": "issue-77-n1-004",
+        "ordinal": 1,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-004-a07--a01/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-004-a07",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-004-a07--a01",
+          "sha256": "sha256:df06fe27a72e5fd9bc249bab01bd361ec3f91f09edd5e02c574ec88bc93f5691"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-006-a00",
+        "engine_seed_first": 764100006,
+        "engine_seed_second": 1764100006,
+        "identity": "seed2--issue-77-n1-006-a05--a00",
+        "kind": "anchor",
+        "member": "issue-77-n1-006",
+        "ordinal": 0,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-006-a05--a00/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-006-a05",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-006-a05--a00",
+          "sha256": "sha256:ae21c3f8c8d66f5e4a45ca88bb082c14c17e97412b92a67d9824e3ed178b6267"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-007-a00",
+        "engine_seed_first": 764100007,
+        "engine_seed_second": 1764100007,
+        "identity": "seed2--issue-77-n1-007-a05--a00",
+        "kind": "anchor",
+        "member": "issue-77-n1-007",
+        "ordinal": 0,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-007-a05--a00/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-007-a05",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-007-a05--a00",
+          "sha256": "sha256:87246519dadebcc4506e5dad2bbae3a9003733afed53790f3051d769435e6ce7"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-008-a00",
+        "engine_seed_first": 764100008,
+        "engine_seed_second": 1764100008,
+        "identity": "seed2--issue-77-n1-008-a05--a00",
+        "kind": "anchor",
+        "member": "issue-77-n1-008",
+        "ordinal": 0,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-008-a05--a00/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-008-a05",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-008-a05--a00",
+          "sha256": "sha256:bf242ddc54e161a5c05f4b2331499b4a8f17caefcf6c58ff90d81e5bba4d8bfe"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-009-a00",
+        "engine_seed_first": 764100009,
+        "engine_seed_second": 1764100009,
+        "identity": "seed2--issue-77-n1-009-a00--a00",
+        "kind": "anchor",
+        "member": "issue-77-n1-009",
+        "ordinal": 0,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-009-a00--a00/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-009-a00",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-009-a00--a00",
+          "sha256": "sha256:65cbb31bb60d078d77e0ff88bebdc8c60487579d306fa4b10dccd5fb9d245db4"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-010-a00",
+        "engine_seed_first": 764100010,
+        "engine_seed_second": 1764100010,
+        "identity": "seed2--issue-77-n1-010-a06--a00",
+        "kind": "anchor",
+        "member": "issue-77-n1-010",
+        "ordinal": 0,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-010-a06--a00/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-010-a06",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-010-a06--a00",
+          "sha256": "sha256:d4153d9e14c18c8d69b1c17e5065d4f782ecd25ee3806cb05af892feec1bf20f"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-011-a00",
+        "engine_seed_first": 764100011,
+        "engine_seed_second": 1764100011,
+        "identity": "seed2--issue-77-n1-011-a02--a00",
+        "kind": "anchor",
+        "member": "issue-77-n1-011",
+        "ordinal": 0,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-011-a02--a00/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-011-a02",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-011-a02--a00",
+          "sha256": "sha256:bd3ce908cd4b4be1c8bbec763646b1421107e6733e78f7ce20a60221bd7d0581"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-012-a00",
+        "engine_seed_first": 764100012,
+        "engine_seed_second": 1764100012,
+        "identity": "seed2--issue-77-n1-012-a08--a00",
+        "kind": "anchor",
+        "member": "issue-77-n1-012",
+        "ordinal": 0,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-012-a08--a00/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-012-a08",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-012-a08--a00",
+          "sha256": "sha256:c5cec4f353e58bd70fdc8c05243df849ded473a9a1f47c4ce9f8e43a8d327f84"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-013-a00",
+        "engine_seed_first": 764100013,
+        "engine_seed_second": 1764100013,
+        "identity": "seed2--issue-77-n1-013-a04--a00",
+        "kind": "anchor",
+        "member": "issue-77-n1-013",
+        "ordinal": 0,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-013-a04--a00/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-013-a04",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-013-a04--a00",
+          "sha256": "sha256:38294a502cc227fe3ec71515b92828b806dbbf3cab5bbcbc4b0434134740ac9e"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-014-a00",
+        "engine_seed_first": 764100014,
+        "engine_seed_second": 1764100014,
+        "identity": "seed2--issue-77-n1-014-a01--a00",
+        "kind": "anchor",
+        "member": "issue-77-n1-014",
+        "ordinal": 0,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-014-a01--a00/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-014-a01",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-014-a01--a00",
+          "sha256": "sha256:f9fc9e59714b0e6d4c01df85b3537b65cd5c9963d0c9de3325f9966e760a262d"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a00",
+        "engine_seed_first": 764100015,
+        "engine_seed_second": 1764100015,
+        "identity": "seed2--issue-77-n1-015-a06--a00",
+        "kind": "anchor",
+        "member": "issue-77-n1-015",
+        "ordinal": 0,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-015-a06--a00/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-015-a06",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-015-a06--a00",
+          "sha256": "sha256:2fb4165a6b20f036b60316f1a7c02998d788220ddbd4a23db085d10ea8126659"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-016-a00",
+        "engine_seed_first": 764100016,
+        "engine_seed_second": 1764100016,
+        "identity": "seed2--issue-77-n1-016-a03--a00",
+        "kind": "anchor",
+        "member": "issue-77-n1-016",
+        "ordinal": 0,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-016-a03--a00/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-016-a03",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-016-a03--a00",
+          "sha256": "sha256:f4377b30ed5f319774af8671d7baa3dac03a2f8b669450df0e47cae940620482"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a06",
+        "engine_seed_first": 764100001,
+        "engine_seed_second": 1764100001,
+        "identity": "seed2--issue-77-n1-001-a00--a06",
+        "kind": "success",
+        "member": "issue-77-n1-001",
+        "ordinal": 6,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-001-a00--a06/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": true,
+        "state": "issue-77-n1-001-a00",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-001-a00--a03",
+          "sha256": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-006-a05",
+        "engine_seed_first": 764100006,
+        "engine_seed_second": 1764100006,
+        "identity": "seed2--issue-77-n1-006-a05--a05",
+        "kind": "success",
+        "member": "issue-77-n1-006",
+        "ordinal": 5,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-006-a05--a05/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": true,
+        "state": "issue-77-n1-006-a05",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-006-a05--a00",
+          "sha256": "sha256:ae21c3f8c8d66f5e4a45ca88bb082c14c17e97412b92a67d9824e3ed178b6267"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-010-a02",
+        "engine_seed_first": 764100010,
+        "engine_seed_second": 1764100010,
+        "identity": "seed2--issue-77-n1-010-a06--a02",
+        "kind": "success",
+        "member": "issue-77-n1-010",
+        "ordinal": 2,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1/attempts/oracle--issue-77-n1-010-a06--a02/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1"
+        },
+        "retained_verdict": true,
+        "state": "issue-77-n1-010-a06",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-010-a06--a00",
+          "sha256": "sha256:d4153d9e14c18c8d69b1c17e5065d4f782ecd25ee3806cb05af892feec1bf20f"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-011-a04",
+        "engine_seed_first": 764100011,
+        "engine_seed_second": 1764100011,
+        "identity": "seed2--issue-77-n1-011-a02--a04",
+        "kind": "success",
+        "member": "issue-77-n1-011",
+        "ordinal": 4,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-011-a02--a04/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": true,
+        "state": "issue-77-n1-011-a02",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-011-a02--a00",
+          "sha256": "sha256:bd3ce908cd4b4be1c8bbec763646b1421107e6733e78f7ce20a60221bd7d0581"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-012-a04",
+        "engine_seed_first": 764100012,
+        "engine_seed_second": 1764100012,
+        "identity": "seed2--issue-77-n1-012-a08--a04",
+        "kind": "success",
+        "member": "issue-77-n1-012",
+        "ordinal": 4,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-012-a08--a04/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": true,
+        "state": "issue-77-n1-012-a08",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-012-a08--a00",
+          "sha256": "sha256:c5cec4f353e58bd70fdc8c05243df849ded473a9a1f47c4ce9f8e43a8d327f84"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-014-a04",
+        "engine_seed_first": 764100014,
+        "engine_seed_second": 1764100014,
+        "identity": "seed2--issue-77-n1-014-a01--a04",
+        "kind": "success",
+        "member": "issue-77-n1-014",
+        "ordinal": 4,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1/attempts/oracle--issue-77-n1-014-a01--a04/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1"
+        },
+        "retained_verdict": true,
+        "state": "issue-77-n1-014-a01",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-014-a01--a00",
+          "sha256": "sha256:f9fc9e59714b0e6d4c01df85b3537b65cd5c9963d0c9de3325f9966e760a262d"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-016-a03",
+        "engine_seed_first": 764100016,
+        "engine_seed_second": 1764100016,
+        "identity": "seed2--issue-77-n1-016-a03--a03",
+        "kind": "success",
+        "member": "issue-77-n1-016",
+        "ordinal": 3,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1/attempts/oracle--issue-77-n1-016-a03--a03/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1"
+        },
+        "retained_verdict": true,
+        "state": "issue-77-n1-016-a03",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-016-a03--a00",
+          "sha256": "sha256:f4377b30ed5f319774af8671d7baa3dac03a2f8b669450df0e47cae940620482"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-003-a01",
+        "engine_seed_first": 764100003,
+        "engine_seed_second": 1764100003,
+        "identity": "seed2--issue-77-n1-003-a00--a01",
+        "kind": "control",
+        "member": "issue-77-n1-003",
+        "ordinal": 1,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-003-a00--a01/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-003-a00",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-003-a00--a00",
+          "sha256": "sha256:1816e5b7dbae14009983f061254fd7472f8f7039c97a7728fae83e503135fca5"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-004-a02",
+        "engine_seed_first": 764100004,
+        "engine_seed_second": 1764100004,
+        "identity": "seed2--issue-77-n1-004-a07--a02",
+        "kind": "control",
+        "member": "issue-77-n1-004",
+        "ordinal": 2,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-004-a07--a02/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-004-a07",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-004-a07--a01",
+          "sha256": "sha256:df06fe27a72e5fd9bc249bab01bd361ec3f91f09edd5e02c574ec88bc93f5691"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-007-a01",
+        "engine_seed_first": 764100007,
+        "engine_seed_second": 1764100007,
+        "identity": "seed2--issue-77-n1-007-a05--a01",
+        "kind": "control",
+        "member": "issue-77-n1-007",
+        "ordinal": 1,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-007-a05--a01/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-007-a05",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-007-a05--a00",
+          "sha256": "sha256:87246519dadebcc4506e5dad2bbae3a9003733afed53790f3051d769435e6ce7"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-008-a01",
+        "engine_seed_first": 764100008,
+        "engine_seed_second": 1764100008,
+        "identity": "seed2--issue-77-n1-008-a05--a01",
+        "kind": "control",
+        "member": "issue-77-n1-008",
+        "ordinal": 1,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-008-a05--a01/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-008-a05",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-008-a05--a00",
+          "sha256": "sha256:bf242ddc54e161a5c05f4b2331499b4a8f17caefcf6c58ff90d81e5bba4d8bfe"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-009-a01",
+        "engine_seed_first": 764100009,
+        "engine_seed_second": 1764100009,
+        "identity": "seed2--issue-77-n1-009-a00--a01",
+        "kind": "control",
+        "member": "issue-77-n1-009",
+        "ordinal": 1,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-009-a00--a01/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-009-a00",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-009-a00--a00",
+          "sha256": "sha256:65cbb31bb60d078d77e0ff88bebdc8c60487579d306fa4b10dccd5fb9d245db4"
+        }
+      }
+    ],
+    "smoke_cells": [
+      {
+        "branch_identity": "issue-77-n1-001-a06",
+        "engine_seed_first": 764100001,
+        "engine_seed_second": 1764100001,
+        "identity": "smoke--issue-77-n1-001-a07--a06",
+        "kind": "smoke_success",
+        "member": "issue-77-n1-001",
+        "ordinal": 6,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-001-a07--a06/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": true,
+        "state": "issue-77-n1-001-a07",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-001-a07--a00",
+          "sha256": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c"
+        }
+      },
+      {
+        "branch_identity": "issue-77-n1-013-a01",
+        "engine_seed_first": 764100013,
+        "engine_seed_second": 1764100013,
+        "identity": "smoke--issue-77-n1-013-a04--a01",
+        "kind": "smoke_control",
+        "member": "issue-77-n1-013",
+        "ordinal": 1,
+        "retained_frame": {
+          "path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-013-a04--a01/decision-frame.png",
+          "pool": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1"
+        },
+        "retained_verdict": false,
+        "state": "issue-77-n1-013-a04",
+        "state_anchor": {
+          "cell": "oracle--issue-77-n1-013-a04--a00",
+          "sha256": "sha256:38294a502cc227fe3ec71515b92828b806dbbf3cab5bbcbc4b0434134740ac9e"
+        }
+      }
+    ],
+    "success_rule": "one success slot per ceiling member: the member's successful (state, ordinal) in the union verdict table with the lowest state identity"
+  },
+  "validation_command": "python -u -m scripts.run_cross_seed_invariance_probe --validate",
+  "version": 1
+}
