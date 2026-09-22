@@ -1,0 +1,263 @@
+{
+  "caps": {
+    "derived_bytes_budget": 52428800,
+    "gpu_cap_seconds": 0.0,
+    "gpu_scope": "no GPU work of any kind in this ticket; the shared flock is still held for every wall-time-measured phase",
+    "stop": "readiness_or_precision_insufficient",
+    "wall_cap_seconds": 300.0,
+    "wall_scope": "cumulative measured wall of the run plus publish plus validate phases; the dry run and the freeze publish no wall time"
+  },
+  "changelog": [
+    {
+      "change": "initial and terminal freeze: unit definitions, join keys, statistics, numeric margins, verdict mapping, precision guards, disclosures and caps are published before any statistic exists",
+      "evidence": "no statistic has been computed at freeze time; every formula below is a closed rule over the frozen inputs",
+      "version": 1,
+      "why": "standard freeze rule of the shared ADD-EXP protocol; the dry run is a structural inventory only and computes no statistic of any kind"
+    }
+  ],
+  "claim_boundary": "re-statement and measurement over retained records only; #87's, #89's and #90's published verdicts are inputs and are never recomputed, amended, or reinterpreted; #64/#65 stay sealed; closed-loop claims stay single-shot, decision-only, development-lineage scoped; no engine access, no rendering, no new data; intervals are DESCRIPTIVE",
+  "disclosures": {
+    "accounting": "15 source members (not 12); #87-only decision accounting (230 bound / 46 unbound / 12 typed decision failures of 288); partial-ceiling accounting (84 cells, 82 bound, 2 unbindable); completed accounting (144/144 bound, 0 successes, binding completed against the #89-extended oracle table)",
+    "chance_baseline": "the only admissible chance reference is inventory-matched uniform selection; the ordinal-8 prior is retired as any kind of baseline (its own ordinal 8 = (-47, 65) sits in the high-arc band and scores zero)",
+    "duplicate_pairs": "the 9 duplicate pairs are published with their identity evidence (byte-identical inventory, same engine seed, same decision anchor, identical per-ordinal verdict vectors, 0 discordant entries)",
+    "issue_77_n1_005_a07": "the one excluded state succeeds at ordinal 7, inside the model-chosen ordinal support; printed, never omitted; its typed-failure cell (ordinal 2, sealed-frame stability violation) is retained in both #87 and #89",
+    "issue_90_token": "#90's audit verdict token is cited verbatim: indeterminate (Q1 readiness_or_precision_insufficient), with the outcome-enriched missingness direction disclosed (5 of 52 timed-out slots succeeded on re-execution against 7 of 234 originally executed)",
+    "launch_regime": "the 13 candidates are a monotone launch-angle sweep (a0 = (-80, 10) flat to a12 = (-11, 79) steep); on the N1 sealed ceiling states every engine-truth success sits at ordinals 2-6 (flat/mid direct shots) while the systems choose ordinals 7-12 (high-arc lobs) in 207/207 model cells; the rule breaks ties toward the lower ordinal, so the high-ordinal concentration is a genuine preference, not tie-breaking; the N1 reading is scoped to type010103/type010105 and never stated as pool-invariant",
+    "oracle_seed_label": "ORACLE_SEED = 20260908 (scripts/run_closed_loop_oracle_probe.py:126) is a #74 matched training-seed protocol label written only into metadata/identity strings; the engine receives exactly one seed, NOVPHY_ENVIRONMENT_SEED = state['engine_seed'] (probe line 858; per member 764100001 + member ordinal); a 'second oracle seed' re-run would dispatch byte-identical engine invocations"
+  },
+  "frozen_at": "2026-09-22T14:54:42Z",
+  "frozen_before_scoring_run": true,
+  "identity": "issue-92-selection-validity-v1",
+  "inputs": [
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/plan.json",
+      "identity_fields": [
+        "identity",
+        "plan_identity",
+        "version",
+        "status"
+      ],
+      "name": "issue_87_plan",
+      "role": "membership (24 states, source members, inventories), oracle cells, published protocol",
+      "schema": "issue_87_closed_loop_oracle_plan_v1",
+      "sha256_at_freeze": "sha256:689ec148564491291b372c02e7aa6f828480ea8200dc6c51e214f641ab5670ac"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/records",
+      "identity_fields": [
+        "plan_identity",
+        "plan_version",
+        "schema"
+      ],
+      "name": "issue_87_decision_records",
+      "role": "the 288 decision cells: full predicted-cost rankings, chosen candidate, #87-only binding",
+      "schema": "issue_87_decision_record_v1",
+      "sha256_at_freeze": "directory:577 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/records",
+      "identity_fields": [
+        "plan_identity",
+        "plan_version",
+        "schema"
+      ],
+      "name": "issue_87_oracle_records",
+      "role": "the 234 executed engine-truth verdicts and 55 typed failures",
+      "schema": "issue_87_closed_loop_oracle_record_v1",
+      "sha256_at_freeze": "directory:577 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1/summary.json",
+      "identity_fields": [
+        "identity",
+        "plan_identity",
+        "schema"
+      ],
+      "name": "issue_89_summary",
+      "role": "cited published cross-check: per-state ceiling, typed-unmeasurable declaration; never recomputed",
+      "schema": "issue_89_oracle_completion_report_v1",
+      "sha256_at_freeze": "sha256:42ef6575d66a2273c9880eac4da9199d862dfb88147c4cc20beef194e1358f5e"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1/records",
+      "identity_fields": [
+        "plan_identity",
+        "plan_version",
+        "schema"
+      ],
+      "name": "issue_89_oracle_records",
+      "role": "the completion-pass engine-truth verdicts extending the union table",
+      "schema": "issue_89_oracle_completion_record_v1",
+      "sha256_at_freeze": "directory:55 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-90-oracle-timeout-audit-v1/summary.json",
+      "identity_fields": [
+        "identity",
+        "plan_identity",
+        "schema"
+      ],
+      "name": "issue_90_summary",
+      "role": "cited audit verdict token, verbatim; never recomputed",
+      "schema": "issue_90_oracle_timeout_audit_report_v1",
+      "sha256_at_freeze": "sha256:69275f813a053fbb6ba6bb201b4475adc5f577bfe24ed187befa95ad02b2243a"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-v1/coverage.json",
+      "identity_fields": [
+        "plan_identity",
+        "schema"
+      ],
+      "name": "issue_77_n1_coverage",
+      "role": "frozen N1 branch admissibility and typed-failure statuses",
+      "schema": "issue_77_n1_coverage_v1",
+      "sha256_at_freeze": "sha256:aa86f1952382bdb35c93be08a9ddffdcceb8d901058e45f3efa7d68db5f03ef6"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-v1/results",
+      "identity_fields": [
+        "member_identity",
+        "base_cluster",
+        "schema"
+      ],
+      "name": "issue_77_n1_results",
+      "role": "frozen N1 replay verdicts (pig_removed event counts) for the determinism measurement",
+      "schema": "issue_76_bounded_transfer_capture_v1",
+      "sha256_at_freeze": "directory:208 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-80-reactive-diagnostic-v1/candidate-outcomes",
+      "identity_fields": [
+        "member_identity",
+        "plan_identity",
+        "schema"
+      ],
+      "name": "issue_80_candidate_outcomes",
+      "role": "frozen candidate tables (action and realized count cost per ordinal)",
+      "schema": "issue_80_candidate_outcomes_v1",
+      "sha256_at_freeze": "directory:15 json files"
+    }
+  ],
+  "join_keys": {
+    "decision_cell": "issue-87 decision--<system>--seed<seed>--<state>.json; the ranking rows give (ordinal, predicted_cost, excluded)",
+    "exposure_role": "issue-87 plan.json states[].execution_member.exposure_role ('training' members joined the fitting pools; 'calibration' members 007/008/014/016 are unexposed)",
+    "frozen_candidate_table": "issue-80 candidate-outcomes/<source_member>.json row with the same ordinal (action and realized count cost)",
+    "frozen_replay": "issue-77 N1 results/<branch identity>.json segments[0].summary.event_counts.pig_removed greater than 0, keyed by branch identity",
+    "state_to_member": "issue-87 plan.json states[].source_member",
+    "verdict_slot": "(state identity, ordinal) -> outcome.first_shot_success of the #87 executed oracle record, else the #89 completion record; slots still typed-failed after #89 carry no verdict"
+  },
+  "limitations": [
+    "development/exposed N1 lineages only; not the sealed #64/#65 benchmark",
+    "the member unit removes the duplicate inflation but the 14 measurable members remain a small, clustered sample; every interval is DESCRIPTIVE",
+    "the selection measurements bind the three frozen fixed-horizon model systems of #87 plus the ordinal prior; no adaptive or endpoint arm is scored here (ticket #92 WP1b)",
+    "single oracle protocol label (ORACLE_SEED is a #74 matched training-seed label, not a random draw); the engine's only seed is the per-member NOVPHY_ENVIRONMENT_SEED",
+    "the AUC cell-unit interval is resampled over 108 cells that cluster inside 7 members; the member-clustered interval is the honest precision statement and is published alongside",
+    "no content hash is recomputed after the freeze and no full-corpus integrity pass runs anywhere; inputs are verified at read time by their carried schema/identity/plan_identity fields"
+  ],
+  "margins": {
+    "action_share": 0.05,
+    "auc_shift": 0.05,
+    "monotonicity": 0.5,
+    "rule": "numeric margins frozen before any statistic; never re-cut after seeing the results",
+    "top_k_shift": 0.1
+  },
+  "precision_guards": {
+    "bootstrap_usable_min_fraction": 0.9,
+    "ceiling_model_cells": 100,
+    "duplicate_discordant_entries": 0,
+    "duplicate_pairs": 9,
+    "replay_join_min_fraction": 0.99,
+    "rule": "each guard is evaluated on the frozen tables; any failed guard maps every disposition to readiness_or_precision_insufficient before the question rules are read",
+    "scored_model_cells": 200,
+    "verdict_slots": 288
+  },
+  "protocol_policy": "single terminal protocol version: the full protocol is frozen with actual numeric margins before the scoring run and executed exactly once; the dry run computes no statistic; --validate recomputes every published table",
+  "published_context": {
+    "issue_87_pre_completion_ceiling": {
+      "ceiling_states": 7,
+      "measured_states": 23,
+      "prevalence": 0.30434782608695654,
+      "states": 24,
+      "unmeasured_states": [
+        "issue-77-n1-005-a07"
+      ]
+    },
+    "issue_89_completed_ceiling": "cited verbatim from issue-89 summary.json ceiling_reestimate.pooled (12/23 = 0.5217 [0.3043, 0.7391] state-unit, before deduplication)",
+    "issue_90_audit_verdict": "cited verbatim from issue-90 summary.json audit_verdict and question_dispositions",
+    "rule": "published numbers cited verbatim as context; never recomputed or amended; the member-unit ceiling published here is a NEW unit correction, not an amendment of #89"
+  },
+  "questions": {
+    "q1_selection_validity": "does the frozen predicted-cost ordering discriminate the engine-truth successful action at or below inventory-matched chance (per-cell AUC, top-k attribution, disjoint ordinal supports)?",
+    "q2_ordering_mechanism": "is the within-state predicted-cost ordering driven by the action-sweep coordinate (near-monotone Spearman ordering, between-actions variance share at noise level) while the between-state component stays large?",
+    "q3_determinism": "do the frozen #77 replay verdicts and the #87/#89 closed-loop verdicts agree on every unique branch (a measured determinism statement: the closed-loop pass is a deterministic re-observation given level, engine seed and action)?"
+  },
+  "role": "terminal",
+  "schema": "issue_92_selection_validity_plan_v1",
+  "statistics": {
+    "auc": "per scored ceiling model cell: P(successful ordinal receives a lower predicted cost than a failure ordinal) with ties scoring 0.5; headline = mean over the 108 cells (cell-unit) with a cell-resampled interval; member-clustered = mean of the 7 per-member means with a member-resampled interval",
+    "bootstrap": "percentile bootstrap, 10000 draws, PCG64 seed 7201, quantiles [0.025, 0.975], labelled DESCRIPTIVE; each statistic draws from an independent stream with the same seed; the member-clustered variant resamples members with every cell of a member moving together and averages per-member means",
+    "chance_references": {
+      "breadth_extrapolation": "ESTIMATE: miss_all(m) approx miss_all(7)^(m/7), evaluated at m = 15 and m = 30; labelled ESTIMATE, never a verdict input",
+      "member_clustered_12cell": "the same product with exponent 12 per member (4 systems x 3 seeds selection cells per ceiling member)",
+      "one_system_3seeds": "the same product with exponent 3 per member (one system x 3 seeds)",
+      "single_draw_miss_all": "product over the 7 ceiling members of (1 - k_m/n_m): one uniform top-1 draw per ceiling member misses everywhere; k_m = successful ordinals, n_m = verdict slots of the member",
+      "uniform_1of13_miss_all": "(12/13)^k for k ceiling members: the inventory-size-only reference"
+    },
+    "determinism": "per unique branch: frozen #77 replay verdict (pig_removed event count > 0) vs closed-loop verdict; agreement counts at the unique-branch level and the verdict-slot level; channel anomalies = executed records whose engine_channel consistency is not 'agreement'; duplicate-pair concordance = discordant per-ordinal verdict entries across the duplicate pairs",
+    "exposure_split": "the q1 measurements split by member exposure_role (training vs calibration); DESCRIPTIVE only, never a verdict input",
+    "member_ceiling": "indicator per measurable member = any of its states carries the ceiling indicator; prevalence over the measurable members; member-clustered percentile bootstrap interval",
+    "monotonicity": "per scored model cell: Spearman correlation between the candidate ordinal (resp. drag_x, drag_y) and the predicted cost over the cell's ranking rows; headline = median absolute rho over the 207 cells, per coordinate and per system",
+    "ordinal_support": "success band = sorted union of engine-truth successful ordinals over the 12 sealed ceiling states; chosen support = distribution of chosen ordinals over all 207 scored model cells; disjointness = share of scored model cells whose chosen ordinal lies in the success band; region success counts = successes vs verdict slots at ordinals 0-1 and 7-12 over the sealed ceiling states",
+    "top_k": "per scored ceiling model cell: top-1 hit (chosen ordinal is engine-truth successful), top-3 hit (any of the three lowest-cost ordinals is successful); inventory-matched per-state chance: k_s/n_s for top-1 and 1 - C(n_s-k_s, 3)/C(n_s, 3) for top-3; paired per-cell difference (hit minus chance) with a member-clustered interval",
+    "variance_decomposition": "over the retained ranking rows of the 207 scored model cells: marginal two-way shares of the predicted-cost variance, between-states = SS(state)/SST, between-actions = SS(ordinal)/SST, residual = 1 minus both shares"
+  },
+  "unit_definitions": {
+    "member": "physical initial state (source member): the unit that carries an independent level layout; PRIMARY unit of analysis for every headline number",
+    "model_cell": "one (state, model system, seed) decision cell with a scored ranking; 207 scored model cells over 23 anchored states, of which 108 sit on the 12 sealed ceiling states",
+    "state": "execution-level state identity of the #87 membership: 24 states over 15 source members; 9 members carry two states that are byte-identical duplicates (same frozen inventory element-for-element, same engine seed, same decision anchor); state-level numbers remain as execution detail only",
+    "unique_branch": "distinct branch identity among the verdict slots; duplicate states share branch identities, so the 288 verdict slots collapse to 176 unique branches",
+    "verdict_slot": "one (state, ordinal) engine-truth verdict in the union of #87's executed oracle records and #89's completion records; 288 of 289 scheduled slots carry a verdict"
+  },
+  "universe": {
+    "duplicate_pairs_expected": 9,
+    "membership_states": 24,
+    "model_systems": [
+      "hybrid-fixed-h1",
+      "continuous-fixed-h1",
+      "continuous-fixed-h5"
+    ],
+    "prior_system": "no-model-ordinal-prior",
+    "scheduled_slots": 289,
+    "sealed_ceiling_states": "12 states carry the ceiling indicator and are not typed-unmeasurable, over 7 ceiling members",
+    "sealed_states": "23 states carry a sealed decision anchor; issue-77-n1-005-a07 is excluded under #89's frozen typed-unmeasurable declaration (no executed oracle anchor)",
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "source_members": 15,
+    "unique_branches": 176,
+    "unmeasured_slot": "issue-77-n1-005-a07 ordinal 2: sealed-frame stability violation, retained as a typed failure in both #87 and #89; never retried, carries no success value",
+    "verdict_slots": 288
+  },
+  "validation_command": "python -u -m scripts.run_selection_validity_restatement --validate",
+  "verdict_mapping": {
+    "q1_selection_validity": {
+      "not_supported_by_this_experiment": "cell-unit AUC mean >= 0.5 OR the top-3 paired difference mean >= 0",
+      "readiness_or_precision_insufficient": "any other combination, or a precision guard tripped",
+      "stop_rule": "if the member-clustered AUC interval covers 0.5 it is published covering 0.5 and the ordinal-support + top-k structure carries the section; margins are never re-cut",
+      "supported": "ALL of: (a) cell-unit AUC mean <= 0.5 - margin AND the cell-unit descriptive interval lies entirely below 0.5; (b) the top-3 paired difference mean <= -margin AND its member-clustered interval lies entirely below 0; (c) the disjointness share (chosen ordinal inside the success band) is exactly 0 over all scored model cells"
+    },
+    "q2_ordering_mechanism": {
+      "not_supported_by_this_experiment": "median |rho| < monotonicity margin AND the between-actions share > action-share margin",
+      "readiness_or_precision_insufficient": "any other combination, or a precision guard tripped",
+      "supported": "median |Spearman rho| between ordinal and predicted cost >= monotonicity margin AND the between-actions variance share <= action-share margin"
+    },
+    "q3_determinism": {
+      "not_supported_by_this_experiment": "any discordant branch or slot, or any channel anomaly; forces a seed-conditional restatement of the ceiling",
+      "readiness_or_precision_insufficient": "the replay join is incomplete beyond the frozen guard, or a precision guard tripped",
+      "supported": "unique-branch agreement == branches joined AND verdict-slot agreement == slots joined AND channel anomalies == 0 AND duplicate discordant entries == 0"
+    }
+  },
+  "version": 1
+}
