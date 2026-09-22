@@ -1,0 +1,114 @@
+{
+  "agreement": {
+    "agree": 26,
+    "slots": 26
+  },
+  "caps": {
+    "artifact_bytes_cap": 8589934592,
+    "gpu_cap_seconds": 1800.0,
+    "gpu_scope": "cumulative cuda-bracketed GPU seconds of the rescore phase",
+    "minimum_free_bytes": 21474836480,
+    "stop": "readiness_or_precision_insufficient",
+    "wall_cap_seconds": 14400.0,
+    "wall_scope": "cumulative measured wall of the run phase"
+  },
+  "capture_channel": {
+    "executed": 26,
+    "frame_byte_equal": 19,
+    "reading": "frames differing while verdicts agree is the informative separation (selection channel noisy, outcome channel invariant); byte-identical frames are the stronger invariance outcome; DESCRIPTIVE"
+  },
+  "claim_boundary": "re-execution of 26 frozen (state, ordinal) slots at one frozen second seed value with the scenario authority, decision step, inventory and actions unchanged; single-shot, decision-only re-scoring, development/exposed N1 lineages only; #64/#65 stay sealed; #87/#89/#90 published verdicts are inputs and are never recomputed, amended, or reinterpreted; no retraining, no method changes, no multi-shot or complete-gameplay claim; capture-channel and selection comparisons are DESCRIPTIVE",
+  "compute": {
+    "phases": {
+      "tables": {
+        "peak_rss_mib": 714.4375,
+        "seconds": 0.007776438724249601
+      }
+    },
+    "wall_seconds_total": 0.007776438724249601
+  },
+  "disposition": "supported",
+  "disposition_conditions": {
+    "flips": 0,
+    "guards_ok": true,
+    "stop_reason": null
+  },
+  "flips": [],
+  "frozen_at": "2026-09-22T17:47:24Z",
+  "hygiene": {
+    "content_hashes_recomputed_after_freeze": false,
+    "full_corpus_integrity_pass": false
+  },
+  "identity": "issue-92-cross-seed-invariance-v1",
+  "limitations": [
+    "one second seed value: the probe measures invariance across one frozen perturbation of the Unity RNG, not a distribution over seeds",
+    "NOVPHY_ENVIRONMENT_SEED initializes the Unity RNG only; whatever the episode does not randomize is unchanged by construction, so byte-identical frames are a possible and informative outcome",
+    "the re-scoring covers the 12 #87 model cells on the composition's distinct states; it is a selection-channel reading, not a new selection-validity estimate",
+    "the remaining scope caps (single-shot, decision-only, development lineages, sealed benchmark untouched) stay as disclosed limitations"
+  ],
+  "motivation": "the primary determinism measurement (176/176 unique branches, 288/288 executed slots, zero channel anomalies) is published by #92 WP1 at zero engine cost; this probe adds the cross-seed axis: NOVPHY_ENVIRONMENT_SEED initializes the Unity RNG (CanonicalCaptureSeed.cs) and is the only engine-visible seed, so a second value perturbs the capture channel while the frozen scenario authority holds the level, inventory, decision step and action fixed",
+  "plan_identity": "issue-92-cross-seed-invariance-v1",
+  "plan_version": 1,
+  "precision_guards": {
+    "frame_comparisons_present": {
+      "floor": 26,
+      "ok": true,
+      "value": 26
+    },
+    "slots_executed": {
+      "floor": 26,
+      "ok": true,
+      "value": 26
+    },
+    "verdicts_present": {
+      "floor": 26,
+      "ok": true,
+      "value": 26
+    }
+  },
+  "question": "do the engine-truth verdicts of the 26 frozen slots survive one frozen second value of NOVPHY_ENVIRONMENT_SEED, and do the captured decision frames and the re-scored selections differ where the verdicts do not?",
+  "restatement_obligation": null,
+  "schema": "issue_92_cross_seed_invariance_report_v1",
+  "seed_disclosure": "ORACLE_SEED = 20260908 is a #74 matched training-seed label written only into metadata/identity strings; the engine receives exactly one seed per execution (NOVPHY_ENVIRONMENT_SEED); re-running the slots at 'seed 20260909' would dispatch byte-identical engine invocations",
+  "selection_rescore": {
+    "label": "DESCRIPTIVE",
+    "rows": []
+  },
+  "smoke_evidence": {
+    "checks": [
+      {
+        "cell": "smoke--issue-77-n1-001-a07--a06",
+        "channel_scan_complete": true,
+        "engine_seed_second": 1764100001,
+        "failure": null,
+        "frame_byte_equal": true,
+        "frame_captured": true,
+        "frame_comparison_recorded": true,
+        "kind": "smoke_success",
+        "ok": true,
+        "second_seed_verdict": true,
+        "verdict_produced": true,
+        "wall_seconds": 148.35227553825825
+      },
+      {
+        "cell": "smoke--issue-77-n1-013-a04--a01",
+        "channel_scan_complete": true,
+        "engine_seed_second": 1764100013,
+        "failure": null,
+        "frame_byte_equal": true,
+        "frame_captured": true,
+        "frame_comparison_recorded": true,
+        "kind": "smoke_control",
+        "ok": true,
+        "second_seed_verdict": false,
+        "verdict_produced": true,
+        "wall_seconds": 143.32843499304727
+      }
+    ],
+    "identity": "issue-92-cross-seed-invariance-v1",
+    "ok": true,
+    "run_at": "2026-09-22T17:27:38Z",
+    "schema": "issue_92_cross_seed_invariance_smoke_v1"
+  },
+  "validation_command": "python -u -m scripts.run_cross_seed_invariance_probe --validate"
+}
