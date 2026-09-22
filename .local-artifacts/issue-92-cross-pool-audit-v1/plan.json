@@ -1,0 +1,277 @@
+{
+  "caps": {
+    "derived_bytes_budget": 52428800,
+    "gpu_cap_seconds": 0.0,
+    "gpu_scope": "no GPU work of any kind in this ticket; the shared flock is still held for every wall-time-measured phase",
+    "stop": "readiness_or_precision_insufficient",
+    "wall_cap_seconds": 300.0,
+    "wall_scope": "cumulative measured wall of the run plus publish plus validate phases; the dry run and the freeze publish no wall time"
+  },
+  "claim_boundary": "cross-pool audit over retained artifacts only; #76's, #77's and the n2-eval pool's published verdicts are inputs and are never recomputed, amended, or reinterpreted beyond the frozen recomputation declared here; #64/#65 stay sealed; the n2-eval system set (12 systems incl. adapted predictors and micro/macro ablations) is never mixed with #87's 4-system set in one rate; zero-shot and few-shot are reported separately and never pooled; no engine access, no rendering, no new data; intervals are DESCRIPTIVE",
+  "disclosures": {
+    "claim_split": "the absolute zero-selection sentence is valid only on the #87 N1 24-state membership (0 of 144 bound cells); on the broader type010101 split the same family of frozen systems selects engine-truth successes at 3.4 % overall, localized to 5 of 17 states; selection validity is published state-conditional, never universal",
+    "condition_boundary": "zero-shot and few-shot subtrees are disjoint and never pooled; only the zero-shot arm is a frozen-system result; the adapted arm exceeding chance is not a frozen-system result",
+    "ordinal_prior_retired": "a constant-ordinal-8 policy scores 0/17 on the cross-split and is retired as any kind of baseline; the only admissible chance reference is inventory-matched uniform selection",
+    "resolution_cell": "issue-76-bounded-transfer-002-a10: coverage status failed (operationally_valid false) yet its retained segment summary carries pig_removed = 1; under the #85/#87 semantics the cell carries no success value and is excluded; the cell, its chunk-recomputed evidence and the exclusion rule are published; the bounded pool's typed failures are therefore not outcome-blind (1 of 41 carries an engine-truth success), the same class of finding #90 published for #87's timeouts"
+  },
+  "expectations": {
+    "bounded": {
+      "admissible_cells": 575,
+      "ceiling_interval": [
+        0.3913,
+        0.6957
+      ],
+      "failed_cells": 41,
+      "measurable_members": 46,
+      "member_ceiling": 25,
+      "ordinal_histogram": {
+        "0": 1,
+        "1": 1,
+        "10": 3,
+        "11": 3,
+        "12": 6,
+        "2": 3,
+        "3": 3,
+        "4": 5,
+        "5": 3,
+        "6": 4
+      },
+      "success_cells": 32,
+      "typed_failures_with_success": 1
+    },
+    "constant_ordinal_cross_split": {
+      "a02": [
+        2,
+        13
+      ],
+      "a03": [
+        1,
+        13
+      ],
+      "a04": [
+        1,
+        14
+      ],
+      "a06": [
+        1,
+        16
+      ],
+      "a08": [
+        0,
+        17
+      ],
+      "a10": [
+        1,
+        15
+      ],
+      "a12": [
+        3,
+        15
+      ]
+    },
+    "constant_ordinal_n1": {
+      "a02": [
+        2,
+        12
+      ],
+      "a03": [
+        2,
+        12
+      ],
+      "a04": [
+        5,
+        12
+      ],
+      "a05": [
+        2,
+        12
+      ],
+      "a06": [
+        2,
+        12
+      ],
+      "a08": [
+        0,
+        12
+      ],
+      "a12": [
+        0,
+        12
+      ]
+    },
+    "cross_split": {
+      "analogue_top1_per_condition": 2,
+      "cells": 1224,
+      "cells_per_condition": 612,
+      "few_shot_top1": 29,
+      "frozen_success_states": 4,
+      "frozen_top1_at_ordinal_12": 11,
+      "per_state_top1": {
+        "issue-76-bounded-transfer-032": 13,
+        "issue-76-bounded-transfer-033": 1,
+        "issue-76-bounded-transfer-037": 4,
+        "issue-76-bounded-transfer-038": 12,
+        "issue-77-n2-007": 12
+      },
+      "pooled_top1_at_ordinal_12": 37,
+      "states": 17,
+      "top1_pooled": 42,
+      "uniform_chance": 0.0407,
+      "zero_shot_top1": 13
+    },
+    "n2": {
+      "admissible": 186,
+      "ceiling_interval": [
+        0.1333,
+        0.6
+      ],
+      "executed": 208,
+      "measurable_members": 15,
+      "member_ceiling": 5,
+      "success_cells": 7,
+      "type010102_measurable": 7,
+      "type010102_successes": 0
+    },
+    "n2n": {
+      "admissible": 34,
+      "executed": 104,
+      "measurable_members": 5,
+      "member_ceiling": 0,
+      "success_cells": 0,
+      "typed_failures": 70
+    }
+  },
+  "frozen_at": "2026-09-22T17:35:14Z",
+  "frozen_before_scoring_run": true,
+  "identity": "issue-92-cross-pool-audit-v1",
+  "inputs": [
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-76-bounded-transfer-v1/plan.json",
+      "role": "bounded membership",
+      "sha256_at_freeze": "sha256:8d75ae2e7de93ce444279fd086912f872eb66f06f31521a9804c98dc8313d804"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-76-bounded-transfer-v1/coverage.json",
+      "role": "bounded coverage",
+      "sha256_at_freeze": "sha256:d40503ee5b1847e3ef2d80bbdab82020f53740c324217d6ef22f2188c5489f15"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-76-bounded-transfer-v1/results",
+      "role": "bounded engine truth",
+      "sha256_at_freeze": "directory:616 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n2-appearance-v1/plan.json",
+      "role": "n2 membership",
+      "sha256_at_freeze": "sha256:f704e89b3aeffce6cea13832241f5aa9825bed86132a198f85bc1a120a8be52d"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n2-appearance-v1/coverage.json",
+      "role": "n2 coverage",
+      "sha256_at_freeze": "sha256:b26b32502cecd0e830f33b7126e3ead1a7643a1bc5913386949fb4c24aa9f3bd"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n2-appearance-v1/results",
+      "role": "n2 engine truth",
+      "sha256_at_freeze": "directory:208 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n2n-v1/plan.json",
+      "role": "n2n membership",
+      "sha256_at_freeze": "sha256:6cd3be120c474cef23df04c559b61fdc76808a4e837e537f7e88a586d0ab1121"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n2n-v1/coverage.json",
+      "role": "n2n coverage",
+      "sha256_at_freeze": "sha256:1643a94eb56b7c1ca94cee5348d9ca7b84db148f1c54d5663e287df8772a782f"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n2n-v1/results",
+      "role": "n2n engine truth",
+      "sha256_at_freeze": "directory:104 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n2-eval-v1/plan.json",
+      "role": "eval membership",
+      "sha256_at_freeze": "sha256:801137c838696fec1928a822a49a191f4d7d874ddcde0630d7be77e0fb8da2bd"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n2-eval-v1/fixed",
+      "role": "eval selection cells",
+      "sha256_at_freeze": "directory:13608 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1",
+      "role": "N1 constant-ordinal input (via WP1 loaders)",
+      "sha256_at_freeze": "directory:127028 json files"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1",
+      "role": "N1 constant-ordinal input (via WP1 loaders)",
+      "sha256_at_freeze": "directory:28550 json files"
+    }
+  ],
+  "limitations": [
+    "descriptive audit over retained artifacts; no inferential claim",
+    "the n2-eval split uses a different system set and membership than #87; the two system sets are never mixed in one rate",
+    "the cross-split chance reference is inventory-matched uniform selection; no other baseline is admissible",
+    "typed failures are excluded and disclosed, never worst-cased"
+  ],
+  "margins": {
+    "chance_margin": 0.0,
+    "rule": "numeric margins frozen before any statistic; never re-cut after seeing the results",
+    "rule_text": "q2's frozen margin is 0.0: the frozen (zero-shot) arm is at-or-below chance iff its top-1 rate is strictly below the inventory-matched uniform reference with the member-clustered paired-difference interval entirely below 0"
+  },
+  "precision_guards": {
+    "cells_per_condition": 612,
+    "cells_total": 1224,
+    "cross_split_states": 17,
+    "eval_join_min_fraction": 0.99,
+    "oracle_pools": 3,
+    "rule": "each guard is evaluated on the frozen tables; any failed guard maps every disposition to readiness_or_precision_insufficient before the question rules are read",
+    "sparse_localization_floor": 3
+  },
+  "protocol_policy": "single terminal protocol version: the full protocol is frozen with actual numeric margins and every pre-declared expectation before the scoring run and executed exactly once; the dry run computes no statistic; --validate recomputes every published table",
+  "published_context": {
+    "issue_92_wp1": "WP1's published N1 measurements are cited verbatim as context; the N1 constant-ordinal table is recomputed from WP1's own verdict inputs via its published loader code path"
+  },
+  "questions": {
+    "q1_bounded_breadth": "at the frozen bounded-transfer window, what are the member-unit ceiling, the ordinal support, the constant-ordinal policies and the uniform reference, with the 002-a10 typed-failure resolution published?",
+    "q2_cross_split_selection": "on the 17-state cross-split, do the frozen (zero-shot) systems select engine-truth successes at or below inventory-matched uniform chance?",
+    "q3_n2_typed_coverage": "what are the N2 and N2n measured pool outcomes, published as typed coverage?"
+  },
+  "role": "terminal",
+  "schema": "issue_92_cross_pool_audit_plan_v1",
+  "statistics": {
+    "auc": "per scored selection cell (>=1 success and >=1 failure among candidates): P(successful candidate receives a lower predicted cost than a failure candidate), ties 0.5; cell mean with cell-resampled interval; member-clustered = mean of per-member means with member-resampled interval",
+    "bootstrap": "percentile bootstrap, 10000 draws, PCG64 seed 7201, quantiles [0.025, 0.975], labelled DESCRIPTIVE; member-clustered variant resamples members with every cell of a member moving together and averages per-member means (identical construction to WP1, same code path)",
+    "constant_ordinal": "per ordinal k: successes over opportunities among admissible branches, on N1 (12 sealed ceiling states, WP1 verdicts), on the cross-split (17 states), and on the full bounded pool (46 measurable members); the inventory-matched uniform reference is the only admissible chance baseline",
+    "member_ceiling": "indicator per measurable member = any admissible successful branch; prevalence over measurable members with a member-resampled interval",
+    "top_k": "per selection cell: top-1 hit, top-3 hit; inventory-matched per-cell chance k_s/n_s and 1 - C(n_s-k_s,3)/C(n_s,3); paired per-cell difference with a member-clustered interval",
+    "typed_failure_audit": "per pool: typed-failure count and the count of typed failures whose retained truth carries pig_removed >= 1; the 002-a10 cell is recomputed from its retained native chunks (manifest + chunk events on runtime:pig:0000) and published with its evidence and the exclusion rule"
+  },
+  "unit_definitions": {
+    "admissible_branch": "oracle branch whose coverage status is 'admissible'; engine truth = pig_removed event count >= 1 in the retained segment summary; typed failures carry no success value and are excluded, never worst-cased",
+    "member": "physical initial state; PRIMARY unit of analysis for every ceiling headline",
+    "selection_cell": "one (condition, seed, state, system) decision cell of the n2-eval pool; 1,224 cells over 17 states; selection = argmin predicted cost, ties to the lower ordinal (WP1's documented rule)"
+  },
+  "validation_command": "python -u -m scripts.run_cross_pool_selection_audit --validate",
+  "verdict_mapping": {
+    "q1_bounded_breadth": {
+      "not_supported_by_this_experiment": "any recomputed quantity differs from its pre-declared expectation; the delta is published",
+      "readiness_or_precision_insufficient": "a precision guard tripped, or the 002-a10 chunks are unreadable",
+      "supported": "every recomputed bounded-pool quantity equals its pre-declared expectation (measurable members, admissible/failed cells, member ceiling and its interval at 4 decimals, success cells, ordinal histogram, typed failures with success) AND the 002-a10 chunk recomputation confirms a pig_removed event on runtime:pig:0000"
+    },
+    "q2_cross_split_selection": {
+      "not_supported_by_this_experiment": "the zero-shot top-1 rate meets or exceeds the uniform reference",
+      "readiness_or_precision_insufficient": "the paired-difference interval covers 0, or fewer than 3 states carry a success (split-level rate only, no generality conclusion), or a precision guard tripped",
+      "supported": "the zero-shot top-1 rate is strictly below the inventory-matched uniform reference (margin 0.0) AND the member-clustered paired-difference interval lies entirely below 0 AND at least 3 states carry a top-1 success"
+    },
+    "q3_n2_typed_coverage": {
+      "not_supported_by_this_experiment": "any recomputed quantity differs; the delta is published",
+      "readiness_or_precision_insufficient": "a precision guard tripped",
+      "supported": "every recomputed N2/N2n coverage quantity equals its pre-declared expectation"
+    }
+  },
+  "version": 1
+}
