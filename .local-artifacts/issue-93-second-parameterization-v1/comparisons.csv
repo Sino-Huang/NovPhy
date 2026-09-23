@@ -1,0 +1,41 @@
+id,arm,statistic,unit,value,interval_low,interval_high,interval_label,detail
+grid_coverage,grid,verdict coverage,slots,0.9666666666666667,,,,"{""typed_failure"": 8, ""verdict"": 232}"
+grid_ceiling,grid,member ceiling,members,0.9333333333333333,0.8,1.0,DESCRIPTIVE,14 of 15
+grid_auc_cell_unit,grid,within-state AUC,cell_unit,0.6177626606198034,0.578381991685563,0.6553689531368102,DESCRIPTIVE,126 cells
+grid_auc_member_clustered,grid,within-state AUC,member_clustered,0.6177626606198033,0.512640306122449,0.7138893613000756,DESCRIPTIVE,126 cells
+grid_auc_continuous-fixed-h1,grid,within-state AUC per system,member_clustered,0.5982993197278912,0.47981859410430844,0.7051077097505667,DESCRIPTIVE,
+grid_auc_continuous-fixed-h5,grid,within-state AUC per system,member_clustered,0.6046485260770975,0.485374149659864,0.7124716553287981,DESCRIPTIVE,
+grid_auc_hybrid-fixed-h1,grid,within-state AUC per system,member_clustered,0.6503401360544219,0.5562315759637187,0.7421811224489795,DESCRIPTIVE,
+grid_top1,grid,top1 hit rate,cells,0.06349206349206349,,,,8/126; chance 0.08035714285714286
+grid_top1_minus_chance,grid,top1 minus chance,member_clustered,-0.016865079365079368,-0.09375,0.11904761904761904,DESCRIPTIVE,
+grid_top3,grid,top3 hit rate,cells,0.24603174603174602,,,,31/126; chance 0.235714285714286
+grid_top3_minus_chance,grid,top3 minus chance,member_clustered,0.010317460317460312,-0.13432539682539682,0.17817460317460315,DESCRIPTIVE,
+grid_mirror_top1,grid,mirror_top1 hit rate,cells,0.0,,,,0/126; chance 0.08035714285714286
+grid_mirror_top1_minus_chance,grid,mirror_top1 minus chance,member_clustered,-0.08035714285714286,-0.09375,-0.06696428571428571,DESCRIPTIVE,
+grid_miss_all,grid,one uniform draw per ceiling member misses everywhere,probability,0.30742910170702964,,,,
+grid_spearman_ordinal,grid,median Spearman rho cost vs ordinal,cells,-0.75,,,,"{""continuous-fixed-h1"": -0.9264705882352942, ""continuous-fixed-h5"": -0.9264705882352942, ""hybrid-fixed-h1"": -0.4705882352941176}"
+grid_spearman_drag_x,grid,median Spearman rho cost vs drag_x,cells,0.5699587188353825,,,,"{""continuous-fixed-h1"": 0.8124943438717155, ""continuous-fixed-h5"": 0.8124943438717155, ""hybrid-fixed-h1"": 0.24253562503633297}"
+grid_spearman_drag_y,grid,median Spearman rho cost vs drag_y,cells,-0.8124943438717155,,,,"{""continuous-fixed-h1"": -0.5699587188353825, ""continuous-fixed-h5"": -0.5699587188353825, ""hybrid-fixed-h1"": -0.9701425001453319}"
+grid_spearman_radius,grid,median Spearman rho cost vs radius,cells,-0.788235294117647,,,,"{""continuous-fixed-h1"": -0.9441176470588234, ""continuous-fixed-h5"": -0.9441176470588234, ""hybrid-fixed-h1"": -0.5235294117647059}"
+grid_spearman_angle,grid,median Spearman rho cost vs angle,cells,-0.3588235294117647,,,,"{""continuous-fixed-h1"": -0.03823529411764706, ""continuous-fixed-h5"": -0.03823529411764706, ""hybrid-fixed-h1"": -0.6647058823529411}"
+grid_disposition,grid,C22 disposition,token,not_supported_by_this_experiment,,,,"{""auc_member_clustered"": 0.6177626606198033, ""ceiling_members"": 14, ""verdict_coverage"": 0.9666666666666667}"
+offset_coverage,offset,verdict coverage,slots,0.9636363636363636,,,,"{""typed_failure"": 6, ""verdict"": 159}"
+offset_ceiling,offset,member ceiling,members,0.6,0.3333333333333333,0.8666666666666667,DESCRIPTIVE,9 of 15
+offset_auc_cell_unit,offset,within-state AUC,cell_unit,0.5512345679012346,0.49629629629629624,0.6080246913580247,DESCRIPTIVE,81 cells
+offset_auc_member_clustered,offset,within-state AUC,member_clustered,0.5512345679012346,0.42345679012345677,0.6685185185185185,DESCRIPTIVE,81 cells
+offset_auc_continuous-fixed-h1,offset,within-state AUC per system,member_clustered,0.6462962962962961,0.5055555555555555,0.7740740740740741,DESCRIPTIVE,
+offset_auc_continuous-fixed-h5,offset,within-state AUC per system,member_clustered,0.5703703703703704,0.41481481481481486,0.7111111111111111,DESCRIPTIVE,
+offset_auc_hybrid-fixed-h1,offset,within-state AUC per system,member_clustered,0.43703703703703706,0.34444444444444444,0.5259259259259258,DESCRIPTIVE,
+offset_top1,offset,top1 hit rate,cells,0.08641975308641975,,,,7/81; chance 0.10303030303030303
+offset_top1_minus_chance,offset,top1 minus chance,member_clustered,-0.016610549943883286,-0.07811447811447811,0.057463524130190784,DESCRIPTIVE,
+offset_top3,offset,top3 hit rate,cells,0.345679012345679,,,,28/81; chance 0.30909090909090936
+offset_top3_minus_chance,offset,top3 minus chance,member_clustered,0.03658810325476994,-0.12457912457912457,0.19775533108866444,DESCRIPTIVE,
+offset_mirror_top1,offset,mirror_top1 hit rate,cells,0.0,,,,0/81; chance 0.10303030303030303
+offset_mirror_top1_minus_chance,offset,mirror_top1 minus chance,member_clustered,-0.10303030303030304,-0.1272727272727273,-0.09090909090909091,DESCRIPTIVE,
+offset_miss_all,offset,one uniform draw per ceiling member misses everywhere,probability,0.37320590416778665,,,,
+offset_spearman_ordinal,offset,median Spearman rho cost vs ordinal,cells,-0.881818181818182,,,,"{""continuous-fixed-h1"": -0.36363636363636365, ""continuous-fixed-h5"": -0.5454545454545455, ""hybrid-fixed-h1"": -1.0}"
+offset_spearman_drag_x,offset,median Spearman rho cost vs drag_x,cells,-0.881818181818182,,,,"{""continuous-fixed-h1"": -0.36363636363636365, ""continuous-fixed-h5"": -0.5454545454545455, ""hybrid-fixed-h1"": -1.0}"
+offset_spearman_drag_y,offset,median Spearman rho cost vs drag_y,cells,-0.881818181818182,,,,"{""continuous-fixed-h1"": -0.36363636363636365, ""continuous-fixed-h5"": -0.5454545454545455, ""hybrid-fixed-h1"": -1.0}"
+offset_spearman_radius,offset,median Spearman rho cost vs radius,cells,0.21867938283753854,,,,"{""continuous-fixed-h1"": -0.2004561009344103, ""continuous-fixed-h5"": -0.03644656380625642, ""hybrid-fixed-h1"": 0.28246086949848725}"
+offset_spearman_angle,offset,median Spearman rho cost vs angle,cells,-0.881818181818182,,,,"{""continuous-fixed-h1"": -0.36363636363636365, ""continuous-fixed-h5"": -0.5454545454545455, ""hybrid-fixed-h1"": -1.0}"
+offset_disposition,offset,C23 disposition,token,readiness_or_precision_insufficient,,,,"{""auc_member_clustered"": 0.5512345679012346, ""ceiling_members"": 9, ""verdict_coverage"": 0.9636363636363636}"

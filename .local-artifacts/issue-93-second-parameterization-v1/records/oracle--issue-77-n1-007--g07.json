@@ -1,0 +1,122 @@
+{
+  "cell": {
+    "action": {
+      "drag_x": -80,
+      "drag_y": 80,
+      "release_time_ms": 1000,
+      "tap_time_ms": 0
+    },
+    "arm": "grid",
+    "branch_identity": "issue-77-n1-007-g07",
+    "engine_seed": 764100007,
+    "identity": "oracle--issue-77-n1-007--g07",
+    "member": "issue-77-n1-007",
+    "ordinal": 7,
+    "retained_anchor_path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-007-a05--a00/decision-frame.png",
+    "state": "issue-77-n1-007-a05"
+  },
+  "cell_kind": "oracle",
+  "decision_frame": {
+    "decision_compute": "none (frozen candidate; scoring is a separate phase)",
+    "fixed_step": 30000,
+    "fixed_time_seconds": 13.158,
+    "frame_identity": "agent-observation-v1:sha256:4f453c3c053756848622c5253423aa8108c314e3b0bd2107e9536ce61e560d0d",
+    "observed_frames": 3,
+    "path": "/p/Project/NovPhy/data/issue-93-second-parameterization/attempts/oracle--issue-77-n1-007--g07/decision-frame.png",
+    "sha256": "sha256:87246519dadebcc4506e5dad2bbae3a9003733afed53790f3051d769435e6ce7"
+  },
+  "engine_channel": {
+    "bird_launches": 1,
+    "consistency": "agreement",
+    "pig_contact": true,
+    "pig_identity_failures": 0,
+    "pig_lifecycle_destroyed": [
+      "runtime:pig:0000"
+    ],
+    "pig_removed": true,
+    "pig_removed_events": [
+      {
+        "event_type": "entity_death",
+        "fixed_step": 46301,
+        "participants": [
+          "runtime:pig:0000"
+        ]
+      },
+      {
+        "event_type": "entity_destroyed",
+        "fixed_step": 46301,
+        "participants": [
+          "runtime:pig:0000"
+        ]
+      },
+      {
+        "event_type": "pig_removed",
+        "fixed_step": 46301,
+        "participants": [
+          "runtime:pig:0000"
+        ]
+      }
+    ],
+    "structure_destroyed": false,
+    "structure_destroyed_events": 0
+  },
+  "engine_seed": 764100007,
+  "executed_action": {
+    "drag_release": [
+      -80,
+      80
+    ],
+    "release_time": 1000,
+    "socket_command": {
+      "gameX": 18,
+      "gameY": 147,
+      "releaseTime": 1000,
+      "tapTime": 0,
+      "x": 18,
+      "y": 332
+    },
+    "tap_time": 0
+  },
+  "execution": {
+    "censored": false,
+    "engine_wall_seconds": 115.78932793485001,
+    "first_fixed_step": 30000,
+    "frame_count": 478,
+    "last_fixed_step": 53804,
+    "native_root": "/p/Project/NovPhy/data/issue-93-second-parameterization/attempts/oracle--issue-77-n1-007--g07/aligned/capture-v2:7fe53fa3f9af479e9570fd18c22e115b",
+    "observation_manifest": "observation-trace-manifest-v1:sha256:13ce7f91659f7e1bdb0436c509f04427d2fc3274d8f3d15f2490be7853fc90a2",
+    "segment_identity": "oracle--issue-77-n1-007--g07:shot-1",
+    "terminal_reason": "level_clear"
+  },
+  "failure": null,
+  "failure_kind": null,
+  "frame_vs_retained_anchor": {
+    "byte_equal": true,
+    "retained_anchor_path": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-007-a05--a00/decision-frame.png"
+  },
+  "fresh_scenario_lineage": false,
+  "issue_64_authorized": false,
+  "launch": {
+    "angle_deg": 44.775925485405196,
+    "fixed_step": 32502,
+    "speed": 9.999298265872246,
+    "velocity": [
+      7.09816933,
+      7.04286575
+    ]
+  },
+  "outcome": {
+    "first_shot_success": true
+  },
+  "plan_identity": "issue-93-second-parameterization-v1",
+  "plan_version": 1,
+  "ports": {
+    "agent": 28700,
+    "game": 28701,
+    "physics": 28702
+  },
+  "schema": "issue_93_oracle_record_v1",
+  "seed": 20260908,
+  "state_identity": "issue-77-n1-007-a05",
+  "wall_seconds": 177.4541786960326
+}
