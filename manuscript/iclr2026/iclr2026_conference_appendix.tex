@@ -1,11 +1,30 @@
 %!TEX root = iclr2026_conference.tex
-% Binds outline appendix content classes — manuscript/writing_outline_boundary_paper.md (v1.2);
+% Binds outline appendix content classes — manuscript/writing_outline_boundary_paper.md (v2.0);
 % evidence ledger: manuscript/research_evidence.md. Status: REVISED 2026-09-21 post-review, PROSE PASS 2026-09-21,
 % drafted from executed artifacts (env@254720f plus commits 0a0dd73, ac2a4e1, 8399f57, 9e369c4;
 % issues #77–#80).
-% Registry rows C14–C16 remain gated by #83/#84/#82 and carry [TODO] markers.
+% Registry rows C14–C16 resolved by #83/#84 and the #82->#92 chain; C17–C21 added by #92 (2026-09-23).
+% #91-PASS 2026-09-23 (WP2 item 6): #76 closeout provenance path corrected to data/issue-76-closeout/
+% in the registry-provenance row C2b and the artifact table (was data/runtime_evidence/...);
+% tab:app:registry caption range C1--C16 -> C1--C21 (rows C17-C21 already present).
+% r3 2026-09-23 (Evidence): I28 App. A exception pointer + C19 token bound to the frozen 0.5-margin rule;
+% I9 horizon-separation sentence qualified (App. E.3); I13 fig:app:ceiling combined-count label; I27/I29/I32
+% App. H.1 + tab:app:lookahead caption (rollout depth, 13th slot, h15 opposite directions); tab:app:audit
+% rows for rollout depth and the 216/612, 6-cluster cross-split AUC basis.
 % This file OWNS the \appendix switch; the main file must place this input AFTER \bibliography.
+% #91-WP5 2026-09-23 (page limit + audit): this file now also OWNS the floats and prose moved out of
+% the main text so the body fits the ICLR 2026 9-page limit: Appendix sec:app:anat (former §5
+% subsections + floats from experiments.tex, the heuristic reading / frontier / learnables from
+% synthesis.tex, discussion (b)-(c) limitations), sec:app:related (intro ¶2-¶5 + related-work
+% subsections + tab:app:matrix), sec:app:estimands (fig:app:estimands, tab:app:estimands), the full
+% protocol element list (end of sec:app:protocol), the claim registry tab:app:registry (former
+% tab:syn:registry, merged with the former per-row provenance table, which is deleted; commands now
+% live only in tab:app:repro), and the new number-to-artifact audit table tab:app:audit.
 % Label prefixes owned by this file: sec:app, tab:app, fig:app.
+% #91-WP4 2026-09-23 (WriterEpsilon): added fig:app:ceiling (figures/fig_ceiling_map.pdf, built and
+% artifact-asserted by figures/build_figures.py:ceiling_map()) in sec:app:registry, referenced from its
+% first paragraph. tab:app:matrix "This paper" row rewritten for the ranking-failure thesis (was
+% Yes x5 under the retired adaptive-granularity thesis); caption sentence added for that row.
 
 \appendix
 
@@ -17,13 +36,18 @@ Every executed artifact in this paper is produced under a frozen plan. The lifec
 
 Every scheduled cell is executed or retained as a typed terminal failure. There is no outcome-conditioned exclusion, retry, replacement, or re-freeze. A terminal-incomplete ledger refuses top-up permanently, and all failure records are kept. Recorded failure kinds include campaign capture failures (\texttt{native-manifest} deadlines and paired-view mismatches), the reactive diagnostic's \texttt{decision\_failure: prior\_candidate\_absent} cells, and the \texttt{compute\_allowance\_exceeded} stop rule attached to each ticket's allowance. Allowances were recorded per ticket: four GPU-hours for the external baselines, six GPU-hours for the CLEVRER replication, and a 24 worker-hour wall cap with a two GPU-hour decision cap for the reactive diagnostic. An unfunded cell is recorded \texttt{unsupported}, never dropped.
 
-The disposition vocabulary has exactly three tokens: \texttt{supported}, \texttt{not\_supported\_by\_this\_experiment}, and \texttt{readiness\_or\_precision\_insufficient}. Each token is returned by a rule declared before outcomes. The external-baseline signature question returns \texttt{supported} only if both ports show the decay signature, \texttt{not\_supported\_by\_this\_experiment} on a definitive negative, and \texttt{readiness\_or\_precision\_insufficient} otherwise. One positive and one indeterminate port produced the third token. The CLEVRER signature question applies frozen component rules S1--S3 with pre-declared numeric margins. The reactive diagnostic applies a mandatory prevalence floor of 0.10 pooled first-shot successes before any paired-difference question is scored. Tokens are reported verbatim and are never softened into equivalence language.
+% r3 I28: exception pointer to the post-outcome restatement disclosed in Section 4 (method.tex sec:mth:protocol).
+The disposition vocabulary has exactly three tokens: \texttt{supported}, \texttt{not\_supported\_by\_this\_\allowbreak experiment}, and \texttt{readiness\_or\_precision\_\allowbreak insufficient}. Each token is returned by a rule declared before outcomes, with one disclosed exception: the restatement of Section~\ref{sec:mth:protocol} was specified after the oracle-pass and completion-pass outcomes, and re-readings against criteria chosen later (row C19) are labelled post hoc. The external-baseline signature question returns \texttt{supported} only if both ports show the decay signature, \texttt{not\_supported\_by\_this\_\allowbreak experiment} on a definitive negative, and \texttt{readiness\_or\_precision\_\allowbreak insufficient} otherwise. One positive and one indeterminate port produced the third token. The CLEVRER signature question applies frozen component rules S1--S3 with pre-declared numeric margins. The reactive diagnostic applies a mandatory prevalence floor of 0.10 pooled first-shot successes before any paired-difference question is scored. Tokens are reported verbatim and are never softened into equivalence language.
 
 Measurement discipline is uniform. All paired contrasts carry bootstrap intervals over paired units, labelled descriptive wherever the underlying evidence is descriptive, and no interval is read as a significance test at these state counts. No multiplicity adjustment is applied. Zero-shot and few-shot conditions are reported separately and never pooled. Evaluation states are held-out lineages with at least one coverage-admissible branch, taken in sorted identity order. The ranking estimand on NovPhy is normalized regret against the $t=600$ end-of-window replay cost, which is right-censored and not a settled cost. Targets at offsets beyond an early-terminal branch's last frame reuse the terminal frame's carrier, with absorbed offsets recorded per target. The candidate inventory is the frozen 13-candidate set (reference \texttt{a00} plus angular candidates \texttt{a01}--\texttt{a12}), with per-state counts reduced by typed branch failures exactly as the headroom tables record.
 
 Compute accounting reports a work frontier, not an equalization. Each arm reports per-state wall time, active-parameter step counts, and candidate counts. Training is equalized: 9{,}000 updates with batch 64 per cell, which is 576{,}000 examples, and identical minibatches per paired seed across arms. Candidate count alone is never presented as compute matching. \texttt{training\_compute\_matched=false} is recorded, and inference is not equalized across arms. Linear MACs are reported rather than full FLOPs. The capacity contract matches the continuous width to the hybrid total parameter count within a 2\% tolerance. The \#74 fits measure 1{,}862{,}396 continuous versus 1{,}837{,}690 hybrid parameters (a relative difference of 0.0134) and record that active capacity differs and is not claimed equal. All fits ran on one RTX 3090 under an exclusive lock, and every port targets the existing $\sim$1.8M-parameter frozen-carrier predictor scale.
 
 Paired checkpoints use three seeds, 20260908, 20260909, and 20260910, across all four retraining families. Campaign generation and engine seeds are pinned disjoint from all earlier ranges in each frozen plan. The \#77 bases are 764{,}000{,}000+ordinal for generation and 764{,}100{,}000+ordinal for the engine, with 764{,}200{,}000+, 764{,}300{,}000+, and 764{,}400{,}000+ reserved for the \#75-adjacent N2 capture, engine, and adaptation streams. Table~\ref{tab:app:checkpoints} inventories the per-seed artifacts.
+
+% #91-WP5: full protocol element list moved from method.tex (was §4 ¶2).
+The protocol's design discipline is \textbf{frozen plans} (every campaign, training run, and evaluation run executes a plan frozen before launch and re-hashed at launch, refusing the run after any source edit); \textbf{sealed membership} (cell membership, held-out state identities, and the candidate inventory are pinned before any rendered run or model score, and no outcome moves membership); \textbf{typed terminal failures} (every scheduled unit ends admissible or as a typed failure with a recorded kind, retained and reported per cell, never silently dropped or worst-cased); and \textbf{equal-update training with work reporting} (paired arms share minibatches and update budgets, the continuous width is matched to the hybrid parameter count within a width tolerance, \texttt{training\_compute\_matched=false} is disclosed, and every cross-system contrast is work-reported). Its scoring and reporting discipline is \textbf{paired descriptive inference} (all contrasts report mean paired differences over paired units with descriptive 95\% paired-bootstrap intervals that support no superiority decision, and record a selection-optimism flag where a reference policy is selected on its scoring data); a \textbf{declared candidate inventory} (13 candidate actions per state, one reference drag plus 12 release-angle actions, are pinned before scoring, typed branch failures remove candidates without refill, and CLEVRER runs no inventory); \textbf{right-censored endpoints} (task costs are end-of-window costs at declared endpoints on mostly right-censored branches under a recorded stable-terminal absorption convention, never presented as settled costs); \textbf{every attempted cell reported} (the accounting is fixed in advance and reported in full, 208/208 normal-mechanics branches attempted, 186/208 appearance-novelty branches admissible on the novel side, 34/104 admissible on the parallel normal-side campaign with all 70 contention-era typed failures retained, and 480 CLEVRER windows with zero typed failures); and a \textbf{disposition vocabulary} (each executed question ends in exactly one verbatim token, \texttt{supported}, \texttt{not\_supported\_by\_this\_\allowbreak experiment}, or \texttt{readiness\_or\_precision\_\allowbreak insufficient}, and a negative is never restated as ``no significant difference'').
+
 
 \begin{table}[t]
 \centering
@@ -34,10 +58,10 @@ Paired checkpoints use three seeds, 20260908, 20260909, and 20260910, across all
 \toprule
 Family and root & Arms & Per-seed artifacts and budget \\
 \midrule
-\#74 matched systems, \texttt{.local-artifacts/issue-74-matched-dynamics-v1} & \texttt{continuous}, \texttt{hybrid} & \texttt{seed-*/\{continuous,hybrid\}/\{predictor,controller\}.pt}; six fits, 9{,}000 updates each, selection at the last update \\
-\#77 N1 retraining, \texttt{.local-artifacts/issue-77-n1-dynamics-v1} & \texttt{continuous}, \texttt{hybrid} & \texttt{seed-*/\{continuous,hybrid\}/}; six fits, 9{,}000 updates each, identical recipe to \#74 \\
-\#78 external baselines, \texttt{.local-artifacts/issue-78-external-temporal-baselines-v1} & \texttt{tawm}, \texttt{vlwm} & \texttt{seed-*/\{tawm,vlwm\}/predictor.pt} and \texttt{seed-*/tawm/controller.pt}; six external fits at the identical budget. The \texttt{continuous} reference arms are the frozen \#77 checkpoints and are not retrained \\
-\#79 CLEVRER replication, \texttt{.local-artifacts/issue-79-clevrer-boundary-v1} & \texttt{continuous}, \texttt{hybrid} & \texttt{seed-*/\{continuous,hybrid\}/predictor.pt}; six fits, 9{,}000 updates each \\
+\#74 matched systems, \texttt{.local-artifacts/}\newline\texttt{issue-\allowbreak 74-\allowbreak matched-\allowbreak dynamics-\allowbreak v1} & \texttt{continuous}, \texttt{hybrid} & \texttt{seed-\allowbreak */\allowbreak \{continuous,hybrid\}/}\newline\texttt{\{predictor,controller\}.pt}; six fits, 9{,}000 updates each, selection at the last update \\
+\#77 N1 retraining, \texttt{.local-artifacts/}\newline\texttt{issue-77-n1-dynamics-v1} & \texttt{continuous}, \texttt{hybrid} & \texttt{seed-\allowbreak */\allowbreak \{continuous,hybrid\}/}; six fits, 9{,}000 updates each, identical recipe to \#74 \\
+\#78 external baselines, \texttt{.local-artifacts/}\newline\texttt{issue-\allowbreak 78-\allowbreak external-\allowbreak temporal-\allowbreak }\newline\texttt{baselines-v1} & \texttt{tawm}, \texttt{vlwm} & \texttt{seed-*/\{tawm,vlwm\}/predictor.pt} and\newline\texttt{seed-\allowbreak */\allowbreak tawm/\allowbreak controller.pt}; six external fits at the identical budget. The \texttt{continuous} reference arms are the frozen \#77 checkpoints and are not retrained \\
+\#79 CLEVRER replication, \texttt{.local-artifacts/}\newline\texttt{issue-\allowbreak 79-\allowbreak clevrer-\allowbreak boundary-\allowbreak v1} & \texttt{continuous}, \texttt{hybrid} & \texttt{seed-\allowbreak */\allowbreak \{continuous,hybrid\}/}\newline\texttt{predictor.pt}; six fits, 9{,}000 updates each \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -57,10 +81,10 @@ The campaigns attempted every scheduled branch, and Table~\ref{tab:app:coverage}
 Campaign root & Attempted & Admissible & Typed failures & Published inventory \\
 \midrule
 \texttt{issue-77-n1-v1} (N1) & 208 & 178 & 30 & coverage complete \\
-\texttt{issue-77-n2-appearance-v1} (novel side) & 208 & 186 & 22 & coverage complete \\
+\texttt{issue-\allowbreak 77-\allowbreak n2-\allowbreak appearance-\allowbreak v1} (novel side) & 208 & 186 & 22 & coverage complete \\
 \texttt{issue-77-n2n-v1} (normal side, \texttt{type010102}) & 104 & 34 & 70 & coverage complete \\
 \midrule
-\texttt{issue-77-n1-diagnostic-v1} & & & & 4 states, 52 state--candidate pairs, 12 systems $\times$ 3 seeds $=$ 1{,}872 records \\
+\texttt{issue-\allowbreak 77-\allowbreak n1-\allowbreak diagnostic-\allowbreak v1} & & & & 4 states, 52 state--candidate pairs, 12 systems $\times$ 3 seeds $=$ 1{,}872 records \\
 \texttt{issue-77-n2-eval-v1} & & & & 17 states, 189 candidates, 12 systems $\times$ 3 seeds $\times$ 2 conditions $=$ 13{,}608 records, 6 adapted predictors \\
 \bottomrule
 \end{tabular}
@@ -100,13 +124,13 @@ For VLWM \citep{du2026vlwm} no public code exists. The frozen plan records a 7-w
 
 On this carrier the TAWM cell shares the \#77 continuous reference cell's recipe, meaning the same seed-initialized carrier, minibatch stream, loss, optimizer, and horizon counts. The two cells differ only in within-cycle horizon ordering, round-robin 1, 5, 15 versus the reference's blocked 1, 1, 1, 5, 5, 5, 15, 15, 15. The TAWM-versus-continuous contrasts therefore estimate horizon-schedule-ordering effects under an identical budget, and the VLWM arm carries the independent mechanism contrast.
 
-Execution covered all scheduled cells: 5{,}061 of 5{,}061 candidate records across 7 systems, 3 paired seeds, and 241 admissible candidates on all 21 evaluable states, with zero prediction failures. Cumulative active GPU time was 2{,}071 seconds ($\approx$0.58 GPU-hours, about 14\% of the four-hour allowance), with peak CUDA allocation of 203 MiB. Reference-arm walls are frozen \#77 measurements dated 2026-09-20, while baseline walls were measured under this ticket's exclusive GPU lock. Bootstrap intervals are paired and descriptive, with 10{,}000 draws at seed 7201. The dispositions are recorded verbatim: the method-class decay-signature question returns \texttt{readiness\_or\_precision\_insufficient}, and the work-reported comparison and the $h{=}1$ training-effect analog each return \texttt{supported} at the recorded scope of Section~\ref{sec:exp:external}.
+Execution covered all scheduled cells: 5{,}061 of 5{,}061 candidate records across 7 systems, 3 paired seeds, and 241 admissible candidates on all 21 evaluable states, with zero prediction failures. Cumulative active GPU time was 2{,}071 seconds ($\approx$0.58 GPU-hours, about 14\% of the four-hour allowance), with peak CUDA allocation of 203 MiB. Reference-arm walls are frozen \#77 measurements dated 2026-09-20, while baseline walls were measured under this ticket's exclusive GPU lock. Bootstrap intervals are paired and descriptive, with 10{,}000 draws at seed 7201. The dispositions are recorded verbatim: the method-class decay-signature question returns \texttt{readiness\_or\_precision\_\allowbreak insufficient}, and the work-reported comparison and the $h{=}1$ training-effect analog each return \texttt{supported} at the recorded scope of Appendix~\ref{sec:app:extbase}.
 
 \section{CLEVRER Replication Details}
 \label{sec:app:clevrer}
 
 This section documents the CLEVRER replication: data provenance, frozen membership rule, Phase-0 vocabulary mapping, endpoint grid, and training protocol.
-The data source is the official CLEVRER release at \texttt{data.csail.mit.edu/clevrer} under a CC0 license \citep{yi2020clevrer}. Only the annotation archives were used: train at 156{,}761{,}889 bytes with \texttt{sha256} prefix \texttt{e7f9185a} and validation at 78{,}386{,}966 bytes with prefix \texttt{d89e7471}. No videos were downloaded. Train scenes 0--9999 and validation scenes 10000--14999 ship annotations, and the test split ships none. Each annotation contains \texttt{object\_property} records for color, material, and shape, per-frame \texttt{motion\_trajectory} entries with per-object location, orientation, velocity, and angular velocity, collision events with \texttt{frame\_id}, and an \texttt{inside\_camera\_view} flag. That flag is the availability mask, applied in slot columns 7 and 10 and in every masked estimand, and unavailable fields are zeroed exactly as the deployment carrier zeroes them. Vertical location and velocity, orientation matrices, and angular velocities are parsed into per-scene shards for the parser-contract record with no carrier-column referent. No official generation or simulation code exists. The public CLEVRER repository at pinned commit \texttt{98b8420} contains model code only, and the paper's Bullet-plus-Blender pipeline was never released, so regenerated scenes are not a fallback. Had the released fields proved insufficient for the feature-parser contract, the frozen rule required publishing \texttt{readiness\_or\_precision\_insufficient} naming the exact blocker.
+The data source is the official CLEVRER release at \texttt{data.csail.mit.edu/\allowbreak clevrer} under a CC0 license \citep{yi2020clevrer}. Only the annotation archives were used: train at 156{,}761{,}889 bytes with \texttt{sha256} prefix \texttt{e7f9185a} and validation at 78{,}386{,}966 bytes with prefix \texttt{d89e7471}. No videos were downloaded. Train scenes 0--9999 and validation scenes 10000--14999 ship annotations, and the test split ships none. Each annotation contains \texttt{object\_property} records for color, material, and shape, per-frame \texttt{motion\_trajectory} entries with per-object location, orientation, velocity, and angular velocity, collision events with \texttt{frame\_id}, and an \texttt{inside\_camera\_view} flag. That flag is the availability mask, applied in slot columns 7 and 10 and in every masked estimand, and unavailable fields are zeroed exactly as the deployment carrier zeroes them. Vertical location and velocity, orientation matrices, and angular velocities are parsed into per-scene shards for the parser-contract record with no carrier-column referent. No official generation or simulation code exists. The public CLEVRER repository at pinned commit \texttt{98b8420} contains model code only, and the paper's Bullet-plus-Blender pipeline was never released, so regenerated scenes are not a fallback. Had the released fields proved insufficient for the feature-parser contract, the frozen rule required publishing \texttt{readiness\_or\_precision\_\allowbreak insufficient} naming the exact blocker.
 
 Membership was frozen before any training. The rule selects the first 12 collision-complete scenes in ascending \texttt{scene\_index} within the validation-split annotations, where collision-complete means a contiguous 128-frame trajectory for every declared object and at least one collision event, with no outcome-based selection. The selected scenes are 10000 through 10011, with 4 to 6 objects and 1 to 4 collisions each. Each scene yields 40 training windows with starts 0 through 39 and length 61, for 480 windows in total, and the evaluation contexts $\{0,1,2,3\}$ give 48 scene--context units per seed. The scan visited exactly these 12 scenes and skipped none, and the membership function returns typed failures for skipped scenes rather than dropping them silently.
 
@@ -114,40 +138,468 @@ The Phase 0 vocabulary mapping was declared before any training. The carrier reu
 
 The endpoint grid is $\{15, 30, 60, 120\}$ CLEVRER frames, fixed by a divisibility rule. Every endpoint is divisible by all $h \in \{1,5,15\}$, and every context plus endpoint stays within the 128-frame clip, which holds for all four contexts since the largest sum is $3 + 120 = 123 \le 127$. The NovPhy grid $\{15, \ldots, 600\}$ does not transfer because 600 exceeds the clip, and divisibility is the freezing rule. The estimand is a recursive fixed-pair rollout from the true carrier at each context, with one shared initial carrier, predictions feeding the next transition, and no truth resets. Metrics are position, velocity, carrier, presence, and kind mean squared error, with position and velocity masked by \texttt{inside\_camera\_view} at the target frame. Ranking regret is not an estimand here because no candidate inventory exists on CLEVRER. Engine-annotation features are the input on both arms, there is no visual perception on either arm, and the parser contract is shared and frozen.
 
-Both arms were retrained from scratch, pure continuous versus the micro-symbolic hybrid, for 3 paired seeds at 9{,}000 updates with identical minibatches. The objective is local MSE plus recursive MSE plus the carrier-bound penalty at the \#74 weight of 0.01, and the hybrid adds micro symbolic losses at weight 0.1. The hybrid macro head and adapter receive no CLEVRER gradient and are excluded from the expected-gradient parameter count. The compute allowance was 6 GPU-hours with the recorded stop rule: exceeding it halts execution, retains the remaining cells as \texttt{compute\_allowance\_exceeded} typed failures, and disposes \texttt{readiness\_or\_precision\_insufficient}. Actual consumption was 1{,}494.6 seconds of training plus 52.6 seconds of evaluation, approximately 0.43 GPU-hours, with peak CUDA allocation of 105 MiB and zero typed failures. Units per arm were 432 continuous versus 864 hybrid, and active-parameter counts, linear MACs per step, and transition-step counts per system are recorded in \texttt{summary.json}. Inference was not equalized and is recorded as not equalized.
+Both arms were retrained from scratch, pure continuous versus the micro-symbolic hybrid, for 3 paired seeds at 9{,}000 updates with identical minibatches. The objective is local MSE plus recursive MSE plus the carrier-bound penalty at the \#74 weight of 0.01, and the hybrid adds micro symbolic losses at weight 0.1. The hybrid macro head and adapter receive no CLEVRER gradient and are excluded from the expected-gradient parameter count. The compute allowance was 6 GPU-hours with the recorded stop rule: exceeding it halts execution, retains the remaining cells as \texttt{compute\_allowance\_exceeded} typed failures, and disposes \texttt{readiness\_or\_precision\_\allowbreak insufficient}. Actual consumption was 1{,}494.6 seconds of training plus 52.6 seconds of evaluation, approximately 0.43 GPU-hours, with peak CUDA allocation of 105 MiB and zero typed failures. Units per arm were 432 continuous versus 864 hybrid, and active-parameter counts, linear MACs per step, and transition-step counts per system are recorded in \texttt{summary.json}. Inference was not equalized and is recorded as not equalized.
 
-\section{Claim-Registry Provenance}
-\label{sec:app:registry}
+\section{Heuristic Boundary Anatomy: Full Record}
+\label{sec:app:anat}
 
-The registry table appears in the main text as Table~\ref{tab:syn:registry} in Section~\ref{sec:syn:picture}. This appendix records, for each row, the artifact roots that hold the published numbers and the exact validation command that recomputes them. Paths are relative to the NovPhy repository root. Each row's disposition token is quoted verbatim from its artifact, and each row's numbers are bounded to the recorded scope of that artifact.
+This appendix holds the proxy-era record that Section~\ref{sec:exp:anatomy} summarizes. Every regret below is scored against the construct-invalidated $t{=}600$ replay count cost of Section~\ref{sec:exp:validity} and is heuristic.
+
+Section~\ref{sec:mth:setting} defined the request surface and Section~\ref{sec:mth:protocol} the frozen evaluation contract. This section reports the executed evidence in six families, one per subsection. Each opening sentence names the estimand scored and the state family covered, because the estimand changes between the confirmatory endpoint, the ranking cohorts, and the recursive CLEVRER scoring. All intervals are descriptive paired bootstrap intervals computed under the frozen protocol, and we call an effect null when its descriptive interval covers zero. Dispositions appear in the frozen vocabulary verbatim, every attempted cell is reported, and the reactive closed-loop diagnostic is reported in Section~\ref{sec:disc} rather than here.
+
+% Source: research_evidence.md row "Issue-15 confirmatory" + issue-15 confirmatory-v2 summary.
+\subsection{Confirmatory endpoint result}
+\label{sec:app:confirmatory}
+
+The estimand is the paired mean gain in duration-weighted authoritative endpoint carrier MSE over eligible teacher-forced decision states, and the family is instance-held-out, same-physics NovPhy gameplay \citep{pinto2024novphy}: the six complete sealed rollouts of the frozen final partition, collected once and consumed once. The protocol calibrated two compute-support budgets prospectively, declared any configuration exceeding its budget ineligible, and scored the candidate against the strongest eligible comparator at each budget. The parameter-matched two-head controller was strongest at the lower budget and fixed-pair at the higher.
+
+At the lower budget the mean paired gain is zero. At the higher budget the mean paired gain is $-5.2 \times 10^{-4}$ with a paired 95\% interval $[-7.1 \times 10^{-4}, -3.6 \times 10^{-4}]$, where gain is the comparator's error minus the candidate's error. The candidate's endpoint error was therefore higher than fixed-pair's at the higher budget. Authoritative endpoint physical-violation incidence did not increase at either budget.
+
+Three scope limits bound this result. The estimand is teacher-forced, so the result does not measure closed-loop control. Violation measurement covers the two authoritative endpoint checks only, and dense-path plausibility is unmeasured. Exposure is instance-held-out within the same physics, so the result supports no template-held-out or shifted-physics claim. Because the frozen rule scored only the strongest eligible comparator per budget, no five-comparator matched suite exists, and recomputing one would require a new authorization and partition. The frozen decision rule returns \texttt{not\_supported\_by\_this\_\allowbreak experiment}.
+
+% Source: research_evidence.md rows "Issue-74 matched dynamics systems" and "Issue-76 closeout".
+\subsection{Development anatomy on the original families}
+\label{sec:app:development}
+
+The estimands are ranking regret over the nine request pairs and carrier MSE scored on offset-225 rollouts, and the families are the original single-force and multi-force development families (type010101 and type010102), in a 200-state calibration cohort and a 24-state closeout cohort.
+
+Six source-bound fits, three seeds each of an independent pure-continuous system and the hybrid system, were trained for 9,000 equal updates and scored on the 200 calibration states, with zero states dropped for prediction failure. The selected comparator is \texttt{continuous\_h5}, chosen as the strongest arm on the same calibration scoring on which it is then evaluated, and the artifact records \texttt{selection\_optimism=true} for it. The hybrid adaptive arm reaches mean ranking regret 0.349998 against 0.329997 for \texttt{continuous\_h5}, a contrast of $-0.0200$ with descriptive interval $[-0.045, +0.003]$. At matched development scoring, the hybrid shows no regret advantage over the selected comparator. Training is equal-update rather than compute-matched, and the protocol records \texttt{training\_compute\_matched=false} with full work reporting (Section~\ref{sec:mth:protocol}).
+
+The closeout anatomy resolves the same question per horizon on the 24-state cohort of the same original families, with three paired seeds, 12 fixed systems, and 12 actions per state, for 10,368 records. Improvement is defined as reference minus tested, so positive values favor the hybrid arm. Table~\ref{tab:app:closeout} reports the training effects: null-to-negative at $h=1$, negative at $h=5$ with the interval excluding zero, and exactly zero at $h=15$. On the families it trained on, the hybrid arm is null-to-worse. These are descriptive development-cohort intervals over 24 states, and the closeout carries a pre-access \texttt{readiness\_or\_precision\_\allowbreak insufficient} stop on fresh sealed evaluation.
+
+\begin{table}[t]
+\centering
+\caption{Heuristic (regret on the replay count cost; Section~\ref{sec:exp:validity}). Hybrid training effects on the original families (24 closeout states, three paired seeds, 12 fixed systems, 12 actions; 10,368 records). Improvement is reference minus tested, so positive favors the hybrid arm. All intervals are descriptive; null means the interval covers zero.}
+\label{tab:app:closeout}
+\begin{tabular}{lccc}
+\toprule
+Requested horizon & Improvement & Descriptive 95\% interval & Reading \\
+\midrule
+$h=1$  & $-0.0278$ & $[-0.0694, 0.0000]$   & null-to-negative \\
+$h=5$  & $-0.0556$ & $[-0.1111, -0.0139]$  & excludes zero \\
+$h=15$ & $0.0000$  & --                    & exactly zero \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% Walls: .local-artifacts/issue-74-matched-dynamics-v1/readiness.json, per_seed.*.policies.*.mean_perception_planning_seconds,
+% three-seed means: continuous_adaptive 2.0147, continuous_h1 1.7869, continuous_h5 0.3744,
+% continuous_h15 0.1320, hybrid_adaptive 1.0098 (corroborated: data/issue-76-closeout/findings.md
+% continuous_adaptive 2.020315 s on the 24-state closeout cohort).
+Table~\ref{tab:app:walls} records the matched-systems per-state inference walls on the same 200-state cohort. The continuous adaptive arm is the most expensive system measured, at about 2.01\,s per state against 1.79\,s for the pure-continuous arm at $h=1$. The hybrid adaptive arm costs about $2.7\times$ the selected \texttt{continuous\_h5} comparator, and it is not the cheapest arm at any horizon. Per-state cost inverts with horizon, so adaptive granularity is not synonymous with expensive inference. These walls are measured on the original-family cohort with offset-225 rollouts, not on the endpoints of Appendix~\ref{sec:app:horizon}.
+
+\begin{table}[t]
+\centering
+\caption{Per-state wall-clock inference cost on the 200-state original-family calibration cohort with offset-225 rollouts, as recorded by the matched-systems anatomy (three-seed means, seconds per state, rounded to two decimals). Both adaptive arms are listed. The hybrid adaptive arm is never the cheapest.}
+\label{tab:app:walls}
+\begin{tabular}{lc}
+\toprule
+System & Per-state wall (s) \\
+\midrule
+Continuous, $h=1$    & 1.79 \\
+Continuous adaptive  & 2.01 \\
+Continuous, $h=5$    & 0.37 \\
+Continuous, $h=15$   & 0.13 \\
+Hybrid adaptive      & 1.01 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% Source: research_evidence.md row "Issue-77 N1 normal-mechanics breadth campaign and diagnostic".
+\subsection{Horizon-resolved effects on new normal-mechanics families}
+\label{sec:app:horizon}
+
+The estimand is ranking regret scored against the end-of-window cost at the $t=600$ endpoint, a right-censored quantity that is not a settled cost, and the families are the new normal-mechanics rolling and sliding families (type010103 and type010105) on 4 held-out states.
+
+The breadth campaign attempted all 208 corpus branches, of which 178 were admissible and 30 ended in recorded typed failures. Both arms were retrained under a matched three-seed protocol, and the diagnostic scored 52 state-candidate pairs (13 candidates at 4 states) across 12 systems and 3 seeds, for 1,872 published and exact-validated records.
+
+% Per-seed decompositions: .local-artifacts/issue-77-n1-diagnostic-v1/findings.md (Action ranking table).
+% r3 I9: horizon-separation sentence qualified; both aggregates rest on one of three seeds (per-seed values above).
+The hybrid-versus-continuous training contrast reads $+0.0887$ with descriptive interval $[+0.0155, +0.2118]$ at $h=1$, where positive favors the hybrid arm. Per seed it is $0$, $0$, and $+0.2662$, so one of three seeds carries it, and the contrast is demoted per the notice of Section~\ref{sec:exp:anatomy}. At $h=5$ and $h=15$ the training effects are null. The macro-readout symbolic-execution effect at $h=15$ is $+0.0944$ $[+0.0231, +0.1878]$, which excludes zero, with per-seed values $+0.2905$, $-0.0215$, and $+0.0141$. The symbolic-execution contrasts at $h=1$ straddle zero. Each aggregate rests on one of three seeds, so these heuristic regrets support no separation of the two estimands by horizon.
+
+Prior and uniform request baselines reach pooled N1 regrets of 0.492 and 0.461, so every frozen state leaves ranking signal for a learned policy. The ranking problem is far from saturated.
+
+Recursive carrier MSE grows with elapsed endpoint in both arms, and at $h=1$ it reaches unstable magnitudes from $t \ge 150$ (Figure~\ref{fig:app:growth}). This error-growth measurement does not use the replay count cost. We record it as an instability observation. It is consistent with a mechanism in which long-horizon recursion lacks a stable training signal, but it does not prove one, because the positive $h=15$ macro execution effect shows that readout-level signal survives carrier-level instability. The growth pattern itself is bounded by the CLEVRER result of Appendix~\ref{sec:app:clevrer:results}.
+
+\begin{figure}[t]
+\centering
+% Data: .local-artifacts/issue-77-n1-diagnostic-v1/summary.json per_seed.*.<system>.curves.<t>.carrier_mse
+% (seed mean; e.g. continuous_h1 seed 20260908 t=150 = 499.74) and
+% .local-artifacts/issue-79-clevrer-boundary-v1/findings.md (recursive position MSE table, seed mean).
+% Built by figures/build_figures.py:error_growth().
+\includegraphics[width=\linewidth]{figures/fig_error_growth.pdf}
+\caption{Recursive error growth, one family per panel, seed means over three seeds on log axes. (a) NovPhy N1, 4 held-out states: carrier MSE against elapsed endpoint for the continuous (solid) and hybrid (dashed) arms at each requested horizon. At $h=1$ both arms exceed $10^2$ from $t = 150$. (b) CLEVRER, 12 validation scenes: recursive position MSE at $e \in \{15, 30, 60, 120\}$. The continuous $h=15$ curve is non-monotone. Values are artifact-recorded descriptive means, and no growth-shape claim is made beyond the recorded divergence.}
+\label{fig:app:growth}
+\end{figure}
+
+Read against Appendix~\ref{sec:app:development}, the two family groups can now be compared on the heuristic regrets. At $h=1$ the training contrast is positive on the new rolling and sliding families ($+0.0887$, per seed $0, 0, +0.2662$, demoted per the notice of Section~\ref{sec:exp:anatomy}) and null-to-negative on the original families ($-0.0278$). At $h=5$ it is null on the new families and negative on the original ones ($-0.0556$, interval excluding zero). At $h=15$ it is null on the new families ($-0.0051$ $[-0.1625, +0.1373]$) and exactly zero on the original ones ($0.0000$). This (family, horizon) dependence was the section's original boundary reading. Under the disclosure of Section~\ref{sec:exp:validity} it is a heuristic pattern on an invalidated cost, and we draw no positive boundary claim from it.
+
+% Source: research_evidence.md row "Issue-77 N2 appearance-novelty evaluation".
+\subsection{Appearance-novelty boundary}
+\label{sec:app:novelty}
+
+The estimands are zero-shot and few-shot ranking regret, which we report separately and never pool, and the families are the two appearance-novelty pairs over the original families (type010101 and type010102), scored on 17 states with 189 candidates.
+
+Coverage is disclosed rather than trimmed. On the novel side, 186 of 208 branches are admissible. On the normal side of the type010102 pair, contention left 34 of 104 branches admissible, and the 70 contention-era typed failures are retained and reported as the protocol requires. The evaluation holds 13,608 records across 12 systems, 3 seeds, and 2 conditions, plus six adapted predictors retrained with 2,000 matched steps.
+
+Under zero-shot appearance novelty at $h=15$ on type010102, the hybrid-continuous contrast moves by $-0.2693$ $[-0.5412, -0.0050]$ and the hybrid-macro contrast by $+0.4242$ $[+0.0915, +0.7657]$. Both intervals exclude zero, and the two effects point in opposite directions. No uniform statement about appearance novelty survives this pair. The direction is a property of the system whose contrast is measured.
+
+Under few-shot exposure at the same horizon, reported separately, the pattern reverses: $+0.1953$ $[+0.0583, +0.3363]$ for hybrid-continuous and $-0.1892$ $[-0.2720, -0.0945]$ for hybrid-macro, both intervals excluding zero. The two conditions measure different exposure regimes, so we keep them in separate paragraphs and separate registry rows throughout.
+
+% Exposure contrast values: .local-artifacts/issue-77-n2-eval-v1/findings.md, table "Adaptation change on the
+% novel side (few-shot minus zero-shot)", continuous_h* rows, verbatim.
+Table~\ref{tab:app:adapt} reports the exposure contrast on the continuous-readout ranking per family and horizon: the novel-side regret of the same fixed-pair system with its predictor adapted under few-shot exposure, minus its zero-shot regret. This is a contrast between exposure conditions on fixed-pair systems, with no controller adapted. It is not the adaptation effect $\tau_{\mathrm{ad}}$ of Section~\ref{sec:mth:estimands}, which compares a per-decision selection schedule against fixed pairs and is not measured in the evidence reported here. Few-shot exposure lowers regret at $h=1$ only in type010102, with effect $-0.1970$ $[-0.2688, -0.1253]$, while the type010101 interval straddles zero. It raises regret at $h=5$ in both families and at $h=15$ in both. Exposure on the novel side is not a rescue. The per-family scope is itself part of the result. Figure~\ref{fig:app:novelty} plots the zero-shot and few-shot cross-side changes in separate panels beside this exposure contrast.
+
+\begin{figure}[t]
+\centering
+% Data: .local-artifacts/issue-77-n2-eval-v1/findings.md ("Cross-side change" and "Adaptation change on the
+% novel side" tables), asserted verbatim by figures/build_figures.py:novelty().
+\includegraphics[width=\linewidth]{figures/fig_novelty_boundary.pdf}
+\caption{Appearance-novelty boundary, heuristic (regret on the replay count cost; Section~\ref{sec:exp:validity}). (a) Zero-shot and (b) few-shot change in the hybrid effect from the normal to the novel side of each pair, reported in separate panels and never pooled. (c) Exposure contrast on fixed continuous-readout systems, few-shot minus zero-shot regret on the novel side, as in Table~\ref{tab:app:adapt}. Bars are descriptive 95\% intervals.}
+\label{fig:app:novelty}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Heuristic (regret on the replay count cost; Section~\ref{sec:exp:validity}). Exposure contrast on the continuous-readout ranking, by family and requested horizon: novel-side regret of the same fixed system under few-shot exposure minus under zero-shot. This is an exposure-condition contrast, not the selection-schedule estimand $\tau_{\mathrm{ad}}$, which is unmeasured. Negative means few-shot exposure lowered regret. All intervals are descriptive.}
+\label{tab:app:adapt}
+\begin{tabular}{llcc}
+\toprule
+Horizon & Family & Exposure contrast & Descriptive 95\% interval \\
+\midrule
+$h=1$  & type010102 & $-0.1970$ & $[-0.2688, -0.1253]$ \\
+$h=1$  & type010101 & $-0.0866$ & $[-0.2422, +0.0690]$ \\
+$h=5$  & type010102 & $+0.1850$ & $[+0.1012, +0.2688]$ \\
+$h=5$  & type010101 & $+0.1544$ & $[+0.0062, +0.3025]$ \\
+$h=15$ & type010102 & $+0.0672$ & $[+0.0432, +0.0912]$ \\
+$h=15$ & type010101 & $+0.1080$ & $[+0.0339, +0.1820]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% Source: research_evidence.md row "Issue-78 external temporal-adaptation baselines" (closed 2026-09-21).
+\subsection{External temporal-adaptation baselines}
+\label{sec:app:extbase}
+
+The estimand is ranking regret on the 21 frozen \#77 states, the 4 held-out rolling and sliding N1 states of Appendix~\ref{sec:app:horizon} plus the 17 N2 states of Appendix~\ref{sec:app:novelty}, here used for a mechanism-class comparison under one frozen contract rather than a within-program comparison.
+
+We ported TAWM \citep{nhu2025tawm} and VLWM \citep{du2026vlwm}, retrained both under the identical budget on the frozen N1 corpus, and scored the frozen states. Port fidelity is disclosed rather than idealized. The TAWM port follows the reference implementation at commit \texttt{ffb61f8}, which was consulted rather than run, with declared deviations on horizon conditioning, the mixed-horizon sampler, and the controller used for its adaptive evaluation. The VLWM port reproduces Eqs.~3--6 of the paper at fidelity, with no public code available and a recorded seven-way configuration search. One structural fact matters for reading the contrasts below: the TAWM cell shares the recipe of the continuous reference arm from the N1 diagnostic, so port and reference are structurally matched there. Appendix~\ref{sec:app:external} records every deviation.
+
+% Row semantics: in .local-artifacts/issue-78-external-temporal-baselines-v1/findings.md the three rows per
+% paired contrast are (all 21 states, N1 4 states, N2 17 states), matched against its "Per-corpus contrasts"
+% table (e.g. tawm decay N1 +0.2576, N2 +0.2177; tawm_h1 vs continuous_h1 pooled +0.0669 = (4*0.0810+17*0.0636)/21).
+% The continuous reference has no per-corpus row there; its N1/N2 labels follow the same row order.
+Table~\ref{tab:app:decay} reports the paired decay contrast between the $h=1$ and $h=15$ requests over all 21 states and per corpus, where positive means the arm's regret is higher at the longer horizon. All three systems show positive point estimates in every row: the TAWM port at $+0.2253$ over all states, $+0.2576$ on N1, and $+0.2177$ on N2; the VLWM port at $+0.0591$, $+0.1000$, and $+0.0494$; and the plain continuous reference at $+0.1605$, $+0.2671$, and $+0.1354$. Over all 21 states the descriptive intervals are $[+0.0816, +0.3716]$ for TAWM, $[-0.0251, +0.1482]$ for VLWM, and $[-0.0125, +0.3256]$ for the reference. Only the TAWM interval excludes zero.
+
+% TAWM degeneracy: .local-artifacts/issue-78-external-temporal-baselines-v1/findings.md (Action ranking table).
+The TAWM port is degenerate across its short and adaptive requests. At every seed, \texttt{tawm\_h1}, \texttt{tawm\_h5}, and \texttt{tawm\_adaptive} reach the same mean regret, $0.3998$, with identical Top-1 ($0.190$) and Top-3 ($0.429$) fractions. Only \texttt{tawm\_h15} differs. On this cohort the port therefore does not discriminate horizon below $h=15$, its adaptive arm is indistinguishable from its fixed $h=1$ and $h=5$ arms, and its decay contrast measures the $h=15$ request alone.
+
+\begin{table}[t]
+\centering
+\caption{Heuristic (regret on the replay count cost; Section~\ref{sec:exp:validity}). Paired decay contrasts between the $h=1$ and $h=15$ requests, over all 21 frozen states and per corpus (4 N1 states, 17 N2 states), where positive means higher regret at $h=15$. All values are descriptive.}
+\label{tab:app:decay}
+\begin{tabular}{lccc}
+\toprule
+System & All 21 states & N1 (4) & N2 (17) \\
+\midrule
+TAWM port \citep{nhu2025tawm}       & $+0.2253$ & $+0.2576$ & $+0.2177$ \\
+VLWM port \citep{du2026vlwm}        & $+0.0591$ & $+0.1000$ & $+0.0494$ \\
+Continuous reference                & $+0.1605$ & $+0.2671$ & $+0.1354$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Under full work reporting, the TAWM port's regret contrast against the selected \texttt{continuous\_h5} reference is $+0.0664$ over all 21 states, $+0.0325$ on N1, and $+0.0743$ on N2. Every measured system decays in point estimate, and four N1 states and 17 N2 states bound the precision, so the class-level question cannot yet separate a method class from an implementation. The three pre-registered questions of the external-baseline study return verbatim dispositions: the work-reported question returns \texttt{supported}, the training-effect question returns \texttt{supported}, and the method-class signature question closes \texttt{readiness\_or\_precision\_\allowbreak insufficient}. The redirect we draw from this is a reporting requirement, stated as such in Appendix~\ref{sec:app:anat:limits}.
+
+% Source: research_evidence.md row "Issue-79 CLEVRER out-of-family replication" (executed, commit 0a0dd73).
+\subsection{Out-of-family replication on CLEVRER}
+\label{sec:app:clevrer:results}
+
+The estimand is recursive position MSE at elapsed endpoints of 15, 30, 60, and 120 CLEVRER frames \citep{yi2020clevrer}, and the family is collision video physics outside the NovPhy scenario families: 12 validation scenes (indices 10000--10011) with 40 windows each, 48 units per seed, zero typed failures, and roughly 0.43 GPU-hours of compute. Two arms were retrained under the identical budget. The CLEVRER vocabulary does not support the macro readout, which was dropped in Phase 0 before any scoring. Membership and vocabulary mapping rules are recorded in Appendix~\ref{sec:app:clevrer}.
+
+Three frozen component rules test the replication. S1, short-horizon separation, replicates: the $h=1$ training effect at $e=15$ is $+0.00366$, above the pre-declared margin of $0.0010$. S2, horizon ordering, replicates: the separation at $h=15$ is $-0.00006$, below the $h=1$ separation, matching the NovPhy shape in which separation shrinks with horizon. S3, growth shape, fails at $h=15$: the continuous arm's recursive MSE is non-monotone over the endpoint grid, $0.00132 \rightarrow 0.00166 \rightarrow 0.00133 \rightarrow 0.01156$. The $h=1$ and $h=5$ arms grow monotonically, with $h=1$ reaching $13.53$ at $e=120$.
+
+% Regime-separation D: .local-artifacts/issue-79-clevrer-boundary-v1/findings.md, "Active-minus-still" column.
+The signature question fails on S3 alone. The contact-regime question fails with its direction reversed at the final endpoint: at $e=120$ every regime-separation estimate $D$ is negative, $-0.1077$ at $h=1$, $-0.0076$ at $h=5$, and $-0.0020$ at $h=15$, opposite the NovPhy scale-separation direction. The sign depends on the endpoint. At $e=15$ and $e=30$ the $h=1$ estimates are positive ($+0.0033$, $+0.0015$), as are the $h=5$ estimates ($+0.0003$, $+0.0015$), while the $h=15$ estimates are negative at every endpoint. Both pre-registered questions return \texttt{not\_supported\_by\_this\_\allowbreak experiment}. We report the two families separately and draw no falsification claim in either direction. A CLEVRER non-replication does not falsify the NovPhy boundary, and the NovPhy result does not predict the CLEVRER growth shape. The S3 failure also bounds the instability observation of Appendix~\ref{sec:app:horizon}: late-horizon magnitude growth is not a universal shape.
+
+% r2 I10: #83/#84 sentences moved here from discussion (d). Sources: .local-artifacts/issue-83-clevrer-nonmonotonicity-v1/findings.md
+% (ratio 0.777, band [0.8, 1.25]); .local-artifacts/issue-84-third-family-v1/findings.md (Q1/Q2 dispositions).
+The third family (Physion-Dominoes) does not replicate the full signature (\texttt{not\_supported\_by\_this\_\allowbreak experiment} at the frozen margins), while its contact-activity regime contrast is supported: the signature does not travel, the regime boundary does (row C15). The CLEVRER $h{=}15$ decomposition isolates a post-settlement property (Q1 supported, ratio $0.777$ below the uniform band $[0.8, 1.25]$), and the endpoint-artifact hypothesis is \texttt{not\_supported\_by\_this\_\allowbreak experiment} (row C14), because all primary variants stay non-monotone.
+
+\subsection{Heuristic reading, work frontier, and scoped observations}
+\label{sec:app:anat:reading}
+
+% Heuristic supporting reading of the proxy-scored anatomy (demoted). Sources:
+% issue-77-n1-diagnostic-v1/findings.md (+0.0887, h=5 -0.0028, h=15 -0.0051, +0.0944, per-seed table);
+% data/issue-76-closeout/findings.md (-0.0278, -0.0556, h=15 0.000000 [0,0]); #79 findings (CLEVRER).
+The proxy-scored anatomy survives only as a heuristic reading. Improvement is reference minus tested, so positive favors the hybrid over its continuous reference. At $h{=}1$ the N1 contrast is positive against the right-censored $t{=}600$ cost ($+0.0887$ $[+0.0155, +0.2118]$, per-seed $0$, $0$, $+0.2662$, row C2), and we mark it demoted as unsupported: carried by one seed on an invalidated proxy. The original-family contrast is null-to-negative on the 24 closeout states ($-0.0278$ $[-0.0694, 0.0000]$, row C2b). At $h{=}5$ the N1 contrast is null and the original-family contrast negative ($-0.0556$ $[-0.1111, -0.0139]$). At $h{=}15$ the contrast is null on N1 ($-0.0051$ $[-0.1625, +0.1373]$) and exactly zero on the original families ($0.000000$ $[0, 0]$, row C3). The macro symbolic-execution contrast at $h{=}15$ ($+0.0944$) has per-seed values $+0.2905$, $-0.0215$, and $+0.0141$. On CLEVRER, scored in recursive position MSE, the short-horizon separation replicates and shrinks with horizon while the growth shape fails at $h{=}15$ (row C9). None of these readings is engine-truth evidence.
+
+% Work frontier: regret vs per-state wall (L6). Walls and the registered contrast come from #74
+% (.local-artifacts/issue-74-matched-dynamics-v1/readiness.json; continuous_adaptive 2.0147 s).
+Cost is a development quantity and stays teacher-forced. On the \#74 development cohort the per-state inference walls are $\approx$2.01\,s for the continuous adaptive arm, $\approx$1.79\,s for the pure-continuous $h{=}1$ arm, $\approx$0.37\,s for the selected comparator \texttt{continuous\_h5}, $\approx$0.13\,s for $h{=}15$, and $\approx$1.01\,s for the hybrid adaptive arm, about $2.7\times$ the selected comparator (Table~\ref{tab:app:frontier}). At matched development scoring the hybrid shows no advantage over the selected comparator ($-0.0200\,[-0.045, +0.003]$, row C11), with the comparator's selection optimism disclosed and training compute not matched. Among fixed arms the wall falls with horizon, and the hybrid adaptive arm is never the cheapest (row C12).
 
 \begin{table}[t]
 \centering
 \small
-\caption{Per-row provenance for registry C1--C16. Commands run from the NovPhy repository root.}
-\label{tab:app:registry}
-\begin{tabular}{@{}p{0.14\textwidth}p{0.83\textwidth}@{}}
+\caption{Work frontier on the \#74 development cohort: mean ranking regret at matched development scoring against the per-state inference wall (200 calibration states, offset-225 rollouts; endpoint semantics differ from the N1 $t{=}600$ endpoints). ``--'' marks quantities outside the registered \#74 row. \texttt{continuous\_h5} was selected on this cohort, so its regret carries selection optimism (row C11); training compute is not matched.}
+\label{tab:app:frontier}
+\begin{tabular}{@{}lrr@{}}
 \toprule
-Row & Artifact roots and exact validation command \\
+Arm & Per-state wall (s) & Mean ranking regret \\
 \midrule
-C1 & \texttt{not\_supported\_by\_this\_experiment} (\#15). Roots: \texttt{data/runtime\_evidence/issue-15/} for the confirmatory-v2 summary and collection summary, \texttt{.local-artifacts/issue-15-confirmatory-v2/} for the full output root. Command: \texttt{python -u -m scripts.run\_issue\_15\_confirmatory\_v2 --validate} \\
-C2 & \texttt{supported}, descriptive, 4 held-out states on rolling and sliding. Roots: \texttt{.local-artifacts/issue-77-n1-diagnostic-v1/}, with campaign root \texttt{issue-77-n1-v1/} and training root \texttt{issue-77-n1-dynamics-v1/}. Command: \texttt{python -u -m scripts.run\_issue\_77\_n1\_diagnostic --validate} \\
-C2b & \texttt{supported} as a boundary condition, 24 closeout states. Root: \texttt{data/runtime\_evidence/issue-76-closeout/} with \texttt{findings.md} and \texttt{comparisons.csv}. Command: \texttt{python -u -m scripts.run\_issue\_76\_closeout --validate} \\
-C3 & Both family sets, per-family scope stated. Roots and commands: C2 and C2b jointly \\
-C4 & \texttt{supported}, bounded to N1. Root: \texttt{.local-artifacts/issue-77-n1-diagnostic-v1/}. Command as in C2 \\
-C5 & \texttt{supported} as an instability observation, growth shape not universal. Roots: \texttt{.local-artifacts/issue-77-n1-diagnostic-v1/} for the recursive curves at $t \ge 150$, and \texttt{.local-artifacts/issue-79-clevrer-boundary-v1/}. Commands as in C2 and C9 \\
-C6 & \texttt{supported}, zero-shot only. Root: \texttt{.local-artifacts/issue-77-n2-eval-v1/}, with campaign roots \texttt{issue-77-n2-appearance-v1/} and \texttt{issue-77-n2n-v1/}. Command: \texttt{python -u -m scripts.run\_issue\_77\_n2\_eval --validate} \\
-C6b & \texttt{supported}, reported separately from C6. Root and command as in C6 \\
-C7 & \texttt{supported} with per-family scope. Root and command as in C6 \\
-C8 & \texttt{readiness\_or\_precision\_insufficient} (\#78, 4 states). Root: \texttt{.local-artifacts/issue-78-external-temporal-baselines-v1/}. Command: \texttt{python -u -m scripts.run\_external\_temporal\_baselines --validate} \\
-C9 & \texttt{not\_supported\_by\_this\_experiment} overall, component-wise S1 and S2 replicate, S3 fails at $h{=}15$, contact-regime direction reversed. Root: \texttt{.local-artifacts/issue-79-clevrer-boundary-v1/}. Command: \texttt{python -u -m scripts.run\_clevrer\_boundary\_replication --validate} \\
-C10 & \texttt{readiness\_or\_precision\_insufficient} (\#80 gate stop). Root: \texttt{.local-artifacts/issue-80-reactive-diagnostic-v1/} with \texttt{pilot-gate.json}, \texttt{summary.json}, \texttt{comparisons.csv}, \texttt{findings.md}. Command: \texttt{python -u -m scripts.run\_short\_horizon\_reactive\_diagnostic --validate} \\
-C11 & \texttt{supported}, descriptive, selection optimism disclosed. Root: \texttt{.local-artifacts/issue-74-matched-dynamics-v1/readiness.json}. Command: \texttt{python -u -m scripts.run\_issue\_74\_matched\_dynamics --validate} \\
-C12 & Verified at \#74-family scope. Root and command as in C11 \\
-C13 & Verified. Roots: \texttt{.local-artifacts/issue-77-n1-diagnostic-v1/} for the pooled N1 headroom and \texttt{.local-artifacts/issue-78-external-temporal-baselines-v1/} for the per-state headroom table. Commands as in C2 and C8 \\
-C14 & [TODO: C14 provenance pending the \#83 outcome, the CLEVRER $h{=}15$ non-monotonicity decomposition, which gates this row. No artifact or validation command exists yet.] \\
-C15 & [TODO: C15 provenance pending the \#84 outcome, the third-family tie-breaker, which gates this row. No executed artifact or validation command exists yet.] \\
-C16 & [TODO: C16 provenance pending the \#82 outcome, the oracle-ceiling diagnostic of the closed-loop zero floor, which gates this row. No disposition exists yet.] \\
+continuous, $h{=}1$ & $\approx$1.79 & -- \\
+continuous, $h{=}5$ (selected) & $\approx$0.37 & 0.329997 \\
+continuous, $h{=}15$ & $\approx$0.13 & -- \\
+continuous adaptive & $\approx$2.01 & -- \\
+hybrid adaptive & $\approx$1.01 & 0.349998 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% Heuristic anatomy learnables (L1–L5), rows referenced by ID only; all proxy- or teacher-forced.
+The heuristic anatomy contributes four scoped observations, each on the proxy or on teacher-forced readouts. On the invalidated proxy, the only positive family contrast rests on one seed (rows C2, C2b, C3). Training, symbolic-execution, and exposure contrasts carry different signs within the same cells, so they are separate estimands (C2, C4, C7), and the adaptation effect $\tau_{\mathrm{ad}}$ is unmeasured. Recursive carrier error grows in magnitude at late endpoints in both arms while the out-of-family growth shape is not universal, so instability remains a hypothesis (C5, C9). Zero-shot contrasts move in opposite, system-specific directions and few-shot changes are reported separately (C6, C6b), and few-shot exposure degrades longer-horizon ranking on both families (C7). Cells stand side by side and are never averaged across families.
+
+\subsection{Limitations of the heuristic record}
+\label{sec:app:anat:limits}
+
+% --- (b) Tempered redirect (L7). Registry rows C8 (signature insufficiency), Q2/Q3 supported. ---
+% NOTE (R1): this paragraph demands a reporting standard; it does not assert what any cited paper
+% fails to report. Per-paper verification lives in Section 2.
+Under one frozen contract, both ported adaptive-temporal methods and the plain continuous reference decay in point estimate between the $h=1$ and $h=15$ requests on the same 21 frozen states, 4 from N1 and 17 from N2 (Appendix~\ref{sec:app:extbase}). % .local-artifacts/issue-78-external-temporal-baselines-v1/findings.md (headroom table; per-corpus rows)
+Those contrasts are scored on the construct-invalidated proxy and are heuristic. The class-level signature question closes as \texttt{readiness\_or\_precision\_\allowbreak insufficient}. The external-family results bound our own claims and carry no information about the published results of the ported methods. Closed-loop utility evaluation is the companion requirement, and World-In-World makes that case for world models in closed-loop worlds \citep{zhang2026worldinworld}. Fresh sealed gameplay in our program cannot be re-opened, so our closed-loop evidence enters as the decision-only measurement of Section~\ref{sec:syn:picture} rather than as a sealed benchmark run.
+
+% --- (c) Limitations, part 1: coverage and authorization scope. Registry rows C2/C6/C7 scope, ---
+% readiness record 4/45, n2n 34/104 with 70 retained contention-era typed failures, #78 4 states.
+The coverage limitations are recorded in full. Four of 45 scenario-novelty cells are runtime-tested (normal rolling, normal sliding, and two appearance-novelty cells), and the other 41 carry named blockers in the readiness record (Appendix~\ref{sec:app:coverage}). On the normal side of the appearance-novelty pair, contention left 34 of 104 branches admissible, and the 70 contention-era typed failures are retained and reported (Appendix~\ref{sec:app:novelty}). Fresh sealed gameplay was never opened. Its advancement gate is unmet on readiness grounds, and re-opening on outcome grounds stays barred. The external-method comparison covers 21 frozen states (4 from N1, 17 from N2), which leaves its class-level question precision-limited.
+
+% --- (c) Limitations, part 2: measurement and estimand scope. Registry rows C1--C5, C9. ---
+Measurement scope constrains the heuristic anatomy further. Its effect intervals are descriptive, computed over 4 held-out N1 states, 24 closeout states, or 48 CLEVRER units per seed (480 windows), and none carries a significance reading. The $t=600$ endpoint is end-of-window right-censored and its cost proxy is construct-invalid against engine outcomes. The aggregates that looked strongest rest on single seeds: $+0.0887$ is the mean of $0$, $0$, and $+0.2662$, and $+0.0944$ the mean of $+0.2905$, $-0.0215$, and $+0.0141$. % issue-77-n1-diagnostic-v1/findings.md per-seed ranking table
+The confirmatory estimand, teacher-forced mean duration-weighted authoritative endpoint carrier MSE over eligible decision states (Appendix~\ref{sec:app:confirmatory}), leaves terminal-outcome accuracy unavailable. Magnitudes diverge at late endpoints on both arms ($t \ge 150$ on NovPhy and $e=120$ on CLEVRER), so carrier instability bounds every recursive claim. The CLEVRER replication returns an overall signature disposition of \texttt{not\_supported\_by\_this\_\allowbreak experiment}. Zero-shot and few-shot novelty contrasts are reported separately throughout.
+
+\section{Extended Related Work}
+\label{sec:app:related}
+
+% Paragraph 2: Motivate granularity as a decision-dependent question while treating fixed predictive targets as rational task-specific choices.
+Existing methods reasonably fix predictive horizons and targets to suit their intended objectives. Latent-dynamics control methods fix temporal targets or planning horizons and reach further by recursive one-step rollout with value bootstrapping \citep{hafner2020dreamer,hansen2022tdmpc,sobal2025pldm}. Joint-embedding approaches fix the predictive representation and target at training time \citep{assran2023ijepa,bardes2024vjepa}. Recent latent world models on frozen or end-to-end features inherit the same fixed target \citep{zhou2025dinowm,maes2026leworldmodel}. This task-specific design is a widespread default. We ask whether one action-conditioned model serving heterogeneous decisions should instead select prediction horizon and output-description mode jointly at each decision.
+
+% Paragraph 3: Acknowledge nearest single-axis relaxations and state the narrow joint gap.
+Recent work relaxes one dimension of this contract at a time. On the temporal side, variable-length latent world models vary prediction offsets \citep{du2026vlwm}, surprise signals set hierarchical chunk boundaries in open-loop video prediction \citep{iiyama2026sunta}, and reliability estimates adapt rollout depth during imagination \citep{hafez2020improving}. On the description side, published work varies the output form: state-dependent scene resolution \citep{wang2023dynamic} and per-frame abstraction of action forecasts \citep{scarafoni2022islands}. Fixed couplings of the two also exist: hierarchical prediction across fixed time scales \citep{shaj2023multi,villarcorrales2022mspred} and short-detailed versus long-simplified segments in one model-predictive controller \citep{brudigam2021mpc}. \citet{wang2026adajepa} adapt model parameters at test time, not granularity selection. None of these lines treats horizon and output-description mode jointly as one state-dependent prediction request to an action-conditioned world model, which is the narrow gap the granularity program targeted. % #91-WP5: Delta OPEN TEX ITEM 6 applied (Shaj/MSPred and Brudigam reclassified as fixed couplings; standing critic item).
+
+% Paragraph 4: Distinguish control-schedule temporal abstraction from prediction granularity.
+Temporal abstraction in reinforcement learning answers a different question. Options and their learned variants decide when and for how long the agent acts \citep{sutton1999options,bacon2017optioncritic}, and \citet{biedenkapp2021temporl} learn when to commit to an action repetition. These methods adapt the agent's control schedule, not what the world model predicts or how far ahead it extends. Our question sits on the prediction side of that boundary.
+
+% Paragraph 5: Introduce the action-sparse persistent-effect setting with physics benchmarks; retargeted
+% close poses granularity mismatch as a heterogeneity hypothesis (when/where, not whether).
+In the \emph{action-sparse persistent-effect environment}, actions occur infrequently while their physical effects continue autonomously for many fixed simulation steps. A single intervention can set off a cascade through collision onset and active rearrangement before settling. We build on NovPhy \citep{pinto2024novphy}, a published physical-reasoning benchmark \citep{bakhtin2019phyre,bear2021physion,yi2020clevrer} evaluating how agents detect and adapt to novel physical dynamics across scenarios. Each cascade phase, we hypothesize, asks for different prediction granularity: fine temporal resolution and relation-level detail near the intervention, coarse state judgments near settling. We call this tension \emph{granularity mismatch} and treat it as a heterogeneity hypothesis. Effects, if any, depend on the decision's phase, the physical family, and the scored horizon. An average over cells can hide either sign.
+
+Granularity can enter a world model on the temporal axis, on the description axis, or on both at once. The paragraphs above survey fixed designs and present them as reasonable task-specific choices. The subsections below cover methods that make at least one axis adaptive, the closest joint neighbour, and the evaluation platforms that currently set the standard for judging world models. Table~\ref{tab:app:matrix} summarizes the positioning, verified against each paper's full text. The one entry without public text is marked unverified.
+
+\subsection{Temporal adaptation of prediction}
+\label{sec:app:rel:temporal}
+
+The temporal-abstraction paragraph above draws the boundary between prediction-side granularity and the control schedule. The options framework, its learned descendants, and TempoRL sit on the acting side of that line, deciding when and for how long the agent acts \citep{sutton1999options,bacon2017optioncritic,biedenkapp2021temporl}. They adapt the agent's commitment rather than the prediction, so we treat them as the boundary of the survey class rather than as members of it.
+
+Within the prediction side, TAWM conditions predictions on the time-step size $\Delta t$ and trains across a range of step sizes, so a single model serves tasks observed at different temporal grains \citep{nhu2025tawm}. The grain at inference is imposed by the environment's observation rate rather than chosen per decision, so TAWM tolerates rate changes instead of adapting its grain per state. VLWM predicts future latent states conditioned on action sequences of variable length and extends the horizon through a training curriculum \citep{du2026vlwm}. Its planner is tailored to the variable-length predictor. THICK learns a hierarchy over discrete latent dynamics in which parts of the latent state update sparsely, forming invariant contexts whose durations are learned \citep{gumbsch2024thick}. A higher level predicts when those contexts change. SUNTA varies chunk length at inference inside a hierarchical video predictor, splitting the rollout where surprise spikes, and reports prediction staying accurate to 250 steps where the compared baselines degrade within ten \citep{iiyama2026sunta}. Its scope is open-loop video prediction with a fixed output format. TAWM and VLWM express the prediction in a single latent format, while THICK fixes a two-level discrete latent hierarchy. None of the four casts grain selection as an explicit per-decision request over a prediction surface. We retrain TAWM and VLWM under our contract in Appendix~\ref{sec:app:extbase}.
+
+\subsection{Description adaptation}
+\label{sec:app:rel:description}
+
+The description axis has its own adaptive tradition. VisualPredicator learns abstract world models over an invented first-order predicate language, with an online algorithm that invents predicates and plans over the resulting abstract states \citep{liang2025visualpredicator}. Resolution-adaptive scene representations and per-frame abstraction of action forecasts, both introduced above, also adapt what the model expresses \citep{wang2023dynamic,scarafoni2022islands}. On this axis the adaptation selects the state description. The prediction length remains fixed, so the joint request over $(\Delta, \alpha)$ remains open.
+
+\subsection{Joint state and temporal abstraction}
+\label{sec:app:rel:joint}
+
+SALT addresses state- and temporally-abstracted world models for offline long-horizon decision-making \citep{huang2026salt}, the nearest title-level overlap with our joint request. No public text is available beyond the workshop's poster listing, so the SALT row of Table~\ref{tab:app:matrix} is marked unverified. Our surface makes the abstraction a per-decision prediction request, selecting which supervised readout is scored and how many steps the carrier advances, and scores that request against fixed-granularity references as a property of prediction.
+
+\subsection{Evaluation zeitgeist}
+\label{sec:app:rel:eval}
+
+Two 2026 evaluation efforts set the current standard for judging world models. World-in-World benchmarks world models inside a closed loop with a unified online planning strategy and a standardized action interface \citep{zhang2026worldinworld}. Task success rather than visual fidelity is the primary metric. Reported findings include that visual quality alone does not guarantee task success and that more inference-time compute improves closed-loop performance. WorldBench evaluates video-based world models with physics concepts isolated one at a time, at two levels: intuitive concepts such as object permanence, and low-level constants such as friction coefficients and viscosity \citep{upadhyay2026worldbench}. Both platforms target diagnostic criteria over aggregate quality. Neither platform treats granularity as the object of evaluation or asks where an adaptive-granularity advantage stops.
+
+% r2 I2: PHYRE facts verified by Scout (arXiv:1908.05656: tier solvability p.3 §3.1; binomial-test proxy p.14 App. B; AUCCESS p.4 §3.2; <=100 attempts p.6 §4.2).
+PHYRE certifies task solvability by construction and scores agents by AUCCESS over up to 100 attempts per task~\citep{bakhtin2019phyre}, and I-PHYRE reports human success alongside an experimenter upper bound~\citep{li2024iphyre}. Closed-loop world-model evaluations such as World-in-World report task success without a per-state solvability ceiling~\citep{zhang2026worldinworld}. We measure that ceiling in the engine for our frozen 13-candidate inventory and pair it with ranker-level engine-truth AUC. Physion evaluates event-prediction accuracy, not agent task completion, so it is outside this success-rate comparison~\citep{bear2021physion}.
+
+Horizon-resolved or rate-resolved plots do appear individually: VLWM reports success against goal offset, TAWM reports success against the evaluation time step, THICK sweeps corridor length, and SUNTA reports horizon-resolved degradation of open-loop video prediction. These are post-hoc, single-system-suite analyses without frozen protocols, uncertainty discipline, or family resolution, and none reports where the advantage inverts. Across the surveyed class, verified per paper against the full texts (Table~\ref{tab:app:matrix}), no method reports a pre-registered, matched-system comparison together with a family- and horizon-resolved boundary curve.\footnote{SALT has no public text, so we could not verify its protocol.} The claim is scoped to the surveyed papers with public text. Average-effect comparisons are what the field currently has, and Appendix~\ref{sec:app:anat} reports such curves for one setting under the protocol of Section~\ref{sec:mth:protocol}. % #91-WP5: Denominator-positioning item resolved in the citation pass.
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lp{1.55cm}p{1.65cm}p{1.65cm}p{1.9cm}p{2.2cm}@{}}
+\toprule
+Method & Temporal adaptive & Description adaptive & Pre-registered protocol & Matched-system comparison & Family- and horizon-resolved boundary curve \\
+\midrule
+TAWM \citep{nhu2025tawm} & Partial & No & No & Partial & Partial \\
+VLWM \citep{du2026vlwm} & Yes & No & No & Partial & Partial \\
+THICK \citep{gumbsch2024thick} & Yes & Partial & No & No & Partial \\
+SUNTA \citep{iiyama2026sunta} & Yes & No & No & No & Partial \\
+Options line \citep{sutton1999options,bacon2017optioncritic,biedenkapp2021temporl} & Yes (control schedule) & No & -- & -- & -- \\
+VisualPredicator \citep{liang2025visualpredicator} & No & Yes & No & No & No \\
+SALT \citep{huang2026salt} & ? & ? & ? & ? & ? \\
+World-in-World \citep{zhang2026worldinworld} & No & No & -- & Partial & -- \\
+WorldBench \citep{upadhyay2026worldbench} & No & No & No & No & Partial \\
+% #91-WP4: row rebuilt for the ranking-failure thesis. The adaptive controller never enters the
+% closed-loop record (fixed-horizon rankers + ordinal prior, decision-only single-shot, development
+% N1 lineages), so both adaptive columns read No; the boundary curve is demoted (registry C8).
+% Citation support for the other rows and per-paper denominator verification were
+% checked against full texts in the #91 citation pass; the positioning sentence is above.
+This paper & No & No & Yes & Yes & No (demoted) \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Positioning matrix. Cells follow full-text verification of the surveyed papers as of September 2026. The SALT row is marked ``?'' because no public text exists. ``Partial'' in the temporal column records that TAWM's inference time step is imposed by the environment's observation rate rather than selected per decision. In the description column it records that THICK's two-level hierarchy is fixed by its architecture. In the matched-system column it records training at equal samples and iterations without inference-work accounting (TAWM), an implementation- and planner-matched comparison on a single seed (VLWM), and a fixed planning strategy with a standardized action interface that holds the decision layer constant across heterogeneous world models (World-in-World). In the boundary column it records resolution short of the full conjunct: success against the evaluation time step (TAWM), success against goal offset with post-hoc oracle-per-cell planner selection (VLWM), a corridor-length sweep of task horizon in one environment (THICK), horizon-resolved degradation of open-loop video prediction without family resolution or work accounting (SUNTA), and concept-resolved failure patterns without a horizon axis (WorldBench). ``--'' marks properties that do not apply to an entry's role: the options line acts on the control schedule and makes no prediction-granularity claim, and World-in-World evaluates rather than trains adaptive-granularity methods. Our TAWM and VLWM ports under one contract appear in Appendix~\ref{sec:app:extbase}. For this paper, the closed-loop record scores frozen fixed-horizon rankers and a no-model ordinal prior, decision-only and single-shot on development N1 lineages. Adaptive arms appear only in the heuristic proxy record, so no adaptive controller is evaluated on the engine-truth channel and both adaptive columns read No. The protocol column refers to the frozen plans of Appendix~\ref{sec:app:protocol}. The matched-system column refers to the \#74 matched training (Appendix~\ref{sec:app:development}) and to one candidate inventory and engine-truth binding shared by every closed-loop system. The boundary curve is demoted to the heuristic record (registry row C8), and the paper instead measures a per-state action ceiling in the engine with per-candidate engine-truth verdicts (Figure~\ref{fig:app:ceiling}).}
+\label{tab:app:matrix}
+\end{table}
+
+\section{Estimand Taxonomy Details}
+\label{sec:app:estimands}
+
+Comparisons across the nine-pair surface differ in what they hold fixed and what they let vary. A single aggregate would conflate three distinct questions: whether symbol-supervised training changes the shared carrier, whether executing a symbolic readout changes prediction at a fixed checkpoint, and whether per-decision selection improves on fixed pairs. The three require different evidence, and an answer to one does not transfer to the others. We define each below as a contrast in which exactly one factor differs.
+
+\begin{figure}[t]
+\centering
+% Schematic only; no data. Source: figures/build_figures.py:taxonomy().
+\includegraphics[width=\linewidth]{figures/estimand_taxonomy.pdf}
+\caption{The estimand taxonomy. Each contrast class varies exactly one of three factors: the training recipe (training effect), the executed readout at a shared checkpoint (symbolic-execution effect), or the per-decision selection schedule (adaptation effect). Holding the other two factors fixed inside the contrast is what makes the three estimands mechanically distinguishable.}
+\label{fig:app:estimands}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{The three estimands. ``Varies'' names the factor that differs between the two sides of a contrast. The remaining two factors are identical by construction, which is what fixes the estimand's meaning.}
+\label{tab:app:estimands}
+\small
+\begin{tabular}{@{}p{2.9cm}p{4.6cm}p{4.2cm}@{}}
+\toprule
+Estimand & Contrast (tested vs.\ reference) & Varies / isolates \\
+\midrule
+Training effect $\tau_{\mathrm{tr}}(\Delta)$ & hybrid-trained model vs.\ independently trained pure-continuous model, both executing $(\Delta, \mathrm{continuous})$ & training recipe, isolating what symbol-supervised training does to the carrier \\
+\addlinespace
+Symbolic-execution effect $\tau_{\mathrm{ex}}(\Delta, \alpha)$ & fixed $(\Delta, \alpha)$ with $\alpha \in \{\mathrm{micro}, \mathrm{macro}\}$ vs.\ $(\Delta, \mathrm{continuous})$, inside one hybrid checkpoint & executed readout, isolating what executing a symbolic readout contributes at a fixed checkpoint \\
+\addlinespace
+Adaptation effect $\tau_{\mathrm{ad}}$ & per-decision selection policy vs.\ fixed-pair controls, within an arm at matched training & selection schedule, isolating the value of adapting granularity per decision; defined here, unmeasured in this paper \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Each estimand varies exactly one factor. The \emph{training effect} $\tau_{\mathrm{tr}}(\Delta)$ varies the training recipe. It compares a model trained with symbol-supervised readouts (the hybrid arm) against an independently trained pure-continuous model, both executing the fixed continuous pair $(\Delta, \mathrm{continuous})$. The executed readout and the selection policy are identical. The \emph{symbolic-execution effect} $\tau_{\mathrm{ex}}(\Delta, \alpha)$ varies the executed readout. It compares a fixed symbolic readout $(\Delta, \alpha)$ against the fixed continuous readout at the same $\Delta$, inside one hybrid checkpoint. The trained model and selection policy are identical. The \emph{adaptation effect} $\tau_{\mathrm{ad}}$ varies the selection schedule. It compares a per-decision selection policy against fixed-pair controls within an arm at matched training. Checkpoints and readouts are identical per pair.
+
+Classification is mechanical. For any contrast, examine what differs between its two sides: the training recipe alone gives a training effect, the readout at a shared checkpoint gives a symbolic-execution effect, and the selection schedule at shared checkpoints gives an adaptation effect. Under this rule, every model-comparison claim in the paper attaches to exactly one estimand. No contrast reported in this paper varies the selection schedule alone, so $\tau_{\mathrm{ad}}$ is defined here but unmeasured in the reported evidence, and the adaptive controller never enters the engine-truth closed-loop record. The exposure contrast of Table~\ref{tab:app:adapt} holds the system fixed and varies the exposure condition (few-shot minus zero-shot), so it is a condition contrast outside the three estimands and is labelled as such. Condition labels are part of estimand identity, so zero-shot and few-shot contrasts are separate cells and are never pooled. Each subsection of Appendix~\ref{sec:app:anat} names its estimand and its family in its first sentence. Two estimand switches occur, and both are flagged where they happen. The confirmatory result (Appendix~\ref{sec:app:confirmatory}) is a paired gain in mean duration-weighted authoritative endpoint carrier MSE over eligible teacher-forced decision states, not a ranking regret. Appendices~\ref{sec:app:development}--\ref{sec:app:extbase} quote normalized ranking regret against end-of-window replay cost, a cost our own audits construct-invalidated (Section~\ref{sec:exp:validity}), so those regrets are heuristic. The out-of-family replication (Appendix~\ref{sec:app:clevrer:results}) switches estimand again, to recursive position MSE at frozen annotation endpoints, and runs no candidate inventory on CLEVRER. The taxonomy extends beyond this program: any evaluation with a carrier, supervised readouts, and a selection policy can classify its contrasts the same way.
+
+\section{Claim Registry and Provenance}
+\label{sec:app:registry}
+
+Table~\ref{tab:app:registry} is the claim registry. Each row pins one assertion to its status, disposition, and scope. Artifact roots and the exact validation command per artifact family are listed once, in Table~\ref{tab:app:repro}, with paths relative to the NovPhy repository root. Rows map to artifact families as follows: C1 to \#15; C2, C4, and C13 to the \#77 N1 diagnostic (C13 also to \#78); C2b to the \#76 closeout; C3 to the \#77 N1 diagnostic and the \#76 closeout; C5 to the \#77 N1 diagnostic and \#79; C6, C6b, and C7 to the \#77 N2 evaluation; C8 to \#78; C9 to \#79; C10 to \#80; C11 and C12 to \#74; C14 to \#83; C15 to \#84; C16 to \#82, \#85, \#87, \#89, and the \#92 selection-validity restatement; C17 and C18 to the \#92 selection-validity restatement, which binds the \#87 and \#89 records read-only, with their per-member structure drawn in Figure~\ref{fig:app:ceiling}; C19 to the \#92 lookahead control; C20 to the \#92 selection-validity restatement and cross-seed probe; C21 to the \#92 cross-pool audit. Each row's disposition token is quoted verbatim from its artifact.
+
+\begin{figure}[t]
+\centering
+% Data: .local-artifacts/issue-92-selection-validity-v1/summary.json (unit_of_analysis.members,
+% duplicate_pairs, member_ceiling 0.5 [0.2143, 0.7857]; exposure_split ceiling_members; selection_validity
+% chosen_support, chosen_in_band_cells 0); .local-artifacts/issue-89-oracle-completion-v1/summary.json
+% (ceiling_reestimate.per_state successful ordinals); .local-artifacts/issue-87-closed-loop-oracle-v1/
+% records/decision--*.json (chosen ordinal per cell) and plan.json (membership, exposure_role).
+% Every value asserted by figures/build_figures.py:ceiling_map().
+\includegraphics[width=\linewidth]{figures/fig_ceiling_map.pdf}
+\caption{Per-member ceiling and selection map for the 24 development N1 states, grouped by their 15 source members, the unit of analysis. ``(2 states)'' marks the 9 byte-identical duplicate pairs, whose verdicts agree entry by entry. Blue squares mark the engine-truth successful ordinals. Seven of 14 measurable members have a measured ceiling, a member-unit ceiling of $7/14 = 0.5000$ with descriptive 95\% interval $[0.2143, 0.7857]$, and their successes lie at ordinals 2--6. The hatched square is the ordinal-7 success of the typed-unmeasurable \texttt{issue-77-n1-005-a07}, excluded under \#89's frozen declaration and carrying no bound decision. Markers give each frozen system's chosen ordinal, with area growing with the number of cells (states $\times$ 3 seeds). Every choice lies in 7--12, so no system chooses inside the success band ($0/207$ model cells). The no-model prior picks ordinal 8 on every ceiling cell. Starred, shaded rows are the four unexposed members (007, 008, 014, 016), and the right column gives the split of each ceiling member: training $\{001, 006, 010, 011, 012\}$ and calibration $\{014, 016\}$. The zero-selection reading is scoped to N1 membership. Outside N1 the type010101 split carries a localized counterexample (frozen zero-shot $13/612$; combined count across two separately reported conditions $42/1{,}224$, registry row C21), so the map supports no universal claim.}
+\label{fig:app:ceiling}
+\end{figure}
+
+% Table: the claim registry (moved from synthesis.tex, #91-WP5). Single tex home; provenance is the paragraph above plus tab:app:repro.
+{\small
+\setlength{\tabcolsep}{4pt}
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+\begin{longtable}{@{}p{0.05\textwidth}p{0.41\textwidth}p{0.13\textwidth}p{0.33\textwidth}@{}}
+\caption{The claim registry. Each row pins one assertion to its status, disposition, and scope, so a reader can trace any claim in Sections~\ref{sec:exp:anatomy} and~\ref{sec:syn:picture} and Appendix~\ref{sec:app:anat} to its evidence. Rows C1--C21 are executed; rows C14--C16 are resolved by tickets \#83, \#84, and the \#82$\to$\#92 chain, rows C17--C21 are added by ticket \#92's measurement wave, and rows C2/C8 are demoted per \#92 WP5. Rows C2--C7 and C13 are scored on the construct-invalidated $t{=}600$ proxy or on teacher-forced readouts and are heuristic support. Disposition tokens come from the pre-registered vocabulary of Section~\ref{sec:mth:protocol} and appear verbatim on the rows that carry one: \texttt{supported}, \texttt{not\_supported\_by\_this\_\allowbreak experiment}, \texttt{readiness\_or\_precision\_\allowbreak insufficient}. Rows without a token carry scope instead. Intervals are descriptive wherever the source artifact records them as descriptive. The paragraph above maps each row to its artifact family, and Table~\ref{tab:app:repro} gives each family's root and validation command.}
+\label{tab:app:registry}\\
+\toprule
+Row & Claim & Status & Disposition / scope \\
+\midrule
+\endfirsthead
+\multicolumn{4}{@{}l@{}}{\footnotesize\emph{Table \ref{tab:app:registry} (continued)}}\\
+\toprule
+Row & Claim & Status & Disposition / scope \\
+\midrule
+\endhead
+\midrule\multicolumn{4}{@{}r@{}}{\footnotesize\emph{continued overleaf}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C1 & Joint granularity selection shows no general endpoint advantage under the frozen two-budget protocol & Verified & \texttt{not\_supported\_by\_this\_\allowbreak experiment} (\#15) \\
+C2 & A hybrid $h{=}1$ training effect exists on the N1 rolling/sliding families & Demoted (\#92 WP5) & the $+0.0887\,[+0.0155, +0.2118]$ proxy effect is unsupported: carried by one seed on an invalidated proxy (per-seed decomposition $0, 0, +0.2662$ on the $t{=}600$ proxy the program construct-invalidated: \#82 agreement $0.1299$ vs a $0.50$ floor; \#85 $0.1064$, $0/47$); both cross-family replications are non-replications (\#79 Q1, \#84 Q1); \#88 component rules 0 consistent / 1 INVERTED; \#80 reactive cell $0/45$; retained only as motivation for isolating the ranking stage \\
+C2b & On the original single/multi-force families the hybrid training effect is null-to-negative at $h1$ and negative at $h5$ & Verified (descriptive) & \texttt{supported} for the original families only (24 closeout states, proxy-scored); no family-conditionality claim, since the only positive family contrast (C2) rests on one seed \\
+C3 & Hybrid training effects at $h15$ are null on N1 ($-0.0051\,[-0.1625, +0.1373]$) and exactly zero on the original families ($0.000000\,[0, 0]$); $h5$ is null on N1 and negative on original families & Verified (descriptive) & \texttt{supported}, per-family scope stated \\
+C4 & Symbolic-execution effects at $h{=}1$ straddle zero; macro execution at $h15$ is positive (N1; per-seed $+0.2905, -0.0215, +0.0141$) & Verified (descriptive) & \texttt{supported}, bounded to N1 \\
+C5 & Recursive carrier MSE diverges in magnitude at late endpoints, both arms, both families & Verified & \texttt{supported}, as instability observation; growth-shape NOT universal (\#79) \\
+C6 & Appearance novelty moves zero-shot contrasts in system-specific opposite directions (type010102) & Verified (descriptive) & \texttt{supported}, zero-shot only \\
+C6b & Few-shot cross-side changes are interval-excluding in type010102 ($+0.1953$ / $-0.1892$) & Verified (descriptive) & \texttt{supported}, reported separately from C6 \\
+C7 & The few-shot minus zero-shot exposure contrast on fixed systems degrades $h5$/$h15$ continuous ranking in both families and improves $h1$ only in type010102 (the adaptation effect $\tau_{\mathrm{ad}}$ is unmeasured) & Verified (descriptive) & \texttt{supported} with per-family scope \\
+C8 & The horizon-decay signature belongs to the adaptive-temporal method class & Demoted (\#92 WP5) & the horizon-decay boundary is cut as a positive claim (\#78 evidence was already \texttt{readiness\_or\_precision\_\allowbreak insufficient}); retained per \#92 WP5: the proxy-independent prediction-error horizon tradeoff as motivation, and the \#82$\to$\#85$\to$\#87$\to$\#89/\#90 cascade as the measurement-validity narrative \\
+C9 & The NovPhy boundary signature replicates out-of-family on CLEVRER & TESTED & \texttt{not\_supported\_by\_this\_\allowbreak experiment} overall (\#79); component-wise: S1 separation REPLICATES, S2 ordering REPLICATES, S3 growth-shape fails at $h15$ (non-monotone), Q2 regime direction reversed \\
+C10 & The $h1$ effect has closed-loop reactive payoff & TESTED (gate stop) & \texttt{readiness\_or\_precision\_\allowbreak insufficient} (\#80): prevalence $0.0000 < 0.10$ floor over 45 valid executions; paired-difference questions unscored by design; the \#82$\to$\#85$\to$\#87$\to$\#89/\#90 chain resolved the oracle ceiling (rows C16--C17) \\
+C11 & At matched development scoring, hybrid adaptive shows no regret advantage over the selected \texttt{continuous\_h5} & Verified (descriptive) & \#74 contrast $-0.0200\,[-0.045, +0.003]$; selection optimism disclosed \\
+C12 & Per-state inference cost is horizon- and system-dependent; hybrid adaptive is never the cheapest arm & Verified & \#74 walls ($\approx$1.79/0.37/0.13/1.01\,s; continuous adaptive $\approx$2.01\,s); \#74-family scope stated \\
+C13 & Headroom: prior and uniform regret baselines leave ranking signal on every frozen state & Verified & \#77/\#78 headroom tables (e.g.\ prior $0.492$ / uniform $0.461$ pooled N1) \\
+C14 & The CLEVRER $h15$ non-monotonicity is a regime property (post-settlement) rather than an estimand/endpoint artifact & TESTED & \texttt{supported} (\#83 Q1 localization): the dip concentrates in post-settlement segments (ratio $0.777$ below the uniform band $[0.8, 1.25]$); the artifact hypothesis is \texttt{not\_supported\_by\_this\_\allowbreak experiment} (\#83 Q2: all primary variants stay non-monotone) \\
+C15 & A third physics family breaks the two-family component tie (NovPhy full signature vs CLEVRER 2/3) & TESTED & \texttt{not\_supported\_by\_this\_\allowbreak experiment} (\#84 Q1: the Physion-Dominoes full-signature replication fails at the frozen margins); the contact-activity regime contrast is \texttt{supported} (\#84 Q2): the signature does not travel, the regime boundary does; the three families are reported separately \\
+C16 & The \#80 zero floor is a state-difficulty floor (oracle prevalence 0) rather than $h1$ ranking failure & TESTED & \texttt{not\_supported\_by\_this\_\allowbreak experiment} (\#82/\#85/\#87/\#89, measured by \#92 WP1): oracle candidates succeed on $7/14$ members, so the zero is a ranking failure on solvable states, not a state-difficulty floor (rows C17--C18); the \#90 timeout audit returned \texttt{indeterminate} (Q1 \texttt{readiness\_or\_precision\_\allowbreak insufficient}), resolved by the \#89 completion pass \\
+C17 & The completed closed-loop oracle ceiling over the development N1 membership & TESTED & \texttt{supported} (\#87+\#89; unit corrected by \#92 WP1): member-unit $7/14 = 0.5000$, descriptive 95\% interval $[0.2143, 0.7857]$; state-unit $12/23 = 0.5217\ [0.3043, 0.7391]$ is execution detail; 15 source members with 9 byte-identical duplicate pairs disclosed; the typed-unmeasurable \texttt{issue-77-n1-005-a07} is excluded under \#89's frozen declaration \\
+C18 & Frozen model-based rankers discriminate the successful action at or below chance on the engine-truth channel & TESTED & \texttt{supported} (\#92 WP1): AUC $0.4367\,[0.4045, 0.4710]$ over 108 model cells (member-clustered $0.4180\,[0.3135, 0.5252]$, covering $0.5$ over 7 clusters); top-1 $0/108$; top-3 $6/108$ against inventory-matched chance $0.2340$; chosen ordinals inside the success band $\{2..6\}$ in $0/207$ cells (band and disjoint supports specified after the oracle-pass and completion-pass outcomes); N1-membership scope with the cross-split counterexample disclosed (frozen zero-shot $13/612$, row C21) \\
+% r3 I28/I32: token bound to the frozen 0.5-margin rule (lookahead findings.md line 48: "any arm at the 0.5 margin: False");
+% chance-0.0780 reading post hoc; h15 endpoint means derived from findings.md lines 33-34, 41-42 histograms.
+C19 & No decision-only lookahead arm reaches the frozen $0.5$ margin; post hoc, none exceeds inventory-matched chance & TESTED & \texttt{supported} (\#92 WP1b) by the frozen rule (no arm at the $0.5$ margin); read post hoc against per-arm chance $0.0780$ (protocol note, Appendix~\ref{sec:app:protocol}): 16 decision-only endpoint arms (fixed/adaptive $\times$ continuous/hybrid $\times$ 225-step and 600-step endpoints) over the 36 ceiling cells, 15 arms $0/36$, \texttt{hybrid-fixed-h15-e225} $2/36\ [0.0000, 0.1429]$; the two stable $h15$ arms move in opposite directions between endpoints (hybrid flatter, continuous steeper); the $h1$ arms and the $h5$ 600-step arms roll into the unstable carrier regime (Table~\ref{tab:app:lookahead}); zero typed rollout failures \\
+C20 & The closed-loop pass is a deterministic re-observation given (level, engine seed, action) & TESTED & \texttt{supported} (\#92 WP1 primary): the frozen \#77 replay branches and the \#87/\#89 closed-loop executions agree on $176/176$ unique (member, ordinal) branches and $288/288$ verdict slots with 0 channel anomalies; a second engine seed leaves $26/26$ verdicts unchanged with 19 of 26 decision frames byte-identical, so the engine is effectively deterministic for these episodes (\#92 cross-seed probe) \\
+C21 & The N1 zero-selection sentence holds only with its split scope; the broader type010101 split carries a localized counterexample, and the breadth ceiling is protocol-identical & TESTED & \texttt{supported} (\#92 WP3): the frozen zero-shot arm selects an engine-truth success in $13/612 = 0.0212$ of cells against inventory-matched uniform chance $0.0407$ (member-clustered paired difference $-0.0195\,[-0.0368, -0.0045]$, descriptive); the adapted few-shot arm, reported separately, reaches $29/612 = 0.0474$; the combined count across two separately reported conditions is $42/1{,}224$, localized to 5 of 17 states; the \#87-analogue systems score $2/153$ in each condition; the bounded-transfer member-unit ceiling is $25/46 = 0.5435\,[0.3913, 0.6957]$; the 002-a10 typed failure is chunk-verified and excluded under the coverage rule; N2 $5/15$, N2n $0/5$ published as typed coverage; one pre-declared reference-table delta published (N1 constant a02 is $1/12$) \\
+\end{longtable}
+}
+
+\subsection{Per-arm lookahead control}
+\label{sec:app:lookahead}
+
+% r2 I6. Sources: .local-artifacts/issue-92-lookahead-control-v1/comparisons.csv (hits, intervals, chosen_in_band,
+% chosen_histogram, typed_candidate_failures per arm) and findings.md §1 (endpoint coverage 8/13 at 225, 13/13 at 600;
+% power note (12/13)^36 = 0.056). Per-arm chance 0.0780 = mean over the 36 ceiling cells of 1/n_candidates
+% (member_terms in issue-92-selection-validity-v1/summary.json: n=12 for member 001, n=13 otherwise; k=1 each;
+% (6/12 + 30/13)/36 = 0.07799), identical to that summary's selection_validity.top1.chance_rate 0.07799 (DERIVED; all
+% arms share the inventory). Carrier MSE: .local-artifacts/issue-77-n1-diagnostic-v1/summary.json
+% per_seed["20260908"][<arm>_h<h>]["curves"]["225"|"600"]["carrier_mse"], 4 held-out states, one seed (3 s.f.).
+% r3 I29: rollout depth 1/25 carrier frames, resolution offsets 97.8-400.9 agent frames; the artifact's '~0.3-7%' horizon string is superseded by the body's derived 0.25-25.6% range:
+% .local-artifacts/issue-92-lookahead-control-v1/findings.md line 9; coverage 8/13 and 13/13: lines 12-13; 13th slot
+% issue-77-n1-005-a07 (I27): line 14. r3 I32: h15 endpoint means derived from histograms at lines 33-34 and 41-42
+% (continuous 184/36 = 5.11 -> 218/36 = 6.06; hybrid 254/36 = 7.06 -> 81/36 = 2.25).
+% r3 I35: lookahead fraction DERIVED as 1/400.9 = 0.25% and 25/97.8 = 25.6% from findings.md lines 9 and 14.
+% r3 I30: inverted ranker, .local-artifacts/issue-91-inverted-ranker-v1/{summary.json,findings.md} (#91, post hoc).
+Table~\ref{tab:app:lookahead} reports each of the 16 decision-only endpoint arms against inventory-matched chance, a post hoc reading beside the frozen $0.5$ margin that returned the row C19 token. The primary rankers roll only 1 ($h{=}1$) or 25 ($h{=}5$) carrier frames per candidate, while engine-truth outcomes resolve 97.8--400.9 agent frames after the same sealed decision frame, a lookahead of between 0.25\% and 25.6\% of the outcome horizon. Every ceiling state has one successful candidate among 12 or 13, so top-1 chance is $0.0780$ per arm (2.81 expected hits in 36 cells), and a single arm's $0/36$ has probability about $(12/13)^{36} = 0.056$ under uniform choice. No arm exceeds that chance: 15 arms select no success, and \texttt{hybrid-fixed-h15-e225} selects $2/36 = 0.0556$ $[0.0000, 0.1429]$. The 225-step endpoint reaches outcome resolution on 8 of 13 successful slots and the 600-step endpoint on 13 of 13. The 13 slots are the 12 ceiling states plus the excluded typed-unmeasurable \texttt{issue-77-n1-005-a07}. The dose ladder is confounded with carrier stability. The $h1$ arms at both endpoints and the $h5$ arms at 600 steps roll into the numerically unstable carrier regime of Appendix~\ref{sec:app:horizon}, so their failure says nothing about whether longer lookahead helps. From the 225- to the 600-step endpoint the two stable $h{=}15$ arms move in opposite directions: \texttt{hybrid-fixed-h15} moves flatter (mean chosen ordinal about 7.1 to 2.3) and \texttt{continuous-fixed-h15} steeper (about 5.1 to 6.1), and \texttt{hybrid-fixed-h15-e225} is the only arm that finds the successful candidate. The adaptive arms choose their own horizons, so no single carrier error applies to them. Inverting the primary record's cost ordering (argmax predicted cost, ties to the lower ordinal) does not recover the cross-split successes either: $15/612 = 0.0245$ zero-shot and $21/612 = 0.0343$ few-shot against chance $0.0407$, both descriptive paired intervals covering zero (Table~\ref{tab:app:audit}).
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{Per-arm lookahead control over the 36 ceiling cells (12 ceiling states $\times$ 3 seeds). Chance is inventory-matched top-1 chance, identical for every arm. ``In band'' counts choices at ordinals 2--6. Coverage is the number of 13 successful slots (the 12 ceiling states plus the excluded typed-unmeasurable \texttt{issue-77-n1-005-a07}) whose outcome resolves before the endpoint. Carrier MSE is the recursive carrier error of the matching fixed-horizon checkpoint at that endpoint on the 4 held-out N1 diagnostic states for seed 20260908, a stability indicator rather than a per-cell error; ``--'' marks adaptive arms. Zero typed candidate failures in every arm. Intervals are descriptive.}
+\label{tab:app:lookahead}
+\begin{tabular}{@{}lrrrlrr@{}}
+\toprule
+Arm & Hits & Interval & In band & Chosen-ordinal histogram & Coverage & Carrier MSE \\
+\midrule
+continuous-adaptive-e225 & 0/36 & $[0, 0]$ & 4 & 0:18, 1:2, 5:4, 7:5, 10:2, 11:2, 12:3 & 8/13 & -- \\
+continuous-adaptive-e600 & 0/36 & $[0, 0]$ & 0 & 0:36 & 13/13 & -- \\
+continuous-fixed-h1-e225 & 0/36 & $[0, 0]$ & 0 & 0:28, 1:2, 8:1, 11:2, 12:3 & 8/13 & $2.32 \times 10^{3}$ \\
+continuous-fixed-h1-e600 & 0/36 & $[0, 0]$ & 0 & 0:35, 8:1 & 13/13 & $3.25 \times 10^{4}$ \\
+continuous-fixed-h5-e225 & 0/36 & $[0, 0]$ & 0 & 1:12, 7:14, 12:10 & 8/13 & $0.332$ \\
+continuous-fixed-h5-e600 & 0/36 & $[0, 0]$ & 0 & 0:32, 12:4 & 13/13 & $182$ \\
+continuous-fixed-h15-e225 & 0/36 & $[0, 0]$ & 1 & 1:17, 3:1, 7:10, 11:2, 12:6 & 8/13 & $0.0262$ \\
+continuous-fixed-h15-e600 & 0/36 & $[0, 0]$ & 0 & 1:14, 7:12, 12:10 & 13/13 & $0.179$ \\
+hybrid-adaptive-e225 & 0/36 & $[0, 0]$ & 2 & 0:24, 1:8, 5:2, 12:2 & 8/13 & -- \\
+hybrid-adaptive-e600 & 0/36 & $[0, 0]$ & 0 & 0:27, 1:5, 12:4 & 13/13 & -- \\
+hybrid-fixed-h1-e225 & 0/36 & $[0, 0]$ & 0 & 0:36 & 8/13 & $1.61 \times 10^{3}$ \\
+hybrid-fixed-h1-e600 & 0/36 & $[0, 0]$ & 4 & 0:30, 5:4, 12:2 & 13/13 & $4.09 \times 10^{4}$ \\
+hybrid-fixed-h5-e225 & 0/36 & $[0, 0]$ & 0 & 1:29, 7:3, 12:4 & 8/13 & $0.153$ \\
+hybrid-fixed-h5-e600 & 0/36 & $[0, 0]$ & 3 & 0:26, 1:6, 3:3, 12:1 & 13/13 & $10.5$ \\
+hybrid-fixed-h15-e225 & 2/36 & $[0.0000, 0.1429]$ & 3 & 1:13, 3:3, 10:4, 12:16 & 8/13 & $0.0217$ \\
+hybrid-fixed-h15-e600 & 0/36 & $[0, 0]$ & 0 & 1:31, 7:2, 12:3 & 13/13 & $0.114$ \\
+\midrule
+Chance (every arm) & 2.81/36 & $0.0780$ & & & & \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -157,27 +609,134 @@ C16 & [TODO: C16 provenance pending the \#82 outcome, the oracle-ceiling diagnos
 
 Activate the environment before running any command: \texttt{conda activate novphy \&\& source env.sh}, where \texttt{env.sh} puts the repository root on \texttt{PYTHONPATH}. All commands below run from the NovPhy repository root. The recorded source revisions are \texttt{env@254720f} for the \#74 and \#77 records and commits \texttt{0a0dd73} plus \texttt{ac2a4e1}, \texttt{8399f57}, and \texttt{9e369c4} for the \#79 and \#80 line. Each \texttt{-{}-validate} mode recomputes the published tables from the retained artifacts and must exit 0. The validators never retrain a model, and the published records carry \texttt{fresh\_evaluation\_opened=false}, \texttt{final\_evaluation\_opened=false}, and \texttt{issue\_64\_authorized=false}. The external-baseline validator was verified on both cpu and cuda. Table~\ref{tab:app:repro} lists one row per artifact family.
 
-\begin{table}[t]
-\centering
-\small
+{\small
+\setlength{\LTleft}{0pt}
+\setlength{\LTright}{0pt}
+\begin{longtable}{@{}p{0.22\textwidth}p{0.30\textwidth}p{0.45\textwidth}@{}}
 \caption{Exact validation commands per artifact family, with artifact roots relative to the NovPhy repository root.}
-\label{tab:app:repro}
-\begin{tabular}{@{}p{0.22\textwidth}p{0.30\textwidth}p{0.45\textwidth}@{}}
+\label{tab:app:repro}\\
 \toprule
 Artifact family & Root(s) & Command \\
 \midrule
-\#15 confirmatory v2 & \texttt{data/runtime\_evidence/issue-15/}, \texttt{.local-artifacts/issue-15-confirmatory-v2/} & \texttt{python -u -m scripts.run\_issue\_15\_confirmatory\_v2 --validate} \\
-\#74 matched systems & \texttt{.local-artifacts/issue-74-matched-dynamics-v1/} & \texttt{python -u -m scripts.run\_issue\_74\_matched\_dynamics --validate} \\
-\#76 closeout, original families & \texttt{data/runtime\_evidence/issue-76-closeout/} & \texttt{python -u -m scripts.run\_issue\_76\_closeout --validate} \\
-\#77 N1 campaign & \texttt{.local-artifacts/issue-77-n1-v1/} & \texttt{python scripts/run\_issue\_77\_n1.py --validate} \\
-\#77 N1 training and diagnostic & \texttt{.local-artifacts/issue-77-n1-dynamics-v1/}, \texttt{.local-artifacts/issue-77-n1-diagnostic-v1/} & \texttt{python -u -m scripts.run\_issue\_77\_n1\_diagnostic --validate} \\
-\#77 N2 campaigns & \texttt{.local-artifacts/issue-77-n2-appearance-v1/}, \texttt{.local-artifacts/issue-77-n2n-v1/} & \texttt{python scripts/run\_issue\_77\_n2.py --validate} and \texttt{python scripts/run\_issue\_77\_n2n.py --validate} \\
-\#77 N2 evaluation & \texttt{.local-artifacts/issue-77-n2-eval-v1/} & \texttt{python -u -m scripts.run\_issue\_77\_n2\_eval --validate} \\
-\#78 external temporal baselines & \texttt{.local-artifacts/issue-78-external-temporal-baselines-v1/} & \texttt{python -u -m scripts.run\_external\_temporal\_baselines --validate} \\
-\#79 CLEVRER boundary replication & \texttt{.local-artifacts/issue-79-clevrer-boundary-v1/} & \texttt{python -u -m scripts.run\_clevrer\_boundary\_replication --validate} \\
-\#80 reactive diagnostic & \texttt{.local-artifacts/issue-80-reactive-diagnostic-v1/} & \texttt{python -u -m scripts.run\_short\_horizon\_reactive\_diagnostic --validate} \\
+\endfirsthead
+\multicolumn{3}{@{}l@{}}{\footnotesize\emph{Table \ref{tab:app:repro} (continued)}}\\
+\toprule
+Artifact family & Root(s) & Command \\
+\midrule
+\endhead
+\midrule\multicolumn{3}{@{}r@{}}{\footnotesize\emph{continued overleaf}}\\
+\endfoot
 \bottomrule
-\end{tabular}
-\end{table}
+\endlastfoot
+\#15 confirmatory v2 & \texttt{data/\allowbreak runtime\_evidence/\allowbreak issue-\allowbreak 15/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak issue\_15\_confirmatory\_v2 --validate} \\
+\#74 matched systems & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 74-\allowbreak matched-\allowbreak dynamics-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak issue\_74\_matched\_dynamics --validate} \\
+\#76 closeout, original families & \texttt{data/issue-76-closeout/} & \texttt{python -u -m scripts.run\_\allowbreak issue\_76\_closeout --validate} \\
+\#77 N1 campaign & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 77-\allowbreak n1-\allowbreak v1/\allowbreak } & \texttt{python scripts/\allowbreak run\_issue\_77\_n1.py -\allowbreak -\allowbreak validate} \\
+\#77 N1 training and diagnostic & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 77-\allowbreak n1-\allowbreak dynamics-\allowbreak v1/\allowbreak }, \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 77-\allowbreak n1-\allowbreak diagnostic-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak issue\_77\_n1\_diagnostic --validate} \\
+\#77 N2 campaigns & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 77-\allowbreak n2-\allowbreak appearance-\allowbreak v1/\allowbreak }, \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 77-\allowbreak n2n-\allowbreak v1/\allowbreak } & \texttt{python scripts/\allowbreak run\_issue\_77\_n2.py -\allowbreak -\allowbreak validate} and \texttt{python scripts/\allowbreak run\_issue\_77\_n2n.py -\allowbreak -\allowbreak validate} \\
+\#77 N2 evaluation & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 77-\allowbreak n2-\allowbreak eval-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak issue\_77\_n2\_eval --validate} \\
+\#78 external temporal baselines & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 78-\allowbreak external-\allowbreak temporal-\allowbreak baselines-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak external\_temporal\_baselines --validate} \\
+\#79 CLEVRER boundary replication & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 79-\allowbreak clevrer-\allowbreak boundary-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak clevrer\_boundary\_replication --validate} \\
+\#80 reactive diagnostic & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 80-\allowbreak reactive-\allowbreak diagnostic-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak short\_horizon\_reactive\_diagnostic --validate} \\
+\#82 zero-floor oracle & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 82-\allowbreak zero-\allowbreak floor-\allowbreak oracle-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak reactive\_zero\_floor\_oracle --validate} \\
+\#83 CLEVRER non-monotonicity & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 83-\allowbreak clevrer-\allowbreak nonmonotonicity-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak clevrer\_nonmonotonicity\_probe --validate} \\
+\#84 third family & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 84-\allowbreak third-\allowbreak family-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak third\_family\_boundary\_replication --validate} \\
+\#85 engine-outcome channel & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 85-\allowbreak engine-\allowbreak outcome-\allowbreak reactive-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak engine\_outcome\_reactive\_diagnostic --validate} \\
+\#87 closed-loop oracle & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 87-\allowbreak closed-\allowbreak loop-\allowbreak oracle-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak closed\_loop\_oracle\_probe --validate} \\
+\#88 component-resolved regime & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 88-\allowbreak component-\allowbreak resolved-\allowbreak regime-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak component\_resolved\_regime\_synthesis --validate} \\
+\#89 oracle completion & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 89-\allowbreak oracle-\allowbreak completion-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak closed\_loop\_oracle\_completion --validate} \\
+\#90 timeout audit & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 90-\allowbreak oracle-\allowbreak timeout-\allowbreak audit-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak oracle\_timeout\_audit --validate} \\
+\#92 selection validity & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 92-\allowbreak selection-\allowbreak validity-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak selection\_validity\_restatement --validate} \\
+\#92 lookahead control & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 92-\allowbreak lookahead-\allowbreak control-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak lookahead\_control --validate} \\
+\#92 cross-seed probe & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 92-\allowbreak cross-\allowbreak seed-\allowbreak invariance-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak cross\_seed\_invariance\_probe --validate} \\
+\#92 cross-pool audit & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 92-\allowbreak cross-\allowbreak pool-\allowbreak audit-\allowbreak v1/\allowbreak } (binds \texttt{issue-\allowbreak 76-\allowbreak bounded-\allowbreak transfer-\allowbreak v1/\allowbreak }, \texttt{issue-77-n2-eval-v1/}) & \texttt{python -u -m scripts.run\_\allowbreak cross\_pool\_selection\_audit --validate} \\
+\#91 state-difficulty AUC & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 91-\allowbreak state-\allowbreak difficulty-\allowbreak auc-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak state\_difficulty\_auc --validate} \\
+\#91 inverted-ranker probe & \texttt{.local-\allowbreak artifacts/\allowbreak issue-\allowbreak 91-\allowbreak inverted-\allowbreak ranker-\allowbreak v1/\allowbreak } & \texttt{python -u -m scripts.run\_\allowbreak inverted\_ranker\_probe --validate} \\
+\end{longtable}
+}
 
-The two campaign validators re-derive \texttt{coverage.json} from the retained ledgers, and the evaluation validators recompute every published table without new inference. The CLEVRER module records its own exact validation command in its module documentation, \texttt{python -u -m scripts.run\_clevrer\_boundary\_replication --validate}, which recomputes every published table and exits 0. The reactive-diagnostic validator recomputes the pilot-gate verdict and the published report, and it passes with exit 0 on the recorded artifacts.
+The two campaign validators re-derive \texttt{coverage.json} from the retained ledgers, and the evaluation validators recompute every published table without new inference. The CLEVRER module records its own exact validation command in its module documentation, \texttt{python -u -m scripts.run\_\allowbreak clevrer\_boundary\_replication --validate}, which recomputes every published table and exits 0. The reactive-diagnostic validator recomputes the pilot-gate verdict and the published report, and it passes with exit 0 on the recorded artifacts.
+
+The closed-loop runners (\#87, \#89, \#90) and the four \#92 runners bind a frozen \texttt{plan.json} with sha256-pinned inputs, write per-cell markers and receipts to a resumable ledger, and record every unit that does not complete as a typed failure. The \#87 plan freezes the caps at 86{,}400\,s wall, 10{,}800\,s GPU, and 4 workers. The small-artifact subset of every root in Table~\ref{tab:app:repro} (4,187 paths: plans, summaries, comparisons, findings, records, receipts, and ledgers) is version-controlled through commit \texttt{2b4d897}. Frames and native chunks, about 15\,GB per pool, are excluded.
+
+\section{Number-to-Artifact Audit}
+\label{sec:app:audit}
+
+% #91-WP5 2026-09-23: built fresh from the tex itself by harvesting every trailing artifact comment
+% (grep of `%` comments containing .local-artifacts/ or data/issue-) and every printed number of the
+% main text, figure captions, and Appendices A-G. Spot-verified against the artifacts during the build:
+% issue-92-selection-validity-v1/findings.md (sections 1-6), issue-92-cross-pool-audit-v1/{findings.md,
+% summary.json} (37 of 42 = 26 few-shot + 11 zero-shot at ordinal 12; 5 success states per condition;
+% few-shot paired +0.0067 [-0.0202, +0.0368]), issue-89-oracle-completion-v1/findings.md,
+% issue-87-closed-loop-oracle-v1/plan.json (caps). One defect found and fixed in synthesis.tex and
+% introduction.tex: the constant-ordinal-12 rate was printed as "about 20% of cross-split cells against
+% 2.12%", but the artifact rate is 3 of 15 STATES against a 0.0212 CELL rate.
+Table~\ref{tab:app:audit} maps every number printed in this paper to the artifact that holds it. Rows group numbers by source. Paths are relative to the NovPhy repository root, and each root validates with the command of Table~\ref{tab:app:repro}.
+
+{\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{longtable}{@{}p{0.17\textwidth}p{0.37\textwidth}p{0.36\textwidth}p{0.07\textwidth}@{}}
+\caption{Number-to-artifact audit. ``Value as printed'' lists every number the paper prints for the claim, in the paper's rounding.}\label{tab:app:audit}\\
+\toprule
+Claim & Value as printed & Artifact path & Ticket \\
+\midrule
+\endfirsthead
+\toprule
+Claim & Value as printed & Artifact path & Ticket \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\multicolumn{4}{@{}l}{\emph{Engine-truth closed-loop record (abstract, Sections 1, 3, 6, 7, Figure~\ref{fig:teaser}, Table~\ref{tab:syn:oracle})}} \\
+Membership & 15 source members, 24 states, 9 byte-identical duplicate pairs, 0 discordant; 13-candidate inventory, ordinals 0--12 & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/findings.md} & \#92 \\
+Member-unit ceiling & $7/14 = 0.5000$ $[0.2143, 0.7857]$; 7 clusters & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/findings.md} & \#92 \\
+State-unit ceiling & $12/23 = 0.5217$ $[0.3043, 0.7391]$; completion moved $0.3043$ to $0.5217$ & \nolinkurl{.local-artifacts/issue-89-oracle-completion-v1/findings.md} & \#89 \\
+Timeout audit & 5 of 52 timed-out slots vs 7 of 234 executed; token \texttt{indeterminate} & \nolinkurl{.local-artifacts/issue-90-oracle-timeout-audit-v1/findings.md}; \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/findings.md} & \#90 \\
+Decision binding & 144/144 ceiling-state cells ($12 \times 4 \times 3$), 108 model + 36 prior cells; 230/288 bound, 12 typed decision failures, 46 unbound & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/findings.md} & \#87, \#89 \\
+Uniform miss-all chance & $0.567$ & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/findings.md} & \#92 \\
+Engine-truth AUC & $0.4367$ $[0.4045, 0.4710]$ over 108 cells; $0.4180$ $[0.3135, 0.5252]$ member-clustered; chance $0.5$ & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/findings.md} & \#92 \\
+Top-1 & $0/108$; chance $0.0780$; paired $-0.0778$ $[-0.0797, -0.0769]$ & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/findings.md} & \#92 \\
+Top-3 & $6/108 = 0.0556$; chance $0.2340$; paired $-0.1859$ $[-0.2308, -0.1279]$ & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/findings.md} & \#92 \\
+No-model prior & $0/36$, ordinal 8 & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/findings.md} & \#92 \\
+Ordinal supports & chosen $\{7{:}90, 8{:}12, 9{:}45, 10{:}10, 11{:}6, 12{:}44\}$ over 207 cells; 0/207 in band 2--6; 12/60 successes at 2--6; 0/70 at 7--12; \texttt{issue-77-n1-005-a07} succeeds at ordinal 7 & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/findings.md}; \nolinkurl{summary.json} (\texttt{selection\_validity}) & \#92 \\
+Exposure split & exposed 0/72, AUC $0.4838$, top-3 6/72; unexposed 0/36, AUC $0.3426$, top-3 0/36; 4 of 15 members, 2 of 7 ceiling members unexposed & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/findings.md}; \nolinkurl{summary.json} (\texttt{exposure\_split}) & \#92 \\
+Ordering mechanism & variance $0.360$ between states, $0.004$ action main effect, $0.636$ residual; Spearman $0.8776$ pooled, per system $0.4924$ / $0.6130$ / $0.9986$ (continuous-fixed-h1 / continuous-fixed-h5 / hybrid-fixed-h1) & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/summary.json} (\texttt{ordering\_mechanism}) & \#92 \\
+Per-member successes & one success per ceiling state ($k=1$ for all 7 members); member counts by ordinal $\{2{:}1, 3{:}1, 4{:}3, 5{:}1, 6{:}1\}$ & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/summary.json} (\texttt{chance\_references.member\_terms}); \nolinkurl{slot_join.csv} (\texttt{successful\_ordinals}) & \#92 \\
+State-difficulty AUC (post hoc) & $0.5758$ over 23 states; member-deduplicated $0.5918$; member-clustered $[0.2653, 0.8958]$ covers $0.5$ & \nolinkurl{.local-artifacts/issue-91-state-difficulty-auc-v1/findings.md} & \#91 \\
+Determinism & 176/176 branches, 288/288 verdict slots, 0 channel anomalies & \nolinkurl{.local-artifacts/issue-92-selection-validity-v1/findings.md} & \#92 \\
+Lookahead control & 16 arms, 15 at $0/36$, \texttt{hybrid-fixed-h15-e225} $2/36 = 0.0556$ $[0.0000, 0.1429]$; per-arm chance $0.0780$ (2.81/36, derived); $(12/13)^{36} = 0.056$; per-arm in-band counts and chosen-ordinal histograms of Table~\ref{tab:app:lookahead}; stable $h15$ mean chosen ordinal 225$\to$600: hybrid $7.1 \to 2.3$, continuous $5.1 \to 6.1$ (derived from the histograms); 0 typed rollout failures; frozen $0.5$-margin rule: no arm at the margin & \nolinkurl{.local-artifacts/issue-92-lookahead-control-v1/comparisons.csv}; \nolinkurl{findings.md} (lines 29--48) & \#92 \\
+Rollout depth & primary rankers roll 1 ($h1$) or 25 ($h5$) carrier frames per candidate; outcomes resolve 97.8--400.9 agent frames after the sealed decision frame, lookahead between 0.25\% and 25.6\% of the outcome horizon (derived, $1/400.9$ and $25/97.8$); coverage 8 of 13 successful slots (225) and 13 of 13 (600); the 13th slot is the excluded typed-unmeasurable \texttt{issue-77-n1-005-a07} & \nolinkurl{.local-artifacts/issue-92-lookahead-control-v1/findings.md} (lines 9, 12--14) & \#92 \\
+Inverted ranker (post hoc) & argmax predicted cost, ties to lower ordinal; cross-split top-1 zero-shot $15/612 = 0.0245$, few-shot $21/612 = 0.0343$, chance $0.0407$; paired $-0.0162$ $[-0.0392, +0.0026]$ zero-shot, $-0.0064$ $[-0.0270, +0.0118]$ few-shot, 17 state clusters, 612 units each, descriptive; inverted choices at ordinal 0: $299/612$ and $240/612$ & \nolinkurl{.local-artifacts/issue-91-inverted-ranker-v1/summary.json}; \nolinkurl{findings.md} & \#91 \\
+Lookahead carrier MSE & seed 20260908, 4 states: $h1$ $2.32 \times 10^{3}$ / $3.25 \times 10^{4}$ (continuous), $1.61 \times 10^{3}$ / $4.09 \times 10^{4}$ (hybrid); $h5$ $0.332$ / $182$, $0.153$ / $10.5$; $h15$ $0.0262$ / $0.179$, $0.0217$ / $0.114$ (endpoint 225 / 600) & \nolinkurl{.local-artifacts/issue-77-n1-diagnostic-v1/summary.json} (\texttt{per\_seed}) & \#77 \\
+Second engine seed & 26/26 verdicts, 0 flips; 19 of 26 decision frames byte-identical & \nolinkurl{.local-artifacts/issue-92-cross-seed-invariance-v1/findings.md} & \#92 \\
+Cross-split scope & zero-shot $13/612 = 0.0212$, chance $0.0407$, paired $-0.0195$ $[-0.0368, -0.0045]$; few-shot $29/612 = 0.0474$, paired $+0.0067$ $[-0.0202, +0.0368]$; combined count across the two separately reported conditions $42/1{,}224$ in 5 of 17 states, 37 of 42 at ordinal 12; 12 systems; \#87-analogue systems $2/153$ per condition; cell-unit AUC $0.2039$ $[0.0762, 0.3324]$ zero-shot, $0.2732$ $[0.2182, 0.3239]$ few-shot, each over 216 of 612 scored cells (states with a success), interval from a 6-state-cluster bootstrap & \nolinkurl{.local-artifacts/issue-92-cross-pool-audit-v1/findings.md}; \nolinkurl{summary.json} (\texttt{cross\_split.per\_condition.*.auc.cell\_unit}) & \#92 \\
+Breadth pools & bounded-transfer $25/46 = 0.5435$ $[0.3913, 0.6957]$, successes at ordinals 0--6 and 10--12; N2 $5/15$; N2n $0/5$ & \nolinkurl{.local-artifacts/issue-92-cross-pool-audit-v1/findings.md} & \#92 \\
+Constant ordinals & ordinal 4: 3 of 7 N1 ceiling members (5/12 states), 1/14 cross-split; ordinal 12: 3/15 cross-split states, 0/12 N1; frozen cell rate $0.0212$; ordinal 2: 1/12 N1 & \nolinkurl{.local-artifacts/issue-92-cross-pool-audit-v1/findings.md}; members from \nolinkurl{issue-92-selection-validity-v1/slot_join.csv} & \#92 \\
+Ranker architecture & depth-3 predictor, 236-dimensional carrier; 1,837,690 (hybrid) and 1,862,396 (continuous) parameters; 9,000 updates, batch 64; 2,409 fitting lineages & \nolinkurl{.local-artifacts/issue-77-n1-dynamics-v1/plan.json} (\texttt{contract.config}, \texttt{training}, parameter-count block) & \#77 \\
+Oracle caps & 24\,h (86{,}400\,s) wall, 3\,h (10{,}800\,s) GPU, 4 workers & \nolinkurl{.local-artifacts/issue-87-closed-loop-oracle-v1/plan.json} & \#87 \\
+Per-candidate replays & gallery & \nolinkurl{data/issue-87-closed-loop-oracle/index.html} & \#87 \\
+Artifact release & 4,187 paths through commit \texttt{2b4d897}; about 15\,GB per pool excluded & \#92 WP6 execution report (git-tracked file list at \texttt{2b4d897}); no in-tree artifact file & \#92 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Proxy invalidation cascade (abstract, Sections 1, 5, 7, 8)}} \\
+Reactive gate stop & $0/45$ valid executions; $0.10$ floor & \nolinkurl{.local-artifacts/issue-80-reactive-diagnostic-v1/pilot-gate.json} & \#80 \\
+Proxy agreement & $0.1299$ against a $0.50$ floor; \texttt{no\_defensible\_binding} & \nolinkurl{.local-artifacts/issue-82-zero-floor-oracle-v1/findings.md} & \#82 \\
+Engine channel & agreement $0.1064$ on 47 cells; proxy minus engine $+0.8958$ $[+0.6875, +1.0000]$; $0/47$ & \nolinkurl{.local-artifacts/issue-85-engine-outcome-reactive-v1/findings.md} & \#85 \\
+Component rules & 0 consistent / 1 INVERTED & \nolinkurl{.local-artifacts/issue-88-component-resolved-regime-v1/findings.md} & \#88 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Heuristic record (Section 5 summary, Appendix~\ref{sec:app:anat}, Tables~\ref{tab:app:closeout}--\ref{tab:app:frontier}, Figures~\ref{fig:app:growth}--\ref{fig:app:novelty})}} \\
+Confirmatory endpoint & zero paired gain; $-5.2 \times 10^{-4}$ $[-7.1, -3.6] \times 10^{-4}$; six sealed rollouts; two budgets; five comparators & \nolinkurl{data/runtime_evidence/issue-15/} & \#15 \\
+Matched systems & regret 0.349998 vs 0.329997, $-0.0200$ $[-0.045, +0.003]$; 200 states; 9,000 updates; walls 2.01, 1.79, 0.37, 0.13, 1.01\,s; $2.7\times$; 1,862,396 vs 1,837,690 parameters (0.0134); 2\% tolerance & \nolinkurl{.local-artifacts/issue-74-matched-dynamics-v1/readiness.json} & \#74 \\
+Original-family closeout & $-0.0278$ $[-0.0694, 0.0000]$; $-0.0556$ $[-0.1111, -0.0139]$; $0.0000$ ($0.000000$ $[0, 0]$); 24 states; 10,368 records; 12 systems; 12 actions & \nolinkurl{data/issue-76-closeout/findings.md} & \#76 \\
+N1 diagnostic & $+0.0887$ $[+0.0155, +0.2118]$, per seed $0, 0, +0.2662$; $+0.0944$ $[+0.0231, +0.1878]$, per seed $+0.2905, -0.0215, +0.0141$; $h{=}15$ $-0.0051$ $[-0.1625, +0.1373]$; prior $0.492$, uniform $0.461$; 52 pairs; 1,872 records; carrier MSE above $10^2$ from $t = 150$ & \nolinkurl{.local-artifacts/issue-77-n1-diagnostic-v1/findings.md}; \nolinkurl{summary.json} (curves) & \#77 \\
+N2 novelty & $-0.2693$ $[-0.5412, -0.0050]$; $+0.4242$ $[+0.0915, +0.7657]$; $+0.1953$ $[+0.0583, +0.3363]$; $-0.1892$ $[-0.2720, -0.0945]$; exposure contrasts of Table~\ref{tab:app:adapt}; 17 states; 189 candidates; 13,608 records; 6 adapted predictors, 2,000 steps & \nolinkurl{.local-artifacts/issue-77-n2-eval-v1/findings.md} & \#77 \\
+External ports & decay contrasts of Table~\ref{tab:app:decay}; intervals $[+0.0816, +0.3716]$, $[-0.0251, +0.1482]$, $[-0.0125, +0.3256]$; $0.3998$, $0.190$, $0.429$; $+0.0664$, $+0.0325$, $+0.0743$; 21 states; 5,061 records; 241 candidates; 7 systems; 2,071\,s ($\approx$0.58 GPU-hours, 14\%); 203 MiB; 2,409 / 603 lineages; $K_{\max}=3$, $T=9000$; commit \texttt{ffb61f8} & \nolinkurl{.local-artifacts/issue-78-external-temporal-baselines-v1/findings.md}; \nolinkurl{summary.json}; \nolinkurl{plan.json} & \#78 \\
+CLEVRER replication & $+0.00366$ vs $0.0010$; $-0.00006$; $0.00132$, $0.00166$, $0.00133$, $0.01156$; $13.53$; $D$ $-0.1077$, $-0.0076$, $-0.0020$; $+0.0033$, $+0.0015$, $+0.0003$, $+0.0015$; 12 scenes, 480 windows, 48 units per seed; $\approx$0.43 GPU-hours (1,494.6\,s + 52.6\,s); 105 MiB; 432 / 864 units; archive sizes and hash prefixes of Appendix~\ref{sec:app:clevrer} & \nolinkurl{.local-artifacts/issue-79-clevrer-boundary-v1/findings.md}; \nolinkurl{summary.json}; \nolinkurl{clevrer-data.json} & \#79 \\
+CLEVRER decomposition & ratio $0.777$; band $[0.8, 1.25]$ & \nolinkurl{.local-artifacts/issue-83-clevrer-nonmonotonicity-v1/findings.md} & \#83 \\
+Third family & dispositions only (no printed numbers) & \nolinkurl{.local-artifacts/issue-84-third-family-v1/findings.md} & \#84 \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Protocol and coverage records (Appendices~\ref{sec:app:protocol}--\ref{sec:app:clevrer})}} \\
+Campaign coverage & N1 208 / 178 / 30; N2 208 / 186 / 22; n2n 104 / 34 / 70; 8 lineages per family, 13 actions; 5 of 8 lineages, 4--11 candidates, 31 dropped candidates & \nolinkurl{.local-artifacts/issue-77-n1-v1/coverage.json}; \nolinkurl{.local-artifacts/issue-77-n2-appearance-v1/coverage.json}; \nolinkurl{.local-artifacts/issue-77-n2n-v1/coverage.json} & \#77 \\
+Novelty readiness & 4 of 45 cells tested, 41 blocked; 27 / 48 / 5 of 80 templates; 18 slots; 8 vs 6 platforms; drag-$x \in [-160, -10]$ & \nolinkurl{docs/issue-76-novelty-level-evaluation-design.md} (section 1, \texttt{env@254720f}) & \#76 \\
+Seeds and budgets & seeds 20260908--20260910; seed bases 764{,}000{,}000, 764{,}100{,}000 (engine), 764{,}200{,}000, 764{,}300{,}000, 764{,}400{,}000, each plus ordinal; 9,000 updates $\times$ batch 64 $=$ 576,000 examples; allowances 4 and 6 GPU-hours, 24 worker-hours with 2 GPU-hours; 10,000 bootstrap draws at seed 7201 & per-ticket \nolinkurl{plan.json} under the roots of Table~\ref{tab:app:repro} & \#74--\#80 \\
+\end{longtable}
+}

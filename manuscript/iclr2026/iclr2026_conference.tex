@@ -5,37 +5,60 @@
 \input{math_commands.tex}
 
 \usepackage{hyperref}
-\usepackage{url}
+\usepackage{xurl} % xurl over url: lets \nolinkurl paths break anywhere (appendix audit/repro tables)
 \usepackage{enumitem}
 \setlist[itemize]{leftmargin=*, topsep=0pt, itemsep=0pt, parsep=0pt}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{longtable} % #91-WP5: multi-page audit table tab:app:audit (appendix)
 \graphicspath{{figures/}}
 
 % =============================================================================
-% FILE MAP (multi-file split, 2026-09-21). No body prose lives in this file.
-%   iclr2026_conference_abstract.tex      -> Abstract (retarget pending)
-%   iclr2026_conference_introduction.tex  -> §1 Introduction; OWNS the teaser float + fig:teaser
-%   iclr2026_conference_related_work.tex  -> §2 Related Work (R1-gated)
-%   iclr2026_conference_method.tex        -> §3 Setting and Formulation + §4 Protocol
-%   iclr2026_conference_experiments.tex   -> §5 Boundary Anatomy (5.1–5.6)
-%   iclr2026_conference_synthesis.tex     -> §6 Boundary Picture; OWNS Table 3 claim registry
+% PAGE LIMIT (verified 2026-09-23, #91 WP5): iclr2026_conference.sty is silent on length. The
+% official ICLR 2026 Author Guide (https://iclr.cc/Conferences/2026/AuthorGuide, "Paper length")
+% sets the submission main text at 9 pages or fewer (10 pages for rebuttal and camera-ready),
+% strictly enforced with desk rejection. References do not count; appendices after the bibliography
+% are unlimited; the optional Ethics and Reproducibility statements (end of main text, before
+% references) do not count. Measured before this pass from the 31-page build
+% (iclr2026_conference.aux): Conclusion started p. 18, the registry and frontier floats sat on
+% pp. 20-21, and the bibliography began p. 22, so the body ran about 21 pages. This pass moved every
+% proxy-era float and the detailed §2/§3/§4/§5/§7 material to the appendix (see file map). Re-measure
+% on the next latexmk build: the last body page is the page before the first \bibcite page.
+% =============================================================================
+% FILE MAP (multi-file split, 2026-09-21; float ownership updated #91-WP5 2026-09-23).
+% No body prose lives in this file.
+%   iclr2026_conference_abstract.tex      -> Abstract
+%   iclr2026_conference_introduction.tex  -> §1 Introduction; OWNS the teaser float fig:teaser (hero)
+%   iclr2026_conference_related_work.tex  -> §2 Related Work (two-paragraph summary; no floats)
+%   iclr2026_conference_method.tex        -> §3 Setting and Formulation + §4 Protocol (no floats)
+%   iclr2026_conference_experiments.tex   -> §5 heuristic anatomy: validity disclosure, demotion
+%                                            notice, summary (no floats)
+%   iclr2026_conference_synthesis.tex     -> §6 Ranking-Failure Measurement; OWNS tab:syn:oracle and
+%                                            tab:syn:denominator
 %   iclr2026_conference_discussion.tex    -> §7 Discussion + §8 Conclusion + pre-reference blocks
-%   iclr2026_conference_appendix.tex      -> Appendices A–F; OWNS the \appendix switch
-%   iclr2026_conference_checklist.tex     -> ICLR paper checklist (submission-time)
-% Section semantics bind to manuscript/writing_outline_boundary_paper.md (v1.1);
+%                                            (Reproducibility and Ethics statements)
+%   iclr2026_conference_appendix.tex      -> Appendices; OWNS the \appendix switch and every moved
+%                                            float: tab:app:closeout, tab:app:walls, fig:app:growth,
+%                                            tab:app:adapt, fig:app:novelty, tab:app:decay,
+%                                            tab:app:frontier, tab:app:registry (claim registry,
+%                                            merged with per-row provenance), tab:app:matrix,
+%                                            fig:app:estimands, tab:app:estimands, tab:app:repro,
+%                                            tab:app:audit (number-to-artifact audit)
+% Section semantics bind to manuscript/writing_outline_boundary_paper.md (v2.0);
 % status per manuscript/content_brief.md.
 % LABEL OWNERSHIP (file-scoped prefixes; duplicate labels only WARN, so respect these):
-%   intro: sec:intro, fig:teaser | related: sec:rel, tab:rel | method: sec:mth, fig:mth, tab:mth
-%   experiments: sec:exp, fig:exp, tab:exp | synthesis: sec:syn, fig:syn, tab:syn (tab:syn:registry)
-%   discussion: sec:disc, tab:disc | appendix: sec:app, tab:app, fig:app
+%   intro: sec:intro, fig:teaser | related: sec:rel | method: sec:mth
+%   experiments: sec:exp | synthesis: sec:syn, tab:syn | discussion: sec:disc, tab:disc
+%   appendix: sec:app, tab:app, fig:app
 % SHARED FILES: preamble + this map (this file); iclr2026_conference.bib (append-only, one entry per
 % block); figures/ (one asset prefix per owner). Build: latexmk -pdf (pdflatex/bibtex/pdflatex x2);
 % a single pdflatex pass leaves ?? and is not a valid check. Page-limit accounting on the assembled
 % PDF only (floats drift across file boundaries under this style's \topfraction).
 % =============================================================================
 
-\title{When Does Adaptive Granularity Help World Models?\\A Pre-Registered Boundary Anatomy of Joint Horizon--Description Selection}
+% #92-WP4 retitle 2026-09-23: the claim center moves from the boundary anatomy (demoted by
+% #92 WP5) to the measured selection pathology; any subtitle is #91 WP1's choice.
+\title{Solvable but Mis-Ranked: An Engine-Truth Audit of Frozen World-Model Action Selection in NovPhy}
 
 % Authors must not appear in the submitted version. They should be hidden
 % as long as the \iclrfinalcopy macro remains commented out below.
@@ -65,8 +88,9 @@
 
 \input{iclr2026_conference_discussion}
 
-% Keep Section 6 floats (registry, frontier) inside the main text; do not let
-% them drift past the bibliography into the appendix (review finding M1).
+% Keep the Section 6 floats (tab:syn:oracle, tab:syn:denominator) inside the main text; do not let
+% them drift past the bibliography (review finding M1). Since #91-WP5 the registry and frontier are
+% appendix floats, so this \clearpage only guards the two remaining Section 6 tables.
 \clearpage
 
 \bibliography{iclr2026_conference}
@@ -74,6 +98,5 @@
 
 \input{iclr2026_conference_appendix}
 
-\input{iclr2026_conference_checklist}
 
 \end{document}

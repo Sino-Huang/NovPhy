@@ -1,171 +1,43 @@
 %!TEX root = iclr2026_conference.tex
-% Binds outline §5 (Boundary Anatomy, 5.1–5.6) — manuscript/writing_outline_boundary_paper.md (v1.2);
+% Binds outline §5 (heuristic anatomy; detail in Appendix sec:app:anat) — manuscript/writing_outline_boundary_paper.md (v2.0);
 % status: manuscript/content_brief.md. DRAFTED 2026-09-21 from manuscript/research_evidence.md rows:
 % issue-15 confirmatory, issue-74, issue-76 closeout, issue-77 N1/N2, issue-78 (executed), issue-79
 % (executed). Every number is ledger-verbatim. All intervals are descriptive and labelled as such;
 % disposition tokens appear verbatim and are never softened; zero-shot and few-shot are reported in
 % separate paragraphs and never pooled; each subsection's first sentence names its estimand and family.
-% §5.7 (#80 reactive diagnostic) has NO subsection here — outline v1.2 keeps it as a Discussion
-% paragraph; it is pointed to, not reported, in this file.
-% Label prefixes owned by this file: sec:exp, fig:exp, tab:exp.
-% Floats declared here: tab:exp:closeout, tab:exp:walls (5.2); fig:exp:growth (5.3, asset pending,
-% [TODO: error-growth figure]); tab:exp:adapt (5.4); tab:exp:decay (5.5).
-% Pending synthesis-level numbers are marked [TODO: gated by #81 synthesis]; the CLEVRER h15
-% decomposition is marked [TODO: gated by #83]. PROSE PASS 2026-09-21.
+% outline v2.0: the #80 stop is reported in Discussion §7(a) as the start of the resolved chain; it is
+% pointed to, not reported, in this file.
+% Label prefixes owned by this file: sec:exp. Floats: none since #91-WP5 (see the WP5 note below).
+% #91-WP5: section retitled "Heuristic Boundary Anatomy on the Replay-Cost Proxy" (Delta OPEN TEX
+% ITEM 4; label sec:exp:anatomy kept). PROSE PASS 2026-09-21.
+% #91-PASS 2026-09-23 (WP2 items 2-8, §5 demotion block, WP4 figures): construct-validity
+% disclosure sec:exp:validity at the section head (#82/#85 numbers; primary closed-loop table is
+% tab:syn:oracle); regret-on-replay-cost tables captioned heuristic; item 2 walls sentence fixed and
+% continuous_adaptive row disclosed; item 3 e=120 endpoint qualifier; item 4 tab:exp:adapt relabelled
+% as the exposure (few-shot minus zero-shot) contrast on fixed systems, tau_ad unmeasured; item 5
+% h=15 intervals printed; item 7 TAWM degeneracy disclosed; item 8 per-seed rows beside +0.0887 and
+% +0.0944; h=15 "exactly zero in both" corrected (item 1 wording); #81-gated [TODO]s cut (no
+% artifact); fig:exp:growth and fig:exp:novelty wired to figures/ (built by figures/build_figures.py).
+% #91-WP5 2026-09-23 (page limit, ICLR 2026 main text <= 9 pp): the section-opening paragraph and
+% subsections 5.1-5.6 with all their floats (tab:exp:closeout, tab:exp:walls, fig:exp:growth,
+% tab:exp:adapt, fig:exp:novelty, tab:exp:decay) MOVED to the appendix file as Appendix
+% sec:app:anat, labels renamed to the appendix prefix (sec:app:confirmatory, sec:app:development,
+% sec:app:horizon, sec:app:novelty, sec:app:extbase, sec:app:clevrer:results; tab:app:closeout,
+% tab:app:walls, tab:app:adapt, tab:app:decay; fig:app:growth, fig:app:novelty). This file now
+% declares NO floats; it keeps sec:exp:anatomy + sec:exp:validity and a short demotion notice (r4 I10: summary paragraph cut).
 
-\section{Boundary Anatomy}
-\label{sec:exp:anatomy}
+\section{Heuristic Boundary Anatomy on the Replay-Cost Proxy}\label{sec:exp:anatomy}
+% #91 §5 demotion block 2026-09-23. Sources: .local-artifacts/issue-82-zero-floor-oracle-v1/findings.md
+% (agreement 0.1299 vs floor 0.50, status no_defensible_binding);
+% .local-artifacts/issue-85-engine-outcome-reactive-v1/findings.md (agreement 0.1064 on 47 cells;
+% proxy-minus-engine +0.8958 [+0.6875, +1.0000]).
+\paragraph{Construct-validity disclosure.}\label{sec:exp:validity} The ranking regrets in Appendices~\ref{sec:app:development}--\ref{sec:app:extbase} are scored against end-of-window replay count cost, read at $t{=}600$ on the N1 and N2 cohorts, and our own audits invalidated that cost as a measure of engine outcomes. Its best monotone success threshold agrees with the replay engine evidence on $0.1299$ of cells against a pre-declared $0.50$ floor (proxy audit, status \texttt{no\_defensible\_binding}). On 47 executed pilot cells it agrees with the engine-side verdict on $0.1064$ of cells, and the paired proxy-minus-engine difference is $+0.8958$ $[+0.6875, +1.0000]$, so the proxy over-calls success (engine-event channel). We therefore keep this section as a heuristic supporting section and measurement-validity case study. Every table scored on the replay count cost is labelled heuristic in its caption. The primary closed-loop result is the engine-truth record of Section~\ref{sec:syn:picture} (Table~\ref{tab:syn:oracle}).
 
-Section~\ref{sec:mth:setting} defined the request surface and Section~\ref{sec:mth:protocol} the frozen evaluation contract. This section reports the executed evidence in six families, one per subsection. Each opening sentence names the estimand scored and the state family covered, because the estimand changes between the confirmatory endpoint, the ranking cohorts, and the recursive CLEVRER scoring. All intervals are descriptive paired bootstrap intervals computed under the frozen protocol, and we call an effect null when its descriptive interval covers zero. Dispositions appear in the frozen vocabulary verbatim, every attempted cell is reported, and the reactive closed-loop diagnostic is reported in Section~\ref{sec:disc} rather than here.
-
-% Source: research_evidence.md row "Issue-15 confirmatory" + issue-15 confirmatory-v2 summary.
-\subsection{Confirmatory endpoint result}
-\label{sec:exp:confirmatory}
-
-The estimand is the paired mean gain in duration-weighted authoritative endpoint carrier MSE over eligible teacher-forced decision states, and the family is instance-held-out, same-physics NovPhy gameplay \citep{pinto2024novphy}: the six complete sealed rollouts of the frozen final partition, collected once and consumed once. The protocol calibrated two compute-support budgets prospectively, declared any configuration exceeding its budget ineligible, and scored the candidate against the strongest eligible comparator at each budget. The parameter-matched two-head controller was strongest at the lower budget and fixed-pair at the higher.
-
-At the lower budget the mean paired gain is zero. At the higher budget the mean paired gain is $-5.2 \times 10^{-4}$ with a paired 95\% interval $[-7.1 \times 10^{-4}, -3.6 \times 10^{-4}]$, where gain is the comparator's error minus the candidate's error. The candidate's endpoint error was therefore higher than fixed-pair's at the higher budget. Authoritative endpoint physical-violation incidence did not increase at either budget.
-
-Three scope limits bound this result. The estimand is teacher-forced, so the result does not measure closed-loop control. Violation measurement covers the two authoritative endpoint checks only, and dense-path plausibility is unmeasured. Exposure is instance-held-out within the same physics, so the result supports no template-held-out or shifted-physics claim. Because the frozen rule scored only the strongest eligible comparator per budget, no five-comparator matched suite exists, and recomputing one would require a new authorization and partition. The frozen decision rule returns \texttt{not\_supported\_by\_this\_experiment}.
-
-% Source: research_evidence.md rows "Issue-74 matched dynamics systems" and "Issue-76 closeout".
-\subsection{Development anatomy on the original families}
-\label{sec:exp:development}
-
-The estimands are ranking regret over the nine request pairs and carrier MSE scored on offset-225 rollouts, and the families are the original single-force and multi-force development families (type010101 and type010102), in a 200-state calibration cohort and a 24-state closeout cohort.
-
-Six source-bound fits, three seeds each of an independent pure-continuous system and the hybrid system, were trained for 9,000 equal updates and scored on the 200 calibration states, with zero states dropped for prediction failure. The selected comparator is \texttt{continuous\_h5}, chosen as the strongest arm on the same calibration scoring on which it is then evaluated, and the artifact records \texttt{selection\_optimism=true} for it. The hybrid adaptive arm reaches mean ranking regret 0.349998 against 0.329997 for \texttt{continuous\_h5}, a contrast of $-0.0200$ with descriptive interval $[-0.045, +0.003]$. At matched development scoring, the hybrid shows no regret advantage over the selected comparator. Training is equal-update rather than compute-matched, and the protocol records \texttt{training\_compute\_matched=false} with full work reporting (Section~\ref{sec:mth:protocol}).
-
-The closeout anatomy resolves the same question per horizon on the 24-state cohort of the same original families, with three paired seeds, 12 fixed systems, and 12 actions per state, for 10,368 records. Improvement is defined as reference minus tested, so positive values favor the hybrid arm. Table~\ref{tab:exp:closeout} reports the training effects: null-to-negative at $h=1$, negative at $h=5$ with the interval excluding zero, and exactly zero at $h=15$. On the families it trained on, the hybrid arm is null-to-worse. These are descriptive development-cohort intervals over 24 states, and the closeout carries a pre-access \texttt{readiness\_or\_precision\_insufficient} stop on fresh sealed evaluation.
-
-\begin{table}[t]
-\centering
-\caption{Hybrid training effects on the original families (24 closeout states, three paired seeds, 12 fixed systems, 12 actions; 10,368 records). Improvement is reference minus tested, so positive favors the hybrid arm. All intervals are descriptive; null means the interval covers zero.}
-\label{tab:exp:closeout}
-\begin{tabular}{lccc}
-\toprule
-Requested horizon & Improvement & Descriptive 95\% interval & Reading \\
-\midrule
-$h=1$  & $-0.0278$ & $[-0.0694, 0.0000]$   & null-to-negative \\
-$h=5$  & $-0.0556$ & $[-0.1111, -0.0139]$  & excludes zero \\
-$h=15$ & $0.0000$  & --                    & exactly zero \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:exp:walls} records the matched-systems per-state inference walls on the same 200-state cohort. The pure-continuous arm at $h=1$ is the most expensive system measured. The hybrid adaptive arm costs about $2.7\times$ the selected \texttt{continuous\_h5} comparator, and it is not the cheapest arm at any horizon. Per-state cost inverts with horizon, so adaptive granularity is not synonymous with expensive inference. These walls are measured on the original-family cohort with offset-225 rollouts, not on the endpoints of Section~\ref{sec:exp:horizon}.
-
-\begin{table}[t]
-\centering
-\caption{Per-state wall-clock inference cost on the 200-state original-family calibration cohort with offset-225 rollouts, as recorded by the matched-systems anatomy (approximate artifact means, seconds per state). The hybrid adaptive arm is never the cheapest.}
-\label{tab:exp:walls}
-\begin{tabular}{lc}
-\toprule
-System & Per-state wall (s) \\
-\midrule
-Continuous, $h=1$    & 1.79 \\
-Continuous, $h=5$    & 0.37 \\
-Continuous, $h=15$   & 0.13 \\
-Hybrid adaptive      & 1.01 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-% Source: research_evidence.md row "Issue-77 N1 normal-mechanics breadth campaign and diagnostic".
-\subsection{Horizon-resolved effects on new normal-mechanics families}
-\label{sec:exp:horizon}
-
-The estimand is ranking regret scored against the end-of-window cost at the $t=600$ endpoint, a right-censored quantity that is not a settled cost, and the families are the new normal-mechanics rolling and sliding families (type010103 and type010105) on 4 held-out states.
-
-The breadth campaign attempted all 208 corpus branches, of which 178 were admissible and 30 ended in recorded typed failures. Both arms were retrained under a matched three-seed protocol, and the diagnostic scored 52 state-candidate pairs (13 candidates at 4 states) across 12 systems and 3 seeds, for 1,872 published and exact-validated records.
-
-The hybrid-versus-continuous training effect is $+0.0887$ with descriptive interval $[+0.0155, +0.2118]$ at $h=1$, where positive favors the hybrid arm. The interval excludes zero. At $h=5$ and $h=15$ the training effects are null. The macro-readout symbolic-execution effect at $h=15$ is $+0.0944$ $[+0.0231, +0.1878]$, which excludes zero. The symbolic-execution contrasts at $h=1$ straddle zero. The two estimands separate by horizon: the training effect carries the signal at the short horizon and the symbolic-execution effect at the long one.
-
-Prior and uniform request baselines reach pooled N1 regrets of 0.492 and 0.461, so every frozen state leaves ranking signal for a learned policy. The ranking problem is far from saturated.
-
-Recursive carrier MSE grows with elapsed endpoint in both arms and reaches unstable magnitudes from $t \ge 150$ (Figure~\ref{fig:exp:growth}). We record this as an instability observation. It is consistent with a mechanism in which long-horizon recursion lacks a stable training signal, but it does not prove one, because the positive $h=15$ macro execution effect shows that readout-level signal survives carrier-level instability. The growth pattern itself is bounded by the CLEVRER result of Section~\ref{sec:exp:clevrer}.
-
-\begin{figure}[t]
-\centering
-\fbox{\parbox{0.92\linewidth}{\centering \vspace{2em} [TODO: error-growth figure] \vspace{2em}}}
-% Asset pending: recursive carrier MSE vs elapsed endpoint, both arms, N1 held-out states.
-\caption{Recursive carrier MSE against elapsed endpoint on the N1 held-out states, for the continuous and hybrid arms. Both arms grow to unstable magnitudes from $t \ge 150$. The magnitudes are artifact-recorded descriptive values, and no growth-shape claim is made beyond the recorded divergence.}
-\label{fig:exp:growth}
-\end{figure}
-
-Read against Section~\ref{sec:exp:development}, the two family groups can now be compared. At $h=1$ the training effect is positive on the new rolling and sliding families ($+0.0887$) and null-to-negative on the original families ($-0.0278$). At $h=5$ it is null on the new families and negative on the original ones ($-0.0556$, interval excluding zero). At $h=15$ it is exactly zero in both. This is the central boundary result: the training effect depends on the (family, horizon) cell, and any statement that averages over either axis would erase this pattern.
-
-[TODO: gated by \#81 synthesis, pooled family-by-horizon grid]
-
-% Source: research_evidence.md row "Issue-77 N2 appearance-novelty evaluation".
-\subsection{Appearance-novelty boundary}
-\label{sec:exp:novelty}
-
-The estimands are zero-shot and few-shot ranking regret, which we report separately and never pool, and the families are the two appearance-novelty pairs over the original families (type010101 and type010102), scored on 17 states with 189 candidates.
-
-Coverage is disclosed rather than trimmed. On the novel side, 186 of 208 branches are admissible. On the normal side of the type010102 pair, contention left 34 of 104 branches admissible, and the 70 contention-era typed failures are retained and reported as the protocol requires. The evaluation holds 13,608 records across 12 systems, 3 seeds, and 2 conditions, plus six adapted predictors retrained with 2,000 matched steps.
-
-Under zero-shot appearance novelty at $h=15$ on type010102, the hybrid-continuous contrast moves by $-0.2693$ $[-0.5412, -0.0050]$ and the hybrid-macro contrast by $+0.4242$ $[+0.0915, +0.7657]$. Both intervals exclude zero, and the two effects point in opposite directions. No uniform statement about appearance novelty survives this pair. The direction is a property of the system whose contrast is measured.
-
-Under few-shot exposure at the same horizon, reported separately, the pattern reverses: $+0.1953$ $[+0.0583, +0.3363]$ for hybrid-continuous and $-0.1892$ $[-0.2720, -0.0945]$ for hybrid-macro, both intervals excluding zero. The two conditions measure different exposure regimes, so we keep them in separate paragraphs and separate registry rows throughout.
-
-Table~\ref{tab:exp:adapt} reports the adaptation effect on the continuous-readout ranking per family and horizon. Adaptation lowers regret at $h=1$ only in type010102, with effect $-0.1970$ $[-0.2688, -0.1253]$, while the type010101 interval straddles zero. It raises regret at $h=5$ in both families and at $h=15$ in both. Adaptation on the novel side is not a rescue. The per-family scope is itself part of the result.
-
-\begin{table}[t]
-\centering
-\caption{Adaptation effect on the continuous-readout ranking, by family and requested horizon. Negative means adaptation lowered regret. Positive means it raised it. All intervals are descriptive. Daggers mark the $h=15$ cells, whose descriptive intervals exclude zero with endpoints recorded in the artifact.}
-\label{tab:exp:adapt}
-\begin{tabular}{llcc}
-\toprule
-Horizon & Family & Effect & Descriptive 95\% interval \\
-\midrule
-$h=1$  & type010102 & $-0.1970$ & $[-0.2688, -0.1253]$ \\
-$h=1$  & type010101 & $-0.0866$ & $[-0.2422, +0.0690]$ \\
-$h=5$  & type010102 & $+0.1850$ & $[+0.1012, +0.2688]$ \\
-$h=5$  & type010101 & $+0.1544$ & $[+0.0062, +0.3025]$ \\
-$h=15$ & type010102 & $+0.0672$ & --$^{\dagger}$ \\
-$h=15$ & type010101 & $+0.1080$ & --$^{\dagger}$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-% Source: research_evidence.md row "Issue-78 external temporal-adaptation baselines" (closed 2026-09-21).
-\subsection{External temporal-adaptation baselines}
-\label{sec:exp:external}
-
-The estimand is ranking regret on the frozen N1 states of Section~\ref{sec:exp:horizon}, and the family is the same 4 held-out rolling and sliding states, here used for a mechanism-class comparison under one frozen contract rather than a within-program comparison.
-
-We ported TAWM \citep{nhu2025tawm} and VLWM \citep{du2026vlwm}, retrained both under the identical budget on the frozen N1 corpus, and scored the frozen states. Port fidelity is disclosed rather than idealized. The TAWM port follows the reference implementation at commit \texttt{ffb61f8}, which was consulted rather than run, with declared deviations on horizon conditioning, the mixed-horizon sampler, and the controller used for its adaptive evaluation. The VLWM port reproduces Eqs.~3--6 of the paper at fidelity, with no public code available and a recorded seven-way configuration search. One structural fact matters for reading the contrasts below: the TAWM cell shares the recipe of the continuous reference arm from the N1 diagnostic, so port and reference are structurally matched there. Appendix~\ref{sec:app:external} records every deviation.
-
-Table~\ref{tab:exp:decay} reports the paired decay contrast between the $h=1$ and $h=15$ requests per seed, where positive means the arm's regret is higher at the longer horizon. All three systems show positive point estimates across seeds: the TAWM port at $+0.2253$, $+0.2576$, and $+0.2177$; the VLWM port at $+0.0591$, $+0.1000$, and $+0.0494$; and the plain continuous reference at $+0.1605$, $+0.2671$, and $+0.1354$. Descriptive intervals on the first seed (20260908) are $[+0.0816, +0.3716]$ for TAWM, $[-0.0251, +0.1482]$ for VLWM, and $[-0.0125, +0.3256]$ for the reference. Only the TAWM interval excludes zero.
-
-\begin{table}[t]
-\centering
-\caption{Per-seed paired decay contrasts between the $h=1$ and $h=15$ requests on the frozen N1 states, where positive means higher regret at $h=15$. Seeds are listed in recorded order, with 20260908 first. All values are descriptive.}
-\label{tab:exp:decay}
-\begin{tabular}{lccc}
-\toprule
-System & Seed 1 & Seed 2 & Seed 3 \\
-\midrule
-TAWM port \citep{nhu2025tawm}       & $+0.2253$ & $+0.2576$ & $+0.2177$ \\
-VLWM port \citep{du2026vlwm}        & $+0.0591$ & $+0.1000$ & $+0.0494$ \\
-Continuous reference                & $+0.1605$ & $+0.2671$ & $+0.1354$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Under full work reporting, the TAWM port's regret contrast against the selected \texttt{continuous\_h5} reference is $+0.0664$, $+0.0325$, and $+0.0743$ across seeds. Every measured system decays in point estimate, and four held-out states bound the precision, so the class-level question cannot yet separate a method class from an implementation. The three pre-registered questions of the external-baseline study return verbatim dispositions: the work-reported question returns \texttt{supported}, the training-effect question returns \texttt{supported}, and the method-class signature question closes \texttt{readiness\_or\_precision\_insufficient}. The redirect we draw from this is a reporting requirement, stated as such in Section~\ref{sec:disc}.
-
-% Source: research_evidence.md row "Issue-79 CLEVRER out-of-family replication" (executed, commit 0a0dd73).
-\subsection{Out-of-family replication on CLEVRER}
-\label{sec:exp:clevrer}
-
-The estimand is recursive position MSE at elapsed endpoints of 15, 30, 60, and 120 CLEVRER frames \citep{yi2020clevrer}, and the family is collision video physics outside the NovPhy scenario families: 12 validation scenes (indices 10000--10011) with 40 windows each, 48 units per seed, zero typed failures, and roughly 0.43 GPU-hours of compute. Two arms were retrained under the identical budget. The CLEVRER vocabulary does not support the macro readout, which was dropped in Phase 0 before any scoring. Membership and vocabulary mapping rules are recorded in Appendix~\ref{sec:app:clevrer}.
-
-Three frozen component rules test the replication. S1, short-horizon separation, replicates: the $h=1$ training effect at $e=15$ is $+0.00366$, above the pre-declared margin of $0.0010$. S2, horizon ordering, replicates: the separation at $h=15$ is $-0.00006$, below the $h=1$ separation, matching the NovPhy shape in which separation shrinks with horizon. S3, growth shape, fails at $h=15$: the continuous arm's recursive MSE is non-monotone over the endpoint grid, $0.00132 \rightarrow 0.00166 \rightarrow 0.00133 \rightarrow 0.01156$. The $h=1$ and $h=5$ arms grow monotonically, with $h=1$ reaching $13.53$ at $e=120$.
-
-The signature question fails on S3 alone. The contact-regime question fails with its direction reversed: every regime-separation estimate $D$ is negative, $-0.108$ at $h=1$, $-0.0076$ at $h=5$, and $-0.0020$ at $h=15$, opposite the NovPhy scale-separation direction. Both pre-registered questions return \texttt{not\_supported\_by\_this\_experiment}. We report the two families separately and draw no falsification claim in either direction. A CLEVRER non-replication does not falsify the NovPhy boundary, and the NovPhy result does not predict the CLEVRER growth shape. The S3 failure also bounds the instability observation of Section~\ref{sec:exp:horizon}: late-horizon magnitude growth is not a universal shape. Whether the $h=15$ non-monotonicity is a regime property or an estimand and endpoint artifact is assigned to a frozen-checkpoint decomposition.
-
-[TODO: gated by \#83, the CLEVRER $h=15$ non-monotonicity decomposition]
-
-[TODO: gated by \#81 synthesis, cross-family rollup numbers for the boundary picture]
+% #92-WP5 demotion 2026-09-23 (registry rows C2/C8): the horizon-decay boundary is cut as a positive
+% claim; the +0.0887 headline is unsupported (one seed, invalidated proxy). Per-seed 0, 0, +0.2662:
+% .local-artifacts/issue-77-n1-diagnostic-v1/findings.md. r4 I10: the demotion notice is shortened (its
+% repeated agreement numbers and the replication/component/pilot tallies live in registry row C2 and
+% the appendix provenance table) and the summary paragraph is deleted (it duplicated §1; its content
+% lives in Appendix sec:app:anat subsections and Discussion (c)). Tallies: appendix provenance table
+% (issue-80 0/45; issue-88 0 consistent / 1 INVERTED); numbers above per rows C2/C10.
+\paragraph{Demotion notice (post-registration).} The engine-truth audit demotes this section's headline: the $+0.0887\,[+0.0155, +0.2118]$ training contrast decomposes per seed to $0, 0, +0.2662$ on this invalidated proxy and is unsupported (row C2 of Table~\ref{tab:app:registry}). The Appendix~\ref{sec:app:anat} numbers stay printed as descriptive values, read as a measurement-validity narrative plus the prediction-error horizon tradeoff that motivates isolating the ranking stage, never as a positive boundary claim.

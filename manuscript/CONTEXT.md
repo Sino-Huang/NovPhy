@@ -2,6 +2,16 @@
 
 This glossary is the manuscript-local vocabulary for work that references the published NovPhy benchmark and the in-progress BG-NS-JEPA program.
 
+## Current state for a fresh session (2026-09-23, round 4 after r3 follow-up review)
+
+- **Thesis = the measured ranking failure, AUC as headline.** On the development N1 membership an engine-truth closed-loop audit finds a successful single-shot action for 7 of 14 source members (exactly one successful candidate per ceiling state). Three small (~1.8M-parameter) frozen rankers order candidates at or below chance on N1: AUC 0.4367 [0.4045, 0.4710] (108 cells), member-clustered 0.4180 [0.3135, 0.5252]. On the type010101 split both AUC point estimates sit below 0.5, each over 216 of 612 scored cells per condition with a 6-state-cluster bootstrap: 0.2039 [0.0762, 0.3324] for the frozen zero-shot arm (held out) and 0.2732 [0.2182, 0.3239] for the few-shot arm (adapted on the split), never pooled. Inverting the ranking (max cost, ties to the lower ordinal; post hoc, issue-91-inverted-ranker-v1) does not recover the successes: top-1 15/612 = 0.0245 zero-shot and 21/612 = 0.0343 few-shot against chance 0.0407, paired −0.0162 [−0.0392, +0.0026] and −0.0064 [−0.0270, +0.0118] over 17 state clusters, so no support for a cost-sign reclassification. A fixed-horizon ranker applies its carrier Δ times of Δ agent frames each (Δ² = 1, 25, 225 frames); the primary rankers look 1 (h1) or 25 (h5) frames ahead against outcomes resolving 97.8–400.9 agent frames after the decision, between 0.25% and 25.6% of the outcome horizon (derived: 1/400.9, 25/97.8). Mechanism sentence, always with that scope: "selection fails at within-state action discrimination along the candidate sweep". The hybrid ranker alone orders by the sweep coordinate (0.9986; continuous 0.4924/0.6130). There is no claim about state-difficulty estimation in either direction (post-hoc state-level AUC 0.5758, [0.2653, 0.8958] covers 0.5). The restatement statistics (member unit, band, disjoint supports, AUC choice) are disclosed as post hoc in §4 and §6, and the non-overlap of supports is a post-hoc N1 observation. The +0.0887 contrast reads "unsupported: carried by one seed on an invalidated proxy".
+- **Manuscript:** `iclr2026/`, title *Solvable but Mis-Ranked: An Engine-Truth Audit of Frozen World-Model Action Selection in NovPhy*. r4 gate (Main): 39 pp total, body §1–§8 ends p. 9 l.442 (§5 compression moved §8 to start on p. 8 l.423), Repro/Ethics p. 9 (uncounted), references start p. 10, figures unchanged. Fig. 1 caption leads "Engine-truth selection AUC is at or below chance on solvable N1 states"; panel (b) carries the cross-split AUC rows. There are 3 contributions, prose uses stage names (oracle pass / completion pass / timeout audit / restatement), and the objective-mismatch paragraph cites `lambert2020objective` and `girdhar2020forward`. Per-section status is in `content_brief.md`, the binding plan is `writing_outline_boundary_paper.md` v2.4, and the evidence is in `research_evidence.md`.
+- **Review:** r1 4/10, 24 findings (23 RESOLVED r2, I16 PARTIAL). r2 4/10 (weak reject), findings I25–I34 plus r1 partials. r3 4/10 (weak reject; "a 6 is defensible once I35 is corrected"), new findings I35 (CRITICAL) and I36–I39. r3-followup 6/10 (borderline), minted I40. Authoring tallies (`iclr2026/review-log.md`): r3 13 RESOLVED, 2 PARTIAL (I10, I30); r3-followup 6 RESOLVED (I30, I35–I39), 0 REJECTED, plus I40 RESOLVED; r4 2 RESOLVED (I10, I25), 0 REJECTED, pending r4 reviewer verification.
+- **PHYRE/AUCCESS positioning (r4, I25):** PHYRE certifies solvability by construction and scores multi-attempt task success by AUCCESS, a log-weighted area under the task-level success curve over up to 100 attempts. This paper's delta is narrower: a measured per-state ceiling on a frozen 13-candidate inventory plus a per-candidate engine-truth AUC in a single-shot cascade regime, not a new success-metric family. Sites: abstract.tex:31, introduction.tex:93/:99, synthesis.tex:112, related_work.tex:24–25, appendix.tex:419–420. r4 gate: 39 pp, body ends p. 9 l.442 (§8 starts p. 8 l.423), Repro/Ethics p. 9, references p. 10; §5 now two paragraphs (I10).
+- **Canonical numbers:** ceiling member-unit 7/14 = 0.5000 [0.2143, 0.7857]; AUC 0.4367 [0.4045, 0.4710] (108 cells), member-clustered 0.4180 [0.3135, 0.5252]; top-1 0/108; top-3 6/108 vs 0.2340 (paired −0.1859 [−0.2308, −0.1279]); chosen {7:90, 8:12, 9:45, 10:10, 11:6, 12:44}; lookahead 15/16 arms 0/36, one arm 2/36; determinism 176/176 + 288/288; second seed 26/26; counterexample 42/1,224 in 5 of 17 states; zero-shot 13/612 vs 0.0407, few-shot 29/612 (never pooled); inverted top-1 15/612 and 21/612 vs 0.0407; breadth ceiling 25/46 = 0.5435 [0.3913, 0.6957]. All intervals descriptive.
+- **Blockers:** all closed (#89 completion, #90 timeout audit, #92 restatement, #91 inverted-ranker probe). No measurement gates the prose.
+- **Still pending:** anonymized artifact link (author, I16; repro cites commit 2b4d897 of a non-public repository); r4 re-review of the I10/I25 closures.
+
 ## Core Terms
 
 **NovPhy benchmark**
@@ -136,27 +146,57 @@ Completed implementation/tooling work, closed at commit `40ab258`. It delivers n
 
 _Avoid_: Retraining result, gameplay result, demonstrated effect.
 
-**Boundary-anatomy reframing**
+**Boundary-anatomy reframing (SUPERSEDED 2026-09-23)**
 
-The 2026-09-21 manuscript decision: the paper reports WHEN adaptive granularity helps (horizon-local training effect, nulls, system-specific novelty directions, cost inversion) instead of claiming a method advantage. The binding section plan and claim registry (C1–C10) live in `writing_outline_boundary_paper.md`.
+The 2026-09-21 framing (the paper reports when adaptive granularity helps). Superseded by the ranking-failure thesis after #82/#85 construct-invalidated the t=600 proxy that scored it. Its sections survive only as the heuristic measurement-validity case study (§5).
 
-_Avoid_: Method-advantage framing, "BG-NS-JEPA wins", softening the issue-15 negative.
+_Avoid_: Drafting from it; any positive boundary claim.
 
-**Horizon-resolved training effect**
+**Ranking-failure thesis**
 
-The issue-77 N1 diagnostic contrast `hybrid_continuous_h1` vs `continuous_h1` (kind `training_effect`): +0.0887 [+0.0155, +0.2118], descriptive, 4 held-out states. Distinct from symbolic-execution effects, which straddle zero at h=1.
+The binding #91 framing: a scoped measurement that frozen model rankers fail at within-state action discrimination on states the engine shows are solvable. Registry rows C16–C21.
 
-_Avoid_: Calling it a symbol-conditioning or controller advantage.
+_Avoid_: "not dynamics prediction" (false dichotomy); "no system ever"; field-wide causal explanations.
+
+**Source member**
+
+The unit of analysis for the closed-loop ceiling: one physical initial state with its candidate table. 15 members cover 24 states, including 9 byte-identical duplicate pairs.
+
+_Avoid_: Using states (12/23) as the headline unit.
+
+**Action ceiling / oracle-conditioned denominator**
+
+The fraction of source members for which engine replay finds at least one successful candidate (7/14 on N1; 25/46 on the bounded-transfer breadth pool). It is the denominator that turns a zero success rate into a ranking-failure measurement.
+
+_Avoid_: Calling it a gameplay success rate or a sealed-benchmark result.
+
+**Selection validity**
+
+Engine-truth AUC and top-k of the frozen rankers' predicted-cost ordering against per-candidate verdicts on ceiling states.
+
+_Avoid_: Significance language; the member-clustered AUC interval covers 0.5.
+
+**Counterexample split**
+
+The cross-split type010101 audit where predictors select engine-truth successes in 42 of 1,224 cells (5 of 17 states). It must accompany every N1 zero-selection sentence.
+
+_Avoid_: Pooling zero-shot and few-shot; reading the counterexample as universality.
+
+**Horizon-resolved training effect (DEMOTED)**
+
+The issue-77 N1 diagnostic contrast `hybrid_continuous_h1` vs `continuous_h1`: +0.0887 [+0.0155, +0.2118], per-seed 0, 0, +0.2662, on the construct-invalidated t=600 proxy. Demoted by #92 WP5; first-person motivation only.
+
+_Avoid_: Presenting it as evidence; quoting it without the per-seed decomposition.
 
 **Appearance-novelty boundary**
 
-The issue-77 N2 evaluation over matched normal/novel appearance pairs: zero-shot and few-shot conditions reported separately; type010102 effects move in opposite system-specific directions (hybrid-continuous h15 −0.2693 vs hybrid-macro h15 +0.4242).
+The issue-77 N2 evaluation over matched normal/novel appearance pairs: zero-shot and few-shot conditions reported separately; type010102 effects move in opposite system-specific directions (hybrid-continuous h15 −0.2693 vs hybrid-macro h15 +0.4242). Heuristic (proxy-scored).
 
 _Avoid_: Any uniform "novelty helps/hurts hybrids" claim.
 
-**ADD-EXP boundary tickets (#78–#81)**
+**ADD-EXP and follow-up tickets (#78–#92)**
 
-The 2026-09-21 boundary-evidence follow-ups: #78 external temporal-adaptation baselines **closed 2026-09-21** (method-class `readiness_or_precision_insufficient`; work-reported and training-effect `supported`); #79 CLEVRER out-of-family replication **executed with published dispositions** (component-wise: S1 short-horizon separation and S2 horizon-ordering REPLICATE; S3 growth-shape fails at h15 non-monotone; Q2 regime direction reversed); #80 reactive-control diagnostic **executed with a typed stop** (`readiness_or_precision_insufficient`: first-shot prevalence 0.0000 over 45 valid executions, full 288-cell matrix barred by the frozen precondition — never present the stop as planner-quality evidence); #81 pooled synthesis **unblocked** (all upstreams terminal) but not executed. New open follow-ups: #82 oracle-ceiling zero-floor diagnostic, #83 CLEVRER h15 non-monotonicity decomposition, #84 third-family replication tie-breaker. #78/#79/#80 outcomes feed registry rows C8/C9/C10; #82/#83/#84 feed C14–C16; #81 feeds the synthesis section itself.
+#78 closed (method-class `readiness_or_precision_insufficient`); #79 executed (S1/S2 replicate, S3 fails, Q2 reversed at e=120); #80 typed stop (0/45); #81 never executed (superseded); #82 `no_defensible_binding` (0.1299 vs 0.50); #83 Q1 supported / Q2 not_supported; #84 Q1 not_supported / Q2 supported; #85 agreement 0.1064, 0/47; #86 `readiness_or_precision_insufficient`; #87 pre-completion ceiling 0.3043; #88 no consistent rule; #89 completion 12/23 (state unit); #90 `indeterminate`, missingness disclosed; #92 final restatement. All closed. Final values: `research_evidence.md`.
 
 _Avoid_: Treating pending tickets as evidence, or letting them reopen #64/#65.
 
