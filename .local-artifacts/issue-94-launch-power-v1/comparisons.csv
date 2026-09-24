@@ -1,0 +1,33 @@
+id,arm,statistic,unit,value,interval_low,interval_high,interval_label,detail
+coverage,power,verdict coverage,slots,0.9833333333333333,,,,"{""typed_failure"": 5, ""verdict"": 295}"
+ceiling,power,member ceiling,members,0.5333333333333333,0.26666666666666666,0.8,DESCRIPTIVE,8 of 15
+top1,power,pooled top-1 hit rate,cells,0.0,,,,0/72; chance 0.05208333333333325
+top1_minus_chance,power,top1 minus chance,member_clustered,-0.052083333333333336,-0.05625,-0.05,DESCRIPTIVE,
+top3,power,top-3 hit rate,cells,0.125,,,,9/72; chance 0.15625000000000022
+top3_minus_chance,power,top3 minus chance,member_clustered,-0.031250000000000014,-0.16875,0.22499999999999998,DESCRIPTIVE,
+top1_continuous-fixed-h1,power,top-1 per system minus chance,member_clustered,-0.05208333333333334,-0.05625,-0.05000000000000001,DESCRIPTIVE,0/24; chance 0.05208333333333335
+top1_continuous-fixed-h5,power,top-1 per system minus chance,member_clustered,-0.05208333333333334,-0.05625,-0.05000000000000001,DESCRIPTIVE,0/24; chance 0.05208333333333335
+top1_hybrid-fixed-h1,power,top-1 per system minus chance,member_clustered,-0.05208333333333334,-0.05625,-0.05000000000000001,DESCRIPTIVE,0/24; chance 0.05208333333333335
+auc_cell_unit,power,within-state AUC,cell_unit,0.7440998329156224,0.7232142857142857,0.765142021720969,DESCRIPTIVE,72 cells
+auc_member_clustered,power,within-state AUC,member_clustered,0.7440998329156224,0.6922514619883041,0.8026315789473684,DESCRIPTIVE,72 cells
+auc_continuous-fixed-h1,power,within-state AUC per system,member_clustered,0.7640977443609023,0.7243107769423558,0.8198621553884711,DESCRIPTIVE,
+auc_continuous-fixed-h5,power,within-state AUC per system,member_clustered,0.7531328320802005,0.7105263157894737,0.80328947368421,DESCRIPTIVE,
+auc_hybrid-fixed-h1,power,within-state AUC per system,member_clustered,0.7150689223057645,0.6448934837092732,0.7872807017543859,DESCRIPTIVE,
+miss_all,power,one uniform draw per ceiling member misses everywhere,probability,0.6517814763541665,,,,
+rho_speed_10deg,power,median Spearman rho cost vs realized speed at 10deg,cells,-0.9999999999999999,,,,"{""continuous-fixed-h1"": -0.9999999999999999, ""continuous-fixed-h5"": -0.9999999999999999, ""hybrid-fixed-h1"": -0.9999999999999999}"
+rho_speed_30deg,power,median Spearman rho cost vs realized speed at 30deg,cells,-0.9999999999999999,,,,"{""continuous-fixed-h1"": -0.9999999999999999, ""continuous-fixed-h5"": -0.9999999999999999, ""hybrid-fixed-h1"": -0.9999999999999999}"
+rho_speed_50deg,power,median Spearman rho cost vs realized speed at 50deg,cells,-0.9999999999999999,,,,"{""continuous-fixed-h1"": -0.9999999999999999, ""continuous-fixed-h5"": -0.9999999999999999, ""hybrid-fixed-h1"": -0.9999999999999999}"
+rho_speed_70deg,power,median Spearman rho cost vs realized speed at 70deg,cells,-0.9999999999999999,,,,"{""continuous-fixed-h1"": -0.9999999999999999, ""continuous-fixed-h5"": -0.9999999999999999, ""hybrid-fixed-h1"": -0.9999999999999999}"
+rho_angle_5px,power,median Spearman rho cost vs realized angle at 5px,cells,-1.0,,,,"{""continuous-fixed-h1"": -1.0, ""continuous-fixed-h5"": -1.0, ""hybrid-fixed-h1"": -1.0}"
+rho_angle_9px,power,median Spearman rho cost vs realized angle at 9px,cells,-0.7999999999999999,,,,"{""continuous-fixed-h1"": -0.39999999999999997, ""continuous-fixed-h5"": -0.7999999999999999, ""hybrid-fixed-h1"": -1.0}"
+rho_angle_13px,power,median Spearman rho cost vs realized angle at 13px,cells,-0.7999999999999999,,,,"{""continuous-fixed-h1"": -0.39999999999999997, ""continuous-fixed-h5"": -0.7999999999999999, ""hybrid-fixed-h1"": -1.0}"
+rho_angle_17px,power,median Spearman rho cost vs realized angle at 17px,cells,-1.0,,,,"{""continuous-fixed-h1"": -0.7999999999999999, ""continuous-fixed-h5"": -0.7999999999999999, ""hybrid-fixed-h1"": -1.0}"
+rho_angle_80px,power,median Spearman rho cost vs realized angle at 80px,cells,-1.0,,,,"{""continuous-fixed-h1"": -0.39999999999999997, ""continuous-fixed-h5"": -0.7999999999999999, ""hybrid-fixed-h1"": -1.0}"
+saturated_chosen_share,power,share of selector choices at the saturated column,cells,1.0,,,,"{""admissible_top1"": 1.0, ""cells"": 135, ""selector_full_inventory"": 1.0, ""uniform_reference"": 0.2}"
+launch_speed_5px,power,realized launch speed at 5 px,slots,2.335065214682299,,,,"{""count"": 59, ""max"": 2.642098023209366, ""mean"": 2.417364693782928, ""median"": 2.335065214682299, ""min"": 2.193404812961783, ""p10"": 2.193404812961783, ""p90"": 2.642098023209366}"
+launch_speed_9px,power,realized launch speed at 9 px,slots,4.638652972526115,,,,"{""count"": 60, ""max"": 4.871726462786207, ""mean"": 4.594751969819131, ""median"": 4.638652972526115, ""min"": 4.229975471438085, ""p10"": 4.229975471438085, ""p90"": 4.871726462786207}"
+launch_speed_13px,power,realized launch speed at 13 px,slots,6.587059819365731,,,,"{""count"": 58, ""max"": 7.045457794527011, ""mean"": 6.668408683315856, ""median"": 6.587059819365731, ""min"": 6.472535446180234, ""p10"": 6.472535446180234, ""p90"": 7.045457794527011}"
+launch_speed_17px,power,realized launch speed at 17 px,slots,8.920232264222594,,,,"{""count"": 59, ""max"": 9.280639737890048, ""mean"": 9.029522265387767, ""median"": 8.920232264222594, ""min"": 8.902218803813607, ""p10"": 8.902218803813607, ""p90"": 9.280639737890048}"
+launch_speed_80px,power,realized launch speed at 80 px,slots,9.999215094118117,,,,"{""count"": 59, ""max"": 9.999543486544423, ""mean"": 9.999321453709241, ""median"": 9.999215094118117, ""min"": 9.999203183172442, ""p10"": 9.999203183172442, ""p90"": 9.999543486544423}"
+C24_disposition,power,C24 disposition,token,supported,,,,"{""chance_mean"": 0.05208333333333325, ""paired_difference"": {""clusters"": 8, ""interval"": [-0.05625, -0.05], ""label"": ""DESCRIPTIVE"", ""mean"": -0.052083333333333336, ""units"": 72}, ""top1_rate"": 0.0}"
+C25_disposition,power,C25 disposition,token,not_supported_by_this_experiment,,,,"{""auc_member_clustered"": 0.7440998329156224}"

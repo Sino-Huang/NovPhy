@@ -1,0 +1,699 @@
+{
+  "action_bound_authority": "drag_x in [-160, -10] (successor_cohort.py ACTION_BOUNDS) and [-160, -40] (gameplay_success.py action_bounds) are enforced only by pipeline samplers and plan/candidate validators (successor_cohort sampler, gameplay_success validator, lineage_scaling ActionRankingState). The executed path used here - ReactiveSelector.action_tensor (scoring), slingshot_readiness._anchored_action_and_command (command), ScienceBirdsBridge.shoot (socket), the interface jar ShootAndTapSchema.shoot, AIBirdsConnection.TapShoot, HUD.Drag and ABBird.DragBird (engine) - contains no drag bound; the engine's only limit is the _dragRadius clamp from above. The runner therefore uses its own frozen action contract (the 20 listed candidates, tap 0 ms, release 1000 ms).",
+  "arm": {
+    "auc": {
+      "cell_unit": {
+        "clusters": 72,
+        "interval": [
+          0.7232142857142857,
+          0.765142021720969
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.7440998329156224,
+        "units": 72
+      },
+      "cells": 72,
+      "member_clustered": {
+        "clusters": 8,
+        "interval": [
+          0.6922514619883041,
+          0.8026315789473684
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.7440998329156224,
+        "units": 72
+      },
+      "per_system": {
+        "continuous-fixed-h1": {
+          "cell_unit": {
+            "clusters": 24,
+            "interval": [
+              0.7365288220551379,
+              0.7957393483709273
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.7640977443609023,
+            "units": 24
+          },
+          "cells": 24,
+          "member_clustered": {
+            "clusters": 8,
+            "interval": [
+              0.7243107769423558,
+              0.8198621553884711
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.7640977443609023,
+            "units": 24
+          }
+        },
+        "continuous-fixed-h5": {
+          "cell_unit": {
+            "clusters": 24,
+            "interval": [
+              0.726969768170426,
+              0.7817982456140351
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.7531328320802005,
+            "units": 24
+          },
+          "cells": 24,
+          "member_clustered": {
+            "clusters": 8,
+            "interval": [
+              0.7105263157894737,
+              0.80328947368421
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.7531328320802005,
+            "units": 24
+          }
+        },
+        "hybrid-fixed-h1": {
+          "cell_unit": {
+            "clusters": 24,
+            "interval": [
+              0.670422149122807,
+              0.7578320802005013
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.7150689223057644,
+            "units": 24
+          },
+          "cells": 24,
+          "member_clustered": {
+            "clusters": 8,
+            "interval": [
+              0.6448934837092732,
+              0.7872807017543859
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.7150689223057645,
+            "units": 24
+          }
+        }
+      }
+    },
+    "ceiling": {
+      "denominator": 15,
+      "interval": {
+        "clusters": 15,
+        "interval": [
+          0.26666666666666666,
+          0.8
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5333333333333333,
+        "units": 15
+      },
+      "numerator": 8,
+      "value": 0.5333333333333333
+    },
+    "ceiling_members": [
+      "issue-77-n1-004",
+      "issue-77-n1-005",
+      "issue-77-n1-006",
+      "issue-77-n1-007",
+      "issue-77-n1-008",
+      "issue-77-n1-009",
+      "issue-77-n1-013",
+      "issue-77-n1-014"
+    ],
+    "chosen_ordinal_histogram": {
+      "14": 67,
+      "19": 68
+    },
+    "disposition_inputs": {
+      "C24": {
+        "chance_mean": 0.05208333333333325,
+        "paired_difference": {
+          "clusters": 8,
+          "interval": [
+            -0.05625,
+            -0.05
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.052083333333333336,
+          "units": 72
+        },
+        "top1_rate": 0.0
+      },
+      "C25": {
+        "auc_member_clustered": 0.7440998329156224
+      }
+    },
+    "dispositions": {
+      "C24": "supported",
+      "C25": "not_supported_by_this_experiment"
+    },
+    "measurable_members": [
+      "issue-77-n1-001",
+      "issue-77-n1-003",
+      "issue-77-n1-004",
+      "issue-77-n1-005",
+      "issue-77-n1-006",
+      "issue-77-n1-007",
+      "issue-77-n1-008",
+      "issue-77-n1-009",
+      "issue-77-n1-010",
+      "issue-77-n1-011",
+      "issue-77-n1-012",
+      "issue-77-n1-013",
+      "issue-77-n1-014",
+      "issue-77-n1-015",
+      "issue-77-n1-016"
+    ],
+    "members": {
+      "issue-77-n1-001": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-003": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-004": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [
+          13
+        ],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-005": {
+        "anchor_source": "issue93_captured",
+        "measurable": true,
+        "successes": [
+          13
+        ],
+        "verdict_slots": 15
+      },
+      "issue-77-n1-006": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [
+          9
+        ],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-007": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [
+          13
+        ],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-008": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [
+          13
+        ],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-009": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [
+          8
+        ],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-010": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-011": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-012": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-013": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [
+          8
+        ],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-014": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [
+          8
+        ],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-015": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [],
+        "verdict_slots": 20
+      },
+      "issue-77-n1-016": {
+        "anchor_source": "issue87_retained",
+        "measurable": true,
+        "successes": [],
+        "verdict_slots": 20
+      }
+    },
+    "miss_all_probability": 0.6517814763541665,
+    "readiness": {
+      "ceiling_members": 8,
+      "ready": true,
+      "verdict_coverage": 0.9833333333333333
+    },
+    "saturated_column_chosen_share": {
+      "admissible_top1": 1.0,
+      "cells": 135,
+      "selector_full_inventory": 1.0,
+      "uniform_reference": 0.2
+    },
+    "scheduled_slots": 300,
+    "slot_status": {
+      "typed_failure": 5,
+      "verdict": 295
+    },
+    "structure": {
+      "full_inventory_rho_vs_expected_speed": -0.9316803618572252,
+      "full_inventory_rho_vs_ordinal": -0.4827067669172932,
+      "pooled_within_angle_median_rho": -0.9999999999999999,
+      "pooled_within_radius_median_rho": -1.0,
+      "within_angle_rho_vs_realized_speed": {
+        "10deg": {
+          "median_rho": -0.9999999999999999,
+          "per_system_median_rho": {
+            "continuous-fixed-h1": -0.9999999999999999,
+            "continuous-fixed-h5": -0.9999999999999999,
+            "hybrid-fixed-h1": -0.9999999999999999
+          }
+        },
+        "30deg": {
+          "median_rho": -0.9999999999999999,
+          "per_system_median_rho": {
+            "continuous-fixed-h1": -0.9999999999999999,
+            "continuous-fixed-h5": -0.9999999999999999,
+            "hybrid-fixed-h1": -0.9999999999999999
+          }
+        },
+        "50deg": {
+          "median_rho": -0.9999999999999999,
+          "per_system_median_rho": {
+            "continuous-fixed-h1": -0.9999999999999999,
+            "continuous-fixed-h5": -0.9999999999999999,
+            "hybrid-fixed-h1": -0.9999999999999999
+          }
+        },
+        "70deg": {
+          "median_rho": -0.9999999999999999,
+          "per_system_median_rho": {
+            "continuous-fixed-h1": -0.9999999999999999,
+            "continuous-fixed-h5": -0.9999999999999999,
+            "hybrid-fixed-h1": -0.9999999999999999
+          }
+        }
+      },
+      "within_radius_rho_vs_realized_angle": {
+        "13px": {
+          "median_rho": -0.7999999999999999,
+          "per_system_median_rho": {
+            "continuous-fixed-h1": -0.39999999999999997,
+            "continuous-fixed-h5": -0.7999999999999999,
+            "hybrid-fixed-h1": -1.0
+          }
+        },
+        "17px": {
+          "median_rho": -1.0,
+          "per_system_median_rho": {
+            "continuous-fixed-h1": -0.7999999999999999,
+            "continuous-fixed-h5": -0.7999999999999999,
+            "hybrid-fixed-h1": -1.0
+          }
+        },
+        "5px": {
+          "median_rho": -1.0,
+          "per_system_median_rho": {
+            "continuous-fixed-h1": -1.0,
+            "continuous-fixed-h5": -1.0,
+            "hybrid-fixed-h1": -1.0
+          }
+        },
+        "80px": {
+          "median_rho": -1.0,
+          "per_system_median_rho": {
+            "continuous-fixed-h1": -0.39999999999999997,
+            "continuous-fixed-h5": -0.7999999999999999,
+            "hybrid-fixed-h1": -1.0
+          }
+        },
+        "9px": {
+          "median_rho": -0.7999999999999999,
+          "per_system_median_rho": {
+            "continuous-fixed-h1": -0.39999999999999997,
+            "continuous-fixed-h5": -0.7999999999999999,
+            "hybrid-fixed-h1": -1.0
+          }
+        }
+      }
+    },
+    "success_ordinal_histogram": {
+      "13": 4,
+      "8": 3,
+      "9": 1
+    },
+    "top1": {
+      "cells": 72,
+      "chance_mean": 0.05208333333333325,
+      "hits": 0,
+      "paired_difference_member_clustered": {
+        "clusters": 8,
+        "interval": [
+          -0.05625,
+          -0.05
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.052083333333333336,
+        "units": 72
+      },
+      "per_system": {
+        "continuous-fixed-h1": {
+          "cells": 24,
+          "chance_mean": 0.05208333333333335,
+          "hits": 0,
+          "paired_difference_member_clustered": {
+            "clusters": 8,
+            "interval": [
+              -0.05625,
+              -0.05000000000000001
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.05208333333333334,
+            "units": 24
+          },
+          "rate": 0.0
+        },
+        "continuous-fixed-h5": {
+          "cells": 24,
+          "chance_mean": 0.05208333333333335,
+          "hits": 0,
+          "paired_difference_member_clustered": {
+            "clusters": 8,
+            "interval": [
+              -0.05625,
+              -0.05000000000000001
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.05208333333333334,
+            "units": 24
+          },
+          "rate": 0.0
+        },
+        "hybrid-fixed-h1": {
+          "cells": 24,
+          "chance_mean": 0.05208333333333335,
+          "hits": 0,
+          "paired_difference_member_clustered": {
+            "clusters": 8,
+            "interval": [
+              -0.05625,
+              -0.05000000000000001
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.05208333333333334,
+            "units": 24
+          },
+          "rate": 0.0
+        }
+      },
+      "rate": 0.0
+    },
+    "top3": {
+      "cells": 72,
+      "chance_mean": 0.15625000000000022,
+      "hits": 9,
+      "paired_difference_member_clustered": {
+        "clusters": 8,
+        "interval": [
+          -0.16875,
+          0.22499999999999998
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.031250000000000014,
+        "units": 72
+      },
+      "rate": 0.125
+    },
+    "typed_failures_by_kind": {
+      "execution_failure": 5
+    },
+    "verdict_coverage": 0.9833333333333333
+  },
+  "claim_boundary": "pooled top-1 and within-state engine-truth AUC of the three frozen N1 rankers on one angle x launch-power inventory over 15 N1 source members; does not test other models, adaptation, fresh gameplay, sealed benchmarks (#64/#65 sealed) or state difficulty; never pooled with N1 or #93; does not re-open #87/#89/#90/#92/#93 dispositions",
+  "claims": {
+    "C24": "On an angle x launch-power inventory, the three frozen rankers' pooled top-1 is below inventory-matched chance.",
+    "C25": "On an angle x launch-power inventory, the frozen rankers' within-state engine-truth AUC is at or below chance."
+  },
+  "compute": {
+    "caps": {
+      "gpu_seconds": 10800.0,
+      "wall_seconds": 86400.0,
+      "workers": 4
+    },
+    "caps_respected": true,
+    "completion_wall_seconds": null,
+    "launch_speed": {
+      "inner_radii_distinct_submaximal": true,
+      "per_radius_px": {
+        "13": {
+          "realized_minus_declared_angle_deg": {
+            "count": 58,
+            "max": -0.43132684336417526,
+            "mean": -2.094526134333035,
+            "median": -1.7316420220334194,
+            "min": -3.4024046374466437,
+            "p10": -3.4024046374466437,
+            "p90": -0.43132684336417526
+          },
+          "realized_minus_expected_speed": {
+            "count": 58,
+            "max": -0.06751725818693366,
+            "mean": -0.24429002698659166,
+            "median": -0.3198965678492085,
+            "min": -0.36797050816800514,
+            "p10": -0.36797050816800514,
+            "p90": -0.06751725818693366
+          },
+          "realized_speed": {
+            "count": 58,
+            "max": 7.045457794527011,
+            "mean": 6.668408683315856,
+            "median": 6.587059819365731,
+            "min": 6.472535446180234,
+            "p10": 6.472535446180234,
+            "p90": 7.045457794527011
+          },
+          "slots": 58
+        },
+        "17": {
+          "realized_minus_declared_angle_deg": {
+            "count": 59,
+            "max": -0.41943042290638743,
+            "mean": -1.6168717134781874,
+            "median": -1.3525730415611363,
+            "min": -2.559923116295005,
+            "p10": -2.559923116295005,
+            "p90": -0.41943042290638743
+          },
+          "realized_minus_expected_speed": {
+            "count": 59,
+            "max": -0.054834095163085905,
+            "mean": -0.21615431587951106,
+            "median": -0.2890807178649446,
+            "min": -0.33879586576892073,
+            "p10": -0.33879586576892073,
+            "p90": -0.054834095163085905
+          },
+          "realized_speed": {
+            "count": 59,
+            "max": 9.280639737890048,
+            "mean": 9.029522265387767,
+            "median": 8.920232264222594,
+            "min": 8.902218803813607,
+            "p10": 8.902218803813607,
+            "p90": 9.280639737890048
+          },
+          "slots": 59
+        },
+        "5": {
+          "realized_minus_declared_angle_deg": {
+            "count": 59,
+            "max": -1.7100623935458543,
+            "mean": -6.174387868592873,
+            "median": -8.939537499975543,
+            "min": -9.158670427609405,
+            "p10": -9.158670427609405,
+            "p90": -1.7100623935458543
+          },
+          "realized_minus_expected_speed": {
+            "count": 59,
+            "max": -0.11539808342695634,
+            "mean": -0.2770468354833084,
+            "median": -0.22507926057151462,
+            "min": -0.4075264587046217,
+            "p10": -0.4075264587046217,
+            "p90": -0.11539808342695634
+          },
+          "realized_speed": {
+            "count": 59,
+            "max": 2.642098023209366,
+            "mean": 2.417364693782928,
+            "median": 2.335065214682299,
+            "min": 2.193404812961783,
+            "p10": 2.193404812961783,
+            "p90": 2.642098023209366
+          },
+          "slots": 59
+        },
+        "80": {
+          "realized_minus_declared_angle_deg": {
+            "count": 59,
+            "max": -0.07575688232248012,
+            "mean": -0.33705937941767644,
+            "median": -0.43720673292109424,
+            "min": -0.5430623990232082,
+            "p10": -0.5430623990232082,
+            "p90": -0.07575688232248012
+          },
+          "realized_minus_expected_speed": {
+            "count": 59,
+            "max": -0.0004565134555765127,
+            "mean": -0.0006785462907684839,
+            "median": -0.0007849058818827359,
+            "min": -0.0007968168275578336,
+            "p10": -0.0007968168275578336,
+            "p90": -0.0004565134555765127
+          },
+          "realized_speed": {
+            "count": 59,
+            "max": 9.999543486544423,
+            "mean": 9.999321453709241,
+            "median": 9.999215094118117,
+            "min": 9.999203183172442,
+            "p10": 9.999203183172442,
+            "p90": 9.999543486544423
+          },
+          "slots": 59
+        },
+        "9": {
+          "realized_minus_declared_angle_deg": {
+            "count": 60,
+            "max": -0.8827661083098093,
+            "mean": -3.1563991892127157,
+            "median": -3.4772267416953095,
+            "min": -4.788377165150443,
+            "p10": -4.788377165150443,
+            "p90": -0.8827661083098093
+          },
+          "realized_minus_expected_speed": {
+            "count": 60,
+            "max": -0.11410618173971976,
+            "mean": -0.2625332229082977,
+            "median": -0.27274742327014634,
+            "min": -0.39053186335317935,
+            "p10": -0.39053186335317935,
+            "p90": -0.11410618173971976
+          },
+          "realized_speed": {
+            "count": 60,
+            "max": 4.871726462786207,
+            "mean": 4.594751969819131,
+            "median": 4.638652972526115,
+            "min": 4.229975471438085,
+            "p10": 4.229975471438085,
+            "p90": 4.871726462786207
+          },
+          "slots": 60
+        }
+      },
+      "rule": "inner radii distinct iff the realized-speed ranges of 5, 9, 13, 17 px are strictly increasing and disjoint and all below 10"
+    },
+    "launch_speed_range": [
+      2.193404812961783,
+      9.999543486544423
+    ],
+    "oracle_stop_reason": null,
+    "oracle_wall_seconds": 14430.673218777,
+    "per_slot_engine_wall_seconds": {
+      "count": 295,
+      "max": 176.55399340899976,
+      "mean": 102.58658840881358,
+      "median": 110.06348202499976,
+      "min": 28.845738407999306,
+      "p10": 57.60561173899987,
+      "p90": 136.76213395600007
+    },
+    "per_slot_worker_wall_seconds": {
+      "count": 300,
+      "max": 257.1047220659998,
+      "mean": 165.64756354500997,
+      "median": 173.7819111429999,
+      "min": 35.08935822500007,
+      "p10": 106.79837443600081,
+      "p90": 213.23401949599997
+    },
+    "score_gpu_seconds": 5.848188332003701
+  },
+  "decision_frames_vs_retained_anchor": {
+    "byte_equal": 295,
+    "compared": 295
+  },
+  "dispositions": {
+    "C24": "supported",
+    "C25": "not_supported_by_this_experiment"
+  },
+  "frozen_at": "2026-09-24T04:00:30Z",
+  "identity": "issue-94-launch-power-v1",
+  "issue_64_authorized": false,
+  "plan_identity": "issue-94-launch-power-v1",
+  "plan_version": 1,
+  "reading_matrix_row": {
+    "C24": "supported",
+    "C25": "not_supported_by_this_experiment",
+    "reading": "Selection fails while ordering tracks an engine-relevant coordinate; the ordering/selection dissociation is shown on an engine-effective second coordinate (earns r6 I49's \"We show\", scoped to this inventory).",
+    "row": 2
+  },
+  "schema": "issue_94_report_v1",
+  "stated_predictions": {
+    "C24": {
+      "expected_token": "supported",
+      "rationale": "pooled top-1 was at or below inventory-matched chance in point estimate on all three saturated-speed inventories (0/108, 7/81, 8/126), and every inner-radius candidate is out of the rankers' training support, so nothing predicts a gain in selection."
+    },
+    "C25": {
+      "expected_token": "no prediction",
+      "rationale": "no directional prediction: member-clustered AUC moved with the inventory (0.4180 / 0.5512 / 0.6178), so the prior evidence does not fix its sign on a new engine-side coordinate."
+    },
+    "source": "ticket #94 owner-decision defaults (no owner comment before freeze); recorded before any engine slot and never edited after"
+  },
+  "structure": {
+    "decision_cells": 135,
+    "members": 15,
+    "slots": 300
+  },
+  "training_support": "the N1 predictor pool (the only release-1000 training actions) spans pull radius 79.51-80.66 px; 16/16 inner-radius candidates are outside it on the ranker input (out of training support); 0 candidates are exact training actions. Printed, not a reason to exclude.",
+  "validation_command": "python -u -m scripts.run_launch_power_probe --validate"
+}
