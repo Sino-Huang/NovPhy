@@ -28,14 +28,21 @@ Per-section status after round 3 (r2 review 4/10; r3 authoring tally 12 RESOLVED
 
 _Historical record (pre-#91 boundary-anatomy era) and the closed tex-items list were removed 2026-09-23 per owner directive; see git history and `changelog.md`._
 
-## OPEN TEX ITEMS (round 4, after Thesis/Evidence + Main gate)
+## OPEN TEX ITEMS (r5 authoring 2026-09-24, #93 + r4 items; supersedes round 4)
 
-Round-3 Batch A+B closed I3, I9, I11, I13, I26–I29 and I31–I34; the r3 follow-up closed I30 and I35–I39, and r3-followup authoring closed I40; round 4 closed I10 and I25, pending r4 reviewer verification (tex locations in `iclr2026/review-log.md`). The following remain open:
+Round-3 Batch A+B closed I3, I9, I11, I13, I26–I29 and I31–I34; the r3 follow-up closed I30 and I35–I39, and r3-followup authoring closed I40; round 4 closed I10 and I25 (r4 reviewer: I10 verified, I25 three residues, I40 residue, new I41/I42). r5 authoring 2026-09-24 fixed I25(a)(b)(c), I40, I41, I42 and landed the #93 second-parameterization appendix (C22 `not_supported_by_this_experiment`, C23 `readiness_or_precision_insufficient`, reading-matrix row 5: appendix H.2 plus body pointers at abstract.tex:30, introduction.tex:90, discussion.tex:58, method.tex:49), all pending r5 reviewer verification (tex locations in `iclr2026/review-log.md`). The following remain open:
 
 1. **I16 (author action, still open):** anonymized artifact link (Fig. 1 gallery pointer now lives only in the appendix repro/audit tables; the reproducibility statement still cites commit `2b4d897` of a non-public repository).
 2. **I11:** CLOSED 2026-09-23 (Main): the §5 construct-validity paragraph now reads "(proxy audit, status no_defensible_binding)" and "(engine-event channel)" (experiments.tex:34).
 3. **I10:** CLOSED r4 2026-09-23 (pending reviewer verification): §5 is two paragraphs (experiments.tex:34, 43); the summary paragraph is deleted.
 4. **I30:** CLOSED 2026-09-23 (r3 follow-up): owner approved; issue-91-inverted-ranker-v1 executed; inverted top-1 15/612 and 21/612 vs chance 0.0407, intervals cover zero, printed in abstract/§1/§6/§8, App. H.1, tab:app:audit, tab:app:repro. I35–I39 CLOSED the same pass.
 5. **I8 scope note:** the pretrained-world-model experiment is declined (no new experiments). Disclosed limitation, not a tex task.
-6. **I25:** CLOSED r4 2026-09-23 (pending reviewer verification): AUCCESS named and characterized, delta stated narrowly (abstract.tex:31; introduction.tex:93, :99; synthesis.tex:112; related_work.tex:24–25; appendix.tex:419–420).
-7. **I40:** CLOSED r3-followup authoring (carrier-frame and state-cluster naming unified).
+6. **I25:** r5-authoring 2026-09-24 (pending reviewer verification): (a) §8 denominator sentence scoped to "World-in-World-style reporting" (discussion.tex:77); (b) abstract delta = per-candidate engine-truth AUC under a per-state ceiling (abstract.tex:31); (c) PHYRE §4.4 OPTIMAL oracle-ranking agent cited as nearest precedent (appendix.tex:424). The Axis 1 value limit stays (not a tex item).
+7. **I40:** r5-authoring: outcome horizon renamed "carrier frames" at every ratio site and the agent-frame = carrier-frame identity restated (method.tex:44; introduction.tex:85; synthesis.tex:92; discussion.tex:52; appendix.tex:581, :767).
+8. **I41:** r5-authoring: App. E lead "that Section 5 demotes" (appendix.tex:149); audit group header "Section 5 disclosure" (appendix.tex:786).
+9. **I42:** r5-authoring: abstract PHYRE sentence rewritten with "Whereas", parentheticals separated, one 46-word sentence → 20 + 13 words plus citations (abstract.tex:31).
+10. **#93:** C22/C23 in `tab:app:registry`, audit row, repro row, "ten runners" (discussion.tex:84); r5 review minted I43–I46 against it.
+11. **I43 (MAJOR):** r5-followup-authoring 2026-09-24: body pointers now carry the verdict ("not supported on a drag grid, though top-1 stays at or below chance"; abstract.tex:30, introduction.tex:91). §7 prints C22 0.6178 not supported, C23 0.5512 undecided, and top-1 8/126 vs 0.0804 and 7/81 vs 0.1030 (discussion.tex:61). Pending r5-followup review.
+12. **I44:** r5-followup-authoring: H.2 closing verdict (appendix.tex:637–639); §7 states both inventories are launch-angle sets at saturated speed in the engine. Pending review.
+13. **I45:** r5-followup-authoring: App. A inventory convention scoped to the N1 closed-loop and proxy-era records, with H.2 exception pointers (appendix.tex:46, :53). Pending review.
+14. **I46:** r5-followup-authoring: audit #93 row completed (appendix.tex:776). Pending review.

@@ -1,4 +1,4 @@
-# Writing Outline — Ranking-Failure Paper (v2.4, 2026-09-23, round-4 sync)
+# Writing Outline — Ranking-Failure Paper (v2.5, 2026-09-24, r5-authoring sync: #93 second parameterization + r4 wording items)
 
 Status: BINDING planning artifact for the #91 rebuild. Thesis = the measured ranking failure. Binding sources, in precedence order: `issue://91` (body + 7 comments; later comments win) → the #91 executive digest (`issue91_exec_digest.md`) → this outline → `content_brief.md`. Built manuscript: `iclr2026/` (title *Solvable but Mis-Ranked: An Engine-Truth Audit of Frozen World-Model Action Selection in NovPhy*; r4 gate: 39 pp total, body §1–§8 ends p. 9 l.442 (§5 compression moved §8 to start on p. 8 l.423), Repro/Ethics p. 9 (uncounted), references p. 10, green). v2.4 syncs the outline to the round-4 text: I25 positions the delta against PHYRE AUCCESS (multi-attempt, task-level, up to 100 attempts) as a measured per-state ceiling on a frozen 13-candidate inventory plus a per-candidate engine-truth AUC in a single-shot cascade regime, not a new success-metric family; I10 compresses §5 to two paragraphs (see `iclr2026/review-log.md`).
 
@@ -80,7 +80,8 @@ Invalidation cascade (the spine, presented as strength): #80 (0/45 gate stop) �
 3. **Round 3 (Batch A):** landed; gate green (38 pp; body ends p. 9; Repro/Ethics p. 9; references p. 10); r3 authoring tally 12 RESOLVED, 3 PARTIAL (I10 §5 surface, I11 #82/#85 at experiments.tex:34, I30 inverted-ranker test pending owner decision) — see `review-log.md`.
 4. **r3 follow-up:** landed; gate green (39 pp, appendix +1; body ends p. 9; Repro/Ethics p. 9; references p. 10); I35–I39 fixed and I30 executed (issue-91-inverted-ranker-v1), r3-followup authoring tally 6 RESOLVED, 0 REJECTED. Open per r3: I10 §5 surface, I25 AUCCESS precedent.
 5. **Round 4:** landed; gate green (39 pp; body ends p. 9 l.442, §8 starts p. 8 l.423; Repro/Ethics p. 9; references p. 10; figures unchanged); I25 (AUCCESS positioning at abstract, §1 contribution 1 and significance close, §6, related work, appendix) and I10 (§5 compression) RESOLVED, wording-only; pending r4 reviewer verification.
-6. **Author action:** anonymized artifact link (I16).
+6. **r5 authoring (#93 + r4 items):** landed 2026-09-24; gate green (41 pp; body ends p. 9; Repro/Ethics p. 9; references p. 10; figures unchanged). #93 second candidate parameterization (owner-approved; release b8aba59): C22 drag grid `not_supported_by_this_experiment` (member-clustered AUC 0.6178), C23 offset sweep `readiness_or_precision_insufficient` (0.5512); reading-matrix row 5 → Appendix H.2 (`sec:app:secondparam`) plus short body pointers at the 1-D scope-limit sites; the mechanism sentence ("along the candidate sweep") is unchanged. r4 I25(a)(b)(c), I40, I41, I42 fixed; pending r5 reviewer verification.
+7. **Author action:** anonymized artifact link (I16).
 
 ---
 

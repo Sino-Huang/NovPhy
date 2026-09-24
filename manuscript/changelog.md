@@ -2,6 +2,60 @@
 
 Single canonical change log for the manuscript. File-local conventions (per-file header comments in `iclr2026/*.tex`) remain, but anything that changes the story, the file set, or the doc set lands here. Reviews are logged separately in `iclr2026/review-log.md`.
 
+## 2026-09-24 · r5-followup-authoring: I46 (audit row)
+- Changed: tab:app:audit #93 row (appendix.tex:776) now also lists the grid definition, both arms' median Spearman values, the chosen- and success-ordinal histograms, the derived geometry (1.8°–63.4°, 40–179 px; derivation in % comment appendix.tex:775), the 85.5°/drag_x = −6 exclusion, follow-up speed 9.9992–9.9996, and the H.2 design constants. It adds plan.json and anchor_retention.json as sources. Why: I46 (the "every number" caption claim now holds on this row)
+- Rejected: narrowing the caption (Main preferred adding the numbers).
+
+## 2026-09-24 · r5-followup-authoring: I45 (App. A inventory convention)
+- Changed: appendix.tex:46 and :53, the 13-candidate inventory convention now applies to "the N1 closed-loop and proxy-era records", with exception pointers to Appendix sec:app:secondparam (16- and 11-candidate inventories). Why: I45
+- Rejected: none.
+
+## 2026-09-24 · r5-followup-authoring: I44 (H.2 verdict; §7 engine scope)
+- Changed: new closing verdict paragraph in App. H.2 (appendix.tex:637–639). It says the ordering AUC is not inventory-invariant; both arms are launch-angle sets at saturated speed, so the 1-D engine-action scope stands; the grid AUC tracks the engine-ignored pull radius (ρ = −0.7882); top-1 stays below chance in point estimate on both arms; what persists is the top-1 failure, not the ordering AUC. H.2 "top-1 at chance" → "below chance in point estimate" (appendix.tex:635). The §7 pointer states that both inventories are launch-angle sets at saturated speed in the engine (discussion.tex:61). Why: I44
+- Rejected: none.
+
+## 2026-09-24 · r5-followup-authoring: I43 (pointer verdicts) + gate
+- Changed: "inconclusive" removed from the #93 body pointers. abstract.tex:30 and introduction.tex:91 now read "on a drag grid the at-or-below-chance AUC is not supported, though top-1 stays at or below chance". discussion.tex:61 carries C22 not supported (0.6178), C23 undecided (0.5512), and top-1 8/126 vs 0.0804 and 7/81 vs 0.1030. Offsets: abstract.tex:21 "in which one launch sets off a long autonomous cascade" → "where one launch sets off a cascade"; introduction.tex:91 "a candidate set that is a …" → "… sweep of candidates"; discussion.tex:82 "more-states extension" clause cut (registry C8 keeps it). The mechanism sentence is unchanged. Why: I43 (row 5 governs placement, not the verdict; this reverses the r5-authoring "inconclusive" wording)
+- Changed: review-log r5 section gains [RESOLVED r5-followup-authoring …] lines under I43–I46 (additive; diff vs /tmp/review-log.pre-r5followup.md shows 4 addition hunks and 0 deleted lines); content_brief.md OPEN TEX ITEMS updated. Gate: latexmk exit 0, 41 pp, 0 Float too large, 0 undefined, 0 [TODO], Conclusion p. 8 into p. 9, Repro/Ethics p. 9, References p. 10. Why: r5 close-out
+- Deferred: I16 (owner); I25 Axis 1 value limit (not a wording item).
+- Rejected: none.
+
+## 2026-09-24 · r5-authoring: #93 second candidate parameterization (appendix H.2, registry, audit, repro, body pointers)
+- Changed: new numbered analysis #93, approved by the owner in session (release commit b8aba59; frozen plan commit 6239a04; artifact root .local-artifacts/issue-93-second-parameterization-v1/). Dispositions verbatim: C22 (Arm B drag grid) not_supported_by_this_experiment, member-clustered AUC 0.6178 [0.5126, 0.7139]; C23 (Arm A offset sweep) readiness_or_precision_insufficient, 0.5512 [0.4235, 0.6685]. Reading-matrix row 5 applied: descriptive appendix report, body scope sentences unchanged except a pointer. Why: #93 owner-approved analysis
+- Changed: appendix.tex:615–663 new \subsection{Second candidate parameterization} (sec:app:secondparam) + tab:app:secondparam: inventories, states, rankers, estimands, frozen rule, dispositions, row 5 verbatim, WP0 drag-clamp finding (saturated speed 10; 234/234 retained launches 9.9992–9.9997), training support (grid out of release-1000 support in radius on the input side only), execution, per-arm table; every number carries a % comment into the #93 root (appendix.tex:619–628). Why: #93 brief item 1
+- Changed: registry rows C22/C23 (appendix.tex:558–561), caption C1--C21 → C1--C23 (appendix.tex:518), row-to-family paragraph (appendix.tex:497), header comment (appendix.tex:6–9); synthesis.tex:115 C1--C23; method.tex:61 rows C16--C23. Why: #93 brief item 2
+- Changed: audit row "Second parameterization (#93)" (appendix.tex:769); repro row (appendix.tex:713) and #93 in the closed-loop-runner paragraph with release commit b8aba59 (appendix.tex:719); Reproducibility Statement "nine runners" → "ten runners" with run_second_parameterization_probe listed, #93 root at b8aba59 (discussion.tex:84). Offset: artifact-type list after "4,187 paths" cut (kept in App. repro). Why: #93 brief items 3–4
+- Changed: body pointers: method.tex:49 (one clause, offset "have no symbolic modules and" cut); introduction.tex:90 (offset: "The claim is narrow by construction." cut); discussion.tex:58 with both member-clustered AUCs (offset: "over which percentile intervals are wide," cut); abstract.tex:30 short pointer (fits: gate green). Each pointer states the drag-grid AUC is above chance. Mechanism sentence "selection fails at within-state action discrimination along the candidate sweep" unchanged at every site. Why: #93 brief items 5–6
+- Changed: gate 41 pp (appendix +2), latexmk exit 0, 0 Float too large, 0 undefined, 0 rendered [TODO], body ends p. 9, Repro/Ethics p. 9, references p. 10. Figures unchanged. Why: page-limit gate
+- Deferred: I16 anonymized artifact link (owner action, carried; the repro now also cites b8aba59). r5 review entry (separate reviewer).
+- Rejected: editing issue91_exec_digest.md or "along the candidate sweep" (owner did not amend the digest); pooling arms with each other or with N1; any state-difficulty or significance reading of C22.
+
+## 2026-09-24 · r5-authoring: r4 I25(a)
+- Changed: discussion.tex:77 "the oracle-conditioned denominator that closed-loop world-model success reporting lacks" → "… that World-in-World-style reporting lacks" (−3 words). Why: I25(a)
+- Rejected: none.
+
+## 2026-09-24 · r5-authoring: r4 I25(b)
+- Changed: abstract.tex:31 "extending objective-mismatch findings … to per-candidate verdicts" → "Under that ceiling, a per-candidate engine-truth AUC extends objective-mismatch findings … within a state". Why: I25(b)
+- Rejected: none.
+
+## 2026-09-24 · r5-authoring: r4 I25(c)
+- Changed: appendix.tex:424 (App. F) cites PHYRE §4.4 / Fig. 4 OPTIMAL oracle-ranking agent as the nearest precedent for a measured ceiling over a candidate inventory, with the per-state-denominator delta; placed in App. F to spare the body. Why: I25(c)
+- Rejected: a §1 sentence (body at the page limit).
+
+## 2026-09-24 · r5-authoring: r4 I40
+- Changed: outcome horizon "agent frames" → "carrier frames" in every lookahead-ratio sentence (introduction.tex:85, method.tex:44, synthesis.tex:92, discussion.tex:52, appendix.tex:581, :767); §3 clamp keeps "agent frames" (r3-followup decision) with the identity "(carrier frames of 50 native steps)" restored (method.tex:44). Why: I40 (r4 residue: identity removed by the r3-followup fix)
+- Rejected: renaming the clamp to "carrier frames" (would reverse the logged r3-followup Δ/Δ² disambiguation without cause).
+
+## 2026-09-24 · r5-authoring: r4 I41
+- Changed: appendix.tex:149 "that Section 5 summarizes" → "that Section 5 demotes"; audit group header "Section 5 summary" → "Section 5 disclosure" (appendix.tex:786). Why: I41
+- Rejected: none.
+
+## 2026-09-24 · r5-authoring: r4 I42 + review-log / docs sync
+- Changed: abstract.tex:31 PHYRE sentence → "Whereas PHYRE certifies solvability and scores multi-attempt task success by AUCCESS (cite), we measure a per-state engine ceiling for single-shot cascades." (20 words plus citation; parentheticals separated; delta moved to its own sentence). Why: I42
+- Changed: review-log.md r4 section gains [RESOLVED r5-authoring 2026-09-24: …] lines under I25, I40, I41, I42 (diff vs /tmp/review-log.pre-r5authoring.md: 4 addition hunks, 0 deleted/changed lines). CONTEXT.md, content_brief.md OPEN TEX ITEMS, writing_outline v2.4 → v2.5 synced. Why: r5 close-out
+- Deferred: I16 (owner action, carried unchanged).
+- Rejected: none.
+
 ## 2026-09-23 · r4: I25 (abstract, §1, §6, related work, appendix) + I10 (§5); docs sync
 - Changed: I25 (MAJOR) - PHYRE AUCCESS named and characterized (multi-attempt, task-level, log-weighted area under the success curve, up to 100 attempts; arXiv:1908.05656 §3.2, §4.2; tier solvability §3.1/App. B) at abstract.tex:31, introduction.tex:93 (contribution 1; "releases simulation results for 100,000 actions" over-claim removed, PHYRE §4.2 fn.3 states release as future), introduction.tex:99 (Girdhar 2020 forward-predictor PHYRE ranking acknowledged as objective-mismatch precedent), synthesis.tex:112, related_work.tex:24–25, appendix.tex:419–420. Delta stated narrowly: measured per-state ceiling on a frozen 13-candidate inventory + per-candidate engine-truth AUC in a single-shot cascade regime, not a new success-metric family. Words: abstract −4, intro 0, synthesis 0, related work −2, appendix +1. Why: I25 (r3/r3-followup most damaging); facts local://phyrefacts.md
 - Changed: I10 (MINOR) - §5 three paragraphs → two: construct-validity disclosure unchanged (experiments.tex:34), demotion notice shortened with pointer to row C2 of tab:app:registry (experiments.tex:43), summary paragraph duplicating §1 deleted (content in appendix/registry C1–C10); header comment experiments.tex:27. −7 source lines, about −300 words. Why: I10 residue per r3/r3-followup
