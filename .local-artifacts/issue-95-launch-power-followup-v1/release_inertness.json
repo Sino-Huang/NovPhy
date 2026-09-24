@@ -1,0 +1,37 @@
+{
+  "bridge_transport": {
+    "file": "src/webui/bridge.py",
+    "line": 344,
+    "text": "self._send(code, \"iiii\", int(x), int(y), int(release_time), int(tap_time))"
+  },
+  "computed_at": "2026-09-24T08:21:37Z",
+  "engine_tapshoot_reads": {
+    "file": ".local-artifacts/issue-76-canonical-player-v1/project/Assets/Scripts/Assembly-CSharp/AIBirdsConnection.cs",
+    "line": 112,
+    "text": "float asFloat3 = data[2][\"tap_time\"].AsFloat;"
+  },
+  "finding": "release_time_engine_inert",
+  "identity": "issue-95-launch-power-followup-v1",
+  "jar": ".local-artifacts/issue-77-n1-v1/player/game_playing_interface.jar",
+  "jar_sha256": "sha256:b8ebda1806e8e440eda2e810c7c2892bf4a7251252bb79f9fb827a1c7af81e7a",
+  "proxy_tap_shoot_message_strings": [
+    "tapShoot",
+    "x",
+    "y",
+    "tap_time",
+    "data"
+  ],
+  "reading": "ScienceBirdsBridge.shoot sends (x, y, release_time, tap_time); the jar stores them as Shot(x, y, t_shot, t_tap); ShootAndTapSchema.shoot reads only getX, getY and getT_tap into ProxyTapShootMessage(x, y, tap_time), and AIBirdsConnection.TapShoot reads only x, y and tap_time. The release time never reaches the engine, so a #94 candidate at release 600 is the identical engine action and its retained #94 verdict applies.",
+  "schema": "issue_95_release_inertness_v1",
+  "shoot_and_tap_schema_shot_getters": [
+    "getT_tap",
+    "getX",
+    "getY"
+  ],
+  "shot_constructor_fields_in_argument_order": [
+    "x:I",
+    "y:I",
+    "t_shot:I",
+    "t_tap:I"
+  ]
+}
