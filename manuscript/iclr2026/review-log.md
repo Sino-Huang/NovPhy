@@ -1,5 +1,226 @@
 # Review log
 
+## r7 · 2026-09-24 · BORDERLINE · 6/10 (I47–I53 are fixed and #94 adds a pre-registered engine-effective second coordinate, but its 0/72 and its "launch-power preference" are confounded with training support, and the frozen plan itself used that support to predict the zero; the coordinate-baseline lesson is established practice elsewhere; 18/18 numbers match)
+This is an independent round-7 review of the rebuilt PDF (46 pp; ModDate 2026-09-24 19:51:50 AEST). The body runs pp. 1–9 and ends p. 9 l.436. Repro/Ethics are on p. 9 and references start p. 10. I read it end to end via `pdftotext -layout`, and I rendered p. 2 (Fig. 1) at 150 dpi plus a 300 dpi crop of the plot. Locations are PDF page/ICLR line numbers. The authoring record read is manuscript/changelog.md, top two entries (2026-09-24 r7-authoring; r7 Story Lock v2). Its Rejected lines decline adopting #94 reading-matrix row 2 "We show", Δbelief A, the r6 title, the unqualified clause, the r6 lesson, and keeping the #93 recount unprinted. None of these names an I# as declined (the row-2 line cites I49, but I49 is fixed, not declined), so no WONTFIX follows. The digest was read in full, and its "amended r7, owner-approved" lines (headline sentence l.35, mechanism clause l.38, pooling l.40, #94/#95 rules l.41, significance caution l.48, hero figure l.72) are the binding wording rules. Artifacts were read at .local-artifacts/issue-94-launch-power-v1/ (comparisons.csv, summary.json, plan.json, findings.md, slot_join.csv, training_action_support.json, compute data in findings.md) and issue-95-launch-power-followup-v1/ (comparisons.csv, plan.json, findings.md), with #93 slot_join.csv for a recount. I read the git log (read-only) for 6c07c94, 88a1a21, 19fc865c and 3742c7e0. I checked two published-practice anchors: DOPE, https://arxiv.org/abs/2103.16596 (PDF fetched; §4 defines "Regret@k" and "Rank correlation" as paired metrics), and hypothesis-only baselines, S2 record for ARXIV:1805.01042.
+Genre: FINDINGS (+ BENCHMARK). Δbelief: under a per-state engine ceiling on four inventories over the same 15 N1 members (7/14, 9/15, 14/15, 8/15), three ~1.8M-param frozen rankers' pooled top-1 is at or below chance. It is 0/108, 7/81, 8/126 and 0/72, with a pre-registered non-degenerate pass only on the held-out split (13/612), degenerate on N1 and the launch-power sweep, and point-estimate on the other two. Member-clustered AUC moves from 0.4180 to 0.7441. On the one inventory that varies launch power, the 0.7441 is a monotone-in-speed ordering (median ρ(cost, speed) = −1.0000 within each angle) that a speed-only baseline mostly matches (0.6889; within-power 0.5949, interval covering 0.5). That reading is post hoc, rests on one inventory, and is confounded with training support. The update is real but still small. The new half, "a high AUC can be a single-coordinate preference, so report a trivial-coordinate baseline beside it", is a portable check, but it is the trivial-baseline discipline other fields already publish (see I25).
+Status: Closed: I47*, I48*, I49*, I50*, I51*, I52*, I53*, I43, I44, I46, I10, I30, I35, I36, I37, I38, I39, I40, I41, I42 · Regressed: I45* (MINOR) · Still open: I25 (MAJOR; partially improved r7*, the Axis 1 value limit remains), I16 (owner action; carried) · New: I54* (MAJOR), I55* (MINOR), I56* (MINOR), I57* (MINOR) · Wontfix: I8 · Withdrawn: none · Not rechecked this pass: the r3 closures of I3, I9, I11, I13, I26–I29, I31–I34. I spot-read E.1/E.8/Table 13 text, and it is unchanged apart from the new registry rows.
+
+Dispositions:
+- I25 · partially improved r7; stays OPEN (MAJOR, Axis 1). This is brief item 1.
+  - What #94/#95 add:
+    - A pre-registered inventory on an engine-effective second coordinate. The plan was frozen 2026-09-24T04:00:30Z, `frozen_before_scoring_run` true, and commit 6c07c94 is at 04:05:16Z before the publish commit 88a1a21. This meets r6's 8-requirement (2) in letter.
+    - For the first time a "why" for an AUC above 0.5. H.3 p. 36 l.1943 reads "Predicted cost falls with realized launch speed (median ρ = −1.0000 within each angle)", and p. 37 l.1978 reads "All 135 selector choices go to the 80 px column at 50° or 70°, and none of those candidates succeeded".
+    - A concrete, checkable cash-out at §1 p. 4 l.167–170: "report top-1 against a measured per-state ceiling, a coordinate-only baseline, and a within-coordinate AUC beside any ordering AUC".
+    - This beats the r6 lesson, which could not name a procedure beyond "report top-1".
+  - Why the limit stays:
+    - (a) The corrected practice is still not shown to exist in the field. Off-policy evaluation already pairs an ordering metric with a selection metric: DOPE (Fu et al., ICLR 2021; https://arxiv.org/abs/2103.16596, §4) reports "Rank correlation" beside "Regret@k" as standard. The trivial-single-feature baseline check is the hypothesis-only-baseline discipline (Poliak et al., *SEM 2018, ARXIV:1805.01042).
+    - The paper cites neither. Its own §2 still says the closed-loop benchmarks score success (p. 4 l.180–181, "scores task success as the primary metric"). The only documented case of an ordering headline without a baseline remains the paper's own former N1 headline (contribution 3 p. 3 l.158–159).
+    - (b) The lesson is drawn post hoc from one inventory. The within-coordinate half returned readiness_or_precision_insufficient (C28, 0.5949 [0.4444, 0.7454]), so the paper cannot say whether the rankers order anything beyond power.
+    - (c) The "preference" is confounded with training support (I54). The preferred 80 px column is the only radius in the release-1000 N1 pool (79.51–80.66 px), so "prefers high launch power" and "prefers in-support inputs" make the same prediction on #94.
+  - Net: the value moved from "a metric mismatch we observed" to "a named baseline check with one worked instance". That is progress, but it does not reach a Δbelief the community lacks. The r6 fix list stands, updated under "What an 8 would need now".
+- I47 · verified-fixed.
+  - The qualifier or interval criterion is at every claim site:
+    - abstract p. 1 l.029–030 "(in point estimate on the offset sweep and drag grid)" and l.033–035 "whose paired interval lies entirely below 0 (pre-registered, non-degenerate). On N1 (post hoc) and the launch-power sweep (pre-registered) this holds degenerately";
+    - §1 p. 3 l.123 "(in point estimate on these two)" and l.124–126;
+    - contribution 2 p. 3 l.152–154 "It holds in point estimate on the offset sweep and drag grid, and with the paired interval below 0 on the held-out zero-shot arm, and degenerately on N1 and the launch-power sweep";
+    - clause sites p. 3 l.137–138, p. 7 l.360–361 and p. 8 l.427;
+    - §1 close p. 4 l.167 "does not, in point estimate";
+    - §6 p. 6 l.315–317 keeps "Top-1 failure alone is weak evidence at this size";
+    - §8 p. 8 l.418–421.
+  - The r6 requirement "state that only N1 and the held-out split meet the pre-registered interval criterion" is met and extended to the launch-power sweep, with its degeneracy stated.
+- I48 · verified-fixed.
+  - Table 15 p. 36 l.1959–1963 prints per-system top-1 3/42, 3/42, 2/42 and 5/27, 2/27, 0/27; my recount matches.
+  - H.2 p. 35 l.1899–1901 reads "All 8 grid hits come from one member (issue-77-n1-011), at the ordinal-15 candidate that takes 120 of 135 choices. On the offset sweep continuous-fixed-h1 selects 5/27 against chance 0.1030".
+  - The §7 pointer carries a cross-reference defect (I55).
+- I49 · verified-fixed.
+  - "We show" has 1 hit, the verbatim row-2 quote in H.3 p. 37 l.1982, which is followed by "the body does not adopt the row's wording" (l.1984). The 4 hits of " must " are all protocol text (p. 13, p. 14, p. 38).
+  - The dissociation is labelled at abstract p. 1 l.036–037 ("a post-hoc descriptive observation"), §1 p. 3 l.128–129, p. 4 l.165 ("We observe, post hoc"), §6 p. 7 l.337–338 and §8 p. 8 l.423.
+  - The earn-condition r6 named (a pre-registered prediction of the dissociation's sign) was not met: summary.json `stated_predictions.C25` reads "no prediction". The paper rightly does not claim it.
+- I50 · verified-fixed. The Fig. 1 caption p. 2 l.074–075 reads "the three frozen rankers on the four inventories and the frozen zero-shot arm of a 12-system pool on type010101". The Table 1 caption p. 6 l.272–273 reads "over 12 matched systems × 3 seeds on the type010101 rows". The rendered y-tick reads "type010101 (12 systems)".
+- I51 · verified-fixed. Contribution 2 p. 3 l.154–156 reads "The 16 lookahead arms, second engine seed, exposure split and constant-policy exhibit ran on N1, the inverted ranker on the cross-split, and post-hoc release and power controls on the launch-power sweep". The abstract p. 1 l.043 reads "On N1, 15 of 16 lookahead arms select no success".
+- I52 · verified-fixed. The title is "Solvable, Yet Selected No Better Than Chance …" (p. 1 l.001–006), and §1 p. 3 l.114–115 reads "The literal zero is specific to the N1 membership and the launch-power sweep".
+- I53 · verified-fixed. "clamped above" and "clamps" have 0 hits, and "saturates at 18.49 px" appears at p. 3 l.140, p. 4 l.209, p. 7 l.341 and p. 36 l.1908. The r6 density sentence is gone: the margin parentheticals left the abstract, which keeps one "(above 0.60)". The new abstract sentence has a different defect, minted as I56.
+- I16 · OPEN (owner action; carried). p. 9 l.453–455 still cites commits "2b4d897 … b8aba59 … 88a1a21 … 3742c7e0" with no anonymized link, while contribution 3 p. 3 l.161 says artifacts "are released (Appendix I)".
+- I45 · REGRESSED r7 (MINOR, Axis 3).
+  - r6 closing evidence: "l.689–692 reads '(in the N1 closed-loop and proxy-era records, 13 candidate actions per state … Appendix H.2 pins its own two inventories)'".
+  - Current text, p. 13 l.691–692: "(in the N1 closed-loop and proxy-era records, 13 candidate actions per state, … Appendix H.2 pins its own two inventories)".
+  - The #94 launch-power sweep is an N1 closed-loop record with 20 candidates, so the exception list is incomplete again. The sister site p. 13 l.663 was updated ("Appendices H.2 and H.3 declare their own 16-, 11-, and 20-candidate inventories"); this one was missed.
+  - Fix: "Appendices H.2–H.3 pin their own three inventories".
+
+Re-check of the r6 closures on this PDF:
+- I43 holds. "inconclusive" and "undecided" have 0 hits. The tokens are verbatim in the abstract p. 1 l.038–040, Fig. 1 (rendered) and Table 1. The offset-sweep margin ("between the 0.50 and 0.60 margins") left the abstract and §6 and now survives only in C28 and H.3's rule text ("at most 0.50, at least 0.60, in between", p. 36 l.1928). The token is unsoftened, so this is not counted, but the changelog's "margins moved to §6" does not describe the PDF.
+- I44 holds under the r7 companion. The retired r6 companion ("every inventory tested is a set") has 0 hits. The new companion, "three sets of launch angles at saturated speed and one angle × launch-power sweep", is at every clause site. The H.2 verdict p. 35 l.1905–1907 reads "this follow-up alone does not widen the action scope (Appendix H.3 does)".
+- I46 holds. The Table 18 Fig. 1 row p. 41 l.2171–2190 lists every plotted number, including 8/15 [0.2667, 0.8000], −0.0521 (degenerate), 0.7441 [0.6923, 0.8026] and the "speed-only baseline 0.6889 [0.6424, 0.7599] (post hoc)", and says "Miss-all probabilities not plotted".
+- I10 holds: §5 has two paragraphs (p. 5 l.247–261), and "row C2 of Table 13" resolves.
+- I30 holds: 15/612 and 21/612 against 0.0407 at p. 6 l.320–322 and p. 33 l.1818 ("both descriptive paired intervals covering zero (Table 18)", renumbered correctly).
+- I35 holds: "0.25%" appears only at H.1 p. 33 l.1778 and Table 18 l.2259.
+- I36 holds: the only "systematic" is "family-systematic" (p. 17 l.751).
+- I37 holds: the Fig. 1 caption scopes AUC per inventory with its status.
+- I38 holds: p. 4 l.203 reads "so it looks ∆² carrier frames ahead (1, 25, 225)".
+- I39 holds under the r7 clause (digest l.38). The clause is verbatim at abstract p. 1 l.027–030, §1 p. 3 l.136–138, §6 p. 7 l.359–361 and §8 p. 8 l.425–427. The companion is in the next sentence in the abstract (l.030–032), which fixes the r6 placement residue, and in the same sentence at the other three. "discrimination" has 0 hits, and there is no state-difficulty claim (p. 7 l.353–356 is an explicit no-claim).
+- I40 holds: carrier frames appear at p. 3 l.135, p. 4 l.202–203, p. 7 l.357–358 and p. 8 l.381–382.
+- I41 holds: p. 17 l.889 "that Section 5 demotes"; p. 45 l.2420 "Heuristic record (Section 5 disclosure, …)".
+- I42 holds vacuously: there is no PHYRE sentence in the abstract.
+
+Headline judgment (brief item 3):
+- Leads with what holds on all four inventories: yes.
+  - The title, the abstract result sentences (p. 1 l.023–031, ceilings then pooled top-1 0/108, 7/81, 8/126, 0/72), the Fig. 1 caption lead (p. 2 l.067–068), §1 l.122–124, §6 l.268–269 and §8 l.416–419 all lead with per-inventory pooled top-1.
+  - The held-out 13/612 is printed beside them with "(pre-registered, non-degenerate)" (abstract l.033–034).
+- Status is correct against the artifacts:
+  - N1 is "pre-specified outcome, chance reading post hoc" (the #87 margin 0.5).
+  - Offset and grid are "pre-declared descriptive" (the #93 `estimands.topk` has no rule).
+  - Launch-power is "pre-registered under frozen rule C24" (the #94 plan frozen before scoring).
+  - §4 p. 5 l.235 adds "a frozen rule with a ticket-default stated prediction", which matches summary.json `stated_predictions.source` "ticket #94 owner-decision defaults".
+- Degenerate-interval notes (N1 and launch-power) are present wherever the interval is printed or relied on: abstract l.034–035; §1 l.124–126; contribution 2 l.154; Table 1 rows (p. 6 l.282, l.291, "(degenerate)"); §6 l.316–317; §8 l.420–421; the Fig. 1 caption l.076–077; the rendered Fig. 1 (b) "degenerate" labels on both rows; C24, C26 and Table 16; and the Table 18 Fig. 1 row. Pass.
+  - On the merits the C24 criterion cannot fail when top-1 is 0 at any member count. The paper says what the degenerate interval reflects ("only the between-member spread of chance", p. 36 l.1939–1940), which is honest.
+  - What is missing is the reason top-1 was predicted to be 0 (I54).
+- #95 handling: it is never called a fifth inventory or pooled with #94. "fifth" has 0 hits, and "four inventories" is consistent throughout. Table 1 puts #95 under "Controls" (p. 6 l.305–306). H.3 p. 37 l.1996 reads "#95 is a control on #94, not a separate inventory, and its columns are never pooled with #94". The Table 16 caption reads "No column is pooled with another". C26–C28 carry "(post-hoc control)". Fig. 1 draws the baseline as a separate hollow diamond, not merged with the ranker marker. Pass.
+- #95 disclosures (post-hoc design and pre-freeze sighting of the baseline) are at every site where a #95 statistic carries a claim: abstract l.040–043; Fig. 1 caption l.080–081; contribution 3 l.160–161; §4 l.237–238; Table 1 l.305–306; §6 l.344–346; §8 l.423–424; C26–C28; the Table 16 caption; and H.3 l.1992–1995. They agree with #95 plan.json `chronology`: "designed after the #94 publication … the power-only baseline … was printed by a synthetic-cost dry run of this runner before the freeze". Pass. The §1 close (p. 4 l.167–169, "a trivial baseline mostly matches") restates a #95 result without the sighting note, but it prints no statistic and follows contribution 3 by six lines. Not counted.
+- The training-range confound (26 of 4,377 #71 shots below the clamp) is disclosed in §6 p. 7 l.347–348, §7 p. 8 l.388–391 and H.3 p. 37 l.1987–1991, and softly in abstract l.026–027 and §1 l.140–141 ("inner radii mostly outside the rankers' training range").
+  - It is disclosed as a scope note on the sweep. It is never connected to the two claims it confounds, the 0/72 top-1 and the "launch-power preference", and it is absent from contribution 2, contribution 3, §8 and the Fig. 1 caption.
+  - The pool wording also shifts between sites (I57).
+  - Not honest at every claim site: I54.
+
+Axis passes (round-7 surface):
+- Axis 1:
+  - 10-minute test: title + abstract + Fig. 1 + Table 1 yield the Δbelief above.
+  - Fig. 1 carries the tension visually, judged on the rendered asset. Panel (b) sits at or left of 0 on every frozen row, panel (c) crosses 0.5 and the shaded 0.50–0.60 band on three rows, and the hollow speed-only diamond sits under the launch-power AUC. Pass.
+  - The value limit is I25.
+- Axis 2:
+  - Falsifiability. #94 committed in advance to C24/C25 rules, the readiness gate, 10,000 draws at seed 7201 and the member set.
+    - C24 was predicted supported, and the rationale for that prediction was the training-support gap, not the headline hypothesis. summary.json `stated_predictions.C24.rationale` reads "every inner-radius candidate is out of the rankers' training support, so nothing predicts a gain in selection". So the pre-registered top-1 test had no outcome under which the naive alternative (the rankers cannot score unseen inputs) and the headline (selection at chance on solvable states) predict opposite signs (I54).
+    - C25 had "no prediction".
+  - HARKing scan on the #94/#95 reading: 3 bare-fact placements, each labelled within the same sentence or paragraph, so the scan passes.
+    - Contribution 3 heading p. 3 l.158: "An ordering AUC that looks good can be a single-coordinate preference."
+    - Fig. 1 lead p. 2 l.069: "on the launch-power sweep a speed-only baseline matches most of it" (label at l.080–081).
+    - Abstract l.040: "That 0.7441 is mostly a launch-power preference:" (label after the colon).
+  - Post-hoc smell: the abstract rests the preference reading on the #95 post-hoc numbers (0.6889, 0.5949), which carry the pre-freeze sighting. The stronger support is a post-hoc reading of a statistic #94 pre-declared: ρ(cost, speed) = −1.0000 within every angle, which comparisons.csv `rho_speed_*deg` gives as −1.0 for all three systems at all four angles. It sits only in H.3 p. 36 l.1943 and Table 16. A recommendation, not minted.
+  - Refutation check: C25 lost and C28 is insufficient, both printed. Credit.
+  - Statistical hygiene: every interval is descriptive and labelled, and the member counts (8) are printed.
+- Axis 3: I45 (regressed), I57. No conflicting values for the same quantity.
+- Axis 4: I54. Framing-only pass: the abstract "0/108, 7/81, 8/126 and 0/72 against 0.0780, 0.1030, 0.0804 and 0.0521" (l.030–031) and Table 1 (p. 6 l.281–291) differ only in wording. The "mostly" in "mostly a launch-power preference" is backed in point estimate (the baseline recovers (0.6889 − 0.5)/(0.7441 − 0.5) ≈ 77% of the above-0.5 AUC), and the within-power upper bound 0.7454 is printed beside it. Pass.
+- Axis 5: I55 and I56.
+  - The §6 launch-power block ends in a local verdict ("so the training-range confound stays open", p. 7 l.347–348). Pass.
+  - Elimination: #95's release control kills the release-time channel, since the release time never reaches the engine and the rank agreement has median ρ 1.0. The speed-only baseline kills "the AUC carries information beyond power" only in point estimate. The training-support alternative is named but not killed.
+  - Cosmetic, not counted: the abstract spends l.014–023 on the owner-binding B framing before the first engine-truth number.
+- FINDINGS checklist:
+  - Phenomenon as a conflict: partial. The conflict is ordering vs selection plus "a high AUC from one coordinate", but the practice it corrects is attested only in the paper itself, and DOPE already pairs the two metric types (I25).
+  - Primary analysis designated: pass (pooled top-1 vs chance; AUC "a supporting statistic", p. 3 l.128, p. 6 l.319).
+  - Cross-validations each kill an alternative: pass for the #92 set (unchanged) and the release control. It fails for training support, which no control addresses (I54).
+  - Dose ladder: partial. The five-radius launch-power sweep is the first graded manipulation, and cost is monotone in it (ρ −1.0000). The outcome side has no dose ladder, and the headline has none either.
+  - Cash-out: present (p. 4 l.167–170; p. 8 l.430–431), with the reach limit under I25.
+
+New issues minted r7:
+- I54 · MAJOR · Axis 4 · abstract p. 1 l.028–031 "on every inventory tested … 0/108, 7/81, 8/126 and 0/72" (also contribution 2 p. 3 l.152; §8 p. 8 l.417–419; Fig. 1 caption lead; contribution 3 p. 3 l.158–161 and abstract l.040 "mostly a launch-power preference") · [OPEN r7]
+  - The launch-power 0/72 enters the "every inventory" quantifier as selection-failure evidence, but 7 of 8 successes sit at 17 px (p. 37 l.1978–1979; summary.json `success_ordinal_histogram` {8:3, 9:1, 13:4}).
+    - 17 px is absent from the release-1000 N1 pool (79.51–80.66 px, 96 shots).
+    - It is inside the #71 radius range only through at most 26 of 4,377 release-600 shots below the clamp (training_action_support.json).
+    - The rankers' every choice sits at the 80 px column, which is the only in-support radius.
+  - The frozen plan predicted C24 "supported" for exactly this reason: `stated_predictions.C24.rationale` reads "every inner-radius candidate is out of the rankers' training support, so nothing predicts a gain in selection". H.3 p. 36 l.1929 prints only "The frozen plan's stated predictions are ticket defaults: C24 supported, C25 none", so the rationale is omitted.
+  - The same confound covers the new "why": a ranker that assigns higher cost to out-of-support radii shows ρ(cost, speed) = −1 within angle and prefers 80 px, just as a genuine launch-power preference would.
+  - §6/§7/H.3 say the confound "stays open", but no claim site says which claims it bears on. Contribution 2, contribution 3, §8 and the Fig. 1 caption omit it. The abstract has only "(inner radii mostly outside the rankers' training range)", attached to the ceiling and not to the top-1 or the AUC reading.
+  - This is the limitation-omitted case: the headline quantifier rests partly on a pre-registered pass that its own plan attributed to input support.
+  - Fix, wording:
+    - Print the C24 prediction rationale in H.3 and §6.
+    - Add at contribution 2, §8 and the Fig. 1 caption that on the launch-power sweep the successes lie at radii outside the release-1000 training pool, so its 0/72 does not separate selection failure from support failure.
+    - Scope the "launch-power preference" sentences with "which the training-range confound leaves indistinguishable from a preference for in-support inputs".
+  - Experiment that would change the verdict: retrain one ranker (the §3 recipe, 9,000 updates) with release-1000 sub-clamp drags in its fitting pool, then re-score the frozen #94 inventory under a pre-registered prediction for (i) within-angle ρ(cost, speed), (ii) top-1 against 0.0521 and (iii) within-power AUC.
+    - If ρ stays near −1 and top-1 stays 0, the preference and the selection failure are ranker properties, and I54 and much of I25 close.
+    - If they vanish, #94 measured support, not selection.
+    - §7 p. 8 l.390–391 already names this test.
+- I55 · MINOR · Axis 5 (cross-reference) · §7 p. 8 l.392–393 "except per-ranker counts of 0/24 each on the launch-power sweep (second-parameterization split: Table 15)" · [OPEN r7]
+  - The parenthetical sits directly after the 0/24 counts and reads as their source, but 0/24 is in Table 16 (p. 38 l.2009–2010). Table 15 holds the #93 per-ranker split (5/27, 2/27, 0/27; 3/42, 3/42, 2/42), which the sentence never mentions.
+  - A reader who follows the pointer finds no 0/24, and nothing in the body says the #93 per-ranker split exists or cuts against the pooled reading.
+  - Fix: "(launch-power per-ranker counts: Table 16; the #93 per-ranker split, including 5/27 on the offset sweep: Table 15)". This is appendix-pointer wording and quantifies over no ranker in the body (digest l.40).
+- I56 · MINOR · Axis 5 · abstract p. 1 l.033–035 "whose paired interval lies entirely below 0 (pre-registered, non-degenerate). On N1 (post hoc) and the launch-power sweep (pre-registered) this holds degenerately (zero top-1), and the offset sweep and grid were pre-declared descriptive" · [OPEN r7]
+  - "this" points back across a sentence boundary to a relative clause about the held-out split, and the sentence then switches subject to the status of two other arms. With five status tags in 40 words, a tired reader re-reads it to recover that "this" is the interval criterion.
+  - Fix: "The paired interval also lies below 0 on N1 (post hoc) and the launch-power sweep (pre-registered), but degenerately, since top-1 is zero in every cell; the offset-sweep and grid tests were pre-declared descriptive."
+- I57 · MINOR · Axis 3 · §7 p. 8 l.389 "its inner radii lie outside the rankers' training support" and H.3 p. 37 l.1987 "The inner radii also lie outside the rankers' training support" vs abstract p. 1 l.026–027 and §1 p. 3 l.140–141 "mostly outside the rankers' training range" · [OPEN r7]
+  - The same quantity is stated two ways, and neither names its pool.
+  - Per training_action_support.json, all 16 inner-radius candidates lie outside the N1 pool, but 8 of 16 (the 13 px and 17 px columns) have `radius_within_issue71_training_range` true. The #71 pool spans 11.18–177.99 px.
+  - The success-carrying 17 px column is therefore inside the #71 pretraining range, but sparse: at most 26 shots below the clamp, all at release 600.
+  - "Outside the rankers' training support" is true only of the release-1000 N1 pool, and "mostly outside" is true of neither pool as stated.
+  - This matters for I54: whether the 17 px successes are out of support or merely under-sampled changes how strongly the confound binds.
+  - Fix: name the pool at each site ("outside the release-1000 N1 pool; 13 and 17 px inside the #71 radius range but covered by at most 26 of 4,377 shots").
+
+Other new-defect hunt (round-7 surface):
+- Page gate: 46 pp. The body ends p. 9 l.436, Repro/Ethics are on p. 9 and references start p. 10. Pass.
+- Cross-references: 0 "??". "Appendix H.3" (p. 3 l.141; p. 6 l.342; p. 8 l.391) → p. 36. "Table 16" (p. 36 l.1936) → p. 38. "Table 18" (p. 9 l.456; p. 33 l.1818) → p. 41. "Table 13 … C1–C28" (p. 7 l.365–366) and "rows C16–C28" (p. 5 l.243) resolve. The only defect is I55.
+- Caption/graphic agreement for Fig. 1, rendered at 150 dpi plus a 300 dpi crop.
+  - The (a) rows read 7/14, 9/15, 14/15, 8/15 and 25/46.
+  - The (b) rows read "0/108 vs 0.0780 … 0/72 vs 0.0521, 13/612 vs 0.0407, 29/612 vs 0.0407", with "degenerate" labels under the N1 and launch-power markers.
+  - The (c) tokens are verbatim, and the band covers the offset, grid and launch-power rows only, as the caption says ("shaded on those three rows").
+  - The legend reads "speed-only baseline (post hoc), 0.6889" and "frozen 0.50/0.60 margins", and the few-shot row is hatched.
+  - The caption agrees with the graphic. The caption omits the training-range confound for the launch-power row (I54).
+- Registry/table consistency:
+  - C24–C28 (p. 33 l.1730–1770), Table 16 and H.3 agree on every value.
+  - Table 16's "Chosen ordinals (selector) {14:67, 19:68}" matches summary.json `chosen_ordinal_histogram`. slot_join.csv's admissible-restricted `chosen_ordinal` gives {14:72, 19:63}, because member 005's nine cells shift from 19, a typed-failure slot, to 14. The "(selector)" label disambiguates, and "All 135 selector choices go to the 80 px column" holds either way. Not counted.
+- Chronology: the #95 freeze (19fc865c, 18:21:37+10:00) precedes its publish commit (3742c7e0, 18:22:10+10:00) by 33 s, which is consistent with zero engine seconds. The #94 freeze (04:00:30Z) precedes 6c07c94 (04:05:16Z) and 88a1a21 (08:07:06Z). Pass.
+
+Wording-rule compliance (digest incl. r7 amendments): pass, with the I54 caveat on the training-range rule's reach.
+- Headline sentence (l.35): its pieces are present with status (abstract l.023–043; §1 l.108–139; §8 l.416–428), including "stated predictions are ticket defaults" (§4 l.235; H.3 l.1929).
+- Mechanism clause (l.38): verbatim at 4 sites, with the r7 companion in the same or next sentence. The retired r6 companion has 0 hits. "discrimination" and "not dynamics prediction" have 0 hits.
+- Pooling (l.39–40):
+  - The per-ranker 0/24 is printed for the launch-power sweep and its release control (§7 l.392–393; C24; C26; Table 16).
+  - The #93 per-ranker split appears in the appendix only (Table 15; H.2).
+  - "every ranker" and "each ranker" have 0 hits. The one "no ranker" is "with no ranker input" (p. 38 l.2045), which describes the baseline.
+- #94/#95 rules (l.41):
+  - #95 is never a fifth inventory, never a replication (no "replicat" hit in H.3/#95 text) and never pooled.
+  - The post-hoc design and pre-freeze sighting are at every #95 statistic claim site.
+  - The #94 interval is "degenerate" at every print.
+  - Row 2 is quoted verbatim (checked against summary.json `reading_matrix_row.reading`) and immediately qualified (p. 37 l.1983–1984).
+  - The training-range confound "stays open" (p. 7 l.347–348; p. 8 l.390; p. 37 l.1990–1991).
+  - #94 is not pooled with N1 or #93, and the miss-all probabilities are "listed, not combined" (p. 6 l.318).
+- Significance caution (l.48): §1 p. 4 l.167–170 is verbatim minus the "verify the outcome channel" parenthetical, which §8 p. 8 l.430–431 carries. The abstract compresses it (l.044–045). Pass.
+- Hero figure (l.72): the launch-power row is in (a)–(c), "degenerate" appears in (b), the diamond is labelled "speed-only baseline (post hoc)", and the y-tick reads "type010101 (12 systems)". Pass.
+- Verbatim tokens: pass. "inconclusive" and "undecided" have 0 hits, and "significant" appears only in protocol text (p. 14 l.655, l.701; p. 21).
+
+Spot-check tally: 18 checked; 18 match, 0 mismatch. (recomputed) marks my own recount from records.
+- #94 ceiling: 8/15 = 0.5333 [0.2667, 0.8000] against comparisons.csv `ceiling` (0.5333, [0.26667, 0.8], "8 of 15") · match.
+- #94 top-1: 0/72 against 0.0521, 0/24 per system. comparisons.csv `top1` reads "0/72; chance 0.052083", and `top1_<system>` reads "0/24" ×3; (recomputed) slot_join.csv, 72 non-null-AUC power cells over 8 members, 0 hits, mean chance 0.0521 · match.
+- #94 paired: −0.0521 [−0.0563, −0.0500] against `top1_minus_chance` (−0.052083 [−0.05625, −0.05]) · match.
+- #94 AUC: 0.7441 [0.6923, 0.8026] over 8 members; cell-unit [0.7232, 0.7651]; per system 0.7641 / 0.7531 / 0.7151. Sources: `auc_member_clustered`, `auc_cell_unit`, `auc_<system>`; (recomputed) mean cell AUC 0.7441 · match.
+- #94 top-3 and miss-all: 9/72 against 0.1563, paired −0.0313 [−0.1688, +0.2250]; miss-all 0.6518. Sources: `top3` ("9/72; chance 0.15625"), `top3_minus_chance` (−0.03125 [−0.16875, 0.225]), `miss_all` 0.651781 · match.
+- #94 realized speeds: 2.34 / 4.64 / 6.59 / 8.92 / 10.00 against `launch_speed_{5,9,13,17,80}px` medians 2.3351 / 4.6387 / 6.5871 / 8.9202 / 9.9992 · match.
+- #94 ρ(cost, speed): −1.0000 within each angle against `rho_speed_{10,30,50,70}deg`, −1.0 for all three systems · match.
+- #94 choices/successes: {14:67, 19:68} and {8:3, 9:1, 13:4} against summary.json `arm.chosen_ordinal_histogram` / `success_ordinal_histogram`. The slot_join admissible-restricted recount differs, as explained above · match.
+- #94 training support: #71 4,377 shots, release 600, 11.18–177.99 px, 26 below the clamp; N1 96 shots, 79.51–80.66 px, 16/16 inner candidates outside. Sources: #94 training_action_support.json `sources` and #95 plan.json `training_regime` · match (see I57 on the "outside" wording).
+- #94 execution: 295/300, 5 typed failures (n1-005), 295/295 frames, 4.01 h, 5.8 GPU-s against #94 findings.md l.48–49 ("oracle wall 4.01 h … ranker scoring GPU 5.8 s") · match.
+- #94 freeze/commits: frozen 2026-09-24T04:00:30Z against plan.json `frozen_at`; 6c07c94 ("Freeze #94 launch-power protocol", 14:05:16+10:00) and 88a1a21 ("Publish #94 … C24 supported, C25 not_supported") in the git log · match.
+- #94 dispositions and stated predictions: C24 supported / C25 not_supported_by_this_experiment against `C24_disposition` / `C25_disposition`. "ticket defaults: C24 supported, C25 none" against summary.json `stated_predictions` (C24 "supported", C25 "no prediction"). The rationale is not printed (I54) · match.
+- #95 release-600: AUC 0.7456 [0.6959, 0.8061]; cell-unit [0.7247, 0.7670]; per system 0.7641 / 0.7553 / 0.7173; top-1 0/72, 0/24 per system; chosen {9:2, 14:65, 19:68}. Sources: #95 comparisons.csv `r600_*` · match.
+- #95 within-power: 0.5949 [0.4444, 0.7454]; cell-unit [0.5347, 0.6597]; per system 0.6736 / 0.6042 / 0.5069; release 600 0.5995 [0.4583, 0.7361]. Sources: `within_power_release_1000_*` and `within_power_release_600_member_clustered` · match.
+- #95 speed-only baseline: AUC 0.6889 [0.6424, 0.7599], top-1 0/8 against 0.0521 against `power_only_auc` and `power_only_top1` ("0/8; chance 0.052083"). #95 findings.md l.42 defines it as "cost = -expected speed" · match.
+- #95 rank agreement and dispositions: median ρ 1.0, minimum 0.991 over 135 cells against `rank_agreement` (min 0.99098). C26 supported, C27 not_supported_by_this_experiment and C28 readiness_or_precision_insufficient against `C2{6,7,8}_disposition` · match.
+- #95 chronology: "designed after the #94 results … froze them at 2026-09-24T08:21:37Z (commit 19fc865c) … The speed-only baseline had been printed by a synthetic-cost dry run before that freeze … released at commit 3742c7e0" (p. 37 l.1992–1995) against plan.json `frozen_at` and `chronology` and the git log (19fc865c 18:21:37+10:00; 3742c7e0 "Publish #95 follow-up controls") · match.
+- #93 per-system top-1, (recomputed; slot_join.csv, non-null-AUC cells): grid 3/42, 3/42, 2/42 (8/126, mean chance 0.0804, mean AUC 0.6178, 14 members); offset 5/27, 2/27, 0/27 (7/81, 0.1030, 0.5512, 9 members), against Table 15 p. 36 l.1957–1963 · match.
+
+Re-score: 6 on the ICLR 1/2/4/6/8/10 scale (BORDERLINE; r1 4, r2 4, r3 4, r3-followup 6, r4 6, r5 6, r6 6).
+- Why it holds at 6:
+  - Every r6 wording item is fixed (I47–I53 verified at their cited sites).
+  - New evidence entered. #94 is a pre-registered, engine-telemetry-verified second coordinate (realized speeds 2.34–10.00), and #95's zero-engine controls are disclosed as post hoc with the baseline sighting at every claim site.
+  - The headline leads with the four-inventory top-1 and carries correct status and degenerate-interval notes everywhere. #95 is never a fifth inventory.
+  - 18/18 spot-checked numbers match, 7 of them by recount, and the stated statuses agree with the frozen plans.
+- Why not 8:
+  - Only one of the four inventory top-1 results is non-degenerate and pre-registered, and that is the held-out split, not an inventory. Two are degenerate zeros and two are point-estimate nulls on 9 and 14 member clusters. r6's powered-test requirement (1) is unmet.
+  - The new inventory's 0/72 and its "launch-power preference" are both confounded with training support, and the plan itself predicted the zero from that support (I54).
+  - The lesson is established practice in adjacent evaluation literatures, and the paper neither cites nor distinguishes itself from them (I25).
+  - The within-coordinate half of the lesson is unresolved on the only inventory that motivates it (C28).
+  - The ranker family is still one 1.8M architecture (three checkpoints).
+- Why not lower:
+  - Every weakness above is disclosed somewhere (§6 l.315–317 "weak evidence at this size"; §7 l.388–391 "the training-range confound stays open"; C28 insufficient printed). The fixes for I54–I57 and I45 are wording-only.
+  - The pre-registered held-out pass and the N1 zero are solid, and the #94 run is clean (295/300 verdicts, frames byte-identical).
+  - No number is wrong.
+  - A 4 becomes defensible only if a future round counts the launch-power 0/72 as independent selection evidence while suppressing the C24 prediction rationale, or promotes the preference reading to "We show".
+- What an 8 would need now:
+  - (1) Break the support confound. Retrain one ranker with release-1000 sub-clamp drags, then re-score the frozen #94 inventory under a pre-registered prediction for within-angle ρ(cost, speed), top-1 and within-power AUC (see I54). This is the single experiment that decides whether the new "why" is a ranker property.
+  - (2) The powered top-1 test carried from r6: a pre-registered q2-criterion test on the 46-member type010101 pool (25 ceiling members), to turn "in point estimate/degenerate" into an interval claim at 3× the inventory memberships.
+  - (3) Anchor the lesson. Cite DOPE's paired rank-correlation/regret@k practice and the trivial-baseline literature, and state the delta: a measured per-state ceiling and a within-coordinate AUC, which neither provides.
+  - (4) Optionally, a second ranker family.
+  - Plus the wording fixes for I54–I57 and I45.
+Most damaging: I25 (no CRITICAL; first MAJOR in axis order, Axis 1). The current text is §1 p. 4 l.167–170: "A lesson we draw post hoc from the launch-power sweep: a high ordering AUC can come from a single-coordinate preference that a trivial baseline mostly matches while top-1 is zero, so report top-1 against a measured per-state ceiling, a coordinate-only baseline, and a within-coordinate AUC beside any ordering AUC." Pairing an ordering metric with a selection metric is published practice (DOPE, https://arxiv.org/abs/2103.16596), and trivial-feature baselines are standard (ARXIV:1805.01042). The one worked instance rests on a post-hoc control on one inventory whose preference is confounded with training support (I54). The most actionable item is I54 (Axis 4; wording now, one retraining experiment to close).
+Diff check: `diff /tmp/review-log.pre-r7review.md iclr2026/review-log.md` shows a single insertion hunk, `2a3,223` (this r7 section, lines 3–222, plus one blank separator line at 223, directly above "## r6 · 2026-09-24"), with 0 deleted or changed lines.
+
 ## r6 · 2026-09-24 · BORDERLINE · 6/10 (headline now leads with top-1 as r5 asked, and I43–I46 are closed; the restatement drops "in point estimate" at its claim sites and asserts a post-hoc AUC/top-1 dissociation as "We show"; no new evidence; 19/19 numbers match)
 This is an independent round-6 review of the rebuilt PDF (42 pp; ModDate 2026-09-24 11:27:31 AEST). The body runs pp. 1–9 and ends p. 9 l.436. Repro/Ethics are on p. 9 and references start p. 10. I read it end to end via `pdftotext -layout`, and I rendered p. 2 (Fig. 1) and p. 34 (Figure 6 = fig:app:bands) at 150 dpi. Locations are PDF page/ICLR line numbers. The authoring record read is manuscript/changelog.md, top three entries (2026-09-24 r6-authoring, r6 Story Lock, r5-followup I46). Their Rejected lines decline printing "the 5/27 and single-member (member 011) recounts" and decline Options B and C. None of these names an I#, so no WONTFIX follows from them. The digest (issue91_exec_digest.md) was read in full; its lines marked "amended r6, owner-approved" (l.27, l.34, l.36, l.37, l.38, l.43, l.66) supersede their predecessors. The artifacts read were issue-93-second-parameterization-v1 (slot_join.csv, comparisons.csv, summary.json, plan.json, engine_action_check.json), issue-92-selection-validity-v1 (slot_join.csv, findings.md), issue-92-cross-pool-audit-v1 (cross_split_cells.csv, comparisons.csv, plan.json, findings.md) and issue-87-closed-loop-oracle-v1/plan.json. This round is storyline-only; no new experiment entered the paper.
 Genre: FINDINGS (+ BENCHMARK). Δbelief: under a measured per-state engine ceiling (7/14, 9/15, 14/15 members on three launch-angle inventories over the same 15 N1 members), three ~1.8M-param frozen rankers pick the engine-verified success no more often than a uniform draw in point estimate (0/108, 7/81, 8/126). A held-out split passes a pre-registered test (13/612 vs 0.0407, paired interval below 0). Meanwhile, member-clustered ordering AUC runs 0.4180–0.6178 with the inventory. The update is real but small. It says that small frozen rankers select at chance on these states, and that an ordering statistic can look fine while selection fails. The first half is the r5 "what survives" residue restated as the headline. The second half is a post-hoc observation (I49). Δbelief is the same as r5 in substance, now honestly led.
@@ -16,6 +237,7 @@ Dispositions:
     - The portable claim (p. 3 l.166–168) is: "We show a mismatch between two decision metrics under a measured per-state ceiling: ordering AUC moves with the inventory while pooled top-1 does not. The lesson is to verify the outcome channel and report top-1 against a measured per-state ceiling beside any ordering statistic."
     - The practice this cash-out corrects is not shown to exist in the field. The paper's own §2 says the closed-loop benchmarks already score success: World-in-World "scores task success as the primary metric" (p. 4 l.179–180), and PHYRE "scores multi-attempt task success by AUCCESS" (l.183). The only documented case of an ordering statistic headlined in place of top-1 is this paper's own r1–r5 headline (contribution 3, p. 3 l.156: "Our post-hoc ordering headline failed its pre-registered replication").
     - The ceiling-as-denominator half has a precedent (PHYRE OPTIMAL, conceded l.150–151). The chance-level-selection half is a point-estimate null on 14/9/7 member clusters (I47).
+  [PARTIAL r7-authoring 2026-09-24: #94/#95 add a fourth, pre-registered inventory over the same 15 members and turn the cash-out into a coordinate-baseline lesson, drawn post hoc. Title now "Solvable, Yet Selected No Better Than Chance" (iclr2026_conference.tex:62). The §1 close reads "We observe, post hoc, a mismatch between two decision metrics … A lesson we draw post hoc from the launch-power sweep: a high ordering AUC can come from a single-coordinate preference that a trivial baseline mostly matches while top-1 is zero" (introduction.tex:123); contribution 3 "An ordering AUC that looks good can be a single-coordinate preference" (introduction.tex:119); abstract "A post-hoc lesson: report top-1 against a measured per-state ceiling, a coordinate-only baseline and within-coordinate AUC beside ordering AUC" (abstract.tex:42). Still open: field-practice reach (World-in-World/PHYRE already score success, introduction.tex:123 cites World-in-World only for the missing ceiling), and the training-range confound, "stays open until rankers trained on sub-clamp drags are tested" (discussion.tex:76; appendix.tex:736).]
 - I43 · verified-fixed.
   - "inconclusive" 0 hits; "undecided" 0 hits.
   - The tokens appear verbatim, each with its margin: abstract p. 1 l.032–035 ("returned not_supported_by_this_experiment on the grid (above its 0.60 margin) and readiness_or_precision_insufficient on the offset sweep (between the 0.50 and 0.60 margins)"); §7 p. 8 l.390–392; §6 p. 7 l.337–339; Fig. 1 panel (c) row labels (rendered, p. 2).
@@ -103,6 +325,7 @@ New issues minted r6:
     - Insert "in point estimate" at the four sites.
     - Carry the l.313 concession, or the upper bounds, into the abstract and §8.
     - State that only N1 and the held-out split meet the pre-registered interval criterion.
+  [RESOLVED r7-authoring 2026-09-24: every claim site now carries the qualifier and the interval criterion. Abstract "on every inventory tested (in point estimate on the offset sweep and drag grid)" (abstract.tex:37) and "a held-out split, whose paired interval lies entirely below $0$ (pre-registered, non-degenerate). On N1 (post hoc) and the launch-power sweep (pre-registered) this holds degenerately (zero top-1)" (abstract.tex:38). Same at §1 "The paired interval lies entirely below $0$ non-degenerately on the held-out split and degenerately on N1 and the launch-power sweep, where top-1 is zero in every cell" (introduction.tex:105), contribution 2 (introduction.tex:118), clause site introduction.tex:106, §1 close "does not, in point estimate" (introduction.tex:123), Fig. 1 caption "The original-sweep and launch-power intervals are degenerate" (introduction.tex:74), Table 1 "(degenerate)" rows (synthesis.tex:84, :87), §6 clause (synthesis.tex:113), §8 (discussion.tex:95). N1 −0.0778 [−0.0797, −0.0769] is now marked degenerate (cold-read #2 correction); the held-out split is the only non-degenerate record meeting the criterion.]
 - I48 · MINOR · Axis 4 · §7 p. 8 l.388–389 "Top-1 claims are pooled over the three frozen rankers, and no per-ranker statement is made" (with Table 15 p. 35 l.1843–1850, which prints per-system AUCs but only pooled top-1) · [OPEN r6]
   - My recount from slot_join.csv (non-null-AUC ceiling cells) shows the following.
     - On the offset sweep, continuous-fixed-h1 selects the success in 5/27 = 0.185 cells against chance 0.1030. The other two rankers score 2/27 and 0/27.
@@ -110,6 +333,7 @@ New issues minted r6:
   - So the grid's 8/126 is what a near-constant selector scores when its constant happens to be one member's success, and the offset's pooled 7/81 averages over a ranker at about 1.8× chance.
   - The pooled estimand matches the #93 plan (`estimands.topk` defines top-1 per cell with a member-clustered paired difference and no per-system split), so pooling is not HARKing. Still, a reader cannot see that the per-ranker split cuts against the pooled reading. This is the limitation-omitted case, and the changelog's Rejected line shows the authors know it.
   - Fix: add per-system top-1 to Table 15 beside the per-system AUCs already printed, plus one clause that the grid hits come from one member. This does not "quantify over rankers" (digest l.37).
+  [RESOLVED r7-authoring 2026-09-24: Table 15 prints per-system top-1 beside the per-system AUCs, "Top-1, \texttt{continuous-fixed-h1} & $3/42$ & $5/27$", "… h5 & $3/42$ & $2/27$", "… hybrid-fixed-h1 & $2/42$ & $0/27$" (appendix.tex:694–696), and the H.2 clause reads "All 8 grid hits come from one member (\texttt{issue-77-n1-011}), at the ordinal-15 candidate that takes 120 of 135 choices. On the offset sweep \texttt{continuous-fixed-h1} selects $5/27$ against chance $0.1030$" (appendix.tex:668). §7 points to it: "Top-1 claims are pooled over the three frozen rankers, except per-ranker counts of $0/24$ each on the launch-power sweep (second-parameterization split: Table~\ref{tab:app:secondparam})" (discussion.tex:76). Table 17 row appendix.tex:892.]
 - I49 · MAJOR · Axis 2 · §1 p. 3 l.166–167 "We show a mismatch between two decision metrics under a measured per-state ceiling: ordering AUC moves with the inventory while pooled top-1 does not" (also contribution 3 p. 3 l.157–158 "so ordering and selection must be reported separately against a measured ceiling"; abstract p. 1 l.030–031; §8 p. 8 l.424–425 "Member-clustered ordering AUC dissociates from it") · [OPEN r6]
   - The paper's own §6 labels this "a post-hoc descriptive observation" (p. 6 l.323). It is the paper's delta, restated in §2 p. 4 l.175–176, yet it is asserted as a shown result and turned into a normative "must" at five sites, with the label at one.
   - The evidence is thin on its own terms.
@@ -119,10 +343,12 @@ New issues minted r6:
     - No pre-specified comparison could have refuted "ordering and selection dissociate".
   - Fix, wording only: label the dissociation post hoc/descriptive at every site, and replace "We show … must" with "we observe … should".
   - The experiment that would earn "We show" is a pre-registered prediction of the dissociation's sign on a new inventory, with a stated criterion. The launch-power sweep r5 named is the natural carrier. Its result would decide whether the dissociation is a property of these rankers or an artifact of near-constant selection.
+  [RESOLVED r7-authoring 2026-09-24: the dissociation is labelled post hoc at every site. Abstract "Member-clustered AUC moves with the inventory ($0.4180$, post-hoc headline; $0.5512$; $0.6178$; $0.7441$), a post-hoc descriptive observation" (abstract.tex:39); §1 spine "moves with the inventory instead (a post-hoc descriptive observation)" (introduction.tex:105); §1 close "We observe, post hoc, a mismatch … does not, in point estimate" (introduction.tex:123); §8 "dissociates from it … (a post-hoc descriptive observation)" (discussion.tex:95); §6 "a post-hoc reading of pre-declared descriptive statistics" (synthesis.tex:108). "must be reported" has 0 hits, and "We show" survives only inside the verbatim row-2 quote in H.3, which "the body does not adopt" (appendix.tex:734), because #95 locates most of the launch-power AUC (C25 not_supported_by_this_experiment, 0.7441, appendix.tex:579) in a launch-power preference (speed-only 0.6889; within-power 0.5949 [0.4444, 0.7454], C28 readiness_or_precision_insufficient; appendix.tex:582, :738).]
 - I50 · MINOR · Axis 3 · Fig. 1 caption p. 2 l.071–072 "(b) Paired difference, pooled top-1 of the three frozen rankers minus inventory-matched chance" (also Table 1 caption p. 6 l.272–273 "top-1 is pooled over the three frozen model rankers × 3 seeds") · [OPEN r6]
   - Both captions cover the type010101 rows: 13/612 and 29/612 in Fig. 1 (b), and the top block of Table 1.
   - Those rows pool 12 systems. §1 p. 3 l.113 says "with 12 systems", and Table 17 p. 41 l.2167 says "12 systems". My recount of cross_split_cells.csv: 12 distinct systems × 17 states × 3 seeds = 612 per condition, including h15, micro and macro variants.
   - Fix: scope the captions to "the three inventories" and name the 12-system pool for the type010101 rows.
+  [RESOLVED r7-authoring 2026-09-24: Fig. 1 caption (b) "the three frozen rankers on the four inventories and the frozen zero-shot arm of a 12-system pool on type010101" (introduction.tex:74); Table 1 caption "top-1 is pooled over the three frozen model rankers $\times$ 3 seeds on the four inventories and over 12 matched systems $\times$ 3 seeds on the type010101 rows" (synthesis.tex:76). Figure y-tick now "type010101 (12 systems)" (build_figures.py hero_selection_ordering, per r7-main-notes).]
 - I51 · MINOR · Axis 4 · contribution 2 p. 3 l.152–155 "It holds on the original sweep, the offset sweep, the drag grid, and the held-out zero-shot arm, under 16 lookahead arms, a second engine seed, an exposure split, an inverted ranker, and a constant-policy exhibit" (also abstract p. 1 l.039–040 "The result … survives 16 decision-only lookahead arms … and a second engine seed (26/26)") · [OPEN r6]
   - Now that "the result" is the four-record top-1 headline, these controls are attributed to all four records. Most of them ran on one record only:
     - the lookahead arms: the 36 N1 ceiling cells (Table 14 p. 33);
@@ -131,12 +357,15 @@ New issues minted r6:
     - the constant-policy exhibit: N1 and the cross-split.
   - The inverted ranker was scored on the cross-split (and as argmax-cost on #93). It is a different selector, not a condition under which the frozen rankers' top-1 "holds".
   - Fix: scope the control list to "on N1".
+  [RESOLVED r7-authoring 2026-09-24: controls scoped per record. Contribution 2: "The 16 lookahead arms, second engine seed, exposure split and constant-policy exhibit ran on N1, the inverted ranker on the cross-split, and post-hoc release and power controls on the launch-power sweep" (introduction.tex:118). Abstract: "On N1, 15 of 16 lookahead arms select no success" (abstract.tex:41); second-seed 26/26 cut from the abstract, kept in Table 1 and §7 (discussion.tex:76).]
 - I52 · MINOR · Axis 4 · title p. 1 l.001–004 "Solvable but Not Selected" vs §1 p. 3 l.112 "The literal zero is specific to the N1 membership" · [OPEN r6]
   - Read literally, the title claims the zero, which the paper confines to N1. On the other records the rankers do select successes (7/81, 8/126, 13/612), at about chance.
   - This is borderline legitimate compression. It is flagged only because the body explicitly disowns the literal reading. A reading like "…Selected No Better Than Chance…" would carry the headline without the contradiction.
+  [RESOLVED r7-authoring 2026-09-24: title "Solvable, Yet Selected No Better Than Chance: Frozen World-Model Rankers Against a Measured Engine Ceiling in NovPhy" (iclr2026_conference.tex:62, owner-approved); §1 "The literal zero is specific to the N1 membership and the launch-power sweep" (introduction.tex:100).]
 - I53 · MINOR · Axis 5 · abstract p. 1 l.035–036 "In the engine, pull radius is clamped above 18.49 px" (also p. 3 l.141–142, p. 4 l.208 "pull radius clamped above 18.49 px") · [OPEN r6]
   - "Clamped above X" first reads as a floor, radius ≥ 18.49. The mechanism is a ceiling: H.2 p. 34 l.1833–1835 says "The engine projects any drag beyond _dragRadius (… 18.49 px …) onto the drag circle". Suggested wording: "pull radius saturates at 18.49 px".
   - Same item, tired-reader cost: the abstract sentence at l.030–035 packs three status tags, two verbatim tokens and two margin parentheticals into about 60 words. It is re-read on first pass.
+  [RESOLVED r7-authoring 2026-09-24: "clamped above"/"clamps pull"/"clamps away" have 0 prose hits. Now "Pull radius saturates at 18.49 px in the engine" (introduction.tex:112), "pull radius saturates at 18.49~px" (method.tex:39), "The engine saturates pull radius at 18.49 px" (synthesis.tex:108), "which the engine saturates at 18.49\,px" (appendix.tex:668, :673). Density half: the abstract margin parentheticals were moved to §6 and the tokens now sit in one AUC sentence (abstract.tex:39).]
 
 Other new-defect hunt (round-6 surface):
 - Page gate: 42 pp. The body ends p. 9 l.436 (Conclusion p. 8 l.416–p. 9 l.436). Repro/Ethics are on p. 9 and references on p. 10. Pass.

@@ -1,6 +1,8 @@
 # Manuscript Content Brief
 
-## CURRENT STATUS (2026-09-24, round-6 storyline doc sync; binding for a fresh session)
+## CURRENT STATUS (2026-09-24, round-7 #94/#95 doc sync; binding for a fresh session)
+
+**r7 update (Story Lock v2; overrides the r6 paragraph below where they differ).** Title *Solvable, Yet Selected No Better Than Chance: Frozen World-Model Rankers Against a Measured Engine Ceiling in NovPhy*. Thesis: under a measured per-state ceiling on four inventories over the same 15 N1 members (7/14, 9/15, 14/15, 8/15), the frozen rankers' pooled top-1 is at or below inventory-matched chance on every inventory (in point estimate on the offset sweep and grid; 0/72 vs 0.0521 on the pre-registered launch-power sweep), while ordering AUC moves with the inventory (0.4180, 0.5512, 0.6178, 0.7441; a post-hoc descriptive observation) and on the launch-power sweep is mostly a launch-power preference (#95 post-hoc controls: speed-only 0.6889, within-power 0.5949 covering 0.5). Canonical numbers: `CONTEXT.md` r7 update; plan: outline v2.7; per-file edits: `changelog.md` "r7-authoring".
 
 **Thesis = selection, not ordering (Story Lock A-hybrid)** (see `writing_outline_boundary_paper.md` v2.6 §0–§2; canonical numbers with status tags in `CONTEXT.md` "Current state"; review dispositions in `iclr2026/review-log.md`). Title: *Solvable but Not Selected: Frozen World-Model Rankers Against a Measured Engine Ceiling in NovPhy*. Thesis sentence: under a per-state ceiling measured in the engine, the three frozen rankers' pooled top-1 is at or below inventory-matched chance in point estimate on three candidate inventories over the same 15 N1 source members and on a held-out split, while member-clustered ordering AUC runs from 0.4180 to 0.6178 with the inventory. Headline numbers: ceilings 7/14, 9/15, 14/15 (member unit; descriptive intervals); pooled top-1 0/108 vs 0.0780 (outcome pre-specified; chance reading post hoc), 7/81 vs 0.1030 and 8/126 vs 0.0804 (pre-declared descriptive), held-out 13/612 vs 0.0407 (pre-registered); adapted few-shot 29/612 reported separately; AUC_m 0.4180 (headline choice post hoc) / 0.5512 `readiness_or_precision_insufficient` / 0.6178 `not_supported_by_this_experiment` (frozen decision statistic). Fig. 1 = `fig_hero_selection_ordering` (ceiling / pooled top-1 minus chance / AUC per inventory); the old N1 band figure is `fig:app:bands`. r6 gate: 42 pp total, Conclusion ends p. 9, Repro/Ethics p. 9 (uncounted), references p. 10, 0 undefined, 0 [TODO].
 
@@ -28,11 +30,13 @@ Per-section status after round 3 (historical; r6 rewrote abstract, §1, §3–§
 
 _Historical record (pre-#91 boundary-anatomy era) and the closed tex-items list were removed 2026-09-23 per owner directive; see git history and `changelog.md`._
 
-## OPEN TEX ITEMS (r6 authoring 2026-09-24; supersedes r5)
+## OPEN TEX ITEMS (r7 authoring 2026-09-24; supersedes r6)
 
-r6 closed the r5-era pointer items (I43–I46 RESOLVED r5-followup; their text moved in r6, pointers added in `iclr2026/review-log.md`) and restated the headline around pooled top-1 (I25 PARTIAL). Earlier closures (I3, I9–I11, I13, I26–I42) stand as logged in `review-log.md` and `changelog.md`. The following remain open:
+r7 closed I47, I48, I49, I50, I51, I52, I53 (RESOLVED r7-authoring tags in `iclr2026/review-log.md` r6 section). Earlier closures (I3, I9–I11, I13, I26–I46) stand as logged. The following remain open:
 
-1. **I16 (owner action, carried):** anonymized artifact link; the Reproducibility Statement still cites commits `2b4d897` and `b8aba59` of a non-public repository.
-2. **I25 residual (Axis 1 value limit):** the engine-side second action coordinate is still untested; in the engine every inventory is a set of launch angles at saturated speed. §7 names a launch-power sweep inside the 18.49 px clamp and a second ranker family as the tests that could widen the scope (discussion.tex:68). Not a wording item.
-3. **Cold-read carry-overs (r6, not fixed for budget/jargon):** N1/member/state/cell unit map; "12 systems"; a04 jargon; status-token density; chance 0.0780 vs 1/13; point-estimate-null attack (a stronger ranker beating chance; #93 intervals admit above-chance; angle bias in one architecture ≠ world-model rankers in general).
-4. **I8 scope note:** pretrained-world-model experiment declined. Disclosed limitation, not a tex task.
+1. **I16 (owner action, carried):** anonymized artifact link; the Reproducibility Statement cites commits `2b4d897`, `b8aba59`, `88a1a21` and `3742c7e0` of a non-public repository (appendix.tex repro sentence; discussion.tex:103).
+2. **I25 residual (PARTIAL r7):** #94/#95 supply the engine-side second coordinate and the coordinate-baseline lesson (post hoc), but field-practice reach is not shown (World-in-World/PHYRE already score success). Not a wording item.
+3. **Training-range confound (open):** the launch-power inner radii lie outside the rankers' training support (26 of 4,377 shots below the clamp; N1 pool 79.51–80.66 px); only rankers trained on sub-clamp drags could close it (discussion.tex:76; appendix.tex:736). Evidence need.
+4. **Carried evidence needs:** 46-member type010101 pre-registered top-1 test (r6 item 1); second ranker family (r6 item 3); lookahead-horizon dose ladder ≥400 frames with sub-clamp training (ColdRead #2 myopia/out-of-distribution attack).
+5. **Cold-read carry-overs (r7, text):** N1/member/state/cell unit map; BG-NS-JEPA; a04 post-hoc status; "joint selection" undefined; Fig. 1 (a) status tags unexplained in caption; abstract density.
+6. **I8 scope note:** pretrained-world-model experiment declined. Disclosed limitation, not a tex task.
