@@ -1,6 +1,10 @@
 # Manuscript Content Brief
 
-## CURRENT STATUS (2026-09-24, round-7 #94/#95 doc sync; binding for a fresh session)
+## CURRENT STATUS (2026-09-24, round-8 r7-closure doc sync; binding for a fresh session)
+
+**r8-followup update (r8 lock §6; overrides the r8 paragraph below where they differ).** R8 review scored 6/10 and closed I45 and I55–I57. The r8-followup round fixed every remaining WORDING-FIXABLE item: the I54 residue (Table 1, C24 row, Table 16), I58 (the C24 prediction is stated as partly from the gap; H.3 gives both grounds), I59 (lookahead range scoped to N1 outcomes), I60 (provenance of the 26), I61 (abstract launch-power sentence; caption participle), I62 (Table 16 now on p. 39) and the I25 wording (DOPE regret delta; "partial-input"). Abstract 398 words (Main exception); 48 pp.
+
+**r8 update (r8 lock; overrides the r7 paragraph below where they differ).** This round changed wording and citations only, and the thesis and numbers are unchanged. The launch-power 0/72 is qualified at every claim site: 7 of 8 successes lie outside the release-1000 N1 pool, so it does not separate selection from support failure, and the frozen plan predicted the zero from that gap. The launch-power preference reading is marked indistinguishable from a preference for in-support inputs. The C24 rationale is printed in H.3 and §6. The lesson is anchored to DOPE §3.2 and hypothesis-only baselines, with the delta of a measured ceiling plus within-coordinate AUC. The abstract states the lookahead gap. Support phrases use the canonical pool-named forms (r8 lock §1). Gate: 48 pp; abstract 390 words.
 
 **r7 update (Story Lock v2; overrides the r6 paragraph below where they differ).** Title *Solvable, Yet Selected No Better Than Chance: Frozen World-Model Rankers Against a Measured Engine Ceiling in NovPhy*. Thesis: under a measured per-state ceiling on four inventories over the same 15 N1 members (7/14, 9/15, 14/15, 8/15), the frozen rankers' pooled top-1 is at or below inventory-matched chance on every inventory (in point estimate on the offset sweep and grid; 0/72 vs 0.0521 on the pre-registered launch-power sweep), while ordering AUC moves with the inventory (0.4180, 0.5512, 0.6178, 0.7441; a post-hoc descriptive observation) and on the launch-power sweep is mostly a launch-power preference (#95 post-hoc controls: speed-only 0.6889, within-power 0.5949 covering 0.5). Canonical numbers: `CONTEXT.md` r7 update; plan: outline v2.7; per-file edits: `changelog.md` "r7-authoring".
 
@@ -30,13 +34,18 @@ Per-section status after round 3 (historical; r6 rewrote abstract, §1, §3–§
 
 _Historical record (pre-#91 boundary-anatomy era) and the closed tex-items list were removed 2026-09-23 per owner directive; see git history and `changelog.md`._
 
-## OPEN TEX ITEMS (r7 authoring 2026-09-24; supersedes r6)
+## OPEN TEX ITEMS (r8-followup authoring 2026-09-24; supersedes r8)
 
-r7 closed I47, I48, I49, I50, I51, I52, I53 (RESOLVED r7-authoring tags in `iclr2026/review-log.md` r6 section). Earlier closures (I3, I9–I11, I13, I26–I46) stand as logged. The following remain open:
+- r8-followup (2), 2026-09-24: I63 RESOLVED (Main; see changelog). WORDING-FIXABLE content items open: none. Remaining: I16 (owner packaging) and the NEEDS-EXPERIMENT carries listed below.
 
-1. **I16 (owner action, carried):** anonymized artifact link; the Reproducibility Statement cites commits `2b4d897`, `b8aba59`, `88a1a21` and `3742c7e0` of a non-public repository (appendix.tex repro sentence; discussion.tex:103).
-2. **I25 residual (PARTIAL r7):** #94/#95 supply the engine-side second coordinate and the coordinate-baseline lesson (post hoc), but field-practice reach is not shown (World-in-World/PHYRE already score success). Not a wording item.
-3. **Training-range confound (open):** the launch-power inner radii lie outside the rankers' training support (26 of 4,377 shots below the clamp; N1 pool 79.51–80.66 px); only rankers trained on sub-clamp drags could close it (discussion.tex:76; appendix.tex:736). Evidence need.
-4. **Carried evidence needs:** 46-member type010101 pre-registered top-1 test (r6 item 1); second ranker family (r6 item 3); lookahead-horizon dose ladder ≥400 frames with sub-clamp training (ColdRead #2 myopia/out-of-distribution attack).
-5. **Cold-read carry-overs (r7, text):** N1/member/state/cell unit map; BG-NS-JEPA; a04 post-hoc status; "joint selection" undefined; Fig. 1 (a) status tags unexplained in caption; abstract density.
-6. **I8 scope note:** pretrained-world-model experiment declined. Disclosed limitation, not a tex task.
+No WORDING-FIXABLE item remains except the I16 packaging. r8-followup closed the I54 residue and I58–I62, and fixed the I25 wording residue; the tags are in the `iclr2026/review-log.md` r8 section. The r8 closures (I45, I55–I57), the r7 closures (I47–I53) and the earlier ones stand as logged.
+
+1. **I16 (owner action; packaging):** anonymized artifact link. The Reproducibility Statement cites commits `2b4d897`, `b8aba59`, `88a1a21` and `3742c7e0` of a non-public repository.
+2. **NEEDS-EXPERIMENT carries:**
+   - I25(1) / I54 verdict, the support-confound retrain: retrain one ranker with release-1000 sub-clamp drags, then re-score the frozen #94 inventory under a pre-registered prediction for within-angle ρ(cost, speed), top-1 against 0.0521 and within-power AUC.
+   - I25(2): a powered, pre-registered 46-member type010101 top-1 test.
+   - I25(4): a second ranker family.
+   - A lookahead-horizon dose ladder, or an engine-oracle control truncated at 1/25 frames (ColdRead8 attack).
+   - Optional, zero engine seconds: #93/#94 outcome-resolution offsets (I59).
+3. **Cold-read carry-overs (text; jargon and budget, not review items):** N1, h, cells and clamp are undefined in the front matter; "bounds it"; the hybrid-fixed-h15-e225 identifier; Fig. 1 (a) status tags; 0.0780 vs 1/13; degenerate rows show no visible interval; BG-NS-JEPA; a04 status; "joint selection".
+4. **I8 scope note:** the pretrained-world-model experiment was declined. It is a disclosed limitation, not a tex task.

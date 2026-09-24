@@ -12,12 +12,16 @@
 % r6 2026-09-24 (Story Lock A-hybrid): delta restated as ordering vs selection under a measured per-state
 % ceiling; PHYRE AUCCESS §3.2, OPTIMAL oracle ranking §4.4 Fig. 4 (arXiv:1908.05656). Offsets: "Our measurement
 % adds" sentence folded into the PHYRE sentence; World-in-World contrast shortened; header condensed.
+% r8 2026-09-24 (r8 lock): I25(3) prior-practice delta (DOPE \S3.2, Poliak 2018) added to para 1; offsets:
+% para-1 lead and delta condensed, ceiling/PHYRE/World-in-World sentences condensed (no claim dropped).
+% r8-followup 2026-09-24 (r8 lock §6, I25 wording residue): delta restated verbatim per §6 (DOPE regret \S3.2,
+% partial-input baselines), split at the semicolon; offsets: binomial-test detail, "higher", ceiling sentence condensed.
 
 \section{Related Work}
 \label{sec:rel}
 
-\paragraph{Decision-relevant prediction.} Objective-mismatch studies show that aggregate predictive quality need not equal decision quality: one-step prediction likelihood need not track control performance, and higher pixel accuracy need not yield better physical-reasoning performance on PHYRE \citep{lambert2020objective,girdhar2020forward}. We separate ordering (per-candidate engine-truth AUC) from selection (pooled top-1 against inventory-matched chance) under a measured per-state ceiling.
+\paragraph{Decision-relevant prediction.} Objective-mismatch studies show predictive quality need not equal decision quality: one-step likelihood need not track control, and pixel accuracy need not improve physical reasoning on PHYRE \citep{lambert2020objective,girdhar2020forward}. We separate ordering (AUC) from selection (top-1 against inventory-matched chance). DOPE scores selection by regret against the environment-measured best policy in each candidate set \citep[\S3.2]{fu2021benchmarks}, and partial-input baselines test single-input shortcuts \citep{poliak2018hypothesis}. We condition per state on whether any candidate succeeds and add a within-coordinate AUC.
 
 % r3 I33 (2026-09-23): PHYRE claims cite bakhtin2019phyre, the World-in-World claim cites zhang2026worldinworld.
 % r4 I25: PHYRE facts arXiv:1908.05656 §3.1, App. B, §3.2.
-\paragraph{Closed-loop evaluation.} World-in-World benchmarks world models in a closed loop with a unified planning strategy and action interface, scores task success as the primary metric, and finds that visual quality alone does not guarantee it \citep{zhang2026worldinworld}. WorldBench evaluates video world models one physics concept at a time \citep{upadhyay2026worldbench}. PHYRE defines tier membership by solvability within a fixed action set, operationalized via a sampled-action binomial test, scores multi-attempt task success by AUCCESS \citep[\S3.2]{bakhtin2019phyre}, and reports an OPTIMAL agent that performs oracle ranking of the action set \citep[\S4.4, Fig.~4]{bakhtin2019phyre}. Our ceiling is measured per state in the engine for each inventory and serves as the denominator of single-shot top-1 (Section~\ref{sec:syn:picture}).
+\paragraph{Closed-loop evaluation.} World-in-World benchmarks world models in closed loop with unified planning and action interfaces, scores task success as primary metric, and finds visual quality alone does not guarantee it \citep{zhang2026worldinworld}. WorldBench evaluates video world models one physics concept at a time \citep{upadhyay2026worldbench}. PHYRE defines tier membership by solvability within a fixed action set, scores multi-attempt success by AUCCESS \citep[\S3.2]{bakhtin2019phyre}, and reports an OPTIMAL agent oracle-ranking the action set \citep[\S4.4, Fig.~4]{bakhtin2019phyre}. Our per-state engine ceiling, per inventory, is the top-1 denominator (Section~\ref{sec:syn:picture}).
