@@ -1,0 +1,407 @@
+{
+  "claim_boundary": "controls on the #94 inventory and its retained engine verdicts only: the release control moves one engine-inert ranker input into the training regime and leaves the pull-radius extrapolation (5-17 px, mostly outside training support) untouched; no retraining, no new engine slot, no other ranker family; #94 dispositions are inputs and are not re-opened",
+  "claims": {
+    "C26": "With the engine-inert release input set to the rankers' dominant training value (600 ms), the three frozen rankers' pooled top-1 on the #94 angle x launch-power inventory is below inventory-matched chance.",
+    "C27": "With the engine-inert release input set to 600 ms, the frozen rankers' within-state engine-truth AUC on the #94 inventory is at or below chance.",
+    "C28": "Within a fixed launch-power column of the #94 inventory (release 1000, the #94 rankings), the frozen rankers' engine-truth ordering is at or below chance."
+  },
+  "compute": {
+    "engine_seconds": 0,
+    "score_gpu_seconds": 5.376250001983863
+  },
+  "dispositions": {
+    "C26": "supported",
+    "C27": "not_supported_by_this_experiment",
+    "C28": "readiness_or_precision_insufficient"
+  },
+  "frozen_at": "2026-09-24T08:21:37Z",
+  "identity": "issue-95-launch-power-followup-v1",
+  "issue_64_authorized": false,
+  "power_only_baseline": {
+    "auc_member_clustered": {
+      "clusters": 8,
+      "interval": [
+        0.6423872180451128,
+        0.7598684210526316
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6889097744360901,
+      "units": 8
+    },
+    "chance_mean": 0.05208333333333333,
+    "members": 8,
+    "top1_hits": 0,
+    "top1_rate": 0.0,
+    "within_power_auc": 0.5
+  },
+  "rank_agreement_release_1000_vs_600": {
+    "cells": 135,
+    "median_rho": 1.0,
+    "min_rho": 0.9909774436090225
+  },
+  "readings": {
+    "power_control": {
+      "C28": "readiness_or_precision_insufficient",
+      "reading": "Report descriptively in the appendix only."
+    },
+    "release_control": {
+      "C26": "supported",
+      "C27": "not_supported_by_this_experiment",
+      "reading": "The #94 dissociation survives moving the release input into the rankers' dominant training regime; the release-1000 extrapolation does not explain it. The remaining training-range confound is the pull radius alone."
+    }
+  },
+  "release_control": {
+    "auc": {
+      "cell_unit": {
+        "clusters": 72,
+        "interval": [
+          0.7246749686716791,
+          0.7669708124477861
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.7455618212197159,
+        "units": 72
+      },
+      "cells": 72,
+      "member_clustered": {
+        "clusters": 8,
+        "interval": [
+          0.6958881578947369,
+          0.8061494883040933
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.7455618212197159,
+        "units": 72
+      },
+      "per_system": {
+        "continuous-fixed-h1": {
+          "cell_unit": {
+            "clusters": 24,
+            "interval": [
+              0.7365288220551379,
+              0.7957393483709273
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.7640977443609023,
+            "units": 24
+          },
+          "cells": 24,
+          "member_clustered": {
+            "clusters": 8,
+            "interval": [
+              0.7243107769423558,
+              0.8198621553884711
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.7640977443609023,
+            "units": 24
+          }
+        },
+        "continuous-fixed-h5": {
+          "cell_unit": {
+            "clusters": 24,
+            "interval": [
+              0.7277568922305765,
+              0.786501409774436
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.755325814536341,
+            "units": 24
+          },
+          "cells": 24,
+          "member_clustered": {
+            "clusters": 8,
+            "interval": [
+              0.7127192982456141,
+              0.8098684210526312
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.755325814536341,
+            "units": 24
+          }
+        },
+        "hybrid-fixed-h1": {
+          "cell_unit": {
+            "clusters": 24,
+            "interval": [
+              0.6730889724310778,
+              0.7609649122807017
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.7172619047619048,
+            "units": 24
+          },
+          "cells": 24,
+          "member_clustered": {
+            "clusters": 8,
+            "interval": [
+              0.6491228070175439,
+              0.7918233082706767
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": 0.7172619047619049,
+            "units": 24
+          }
+        }
+      }
+    },
+    "ceiling": {
+      "denominator": 15,
+      "interval": {
+        "clusters": 15,
+        "interval": [
+          0.26666666666666666,
+          0.8
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5333333333333333,
+        "units": 15
+      },
+      "numerator": 8,
+      "value": 0.5333333333333333
+    },
+    "chosen_ordinal_histogram": {
+      "14": 65,
+      "19": 68,
+      "9": 2
+    },
+    "saturated_column_chosen_share": {
+      "admissible_top1": 1.0,
+      "cells": 135,
+      "selector_full_inventory": 1.0,
+      "uniform_reference": 0.2
+    },
+    "top1": {
+      "cells": 72,
+      "chance_mean": 0.05208333333333325,
+      "hits": 0,
+      "paired_difference_member_clustered": {
+        "clusters": 8,
+        "interval": [
+          -0.05625,
+          -0.05
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.052083333333333336,
+        "units": 72
+      },
+      "per_system": {
+        "continuous-fixed-h1": {
+          "cells": 24,
+          "chance_mean": 0.05208333333333335,
+          "hits": 0,
+          "paired_difference_member_clustered": {
+            "clusters": 8,
+            "interval": [
+              -0.05625,
+              -0.05000000000000001
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.05208333333333334,
+            "units": 24
+          },
+          "rate": 0.0
+        },
+        "continuous-fixed-h5": {
+          "cells": 24,
+          "chance_mean": 0.05208333333333335,
+          "hits": 0,
+          "paired_difference_member_clustered": {
+            "clusters": 8,
+            "interval": [
+              -0.05625,
+              -0.05000000000000001
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.05208333333333334,
+            "units": 24
+          },
+          "rate": 0.0
+        },
+        "hybrid-fixed-h1": {
+          "cells": 24,
+          "chance_mean": 0.05208333333333335,
+          "hits": 0,
+          "paired_difference_member_clustered": {
+            "clusters": 8,
+            "interval": [
+              -0.05625,
+              -0.05000000000000001
+            ],
+            "label": "DESCRIPTIVE",
+            "mean": -0.05208333333333334,
+            "units": 24
+          },
+          "rate": 0.0
+        }
+      },
+      "rate": 0.0
+    },
+    "top3": {
+      "cells": 72,
+      "chance_mean": 0.15625000000000022,
+      "hits": 9,
+      "paired_difference_member_clustered": {
+        "clusters": 8,
+        "interval": [
+          -0.16875,
+          0.22499999999999998
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.031250000000000014,
+        "units": 72
+      },
+      "rate": 0.125
+    },
+    "verdict_coverage": 0.9833333333333333
+  },
+  "schema": "issue_95_report_v1",
+  "stated_predictions": {
+    "C26": {
+      "expected_token": "supported",
+      "rationale": "top-1 was 0/72 at release 1000 and the release input is engine-inert, so nothing in the control adds success information."
+    },
+    "C27": {
+      "expected_token": "no prediction",
+      "rationale": "the release input may move the power preference in either direction; no directional prediction."
+    },
+    "C28": {
+      "expected_token": "no prediction",
+      "rationale": "within-column pairs are few (one success per ceiling member); no directional prediction."
+    },
+    "source": "runner author (the owner did not state predictions); recorded before scoring"
+  },
+  "validation_command": "python -u -m scripts.run_launch_power_followup --validate",
+  "within_power": {
+    "release_1000": {
+      "cell_unit": {
+        "clusters": 72,
+        "interval": [
+          0.5347222222222222,
+          0.6597222222222222
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5949074074074073,
+        "units": 72
+      },
+      "cells": 72,
+      "member_clustered": {
+        "clusters": 8,
+        "interval": [
+          0.4444444444444444,
+          0.7453703703703702
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5949074074074074,
+        "units": 72
+      },
+      "members": [
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-013",
+        "issue-77-n1-014"
+      ],
+      "per_system": {
+        "continuous-fixed-h1": {
+          "clusters": 8,
+          "interval": [
+            0.5277777777777777,
+            0.8194444444444444
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.6736111111111112,
+          "units": 24
+        },
+        "continuous-fixed-h5": {
+          "clusters": 8,
+          "interval": [
+            0.4027777777777778,
+            0.8055555555555556
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.6041666666666667,
+          "units": 24
+        },
+        "hybrid-fixed-h1": {
+          "clusters": 8,
+          "interval": [
+            0.3958333333333333,
+            0.625
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5069444444444444,
+          "units": 24
+        }
+      }
+    },
+    "release_600": {
+      "cell_unit": {
+        "clusters": 72,
+        "interval": [
+          0.5416666666666666,
+          0.6597222222222222
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.599537037037037,
+        "units": 72
+      },
+      "cells": 72,
+      "member_clustered": {
+        "clusters": 8,
+        "interval": [
+          0.45833333333333337,
+          0.7361111111111112
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.599537037037037,
+        "units": 72
+      },
+      "members": [
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-013",
+        "issue-77-n1-014"
+      ],
+      "per_system": {
+        "continuous-fixed-h1": {
+          "clusters": 8,
+          "interval": [
+            0.5277777777777777,
+            0.8194444444444444
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.6736111111111112,
+          "units": 24
+        },
+        "continuous-fixed-h5": {
+          "clusters": 8,
+          "interval": [
+            0.43055555555555547,
+            0.8055555555555556
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.6180555555555556,
+          "units": 24
+        },
+        "hybrid-fixed-h1": {
+          "clusters": 8,
+          "interval": [
+            0.41666666666666663,
+            0.5972222222222222
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5069444444444444,
+          "units": 24
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+id,statistic,value,interval_low,interval_high,interval_label,detail
+r600_coverage,verdict coverage (#94 slots),0.9833333333333333,,,,
+r600_ceiling,member ceiling,0.5333333333333333,0.26666666666666666,0.8,DESCRIPTIVE,8 of 15
+r600_top1,release-600 pooled top-1,0.0,,,,0/72; chance 0.05208333333333325
+r600_top1_minus_chance,release-600 top-1 minus chance,-0.052083333333333336,-0.05625,-0.05,DESCRIPTIVE,
+r600_top1_continuous-fixed-h1,release-600 top-1 per system,0.0,,,,0/24; chance 0.05208333333333335
+r600_top1_continuous-fixed-h5,release-600 top-1 per system,0.0,,,,0/24; chance 0.05208333333333335
+r600_top1_hybrid-fixed-h1,release-600 top-1 per system,0.0,,,,0/24; chance 0.05208333333333335
+r600_auc_cell_unit,release-600 within-state AUC,0.7455618212197159,0.7246749686716791,0.7669708124477861,DESCRIPTIVE,
+r600_auc_member_clustered,release-600 within-state AUC,0.7455618212197159,0.6958881578947369,0.8061494883040933,DESCRIPTIVE,
+r600_auc_continuous-fixed-h1,release-600 AUC per system,0.7640977443609023,0.7243107769423558,0.8198621553884711,DESCRIPTIVE,
+r600_auc_continuous-fixed-h5,release-600 AUC per system,0.755325814536341,0.7127192982456141,0.8098684210526312,DESCRIPTIVE,
+r600_auc_hybrid-fixed-h1,release-600 AUC per system,0.7172619047619049,0.6491228070175439,0.7918233082706767,DESCRIPTIVE,
+r600_saturated_share,release-600 selector choices at the saturated column,1.0,,,,"{""14"": 65, ""19"": 68, ""9"": 2}"
+rank_agreement,median Spearman rho release-1000 vs release-600 costs,1.0,,,,"{""cells"": 135, ""median_rho"": 1.0, ""min_rho"": 0.9909774436090225}"
+within_power_release_1000_cell_unit,within-power AUC (release_1000),0.5949074074074073,0.5347222222222222,0.6597222222222222,DESCRIPTIVE,"72 cells, 8 members"
+within_power_release_1000_member_clustered,within-power AUC (release_1000),0.5949074074074074,0.4444444444444444,0.7453703703703702,DESCRIPTIVE,"72 cells, 8 members"
+within_power_release_1000_continuous-fixed-h1,within-power AUC per system (release_1000),0.6736111111111112,0.5277777777777777,0.8194444444444444,DESCRIPTIVE,
+within_power_release_1000_continuous-fixed-h5,within-power AUC per system (release_1000),0.6041666666666667,0.4027777777777778,0.8055555555555556,DESCRIPTIVE,
+within_power_release_1000_hybrid-fixed-h1,within-power AUC per system (release_1000),0.5069444444444444,0.3958333333333333,0.625,DESCRIPTIVE,
+within_power_release_600_cell_unit,within-power AUC (release_600),0.599537037037037,0.5416666666666666,0.6597222222222222,DESCRIPTIVE,"72 cells, 8 members"
+within_power_release_600_member_clustered,within-power AUC (release_600),0.599537037037037,0.45833333333333337,0.7361111111111112,DESCRIPTIVE,"72 cells, 8 members"
+within_power_release_600_continuous-fixed-h1,within-power AUC per system (release_600),0.6736111111111112,0.5277777777777777,0.8194444444444444,DESCRIPTIVE,
+within_power_release_600_continuous-fixed-h5,within-power AUC per system (release_600),0.6180555555555556,0.43055555555555547,0.8055555555555556,DESCRIPTIVE,
+within_power_release_600_hybrid-fixed-h1,within-power AUC per system (release_600),0.5069444444444444,0.41666666666666663,0.5972222222222222,DESCRIPTIVE,
+power_only_top1,power-only baseline top-1,0.0,,,,0/8; chance 0.05208333333333333
+power_only_auc,power-only baseline AUC (member-clustered),0.6889097744360901,0.6423872180451128,0.7598684210526316,DESCRIPTIVE,
+C26_disposition,C26 disposition,supported,,,,
+C27_disposition,C27 disposition,not_supported_by_this_experiment,,,,
+C28_disposition,C28 disposition,readiness_or_precision_insufficient,,,,
