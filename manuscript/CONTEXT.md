@@ -4,6 +4,7 @@ This glossary is the manuscript-local vocabulary for work that references the pu
 
 ## Current state for a fresh session (2026-09-24, round 8 r7 closure; Story Lock v2 + r8 lock)
 
+- **Owner close-out (2026-09-24, latest).** I25 WONTFIX (no further experiments: support-confound retrain, powered type010101 top-1 test, second ranker family all declined); I16 deferred to OpenReview. No open manuscript item remains. GitHub #79/#80/#82/#85/#86/#87/#88 closed.
 - **r8-followup verification (latest).** R8f review 6/10 BORDERLINE (17/17 numbers match); minted only I63 (undefined "C24"/"release-1000" in §1), fixed the same round. No WORDING-FIXABLE content item remains; open = I16 (owner packaging) + NEEDS-EXPERIMENT carries (support-confound retrain, powered type010101 top-1 test, second ranker family, lookahead dose ladder).
 - **r8-followup update (overrides the r8 bullets below where they differ).** R8 review scored 6/10. The r8-followup-authoring tags in the `iclr2026/review-log.md` r8 section mark the I54 residue and I58, I59, I60, I61 and I62 RESOLVED, and I25 PARTIAL (wording fixed; parts (1), (2) and (4) NEEDS-EXPERIMENT). The canonical wording is now:
   - C24: "the frozen plan predicted C24 supported from the three prior nulls and that gap"; short form "partly from that gap"; the abstract says "this result".

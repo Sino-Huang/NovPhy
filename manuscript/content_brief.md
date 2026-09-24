@@ -36,6 +36,8 @@ _Historical record (pre-#91 boundary-anatomy era) and the closed tex-items list 
 
 ## OPEN TEX ITEMS (r8-followup authoring 2026-09-24; supersedes r8)
 
+- Owner close-out, 2026-09-24: I25 WONTFIX (no further experiments); I16 deferred to OpenReview (anonymized link supplied at submission). No open manuscript item remains.
+
 - r8-followup (2), 2026-09-24: I63 RESOLVED (Main; see changelog). WORDING-FIXABLE content items open: none. Remaining: I16 (owner packaging) and the NEEDS-EXPERIMENT carries listed below.
 
 No WORDING-FIXABLE item remains except the I16 packaging. r8-followup closed the I54 residue and I58–I62, and fixed the I25 wording residue; the tags are in the `iclr2026/review-log.md` r8 section. The r8 closures (I45, I55–I57), the r7 closures (I47–I53) and the earlier ones stand as logged.

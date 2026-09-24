@@ -2,6 +2,11 @@
 
 Single canonical change log for the manuscript. File-local conventions (per-file header comments in `iclr2026/*.tex`) remain, but anything that changes the story, the file set, or the doc set lands here. Reviews are logged separately in `iclr2026/review-log.md`.
 
+## 2026-09-24 · owner decisions: close-out (no further experiments)
+- Rejected: I25 parts (1), (2) and (4), i.e. the support-confound retrain on release-1000 sub-clamp drags, the powered pre-registered top-1 test on the 46-member type010101 pool, and a second ranker family (owner: enough experiments have been run; the value limit is accepted as disclosed). Why: owner decision 2026-09-24; I25 → WONTFIX
+- Deferred: I16 — the anonymized artifact link will be supplied directly on OpenReview at submission; no tex change now. Why: owner decision 2026-09-24
+- Changed: review-log r8-followup section gains [WONTFIX owner] under I25 and [DEFERRED owner] under I16 (2 pure insertions). GitHub issues #79, #80, #82, #85, #86, #87, #88 closed as completed (results published and integrated). Why: owner close-out
+
 ## 2026-09-24 · r8-followup-authoring (2): I63 (verification review)
 - Changed: "C24" removed from the §1 sites, which now read "the frozen plan predicted this result partly from that gap" (introduction.tex:82 caption, :114, :127); the N1 training pool is defined at first body use, "outside the rankers' N1 training pool (release 1000\,ms, 79.5--80.7\,px)" (introduction.tex:82); C24 `supported` typeset as a token after its §6 gloss (synthesis.tex:113; discussion.tex:101); §3 lookahead range scoped to "N1 outcomes" (method.tex:35). Why: R8f review I63 (undefined labels in the central concession sentence)
 - Changed: review-log r8-followup section gains one [RESOLVED r8-followup-authoring] tag under I63 (pure insertion, diff 79a80). Gate: latexmk 0, 48 pp, 0 Float too large, 0 undefined, 0 [TODO], Repro/Ethics p.9, References p.10. Cumulative prose deltas vs /tmp/r8_pre: abstract +8 (exception), introduction 0, synthesis −3, discussion −3, method 0, related_work −4, experiments 0. Why: close-out

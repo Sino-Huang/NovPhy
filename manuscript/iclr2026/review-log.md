@@ -7,6 +7,7 @@ Status: Closed: I54*, I58*, I59*, I60*, I61*, I62*, I45, I55, I56, I57, I47, I48
 
 Dispositions:
 - I25 · wording residue verified-fixed; stays OPEN (MAJOR, Axis 1), now NEEDS-EXPERIMENT only.
+  [WONTFIX owner 2026-09-24: owner declines further experiments (support-confound retrain, powered 46-member type010101 top-1 test, second ranker family); the remaining I25 value limit is accepted as stated in the paper. Recorded in manuscript/changelog.md "owner decisions: close-out".]
   - §2 p. 4 l.181–184 reads "DOPE scores selection by regret against the environment-measured best policy in each candidate set (Fu et al., 2021, §3.2), and partial-input baselines test single-input shortcuts (Poliak et al., 2018). We condition per state on whether any candidate succeeds and add a within-coordinate AUC."
   - I checked this against DOPE §3.2 (https://arxiv.org/pdf/2103.16596). DOPE §3.2 computes ground-truth values "by running the policy for M ≥ 1000 episodes", and it defines Regret@k as "the difference between the actual expected return of the best policy in the entire set, and the actual value of the best policy in the top-k set". The paper's sentence now states that overlap, and it claims only the per-state conditioning and the within-coordinate AUC as its own. Accurate.
   - The §1 close p. 4 l.173–174 now reads "extending DOPE-style paired metrics and partial-input baselines". "trivial-input" and "trivial single" have 0 hits. The one "trivial" left (l.171, "a trivial baseline mostly matches") names the speed-only baseline, not Poliak. Pass.
@@ -37,6 +38,7 @@ Dispositions:
   - Table 16 is on p. 39, directly after H.3 ends on p. 38 and before Appendix I (p. 40). The table sequence is 13, 14, 15, 16, 17, 18.
   - Rendered pp. 38–39: about two thirds of p. 38 below H.3 is blank, and p. 39 holds Table 16 alone. This cosmetic cost of `[!htbp]` plus `\clearpage` does not affect meaning. Not counted.
 - I16 · OPEN (owner action; carried). p. 9 l.456–457 still cites commits "2b4d897 … b8aba59 … 88a1a21 … 3742c7e0" with no anonymized link.
+  [DEFERRED owner 2026-09-24: the anonymized artifact link will be provided directly on the OpenReview platform at submission; no manuscript change is planned for I16 now.]
 - I8 · WONTFIX (unchanged; not re-argued).
 
 Re-check of the r8 closures on this PDF (all hold):
