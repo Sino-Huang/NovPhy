@@ -209,6 +209,189 @@ def hero():
     plt.close(fig)
 
 
+# ------------------------------------------------------------ hero (r6, Fig. 1)
+def hero_selection_ordering():
+    """Fig. 1 (r6 story lock §4): ceiling, pooled top-1 minus chance, and member-clustered AUC per record.
+
+    One row per record, never pooled; every plotted number is read from its artifact and asserted at
+    the printed rounding.
+    """
+    r4 = lambda x: round(float(x), 4)  # noqa: E731
+
+    # N1, original 13-candidate sweep: issue-92-selection-validity-v1/summary.json.
+    s92 = load(ART / "issue-92-selection-validity-v1/summary.json")
+    mc = s92["unit_of_analysis"]["member_ceiling"]
+    assert mc["label"] == "DESCRIPTIVE" and mc["units"] == 14 and round(mc["mean"] * mc["units"]) == 7
+    assert [r4(mc["mean"]), *map(r4, mc["interval"])] == [0.5, 0.2143, 0.7857]
+    t1 = s92["selection_validity"]["top1"]
+    pd = t1["paired_difference"]
+    assert (t1["hits"], t1["cells"], r4(t1["chance_rate"])) == (0, 108, 0.0780)
+    assert pd["label"] == "DESCRIPTIVE" and pd["clusters"] == 7
+    assert [r4(pd["mean"]), *map(r4, pd["interval"])] == [-0.0778, -0.0797, -0.0769]
+    am = s92["selection_validity"]["auc_member_clustered"]
+    assert am["label"] == "DESCRIPTIVE" and am["clusters"] == 7
+    assert [r4(am["mean"]), *map(r4, am["interval"])] == [0.4180, 0.3135, 0.5252]
+
+    # #93 offset sweep and drag grid: issue-93-second-parameterization-v1/comparisons.csv (+ plan, summary).
+    root93 = ART / "issue-93-second-parameterization-v1"
+    c93 = {r["id"]: r for r in csv.DictReader((root93 / "comparisons.csv").open())}
+    tri = lambda r: [r4(r["value"]), r4(r["interval_low"]), r4(r["interval_high"])]  # noqa: E731
+    assert c93["offset_ceiling"]["detail"] == "9 of 15" and c93["grid_ceiling"]["detail"] == "14 of 15"
+    assert tri(c93["offset_ceiling"]) == [0.6, 0.3333, 0.8667]
+    assert tri(c93["grid_ceiling"]) == [0.9333, 0.8, 1.0]
+    top93 = {}
+    for arm, kn in (("offset", "7/81"), ("grid", "8/126")):
+        k_n, chance = c93[f"{arm}_top1"]["detail"].split("; chance ")
+        assert k_n == kn, (arm, k_n)
+        top93[arm] = (k_n, r4(chance))
+        assert c93[f"{arm}_top1_minus_chance"]["unit"] == "member_clustered"
+        for s in ("ceiling", "top1_minus_chance", "auc_member_clustered"):
+            assert c93[f"{arm}_{s}"]["interval_label"] == "DESCRIPTIVE", (arm, s)
+    assert top93 == {"offset": ("7/81", 0.1030), "grid": ("8/126", 0.0804)}
+    assert tri(c93["offset_top1_minus_chance"]) == [-0.0166, -0.0781, 0.0575]
+    assert tri(c93["grid_top1_minus_chance"]) == [-0.0169, -0.0938, 0.1190]
+    assert tri(c93["offset_auc_member_clustered"]) == [0.5512, 0.4235, 0.6685]
+    assert tri(c93["grid_auc_member_clustered"]) == [0.6178, 0.5126, 0.7139]
+    tok = {"offset": c93["offset_disposition"]["value"], "grid": c93["grid_disposition"]["value"]}
+    assert tok == {"offset": "readiness_or_precision_insufficient",
+                   "grid": "not_supported_by_this_experiment"}, tok
+    assert load(root93 / "summary.json")["dispositions"] == {"C22": tok["grid"], "C23": tok["offset"]}
+    rule = load(root93 / "plan.json")["disposition_rule"]
+    assert set(tok.values()) <= set(rule["tokens"])
+    margins = (rule["supported_max_auc"], rule["not_supported_min_auc"])
+    assert margins == (0.5, 0.6), margins
+
+    # Held-out type010101: issue-92-cross-pool-audit-v1/comparisons.csv rows 2 and 5-10 (+ findings.md Q1).
+    cx = list(csv.DictReader((ART / "issue-92-cross-pool-audit-v1/comparisons.csv").open()))
+    bp = cx[0]
+    assert (bp["table"], bp["scope"], bp["metric"], bp["label"]) == ("member_ceiling", "bounded", "25/46",
+                                                                     "DESCRIPTIVE")
+    assert [r4(bp["value"]), r4(bp["interval_low"]), r4(bp["interval_high"])] == [0.5435, 0.3913, 0.6957]
+    assert "member-unit ceiling 25/46 = 0.5435 [0.3913, 0.6957]" in (
+        ART / "issue-92-cross-pool-audit-v1/findings.md").read_text()
+    xs = {}
+    for r in cx[3:9]:
+        xs[(r["table"], r["scope"])] = r
+    cs = {}
+    for c, kn in (("zero-shot", "13/612"), ("few-shot", "29/612")):
+        assert xs[("cross_split_top1", c)]["metric"] == kn
+        ch = r4(xs[("cross_split_uniform_chance", c)]["metric"])
+        d = xs[("cross_split_paired_diff", c)]
+        # paired_diff rows carry 6 fields under the 7-column header: mean in "metric", interval in
+        # "value"/"interval_low", the label in "interval_high".
+        assert d["interval_high"] == "DESCRIPTIVE" and d["label"] is None, d
+        cs[c] = (kn, ch, [r4(d["metric"]), r4(d["value"]), r4(d["interval_low"])])
+    assert cs["zero-shot"] == ("13/612", 0.0407, [-0.0195, -0.0368, -0.0045]), cs
+    assert cs["few-shot"] == ("29/612", 0.0407, [0.0067, -0.0202, 0.0368]), cs
+    assert "not a frozen-system result" in xs[("cross_split_top1", "few-shot")]["label"]
+
+    # ---------------------------------------------------------------- rows (y grows downward)
+    col = {"n1": OI["vermillion"], "off": OI["orange"], "grid": OI["blue"], "bp": OI["green"],
+           "zs": OI["grey"], "fs": OI["black"]}
+    ymain = {"n1": 0, "off": 1, "grid": 2}
+    yx1, yx2 = 3.55, 4.55  # separated rows below the shared three
+    vi = lambda r: (float(r["value"]), [float(r["interval_low"]), float(r["interval_high"])])  # noqa: E731
+    ceil = [("n1", mc["mean"], mc["interval"], "7/14", "pre-registered; member unit post hoc"),
+            ("off", *vi(c93["offset_ceiling"]), "9/15", "pre-declared descr."),
+            ("grid", *vi(c93["grid_ceiling"]), "14/15", "pre-declared descr.")]
+    diff = [("n1", pd["mean"], pd["interval"], "0/108 vs 0.0780", "pre-spec. outcome; chance post hoc"),
+            *[(a, *vi(c93[f"{n}_top1_minus_chance"]), f"{top93[n][0]} vs {top93[n][1]:.4f}",
+               "pre-declared descr.") for a, n in (("off", "offset"), ("grid", "grid"))]]
+    auc = [("n1", am["mean"], am["interval"], "headline choice post hoc"),
+           *[(a, *vi(c93[f"{n}_auc_member_clustered"]), tok[n])
+             for a, n in (("off", "offset"), ("grid", "grid"))]]
+    assert [f"{v:.4f}" for _, v, *_ in ceil] == ["0.5000", "0.6000", "0.9333"]
+    assert [f"{v:+.4f}" for _, v, *_ in diff] == ["-0.0778", "-0.0166", "-0.0169"]
+    assert [f"{v:.4f}" for _, v, *_ in auc] == ["0.4180", "0.5512", "0.6178"]
+
+    # Explicit axes so the k/n column after (b) gets its own gap: [left, bottom, width, height].
+    fig = plt.figure(figsize=(7.0, 2.6))
+    ax = fig.add_axes([0.150, 0.17, 0.215, 0.72])
+    bx = fig.add_axes([0.392, 0.17, 0.228, 0.72], sharey=ax)
+    cxa = fig.add_axes([0.758, 0.17, 0.234, 0.72], sharey=ax)
+    axs = (ax, bx, cxa)
+    tagkw = dict(fontsize=5.8, color="#555555", ha="center", va="bottom")
+
+    def point(ax, y, m, iv, c, hollow=False):
+        ax.errorbar(m, y, xerr=[[m - iv[0]], [iv[1] - m]], fmt="o", color=c, ms=3.6, capsize=2, lw=1,
+                    mfc="white" if hollow else c, zorder=4)
+
+    # (a) ceiling.
+    for key, m, iv, kn, tag in ceil:
+        y = ymain[key]
+        point(ax, y, m, iv, col[key])
+        ax.text(0.54, y - 0.2, tag, **tagkw)
+    for key, m, iv, kn, _ in ceil:  # k/n beside the interval; left of it where the interval reaches 1
+        right = iv[1] < 0.9
+        ax.text(iv[1] + 0.03 if right else iv[0] - 0.03, ymain[key] + 0.02, kn, fontsize=6.3,
+                va="center", ha="left" if right else "right")
+    point(ax, yx1, float(bp["value"]), [float(bp["interval_low"]), float(bp["interval_high"])], col["bp"])
+    ax.text(0.54, yx1 - 0.2, "breadth pool; pre-registered", **tagkw)
+    ax.text(float(bp["interval_high"]) + 0.03, yx1 + 0.02, "25/46", fontsize=6.3, va="center")
+    ax.set_xlim(0, 1)
+    ax.set_xticks([0, 0.5, 1])
+    ax.set_xlabel("share of measurable members")
+    ax.set_title("(a) Ceiling (member unit)", loc="left")
+
+    # (b) pooled top-1 minus chance.
+    for key, m, iv, kn, tag in diff:
+        point(bx, ymain[key], m, iv, col[key])
+        bx.text(0.0, ymain[key] - 0.2, tag, **tagkw)
+    point(bx, yx1, cs["zero-shot"][2][0], cs["zero-shot"][2][1:], col["zs"])
+    bx.text(0.0, yx1 - 0.2, "held-out zero-shot; pre-registered", **tagkw)
+    point(bx, yx2, cs["few-shot"][2][0], cs["few-shot"][2][1:], col["fs"], hollow=True)
+    bx.text(0.012, yx2 - 0.3, "adapted few-shot (not frozen-system)",
+            bbox=dict(facecolor="white", edgecolor="none", pad=0.6), **tagkw)
+    bx.axvline(0, color=OI["black"], ls=":", lw=0.8, zorder=1)
+    bx.text(0.004, -0.62, "uniform draw", fontsize=5.8, ha="left", va="bottom")
+    for (key, *_r, kn, _t) in diff:
+        bx.text(1.03, ymain[key], kn, transform=bx.get_yaxis_transform(), fontsize=5.8, va="center")
+    bx.text(1.03, yx1, f"{cs['zero-shot'][0]} vs {cs['zero-shot'][1]:.4f}",
+            transform=bx.get_yaxis_transform(), fontsize=5.8, va="center")
+    bx.text(1.03, yx2, f"{cs['few-shot'][0]} vs {cs['few-shot'][1]:.4f}",
+            transform=bx.get_yaxis_transform(), fontsize=5.8, va="center")
+    bx.text(1.03, -0.62, "k/n vs chance", transform=bx.get_yaxis_transform(), fontsize=5.8,
+            va="bottom", style="italic")
+    # Inset frame below the tag (inside the axes, clear of the left spine); the tag sits above it.
+    frame = Rectangle((0.015, yx2 - 0.27), 0.97, 0.7, transform=bx.get_yaxis_transform(),
+                      facecolor="none", edgecolor=OI["grey"], hatch="////", lw=0.6, ls="--",
+                      zorder=0, alpha=0.55)
+    bx.add_patch(frame)
+    bx.set_xlim(-0.12, 0.14)
+    bx.set_xticks([-0.1, 0, 0.1])
+    bx.set_xlabel("top-1 $-$ chance (paired)")
+    bx.set_title("(b) Top-1 $-$ chance", loc="left")
+
+    # (c) member-clustered ordering AUC.
+    lo, hi = margins
+    cxa.add_patch(Rectangle((lo, ymain["off"] - 0.45), hi - lo, 1.9, facecolor=OI["sky"], alpha=0.25,
+                            lw=0, zorder=0))
+    cxa.text((lo + hi) / 2, ymain["grid"] + 0.47, "frozen margins", fontsize=5.6, ha="center",
+             va="top", color=OI["blue"])
+    cxa.axvline(0.5, color=OI["black"], ls=":", lw=0.8, zorder=1)
+    for key, m, iv, tag in auc:
+        point(cxa, ymain[key], m, iv, col[key])
+        mono = "_" in tag  # verbatim #93 token
+        cxa.text(0.5, ymain[key] - 0.2, tag, transform=cxa.get_yaxis_transform(),
+                 **{**tagkw, **({"family": "monospace", "fontsize": 5.3} if mono else {})})
+        cxa.text(iv[1] + 0.01, ymain[key] + 0.02, f"{m:.4f}", fontsize=6.0, va="center")
+    cxa.set_xlim(0.28, 0.84)
+    cxa.set_xticks([0.3, 0.5, 0.7])
+    cxa.set_xlabel("member-clustered AUC")
+    cxa.set_title("(c) Ordering AUC", loc="left")
+
+    for a in axs:
+        a.axhline(2.95, color="#bbbbbb", lw=0.5, zorder=0)
+    axs[0].set_ylim(yx2 + 0.5, -0.7)
+    axs[0].set_yticks([0, 1, 2, yx1])
+    axs[0].set_yticklabels(["original 13-cand. sweep", "offset sweep", "drag grid", "type010101"],
+                           fontsize=6.6)
+    for a in axs[1:]:
+        a.tick_params(axis="y", left=False, labelleft=False)
+    fig.savefig(OUT / "fig_hero_selection_ordering.pdf", bbox_inches="tight", pad_inches=0.02)
+    plt.close(fig)
+
+
 # ----------------------------------------------------------------------- taxonomy
 def taxonomy():
     fig, ax = plt.subplots(figsize=(7.0, 2.1))
@@ -483,6 +666,7 @@ def ceiling_map():
 
 if __name__ == "__main__":
     hero()
+    hero_selection_ordering()
     taxonomy()
     error_growth()
     novelty()

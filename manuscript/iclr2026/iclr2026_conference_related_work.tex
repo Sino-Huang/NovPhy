@@ -1,25 +1,23 @@
 %!TEX root = iclr2026_conference.tex
 % Binds outline §2 — manuscript/writing_outline_boundary_paper.md (v2.0); status: manuscript/content_brief.md
-% REVISED 2026-09-21 post-review (ReviseRelated): Table 1 cells now follow the full-text scout verdicts of
-% 2026-09-21 (manuscript/related_work_r1_verification.md), replacing the earlier abstract-level reads; all
-% placeholder cells and the stale R1 wrapper are resolved. Applied findings: B1 (verdict cells,
-% safe-form keystone, SALT footnote), B2 (SUNTA row and prose), M7 (TAWM temporal and THICK description
-% qualified to Partial; single-latent sentence fixed), M8 (SALT row unverified, mechanism claims held to
-% title level), M9 (STRIPS-WM citation-gap sentence deleted), m10 (WorldBench boundary Partial shown, not '--'),
-% m11 (options-row cell self-labels as control schedule), m13 (this header). Do not turn related work into
-% evidence for the controller (content_brief rule).
+% REVISED 2026-09-21 post-review (ReviseRelated): cells follow the full-text scout verdicts
+% (manuscript/related_work_r1_verification.md); findings B1, B2, M7-M9, m10, m11, m13 applied.
+% Do not turn related work into evidence for the controller (content_brief rule).
 % PROSE PASS 2026-09-21
 % #91-WP5 2026-09-23 (page limit): the four subsections and the positioning matrix MOVED verbatim to
 % the appendix file as Appendix sec:app:related (labels renamed sec:app:rel:*, tab:rel:matrix ->
 % tab:app:matrix). Main text keeps a two-paragraph summary with no new claims; every sentence below
 % restates a verified sentence of the appendix copy.
 % Label prefixes owned by this file: sec:rel (no floats declared here since #91-WP5).
+% r6 2026-09-24 (Story Lock A-hybrid): delta restated as ordering vs selection under a measured per-state
+% ceiling; PHYRE AUCCESS §3.2, OPTIMAL oracle ranking §4.4 Fig. 4 (arXiv:1908.05656). Offsets: "Our measurement
+% adds" sentence folded into the PHYRE sentence; World-in-World contrast shortened; header condensed.
 
 \section{Related Work}
 \label{sec:rel}
 
-\paragraph{Decision-relevant prediction.} Objective-mismatch studies show that aggregate predictive quality need not equal decision quality: one-step prediction likelihood need not track control performance, and higher pixel accuracy need not yield better physical-reasoning performance on PHYRE \citep{lambert2020objective,girdhar2020forward}. We add an engine-truth per-candidate AUC under a measured per-state ceiling in a single-shot cascade regime.
+\paragraph{Decision-relevant prediction.} Objective-mismatch studies show that aggregate predictive quality need not equal decision quality: one-step prediction likelihood need not track control performance, and higher pixel accuracy need not yield better physical-reasoning performance on PHYRE \citep{lambert2020objective,girdhar2020forward}. We separate ordering (per-candidate engine-truth AUC) from selection (pooled top-1 against inventory-matched chance) under a measured per-state ceiling.
 
 % r3 I33 (2026-09-23): PHYRE claims cite bakhtin2019phyre, the World-in-World claim cites zhang2026worldinworld.
 % r4 I25: PHYRE facts arXiv:1908.05656 §3.1, App. B, §3.2.
-\paragraph{Closed-loop evaluation.} World-in-World benchmarks world models inside a closed loop with a unified online planning strategy and a standardized action interface, with task success as the primary metric, and reports that visual quality alone does not guarantee task success \citep{zhang2026worldinworld}. WorldBench evaluates video world models with physics concepts isolated one at a time \citep{upadhyay2026worldbench}. Our measurement adds a per-state action ceiling measured in the engine as the denominator of a closed-loop success rate (Section~\ref{sec:syn:picture}). PHYRE defines tier membership by solvability within a fixed action set, operationalized via a sampled-action binomial test, and scores multi-attempt task success by AUCCESS \citep{bakhtin2019phyre}; World-in-World instead reports task success without that task-set solvability label \citep{zhang2026worldinworld}.
+\paragraph{Closed-loop evaluation.} World-in-World benchmarks world models in a closed loop with a unified planning strategy and action interface, scores task success as the primary metric, and finds that visual quality alone does not guarantee it \citep{zhang2026worldinworld}. WorldBench evaluates video world models one physics concept at a time \citep{upadhyay2026worldbench}. PHYRE defines tier membership by solvability within a fixed action set, operationalized via a sampled-action binomial test, scores multi-attempt task success by AUCCESS \citep[\S3.2]{bakhtin2019phyre}, and reports an OPTIMAL agent that performs oracle ranking of the action set \citep[\S4.4, Fig.~4]{bakhtin2019phyre}. Our ceiling is measured per state in the engine for each inventory and serves as the denominator of single-shot top-1 (Section~\ref{sec:syn:picture}).

@@ -1,61 +1,46 @@
 %!TEX root = iclr2026_conference.tex
 % Binds outline §3 (Setting and Formulation) + §4 (Pre-Registered Matched-System Protocol) —
 % manuscript/writing_outline_boundary_paper.md (v2.0); status: manuscript/content_brief.md.
-% STATUS: REVISED 2026-09-21 post-review. §3 formalizes the setting (reusing Introduction ¶5–6
-% material), defines requested vs effective horizon, and states the estimand taxonomy (training /
-% symbolic-execution / adaptation; the #76 Phase A0.1 separation) as a named contribution with
-% Fig. 2 (fig:mth:estimands) and Table (tab:mth:estimands); flags the estimand switches at
-% §5.1, §5.2–5.5, §5.6. Post-review fixes applied: (m2) h ≡ Δ declared once at the
-% requested-horizon definition while the formalism keeps Δ; (B3) §4 compressed to a half-page
-% name-level itemize, all mechanics deferred to Appendix sec:app:protocol, accounting counts kept
-% as one sentence; (M10) untraceable specifics dropped: the 5°–82° release-angle range (now
-% "12 release-angle actions") and the 2% width figure (now "a width tolerance"). §4 names the
-% discipline elements the experiments section invokes: frozen plans, sealed membership, typed
-% terminal failures, equal-update training with training_compute_matched=false disclosed + work
-% reporting, paired descriptive inference with selection-optimism flag, 13-candidate inventory,
-% right-censored end-of-window endpoints, every-attempted-cell accounting (208/208, 186/208,
-% 34/104, 480 CLEVRER windows), disposition tokens verbatim, and the #61-extended matched
-% gameplay systems as infrastructure only. No outcome numbers appear here.
-% Fig. 2 asset: figures/estimand_taxonomy.pdf (built by figures/build_figures.py:taxonomy()).
-% #91-PASS 2026-09-23 (WP2 item 4, WP4 Fig. 2): fig:mth:estimands wired; tau_ad defined but unmeasured;
-% tab:exp:adapt is an exposure-condition (few-shot minus zero-shot) contrast outside the three estimands.
-% #91-WP5 2026-09-23 (page limit): the full estimand subsection (fig:mth:estimands, tab:mth:estimands,
-% both definition paragraphs) MOVED to the appendix file as Appendix sec:app:estimands (labels
-% renamed fig:app:estimands, tab:app:estimands); the full protocol element list MOVED to the end of
-% Appendix sec:app:protocol. Main text keeps compressed versions plus a closed-loop selection
-% paragraph (13-candidate inventory, argmin predicted cost with ties to the lower ordinal, engine
-% removal-event verdicts; source: issue #91 comment 2026-09-22 "lookahead" and #85 engine channel,
-% .local-artifacts/issue-85-engine-outcome-reactive-v1/findings.md). No floats are declared here.
-% Label prefixes owned by this file: sec:mth.
-% PROSE PASS 2026-09-21
-% r3 2026-09-23 (Evidence, Thesis-drafted I10/I29): (Delta, alpha) request paragraph compressed and given
-% the rollout-depth sentence; sec:mth:estimands compressed to two sentences (labels kept).
+% STATUS: REVISED 2026-09-21 post-review. §3 formalizes the setting, requested vs effective horizon, and the
+% estimand taxonomy (training / symbolic-execution / adaptation). §4 is a name-level protocol summary; all
+% mechanics in Appendix sec:app:protocol. No outcome numbers appear here.
+% #91-WP5 2026-09-23: full estimand subsection moved to Appendix sec:app:estimands (fig:app:estimands,
+% tab:app:estimands); closed-loop selection paragraph kept (argmin predicted cost, ties to lower ordinal,
+% engine removal-event verdicts: .local-artifacts/issue-85-engine-outcome-reactive-v1/findings.md).
+% Label prefixes owned by this file: sec:mth. No floats declared here.
+% r3 2026-09-23 (Evidence, I10/I29): request paragraph compressed; sec:mth:estimands two sentences.
+% r6 2026-09-24 (Story Lock A-hybrid): selection estimand (pooled top-1 vs inventory-matched chance under the
+% measured ceiling) and ordering estimand (cell-unit / member-clustered AUC) defined; #93 pointer names the three
+% inventories + saturated-speed clamp; §4 status sentence added (post-hoc disclosure kept verbatim). Offsets: NovPhy
+% supply clause, carrier/readout wording, 2,400-pool parenthetical, one-successful-candidate sentence, controller
+% clause in estimands, protocol element list compressed, header comments condensed.
+% Clamp 18.49 px, 11/16 candidates: .local-artifacts/issue-93-second-parameterization-v1/engine_action_check.json.
 
 \section{Setting and Formulation}
 \label{sec:mth:setting}
 
-An \emph{action-sparse persistent-effect environment} proceeds in discrete fixed steps. An agent acts at a few steps, and the physical state then evolves autonomously through collisions and rearrangement before settling. We instantiate this class on NovPhy \citep{pinto2024novphy}, which supplies the scenarios, generator families, and novelty levels. BG-NS-JEPA, the in-progress program studied here, supplies the models, the policies, and every number we report. Its scenario families serve as comparison strata: the original single-force and multiple-forces families, the rolling and sliding families added for breadth (N1), and matched appearance-novelty pairs (N2). One out-of-family replication uses CLEVRER \citep{yi2020clevrer} (Appendix~\ref{sec:app:clevrer:results}).
+An \emph{action-sparse persistent-effect environment} proceeds in discrete fixed steps. An agent acts at a few steps, and the state then evolves through collisions before settling. We instantiate this class on NovPhy \citep{pinto2024novphy}. BG-NS-JEPA, the in-progress program studied here, supplies the models and every number we report. Its scenario families serve as comparison strata: the original single-force and multiple-forces families, the rolling and sliding families added for breadth (N1), and matched appearance-novelty pairs (N2). One out-of-family replication uses CLEVRER \citep{yi2020clevrer} (Appendix~\ref{sec:app:clevrer:results}).
 
 % r3 I10/I29 (Thesis draft): request paragraph compressed; rollout depth 1/25 carrier frames vs outcome
 % resolution 97.8-400.9 agent frames: .local-artifacts/issue-92-lookahead-control-v1/findings.md line 9 (offsets line 14).
 % r3 I38: Delta^2 lookahead = Delta applications x Delta agent frames per candidate: scripts/run_engine_outcome_reactive_diagnostic.py
 % (candidate loop `for _ in range(self.pair.delta)`, ~line 640); findings.md line 9; 1 agent frame = 50 native steps: plan.json line 272.
 % r5-authoring 2026-09-24 (r4 I40): unit identity restated (agent frame = carrier frame of 50 native steps) and the outcome horizon renamed "carrier frames" so both sides of the 0.25-25.6% ratio share one unit.
-Each decision state receives a prediction request with a requested horizon $\Delta \in \{1, 5, 15\}$ (written $h$ later) and an output-description mode $\alpha \in \{\mathrm{continuous}, \mathrm{micro}, \mathrm{macro}\}$, which selects the supervised readout scored at that decision: the predictive latent, fine contact and support relations, or coarse predicates such as \texttt{steady-state}. All nine pairs run over one continuous latent carrier, and modes are readouts over it, never alternative state representations. If the scenario terminates $k < \Delta$ agent frames (carrier frames of 50 native steps) after the decision, scoring clamps the offset to $k$. A fixed-horizon ranker applies its $\Delta$-conditioned carrier $\Delta$ times per candidate, each advancing $\Delta$ carrier frames, so it looks $\Delta^2$ carrier frames ahead (1, 25, 225), while engine-truth outcomes resolve 97.8--400.9 carrier frames after the decision (Appendix~\ref{sec:app:lookahead}).
+Each decision state receives a prediction request with a requested horizon $\Delta \in \{1, 5, 15\}$ (written $h$ later) and an output-description mode $\alpha \in \{\mathrm{continuous}, \mathrm{micro}, \mathrm{macro}\}$, selecting the scored readout: the predictive latent, fine contact and support relations, or coarse predicates such as \texttt{steady-state}. All nine pairs are readouts over one continuous latent carrier. If the scenario terminates $k < \Delta$ agent frames (carrier frames of 50 native steps) after the decision, scoring clamps the offset to $k$. A fixed-horizon ranker applies its $\Delta$-conditioned carrier $\Delta$ times per candidate, each advancing $\Delta$ carrier frames, so it looks $\Delta^2$ carrier frames ahead (1, 25, 225), while engine-truth outcomes resolve 97.8--400.9 carrier frames after the decision (Appendix~\ref{sec:app:lookahead}).
 
 % r2 I8 model paragraph: .local-artifacts/issue-77-n1-dynamics-v1/plan.json (arch issue-71-cnn-carrier-soft-ordered-predicates-v1, depth 3, latent 236; params 1862396 cont./1837690 hybrid; training.steps 9000, batch 64, fit_lineages 2409, PAIRS[step%9]); same counts in issue-74-matched-dynamics-v1/readiness.json.
 % r2 I3a: restatement disclosure sentence verbatim-matched to §6 (synthesis); plan freeze issue-92-selection-validity-v1/findings.md:3 postdates #87/#89 outcomes.
-% #93 pointer (r5-authoring 2026-09-24): two further inventories in Appendix sec:app:secondparam; offset: "have no symbolic modules and" cut.
-The closed-loop measurement scores selection. Each development N1 decision state carries a frozen inventory of 13 candidate launches, indexed by ordinal along a monotone launch-angle sweep from flat (ordinal 0) to steep (ordinal 12), and Appendix~\ref{sec:app:secondparam} scores two further inventories. A frozen ranker predicts a cost for every candidate and selects the lowest, breaking ties toward the lower ordinal. Each candidate's engine-truth verdict is read from the engine's own removal events, and a state belongs to the action ceiling when at least one candidate succeeds at first shot. Every measured N1 ceiling state has exactly one successful candidate. The three frozen model rankers share one small architecture: a frozen CNN slot parser maps observed frames to object centers, motion, and an availability mask, and a depth-3 predictor advances a 236-dimensional latent carrier conditioned on the launch action and the requested $(\Delta, \alpha)$ pair. The hybrid model adds supervised micro and macro predicate heads (1,837,690 parameters). The pure-continuous models are widened to match (1,862,396). Each trained for 9,000 updates of batch 64 on 2,409 fitting lineages (a frozen 2,400-entry pool plus N1 training lineages), cycling through all nine pairs.
+% #93 pointer (r6): inventories and clamp from .local-artifacts/issue-93-second-parameterization-v1/engine_action_check.json (clamp_radius_px 18.491484; grid clamped 16, offset clamped 11).
+Each development N1 decision state carries the original 13-candidate sweep, indexed by ordinal from flat (ordinal 0) to steep (ordinal 12). With the offset sweep (11 candidates) and the drag grid (16), it is one of three candidate inventories over the same 15 N1 source members (Appendix~\ref{sec:app:secondparam}), in the engine each a set of launch angles at saturated speed (pull radius clamped above 18.49~px). A frozen ranker predicts a cost for every candidate and selects the lowest, breaking ties toward the lower ordinal. Each candidate's engine-truth verdict is read from the engine's own removal events, and a state belongs to the action ceiling when at least one candidate succeeds at first shot. The selection estimand is pooled top-1 over the three rankers on ceiling states against inventory-matched chance, a uniform draw over the scored inventory. Cell-unit and member-clustered AUC ($\mathrm{AUC}_m$) estimate ordering. The three frozen rankers share one architecture: a frozen CNN slot parser extracts object centers, motion, and an availability mask, and a depth-3 predictor advances a 236-dimensional latent carrier conditioned on the launch action and the requested $(\Delta, \alpha)$ pair. The hybrid model adds micro and macro predicate heads (1,837,690 parameters), and the pure-continuous models are widened to match (1,862,396). Each trained for 9,000 updates of batch 64 on 2,409 fitting lineages.
 
 \subsection{The Estimand Taxonomy}
 \label{sec:mth:estimands}
 
-Three estimands separate what a comparison varies (Appendix~\ref{sec:app:estimands}): the training effect $\tau_{\mathrm{tr}}(\Delta)$ (hybrid against pure-continuous training, both executing $(\Delta, \mathrm{continuous})$), the symbolic-execution effect $\tau_{\mathrm{ex}}(\Delta, \alpha)$ (executed readout inside one hybrid checkpoint), and the adaptation effect $\tau_{\mathrm{ad}}$ (selection schedule against fixed-pair controls), which no reported contrast isolates, so the adaptive controller never enters the engine-truth record. Condition labels are part of estimand identity, so zero-shot and few-shot contrasts are never pooled.
+Three estimands separate what a comparison varies (Appendix~\ref{sec:app:estimands}): the training effect $\tau_{\mathrm{tr}}(\Delta)$ (hybrid against pure-continuous training, both executing $(\Delta, \mathrm{continuous})$), the symbolic-execution effect $\tau_{\mathrm{ex}}(\Delta, \alpha)$ (executed readout inside one hybrid checkpoint), and the adaptation effect $\tau_{\mathrm{ad}}$ (selection schedule against fixed-pair controls), which no reported contrast isolates. Condition labels are part of estimand identity, so zero-shot and few-shot contrasts are never pooled.
 
 \section{The Pre-Registered Matched-System Protocol}
 \label{sec:mth:protocol}
 
-The scoring units, failure accounting, and disposition tokens were fixed by pre-registered plans before the model outcomes they score existed. The restatement statistics were not. The restatement's member unit, the ordinal success band, the disjoint-supports observation, and the choice of AUC as headline statistic were specified after the oracle-pass and completion-pass outcomes were seen. The protocol's elements are frozen plans re-hashed at launch, sealed membership, retained typed terminal failures, equal-update training with \texttt{training\_compute\_matched=false} disclosed, descriptive 95\% bootstrap intervals that support no superiority decision, right-censored end-of-window endpoints, reporting of every attempted cell, and a three-token disposition vocabulary (\texttt{supported}, \texttt{not\_supported\_by\_this\_experiment}, \texttt{readiness\_or\_precision\_insufficient}). Appendix~\ref{sec:app:protocol} records each element and its accounting, and Appendix~\ref{sec:app:repro} lists the validation commands.
+The scoring units, failure accounting, and disposition tokens were fixed by pre-registered plans before the model outcomes they score existed. The restatement statistics were not. The restatement's member unit, the ordinal success band, the disjoint-supports observation, and the choice of AUC as headline statistic were specified after the oracle-pass and completion-pass outcomes were seen. Top-1 was pre-specified as a reported outcome (0.5 margin on N1, descriptive on the other two inventories), the chance reading is post hoc on N1, and $\mathrm{AUC}_m$ was the frozen decision statistic of the two added inventories. Appendix~\ref{sec:app:protocol} records each protocol element and its accounting (frozen plans re-hashed at launch, sealed membership, typed terminal failures, equal-update training with \texttt{training\_compute\_matched=false} disclosed, descriptive 95\% bootstrap intervals, three disposition tokens), and Appendix~\ref{sec:app:repro} lists the validation commands.
 
-Closed-loop behavior is scored under the same contract by matched gameplay systems, extended with fixed-horizon, hybrid fixed-mode, and no-model ordinal-prior arms, for which we claim no benefit. Every closed-loop claim is single-shot, decision-only, and scoped to the development N1 membership and the type010101 cross-split (Section~\ref{sec:syn:picture}, rows C16--C23). None is a gameplay-benefit, fresh-capture, or sealed-evaluation claim.
+Matched gameplay systems, extended with fixed-horizon, hybrid fixed-mode, and no-model ordinal-prior arms, score closed-loop behavior under the same contract. Every closed-loop claim is single-shot, decision-only, and scoped to the development N1 membership and the type010101 cross-split (Section~\ref{sec:syn:picture}, rows C16--C23). None is a gameplay-benefit, fresh-capture, or sealed-evaluation claim.
