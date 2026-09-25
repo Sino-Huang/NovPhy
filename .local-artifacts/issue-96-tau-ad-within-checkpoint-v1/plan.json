@@ -1,0 +1,1022 @@
+{
+  "caps": {
+    "engine_seconds": 0,
+    "gpu_seconds": 10800.0,
+    "stop": "readiness_or_precision_insufficient",
+    "wall_seconds": 21600.0
+  },
+  "claim_boundary": "decision-only rollouts of the frozen #77 N1 checkpoints from the sealed member anchors to endpoint 225 on four retained engine-verdicted inventories; the controller selects the prediction pair from a policy trained by dynamic programming on the same frozen corpus, never from task outcomes; the record bounds decision-time pair-schedule adaptivity on this checkpoint, not policy learning; no engine access, rendering or retraining; prior dispositions are inputs and are not re-opened; inventories are never pooled; every interval is DESCRIPTIVE",
+  "decision_rule": {
+    "interpretation": "if the member-mean fixed-pair spread on the grid is < delta, a not_supported result is written as 'the selection schedule is near-inert on this checkpoint', not as 'adaptivity does not help'",
+    "not_supported_by_this_experiment": "all guards pass AND 95% upper bound < delta",
+    "readiness_or_precision_insufficient": "otherwise",
+    "replication": "J - F* on offset/angle/power reported verbatim with the count meeting theta >= delta AND lower > 0; does not change the token",
+    "secondary_tokens": "J - M and J - OL on the grid: the same three-token rule and delta; guards G1-G5 and caps as evaluated for the primary, G6 applied to the secondary's own interval",
+    "supported": "all guards pass AND theta_hat >= delta AND 95% lower bound > 0"
+  },
+  "disclosure": "The pre-freeze Oracle review read #92's J step-pair frequencies (horizon_trace, trace-only, outcome-free) and F*'s cross-fit inventories are chosen from published fixed-arm results; no outcome statistic of this contrast was computed before freeze. The #92 G1 reference records are read for chosen_ordinal and selected_predicted_cost only.",
+  "engine_seconds": 0,
+  "estimands": {
+    "F_hindsight": "the F pair with the highest member-clustered mean AUC on I itself (in-sample)",
+    "cell_auc": "within-cell P(successful candidate has lower predicted cost than failed candidate), ties 0.5, over admissible candidates (retained verdict AND finite predicted cost); the tie-correct definition run_launch_power_probe.cell_auc is used because run_cross_pool_selection_audit.cell_auc scores a tied pair as -0.5 when the failure precedes the success in cost-then-ordinal order (verified: tie fail-first -> -0.5, tie success-first -> 0.5)",
+    "compute_accounting": "per arm: transition calls, controller calls, linear MACs, GPU seconds",
+    "contrast_cells": "cells where both arms' AUCs are defined; undefined cells counted and reported",
+    "coverage": "per inventory: successful slots of mixed members whose first engine-channel pig-removal step lies within 225 agent frames of the decision frame ((fixed_step - 30000)/50 <= 225)",
+    "cross_fit": "F*(I) = the F(Delta, alpha) with the highest mean, over the other three inventories, of the inventory's member-clustered mean AUC (inventories equally weighted); ties by PAIRS order; C-F*(I) likewise over C-F",
+    "interval": "member-clustered percentile bootstrap, 10000 draws, PCG64 seed 7201, quantiles [0.025, 0.975], DESCRIPTIVE",
+    "per_inventory": "every estimand per inventory, never pooled across inventories",
+    "power_note": "top-1 over ~42 grid cells against chance ~0.06-0.10 cannot resolve differences below ~0.15; descriptive only",
+    "primary": "theta_grid = member-clustered mean over mixed grid cells of AUC_J - AUC_F*, F* = the cross-fitted best fixed pair",
+    "secondaries": [
+      "J - F_hindsight",
+      "J - F(1, macro)",
+      "J - F(1, continuous)",
+      "J - M",
+      "J - OL",
+      "J - T",
+      "J - D",
+      "C-J - C-F*",
+      "top-1 J - F* (pooled descriptive, power note)",
+      "fixed-pair spread max_F - min_F per cell"
+    ]
+  },
+  "frozen_at": "2026-09-25T10:50:13Z",
+  "frozen_before_scoring_run": true,
+  "guards": {
+    "G1": "replication: fresh J and F(15, continuous) on angle/issue-77-n1-001 seed 20260908 reproduce #92 decision--hybrid-adaptive-e225 (chosen 5, cost 2.564507) and decision--hybrid-fixed-h15-e225: ordinal identical, cost within 1e-3 (smoke and retained run records)",
+    "G2": "anchor sha256 equality (file == recorded == #93/#94/#87 decision anchors)",
+    "G3": "verdict resolution 1.0 on admissible candidates of mixed grid cells for every arm; nonfinite typed-failure share <= 0.1",
+    "G4": "<= 0.2 of mixed grid cells have J or F* fully tied",
+    "G5": "J's non-modal step share >= 0.1 on mixed grid cells AND Kendall tau-b(J, F(modal)) < 1 on >= 0.25 of mixed grid cells (modal = J's modal step pair over mixed grid cells)",
+    "G6": "primary interval half-width <= 0.05",
+    "caps": "run GPU seconds <= 10800.0, run wall seconds <= 21600.0",
+    "failure": "any guard failure -> readiness_or_precision_insufficient"
+  },
+  "held_identical": {
+    "anchors": "the member's sealed anchor carrier by the #93 anchor_retention rule (run_launch_power_probe.frozen_anchor), sha256-checked at every load; one anchor per member for every inventory and arm",
+    "checkpoints": "per-seed predictor.pt bound by issue-87 plan.json dynamics_checkpoints (sha256 equality verified at smoke); the same controller.pt for J/M/T/D and for OL's frequencies",
+    "compute": "differs by schedule; reported, not matched",
+    "cost": "the frozen TaskObjective count cost of the endpoint carrier",
+    "endpoint": 225,
+    "inventory_and_normalization": "the frozen source inventories; action tensor (drag_x/480, drag_y/480, release/1000, tap/1000, 1)",
+    "tie_rule": "argmin predicted cost, ties to the lower ordinal",
+    "typed_failures": "a nonfinite carrier is a retained typed failure (excluded from the ranking, inherits no verdict), never retried",
+    "varies": "only the map (step, carrier, remaining) -> pair",
+    "verdicts": "#93 oracle table (grid, offset), #94 oracle table (power), #87+#89 union table (angle); keyed by candidate identity"
+  },
+  "identity": "issue-96-tau-ad-within-checkpoint-v1",
+  "inputs": [
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-87-closed-loop-oracle-v1/plan.json",
+      "name": "issue_87_plan",
+      "sha256": "sha256:689ec148564491291b372c02e7aa6f828480ea8200dc6c51e214f641ab5670ac"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-89-oracle-completion-v1/summary.json",
+      "name": "issue_89_summary",
+      "sha256": "sha256:42ef6575d66a2273c9880eac4da9199d862dfb88147c4cc20beef194e1358f5e"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-92-lookahead-control-v1/plan.json",
+      "name": "issue_92_lookahead_plan",
+      "sha256": "sha256:8da04d4fdf8d5bbec84e15d44c24f267c16de0de1ec902894cf3ee0367f03b04"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-92-lookahead-control-v1/records/decision--hybrid-adaptive-e225--seed20260908--issue-77-n1-001-a00.json",
+      "name": "issue_92_g1_reference_J",
+      "sha256": "sha256:37b7dbe60d0e40a40b54a70028995c3ed9f03383477cc13c6a42abd4e29f1ab9"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-92-lookahead-control-v1/records/decision--hybrid-fixed-h15-e225--seed20260908--issue-77-n1-001-a00.json",
+      "name": "issue_92_g1_reference_F15",
+      "sha256": "sha256:0009fbc6d6a6fc1bc7a84e4df7096adf2ec9c80f4d03f507dd45009b32808e25"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-93-second-parameterization-v1/plan.json",
+      "name": "issue_93_plan",
+      "sha256": "sha256:4932ed53d89b1b9a653c235253d3edba38c89f6b3aa28ecd43772c2c8d77f2c8"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-93-second-parameterization-v1/anchor_retention.json",
+      "name": "issue_93_anchor_retention",
+      "sha256": "sha256:178c17975d5142dab8b82fa5663da4cc1c2dda763f27fd0aba4ef4de3b1e9794"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-93-second-parameterization-v1/summary.json",
+      "name": "issue_93_summary",
+      "sha256": "sha256:622731cb2de4b90d82e22243645b5e2af187eb9c46f526407a883e6c445315a0"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-94-launch-power-v1/plan.json",
+      "name": "issue_94_plan",
+      "sha256": "sha256:8690758b4bd4e7d67fe74ada0d072a8bc567e32ddc72af417d67385372768cec"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-94-launch-power-v1/summary.json",
+      "name": "issue_94_summary",
+      "sha256": "sha256:771cc47ad862ca04ba797448f03aef81640aea62539ca6caaf2e87d821470150"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/plan.json",
+      "name": "issue_77_dynamics_plan",
+      "sha256": "sha256:18eb5a1e7ae3ad5a76b8db3dd2482b85844e404064614dc6835b8e4707e5b14d"
+    },
+    {
+      "artifact": "/p/Project/NovPhy/.local-artifacts/issue-96-tau-ad-within-checkpoint-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:d45d41ef2207e994a752de32674f62b762d3167eed3a58d126cd2fdabdccab2c"
+    }
+  ],
+  "issue": 96,
+  "issue_64_authorized": false,
+  "licenses": {
+    "insufficient": "tau_ad stays unmeasured-in-effect; the five 'unmeasured' manuscript sentences are still corrected to the accurate three-reading statement",
+    "near_inert": "no selection-based claim in either direction",
+    "not_supported_healthy_spread": "per-decision selection does not help on this checkpoint, which strengthens the existing measurement story",
+    "supported": "on this checkpoint, per-decision joint selection orders engine-truth outcomes better than the best fixed pair by >= 0.02 within-cell AUC - an ordering claim, decision-only, scoped to the frozen N1 membership; top-1 stays descriptive and underpowered; jointness/state-dependence claims require J - M / J - OL to pass"
+  },
+  "margin": {
+    "delta": 0.02,
+    "unit": "within-cell AUC difference"
+  },
+  "prohibited": [
+    "computing any AUC or top-1 statistic of this contrast from the #92 hybrid-adaptive records before freeze",
+    "adding endpoint 600 or a pooled estimate after seeing results (no e600 column is declared)",
+    "retrying typed failures",
+    "re-opening any prior disposition (#15, #87, #89, #90, #92-#95)"
+  ],
+  "question": "on the frozen #77 N1 hybrid checkpoints, does per-decision joint (Delta, alpha) selection order engine-truth outcomes better than the best fixed pair, holding checkpoint, anchors, inventory, endpoint, cost and verdicts identical so that only the per-step pair schedule varies?",
+  "role": "terminal",
+  "runner": "scripts/run_tau_ad_within_checkpoint.py",
+  "runner_sha256_at_freeze": "sha256:9cf1ffe4c6ec61ecf15bb3c911425929a00491c725b07f9880b2e84792b685bf",
+  "schema": "issue_96_tau_ad_within_checkpoint_plan_v1",
+  "smoke_evidence": {
+    "checks": [
+      {
+        "abs_cost_delta": 0.0,
+        "chosen_ordinal_fresh": 5,
+        "chosen_ordinal_retained": 5,
+        "control": "G1_replication_J",
+        "gpu_seconds": 0.27645089400175493,
+        "ok": true,
+        "reference_record": "decision--hybrid-adaptive-e225--seed20260908--issue-77-n1-001-a00",
+        "selected_cost_fresh": 2.564507007598877,
+        "selected_cost_retained": 2.564507007598877,
+        "tolerance": 0.001
+      },
+      {
+        "abs_cost_delta": 0.0,
+        "chosen_ordinal_fresh": 12,
+        "chosen_ordinal_retained": 12,
+        "control": "G1_replication_F-15-continuous",
+        "gpu_seconds": 0.018498816003557295,
+        "ok": true,
+        "reference_record": "decision--hybrid-fixed-h15-e225--seed20260908--issue-77-n1-001-a00",
+        "selected_cost_fresh": 1.1140103340148926,
+        "selected_cost_retained": 1.1140103340148926,
+        "tolerance": 0.001
+      },
+      {
+        "control": "G2_anchor_sha256_equality",
+        "members": [
+          {
+            "cell": "oracle--issue-77-n1-001-a00--a03",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c"
+            ],
+            "member": "issue-77-n1-001",
+            "ok": true,
+            "sha256_file": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c",
+            "sha256_recorded": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-003-a00--a00",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:1816e5b7dbae14009983f061254fd7472f8f7039c97a7728fae83e503135fca5"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:1816e5b7dbae14009983f061254fd7472f8f7039c97a7728fae83e503135fca5"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:1816e5b7dbae14009983f061254fd7472f8f7039c97a7728fae83e503135fca5"
+            ],
+            "member": "issue-77-n1-003",
+            "ok": true,
+            "sha256_file": "sha256:1816e5b7dbae14009983f061254fd7472f8f7039c97a7728fae83e503135fca5",
+            "sha256_recorded": "sha256:1816e5b7dbae14009983f061254fd7472f8f7039c97a7728fae83e503135fca5",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-004-a07--a01",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:df06fe27a72e5fd9bc249bab01bd361ec3f91f09edd5e02c574ec88bc93f5691"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:df06fe27a72e5fd9bc249bab01bd361ec3f91f09edd5e02c574ec88bc93f5691"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:df06fe27a72e5fd9bc249bab01bd361ec3f91f09edd5e02c574ec88bc93f5691"
+            ],
+            "member": "issue-77-n1-004",
+            "ok": true,
+            "sha256_file": "sha256:df06fe27a72e5fd9bc249bab01bd361ec3f91f09edd5e02c574ec88bc93f5691",
+            "sha256_recorded": "sha256:df06fe27a72e5fd9bc249bab01bd361ec3f91f09edd5e02c574ec88bc93f5691",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-005--g03",
+            "issue87_canonical_state_anchor_sha256": [],
+            "issue93_decision_anchor_sha256": [
+              "sha256:b8a7bf1cffbfe6e387465933e45229702cc36e8d5c66313f8ae1c6b393c77c6c"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:b8a7bf1cffbfe6e387465933e45229702cc36e8d5c66313f8ae1c6b393c77c6c"
+            ],
+            "member": "issue-77-n1-005",
+            "ok": true,
+            "sha256_file": "sha256:b8a7bf1cffbfe6e387465933e45229702cc36e8d5c66313f8ae1c6b393c77c6c",
+            "sha256_recorded": "sha256:b8a7bf1cffbfe6e387465933e45229702cc36e8d5c66313f8ae1c6b393c77c6c",
+            "source": "issue93_captured"
+          },
+          {
+            "cell": "oracle--issue-77-n1-006-a05--a00",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:ae21c3f8c8d66f5e4a45ca88bb082c14c17e97412b92a67d9824e3ed178b6267"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:ae21c3f8c8d66f5e4a45ca88bb082c14c17e97412b92a67d9824e3ed178b6267"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:ae21c3f8c8d66f5e4a45ca88bb082c14c17e97412b92a67d9824e3ed178b6267"
+            ],
+            "member": "issue-77-n1-006",
+            "ok": true,
+            "sha256_file": "sha256:ae21c3f8c8d66f5e4a45ca88bb082c14c17e97412b92a67d9824e3ed178b6267",
+            "sha256_recorded": "sha256:ae21c3f8c8d66f5e4a45ca88bb082c14c17e97412b92a67d9824e3ed178b6267",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-007-a05--a00",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:87246519dadebcc4506e5dad2bbae3a9003733afed53790f3051d769435e6ce7"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:87246519dadebcc4506e5dad2bbae3a9003733afed53790f3051d769435e6ce7"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:87246519dadebcc4506e5dad2bbae3a9003733afed53790f3051d769435e6ce7"
+            ],
+            "member": "issue-77-n1-007",
+            "ok": true,
+            "sha256_file": "sha256:87246519dadebcc4506e5dad2bbae3a9003733afed53790f3051d769435e6ce7",
+            "sha256_recorded": "sha256:87246519dadebcc4506e5dad2bbae3a9003733afed53790f3051d769435e6ce7",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-008-a05--a00",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:bf242ddc54e161a5c05f4b2331499b4a8f17caefcf6c58ff90d81e5bba4d8bfe"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:bf242ddc54e161a5c05f4b2331499b4a8f17caefcf6c58ff90d81e5bba4d8bfe"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:bf242ddc54e161a5c05f4b2331499b4a8f17caefcf6c58ff90d81e5bba4d8bfe"
+            ],
+            "member": "issue-77-n1-008",
+            "ok": true,
+            "sha256_file": "sha256:bf242ddc54e161a5c05f4b2331499b4a8f17caefcf6c58ff90d81e5bba4d8bfe",
+            "sha256_recorded": "sha256:bf242ddc54e161a5c05f4b2331499b4a8f17caefcf6c58ff90d81e5bba4d8bfe",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-009-a00--a00",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:65cbb31bb60d078d77e0ff88bebdc8c60487579d306fa4b10dccd5fb9d245db4"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:65cbb31bb60d078d77e0ff88bebdc8c60487579d306fa4b10dccd5fb9d245db4"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:65cbb31bb60d078d77e0ff88bebdc8c60487579d306fa4b10dccd5fb9d245db4"
+            ],
+            "member": "issue-77-n1-009",
+            "ok": true,
+            "sha256_file": "sha256:65cbb31bb60d078d77e0ff88bebdc8c60487579d306fa4b10dccd5fb9d245db4",
+            "sha256_recorded": "sha256:65cbb31bb60d078d77e0ff88bebdc8c60487579d306fa4b10dccd5fb9d245db4",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-010-a06--a00",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:d4153d9e14c18c8d69b1c17e5065d4f782ecd25ee3806cb05af892feec1bf20f"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:d4153d9e14c18c8d69b1c17e5065d4f782ecd25ee3806cb05af892feec1bf20f"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:d4153d9e14c18c8d69b1c17e5065d4f782ecd25ee3806cb05af892feec1bf20f"
+            ],
+            "member": "issue-77-n1-010",
+            "ok": true,
+            "sha256_file": "sha256:d4153d9e14c18c8d69b1c17e5065d4f782ecd25ee3806cb05af892feec1bf20f",
+            "sha256_recorded": "sha256:d4153d9e14c18c8d69b1c17e5065d4f782ecd25ee3806cb05af892feec1bf20f",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-011-a02--a00",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:bd3ce908cd4b4be1c8bbec763646b1421107e6733e78f7ce20a60221bd7d0581"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:bd3ce908cd4b4be1c8bbec763646b1421107e6733e78f7ce20a60221bd7d0581"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:bd3ce908cd4b4be1c8bbec763646b1421107e6733e78f7ce20a60221bd7d0581"
+            ],
+            "member": "issue-77-n1-011",
+            "ok": true,
+            "sha256_file": "sha256:bd3ce908cd4b4be1c8bbec763646b1421107e6733e78f7ce20a60221bd7d0581",
+            "sha256_recorded": "sha256:bd3ce908cd4b4be1c8bbec763646b1421107e6733e78f7ce20a60221bd7d0581",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-012-a08--a00",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:c5cec4f353e58bd70fdc8c05243df849ded473a9a1f47c4ce9f8e43a8d327f84"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:c5cec4f353e58bd70fdc8c05243df849ded473a9a1f47c4ce9f8e43a8d327f84"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:c5cec4f353e58bd70fdc8c05243df849ded473a9a1f47c4ce9f8e43a8d327f84"
+            ],
+            "member": "issue-77-n1-012",
+            "ok": true,
+            "sha256_file": "sha256:c5cec4f353e58bd70fdc8c05243df849ded473a9a1f47c4ce9f8e43a8d327f84",
+            "sha256_recorded": "sha256:c5cec4f353e58bd70fdc8c05243df849ded473a9a1f47c4ce9f8e43a8d327f84",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-013-a04--a00",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:38294a502cc227fe3ec71515b92828b806dbbf3cab5bbcbc4b0434134740ac9e"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:38294a502cc227fe3ec71515b92828b806dbbf3cab5bbcbc4b0434134740ac9e"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:38294a502cc227fe3ec71515b92828b806dbbf3cab5bbcbc4b0434134740ac9e"
+            ],
+            "member": "issue-77-n1-013",
+            "ok": true,
+            "sha256_file": "sha256:38294a502cc227fe3ec71515b92828b806dbbf3cab5bbcbc4b0434134740ac9e",
+            "sha256_recorded": "sha256:38294a502cc227fe3ec71515b92828b806dbbf3cab5bbcbc4b0434134740ac9e",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-014-a01--a00",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:f9fc9e59714b0e6d4c01df85b3537b65cd5c9963d0c9de3325f9966e760a262d"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:f9fc9e59714b0e6d4c01df85b3537b65cd5c9963d0c9de3325f9966e760a262d"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:f9fc9e59714b0e6d4c01df85b3537b65cd5c9963d0c9de3325f9966e760a262d"
+            ],
+            "member": "issue-77-n1-014",
+            "ok": true,
+            "sha256_file": "sha256:f9fc9e59714b0e6d4c01df85b3537b65cd5c9963d0c9de3325f9966e760a262d",
+            "sha256_recorded": "sha256:f9fc9e59714b0e6d4c01df85b3537b65cd5c9963d0c9de3325f9966e760a262d",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-015-a06--a00",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:2fb4165a6b20f036b60316f1a7c02998d788220ddbd4a23db085d10ea8126659"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:2fb4165a6b20f036b60316f1a7c02998d788220ddbd4a23db085d10ea8126659"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:2fb4165a6b20f036b60316f1a7c02998d788220ddbd4a23db085d10ea8126659"
+            ],
+            "member": "issue-77-n1-015",
+            "ok": true,
+            "sha256_file": "sha256:2fb4165a6b20f036b60316f1a7c02998d788220ddbd4a23db085d10ea8126659",
+            "sha256_recorded": "sha256:2fb4165a6b20f036b60316f1a7c02998d788220ddbd4a23db085d10ea8126659",
+            "source": "issue87_retained"
+          },
+          {
+            "cell": "oracle--issue-77-n1-016-a03--a00",
+            "issue87_canonical_state_anchor_sha256": [
+              "sha256:f4377b30ed5f319774af8671d7baa3dac03a2f8b669450df0e47cae940620482"
+            ],
+            "issue93_decision_anchor_sha256": [
+              "sha256:f4377b30ed5f319774af8671d7baa3dac03a2f8b669450df0e47cae940620482"
+            ],
+            "issue94_decision_anchor_sha256": [
+              "sha256:f4377b30ed5f319774af8671d7baa3dac03a2f8b669450df0e47cae940620482"
+            ],
+            "member": "issue-77-n1-016",
+            "ok": true,
+            "sha256_file": "sha256:f4377b30ed5f319774af8671d7baa3dac03a2f8b669450df0e47cae940620482",
+            "sha256_recorded": "sha256:f4377b30ed5f319774af8671d7baa3dac03a2f8b669450df0e47cae940620482",
+            "source": "issue87_retained"
+          }
+        ],
+        "ok": true
+      },
+      {
+        "checkpoints": [
+          {
+            "controller": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/seed-20260908/hybrid/controller.pt",
+            "controller_sha256": "sha256:7f8f2b81199644b6c61c818ab9e4d73a8bd2f7368738c2cb207b729f3793edb9",
+            "family": "hybrid",
+            "ok": true,
+            "predictor": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/seed-20260908/hybrid/predictor.pt",
+            "predictor_identity_issue87": "sha256:0d6c246aa8493ce5f31297349adc226a7a10db22d9123c270a91c65f56efcbea",
+            "predictor_sha256": "sha256:0d6c246aa8493ce5f31297349adc226a7a10db22d9123c270a91c65f56efcbea",
+            "seed": 20260908
+          },
+          {
+            "controller": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/seed-20260908/continuous/controller.pt",
+            "controller_sha256": "sha256:3b6e2662ab30a702a50976aec89d306f13c457cc540aeabba61e950b676f65b4",
+            "family": "continuous",
+            "ok": true,
+            "predictor": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/seed-20260908/continuous/predictor.pt",
+            "predictor_identity_issue87": "sha256:b91a59b017ddf9481ed68ef5e2f1075f4d2475fdbfda1afc8140b1365f78c911",
+            "predictor_sha256": "sha256:b91a59b017ddf9481ed68ef5e2f1075f4d2475fdbfda1afc8140b1365f78c911",
+            "seed": 20260908
+          },
+          {
+            "controller": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/seed-20260909/hybrid/controller.pt",
+            "controller_sha256": "sha256:46b63dd28e55d813192e7873c5dcad7ff83c21e7a1702f3cb61a53afaa69aeb6",
+            "family": "hybrid",
+            "ok": true,
+            "predictor": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/seed-20260909/hybrid/predictor.pt",
+            "predictor_identity_issue87": "sha256:4a0048cbaaf248f0e168989da2f43c7e0ee999dd85cb3bb93871a3a700fab934",
+            "predictor_sha256": "sha256:4a0048cbaaf248f0e168989da2f43c7e0ee999dd85cb3bb93871a3a700fab934",
+            "seed": 20260909
+          },
+          {
+            "controller": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/seed-20260909/continuous/controller.pt",
+            "controller_sha256": "sha256:e65e31e2e921a44467c56effe66a9aa1a7952c2dd80d3b1437afa25eaecbde9c",
+            "family": "continuous",
+            "ok": true,
+            "predictor": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/seed-20260909/continuous/predictor.pt",
+            "predictor_identity_issue87": "sha256:cfceb3083dd1602089b473dd282a70e2a4f92c4120c71b048448e0e97239cccb",
+            "predictor_sha256": "sha256:cfceb3083dd1602089b473dd282a70e2a4f92c4120c71b048448e0e97239cccb",
+            "seed": 20260909
+          },
+          {
+            "controller": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/seed-20260910/hybrid/controller.pt",
+            "controller_sha256": "sha256:f8ff7bee606aca51398eecf9527339050464a973f753d00c82e4b7f7438a9f28",
+            "family": "hybrid",
+            "ok": true,
+            "predictor": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/seed-20260910/hybrid/predictor.pt",
+            "predictor_identity_issue87": "sha256:3d8ac686cce8c5633733f21e8c7cde84b847f95951dfe7adc5a2558c2b74a8e3",
+            "predictor_sha256": "sha256:3d8ac686cce8c5633733f21e8c7cde84b847f95951dfe7adc5a2558c2b74a8e3",
+            "seed": 20260910
+          },
+          {
+            "controller": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/seed-20260910/continuous/controller.pt",
+            "controller_sha256": "sha256:488c0e80009e75984de89fee840fd9eff5d4199d9bfe61a30fd5564da057666f",
+            "family": "continuous",
+            "ok": true,
+            "predictor": "/p/Project/NovPhy/.local-artifacts/issue-77-n1-dynamics-v1/seed-20260910/continuous/predictor.pt",
+            "predictor_identity_issue87": "sha256:f26f0e97e6bac95eb72f7cb0b91f1dc3ec9dc6f3d24ca66aa60822db9ddeed50",
+            "predictor_sha256": "sha256:f26f0e97e6bac95eb72f7cb0b91f1dc3ec9dc6f3d24ca66aa60822db9ddeed50",
+            "seed": 20260910
+          }
+        ],
+        "control": "checkpoint_identity_equality",
+        "ok": true
+      },
+      {
+        "arms": [
+          {
+            "arm": "F-1-continuous",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.2629612060118234,
+            "linear_macs": 3867609600,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "1-continuous": 2700
+            },
+            "transition_calls": 2700
+          },
+          {
+            "arm": "F-1-micro",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.3183351610059617,
+            "linear_macs": 4847731200,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "1-micro": 2700
+            },
+            "transition_calls": 2700
+          },
+          {
+            "arm": "F-1-macro",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.290187035992858,
+            "linear_macs": 3954700800,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "1-macro": 2700
+            },
+            "transition_calls": 2700
+          },
+          {
+            "arm": "F-5-continuous",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.05290221801260486,
+            "linear_macs": 773521920,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "5-continuous": 540
+            },
+            "transition_calls": 540
+          },
+          {
+            "arm": "F-5-micro",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.06408394999743905,
+            "linear_macs": 969546240,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "5-micro": 540
+            },
+            "transition_calls": 540
+          },
+          {
+            "arm": "F-5-macro",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.07331840400001965,
+            "linear_macs": 790940160,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "5-macro": 540
+            },
+            "transition_calls": 540
+          },
+          {
+            "arm": "F-15-continuous",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.01797756800078787,
+            "linear_macs": 257840640,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "15-continuous": 180
+            },
+            "transition_calls": 180
+          },
+          {
+            "arm": "F-15-micro",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.02155871300783474,
+            "linear_macs": 323182080,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "15-micro": 180
+            },
+            "transition_calls": 180
+          },
+          {
+            "arm": "F-15-macro",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.019219927009544335,
+            "linear_macs": 263646720,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "15-macro": 180
+            },
+            "transition_calls": 180
+          },
+          {
+            "arm": "J",
+            "candidates": 12,
+            "controller_calls": 824,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.12628728200797923,
+            "linear_macs": 1217005056,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "1-continuous": 343,
+              "1-micro": 12,
+              "5-continuous": 288,
+              "5-macro": 181
+            },
+            "transition_calls": 824
+          },
+          {
+            "arm": "M",
+            "candidates": 12,
+            "controller_calls": 780,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.13485252499231137,
+            "linear_macs": 1146725376,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "1-continuous": 288,
+              "1-micro": 12,
+              "5-continuous": 480
+            },
+            "transition_calls": 780
+          },
+          {
+            "arm": "T",
+            "candidates": 12,
+            "controller_calls": 828,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.09615987700817641,
+            "linear_macs": 1212668928,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "1-continuous": 360,
+              "5-continuous": 468
+            },
+            "transition_calls": 828
+          },
+          {
+            "arm": "D",
+            "candidates": 12,
+            "controller_calls": 540,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.07435813899792265,
+            "linear_macs": 803871744,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "5-continuous": 260,
+              "5-macro": 268,
+              "5-micro": 12
+            },
+            "transition_calls": 540
+          },
+          {
+            "arm": "OL",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.08126663599978201,
+            "linear_macs": 1136957952,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "1-continuous": 264,
+              "1-micro": 36,
+              "5-continuous": 276,
+              "5-macro": 204
+            },
+            "transition_calls": 780
+          },
+          {
+            "arm": "C-F-1",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.22123346099397168,
+            "linear_macs": 5000940000,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "1-continuous": 2700
+            },
+            "transition_calls": 2700
+          },
+          {
+            "arm": "C-F-5",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.041970778998802416,
+            "linear_macs": 1000188000,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "5-continuous": 540
+            },
+            "transition_calls": 540
+          },
+          {
+            "arm": "C-F-15",
+            "candidates": 12,
+            "controller_calls": 0,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.014007965990458615,
+            "linear_macs": 333396000,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "15-continuous": 180
+            },
+            "transition_calls": 180
+          },
+          {
+            "arm": "C-J",
+            "candidates": 12,
+            "controller_calls": 2378,
+            "every_finite_candidate_reaches_endpoint": true,
+            "gpu_seconds": 0.2661152140062768,
+            "linear_macs": 4480853510,
+            "nonfinite": 0,
+            "ok": true,
+            "pair_step_histogram": {
+              "1-continuous": 2355,
+              "15-continuous": 23
+            },
+            "transition_calls": 2378
+          }
+        ],
+        "cell": "angle/issue-77-n1-001/seed20260908",
+        "control": "schedule_mechanics_all_arms",
+        "ok": true,
+        "smoke_only_inputs": {
+          "alpha_T_index": 0,
+          "delta_D_index": 1,
+          "j_counts": [
+            343,
+            12,
+            0,
+            288,
+            0,
+            181,
+            0,
+            0,
+            0
+          ],
+          "ol_schedule": "3x2 0x1 1x1 3x2 5x2 3x1 0x1 3x1 5x2 0x1 3x3 0x2 5x1 3x1 0x1 3x1 5x1 0x1 5x1 0x1 3x1 0x1 3x2 1x1 5x1 0x1 5x3 0x1 3x1 0x3 5x1 3x1 5x1 0x1 3x1 0x1 3x1 0x1 1x1 0x1 3x1 0x1 5x2 3x1 0x2 3x2 0x1 5x2 3x1"
+        }
+      },
+      {
+        "control": "factorized_selector_reference",
+        "ok": true,
+        "rows": 64
+      }
+    ],
+    "device": "cuda",
+    "identity": "issue-96-tau-ad-within-checkpoint-v1",
+    "ok": true,
+    "projected_run_gpu_seconds": 385.2929029801162,
+    "reading": "infrastructure assertions only; no AUC, top-1 or other outcome statistic of this contrast was computed",
+    "run_at": "2026-09-25T10:49:01Z",
+    "schema": "issue_96_tau_ad_within_checkpoint_smoke_v1"
+  },
+  "universe": {
+    "arm_definitions": {
+      "C-F-1": "continuous checkpoint, fixed pair (1, continuous) at every step",
+      "C-F-15": "continuous checkpoint, fixed pair (15, continuous) at every step",
+      "C-F-5": "continuous checkpoint, fixed pair (5, continuous) at every step",
+      "C-J": "continuous checkpoint, joint argmax over its three MatchedController logits (horizon-only, complete control set) = #92 continuous-adaptive-e225",
+      "D": "hybrid checkpoint, description-only: Delta fixed at Delta_D, alpha = argmax_alpha L[Delta_D, alpha]; Delta_D = the modal Delta of J's pooled per-seed step-pair frequencies (outcome-free; 225 is divisible by every Delta so Delta_D is always feasible)",
+      "F-1-continuous": "hybrid checkpoint, fixed pair (1, continuous) at every step",
+      "F-1-macro": "hybrid checkpoint, fixed pair (1, macro) at every step",
+      "F-1-micro": "hybrid checkpoint, fixed pair (1, micro) at every step",
+      "F-15-continuous": "hybrid checkpoint, fixed pair (15, continuous) at every step",
+      "F-15-macro": "hybrid checkpoint, fixed pair (15, macro) at every step",
+      "F-15-micro": "hybrid checkpoint, fixed pair (15, micro) at every step",
+      "F-5-continuous": "hybrid checkpoint, fixed pair (5, continuous) at every step",
+      "F-5-macro": "hybrid checkpoint, fixed pair (5, macro) at every step",
+      "F-5-micro": "hybrid checkpoint, fixed pair (5, micro) at every step",
+      "J": "hybrid checkpoint, joint argmax over the nine MatchedController logits at every step (logits with Delta > remaining masked to -inf inside the controller; argmax ties to the lower PAIRS index) = #92 hybrid-adaptive-e225",
+      "M": "hybrid checkpoint, factorized selector from the same logits, no training: Delta* = argmax_Delta logsumexp_alpha L[Delta, alpha], alpha* = argmax_alpha logsumexp_Delta L[Delta, alpha]; pair (Delta*, alpha*)",
+      "OL": "hybrid checkpoint, open-loop: pairs drawn i.i.d. from J's pooled per-seed step-pair frequencies renormalized over the pairs feasible at the remaining horizon (uniform over feasible pairs if their pooled mass is zero); one draw sequence per cell shared by every candidate; one PCG64(7202) stream consumed in the frozen cell order (inventory, member, seed)",
+      "T": "hybrid checkpoint, temporal-only: alpha fixed at alpha_T, Delta = argmax_Delta L[Delta, alpha_T]; alpha_T = the modal alpha of J's pooled per-seed step-pair frequencies (outcome-free)"
+    },
+    "arms": [
+      "F-1-continuous",
+      "F-1-micro",
+      "F-1-macro",
+      "F-5-continuous",
+      "F-5-micro",
+      "F-5-macro",
+      "F-15-continuous",
+      "F-15-micro",
+      "F-15-macro",
+      "J",
+      "M",
+      "T",
+      "D",
+      "OL",
+      "C-F-1",
+      "C-F-5",
+      "C-F-15",
+      "C-J"
+    ],
+    "excluded": [
+      {
+        "inventory": "angle",
+        "member": "issue-77-n1-005",
+        "rule": "#89 frozen typed-unmeasurable declaration (no executed oracle anchor); inherited, not re-opened",
+        "state": "issue-77-n1-005-a07"
+      }
+    ],
+    "inventories": {
+      "angle": "#87 N1 radius-80 launch-angle sweep of the member's canonical state (9-13 candidates; #87+#89 union verdict table)",
+      "grid": "#93 Arm B 4x4 Cartesian drag grid (16 candidates; #93 oracle verdicts)",
+      "offset": "#93 Arm A offset angle sweep at radius 80 px (11 candidates; #93 oracle verdicts)",
+      "power": "#94 angle x launch-power sweep (20 candidates; #94 oracle verdicts; out of training support per #95, secondary only)"
+    },
+    "members": {
+      "angle": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-014",
+        "issue-77-n1-015",
+        "issue-77-n1-016"
+      ],
+      "grid": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-014",
+        "issue-77-n1-015",
+        "issue-77-n1-016"
+      ],
+      "offset": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-014",
+        "issue-77-n1-015",
+        "issue-77-n1-016"
+      ],
+      "power": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-014",
+        "issue-77-n1-015",
+        "issue-77-n1-016"
+      ]
+    },
+    "mixed_members": {
+      "angle": [
+        "issue-77-n1-001",
+        "issue-77-n1-006",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-014",
+        "issue-77-n1-016"
+      ],
+      "grid": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-014",
+        "issue-77-n1-015"
+      ],
+      "offset": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-014"
+      ],
+      "power": [
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-013",
+        "issue-77-n1-014"
+      ]
+    },
+    "mixed_rule": "a (inventory, member) is mixed iff its retained verdicts hold at least one success and one failure; cells = mixed member x 3 seeds",
+    "pairs_order": [
+      "1-continuous",
+      "1-micro",
+      "1-macro",
+      "5-continuous",
+      "5-micro",
+      "5-macro",
+      "15-continuous",
+      "15-micro",
+      "15-macro"
+    ],
+    "phase_1": [
+      "F-1-continuous",
+      "F-1-micro",
+      "F-1-macro",
+      "F-5-continuous",
+      "F-5-micro",
+      "F-5-macro",
+      "F-15-continuous",
+      "F-15-micro",
+      "F-15-macro",
+      "J",
+      "M",
+      "C-F-1",
+      "C-F-5",
+      "C-F-15",
+      "C-J"
+    ],
+    "phase_2": [
+      "T",
+      "D",
+      "OL"
+    ],
+    "primary": "grid",
+    "records": 3186,
+    "scheduled_cells": 177,
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ]
+  },
+  "validation_command": "python -u -m scripts.run_tau_ad_within_checkpoint --validate",
+  "version": 1
+}
