@@ -1,0 +1,131 @@
+{
+  "anchor": {
+    "cell": "oracle--issue-77-n1-001-a00--a03",
+    "sha256": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c",
+    "source": "issue87_retained"
+  },
+  "cell": {
+    "arm": "D",
+    "endpoint": 225,
+    "family": "hybrid",
+    "identity": "decision--offset--issue-77-n1-001--seed20260908--D",
+    "inventory": "offset",
+    "member": "issue-77-n1-001",
+    "seed": 20260908,
+    "state": "issue-77-n1-001-a00"
+  },
+  "decision": {
+    "candidate_count": 11,
+    "chosen_ordinal": 8,
+    "controller_calls": 495,
+    "delta_D": 5,
+    "failure": null,
+    "gpu_seconds": 0.08193556699552573,
+    "linear_macs": 736828672,
+    "pair_step_counts": {
+      "5-continuous": 240,
+      "5-macro": 244,
+      "5-micro": 11
+    },
+    "ranking": [
+      {
+        "branch_identity": "issue-77-n1-001-o00",
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 1.9393441677093506,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-o01",
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 1.983976125717163,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-o02",
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 1.9842898845672607,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-o03",
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 1.9763401746749878,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-o04",
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 1.9663153886795044,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-o05",
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 1.9526137113571167,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-o06",
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 1.9528836011886597,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-o07",
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 1.9566645622253418,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-o08",
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 1.9196372032165527,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-o09",
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 1.9344096183776855,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-o10",
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 1.9291421175003052,
+        "steps": 225
+      }
+    ],
+    "schedules": {
+      "0": "4x1 3x13 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x17",
+      "1": "4x1 3x13 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x11",
+      "10": "4x1 3x13 5x1 3x2 5x1 3x1 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x10",
+      "2": "4x1 3x13 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x11",
+      "3": "4x1 3x13 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x11",
+      "4": "4x1 3x13 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x11",
+      "5": "4x1 3x13 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x17",
+      "6": "4x1 3x13 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x17",
+      "7": "4x1 3x13 5x1 3x2 5x1 3x1 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x2 3x1 5x4 3x1 5x4",
+      "8": "4x1 3x13 5x1 3x2 5x1 3x1 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x15",
+      "9": "4x1 3x13 5x1 3x2 5x1 3x1 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x2 3x1 5x7"
+    },
+    "selected_predicted_cost": 1.9196372032165527,
+    "transition_calls": 495
+  },
+  "engine_seconds": 0,
+  "issue_64_authorized": false,
+  "plan_identity": "issue-96-tau-ad-within-checkpoint-v1",
+  "plan_version": 1,
+  "schema": "issue_96_tau_ad_within_checkpoint_decision_v1",
+  "wall_seconds": 0.08479437099595089
+}

@@ -1,0 +1,131 @@
+{
+  "anchor": {
+    "cell": "oracle--issue-77-n1-015-a06--a00",
+    "sha256": "sha256:2fb4165a6b20f036b60316f1a7c02998d788220ddbd4a23db085d10ea8126659",
+    "source": "issue87_retained"
+  },
+  "cell": {
+    "arm": "D",
+    "endpoint": 225,
+    "family": "hybrid",
+    "identity": "decision--offset--issue-77-n1-015--seed20260908--D",
+    "inventory": "offset",
+    "member": "issue-77-n1-015",
+    "seed": 20260908,
+    "state": "issue-77-n1-015-a06"
+  },
+  "decision": {
+    "candidate_count": 11,
+    "chosen_ordinal": 8,
+    "controller_calls": 495,
+    "delta_D": 5,
+    "failure": null,
+    "gpu_seconds": 0.0748980880016461,
+    "linear_macs": 737134848,
+    "pair_step_counts": {
+      "5-continuous": 210,
+      "5-macro": 276,
+      "5-micro": 9
+    },
+    "ranking": [
+      {
+        "branch_identity": "issue-77-n1-015-o00",
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 2.0873920917510986,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-o01",
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 2.0825371742248535,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-o02",
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 2.0767083168029785,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-o03",
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 2.072326898574829,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-o04",
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 2.019684314727783,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-o05",
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 2.0058748722076416,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-o06",
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 2.010495901107788,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-o07",
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 2.001634120941162,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-o08",
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 1.9987704753875732,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-o09",
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 2.047518253326416,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-o10",
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 2.051302671432495,
+        "steps": 225
+      }
+    ],
+    "schedules": {
+      "0": "3x13 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x7 3x1 5x5 3x1 5x2",
+      "1": "3x13 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x3 3x1 5x7 3x1 5x4",
+      "10": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x7 3x1 5x4",
+      "2": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x3 3x1 5x7 3x1 5x4",
+      "3": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x3 3x1 5x7 3x1 5x4",
+      "4": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x9 3x1 5x12",
+      "5": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x22",
+      "6": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x22",
+      "7": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x22",
+      "8": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x22",
+      "9": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x7 3x1 5x4"
+    },
+    "selected_predicted_cost": 1.9987704753875732,
+    "transition_calls": 495
+  },
+  "engine_seconds": 0,
+  "issue_64_authorized": false,
+  "plan_identity": "issue-96-tau-ad-within-checkpoint-v1",
+  "plan_version": 1,
+  "schema": "issue_96_tau_ad_within_checkpoint_decision_v1",
+  "wall_seconds": 0.07762774000002537
+}

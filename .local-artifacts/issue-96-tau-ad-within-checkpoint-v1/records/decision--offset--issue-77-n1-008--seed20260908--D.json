@@ -1,0 +1,131 @@
+{
+  "anchor": {
+    "cell": "oracle--issue-77-n1-008-a05--a00",
+    "sha256": "sha256:bf242ddc54e161a5c05f4b2331499b4a8f17caefcf6c58ff90d81e5bba4d8bfe",
+    "source": "issue87_retained"
+  },
+  "cell": {
+    "arm": "D",
+    "endpoint": 225,
+    "family": "hybrid",
+    "identity": "decision--offset--issue-77-n1-008--seed20260908--D",
+    "inventory": "offset",
+    "member": "issue-77-n1-008",
+    "seed": 20260908,
+    "state": "issue-77-n1-008-a05"
+  },
+  "decision": {
+    "candidate_count": 11,
+    "chosen_ordinal": 10,
+    "controller_calls": 495,
+    "delta_D": 5,
+    "failure": null,
+    "gpu_seconds": 0.08843951800372452,
+    "linear_macs": 736699648,
+    "pair_step_counts": {
+      "5-continuous": 244,
+      "5-macro": 240,
+      "5-micro": 11
+    },
+    "ranking": [
+      {
+        "branch_identity": "issue-77-n1-008-o00",
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 93.54570782184601,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-008-o01",
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 114.56185376644135,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-008-o02",
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 107.35674774646759,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-008-o03",
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 96.02162539958954,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-008-o04",
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 116.56433808803558,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-008-o05",
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 114.41467559337616,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-008-o06",
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 112.44191205501556,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-008-o07",
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 90.26785063743591,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-008-o08",
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 91.7747985124588,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-008-o09",
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 88.48113477230072,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-008-o10",
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 52.79287135601044,
+        "steps": 225
+      }
+    ],
+    "schedules": {
+      "0": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x3",
+      "1": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x4",
+      "10": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x3 3x1 5x4 3x1 5x5",
+      "2": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x4",
+      "3": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x5 3x1 5x2",
+      "4": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x8",
+      "5": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x8",
+      "6": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x8",
+      "7": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x5 3x1 5x2",
+      "8": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x5 3x1 5x2",
+      "9": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x3 3x1 5x8 3x1 5x2"
+    },
+    "selected_predicted_cost": 52.79287135601044,
+    "transition_calls": 495
+  },
+  "engine_seconds": 0,
+  "issue_64_authorized": false,
+  "plan_identity": "issue-96-tau-ad-within-checkpoint-v1",
+  "plan_version": 1,
+  "schema": "issue_96_tau_ad_within_checkpoint_decision_v1",
+  "wall_seconds": 0.09112883900525048
+}

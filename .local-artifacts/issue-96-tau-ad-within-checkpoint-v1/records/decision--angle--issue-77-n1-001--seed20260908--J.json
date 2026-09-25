@@ -1,0 +1,139 @@
+{
+  "anchor": {
+    "cell": "oracle--issue-77-n1-001-a00--a03",
+    "sha256": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c",
+    "source": "issue87_retained"
+  },
+  "cell": {
+    "arm": "J",
+    "endpoint": 225,
+    "family": "hybrid",
+    "identity": "decision--angle--issue-77-n1-001--seed20260908--J",
+    "inventory": "angle",
+    "member": "issue-77-n1-001",
+    "seed": 20260908,
+    "state": "issue-77-n1-001-a00"
+  },
+  "decision": {
+    "candidate_count": 12,
+    "chosen_ordinal": 5,
+    "controller_calls": 824,
+    "failure": null,
+    "gpu_seconds": 0.1300654310034588,
+    "linear_macs": 1217005056,
+    "pair_step_counts": {
+      "1-continuous": 343,
+      "1-micro": 12,
+      "5-continuous": 288,
+      "5-macro": 181
+    },
+    "ranking": [
+      {
+        "branch_identity": "issue-77-n1-001-a00",
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 2.6797220706939697,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a01",
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 2.674762010574341,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a02",
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 2.6587181091308594,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a03",
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 2.6270036697387695,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a04",
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 2.6284408569335938,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a05",
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 2.564507007598877,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a06",
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 2.661045551300049,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a07",
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 2.583552360534668,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a08",
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 2.760885715484619,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a09",
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 2.770860195159912,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a10",
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 2.77590274810791,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-001-a12",
+        "excluded": false,
+        "ordinal": 12,
+        "predicted_cost": 2.749197483062744,
+        "steps": 225
+      }
+    ],
+    "schedules": {
+      "0": "1x1 0x25 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x18 0x4",
+      "1": "1x1 0x25 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x3 5x1 3x2 5x2 3x2 5x1 3x13 0x4",
+      "10": "1x1 0x25 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x3 5x1 3x2 5x2 3x2 5x1 3x13 0x4",
+      "12": "1x1 0x25 5x1 3x2 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x3 5x1 3x2 5x2 3x2 5x1 3x16 0x4",
+      "2": "1x1 0x25 5x1 3x1 5x1 3x2 5x1 3x2 5x1 3x1 5x1 3x2 5x1 3x2 5x2 3x1 5x4 3x1 5x4 3x1 5x2 3x1 5x2 3x5 0x4",
+      "3": "1x1 0x25 5x1 3x1 5x1 3x2 5x1 3x2 5x1 3x1 5x1 3x2 5x1 3x2 5x2 3x1 5x4 3x1 5x4 3x1 5x4 3x1 5x2 3x3 0x4",
+      "4": "1x1 0x25 5x1 3x1 5x1 3x2 5x1 3x2 5x1 3x1 5x1 3x2 5x1 3x2 5x2 3x1 5x4 3x1 5x4 3x1 5x4 3x1 5x2 3x3 0x4",
+      "5": "1x1 0x24 5x1 3x1 5x1 3x2 5x1 3x2 5x1 3x1 5x1 3x2 5x1 3x1 5x1 3x2 5x2 3x1 5x2 3x1 5x2 3x1 5x4 3x1 5x2 3x1 5x2 3x3",
+      "6": "1x1 0x25 5x1 3x1 5x1 3x2 5x1 3x2 5x1 3x1 5x1 3x2 5x1 3x2 5x2 3x1 5x4 3x1 5x4 3x1 5x4 3x6 0x4",
+      "7": "1x1 0x25 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x2 5x1 3x2 5x2 3x1 5x4 3x1 5x8 3x1 5x2 3x1 5x2 3x3 0x4",
+      "8": "1x1 0x25 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x18 0x4",
+      "9": "1x1 0x25 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x3 5x1 3x1 5x1 3x18 0x4"
+    },
+    "selected_predicted_cost": 2.564507007598877,
+    "transition_calls": 824
+  },
+  "engine_seconds": 0,
+  "issue_64_authorized": false,
+  "plan_identity": "issue-96-tau-ad-within-checkpoint-v1",
+  "plan_version": 1,
+  "schema": "issue_96_tau_ad_within_checkpoint_decision_v1",
+  "wall_seconds": 0.13319692900404334
+}

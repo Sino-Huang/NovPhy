@@ -1,0 +1,132 @@
+{
+  "anchor": {
+    "cell": "oracle--issue-77-n1-004-a07--a01",
+    "sha256": "sha256:df06fe27a72e5fd9bc249bab01bd361ec3f91f09edd5e02c574ec88bc93f5691",
+    "source": "issue87_retained"
+  },
+  "cell": {
+    "arm": "M",
+    "endpoint": 225,
+    "family": "hybrid",
+    "identity": "decision--offset--issue-77-n1-004--seed20260908--M",
+    "inventory": "offset",
+    "member": "issue-77-n1-004",
+    "seed": 20260908,
+    "state": "issue-77-n1-004-a07"
+  },
+  "decision": {
+    "candidate_count": 11,
+    "chosen_ordinal": 8,
+    "controller_calls": 715,
+    "failure": null,
+    "gpu_seconds": 0.11587328198947944,
+    "linear_macs": 1064873728,
+    "pair_step_counts": {
+      "1-continuous": 238,
+      "1-macro": 26,
+      "1-micro": 11,
+      "5-continuous": 41,
+      "5-macro": 399
+    },
+    "ranking": [
+      {
+        "branch_identity": "issue-77-n1-004-o00",
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 173.6666874885559,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-004-o01",
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 165.76148962974548,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-004-o02",
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 169.4364311695099,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-004-o03",
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 207.3859828710556,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-004-o04",
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 174.0213862657547,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-004-o05",
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 171.25094938278198,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-004-o06",
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 176.17273342609406,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-004-o07",
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 169.36780679225922,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-004-o08",
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 155.5755877494812,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-004-o09",
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 159.19101560115814,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-004-o10",
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 174.92683744430542,
+        "steps": 225
+      }
+    ],
+    "schedules": {
+      "0": "1x1 0x18 2x1 0x1 2x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x31 0x3",
+      "1": "1x1 0x17 2x1 0x1 2x1 0x2 5x1 3x1 5x1 3x1 5x2 3x1 5x33 0x2",
+      "10": "1x1 0x18 2x1 0x1 2x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x31 2x1 0x2",
+      "2": "1x1 0x17 2x1 0x1 2x1 0x2 5x1 3x1 5x1 3x1 5x2 3x1 5x33 0x2",
+      "3": "1x1 0x17 2x1 0x1 2x1 0x2 5x1 3x1 5x1 3x1 5x2 3x1 5x33 2x1 0x1",
+      "4": "1x1 0x17 2x1 0x1 2x1 0x2 5x1 3x1 5x1 3x1 5x2 3x1 5x33 0x2",
+      "5": "1x1 0x17 2x1 0x1 2x1 0x2 5x1 3x1 5x1 3x1 5x2 3x1 5x33 0x2",
+      "6": "1x1 0x17 2x1 0x1 2x1 0x2 5x1 3x1 5x1 3x1 5x2 3x1 5x33 0x2",
+      "7": "1x1 0x17 2x1 0x1 2x1 0x2 5x1 3x1 5x1 3x1 5x2 3x1 5x33 0x2",
+      "8": "1x1 0x18 2x1 0x1 2x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x31 2x1 0x2",
+      "9": "1x1 0x18 2x1 0x1 2x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x31 2x1 0x2"
+    },
+    "selected_predicted_cost": 155.5755877494812,
+    "transition_calls": 715
+  },
+  "engine_seconds": 0,
+  "issue_64_authorized": false,
+  "plan_identity": "issue-96-tau-ad-within-checkpoint-v1",
+  "plan_version": 1,
+  "schema": "issue_96_tau_ad_within_checkpoint_decision_v1",
+  "wall_seconds": 0.118577973000356
+}

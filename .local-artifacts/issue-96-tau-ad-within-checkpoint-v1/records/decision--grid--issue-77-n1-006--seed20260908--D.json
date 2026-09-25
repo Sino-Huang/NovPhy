@@ -1,0 +1,171 @@
+{
+  "anchor": {
+    "cell": "oracle--issue-77-n1-006-a05--a00",
+    "sha256": "sha256:ae21c3f8c8d66f5e4a45ca88bb082c14c17e97412b92a67d9824e3ed178b6267",
+    "source": "issue87_retained"
+  },
+  "cell": {
+    "arm": "D",
+    "endpoint": 225,
+    "family": "hybrid",
+    "identity": "decision--grid--issue-77-n1-006--seed20260908--D",
+    "inventory": "grid",
+    "member": "issue-77-n1-006",
+    "seed": 20260908,
+    "state": "issue-77-n1-006-a05"
+  },
+  "decision": {
+    "candidate_count": 16,
+    "chosen_ordinal": 14,
+    "controller_calls": 720,
+    "delta_D": 5,
+    "failure": null,
+    "gpu_seconds": 0.09486700700654183,
+    "linear_macs": 1072947200,
+    "pair_step_counts": {
+      "5-continuous": 312,
+      "5-macro": 392,
+      "5-micro": 16
+    },
+    "ranking": [
+      {
+        "branch_identity": "issue-77-n1-006-g00",
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 92.46482867002487,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g01",
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 107.19094318151474,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g02",
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 92.57308399677277,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g03",
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 147.78238832950592,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g04",
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 99.60278958082199,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g05",
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 93.88765704631805,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g06",
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 149.47756814956665,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g07",
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 140.0632438659668,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g08",
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 110.3601685166359,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g09",
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 95.04289716482162,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g10",
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 140.24044823646545,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g11",
+        "excluded": false,
+        "ordinal": 11,
+        "predicted_cost": 148.4273898601532,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g12",
+        "excluded": false,
+        "ordinal": 12,
+        "predicted_cost": 101.11244523525238,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g13",
+        "excluded": false,
+        "ordinal": 13,
+        "predicted_cost": 140.2105929851532,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g14",
+        "excluded": false,
+        "ordinal": 14,
+        "predicted_cost": 87.10621643066406,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-006-g15",
+        "excluded": false,
+        "ordinal": 15,
+        "predicted_cost": 137.45265984535217,
+        "steps": 225
+      }
+    ],
+    "schedules": {
+      "0": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x3",
+      "1": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x5 3x1 5x2",
+      "10": "4x1 3x10 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x3 3x1 5x16",
+      "11": "4x1 3x10 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x20",
+      "12": "4x1 3x10 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x15",
+      "13": "4x1 3x10 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x3 3x1 5x16",
+      "14": "4x1 3x9 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x3 3x1 5x17",
+      "15": "4x1 3x9 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x20",
+      "2": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x5 3x1 5x2",
+      "3": "4x1 3x10 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x3 3x1 5x16",
+      "4": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x5 3x1 5x2",
+      "5": "4x1 3x11 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x5 3x1 5x2",
+      "6": "4x1 3x10 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x3 3x1 5x16",
+      "7": "4x1 3x10 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x3 3x1 5x16",
+      "8": "4x1 3x10 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x7 3x1 5x1",
+      "9": "4x1 3x10 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x3 3x1 5x3 3x1 5x7 3x1 5x4"
+    },
+    "selected_predicted_cost": 87.10621643066406,
+    "transition_calls": 720
+  },
+  "engine_seconds": 0,
+  "issue_64_authorized": false,
+  "plan_identity": "issue-96-tau-ad-within-checkpoint-v1",
+  "plan_version": 1,
+  "schema": "issue_96_tau_ad_within_checkpoint_decision_v1",
+  "wall_seconds": 0.09872803700272925
+}

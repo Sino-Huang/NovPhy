@@ -1,0 +1,131 @@
+{
+  "anchor": {
+    "cell": "oracle--issue-77-n1-013-a04--a00",
+    "sha256": "sha256:38294a502cc227fe3ec71515b92828b806dbbf3cab5bbcbc4b0434134740ac9e",
+    "source": "issue87_retained"
+  },
+  "cell": {
+    "arm": "M",
+    "endpoint": 225,
+    "family": "hybrid",
+    "identity": "decision--offset--issue-77-n1-013--seed20260908--M",
+    "inventory": "offset",
+    "member": "issue-77-n1-013",
+    "seed": 20260908,
+    "state": "issue-77-n1-013-a04"
+  },
+  "decision": {
+    "candidate_count": 11,
+    "chosen_ordinal": 5,
+    "controller_calls": 715,
+    "failure": null,
+    "gpu_seconds": 0.11791899398667738,
+    "linear_macs": 1060364544,
+    "pair_step_counts": {
+      "1-continuous": 198,
+      "1-macro": 77,
+      "5-continuous": 108,
+      "5-macro": 332
+    },
+    "ranking": [
+      {
+        "branch_identity": "issue-77-n1-013-o00",
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 3.73075532913208,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-013-o01",
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 3.5245912075042725,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-013-o02",
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 3.3493332862854004,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-013-o03",
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 3.427299976348877,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-013-o04",
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 3.5176501274108887,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-013-o05",
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 3.1498379707336426,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-013-o06",
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 3.2551236152648926,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-013-o07",
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 3.557568073272705,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-013-o08",
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 3.448923110961914,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-013-o09",
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 3.4182138442993164,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-013-o10",
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 3.3703174591064453,
+        "steps": 225
+      }
+    ],
+    "schedules": {
+      "0": "0x13 2x1 0x2 2x1 0x1 2x1 0x1 2x2 0x1 2x2 5x5 3x1 5x3 3x1 5x7 3x1 5x7 3x1 5x2 3x1 5x2 3x9",
+      "1": "0x13 2x1 0x2 2x1 0x1 2x1 0x1 2x2 0x1 2x2 5x6 3x1 5x15 3x1 5x4 3x1 5x2 3x1 5x2 3x7",
+      "10": "0x13 2x1 0x2 2x1 0x1 2x1 0x1 2x2 0x1 2x2 5x2 3x1 5x25 3x1 5x2 3x1 5x2 3x6",
+      "2": "0x13 2x1 0x2 2x1 0x1 2x1 0x1 2x2 0x1 2x2 5x4 3x1 5x23 3x1 5x2 3x1 5x2 3x6",
+      "3": "0x13 2x1 0x2 2x1 0x1 2x1 0x1 2x2 0x1 2x2 5x4 3x1 5x19 3x1 5x4 3x1 5x2 3x1 5x1 3x6",
+      "4": "0x13 2x1 0x2 2x1 0x1 2x1 0x1 2x2 0x1 2x2 5x4 3x1 5x17 3x1 5x4 3x1 5x2 3x1 5x2 3x7",
+      "5": "0x13 2x1 0x2 2x1 0x1 2x1 0x1 2x2 0x1 2x2 5x30 3x1 5x2 3x1 5x2 3x4",
+      "6": "0x13 2x1 0x2 2x1 0x1 2x1 0x1 2x2 0x1 2x2 5x26 3x1 5x4 3x1 5x1 3x2 5x1 3x4",
+      "7": "0x13 2x1 0x2 2x1 0x1 2x1 0x1 2x2 0x1 2x2 5x2 3x1 5x19 3x1 5x4 3x1 5x2 3x1 5x2 3x7",
+      "8": "0x13 2x1 0x2 2x1 0x1 2x1 0x1 2x2 0x1 2x2 5x2 3x1 5x21 3x1 5x4 3x1 5x2 3x1 5x1 3x6",
+      "9": "0x13 2x1 0x2 2x1 0x1 2x1 0x1 2x2 0x1 2x2 5x2 3x1 5x21 3x1 5x4 3x1 5x2 3x1 5x2 3x5"
+    },
+    "selected_predicted_cost": 3.1498379707336426,
+    "transition_calls": 715
+  },
+  "engine_seconds": 0,
+  "issue_64_authorized": false,
+  "plan_identity": "issue-96-tau-ad-within-checkpoint-v1",
+  "plan_version": 1,
+  "schema": "issue_96_tau_ad_within_checkpoint_decision_v1",
+  "wall_seconds": 0.12062133499421179
+}

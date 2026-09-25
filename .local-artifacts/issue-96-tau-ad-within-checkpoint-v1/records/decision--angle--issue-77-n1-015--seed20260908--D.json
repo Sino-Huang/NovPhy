@@ -1,0 +1,147 @@
+{
+  "anchor": {
+    "cell": "oracle--issue-77-n1-015-a06--a00",
+    "sha256": "sha256:2fb4165a6b20f036b60316f1a7c02998d788220ddbd4a23db085d10ea8126659",
+    "source": "issue87_retained"
+  },
+  "cell": {
+    "arm": "D",
+    "endpoint": 225,
+    "family": "hybrid",
+    "identity": "decision--angle--issue-77-n1-015--seed20260908--D",
+    "inventory": "angle",
+    "member": "issue-77-n1-015",
+    "seed": 20260908,
+    "state": "issue-77-n1-015-a06"
+  },
+  "decision": {
+    "candidate_count": 13,
+    "chosen_ordinal": 6,
+    "controller_calls": 585,
+    "delta_D": 5,
+    "failure": null,
+    "gpu_seconds": 0.0752104030107148,
+    "linear_macs": 870954752,
+    "pair_step_counts": {
+      "5-continuous": 248,
+      "5-macro": 327,
+      "5-micro": 10
+    },
+    "ranking": [
+      {
+        "branch_identity": "issue-77-n1-015-a00",
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 2.026226758956909,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a01",
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 2.081188201904297,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a02",
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 2.0834968090057373,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a03",
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 2.040400266647339,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a04",
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 2.0753257274627686,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a05",
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 2.065645456314087,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a06",
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 1.9864916801452637,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a07",
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 2.0177533626556396,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a08",
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 2.014827251434326,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a09",
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 1.9965488910675049,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a10",
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 2.002309560775757,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a11",
+        "excluded": false,
+        "ordinal": 11,
+        "predicted_cost": 2.049079179763794,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-a12",
+        "excluded": false,
+        "ordinal": 12,
+        "predicted_cost": 2.0540261268615723,
+        "steps": 225
+      }
+    ],
+    "schedules": {
+      "0": "3x13 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x3 3x1 5x18",
+      "1": "3x13 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x3 3x1 5x9 3x1 5x5 3x1 5x2",
+      "10": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x22",
+      "11": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x7 3x1 5x4",
+      "12": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x7 3x1 5x4",
+      "2": "3x13 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x3 3x1 5x7 3x1 5x4",
+      "3": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x7 3x1 5x8",
+      "4": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x3 3x1 5x7 3x1 5x4",
+      "5": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x5 3x1 5x3 3x1 5x7 3x1 5x4",
+      "6": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x22",
+      "7": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x22",
+      "8": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x6 3x1 5x15",
+      "9": "4x1 3x12 5x1 3x2 5x1 3x1 5x1 3x1 5x2 3x1 5x22"
+    },
+    "selected_predicted_cost": 1.9864916801452637,
+    "transition_calls": 585
+  },
+  "engine_seconds": 0,
+  "issue_64_authorized": false,
+  "plan_identity": "issue-96-tau-ad-within-checkpoint-v1",
+  "plan_version": 1,
+  "schema": "issue_96_tau_ad_within_checkpoint_decision_v1",
+  "wall_seconds": 0.07835876100580208
+}

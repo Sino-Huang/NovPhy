@@ -1,0 +1,101 @@
+{
+  "coordinates": {
+    "20260908": {
+      "alpha_T": "continuous",
+      "alpha_T_index": 0,
+      "alpha_marginal_steps": [
+        48228,
+        698,
+        9666
+      ],
+      "delta_D": 5,
+      "delta_D_index": 1,
+      "delta_marginal_steps": [
+        24315,
+        34092,
+        185
+      ]
+    },
+    "20260909": {
+      "alpha_T": "macro",
+      "alpha_T_index": 2,
+      "alpha_marginal_steps": [
+        110,
+        908,
+        162306
+      ],
+      "delta_D": 1,
+      "delta_D_index": 0,
+      "delta_marginal_steps": [
+        159695,
+        1658,
+        1971
+      ]
+    },
+    "20260910": {
+      "alpha_T": "macro",
+      "alpha_T_index": 2,
+      "alpha_marginal_steps": [
+        4580,
+        30312,
+        129978
+      ],
+      "delta_D": 1,
+      "delta_D_index": 0,
+      "delta_marginal_steps": [
+        156700,
+        8170,
+        0
+      ]
+    }
+  },
+  "counts": {
+    "20260908": [
+      23534,
+      698,
+      83,
+      24694,
+      0,
+      9398,
+      0,
+      0,
+      185
+    ],
+    "20260909": [
+      103,
+      0,
+      159592,
+      0,
+      775,
+      883,
+      7,
+      133,
+      1831
+    ],
+    "20260910": [
+      3097,
+      23636,
+      129967,
+      1483,
+      6676,
+      11,
+      0,
+      0,
+      0
+    ]
+  },
+  "identity": "issue-96-tau-ad-within-checkpoint-v1",
+  "pairs": [
+    "1-continuous",
+    "1-micro",
+    "1-macro",
+    "5-continuous",
+    "5-micro",
+    "5-macro",
+    "15-continuous",
+    "15-micro",
+    "15-macro"
+  ],
+  "rule": "J step-pair counts pooled per seed over every scheduled cell of all four inventories and every candidate (outcome-free: controller traces only); alpha_T / Delta_D = modal marginal, ties to the lower index",
+  "schema": "issue_96_tau_ad_within_checkpoint_frequencies_v1"
+}

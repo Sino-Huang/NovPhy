@@ -1,0 +1,172 @@
+{
+  "anchor": {
+    "cell": "oracle--issue-77-n1-015-a06--a00",
+    "sha256": "sha256:2fb4165a6b20f036b60316f1a7c02998d788220ddbd4a23db085d10ea8126659",
+    "source": "issue87_retained"
+  },
+  "cell": {
+    "arm": "M",
+    "endpoint": 225,
+    "family": "hybrid",
+    "identity": "decision--grid--issue-77-n1-015--seed20260909--M",
+    "inventory": "grid",
+    "member": "issue-77-n1-015",
+    "seed": 20260909,
+    "state": "issue-77-n1-015-a06"
+  },
+  "decision": {
+    "candidate_count": 16,
+    "chosen_ordinal": 2,
+    "controller_calls": 3002,
+    "failure": null,
+    "gpu_seconds": 0.35862005499075167,
+    "linear_macs": 4501427712,
+    "pair_step_counts": {
+      "1-macro": 2937,
+      "1-micro": 8,
+      "15-macro": 37,
+      "5-macro": 4,
+      "5-micro": 16
+    },
+    "ranking": [
+      {
+        "branch_identity": "issue-77-n1-015-g00",
+        "excluded": false,
+        "ordinal": 0,
+        "predicted_cost": 1.5306682586669922,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g01",
+        "excluded": false,
+        "ordinal": 1,
+        "predicted_cost": 2.0,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g02",
+        "excluded": false,
+        "ordinal": 2,
+        "predicted_cost": 1.0,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g03",
+        "excluded": false,
+        "ordinal": 3,
+        "predicted_cost": 1.2457003593444824,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g04",
+        "excluded": false,
+        "ordinal": 4,
+        "predicted_cost": 2.0,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g05",
+        "excluded": false,
+        "ordinal": 5,
+        "predicted_cost": 2.0,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g06",
+        "excluded": false,
+        "ordinal": 6,
+        "predicted_cost": 1.8498265743255615,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g07",
+        "excluded": false,
+        "ordinal": 7,
+        "predicted_cost": 2.0,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g08",
+        "excluded": false,
+        "ordinal": 8,
+        "predicted_cost": 2.0,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g09",
+        "excluded": false,
+        "ordinal": 9,
+        "predicted_cost": 2.0,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g10",
+        "excluded": false,
+        "ordinal": 10,
+        "predicted_cost": 2.0,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g11",
+        "excluded": false,
+        "ordinal": 11,
+        "predicted_cost": 2.0,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g12",
+        "excluded": false,
+        "ordinal": 12,
+        "predicted_cost": 2.0,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g13",
+        "excluded": false,
+        "ordinal": 13,
+        "predicted_cost": 2.0,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g14",
+        "excluded": false,
+        "ordinal": 14,
+        "predicted_cost": 2.0,
+        "steps": 225
+      },
+      {
+        "branch_identity": "issue-77-n1-015-g15",
+        "excluded": false,
+        "ordinal": 15,
+        "predicted_cost": 2.0,
+        "steps": 225
+      }
+    ],
+    "schedules": {
+      "0": "4x1 2x174 8x3 2x1",
+      "1": "4x1 2x174 8x3 2x1",
+      "10": "4x1 1x1 2x176 8x2 2x6 5x1 2x2",
+      "11": "4x1 1x1 2x174 8x3",
+      "12": "4x1 2x193 8x1 2x5 5x1 2x2",
+      "13": "4x1 2x191 8x1 2x6 5x1 2x3",
+      "14": "4x1 1x1 2x181 8x2 2x8",
+      "15": "4x1 1x1 2x179 8x2 2x10",
+      "2": "4x1 1x1 2x167 8x3 2x7",
+      "3": "4x1 1x1 2x166 8x3 2x8",
+      "4": "4x1 2x180 8x2 2x10",
+      "5": "4x1 2x179 8x2 2x6 5x1",
+      "6": "4x1 1x1 2x171 8x3 2x3",
+      "7": "4x1 1x1 2x170 8x3 2x4",
+      "8": "4x1 2x186 8x2 2x4",
+      "9": "4x1 2x185 8x2 2x5"
+    },
+    "selected_predicted_cost": 1.0,
+    "transition_calls": 3002
+  },
+  "engine_seconds": 0,
+  "issue_64_authorized": false,
+  "plan_identity": "issue-96-tau-ad-within-checkpoint-v1",
+  "plan_version": 1,
+  "schema": "issue_96_tau_ad_within_checkpoint_decision_v1",
+  "wall_seconds": 0.3624192229908658
+}
