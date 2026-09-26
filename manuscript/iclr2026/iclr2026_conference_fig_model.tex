@@ -1,0 +1,66 @@
+%!TEX root = iclr2026_conference.tex
+% ==== BRIEF FIG (fig:mth:arch) ====
+% [中] 定位：方法总览；一个按请求条件化的预测器服务全部九种 (Delta, alpha) 请求，
+%      而非九个模型。面向 JEPA / world-model 读者，突出逐次预测可变的粒度。
+%      主张：蓝色主路从真实 RGB 经冻结 CNN 对象槽编码器到同一连续 carrier；青绿色
+%      请求码调制全部三个 FiLM 块；micro/macro 的软谓词经无偏置适配器在块前注入。
+%      递归只更新 carrier，直到端点；按预测端点任务代价最小化选择候选 launch。
+%      证据：world_model/training/cnn_hybrid.py:18-22,33-86（九请求、236 维、384 宽、
+%      三块、残差、软读出与块前适配器）；world_model/model/predictor.py:218-274
+%      （sinusoidal Delta + alpha embedding 联合码、零初始化 scale/shift）。
+%      world_model/training/cohort_v2_visual_parser.py:272-291（CNN 对象槽 parser）；
+%      world_model/data/deployment_temporal.py:553-554,599-621,680-719,734-750
+%      （当前帧及可选前帧、无梯度解析、2+18x13 carrier）；
+%      scripts/run_issue_70_parser_repair.py:96-98,464-472（维度与冻结检查点装载）。
+%      policy 实际为 236 carrier + 5 action + 1 remaining = 242 -> 128 -> 9，
+%      remaining 为 min(remaining,60)/60，越界请求被 mask：
+%      world_model/training/matched_dynamics.py:91-104,132-154。
+%      action = (drag_x/480,drag_y/480,release/1000,tap/1000,1)：
+%      scripts/run_lookahead_control.py:588-591；端点评分及最小值选择：
+%      scripts/run_tau_ad_within_checkpoint.py:401-458；run_lookahead_control.py:659-664。
+%      训练：world_model/training/cnn_hybrid.py:89-139（局部 teacher-forced MSE、
+%      递归 MSE、0.1 symbolic BCE、0.01 carrier bound）；
+%      scripts/run_issue_77_n1_train.py:228-260,289-303,451-452,480-498,516-563
+%      （engine 标签、冻结编码目标、九请求轮转、DP 标签 CE 与第二轮 DAgger 式聚合）。
+%      DP 步代价 = Delta*(1/236)||F_theta(z,a,r)-z_future||^2
+%      + 1e-4*(MAC_F(r)+MAC_pi)/MAC_F(15,continuous)，再加后继 value；
+%      world_model/training/matched_dynamics.py:107-111,157-184。
+%      手法与边界：真实图仅等比例裁剪 figures/source/001_common_decision.png；
+%      槽堆栈是 carrier 图标，着色格为示意选择；训练灰色虚线带与运行时路径隔开。
+%      JEPA-style latent predictor over a frozen object-slot encoder；无 EMA target encoder，
+%      无 stop-gradient target branch。policy 仅在 decision-only imagined rollouts 受评，
+%      从未闭环执行；scripts/run_tau_ad_within_checkpoint.py:12-17,845-855。
+% [EN] Role: Method overview for JEPA / world-model readers: one shared predictor serves
+%      nine requests, with granularity selected anew for each imagined prediction.
+%      Claim: RGB becomes a frozen object-slot carrier (blue); the joint request code
+%      modulates all three FiLM blocks (teal); micro/macro soft readouts feed back through
+%      bias-free adapters before the blocks (violet/orange). Every mode advances the same
+%      continuous carrier. Rollouts rank candidate launches by predicted endpoint task cost.
+%      Evidence: world_model/training/cnn_hybrid.py:18-86,89-139;
+%      world_model/model/predictor.py:218-274; world_model/training/cohort_v2_visual_parser.py:272-291;
+%      world_model/data/deployment_temporal.py:553-554,599-621,680-719,734-750;
+%      scripts/run_issue_70_parser_repair.py:96-98,464-472 (frozen encoder/carrier).
+%      Policy input is 236 carrier + 5 action + 1 normalized remaining, not carrier alone:
+%      world_model/training/matched_dynamics.py:91-104. Action and minimum-cost selection:
+%      scripts/run_lookahead_control.py:588-591,659-664. Recursive endpoint scoring:
+%      scripts/run_tau_ad_within_checkpoint.py:401-458.
+%      Local + recursive MSE, 0.1 engine-label symbolic BCE and 0.01 bound:
+%      world_model/training/cnn_hybrid.py:89-139; scripts/run_issue_77_n1_train.py:228-260,289-303.
+%      Round-robin, CE on DP labels, and second-round DAgger-style aggregation:
+%      scripts/run_issue_77_n1_train.py:451-452,480-498,516-563.
+%      DP step cost is Delta*MSE + 1e-4*(predictor MACs + policy MACs)/continuous-15
+%      predictor MACs, plus continuation value; world_model/training/matched_dynamics.py:107-111,157-184.
+%      Craft: 5.5 x 2.6 in; >=7 pt base text; three visual lanes; policy inputs drawn (carrier z_k in blue,
+%      launch a in ink; kappa_k named in-box); real aspect-preserving frame crop; editable SVG text, embedded PDF fonts.
+%      Caption opens with bold "Model overview." (owner directive); the three disclaimers are one sentence.
+%      The selected request is schematic, not an observed decision. This is a JEPA-style
+%      latent predictor over a frozen object-slot encoder, with no EMA or stop-gradient
+%      target branch. Policy evaluation was decision-only, never closed-loop:
+%      scripts/run_tau_ad_within_checkpoint.py:12-17,845-855. No proposal-only modules are drawn.
+% ==== /BRIEF ====
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{fig_model_overview}
+  \caption{\textbf{Model overview.} One request-conditioned predictor serves all nine $(\Delta,\alpha)$ requests. This JEPA-style latent predictor over a frozen object-slot encoder advances a continuous carrier (blue), receives request modulation (teal), and feeds soft predicates back only for micro/macro requests (violet/orange); training signals (bottom) are separate from runtime inputs. The highlighted cell is schematic; there is no EMA target encoder, and the policy was evaluated only in decision-only imagined rollouts, never in closed loop.}
+  \label{fig:mth:arch}
+\end{figure}

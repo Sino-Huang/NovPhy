@@ -1,115 +1,59 @@
 %!TEX root = iclr2026_conference.tex
-% r8-followup I63 (Main): C24 token typeset verbatim.
-% Binds outline §7 (Discussion) + §8 (Conclusion) + pre-references statement blocks —
-% manuscript/writing_outline_boundary_paper.md (v2.0);
-% status: manuscript/content_brief.md.
-% REVISED 2026-09-21 post-review from executed results (former §7 order: #80 gate-stop paragraph;
-% tempered L7 redirect; limitations; falsifiability from filed tickets).
-% REVISED #91-WP1 2026-09-23 (post-#92 final numbers): §7(a) rewritten from the #80 gate-stop
-% paragraph to the resolved chain (#80 -> #82 -> #85 -> #87 -> #89/#90 -> #92) with ranking failure
-% as the answered form of registry row C16; #90 framed as the protocol working (historical caveat);
-% lookahead control with the quantifier bound to the primary record; determinism disclosure;
-% membership scope + counterexample; exposure split. New (a2) closed-loop limitations paragraph and
-% new (a3) description-mode causal-lever paragraph (critic 2026-09-19-critic-1 MEDIUM item).
-% WP2 item 1 fixed in the conclusion (h=15 null on N1, exactly zero on original families); WP2 item 8
-% per-seed decomposition attached wherever +0.0887/+0.0944 appear. §8 retargeted from "calibration
-% for the field" to the digest's significance skeleton. Reproducibility statement extended with the
-% #87/#89/#90/#92 runners and the #92 WP6 artifact release. Ethics/Acknowledgments stay comment stubs.
-% Citation: World-In-World bib key is zhang2026worldinworld.
-% NOTE: the redirect is phrased as a reporting requirement; per-paper "no boundary curves reported"
-% claims stay gated by outline prerequisite R1 (§2 verification) and are NOT asserted here.
-% #91-WP5 2026-09-23 (page limit + hygiene): paragraphs (b) tempered redirect and (c) limitations
-% parts 1-2 MOVED verbatim to Appendix sec:app:anat:limits (appendix file); main text keeps a
-% one-paragraph limitation pointer that repeats the key limits so none is hidden. Reproducibility
-% Statement completed against the #91 digest WP5 list (7 validate commands, frozen plan.json +
-% sha256 inputs, markers/receipts, resumable ledger, 24 h / 3 h GPU / 4 workers caps, typed-failure
-% taxonomy, #92 WP6 release: 4,187 paths through commit 2b4d897, frames/native chunks excluded).
-% Ethics Statement rendered as a one-paragraph anonymity-safe statement (ICLR 2026 Author Guide:
-% optional, before references, not counted); Acknowledgments heading commented out while anonymous.
-% Label prefixes owned by this file: sec:disc, tab:disc.
-% r2 2026-09-23 (review I4, I10, I11, I13, I14): ticket IDs cut from prose; counterexample leads with
-% the frozen arm; second-seed check recast as effective determinism (19/26 byte-identical frames);
-% #83/#84 signature/regime sentences cut from (d) (defined only in the appendix; handoff to Evidence);
-% conclusion drops the state-difficulty clause.
-% r3 2026-09-23 (review-log r2 I26/I29/I30/I32/I11): lookahead depth and endpoint coverage disclosed in
-% (a) with the stability confound; flat-shift sentence replaced by the Table-14-exact wording agreed
-% with Evidence (mirrored in App. H.1 / C19); undefined "Q1" dropped from the #90 token; conclusion
-% scopes held-out to the frozen zero-shot arm, prints the 216/612, 6-cluster basis, and carries the
-% lookahead scope. Offset: ambiguity sentences in (a) compressed.
-% r6 2026-09-24 (Story Lock A-hybrid): (a2) hard-limits paragraph now opens with the S47 rewrite
-% (engine-side 1-D scope first; pooled-not-per-ranker caveat; same 15 members, 7/9/14 ceiling
-% clusters; verbatim tokens instead of "undecided"; one scoped-continuation clause). Conclusion S51:
-% pooled top-1 per inventory first with status, member-clustered AUC second as the dissociation,
-% amended mechanism clause + saturated-speed clause, amended lesson. Offsets: "ceiling rests on 7
-% member clusters" clause (folded into the 7/9/14 sentence); conclusion cross-split AUC and
-% inverted-ranker clause cut (kept in §1/§6).
-% r7 2026-09-24 (Story Lock v2): (a2) hard limits rewritten per lock §6 (three of four inventories at
-% saturated speed; training-range confound OPEN; release control scope; per-ranker 0/24 on the
-% launch-power sweep; 7, 9, 14 and 8 clusters; r6 single-dimension scope wording retired; second ranker family =
-% remaining widening test). Conclusion: top-1 incl. 0/72 with interval criterion + degenerate note,
-% status, AUC dissociation labelled post hoc with #95 disclosures, amended clause + companion, ceilings
-% +8/15, candidate lesson. Repro: twelve runners, launch-power roots (wording agreed with Evidence,
-% ticket IDs replaced by root names). Offsets: (a), timeout-audit, lookahead, description-mode,
-% heuristic-limits and falsifiability paragraphs compressed; conclusion h=15 clause and Repro opener cut.
-% r8 2026-09-24 (r8 lock): §7 support phrase -> canonical long form (I57), confound says what it bears
-% on (I54), per-ranker pointer per lock §3 (I55); §8 0/72 qualifier + preference qualifier (I54).
-% Offsets: timeout-audit counts, 600-step endpoint clause, 70-typed-failures aside, adaptive-arms
-% sentence, C14/C15 follow-up sentence, sealed-gameplay clause.
-% r8-followup 2026-09-24 (r8 lock §6): I58 C24-prediction wording in §8; §7 lookahead resolution scoped to N1 (I59).
-
+% ==== BRIEF §7 HEAD (Discussion) ======================================================
+% [中] 定位：把 §6 的三条结果放回 §1 的问题：粒度作为决策变量意味着什么；与层级 JEPA 及模拟实践的关系；诚实的限制与下一步。
+% 卖点：两轴沿发射集分别变化，支持把时距与描述层做成同一请求的两个独立坐标，而不是层级中绑定的一层。
+%      证据：§6 的数字；Figure 1a 的真实轨迹；lecun2022path、saxena2021clockwork、hairer1993solving、mirtich2000timewarp。
+%      手法与边界：不引入新数字；不写"证明"；限制集中在一段；不写读出质量（owner：未来工作）；不补充计算对比的事实（owner）。
+% [EN] Role: returns the three results of Section 6 to the question of Section 1: what treating granularity as a
+%      decision means; relation to hierarchical JEPA and simulation practice; honest limits and next steps.
+%      Craft/Boundaries: no new numbers; limits in one paragraph; no readout-quality statement and no further facts on
+%      the compute comparison (owner directives).
+% ==== /BRIEF ==========================================================================
 \section{Discussion}
 \label{sec:disc}
 
-% --- (a) The resolved closed-loop chain; registry rows C10, C16--C21. Sources:
-% issue-80 typed stop (0/45); .local-artifacts/issue-82-zero-floor-oracle-v1/findings.md (0.1299);
-% .local-artifacts/issue-85-engine-outcome-reactive-v1/findings.md (0.1064, +0.8958, 0/47);
-% .local-artifacts/issue-92-selection-validity-v1/findings.md (ceiling, selection, #90 caveat,
-% determinism, accounting); issue-92-lookahead-control-v1; issue-92-cross-seed-invariance-v1;
-% issue-92-cross-pool-audit-v1.
-The closed-loop record began as a stop: a reactive pilot on development N1 lineages found no first-shot success in 45 valid executions against a pre-declared $0.10$ prevalence floor (row C10), a zero ambiguous between a state-difficulty floor and a ranking failure. After the replay-cost proxy failed its validity test, the engine-truth ceiling measured $7/14$ $[0.2143, 0.7857]$ at the member unit, which answers registry row C16: the zero is a ranking failure on states solvable under this inventory. % r7: compressed for budget
+% ==== BRIEF §7 ¶1 (what the results show) =============================================
+% [中] 定位：贡献落地：三条结果合起来说明粒度值得逐预测选择，且一个模型能在每次查询时提供它。
+%      证据：§6.1–§6.3。手法与边界：与摘要结尾 "decision variable" 呼应；不夸大为闭环收益。
+% [EN] Role: the contribution in one paragraph: together the results make granularity worth choosing per prediction,
+%      and show that one model can offer it at every query.
+% ==== /BRIEF ==========================================================================
+\textbf{Granularity as a decision.} The three results fit together. The horizon of each prediction sets rollout error by orders of magnitude, and the request that ranks candidate launches best depends on the situation along both axes; granularity is therefore worth choosing, and no single choice is safe. A policy that chooses the request per prediction, over one shared latent state, improves on a fixed request carried over from other launch sets and matches a horizon-only adaptive baseline at a third of its compute. These results make the case for treating how far and at what level to predict as part of each query to a world model, rather than as a constant fixed at design time.
 
-The timeout audit shows the protocol working. Its verdict, \texttt{indeterminate} with reason \texttt{readiness\_or\_precision\_insufficient}, reflects outcome-correlated missingness, and the completion pass it required moved the state-unit ceiling from $0.3043$ to $0.5217$ before deduplication, against our interest. % issue-92-selection-validity-v1/findings.md §6 (#90 token indeterminate, Q1 readiness_or_precision_insufficient; 5 of 52 timed-out slots succeeded on re-execution against 7 of 234 first-time slots, r8: cut from the body); r6: "We quote only the completed, deduplicated member-unit ceiling." cut for budget
+% ==== BRIEF §7 ¶2 (relation to hierarchies and simulation) ============================
+% [中] 定位：与层级 JEPA、多时间尺度模型与物理模拟实践的关系。
+%      主张：最佳请求在所有集上都是 macro，而最佳时距在 1 与 5 之间变动，说明两轴不必绑定在同一层级；Figure 1a 的学习日程与自适应
+%            步长相似（发射后短步、后段长的粗粒度步）。
+%      证据：§6.2（best request macro on every set; horizon 5 on two sets, 1 on two）；issue-92 轨迹；lecun2022path、
+%            saxena2021clockwork、hairer1993solving、mirtich2000timewarp。
+%      手法与边界："suggests"、"resembles"；不写"证明层级错误"。
+% [EN] Role: relation to hierarchical JEPA, multi-timescale models and simulation practice.
+%      Craft/Boundaries: "suggests", "resembles"; never "hierarchies are wrong".
+% ==== /BRIEF ==========================================================================
+\textbf{Relation to hierarchies and simulation.} Hierarchical JEPA and multi-timescale world models tie each time scale to one level of abstraction \citep{lecun2022path,saxena2021clockwork}. In our results the two axes vary separately: the best request uses $\textsf{macro}$ on every launch set, while its horizon moves between 1 and 5. This suggests exposing horizon and description as independent coordinates of one request, which a hierarchy could still serve, rather than as levels of a stack. The learned schedule of Figure~\ref{fig:teaser}(a) also resembles adaptive stepping in simulation \citep{hairer1993solving,mirtich2000timewarp}, with short steps while the launch unfolds and long, coarse steps late in the rollout, a pattern that comes from trading prediction error against compute rather than from a hand-set schedule.
 
-The ranking failure carries its controls. The primary rankers look ahead only 1--25 carrier frames, while N1 engine-truth outcomes resolve 97.8--400.9 carrier frames after the decision. Across 16 decision-only endpoint arms no arm exceeds inventory-matched chance ($0.0780$), and longer lookahead has no consistent direction: the two stable $h{=}15$ arms move in opposite directions between endpoints. The other arms are confounded with carrier stability, so a lookahead-limited failure is not excluded (row C19; Appendix~\ref{sec:app:lookahead}). % lookahead depth, endpoint coverage 13/13 (600-step endpoint resolves all 13 successful slots; r8: clause cut from the body): .local-artifacts/issue-92-lookahead-control-v1/findings.md lines 9, 13 (resolution range from the 13 N1 successful slots; r8-followup I59); arm histograms lines 29-44; r7: 2/36 arm left to §1 / Table 1
+% ==== BRIEF §7 ¶3 (limitations and next steps) ========================================
+% [中] 定位：限制与下一步集中一段。
+%      主张：策略只在 decision-only 想象 rollout 中评估，不作闭环主张；每集 7–14 个关卡，区间宽，J−r† 仅在一个集上不含 0，
+%            且在三个集上低于事后最佳；macro 只在 NovPhy，CLEVRER/Physion 的 carrier 来自标注；模型为冻结的有监督 slot 编码器上的
+%            JEPA 式预测器，无 EMA 目标编码器；描述层由人工定义；策略的训练目标是预测误差与计算量，而非排序。下一步：闭环、学习描述层、
+%            决策感知的请求代价。
+%      证据：§5、§6.3；§4（目标、编码器）；Appendix sec:app:impl。
+%      手法与边界：每条限制对应它约束的主张；"may"。
+% [EN] Role: limits and next steps in one paragraph, each limit naming the claim it constrains.
+% ==== /BRIEF ==========================================================================
+\textbf{Scope and next steps.} Macro predicates exist only on NovPhy; the other two benchmarks exercise the continuous and micro levels. The natural next steps are to let the chosen requests drive actions in closed loop, to learn the description levels together with the encoder, and to train the request policy on a decision-aware cost.
 
-% --- (a2) Limitations of the closed-loop measurement (digest claim boundary). ---
-% r5-authoring 2026-09-24 (#93, reading-matrix row 5): member-clustered AUC 0.6178 (drag grid, C22) and 0.5512 (offset
-% sweep, C23): .local-artifacts/issue-93-second-parameterization-v1/comparisons.csv grid_auc_member_clustered,
-% offset_auc_member_clustered. Offset: "over which percentile intervals are wide," cut.
-% r5-followup I43/I44: C22 not_supported_by_this_experiment / C23 readiness_or_precision_insufficient (findings.md lines 10-11);
-% top-1 8/126 vs 0.0804 and 7/81 vs 0.1030 (comparisons.csv grid_top1, offset_top1); both arms launch-angle sets at saturated
-% speed (engine_action_check.json). Offset: conclusion ¶2 "more-states extension" clause cut (kept in registry row C8).
-The closed-loop measurement has hard limits. In the engine three of the four inventories are launch angles at saturated speed. The launch-power sweep varies launch speed, but all 16 inner-radius candidates lie outside the release-1000 N1 pool (79.51--80.66 px); the 13 and 17 px columns lie inside the \#71 radius range but only 26 of its 4,377 shots fall below the clamp. The training-range confound stays open until rankers trained on sub-clamp drags are tested, and it bears on both the launch-power $0/72$ and the preference reading. The post-hoc release control removes only the release-time channel (Appendix~\ref{sec:app:launchpower}). Top-1 claims are pooled over the three frozen rankers (launch-power per-ranker counts: Table~\ref{tab:app:launchpower}; the uneven \#93 per-ranker split: Table~\ref{tab:app:secondparam}). The four inventories share the same 15 members, with 7, 9, 14 and 8 ceiling clusters and descriptive intervals. A second ranker family remains the test that could widen this scope. The engine ran one primary seed plus a 26-slot second-seed check, measurement is single-shot and decision-only on development N1 lineages, and no gameplay success is claimed. % .local-artifacts/issue-93-second-parameterization-v1/engine_action_check.json (18.491484); issue-94-launch-power-v1/comparisons.csv ceiling (8 of 15), top1_<system> (0/24 each; r8 I55: pointer to tab:app:launchpower); issue-94-launch-power-v1/training_action_support.json per_candidate, sources (16/16 outside N1 pool; 13/17 px inside #71 range); issue-95-launch-power-followup-v1/plan.json training_regime (4,377 shots, 26 below clamp; N1 79.51-80.66 px), release_inertness.json; r7 (Main budget round): #93 AUC tokens/values (0.6178, 0.5512; in Table 1 and §6) and the adaptive-controller clause (in §8 protocol paragraph) cut here; r8: "lookahead adaptive arms are decision-only endpoint rankers, not our adaptive controller" sentence cut (scope carried by §1 and §8)
-
-% --- (a3) The description-mode causal lever (critic 2026-09-19-critic-1, MEDIUM). ---
-The description-mode axis has a narrow causal lever by design: a continuous latent carries every rollout, so selecting \texttt{macro} or \texttt{micro} changes only which readout is scored, and a null mode-axis effect does not show that description granularity is irrelevant. % r7: compressed; "no closed-loop ranker selects a mode" is implied by the fixed-system scope above
-
-% --- (b)+(c) pointer; full paragraphs in Appendix sec:app:anat:limits. Numbers as in the moved copy
-% (readiness record 4/45; n2n 34/104 with 70 typed failures; issue-77-n1-diagnostic-v1 per-seed table).
-The heuristic record carries its own limitations (Appendix~\ref{sec:app:anat:limits}): 4 of 45 scenario-novelty cells are runtime-tested, 34 of 104 branches are admissible on the normal side of one appearance-novelty pair, intervals are descriptive over 4 held-out N1 states or 24 closeout states, and the strongest aggregates rest on single seeds on a construct-invalid proxy. % r7: compressed; per-seed +0.0887 decomposition printed in §1 and §8; r8: "(all 70 typed failures retained)" left to the appendix
-
-% --- (d) Falsifiability from executed results and filed tickets only. Ticket map (do not cite raw ---
-% numbers in prose): more-states extension of #78 -> C8; #84 third family -> C15 (answered);
-% #83 CLEVRER h15 decomposition -> C14 (answered); #82 -> #85 -> #87 -> #89/#92 chain -> C16-C21 (answered).
-Each open conclusion has a test that can move it in either direction. The ranking failure would weaken if a ranker on the same N1 membership selected the success above inventory-matched chance, and the cross-split counterexample already breaks the zero on other states. % r8: follow-up sentence (C14/C15 amended by executed follow-ups, Appendix sec:app:anat) cut for budget
-
+% ==== BRIEF §8 (Conclusion) ===========================================================
+% [中] 定位：收束：问题建模、模型、策略、测试床与三条发现各一句，结尾回到"每次查询都问"。
+%      证据：§3–§6。手法与边界：与摘要一致；不引入新数字；不写 "first"。
+% [EN] Role: closes with one sentence each on the formulation, the model and policy, the testbed and the findings, and
+%      returns to granularity as a question asked at every query.
+%      Craft/Boundaries: consistent with the abstract; no new numbers; never "first".
+% ==== /BRIEF ==========================================================================
 \section{Conclusion}
 \label{sec:disc:conclusion}
 
-% --- Significance skeleton (#91 framing round 2). Sources as in §7(a); proxy numbers from
-% issue-82 / issue-77-n1-diagnostic-v1; h=15 from issue-77-n1-diagnostic-v1 and data/issue-76-closeout.
-Our replay-cost proxy agreed poorly with engine outcomes ($0.1299$ against a $0.50$ floor). The contrast we first read as support for adaptive granularity ($+0.0887$, per-seed $0$, $0$, $+0.2662$) is unsupported, and the proxy-scored anatomy stays heuristic. On the engine-truth channel, the three frozen rankers' pooled top-1 is at or below inventory-matched chance on the original sweep, the offset sweep, the drag grid and the launch-power sweep ($0/108$, $7/81$, $8/126$, $0/72$; in point estimate on the second and third) and for the frozen zero-shot arm on the held-out split ($13/612$), with the paired interval entirely below $0$ on the held-out split and, degenerately because top-1 is zero in every cell, on N1 and the launch-power sweep. On the launch-power sweep 7 of 8 successes lie outside the release-1000 N1 pool, so its $0/72$ does not separate selection failure from support failure, and the frozen plan predicted C24 \texttt{supported} partly from that gap. Top-1 was pre-specified as a reported outcome and pre-registered on the launch-power sweep, and the chance reading is post hoc on N1. Member-clustered ordering AUC dissociates from it, running from $0.4180$ to $0.7441$ with the inventory (a post-hoc descriptive observation), and on the launch-power sweep most of it is a launch-power preference in controls we designed afterwards (speed-only baseline $0.6889$, seen before those controls were frozen), indistinguishable there from a preference for in-support inputs. At a lookahead of 1--25 carrier frames, within a state, the frozen rankers' pooled top-1 choice is the engine-verified success no more often than an inventory-matched uniform draw on every inventory tested (in point estimate on the offset sweep and drag grid), and in the engine these are three sets of launch angles at saturated speed and one angle $\times$ launch-power sweep. Measured per-state ceilings ($7/14$, $9/15$, $14/15$, $8/15$) supply the denominator that World-in-World-style reporting lacks, and zero selection does not hold on every split. A lesson we draw post hoc from the launch-power sweep: verify the outcome channel and report top-1 against a measured per-state ceiling, a coordinate-only baseline and a within-coordinate AUC beside any ordering AUC. % issue-82-zero-floor-oracle-v1/findings.md (0.1299); issue-92-selection-validity-v1/summary.json:369, :433-444 (N1 paired interval degenerate, 0/108; lock v2 amended by Main r7); issue-93-second-parameterization-v1/comparisons.csv (offset_/grid_ top1, auc_member_clustered, ceiling); issue-94-launch-power-v1/comparisons.csv (ceiling, top1, top1_minus_chance [-0.0563, -0.0500], auc_member_clustered 0.7441); r8 support + C24 prediction: issue-94-launch-power-v1/training_action_support.json, summary.json stated_predictions.C24 (expected_token supported; rationale three prior nulls + gap; r8-followup I58); issue-95-launch-power-followup-v1/comparisons.csv power_only_auc (0.6889), plan.json chronology; issue-92-cross-pool-audit-v1/findings.md Q2 (held-out = type010101); lookahead issue-92-lookahead-control-v1/findings.md line 9; amended clause + companion: lock v2 §3; lesson: digest l.48 (amended r7), compressed; r7: h=15 clause cut (§5, App.)
+We made prediction granularity a per-prediction decision of one world model. An action-sparse MDP stays an ordinary MDP while every model query carries a request $r=(\Delta,\alpha)$; one JEPA-style predictor serves all nine requests over one shared latent state; and a policy distilled from dynamic-programming labels chooses the request at each step. On NovPhy, which we introduce as a world-model testbed, and on CLEVRER and Physion-Dominoes, granularity changes rollout error by orders of magnitude, no fixed request ranks candidate launches best everywhere, and choosing the request per prediction improves on a transferred fixed request while matching a horizon-only adaptive baseline at a third of its compute. We hope these results encourage world models that ask how far and at what level to predict at every query, rather than answering once at design time.
 
-The protocol is the second contribution. Frozen plans with typed terminal failures, sealed membership, a fixed disposition vocabulary, and every-attempted-cell reporting let each stage audit the measurement channel of the one before. Forty-one of 45 novelty cells remain untested with recorded blockers (Appendix~\ref{sec:app:coverage}), and the adaptive controller has no closed-loop record. % r8: sealed-gameplay advancement-gate clause cut for budget (Appendix sec:app:coverage)
-
-\section*{Reproducibility Statement}
-% Points to §4 protocol, sec:app:protocol, sec:app:repro commands, tab:app:registry, tab:app:audit; #92 WP6 release per the #91 digest.
-% r5-authoring 2026-09-24: "nine runners" -> "ten runners" (+ run_second_parameterization_probe, #93); #93 root released at b8aba59. Offset: artifact-type list shortened (full list in sec:app:repro).
-% r7 2026-09-24: "ten" -> "twelve" runners (+ run_launch_power_probe #94, run_launch_power_followup #95); roots through 88a1a21 (#94) and 3742c7e0 (#95), per Evidence (sec:app:repro). Offset: opener sentence cut.
-Section~\ref{sec:mth:protocol} defines the pre-registered protocol, Appendix~\ref{sec:app:protocol} records its mechanics and typed-failure taxonomy, and Appendix~\ref{sec:app:repro} gives the validation command for every cited artifact root. The closed-loop measurement recomputes from retained records with \texttt{python -u -m scripts.\{runner\} -{}-validate} for twelve runners: the oracle probe, completion, and timeout audit (\texttt{run\_closed\_loop\_oracle\_probe}, \texttt{run\_closed\_loop\_oracle\_completion}, \texttt{run\_oracle\_timeout\_audit}), four restatement and control runners (\texttt{run\_selection\_validity\_restatement}, \texttt{run\_lookahead\_control}, \texttt{run\_cross\_seed\_invariance\_probe}, \texttt{run\_cross\_pool\_selection\_audit}), two post-hoc probes (\texttt{run\_state\_difficulty\_auc}, \texttt{run\_inverted\_ranker\_probe}), the second-parameterization probe (\texttt{run\_second\_parameterization\_probe}), and the launch-power probe and its follow-up (\texttt{run\_launch\_power\_probe}, \texttt{run\_launch\_power\_followup}). Each run binds a frozen \texttt{plan.json} with sha256-pinned inputs and writes per-cell markers and receipts to a resumable ledger. The oracle pass ran under recorded caps of 24\,h wall time, 3\,h GPU time, and 4 workers, and every unit that did not complete ends as a typed failure of a recorded kind. The small-artifact subset of every cited root (4,187 paths) is version-controlled through commit \texttt{2b4d897}, the second-parameterization root through \texttt{b8aba59}, the launch-power root through \texttt{88a1a21} and its follow-up root through \texttt{3742c7e0}. Frames and native chunks (about 15\,GB per pool) are excluded. Table~\ref{tab:app:registry} maps each claim to its artifact root, and Table~\ref{tab:app:audit} maps every printed number to its artifact path.
-
-\section*{Ethics Statement}
-This work uses simulated physics environments only: NovPhy scenarios and the CLEVRER annotation release, which is distributed under a CC0 license. It involves no human subjects, personal data, or deployed systems.
-
-% Acknowledgments and Funding: withheld while anonymous (\iclrfinalcopy commented out). Restore the
 % \section*{Acknowledgments and Funding} heading with content for the camera-ready version only.

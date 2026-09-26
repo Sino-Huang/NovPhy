@@ -4,62 +4,123 @@
 % Optional math commands from https://github.com/goodfeli/dlbook_notation.
 \input{math_commands.tex}
 
+\usepackage{float}
+\usepackage[table]{xcolor}
+\definecolor{tableheader}{gray}{0.92}
 \usepackage{hyperref}
 \usepackage{xurl} % xurl over url: lets \nolinkurl paths break anywhere (appendix audit/repro tables)
 \usepackage{enumitem}
 \setlist[itemize]{leftmargin=*, topsep=0pt, itemsep=0pt, parsep=0pt}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{array}
 \usepackage{longtable} % #91-WP5: multi-page audit table tab:app:audit (appendix)
 \graphicspath{{figures/}}
 
+% VOCAB-PASS (2026-09-25): reader-facing terminology glosses applied; polish pass pending (paper-writer).
 % =============================================================================
-% PAGE LIMIT (verified 2026-09-23, #91 WP5): iclr2026_conference.sty is silent on length. The
-% official ICLR 2026 Author Guide (https://iclr.cc/Conferences/2026/AuthorGuide, "Paper length")
-% sets the submission main text at 9 pages or fewer (10 pages for rebuttal and camera-ready),
-% strictly enforced with desk rejection. References do not count; appendices after the bibliography
-% are unlimited; the optional Ethics and Reproducibility statements (end of main text, before
-% references) do not count. Measured before this pass from the 31-page build
-% (iclr2026_conference.aux): Conclusion started p. 18, the registry and frontier floats sat on
-% pp. 20-21, and the bibliography began p. 22, so the body ran about 21 pages. This pass moved every
-% proxy-era float and the detailed §2/§3/§4/§5/§7 material to the appendix (see file map). Re-measure
-% on the next latexmk build: the last body page is the page before the first \bibcite page.
+% PAGE LIMIT: the official ICLR 2026 Author Guide
+% (https://iclr.cc/Conferences/2026/AuthorGuide#paper-length) limits submissions to 9
+% main-text pages, with desk rejection for excess length. References and appendices
+% do not count. 2026-09-25: the Ethics and Reproducibility statements are no longer main-body
+% blocks; they are the closing appendix sections (owner directive, matching the ICLR example under
+% manuscript/style_example/). The visual revision intentionally prioritizes traceability over length:
+% 2026-09-26: after the negative-record cleanup the assembled 23-page PDF has main text ending on
+% p. 9 and references starting p. 10, inside the 9-page submission limit. The appendix holds the
+% protocol, benchmark-detail, related-work, estimand, implementation, reproduction and audit records.
 % =============================================================================
 % FILE MAP (multi-file split, 2026-09-21; float ownership updated #91-WP5 2026-09-23).
 % No body prose lives in this file.
 %   iclr2026_conference_abstract.tex      -> Abstract
-%   iclr2026_conference_introduction.tex  -> §1 Introduction; OWNS the teaser float fig:teaser (hero)
+%   this file                         -> pre-abstract conceptual/gameplay teaser fig:teaser
+%   iclr2026_conference_introduction.tex  -> §1 Introduction (no floats)
 %   iclr2026_conference_related_work.tex  -> §2 Related Work (two-paragraph summary; no floats)
-%   iclr2026_conference_method.tex        -> §3 Setting and Formulation + §4 Protocol (no floats)
-%   iclr2026_conference_experiments.tex   -> §5 heuristic anatomy: validity disclosure, demotion
-%                                            notice, summary (no floats)
-%   iclr2026_conference_synthesis.tex     -> §6 Ranking-Failure Measurement; OWNS tab:syn:oracle and
-%                                            tab:syn:denominator
-%   iclr2026_conference_discussion.tex    -> §7 Discussion + §8 Conclusion + pre-reference blocks
-%                                            (Reproducibility and Ethics statements)
-%   iclr2026_conference_appendix.tex      -> Appendices; OWNS the \appendix switch and every moved
-%                                            float: tab:app:closeout, tab:app:walls, fig:app:growth,
-%                                            tab:app:adapt, fig:app:novelty, tab:app:decay,
-%                                            tab:app:frontier, tab:app:registry (claim registry,
-%                                            merged with per-row provenance), tab:app:matrix,
-%                                            fig:app:estimands, tab:app:estimands, tab:app:repro,
-%                                            tab:app:audit (number-to-artifact audit)
+%   iclr2026_conference_method.tex        -> §3 Problem Formulation (owns fig:levels) + §4 Method
+%                                            (inputs fig_model: fig:mth:arch) + §5 Experimental Setup
+%   iclr2026_conference_results.tex       -> §6 Results; OWNS tab:res:rollout, fig:res:grid
+%   iclr2026_conference_discussion.tex    -> §7 Discussion + §8 Conclusion (no floats)
+%   iclr2026_conference_appendix.tex      -> Appendices (A--J); OWNS the \appendix switch, tab:app:checkpoints,
+%                                            tab:app:matrix, fig:app:estimands, tab:app:estimands,
+%                                            tab:app:repro, tab:app:audit (number-to-artifact audit).
+% 2026-09-26: the three record files (iclr2026_conference_experiments.tex, _synthesis.tex,
+% _legacy_discussion.tex) and their appendix sections were deleted with the negative-record cleanup;
+% their text survives in git history if an owner decision reinstates the boundary/anatomy record.
 % Section semantics bind to manuscript/writing_outline_boundary_paper.md (v2.0);
 % status per manuscript/content_brief.md.
 % LABEL OWNERSHIP (file-scoped prefixes; duplicate labels only WARN, so respect these):
-%   intro: sec:intro, fig:teaser | related: sec:rel | method: sec:mth
-%   experiments: sec:exp | synthesis: sec:syn, tab:syn | discussion: sec:disc, tab:disc
-%   appendix: sec:app, tab:app, fig:app
+%   main: fig:teaser | intro: sec:introduction | related: sec:rel | results: sec:res, tab:res, fig:res
+%   discussion: sec:disc
+%   method: sec:mth | appendix: sec:app, tab:app, fig:app, sec:rel
 % SHARED FILES: preamble + this map (this file); iclr2026_conference.bib (append-only, one entry per
 % block); figures/ (one asset prefix per owner). Build: latexmk -pdf (pdflatex/bibtex/pdflatex x2);
 % a single pdflatex pass leaves ?? and is not a valid check. Page-limit accounting on the assembled
 % PDF only (floats drift across file boundaries under this style's \topfraction).
 % =============================================================================
 
-% #92-WP4 retitle 2026-09-23: the claim center moves from the boundary anatomy (demoted by
-% #92 WP5) to the measured selection pathology; any subtitle is #91 WP1's choice.
-% r7 2026-09-24 (Story Lock v2): title per lock §1 (I52; owner-approved word growth).
-\title{Solvable, Yet Selected No Better Than Chance: Frozen World-Model Rankers Against a Measured Engine Ceiling in NovPhy}
+% 2026-09-25: title restored to the OpenReview-registered form (owner directive; supersedes the
+% ==== BRIEF-LEGEND START ====
+% Bilingual intent notes: one block above each section, subsection, prose paragraph and float caption.
+% Each block gives 定位 / 主张 / 证据 / 手法与边界 in Chinese and Role / Claim / Evidence / Craft and Boundaries in English.
+% The voice they describe: a Fei-Fei Li arc (why the measurement had to exist, and what the field adopts next)
+% over a Kaiming He sentence (claim first, plain nouns, exact numbers, no adjectives).
+% The blocks are comments: compiled away, and they never override the prose they sit above.
+% Details and the full legend: manuscript/CONTEXT.md.
+% Optional 卖点 / Pitch line: the TITLE, ABSTRACT, §1 ¶2, the §1 contribution list and §8 carry one plain-language
+% sentence stating what the unit promises (the two-axis "granularity is a decision" framing), kept separate from
+% 主张/证据 and from the claim boundaries --- plain words for a reader who is not in the field, never a new claim.
+%
+% WARNING --- the phrase "the decision" has TWO referents in this paper.
+%   (1) the candidate-action pick: measured (Fig. 1 and §6).
+% TAU-AD-96: three readings become four readings
+%   (2) the (Δ, α) pick, i.e. the granularity decision itself: NOT measured (τ_ad has four executed readings,
+%       none informative, the fourth the #96 within-checkpoint contrast that returned readiness_or_precision_insufficient;
+%       no closed-loop, non-degenerate contrast exists; the title's question stays open,
+%       and the body supplies the score such a choice would need).
+% Never let a sentence slide from (1) to (2). The correct bridge is: the title poses the question; the body builds the
+% engine-checked score any such decision would have to be judged by and applies it only to fixed-granularity rankers.
+%
+% 易读性 / Readability field (added 2026-09-25, owner directive): the ABSTRACT and every §1 unit carry a block naming the
+% assumed reader --- an embodied-agent researcher who does not know NovPhy, the ranker, the replay-cost proxy or this paper's
+% statistics conventions --- plus the terms that must be defined at first use, the plain-word substitutions, a <=20-words-per-
+% sentence target and the sentence the reader should be able to repeat afterwards. Readability is bought by cutting detail;
+% NEVER by dropping a scope qualifier (the "in point estimate" qualifier, or the 0/72 support clause).
+% ==== BRIEF-LEGEND END ====
+% ==== BRIEF TITLE | \title ===========================================================
+% [中] 定位：标题是全文的第一个承诺。"Granularity Is a Decision"把粒度从超参改写成决策对象：一次持续物理级联里，
+%      模型每一步本要选"预测多远"（Δ∈{1,5,15}）与"用哪一层描述"（continuous / micro / macro）。
+% 卖点：一句话——"什么时候该看得远、什么时候该只记要点，这两件事要一起决定。"通俗、可复述、只提出问题，不承诺结果。
+% 桥（必须写对，别写错）：标题**提出问题**；正文给出任何这类决策都必须先有的东西——经引擎核验的逐状态评分——
+%      并且只把它用在固定粒度 ranker 上；逐状态选择本身（τ_ad）在本篇未被测量。
+%      主张：把 horizon 与 description mode 的联合选择作为一个**问题**提出，并提供判定它所必需的评分。
+%      证据：标题不承载数字；它由摘要 S1--S2 与 §1 ¶2 以"问题 + 前置条件"的形式兑现，并由 §3 的九对请求面与 §3.1 的估计量分类定义。
+%      手法/边界：He 式裸断言（名词短语 + Is a Decision）＋ Li 式问题意识。边界（重要）：不得写"两轴属于同一个决定/不是两个旋钮"
+%            ——那是 proposal 里未被检验的耦合假设；也不得写"正文测量了这个决策"——被测量的是候选选择，不是 (Δ,α) 选择。
+%            历史：这个短语曾被早期读者判为已废弃的旧论点而删掉，如今随标题回归，
+%            因此必须由摘要 S1--S2 用大白话定义它，否则会重演"标题超出正文"的老问题。
+% [EN] Role: the first promise. "Granularity Is a Decision" renames granularity from hyperparameter to decision object: how far
+%       ahead to predict and at which level of description, decided state by state.
+% Pitch: one sentence --- "when to look far ahead and when to keep only the essentials are one decision, not two." Plain,
+%       repeatable, and it poses a question rather than promising a result.
+%       Bridge (get this right): the title POSES THE QUESTION; the body builds the engine-checked per-state score that any such
+%       decision would have to be judged by, and applies it only to fixed-granularity rankers; the per-state choice itself
+% TAU-AD-96: three readings become four readings
+%       (τ_ad) has four executed readings, none informative (the fourth: #96, readiness_or_precision_insufficient);
+%       no closed-loop, non-degenerate contrast exists;
+%       the title's question stays open, and the body supplies the score such a choice would need.
+%       Claim: we pose joint horizon--description selection as a question and supply the score that judging it requires.
+%       Evidence: no number in a title; abstract S1--S2 and §1 ¶2 redeem it as a question plus its precondition, and Sections 3/3.1
+%       define the surface and the taxonomy.
+%       Craft/Boundaries: He-style bare assertion over Li-style framing. Boundaries: never write "the two are one decision, not two
+%       knobs" (that is the untested coupling hypothesis), and never "the body measures that decision" (the measured decision is
+%       which candidate to pick, not the (Δ, α) pick). History: the phrase was once cut as an obsolete thesis and now returns
+%       residue, and the restored subtitle brings the phrase back --- so abstract S1--S2 must define it in plain words or the
+%       with the title, so S1--S2 must define it plainly or a title-overreach objection returns.
+% 易读性：标题已定稿、不再改动；它的可读性由摘要 S1--S2 承担——用读者已知的词把那个决定复述一遍。
+%          任何 session 都不得为了"更通俗"而重写标题或副标题。
+% Readability: the title is frozen; abstract S1--S2 carry its readability by restating the decision in words an outsider
+%             already knows. No session may rewrite the title or subtitle "to make it plainer".
+% ==== /BRIEF ==========================================================================
+\title{Granularity Is a Decision: Joint Horizon-Description Selection in World Models}
 
 % Authors must not appear in the submitted version. They should be hidden
 % as long as the \iclrfinalcopy macro remains commented out below.
@@ -75,6 +136,51 @@
 
 \maketitle
 
+% ==== BRIEF FIG 0 (fig:teaser) ====
+% [中] 定位：第1页先用真实单次发射及两条共轴预测轨道说明“预测粒度是每次查询的变量”，再给出误差与决策证据。
+%      主张：固定单步/连续描述 vs. 每次查询 r=(Δ,α)；长跨度降低递归误差；固定请求的排序随发射集改变，逐次选择可利用这种差异。
+%      手法：四幅引擎画面共用裁剪，用引线连至真实载体帧位置；MDP 的均匀逐帧刻度和楔形扩张误差带仅为示意。
+%      下轨为学习策略对同一次发射候选项6在决策期想象轨迹的实际请求，不是闭环执行；图内颜色图例表描述层，线段长度表Δ。
+%      证据/键：data/issue-87-closed-loop-oracle/manifest.json cells[state=issue-77-n1-001-a00,ordinal=6]
+%      的 decision_frame/video/final_frame/video_frames；视频第0/80/120/554帧对应载体帧0/80/120/553.38。
+%      原始 .local-artifacts/issue-87-closed-loop-oracle-v1/attempts/oracle--issue-77-n1-001-a00--a06/
+%      shot-1/observation-trace/observation_trace_manifest.json 的 frame_records[].fixed_step
+%      为30000/34000/36000/57669；以30000为原点、除以50。最终引线指向553.38（不标刻度数字），为实际引擎窗口终点；
+%      帧211处块体仍在斜坡中段，故不把想象请求切换到(15,macro)的时刻当作真实静止时刻。
+%      视频顺序由 scripts/run_closed_loop_oracle_probe.py::gallery_entry 逐项按 frame_records 编码。
+%      学习请求源：.local-artifacts/issue-92-lookahead-control-v1/
+%      records/decision--hybrid-adaptive-e600--seed20260908--issue-77-n1-001-a00.json
+%      的 decision.horizon_trace["6"][].{start_fixed_step,horizon,mode}（0--600）；.local-artifacts/issue-77-n1-diagnostic-v1/
+%      plan.json definitions.endpoint_semantics（1载体帧=50引擎步）、definitions.recursive。
+%      三项误差曲线/种子范围：.local-artifacts/{issue-77-n1-diagnostic-v1,issue-79-clevrer-boundary-v1,
+%      issue-84-third-family-v1}/summary.json 的 per_seed[20260908/09/10].continuous_h{1,15}.curves[endpoint].position_mse；
+%      端点依次为 NovPhy [15,30,60,150,225]、其他两项 [15,30,60,120]；逐点种子均值及最小--最大，纵轴对数。
+%      排名和差值：.local-artifacts/issue-96-tau-ad-within-checkpoint-v1/comparisons.csv 的
+%      {angle,offset,grid,power}_auc_F-{1,5,15}-{continuous,micro,macro}.value（F-5-macro 的9项内降序排名
+%      依次1,1,9,4）及同文件 {angle,offset,grid,power}_J-F*.{value,interval_low,interval_high}；
+%      F* 在其他三个发射集上选取；每个区间仅为描述性 member 聚类区间。
+%      图注向读者解释：规划靠想象每个候选发射并取预测代价最低者；ordering AUC = 引擎中成功的发射预测代价低于
+%      失败发射的概率；9 个请求 = Δ∈{1,5,15}×α∈{continuous,micro,macro}；右图是差值，0 = 无差别（图内标注），
+%      故图注不写“0.5=随机”。四个发射集的生成方式（plan.json universe.inventories）留给正文，不占图注篇幅。
+% [EN] Role/Claim: page-one visual argument: make prediction granularity a per-query request,
+%      then show why jumps, variable fixed-pair rankings, and adaptive choice matter.
+%      Craft/Boundary: uniformly cropped genuine frames, with leaders to carrier frames
+%      0,80,120,553.38 (553.38 carries no tick label); the final engine frame is not the imagined endpoint 600.
+%      Uniform one-step ticks and widening error wedge are schematic. The lower track is
+%      the actual learned-policy requests in a decision-only imagined rollout, not closed loop.
+%      Inline colours encode description level; segment length encodes horizon. The compact
+%      ordering band shares launch-set names; seed bands are ranges and cross-set intervals descriptive.
+%      The caption defines how candidate launches are chosen, what ordering AUC measures, and the nine requests;
+%      the right plot is a difference (0 = no difference, labelled in-figure). Launch-set construction is left to the body.
+%      Evidence: raw paths and exact frame/seed/system/endpoint/rank/contrast keys are above.
+% ==== /BRIEF ====
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{fig_teaser_granularity}
+  \caption{Prediction granularity can change at every query. (a)~One real NovPhy launch. The MDP track is schematic; the lower track shows the requests $r=(\Delta,\alpha)$ our learned policy chose while imagining this launch (decision-only, not closed-loop). (b1)~Rollout error of a continuous-only model stepping by $\Delta=1$ versus $15$ (three-seed mean and range). (b2)~We plan by imagining each candidate launch and picking the lowest predicted cost; ordering AUC is the probability that a launch that succeeds in the engine is predicted to cost less than one that fails. Left: rank of one fixed request among all nine ($\Delta\in\{1,5,15\}\times\alpha\in\{\textsf{continuous},\textsf{micro},\textsf{macro}\}$).}
+  \label{fig:teaser}
+\end{figure}
+
 \input{iclr2026_conference_abstract}
 
 \input{iclr2026_conference_introduction}
@@ -83,16 +189,12 @@
 
 \input{iclr2026_conference_method}
 
-\input{iclr2026_conference_experiments}
-
-\input{iclr2026_conference_synthesis}
+\input{iclr2026_conference_results}
 
 \input{iclr2026_conference_discussion}
 
-% Keep the Section 6 floats (tab:syn:oracle, tab:syn:denominator) inside the main text; do not let
-% them drift past the bibliography (review finding M1). Since #91-WP5 the registry and frontier are
-% appendix floats, so this \clearpage only guards the two remaining Section 6 tables.
-\clearpage
+% Keep all Section 6 figures and tables inside the main text; do not let floats drift past
+% the bibliography.
 
 \bibliography{iclr2026_conference}
 \bibliographystyle{iclr2026_conference}

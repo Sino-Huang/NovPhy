@@ -1,27 +1,49 @@
 %!TEX root = iclr2026_conference.tex
-% Binds outline §2 — manuscript/writing_outline_boundary_paper.md (v2.0); status: manuscript/content_brief.md
-% REVISED 2026-09-21 post-review (ReviseRelated): cells follow the full-text scout verdicts
-% (manuscript/related_work_r1_verification.md); findings B1, B2, M7-M9, m10, m11, m13 applied.
-% Do not turn related work into evidence for the controller (content_brief rule).
-% PROSE PASS 2026-09-21
-% #91-WP5 2026-09-23 (page limit): the four subsections and the positioning matrix MOVED verbatim to
-% the appendix file as Appendix sec:app:related (labels renamed sec:app:rel:*, tab:rel:matrix ->
-% tab:app:matrix). Main text keeps a two-paragraph summary with no new claims; every sentence below
-% restates a verified sentence of the appendix copy.
-% Label prefixes owned by this file: sec:rel (no floats declared here since #91-WP5).
-% r6 2026-09-24 (Story Lock A-hybrid): delta restated as ordering vs selection under a measured per-state
-% ceiling; PHYRE AUCCESS §3.2, OPTIMAL oracle ranking §4.4 Fig. 4 (arXiv:1908.05656). Offsets: "Our measurement
-% adds" sentence folded into the PHYRE sentence; World-in-World contrast shortened; header condensed.
-% r8 2026-09-24 (r8 lock): I25(3) prior-practice delta (DOPE \S3.2, Poliak 2018) added to para 1; offsets:
-% para-1 lead and delta condensed, ceiling/PHYRE/World-in-World sentences condensed (no claim dropped).
-% r8-followup 2026-09-24 (r8 lock §6, I25 wording residue): delta restated verbatim per §6 (DOPE regret \S3.2,
-% partial-input baselines), split at the semicolon; offsets: binomial-test detail, "higher", ceiling sentence condensed.
-
+% Related Work, compressed 2026-09-26 to about 3/8 page under the granularity storyline; the positioning table was
+% removed from the main text (the extended comparison lives in Appendix sec:app:related).
 \section{Related Work}
 \label{sec:rel}
 
-\paragraph{Decision-relevant prediction.} Objective-mismatch studies show predictive quality need not equal decision quality: one-step likelihood need not track control, and pixel accuracy need not improve physical reasoning on PHYRE \citep{lambert2020objective,girdhar2020forward}. We separate ordering (AUC) from selection (top-1 against inventory-matched chance). DOPE scores selection by regret against the environment-measured best policy in each candidate set \citep[\S3.2]{fu2021benchmarks}, and partial-input baselines test single-input shortcuts \citep{poliak2018hypothesis}. We condition per state on whether any candidate succeeds and add a within-coordinate AUC.
+% ==== BRIEF §2 ¶1 (one axis at a time) ====
+% [中] 定位：展开 Intro ¶2 的 "one axis at a time"。
+%      主张：时间轴方法改变预测多远，但预测内容固定；描述轴方法改变描述，但预测日程固定。
+%      证据：jayaraman2019tap、pertsch2020keyin、kim2019vta（跳到可预测帧/关键帧）；nhu2025tawm（以时间步为条件）；
+%            gumbsch2024thick、iiyama2026sunta（按上下文变化或惊讶分段）；liang2025visualpredicator（在线发明谓词）。
+%      手法与边界：高层归类，一句一类；先肯定其可变的轴，再指出固定的轴。
+% [EN] Role: expands Intro ¶2's "one axis at a time".
+%      Claim: temporal methods vary reach with a fixed description; description methods vary the description over a
+%      fixed schedule.
+%      Evidence: citations as listed above. Craft: one sentence per axis; credit first, fixed axis last.
+% ==== /BRIEF ====
+\paragraph{Adapting granularity.}
+Horizon-adaptive world models jump to predictable or key frames \citep{jayaraman2019tap,pertsch2020keyin,kim2019vta}, condition on the time step \citep{nhu2025tawm}, or segment time by context change or surprise \citep{gumbsch2024thick,iiyama2026sunta}, while what they predict stays fixed; VisualPredicator instead invents predicates over a fixed schedule \citep{liang2025visualpredicator}.
+% ==== BRIEF §2 ¶2 (closest neighbours and why this work is needed) ====
+% [中] 定位：新颖性防线。点名最近邻：H-JEPA 与层级模型按层级/架构绑定两轴；SALT 联合学习但为固定技能库；Wang 2023 与 MuSix
+%      确实逐状态选择，但选的是单轴分辨率或混合中的模型。收束：它们改变粒度靠换层级、技能或模型，而非同一预测器的输入；
+%      物理模拟器在一次运行中随级联调整步长与细节，因此给出带 "to our knowledge" 的缺口句（jointly, per prediction, one shared latent）。
+%      证据：lecun2022path §4.4、§4.6；saxena2021clockwork、villarcorrales2022mspred、hafner2022director；huang2026salt 摘要；
+%            wang2023dynamic（每个 MPC 步选择分辨率，horizon 为标准 MPC）；jang2026musix（按经验距离路由到混合中的世界模型）；
+%            mirtich2000timewarp、carlson1997simulation（Intro ¶1 已用）。
+%      手法与边界：不写 "first"，不写"两轴必须联合选择"；"为何需要"用模拟实践的事实表述，不作收益断言。
+% [EN] Role: the novelty defense; names the closest neighbours and says why the work is needed.
+%      Claim: hierarchies bind the axes by level or architecture; SALT learns them jointly as a fixed repertoire; Wang
+%      2023 and MuSix select per state, but a one-axis resolution or a model. Their granularity changes by switching
+%      level, skill or model, not as an input to one predictor, whereas simulators adjust step and detail within one
+%      run. Gap: to our knowledge, no world model chooses horizon and description jointly, per prediction, over one
+%      shared latent state.
+%      Evidence: citations as listed above. Craft: never "first"; the need is stated as simulation practice, not as a
+%      demonstrated benefit.
+% ==== /BRIEF ====
+Hierarchical models fix which time scale goes with which level of abstraction: H-JEPA assigns short-term, low-level prediction to one level and longer-term, higher-level to the next \citep[\S4.4, \S4.6]{lecun2022path}, and Clockwork VAE, MSPred and Director fix these scales in the architecture \citep{saxena2021clockwork,villarcorrales2022mspred,hafner2022director}. SALT learns both abstractions jointly, but once, as a fixed repertoire for skill planning \citep{huang2026salt}. Others select per state, but a different variable: \citet{wang2023dynamic} choose a model resolution at each MPC step over a fixed horizon, and MuSix routes each state to one world model in a mixture \citep{jang2026musix}. Granularity thus changes by switching level, skill or model, whereas simulators adjust step and detail within one run \citep{mirtich2000timewarp,carlson1997simulation}. To our knowledge, no world model chooses horizon and description jointly, per prediction, over one shared latent state.
 
-% r3 I33 (2026-09-23): PHYRE claims cite bakhtin2019phyre, the World-in-World claim cites zhang2026worldinworld.
-% r4 I25: PHYRE facts arXiv:1908.05656 §3.1, App. B, §3.2.
-\paragraph{Closed-loop evaluation.} World-in-World benchmarks world models in closed loop with unified planning and action interfaces, scores task success as primary metric, and finds visual quality alone does not guarantee it \citep{zhang2026worldinworld}. WorldBench evaluates video world models one physics concept at a time \citep{upadhyay2026worldbench}. PHYRE defines tier membership by solvability within a fixed action set, scores multi-attempt success by AUCCESS \citep[\S3.2]{bakhtin2019phyre}, and reports an OPTIMAL agent oracle-ranking the action set \citep[\S4.4, Fig.~4]{bakhtin2019phyre}. Our per-state engine ceiling, per inventory, is the top-1 denominator (Section~\ref{sec:syn:picture}).
+% ==== BRIEF §2 ¶3 (setting and testbed) ====
+% [中] 定位：场景与测试床。主张：物理推理 benchmark 提供一次干预或被动动力学；PHYRE 上的前向预测使用固定粒度模型；据我们所知
+%      NovPhy 尚未被用于评估学习型世界模型。证据：bakhtin2019phyre、bear2021physion、yi2020clevrer、girdhar2020forward、
+%      pinto2024novphy。
+%      手法与边界："to our knowledge"；不写"无人研究一次动作的级联"（PHYRE 反例）；附录指针合并进末句。
+% [EN] Role: setting and testbed. Claim: benchmarks pose one-shot interventions or passive dynamics; forward prediction
+%      on PHYRE uses fixed-granularity models; to our knowledge no learned world model has been evaluated on NovPhy.
+%      Craft: scoped; never "one-action cascades are unstudied"; appendix pointer folded into the last sentence.
+% ==== /BRIEF ====
+\paragraph{Action-sparse physics.}
+Physical-reasoning benchmarks pose one-shot interventions or passive dynamics \citep{bakhtin2019phyre,bear2021physion,yi2020clevrer}, and forward-prediction agents on PHYRE use object- or pixel-based models of fixed granularity \citep{girdhar2020forward}. To our knowledge, NovPhy \citep{pinto2024novphy} has not been used to evaluate a learned world model; Appendix~\ref{sec:app:related} gives more detail.
