@@ -1,0 +1,76 @@
+{
+  "claim_boundary": "decision-only ranking of retained engine-verdicted executions; fit lineages by leave-one-lineage-out, the 4 exposed held-out lineages once, descriptively; E99 encoder fixed; no engine access, rendering or capture; no closed-loop or competence claim",
+  "controls": {
+    "action_prior": "no model: cost = minus the engine success frequency of the identical action over the other fit lineages' verdict-bearing executions (leave-one-lineage-out) or over all fit lineages (held-out); an action never executed elsewhere costs 0",
+    "rank_stability": "per cell: mean over wrong anchors of the Spearman correlation between the right-anchor and wrong-anchor candidate costs (1 = the ranking ignores the anchor)",
+    "right_minus_wrong": "per cell (target, inventory, seed): right-anchor AUC minus the mean over wrong anchors of the wrong-anchor AUC, tie-free cost; member-clustered bootstrap",
+    "variance": "fold-'all' members: the shared action set rolled out from every fit anchor; two-way shares (anchor, action, residual) of the tie-free cost over the fit members with every candidate executed (the v1 diagnostic membership), per arm and request, seed-mean",
+    "wrong_anchor": "for every v1 model (every arm, family, fold, seed) and every target member (the fold lineage; held-out members for fold 'all'): the target's candidates rolled out with each request from the target's own E99 anchor (right) and from every fit member's E99 anchor other than the target (wrong); costs are EndpointCosts rows against the anchor used"
+  },
+  "decision_rule": {
+    "Q5_anchor_dependence": "the v1-selected unit (LC:C-F-15), leave-one-lineage-out grid: supported (its ranking depends on the anchor) iff right - wrong >= 0.02 with lower > 0; not_supported_by_this_experiment iff upper < 0.02; otherwise readiness_or_precision_insufficient",
+    "labels": "leave-one-lineage-out: EXPLORATORY; held-out: DESCRIPTIVE"
+  },
+  "disclosure": "Frozen AFTER every v1 outcome was known, including the v1 held-out tables and the observation that the C arm's leave-one-lineage-out and held-out AUCs are identical across the nine hybrid requests on several inventories. The questions below were chosen because of that observation. They do not change any v1 token, the v1 selection or the Gate-B handoff.",
+  "frozen_at": "2026-09-27T21:36:19Z",
+  "guards": {
+    "G5": "every right-anchor row replicates the v1 record row (endpoint_replication, tolerance 0.001) - the same model, anchor, actions and operation",
+    "G6": "every record carries the #111 SCORING_POLICY"
+  },
+  "identity": "issue-112-controls-v2",
+  "inventories": [
+    "grid",
+    "offset"
+  ],
+  "issue": 112,
+  "role": "post-hoc controls of v1 (v1 unchanged and re-validated at every publish and validate)",
+  "runner": "scripts/run_decision_dynamics_controls.py",
+  "runner_sha256_at_freeze": "sha256:fcf7ce73e49cd16cfd1fe57f351b32678d540b01ef95177cbefaf17428781f0f",
+  "schema": "issue_112_controls_plan_v2",
+  "v1": {
+    "artifacts": [
+      {
+        "name": "plan.json",
+        "sha256": "sha256:9a3a1659c5050128339b6e1f38be5093d66ebf8ae36f74f7a5fa003a55cc33df"
+      },
+      {
+        "name": "smoke.json",
+        "sha256": "sha256:804e062c208b1bf85b272831fb5460480b18aa4401bae6eba771ca988d229a41"
+      },
+      {
+        "name": "selection.json",
+        "sha256": "sha256:27b325d1b7665302678459f1394d6651f0ffa7483c889ea323f274756e14189b"
+      },
+      {
+        "name": "gate_b_handoff.json",
+        "sha256": "sha256:fd26dff2893c22856d66b6a427fd6f78cfcc6df94606d489122aa1cf0d14e84f"
+      },
+      {
+        "name": "compute.json",
+        "sha256": "sha256:4a1c48a66b40c9450fb2bf0931e4b374a51edf8ad6961b0d2c7302b42f65a403"
+      },
+      {
+        "name": "summary.json",
+        "sha256": "sha256:404742c177eaf698a5732bc64672086b372301ca94911e38e449bcfc7e8809f5"
+      },
+      {
+        "name": "findings.md",
+        "sha256": "sha256:26786c134e94fe3a793a29dc4ac3449b5db44ead87d83d137718f9d28974ed43"
+      },
+      {
+        "name": "comparisons.csv",
+        "sha256": "sha256:9fff942a35d48d1401f82e8c9429a42f99e1caf8660f12d9ed4a77bfe88d9e7f"
+      }
+    ],
+    "module_sha256": "sha256:14aa4587277377bb7d7b8bd4a1954366bb653fb0baf3a912c6fa52075ac1b794",
+    "runner_sha256": "sha256:22ef72c8dbe6d744f860c3b727ac7d9eb2813be635f622d1f7bb8743ba9ff98f",
+    "selected": {
+      "arm": "LC",
+      "family": "continuous",
+      "request": "C-F-15",
+      "score": 0.75586860670194
+    }
+  },
+  "validation_command": "python -u -m scripts.run_decision_dynamics_controls --validate",
+  "version": 2
+}
