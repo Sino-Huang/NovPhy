@@ -1,0 +1,285 @@
+{
+  "anchor_evidence_ok": true,
+  "checks": [
+    {
+      "candidates": 826,
+      "control": "stage_c_replicates_issue_96_records",
+      "max_abs_count_delta": 0.0,
+      "member": "issue-77-n1-001",
+      "ok": true,
+      "requests": [
+        "F-1-continuous",
+        "F-1-micro",
+        "F-1-macro",
+        "F-5-continuous",
+        "F-5-micro",
+        "F-5-macro",
+        "F-15-continuous",
+        "F-15-micro",
+        "F-15-macro",
+        "C-F-1",
+        "C-F-5",
+        "C-F-15",
+        "J",
+        "C-J"
+      ],
+      "seed": 20260908,
+      "tolerance": 0.001
+    },
+    {
+      "anchor_sha256": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c",
+      "control": "frame0_equals_sealed_anchor",
+      "frame0_sha256": [
+        "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c",
+        "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c",
+        "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c"
+      ],
+      "ok": true,
+      "shots": 3
+    },
+    {
+      "control": "parsed_position0_equals_anchor_carrier",
+      "max_abs_delta": 0.00040012598037719727,
+      "ok": true,
+      "tolerance": 0.001
+    },
+    {
+      "center_tolerance": 0.05,
+      "control": "engine_projection_geometry_at_anchor",
+      "engine_start_spread_across_shots": 0.0,
+      "member": "issue-77-n1-001",
+      "most_confident_parsed_slot": {
+        "center_distance": 0.019403817202594847,
+        "engine_presence": 1.0,
+        "parsed_presence": 0.9860511422157288,
+        "slot": "platform:0000"
+      },
+      "ok": true,
+      "slots": [
+        {
+          "center_distance": null,
+          "engine_presence": 1.0,
+          "parsed_presence": 0.22837917506694794,
+          "slot": "bird:0000"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 0.0,
+          "parsed_presence": 0.09073509275913239,
+          "slot": "bird:0001"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 0.0,
+          "parsed_presence": 0.1595854014158249,
+          "slot": "bird:0002"
+        },
+        {
+          "center_distance": 0.23890293320726355,
+          "engine_presence": 1.0,
+          "parsed_presence": 0.7976552248001099,
+          "slot": "block:0000"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 1.0,
+          "parsed_presence": 0.024226387962698936,
+          "slot": "block:0001"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 1.0,
+          "parsed_presence": 0.002592865377664566,
+          "slot": "block:0002"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 1.0,
+          "parsed_presence": 0.002825953997671604,
+          "slot": "block:0003"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 0.0,
+          "parsed_presence": 0.0018801060505211353,
+          "slot": "block:0004"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 1.0,
+          "parsed_presence": 0.05426130071282387,
+          "slot": "pig:0000"
+        },
+        {
+          "center_distance": 0.019403817202594847,
+          "engine_presence": 1.0,
+          "parsed_presence": 0.9860511422157288,
+          "slot": "platform:0000"
+        },
+        {
+          "center_distance": 0.033017053351092104,
+          "engine_presence": 1.0,
+          "parsed_presence": 0.6302329301834106,
+          "slot": "platform:0001"
+        },
+        {
+          "center_distance": 0.13808388140045916,
+          "engine_presence": 1.0,
+          "parsed_presence": 0.5609326958656311,
+          "slot": "platform:0002"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 1.0,
+          "parsed_presence": 0.0012035054387524724,
+          "slot": "platform:0003"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 1.0,
+          "parsed_presence": 9.641891665523872e-05,
+          "slot": "platform:0004"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 0.0,
+          "parsed_presence": 7.939719580463134e-06,
+          "slot": "platform:0005"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 0.0,
+          "parsed_presence": 6.19124193690368e-06,
+          "slot": "slingshot:0000"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 0.0,
+          "parsed_presence": 6.187310646055266e-06,
+          "slot": "world:landscape:0000"
+        },
+        {
+          "center_distance": null,
+          "engine_presence": 0.0,
+          "parsed_presence": 6.214797394932248e-06,
+          "slot": "world:landscape:0001"
+        }
+      ]
+    },
+    {
+      "control": "teacher_forcing_mechanics",
+      "ok": true,
+      "requests": [
+        {
+          "controller_calls": 0,
+          "finite": 3,
+          "ok": true,
+          "request": "F-1-continuous",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 0,
+          "finite": 3,
+          "ok": true,
+          "request": "F-1-micro",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 0,
+          "finite": 3,
+          "ok": true,
+          "request": "F-1-macro",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 0,
+          "finite": 3,
+          "ok": true,
+          "request": "F-5-continuous",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 0,
+          "finite": 3,
+          "ok": true,
+          "request": "F-5-micro",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 0,
+          "finite": 3,
+          "ok": true,
+          "request": "F-5-macro",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 0,
+          "finite": 3,
+          "ok": true,
+          "request": "F-15-continuous",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 0,
+          "finite": 3,
+          "ok": true,
+          "request": "F-15-micro",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 0,
+          "finite": 3,
+          "ok": true,
+          "request": "F-15-macro",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 0,
+          "finite": 3,
+          "ok": true,
+          "request": "C-F-1",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 0,
+          "finite": 3,
+          "ok": true,
+          "request": "C-F-5",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 0,
+          "finite": 3,
+          "ok": true,
+          "request": "C-F-15",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 605,
+          "finite": 3,
+          "ok": true,
+          "request": "J",
+          "transition_calls": 3
+        },
+        {
+          "controller_calls": 45,
+          "finite": 3,
+          "ok": true,
+          "request": "C-J",
+          "transition_calls": 3
+        }
+      ]
+    }
+  ],
+  "device": "cuda",
+  "identity": "issue-99-decision-chain-attribution-v1",
+  "ok": true,
+  "projection": {
+    "extraction_seconds_per_shot": 4.815073426667368,
+    "projected_extraction_seconds": 4136.148073507269,
+    "shots": 859
+  },
+  "reading": "infrastructure assertions only; no verdict was joined and no AUC, tie or top-1 statistic was computed",
+  "run_at": "2026-09-27T02:06:18Z",
+  "schema": "issue_99_decision_chain_attribution_smoke_v1"
+}

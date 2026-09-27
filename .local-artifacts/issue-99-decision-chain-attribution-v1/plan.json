@@ -1,0 +1,613 @@
+{
+  "caps": {
+    "engine_seconds": 0,
+    "gpu_seconds": 10800.0,
+    "stop": "readiness_or_precision_insufficient",
+    "wall_seconds": 21600.0
+  },
+  "claim_boundary": "decision-only re-scoring of retained engine-verdicted executions and the frozen #77 N1 checkpoints; stage d reads post-launch frames and is a diagnostic, not a decision-time ranker; development/exposed N1 members only (held-out = not fit by #77 predictors or controllers, still exposed through earlier tickets); no engine access, rendering or retraining; inventories and cohorts are never pooled; every interval is DESCRIPTIVE",
+  "cost_rules": {
+    "start_carrier": "a and b: the engine-projected position-0 carrier; ap, c and d: the parsed position-0 carrier",
+    "tie_rule": "argmin cost, ties to the lower ordinal (top-1)",
+    "typed_failures": "a nonfinite endpoint carrier is a retained typed failure (excluded, inherits no verdict), never retried"
+  },
+  "costs": {
+    "count": "frozen TaskObjective: 1000 * clamp(pig presence, 0, 1) + sum over block slots of clamp(block presence, 0, 1)",
+    "tie_free": "pig presence (unclamped) - 0.1 * Euclidean displacement of the pig slot center (normalized screen units) between the stage's start carrier (position 0) and the endpoint carrier; lower is better"
+  },
+  "decision_rule": {
+    "Q1_attribution": "supported iff guards pass AND the dominant drop's lower bound > 0; not_supported_by_this_experiment iff guards pass AND the dominant drop's upper bound < 0.02; otherwise readiness_or_precision_insufficient",
+    "Q2_tie_free_cost": "supported iff guards pass AND at stage c on mixed grid cells (cohort all) every request's tied-cell share under the tie-free cost is < 0.1; not_supported_by_this_experiment iff guards pass and some request is >= 0.1; otherwise readiness_or_precision_insufficient",
+    "baseline_target": "reported, not a token: any request at stage c, held-out grid, tie-free cost with AUC >= 0.65 and lower bound > 0.55; the issue's target token is decided after step 3"
+  },
+  "disclosure": "Known before freeze and not re-derived here: the #96 stage-c count-cost AUCs of every request (published), the #109 held-out re-score of the same records, and the #85 finding that the parsed-endpoint count cost disagrees with engine truth in closed loop (offset 600, 42/47 proxy-only successes). No stage a/ap/b/d statistic and no tie-free statistic was computed before freeze; the smoke joins no verdict.",
+  "engine_seconds": 0,
+  "estimands": {
+    "attribution": "paired per cell, member-clustered: endpoint_perception = a - ap; one_step_dynamics(r) = ap - d(r); compounding(r) = d(r) - c(r); anchor_perception(r) = b(r) - c(r); total(r) = a - c(r); request-mean versions average the 14 requests within a cell first",
+    "cell_auc": "within-cell P(successful candidate has lower cost than failed candidate), ties 0.5, over admissible candidates (verdict AND finite cost) (run_launch_power_probe.cell_auc)",
+    "compute_accounting": "per request x stage: records, candidates, transition calls, controller calls, linear MACs, GPU seconds, active parameters; per record wall seconds; evidence extraction parse calls and wall seconds",
+    "interval": "member-clustered percentile bootstrap, 10000 draws, PCG64 seed 7201, quantiles [0.025, 0.975], DESCRIPTIVE",
+    "perception_fidelity": "outcome-free, per cohort: parser presence (>= 0.5) against engine presence per slot kind at positions 0 and 225 over every verdict-bearing shot; accuracy and mean absolute presence error",
+    "stage_auc": "per cohort x inventory x cost x stage x request: member-clustered percentile bootstrap of the cell AUCs over mixed cells",
+    "ties": "tied cell = every admissible cost of the cell equal (the #96 G4 definition); tied pair share = success/failure pairs with equal cost over all such pairs",
+    "top1": "argmin-cost candidate succeeds; pooled count over cells with chance reported"
+  },
+  "frozen_at": "2026-09-27T02:07:52Z",
+  "frozen_before_scoring_run": true,
+  "gate_a": {
+    "dominant": "argmax of the three point drops; ties in the order dynamics, perception, cost",
+    "drops": {
+      "cost": "1 - AUC(a)",
+      "dynamics": "request-mean (AUC(ap) - AUC(c)) = one_step_dynamics + compounding",
+      "perception": "max(endpoint_perception, request-mean anchor_perception)"
+    },
+    "fix": {
+      "cost": "redefine the decision cost before any model work",
+      "dynamics": "retrain the predictor with a decision-aware auxiliary loss (pairwise ranking of candidate endpoints on fit lineages)",
+      "perception": "improve the slot encoder"
+    },
+    "held_out": "the same drops on the held-out cohort are reported, not used for the choice",
+    "scope": "grid, cohort all, cost tie_free, request-mean"
+  },
+  "guards": {
+    "G1": "stage-c count cost reproduces every #96 record of the 14 requests within 0.001 (same nonfinite exclusions)",
+    "G2": "every executed shot's position-0 agent frame is byte-identical to the member's sealed anchor",
+    "G3": "engine-projected position-0 carriers agree across a member's shots within 1e-06",
+    "G4": "verdict resolution 1.0 and nonfinite typed-failure share <= 0.1 on mixed grid cells for every stage and request",
+    "caps": "run GPU seconds <= 10800.0, run wall seconds <= 21600.0",
+    "failure": "any guard failure -> readiness_or_precision_insufficient for Q1 and Q2"
+  },
+  "held_identical": {
+    "anchors": "the #96 sealed parsed anchors (run_launch_power_probe.frozen_anchor)",
+    "checkpoints": "the #96 per-seed predictor.pt / controller.pt (issue-87 bindings)",
+    "endpoint": 225,
+    "engine_anchor": "the engine-projected position-0 carrier of the member's first verdict-bearing executed shot in frozen order (inventory, ordinal); every other shot of the member must agree within 1e-06",
+    "inventories_and_verdicts": "t96.build_universe, unchanged",
+    "positions": "position k = fixed step 30000 + 50 k"
+  },
+  "identity": "issue-99-decision-chain-attribution-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-96-tau-ad-within-checkpoint-v1/plan.json",
+      "name": "issue_96_plan",
+      "sha256": "sha256:b4b10b8732ecad6b5cb5f5e7fa63ddf2f67994fa723b780bb63204fb06c57e56"
+    },
+    {
+      "artifact": ".local-artifacts/issue-96-tau-ad-within-checkpoint-v1/summary.json",
+      "name": "issue_96_summary",
+      "sha256": "sha256:618efd3df218660466df88be9483ed84b7228546ee72bd95c4fe46f8de11570b"
+    },
+    {
+      "artifact": "scripts/run_tau_ad_within_checkpoint.py",
+      "name": "issue_96_runner",
+      "sha256": "sha256:9cf1ffe4c6ec61ecf15bb3c911425929a00491c725b07f9880b2e84792b685bf"
+    },
+    {
+      "artifact": ".local-artifacts/issue-93-second-parameterization-v1/plan.json",
+      "name": "issue_93_plan",
+      "sha256": "sha256:4932ed53d89b1b9a653c235253d3edba38c89f6b3aa28ecd43772c2c8d77f2c8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-93-second-parameterization-v1/anchor_retention.json",
+      "name": "issue_93_anchor_retention",
+      "sha256": "sha256:178c17975d5142dab8b82fa5663da4cc1c2dda763f27fd0aba4ef4de3b1e9794"
+    },
+    {
+      "artifact": ".local-artifacts/issue-94-launch-power-v1/plan.json",
+      "name": "issue_94_plan",
+      "sha256": "sha256:8690758b4bd4e7d67fe74ada0d072a8bc567e32ddc72af417d67385372768cec"
+    },
+    {
+      "artifact": ".local-artifacts/issue-87-closed-loop-oracle-v1/plan.json",
+      "name": "issue_87_plan",
+      "sha256": "sha256:689ec148564491291b372c02e7aa6f828480ea8200dc6c51e214f641ab5670ac"
+    },
+    {
+      "artifact": ".local-artifacts/issue-89-oracle-completion-v1/summary.json",
+      "name": "issue_89_summary",
+      "sha256": "sha256:42ef6575d66a2273c9880eac4da9199d862dfb88147c4cc20beef194e1358f5e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/plan.json",
+      "name": "issue_77_dynamics_plan",
+      "sha256": "sha256:18eb5a1e7ae3ad5a76b8db3dd2482b85844e404064614dc6835b8e4707e5b14d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-decision-chain-attribution-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:dddfc3fc6369a90c95ae7ac9074fe50fa1374471a706bc37f07bdc88d9884be4"
+    }
+  ],
+  "issue": 99,
+  "issue_64_authorized": false,
+  "primary_cost": "tie_free",
+  "prohibited": [
+    "tuning the tie-free cost weight after any verdict join",
+    "adding stages, requests or cohorts after scoring",
+    "retrying typed failures",
+    "re-opening any prior disposition (#15-#98, #109)"
+  ],
+  "question": "where along engine state -> perception -> carrier -> predictor rollout -> cost is the launch-ranking signal lost on the four engine-verdicted #96 inventories, and does a tie-free cost read from the same endpoint carrier remove the count cost's ties?",
+  "role": "terminal",
+  "runner": "scripts/run_decision_chain_attribution.py",
+  "runner_sha256_at_freeze": "sha256:9e017a24b0e6b126ec68eb91586f454e05e1c259430d7057281977c349fcc43c",
+  "schema": "issue_99_decision_chain_attribution_plan_v1",
+  "smoke_evidence": {
+    "anchor_evidence_ok": true,
+    "checks": [
+      {
+        "candidates": 826,
+        "control": "stage_c_replicates_issue_96_records",
+        "max_abs_count_delta": 0.0,
+        "member": "issue-77-n1-001",
+        "ok": true,
+        "requests": [
+          "F-1-continuous",
+          "F-1-micro",
+          "F-1-macro",
+          "F-5-continuous",
+          "F-5-micro",
+          "F-5-macro",
+          "F-15-continuous",
+          "F-15-micro",
+          "F-15-macro",
+          "C-F-1",
+          "C-F-5",
+          "C-F-15",
+          "J",
+          "C-J"
+        ],
+        "seed": 20260908,
+        "tolerance": 0.001
+      },
+      {
+        "anchor_sha256": "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c",
+        "control": "frame0_equals_sealed_anchor",
+        "frame0_sha256": [
+          "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c",
+          "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c",
+          "sha256:7ac31cf22c139a477f2edcc4a99bd29e2bb47a774da7ec520a2b63214cffdf1c"
+        ],
+        "ok": true,
+        "shots": 3
+      },
+      {
+        "control": "parsed_position0_equals_anchor_carrier",
+        "max_abs_delta": 0.00040012598037719727,
+        "ok": true,
+        "tolerance": 0.001
+      },
+      {
+        "center_tolerance": 0.05,
+        "control": "engine_projection_geometry_at_anchor",
+        "engine_start_spread_across_shots": 0.0,
+        "member": "issue-77-n1-001",
+        "most_confident_parsed_slot": {
+          "center_distance": 0.019403817202594847,
+          "engine_presence": 1.0,
+          "parsed_presence": 0.9860511422157288,
+          "slot": "platform:0000"
+        },
+        "ok": true,
+        "slots": [
+          {
+            "center_distance": null,
+            "engine_presence": 1.0,
+            "parsed_presence": 0.22837917506694794,
+            "slot": "bird:0000"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 0.0,
+            "parsed_presence": 0.09073509275913239,
+            "slot": "bird:0001"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 0.0,
+            "parsed_presence": 0.1595854014158249,
+            "slot": "bird:0002"
+          },
+          {
+            "center_distance": 0.23890293320726355,
+            "engine_presence": 1.0,
+            "parsed_presence": 0.7976552248001099,
+            "slot": "block:0000"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 1.0,
+            "parsed_presence": 0.024226387962698936,
+            "slot": "block:0001"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 1.0,
+            "parsed_presence": 0.002592865377664566,
+            "slot": "block:0002"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 1.0,
+            "parsed_presence": 0.002825953997671604,
+            "slot": "block:0003"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 0.0,
+            "parsed_presence": 0.0018801060505211353,
+            "slot": "block:0004"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 1.0,
+            "parsed_presence": 0.05426130071282387,
+            "slot": "pig:0000"
+          },
+          {
+            "center_distance": 0.019403817202594847,
+            "engine_presence": 1.0,
+            "parsed_presence": 0.9860511422157288,
+            "slot": "platform:0000"
+          },
+          {
+            "center_distance": 0.033017053351092104,
+            "engine_presence": 1.0,
+            "parsed_presence": 0.6302329301834106,
+            "slot": "platform:0001"
+          },
+          {
+            "center_distance": 0.13808388140045916,
+            "engine_presence": 1.0,
+            "parsed_presence": 0.5609326958656311,
+            "slot": "platform:0002"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 1.0,
+            "parsed_presence": 0.0012035054387524724,
+            "slot": "platform:0003"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 1.0,
+            "parsed_presence": 9.641891665523872e-05,
+            "slot": "platform:0004"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 0.0,
+            "parsed_presence": 7.939719580463134e-06,
+            "slot": "platform:0005"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 0.0,
+            "parsed_presence": 6.19124193690368e-06,
+            "slot": "slingshot:0000"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 0.0,
+            "parsed_presence": 6.187310646055266e-06,
+            "slot": "world:landscape:0000"
+          },
+          {
+            "center_distance": null,
+            "engine_presence": 0.0,
+            "parsed_presence": 6.214797394932248e-06,
+            "slot": "world:landscape:0001"
+          }
+        ]
+      },
+      {
+        "control": "teacher_forcing_mechanics",
+        "ok": true,
+        "requests": [
+          {
+            "controller_calls": 0,
+            "finite": 3,
+            "ok": true,
+            "request": "F-1-continuous",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 0,
+            "finite": 3,
+            "ok": true,
+            "request": "F-1-micro",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 0,
+            "finite": 3,
+            "ok": true,
+            "request": "F-1-macro",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 0,
+            "finite": 3,
+            "ok": true,
+            "request": "F-5-continuous",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 0,
+            "finite": 3,
+            "ok": true,
+            "request": "F-5-micro",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 0,
+            "finite": 3,
+            "ok": true,
+            "request": "F-5-macro",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 0,
+            "finite": 3,
+            "ok": true,
+            "request": "F-15-continuous",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 0,
+            "finite": 3,
+            "ok": true,
+            "request": "F-15-micro",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 0,
+            "finite": 3,
+            "ok": true,
+            "request": "F-15-macro",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 0,
+            "finite": 3,
+            "ok": true,
+            "request": "C-F-1",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 0,
+            "finite": 3,
+            "ok": true,
+            "request": "C-F-5",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 0,
+            "finite": 3,
+            "ok": true,
+            "request": "C-F-15",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 605,
+            "finite": 3,
+            "ok": true,
+            "request": "J",
+            "transition_calls": 3
+          },
+          {
+            "controller_calls": 45,
+            "finite": 3,
+            "ok": true,
+            "request": "C-J",
+            "transition_calls": 3
+          }
+        ]
+      }
+    ],
+    "device": "cuda",
+    "identity": "issue-99-decision-chain-attribution-v1",
+    "ok": true,
+    "projection": {
+      "extraction_seconds_per_shot": 4.815073426667368,
+      "projected_extraction_seconds": 4136.148073507269,
+      "shots": 859
+    },
+    "reading": "infrastructure assertions only; no verdict was joined and no AUC, tie or top-1 statistic was computed",
+    "run_at": "2026-09-27T02:06:18Z",
+    "schema": "issue_99_decision_chain_attribution_smoke_v1"
+  },
+  "stages": {
+    "a": "engine endpoint: engine state of the executed shot at position 225 (fixed step 41250, terminal absorption) projected into the carrier (presence = active entity with a body, centers through the frame's world_to_observation transform, kinds one-hot of the declared slot kind; prior position 224 for motion) -> cost",
+    "ap": "perceived endpoint: the executed shot's agent frame at position 225 (prior 224; terminal absorption) parsed by the frozen issue-70 slot parser -> cost",
+    "b": "engine anchor: the engine state at position 0 of the member's executed shots projected into the carrier -> request rollout to 225 -> cost",
+    "c": "current: the member's sealed parsed anchor carrier -> request rollout to 225 -> cost (the #96 arm, recomputed)",
+    "d": "teacher-forced predictor: the request's pair schedule walks the executed shot's parsed carriers (fixed pair Delta: input at position 225 - Delta; J / C-J: the controller chooses on the parsed carrier at each visited position); only the final step to 225 is predicted -> cost"
+  },
+  "universe": {
+    "cohort_rule": "held_out = #96 members outside issue-77-n1-dynamics-v1 n1_lineages predictor and controller pools; all = every #96 member; reported side by side, never pooled",
+    "cohorts": {
+      "all": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-014",
+        "issue-77-n1-015",
+        "issue-77-n1-016"
+      ],
+      "held_out": [
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-014",
+        "issue-77-n1-016"
+      ]
+    },
+    "endpoint_records": 59,
+    "inventories": {
+      "angle": "#87 N1 radius-80 launch-angle sweep of the member's canonical state (9-13 candidates; #87+#89 union verdict table)",
+      "grid": "#93 Arm B 4x4 Cartesian drag grid (16 candidates; #93 oracle verdicts)",
+      "offset": "#93 Arm A offset angle sweep at radius 80 px (11 candidates; #93 oracle verdicts)",
+      "power": "#94 angle x launch-power sweep (20 candidates; #94 oracle verdicts; out of training support per #95, secondary only)"
+    },
+    "members": {
+      "angle": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-014",
+        "issue-77-n1-015",
+        "issue-77-n1-016"
+      ],
+      "grid": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-014",
+        "issue-77-n1-015",
+        "issue-77-n1-016"
+      ],
+      "offset": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-014",
+        "issue-77-n1-015",
+        "issue-77-n1-016"
+      ],
+      "power": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-014",
+        "issue-77-n1-015",
+        "issue-77-n1-016"
+      ]
+    },
+    "mixed_members": {
+      "angle": [
+        "issue-77-n1-001",
+        "issue-77-n1-006",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-014",
+        "issue-77-n1-016"
+      ],
+      "grid": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-014",
+        "issue-77-n1-015"
+      ],
+      "offset": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-014"
+      ],
+      "power": [
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-009",
+        "issue-77-n1-013",
+        "issue-77-n1-014"
+      ]
+    },
+    "mixed_rule": "a (inventory, member) is mixed iff its retained verdicts hold at least one success and one failure; cells = mixed member x 3 seeds (seed-free stages a/ap repeat the member's value in each seed cell, so member-clustered means are unchanged)",
+    "model_records": 177,
+    "primary": "grid",
+    "requests": [
+      "F-1-continuous",
+      "F-1-micro",
+      "F-1-macro",
+      "F-5-continuous",
+      "F-5-micro",
+      "F-5-macro",
+      "F-15-continuous",
+      "F-15-micro",
+      "F-15-macro",
+      "C-F-1",
+      "C-F-5",
+      "C-F-15",
+      "J",
+      "C-J"
+    ],
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "stages": [
+      "a",
+      "ap",
+      "d",
+      "c",
+      "b"
+    ],
+    "verdict_bearing_shots": 859
+  },
+  "validation_command": "python -u -m scripts.run_decision_chain_attribution --validate",
+  "version": 1
+}

@@ -1,0 +1,103 @@
+{
+  "checks": [
+    {
+      "control": "shot_labels_and_images",
+      "ok": true,
+      "shots": [
+        {
+          "end": 285,
+          "images": [
+            58,
+            3,
+            240,
+            320
+          ],
+          "key": "n1--issue-77-n1-001-a00",
+          "pig_present_share": 1.0
+        },
+        {
+          "end": 285,
+          "images": [
+            58,
+            3,
+            240,
+            320
+          ],
+          "key": "inv--grid--issue-77-n1-001--o00",
+          "pig_present_share": 1.0
+        }
+      ]
+    },
+    {
+      "control": "encoder_trains",
+      "loss": 13.907220840454102,
+      "ok": true,
+      "parameters": 506414
+    },
+    {
+      "control": "R0_carriers_replicate_issue_99_evidence",
+      "max_abs_delta": 8.941278792917728e-06,
+      "ok": true,
+      "tolerance": 0.001
+    },
+    {
+      "control": "hybrid_predictor_trains",
+      "loss": 0.33457908034324646,
+      "ok": true,
+      "windows": 32
+    },
+    {
+      "control": "continuous_predictor_trains",
+      "loss": 0.019654329866170883,
+      "ok": true,
+      "windows": 32
+    },
+    {
+      "control": "held_out_eval_mechanics",
+      "finite": 192,
+      "member": "issue-77-n1-007",
+      "ok": true,
+      "requests": 12
+    },
+    {
+      "control": "held_out_isolation",
+      "ok": true,
+      "training_members": [
+        "issue-77-n1-001",
+        "issue-77-n1-002",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-015"
+      ]
+    }
+  ],
+  "identity": "issue-99-slot-encoder-fix-v1",
+  "ok": true,
+  "projection": {
+    "carrier_seconds": 1007.5184154382441,
+    "encoder_seconds": 982.1495420717322,
+    "eval_seconds": 148.1725988164544,
+    "predictor_seconds": 2714.4805590767646,
+    "shot_build_seconds": 8916.236878032505,
+    "total_seconds": 13768.557993435701,
+    "training_shots": 745
+  },
+  "reading": "infrastructure assertions only; nothing kept; no verdict joined",
+  "run_at": "2026-09-27T03:30:43Z",
+  "schema": "issue_99_slot_encoder_fix_smoke_v1",
+  "timings": {
+    "carrier_seconds_per_shot": 0.6761868559988216,
+    "continuous_seconds_per_step": 0.019150220550363882,
+    "encoder_seconds_per_step": 0.12122496855008649,
+    "eval_seconds_per_record": 1.5434645710047334,
+    "hybrid_seconds_per_step": 0.031117937951057682,
+    "shot_build_seconds": 11.96810319198994
+  }
+}

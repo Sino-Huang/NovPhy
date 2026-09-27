@@ -1,0 +1,4079 @@
+{
+  "arms": {
+    "E": "new spatial slot parser trained on fit-lineage frames, predictors retrained on its carriers",
+    "R0": "frozen issue-70 parser, predictors retrained on its carriers (same data and recipe)",
+    "current": "frozen #77 N1 checkpoints (#99 attribution stage c), reference only"
+  },
+  "caps": {
+    "gpu_seconds": 28800.0,
+    "stop": "readiness_or_precision_insufficient",
+    "wall_seconds": 57600.0
+  },
+  "claim_boundary": "decision-only ranking of retained engine-verdicted executions on the 4 held-out N1 members (never fit here or by #77; exposed through earlier tickets); a new slot encoder and predictors trained on fit lineages of the same two families; no engine access, rendering or capture; no closed-loop or competence claim; every interval is DESCRIPTIVE",
+  "decision_rule": {
+    "Q3_target": "supported iff guards pass AND some request of arm E on held-out grid cells under the tie-free cost has AUC >= 0.65 with lower bound > 0.55; not_supported_by_this_experiment iff guards pass and no request does; otherwise readiness_or_precision_insufficient",
+    "Q4_encoder_effect": "request-mean paired (E - R0) AUC on held-out grid cells, tie-free cost: supported iff mean >= 0.02 and lower > 0; not_supported_by_this_experiment iff upper < 0.02; otherwise readiness_or_precision_insufficient",
+    "multiplicity": "Q3 scans 12 requests against one target; the count of requests meeting it is reported; held-out grid has 3 member clusters, whose percentile bootstrap has 10 distinct resamples and understates uncertainty"
+  },
+  "disclosure": "Known before freeze: every #99 attribution table (all and held-out cohorts, including the current checkpoint's held-out stage-c AUCs under the tie-free cost, several of which already meet the target), the #96 and #109 tables. The encoder architecture and every training setting below were fixed without any held-out verdict join; the smoke joins no verdict.",
+  "encoder": {
+    "adapter": "issue-70 RepairedAdapter temperatures/thresholds and the 236-value carrier; relations and macros never enter the carrier tensor",
+    "architecture": "issue-99-spatial-slot-parser-v1",
+    "attention_heads": 4,
+    "attention_layers": 2,
+    "batch_size": 64,
+    "epochs": 12,
+    "hidden_dim": 128,
+    "image_height": 240,
+    "image_stride": 5,
+    "image_width": 320,
+    "learning_rate": 0.001,
+    "loss": "issue-70 repair.parser_loss with class-balanced pig/block presence weights from the training frames",
+    "module": "world_model/training/spatial_slot_parser.py",
+    "seed": 9900001,
+    "selection": "last epoch; no validation split",
+    "targets": "issue-70 repair.targets on the frame's engine sample: presence, projected centers, cohort-v2 micro relations, native macro labels",
+    "weight_decay": 0.0001
+  },
+  "engine_seconds": 0,
+  "evaluation": {
+    "cells": "mixed held-out member x 3 seeds; inventories never pooled",
+    "cohort": {
+      "held_out": [
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-014",
+        "issue-77-n1-016"
+      ]
+    },
+    "costs": {
+      "count": "frozen TaskObjective: 1000 * clamp(pig presence, 0, 1) + sum over block slots of clamp(block presence, 0, 1)",
+      "tie_free": "pig presence (unclamped) - 0.1 * Euclidean displacement of the pig slot center (normalized screen units) between the stage's start carrier (position 0) and the endpoint carrier; lower is better"
+    },
+    "endpoint_stage_ap": "the arm's parsed endpoint frame -> cost, held-out shots (diagnostic)",
+    "interval": "member-clustered percentile bootstrap, 10000 draws, PCG64 7201, DESCRIPTIVE",
+    "perception": "outcome-free: parser presence (>= 0.5) against engine presence per slot kind at positions 0 and 225 of every held-out shot, per arm",
+    "primary_cost": "tie_free",
+    "stage": "c: the arm's parsed sealed anchor -> request rollout to 225 -> cost (m99.rollout_endpoints); requests the 9 hybrid and 3 continuous fixed pairs"
+  },
+  "fit_data": {
+    "members": [
+      "issue-77-n1-001",
+      "issue-77-n1-002",
+      "issue-77-n1-003",
+      "issue-77-n1-004",
+      "issue-77-n1-005",
+      "issue-77-n1-006",
+      "issue-77-n1-009",
+      "issue-77-n1-010",
+      "issue-77-n1-011",
+      "issue-77-n1-012",
+      "issue-77-n1-013",
+      "issue-77-n1-015"
+    ],
+    "positions": "0..min(last, 285) (position k = fixed step 30000 + 50 k)",
+    "rule": "every #77 N1 admissible branch of the #77 predictor/controller lineages plus every verdict-bearing #93/#94/#87/#89 inventory execution of those lineages; verdicts are never read by training",
+    "shots": [
+      {
+        "key": "n1--issue-77-n1-001-a00",
+        "member": "issue-77-n1-001",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-001-a01",
+        "member": "issue-77-n1-001",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-001-a02",
+        "member": "issue-77-n1-001",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-001-a03",
+        "member": "issue-77-n1-001",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-001-a04",
+        "member": "issue-77-n1-001",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-001-a05",
+        "member": "issue-77-n1-001",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-001-a06",
+        "member": "issue-77-n1-001",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-001-a07",
+        "member": "issue-77-n1-001",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-001-a08",
+        "member": "issue-77-n1-001",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-001-a09",
+        "member": "issue-77-n1-001",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-001-a10",
+        "member": "issue-77-n1-001",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-001-a12",
+        "member": "issue-77-n1-001",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-002-a11",
+        "member": "issue-77-n1-002",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-003-a00",
+        "member": "issue-77-n1-003",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-003-a01",
+        "member": "issue-77-n1-003",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-003-a02",
+        "member": "issue-77-n1-003",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-003-a03",
+        "member": "issue-77-n1-003",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-003-a05",
+        "member": "issue-77-n1-003",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-003-a07",
+        "member": "issue-77-n1-003",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-003-a09",
+        "member": "issue-77-n1-003",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-003-a10",
+        "member": "issue-77-n1-003",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-003-a11",
+        "member": "issue-77-n1-003",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-004-a01",
+        "member": "issue-77-n1-004",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-004-a02",
+        "member": "issue-77-n1-004",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-004-a04",
+        "member": "issue-77-n1-004",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-004-a05",
+        "member": "issue-77-n1-004",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-004-a06",
+        "member": "issue-77-n1-004",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-004-a07",
+        "member": "issue-77-n1-004",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-004-a08",
+        "member": "issue-77-n1-004",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-004-a11",
+        "member": "issue-77-n1-004",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-004-a12",
+        "member": "issue-77-n1-004",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-005-a01",
+        "member": "issue-77-n1-005",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-005-a02",
+        "member": "issue-77-n1-005",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-005-a07",
+        "member": "issue-77-n1-005",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-005-a08",
+        "member": "issue-77-n1-005",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a00",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a01",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a02",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a03",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a04",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a05",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a06",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a07",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a08",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a09",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a10",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a11",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-006-a12",
+        "member": "issue-77-n1-006",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a00",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a01",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a02",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a03",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a04",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a05",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a06",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a07",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a08",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a09",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a10",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a11",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-009-a12",
+        "member": "issue-77-n1-009",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a00",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a01",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a02",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a03",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a04",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a05",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a06",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a07",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a08",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a09",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a10",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a11",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-010-a12",
+        "member": "issue-77-n1-010",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a00",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a01",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a02",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a03",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a04",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a05",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a06",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a07",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a08",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a09",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a10",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a11",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-011-a12",
+        "member": "issue-77-n1-011",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a00",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a01",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a02",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a03",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a04",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a05",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a06",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a07",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a08",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a09",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a10",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a11",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-012-a12",
+        "member": "issue-77-n1-012",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a00",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a01",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a02",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a03",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a04",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a05",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a06",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a07",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a08",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a09",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a10",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a11",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-013-a12",
+        "member": "issue-77-n1-013",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a00",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a01",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a02",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a03",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a04",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a05",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a06",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a07",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a08",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a09",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a10",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a11",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "n1--issue-77-n1-015-a12",
+        "member": "issue-77-n1-015",
+        "source": "issue_77_n1"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o00",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o01",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o02",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o03",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o04",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o05",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o06",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o07",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o08",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o09",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o10",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o11",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o12",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o13",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o14",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-001--o15",
+        "member": "issue-77-n1-001",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o00",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o01",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o02",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o03",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o04",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o05",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o06",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o07",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o08",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o09",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o10",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o11",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o12",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o13",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o14",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-003--o15",
+        "member": "issue-77-n1-003",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o00",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o01",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o02",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o03",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o04",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o05",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o06",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o07",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o08",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o09",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o10",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o11",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o12",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o13",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o14",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-004--o15",
+        "member": "issue-77-n1-004",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-005--o03",
+        "member": "issue-77-n1-005",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-005--o05",
+        "member": "issue-77-n1-005",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-005--o06",
+        "member": "issue-77-n1-005",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-005--o07",
+        "member": "issue-77-n1-005",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-005--o10",
+        "member": "issue-77-n1-005",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-005--o11",
+        "member": "issue-77-n1-005",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-005--o14",
+        "member": "issue-77-n1-005",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-005--o15",
+        "member": "issue-77-n1-005",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o00",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o01",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o02",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o03",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o04",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o05",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o06",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o07",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o08",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o09",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o10",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o11",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o12",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o13",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o14",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-006--o15",
+        "member": "issue-77-n1-006",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o00",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o01",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o02",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o03",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o04",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o05",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o06",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o07",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o08",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o09",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o10",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o11",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o12",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o13",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o14",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-009--o15",
+        "member": "issue-77-n1-009",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o00",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o01",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o02",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o03",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o04",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o05",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o06",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o07",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o08",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o09",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o10",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o11",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o12",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o13",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o14",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-010--o15",
+        "member": "issue-77-n1-010",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o00",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o01",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o02",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o03",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o04",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o05",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o06",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o07",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o08",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o09",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o10",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o11",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o12",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o13",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o14",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-011--o15",
+        "member": "issue-77-n1-011",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o00",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o01",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o02",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o03",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o04",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o05",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o06",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o07",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o08",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o09",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o10",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o11",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o12",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o13",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o14",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-012--o15",
+        "member": "issue-77-n1-012",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o00",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o01",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o02",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o03",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o04",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o05",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o06",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o07",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o08",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o09",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o10",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o11",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o12",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o13",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o14",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-013--o15",
+        "member": "issue-77-n1-013",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o00",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o01",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o02",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o03",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o04",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o05",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o06",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o07",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o08",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o09",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o10",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o11",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o12",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o13",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o14",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--grid--issue-77-n1-015--o15",
+        "member": "issue-77-n1-015",
+        "source": "inventory_grid"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-001--o00",
+        "member": "issue-77-n1-001",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-001--o01",
+        "member": "issue-77-n1-001",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-001--o02",
+        "member": "issue-77-n1-001",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-001--o03",
+        "member": "issue-77-n1-001",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-001--o04",
+        "member": "issue-77-n1-001",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-001--o05",
+        "member": "issue-77-n1-001",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-001--o06",
+        "member": "issue-77-n1-001",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-001--o07",
+        "member": "issue-77-n1-001",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-001--o08",
+        "member": "issue-77-n1-001",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-001--o09",
+        "member": "issue-77-n1-001",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-001--o10",
+        "member": "issue-77-n1-001",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-003--o00",
+        "member": "issue-77-n1-003",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-003--o01",
+        "member": "issue-77-n1-003",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-003--o02",
+        "member": "issue-77-n1-003",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-003--o03",
+        "member": "issue-77-n1-003",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-003--o04",
+        "member": "issue-77-n1-003",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-003--o05",
+        "member": "issue-77-n1-003",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-003--o06",
+        "member": "issue-77-n1-003",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-003--o07",
+        "member": "issue-77-n1-003",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-003--o08",
+        "member": "issue-77-n1-003",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-003--o09",
+        "member": "issue-77-n1-003",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-003--o10",
+        "member": "issue-77-n1-003",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-004--o00",
+        "member": "issue-77-n1-004",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-004--o01",
+        "member": "issue-77-n1-004",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-004--o02",
+        "member": "issue-77-n1-004",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-004--o03",
+        "member": "issue-77-n1-004",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-004--o04",
+        "member": "issue-77-n1-004",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-004--o05",
+        "member": "issue-77-n1-004",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-004--o06",
+        "member": "issue-77-n1-004",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-004--o07",
+        "member": "issue-77-n1-004",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-004--o08",
+        "member": "issue-77-n1-004",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-004--o09",
+        "member": "issue-77-n1-004",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-004--o10",
+        "member": "issue-77-n1-004",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-005--o02",
+        "member": "issue-77-n1-005",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-005--o04",
+        "member": "issue-77-n1-005",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-005--o05",
+        "member": "issue-77-n1-005",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-005--o06",
+        "member": "issue-77-n1-005",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-005--o08",
+        "member": "issue-77-n1-005",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-006--o00",
+        "member": "issue-77-n1-006",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-006--o01",
+        "member": "issue-77-n1-006",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-006--o02",
+        "member": "issue-77-n1-006",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-006--o03",
+        "member": "issue-77-n1-006",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-006--o04",
+        "member": "issue-77-n1-006",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-006--o05",
+        "member": "issue-77-n1-006",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-006--o06",
+        "member": "issue-77-n1-006",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-006--o07",
+        "member": "issue-77-n1-006",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-006--o08",
+        "member": "issue-77-n1-006",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-006--o09",
+        "member": "issue-77-n1-006",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-006--o10",
+        "member": "issue-77-n1-006",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-009--o00",
+        "member": "issue-77-n1-009",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-009--o01",
+        "member": "issue-77-n1-009",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-009--o02",
+        "member": "issue-77-n1-009",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-009--o03",
+        "member": "issue-77-n1-009",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-009--o04",
+        "member": "issue-77-n1-009",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-009--o05",
+        "member": "issue-77-n1-009",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-009--o06",
+        "member": "issue-77-n1-009",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-009--o07",
+        "member": "issue-77-n1-009",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-009--o08",
+        "member": "issue-77-n1-009",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-009--o09",
+        "member": "issue-77-n1-009",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-009--o10",
+        "member": "issue-77-n1-009",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-010--o00",
+        "member": "issue-77-n1-010",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-010--o01",
+        "member": "issue-77-n1-010",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-010--o02",
+        "member": "issue-77-n1-010",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-010--o03",
+        "member": "issue-77-n1-010",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-010--o04",
+        "member": "issue-77-n1-010",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-010--o05",
+        "member": "issue-77-n1-010",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-010--o06",
+        "member": "issue-77-n1-010",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-010--o07",
+        "member": "issue-77-n1-010",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-010--o08",
+        "member": "issue-77-n1-010",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-010--o09",
+        "member": "issue-77-n1-010",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-010--o10",
+        "member": "issue-77-n1-010",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-011--o00",
+        "member": "issue-77-n1-011",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-011--o01",
+        "member": "issue-77-n1-011",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-011--o02",
+        "member": "issue-77-n1-011",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-011--o03",
+        "member": "issue-77-n1-011",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-011--o04",
+        "member": "issue-77-n1-011",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-011--o05",
+        "member": "issue-77-n1-011",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-011--o06",
+        "member": "issue-77-n1-011",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-011--o07",
+        "member": "issue-77-n1-011",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-011--o08",
+        "member": "issue-77-n1-011",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-011--o09",
+        "member": "issue-77-n1-011",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-011--o10",
+        "member": "issue-77-n1-011",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-012--o00",
+        "member": "issue-77-n1-012",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-012--o01",
+        "member": "issue-77-n1-012",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-012--o02",
+        "member": "issue-77-n1-012",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-012--o03",
+        "member": "issue-77-n1-012",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-012--o04",
+        "member": "issue-77-n1-012",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-012--o05",
+        "member": "issue-77-n1-012",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-012--o06",
+        "member": "issue-77-n1-012",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-012--o07",
+        "member": "issue-77-n1-012",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-012--o08",
+        "member": "issue-77-n1-012",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-012--o09",
+        "member": "issue-77-n1-012",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-012--o10",
+        "member": "issue-77-n1-012",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-013--o00",
+        "member": "issue-77-n1-013",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-013--o01",
+        "member": "issue-77-n1-013",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-013--o02",
+        "member": "issue-77-n1-013",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-013--o03",
+        "member": "issue-77-n1-013",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-013--o04",
+        "member": "issue-77-n1-013",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-013--o05",
+        "member": "issue-77-n1-013",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-013--o06",
+        "member": "issue-77-n1-013",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-013--o07",
+        "member": "issue-77-n1-013",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-013--o08",
+        "member": "issue-77-n1-013",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-013--o09",
+        "member": "issue-77-n1-013",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-013--o10",
+        "member": "issue-77-n1-013",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-015--o00",
+        "member": "issue-77-n1-015",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-015--o01",
+        "member": "issue-77-n1-015",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-015--o02",
+        "member": "issue-77-n1-015",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-015--o03",
+        "member": "issue-77-n1-015",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-015--o04",
+        "member": "issue-77-n1-015",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-015--o05",
+        "member": "issue-77-n1-015",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-015--o06",
+        "member": "issue-77-n1-015",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-015--o07",
+        "member": "issue-77-n1-015",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-015--o08",
+        "member": "issue-77-n1-015",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-015--o09",
+        "member": "issue-77-n1-015",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--offset--issue-77-n1-015--o10",
+        "member": "issue-77-n1-015",
+        "source": "inventory_offset"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-001--o00",
+        "member": "issue-77-n1-001",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-001--o01",
+        "member": "issue-77-n1-001",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-001--o02",
+        "member": "issue-77-n1-001",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-001--o03",
+        "member": "issue-77-n1-001",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-001--o04",
+        "member": "issue-77-n1-001",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-001--o05",
+        "member": "issue-77-n1-001",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-001--o06",
+        "member": "issue-77-n1-001",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-001--o07",
+        "member": "issue-77-n1-001",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-001--o08",
+        "member": "issue-77-n1-001",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-001--o09",
+        "member": "issue-77-n1-001",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-001--o10",
+        "member": "issue-77-n1-001",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-001--o12",
+        "member": "issue-77-n1-001",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-003--o00",
+        "member": "issue-77-n1-003",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-003--o01",
+        "member": "issue-77-n1-003",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-003--o02",
+        "member": "issue-77-n1-003",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-003--o03",
+        "member": "issue-77-n1-003",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-003--o05",
+        "member": "issue-77-n1-003",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-003--o07",
+        "member": "issue-77-n1-003",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-003--o09",
+        "member": "issue-77-n1-003",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-003--o10",
+        "member": "issue-77-n1-003",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-003--o11",
+        "member": "issue-77-n1-003",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-004--o01",
+        "member": "issue-77-n1-004",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-004--o02",
+        "member": "issue-77-n1-004",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-004--o04",
+        "member": "issue-77-n1-004",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-004--o05",
+        "member": "issue-77-n1-004",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-004--o06",
+        "member": "issue-77-n1-004",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-004--o07",
+        "member": "issue-77-n1-004",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-004--o08",
+        "member": "issue-77-n1-004",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-004--o11",
+        "member": "issue-77-n1-004",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-004--o12",
+        "member": "issue-77-n1-004",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o00",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o01",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o02",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o03",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o04",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o05",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o06",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o07",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o08",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o09",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o10",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o11",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-006--o12",
+        "member": "issue-77-n1-006",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o00",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o01",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o02",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o03",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o04",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o05",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o06",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o07",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o08",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o09",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o10",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o11",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-009--o12",
+        "member": "issue-77-n1-009",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o00",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o01",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o02",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o03",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o04",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o05",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o06",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o07",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o08",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o09",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o10",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o11",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-010--o12",
+        "member": "issue-77-n1-010",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o00",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o01",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o02",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o03",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o04",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o05",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o06",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o07",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o08",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o09",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o10",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o11",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-011--o12",
+        "member": "issue-77-n1-011",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o00",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o01",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o02",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o03",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o04",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o05",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o06",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o07",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o08",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o09",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o10",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o11",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-012--o12",
+        "member": "issue-77-n1-012",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o00",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o01",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o02",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o03",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o04",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o05",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o06",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o07",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o08",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o09",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o10",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o11",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-013--o12",
+        "member": "issue-77-n1-013",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o00",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o01",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o02",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o03",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o04",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o05",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o06",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o07",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o08",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o09",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o10",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o11",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--angle--issue-77-n1-015--o12",
+        "member": "issue-77-n1-015",
+        "source": "inventory_angle"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o00",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o01",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o02",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o03",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o04",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o05",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o06",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o07",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o08",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o09",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o10",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o11",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o12",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o13",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o14",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o15",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o16",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o17",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o18",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-001--o19",
+        "member": "issue-77-n1-001",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o00",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o01",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o02",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o03",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o04",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o05",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o06",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o07",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o08",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o09",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o10",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o11",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o12",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o13",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o14",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o15",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o16",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o17",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o18",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-003--o19",
+        "member": "issue-77-n1-003",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o00",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o01",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o02",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o03",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o04",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o05",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o06",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o07",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o08",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o09",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o10",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o11",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o12",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o13",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o14",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o15",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o16",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o17",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o18",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-004--o19",
+        "member": "issue-77-n1-004",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o00",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o01",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o03",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o04",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o05",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o06",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o09",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o10",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o11",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o12",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o13",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o14",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o16",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o17",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-005--o18",
+        "member": "issue-77-n1-005",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o00",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o01",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o02",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o03",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o04",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o05",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o06",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o07",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o08",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o09",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o10",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o11",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o12",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o13",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o14",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o15",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o16",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o17",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o18",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-006--o19",
+        "member": "issue-77-n1-006",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o00",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o01",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o02",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o03",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o04",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o05",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o06",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o07",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o08",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o09",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o10",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o11",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o12",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o13",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o14",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o15",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o16",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o17",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o18",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-009--o19",
+        "member": "issue-77-n1-009",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o00",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o01",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o02",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o03",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o04",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o05",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o06",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o07",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o08",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o09",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o10",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o11",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o12",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o13",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o14",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o15",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o16",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o17",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o18",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-010--o19",
+        "member": "issue-77-n1-010",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o00",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o01",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o02",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o03",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o04",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o05",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o06",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o07",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o08",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o09",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o10",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o11",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o12",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o13",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o14",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o15",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o16",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o17",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o18",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-011--o19",
+        "member": "issue-77-n1-011",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o00",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o01",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o02",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o03",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o04",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o05",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o06",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o07",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o08",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o09",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o10",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o11",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o12",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o13",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o14",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o15",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o16",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o17",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o18",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-012--o19",
+        "member": "issue-77-n1-012",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o00",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o01",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o02",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o03",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o04",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o05",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o06",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o07",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o08",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o09",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o10",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o11",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o12",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o13",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o14",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o15",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o16",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o17",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o18",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-013--o19",
+        "member": "issue-77-n1-013",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o00",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o01",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o02",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o03",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o04",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o05",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o06",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o07",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o08",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o09",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o10",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o11",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o12",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o13",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o14",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o15",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o16",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o17",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o18",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      },
+      {
+        "key": "inv--power--issue-77-n1-015--o19",
+        "member": "issue-77-n1-015",
+        "source": "inventory_power"
+      }
+    ]
+  },
+  "frozen_at": "2026-09-27T03:31:32Z",
+  "frozen_before_training_and_scoring": true,
+  "gate_a": {
+    "dominant": "perception",
+    "drops": {
+      "cost": {
+        "interval": [
+          0.0714285714285714,
+          0.3571428571428571
+        ],
+        "mean": 0.2142857142857143
+      },
+      "dynamics": {
+        "interval": [
+          -0.26846230158730156,
+          0.09619290573372208
+        ],
+        "mean": -0.08418367346938771
+      },
+      "perception": {
+        "interval": [
+          0.09215986394557822,
+          0.4891241496598639
+        ],
+        "mean": 0.2925170068027211,
+        "source": "endpoint_perception"
+      }
+    },
+    "fix": "improve the slot encoder",
+    "q1_token": "readiness_or_precision_insufficient",
+    "q1_token_note": "the attribution's Q1/Q2 tokens are readiness_or_precision_insufficient because its frozen G2 byte-identity guard failed on 4/859 decision frames; Gate A's dominant stage is computed independently of the guards and names the step-3 remedy",
+    "source": "issue-99-decision-chain-attribution-v1 compute.json Q1_attribution"
+  },
+  "guards": {
+    "G1": "no training shot belongs to a held-out member",
+    "G2": "encoder finished every epoch and all 12 predictors reached the frozen step count with finite losses",
+    "G3": "R0 parsed endpoint costs (stage ap) replicate the #99 attribution endpoint records within 0.001",
+    "G4": "nonfinite share <= 0.1 on held-out grid cells for every arm and request",
+    "caps": "GPU seconds <= 28800.0, wall seconds <= 57600.0"
+  },
+  "identity": "issue-99-slot-encoder-fix-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-99-decision-chain-attribution-v1/plan.json",
+      "name": "issue_99_attribution_plan",
+      "sha256": "sha256:c8d5f21e1190104d8ebdfd9fed7c1b078674bd871cf5eb33b00bee741c656e01"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-decision-chain-attribution-v1/compute.json",
+      "name": "issue_99_attribution_compute",
+      "sha256": "sha256:e016d2bbad543d030611bce4280a5fba4a382a2e6559886a793d25ef255bfc5d"
+    },
+    {
+      "artifact": "scripts/run_decision_chain_attribution.py",
+      "name": "issue_99_attribution_runner",
+      "sha256": "sha256:9e017a24b0e6b126ec68eb91586f454e05e1c259430d7057281977c349fcc43c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-96-tau-ad-within-checkpoint-v1/plan.json",
+      "name": "issue_96_plan",
+      "sha256": "sha256:b4b10b8732ecad6b5cb5f5e7fa63ddf2f67994fa723b780bb63204fb06c57e56"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/plan.json",
+      "name": "issue_77_dynamics_plan",
+      "sha256": "sha256:18eb5a1e7ae3ad5a76b8db3dd2482b85844e404064614dc6835b8e4707e5b14d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-v1/plan.json",
+      "name": "issue_77_n1_plan",
+      "sha256": "sha256:b216e6f14db16398b9ecac55b7fca507de8b7a68ac83286a52de0f03fb4ec240"
+    },
+    {
+      "artifact": ".local-artifacts/issue-70-parser-repair-v6/plan.json",
+      "name": "issue_70_parser_plan",
+      "sha256": "sha256:55311d90fb092d3cc058905e3fea5aaf359f1600fdc528abd5f3e2144c70d5c4"
+    },
+    {
+      "artifact": "world_model/training/spatial_slot_parser.py",
+      "name": "model_module",
+      "sha256": "sha256:4a1fb427c258880007d7d7f1e98400f1ea94db758c2b4b0dd81bfc7f5bd289f6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:6d56e2246c0252e07372711e8b6358d318abe1dcb1b20a41d8f328c8fd67ac6b"
+    }
+  ],
+  "issue": 99,
+  "issue_64_authorized": false,
+  "predictors": {
+    "families": [
+      "hybrid",
+      "continuous"
+    ],
+    "initialization": "from scratch, torch.manual_seed(seed)",
+    "loss": "run_issue_74_matched_dynamics.loss_for (#74/#77 recipe)",
+    "pairs": "PAIRS[step % 9]; continuous uses the same horizon",
+    "recipe": {
+      "batch_size": 64,
+      "grad_clip": 1.0,
+      "learning_rate": 0.0001,
+      "steps": 9000,
+      "weight_decay": 0.0001
+    },
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "selection": "last update",
+    "windows": {
+      "length": 60,
+      "padding": "repeat the last position (terminal absorption)",
+      "starts": [
+        0,
+        15,
+        30,
+        45,
+        60,
+        75,
+        90,
+        105,
+        120,
+        135,
+        150,
+        165,
+        180,
+        195,
+        210,
+        225
+      ]
+    }
+  },
+  "prohibited": [
+    "reading any held-out verdict before publish",
+    "changing the encoder, windows or recipe after training starts",
+    "retrying typed failures",
+    "re-opening any prior disposition (#15-#98, #109) or the #99 attribution"
+  ],
+  "question": "with the slot encoder replaced (the Gate-A remedy) and predictors retrained on its carriers, does any request's predicted cost order held-out grid candidates with AUC >= 0.65 and a lower bound > 0.55; and how much of the change is the encoder (E - R0)?",
+  "role": "terminal",
+  "runner": "scripts/run_slot_encoder_fix.py",
+  "runner_sha256_at_freeze": "sha256:e256d0908c459b403826b07a39fa4bfa7d50692ede7db692b000d322aa422ddf",
+  "schema": "issue_99_slot_encoder_fix_plan_v1",
+  "smoke_evidence": {
+    "checks": [
+      {
+        "control": "shot_labels_and_images",
+        "ok": true,
+        "shots": [
+          {
+            "end": 285,
+            "images": [
+              58,
+              3,
+              240,
+              320
+            ],
+            "key": "n1--issue-77-n1-001-a00",
+            "pig_present_share": 1.0
+          },
+          {
+            "end": 285,
+            "images": [
+              58,
+              3,
+              240,
+              320
+            ],
+            "key": "inv--grid--issue-77-n1-001--o00",
+            "pig_present_share": 1.0
+          }
+        ]
+      },
+      {
+        "control": "encoder_trains",
+        "loss": 13.907220840454102,
+        "ok": true,
+        "parameters": 506414
+      },
+      {
+        "control": "R0_carriers_replicate_issue_99_evidence",
+        "max_abs_delta": 8.941278792917728e-06,
+        "ok": true,
+        "tolerance": 0.001
+      },
+      {
+        "control": "hybrid_predictor_trains",
+        "loss": 0.33457908034324646,
+        "ok": true,
+        "windows": 32
+      },
+      {
+        "control": "continuous_predictor_trains",
+        "loss": 0.019654329866170883,
+        "ok": true,
+        "windows": 32
+      },
+      {
+        "control": "held_out_eval_mechanics",
+        "finite": 192,
+        "member": "issue-77-n1-007",
+        "ok": true,
+        "requests": 12
+      },
+      {
+        "control": "held_out_isolation",
+        "ok": true,
+        "training_members": [
+          "issue-77-n1-001",
+          "issue-77-n1-002",
+          "issue-77-n1-003",
+          "issue-77-n1-004",
+          "issue-77-n1-005",
+          "issue-77-n1-006",
+          "issue-77-n1-009",
+          "issue-77-n1-010",
+          "issue-77-n1-011",
+          "issue-77-n1-012",
+          "issue-77-n1-013",
+          "issue-77-n1-015"
+        ]
+      }
+    ],
+    "identity": "issue-99-slot-encoder-fix-v1",
+    "ok": true,
+    "projection": {
+      "carrier_seconds": 1007.5184154382441,
+      "encoder_seconds": 982.1495420717322,
+      "eval_seconds": 148.1725988164544,
+      "predictor_seconds": 2714.4805590767646,
+      "shot_build_seconds": 8916.236878032505,
+      "total_seconds": 13768.557993435701,
+      "training_shots": 745
+    },
+    "reading": "infrastructure assertions only; nothing kept; no verdict joined",
+    "run_at": "2026-09-27T03:30:43Z",
+    "schema": "issue_99_slot_encoder_fix_smoke_v1",
+    "timings": {
+      "carrier_seconds_per_shot": 0.6761868559988216,
+      "continuous_seconds_per_step": 0.019150220550363882,
+      "encoder_seconds_per_step": 0.12122496855008649,
+      "eval_seconds_per_record": 1.5434645710047334,
+      "hybrid_seconds_per_step": 0.031117937951057682,
+      "shot_build_seconds": 11.96810319198994
+    }
+  },
+  "universe": {
+    "eval_records": 96,
+    "held_out_mixed": {
+      "angle": [
+        "issue-77-n1-014",
+        "issue-77-n1-016"
+      ],
+      "grid": [
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-014"
+      ],
+      "offset": [
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-014"
+      ],
+      "power": [
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-014"
+      ]
+    },
+    "perception_records": 32
+  },
+  "validation_command": "python -u -m scripts.run_slot_encoder_fix --validate",
+  "version": 1
+}
