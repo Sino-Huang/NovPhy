@@ -1,0 +1,819 @@
+{
+  "arms": {
+    "B": "#77 recipe only (the E99 baseline predictor recipe, retrained here per fold)",
+    "C": "#77 recipe + decision-contrastive pairwise ranking loss on fit-lineage anchors",
+    "L": "#77 recipe + long-horizon recursive supervision to 225 frames (horizon curriculum 60 -> 225)",
+    "LC": "#77 recipe + long-horizon supervision + decision-contrastive loss"
+  },
+  "caps": {
+    "gpu_seconds": 57600.0,
+    "stop": "readiness_or_precision_insufficient",
+    "wall_seconds": 108000.0
+  },
+  "claim_boundary": "decision-only ranking of retained engine-verdicted executions; fit lineages by leave-one-lineage-out, the 4 exposed held-out lineages once, descriptively; E99 encoder fixed; no engine access, rendering or capture; no closed-loop or competence claim",
+  "decision_rule": {
+    "Q1_long_horizon": "request-mean paired (L - B) leave-one-lineage-out grid AUC, tie-free: supported iff mean >= 0.02 and lower > 0; not_supported_by_this_experiment iff upper < 0.02; otherwise readiness_or_precision_insufficient; (LC - C) reported alongside",
+    "Q2_contrastive": "request-mean paired (C - B) leave-one-lineage-out grid AUC, tie-free, same rule; (LC - L) reported alongside",
+    "Q3_selected_target": "the selected (arm, request): supported iff its leave-one-lineage-out grid AUC >= 0.65 with lower bound > 0.55; not_supported_by_this_experiment otherwise; readiness_or_precision_insufficient if a guard fails",
+    "labels": "leave-one-lineage-out: EXPLORATORY; held-out: DESCRIPTIVE",
+    "multiplicity": "selection scans 4 arms x 12 requests, so the selected unit's leave-one-lineage-out estimate is optimistic; Gate B on the #104 sealed split is the unbiased test"
+  },
+  "diagnostics": {
+    "action_sensitivity": "per fit member x inventory cell and request: SD over executed candidates of the predicted endpoint pig presence, pig displacement and tie-free cost against the engine endpoint SD (#99 attribution engine-projected carriers at 0 and 225); SD ratio and Spearman correlation; the E99 parsed endpoint as the perception reference",
+    "cohort": "fit lineages only (in-sample for the #99 E one-step training windows)",
+    "error_growth": "per request: the #100 engine-referenced rollout error (engine_position_mse) and the own-parse position MSE at t = 15, 30, 60, 150, 225 on every fit lineage's N1 samples (#77 diagnostic sample rule, #100 context rule)",
+    "models": "the frozen #99 E hybrid and continuous predictors, 3 seeds (zero training)",
+    "variance": "grid and offset (identical action sets across members): two-way decomposition of the endpoint quantity over (anchor member, action) on members whose every candidate was executed; anchor, action and residual shares; predicted, engine and parsed"
+  },
+  "disclosure": "Known before freeze: every #99, #100, #109 and #96 table, including the #99 E held-out stage-c AUCs (E best request C-F-1 0.7259; E - R0 0.0025) and the #100 held-out rollout errors. Held-out lineages 007/008/014/016 are exposed; nothing here reads a held-out record before the --select freeze. Fit-lineage inventory verdicts are training labels of the ranking loss and the leave-one-lineage-out validation targets; no fold model is trained on its validation lineage. The smoke computes no statistic.",
+  "encoder": {
+    "anchors": "E99 batch-1 parse of each member's frozen sealed anchor (p94.frozen_anchor)",
+    "carriers": "the #99 fix E carriers of the 745 fit shots (positions 0..min(last, 285))",
+    "identity": "E99: the frozen #99 spatial slot parser (issue-99-slot-encoder-fix-v1 arm E)"
+  },
+  "engine_seconds": 0,
+  "families": [
+    "hybrid",
+    "continuous"
+  ],
+  "folds": {
+    "fit_lineages": [
+      "issue-77-n1-001",
+      "issue-77-n1-002",
+      "issue-77-n1-003",
+      "issue-77-n1-004",
+      "issue-77-n1-005",
+      "issue-77-n1-006",
+      "issue-77-n1-009",
+      "issue-77-n1-010",
+      "issue-77-n1-011",
+      "issue-77-n1-012",
+      "issue-77-n1-013",
+      "issue-77-n1-015"
+    ],
+    "folds": [
+      "issue-77-n1-001",
+      "issue-77-n1-002",
+      "issue-77-n1-003",
+      "issue-77-n1-004",
+      "issue-77-n1-005",
+      "issue-77-n1-006",
+      "issue-77-n1-009",
+      "issue-77-n1-010",
+      "issue-77-n1-011",
+      "issue-77-n1-012",
+      "issue-77-n1-013",
+      "issue-77-n1-015",
+      "all"
+    ],
+    "members_per_ensemble": 39,
+    "rule": "fold L trains on every fit shot, long window and ranking cell whose lineage is not L; fold 'all' trains on all 12 fit lineages (the Gate-B checkpoints)"
+  },
+  "frozen_at": "2026-09-27T13:08:12Z",
+  "frozen_before_training_and_scoring": true,
+  "guards": {
+    "G1": "no training window, long window or ranking cell of a held-out lineage; no fold pool holds its lineage",
+    "G2": "every member of every arm reached 9000 updates without retirement",
+    "G3": "every scoring record carries the #111 SCORING_POLICY; --validate re-scores one diagnostic, one leave-one-lineage-out and one held-out record and endpoint_replication passes; stored anchors and contexts pass carrier_replication against a fresh parse",
+    "G4": "nonfinite share <= 0.1 on leave-one-lineage-out grid cells, every arm and request",
+    "caps": "GPU seconds <= 57600.0, wall seconds <= 108000.0"
+  },
+  "identity": "issue-112-decision-relevant-dynamics-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/plan.json",
+      "name": "issue_99_fix_plan",
+      "sha256": "sha256:cce9fb1b3e2a134d0b1d41f85f57f106f592c8a7a59cb8ee1a980cf7aebc9098"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/encoder/encoder.pt",
+      "name": "issue_99_fix_encoder",
+      "sha256": "sha256:cdbe677ab103e872ed6ac7777a3dc8b5aa0432f5771e8aa63a6e4e2d469bdd73"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/models/E/seed-20260908/hybrid/predictor.pt",
+      "name": "issue_99_E_hybrid_seed20260908",
+      "sha256": "sha256:302c297816fd99a1efa900d838c77321c6833886ea5f873a240dfed52e7279d7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/models/E/seed-20260908/continuous/predictor.pt",
+      "name": "issue_99_E_continuous_seed20260908",
+      "sha256": "sha256:0752e2ec08f923ac5d4040339af47d6aade255b765ae44a52acd4b21d4c34ff3"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/models/E/seed-20260909/hybrid/predictor.pt",
+      "name": "issue_99_E_hybrid_seed20260909",
+      "sha256": "sha256:ba6147f60401d52685ac70e63179fe0cff343671d88072ada339d63172ede4aa"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/models/E/seed-20260909/continuous/predictor.pt",
+      "name": "issue_99_E_continuous_seed20260909",
+      "sha256": "sha256:dbcf1efb54cc1b8aec1dd4fd5d7c7660688927f6ec386e4b136b848272ffcab5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/models/E/seed-20260910/hybrid/predictor.pt",
+      "name": "issue_99_E_hybrid_seed20260910",
+      "sha256": "sha256:c88ec0ec173be05100f817dbbb80fe99ad98e31d679062d94c68b2ab4b82abaf"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/models/E/seed-20260910/continuous/predictor.pt",
+      "name": "issue_99_E_continuous_seed20260910",
+      "sha256": "sha256:773f5357817bd5c93533a52f14dbfad90bb97fe47e539e6cf1aca827469e0db2"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-decision-chain-attribution-v1/plan.json",
+      "name": "issue_99_attribution_plan",
+      "sha256": "sha256:c8d5f21e1190104d8ebdfd9fed7c1b078674bd871cf5eb33b00bee741c656e01"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/plan.json",
+      "name": "issue_100_plan",
+      "sha256": "sha256:5b220eceb66d47b93e344e81503115d4ebabc12a5406c9751c7eeb0f0bcad35a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-guard-revision-v2/plan.json",
+      "name": "issue_100_v2_plan",
+      "sha256": "sha256:e45131c1bd6f2da2362a00b46a73f87f04f50dfbae924ceb35a755cb53b98629"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/plan.json",
+      "name": "issue_77_dynamics_plan",
+      "sha256": "sha256:18eb5a1e7ae3ad5a76b8db3dd2482b85844e404064614dc6835b8e4707e5b14d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-v1/plan.json",
+      "name": "issue_77_n1_plan",
+      "sha256": "sha256:b216e6f14db16398b9ecac55b7fca507de8b7a68ac83286a52de0f03fb4ec240"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-diagnostic-v1/plan.json",
+      "name": "issue_77_diagnostic_plan",
+      "sha256": "sha256:933c1b36acb05a5556133d889767e3cbb810f98a2bb77e0211b6787ce3b77d39"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": "world_model/training/decision_dynamics.py",
+      "name": "model_module",
+      "sha256": "sha256:14aa4587277377bb7d7b8bd4a1954366bb653fb0baf3a912c6fa52075ac1b794"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:804e062c208b1bf85b272831fb5460480b18aa4401bae6eba771ca988d229a41"
+    }
+  ],
+  "issue": 112,
+  "issue_64_authorized": false,
+  "model_module": "world_model/training/decision_dynamics.py",
+  "prohibited": [
+    "reading a held-out record before the --select freeze",
+    "changing any arm, loss, weight, window or recipe after training starts",
+    "retrying typed failures",
+    "re-opening any prior disposition (#15-#100, #109, #111)"
+  ],
+  "question": "on E99 carriers, does long-horizon recursive supervision to the 225-frame decision endpoint and/or a decision-contrastive ranking loss make the request rollout order a left-out fit lineage's candidates better than the #77 recipe, and which (arm, request) goes to Gate B?",
+  "requests": [
+    "F-1-continuous",
+    "F-1-micro",
+    "F-1-macro",
+    "F-5-continuous",
+    "F-5-micro",
+    "F-5-macro",
+    "F-15-continuous",
+    "F-15-micro",
+    "F-15-macro",
+    "C-F-1",
+    "C-F-5",
+    "C-F-15"
+  ],
+  "role": "development protocol under the #87 versioned-protocol policy: leave-one-lineage-out results are EXPLORATORY; the recipe freeze is the --select record; held-out scored once after it",
+  "runner": "scripts/run_decision_relevant_dynamics.py",
+  "runner_sha256_at_freeze": "sha256:13527c41500ba6ee9cdbdca778999e719731790cd988164e28a5444d4c7cb13a",
+  "schema": "issue_112_plan_v1",
+  "seeds": [
+    20260908,
+    20260909,
+    20260910
+  ],
+  "smoke_evidence": {
+    "checks": [
+      {
+        "control": "anchor_parse_is_deterministic",
+        "ok": true,
+        "replication": {
+          "max_abs_nonmotion_delta": 0.0,
+          "max_motion_delta_times_elapsed_over_2": 0.0,
+          "pass": true,
+          "rows": 1,
+          "tolerance": 0.001
+        }
+      },
+      {
+        "control": "windows_equal_issue_99_window_data",
+        "ok": true,
+        "windows": 128
+      },
+      {
+        "cells": 27,
+        "control": "ranking_cells_are_fit_mixed_cells",
+        "ok": true
+      },
+      {
+        "control": "hybrid_masked_loss_equals_issue_77_loss",
+        "max_relative_delta": 1.726142935337132e-07,
+        "ok": true
+      },
+      {
+        "control": "hybrid_compiled_transition_equals_eager",
+        "max_abs_delta": 5.364418029785156e-07,
+        "ok": true
+      },
+      {
+        "control": "B_hybrid_m2_trains_finite",
+        "final_loss": [
+          0.35360366106033325,
+          0.33478066325187683
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "B_hybrid_m4_trains_finite",
+        "final_loss": [
+          0.35360366106033325,
+          0.33478063344955444,
+          0.33000561594963074,
+          0.35360366106033325
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "L_hybrid_m2_trains_finite",
+        "final_loss": [
+          2547.072265625,
+          3181.092041015625
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "L_hybrid_m4_trains_finite",
+        "final_loss": [
+          2547.071533203125,
+          3181.092529296875,
+          3354.83935546875,
+          2547.071533203125
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "C_hybrid_m2_trains_finite",
+        "final_loss": [
+          0.5417221784591675,
+          0.44804346561431885
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "C_hybrid_m4_trains_finite",
+        "final_loss": [
+          0.5415107011795044,
+          0.448045551776886,
+          0.4837262034416199,
+          0.5415107011795044
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "LC_hybrid_m2_trains_finite",
+        "final_loss": [
+          2549.393798828125,
+          3181.67626953125
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "LC_hybrid_m4_trains_finite",
+        "final_loss": [
+          2549.393310546875,
+          3181.67626953125,
+          3343.7373046875,
+          2549.393310546875
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "continuous_masked_loss_equals_issue_77_loss",
+        "max_relative_delta": 9.140615759408755e-08,
+        "ok": true
+      },
+      {
+        "control": "continuous_compiled_transition_equals_eager",
+        "max_abs_delta": 4.76837158203125e-07,
+        "ok": true
+      },
+      {
+        "control": "B_continuous_m2_trains_finite",
+        "final_loss": [
+          0.023463139310479164,
+          0.017025001347064972
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "B_continuous_m4_trains_finite",
+        "final_loss": [
+          0.023463133722543716,
+          0.017025001347064972,
+          0.015383400022983551,
+          0.023463133722543716
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "L_continuous_m2_trains_finite",
+        "final_loss": [
+          2880.48388671875,
+          2846.798095703125
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "L_continuous_m4_trains_finite",
+        "final_loss": [
+          2880.48388671875,
+          2846.798095703125,
+          2212.23388671875,
+          2880.48388671875
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "C_continuous_m2_trains_finite",
+        "final_loss": [
+          0.23761503398418427,
+          0.08204592764377594
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "C_continuous_m4_trains_finite",
+        "final_loss": [
+          0.23765477538108826,
+          0.08205060660839081,
+          0.1629669964313507,
+          0.23765477538108826
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "LC_continuous_m2_trains_finite",
+        "final_loss": [
+          2887.73193359375,
+          2857.770263671875
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "LC_continuous_m4_trains_finite",
+        "final_loss": [
+          2887.731689453125,
+          2857.76904296875,
+          2216.61669921875,
+          2887.731689453125
+        ],
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "scoring_is_bit_reproducible_in_process",
+        "ok": true,
+        "policy": {
+          "cudnn_allow_tf32": false,
+          "cudnn_benchmark": false,
+          "cudnn_deterministic": true,
+          "matmul_allow_tf32": false
+        },
+        "worst": 0.0
+      },
+      {
+        "branches": 12,
+        "control": "rollout_error_mechanics",
+        "ok": true,
+        "requests": 9
+      },
+      {
+        "control": "held_out_isolation",
+        "ok": true,
+        "training_members": [
+          "issue-77-n1-001",
+          "issue-77-n1-002",
+          "issue-77-n1-003",
+          "issue-77-n1-004",
+          "issue-77-n1-005",
+          "issue-77-n1-006",
+          "issue-77-n1-009",
+          "issue-77-n1-010",
+          "issue-77-n1-011",
+          "issue-77-n1-012",
+          "issue-77-n1-013",
+          "issue-77-n1-015"
+        ]
+      }
+    ],
+    "group_sizes": {
+      "B_continuous": 39,
+      "B_hybrid": 39,
+      "C_continuous": 39,
+      "C_hybrid": 39,
+      "LC_continuous": 20,
+      "LC_hybrid": 20,
+      "L_continuous": 20,
+      "L_hybrid": 20
+    },
+    "identity": "issue-112-decision-relevant-dynamics-v1",
+    "memory_gb": {
+      "B_continuous_m2": 0.280638464,
+      "B_continuous_m4": 0.330415104,
+      "B_hybrid_m2": 0.188676096,
+      "B_hybrid_m4": 0.373225984,
+      "C_continuous_m2": 0.867628544,
+      "C_continuous_m4": 1.49051392,
+      "C_hybrid_m2": 0.930371584,
+      "C_hybrid_m4": 1.628412928,
+      "LC_continuous_m2": 1.903169024,
+      "LC_continuous_m4": 3.566816256,
+      "LC_hybrid_m2": 1.995731968,
+      "LC_hybrid_m4": 3.758265856,
+      "L_continuous_m2": 1.316606464,
+      "L_continuous_m4": 2.391991808,
+      "L_hybrid_m2": 1.38143232,
+      "L_hybrid_m4": 2.520020992
+    },
+    "ok": true,
+    "projection": {
+      "B_continuous": {
+        "base_gb_with_full_data": 1.09724432,
+        "gb_per_member": 0.02488832000000002,
+        "group_size": 39,
+        "groups": 1,
+        "projected_peak_gb": 2.0678888000000004,
+        "seconds_per_update_at_group_size": -0.0042713402096220925,
+        "training_seconds_upper": -38.44206188659883
+      },
+      "B_hybrid": {
+        "base_gb_with_full_data": 1.794512304,
+        "gb_per_member": 0.09227494400000001,
+        "group_size": 39,
+        "groups": 1,
+        "projected_peak_gb": 5.39323512,
+        "seconds_per_update_at_group_size": 0.09224349482246907,
+        "training_seconds_upper": 830.1914534022217
+      },
+      "C_continuous": {
+        "base_gb_with_full_data": 1.111125664,
+        "gb_per_member": 0.31144268799999997,
+        "group_size": 39,
+        "groups": 1,
+        "projected_peak_gb": 13.257390495999998,
+        "seconds_per_update_at_group_size": 0.4090708409736785,
+        "training_seconds_upper": 3681.6375687631066
+      },
+      "C_hybrid": {
+        "base_gb_with_full_data": 2.0227163360000002,
+        "gb_per_member": 0.349020672,
+        "group_size": 39,
+        "groups": 1,
+        "projected_peak_gb": 15.634522544,
+        "seconds_per_update_at_group_size": 0.3472746928964625,
+        "training_seconds_upper": 3125.4722360681626
+      },
+      "LC_continuous": {
+        "base_gb_with_full_data": 1.105904288,
+        "gb_per_member": 0.831823616,
+        "group_size": 20,
+        "groups": 2,
+        "projected_peak_gb": 17.742376608,
+        "seconds_per_update_at_group_size": 0.34408417605057645,
+        "training_seconds_upper": 6193.515168910376
+      },
+      "LC_hybrid": {
+        "base_gb_with_full_data": 2.023584176,
+        "gb_per_member": 0.8812669439999999,
+        "group_size": 20,
+        "groups": 2,
+        "projected_peak_gb": 19.648923055999997,
+        "seconds_per_update_at_group_size": 0.3642511353294446,
+        "training_seconds_upper": 6556.520435930002
+      },
+      "L_continuous": {
+        "base_gb_with_full_data": 1.1076036159999996,
+        "gb_per_member": 0.5376926720000001,
+        "group_size": 20,
+        "groups": 2,
+        "projected_peak_gb": 11.861457056000003,
+        "seconds_per_update_at_group_size": 0.3357930868660334,
+        "training_seconds_upper": 6044.275563588601
+      },
+      "L_hybrid": {
+        "base_gb_with_full_data": 2.033229744,
+        "gb_per_member": 0.569294336,
+        "group_size": 20,
+        "groups": 2,
+        "projected_peak_gb": 13.419116464,
+        "seconds_per_update_at_group_size": 0.32142523843018966,
+        "training_seconds_upper": 5785.6542917434135
+      },
+      "training_seconds": 32178.824656519286
+    },
+    "reading": "infrastructure assertions only; nothing kept; no statistic; no held-out access",
+    "run_at": "2026-09-27T13:07:45Z",
+    "schema": "issue_112_smoke_v1",
+    "timings": {
+      "B_continuous_m2_seconds_per_update": 0.016925631503302913,
+      "B_continuous_m4_seconds_per_update": 0.01577984924855021,
+      "B_hybrid_m2_seconds_per_update": 0.020671977501478978,
+      "B_hybrid_m4_seconds_per_update": 0.024540708167478442,
+      "C_continuous_m2_seconds_per_update": 0.20454220391305475,
+      "C_continuous_m4_seconds_per_update": 0.2155978059163317,
+      "C_hybrid_m2_seconds_per_update": 0.2161420355841983,
+      "C_hybrid_m4_seconds_per_update": 0.2232302873308072,
+      "LC_continuous_m2_seconds_per_update": 0.24158963424755106,
+      "LC_continuous_m4_seconds_per_update": 0.25297791667010944,
+      "LC_hybrid_m2_seconds_per_update": 0.2510674945854892,
+      "LC_hybrid_m4_seconds_per_update": 0.2636434546681509,
+      "L_continuous_m2_seconds_per_update": 0.23195670958375558,
+      "L_continuous_m4_seconds_per_update": 0.243494084837342,
+      "L_hybrid_m2_seconds_per_update": 0.24043307816706752,
+      "L_hybrid_m4_seconds_per_update": 0.2494322070851922,
+      "data_seconds_per_shot": 0.011961511248955503,
+      "score_seconds_per_hybrid_record": 2.2307901059975848
+    }
+  },
+  "training": {
+    "execution": "members of one (arm, family) are trained in lock-step groups by a vmapped, torch.compile'd transition (training process only; autotuning allowed)",
+    "group_sizes": {
+      "B_continuous": 39,
+      "B_hybrid": 39,
+      "C_continuous": 39,
+      "C_hybrid": 39,
+      "LC_continuous": 20,
+      "LC_hybrid": 20,
+      "L_continuous": 20,
+      "L_hybrid": 20
+    },
+    "initialization": "torch.manual_seed(seed); s99.new_predictor(family) (from scratch)",
+    "local_loss": "#74/#77 loss (run_issue_74_matched_dynamics.loss_for) in masked form (decision_dynamics.local_loss) on the #99 windows: starts 0..225 step 15, 60 transitions, terminal padding masked; batch of 64 windows sampled uniformly with replacement from the member's pool by torch.Generator().manual_seed(seed)",
+    "long_horizon": {
+      "arms": [
+        "L",
+        "LC"
+      ],
+      "batch_size": 64,
+      "definition": "windows at starts 0, 15, 30, 45, 60 of every fit shot (start below the shot's last position); the step's pair is unrolled horizon // delta transitions; loss = mean over visited positions of row-mean carrier MSE + 0.01 x the #77 carrier-bound penalty; horizon = min(225, 60 + 15 x floor(update / 500))",
+      "every": 500,
+      "first": 60,
+      "increment": 15,
+      "last": 225,
+      "seed_offset": 112001,
+      "starts": [
+        0,
+        15,
+        30,
+        45,
+        60
+      ],
+      "targets": "the E99 parsed carrier at every visited position start + j * delta, terminal absorption past the shot's last frame",
+      "truncation": "none (full back-propagation through the unrolled recursion)",
+      "weight": 1.0
+    },
+    "matched": "every arm: same architectures and parameter counts, same 9000 updates of 64 #77 windows",
+    "ranking": {
+      "arms": [
+        "C",
+        "LC"
+      ],
+      "candidate_pad": 20,
+      "cells": [
+        {
+          "inventory": "grid",
+          "member": "issue-77-n1-001"
+        },
+        {
+          "inventory": "grid",
+          "member": "issue-77-n1-003"
+        },
+        {
+          "inventory": "grid",
+          "member": "issue-77-n1-004"
+        },
+        {
+          "inventory": "grid",
+          "member": "issue-77-n1-005"
+        },
+        {
+          "inventory": "grid",
+          "member": "issue-77-n1-006"
+        },
+        {
+          "inventory": "grid",
+          "member": "issue-77-n1-009"
+        },
+        {
+          "inventory": "grid",
+          "member": "issue-77-n1-010"
+        },
+        {
+          "inventory": "grid",
+          "member": "issue-77-n1-011"
+        },
+        {
+          "inventory": "grid",
+          "member": "issue-77-n1-012"
+        },
+        {
+          "inventory": "grid",
+          "member": "issue-77-n1-013"
+        },
+        {
+          "inventory": "grid",
+          "member": "issue-77-n1-015"
+        },
+        {
+          "inventory": "offset",
+          "member": "issue-77-n1-001"
+        },
+        {
+          "inventory": "offset",
+          "member": "issue-77-n1-003"
+        },
+        {
+          "inventory": "offset",
+          "member": "issue-77-n1-004"
+        },
+        {
+          "inventory": "offset",
+          "member": "issue-77-n1-005"
+        },
+        {
+          "inventory": "offset",
+          "member": "issue-77-n1-006"
+        },
+        {
+          "inventory": "offset",
+          "member": "issue-77-n1-009"
+        },
+        {
+          "inventory": "angle",
+          "member": "issue-77-n1-001"
+        },
+        {
+          "inventory": "angle",
+          "member": "issue-77-n1-006"
+        },
+        {
+          "inventory": "angle",
+          "member": "issue-77-n1-010"
+        },
+        {
+          "inventory": "angle",
+          "member": "issue-77-n1-011"
+        },
+        {
+          "inventory": "angle",
+          "member": "issue-77-n1-012"
+        },
+        {
+          "inventory": "power",
+          "member": "issue-77-n1-004"
+        },
+        {
+          "inventory": "power",
+          "member": "issue-77-n1-005"
+        },
+        {
+          "inventory": "power",
+          "member": "issue-77-n1-006"
+        },
+        {
+          "inventory": "power",
+          "member": "issue-77-n1-009"
+        },
+        {
+          "inventory": "power",
+          "member": "issue-77-n1-013"
+        }
+      ],
+      "cells_per_step": 2,
+      "cost": "tie_free (scoring_harness.tie_free on tensors): pig presence - 0.1 x pig-slot center displacement between the anchor carrier and the rollout endpoint at 225",
+      "definition": "per update 2 mixed fit-lineage cells (member x inventory, sampled uniformly with replacement from the member's pool); every verdict-bearing candidate action is rolled out with the step's pair from the member's E99 anchor to 225; loss = mean over cells of the mean over (success, failure) pairs of softplus((cost_success - cost_failure) / 0.1); weight 0.1 x ramp, ramp 0 before update 1000 and linear to 1 by update 2000",
+      "inventories": [
+        "grid",
+        "offset",
+        "angle",
+        "power"
+      ],
+      "ramp": 1000,
+      "seed_offset": 112002,
+      "start": 1000,
+      "temperature": 0.1,
+      "verdict_source": "fit-lineage inventory executions only (#93 grid/offset, #94 power, #87/#89 angle oracle verdicts); no held-out verdict is read",
+      "weight": 0.1
+    },
+    "recipe": {
+      "batch_size": 64,
+      "grad_clip": 1.0,
+      "learning_rate": 0.0001,
+      "steps": 9000,
+      "weight_decay": 0.0001
+    },
+    "schedule": "PAIRS[step % 9]; the continuous family uses the same horizon",
+    "update": "one AdamW over stacked member parameters (elementwise, so per member); per-member gradient clipping to grad_clip; a member with a nonfinite loss or gradient norm is retired at that update (typed terminal failure, never scored)"
+  },
+  "universe": {
+    "fit_shots": 745,
+    "heldout_records": 30,
+    "lolo_mixed": {
+      "angle": [
+        "issue-77-n1-001",
+        "issue-77-n1-006",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012"
+      ],
+      "grid": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-009",
+        "issue-77-n1-010",
+        "issue-77-n1-011",
+        "issue-77-n1-012",
+        "issue-77-n1-013",
+        "issue-77-n1-015"
+      ],
+      "offset": [
+        "issue-77-n1-001",
+        "issue-77-n1-003",
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-009"
+      ],
+      "power": [
+        "issue-77-n1-004",
+        "issue-77-n1-005",
+        "issue-77-n1-006",
+        "issue-77-n1-009",
+        "issue-77-n1-013"
+      ]
+    },
+    "lolo_records": 288,
+    "n1_samples": {
+      "issue-77-n1-001": 12,
+      "issue-77-n1-002": 1,
+      "issue-77-n1-003": 9,
+      "issue-77-n1-004": 9,
+      "issue-77-n1-005": 4,
+      "issue-77-n1-006": 13,
+      "issue-77-n1-007": 13,
+      "issue-77-n1-008": 13,
+      "issue-77-n1-009": 13,
+      "issue-77-n1-010": 13,
+      "issue-77-n1-011": 13,
+      "issue-77-n1-012": 13,
+      "issue-77-n1-013": 13,
+      "issue-77-n1-014": 13,
+      "issue-77-n1-015": 13,
+      "issue-77-n1-016": 13
+    },
+    "ranking_cells": 27
+  },
+  "validation": {
+    "heldout": "after the selection freeze, once: every arm's fold-'all' members and the frozen #99 E predictors (reference) on the held-out lineages, every inventory and request, plus the #100 held-out rollout error; DESCRIPTIVE, no token",
+    "lolo": "fold L model on lineage L: every inventory cell of L (all items) x the family's requests (m99.rollout_endpoints from L's E99 anchor to 225; EndpointCosts rows) and L's N1 rollout error; AUC per mixed cell under each cost (m99.view)",
+    "selection_metric": "S(arm, request) = mean of the grid and offset leave-one-lineage-out AUC means (member-clustered bootstrap mean over (lineage, seed) cells) under the tie-free cost",
+    "selection_rule": "the (arm, request) with the largest S; ties broken by arm order B, L, C, LC then request order; the frozen recipe is that arm's training recipe, the Gate-B request is that request, the checkpoints are its fold-'all' members (3 seeds)"
+  },
+  "validation_command": "python -u -m scripts.run_decision_relevant_dynamics --validate",
+  "version": 1
+}
