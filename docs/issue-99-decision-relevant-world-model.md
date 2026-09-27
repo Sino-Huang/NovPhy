@@ -7,12 +7,14 @@ inputs; nothing here edits the ICLR 2026 submission.
 | --- | --- | --- |
 | 1 stage-wise attribution + 2 tie-free cost | `scripts/run_decision_chain_attribution.py` | `.local-artifacts/issue-99-decision-chain-attribution-v1/` |
 | 3 fix of the dominant stage (slot encoder) | `scripts/run_slot_encoder_fix.py`, `world_model/training/spatial_slot_parser.py` | `.local-artifacts/issue-99-slot-encoder-fix-v1/` |
+| v2 guard revision (terminal) | `scripts/run_decision_chain_guard_revision.py` | `.local-artifacts/issue-99-guard-revision-v2/` |
 
-Validation (both exit 0, `conda activate novphy && source env.sh`):
+Validation (all exit 0, `conda activate novphy && source env.sh`):
 
 ```
 python -u -m scripts.run_decision_chain_attribution --validate
 python -u -m scripts.run_slot_encoder_fix --validate
+python -u -m scripts.run_decision_chain_guard_revision --validate
 pytest tests/test_issue_99_decision_chain.py
 ```
 
@@ -128,5 +130,38 @@ Compute: 3259 GPU s (encoder 540 s, 12 predictors 2581 s, evaluation 162 s), wal
    ranking of candidate endpoints on fit lineages) on E carriers, scored on the #104 sealed
    cohort, where the held-out grid has more than 3 clusters.
 
-Issue disposition under the frozen rules: `readiness_or_precision_insufficient` (typed guard
-failures G2/G3 above), with the attribution table as the deliverable.
+Issue disposition under the v1 rules: `readiness_or_precision_insufficient` (typed guard
+failures G2/G3 above). Superseded by v2 below; v1 is retained byte-identical.
+
+## v2: guard revision (terminal)
+
+Frozen 2026-09-27T05:43:17Z, **after** both v1 publications and with every v1 outcome known.
+v2 replaces exactly the two guards that failed for reasons unrelated to what they protect.
+Every estimand, cost, threshold, cohort, record and decision rule is v1's. The 17 v1
+artifacts and runners are sha256-bound, and both v1 `--validate` commands run inside every
+v2 publish and validate. Cost: 0 GPU seconds, 0 engine seconds.
+
+| guard | v1 | v2 | v2 observed |
+| --- | --- | --- | --- |
+| attribution G2 | every position-0 frame byte-identical to the sealed anchor | every member has ≥1 byte-identical shot, and (v1 G3) every shot has the same engine start state within 1e-6, so every shot starts from the anchor's physical state | 15/15 members; engine spread 0.0; the 4 mismatched frames parse to within 6.1e-4 of a byte-identical shot (3 of them exactly equal) |
+| fix G3 | R0 endpoint count costs within 1e-3 of the attribution | R0 parsed presence (all slots, positions 0 and 225), pig displacement and tie-free cost within 1e-3 (the parse tolerance the v1 smoke froze before any outcome) | max presence 6.65e-4, displacement 0, tie-free 1.34e-4 |
+
+| question | v1 | v2 |
+| --- | --- | --- |
+| Q1 attribution (Gate A: perception) | readiness_or_precision_insufficient | **supported** |
+| Q2 tie-free cost (tied share 0.000 < 0.10) | readiness_or_precision_insufficient | **supported** |
+| Q3 target (arm E, held-out grid) | readiness_or_precision_insufficient | **supported** by 1/12 requests (C-F-1 0.7259 [0.5778, 0.8444]) |
+| Q4 encoder effect (E − R0 0.0025 [−0.0204, 0.0185]) | readiness_or_precision_insufficient | **not_supported_by_this_experiment** |
+
+Limits of the v2 reading:
+- The v2 guards were defined after the results were known. The disclosure is in the v2 plan
+  and in every v2 rendering.
+- Q3 rests on 1 of 12 requests over 3 held-out member clusters (10 distinct bootstrap
+  resamples), with no declared multiplicity adjustment.
+- Under the count cost, E:C-F-1 is tied in every held-out grid cell.
+- Q3 is not evidence that the fix helps: E − current = −0.1401 [−0.1667, −0.0963], and the
+  current #77 checkpoints meet the target on 7 requests without any fix.
+
+v2 is the final guard revision of #99. The issue's disposition is the v2 row set above, and
+the attribution table is the deliverable. Perception is the dominant loss; once perception is
+fixed, dynamics is the binding stage.

@@ -1,0 +1,151 @@
+{
+  "changes": {
+    "attribution.G2": {
+      "reason": "the guard protects the physical start state; v1 failed on 4/859 frames that differ by 196-207 rendered pixels while the engine state is identical (spread 0.0). Byte-mismatched frames and their parsed position-0 deltas stay reported descriptively",
+      "v1": "every executed shot's position-0 agent frame is byte-identical to the member's sealed anchor",
+      "v2": "every member has at least one verdict-bearing shot whose position-0 agent frame is byte-identical to its sealed anchor, and (v1 G3, unchanged) every shot of the member has the same engine-projected position-0 carrier within 1e-06; together every shot starts from the sealed anchor's physical state"
+    },
+    "fix.G3": {
+      "reason": "the guard protects 'R0 is the same parse'; the count cost multiplies pig presence by 1000, so v1 read a 1.34e-4 batch-size float difference as 0.134",
+      "v1": "R0 parsed-endpoint costs (stage ap) replicate the attribution records within 1e-3 (count cost)",
+      "v2": "R0 parsed presence of every vocabulary slot at positions 0 and 225, the pig displacement and the tie-free cost replicate the attribution evidence within 0.001 (PARSE_BATCH_TOLERANCE, frozen in the v1 attribution smoke before any outcome)"
+    }
+  },
+  "claim_boundary": "decision-only re-scoring of retained engine-verdicted executions and the frozen #77 N1 checkpoints; stage d reads post-launch frames and is a diagnostic, not a decision-time ranker; development/exposed N1 members only (held-out = not fit by #77 predictors or controllers, still exposed through earlier tickets); no engine access, rendering or retraining; inventories and cohorts are never pooled; every interval is DESCRIPTIVE; decision-only ranking of retained engine-verdicted executions on the 4 held-out N1 members (never fit here or by #77; exposed through earlier tickets); a new slot encoder and predictors trained on fit lineages of the same two families; no engine access, rendering or capture; no closed-loop or competence claim; every interval is DESCRIPTIVE",
+  "disclosure": "v2 was frozen after both v1 publications, with every v1 outcome known (all AUCs, contrasts, the Gate A result and the counterfactual token readings written in the v1 record and the #99 comment). The v2 guard definitions come from the diagnoses of the two v1 guard failures and from the parse tolerance the v1 attribution smoke froze before any outcome; no AUC or contrast entered their definition. v2 changes no estimand, cost, threshold, cohort, record or decision rule, and v1 is retained byte-identical (sha256-bound below) under the #87 versioned-protocol practice.",
+  "engine_seconds": 0,
+  "frozen_after_v1_publication": true,
+  "frozen_at": "2026-09-27T05:43:17Z",
+  "gpu_seconds": 0,
+  "identity": "issue-99-guard-revision-v2",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-99-decision-chain-attribution-v1/plan.json",
+      "name": "attribution/plan.json",
+      "sha256": "sha256:c8d5f21e1190104d8ebdfd9fed7c1b078674bd871cf5eb33b00bee741c656e01"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-decision-chain-attribution-v1/smoke.json",
+      "name": "attribution/smoke.json",
+      "sha256": "sha256:dddfc3fc6369a90c95ae7ac9074fe50fa1374471a706bc37f07bdc88d9884be4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-decision-chain-attribution-v1/ledger.json",
+      "name": "attribution/ledger.json",
+      "sha256": "sha256:7ea664f646ff69713da0281e042dae140032b1aa87495178bed2235e9b3b7e67"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-decision-chain-attribution-v1/compute.json",
+      "name": "attribution/compute.json",
+      "sha256": "sha256:e016d2bbad543d030611bce4280a5fba4a382a2e6559886a793d25ef255bfc5d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-decision-chain-attribution-v1/summary.json",
+      "name": "attribution/summary.json",
+      "sha256": "sha256:5cb7168a1424230950c975e9e4c480ab8494663be643ef33f42d9d54f153b2a3"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-decision-chain-attribution-v1/findings.md",
+      "name": "attribution/findings.md",
+      "sha256": "sha256:b0be11ad59bfcb3d1e0cd809e1f5a4e6ea10aa11b055a1052ba8b3e934de69b4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-decision-chain-attribution-v1/comparisons.csv",
+      "name": "attribution/comparisons.csv",
+      "sha256": "sha256:1a0dc276ae9f74f94a2a9f8c4a4dd2f67399e8001f8fc83c4170b5d8da59b899"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/plan.json",
+      "name": "fix/plan.json",
+      "sha256": "sha256:cce9fb1b3e2a134d0b1d41f85f57f106f592c8a7a59cb8ee1a980cf7aebc9098"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/smoke.json",
+      "name": "fix/smoke.json",
+      "sha256": "sha256:6d56e2246c0252e07372711e8b6358d318abe1dcb1b20a41d8f328c8fd67ac6b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/ledger.json",
+      "name": "fix/ledger.json",
+      "sha256": "sha256:d1c78f784c59244c03a5c04e826ad8b5d4980925dff38966b2223b261bc93798"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/compute.json",
+      "name": "fix/compute.json",
+      "sha256": "sha256:5481d831be79efe684a45a509e4feac92a85d98a9e40e2ec056d50e8099ec0d1"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/summary.json",
+      "name": "fix/summary.json",
+      "sha256": "sha256:e49baecf86bcfc4f04e76c6e01ce430b0859d36dd8382f528b03f798466570bb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/findings.md",
+      "name": "fix/findings.md",
+      "sha256": "sha256:d23e837d78259fa90ae3b24872b4635f30cba2bac63c44252eeeb7daf5482739"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/comparisons.csv",
+      "name": "fix/comparisons.csv",
+      "sha256": "sha256:9653f7b571683a575fb0fbfbc480e346b77c69abdfaeac1da7e553ef2a288b3c"
+    },
+    {
+      "artifact": "scripts/run_decision_chain_attribution.py",
+      "name": "runner/attribution",
+      "sha256": "sha256:9e017a24b0e6b126ec68eb91586f454e05e1c259430d7057281977c349fcc43c"
+    },
+    {
+      "artifact": "scripts/run_slot_encoder_fix.py",
+      "name": "runner/fix",
+      "sha256": "sha256:e256d0908c459b403826b07a39fa4bfa7d50692ede7db692b000d322aa422ddf"
+    },
+    {
+      "artifact": "world_model/training/spatial_slot_parser.py",
+      "name": "runner/model_module",
+      "sha256": "sha256:4a1fb427c258880007d7d7f1e98400f1ea94db758c2b4b0dd81bfc7f5bd289f6"
+    }
+  ],
+  "issue": 99,
+  "issue_64_authorized": false,
+  "reporting_correction": "v1 attribution compute.json compute.extraction.wall_seconds is an unpopulated field (0.0); v2 reports the extraction wall from the v1 ledger (extraction_seconds_elapsed)",
+  "revision_of": [
+    "issue-99-decision-chain-attribution-v1",
+    "issue-99-slot-encoder-fix-v1"
+  ],
+  "role": "terminal",
+  "runner": "scripts/run_decision_chain_guard_revision.py",
+  "runner_sha256_at_freeze": "sha256:9f199c4c5be95b90ec4f274323a0cc8c3233cb3885daf5a7cd2e660be87169b8",
+  "schema": "issue_99_guard_revision_plan_v2",
+  "terminal": "v2 is the final guard revision of #99; no v3",
+  "token_rule": "each question's v2 token is its frozen v1 rule evaluated with the v2 guard set; a failing v2 guard still forces readiness_or_precision_insufficient",
+  "unchanged": {
+    "attribution_decision_rule": {
+      "Q1_attribution": "supported iff guards pass AND the dominant drop's lower bound > 0; not_supported_by_this_experiment iff guards pass AND the dominant drop's upper bound < 0.02; otherwise readiness_or_precision_insufficient",
+      "Q2_tie_free_cost": "supported iff guards pass AND at stage c on mixed grid cells (cohort all) every request's tied-cell share under the tie-free cost is < 0.1; not_supported_by_this_experiment iff guards pass and some request is >= 0.1; otherwise readiness_or_precision_insufficient",
+      "baseline_target": "reported, not a token: any request at stage c, held-out grid, tie-free cost with AUC >= 0.65 and lower bound > 0.55; the issue's target token is decided after step 3"
+    },
+    "attribution_guards": {
+      "G1": "stage-c count cost reproduces every #96 record of the 14 requests within 0.001 (same nonfinite exclusions)",
+      "G2": "every executed shot's position-0 agent frame is byte-identical to the member's sealed anchor",
+      "G3": "engine-projected position-0 carriers agree across a member's shots within 1e-06",
+      "G4": "verdict resolution 1.0 and nonfinite typed-failure share <= 0.1 on mixed grid cells for every stage and request",
+      "caps": "run GPU seconds <= 10800.0, run wall seconds <= 21600.0",
+      "failure": "any guard failure -> readiness_or_precision_insufficient for Q1 and Q2"
+    },
+    "fix_decision_rule": {
+      "Q3_target": "supported iff guards pass AND some request of arm E on held-out grid cells under the tie-free cost has AUC >= 0.65 with lower bound > 0.55; not_supported_by_this_experiment iff guards pass and no request does; otherwise readiness_or_precision_insufficient",
+      "Q4_encoder_effect": "request-mean paired (E - R0) AUC on held-out grid cells, tie-free cost: supported iff mean >= 0.02 and lower > 0; not_supported_by_this_experiment iff upper < 0.02; otherwise readiness_or_precision_insufficient",
+      "multiplicity": "Q3 scans 12 requests against one target; the count of requests meeting it is reported; held-out grid has 3 member clusters, whose percentile bootstrap has 10 distinct resamples and understates uncertainty"
+    },
+    "fix_guards": {
+      "G1": "no training shot belongs to a held-out member",
+      "G2": "encoder finished every epoch and all 12 predictors reached the frozen step count with finite losses",
+      "G3": "R0 parsed endpoint costs (stage ap) replicate the #99 attribution endpoint records within 0.001",
+      "G4": "nonfinite share <= 0.1 on held-out grid cells for every arm and request",
+      "caps": "GPU seconds <= 28800.0, wall seconds <= 57600.0"
+    },
+    "records": "every v1 record, evidence tensor and checkpoint, read-only"
+  },
+  "validation_command": "python -u -m scripts.run_decision_chain_guard_revision --validate",
+  "version": 2
+}

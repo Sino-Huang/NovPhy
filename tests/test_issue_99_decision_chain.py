@@ -133,3 +133,26 @@ def test_spatial_slot_parser_feeds_the_frozen_temporal_carrier_adapter():
     tensor = adapter.build_from_parsed(TemporalObservationContext(None, observation), parsed, None).tensor
     assert tensor.shape == (2 + 13 * len(VOCABULARY),)
     assert torch.isfinite(tensor).all()
+
+
+def test_v2_start_identity_needs_one_byte_identical_shot_and_equal_engine_state_per_member():
+    from scripts.run_decision_chain_guard_revision import anchored_start_identity
+    frames = {"m1": {"s1": "sha:a", "s2": "sha:x"}, "m2": {"s3": "sha:b"}}
+    anchors = {"m1": "sha:a", "m2": "sha:b"}
+    passing = anchored_start_identity(frames, anchors, {"m1": 0.0, "m2": 0.0})
+    assert passing["pass"] and passing["byte_mismatched_shots"] == ["s2"]
+    assert not anchored_start_identity(frames, {"m1": "sha:a", "m2": "sha:z"}, {"m1": 0.0, "m2": 0.0})["pass"]
+    assert not anchored_start_identity(frames, anchors, {"m1": 1e-3, "m2": 0.0})["pass"]
+
+
+def test_v2_parse_replication_is_judged_on_presence_not_the_thousandfold_count():
+    from scripts.run_decision_chain_guard_revision import TOLERANCE, parse_replication
+    shot = {"parsed_presence_start": [0.5, 0.2], "parsed_presence_end": [0.1, 0.18415]}
+    reference = {"start": [0.5, 0.2], "end": [0.1, 0.18402]}
+    row = {"pig_displacement": 0.0, "tie_free": 0.18415, "count": 184.15}
+    reference_row = {"pig_displacement": 0.0, "tie_free": 0.18402, "count": 184.02}
+    assert parse_replication([(shot, row, reference, reference_row)])["pass"]
+    flipped = {**row, "pig_displacement": 0.9, "tie_free": 0.18415 - 0.09}
+    assert not parse_replication([(shot, flipped, reference, reference_row)])["pass"]
+    moved = {**shot, "parsed_presence_end": [0.1 + 2 * TOLERANCE, 0.18415]}
+    assert not parse_replication([(moved, row, reference, reference_row)])["pass"]

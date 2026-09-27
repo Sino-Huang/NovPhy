@@ -1,0 +1,498 @@
+{
+  "attribution": {
+    "extraction_wall_seconds": 3715.871739293303,
+    "gate_a": {
+      "dominant": "perception",
+      "drops": {
+        "cost": {
+          "interval": [
+            0.0714285714285714,
+            0.3571428571428571
+          ],
+          "mean": 0.2142857142857143
+        },
+        "dynamics": {
+          "interval": [
+            -0.26846230158730156,
+            0.09619290573372208
+          ],
+          "mean": -0.08418367346938771
+        },
+        "perception": {
+          "interval": [
+            0.09215986394557822,
+            0.4891241496598639
+          ],
+          "mean": 0.2925170068027211,
+          "source": "endpoint_perception"
+        }
+      }
+    },
+    "guards": {
+      "G1": {
+        "revised": false,
+        "v1_pass": true,
+        "v2_pass": true
+      },
+      "G2": {
+        "revised": true,
+        "v1_pass": false,
+        "v2_observed": {
+          "byte_mismatched_shots": [
+            "angle/issue-77-n1-010/o07",
+            "offset/issue-77-n1-010/o03",
+            "offset/issue-77-n1-010/o08",
+            "grid/issue-77-n1-016/o06"
+          ],
+          "members": {
+            "issue-77-n1-001": {
+              "byte_identical": 59,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 59
+            },
+            "issue-77-n1-003": {
+              "byte_identical": 56,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 56
+            },
+            "issue-77-n1-004": {
+              "byte_identical": 56,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 56
+            },
+            "issue-77-n1-005": {
+              "byte_identical": 28,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 28
+            },
+            "issue-77-n1-006": {
+              "byte_identical": 60,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 60
+            },
+            "issue-77-n1-007": {
+              "byte_identical": 60,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 60
+            },
+            "issue-77-n1-008": {
+              "byte_identical": 60,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 60
+            },
+            "issue-77-n1-009": {
+              "byte_identical": 60,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 60
+            },
+            "issue-77-n1-010": {
+              "byte_identical": 57,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 60
+            },
+            "issue-77-n1-011": {
+              "byte_identical": 60,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 60
+            },
+            "issue-77-n1-012": {
+              "byte_identical": 60,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 60
+            },
+            "issue-77-n1-013": {
+              "byte_identical": 60,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 60
+            },
+            "issue-77-n1-014": {
+              "byte_identical": 60,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 60
+            },
+            "issue-77-n1-015": {
+              "byte_identical": 60,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 60
+            },
+            "issue-77-n1-016": {
+              "byte_identical": 59,
+              "engine_spread": 0.0,
+              "ok": true,
+              "shots": 60
+            }
+          },
+          "mismatched_parsed_position0": [
+            {
+              "max_abs_carrier_delta": 0.0,
+              "pig_presence_delta": 0.0,
+              "shot": "angle/issue-77-n1-010/o07"
+            },
+            {
+              "max_abs_carrier_delta": 0.0,
+              "pig_presence_delta": 0.0,
+              "shot": "offset/issue-77-n1-010/o03"
+            },
+            {
+              "max_abs_carrier_delta": 0.0,
+              "pig_presence_delta": 0.0,
+              "shot": "offset/issue-77-n1-010/o08"
+            },
+            {
+              "max_abs_carrier_delta": 0.0006066560745239258,
+              "pig_presence_delta": -2.0205974578857422e-05,
+              "shot": "grid/issue-77-n1-016/o06"
+            }
+          ],
+          "pass": true
+        },
+        "v2_pass": true
+      },
+      "G3": {
+        "revised": false,
+        "v1_pass": true,
+        "v2_pass": true
+      },
+      "G4": {
+        "revised": false,
+        "v1_pass": true,
+        "v2_pass": true
+      },
+      "caps": {
+        "revised": false,
+        "v1_pass": true,
+        "v2_pass": true
+      }
+    },
+    "guards_pass": true,
+    "tied_share_tie_free": {
+      "C-F-1": 0.0,
+      "C-F-15": 0.0,
+      "C-F-5": 0.0,
+      "C-J": 0.0,
+      "F-1-continuous": 0.0,
+      "F-1-macro": 0.0,
+      "F-1-micro": 0.0,
+      "F-15-continuous": 0.0,
+      "F-15-macro": 0.0,
+      "F-15-micro": 0.0,
+      "F-5-continuous": 0.0,
+      "F-5-macro": 0.0,
+      "F-5-micro": 0.0,
+      "J": 0.0
+    },
+    "tokens": {
+      "v1": {
+        "Q1_attribution": "readiness_or_precision_insufficient",
+        "Q2_tie_free_cost": "readiness_or_precision_insufficient"
+      },
+      "v2": {
+        "Q1_attribution": "supported",
+        "Q2_tie_free_cost": "supported"
+      }
+    }
+  },
+  "changes": {
+    "attribution.G2": {
+      "reason": "the guard protects the physical start state; v1 failed on 4/859 frames that differ by 196-207 rendered pixels while the engine state is identical (spread 0.0). Byte-mismatched frames and their parsed position-0 deltas stay reported descriptively",
+      "v1": "every executed shot's position-0 agent frame is byte-identical to the member's sealed anchor",
+      "v2": "every member has at least one verdict-bearing shot whose position-0 agent frame is byte-identical to its sealed anchor, and (v1 G3, unchanged) every shot of the member has the same engine-projected position-0 carrier within 1e-06; together every shot starts from the sealed anchor's physical state"
+    },
+    "fix.G3": {
+      "reason": "the guard protects 'R0 is the same parse'; the count cost multiplies pig presence by 1000, so v1 read a 1.34e-4 batch-size float difference as 0.134",
+      "v1": "R0 parsed-endpoint costs (stage ap) replicate the attribution records within 1e-3 (count cost)",
+      "v2": "R0 parsed presence of every vocabulary slot at positions 0 and 225, the pig displacement and the tie-free cost replicate the attribution evidence within 0.001 (PARSE_BATCH_TOLERANCE, frozen in the v1 attribution smoke before any outcome)"
+    }
+  },
+  "claim_boundary": "decision-only re-scoring of retained engine-verdicted executions and the frozen #77 N1 checkpoints; stage d reads post-launch frames and is a diagnostic, not a decision-time ranker; development/exposed N1 members only (held-out = not fit by #77 predictors or controllers, still exposed through earlier tickets); no engine access, rendering or retraining; inventories and cohorts are never pooled; every interval is DESCRIPTIVE; decision-only ranking of retained engine-verdicted executions on the 4 held-out N1 members (never fit here or by #77; exposed through earlier tickets); a new slot encoder and predictors trained on fit lineages of the same two families; no engine access, rendering or capture; no closed-loop or competence claim; every interval is DESCRIPTIVE",
+  "disclosure": "v2 was frozen after both v1 publications, with every v1 outcome known (all AUCs, contrasts, the Gate A result and the counterfactual token readings written in the v1 record and the #99 comment). The v2 guard definitions come from the diagnoses of the two v1 guard failures and from the parse tolerance the v1 attribution smoke froze before any outcome; no AUC or contrast entered their definition. v2 changes no estimand, cost, threshold, cohort, record or decision rule, and v1 is retained byte-identical (sha256-bound below) under the #87 versioned-protocol practice.",
+  "engine_seconds": 0,
+  "fix": {
+    "e_count_cost_tied_share": {
+      "C-F-1": 1.0,
+      "C-F-15": 0.0,
+      "C-F-5": 0.0,
+      "F-1-continuous": 0.8888888888888888,
+      "F-1-macro": 1.0,
+      "F-1-micro": 0.6666666666666666,
+      "F-15-continuous": 0.0,
+      "F-15-macro": 0.0,
+      "F-15-micro": 0.0,
+      "F-5-continuous": 0.0,
+      "F-5-macro": 0.0,
+      "F-5-micro": 0.0
+    },
+    "e_minus_current_grid": {
+      "clusters": 3,
+      "interval": [
+        -0.1666666666666666,
+        -0.09629629629629632
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": -0.14012345679012342,
+      "units": 9
+    },
+    "encoder_effect": {
+      "clusters": 3,
+      "interval": [
+        -0.02037037037037038,
+        0.018518518518518507
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.0024691358024691197,
+      "units": 9
+    },
+    "guards": {
+      "G1": {
+        "revised": false,
+        "v1_pass": true,
+        "v2_pass": true
+      },
+      "G2": {
+        "revised": false,
+        "v1_pass": true,
+        "v2_pass": true
+      },
+      "G3": {
+        "revised": true,
+        "v1_pass": false,
+        "v2_observed": {
+          "max_abs_delta": {
+            "pig_displacement": 0.0,
+            "presence": 0.0006646215915679932,
+            "tie_free": 0.00013428926467895508
+          },
+          "pass": true,
+          "shots": 240,
+          "tolerance": 0.001
+        },
+        "v2_pass": true
+      },
+      "G4": {
+        "revised": false,
+        "v1_pass": true,
+        "v2_pass": true
+      },
+      "caps": {
+        "revised": false,
+        "v1_pass": true,
+        "v2_pass": true
+      }
+    },
+    "guards_pass": true,
+    "met_by": [
+      "C-F-1"
+    ],
+    "reference_arms_meeting_target": [
+      "R0:F-1-continuous",
+      "current:F-5-continuous",
+      "current:F-5-micro",
+      "current:F-15-continuous",
+      "current:F-15-micro",
+      "current:F-15-macro",
+      "current:C-F-5",
+      "current:C-F-15"
+    ],
+    "target_requests": [
+      {
+        "auc": {
+          "clusters": 3,
+          "interval": [
+            0.3111111111111111,
+            0.5777777777777778
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.4000000000000001,
+          "units": 9
+        },
+        "meets": false,
+        "request": "F-1-continuous"
+      },
+      {
+        "auc": {
+          "clusters": 3,
+          "interval": [
+            0.2888888888888889,
+            0.6
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.3925925925925926,
+          "units": 9
+        },
+        "meets": false,
+        "request": "F-1-micro"
+      },
+      {
+        "auc": {
+          "clusters": 3,
+          "interval": [
+            0.4222222222222222,
+            0.5555555555555555
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.47407407407407404,
+          "units": 9
+        },
+        "meets": false,
+        "request": "F-1-macro"
+      },
+      {
+        "auc": {
+          "clusters": 3,
+          "interval": [
+            0.5333333333333333,
+            0.5555555555555556
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5481481481481482,
+          "units": 9
+        },
+        "meets": false,
+        "request": "F-5-continuous"
+      },
+      {
+        "auc": {
+          "clusters": 3,
+          "interval": [
+            0.5555555555555555,
+            0.5777777777777778
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5629629629629629,
+          "units": 9
+        },
+        "meets": false,
+        "request": "F-5-micro"
+      },
+      {
+        "auc": {
+          "clusters": 3,
+          "interval": [
+            0.5555555555555555,
+            0.5777777777777778
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.562962962962963,
+          "units": 9
+        },
+        "meets": false,
+        "request": "F-5-macro"
+      },
+      {
+        "auc": {
+          "clusters": 3,
+          "interval": [
+            0.5111111111111111,
+            0.6222222222222222
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5777777777777778,
+          "units": 9
+        },
+        "meets": false,
+        "request": "F-15-continuous"
+      },
+      {
+        "auc": {
+          "clusters": 3,
+          "interval": [
+            0.5333333333333333,
+            0.6222222222222222
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5851851851851851,
+          "units": 9
+        },
+        "meets": false,
+        "request": "F-15-micro"
+      },
+      {
+        "auc": {
+          "clusters": 3,
+          "interval": [
+            0.37777777777777777,
+            0.6222222222222222
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.5407407407407407,
+          "units": 9
+        },
+        "meets": false,
+        "request": "F-15-macro"
+      },
+      {
+        "auc": {
+          "clusters": 3,
+          "interval": [
+            0.5777777777777778,
+            0.8444444444444444
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.725925925925926,
+          "units": 9
+        },
+        "meets": true,
+        "request": "C-F-1"
+      },
+      {
+        "auc": {
+          "clusters": 3,
+          "interval": [
+            0.3333333333333333,
+            0.4666666666666666
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.38518518518518513,
+          "units": 9
+        },
+        "meets": false,
+        "request": "C-F-5"
+      },
+      {
+        "auc": {
+          "clusters": 3,
+          "interval": [
+            0.39999999999999997,
+            0.4000000000000001
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.39999999999999997,
+          "units": 9
+        },
+        "meets": false,
+        "request": "C-F-15"
+      }
+    ],
+    "tokens": {
+      "v1": {
+        "Q3_target": "readiness_or_precision_insufficient",
+        "Q4_encoder_effect": "readiness_or_precision_insufficient"
+      },
+      "v2": {
+        "Q3_target": "supported",
+        "Q4_encoder_effect": "not_supported_by_this_experiment"
+      }
+    }
+  },
+  "frozen_after_v1_publication": true,
+  "frozen_at": "2026-09-27T05:43:17Z",
+  "gpu_seconds": 0,
+  "identity": "issue-99-guard-revision-v2",
+  "issue_64_authorized": false,
+  "schema": "issue_99_guard_revision_report_v2",
+  "validation_command": "python -u -m scripts.run_decision_chain_guard_revision --validate"
+}
