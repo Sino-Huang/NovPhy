@@ -1,0 +1,122 @@
+{
+  "added_evidence": {
+    "probe_explanation": "descriptive: F77 gated macro at probe frame 80 from a single-frame carrier without prior frame; no verdict changes",
+    "replication": "F77 arm records recomputed in a fresh deterministic process on every #96 cell; evidence for revised G3 only, never scored"
+  },
+  "changes": {
+    "G1": {
+      "reason": "the guard protects 'the audit reads the #77 training carriers'; every v1 exceedance was a motion value, where center float noise from a different parse batch is divided by the frame interval (terminal frames of early-ending shots have intervals of a few milliseconds)",
+      "v1": "F77 audit carriers replicate every valid #77 shard carrier value within 0.001",
+      "v2": "every non-motion carrier value within 0.001, and every motion value within 2 x 0.001 / elapsed seconds of its frame (a motion value is the difference of two parsed centers, each within the 0.001 parse tolerance, divided by the frame interval)"
+    },
+    "G3": {
+      "reason": "the guard protects 'these arms are the #96 arms'; the v1 run process had turned on cuDNN autotuning for JEPA training, so its anchor parses used differently rounded kernels and recursive Delta = 1 rollouts plus the count cost's 1000x pig weight amplified the noise. The v1 records stay the scored records; their divergence from #96 is reported descriptively",
+      "v1": "F77 arms replicate the #96 records (count cost of every candidate of every F/J/M/T/D record) within 0.001, and the F77 T/D coordinates equal #96's",
+      "v2": "a fresh deterministic process (cudnn.benchmark off, cudnn.deterministic on, no prior GPU work) running the v1 arm code for F77 on every #96 cell reproduces every #96 count cost within 0.001, and the F77 T/D coordinates equal #96's (v1 observation, unchanged)"
+    }
+  },
+  "claim_boundary": "readout fidelity on retained #77 N1 captures of 16 normal-mechanics lineages; decision-only ranking of retained engine-verdicted executions; no engine access, rendering, capture, closed-loop or competence claim; every interval is DESCRIPTIVE; nothing here edits the ICLR 2026 submission",
+  "disclosure": "v2 was frozen after the v1 publication, with every v1 outcome known (all readout F1s, rollout errors, arm AUCs, contrasts and the v1 tokens). The v2 guard definitions come from the diagnoses of the two v1 guard failures (motion-value noise; cuDNN autotuning in the run process) and from the parse tolerance the v1 plan froze before any outcome; no F1, AUC or contrast entered their definition. v2 changes no estimand, readout, threshold, cohort, record or decision rule; the scored records stay the v1 records; v1 is retained byte-identical (sha256-bound below).",
+  "engine_seconds": 0,
+  "frozen_after_v1_publication": true,
+  "frozen_at": "2026-09-27T11:03:45Z",
+  "identity": "issue-100-guard-revision-v2",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/plan.json",
+      "name": "v1/plan.json",
+      "sha256": "sha256:5b220eceb66d47b93e344e81503115d4ebabc12a5406c9751c7eeb0f0bcad35a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/smoke.json",
+      "name": "v1/smoke.json",
+      "sha256": "sha256:c5ca34433d04f65e7433a6269a392484c71d4cdcbf895e9526ab6ca711d878f1"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/ledger.json",
+      "name": "v1/ledger.json",
+      "sha256": "sha256:decceb592b79e75ebad8bf13486e2ddf289a37c564f2aba86fe2a622fc91e4cb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/compute.json",
+      "name": "v1/compute.json",
+      "sha256": "sha256:db063302ebff8d00fe0adc5d804780c60426cd17b34298884a525799f4b3bd55"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/summary.json",
+      "name": "v1/summary.json",
+      "sha256": "sha256:a90c521eb23675609ff1688d7f039189049f76fe91cd153a5d7660dc182b75a5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/findings.md",
+      "name": "v1/findings.md",
+      "sha256": "sha256:5e23b31578a113cc22d28bef162c45723ab86af7db6f83c0839872a705b1fe12"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/comparisons.csv",
+      "name": "v1/comparisons.csv",
+      "sha256": "sha256:d35499d3b9bd7c26b734ce54ff36d159eee70bdc8e2d9fd87a259013f21b5e58"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/frequencies--F77.json",
+      "name": "v1/frequencies--F77.json",
+      "sha256": "sha256:5add61238d0e1c1f21f6888d9fce5848a62f44b449a07ef6c3188cc66d6c5619"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/frequencies--E99.json",
+      "name": "v1/frequencies--E99.json",
+      "sha256": "sha256:293bac0b85aed7410798fecd9a2799bcd5812b6a8ceaad31393fda1c0d2af555"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/frequencies--JEPA.json",
+      "name": "v1/frequencies--JEPA.json",
+      "sha256": "sha256:7cfeb7622b64c56def03f92ce8abdec3ce6e2c3bf58661f01285306c7a903403"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/records/probe.json",
+      "name": "v1/records/probe.json",
+      "sha256": "sha256:5bf4537305726f2e3a664c2355d4c673bcd1c9074dbed5e4fdbcec89c88e9f0f"
+    },
+    {
+      "artifact": "scripts/run_readout_fidelity_jepa.py",
+      "name": "runner/v1_runner",
+      "sha256": "sha256:7323ebb62c72ea82e8effa25903a7169fd2b06b2ab6f43c721cd6f8fd556b9f1"
+    },
+    {
+      "artifact": "world_model/training/jepa_slot_encoder.py",
+      "name": "runner/model_module",
+      "sha256": "sha256:8ac04c5a3f2d5862b3978087a2b2593fc8adc63e3f3d751e64ac10dde0b3b6ef"
+    }
+  ],
+  "issue": 100,
+  "issue_64_authorized": false,
+  "revision_of": "issue-100-readout-fidelity-jepa-v1",
+  "role": "terminal",
+  "runner": "scripts/run_readout_fidelity_guard_revision.py",
+  "runner_sha256_at_freeze": "sha256:39b9e78ee698aeeffb1e44298b3020a1ceb5779dfa5521ac02c353c8e6a7b40d",
+  "schema": "issue_100_guard_revision_plan_v2",
+  "terminal": "v2 is the final guard revision of #100; no v3",
+  "token_rule": "each question's v2 token is its frozen v1 rule evaluated with the v2 guard set; a failing v2 guard still forces readiness_or_precision_insufficient",
+  "unchanged": {
+    "arms_rule": "per inventory, better encoder, held-out cohort, tie-free cost: supported iff guards pass AND mean >= 0.02 AND lower > 0; not_supported_by_this_experiment iff guards pass AND upper < 0.02; otherwise readiness_or_precision_insufficient",
+    "guards": {
+      "G1": "F77 audit carriers replicate every valid #77 shard carrier row within 0.001",
+      "G2": "F77 rollout per-seed position_mse at t = 225 replicates the published #77 diagnostic summary for ['hybrid_continuous_h1', 'hybrid_continuous_h15', 'hybrid_continuous_h5', 'hybrid_macro_h15', 'hybrid_micro_h15'] within relative 0.001",
+      "G3": "F77 arms replicate the #96 records (count cost of every candidate of every F/J/M/T/D record) within 0.001, and the F77 T/D coordinates equal #96's",
+      "G4": "no held-out lineage shot in any JEPA/E99 training or controller window",
+      "G5": "3 JEPA checkpoints at 9000 steps with finite losses; 6 controllers complete",
+      "G6": "the differentiable carrier of each trained JEPA encoder equals its adapter carrier within 0.0001 on five frames of issue-77-n1-001-a06",
+      "G7": "every micro/macro predicate has >= 20 positive engine labels in the held-out audit",
+      "caps": "GPU seconds <= 36000.0, wall seconds <= 72000.0"
+    },
+    "readout_target": {
+      "better_encoder": "among encoders meeting the target (all encoders if none): the highest mean of held-out macro F1 and micro edge F1; ties to the ENCODERS order",
+      "macro_f1": "mean of the steady-state and structure-unstable F1 (encoder source, all phases, held-out)",
+      "micro_edge_f1": "mean of the contact-edge and supports-edge F1 (encoder source, all phases, held-out)",
+      "rule": "supported iff guards pass AND some encoder has seed-mean macro F1 >= 0.7 and micro edge F1 >= 0.5 (point estimates, as declared in the issue); not_supported_by_this_experiment iff guards pass and none does; otherwise readiness_or_precision_insufficient"
+    },
+    "records": "every v1 record and checkpoint, read-only"
+  },
+  "validation_command": "python -u -m scripts.run_readout_fidelity_guard_revision --validate",
+  "version": 2
+}

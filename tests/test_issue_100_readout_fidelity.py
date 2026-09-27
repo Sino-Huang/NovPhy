@@ -170,3 +170,16 @@ def test_contact_counts_unordered_pairs_once_and_respects_the_mask():
     mask[0, 3, 4] = False
     tp, fp, fn, _ = r100.confusion(prediction, truth, mask, phase)[0]
     assert (tp, fp, fn) == (1, 0, 0)
+
+
+def test_revised_g1_scales_motion_noise_by_the_frame_interval():
+    from scripts import run_readout_fidelity_guard_revision as v2
+    shard, fresh = torch.zeros(2, 236), torch.zeros(2, 236)
+    motion = v2.motion_columns()[0]
+    fresh[1, motion] = 0.02          # 1e-3 center noise over a 0.05 s interval, x 2 centers / 2
+    fresh[0, 2] = 5e-4               # presence noise, not scaled
+    nonmotion, scaled = v2.carrier_replication(shard, fresh, torch.tensor([0.0868, 0.05]))
+    assert nonmotion == pytest.approx(5e-4)
+    assert scaled == pytest.approx(0.02 * 0.05 / 2)
+    fresh[0, motion + 2] = 1.0       # a motion-availability flag flip is a non-motion value
+    assert v2.carrier_replication(shard, fresh, torch.tensor([0.0868, 0.05]))[0] == pytest.approx(1.0)
