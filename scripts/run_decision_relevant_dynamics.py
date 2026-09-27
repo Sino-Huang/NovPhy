@@ -1433,11 +1433,13 @@ def retirement_text(output, chosen):
 
 
 def rollout_block(per_lineage):
-    """per_lineage: {lineage: [value per seed or None]} -> seed-mean per lineage, bootstrap over lineages."""
+    """per_lineage: {lineage: [value per seed or None]} -> mean over the lineage's available seeds
+    (a retired member or nonfinite rollout is a typed failure, as in the AUC tables), bootstrap
+    over lineages with at least one available seed."""
     values, clusters = [], []
     for lineage, seeds in sorted(per_lineage.items()):
         finite = [v for v in seeds if v is not None]
-        if finite and len(finite) == len(seeds):
+        if finite:
             values.append(float(np.mean(finite)))
             clusters.append(lineage)
     return bootstrap(values, clusters)
@@ -1486,7 +1488,8 @@ def rollout_contrasts(per_record, arms, baseline):
                 for lineage in sorted(a):
                     pa = [None if x is None else branch_mean(x, ENDPOINT, metric)[0] for x in a[lineage]]
                     pb = [None if x is None else branch_mean(x, ENDPOINT, metric)[0] for x in b[lineage]]
-                    if all(v is not None for v in pa + pb):
+                    pa, pb = [v for v in pa if v is not None], [v for v in pb if v is not None]
+                    if pa and pb:
                         values.append(float(np.mean(pa) - np.mean(pb)))
                         clusters.append(lineage)
                 out[f"{arm}-{baseline}:{request}:{metric}"] = bootstrap(values, clusters)
@@ -1654,8 +1657,8 @@ def training_summary(output, plan):
                 for i, member in enumerate(report["members"]):
                     members.append({"arm": arm, "family": family, **member,
                                     "final_loss": last["loss"][i], "final_local": last["local"][i],
-                                    "final_long": None if last["long"] is None else last["long"][i],
-                                    "final_rank": None if last["rank"] is None else last["rank"][i]})
+                                    "final_long": last["long"][i] if arm in ("L", "LC") else None,
+                                    "final_rank": last["rank"][i] if arm in ("C", "LC") else None})
     per_arm = {}
     for arm in ARMS:
         for family in FAMILIES:

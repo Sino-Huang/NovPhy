@@ -1,0 +1,51 @@
+{
+  "Q5_anchor_dependence": {
+    "estimate": {
+      "clusters": 9,
+      "interval": [
+        0.14132275132275135,
+        0.2803703703703704
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.21084656084656084,
+      "units": 20
+    },
+    "label": "EXPLORATORY (post hoc)",
+    "stability": {
+      "clusters": 9,
+      "interval": [
+        0.19749877450980394,
+        0.49843137254901954
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.34867647058823525,
+      "units": 20
+    },
+    "token": "supported",
+    "unit": "LC:C-F-15"
+  },
+  "claim_boundary": "decision-only ranking of retained engine-verdicted executions; fit lineages by leave-one-lineage-out, the 4 exposed held-out lineages once, descriptively; E99 encoder fixed; no engine access, rendering or capture; no closed-loop or competence claim",
+  "disclosure": "Frozen AFTER every v1 outcome was known, including the v1 held-out tables and the observation that the C arm's leave-one-lineage-out and held-out AUCs are identical across the nine hybrid requests on several inventories. The questions below were chosen because of that observation. They do not change any v1 token, the v1 selection or the Gate-B handoff.",
+  "engine_seconds": 0,
+  "frozen_at": "2026-09-27T21:36:19Z",
+  "guards": {
+    "G5": {
+      "compared_request_blocks": 4050,
+      "max_abs_delta": {
+        "pig_displacement": 0.0,
+        "pig_presence": 0.0,
+        "tie_free": 0.0
+      },
+      "pass": true,
+      "tolerance": 0.001
+    },
+    "G6": {
+      "pass": true,
+      "records": 312
+    }
+  },
+  "guards_pass": true,
+  "identity": "issue-112-controls-v2",
+  "schema": "issue_112_controls_report_v2",
+  "validation_command": "python -u -m scripts.run_decision_dynamics_controls --validate"
+}

@@ -88,6 +88,14 @@ def utc_now():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def read_control(path, schema):
+    """v2 control records (cached like v1 records: immutable once written)."""
+    record = v1._record_json(str(path), Path(path).stat().st_mtime_ns)
+    if record.get("schema") != schema or record.get("plan_identity") != IDENTITY:
+        raise ValueError(f"record {path} binding differs")
+    return record
+
+
 def record_path(output, arm, family, fold, seed):
     return Path(output) / "records" / f"anchors--{arm}--{family}--{fold}--seed{seed}.json"
 
@@ -280,7 +288,7 @@ def anchor_rows(output, universe, inventory, lolo):
                 views = {}
                 for arm in ARMS:
                     for family in FAMILIES:
-                        record = v1.read_record(record_path(output, arm, family, fold, seed), SCHEMA_RECORD)
+                        record = read_control(record_path(output, arm, family, fold, seed), SCHEMA_RECORD)
                         for request in v1.family_requests(family):
                             if record["typed_failure"]:
                                 views[(arm, request)] = None
@@ -379,7 +387,7 @@ def variance_tables(output, universe):
                 for request in v1.family_requests(family):
                     per_seed = []
                     for seed in SEEDS:
-                        record = v1.read_record(record_path(output, arm, family, "all", seed), SCHEMA_RECORD)
+                        record = read_control(record_path(output, arm, family, "all", seed), SCHEMA_RECORD)
                         if record["typed_failure"]:
                             continue
                         rows = {m: record["inventories"][inventory]["_fit_anchors"][m][request]["rows"]
@@ -400,7 +408,7 @@ def replication_guard(output, universe):
     worst = dict.fromkeys(harness.PARSED_QUANTITIES, 0.0)
     compared, passed = 0, True
     for arm, family, fold, seed in cells():
-        record = v1.read_record(record_path(output, arm, family, fold, seed), SCHEMA_RECORD)
+        record = read_control(record_path(output, arm, family, fold, seed), SCHEMA_RECORD)
         if record["typed_failure"]:
             continue
         if fold == "all":
@@ -578,7 +586,7 @@ def validate(output):
         arm, family, fold, seed = ARMS[-1], "continuous", v1.fit_lineages()[0], SEEDS[1]
         fresh = control_record(universe, harness.EndpointCosts(wlc.load_objective()), load_anchors(), arm, family,
                                fold, seed, policy)
-    stored = v1.read_record(record_path(output, arm, family, fold, seed), SCHEMA_RECORD)
+    stored = read_control(record_path(output, arm, family, fold, seed), SCHEMA_RECORD)
     if fresh["typed_failure"] is None:
         for inventory, block in fresh["inventories"].items():
             for target, anchors in block.items():

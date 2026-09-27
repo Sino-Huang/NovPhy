@@ -1,0 +1,171 @@
+{
+  "claim_boundary": "decision-only ranking of retained engine-verdicted executions; fit lineages by leave-one-lineage-out, the 4 exposed held-out lineages once, descriptively; E99 encoder fixed; no engine access, rendering or capture; no closed-loop or competence claim",
+  "disclosure": "Known before freeze: every #99, #100, #109 and #96 table, including the #99 E held-out stage-c AUCs (E best request C-F-1 0.7259; E - R0 0.0025) and the #100 held-out rollout errors. Held-out lineages 007/008/014/016 are exposed; nothing here reads a held-out record before the --select freeze. Fit-lineage inventory verdicts are training labels of the ranking loss and the leave-one-lineage-out validation targets; no fold model is trained on its validation lineage. The smoke computes no statistic.",
+  "engine_seconds": 0,
+  "frozen_at": "2026-09-27T13:08:12Z",
+  "guards": {
+    "G1": {
+      "observed": {
+        "held_out": [
+          "issue-77-n1-007",
+          "issue-77-n1-008",
+          "issue-77-n1-014",
+          "issue-77-n1-016"
+        ],
+        "training_members": [
+          "issue-77-n1-001",
+          "issue-77-n1-002",
+          "issue-77-n1-003",
+          "issue-77-n1-004",
+          "issue-77-n1-005",
+          "issue-77-n1-006",
+          "issue-77-n1-009",
+          "issue-77-n1-010",
+          "issue-77-n1-011",
+          "issue-77-n1-012",
+          "issue-77-n1-013",
+          "issue-77-n1-015"
+        ]
+      },
+      "pass": true
+    },
+    "G2": {
+      "observed": {
+        "members": 312,
+        "retired": 28
+      },
+      "pass": false
+    },
+    "G3": {
+      "observed": {
+        "all_carry_policy": true,
+        "records_with_policy": 325,
+        "spot_replication": {
+          "anchor": {
+            "max_abs_nonmotion_delta": 0.0,
+            "max_motion_delta_times_elapsed_over_2": 0.0,
+            "pass": true,
+            "rows": 1,
+            "tolerance": 0.001
+          },
+          "context": {
+            "max_abs_nonmotion_delta": 0.0,
+            "max_motion_delta_times_elapsed_over_2": 0.0,
+            "pass": true,
+            "rows": 1,
+            "tolerance": 0.001
+          },
+          "diagnostic": {
+            "max_abs_delta": {
+              "pig_displacement": 0.0,
+              "pig_presence": 0.0,
+              "tie_free": 0.0
+            },
+            "pass": true,
+            "requests": 9
+          },
+          "lolo": {
+            "max_abs_delta": {
+              "pig_displacement": 0.0,
+              "pig_presence": 0.0,
+              "tie_free": 0.0
+            },
+            "pass": true,
+            "requests": 9
+          }
+        }
+      },
+      "pass": true
+    },
+    "G4": {
+      "observed": {
+        "worst_nonfinite_share": 0.0
+      },
+      "pass": true
+    },
+    "caps": {
+      "observed": {
+        "gpu_seconds": 29964.05433881801,
+        "wall_seconds": 29995.020464323985
+      },
+      "pass": true
+    },
+    "chronology": {
+      "observed": {
+        "first_heldout_scored_at": "2026-09-27T21:23:43Z",
+        "plan_frozen_at": "2026-09-27T13:08:12Z",
+        "selection_frozen_at": "2026-09-27T21:22:45Z"
+      },
+      "pass": true
+    }
+  },
+  "guards_pass": false,
+  "heldout_reading": {
+    "label": "DESCRIPTIVE (exposed lineages, scored once after the selection freeze)",
+    "meets_target": false,
+    "requests_meeting_target": {
+      "B": [],
+      "C": [
+        "F-1-continuous",
+        "F-1-micro",
+        "F-1-macro",
+        "F-5-continuous",
+        "F-5-micro",
+        "F-5-macro",
+        "F-15-continuous",
+        "F-15-micro",
+        "F-15-macro",
+        "C-F-15"
+      ],
+      "E99": [
+        "C-F-1"
+      ],
+      "L": [
+        "F-15-macro"
+      ],
+      "LC": [
+        "F-5-continuous",
+        "F-5-micro",
+        "F-5-macro",
+        "F-15-continuous",
+        "F-15-micro",
+        "F-15-macro"
+      ]
+    },
+    "selected_grid_auc": {
+      "clusters": 3,
+      "interval": [
+        0.4666666666666666,
+        0.8666666666666667
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6444444444444445,
+      "units": 3
+    }
+  },
+  "identity": "issue-112-decision-relevant-dynamics-v1",
+  "issue_64_authorized": false,
+  "question": "on E99 carriers, does long-horizon recursive supervision to the 225-frame decision endpoint and/or a decision-contrastive ranking loss make the request rollout order a left-out fit lineage's candidates better than the #77 recipe, and which (arm, request) goes to Gate B?",
+  "questions": {
+    "Q1_long_horizon": {
+      "label": "EXPLORATORY",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "Q2_contrastive": {
+      "label": "EXPLORATORY",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "Q3_selected_target": {
+      "label": "EXPLORATORY",
+      "token": "readiness_or_precision_insufficient"
+    }
+  },
+  "schema": "issue_112_report_v1",
+  "selected": {
+    "arm": "LC",
+    "request": "C-F-15",
+    "score": 0.75586860670194
+  },
+  "selection_frozen_at": "2026-09-27T21:22:45Z",
+  "validation_command": "python -u -m scripts.run_decision_relevant_dynamics --validate"
+}
