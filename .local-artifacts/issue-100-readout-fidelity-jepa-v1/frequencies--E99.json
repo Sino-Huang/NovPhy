@@ -1,0 +1,102 @@
+{
+  "coordinates": {
+    "20260908": {
+      "alpha_T": "continuous",
+      "alpha_T_index": 0,
+      "alpha_marginal_steps": [
+        51228,
+        0,
+        0
+      ],
+      "delta_D": 1,
+      "delta_D_index": 0,
+      "delta_marginal_steps": [
+        40495,
+        394,
+        10339
+      ]
+    },
+    "20260909": {
+      "alpha_T": "continuous",
+      "alpha_T_index": 0,
+      "alpha_marginal_steps": [
+        42421,
+        2132,
+        41039
+      ],
+      "delta_D": 1,
+      "delta_D_index": 0,
+      "delta_marginal_steps": [
+        77595,
+        0,
+        7997
+      ]
+    },
+    "20260910": {
+      "alpha_T": "continuous",
+      "alpha_T_index": 0,
+      "alpha_marginal_steps": [
+        76423,
+        11936,
+        3819
+      ],
+      "delta_D": 1,
+      "delta_D_index": 0,
+      "delta_marginal_steps": [
+        73770,
+        15234,
+        3174
+      ]
+    }
+  },
+  "counts": {
+    "20260908": [
+      40495,
+      0,
+      0,
+      394,
+      0,
+      0,
+      10339,
+      0,
+      0
+    ],
+    "20260909": [
+      38975,
+      2132,
+      36488,
+      0,
+      0,
+      0,
+      3446,
+      0,
+      4551
+    ],
+    "20260910": [
+      61129,
+      11936,
+      705,
+      15234,
+      0,
+      0,
+      60,
+      0,
+      3114
+    ]
+  },
+  "encoder": "E99",
+  "pairs": [
+    "1-continuous",
+    "1-micro",
+    "1-macro",
+    "5-continuous",
+    "5-micro",
+    "5-macro",
+    "15-continuous",
+    "15-micro",
+    "15-macro"
+  ],
+  "plan_identity": "issue-100-readout-fidelity-jepa-v1",
+  "rule": "J step-pair counts pooled per seed over every scheduled cell of all four inventories and every candidate (outcome-free); alpha_T / Delta_D = modal marginal, ties to the lower index",
+  "schema": "issue_100_frequencies_v1"
+}
