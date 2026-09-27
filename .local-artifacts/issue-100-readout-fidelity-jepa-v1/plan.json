@@ -1,0 +1,2181 @@
+{
+  "arms": {
+    "T_D_coordinates": "modal alpha / Delta of each encoder's own J frequencies (t96 rule)",
+    "arms": [
+      "F-1-continuous",
+      "F-1-micro",
+      "F-1-macro",
+      "F-5-continuous",
+      "F-5-micro",
+      "F-5-macro",
+      "F-15-continuous",
+      "F-15-micro",
+      "F-15-macro",
+      "J",
+      "M",
+      "T",
+      "D"
+    ],
+    "cells": "mixed-verdict member x 3 seeds; member-clustered bootstrap, 10000 draws, PCG64 7201, DESCRIPTIVE",
+    "cohort_note": "E99 and JEPA were trained on inventory executions of the fit lineages, so only the held-out cohort is out-of-sample for them; 'all' is descriptive",
+    "cohorts": [
+      "all",
+      "held_out"
+    ],
+    "contrasts": [
+      "J-T",
+      "J-D",
+      "J-M"
+    ],
+    "costs": {
+      "count": "frozen TaskObjective: 1000 * clamp(pig presence, 0, 1) + sum over block slots of clamp(block presence, 0, 1)",
+      "tie_free": "pig presence (unclamped) - 0.1 * Euclidean displacement of the pig slot center (normalized screen units) between the stage's start carrier (position 0) and the endpoint carrier; lower is better"
+    },
+    "definitions": {
+      "D": "hybrid checkpoint, description-only: Delta fixed at Delta_D, alpha = argmax_alpha L[Delta_D, alpha]; Delta_D = the modal Delta of J's pooled per-seed step-pair frequencies (outcome-free; 225 is divisible by every Delta so Delta_D is always feasible)",
+      "F-1-continuous": "hybrid checkpoint, fixed pair (1, continuous) at every step",
+      "F-1-macro": "hybrid checkpoint, fixed pair (1, macro) at every step",
+      "F-1-micro": "hybrid checkpoint, fixed pair (1, micro) at every step",
+      "F-15-continuous": "hybrid checkpoint, fixed pair (15, continuous) at every step",
+      "F-15-macro": "hybrid checkpoint, fixed pair (15, macro) at every step",
+      "F-15-micro": "hybrid checkpoint, fixed pair (15, micro) at every step",
+      "F-5-continuous": "hybrid checkpoint, fixed pair (5, continuous) at every step",
+      "F-5-macro": "hybrid checkpoint, fixed pair (5, macro) at every step",
+      "F-5-micro": "hybrid checkpoint, fixed pair (5, micro) at every step",
+      "J": "hybrid checkpoint, joint argmax over the nine MatchedController logits at every step (logits with Delta > remaining masked to -inf inside the controller; argmax ties to the lower PAIRS index) = #92 hybrid-adaptive-e225",
+      "M": "hybrid checkpoint, factorized selector from the same logits, no training: Delta* = argmax_Delta logsumexp_alpha L[Delta, alpha], alpha* = argmax_alpha logsumexp_Delta L[Delta, alpha]; pair (Delta*, alpha*)",
+      "T": "hybrid checkpoint, temporal-only: alpha fixed at alpha_T, Delta = argmax_Delta L[Delta, alpha_T]; alpha_T = the modal alpha of J's pooled per-seed step-pair frequencies (outcome-free)"
+    },
+    "inventories": [
+      "grid",
+      "offset",
+      "angle",
+      "power"
+    ],
+    "primary_cohort": "held_out",
+    "primary_cost": "tie_free",
+    "rule": "per inventory, better encoder, held-out cohort, tie-free cost: supported iff guards pass AND mean >= 0.02 AND lower > 0; not_supported_by_this_experiment iff guards pass AND upper < 0.02; otherwise readiness_or_precision_insufficient"
+  },
+  "audit": {
+    "cohorts": {
+      "fit": "the 12 #77 predictor/controller lineages (the N1 dynamics shards)",
+      "held_out": [
+        "issue-77-n1-007",
+        "issue-77-n1-008",
+        "issue-77-n1-014",
+        "issue-77-n1-016"
+      ]
+    },
+    "frames": "the #77 build_n1_shot window rows of every shot: starts sorted({round(i * max(0, last - 60) / 3)}), 60 transitions, valid rows only, union per shot (for fit lineages exactly the shard frames)",
+    "labels": "#99 shot_labels = #77 build_n1_shot semantics: engine presence (active body), projected centers, cohort-v2 contact (symmetric) / supports (directed) with availability masks, native macro labels with availability masks",
+    "phases": "engine-only per shot: pre_contact = frames before the first bird contact with any non-bird, non-slingshot slot (all frames if none); settled = from the first frame >= onset after which steady-state is available and true to the end; cascade = the frames between",
+    "readouts": {
+      "macro": "gated macro value sigmoid(logit) x sigmoid(availability) >= 0.5 where the engine mask is available",
+      "micro": "the predictor's gated micro value (symbolic_features: sigmoid(logit) x carrier presence of both slots x sigmoid(availability)) >= 0.5; contact on unordered pairs i < j, supports on ordered pairs, only where the engine relation mask is available",
+      "presence": "carrier presence_probability >= 0.5 per slot against engine presence; all 18 slots"
+    },
+    "shots": [
+      {
+        "branch": "issue-77-n1-001-a00",
+        "cohort": "fit",
+        "member": "issue-77-n1-001"
+      },
+      {
+        "branch": "issue-77-n1-001-a01",
+        "cohort": "fit",
+        "member": "issue-77-n1-001"
+      },
+      {
+        "branch": "issue-77-n1-001-a02",
+        "cohort": "fit",
+        "member": "issue-77-n1-001"
+      },
+      {
+        "branch": "issue-77-n1-001-a03",
+        "cohort": "fit",
+        "member": "issue-77-n1-001"
+      },
+      {
+        "branch": "issue-77-n1-001-a04",
+        "cohort": "fit",
+        "member": "issue-77-n1-001"
+      },
+      {
+        "branch": "issue-77-n1-001-a05",
+        "cohort": "fit",
+        "member": "issue-77-n1-001"
+      },
+      {
+        "branch": "issue-77-n1-001-a06",
+        "cohort": "fit",
+        "member": "issue-77-n1-001"
+      },
+      {
+        "branch": "issue-77-n1-001-a07",
+        "cohort": "fit",
+        "member": "issue-77-n1-001"
+      },
+      {
+        "branch": "issue-77-n1-001-a08",
+        "cohort": "fit",
+        "member": "issue-77-n1-001"
+      },
+      {
+        "branch": "issue-77-n1-001-a09",
+        "cohort": "fit",
+        "member": "issue-77-n1-001"
+      },
+      {
+        "branch": "issue-77-n1-001-a10",
+        "cohort": "fit",
+        "member": "issue-77-n1-001"
+      },
+      {
+        "branch": "issue-77-n1-001-a12",
+        "cohort": "fit",
+        "member": "issue-77-n1-001"
+      },
+      {
+        "branch": "issue-77-n1-002-a11",
+        "cohort": "fit",
+        "member": "issue-77-n1-002"
+      },
+      {
+        "branch": "issue-77-n1-003-a00",
+        "cohort": "fit",
+        "member": "issue-77-n1-003"
+      },
+      {
+        "branch": "issue-77-n1-003-a01",
+        "cohort": "fit",
+        "member": "issue-77-n1-003"
+      },
+      {
+        "branch": "issue-77-n1-003-a02",
+        "cohort": "fit",
+        "member": "issue-77-n1-003"
+      },
+      {
+        "branch": "issue-77-n1-003-a03",
+        "cohort": "fit",
+        "member": "issue-77-n1-003"
+      },
+      {
+        "branch": "issue-77-n1-003-a05",
+        "cohort": "fit",
+        "member": "issue-77-n1-003"
+      },
+      {
+        "branch": "issue-77-n1-003-a07",
+        "cohort": "fit",
+        "member": "issue-77-n1-003"
+      },
+      {
+        "branch": "issue-77-n1-003-a09",
+        "cohort": "fit",
+        "member": "issue-77-n1-003"
+      },
+      {
+        "branch": "issue-77-n1-003-a10",
+        "cohort": "fit",
+        "member": "issue-77-n1-003"
+      },
+      {
+        "branch": "issue-77-n1-003-a11",
+        "cohort": "fit",
+        "member": "issue-77-n1-003"
+      },
+      {
+        "branch": "issue-77-n1-004-a01",
+        "cohort": "fit",
+        "member": "issue-77-n1-004"
+      },
+      {
+        "branch": "issue-77-n1-004-a02",
+        "cohort": "fit",
+        "member": "issue-77-n1-004"
+      },
+      {
+        "branch": "issue-77-n1-004-a04",
+        "cohort": "fit",
+        "member": "issue-77-n1-004"
+      },
+      {
+        "branch": "issue-77-n1-004-a05",
+        "cohort": "fit",
+        "member": "issue-77-n1-004"
+      },
+      {
+        "branch": "issue-77-n1-004-a06",
+        "cohort": "fit",
+        "member": "issue-77-n1-004"
+      },
+      {
+        "branch": "issue-77-n1-004-a07",
+        "cohort": "fit",
+        "member": "issue-77-n1-004"
+      },
+      {
+        "branch": "issue-77-n1-004-a08",
+        "cohort": "fit",
+        "member": "issue-77-n1-004"
+      },
+      {
+        "branch": "issue-77-n1-004-a11",
+        "cohort": "fit",
+        "member": "issue-77-n1-004"
+      },
+      {
+        "branch": "issue-77-n1-004-a12",
+        "cohort": "fit",
+        "member": "issue-77-n1-004"
+      },
+      {
+        "branch": "issue-77-n1-005-a01",
+        "cohort": "fit",
+        "member": "issue-77-n1-005"
+      },
+      {
+        "branch": "issue-77-n1-005-a02",
+        "cohort": "fit",
+        "member": "issue-77-n1-005"
+      },
+      {
+        "branch": "issue-77-n1-005-a07",
+        "cohort": "fit",
+        "member": "issue-77-n1-005"
+      },
+      {
+        "branch": "issue-77-n1-005-a08",
+        "cohort": "fit",
+        "member": "issue-77-n1-005"
+      },
+      {
+        "branch": "issue-77-n1-006-a00",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-006-a01",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-006-a02",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-006-a03",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-006-a04",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-006-a05",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-006-a06",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-006-a07",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-006-a08",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-006-a09",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-006-a10",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-006-a11",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-006-a12",
+        "cohort": "fit",
+        "member": "issue-77-n1-006"
+      },
+      {
+        "branch": "issue-77-n1-007-a00",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-007-a01",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-007-a02",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-007-a03",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-007-a04",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-007-a05",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-007-a06",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-007-a07",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-007-a08",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-007-a09",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-007-a10",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-007-a11",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-007-a12",
+        "cohort": "held_out",
+        "member": "issue-77-n1-007"
+      },
+      {
+        "branch": "issue-77-n1-008-a00",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-008-a01",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-008-a02",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-008-a03",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-008-a04",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-008-a05",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-008-a06",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-008-a07",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-008-a08",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-008-a09",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-008-a10",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-008-a11",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-008-a12",
+        "cohort": "held_out",
+        "member": "issue-77-n1-008"
+      },
+      {
+        "branch": "issue-77-n1-009-a00",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-009-a01",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-009-a02",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-009-a03",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-009-a04",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-009-a05",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-009-a06",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-009-a07",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-009-a08",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-009-a09",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-009-a10",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-009-a11",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-009-a12",
+        "cohort": "fit",
+        "member": "issue-77-n1-009"
+      },
+      {
+        "branch": "issue-77-n1-010-a00",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-010-a01",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-010-a02",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-010-a03",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-010-a04",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-010-a05",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-010-a06",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-010-a07",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-010-a08",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-010-a09",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-010-a10",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-010-a11",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-010-a12",
+        "cohort": "fit",
+        "member": "issue-77-n1-010"
+      },
+      {
+        "branch": "issue-77-n1-011-a00",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-011-a01",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-011-a02",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-011-a03",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-011-a04",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-011-a05",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-011-a06",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-011-a07",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-011-a08",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-011-a09",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-011-a10",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-011-a11",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-011-a12",
+        "cohort": "fit",
+        "member": "issue-77-n1-011"
+      },
+      {
+        "branch": "issue-77-n1-012-a00",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-012-a01",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-012-a02",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-012-a03",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-012-a04",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-012-a05",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-012-a06",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-012-a07",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-012-a08",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-012-a09",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-012-a10",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-012-a11",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-012-a12",
+        "cohort": "fit",
+        "member": "issue-77-n1-012"
+      },
+      {
+        "branch": "issue-77-n1-013-a00",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-013-a01",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-013-a02",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-013-a03",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-013-a04",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-013-a05",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-013-a06",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-013-a07",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-013-a08",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-013-a09",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-013-a10",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-013-a11",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-013-a12",
+        "cohort": "fit",
+        "member": "issue-77-n1-013"
+      },
+      {
+        "branch": "issue-77-n1-014-a00",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-014-a01",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-014-a02",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-014-a03",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-014-a04",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-014-a05",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-014-a06",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-014-a07",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-014-a08",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-014-a09",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-014-a10",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-014-a11",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-014-a12",
+        "cohort": "held_out",
+        "member": "issue-77-n1-014"
+      },
+      {
+        "branch": "issue-77-n1-015-a00",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-015-a01",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-015-a02",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-015-a03",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-015-a04",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-015-a05",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-015-a06",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-015-a07",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-015-a08",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-015-a09",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-015-a10",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-015-a11",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-015-a12",
+        "cohort": "fit",
+        "member": "issue-77-n1-015"
+      },
+      {
+        "branch": "issue-77-n1-016-a00",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      },
+      {
+        "branch": "issue-77-n1-016-a01",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      },
+      {
+        "branch": "issue-77-n1-016-a02",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      },
+      {
+        "branch": "issue-77-n1-016-a03",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      },
+      {
+        "branch": "issue-77-n1-016-a04",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      },
+      {
+        "branch": "issue-77-n1-016-a05",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      },
+      {
+        "branch": "issue-77-n1-016-a06",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      },
+      {
+        "branch": "issue-77-n1-016-a07",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      },
+      {
+        "branch": "issue-77-n1-016-a08",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      },
+      {
+        "branch": "issue-77-n1-016-a09",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      },
+      {
+        "branch": "issue-77-n1-016-a10",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      },
+      {
+        "branch": "issue-77-n1-016-a11",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      },
+      {
+        "branch": "issue-77-n1-016-a12",
+        "cohort": "held_out",
+        "member": "issue-77-n1-016"
+      }
+    ],
+    "sources": {
+      "Delta-alpha": "heads on predictor.carrier(z_{p - Delta}, a, (Delta, alpha)) for every request; headline rows use alpha matched to the predicate level ({'presence': 'continuous', 'contact': 'micro', 'supports': 'micro', 'steady-state': 'macro', 'structure-unstable': 'macro'})",
+      "encoder": "heads on the encoded carrier z_p"
+    },
+    "statistics": "precision, recall, F1 from counts pooled over the cohort's frames, per seed, then mean over seeds; intervals: lineage-clustered percentile bootstrap (10000 draws, PCG64 7201, one resample shared by the seeds), DESCRIPTIVE"
+  },
+  "caps": {
+    "gpu_seconds": 36000.0,
+    "stop": "readiness_or_precision_insufficient",
+    "wall_seconds": 72000.0
+  },
+  "claim_boundary": "readout fidelity on retained #77 N1 captures of 16 normal-mechanics lineages; decision-only ranking of retained engine-verdicted executions; no engine access, rendering, capture, closed-loop or competence claim; every interval is DESCRIPTIVE; nothing here edits the ICLR 2026 submission",
+  "controllers": {
+    "F77": "the frozen #77 controllers",
+    "batch_size": 128,
+    "compute_weight": 0.0001,
+    "encoders": [
+      "E99",
+      "JEPA"
+    ],
+    "learning_rate": 0.001,
+    "lineages": [
+      "issue-77-n1-005",
+      "issue-77-n1-010",
+      "issue-77-n1-015"
+    ],
+    "rounds": 2,
+    "steps_per_round": 1800,
+    "window": "first window (start 0, 60 transitions) of every fit shot of the #77 controller lineages"
+  },
+  "disclosure": "Known before freeze: the unaudited probe numbers quoted in issue #100, every #77/#96/#99/#109 table (including the #99 E-arm held-out perception accuracies and ranking AUCs). No readout F1, JEPA outcome or new-checkpoint ranking statistic was computed before this freeze; the smoke asserts mechanics only.",
+  "encoders": {
+    "E99": "frozen #99 spatial slot parser (320x240, issue-99-slot-encoder-fix-v1 arm E) + the #99 E hybrid predictors; controllers trained here with the #77 controller recipe",
+    "F77": "frozen issue-70 parser v6 (96x64) + frozen #77 N1 hybrid checkpoints and controllers",
+    "JEPA": "jointly trained here: context encoder (spatial slot parser architecture) + EMA target encoder (stop-gradient) + CNNHybridPredictor, micro/macro heads and the issue-70 parser loss as auxiliary losses; controllers trained here with the #77 controller recipe"
+  },
+  "engine_seconds": 0,
+  "frame_cache": {
+    "note": "derived uint8 cache of fit-shot frames (320x240); rebuildable; not an input",
+    "path": "/home/sukaih/.cache/novphy/issue-100-frame-cache/frames.npy"
+  },
+  "frozen_at": "2026-09-27T07:09:13Z",
+  "frozen_before_training_and_scoring": true,
+  "guards": {
+    "G1": "F77 audit carriers replicate every valid #77 shard carrier row within 0.001",
+    "G2": "F77 rollout per-seed position_mse at t = 225 replicates the published #77 diagnostic summary for ['hybrid_continuous_h1', 'hybrid_continuous_h15', 'hybrid_continuous_h5', 'hybrid_macro_h15', 'hybrid_micro_h15'] within relative 0.001",
+    "G3": "F77 arms replicate the #96 records (count cost of every candidate of every F/J/M/T/D record) within 0.001, and the F77 T/D coordinates equal #96's",
+    "G4": "no held-out lineage shot in any JEPA/E99 training or controller window",
+    "G5": "3 JEPA checkpoints at 9000 steps with finite losses; 6 controllers complete",
+    "G6": "the differentiable carrier of each trained JEPA encoder equals its adapter carrier within 0.0001 on five frames of issue-77-n1-001-a06",
+    "G7": "every micro/macro predicate has >= 20 positive engine labels in the held-out audit",
+    "caps": "GPU seconds <= 36000.0, wall seconds <= 72000.0"
+  },
+  "identity": "issue-100-readout-fidelity-jepa-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/plan.json",
+      "name": "issue_77_dynamics_plan",
+      "sha256": "sha256:18eb5a1e7ae3ad5a76b8db3dd2482b85844e404064614dc6835b8e4707e5b14d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-v1/plan.json",
+      "name": "issue_77_n1_plan",
+      "sha256": "sha256:b216e6f14db16398b9ecac55b7fca507de8b7a68ac83286a52de0f03fb4ec240"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-v1/coverage.json",
+      "name": "issue_77_n1_coverage",
+      "sha256": "sha256:aa86f1952382bdb35c93be08a9ddffdcceb8d901058e45f3efa7d68db5f03ef6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-diagnostic-v1/plan.json",
+      "name": "issue_77_diagnostic_plan",
+      "sha256": "sha256:933c1b36acb05a5556133d889767e3cbb810f98a2bb77e0211b6787ce3b77d39"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-diagnostic-v1/summary.json",
+      "name": "issue_77_diagnostic_summary",
+      "sha256": "sha256:4609908d9cbbdcf25a75b9058061b99da3976e9bee9bfa8d827acd76be10ebc5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-87-closed-loop-oracle-v1/plan.json",
+      "name": "issue_87_plan",
+      "sha256": "sha256:689ec148564491291b372c02e7aa6f828480ea8200dc6c51e214f641ab5670ac"
+    },
+    {
+      "artifact": ".local-artifacts/issue-96-tau-ad-within-checkpoint-v1/plan.json",
+      "name": "issue_96_plan",
+      "sha256": "sha256:b4b10b8732ecad6b5cb5f5e7fa63ddf2f67994fa723b780bb63204fb06c57e56"
+    },
+    {
+      "artifact": ".local-artifacts/issue-96-tau-ad-within-checkpoint-v1/frequencies.json",
+      "name": "issue_96_frequencies",
+      "sha256": "sha256:8159d6d8c80cf6846dc4c22011257357169b0b6c5dfac0a9d86b39ecb2965c81"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/plan.json",
+      "name": "issue_99_slot_fix_plan",
+      "sha256": "sha256:cce9fb1b3e2a134d0b1d41f85f57f106f592c8a7a59cb8ee1a980cf7aebc9098"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/encoder/encoder.pt",
+      "name": "issue_99_slot_fix_encoder",
+      "sha256": "sha256:cdbe677ab103e872ed6ac7777a3dc8b5aa0432f5771e8aa63a6e4e2d469bdd73"
+    },
+    {
+      "artifact": ".local-artifacts/issue-70-parser-repair-v6/plan.json",
+      "name": "issue_70_parser_plan",
+      "sha256": "sha256:55311d90fb092d3cc058905e3fea5aaf359f1600fdc528abd5f3e2144c70d5c4"
+    },
+    {
+      "artifact": "world_model/training/jepa_slot_encoder.py",
+      "name": "model_module",
+      "sha256": "sha256:8ac04c5a3f2d5862b3978087a2b2593fc8adc63e3f3d751e64ac10dde0b3b6ef"
+    },
+    {
+      "artifact": "world_model/training/spatial_slot_parser.py",
+      "name": "spatial_slot_parser_module",
+      "sha256": "sha256:4a1fb427c258880007d7d7f1e98400f1ea94db758c2b4b0dd81bfc7f5bd289f6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-100-readout-fidelity-jepa-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:c5ca34433d04f65e7433a6269a392484c71d4cdcbf895e9526ab6ca711d878f1"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/models/E/seed-20260908/hybrid/predictor.pt",
+      "name": "issue_99_E_hybrid_seed20260908",
+      "sha256": "sha256:302c297816fd99a1efa900d838c77321c6833886ea5f873a240dfed52e7279d7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260908/hybrid/controller.pt",
+      "name": "issue_77_hybrid_controller_seed20260908",
+      "sha256": "sha256:7f8f2b81199644b6c61c818ab9e4d73a8bd2f7368738c2cb207b729f3793edb9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/models/E/seed-20260909/hybrid/predictor.pt",
+      "name": "issue_99_E_hybrid_seed20260909",
+      "sha256": "sha256:ba6147f60401d52685ac70e63179fe0cff343671d88072ada339d63172ede4aa"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260909/hybrid/controller.pt",
+      "name": "issue_77_hybrid_controller_seed20260909",
+      "sha256": "sha256:46b63dd28e55d813192e7873c5dcad7ff83c21e7a1702f3cb61a53afaa69aeb6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/models/E/seed-20260910/hybrid/predictor.pt",
+      "name": "issue_99_E_hybrid_seed20260910",
+      "sha256": "sha256:c88ec0ec173be05100f817dbbb80fe99ad98e31d679062d94c68b2ab4b82abaf"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/seed-20260910/hybrid/controller.pt",
+      "name": "issue_77_hybrid_controller_seed20260910",
+      "sha256": "sha256:f8ff7bee606aca51398eecf9527339050464a973f753d00c82e4b7f7438a9f28"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/shards/lineage-n1-001.pt",
+      "name": "issue_77_shard_lineage-n1-001",
+      "sha256": "sha256:aadfdb52ae5379515aed947be38d26b7025c0251261ffd0b3299e7832254ecfb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/shards/lineage-n1-002.pt",
+      "name": "issue_77_shard_lineage-n1-002",
+      "sha256": "sha256:c4840b8158690e3c70d411711029d3616438db9d77f6d0f18254d6caa81fa81d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/shards/lineage-n1-003.pt",
+      "name": "issue_77_shard_lineage-n1-003",
+      "sha256": "sha256:1c2b8de81d8d2eef87767c20544788d15b2154015f5bd84485117874efb0d42a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/shards/lineage-n1-004.pt",
+      "name": "issue_77_shard_lineage-n1-004",
+      "sha256": "sha256:29eb8893d67426b1e52fe890f937a3644d2509f420453b2257dc92ec1cb77a4d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/shards/lineage-n1-005.pt",
+      "name": "issue_77_shard_lineage-n1-005",
+      "sha256": "sha256:9f270b9f09fa4b1a1428fb781164f6bb13169eff3d7358af8d5bbfd07ca3e965"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/shards/lineage-n1-006.pt",
+      "name": "issue_77_shard_lineage-n1-006",
+      "sha256": "sha256:b0dfd2a94ba1f54db77ea87db07a02ed8ddb0e22c209ef0b10351bec5f8026b5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/shards/lineage-n1-009.pt",
+      "name": "issue_77_shard_lineage-n1-009",
+      "sha256": "sha256:1c87aa30193f5e3c86fd64f1d5daa3bf85d848036b5afc795ef4af50beb4cda8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/shards/lineage-n1-010.pt",
+      "name": "issue_77_shard_lineage-n1-010",
+      "sha256": "sha256:d6d5d8bdd9a7532e691d23eb8ff9cd1b743ad7913e649b29a8417a86b2a8eb2f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/shards/lineage-n1-011.pt",
+      "name": "issue_77_shard_lineage-n1-011",
+      "sha256": "sha256:7e84dbec48ff2c7112622484563be10cc2f1dd9c1a0379504a2c714e46e89fe5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/shards/lineage-n1-012.pt",
+      "name": "issue_77_shard_lineage-n1-012",
+      "sha256": "sha256:0812ce920856bf347d428f3abfce8960e6750669a7b690fc40c7a4f4b37722d4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/shards/lineage-n1-013.pt",
+      "name": "issue_77_shard_lineage-n1-013",
+      "sha256": "sha256:9306bf65ebcd2f4747c0e6433bef6c08e441c848a4e51f45ad5fe174a4d0ce2f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/shards/lineage-n1-015.pt",
+      "name": "issue_77_shard_lineage-n1-015",
+      "sha256": "sha256:9e58b503c19131418b90ea7d21791d927496dac1f92cca18c220b8750c3bace3"
+    }
+  ],
+  "issue": 100,
+  "issue_64_authorized": false,
+  "jepa": {
+    "architecture": "context encoder = SpatialSlotParser (hidden 128, 2 attention layers x 4 heads, 320x240); target encoder = EMA copy, no gradient; predictor = CNNHybridPredictor",
+    "batch_size": 64,
+    "ema_end": 1.0,
+    "ema_start": 0.996,
+    "encoder_learning_rate": 0.001,
+    "fit_data": {
+      "rule": "the #99 fit shots (every #77 N1 admissible branch of the 12 fit lineages and every verdict-bearing inventory execution of those lineages); labels from the #99 shot cache; verdicts never read",
+      "shots": [
+        "n1--issue-77-n1-001-a00",
+        "n1--issue-77-n1-001-a01",
+        "n1--issue-77-n1-001-a02",
+        "n1--issue-77-n1-001-a03",
+        "n1--issue-77-n1-001-a04",
+        "n1--issue-77-n1-001-a05",
+        "n1--issue-77-n1-001-a06",
+        "n1--issue-77-n1-001-a07",
+        "n1--issue-77-n1-001-a08",
+        "n1--issue-77-n1-001-a09",
+        "n1--issue-77-n1-001-a10",
+        "n1--issue-77-n1-001-a12",
+        "n1--issue-77-n1-002-a11",
+        "n1--issue-77-n1-003-a00",
+        "n1--issue-77-n1-003-a01",
+        "n1--issue-77-n1-003-a02",
+        "n1--issue-77-n1-003-a03",
+        "n1--issue-77-n1-003-a05",
+        "n1--issue-77-n1-003-a07",
+        "n1--issue-77-n1-003-a09",
+        "n1--issue-77-n1-003-a10",
+        "n1--issue-77-n1-003-a11",
+        "n1--issue-77-n1-004-a01",
+        "n1--issue-77-n1-004-a02",
+        "n1--issue-77-n1-004-a04",
+        "n1--issue-77-n1-004-a05",
+        "n1--issue-77-n1-004-a06",
+        "n1--issue-77-n1-004-a07",
+        "n1--issue-77-n1-004-a08",
+        "n1--issue-77-n1-004-a11",
+        "n1--issue-77-n1-004-a12",
+        "n1--issue-77-n1-005-a01",
+        "n1--issue-77-n1-005-a02",
+        "n1--issue-77-n1-005-a07",
+        "n1--issue-77-n1-005-a08",
+        "n1--issue-77-n1-006-a00",
+        "n1--issue-77-n1-006-a01",
+        "n1--issue-77-n1-006-a02",
+        "n1--issue-77-n1-006-a03",
+        "n1--issue-77-n1-006-a04",
+        "n1--issue-77-n1-006-a05",
+        "n1--issue-77-n1-006-a06",
+        "n1--issue-77-n1-006-a07",
+        "n1--issue-77-n1-006-a08",
+        "n1--issue-77-n1-006-a09",
+        "n1--issue-77-n1-006-a10",
+        "n1--issue-77-n1-006-a11",
+        "n1--issue-77-n1-006-a12",
+        "n1--issue-77-n1-009-a00",
+        "n1--issue-77-n1-009-a01",
+        "n1--issue-77-n1-009-a02",
+        "n1--issue-77-n1-009-a03",
+        "n1--issue-77-n1-009-a04",
+        "n1--issue-77-n1-009-a05",
+        "n1--issue-77-n1-009-a06",
+        "n1--issue-77-n1-009-a07",
+        "n1--issue-77-n1-009-a08",
+        "n1--issue-77-n1-009-a09",
+        "n1--issue-77-n1-009-a10",
+        "n1--issue-77-n1-009-a11",
+        "n1--issue-77-n1-009-a12",
+        "n1--issue-77-n1-010-a00",
+        "n1--issue-77-n1-010-a01",
+        "n1--issue-77-n1-010-a02",
+        "n1--issue-77-n1-010-a03",
+        "n1--issue-77-n1-010-a04",
+        "n1--issue-77-n1-010-a05",
+        "n1--issue-77-n1-010-a06",
+        "n1--issue-77-n1-010-a07",
+        "n1--issue-77-n1-010-a08",
+        "n1--issue-77-n1-010-a09",
+        "n1--issue-77-n1-010-a10",
+        "n1--issue-77-n1-010-a11",
+        "n1--issue-77-n1-010-a12",
+        "n1--issue-77-n1-011-a00",
+        "n1--issue-77-n1-011-a01",
+        "n1--issue-77-n1-011-a02",
+        "n1--issue-77-n1-011-a03",
+        "n1--issue-77-n1-011-a04",
+        "n1--issue-77-n1-011-a05",
+        "n1--issue-77-n1-011-a06",
+        "n1--issue-77-n1-011-a07",
+        "n1--issue-77-n1-011-a08",
+        "n1--issue-77-n1-011-a09",
+        "n1--issue-77-n1-011-a10",
+        "n1--issue-77-n1-011-a11",
+        "n1--issue-77-n1-011-a12",
+        "n1--issue-77-n1-012-a00",
+        "n1--issue-77-n1-012-a01",
+        "n1--issue-77-n1-012-a02",
+        "n1--issue-77-n1-012-a03",
+        "n1--issue-77-n1-012-a04",
+        "n1--issue-77-n1-012-a05",
+        "n1--issue-77-n1-012-a06",
+        "n1--issue-77-n1-012-a07",
+        "n1--issue-77-n1-012-a08",
+        "n1--issue-77-n1-012-a09",
+        "n1--issue-77-n1-012-a10",
+        "n1--issue-77-n1-012-a11",
+        "n1--issue-77-n1-012-a12",
+        "n1--issue-77-n1-013-a00",
+        "n1--issue-77-n1-013-a01",
+        "n1--issue-77-n1-013-a02",
+        "n1--issue-77-n1-013-a03",
+        "n1--issue-77-n1-013-a04",
+        "n1--issue-77-n1-013-a05",
+        "n1--issue-77-n1-013-a06",
+        "n1--issue-77-n1-013-a07",
+        "n1--issue-77-n1-013-a08",
+        "n1--issue-77-n1-013-a09",
+        "n1--issue-77-n1-013-a10",
+        "n1--issue-77-n1-013-a11",
+        "n1--issue-77-n1-013-a12",
+        "n1--issue-77-n1-015-a00",
+        "n1--issue-77-n1-015-a01",
+        "n1--issue-77-n1-015-a02",
+        "n1--issue-77-n1-015-a03",
+        "n1--issue-77-n1-015-a04",
+        "n1--issue-77-n1-015-a05",
+        "n1--issue-77-n1-015-a06",
+        "n1--issue-77-n1-015-a07",
+        "n1--issue-77-n1-015-a08",
+        "n1--issue-77-n1-015-a09",
+        "n1--issue-77-n1-015-a10",
+        "n1--issue-77-n1-015-a11",
+        "n1--issue-77-n1-015-a12",
+        "inv--grid--issue-77-n1-001--o00",
+        "inv--grid--issue-77-n1-001--o01",
+        "inv--grid--issue-77-n1-001--o02",
+        "inv--grid--issue-77-n1-001--o03",
+        "inv--grid--issue-77-n1-001--o04",
+        "inv--grid--issue-77-n1-001--o05",
+        "inv--grid--issue-77-n1-001--o06",
+        "inv--grid--issue-77-n1-001--o07",
+        "inv--grid--issue-77-n1-001--o08",
+        "inv--grid--issue-77-n1-001--o09",
+        "inv--grid--issue-77-n1-001--o10",
+        "inv--grid--issue-77-n1-001--o11",
+        "inv--grid--issue-77-n1-001--o12",
+        "inv--grid--issue-77-n1-001--o13",
+        "inv--grid--issue-77-n1-001--o14",
+        "inv--grid--issue-77-n1-001--o15",
+        "inv--grid--issue-77-n1-003--o00",
+        "inv--grid--issue-77-n1-003--o01",
+        "inv--grid--issue-77-n1-003--o02",
+        "inv--grid--issue-77-n1-003--o03",
+        "inv--grid--issue-77-n1-003--o04",
+        "inv--grid--issue-77-n1-003--o05",
+        "inv--grid--issue-77-n1-003--o06",
+        "inv--grid--issue-77-n1-003--o07",
+        "inv--grid--issue-77-n1-003--o08",
+        "inv--grid--issue-77-n1-003--o09",
+        "inv--grid--issue-77-n1-003--o10",
+        "inv--grid--issue-77-n1-003--o11",
+        "inv--grid--issue-77-n1-003--o12",
+        "inv--grid--issue-77-n1-003--o13",
+        "inv--grid--issue-77-n1-003--o14",
+        "inv--grid--issue-77-n1-003--o15",
+        "inv--grid--issue-77-n1-004--o00",
+        "inv--grid--issue-77-n1-004--o01",
+        "inv--grid--issue-77-n1-004--o02",
+        "inv--grid--issue-77-n1-004--o03",
+        "inv--grid--issue-77-n1-004--o04",
+        "inv--grid--issue-77-n1-004--o05",
+        "inv--grid--issue-77-n1-004--o06",
+        "inv--grid--issue-77-n1-004--o07",
+        "inv--grid--issue-77-n1-004--o08",
+        "inv--grid--issue-77-n1-004--o09",
+        "inv--grid--issue-77-n1-004--o10",
+        "inv--grid--issue-77-n1-004--o11",
+        "inv--grid--issue-77-n1-004--o12",
+        "inv--grid--issue-77-n1-004--o13",
+        "inv--grid--issue-77-n1-004--o14",
+        "inv--grid--issue-77-n1-004--o15",
+        "inv--grid--issue-77-n1-005--o03",
+        "inv--grid--issue-77-n1-005--o05",
+        "inv--grid--issue-77-n1-005--o06",
+        "inv--grid--issue-77-n1-005--o07",
+        "inv--grid--issue-77-n1-005--o10",
+        "inv--grid--issue-77-n1-005--o11",
+        "inv--grid--issue-77-n1-005--o14",
+        "inv--grid--issue-77-n1-005--o15",
+        "inv--grid--issue-77-n1-006--o00",
+        "inv--grid--issue-77-n1-006--o01",
+        "inv--grid--issue-77-n1-006--o02",
+        "inv--grid--issue-77-n1-006--o03",
+        "inv--grid--issue-77-n1-006--o04",
+        "inv--grid--issue-77-n1-006--o05",
+        "inv--grid--issue-77-n1-006--o06",
+        "inv--grid--issue-77-n1-006--o07",
+        "inv--grid--issue-77-n1-006--o08",
+        "inv--grid--issue-77-n1-006--o09",
+        "inv--grid--issue-77-n1-006--o10",
+        "inv--grid--issue-77-n1-006--o11",
+        "inv--grid--issue-77-n1-006--o12",
+        "inv--grid--issue-77-n1-006--o13",
+        "inv--grid--issue-77-n1-006--o14",
+        "inv--grid--issue-77-n1-006--o15",
+        "inv--grid--issue-77-n1-009--o00",
+        "inv--grid--issue-77-n1-009--o01",
+        "inv--grid--issue-77-n1-009--o02",
+        "inv--grid--issue-77-n1-009--o03",
+        "inv--grid--issue-77-n1-009--o04",
+        "inv--grid--issue-77-n1-009--o05",
+        "inv--grid--issue-77-n1-009--o06",
+        "inv--grid--issue-77-n1-009--o07",
+        "inv--grid--issue-77-n1-009--o08",
+        "inv--grid--issue-77-n1-009--o09",
+        "inv--grid--issue-77-n1-009--o10",
+        "inv--grid--issue-77-n1-009--o11",
+        "inv--grid--issue-77-n1-009--o12",
+        "inv--grid--issue-77-n1-009--o13",
+        "inv--grid--issue-77-n1-009--o14",
+        "inv--grid--issue-77-n1-009--o15",
+        "inv--grid--issue-77-n1-010--o00",
+        "inv--grid--issue-77-n1-010--o01",
+        "inv--grid--issue-77-n1-010--o02",
+        "inv--grid--issue-77-n1-010--o03",
+        "inv--grid--issue-77-n1-010--o04",
+        "inv--grid--issue-77-n1-010--o05",
+        "inv--grid--issue-77-n1-010--o06",
+        "inv--grid--issue-77-n1-010--o07",
+        "inv--grid--issue-77-n1-010--o08",
+        "inv--grid--issue-77-n1-010--o09",
+        "inv--grid--issue-77-n1-010--o10",
+        "inv--grid--issue-77-n1-010--o11",
+        "inv--grid--issue-77-n1-010--o12",
+        "inv--grid--issue-77-n1-010--o13",
+        "inv--grid--issue-77-n1-010--o14",
+        "inv--grid--issue-77-n1-010--o15",
+        "inv--grid--issue-77-n1-011--o00",
+        "inv--grid--issue-77-n1-011--o01",
+        "inv--grid--issue-77-n1-011--o02",
+        "inv--grid--issue-77-n1-011--o03",
+        "inv--grid--issue-77-n1-011--o04",
+        "inv--grid--issue-77-n1-011--o05",
+        "inv--grid--issue-77-n1-011--o06",
+        "inv--grid--issue-77-n1-011--o07",
+        "inv--grid--issue-77-n1-011--o08",
+        "inv--grid--issue-77-n1-011--o09",
+        "inv--grid--issue-77-n1-011--o10",
+        "inv--grid--issue-77-n1-011--o11",
+        "inv--grid--issue-77-n1-011--o12",
+        "inv--grid--issue-77-n1-011--o13",
+        "inv--grid--issue-77-n1-011--o14",
+        "inv--grid--issue-77-n1-011--o15",
+        "inv--grid--issue-77-n1-012--o00",
+        "inv--grid--issue-77-n1-012--o01",
+        "inv--grid--issue-77-n1-012--o02",
+        "inv--grid--issue-77-n1-012--o03",
+        "inv--grid--issue-77-n1-012--o04",
+        "inv--grid--issue-77-n1-012--o05",
+        "inv--grid--issue-77-n1-012--o06",
+        "inv--grid--issue-77-n1-012--o07",
+        "inv--grid--issue-77-n1-012--o08",
+        "inv--grid--issue-77-n1-012--o09",
+        "inv--grid--issue-77-n1-012--o10",
+        "inv--grid--issue-77-n1-012--o11",
+        "inv--grid--issue-77-n1-012--o12",
+        "inv--grid--issue-77-n1-012--o13",
+        "inv--grid--issue-77-n1-012--o14",
+        "inv--grid--issue-77-n1-012--o15",
+        "inv--grid--issue-77-n1-013--o00",
+        "inv--grid--issue-77-n1-013--o01",
+        "inv--grid--issue-77-n1-013--o02",
+        "inv--grid--issue-77-n1-013--o03",
+        "inv--grid--issue-77-n1-013--o04",
+        "inv--grid--issue-77-n1-013--o05",
+        "inv--grid--issue-77-n1-013--o06",
+        "inv--grid--issue-77-n1-013--o07",
+        "inv--grid--issue-77-n1-013--o08",
+        "inv--grid--issue-77-n1-013--o09",
+        "inv--grid--issue-77-n1-013--o10",
+        "inv--grid--issue-77-n1-013--o11",
+        "inv--grid--issue-77-n1-013--o12",
+        "inv--grid--issue-77-n1-013--o13",
+        "inv--grid--issue-77-n1-013--o14",
+        "inv--grid--issue-77-n1-013--o15",
+        "inv--grid--issue-77-n1-015--o00",
+        "inv--grid--issue-77-n1-015--o01",
+        "inv--grid--issue-77-n1-015--o02",
+        "inv--grid--issue-77-n1-015--o03",
+        "inv--grid--issue-77-n1-015--o04",
+        "inv--grid--issue-77-n1-015--o05",
+        "inv--grid--issue-77-n1-015--o06",
+        "inv--grid--issue-77-n1-015--o07",
+        "inv--grid--issue-77-n1-015--o08",
+        "inv--grid--issue-77-n1-015--o09",
+        "inv--grid--issue-77-n1-015--o10",
+        "inv--grid--issue-77-n1-015--o11",
+        "inv--grid--issue-77-n1-015--o12",
+        "inv--grid--issue-77-n1-015--o13",
+        "inv--grid--issue-77-n1-015--o14",
+        "inv--grid--issue-77-n1-015--o15",
+        "inv--offset--issue-77-n1-001--o00",
+        "inv--offset--issue-77-n1-001--o01",
+        "inv--offset--issue-77-n1-001--o02",
+        "inv--offset--issue-77-n1-001--o03",
+        "inv--offset--issue-77-n1-001--o04",
+        "inv--offset--issue-77-n1-001--o05",
+        "inv--offset--issue-77-n1-001--o06",
+        "inv--offset--issue-77-n1-001--o07",
+        "inv--offset--issue-77-n1-001--o08",
+        "inv--offset--issue-77-n1-001--o09",
+        "inv--offset--issue-77-n1-001--o10",
+        "inv--offset--issue-77-n1-003--o00",
+        "inv--offset--issue-77-n1-003--o01",
+        "inv--offset--issue-77-n1-003--o02",
+        "inv--offset--issue-77-n1-003--o03",
+        "inv--offset--issue-77-n1-003--o04",
+        "inv--offset--issue-77-n1-003--o05",
+        "inv--offset--issue-77-n1-003--o06",
+        "inv--offset--issue-77-n1-003--o07",
+        "inv--offset--issue-77-n1-003--o08",
+        "inv--offset--issue-77-n1-003--o09",
+        "inv--offset--issue-77-n1-003--o10",
+        "inv--offset--issue-77-n1-004--o00",
+        "inv--offset--issue-77-n1-004--o01",
+        "inv--offset--issue-77-n1-004--o02",
+        "inv--offset--issue-77-n1-004--o03",
+        "inv--offset--issue-77-n1-004--o04",
+        "inv--offset--issue-77-n1-004--o05",
+        "inv--offset--issue-77-n1-004--o06",
+        "inv--offset--issue-77-n1-004--o07",
+        "inv--offset--issue-77-n1-004--o08",
+        "inv--offset--issue-77-n1-004--o09",
+        "inv--offset--issue-77-n1-004--o10",
+        "inv--offset--issue-77-n1-005--o02",
+        "inv--offset--issue-77-n1-005--o04",
+        "inv--offset--issue-77-n1-005--o05",
+        "inv--offset--issue-77-n1-005--o06",
+        "inv--offset--issue-77-n1-005--o08",
+        "inv--offset--issue-77-n1-006--o00",
+        "inv--offset--issue-77-n1-006--o01",
+        "inv--offset--issue-77-n1-006--o02",
+        "inv--offset--issue-77-n1-006--o03",
+        "inv--offset--issue-77-n1-006--o04",
+        "inv--offset--issue-77-n1-006--o05",
+        "inv--offset--issue-77-n1-006--o06",
+        "inv--offset--issue-77-n1-006--o07",
+        "inv--offset--issue-77-n1-006--o08",
+        "inv--offset--issue-77-n1-006--o09",
+        "inv--offset--issue-77-n1-006--o10",
+        "inv--offset--issue-77-n1-009--o00",
+        "inv--offset--issue-77-n1-009--o01",
+        "inv--offset--issue-77-n1-009--o02",
+        "inv--offset--issue-77-n1-009--o03",
+        "inv--offset--issue-77-n1-009--o04",
+        "inv--offset--issue-77-n1-009--o05",
+        "inv--offset--issue-77-n1-009--o06",
+        "inv--offset--issue-77-n1-009--o07",
+        "inv--offset--issue-77-n1-009--o08",
+        "inv--offset--issue-77-n1-009--o09",
+        "inv--offset--issue-77-n1-009--o10",
+        "inv--offset--issue-77-n1-010--o00",
+        "inv--offset--issue-77-n1-010--o01",
+        "inv--offset--issue-77-n1-010--o02",
+        "inv--offset--issue-77-n1-010--o03",
+        "inv--offset--issue-77-n1-010--o04",
+        "inv--offset--issue-77-n1-010--o05",
+        "inv--offset--issue-77-n1-010--o06",
+        "inv--offset--issue-77-n1-010--o07",
+        "inv--offset--issue-77-n1-010--o08",
+        "inv--offset--issue-77-n1-010--o09",
+        "inv--offset--issue-77-n1-010--o10",
+        "inv--offset--issue-77-n1-011--o00",
+        "inv--offset--issue-77-n1-011--o01",
+        "inv--offset--issue-77-n1-011--o02",
+        "inv--offset--issue-77-n1-011--o03",
+        "inv--offset--issue-77-n1-011--o04",
+        "inv--offset--issue-77-n1-011--o05",
+        "inv--offset--issue-77-n1-011--o06",
+        "inv--offset--issue-77-n1-011--o07",
+        "inv--offset--issue-77-n1-011--o08",
+        "inv--offset--issue-77-n1-011--o09",
+        "inv--offset--issue-77-n1-011--o10",
+        "inv--offset--issue-77-n1-012--o00",
+        "inv--offset--issue-77-n1-012--o01",
+        "inv--offset--issue-77-n1-012--o02",
+        "inv--offset--issue-77-n1-012--o03",
+        "inv--offset--issue-77-n1-012--o04",
+        "inv--offset--issue-77-n1-012--o05",
+        "inv--offset--issue-77-n1-012--o06",
+        "inv--offset--issue-77-n1-012--o07",
+        "inv--offset--issue-77-n1-012--o08",
+        "inv--offset--issue-77-n1-012--o09",
+        "inv--offset--issue-77-n1-012--o10",
+        "inv--offset--issue-77-n1-013--o00",
+        "inv--offset--issue-77-n1-013--o01",
+        "inv--offset--issue-77-n1-013--o02",
+        "inv--offset--issue-77-n1-013--o03",
+        "inv--offset--issue-77-n1-013--o04",
+        "inv--offset--issue-77-n1-013--o05",
+        "inv--offset--issue-77-n1-013--o06",
+        "inv--offset--issue-77-n1-013--o07",
+        "inv--offset--issue-77-n1-013--o08",
+        "inv--offset--issue-77-n1-013--o09",
+        "inv--offset--issue-77-n1-013--o10",
+        "inv--offset--issue-77-n1-015--o00",
+        "inv--offset--issue-77-n1-015--o01",
+        "inv--offset--issue-77-n1-015--o02",
+        "inv--offset--issue-77-n1-015--o03",
+        "inv--offset--issue-77-n1-015--o04",
+        "inv--offset--issue-77-n1-015--o05",
+        "inv--offset--issue-77-n1-015--o06",
+        "inv--offset--issue-77-n1-015--o07",
+        "inv--offset--issue-77-n1-015--o08",
+        "inv--offset--issue-77-n1-015--o09",
+        "inv--offset--issue-77-n1-015--o10",
+        "inv--angle--issue-77-n1-001--o00",
+        "inv--angle--issue-77-n1-001--o01",
+        "inv--angle--issue-77-n1-001--o02",
+        "inv--angle--issue-77-n1-001--o03",
+        "inv--angle--issue-77-n1-001--o04",
+        "inv--angle--issue-77-n1-001--o05",
+        "inv--angle--issue-77-n1-001--o06",
+        "inv--angle--issue-77-n1-001--o07",
+        "inv--angle--issue-77-n1-001--o08",
+        "inv--angle--issue-77-n1-001--o09",
+        "inv--angle--issue-77-n1-001--o10",
+        "inv--angle--issue-77-n1-001--o12",
+        "inv--angle--issue-77-n1-003--o00",
+        "inv--angle--issue-77-n1-003--o01",
+        "inv--angle--issue-77-n1-003--o02",
+        "inv--angle--issue-77-n1-003--o03",
+        "inv--angle--issue-77-n1-003--o05",
+        "inv--angle--issue-77-n1-003--o07",
+        "inv--angle--issue-77-n1-003--o09",
+        "inv--angle--issue-77-n1-003--o10",
+        "inv--angle--issue-77-n1-003--o11",
+        "inv--angle--issue-77-n1-004--o01",
+        "inv--angle--issue-77-n1-004--o02",
+        "inv--angle--issue-77-n1-004--o04",
+        "inv--angle--issue-77-n1-004--o05",
+        "inv--angle--issue-77-n1-004--o06",
+        "inv--angle--issue-77-n1-004--o07",
+        "inv--angle--issue-77-n1-004--o08",
+        "inv--angle--issue-77-n1-004--o11",
+        "inv--angle--issue-77-n1-004--o12",
+        "inv--angle--issue-77-n1-006--o00",
+        "inv--angle--issue-77-n1-006--o01",
+        "inv--angle--issue-77-n1-006--o02",
+        "inv--angle--issue-77-n1-006--o03",
+        "inv--angle--issue-77-n1-006--o04",
+        "inv--angle--issue-77-n1-006--o05",
+        "inv--angle--issue-77-n1-006--o06",
+        "inv--angle--issue-77-n1-006--o07",
+        "inv--angle--issue-77-n1-006--o08",
+        "inv--angle--issue-77-n1-006--o09",
+        "inv--angle--issue-77-n1-006--o10",
+        "inv--angle--issue-77-n1-006--o11",
+        "inv--angle--issue-77-n1-006--o12",
+        "inv--angle--issue-77-n1-009--o00",
+        "inv--angle--issue-77-n1-009--o01",
+        "inv--angle--issue-77-n1-009--o02",
+        "inv--angle--issue-77-n1-009--o03",
+        "inv--angle--issue-77-n1-009--o04",
+        "inv--angle--issue-77-n1-009--o05",
+        "inv--angle--issue-77-n1-009--o06",
+        "inv--angle--issue-77-n1-009--o07",
+        "inv--angle--issue-77-n1-009--o08",
+        "inv--angle--issue-77-n1-009--o09",
+        "inv--angle--issue-77-n1-009--o10",
+        "inv--angle--issue-77-n1-009--o11",
+        "inv--angle--issue-77-n1-009--o12",
+        "inv--angle--issue-77-n1-010--o00",
+        "inv--angle--issue-77-n1-010--o01",
+        "inv--angle--issue-77-n1-010--o02",
+        "inv--angle--issue-77-n1-010--o03",
+        "inv--angle--issue-77-n1-010--o04",
+        "inv--angle--issue-77-n1-010--o05",
+        "inv--angle--issue-77-n1-010--o06",
+        "inv--angle--issue-77-n1-010--o07",
+        "inv--angle--issue-77-n1-010--o08",
+        "inv--angle--issue-77-n1-010--o09",
+        "inv--angle--issue-77-n1-010--o10",
+        "inv--angle--issue-77-n1-010--o11",
+        "inv--angle--issue-77-n1-010--o12",
+        "inv--angle--issue-77-n1-011--o00",
+        "inv--angle--issue-77-n1-011--o01",
+        "inv--angle--issue-77-n1-011--o02",
+        "inv--angle--issue-77-n1-011--o03",
+        "inv--angle--issue-77-n1-011--o04",
+        "inv--angle--issue-77-n1-011--o05",
+        "inv--angle--issue-77-n1-011--o06",
+        "inv--angle--issue-77-n1-011--o07",
+        "inv--angle--issue-77-n1-011--o08",
+        "inv--angle--issue-77-n1-011--o09",
+        "inv--angle--issue-77-n1-011--o10",
+        "inv--angle--issue-77-n1-011--o11",
+        "inv--angle--issue-77-n1-011--o12",
+        "inv--angle--issue-77-n1-012--o00",
+        "inv--angle--issue-77-n1-012--o01",
+        "inv--angle--issue-77-n1-012--o02",
+        "inv--angle--issue-77-n1-012--o03",
+        "inv--angle--issue-77-n1-012--o04",
+        "inv--angle--issue-77-n1-012--o05",
+        "inv--angle--issue-77-n1-012--o06",
+        "inv--angle--issue-77-n1-012--o07",
+        "inv--angle--issue-77-n1-012--o08",
+        "inv--angle--issue-77-n1-012--o09",
+        "inv--angle--issue-77-n1-012--o10",
+        "inv--angle--issue-77-n1-012--o11",
+        "inv--angle--issue-77-n1-012--o12",
+        "inv--angle--issue-77-n1-013--o00",
+        "inv--angle--issue-77-n1-013--o01",
+        "inv--angle--issue-77-n1-013--o02",
+        "inv--angle--issue-77-n1-013--o03",
+        "inv--angle--issue-77-n1-013--o04",
+        "inv--angle--issue-77-n1-013--o05",
+        "inv--angle--issue-77-n1-013--o06",
+        "inv--angle--issue-77-n1-013--o07",
+        "inv--angle--issue-77-n1-013--o08",
+        "inv--angle--issue-77-n1-013--o09",
+        "inv--angle--issue-77-n1-013--o10",
+        "inv--angle--issue-77-n1-013--o11",
+        "inv--angle--issue-77-n1-013--o12",
+        "inv--angle--issue-77-n1-015--o00",
+        "inv--angle--issue-77-n1-015--o01",
+        "inv--angle--issue-77-n1-015--o02",
+        "inv--angle--issue-77-n1-015--o03",
+        "inv--angle--issue-77-n1-015--o04",
+        "inv--angle--issue-77-n1-015--o05",
+        "inv--angle--issue-77-n1-015--o06",
+        "inv--angle--issue-77-n1-015--o07",
+        "inv--angle--issue-77-n1-015--o08",
+        "inv--angle--issue-77-n1-015--o09",
+        "inv--angle--issue-77-n1-015--o10",
+        "inv--angle--issue-77-n1-015--o11",
+        "inv--angle--issue-77-n1-015--o12",
+        "inv--power--issue-77-n1-001--o00",
+        "inv--power--issue-77-n1-001--o01",
+        "inv--power--issue-77-n1-001--o02",
+        "inv--power--issue-77-n1-001--o03",
+        "inv--power--issue-77-n1-001--o04",
+        "inv--power--issue-77-n1-001--o05",
+        "inv--power--issue-77-n1-001--o06",
+        "inv--power--issue-77-n1-001--o07",
+        "inv--power--issue-77-n1-001--o08",
+        "inv--power--issue-77-n1-001--o09",
+        "inv--power--issue-77-n1-001--o10",
+        "inv--power--issue-77-n1-001--o11",
+        "inv--power--issue-77-n1-001--o12",
+        "inv--power--issue-77-n1-001--o13",
+        "inv--power--issue-77-n1-001--o14",
+        "inv--power--issue-77-n1-001--o15",
+        "inv--power--issue-77-n1-001--o16",
+        "inv--power--issue-77-n1-001--o17",
+        "inv--power--issue-77-n1-001--o18",
+        "inv--power--issue-77-n1-001--o19",
+        "inv--power--issue-77-n1-003--o00",
+        "inv--power--issue-77-n1-003--o01",
+        "inv--power--issue-77-n1-003--o02",
+        "inv--power--issue-77-n1-003--o03",
+        "inv--power--issue-77-n1-003--o04",
+        "inv--power--issue-77-n1-003--o05",
+        "inv--power--issue-77-n1-003--o06",
+        "inv--power--issue-77-n1-003--o07",
+        "inv--power--issue-77-n1-003--o08",
+        "inv--power--issue-77-n1-003--o09",
+        "inv--power--issue-77-n1-003--o10",
+        "inv--power--issue-77-n1-003--o11",
+        "inv--power--issue-77-n1-003--o12",
+        "inv--power--issue-77-n1-003--o13",
+        "inv--power--issue-77-n1-003--o14",
+        "inv--power--issue-77-n1-003--o15",
+        "inv--power--issue-77-n1-003--o16",
+        "inv--power--issue-77-n1-003--o17",
+        "inv--power--issue-77-n1-003--o18",
+        "inv--power--issue-77-n1-003--o19",
+        "inv--power--issue-77-n1-004--o00",
+        "inv--power--issue-77-n1-004--o01",
+        "inv--power--issue-77-n1-004--o02",
+        "inv--power--issue-77-n1-004--o03",
+        "inv--power--issue-77-n1-004--o04",
+        "inv--power--issue-77-n1-004--o05",
+        "inv--power--issue-77-n1-004--o06",
+        "inv--power--issue-77-n1-004--o07",
+        "inv--power--issue-77-n1-004--o08",
+        "inv--power--issue-77-n1-004--o09",
+        "inv--power--issue-77-n1-004--o10",
+        "inv--power--issue-77-n1-004--o11",
+        "inv--power--issue-77-n1-004--o12",
+        "inv--power--issue-77-n1-004--o13",
+        "inv--power--issue-77-n1-004--o14",
+        "inv--power--issue-77-n1-004--o15",
+        "inv--power--issue-77-n1-004--o16",
+        "inv--power--issue-77-n1-004--o17",
+        "inv--power--issue-77-n1-004--o18",
+        "inv--power--issue-77-n1-004--o19",
+        "inv--power--issue-77-n1-005--o00",
+        "inv--power--issue-77-n1-005--o01",
+        "inv--power--issue-77-n1-005--o03",
+        "inv--power--issue-77-n1-005--o04",
+        "inv--power--issue-77-n1-005--o05",
+        "inv--power--issue-77-n1-005--o06",
+        "inv--power--issue-77-n1-005--o09",
+        "inv--power--issue-77-n1-005--o10",
+        "inv--power--issue-77-n1-005--o11",
+        "inv--power--issue-77-n1-005--o12",
+        "inv--power--issue-77-n1-005--o13",
+        "inv--power--issue-77-n1-005--o14",
+        "inv--power--issue-77-n1-005--o16",
+        "inv--power--issue-77-n1-005--o17",
+        "inv--power--issue-77-n1-005--o18",
+        "inv--power--issue-77-n1-006--o00",
+        "inv--power--issue-77-n1-006--o01",
+        "inv--power--issue-77-n1-006--o02",
+        "inv--power--issue-77-n1-006--o03",
+        "inv--power--issue-77-n1-006--o04",
+        "inv--power--issue-77-n1-006--o05",
+        "inv--power--issue-77-n1-006--o06",
+        "inv--power--issue-77-n1-006--o07",
+        "inv--power--issue-77-n1-006--o08",
+        "inv--power--issue-77-n1-006--o09",
+        "inv--power--issue-77-n1-006--o10",
+        "inv--power--issue-77-n1-006--o11",
+        "inv--power--issue-77-n1-006--o12",
+        "inv--power--issue-77-n1-006--o13",
+        "inv--power--issue-77-n1-006--o14",
+        "inv--power--issue-77-n1-006--o15",
+        "inv--power--issue-77-n1-006--o16",
+        "inv--power--issue-77-n1-006--o17",
+        "inv--power--issue-77-n1-006--o18",
+        "inv--power--issue-77-n1-006--o19",
+        "inv--power--issue-77-n1-009--o00",
+        "inv--power--issue-77-n1-009--o01",
+        "inv--power--issue-77-n1-009--o02",
+        "inv--power--issue-77-n1-009--o03",
+        "inv--power--issue-77-n1-009--o04",
+        "inv--power--issue-77-n1-009--o05",
+        "inv--power--issue-77-n1-009--o06",
+        "inv--power--issue-77-n1-009--o07",
+        "inv--power--issue-77-n1-009--o08",
+        "inv--power--issue-77-n1-009--o09",
+        "inv--power--issue-77-n1-009--o10",
+        "inv--power--issue-77-n1-009--o11",
+        "inv--power--issue-77-n1-009--o12",
+        "inv--power--issue-77-n1-009--o13",
+        "inv--power--issue-77-n1-009--o14",
+        "inv--power--issue-77-n1-009--o15",
+        "inv--power--issue-77-n1-009--o16",
+        "inv--power--issue-77-n1-009--o17",
+        "inv--power--issue-77-n1-009--o18",
+        "inv--power--issue-77-n1-009--o19",
+        "inv--power--issue-77-n1-010--o00",
+        "inv--power--issue-77-n1-010--o01",
+        "inv--power--issue-77-n1-010--o02",
+        "inv--power--issue-77-n1-010--o03",
+        "inv--power--issue-77-n1-010--o04",
+        "inv--power--issue-77-n1-010--o05",
+        "inv--power--issue-77-n1-010--o06",
+        "inv--power--issue-77-n1-010--o07",
+        "inv--power--issue-77-n1-010--o08",
+        "inv--power--issue-77-n1-010--o09",
+        "inv--power--issue-77-n1-010--o10",
+        "inv--power--issue-77-n1-010--o11",
+        "inv--power--issue-77-n1-010--o12",
+        "inv--power--issue-77-n1-010--o13",
+        "inv--power--issue-77-n1-010--o14",
+        "inv--power--issue-77-n1-010--o15",
+        "inv--power--issue-77-n1-010--o16",
+        "inv--power--issue-77-n1-010--o17",
+        "inv--power--issue-77-n1-010--o18",
+        "inv--power--issue-77-n1-010--o19",
+        "inv--power--issue-77-n1-011--o00",
+        "inv--power--issue-77-n1-011--o01",
+        "inv--power--issue-77-n1-011--o02",
+        "inv--power--issue-77-n1-011--o03",
+        "inv--power--issue-77-n1-011--o04",
+        "inv--power--issue-77-n1-011--o05",
+        "inv--power--issue-77-n1-011--o06",
+        "inv--power--issue-77-n1-011--o07",
+        "inv--power--issue-77-n1-011--o08",
+        "inv--power--issue-77-n1-011--o09",
+        "inv--power--issue-77-n1-011--o10",
+        "inv--power--issue-77-n1-011--o11",
+        "inv--power--issue-77-n1-011--o12",
+        "inv--power--issue-77-n1-011--o13",
+        "inv--power--issue-77-n1-011--o14",
+        "inv--power--issue-77-n1-011--o15",
+        "inv--power--issue-77-n1-011--o16",
+        "inv--power--issue-77-n1-011--o17",
+        "inv--power--issue-77-n1-011--o18",
+        "inv--power--issue-77-n1-011--o19",
+        "inv--power--issue-77-n1-012--o00",
+        "inv--power--issue-77-n1-012--o01",
+        "inv--power--issue-77-n1-012--o02",
+        "inv--power--issue-77-n1-012--o03",
+        "inv--power--issue-77-n1-012--o04",
+        "inv--power--issue-77-n1-012--o05",
+        "inv--power--issue-77-n1-012--o06",
+        "inv--power--issue-77-n1-012--o07",
+        "inv--power--issue-77-n1-012--o08",
+        "inv--power--issue-77-n1-012--o09",
+        "inv--power--issue-77-n1-012--o10",
+        "inv--power--issue-77-n1-012--o11",
+        "inv--power--issue-77-n1-012--o12",
+        "inv--power--issue-77-n1-012--o13",
+        "inv--power--issue-77-n1-012--o14",
+        "inv--power--issue-77-n1-012--o15",
+        "inv--power--issue-77-n1-012--o16",
+        "inv--power--issue-77-n1-012--o17",
+        "inv--power--issue-77-n1-012--o18",
+        "inv--power--issue-77-n1-012--o19",
+        "inv--power--issue-77-n1-013--o00",
+        "inv--power--issue-77-n1-013--o01",
+        "inv--power--issue-77-n1-013--o02",
+        "inv--power--issue-77-n1-013--o03",
+        "inv--power--issue-77-n1-013--o04",
+        "inv--power--issue-77-n1-013--o05",
+        "inv--power--issue-77-n1-013--o06",
+        "inv--power--issue-77-n1-013--o07",
+        "inv--power--issue-77-n1-013--o08",
+        "inv--power--issue-77-n1-013--o09",
+        "inv--power--issue-77-n1-013--o10",
+        "inv--power--issue-77-n1-013--o11",
+        "inv--power--issue-77-n1-013--o12",
+        "inv--power--issue-77-n1-013--o13",
+        "inv--power--issue-77-n1-013--o14",
+        "inv--power--issue-77-n1-013--o15",
+        "inv--power--issue-77-n1-013--o16",
+        "inv--power--issue-77-n1-013--o17",
+        "inv--power--issue-77-n1-013--o18",
+        "inv--power--issue-77-n1-013--o19",
+        "inv--power--issue-77-n1-015--o00",
+        "inv--power--issue-77-n1-015--o01",
+        "inv--power--issue-77-n1-015--o02",
+        "inv--power--issue-77-n1-015--o03",
+        "inv--power--issue-77-n1-015--o04",
+        "inv--power--issue-77-n1-015--o05",
+        "inv--power--issue-77-n1-015--o06",
+        "inv--power--issue-77-n1-015--o07",
+        "inv--power--issue-77-n1-015--o08",
+        "inv--power--issue-77-n1-015--o09",
+        "inv--power--issue-77-n1-015--o10",
+        "inv--power--issue-77-n1-015--o11",
+        "inv--power--issue-77-n1-015--o12",
+        "inv--power--issue-77-n1-015--o13",
+        "inv--power--issue-77-n1-015--o14",
+        "inv--power--issue-77-n1-015--o15",
+        "inv--power--issue-77-n1-015--o16",
+        "inv--power--issue-77-n1-015--o17",
+        "inv--power--issue-77-n1-015--o18",
+        "inv--power--issue-77-n1-015--o19"
+      ]
+    },
+    "grad_clip": 1.0,
+    "head_loss_weight": 0.1,
+    "image_height": 240,
+    "image_width": 320,
+    "inference": "the context encoder in the standard RepairedAdapter (same code path as F77/E99)",
+    "initialization": "from scratch, torch.manual_seed(seed)",
+    "loss": "#77 training_loss structure (4 local transitions + recursive, carrier bound .01) with targets from the target encoder (stop-gradient) + 0.1 x micro and macro head losses on predicted and context carriers for every request + 1.0 x issue-70 parser_loss on the context frames (class-balanced presence weights of the #99 encoder payload)",
+    "max_position": 285,
+    "module": "world_model/training/jepa_slot_encoder.py",
+    "parser_loss_weight": 1.0,
+    "predictor_learning_rate": 0.0001,
+    "progress_every": 500,
+    "requests": "PAIRS[step % 9]",
+    "selection": "last update; no validation split",
+    "steps": 9000,
+    "unroll": 4,
+    "weight_decay": 0.0001,
+    "window_length": 60,
+    "window_starts": [
+      0,
+      15,
+      30,
+      45,
+      60,
+      75,
+      90,
+      105,
+      120,
+      135,
+      150,
+      165,
+      180,
+      195,
+      210,
+      225
+    ]
+  },
+  "model_module_sha256_at_freeze": "sha256:8ac04c5a3f2d5862b3978087a2b2593fc8adc63e3f3d751e64ac10dde0b3b6ef",
+  "parameters": {
+    "E99": {
+      "controller": 32265,
+      "encoder": 506414,
+      "encoder_training": "#99: 12 epochs x 42344 frames, batch 64 (separate, before the predictor)",
+      "predictor": 1837690,
+      "predictor_training": "#77 recipe: 9000 steps x 64 windows over the 745 #99 fit shots"
+    },
+    "F77": {
+      "controller": 32265,
+      "encoder": 290702,
+      "encoder_training": "issue-70 parser v6 (20 epochs, separate)",
+      "predictor": 1837690,
+      "predictor_training": "#77 recipe: 9000 steps x 64 windows over 2409 lineages"
+    },
+    "JEPA": {
+      "controller": 32265,
+      "encoder": 506414,
+      "encoder_training": "joint: 9000 steps x 64 windows (256 context frames per step)",
+      "predictor": 1837690,
+      "predictor_training": "joint: 9000 steps x 64 windows over the 745 #99 fit shots",
+      "target_encoder_trainable": 0
+    }
+  },
+  "probe": {
+    "capture": "issue-77-n1-001-a06",
+    "claims": {
+      "C1_bird_presence_frame80_below_0.5": "every bird slot's carrier presence < 0.5 at frame 80",
+      "C2_pig_presence_frame80_below_0.5": "the pig slot's carrier presence < 0.5 at frame 80",
+      "C3_max_gated_micro_555_frames": 0.059,
+      "C4_macro_steady_frame80": 0.188,
+      "C5_macro_unstable_frame80": 0.041,
+      "C6_lineages_with_gated_micro_edge_above_0.5": [
+        "issue-77-n1-009"
+      ],
+      "C7_lineage_009_positions_mislocalised": "mean engine-present slot center error > 0.05 on the lineage-009 frames with a gated edge > 0.5"
+    },
+    "encoder": "F77",
+    "frame": 80,
+    "frames": 555,
+    "mislocalisation_threshold": 0.05,
+    "numeric_tolerance": 0.0005,
+    "seed": 20260908
+  },
+  "prohibited": [
+    "reading any verdict before the arms phase finishes",
+    "changing any recipe after training starts",
+    "retrying typed failures",
+    "re-opening any prior disposition (#15-#99, #109)"
+  ],
+  "questions": {
+    "Q1_readout_fidelity": "how well do presence, contact, supports, steady-state and structure-unstable read out of each encoder's carriers and one-step predictions, against engine labels, per phase; are the 2026-09-25 probe numbers reproduced?",
+    "Q2_readout_target": "does at least one encoder reach macro F1 >= 0.7 and micro edge F1 >= 0.5 on held-out lineages?",
+    "Q3_jepa_vs_frozen": "how do the jointly trained JEPA encoder's rollout error (#77 diagnostic protocol) and readout F1 compare with the frozen-encoder carriers (F77, E99)?",
+    "Q4_alpha_effect": "J - T and J - D per inventory on the better encoder (#96 arms, rerun here)"
+  },
+  "readout_target": {
+    "better_encoder": "among encoders meeting the target (all encoders if none): the highest mean of held-out macro F1 and micro edge F1; ties to the ENCODERS order",
+    "macro_f1": "mean of the steady-state and structure-unstable F1 (encoder source, all phases, held-out)",
+    "micro_edge_f1": "mean of the contact-edge and supports-edge F1 (encoder source, all phases, held-out)",
+    "rule": "supported iff guards pass AND some encoder has seed-mean macro F1 >= 0.7 and micro edge F1 >= 0.5 (point estimates, as declared in the issue); not_supported_by_this_experiment iff guards pass and none does; otherwise readiness_or_precision_insufficient"
+  },
+  "role": "terminal",
+  "rollout": {
+    "contrast": "JEPA - F77 and JEPA - E99 per request: state-clustered paired bootstrap of seed-mean per-state differences, DESCRIPTIVE",
+    "headline": "position_mse and engine_position_mse at t = 225, all nine requests",
+    "protocol": "#77 diagnostic (tab:res:rollout): held-out states with >= 1 admissible branch, every admissible candidate, one context carrier per state (frame 0 of the lowest-ordinal branch, batch-1 parse by the encoder's adapter), recursive fixed-request rollout to 600 with no truth resets; errors at t in [15, 30, 60, 150, 225, 600] against the encoder's own parsed carrier of the candidate's frame (diag.field_errors, target-availability masks) and against the engine-projected centers of engine-present slots (engine_position_mse); mean over candidates, then states, then seeds",
+    "states": [
+      "issue-77-n1-007",
+      "issue-77-n1-008",
+      "issue-77-n1-014",
+      "issue-77-n1-016"
+    ]
+  },
+  "runner": "scripts/run_readout_fidelity_jepa.py",
+  "runner_sha256_at_freeze": "sha256:7323ebb62c72ea82e8effa25903a7169fd2b06b2ab6f43c721cd6f8fd556b9f1",
+  "schema": "issue_100_readout_fidelity_jepa_plan_v1",
+  "smoke_evidence": {
+    "checks": [
+      {
+        "control": "labels_and_phases",
+        "ok": true,
+        "shots": [
+          {
+            "branch": "issue-77-n1-001-a06",
+            "contact_onset": 138,
+            "frames": 555,
+            "settled_onset": 525
+          },
+          {
+            "branch": "issue-77-n1-007-a00",
+            "contact_onset": null,
+            "frames": 334,
+            "settled_onset": null
+          }
+        ]
+      },
+      {
+        "branch": "issue-77-n1-001-a06",
+        "control": "G1_F77_carriers_replicate_shard",
+        "max_abs_delta": 8.940696716308594e-06,
+        "ok": true,
+        "tolerance": 0.001
+      },
+      {
+        "control": "batched_parse_replicates_adapter_parse_batch",
+        "max_abs_delta": 2.6464462280273438e-05,
+        "ok": true,
+        "tolerance": 0.001
+      },
+      {
+        "control": "G6_differentiable_carrier_equals_adapter",
+        "max_abs_delta": 8.940696716308594e-06,
+        "ok": true,
+        "tolerance": 0.0001
+      },
+      {
+        "control": "audit_mechanics",
+        "ok": true,
+        "sources": 10
+      },
+      {
+        "context_max_abs_delta": 0.0,
+        "control": "G2_rollout_replicates_77_record",
+        "curve_max_abs_delta": 0.0,
+        "ok": true,
+        "state": "issue-77-n1-007",
+        "tolerance": 0.001
+      },
+      {
+        "control": "jepa_trains",
+        "final": {
+          "jepa_loss": 1.593305665254593,
+          "parser_loss": 8.586177289485931,
+          "step": 20
+        },
+        "frames_cached": 306,
+        "ok": true,
+        "parameters": {
+          "encoder": 506414,
+          "predictor": 1837690,
+          "target_encoder_trainable": 0
+        },
+        "target_requires_grad": false,
+        "windows": 32
+      },
+      {
+        "control": "controller_trains",
+        "label_rows": {
+          "0:smoke": 120,
+          "1:smoke": 120
+        },
+        "ok": true
+      },
+      {
+        "cell": "angle/issue-77-n1-001/seed20260908",
+        "control": "G3_arms_replicate_96_records",
+        "max_abs_count_cost_delta": 2.384185791015625e-07,
+        "ok": true,
+        "tolerance": 0.001
+      },
+      {
+        "control": "held_out_isolation",
+        "held_out_shots_in_fit_data": 0,
+        "ok": true
+      }
+    ],
+    "frame_cache_frames": 112348,
+    "identity": "issue-100-readout-fidelity-jepa-v1",
+    "ok": true,
+    "projection": {
+      "audit_seconds": 163.27024738909677,
+      "audit_shots": 178,
+      "carrier_seconds": 711.1176860469277,
+      "controller_seconds": 253.8710135850124,
+      "frame_cache_seconds": 343.4857740043921,
+      "jepa_seconds": 13729.703384291497,
+      "label_seconds": 174.6431529578258,
+      "total_seconds": 15376.091258274751
+    },
+    "reading": "infrastructure assertions only; nothing kept; no verdict joined; no F1 computed",
+    "run_at": "2026-09-27T07:09:10Z",
+    "schema": "issue_100_readout_fidelity_jepa_smoke_v1",
+    "timings": {
+      "audit_seconds_per_shot": 0.10191650898195803,
+      "carrier_seconds_per_shot_two_encoders": 1.5980172720155679,
+      "controller_seconds_smoke": 0.14103945199167356,
+      "frame_cache_seconds_per_frame": 0.0030573376829528976,
+      "jepa_seconds_per_step": 0.5085075327515369,
+      "label_seconds_per_shot": 7.849130470014643
+    }
+  },
+  "universe": {
+    "arms_cells": 531,
+    "audit_shots": 178,
+    "fit_shots": 745,
+    "rollout_states": 4
+  },
+  "validation_command": "python -u -m scripts.run_readout_fidelity_jepa --validate",
+  "version": 1
+}

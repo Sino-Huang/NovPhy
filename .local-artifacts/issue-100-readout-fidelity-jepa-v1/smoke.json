@@ -1,0 +1,115 @@
+{
+  "checks": [
+    {
+      "control": "labels_and_phases",
+      "ok": true,
+      "shots": [
+        {
+          "branch": "issue-77-n1-001-a06",
+          "contact_onset": 138,
+          "frames": 555,
+          "settled_onset": 525
+        },
+        {
+          "branch": "issue-77-n1-007-a00",
+          "contact_onset": null,
+          "frames": 334,
+          "settled_onset": null
+        }
+      ]
+    },
+    {
+      "branch": "issue-77-n1-001-a06",
+      "control": "G1_F77_carriers_replicate_shard",
+      "max_abs_delta": 8.940696716308594e-06,
+      "ok": true,
+      "tolerance": 0.001
+    },
+    {
+      "control": "batched_parse_replicates_adapter_parse_batch",
+      "max_abs_delta": 2.6464462280273438e-05,
+      "ok": true,
+      "tolerance": 0.001
+    },
+    {
+      "control": "G6_differentiable_carrier_equals_adapter",
+      "max_abs_delta": 8.940696716308594e-06,
+      "ok": true,
+      "tolerance": 0.0001
+    },
+    {
+      "control": "audit_mechanics",
+      "ok": true,
+      "sources": 10
+    },
+    {
+      "context_max_abs_delta": 0.0,
+      "control": "G2_rollout_replicates_77_record",
+      "curve_max_abs_delta": 0.0,
+      "ok": true,
+      "state": "issue-77-n1-007",
+      "tolerance": 0.001
+    },
+    {
+      "control": "jepa_trains",
+      "final": {
+        "jepa_loss": 1.593305665254593,
+        "parser_loss": 8.586177289485931,
+        "step": 20
+      },
+      "frames_cached": 306,
+      "ok": true,
+      "parameters": {
+        "encoder": 506414,
+        "predictor": 1837690,
+        "target_encoder_trainable": 0
+      },
+      "target_requires_grad": false,
+      "windows": 32
+    },
+    {
+      "control": "controller_trains",
+      "label_rows": {
+        "0:smoke": 120,
+        "1:smoke": 120
+      },
+      "ok": true
+    },
+    {
+      "cell": "angle/issue-77-n1-001/seed20260908",
+      "control": "G3_arms_replicate_96_records",
+      "max_abs_count_cost_delta": 2.384185791015625e-07,
+      "ok": true,
+      "tolerance": 0.001
+    },
+    {
+      "control": "held_out_isolation",
+      "held_out_shots_in_fit_data": 0,
+      "ok": true
+    }
+  ],
+  "frame_cache_frames": 112348,
+  "identity": "issue-100-readout-fidelity-jepa-v1",
+  "ok": true,
+  "projection": {
+    "audit_seconds": 163.27024738909677,
+    "audit_shots": 178,
+    "carrier_seconds": 711.1176860469277,
+    "controller_seconds": 253.8710135850124,
+    "frame_cache_seconds": 343.4857740043921,
+    "jepa_seconds": 13729.703384291497,
+    "label_seconds": 174.6431529578258,
+    "total_seconds": 15376.091258274751
+  },
+  "reading": "infrastructure assertions only; nothing kept; no verdict joined; no F1 computed",
+  "run_at": "2026-09-27T07:09:10Z",
+  "schema": "issue_100_readout_fidelity_jepa_smoke_v1",
+  "timings": {
+    "audit_seconds_per_shot": 0.10191650898195803,
+    "carrier_seconds_per_shot_two_encoders": 1.5980172720155679,
+    "controller_seconds_smoke": 0.14103945199167356,
+    "frame_cache_seconds_per_frame": 0.0030573376829528976,
+    "jepa_seconds_per_step": 0.5085075327515369,
+    "label_seconds_per_shot": 7.849130470014643
+  }
+}
