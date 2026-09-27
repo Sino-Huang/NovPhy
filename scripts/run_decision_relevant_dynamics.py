@@ -1201,7 +1201,10 @@ def select(output):
         selection = read_json(path)
         if selection != selection_record(output, plan, selection["frozen_at"]):
             raise ValueError("selection.json differs from the frozen rule applied to the retained records")
-        log("existing selection validated")
+        # the handoff is derived from the frozen selection; (re)derive it (added after the v1
+        # selection freeze to carry per-checkpoint completeness; the selection is unchanged)
+        write_json(output / "gate_b_handoff.json", handoff(output, plan, selection))
+        log("existing selection validated; handoff re-derived")
         return 0
     if any(output.glob("records/heldout--*.json")):
         raise ValueError("held-out records exist before the selection freeze")
@@ -1394,11 +1397,12 @@ def handoff(output, plan, selection):
                         "sha256": sha256_of(SLOT_FIX / "encoder" / "encoder.pt"),
                         "load": "scripts.run_slot_encoder_fix.load_adapter(SLOT_FIX, 'E')"},
             "recipe": selection["recipe"], "request": chosen["request"], "family": chosen["family"],
-            "checkpoints": [{"seed": seed, "path": str(member_path(output, chosen["arm"], chosen["family"], "all",
-                                                                   seed).relative_to(ROOT)),
-                             "sha256": selection["checkpoints"]["sha256"][str(seed)]} for seed in SEEDS],
+            "checkpoints": [checkpoint_entry(output, chosen, seed, selection) for seed in SEEDS],
+            "usable_seeds": [seed for seed in SEEDS if checkpoint_entry(output, chosen, seed, selection)["complete"]],
             "load_checkpoint": ("scripts.run_decision_relevant_dynamics.load_member(OUTPUT, arm, family, 'all', "
-                                "seed)"),
+                                "seed); it returns None for a retired member, which Gate B must not score"),
+            "stability_risk": ("members of the selected arm and family retired (nonfinite loss or gradient norm, "
+                               "typed terminal failures) during training: " + retirement_text(output, chosen)),
             "retrain": ("to retrain on a new fit split, run train_group with the frozen recipe (plan.json training "
                         "block, the selected arm) on that split's E99 carriers, windows and fit-lineage cells"),
             "scoring": ("anchor carrier = E99 batch-1 parse of the member's sealed anchor; per candidate "
@@ -1408,6 +1412,24 @@ def handoff(output, plan, selection):
                         "scoring_harness.deterministic_scoring() in a process that did not train"),
             "seed_aggregation": "cells are (member, seed); the bootstrap resamples members",
             "selection_evidence": {"score": chosen["score"], "lolo_records_sha256": selection["lolo_records_sha256"]}}
+
+
+def checkpoint_entry(output, chosen, seed, selection):
+    payload = torch.load(member_path(output, chosen["arm"], chosen["family"], "all", seed), map_location="cpu",
+                         weights_only=True, mmap=True)
+    return {"seed": seed, "path": str(member_path(output, chosen["arm"], chosen["family"], "all", seed)
+                                      .relative_to(ROOT)),
+            "sha256": selection["checkpoints"]["sha256"][str(seed)], "complete": bool(payload["complete"]),
+            "retired_at": payload["retired_at"]}
+
+
+def retirement_text(output, chosen):
+    retired = total = 0
+    for path in sorted((Path(output) / "training").glob(f"{chosen['arm']}--{chosen['family']}--group*.json")):
+        members = read_json(path)["members"]
+        total += len(members)
+        retired += sum(not m["complete"] for m in members)
+    return f"{retired} of {total} ({chosen['arm']}, {chosen['family']}) members across all folds and seeds"
 
 
 def rollout_block(per_lineage):

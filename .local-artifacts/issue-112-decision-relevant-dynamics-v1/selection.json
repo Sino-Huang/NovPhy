@@ -1,0 +1,1411 @@
+{
+  "checkpoints": {
+    "arm": "LC",
+    "family": "continuous",
+    "fold": "all",
+    "sha256": {
+      "20260908": "sha256:834c040524373ec025d2d286d17b08f2df307c0fef2037a42d188ece6ca0e51c",
+      "20260909": "sha256:b696c00d959dfe3df91f9363c1e1bffdc8c733946a679046ac2f837b72c5a6e5",
+      "20260910": "sha256:62030f4f63f4f95e54d34dbb2dfadbbdcb6790eb6add4380becae4962e3ca7a2"
+    }
+  },
+  "frozen_at": "2026-09-27T21:22:45Z",
+  "lolo_records": 288,
+  "lolo_records_sha256": "sha256:601e41e2f116a2f8fb2f95bf187f66941df7651cfc78abca7f8ff203b58b0ff8",
+  "metric": "S(arm, request) = mean of the grid and offset leave-one-lineage-out AUC means (member-clustered bootstrap mean over (lineage, seed) cells) under the tie-free cost",
+  "plan_identity": "issue-112-decision-relevant-dynamics-v1",
+  "recipe": {
+    "arm": "LC",
+    "definition": "#77 recipe + long-horizon supervision + decision-contrastive loss",
+    "training": {
+      "execution": "members of one (arm, family) are trained in lock-step groups by a vmapped, torch.compile'd transition (training process only; autotuning allowed)",
+      "group_sizes": {
+        "B_continuous": 39,
+        "B_hybrid": 39,
+        "C_continuous": 39,
+        "C_hybrid": 39,
+        "LC_continuous": 20,
+        "LC_hybrid": 20,
+        "L_continuous": 20,
+        "L_hybrid": 20
+      },
+      "initialization": "torch.manual_seed(seed); s99.new_predictor(family) (from scratch)",
+      "local_loss": "#74/#77 loss (run_issue_74_matched_dynamics.loss_for) in masked form (decision_dynamics.local_loss) on the #99 windows: starts 0..225 step 15, 60 transitions, terminal padding masked; batch of 64 windows sampled uniformly with replacement from the member's pool by torch.Generator().manual_seed(seed)",
+      "long_horizon": {
+        "arms": [
+          "L",
+          "LC"
+        ],
+        "batch_size": 64,
+        "definition": "windows at starts 0, 15, 30, 45, 60 of every fit shot (start below the shot's last position); the step's pair is unrolled horizon // delta transitions; loss = mean over visited positions of row-mean carrier MSE + 0.01 x the #77 carrier-bound penalty; horizon = min(225, 60 + 15 x floor(update / 500))",
+        "every": 500,
+        "first": 60,
+        "increment": 15,
+        "last": 225,
+        "seed_offset": 112001,
+        "starts": [
+          0,
+          15,
+          30,
+          45,
+          60
+        ],
+        "targets": "the E99 parsed carrier at every visited position start + j * delta, terminal absorption past the shot's last frame",
+        "truncation": "none (full back-propagation through the unrolled recursion)",
+        "weight": 1.0
+      },
+      "matched": "every arm: same architectures and parameter counts, same 9000 updates of 64 #77 windows",
+      "ranking": {
+        "arms": [
+          "C",
+          "LC"
+        ],
+        "candidate_pad": 20,
+        "cells": [
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-001"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-003"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-004"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-005"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-006"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-009"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-010"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-011"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-012"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-013"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-015"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-001"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-003"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-004"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-005"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-006"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-009"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-001"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-006"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-010"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-011"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-012"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-004"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-005"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-006"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-009"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-013"
+          }
+        ],
+        "cells_per_step": 2,
+        "cost": "tie_free (scoring_harness.tie_free on tensors): pig presence - 0.1 x pig-slot center displacement between the anchor carrier and the rollout endpoint at 225",
+        "definition": "per update 2 mixed fit-lineage cells (member x inventory, sampled uniformly with replacement from the member's pool); every verdict-bearing candidate action is rolled out with the step's pair from the member's E99 anchor to 225; loss = mean over cells of the mean over (success, failure) pairs of softplus((cost_success - cost_failure) / 0.1); weight 0.1 x ramp, ramp 0 before update 1000 and linear to 1 by update 2000",
+        "inventories": [
+          "grid",
+          "offset",
+          "angle",
+          "power"
+        ],
+        "ramp": 1000,
+        "seed_offset": 112002,
+        "start": 1000,
+        "temperature": 0.1,
+        "verdict_source": "fit-lineage inventory executions only (#93 grid/offset, #94 power, #87/#89 angle oracle verdicts); no held-out verdict is read",
+        "weight": 0.1
+      },
+      "recipe": {
+        "batch_size": 64,
+        "grad_clip": 1.0,
+        "learning_rate": 0.0001,
+        "steps": 9000,
+        "weight_decay": 0.0001
+      },
+      "schedule": "PAIRS[step % 9]; the continuous family uses the same horizon",
+      "update": "one AdamW over stacked member parameters (elementwise, so per member); per-member gradient clipping to grad_clip; a member with a nonfinite loss or gradient norm is retired at that update (typed terminal failure, never scored)"
+    }
+  },
+  "rule": "the (arm, request) with the largest S; ties broken by arm order B, L, C, LC then request order; the frozen recipe is that arm's training recipe, the Gate-B request is that request, the checkpoints are its fold-'all' members (3 seeds)",
+  "schema": "issue_112_selection_v1",
+  "scores": [
+    {
+      "arm": "B",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5003607503607505,
+          0.634273088023088
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5681096681096681,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.4444444444444444,
+          0.575
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5083333333333333,
+        "units": 18
+      },
+      "request": "F-1-continuous",
+      "score": 0.5382215007215008
+    },
+    {
+      "arm": "B",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4284992784992785,
+          0.5984126984126984
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.514069264069264,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.44999999999999996,
+          0.5666666666666667
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5055555555555555,
+        "units": 18
+      },
+      "request": "F-1-micro",
+      "score": 0.5098124098124097
+    },
+    {
+      "arm": "B",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.45988095238095233,
+          0.6236670274170274
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5376623376623376,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.41111111111111115,
+          0.5722222222222223
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5,
+        "units": 18
+      },
+      "request": "F-1-macro",
+      "score": 0.5188311688311689
+    },
+    {
+      "arm": "B",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4427128427128428,
+          0.527994227994228
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.48080808080808085,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.5055555555555555,
+          0.5833333333333334
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5444444444444445,
+        "units": 18
+      },
+      "request": "F-5-continuous",
+      "score": 0.5126262626262627
+    },
+    {
+      "arm": "B",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4722943722943722,
+          0.5639989177489176
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5175324675324675,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.44444444444444436,
+          0.55
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4972222222222222,
+        "units": 18
+      },
+      "request": "F-5-micro",
+      "score": 0.5073773448773449
+    },
+    {
+      "arm": "B",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4641414141414142,
+          0.5489917027417027
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5056998556998558,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.5111111111111111,
+          0.6222222222222222
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5666666666666667,
+        "units": 18
+      },
+      "request": "F-5-macro",
+      "score": 0.5361832611832612
+    },
+    {
+      "arm": "B",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4523088023088023,
+          0.5472582972582972
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5028138528138528,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.38888888888888884,
+          0.48333333333333334
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4388888888888889,
+        "units": 18
+      },
+      "request": "F-15-continuous",
+      "score": 0.47085137085137085
+    },
+    {
+      "arm": "B",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4495670995670995,
+          0.5621212121212121
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5093073593073593,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.43333333333333335,
+          0.5055555555555555
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.47222222222222227,
+        "units": 18
+      },
+      "request": "F-15-micro",
+      "score": 0.49076479076479074
+    },
+    {
+      "arm": "B",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4268398268398268,
+          0.5678282828282828
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.49595959595959604,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.43333333333333335,
+          0.5055555555555555
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.47222222222222227,
+        "units": 18
+      },
+      "request": "F-15-macro",
+      "score": 0.4840909090909091
+    },
+    {
+      "arm": "B",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4271248196248196,
+          0.5443073593073592
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4841269841269842,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.4888888888888889,
+          0.5888888888888889
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5388888888888889,
+        "units": 18
+      },
+      "request": "C-F-1",
+      "score": 0.5115079365079365
+    },
+    {
+      "arm": "B",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4132034632034632,
+          0.5057720057720058
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4616161616161616,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.4388888888888889,
+          0.5555555555555556
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5,
+        "units": 18
+      },
+      "request": "C-F-5",
+      "score": 0.4808080808080808
+    },
+    {
+      "arm": "B",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.38564033189033187,
+          0.5373773448773449
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4577200577200577,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.4777777777777778,
+          0.561111111111111
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5166666666666667,
+        "units": 18
+      },
+      "request": "C-F-15",
+      "score": 0.4871933621933622
+    },
+    {
+      "arm": "L",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.38636363636363635,
+          0.5516594516594516
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4775613275613276,
+        "units": 32
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.4583333333333333,
+          0.6111111111111112
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5305555555555556,
+        "units": 18
+      },
+      "request": "F-1-continuous",
+      "score": 0.5040584415584416
+    },
+    {
+      "arm": "L",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.35591450216450216,
+          0.5316053391053391
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.44877344877344877,
+        "units": 32
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.4583333333333333,
+          0.5777777777777778
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5194444444444444,
+        "units": 18
+      },
+      "request": "F-1-micro",
+      "score": 0.48410894660894654
+    },
+    {
+      "arm": "L",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4094498556998557,
+          0.5684722222222223
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.49090909090909096,
+        "units": 32
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.3222222222222222,
+          0.6000000000000001
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4611111111111112,
+        "units": 18
+      },
+      "request": "F-1-macro",
+      "score": 0.4760101010101011
+    },
+    {
+      "arm": "L",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4092316017316017,
+          0.5203499278499278
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4623376623376624,
+        "units": 32
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.45555555555555555,
+          0.6
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5333333333333333,
+        "units": 18
+      },
+      "request": "F-5-continuous",
+      "score": 0.49783549783549785
+    },
+    {
+      "arm": "L",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4028860028860029,
+          0.505916305916306
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.45252525252525255,
+        "units": 32
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.5166666666666666,
+          0.6083333333333333
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5583333333333332,
+        "units": 18
+      },
+      "request": "F-5-micro",
+      "score": 0.505429292929293
+    },
+    {
+      "arm": "L",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.45692460317460315,
+          0.5942279942279941
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5186868686868688,
+        "units": 32
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.4444444444444444,
+          0.5777777777777777
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5055555555555556,
+        "units": 18
+      },
+      "request": "F-5-macro",
+      "score": 0.5121212121212122
+    },
+    {
+      "arm": "L",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4312391774891775,
+          0.5079383116883116
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4664502164502165,
+        "units": 32
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.41111111111111115,
+          0.5555555555555556
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.48611111111111116,
+        "units": 18
+      },
+      "request": "F-15-continuous",
+      "score": 0.4762806637806638
+    },
+    {
+      "arm": "L",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4226551226551227,
+          0.5067821067821068
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4613997113997115,
+        "units": 32
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.4888888888888889,
+          0.5611111111111111
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5222222222222223,
+        "units": 18
+      },
+      "request": "F-15-micro",
+      "score": 0.49181096681096687
+    },
+    {
+      "arm": "L",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.46652056277056275,
+          0.602020202020202
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5293650793650794,
+        "units": 32
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.39999999999999997,
+          0.6111111111111112
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5055555555555555,
+        "units": 18
+      },
+      "request": "F-15-macro",
+      "score": 0.5174603174603174
+    },
+    {
+      "arm": "L",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4544715007215007,
+          0.6197745310245311
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5385281385281385,
+        "units": 30
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.39999999999999997,
+          0.5888888888888889
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.49444444444444446,
+        "units": 16
+      },
+      "request": "C-F-1",
+      "score": 0.5164862914862915
+    },
+    {
+      "arm": "L",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4555194805194805,
+          0.5772041847041848
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5144660894660894,
+        "units": 30
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.4888888888888889,
+          0.6
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5388888888888889,
+        "units": 16
+      },
+      "request": "C-F-5",
+      "score": 0.5266774891774891
+    },
+    {
+      "arm": "L",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.39740259740259737,
+          0.5266973304473305
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4597402597402597,
+        "units": 30
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.4888888888888889,
+          0.6555555555555558
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5555555555555556,
+        "units": 16
+      },
+      "request": "C-F-15",
+      "score": 0.5076479076479077
+    },
+    {
+      "arm": "C",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.6012229437229437,
+          0.779004329004329
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6875901875901875,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.3333333333333333,
+          0.5277777777777778
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4388888888888889,
+        "units": 18
+      },
+      "request": "F-1-continuous",
+      "score": 0.5632395382395382
+    },
+    {
+      "arm": "C",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.604112554112554,
+          0.7716450216450217
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6862914862914863,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.3333333333333333,
+          0.5277777777777778
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4388888888888889,
+        "units": 18
+      },
+      "request": "F-1-micro",
+      "score": 0.5625901875901875
+    },
+    {
+      "arm": "C",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5928517316017315,
+          0.7803769841269841
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.683982683982684,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.3333333333333333,
+          0.5277777777777778
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4388888888888889,
+        "units": 18
+      },
+      "request": "F-1-macro",
+      "score": 0.5614357864357864
+    },
+    {
+      "arm": "C",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5872240259740261,
+          0.7878084415584413
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6884559884559884,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.3333333333333333,
+          0.5277777777777778
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4388888888888889,
+        "units": 18
+      },
+      "request": "F-5-continuous",
+      "score": 0.5636724386724387
+    },
+    {
+      "arm": "C",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5828968253968254,
+          0.7893939393939394
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6841269841269841,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.3333333333333333,
+          0.5277777777777778
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4388888888888889,
+        "units": 18
+      },
+      "request": "F-5-micro",
+      "score": 0.5615079365079365
+    },
+    {
+      "arm": "C",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.564716810966811,
+          0.7684704184704184
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6658008658008657,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.3333333333333333,
+          0.5277777777777778
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4388888888888889,
+        "units": 18
+      },
+      "request": "F-5-macro",
+      "score": 0.5523448773448774
+    },
+    {
+      "arm": "C",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5836886724386725,
+          0.7772005772005772
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6802308802308802,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.3333333333333333,
+          0.5277777777777778
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4388888888888889,
+        "units": 18
+      },
+      "request": "F-15-continuous",
+      "score": 0.5595598845598846
+    },
+    {
+      "arm": "C",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5921356421356422,
+          0.7708531746031746
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6810245310245311,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.3333333333333333,
+          0.5277777777777778
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4388888888888889,
+        "units": 18
+      },
+      "request": "F-15-micro",
+      "score": 0.55995670995671
+    },
+    {
+      "arm": "C",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5574260461760462,
+          0.7645779220779221
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6617604617604618,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.3333333333333333,
+          0.5277777777777778
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4388888888888889,
+        "units": 18
+      },
+      "request": "F-15-macro",
+      "score": 0.5503246753246753
+    },
+    {
+      "arm": "C",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5342712842712842,
+          0.7361507936507937
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6352092352092352,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.33888888888888885,
+          0.5666666666666667
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.4611111111111111,
+        "units": 18
+      },
+      "request": "C-F-1",
+      "score": 0.5481601731601732
+    },
+    {
+      "arm": "C",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5322510822510823,
+          0.7118344155844154
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6227994227994228,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.33888888888888885,
+          0.5333333333333333
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.45,
+        "units": 18
+      },
+      "request": "C-F-5",
+      "score": 0.5363997113997114
+    },
+    {
+      "arm": "C",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5612536075036075,
+          0.7415584415584415
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6513708513708513,
+        "units": 33
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.35000000000000003,
+          0.5222222222222221
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.45555555555555555,
+        "units": 18
+      },
+      "request": "C-F-15",
+      "score": 0.5534632034632034
+    },
+    {
+      "arm": "LC",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4787463924963925,
+          0.6794381313131312
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5891414141414141,
+        "units": 27
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.5222222222222223,
+          0.6888888888888888
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6,
+        "units": 16
+      },
+      "request": "F-1-continuous",
+      "score": 0.594570707070707
+    },
+    {
+      "arm": "LC",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.44350288600288607,
+          0.6584415584415585
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5574314574314574,
+        "units": 27
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.5277777777777778,
+          0.6444444444444445
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5833333333333334,
+        "units": 16
+      },
+      "request": "F-1-micro",
+      "score": 0.5703823953823954
+    },
+    {
+      "arm": "LC",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.4533874458874459,
+          0.6661616161616162
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5668109668109668,
+        "units": 27
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.5166666666666667,
+          0.7277777777777777
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6,
+        "units": 16
+      },
+      "request": "F-1-macro",
+      "score": 0.5834054834054834
+    },
+    {
+      "arm": "LC",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5577182539682541,
+          0.7506899350649351
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6628427128427129,
+        "units": 27
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.5750000000000001,
+          0.6611111111111111
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6194444444444444,
+        "units": 16
+      },
+      "request": "F-5-continuous",
+      "score": 0.6411435786435786
+    },
+    {
+      "arm": "LC",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5832611832611833,
+          0.8146500721500721
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.7027056277056277,
+        "units": 27
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.5222222222222223,
+          0.7445833333333314
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6222222222222222,
+        "units": 16
+      },
+      "request": "F-5-micro",
+      "score": 0.662463924963925
+    },
+    {
+      "arm": "LC",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.5504310966810967,
+          0.7658044733044733
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6626984126984128,
+        "units": 27
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.5222222222222223,
+          0.6333333333333333
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5777777777777777,
+        "units": 16
+      },
+      "request": "F-5-macro",
+      "score": 0.6202380952380953
+    },
+    {
+      "arm": "LC",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.6144227994227994,
+          0.7859325396825396
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.7024891774891775,
+        "units": 27
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.4444444444444444,
+          0.6944444444444445
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5611111111111112,
+        "units": 16
+      },
+      "request": "F-15-continuous",
+      "score": 0.6318001443001444
+    },
+    {
+      "arm": "LC",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.6233766233766235,
+          0.7692640692640691
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6988455988455989,
+        "units": 27
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.45555555555555555,
+          0.6333333333333334
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5444444444444445,
+        "units": 16
+      },
+      "request": "F-15-micro",
+      "score": 0.6216450216450218
+    },
+    {
+      "arm": "LC",
+      "grid_auc": {
+        "clusters": 11,
+        "interval": [
+          0.6191558441558441,
+          0.7693028499278498
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6966450216450217,
+        "units": 27
+      },
+      "offset_auc": {
+        "clusters": 6,
+        "interval": [
+          0.45555555555555555,
+          0.7722222222222221
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6,
+        "units": 16
+      },
+      "request": "F-15-macro",
+      "score": 0.6483225108225108
+    },
+    {
+      "arm": "LC",
+      "grid_auc": {
+        "clusters": 9,
+        "interval": [
+          0.5424548059964727,
+          0.7207231040564374
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6291446208112875,
+        "units": 20
+      },
+      "offset_auc": {
+        "clusters": 5,
+        "interval": [
+          0.7166666666666666,
+          0.93
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.8133333333333332,
+        "units": 10
+      },
+      "request": "C-F-1",
+      "score": 0.7212389770723104
+    },
+    {
+      "arm": "LC",
+      "grid_auc": {
+        "clusters": 9,
+        "interval": [
+          0.6231922398589066,
+          0.7780467372134039
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6967372134038801,
+        "units": 20
+      },
+      "offset_auc": {
+        "clusters": 5,
+        "interval": [
+          0.61,
+          0.9
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.76,
+        "units": 10
+      },
+      "request": "C-F-5",
+      "score": 0.72836860670194
+    },
+    {
+      "arm": "LC",
+      "grid_auc": {
+        "clusters": 9,
+        "interval": [
+          0.6867283950617283,
+          0.8537918871252206
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.77173721340388,
+        "units": 20
+      },
+      "offset_auc": {
+        "clusters": 5,
+        "interval": [
+          0.64,
+          0.8400000000000001
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.74,
+        "units": 10
+      },
+      "request": "C-F-15",
+      "score": 0.75586860670194
+    }
+  ],
+  "selected": {
+    "arm": "LC",
+    "family": "continuous",
+    "request": "C-F-15",
+    "score": 0.75586860670194
+  }
+}
