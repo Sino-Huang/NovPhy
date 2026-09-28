@@ -69,7 +69,7 @@
     "members_per_ensemble": 39,
     "rule": "fold L trains on every fit shot, long window and ranking cell whose lineage is not L; fold 'all' trains on all 12 fit lineages (the Gate-B checkpoints)"
   },
-  "frozen_at": "2026-09-28T01:17:58Z",
+  "frozen_at": "2026-09-28T01:18:40Z",
   "frozen_before_training_and_scoring": true,
   "guards": {
     "G1": "no training window, long window or ranking cell of a held-out lineage; no fold pool holds its lineage",
@@ -213,7 +213,7 @@
   ],
   "role": "development version under the #87 versioned-protocol policy; selection on leave-one-lineage-out only (EXPLORATORY); held-out lineages are not scored by this version",
   "runner": "scripts/run_decision_dynamics_versions.py",
-  "runner_sha256_at_freeze": "sha256:c277c82803d4836f720218e39a4cda33caa16e1ca8a44e23ce2d874c5ad9d561",
+  "runner_sha256_at_freeze": "sha256:d772e3cb5629157e625a36a0382a38777d115ed98bf3cfdc09b6dcf28783257b",
   "schema": "issue_112_plan_v3",
   "seeds": [
     20260908,
@@ -842,7 +842,7 @@
     "rules": [
       "a version changes only what a pre-declared diagnosis of the previous version names;",
       "if a version's G2 (training stability) fails, the next version may change stability only;",
-      "once G2 passes, a further version needs a named deficiency and stops the series when its",
+      "once G2 passes, a further version needs a named deficiency and stops the series when its best selection score S improves by less than 0.02 over the previous version's; v6 is the last;",
       "the frozen Gate-B recipe is the selected unit of the last version whose G2 passed."
     ],
     "stop_delta": 0.02

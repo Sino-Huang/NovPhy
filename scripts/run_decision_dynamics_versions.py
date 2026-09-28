@@ -164,12 +164,6 @@ def implementation(version):
     return impl
 
 
-def policy_text():
-    return {"rules": [line.strip("- ") for line in __doc__.split("Version policy")[1].split("Modes:")[0]
-                      .strip().split("\n") if line.startswith("- ")],
-            "stop_delta": STOP_DELTA, "last_version": LAST_VERSION}
-
-
 def load_plan(version):
     impl = implementation(version)
     plan = impl.load_plan(impl.OUTPUT)
@@ -181,6 +175,18 @@ def load_plan(version):
 # ---------------------------------------------------------------------------
 # modes
 # ---------------------------------------------------------------------------
+
+def policy_text():
+    block = __doc__.split("Version policy")[1].split("Modes:")[0].strip().split("\n")[1:]
+    rules = []
+    for line in block:
+        line = line.strip()
+        if line.startswith("- "):
+            rules.append(line[2:])
+        elif line and rules:
+            rules[-1] += " " + line
+    return {"rules": rules, "stop_delta": STOP_DELTA, "last_version": LAST_VERSION}
+
 
 def dry_run(version):
     impl = implementation(version)
