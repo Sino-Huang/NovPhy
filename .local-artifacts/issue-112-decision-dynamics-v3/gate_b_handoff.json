@@ -31,7 +31,7 @@
   "family": "hybrid",
   "frozen_at": "2026-09-28T08:28:49Z",
   "gate": "Gate B (#108): the frozen recipe on the #104 sealed held-out split; grid AUC >= 0.65 with lower bound > 0.55 under the tie-free cost",
-  "load_checkpoint": "scripts.run_decision_relevant_dynamics.load_member(OUTPUT, arm, family, 'all', seed); it returns None for a retired member, which Gate B must not score",
+  "load_checkpoint": "scripts.run_decision_dynamics_versions.implementation(3).load_member(OUTPUT, arm, family, 'all', seed)",
   "plan_identity": "issue-112-decision-dynamics-v3",
   "recipe": {
     "arm": "LC",
@@ -220,6 +220,17 @@
   "request": "F-15-macro",
   "retrain": "to retrain on a new fit split, run train_group with the frozen recipe (plan.json training block, the selected arm) on that split's E99 carriers, windows and fit-lineage cells",
   "schema": "issue_112_gate_b_handoff_v3",
+  "scope": {
+    "baseline_contrast": "pre-declared Gate-B contrast: paired grid AUC of the selected hybrid unit minus C*, the continuous-family unit with the largest selection score S under the same LOLO rule (same arm order and tie-break); member-clustered bootstrap, tie-free cost",
+    "candidate_families": [
+      "hybrid"
+    ],
+    "reported_controls": [
+      "no-model action prior",
+      "wrong-anchor control of the selected unit"
+    ],
+    "rule": "Gate-B candidates are hybrid-family units only: the paper's claim is joint horizon-description selection. The continuous family (C-F-1/5/15, C-J: the parameter-matched pure-continuous model of #74/#77, horizon only) is a matched baseline, trained with the identical recipe, never a candidate. The hybrid family's own continuous-description requests (F-1/5/15-continuous) remain candidates."
+  },
   "scoring": "anchor carrier = E99 batch-1 parse of the member's sealed anchor; per candidate m99.rollout_endpoints(model, None, z0, actions, t96.arm_spec(request)); cost = scoring_harness.EndpointCosts(...).row(...)['tie_free']; cell AUC = m99.view on mixed cells; member-clustered bootstrap (10000 draws, PCG64 7201); every scoring phase inside scoring_harness.deterministic_scoring() in a process that did not train",
   "seed_aggregation": "cells are (member, seed); the bootstrap resamples members",
   "selection_evidence": {

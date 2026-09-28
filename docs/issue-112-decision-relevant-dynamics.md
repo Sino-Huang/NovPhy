@@ -171,6 +171,16 @@ version whose G2 passed) is part of the v3 plan.
 - Recipe: v3 arm LC (v3 plan `training` block + `version_spec`); request **F-15-macro**; hybrid family; encoder E99.
 - Checkpoints: `models/LC/hybrid/fold-all/seed-{20260908,20260909,20260910}/predictor.pt`, all three complete. Load them
   with `implementation(3).load_member(OUTPUT, 'LC', 'hybrid', 'all', seed)`. 0 of 39 LC-hybrid members retired.
+- **Scope (declared 2026-09-28, after the v3 publication, before any Gate-B scoring):** Gate-B candidates are
+  hybrid-family units only. The paper's claim is joint horizon-description selection. The continuous family
+  (C-F-1/5/15, C-J; the parameter-matched pure-continuous model of #74/#77, horizon only) is a matched baseline: it is
+  trained with the identical recipe and is never a candidate. The hybrid family's own continuous-description requests
+  (F-*-continuous) remain candidates. The v3 selection, a hybrid unit, is unchanged.
+- **Pre-declared Gate-B contrast:** the selected hybrid unit minus C*, the continuous-family unit with the largest S under
+  the same rule. On v3 LOLO: LC:F-15-macro − LC:C-F-15 = **+0.048 [−0.035, 0.149]** (grid, 33 cells, EXPLORATORY). The
+  hybrid advantage over the matched baseline is not yet resolved.
+- **Consequence for #99:** its Q3 "supported" rested on C-F-1, a continuous-family unit. Under this scope, that is
+  baseline evidence, not method evidence.
 - Gate B should report the no-model action prior and the wrong-anchor control next to the model (v2 and v3 controls). On
   the exposed lineages, the prior alone clears the target.
 - The held-out lineages were not re-scored for v3: v1 used their single post-freeze look. The unbiased test of the v3
@@ -191,6 +201,8 @@ version whose G2 passed) is part of the v3 plan.
 5. v3 plan re-frozen before training (commit eb3cabbb): the policy text had lost a wrapped line; the spec was unchanged.
    v3 skip counts moved out of `training/`, because the v1 handoff code globs it. The v3 series-continuation field
    applies the stop rule only after a stable parent, as the frozen policy states. No record or statistic changed.
+6. After the v3 publication: the Gate-B scope and the baseline contrast were added to the v3 handoff and compute
+   tables, and `--validate` now also checks the handoff. The selection and every existing statistic are unchanged.
 
 Compute: v1 29 964 GPU s (training 28 700 s; diagnostics 239 s; LOLO scoring 852 s; held-out 411 s), wall 29 995 s;
 v2 about 1.6 h of deterministic scoring; v3 25 748 GPU s (training 24 822 s, LOLO 926 s) plus 864 s of controls and a

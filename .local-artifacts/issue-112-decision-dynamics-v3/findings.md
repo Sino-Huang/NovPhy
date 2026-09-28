@@ -139,6 +139,12 @@ No-model action prior (LOLO): 0.8455 [0.6455, 0.9541].
 | 7 | LC | F-1-macro | 0.6339 |
 | 8 | LC | F-5-continuous | 0.6326 |
 
+## Gate-B scope and matched-baseline contrast
+
+Gate-B candidates are hybrid-family units only: the paper's claim is joint horizon-description selection. The continuous family (C-F-1/5/15, C-J: the parameter-matched pure-continuous model of #74/#77, horizon only) is a matched baseline, trained with the identical recipe, never a candidate. The hybrid family's own continuous-description requests (F-1/5/15-continuous) remain candidates.
+
+Selected LC:F-15-macro − C* LC:C-F-15 (S = 0.6671), paired LOLO grid AUC: 0.0477 [-0.0349, 0.1489] over 33 cells (EXPLORATORY (declared after the v3 publication)).
+
 ## Wrong-anchor control of the selected (arm, family)
 
 | inventory | unit | right − wrong | rank stability |

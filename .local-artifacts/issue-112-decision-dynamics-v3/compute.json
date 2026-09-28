@@ -126,6 +126,26 @@
       }
     }
   },
+  "baseline_contrast": {
+    "c_star": "LC:C-F-15",
+    "c_star_score": 0.6671356421356421,
+    "grid": {
+      "cells": 33,
+      "estimate": {
+        "clusters": 11,
+        "interval": [
+          -0.0348502886002886,
+          0.14885461760461752
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.047691197691197715,
+        "units": 33
+      },
+      "members": 11
+    },
+    "label": "EXPLORATORY (declared after the v3 publication)",
+    "selected": "LC:F-15-macro"
+  },
   "compute": {
     "engine_seconds": 0,
     "gpu_seconds": 25748.16070245381,
@@ -277,6 +297,17 @@
       },
       "unit": "LC:F-15-macro"
     }
+  },
+  "gate_b_scope": {
+    "baseline_contrast": "pre-declared Gate-B contrast: paired grid AUC of the selected hybrid unit minus C*, the continuous-family unit with the largest selection score S under the same LOLO rule (same arm order and tie-break); member-clustered bootstrap, tie-free cost",
+    "candidate_families": [
+      "hybrid"
+    ],
+    "reported_controls": [
+      "no-model action prior",
+      "wrong-anchor control of the selected unit"
+    ],
+    "rule": "Gate-B candidates are hybrid-family units only: the paper's claim is joint horizon-description selection. The continuous family (C-F-1/5/15, C-J: the parameter-matched pure-continuous model of #74/#77, horizon only) is a matched baseline, trained with the identical recipe, never a candidate. The hybrid family's own continuous-description requests (F-1/5/15-continuous) remain candidates."
   },
   "guards": {
     "G1": {

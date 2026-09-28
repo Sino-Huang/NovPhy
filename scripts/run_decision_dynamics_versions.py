@@ -72,6 +72,19 @@ VERSIONS = {
 }
 STOP_DELTA = 0.02
 LAST_VERSION = 6
+# declared after the v3 publication (owner decision 2026-09-28), before any Gate-B scoring; the v3
+# selection (a hybrid unit) is unchanged by it
+GATE_B_SCOPE = {
+    "candidate_families": ["hybrid"],
+    "rule": ("Gate-B candidates are hybrid-family units only: the paper's claim is joint horizon-description "
+             "selection. The continuous family (C-F-1/5/15, C-J: the parameter-matched pure-continuous model of #74/"
+             "#77, horizon only) is a matched baseline, trained with the identical recipe, never a candidate. The "
+             "hybrid family's own continuous-description requests (F-1/5/15-continuous) remain candidates."),
+    "baseline_contrast": ("pre-declared Gate-B contrast: paired grid AUC of the selected hybrid unit minus C*, the "
+                          "continuous-family unit with the largest selection score S under the same LOLO rule (same "
+                          "arm order and tie-break); member-clustered bootstrap, tie-free cost"),
+    "reported_controls": ["no-model action prior", "wrong-anchor control of the selected unit"],
+}
 
 read_json = v1.read_json
 write_json = v1.write_json
@@ -159,8 +172,20 @@ def implementation(version):
         plan["prohibited"].append("scoring or reading any held-out record")
         return plan
 
+    original_handoff = impl.handoff
+
+    def handoff(output, plan, selection):
+        if selection["selected"]["family"] not in GATE_B_SCOPE["candidate_families"]:
+            raise ValueError("the selected unit is a matched-baseline (continuous-family) unit, not a Gate-B candidate")
+        out = original_handoff(output, plan, selection)
+        out["scope"] = GATE_B_SCOPE
+        out["load_checkpoint"] = (f"scripts.run_decision_dynamics_versions.implementation({version}).load_member("
+                                  "OUTPUT, arm, family, 'all', seed)")
+        return out
+
     impl.input_bindings = input_bindings
     impl.frozen_plan = frozen_plan
+    impl.handoff = handoff
     return impl
 
 
@@ -372,6 +397,18 @@ def spot_check(impl, universe):
     return None
 
 
+def baseline_contrast(impl, universe, scores, best):
+    """Selected hybrid unit minus C* (the best continuous-family unit by S), paired LOLO grid AUC."""
+    continuous = [row for row in scores if t96.arm_family(row["request"]) == "continuous" and row["score"] is not None]
+    c_star = impl.select_unit(continuous)
+    rows = impl.lolo_rows(impl.OUTPUT, universe, impl.PRIMARY)
+    first = (impl.PRIMARY_COST, best["arm"], best["request"])
+    second = (impl.PRIMARY_COST, c_star["arm"], c_star["request"])
+    return {"selected": f"{best['arm']}:{best['request']}", "c_star": f"{c_star['arm']}:{c_star['request']}",
+            "c_star_score": c_star["score"], "grid": impl.m99.paired(rows, [(1, first), (-1, second)]),
+            "label": "EXPLORATORY (declared after the v3 publication)"}
+
+
 def compute_tables(version, spot):
     impl, plan = load_plan(version)
     output = impl.OUTPUT
@@ -419,6 +456,7 @@ def compute_tables(version, spot):
     previous = previous_best(version)
     gain = best["score"] - previous["score"]
     prior = c2.prior_tables(universe)
+    baseline = baseline_contrast(impl, universe, scores, best)
     return {
         "schema": f"issue_112_compute_v{version}", "identity": impl.IDENTITY, "version": version, "spec": spec,
         "guards": guards, "guards_pass": guards_ok,
@@ -431,6 +469,8 @@ def compute_tables(version, spot):
                                  "stability": controls[impl.PRIMARY]["stability"],
                                  "token": impl.token(q5, guards_ok), "label": "EXPLORATORY"},
         "controls": controls,
+        "gate_b_scope": GATE_B_SCOPE,
+        "baseline_contrast": baseline,
         "action_prior_lolo": {k: v for k, v in prior.items() if k.endswith(":lolo")},
         # the stop rule compares a version with a stable parent; after an unstable parent (a
         # stability-only version) the series continues if a named deficiency justifies it
@@ -519,6 +559,14 @@ def findings_md(version, plan, compute):
     for rank, row in enumerate(top, 1):
         add(f"| {rank} | {row['arm']} | {row['request']} | {row['score']:.4f} |")
     add("")
+    base = compute["baseline_contrast"]
+    add("## Gate-B scope and matched-baseline contrast")
+    add("")
+    add(compute["gate_b_scope"]["rule"])
+    add("")
+    add(f"Selected {base['selected']} − C* {base['c_star']} (S = {base['c_star_score']:.4f}), paired LOLO grid AUC: "
+        f"{cell(base['grid']['estimate'])} over {base['grid']['cells']} cells ({base['label']}).")
+    add("")
     add("## Wrong-anchor control of the selected (arm, family)")
     add("")
     add("| inventory | unit | right − wrong | rank stability |")
@@ -603,6 +651,8 @@ def validate(version):
             raise ValueError("selection.json differs from the frozen rule applied to the retained records")
         _, _, universe = impl.load_universe()
         spot = spot_check(impl, universe)
+    if read_json(impl.OUTPUT / "gate_b_handoff.json") != json.loads(json_text(impl.handoff(impl.OUTPUT, plan, selection))):
+        raise ValueError("gate_b_handoff.json differs from the frozen selection and Gate-B scope")
     fresh = compute_tables(version, spot)
     if read_json(impl.OUTPUT / "compute.json") != json.loads(json_text(fresh)):
         raise ValueError("compute.json differs from the fresh recomputation")
