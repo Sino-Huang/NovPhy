@@ -1,0 +1,235 @@
+{
+  "checkpoints": [
+    {
+      "complete": true,
+      "path": ".local-artifacts/issue-112-decision-dynamics-v3/models/LC/hybrid/fold-all/seed-20260908/predictor.pt",
+      "retired_at": null,
+      "seed": 20260908,
+      "sha256": "sha256:46d7b6759020aeb43faf7cb032b2f468984788f83bb1c3b88b78569a33a4bb0e"
+    },
+    {
+      "complete": true,
+      "path": ".local-artifacts/issue-112-decision-dynamics-v3/models/LC/hybrid/fold-all/seed-20260909/predictor.pt",
+      "retired_at": null,
+      "seed": 20260909,
+      "sha256": "sha256:a6f4d6ee0e0294d5c425a541d1e301efbe894a656be3680dd954fda83fbf5e54"
+    },
+    {
+      "complete": true,
+      "path": ".local-artifacts/issue-112-decision-dynamics-v3/models/LC/hybrid/fold-all/seed-20260910/predictor.pt",
+      "retired_at": null,
+      "seed": 20260910,
+      "sha256": "sha256:80c7e00ff475859aa035a9bd50d02ff5d437f627da284441051fbf5babe0cb92"
+    }
+  ],
+  "encoder": {
+    "checkpoint": ".local-artifacts/issue-99-slot-encoder-fix-v1/encoder/encoder.pt",
+    "identity": "E99",
+    "load": "scripts.run_slot_encoder_fix.load_adapter(SLOT_FIX, 'E')",
+    "sha256": "sha256:cdbe677ab103e872ed6ac7777a3dc8b5aa0432f5771e8aa63a6e4e2d469bdd73"
+  },
+  "family": "hybrid",
+  "frozen_at": "2026-09-28T08:28:49Z",
+  "gate": "Gate B (#108): the frozen recipe on the #104 sealed held-out split; grid AUC >= 0.65 with lower bound > 0.55 under the tie-free cost",
+  "load_checkpoint": "scripts.run_decision_relevant_dynamics.load_member(OUTPUT, arm, family, 'all', seed); it returns None for a retired member, which Gate B must not score",
+  "plan_identity": "issue-112-decision-dynamics-v3",
+  "recipe": {
+    "arm": "LC",
+    "definition": "#77 recipe + long-horizon supervision + decision-contrastive loss (v3: truncated back-propagation every 45 transitions, skip-on-nonfinite with retirement after 10 consecutive skips)",
+    "training": {
+      "execution": "members of one (arm, family) are trained in lock-step groups by a vmapped, torch.compile'd transition (training process only; autotuning allowed)",
+      "group_sizes": {
+        "B_continuous": 39,
+        "B_hybrid": 39,
+        "C_continuous": 39,
+        "C_hybrid": 39,
+        "LC_continuous": 20,
+        "LC_hybrid": 20,
+        "L_continuous": 20,
+        "L_hybrid": 20
+      },
+      "initialization": "torch.manual_seed(seed); s99.new_predictor(family) (from scratch)",
+      "local_loss": "#74/#77 loss (run_issue_74_matched_dynamics.loss_for) in masked form (decision_dynamics.local_loss) on the #99 windows: starts 0..225 step 15, 60 transitions, terminal padding masked; batch of 64 windows sampled uniformly with replacement from the member's pool by torch.Generator().manual_seed(seed)",
+      "long_horizon": {
+        "arms": [
+          "L",
+          "LC"
+        ],
+        "batch_size": 64,
+        "definition": "windows at starts 0, 15, 30, 45, 60 of every fit shot (start below the shot's last position); the step's pair is unrolled horizon // delta transitions; loss = mean over visited positions of row-mean carrier MSE + 0.01 x the #77 carrier-bound penalty; horizon = min(225, 60 + 15 x floor(update / 500))",
+        "every": 500,
+        "first": 60,
+        "increment": 15,
+        "last": 225,
+        "seed_offset": 112001,
+        "starts": [
+          0,
+          15,
+          30,
+          45,
+          60
+        ],
+        "targets": "the E99 parsed carrier at every visited position start + j * delta, terminal absorption past the shot's last frame",
+        "truncation": "every 45 recursive transitions (stable_decision_dynamics)",
+        "weight": 1.0
+      },
+      "matched": "every arm: same architectures and parameter counts, same 9000 updates of 64 #77 windows",
+      "ranking": {
+        "arms": [
+          "C",
+          "LC"
+        ],
+        "candidate_pad": 20,
+        "cells": [
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-001"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-003"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-004"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-005"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-006"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-009"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-010"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-011"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-012"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-013"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-015"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-001"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-003"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-004"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-005"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-006"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-009"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-001"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-006"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-010"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-011"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-012"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-004"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-005"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-006"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-009"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-013"
+          }
+        ],
+        "cells_per_step": 2,
+        "cost": "tie_free (scoring_harness.tie_free on tensors): pig presence - 0.1 x pig-slot center displacement between the anchor carrier and the rollout endpoint at 225",
+        "definition": "per update 2 mixed fit-lineage cells (member x inventory, sampled uniformly with replacement from the member's pool); every verdict-bearing candidate action is rolled out with the step's pair from the member's E99 anchor to 225; loss = mean over cells of the mean over (success, failure) pairs of softplus((cost_success - cost_failure) / 0.1); weight 0.1 x ramp, ramp 0 before update 1000 and linear to 1 by update 2000",
+        "inventories": [
+          "grid",
+          "offset",
+          "angle",
+          "power"
+        ],
+        "ramp": 1000,
+        "seed_offset": 112002,
+        "start": 1000,
+        "temperature": 0.1,
+        "verdict_source": "fit-lineage inventory executions only (#93 grid/offset, #94 power, #87/#89 angle oracle verdicts); no held-out verdict is read",
+        "weight": 0.1
+      },
+      "recipe": {
+        "batch_size": 64,
+        "grad_clip": 1.0,
+        "learning_rate": 0.0001,
+        "steps": 9000,
+        "weight_decay": 0.0001
+      },
+      "schedule": "PAIRS[step % 9]; the continuous family uses the same horizon",
+      "update": "one AdamW over stacked member parameters (elementwise, so per member); per-member gradient clipping to grad_clip; a member with a nonfinite loss or gradient norm is retired at that update (typed terminal failure, never scored)"
+    }
+  },
+  "request": "F-15-macro",
+  "retrain": "to retrain on a new fit split, run train_group with the frozen recipe (plan.json training block, the selected arm) on that split's E99 carriers, windows and fit-lineage cells",
+  "schema": "issue_112_gate_b_handoff_v3",
+  "scoring": "anchor carrier = E99 batch-1 parse of the member's sealed anchor; per candidate m99.rollout_endpoints(model, None, z0, actions, t96.arm_spec(request)); cost = scoring_harness.EndpointCosts(...).row(...)['tie_free']; cell AUC = m99.view on mixed cells; member-clustered bootstrap (10000 draws, PCG64 7201); every scoring phase inside scoring_harness.deterministic_scoring() in a process that did not train",
+  "seed_aggregation": "cells are (member, seed); the bootstrap resamples members",
+  "selection_evidence": {
+    "lolo_records_sha256": "sha256:268acacdd315c5b23bcbf64b5bf1d6617c2f1f64c140851514c6d93d5ea167c2",
+    "score": 0.6937590187590188
+  },
+  "stability_risk": "members of the selected arm and family retired (nonfinite loss or gradient norm, typed terminal failures) during training: 0 of 39 (LC, hybrid) members across all folds and seeds",
+  "usable_seeds": [
+    20260908,
+    20260909,
+    20260910
+  ]
+}

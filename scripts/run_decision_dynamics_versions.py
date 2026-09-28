@@ -211,7 +211,8 @@ def data(version):
 
 
 def skip_path(impl, arm, family, index):
-    return impl.OUTPUT / "training" / f"{arm}--{family}--group{index}.skips.json"
+    # outside training/: the v1 handoff globs training/{arm}--{family}--group*.json
+    return impl.OUTPUT / "skips" / f"{arm}--{family}--group{index}.json"
 
 
 def train(version):
