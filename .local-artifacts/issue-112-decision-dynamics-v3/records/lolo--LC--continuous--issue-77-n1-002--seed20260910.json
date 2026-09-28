@@ -1,0 +1,102 @@
+{
+  "cell": {
+    "arm": "LC",
+    "family": "continuous",
+    "fold": "issue-77-n1-002",
+    "seed": 20260910
+  },
+  "engine_seconds": 0,
+  "inventories": {},
+  "plan_identity": "issue-112-decision-dynamics-v3",
+  "rollout": {
+    "C-F-1": [
+      {
+        "errors": {
+          "15": {
+            "engine_position_mse": 0.03046191856265068,
+            "position_mse": 0.03724367544054985
+          },
+          "150": {
+            "engine_position_mse": 0.042268577963113785,
+            "position_mse": 0.05629889294505119
+          },
+          "225": {
+            "engine_position_mse": 0.0405363067984581,
+            "position_mse": 0.05627882108092308
+          },
+          "30": {
+            "engine_position_mse": 0.039273351430892944,
+            "position_mse": 0.05279562249779701
+          },
+          "60": {
+            "engine_position_mse": 0.04070836305618286,
+            "position_mse": 0.05582060292363167
+          }
+        },
+        "identity": "issue-77-n1-002-a11"
+      }
+    ],
+    "C-F-15": [
+      {
+        "errors": {
+          "15": {
+            "engine_position_mse": 0.012987230904400349,
+            "position_mse": 0.002142674755305052
+          },
+          "150": {
+            "engine_position_mse": 0.01824818179011345,
+            "position_mse": 0.01544682402163744
+          },
+          "225": {
+            "engine_position_mse": 0.017571117728948593,
+            "position_mse": 0.02115749381482601
+          },
+          "30": {
+            "engine_position_mse": 0.016064930707216263,
+            "position_mse": 0.006008604541420937
+          },
+          "60": {
+            "engine_position_mse": 0.013875645585358143,
+            "position_mse": 0.0086728036403656
+          }
+        },
+        "identity": "issue-77-n1-002-a11"
+      }
+    ],
+    "C-F-5": [
+      {
+        "errors": {
+          "15": {
+            "engine_position_mse": 0.016033440828323364,
+            "position_mse": 0.007578566204756498
+          },
+          "150": {
+            "engine_position_mse": 0.03894008696079254,
+            "position_mse": 0.06194302812218666
+          },
+          "225": {
+            "engine_position_mse": 0.07002338767051697,
+            "position_mse": 0.1053890809416771
+          },
+          "30": {
+            "engine_position_mse": 0.01545592863112688,
+            "position_mse": 0.011436092667281628
+          },
+          "60": {
+            "engine_position_mse": 0.017593955621123314,
+            "position_mse": 0.018569836392998695
+          }
+        },
+        "identity": "issue-77-n1-002-a11"
+      }
+    ]
+  },
+  "schema": "issue_112_lolo_record_v3",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "typed_failure": null
+}

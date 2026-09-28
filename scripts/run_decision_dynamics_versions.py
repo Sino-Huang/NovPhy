@@ -345,12 +345,14 @@ def skip_counts(impl, plan):
 
 
 def previous_best(version):
+    """The parent version's selected unit and whether the parent's G2 (stability) passed."""
     parent = spec_of(version)["parent"]
     if parent == 1:
         selection = read_json(v1.OUTPUT / "selection.json")
-        return {"version": 1, **selection["selected"]}
+        g2 = read_json(v1.OUTPUT / "compute.json")["guards"]["G2"]["pass"]
+        return {"version": 1, **selection["selected"], "g2_passed": g2}
     compute = read_json(implementation(parent).OUTPUT / "compute.json")
-    return {"version": parent, **compute["Q3_selected_target"]["selected"]}
+    return {"version": parent, **compute["Q3_selected_target"]["selected"], "g2_passed": compute["guards"]["G2"]["pass"]}
 
 
 def spot_check(impl, universe):
@@ -430,9 +432,13 @@ def compute_tables(version, spot):
                                  "token": impl.token(q5, guards_ok), "label": "EXPLORATORY"},
         "controls": controls,
         "action_prior_lolo": {k: v for k, v in prior.items() if k.endswith(":lolo")},
+        # the stop rule compares a version with a stable parent; after an unstable parent (a
+        # stability-only version) the series continues if a named deficiency justifies it
         "series": {"previous": previous, "gain_in_S": gain, "stop_delta": STOP_DELTA,
                    "g2_passed": guards["G2"]["pass"],
-                   "continue": (version < LAST_VERSION and (not guards["G2"]["pass"] or gain >= STOP_DELTA))},
+                   "stop_rule_applies": previous["g2_passed"],
+                   "continue": (version < LAST_VERSION
+                                and (not guards["G2"]["pass"] or not previous["g2_passed"] or gain >= STOP_DELTA))},
         "selection": {"scores": scores, "frozen_at": selection["frozen_at"]},
         "lolo": lolo, "rollout": {"lolo": curves, "lolo_nonfinite": nonfinite,
                                    "lolo_contrasts": impl.rollout_contrasts(per, impl.ARMS, "B")},

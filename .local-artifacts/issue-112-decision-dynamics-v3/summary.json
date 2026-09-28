@@ -1,0 +1,64 @@
+{
+  "engine_seconds": 0,
+  "frozen_at": "2026-09-28T01:18:40Z",
+  "guards_pass": true,
+  "identity": "issue-112-decision-dynamics-v3",
+  "questions": {
+    "Q1_long_horizon": {
+      "label": "EXPLORATORY",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "Q2_contrastive": {
+      "label": "EXPLORATORY",
+      "token": "supported"
+    },
+    "Q3_selected_target": {
+      "label": "EXPLORATORY",
+      "token": "supported"
+    },
+    "Q5_anchor_dependence": {
+      "label": "EXPLORATORY",
+      "token": "supported"
+    }
+  },
+  "schema": "issue_112_report_v3",
+  "selected": {
+    "arm": "LC",
+    "family": "hybrid",
+    "request": "F-15-macro",
+    "score": 0.6937590187590188
+  },
+  "series": {
+    "continue": true,
+    "g2_passed": true,
+    "gain_in_S": -0.06210958794292121,
+    "previous": {
+      "arm": "LC",
+      "family": "continuous",
+      "g2_passed": false,
+      "request": "C-F-15",
+      "score": 0.75586860670194,
+      "version": 1
+    },
+    "stop_delta": 0.02,
+    "stop_rule_applies": false
+  },
+  "spec": {
+    "arms": [
+      "B",
+      "L",
+      "C",
+      "LC"
+    ],
+    "change": "truncated back-propagation: the long-horizon and ranking recursions are detached after every 45 transitions (Delta = 5 and 15 unchanged; Delta = 1 in 45-frame gradient segments); a nonfinite update is skipped per member (parameters and AdamW moments untouched), and a member is retired only after 10 consecutive skips",
+    "diagnosis": "v1 retired 28/312 members (L 5/78, LC 23/78, B and C 0), every one on a Delta = 1 update at curriculum horizon >= 165. An instrumented replay of LC/continuous fold 006 seed 20260909 measured per-term gradient norms on Delta = 1 updates of up to 2.2e3 (long-horizon) and 1.1e4 (ranking) against at most 1.2 (#77 local): exploding gradients through up to 225 recursive transitions; an overflow retires the member. No Delta = 5 update (45 recursive transitions) of any of the 312 members was nonfinite.",
+    "long": {},
+    "parent": 1,
+    "patience": 10,
+    "rank": {},
+    "skip_cap": 45,
+    "truncation": 45,
+    "version": 3
+  },
+  "version": 3
+}

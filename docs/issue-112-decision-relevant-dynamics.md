@@ -7,13 +7,15 @@ Parent: #108. Shared rules of #85 apply; #111 scoring contract adopted. Prior di
 | --- | --- | --- |
 | v1 (frozen 2026-09-27T13:08:12Z, before training and scoring; recipe frozen by selection 21:22:45Z, before any held-out record) | `scripts/run_decision_relevant_dynamics.py`, `world_model/training/decision_dynamics.py` | `.local-artifacts/issue-112-decision-relevant-dynamics-v1/` |
 | v2 controls (frozen 2026-09-27T21:36:19Z, **after** every v1 outcome) | `scripts/run_decision_dynamics_controls.py` | `.local-artifacts/issue-112-controls-v2/` |
+| v3 stable recipe (frozen 2026-09-28T01:18:40Z, after every v1/v2 outcome; LOLO only; **the Gate-B recipe**) | `scripts/run_decision_dynamics_versions.py --version 3`, `world_model/training/stable_decision_dynamics.py` | `.local-artifacts/issue-112-decision-dynamics-v3/` |
 
 Validation (all exit 0, `conda activate novphy && source env.sh`):
 
 ```
 python -u -m scripts.run_decision_relevant_dynamics --validate
 python -u -m scripts.run_decision_dynamics_controls --validate   # also runs the v1 --validate
-pytest tests/test_issue_112_decision_dynamics.py
+python -u -m scripts.run_decision_dynamics_versions --version 3 --validate
+pytest tests/test_issue_112_decision_dynamics.py tests/test_issue_112_stable_dynamics.py
 ```
 
 Zero engine seconds. Every scoring phase and `--validate` runs under `deterministic_scoring()` in a process that did not
@@ -125,18 +127,54 @@ action-only shortcut, which could pass a ranking gate without dynamics. v2 re-sc
   under LOLO: each lineage's successful actions are rare elsewhere. On the held-out grid it gives **0.90**, and on the
   held-out power set 0.96. On these exposed lineages, a verdict-frequency prior beats every model.
 
-## Gate-B handoff (`gate_b_handoff.json`)
+## 6. v3: stable recipe (LOLO only; held-out not scored)
 
-- Recipe: arm LC (plan.json `training` block); request C-F-15; continuous family; encoder E99 (sha256 in the handoff).
-- Checkpoints: fold 'all', `models/LC/continuous/fold-all/seed-*/predictor.pt`. **Only seed 20260909 is usable.** Seeds
-  20260908 and 20260910 were retired at updates 5518 and 7615, and `load_member` returns None for them. 17 of 39
-  LC-continuous members retired across all folds.
-- Scoring procedure, bootstrap and target are in the handoff. Gate B should also report the no-model action prior and the
-  wrong-anchor control (`run_decision_dynamics_controls.prior_tables` / `control_record`). On exposed lineages the prior
-  alone clears the target, so a Gate-B pass without these controls would not show decision-relevant dynamics.
-- Risk: the long-horizon arms are numerically unstable under full back-propagation through 225 steps. A retrain on the
-  #104 fit split with this recipe should expect typed member failures. A stabilised recipe (truncated back-propagation or
-  a skip-update rule) would be a new version, re-selected by LOLO before Gate B.
+Diagnosis of the v1 failures:
+- **Where:** all 28 retirements were Δ=1 updates at curriculum horizon ≥ 165.
+- **Why:** an instrumented replay measured Δ=1 gradient norms of up to 2.2e3 (long-horizon term) and 1.1e4 (ranking term),
+  against about 1 for the #77 local term. This is an exploding gradient through up to 225 recursive transitions.
+- **What stayed finite:** every Δ=5 update (45 transitions) of all 312 members.
+
+Change (v3 spec, frozen before training):
+- **Truncated back-propagation every 45 transitions.** Δ=5 and Δ=15 are unchanged; Δ=1 gets 45-frame gradient segments.
+- **Skip-on-nonfinite.** A nonfinite update is skipped per member, and a member is retired only after 10 consecutive
+  skips.
+
+The v1 runner and module stay hash-bound and untouched: v3 runs a private copy of the v1 implementation with the frozen
+v3 spec. The version policy (v4–v6 need a named deficiency and stop when S gains < 0.02; the Gate-B recipe is the last
+version whose G2 passed) is part of the v3 plan.
+
+| question (LOLO, EXPLORATORY) | v1 | v3 |
+| --- | --- | --- |
+| training stability (G2) | 28/312 retired | **0/312 retired, 0 skipped updates** |
+| Q1 long horizon L − B, grid | −0.0240 [−0.0754, 0.0166], insufficient (G2) | −0.0100 [−0.0569, 0.0370], readiness_or_precision_insufficient |
+| Q2 contrastive C − B, grid | +0.1661 [0.0770, 0.2526], insufficient (G2) | +0.1200 [0.0337, 0.1951], **supported** |
+| Q3 selected unit, grid AUC | LC:C-F-15 0.7717 [0.6867, 0.8538], insufficient (G2) | LC:F-15-macro **0.7153 [0.6564, 0.7731], supported** |
+| Q5 anchor dependence of the selected unit, grid | +0.2108 [0.1413, 0.2804] (v2) | +0.1965 [0.1346, 0.2661], **supported** |
+| selection score S (grid, offset mean) | 0.7559 | 0.6938 |
+
+- **v1's S was optimistic:** it averaged over the surviving members of an unstable recipe, and the top unit scanned
+  48 units. v3's S covers every member.
+- **Grid, request-mean AUC:** B 0.508, L 0.498, C 0.628, LC 0.625. The selected unit's offset AUC is 0.672, but its offset
+  anchor dependence is +0.091 [−0.029, 0.221], weaker than on the grid.
+- **Contrasts beyond Q1/Q2:** LC − C is −0.003 on the grid and +0.184 [0.078, 0.328] on offset. Long-horizon supervision
+  adds ranking value only together with the contrastive loss, and only on offset.
+- **Rollout error at t = 225 (LOLO):** L and LC keep hybrid Δ=1 in the 0.05–0.06 range (LC C-F-1: 0.17), against 3600–3900 for B. C alone
+  diverges further than in v1 (13 671 at F-1-continuous).
+- **LC-continuous dynamics cost:** final local loss 0.018, against B's 0.00075. The contrastive term costs dynamics
+  accuracy in the continuous family; the selected unit is hybrid, where LC's local loss equals B's.
+- **Series stopped at v3.** Under the frozen policy another version was allowed, but no deficiency justified it for the
+  Gate-B unit. Each version adds a look at the same 11 lineages, and a v4 would bind Gate B even if it scored lower.
+
+## Gate-B handoff (v3 `gate_b_handoff.json`; supersedes the v1 handoff)
+
+- Recipe: v3 arm LC (v3 plan `training` block + `version_spec`); request **F-15-macro**; hybrid family; encoder E99.
+- Checkpoints: `models/LC/hybrid/fold-all/seed-{20260908,20260909,20260910}/predictor.pt`, all three complete. Load them
+  with `implementation(3).load_member(OUTPUT, 'LC', 'hybrid', 'all', seed)`. 0 of 39 LC-hybrid members retired.
+- Gate B should report the no-model action prior and the wrong-anchor control next to the model (v2 and v3 controls). On
+  the exposed lineages, the prior alone clears the target.
+- The held-out lineages were not re-scored for v3: v1 used their single post-freeze look. The unbiased test of the v3
+  recipe is Gate B on the #104 sealed split.
 
 ## Post-freeze changes (disclosed)
 
@@ -150,7 +188,11 @@ action-only shortcut, which could pass a ranking gate without dynamics. v2 re-sc
    retired. v2 G5 re-scores every complete held-out and LOLO right-anchor block against the v1 records (max delta 0).
 4. After the v2 freeze and the v2 records, before the v2 publication: the v2 runner reads its own records with the v2
    identity check. It had used the v1 reader, which rejects v2 records. No record or statistic changed.
+5. v3 plan re-frozen before training (commit eb3cabbb): the policy text had lost a wrapped line; the spec was unchanged.
+   v3 skip counts moved out of `training/`, because the v1 handoff code globs it. The v3 series-continuation field
+   applies the stop rule only after a stable parent, as the frozen policy states. No record or statistic changed.
 
 Compute: v1 29 964 GPU s (training 28 700 s; diagnostics 239 s; LOLO scoring 852 s; held-out 411 s), wall 29 995 s;
-v2 about 1.6 h of deterministic scoring; engine seconds 0. Checkpoints (2.2 GB) and the training-data cache stay local under the
-existing ignore policy; records, plans, selection, handoff and renderings are tracked.
+v2 about 1.6 h of deterministic scoring; v3 25 748 GPU s (training 24 822 s, LOLO 926 s) plus 864 s of controls and a
+12 min failure replay; engine seconds 0. Checkpoints (2.2 GB per version) and training-data caches stay local under the
+existing ignore policy; records, plans, selections, handoffs and renderings are tracked.
