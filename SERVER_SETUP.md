@@ -28,7 +28,7 @@ Scope: steps 1–6 of the server-migration checklist. Only this file is committe
 | 3. Unit tests | PASS | `47 passed in 5.93s` (all five files) |
 | 4. Cross-hardware replication | **FAIL** | before the rewrite: 3/5 blocked by missing `/p` paths, 2/5 numeric disagreements (deltas below). After the rewrite: 5/5 fail on frozen-input hash bindings. **Cross-hardware replication did not pass.** |
 | 5. Training sanity | PASS | `--version 3 --dry-run` exit 0; compiled 4-member ensemble: 0.24–0.28 s per Δ = 1 full-horizon update (numbers below) |
-| 6. Capture stack | PARTIAL | Xvnc, ffmpeg, GL/Vulkan and Java 21 present; player runs 20 s with no crash, **software rendering (llvmpipe)**; **Unity editor has no license** |
+| 6. Capture stack | PASS (with rendering caveat) | Xvnc, ffmpeg, GL/Vulkan and Java 21 present; player renders its title screen correctly in **software (llvmpipe)**, no crash; Unity editor licensed (re-activated by the owner), batch-mode check exit 0 |
 
 ## Changes made
 
@@ -47,8 +47,12 @@ Scope: steps 1–6 of the server-migration checklist. Only this file is committe
    - `git config --global user.name "Sukai Huang"`
    - `git config --global user.email "hsk6808065@163.com"`
    - `gh auth setup-git` makes `gh` the credential helper for `https://github.com`, so HTTPS pushes use the gh login. `origin` itself is SSH and already works (`git ls-remote origin` succeeds).
-4. **Done by the owner, not by me:** `gh auth login`, and installed `openjdk-21-jre-headless` (21.0.12.1+1-1-24.04.4-Ubuntu).
-5. **Nothing else.** No other system packages, drivers, environment variables, symlinks or license files were changed. I edited no runner or module.
+4. **Done by the owner, not by me:** `gh auth login`; installed `openjdk-21-jre-headless` (21.0.12.1+1-1-24.04.4-Ubuntu); re-activated the Unity license through Unity Hub, which wrote `~/.local/share/unity3d/Unity/Unity_lic.ulf`.
+5. **Unity Hub link handler.** The extracted Hub had no handler for `unityhub://`, so the browser login could not return to Hub. Fix:
+   - Created `~/.local/share/applications/unityhub.desktop` with `Exec=…/hub-3.20.0/root/usr/bin/unityhub --no-sandbox --disable-gpu %U` and `MimeType=x-scheme-handler/unityhub;application/x-unityhub;`.
+   - Ran `update-desktop-database ~/.local/share/applications` and `xdg-mime default unityhub.desktop x-scheme-handler/unityhub`.
+   - Why the flags: Hub needs `--no-sandbox` because Ubuntu 24.04 restricts unprivileged user namespaces (`kernel.apparmor_restrict_unprivileged_userns=1`); without it Hub exits with `No usable sandbox!`. `--disable-gpu` avoids `GPU process isn't usable` on displays without GPU GL.
+6. **Nothing else.** No other system packages, drivers, environment variables or symlinks were changed. I edited no runner or module.
 
 ## Step 1 — paths
 
@@ -280,15 +284,17 @@ The rewrite changed the sha256 of the bound plans, so every validate now stops a
 - **Java:** `/usr/bin/java` is OpenJDK 21.0.12.1 (`openjdk-21-jre-headless`). `scripts/smoke_physics_capture.py` launches `java -jar ./game_playing_interface.jar` (built with JDK 13.0.2, `Main-Class: server.ABServer`).
   - Compatibility: the jar's newest class files are major version 56 (Java 12); Java 21 reads up to 65.
   - `java --dry-run -jar .local-artifacts/issue-77-n1-v1/player/game_playing_interface.jar` exits 0. That loads `server.ABServer` without running `main`, so no engine was started.
-- Player smoke (the one allowed launch):
+- Player smoke (two short launches of a `/tmp` copy; no level, no agent, no gameplay):
   - Ran a `/tmp` copy of `.local-artifacts/issue-77-n1-v1/player/`, because the `9001.x86_64` wrapper renames files in its own directory.
   - Launched `./9001.x86_64 -logFile …` (wrapper adds `-force-glcore -screen-width 840 -screen-height 480`) for 20 s on a private `Xvnc :197`, with `LD_LIBRARY_PATH` stripped.
   - Result: alive after 20 s, no crash or signal.
   - `Renderer: llvmpipe (LLVM 20.1.2, 256 bits)`, `Vendor: Mesa`, `Version: 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2`: **software rendering, no NVIDIA GPU used.** `nvidia-smi` showed no player process.
   - One `DirectoryNotFoundException` for `9001_Data/StreamingAssets/Levels`. Expected for the bare player: the capture fills `Levels/` per attempt.
-  - The RTX 3090 workstation also rendered in software. A retained #87 attempt log shows `llvmpipe (LLVM 22.1.6)`, `Mesa 26.1.2-arch1.1`. **Risk:** the Mesa/LLVM version differs (25.2.8/20.1 here vs 26.1.2/22.1 there), so renderings captured here may not be byte-identical to the retained ones.
+  - Second launch, for a rendering check: ffmpeg `x11grab` screenshots of the private display at 5, 12 and 20 s. All three show the correct Science Birds title screen (logo, birds, PLAY button, ground) filling the 840×480 player area, with 8,920 distinct colours. The renderer was again llvmpipe on Mesa 25.2.8.
+  - The RTX 3090 workstation also rendered in software. A retained #87 attempt log shows `llvmpipe (LLVM 22.1.6)`, `Mesa 26.1.2-arch1.1`.
+  - **Risk:** the Mesa/LLVM version differs (25.2.8/20.1 here vs 26.1.2/22.1 there), so frames captured here may not be byte-identical to the retained ones. The title-screen check shows that rendering works; it cannot show that in-level frames match the 3090, because that needs a capture run.
 - Unity editor `~/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity` (`UNITY_2019_4_41F2` is unset):
-  - Launched with `-batchmode -quit -nographics -logFile -`; exit 1 after ~45 s.
-  - Log: `Pro License: NO` … `Failed to activate/update license Missing or bad username or password`.
-  - No `Unity_lic.ulf` exists in `~/.local/share/unity3d/Unity/` or `.cache/xdg/unity3d/Unity/` (the `XDG_DATA_HOME` set by `env.sh`).
-  - **The owner must re-activate the license.** I made no workaround.
+  - Before re-activation: `-batchmode -quit -nographics -logFile -` exited 1 with `Failed to activate/update license Missing or bad username or password`; no `Unity_lic.ulf` existed anywhere.
+  - After the owner re-activated through Hub, the same command **exits 0**. Log: `Successfully connected to LicensingClient`, `Serial number assigned to: "F4-HCSV-G8FX-6VYN-NB2J-XXXX"`, `Pro License: NO` (Personal), `Current license is already valid and activated`, `Exiting batchmode successfully now!`. The license file `UpdateDate` is 2026-10-04T03:27:31.
+  - **Caveat: the license is found only without `env.sh`'s `XDG_DATA_HOME`.** With `XDG_DATA_HOME=$PWD/.cache/xdg` the editor exits 1 with the same license error, because it looks in `.cache/xdg/unity3d/Unity/`. This is the existing repo convention, not a migration break: `run_issue_76_canonical_player.py` drops `XDG_DATA_HOME` before calling the editor ("Do not make the editor activate a second repository-local seat"). `scripts/build_physics_player.sh` does not drop it, so run it as `env -u XDG_DATA_HOME scripts/build_physics_player.sh …` or from a shell that has not sourced `env.sh`.
+  - Note: Hub created `~/.local/share/unity3d/Unity/` with mode 777 and `Unity_lic.ulf` with mode 777, so the other accounts on this shared server can read the license. Left unchanged; the owner can tighten it with `chmod 700 ~/.local/share/unity3d/Unity && chmod 600 ~/.local/share/unity3d/Unity/Unity_lic.ulf`.
