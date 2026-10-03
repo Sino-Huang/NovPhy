@@ -130,6 +130,36 @@ Throughput: 12.7 s/branch amortized (single pass, including the cold-start ramp)
 - The #85 single-RTX-3090 hardware gate is carried as a single-GPU gate on the 4 × RTX 5090 server. Capture
   uses no GPU.
 
+## 6. Phase 2: campaign capture (running)
+
+| Item | Location |
+| --- | --- |
+| Runner (frozen membership, limits, stop rules; resumable, no retries) | `scripts/run_power_cohort_campaign.py` |
+| Report (capture accounting, mixed-verdict yield per level type) | `scripts/publish_power_cohort_campaign.py` |
+| Campaign directory | `.local-artifacts/issue-104-power-cohort-campaign-v1/` (one sub-directory per stream) |
+
+- Launched 2026-10-03T12:29Z on 16 workers. The manifest binds the plan, pipeline, runner, player, renderer
+  libraries, smoke summary and the frozen branch digest; a resumed `--run` refuses any difference.
+- Streams run in the frozen order. The pipeline enforces S2 (free bytes) and S3 (the remaining artifact
+  allowance is passed per stream). The runner enforces S1 (typed-failure share > 0.05 once ≥ 200 branches
+  have finished, counted over every stream) and S4 (wall over closed runs plus the live run). A stop writes
+  `stop.json` with every undispatched branch as `campaign_stopped:<rule>`; `--run` refuses to continue.
+- **Placement (deviation from the smoke layout).** `/mnt/array` is mergerfs with an existing-path create
+  policy, so a directory's files all land on the branch that holds it; the smoke's attempts sit on one
+  branch. One branch (≤ 2.3 TiB free) cannot hold the ~4 TiB campaign, and an attempt's player hard links
+  must stay on one branch. Each stream directory is therefore created on one branch before its first
+  capture (largest projected stream first, onto the branch with the most unreserved bytes); the plan is
+  recorded in `campaign-manifest.json` under `placement`. Capture code and membership are unchanged.
+- **GPU.** Capture renders on the CPU (llvmpipe). No other GPU job runs while the campaign runs; the runner
+  samples every GPU every 300 s into `gpu-accounting.jsonl`, and the report counts samples with a compute
+  process.
+- No outcome is read while the campaign runs: `--status` reports progress and typed failures only, and
+  the report refuses a campaign that is not terminal (`complete.json` or a finalized `stop.json`).
+- The report computes the engine verdict in one pass over the retained chunks with the frozen #85 channel
+  functions (the ones `capture_pipeline_v2.branch_outcome` applies), without re-validating every sample;
+  on the 160 smoke novelty branches it matches `branch_outcome` on 160 / 160 (verdict, consistency, stop
+  kind).
+
 ## Reproduction
 
 ```bash
@@ -138,4 +168,11 @@ python -u -m scripts.derive_capture_window_spec --validate
 python -u -m scripts.prepare_power_cohort --validate
 python -u -m scripts.run_power_cohort_smoke --validate
 python -m pytest -q tests/test_issue_104_power_cohort.py tests/test_native_segment_trace.py
+
+# phase 2
+python -u -m scripts.run_power_cohort_campaign --dry-run
+python -u -m scripts.run_power_cohort_campaign --run       # resumable; detached launch in run.log
+python -u -m scripts.run_power_cohort_campaign --status
+python -u -m scripts.publish_power_cohort_campaign --publish   # after complete.json / stop.json
+python -u -m scripts.publish_power_cohort_campaign --validate
 ```

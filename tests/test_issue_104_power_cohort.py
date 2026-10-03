@@ -1,11 +1,15 @@
-"""#104 joint cohort freeze: depth rule, #113 window rule check, hard-link byte accounting."""
+"""#104 joint cohort: depth rule, #113 window rule check, hard-link byte accounting, campaign S1 rule, yield."""
+from collections import Counter
 import os
 from pathlib import Path
 import tempfile
+import time
 import unittest
 
 from scripts import capture_pipeline_v2 as pipeline
 from scripts import prepare_power_cohort as cohort
+from scripts import publish_power_cohort_campaign as publish
+from scripts import run_power_cohort_campaign as campaign
 from scripts import run_power_cohort_smoke as smoke
 
 
@@ -85,6 +89,50 @@ class ByteAccountingTests(unittest.TestCase):
             seen = set()
             self.assertEqual(pipeline._attempt_bytes(root / "player", seen), 500)   # size / link count
             self.assertEqual(pipeline._attempt_bytes(root / "attempt", seen), 300)
+
+
+
+def monitor(finished, failed, wall_base=0.0):
+    value = campaign.Monitor.__new__(campaign.Monitor)
+    value.counts = Counter(finished=finished, failed=failed)
+    value.wall_base, value.started, value.wall_cap = wall_base, time.monotonic(), 302.8 * 3600
+    return value
+
+
+class CampaignStopRuleTests(unittest.TestCase):
+    def test_failure_share_applies_only_from_two_hundred_finished_branches(self):
+        self.assertIsNone(monitor(199, 199).rule())
+        self.assertEqual(monitor(200, 11).rule()[0], "S1_failure_rate")
+
+    def test_failure_share_must_exceed_five_percent(self):
+        self.assertIsNone(monitor(200, 10).rule())
+
+    def test_wall_cap_counts_closed_runs(self):
+        self.assertEqual(monitor(0, 0, wall_base=302.8 * 3600 + 1).rule()[0], "S4_wall_cap_hours")
+
+
+def branch(level, removed, status="complete", inventories=("grid",)):
+    return {"stream": "s", "level_type": "t", "level": level, "status": status, "pig_removed": removed,
+            "inventories": list(inventories)}
+
+
+class YieldTests(unittest.TestCase):
+    def test_mixed_needs_both_verdicts_over_a_fully_captured_inventory(self):
+        rows = [branch("a", True), branch("a", False),          # mixed
+                branch("b", True), branch("b", True),           # all removed
+                branch("c", False), branch("c", None, "failed"),  # incomplete, never mixed
+                branch("d", False), branch("d", False)]         # none removed
+        (row,) = publish.yield_table(rows)
+        self.assertEqual((row["levels"], row["complete"], row["incomplete"]), (4, 3, 1))
+        self.assertEqual((row["mixed"], row["all_removed"], row["none_removed"]), (1, 1, 1))
+        self.assertAlmostEqual(row["mixed_share"], 1 / 3, places=4)
+
+    def test_inventories_are_judged_separately_on_shared_candidates(self):
+        rows = [branch("a", True, inventories=("grid", "angle")), branch("a", False, inventories=("grid",)),
+                branch("a", True, inventories=("angle",))]
+        table = {row["inventory"]: row for row in publish.yield_table(rows)}
+        self.assertEqual(table["grid"]["mixed"], 1)
+        self.assertEqual(table["angle"]["all_removed"], 1)
 
 
 if __name__ == "__main__":
