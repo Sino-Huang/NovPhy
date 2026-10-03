@@ -1,0 +1,463 @@
+{
+  "consumer_issues": [
+    104,
+    110
+  ],
+  "engine_seconds": 0,
+  "evidence": {
+    "per_level_type": {
+      "novelty_level_0/type010102": {
+        "censored_launched_bird_end_speed_p50_p90": [
+          0.1244,
+          0.2165
+        ],
+        "censored_moving_at_end": {
+          "bird": 61,
+          "pig": 1
+        },
+        "censored_structure_at_rest_at_cap": 61,
+        "collapse": {
+          "last_change_frame_p50_p90_max": [
+            192.0,
+            321.0,
+            492.0
+          ],
+          "positive_frames_per_lag": {
+            "1": {
+              "frames": 52740,
+              "positive": 99
+            },
+            "15": {
+              "frames": 51284,
+              "positive": 651
+            },
+            "5": {
+              "frames": 52324,
+              "positive": 267
+            }
+          },
+          "share": 0.2981,
+          "shots_with_nonbird_support_change": 31
+        },
+        "frames": {
+          "added_by_rule_upper_bound": 2100,
+          "old_window": 52844,
+          "relative_increase_upper_bound": 0.0397
+        },
+        "launched_bird_destroyed_in_window": 39,
+        "longer_cap_projection": {
+          "bird_dead_by_cap_seconds": {
+            "12": 3,
+            "16": 31,
+            "20": 37,
+            "24": 40,
+            "30": 41,
+            "40": 41
+          },
+          "censored": 62,
+          "censored_without_projection": 20,
+          "label": "DESCRIPTIVE model projection (per-shot exponential decay of the launched bird's speed over the last physics second, extrapolated to the 0.01 u/s death speed); not observed"
+        },
+        "settle": {
+          "rest_step_after_decision_p10_p50_p90": [
+            14201.0,
+            16031.5,
+            25981.2
+          ],
+          "settled_frames_new_window_upper_bound": 2142,
+          "settled_frames_old_window": 42,
+          "settled_frames_per_shot_new_window_upper_bound": 20.596,
+          "share": 0.4038,
+          "shots_reaching_engine_rest": 42
+        },
+        "shots": 104,
+        "stop_kinds_old_window": {
+          "censored": 62,
+          "stable_entered": 42
+        }
+      },
+      "novelty_level_0/type010103": {
+        "censored_launched_bird_end_speed_p50_p90": [
+          0.1145,
+          0.2823
+        ],
+        "censored_moving_at_end": {
+          "bird": 63
+        },
+        "censored_structure_at_rest_at_cap": 63,
+        "collapse": {
+          "last_change_frame_p50_p90_max": [
+            157.0,
+            407.4,
+            561.0
+          ],
+          "positive_frames_per_lag": {
+            "1": {
+              "frames": 54441,
+              "positive": 429
+            },
+            "15": {
+              "frames": 52985,
+              "positive": 1567
+            },
+            "5": {
+              "frames": 54025,
+              "positive": 933
+            }
+          },
+          "share": 0.3558,
+          "shots_with_nonbird_support_change": 37
+        },
+        "frames": {
+          "added_by_rule_upper_bound": 1050,
+          "old_window": 54545,
+          "relative_increase_upper_bound": 0.0193
+        },
+        "launched_bird_destroyed_in_window": 30,
+        "longer_cap_projection": {
+          "bird_dead_by_cap_seconds": {
+            "12": 3,
+            "16": 19,
+            "20": 28,
+            "24": 30,
+            "30": 33,
+            "40": 36
+          },
+          "censored": 63,
+          "censored_without_projection": 25,
+          "label": "DESCRIPTIVE model projection (per-shot exponential decay of the launched bird's speed over the last physics second, extrapolated to the 0.01 u/s death speed); not observed"
+        },
+        "settle": {
+          "rest_step_after_decision_p10_p50_p90": [
+            6705.0,
+            18649.0,
+            23949.0
+          ],
+          "settled_frames_new_window_upper_bound": 1071,
+          "settled_frames_old_window": 21,
+          "settled_frames_per_shot_new_window_upper_bound": 10.298,
+          "share": 0.2019,
+          "shots_reaching_engine_rest": 21
+        },
+        "shots": 104,
+        "stop_kinds_old_window": {
+          "censored": 63,
+          "level_clear": 2,
+          "level_fail": 18,
+          "stable_entered": 21
+        }
+      },
+      "novelty_level_0/type010105": {
+        "censored_launched_bird_end_speed_p50_p90": [
+          0.1226,
+          0.2632
+        ],
+        "censored_moving_at_end": {
+          "bird": 60,
+          "bird+block": 1
+        },
+        "censored_structure_at_rest_at_cap": 60,
+        "collapse": {
+          "last_change_frame_p50_p90_max": [
+            173.0,
+            307.4,
+            379.0
+          ],
+          "positive_frames_per_lag": {
+            "1": {
+              "frames": 52235,
+              "positive": 70
+            },
+            "15": {
+              "frames": 50779,
+              "positive": 518
+            },
+            "5": {
+              "frames": 51819,
+              "positive": 219
+            }
+          },
+          "share": 0.2212,
+          "shots_with_nonbird_support_change": 23
+        },
+        "frames": {
+          "added_by_rule_upper_bound": 1550,
+          "old_window": 52339,
+          "relative_increase_upper_bound": 0.0296
+        },
+        "launched_bird_destroyed_in_window": 39,
+        "longer_cap_projection": {
+          "bird_dead_by_cap_seconds": {
+            "12": 2,
+            "16": 24,
+            "20": 32,
+            "24": 36,
+            "30": 38,
+            "40": 40
+          },
+          "censored": 61,
+          "censored_without_projection": 18,
+          "label": "DESCRIPTIVE model projection (per-shot exponential decay of the launched bird's speed over the last physics second, extrapolated to the 0.01 u/s death speed); not observed"
+        },
+        "settle": {
+          "rest_step_after_decision_p10_p50_p90": [
+            14176.0,
+            15714.0,
+            19431.0
+          ],
+          "settled_frames_new_window_upper_bound": 1581,
+          "settled_frames_old_window": 31,
+          "settled_frames_per_shot_new_window_upper_bound": 15.202,
+          "share": 0.2981,
+          "shots_reaching_engine_rest": 31
+        },
+        "shots": 104,
+        "stop_kinds_old_window": {
+          "censored": 61,
+          "level_clear": 3,
+          "level_fail": 9,
+          "stable_entered": 31
+        }
+      },
+      "novelty_level_1/type010101": {
+        "censored_launched_bird_end_speed_p50_p90": [
+          0.1244,
+          0.2108
+        ],
+        "censored_moving_at_end": {
+          "bird": 54,
+          "none": 1
+        },
+        "censored_structure_at_rest_at_cap": 55,
+        "collapse": {
+          "last_change_frame_p50_p90_max": [
+            181.0,
+            244.2,
+            377.0
+          ],
+          "positive_frames_per_lag": {
+            "1": {
+              "frames": 50315,
+              "positive": 67
+            },
+            "15": {
+              "frames": 48873,
+              "positive": 721
+            },
+            "5": {
+              "frames": 49903,
+              "positive": 289
+            }
+          },
+          "share": 0.3204,
+          "shots_with_nonbird_support_change": 33
+        },
+        "frames": {
+          "added_by_rule_upper_bound": 1900,
+          "old_window": 50418,
+          "relative_increase_upper_bound": 0.0377
+        },
+        "launched_bird_destroyed_in_window": 44,
+        "longer_cap_projection": {
+          "bird_dead_by_cap_seconds": {
+            "12": 2,
+            "16": 18,
+            "20": 24,
+            "24": 30,
+            "30": 30,
+            "40": 31
+          },
+          "censored": 55,
+          "censored_without_projection": 20,
+          "label": "DESCRIPTIVE model projection (per-shot exponential decay of the launched bird's speed over the last physics second, extrapolated to the 0.01 u/s death speed); not observed"
+        },
+        "settle": {
+          "rest_step_after_decision_p10_p50_p90": [
+            14176.0,
+            15714.0,
+            22706.7
+          ],
+          "settled_frames_new_window_upper_bound": 1938,
+          "settled_frames_old_window": 38,
+          "settled_frames_per_shot_new_window_upper_bound": 18.816,
+          "share": 0.3689,
+          "shots_reaching_engine_rest": 38
+        },
+        "shots": 103,
+        "stop_kinds_old_window": {
+          "censored": 55,
+          "level_clear": 1,
+          "level_fail": 9,
+          "stable_entered": 38
+        }
+      },
+      "novelty_level_1/type010102": {
+        "censored_launched_bird_end_speed_p50_p90": [
+          0.0981,
+          0.1955
+        ],
+        "censored_moving_at_end": {
+          "bird": 43
+        },
+        "censored_structure_at_rest_at_cap": 43,
+        "collapse": {
+          "last_change_frame_p50_p90_max": [
+            220.0,
+            336.2,
+            475.0
+          ],
+          "positive_frames_per_lag": {
+            "1": {
+              "frames": 40178,
+              "positive": 86
+            },
+            "15": {
+              "frames": 39016,
+              "positive": 650
+            },
+            "5": {
+              "frames": 39846,
+              "positive": 261
+            }
+          },
+          "share": 0.2771,
+          "shots_with_nonbird_support_change": 23
+        },
+        "frames": {
+          "added_by_rule_upper_bound": 2000,
+          "old_window": 40261,
+          "relative_increase_upper_bound": 0.0497
+        },
+        "launched_bird_destroyed_in_window": 35,
+        "longer_cap_projection": {
+          "bird_dead_by_cap_seconds": {
+            "12": 3,
+            "16": 20,
+            "20": 23,
+            "24": 25,
+            "30": 27,
+            "40": 28
+          },
+          "censored": 43,
+          "censored_without_projection": 13,
+          "label": "DESCRIPTIVE model projection (per-shot exponential decay of the launched bird's speed over the last physics second, extrapolated to the 0.01 u/s death speed); not observed"
+        },
+        "settle": {
+          "rest_step_after_decision_p10_p50_p90": [
+            14163.2,
+            15994.5,
+            24397.9
+          ],
+          "settled_frames_new_window_upper_bound": 2040,
+          "settled_frames_old_window": 40,
+          "settled_frames_per_shot_new_window_upper_bound": 24.578,
+          "share": 0.4819,
+          "shots_reaching_engine_rest": 40
+        },
+        "shots": 83,
+        "stop_kinds_old_window": {
+          "censored": 43,
+          "stable_entered": 40
+        }
+      }
+    },
+    "sources": {
+      "issue-109-capture-smoke-v1": 208,
+      "issue-77-n2-appearance-v1": 186,
+      "issue-77-n2n-v1": 34,
+      "issue-77-n2n-v2": 70
+    },
+    "thresholds": {
+      "bird_death_speed": 0.01,
+      "engine_angular_deg_s": 0.01,
+      "engine_speed": 0.01,
+      "lags_frames": [
+        1,
+        5,
+        15
+      ]
+    },
+    "totals": {
+      "censored": 284,
+      "censored_only_launched_bird_moving": 281,
+      "censored_structure_at_rest_at_cap": 282,
+      "longer_fixed_cap_cost": {
+        "by_cap_seconds": {
+          "16": {
+            "frames_added": 56800,
+            "relative_increase": 0.2268
+          },
+          "20": {
+            "frames_added": 113600,
+            "relative_increase": 0.4537
+          },
+          "24": {
+            "frames_added": 170400,
+            "relative_increase": 0.6805
+          },
+          "30": {
+            "frames_added": 255600,
+            "relative_increase": 1.0207
+          },
+          "40": {
+            "frames_added": 397600,
+            "relative_increase": 1.5878
+          }
+        },
+        "label": "every censored shot runs to the longer cap"
+      },
+      "old_window_frames": 250407,
+      "rule_added_frames_upper_bound": 8600,
+      "rule_relative_increase_upper_bound": 0.0343,
+      "shots": 498
+    },
+    "uncovered": {
+      "levels": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "statement": "no retained capture exists for novelty levels 2-8 (or for level 0/1 families outside type010101/02/03/05); their settle, collapse and storm-onset yields are measured by the #104 rendered smoke under this rule and reported there, not estimated here"
+    }
+  },
+  "frozen_at": "2026-10-03T09:03:55Z",
+  "identity": "issue-113-capture-window-v1",
+  "issue": 113,
+  "not_decided_here": "the #113 item-1 predicate definitions (settle debounce, per-Delta structure change); the rule only guarantees the frames those definitions need",
+  "rationale": [
+    "the macro events are absent because a stable shot stops on the first rest step (0 settled frames after it), not because the cap is short",
+    "at the 12 s cap the structure (every non-bird body) is already at engine rest in almost every censored shot; the only moving body is the launched bird rolling on the ground (see per_level_type.censored_moving_at_end)",
+    "a longer cap therefore adds frames of a lone rolling bird; reaching engine rest needs the bird to fall below 0.01 u/s and die (projection table), at a capture and storage cost proportional to the added seconds",
+    "structure changes stop well before the cap (last non-bird support change), so collapse yield is set by whether the shot reaches the structure (candidate inventory), not by the window",
+    "50 tail frames (1.0 s) hold a settle debounce of up to 35 frames plus the Delta = 15 macro request horizon and a 15-frame temporal-head history inside the window, and cover the bird-death check that follows rest (storm onset on novelty level 8 needs the first bird destroyed)"
+  ],
+  "rule": {
+    "censoring": "a shot not in a tail at pre_rest_cap_steps is censored there (native_time_window_limit), exactly where the old player censored it",
+    "clear_and_fail": "level_clear and level_fail finalize immediately, as before, also inside a tail",
+    "engine_environment": {
+      "NOVPHY_NATIVE_MAX_SHOT_STEPS": 30000,
+      "NOVPHY_NATIVE_REST_TAIL_STEPS": 2500
+    },
+    "hard_limit_steps": 32500,
+    "manifest_fields": {
+      "maximum_shot_steps": 30000,
+      "rest_tail_steps": 2500
+    },
+    "name": "run-to-rest plus a fixed post-rest tail; the old 12 s cap is unchanged for shots not at rest",
+    "old_window_identity": "for every shot the prefix up to the old stop step is the old trace: the change only removes the stable_entered finalization and adds frames after it",
+    "pre_rest_cap_steps": 30000,
+    "rest_tail_frames": 50,
+    "rest_tail_steps": 2500,
+    "rest_trigger": "the engine stable_entered event, unchanged: every dynamic Rigidbody2D has |v|^2 <= 1e-4 and |omega| <= 0.01 deg/s for 100 consecutive native steps, after the launch",
+    "stop_kind": "rest_tail_complete maps to stable_without_clear (scene at engine rest, no clear)",
+    "tail": "stable_entered at step s <= pre_rest_cap_steps no longer finalizes; recording continues to s + rest_tail_steps and then finalizes with terminal reason rest_tail_complete",
+    "tail_cancel": "stable_exited during a tail cancels it; recording continues and censors at pre_rest_cap_steps if that step has passed, otherwise the next stable_entered starts a new tail",
+    "terminal_reason": "rest_tail_complete"
+  },
+  "schema": "issue_113_capture_window_spec_v1",
+  "validation_command": "python -u -m scripts.derive_capture_window_spec --validate"
+}

@@ -1,0 +1,1428 @@
+{
+  "budget": {
+    "amortized_seconds_per_branch": 11.0,
+    "artifact_bytes_per_branch": 100000000,
+    "branch_wall_seconds_excluding_gate": 117.0,
+    "branches": 49560,
+    "cold_start_critical_section_seconds": 11.0,
+    "per_stream": {
+      "issue109-evaluation": {
+        "artifact_tib": 1.062,
+        "branches": 11680,
+        "wall_hours": 35.7
+      },
+      "issue109-fit": {
+        "artifact_tib": 1.266,
+        "branches": 13920,
+        "wall_hours": 42.5
+      },
+      "issue109-policy": {
+        "artifact_tib": 0.317,
+        "branches": 3480,
+        "wall_hours": 10.6
+      },
+      "issue110-evaluation": {
+        "artifact_tib": 0.931,
+        "branches": 10240,
+        "wall_hours": 31.3
+      },
+      "issue110-fit": {
+        "artifact_tib": 0.931,
+        "branches": 10240,
+        "wall_hours": 31.3
+      }
+    },
+    "projected_artifact_tib": 4.51,
+    "projected_wall_hours": 151.4,
+    "projected_worker_hours": 1610.7,
+    "source": "EXPLORATORY engineering runs (dev summary); the rendered smoke re-measures and re-projects",
+    "throughput_model": "engine cold starts are serialized (cold-start gate), so amortized seconds per branch = max(cold-start critical section, branch wall / workers)",
+    "workers": 16
+  },
+  "claim_boundary": "design freeze and rendered smoke only; no outcome of any cohort level is read before the campaign; prior dispositions (#15-#113) are read-only; nothing edits the ICLR 2026 submission",
+  "cohorts": {
+    "issue109": {
+      "candidate_sets": {
+        "grid": 16,
+        "training": 29,
+        "union": 60
+      },
+      "evaluation_rule": "evaluation captures are never fitted; #96 contrasts rerun on them only",
+      "families": [
+        "type010103",
+        "type010105"
+      ],
+      "plan": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json"
+    },
+    "issue110": {
+      "cell_rule": "all 45 cells are captured through the 40 pairs unless the smoke makes a cell unsupported; zero-shot (normal fit) and few-shot (novel fit) never pooled",
+      "cells": {
+        "captured": 45,
+        "v1_supported": 2,
+        "v2_supported": 45,
+        "v2_unsupported": 0
+      },
+      "contract": "issue-110-representation-contract-v2",
+      "fit_merge": "training pool = #109 fit split + #110 fit normal sides (zero-shot) ; the #110 novel fit sides are few-shot adaptation data only",
+      "flags": [
+        "multiple-forces cells (9) carry no single-shot pig-removal headroom",
+        "storm onset needs the first bird destroyed; reported by the smoke"
+      ],
+      "pairs": 40,
+      "plan": ".local-artifacts/issue-110-novelty-coverage-v1/plan.json"
+    }
+  },
+  "depth": {
+    "expected_mixed_members": {
+      "angle": 60.0,
+      "grid": 300.0,
+      "offset": 65.5,
+      "power": 54.5
+    },
+    "fit_levels_per_family": 240,
+    "fit_policy_rationale": "no power target; the full #109 fit (240) and policy (60) rosters, the Gate-B retrain and controller data, fit the storage budget",
+    "grid": {
+      "conservative_share": 0.75,
+      "levels_per_family": 200,
+      "primary_required_mixed_members": 208,
+      "required_mixed_members_max": 293
+    },
+    "novelty_levels_per_split_per_side": 8,
+    "novelty_rationale": "the #110 recommended floor: >= 8 clusters per cell interval and 40 levels per novelty level for #107; storage keeps a > 2 TiB margin at this depth",
+    "policy_levels_per_family": 60,
+    "rule": "grid (primary, 16 candidates): the deepest roster prefix needed for every #96 grid contrast at delta 0.02; union (angle + grid + offset + power, 60 candidates): the prefix needed for every #96 contrast of offset, angle and power at delta 0.05; levels per family = required mixed members / (2 families x conservative mixed share), rounded up to 20, capped at the roster; conservative share = min(development, held-out) member share",
+    "secondary": {
+      "angle": {
+        "conservative_share": 0.5,
+        "levels_per_family": 55,
+        "required_mixed_members": 55
+      },
+      "offset": {
+        "conservative_share": 0.5455,
+        "levels_per_family": 30,
+        "required_mixed_members": 32
+      },
+      "power": {
+        "conservative_share": 0.4545,
+        "levels_per_family": 59,
+        "required_mixed_members": 53
+      }
+    },
+    "union_levels_per_family": 60
+  },
+  "disclosures": [
+    "SERVER_SETUP.md byte-rewrote /p/Project/NovPhy in frozen records (owner decision); the #109 sealed-cohort --validate now fails on its #96 input hash. Inputs here are bound to the current bytes; level files are re-checked against their frozen sha256 at every dispatch",
+    "physics is not bit-identical across machines: engineering re-captures on this server agree with the retained #109 smoke on decision frames and on 16/20 event sequences, but differ in float digits from the bird's first collision; within this server the parent and window players agree on 19/20 full native prefixes",
+    "the #113 tail is cut by level_fail when the launched bird dies after rest (single-bird levels); engineering runs kept 1.7-46 tail frames; the smoke reports the realized settle frames"
+  ],
+  "engine_seconds_before_freeze": "0 on any cohort level; engineering runs touched exposed #77 N1 branches only (EXPLORATORY, dev summary)",
+  "frozen_at": "2026-10-03T10:06:16Z",
+  "frozen_before_any_capture": true,
+  "gate_b": {
+    "controls_runner": "scripts/run_decision_dynamics_controls.py",
+    "evaluation": "the #109 evaluation split captured by this campaign, grid inventory (16 candidates), mixed cells only, tie-free cost, scoring_harness.deterministic_scoring() in a process that did not train; never fitted",
+    "handoff": ".local-artifacts/issue-112-decision-dynamics-v3/gate_b_handoff.json",
+    "handoff_sha256": "sha256:98e29d1f1735aa7dcbc8a18cf2ff49adf7724b885aa809043d30b9e618f14c3f",
+    "plan_identity": "issue-112-decision-dynamics-v3",
+    "pre_declared_contrast": "pre-declared Gate-B contrast: paired grid AUC of the selected hybrid unit minus C*, the continuous-family unit with the largest selection score S under the same LOLO rule (same arm order and tie-break); member-clustered bootstrap, tie-free cost",
+    "reported_controls": [
+      "no-model action prior",
+      "wrong-anchor control of the selected unit"
+    ],
+    "retrain": "to retrain on a new fit split, run train_group with the frozen recipe (plan.json training block, the selected arm) on that split's E99 carriers, windows and fit-lineage cells; a retrain is a separately frozen follow-up, not part of this plan",
+    "scope_rule": "Gate-B candidates are hybrid-family units only: the paper's claim is joint horizon-description selection. The continuous family (C-F-1/5/15, C-J: the parameter-matched pure-continuous model of #74/#77, horizon only) is a matched baseline, trained with the identical recipe, never a candidate. The hybrid family's own continuous-description requests (F-1/5/15-continuous) remain candidates.",
+    "status": "bound, not executed: Gate B runs after the campaign on its frozen evaluation captures",
+    "target": "Gate B (#108): the frozen recipe on the #104 sealed held-out split; grid AUC >= 0.65 with lower bound > 0.55 under the tie-free cost",
+    "unit": {
+      "arm": "LC",
+      "encoder": "E99",
+      "family": "hybrid",
+      "request": "F-15-macro",
+      "usable_seeds": [
+        20260908,
+        20260909,
+        20260910
+      ]
+    }
+  },
+  "hardware": "4x RTX 5090 server (48 threads); capture renders on the CPU (llvmpipe), no GPU; every later GPU stage runs on one device (CUDA_VISIBLE_DEVICES pinned): the #85 single-RTX-3090 gate is carried as a single-GPU gate on this server (disclosed deviation)",
+  "identity": "issue-104-power-cohort-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json",
+      "name": "issue109_sealed_cohort_plan",
+      "sha256": "sha256:e88b07903a10dcf492b8bb6c86f10e52b56183c6a3995337ea282dacee4d6dc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-110-novelty-coverage-v1/plan.json",
+      "name": "issue110_novelty_coverage_plan",
+      "sha256": "sha256:9c3678e653b9a97e3bd2c432617e3efa726debf1bf17ec42e4791919363b9224"
+    },
+    {
+      "artifact": ".local-artifacts/issue-113-capture-window-v1/spec.json",
+      "name": "issue113_capture_window_spec",
+      "sha256": "sha256:929f5bc6d7d9b42b010e7a87653331f3636c68e8ec51f856b61b945238aa076d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-96-tau-ad-within-checkpoint-v1/summary.json",
+      "name": "issue96_summary",
+      "sha256": "sha256:618efd3df218660466df88be9483ed84b7228546ee72bd95c4fe46f8de11570b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-96-tau-ad-within-checkpoint-v1/plan.json",
+      "name": "issue96_plan",
+      "sha256": "sha256:a3d4957454c7173986f658ebfeae69e80ecb205552cce7ff304156074175d68e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-heldout-rescore-v1/summary.json",
+      "name": "issue109_heldout_rescore_summary",
+      "sha256": "sha256:2688a734bca71684a125a23d9fb7adea38e32ca42397a36dea35155398215f6e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-capture-smoke-v1/outcomes.json",
+      "name": "issue109_capture_smoke_outcomes",
+      "sha256": "sha256:a46b7f08b66ab52b626be96ae0aa2e23445e80088e133795a7c888c09f27058f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-dynamics-v3/gate_b_handoff.json",
+      "name": "issue112_v3_gate_b_handoff",
+      "sha256": "sha256:98e29d1f1735aa7dcbc8a18cf2ff49adf7724b885aa809043d30b9e618f14c3f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-capture-dev/summary.json",
+      "name": "issue104_capture_dev_summary",
+      "sha256": "sha256:56eaf4fde6184a51ac03592a7dd69b513969f1e06990dc36967f94d135abda63"
+    },
+    {
+      "artifact": "scripts/capture_pipeline_v2.py",
+      "name": "capture_pipeline_v2",
+      "sha256": "sha256:d5a151f1e01a649eb6b5982004df9ae731c081f73a43d226cd5dd56ca6a6a5fd"
+    },
+    {
+      "artifact": "scripts/issue_104_window_player.py",
+      "name": "window_player_stage",
+      "sha256": "sha256:2b180047d64517ce9a4863635722d1eacf4c565efc578213d86f1444a8937771"
+    },
+    {
+      "artifact": "scripts/build_capture_mesa.sh",
+      "name": "mesa_build_script",
+      "sha256": "sha256:041b31ff87a34a1969cc716186a9ecfc4bd7e38cef7e0fed5835d8da56a35e31"
+    },
+    {
+      "artifact": "scripts/canonical_native_trace.py",
+      "name": "canonical_native_trace",
+      "sha256": "sha256:ed662bb5d84ccb692babff9224f11d093884dae00319f8ca16951b8cfd657008"
+    },
+    {
+      "artifact": "scripts/native_segment_trace.py",
+      "name": "native_segment_trace",
+      "sha256": "sha256:dc878ca9be6a2bfe3d78f16d5511e06d7e9dc7e76f70d98c79463209d57fa58b"
+    },
+    {
+      "artifact": "scripts/issue_76_expansion.py",
+      "name": "issue76_expansion",
+      "sha256": "sha256:488b8521454ae7c1d8c8215214fee94f134e16c924eff89c7ec958a3e5072a9a"
+    }
+  ],
+  "issue": 104,
+  "limits": {
+    "agent_socket_timeout_seconds": 180,
+    "aggregate_cpu_rss_mib": 65536,
+    "artifact_bytes": 6195000000000,
+    "attempt_seconds": 1800,
+    "cold_start_gate": true,
+    "connect_deadline_seconds": 120,
+    "decision_fixed_step": 30000,
+    "engine_environment": {
+      "LD_LIBRARY_PATH": "/home/sukai/.cache/novphy-mesa/mesa-26.1.2-llvm22.1.6/lib",
+      "LIBGL_DRIVERS_PATH": "/home/sukai/.cache/novphy-mesa/mesa-26.1.2-llvm22.1.6/lib/dri",
+      "__GLX_VENDOR_LIBRARY_NAME": "mesa"
+    },
+    "history_ready_seconds": 300,
+    "inference_hold_seconds": 2,
+    "menu_ready_seconds": 180,
+    "minimum_free_bytes": 536870912000,
+    "native_window": {
+      "maximum_shot_steps": 30000,
+      "rest_tail_steps": 2500
+    },
+    "renderer": {
+      "renderer": "llvmpipe (LLVM 22.1.6, 256 bits)",
+      "version": "4.6 (Core Profile) Mesa 26.1.2"
+    },
+    "shot_stall_seconds": 120,
+    "shot_wall_cap_seconds": 900,
+    "worker_cpu_rss_mib": 4096,
+    "workers": 16
+  },
+  "membership": {
+    "branch_digest": "sha256:64f4dda66c542ee33746d6a0ef8300c1159a072f3cef2b88bab8a9429033b5c5",
+    "branches": 49560,
+    "dispatch": "streams in order; inside a stream ordinal-major (every family / pair at ordinal k before k + 1; #110 sides normal then novel); candidates in suffix order; a stopped campaign therefore keeps every stream balanced across families, pairs and cells",
+    "identity_rule": "<level identity>-<candidate suffix>; one identity per (level, engine seed, action)",
+    "levels": 2280,
+    "order": [
+      "issue109-evaluation",
+      "issue110-evaluation",
+      "issue110-fit",
+      "issue109-fit",
+      "issue109-policy"
+    ],
+    "streams": {
+      "issue109-evaluation": {
+        "branches": 11680,
+        "exposure_role": "final_evaluation",
+        "levels": 400
+      },
+      "issue109-fit": {
+        "branches": 13920,
+        "exposure_role": "training",
+        "levels": 480
+      },
+      "issue109-policy": {
+        "branches": 3480,
+        "exposure_role": "training",
+        "levels": 120
+      },
+      "issue110-evaluation": {
+        "branches": 10240,
+        "exposure_role": "final_evaluation",
+        "levels": 640
+      },
+      "issue110-fit": {
+        "branches": 10240,
+        "exposure_role": "training",
+        "levels": 640
+      }
+    }
+  },
+  "pipeline": {
+    "identity": "capture-pipeline-v2",
+    "module": "scripts/capture_pipeline_v2.py",
+    "sha256": "sha256:d5a151f1e01a649eb6b5982004df9ae731c081f73a43d226cd5dd56ca6a6a5fd"
+  },
+  "player": {
+    "assembly_sha256": "ac4182509104d937a04bd9bbfce4bf5059065922174b61d5038c890677c7bbb6",
+    "reference_assembly_sha256": "82db3f42011f1b6768f08f2bf554f34a6573043ea96e66fbd94b7cc086338250",
+    "reference_player": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-109-capture-smoke-v1/player",
+    "replaced_files": {
+      "9001_Data/Managed/Assembly-CSharp.dll": {
+        "after": "ac4182509104d937a04bd9bbfce4bf5059065922174b61d5038c890677c7bbb6",
+        "before": "82db3f42011f1b6768f08f2bf554f34a6573043ea96e66fbd94b7cc086338250"
+      },
+      "9001_Data/globalgamemanagers": {
+        "after": "0c90e7d4543a46cde2e7975fca30216d8d279c75e728b43c596dc61029f7d1ab",
+        "before": "2b64751c9f26eb40cbed6cb00547c2cdb635eddd709d8d5add5c957ec735e4cd"
+      }
+    },
+    "schema": "issue_104_campaign_player_v1",
+    "window_build": "/home/sukai/.cache/novphy-window-player-v1/player-build-01"
+  },
+  "power": {
+    "contrasts": {
+      "angle": {
+        "C-J-C-F*": {
+          "cells": 21,
+          "estimate": -0.030483,
+          "first": "C-J",
+          "half_width": 0.11544,
+          "member_sd": 0.168685,
+          "members": 7,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 234,
+              "design": 274,
+              "normal_approximation": 274
+            },
+            "0.05": {
+              "bootstrap_scaling": 38,
+              "design": 44,
+              "normal_approximation": 44
+            }
+          },
+          "second": "C-F-5"
+        },
+        "J-D": {
+          "cells": 21,
+          "estimate": 0.079545,
+          "first": "J",
+          "half_width": 0.130952,
+          "member_sd": 0.189129,
+          "members": 7,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 301,
+              "design": 344,
+              "normal_approximation": 344
+            },
+            "0.05": {
+              "bootstrap_scaling": 49,
+              "design": 55,
+              "normal_approximation": 55
+            }
+          },
+          "second": "D"
+        },
+        "J-F(1,continuous)": {
+          "cells": 21,
+          "estimate": 0.045635,
+          "first": "J",
+          "half_width": 0.042659,
+          "member_sd": 0.062482,
+          "members": 7,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 32,
+              "design": 38,
+              "normal_approximation": 38
+            },
+            "0.05": {
+              "bootstrap_scaling": 6,
+              "design": 6,
+              "normal_approximation": 6
+            }
+          },
+          "second": "F-1-continuous"
+        },
+        "J-F(1,macro)": {
+          "cells": 21,
+          "estimate": 0.059524,
+          "first": "J",
+          "half_width": 0.052604,
+          "member_sd": 0.078859,
+          "members": 7,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 49,
+              "design": 60,
+              "normal_approximation": 60
+            },
+            "0.05": {
+              "bootstrap_scaling": 8,
+              "design": 10,
+              "normal_approximation": 10
+            }
+          },
+          "second": "F-1-macro"
+        },
+        "J-F*": {
+          "cells": 21,
+          "estimate": 0.059524,
+          "first": "J",
+          "half_width": 0.052604,
+          "member_sd": 0.078859,
+          "members": 7,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 49,
+              "design": 60,
+              "normal_approximation": 60
+            },
+            "0.05": {
+              "bootstrap_scaling": 8,
+              "design": 10,
+              "normal_approximation": 10
+            }
+          },
+          "second": "F-1-macro"
+        },
+        "J-F_hindsight": {
+          "cells": 21,
+          "estimate": -0.069084,
+          "first": "J",
+          "half_width": 0.054383,
+          "member_sd": 0.07861,
+          "members": 7,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 52,
+              "design": 60,
+              "normal_approximation": 60
+            },
+            "0.05": {
+              "bootstrap_scaling": 9,
+              "design": 10,
+              "normal_approximation": 10
+            }
+          },
+          "second": "F-5-macro"
+        },
+        "J-M": {
+          "cells": 21,
+          "estimate": -0.005772,
+          "first": "J",
+          "half_width": 0.019841,
+          "member_sd": 0.027767,
+          "members": 7,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 7,
+              "design": 8,
+              "normal_approximation": 8
+            },
+            "0.05": {
+              "bootstrap_scaling": 2,
+              "design": 2,
+              "normal_approximation": 2
+            }
+          },
+          "second": "M"
+        },
+        "J-OL": {
+          "cells": 21,
+          "estimate": 0.022006,
+          "first": "J",
+          "half_width": 0.048521,
+          "member_sd": 0.070733,
+          "members": 7,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 42,
+              "design": 49,
+              "normal_approximation": 49
+            },
+            "0.05": {
+              "bootstrap_scaling": 7,
+              "design": 8,
+              "normal_approximation": 8
+            }
+          },
+          "second": "OL"
+        },
+        "J-T": {
+          "cells": 21,
+          "estimate": 0.012085,
+          "first": "J",
+          "half_width": 0.03373,
+          "member_sd": 0.04972,
+          "members": 7,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 20,
+              "design": 24,
+              "normal_approximation": 24
+            },
+            "0.05": {
+              "bootstrap_scaling": 4,
+              "design": 4,
+              "normal_approximation": 4
+            }
+          },
+          "second": "T"
+        }
+      },
+      "grid": {
+        "C-J-C-F*": {
+          "cells": 42,
+          "estimate": 0.036395,
+          "first": "C-J",
+          "half_width": 0.078801,
+          "member_sd": 0.156117,
+          "members": 14,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 218,
+              "design": 235,
+              "normal_approximation": 235
+            },
+            "0.05": {
+              "bootstrap_scaling": 35,
+              "design": 38,
+              "normal_approximation": 38
+            }
+          },
+          "second": "C-F-5"
+        },
+        "J-D": {
+          "cells": 42,
+          "estimate": -0.03869,
+          "first": "J",
+          "half_width": 0.082441,
+          "member_sd": 0.162249,
+          "members": 14,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 238,
+              "design": 253,
+              "normal_approximation": 253
+            },
+            "0.05": {
+              "bootstrap_scaling": 39,
+              "design": 41,
+              "normal_approximation": 41
+            }
+          },
+          "second": "D"
+        },
+        "J-F(1,continuous)": {
+          "cells": 42,
+          "estimate": -0.039824,
+          "first": "J",
+          "half_width": 0.065661,
+          "member_sd": 0.128667,
+          "members": 14,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 151,
+              "design": 159,
+              "normal_approximation": 159
+            },
+            "0.05": {
+              "bootstrap_scaling": 25,
+              "design": 26,
+              "normal_approximation": 26
+            }
+          },
+          "second": "F-1-continuous"
+        },
+        "J-F(1,macro)": {
+          "cells": 42,
+          "estimate": -0.04195,
+          "first": "J",
+          "half_width": 0.088494,
+          "member_sd": 0.174633,
+          "members": 14,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 275,
+              "design": 293,
+              "normal_approximation": 293
+            },
+            "0.05": {
+              "bootstrap_scaling": 44,
+              "design": 47,
+              "normal_approximation": 47
+            }
+          },
+          "second": "F-1-macro"
+        },
+        "J-F*": {
+          "cells": 42,
+          "estimate": 0.069983,
+          "first": "J",
+          "half_width": 0.074674,
+          "member_sd": 0.146891,
+          "members": 14,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 196,
+              "design": 208,
+              "normal_approximation": 208
+            },
+            "0.05": {
+              "bootstrap_scaling": 32,
+              "design": 34,
+              "normal_approximation": 34
+            }
+          },
+          "second": "F-5-macro"
+        },
+        "J-F_hindsight": {
+          "cells": 42,
+          "estimate": -0.04195,
+          "first": "J",
+          "half_width": 0.088494,
+          "member_sd": 0.174633,
+          "members": 14,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 275,
+              "design": 293,
+              "normal_approximation": 293
+            },
+            "0.05": {
+              "bootstrap_scaling": 44,
+              "design": 47,
+              "normal_approximation": 47
+            }
+          },
+          "second": "F-1-macro"
+        },
+        "J-M": {
+          "cells": 42,
+          "estimate": -0.021485,
+          "first": "J",
+          "half_width": 0.047392,
+          "member_sd": 0.093474,
+          "members": 14,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 79,
+              "design": 84,
+              "normal_approximation": 84
+            },
+            "0.05": {
+              "bootstrap_scaling": 13,
+              "design": 14,
+              "normal_approximation": 14
+            }
+          },
+          "second": "M"
+        },
+        "J-OL": {
+          "cells": 42,
+          "estimate": -0.051984,
+          "first": "J",
+          "half_width": 0.068271,
+          "member_sd": 0.135257,
+          "members": 14,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 164,
+              "design": 176,
+              "normal_approximation": 176
+            },
+            "0.05": {
+              "bootstrap_scaling": 27,
+              "design": 29,
+              "normal_approximation": 29
+            }
+          },
+          "second": "OL"
+        },
+        "J-T": {
+          "cells": 42,
+          "estimate": -0.027749,
+          "first": "J",
+          "half_width": 0.038422,
+          "member_sd": 0.076636,
+          "members": 14,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 52,
+              "design": 57,
+              "normal_approximation": 57
+            },
+            "0.05": {
+              "bootstrap_scaling": 9,
+              "design": 10,
+              "normal_approximation": 10
+            }
+          },
+          "second": "T"
+        }
+      },
+      "offset": {
+        "C-J-C-F*": {
+          "cells": 27,
+          "estimate": -0.077778,
+          "first": "C-J",
+          "half_width": 0.081481,
+          "member_sd": 0.133073,
+          "members": 9,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 150,
+              "design": 171,
+              "normal_approximation": 171
+            },
+            "0.05": {
+              "bootstrap_scaling": 24,
+              "design": 28,
+              "normal_approximation": 28
+            }
+          },
+          "second": "C-F-5"
+        },
+        "J-D": {
+          "cells": 27,
+          "estimate": -0.022222,
+          "first": "J",
+          "half_width": 0.087037,
+          "member_sd": 0.140929,
+          "members": 9,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 171,
+              "design": 191,
+              "normal_approximation": 191
+            },
+            "0.05": {
+              "bootstrap_scaling": 28,
+              "design": 31,
+              "normal_approximation": 31
+            }
+          },
+          "second": "D"
+        },
+        "J-F(1,continuous)": {
+          "cells": 27,
+          "estimate": -0.009259,
+          "first": "J",
+          "half_width": 0.072222,
+          "member_sd": 0.119638,
+          "members": 9,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 118,
+              "design": 138,
+              "normal_approximation": 138
+            },
+            "0.05": {
+              "bootstrap_scaling": 19,
+              "design": 22,
+              "normal_approximation": 22
+            }
+          },
+          "second": "F-1-continuous"
+        },
+        "J-F(1,macro)": {
+          "cells": 27,
+          "estimate": 0.003704,
+          "first": "J",
+          "half_width": 0.086111,
+          "member_sd": 0.142102,
+          "members": 9,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 167,
+              "design": 194,
+              "normal_approximation": 194
+            },
+            "0.05": {
+              "bootstrap_scaling": 27,
+              "design": 32,
+              "normal_approximation": 32
+            }
+          },
+          "second": "F-1-macro"
+        },
+        "J-F*": {
+          "cells": 27,
+          "estimate": 0.003704,
+          "first": "J",
+          "half_width": 0.086111,
+          "member_sd": 0.142102,
+          "members": 9,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 167,
+              "design": 194,
+              "normal_approximation": 194
+            },
+            "0.05": {
+              "bootstrap_scaling": 27,
+              "design": 32,
+              "normal_approximation": 32
+            }
+          },
+          "second": "F-1-macro"
+        },
+        "J-F_hindsight": {
+          "cells": 27,
+          "estimate": -0.087037,
+          "first": "J",
+          "half_width": 0.062037,
+          "member_sd": 0.103339,
+          "members": 9,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 87,
+              "design": 103,
+              "normal_approximation": 103
+            },
+            "0.05": {
+              "bootstrap_scaling": 14,
+              "design": 17,
+              "normal_approximation": 17
+            }
+          },
+          "second": "F-5-macro"
+        },
+        "J-M": {
+          "cells": 27,
+          "estimate": -0.016667,
+          "first": "J",
+          "half_width": 0.069444,
+          "member_sd": 0.113957,
+          "members": 9,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 109,
+              "design": 125,
+              "normal_approximation": 125
+            },
+            "0.05": {
+              "bootstrap_scaling": 18,
+              "design": 20,
+              "normal_approximation": 20
+            }
+          },
+          "second": "M"
+        },
+        "J-OL": {
+          "cells": 27,
+          "estimate": -0.001852,
+          "first": "J",
+          "half_width": 0.047222,
+          "member_sd": 0.07703,
+          "members": 9,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 51,
+              "design": 57,
+              "normal_approximation": 57
+            },
+            "0.05": {
+              "bootstrap_scaling": 9,
+              "design": 10,
+              "normal_approximation": 10
+            }
+          },
+          "second": "OL"
+        },
+        "J-T": {
+          "cells": 27,
+          "estimate": -0.033333,
+          "first": "J",
+          "half_width": 0.053704,
+          "member_sd": 0.087003,
+          "members": 9,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 65,
+              "design": 73,
+              "normal_approximation": 73
+            },
+            "0.05": {
+              "bootstrap_scaling": 11,
+              "design": 12,
+              "normal_approximation": 12
+            }
+          },
+          "second": "T"
+        }
+      },
+      "power": {
+        "C-J-C-F*": {
+          "cells": 24,
+          "estimate": -0.047149,
+          "first": "C-J",
+          "half_width": 0.120066,
+          "member_sd": 0.184713,
+          "members": 8,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 289,
+              "design": 328,
+              "normal_approximation": 328
+            },
+            "0.05": {
+              "bootstrap_scaling": 47,
+              "design": 53,
+              "normal_approximation": 53
+            }
+          },
+          "second": "C-F-5"
+        },
+        "J-D": {
+          "cells": 24,
+          "estimate": 0.02005,
+          "first": "J",
+          "half_width": 0.058427,
+          "member_sd": 0.091487,
+          "members": 8,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 69,
+              "design": 81,
+              "normal_approximation": 81
+            },
+            "0.05": {
+              "bootstrap_scaling": 11,
+              "design": 13,
+              "normal_approximation": 13
+            }
+          },
+          "second": "D"
+        },
+        "J-F(1,continuous)": {
+          "cells": 24,
+          "estimate": 0.01958,
+          "first": "J",
+          "half_width": 0.067442,
+          "member_sd": 0.105003,
+          "members": 8,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 91,
+              "design": 106,
+              "normal_approximation": 106
+            },
+            "0.05": {
+              "bootstrap_scaling": 15,
+              "design": 17,
+              "normal_approximation": 17
+            }
+          },
+          "second": "F-1-continuous"
+        },
+        "J-F(1,macro)": {
+          "cells": 24,
+          "estimate": 0.001331,
+          "first": "J",
+          "half_width": 0.063283,
+          "member_sd": 0.097342,
+          "members": 8,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 81,
+              "design": 91,
+              "normal_approximation": 91
+            },
+            "0.05": {
+              "bootstrap_scaling": 13,
+              "design": 15,
+              "normal_approximation": 15
+            }
+          },
+          "second": "F-1-macro"
+        },
+        "J-F*": {
+          "cells": 24,
+          "estimate": 0.027334,
+          "first": "J",
+          "half_width": 0.098567,
+          "member_sd": 0.152601,
+          "members": 8,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 195,
+              "design": 224,
+              "normal_approximation": 224
+            },
+            "0.05": {
+              "bootstrap_scaling": 32,
+              "design": 36,
+              "normal_approximation": 36
+            }
+          },
+          "second": "F-5-macro"
+        },
+        "J-F_hindsight": {
+          "cells": 24,
+          "estimate": 0.001331,
+          "first": "J",
+          "half_width": 0.063283,
+          "member_sd": 0.097342,
+          "members": 8,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 81,
+              "design": 91,
+              "normal_approximation": 91
+            },
+            "0.05": {
+              "bootstrap_scaling": 13,
+              "design": 15,
+              "normal_approximation": 15
+            }
+          },
+          "second": "F-1-macro"
+        },
+        "J-M": {
+          "cells": 24,
+          "estimate": -0.02099,
+          "first": "J",
+          "half_width": 0.056391,
+          "member_sd": 0.088224,
+          "members": 8,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 64,
+              "design": 75,
+              "normal_approximation": 75
+            },
+            "0.05": {
+              "bootstrap_scaling": 11,
+              "design": 12,
+              "normal_approximation": 12
+            }
+          },
+          "second": "M"
+        },
+        "J-OL": {
+          "cells": 24,
+          "estimate": -0.00838,
+          "first": "J",
+          "half_width": 0.061247,
+          "member_sd": 0.095926,
+          "members": 8,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 76,
+              "design": 89,
+              "normal_approximation": 89
+            },
+            "0.05": {
+              "bootstrap_scaling": 13,
+              "design": 15,
+              "normal_approximation": 15
+            }
+          },
+          "second": "OL"
+        },
+        "J-T": {
+          "cells": 24,
+          "estimate": 0.005561,
+          "first": "J",
+          "half_width": 0.069666,
+          "member_sd": 0.110016,
+          "members": 8,
+          "required_mixed_members": {
+            "0.02": {
+              "bootstrap_scaling": 98,
+              "design": 117,
+              "normal_approximation": 117
+            },
+            "0.05": {
+              "bootstrap_scaling": 16,
+              "design": 19,
+              "normal_approximation": 19
+            }
+          },
+          "second": "T"
+        }
+      }
+    },
+    "held_out_members": [
+      "issue-77-n1-007",
+      "issue-77-n1-008",
+      "issue-77-n1-014",
+      "issue-77-n1-016"
+    ],
+    "label": "DESCRIPTIVE planning numbers; development variance; not a verdict",
+    "method": "required mixed members for a member-clustered half-width <= delta; (a) bootstrap scaling m = m_obs (h_obs / delta)^2, (b) normal approximation m = (1.96 sd(member means) / delta)^2; design = max(a, b)",
+    "mixed_shares": {
+      "angle": {
+        "conservative": 0.5,
+        "development": {
+          "members": 10,
+          "mixed": 5,
+          "share": 0.5
+        },
+        "held_out": {
+          "members": 4,
+          "mixed": 2,
+          "share": 0.5
+        }
+      },
+      "grid": {
+        "conservative": 0.75,
+        "development": {
+          "members": 11,
+          "mixed": 11,
+          "share": 1.0
+        },
+        "held_out": {
+          "members": 4,
+          "mixed": 3,
+          "share": 0.75
+        }
+      },
+      "offset": {
+        "conservative": 0.5455,
+        "development": {
+          "members": 11,
+          "mixed": 6,
+          "share": 0.5455
+        },
+        "held_out": {
+          "members": 4,
+          "mixed": 3,
+          "share": 0.75
+        }
+      },
+      "power": {
+        "conservative": 0.4545,
+        "development": {
+          "members": 11,
+          "mixed": 5,
+          "share": 0.4545
+        },
+        "held_out": {
+          "members": 4,
+          "mixed": 3,
+          "share": 0.75
+        }
+      }
+    },
+    "source": {
+      "interval": "#96 member-clustered percentile bootstrap, 10000 draws, PCG64 7201",
+      "records": "issue-96 records (member x seed x arm)",
+      "summary": ".local-artifacts/issue-96-tau-ad-within-checkpoint-v1/summary.json"
+    }
+  },
+  "renderer": {
+    "build": "scripts/build_capture_mesa.sh (Mesa 26.1.2 source sha256 bac2bca9..., conda-forge llvmdev 22.1.6)",
+    "engine_environment": {
+      "LD_LIBRARY_PATH": "/home/sukai/.cache/novphy-mesa/mesa-26.1.2-llvm22.1.6/lib",
+      "LIBGL_DRIVERS_PATH": "/home/sukai/.cache/novphy-mesa/mesa-26.1.2-llvm22.1.6/lib/dri",
+      "__GLX_VENDOR_LIBRARY_NAME": "mesa"
+    },
+    "expected": {
+      "renderer": "llvmpipe (LLVM 22.1.6, 256 bits)",
+      "version": "4.6 (Core Profile) Mesa 26.1.2"
+    },
+    "library_sha256": {
+      "lib/dri/libdril_dri.so": "sha256:83b4a584bdf66d2fe6ef6326fa10e8d11276bba966b2a0e0f2964041a7a9620b",
+      "lib/libGLX_mesa.so.0.0.0": "sha256:527f92b4e69b31745588d222fcb3f3dba604e5a65b407ad49e9361c82efd45e1",
+      "lib/libgallium-26.1.2.so": "sha256:401feb649c0c594d09bce00af78b20ce55779acdf48e9446569a5077bfc90581",
+      "libLLVM.so.22.1": "sha256:7fe890d6f88cb2a1f93b7e6835262b37ddc13873900b222f42ce41b787c48851"
+    },
+    "reason": "every retained frame (#77, #87, #89, #93, #94, #109) was rendered by llvmpipe (LLVM 22.1.6) / Mesa 26.1.2; the server's Mesa 25.2.8 / LLVM 20.1.2 differs on 230-872 edge pixels of every decision frame; the local build reproduces the retained decision frames byte for byte (engineering runs, dev summary)"
+  },
+  "role": "terminal",
+  "schema": "issue_104_power_cohort_plan_v1",
+  "smoke": {
+    "branches": 168,
+    "failure_effect": "S1-S4 failing: the campaign is not launched (readiness_or_precision_insufficient). A #110 template failing a criterion makes its cell unsupported with that typed reason; the campaign dispatches no branch of an unsupported cell and records them as unsupported_by_smoke",
+    "gate": {
+      "S1_capture_reliability": "typed capture failures over all smoke branches <= 0.05 (the #109 gate)",
+      "S2_renderer": "every complete branch logs the frozen renderer {'renderer': 'llvmpipe (LLVM 22.1.6, 256 bits)', 'version': '4.6 (Core Profile) Mesa 26.1.2'} (enforced per branch)",
+      "S3_pixel_identity": "every replay branch's decision frame (paused-before.png) equals the retained #109 frame outside the animated Bird/Pig boxes",
+      "S4_window_rule": "every complete branch declares (30000, 2500); every trace whose first post-launch stable_entered lies at or before the cap ends with rest_tail_complete exactly 2500 steps after its last stable_entered, or with level_clear / level_fail / censoring after a stable_exited; every other trace ends as before (clear, fail, or censored exactly at the cap)"
+    },
+    "media": "data/issue-104-capture-smoke",
+    "membership_rule": "#110 smoke roster (1 paired level per pair, both sides) x candidates c05, c10 = the #110 frozen smoke gate; plus 2 exposed #77 N1 branches per retained #109 stop kind (first in identity order, excluding the engineering-run branches) re-captured against the retained #109 smoke",
+    "novelty_branches": [
+      "issue-110-smoke-type010101-normal-001-c05",
+      "issue-110-smoke-type010101-normal-001-c10",
+      "issue-110-smoke-type010101-novel-001-c05",
+      "issue-110-smoke-type010101-novel-001-c10",
+      "issue-110-smoke-type010102-normal-001-c05",
+      "issue-110-smoke-type010102-normal-001-c10",
+      "issue-110-smoke-type010102-novel-001-c05",
+      "issue-110-smoke-type010102-novel-001-c10",
+      "issue-110-smoke-type010103-normal-001-c05",
+      "issue-110-smoke-type010103-normal-001-c10",
+      "issue-110-smoke-type010103-novel-001-c05",
+      "issue-110-smoke-type010103-novel-001-c10",
+      "issue-110-smoke-type010104-normal-001-c05",
+      "issue-110-smoke-type010104-normal-001-c10",
+      "issue-110-smoke-type010104-novel-001-c05",
+      "issue-110-smoke-type010104-novel-001-c10",
+      "issue-110-smoke-type010105-normal-001-c05",
+      "issue-110-smoke-type010105-normal-001-c10",
+      "issue-110-smoke-type010105-novel-001-c05",
+      "issue-110-smoke-type010105-novel-001-c10",
+      "issue-110-smoke-type010201-normal-001-c05",
+      "issue-110-smoke-type010201-normal-001-c10",
+      "issue-110-smoke-type010201-novel-001-c05",
+      "issue-110-smoke-type010201-novel-001-c10",
+      "issue-110-smoke-type010202-normal-001-c05",
+      "issue-110-smoke-type010202-normal-001-c10",
+      "issue-110-smoke-type010202-novel-001-c05",
+      "issue-110-smoke-type010202-novel-001-c10",
+      "issue-110-smoke-type010203-normal-001-c05",
+      "issue-110-smoke-type010203-normal-001-c10",
+      "issue-110-smoke-type010203-novel-001-c05",
+      "issue-110-smoke-type010203-novel-001-c10",
+      "issue-110-smoke-type010204-normal-001-c05",
+      "issue-110-smoke-type010204-normal-001-c10",
+      "issue-110-smoke-type010204-novel-001-c05",
+      "issue-110-smoke-type010204-novel-001-c10",
+      "issue-110-smoke-type010205-normal-001-c05",
+      "issue-110-smoke-type010205-normal-001-c10",
+      "issue-110-smoke-type010205-novel-001-c05",
+      "issue-110-smoke-type010205-novel-001-c10",
+      "issue-110-smoke-type010301-normal-001-c05",
+      "issue-110-smoke-type010301-normal-001-c10",
+      "issue-110-smoke-type010301-novel-001-c05",
+      "issue-110-smoke-type010301-novel-001-c10",
+      "issue-110-smoke-type010302-normal-001-c05",
+      "issue-110-smoke-type010302-normal-001-c10",
+      "issue-110-smoke-type010302-novel-001-c05",
+      "issue-110-smoke-type010302-novel-001-c10",
+      "issue-110-smoke-type010303-normal-001-c05",
+      "issue-110-smoke-type010303-normal-001-c10",
+      "issue-110-smoke-type010303-novel-001-c05",
+      "issue-110-smoke-type010303-novel-001-c10",
+      "issue-110-smoke-type010304-normal-001-c05",
+      "issue-110-smoke-type010304-normal-001-c10",
+      "issue-110-smoke-type010304-novel-001-c05",
+      "issue-110-smoke-type010304-novel-001-c10",
+      "issue-110-smoke-type010305-normal-001-c05",
+      "issue-110-smoke-type010305-normal-001-c10",
+      "issue-110-smoke-type010305-novel-001-c05",
+      "issue-110-smoke-type010305-novel-001-c10",
+      "issue-110-smoke-type010401-normal-001-c05",
+      "issue-110-smoke-type010401-normal-001-c10",
+      "issue-110-smoke-type010401-novel-001-c05",
+      "issue-110-smoke-type010401-novel-001-c10",
+      "issue-110-smoke-type010402-normal-001-c05",
+      "issue-110-smoke-type010402-normal-001-c10",
+      "issue-110-smoke-type010402-novel-001-c05",
+      "issue-110-smoke-type010402-novel-001-c10",
+      "issue-110-smoke-type010403-normal-001-c05",
+      "issue-110-smoke-type010403-normal-001-c10",
+      "issue-110-smoke-type010403-novel-001-c05",
+      "issue-110-smoke-type010403-novel-001-c10",
+      "issue-110-smoke-type010404-normal-001-c05",
+      "issue-110-smoke-type010404-normal-001-c10",
+      "issue-110-smoke-type010404-novel-001-c05",
+      "issue-110-smoke-type010404-novel-001-c10",
+      "issue-110-smoke-type010405-normal-001-c05",
+      "issue-110-smoke-type010405-normal-001-c10",
+      "issue-110-smoke-type010405-novel-001-c05",
+      "issue-110-smoke-type010405-novel-001-c10",
+      "issue-110-smoke-type010501-normal-001-c05",
+      "issue-110-smoke-type010501-normal-001-c10",
+      "issue-110-smoke-type010501-novel-001-c05",
+      "issue-110-smoke-type010501-novel-001-c10",
+      "issue-110-smoke-type010502-normal-001-c05",
+      "issue-110-smoke-type010502-normal-001-c10",
+      "issue-110-smoke-type010502-novel-001-c05",
+      "issue-110-smoke-type010502-novel-001-c10",
+      "issue-110-smoke-type010503-normal-001-c05",
+      "issue-110-smoke-type010503-normal-001-c10",
+      "issue-110-smoke-type010503-novel-001-c05",
+      "issue-110-smoke-type010503-novel-001-c10",
+      "issue-110-smoke-type010504-normal-001-c05",
+      "issue-110-smoke-type010504-normal-001-c10",
+      "issue-110-smoke-type010504-novel-001-c05",
+      "issue-110-smoke-type010504-novel-001-c10",
+      "issue-110-smoke-type010505-normal-001-c05",
+      "issue-110-smoke-type010505-normal-001-c10",
+      "issue-110-smoke-type010505-novel-001-c05",
+      "issue-110-smoke-type010505-novel-001-c10",
+      "issue-110-smoke-type010601-normal-001-c05",
+      "issue-110-smoke-type010601-normal-001-c10",
+      "issue-110-smoke-type010601-novel-001-c05",
+      "issue-110-smoke-type010601-novel-001-c10",
+      "issue-110-smoke-type010602-normal-001-c05",
+      "issue-110-smoke-type010602-normal-001-c10",
+      "issue-110-smoke-type010602-novel-001-c05",
+      "issue-110-smoke-type010602-novel-001-c10",
+      "issue-110-smoke-type010603-normal-001-c05",
+      "issue-110-smoke-type010603-normal-001-c10",
+      "issue-110-smoke-type010603-novel-001-c05",
+      "issue-110-smoke-type010603-novel-001-c10",
+      "issue-110-smoke-type010604-normal-001-c05",
+      "issue-110-smoke-type010604-normal-001-c10",
+      "issue-110-smoke-type010604-novel-001-c05",
+      "issue-110-smoke-type010604-novel-001-c10",
+      "issue-110-smoke-type010605-normal-001-c05",
+      "issue-110-smoke-type010605-normal-001-c10",
+      "issue-110-smoke-type010605-novel-001-c05",
+      "issue-110-smoke-type010605-novel-001-c10",
+      "issue-110-smoke-type010701-normal-001-c05",
+      "issue-110-smoke-type010701-normal-001-c10",
+      "issue-110-smoke-type010701-novel-001-c05",
+      "issue-110-smoke-type010701-novel-001-c10",
+      "issue-110-smoke-type010702-normal-001-c05",
+      "issue-110-smoke-type010702-normal-001-c10",
+      "issue-110-smoke-type010702-novel-001-c05",
+      "issue-110-smoke-type010702-novel-001-c10",
+      "issue-110-smoke-type010703-normal-001-c05",
+      "issue-110-smoke-type010703-normal-001-c10",
+      "issue-110-smoke-type010703-novel-001-c05",
+      "issue-110-smoke-type010703-novel-001-c10",
+      "issue-110-smoke-type010704-normal-001-c05",
+      "issue-110-smoke-type010704-normal-001-c10",
+      "issue-110-smoke-type010704-novel-001-c05",
+      "issue-110-smoke-type010704-novel-001-c10",
+      "issue-110-smoke-type010705-normal-001-c05",
+      "issue-110-smoke-type010705-normal-001-c10",
+      "issue-110-smoke-type010705-novel-001-c05",
+      "issue-110-smoke-type010705-novel-001-c10",
+      "issue-110-smoke-type010801-normal-001-c05",
+      "issue-110-smoke-type010801-normal-001-c10",
+      "issue-110-smoke-type010801-novel-001-c05",
+      "issue-110-smoke-type010801-novel-001-c10",
+      "issue-110-smoke-type010802-normal-001-c05",
+      "issue-110-smoke-type010802-normal-001-c10",
+      "issue-110-smoke-type010802-novel-001-c05",
+      "issue-110-smoke-type010802-novel-001-c10",
+      "issue-110-smoke-type010803-normal-001-c05",
+      "issue-110-smoke-type010803-normal-001-c10",
+      "issue-110-smoke-type010803-novel-001-c05",
+      "issue-110-smoke-type010803-novel-001-c10",
+      "issue-110-smoke-type010804-normal-001-c05",
+      "issue-110-smoke-type010804-normal-001-c10",
+      "issue-110-smoke-type010804-novel-001-c05",
+      "issue-110-smoke-type010804-novel-001-c10",
+      "issue-110-smoke-type010805-normal-001-c05",
+      "issue-110-smoke-type010805-normal-001-c10",
+      "issue-110-smoke-type010805-novel-001-c05",
+      "issue-110-smoke-type010805-novel-001-c10"
+    ],
+    "novelty_template_criteria": [
+      "zero typed capture failures (#109 taxonomy) and render invariance at the decision seal",
+      "every authored slot, including novelty:0000, present in the trace with its authored identity",
+      "world gravity (0, 6) on level 6 and (0, -9.8) elsewhere",
+      "right-slingshot candidates launch leftward (bird_launched velocity x < 0)",
+      "residual acceleration of contact-free bodies agrees in sign with every active force-on label"
+    ],
+    "novelty_template_rules": {
+      "force_sign": "over contact-free consecutive native steps (no contact ids on either step) where force_on is active, the median projection of the residual acceleration (velocity change / 0.0004 s minus gravity x gravity_scale) on the unit force direction is > 0; a template with no such step is reported 'not exercised', not failed",
+      "gravity": "world gravity_vector of the first native sample: (0, 6) on novelty level 6, (0, -9.8) otherwise",
+      "right_slingshot": "bird_launched payload launch_velocity x < 0 on every right-slingshot branch",
+      "slots": "every generated slot (novelty:0000 included) is in the initial trace (pipeline check)"
+    },
+    "output": ".local-artifacts/issue-104-capture-smoke-v1",
+    "replay_branches": [
+      "issue-77-n1-002-a04",
+      "issue-77-n1-003-a02",
+      "issue-77-n1-001-a02",
+      "issue-77-n1-001-a05",
+      "issue-77-n1-001-a03",
+      "issue-77-n1-001-a04",
+      "issue-77-n1-012-a04",
+      "issue-77-n1-016-a03"
+    ],
+    "reported_not_gated": [
+      "storm onset inside the window (level 8)",
+      "force-on prevalence per template",
+      "settle frames (post-rest frames) and collapse (non-bird support change) per level type",
+      "replay native-trace prefix identity and stop kinds vs the retained #109 smoke",
+      "throughput (amortized s/branch, branch wall, unique bytes) and the campaign budget re-projected with it"
+    ],
+    "retry_policy": "technical_retries 0; every scheduled smoke branch executed once or retained as a typed failure",
+    "runner": "scripts/run_power_cohort_smoke.py",
+    "validation_command": "python -u -m scripts.run_power_cohort_smoke --validate",
+    "workers": 16
+  },
+  "stop_rules": {
+    "S1_failure_rate": "after >= 200 dispatched branches, cumulative typed-failure share > 0.05 stops the campaign",
+    "S2_storage": "free bytes on the output filesystem < 500 GiB (limits.minimum_free_bytes)",
+    "S3_artifact_cap": "accounted unique bytes > limits.artifact_bytes (1.25 x projection)",
+    "S4_wall_cap_hours": 302.8,
+    "effect": "a stop is terminal: every undispatched branch is recorded as campaign_stopped:<rule>; no outcome-conditioned retry, replacement or re-freeze"
+  },
+  "tokens": [
+    "supported",
+    "not_supported_by_this_experiment",
+    "readiness_or_precision_insufficient"
+  ],
+  "validation_command": "python -u -m scripts.prepare_power_cohort --validate",
+  "version": 1,
+  "window": {
+    "merge": "the #113 rule is the campaign's engine window (limits.native_window, player rebuild)",
+    "rule": {
+      "censoring": "a shot not in a tail at pre_rest_cap_steps is censored there (native_time_window_limit), exactly where the old player censored it",
+      "clear_and_fail": "level_clear and level_fail finalize immediately, as before, also inside a tail",
+      "engine_environment": {
+        "NOVPHY_NATIVE_MAX_SHOT_STEPS": 30000,
+        "NOVPHY_NATIVE_REST_TAIL_STEPS": 2500
+      },
+      "hard_limit_steps": 32500,
+      "manifest_fields": {
+        "maximum_shot_steps": 30000,
+        "rest_tail_steps": 2500
+      },
+      "name": "run-to-rest plus a fixed post-rest tail; the old 12 s cap is unchanged for shots not at rest",
+      "old_window_identity": "for every shot the prefix up to the old stop step is the old trace: the change only removes the stable_entered finalization and adds frames after it",
+      "pre_rest_cap_steps": 30000,
+      "rest_tail_frames": 50,
+      "rest_tail_steps": 2500,
+      "rest_trigger": "the engine stable_entered event, unchanged: every dynamic Rigidbody2D has |v|^2 <= 1e-4 and |omega| <= 0.01 deg/s for 100 consecutive native steps, after the launch",
+      "stop_kind": "rest_tail_complete maps to stable_without_clear (scene at engine rest, no clear)",
+      "tail": "stable_entered at step s <= pre_rest_cap_steps no longer finalizes; recording continues to s + rest_tail_steps and then finalizes with terminal reason rest_tail_complete",
+      "tail_cancel": "stable_exited during a tail cancels it; recording continues and censors at pre_rest_cap_steps if that step has passed, otherwise the next stable_entered starts a new tail",
+      "terminal_reason": "rest_tail_complete"
+    },
+    "spec": ".local-artifacts/issue-113-capture-window-v1/spec.json",
+    "spec_sha256": "sha256:929f5bc6d7d9b42b010e7a87653331f3636c68e8ec51f856b61b945238aa076d"
+  }
+}

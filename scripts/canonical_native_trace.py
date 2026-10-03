@@ -6,9 +6,21 @@ from pathlib import Path
 
 MAX_CHUNK_BYTES = 16 * 2**20
 CHUNK_SAMPLES = 250
-MAX_STEPS = 30000
+MAX_STEPS = 30000           # legacy constant window; a manifest may declare its own (#113 window rule)
+MAX_STEPS_CEILING = 150000  # largest NOVPHY_NATIVE_MAX_SHOT_STEPS the #104 player accepts
+MAX_TAIL_STEPS = 30000      # largest NOVPHY_NATIVE_REST_TAIL_STEPS the #104 player accepts
 OBSERVATION_STRIDE = 50
 FIXED_DELTA_SECONDS = .0004
+
+
+def declared_window(manifest):
+    """(cap, rest tail) of one trace; manifests before the #104 player declare neither (30000, 0)."""
+    cap = manifest.get("maximum_shot_steps", MAX_STEPS)
+    tail = manifest.get("rest_tail_steps", 0)
+    if (type(cap) is not int or type(tail) is not int or not OBSERVATION_STRIDE <= cap <= MAX_STEPS_CEILING
+            or not 0 <= tail <= MAX_TAIL_STEPS or cap % OBSERVATION_STRIDE or tail % OBSERVATION_STRIDE):
+        raise ValueError("native trace declares an invalid observation window")
+    return cap, tail
 
 
 def finite_tree(value):
@@ -63,7 +75,8 @@ class NativeTrace:
             raise ValueError("native time or observation cadence differs from the contract")
         if value.get("status") not in ("complete", "failed"):
             raise ValueError("native manifest has no declared completion status")
-        if value["last_fixed_step"] - value["first_fixed_step"] > MAX_STEPS:
+        cap, tail = declared_window(value)
+        if value["last_fixed_step"] - value["first_fixed_step"] > cap + tail:
             raise ValueError("native trace exceeded its physical-time window")
 
     def chunks(self):

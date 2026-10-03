@@ -1,5 +1,5 @@
 """Prospective terminal-or-censored segments; raw capture outcomes stay unchanged."""
-from scripts.canonical_native_trace import NativeTrace, MAX_STEPS, OBSERVATION_STRIDE
+from scripts.canonical_native_trace import NativeTrace, OBSERVATION_STRIDE, declared_window
 
 
 class NativeSegmentTrace:
@@ -17,9 +17,12 @@ class NativeSegmentTrace:
         if summary["event_counts"].get("bird_launched", 0) != 1:
             raise ValueError("segment must contain exactly one observed launch")
         if self.censored:
+            # The cap censors a shot not in a post-rest tail; a tail cancelled by stable_exited
+            # after the cap censors on the next step, so a censored length lies in [cap, cap + tail].
+            cap, tail = declared_window(self.manifest)
             steps = [f["fixed_step"] for f in self.manifest["frame_records"]]
             if (summary["failure"] != "native_time_window_limit"
-                    or last - first != MAX_STEPS or summary["sample_count"] != MAX_STEPS + 1
+                    or not cap <= last - first <= cap + tail or summary["sample_count"] != last - first + 1
                     or self.manifest["complete_every_native_step"] is not True
                     or steps != list(range(first, last + 1, OBSERVATION_STRIDE))):
                 raise ValueError("censoring requires an intact full native time window")

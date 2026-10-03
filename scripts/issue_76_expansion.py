@@ -104,12 +104,12 @@ def exposure_sources():
 
 
 def materialize(member,template,output):
-    """Use the condition's workbook coordinates, including the novel columns."""
+    """Use the condition's workbook coordinates, including the novel columns and restrictions."""
     source = ROOT/"tasks/task_templates"/template["template"]
     row = template["constraints"]
     coordinates = row["active_coordinates"]
-    if row["active_restrictions"] is not None:
-        raise ValueError("this frozen smoke requires the selected unrestricted workbook rows")
+    # Workbook distraction restrictions (e.g. Magnet levels: no wood circle) are part of the row.
+    restricted = tuple(item.strip().lower() for item in (row["active_restrictions"] or "").split(",") if item.strip())
     condition = BenchmarkCondition(f"novelty_level_{member['novelty_level']}",member["generator_family"])
     record = create_scenario_template_record(source.read_bytes(),source_reference=str(source.relative_to(ROOT)),
                                              benchmark_conditions=[condition])
@@ -119,7 +119,7 @@ def materialize(member,template,output):
         output_manifest_path=output/"generated-scenario.json",template_name=source.stem.split("_",1)[1],
         benchmark_condition=condition,template_identity=record.identity,generation_seed=member["generation_seed"],
         reference_point=tuple(coordinates[:2]),min_coordinate=tuple(coordinates[2:4]),
-        max_coordinate=tuple(coordinates[4:6]),restricted_objects=(),template_source_reference=str(source.relative_to(ROOT)))
+        max_coordinate=tuple(coordinates[4:6]),restricted_objects=restricted,template_source_reference=str(source.relative_to(ROOT)))
     with redirect_stdout(StringIO()):
         generated,scenario = materialize_template_bound_level_instance(request,record,publish=False)
     return generated,scenario

@@ -9,7 +9,7 @@ from scripts.native_segment_trace import NativeSegmentTrace
 from tests.test_canonical_native_trace import sample
 
 
-def segment_fixture(root, *, censored=True, end=30000, failure="native_time_window_limit"):
+def segment_fixture(root, *, censored=True, end=30000, failure="native_time_window_limit", window=None):
     (root / "native").mkdir()
     descriptors = []
     for ordinal, start in enumerate(range(0, end + 1, 250), 1):
@@ -30,7 +30,7 @@ def segment_fixture(root, *, censored=True, end=30000, failure="native_time_wind
                             "sample_count": stop - start, "event_count": len(events),
                             "uncompressed_bytes": len(encoded), "compressed_bytes": (root / path).stat().st_size})
     steps = list(range(0, end + 1, 50))
-    if steps[-1] != end:
+    if steps[-1] != end and not censored:  # a failed (censored) trace has no forced terminal frame
         steps.append(end)
     value = {"schema": "canonical_native_trace_v1", "capture_id": "capture", "shot_id": "shot",
              "status": "failed" if censored else "complete", "failure": failure if censored else None,
@@ -39,6 +39,8 @@ def segment_fixture(root, *, censored=True, end=30000, failure="native_time_wind
              "complete_every_native_step": True, "chunks": descriptors,
              "frame_records": [{"fixed_step": s, "forced_terminal": s % 50 != 0} for s in steps],
              "terminal_evidence": None if censored else {"reason": "stable_entered", "fixed_step": end, "event_id": "terminal"}}
+    if window is not None:
+        value["maximum_shot_steps"], value["rest_tail_steps"] = window
     (root / "native-manifest.json").write_text(json.dumps(value))
 
 
@@ -86,6 +88,34 @@ class NativeSegmentTests(unittest.TestCase):
             (root / "native/chunk-000001.json.gz").unlink()
             with self.assertRaises((FileNotFoundError, ValueError)):
                 NativeSegmentTrace(root)
+
+    def test_declared_rest_tail_admits_censoring_after_a_cancelled_tail(self):
+        # #113 rule: a tail cancelled past the cap censors on the next step, inside [cap, cap + tail].
+        for end, window, admitted in ((30000, (30000, 2500), True), (30137, (30000, 2500), True),
+                                      (30137, None, False), (29950, (30000, 2500), False)):
+            with self.subTest(end=end, window=window), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                segment_fixture(root, end=end, window=window)
+                if admitted:
+                    self.assertTrue(NativeSegmentTrace(root).censored)
+                else:
+                    with self.assertRaisesRegex(ValueError, "intact full native|physical-time window"):
+                        NativeSegmentTrace(root)
+
+    def test_trace_longer_than_its_declared_window_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            segment_fixture(root, end=32550, window=(30000, 2500))
+            with self.assertRaisesRegex(ValueError, "exceeded its physical-time window"):
+                NativeTrace(root)
+
+    def test_off_grid_or_oversized_window_declaration_is_rejected(self):
+        for window in ((30000, 2501), (30025, 0), (150050, 0)):
+            with self.subTest(window=window), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                segment_fixture(root, end=51, censored=False, window=window)
+                with self.assertRaisesRegex(ValueError, "invalid observation window"):
+                    NativeTrace(root)
 
 
 if __name__ == "__main__":

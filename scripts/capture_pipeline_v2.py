@@ -60,9 +60,13 @@ DEFAULT_LIMITS = {
     "shot_wall_cap_seconds": 900,
     "cold_start_gate": True,
 }
+# The #113 window rule is engine-side; a limits["native_window"] block sets it per campaign.
+WINDOW_VARIABLES = {"maximum_shot_steps": "NOVPHY_NATIVE_MAX_SHOT_STEPS",
+                    "rest_tail_steps": "NOVPHY_NATIVE_REST_TAIL_STEPS"}
 FAILURE_CLASSES = (
     ("port_bind_conflict", ("PortBindConflict",)),
     ("port_block_unavailable", ("no free port sub-block",)),
+    ("renderer_mismatch", ("RendererMismatch",)),
     ("engine_connect_timeout", ("Could not connect to Science Birds",)),
     ("menu_readiness_timeout", ("did not reach PLAYING",)),
     ("barrier_readiness_timeout", ("native decision barrier readiness deadline",)),
@@ -76,11 +80,16 @@ FAILURE_CLASSES = (
     ("supervisor_interrupted", ("supervisor_interrupted",)),
 )
 TERMINAL_KINDS = {"level_clear": "native_clear", "level_fail": "native_fail",
-                  "stable_entered": "stable_without_clear"}
+                  "stable_entered": "stable_without_clear",
+                  "rest_tail_complete": "stable_without_clear"}   # #113 window rule: rest + tail
 
 
 class PortBindConflict(RuntimeError):
     """The engine could not bind one of its assigned ports."""
+
+
+class RendererMismatch(RuntimeError):
+    """The engine rendered with a different OpenGL implementation than the frozen one."""
 
 
 def utc_now():
@@ -153,6 +162,17 @@ def engine_bind_conflict(runtime):
         except OSError:
             continue
     return None
+
+
+def engine_renderer(runtime):
+    """The OpenGL renderer and version lines the player logged at start-up."""
+    found = {}
+    for log in sorted(Path(runtime).glob("sciencebirds_*.log")):
+        for line in log.read_text(errors="ignore").splitlines():
+            for key, prefix in (("renderer", "Renderer:"), ("version", "Version:")):
+                if key not in found and line.startswith(prefix):
+                    found[key] = line[len(prefix):].strip()
+    return found
 
 
 # ------------------------------------------------------ render invariance
@@ -259,6 +279,7 @@ def wait_for_manifest(raw, stall_seconds, cap_seconds, identity, log):
 def capture_segment(bridge, aligned, destination, member, scenario, identity, action, limits, log):
     """The #76 censored shot collector with a progress-based manifest wait."""
     from scripts import issue_76_censored_episode as censored
+    from scripts.canonical_native_trace import declared_window
     from scripts.native_segment_trace import NativeSegmentTrace
     from scripts.observation_trace import load_aligned_observation_captures, persist_observation_trace
     old = censored.old
@@ -277,6 +298,9 @@ def capture_segment(bridge, aligned, destination, member, scenario, identity, ac
     trace = NativeSegmentTrace(raw)
     if trace.manifest["capture_id"] != raw.name or int(trace.manifest["engine_seed"]) != member["engine_seed"]:
         raise ValueError("native manifest capture/seed binding differs")
+    window = limits.get("native_window")
+    if window and declared_window(trace.manifest) != (window["maximum_shot_steps"], window["rest_tail_steps"]):
+        raise ValueError("native manifest window differs from the frozen capture window")
     summary = trace.summary
     if summary["event_counts"].get("bird_launched", 0) != 1:
         raise ValueError("native segment does not contain exactly one actual launch")
@@ -394,7 +418,8 @@ def capture_branch(output, record, limits, slot, sequence):
     bridge = endpoint = engine = display_process = None
     variables = ("DISPLAY", "XDG_DATA_HOME", "NOVPHY_PHYSICS_CAPTURE_PORT",
                  "NOVPHY_PHYSICS_CAPTURE_V2_STRIDE", "NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT",
-                 "NOVPHY_ENVIRONMENT_SEED", shared.TARGET_VARIABLE)
+                 "NOVPHY_ENVIRONMENT_SEED", shared.TARGET_VARIABLE, *WINDOW_VARIABLES.values(),
+                 *limits.get("engine_environment", {}))
     environment = {key: os.environ.get(key) for key in variables}
     step = limits["decision_fixed_step"]
     policy = FixedReplayPolicy(record["actions"][0])
@@ -418,6 +443,12 @@ def capture_branch(output, record, limits, slot, sequence):
                           NOVPHY_ALIGNED_OBSERVATION_CAPTURE_ROOT=str(aligned),
                           NOVPHY_ENVIRONMENT_SEED=str(record["engine_seed"]),
                           NOVPHY_NATIVE_DECISION_STEP=str(step))
+        for key, variable in WINDOW_VARIABLES.items():
+            if limits.get("native_window"):
+                os.environ[variable] = str(limits["native_window"][key])
+            else:
+                os.environ.pop(variable, None)
+        os.environ.update(limits.get("engine_environment", {}))
         with cold_start_gate(output / "cold-start.lock", limits["cold_start_gate"]) as waited:
             result["cold_start_gate_wait_seconds"] = waited
             clock.lap("cold_start_gate_wait")
@@ -451,6 +482,10 @@ def capture_branch(output, record, limits, slot, sequence):
             if conflict:
                 raise PortBindConflict(f"engine log {conflict}: Address already in use")
             clock.lap("menu_to_playing")
+        result["renderer"] = engine_renderer(game)
+        expected = limits.get("renderer")
+        if expected and result["renderer"] != expected:
+            raise RendererMismatch(f"engine renderer {result['renderer']} differs from the frozen {expected}")
         if bridge.get_current_level() != 1:
             raise ValueError("episode did not load its single assigned level")
         deadline = time.monotonic() + limits["history_ready_seconds"]
@@ -575,6 +610,9 @@ def _worker_entry(output, record, limits, slot, sequence):
 
 
 def _attempt_bytes(root, seen):
+    """Unique bytes under ``root``. A hard-linked file is charged size / link count:
+    mergerfs (``/mnt/array``) reports a different inode per path, so inode identity
+    alone would charge every player hard link in full."""
     total = 0
     for path in Path(root).rglob("*"):
         try:
@@ -586,7 +624,7 @@ def _attempt_bytes(root, seen):
         key = (metadata.st_dev, metadata.st_ino)
         if key not in seen:
             seen.add(key)
-            total += metadata.st_size
+            total += metadata.st_size if metadata.st_nlink == 1 else metadata.st_size // metadata.st_nlink
     return total
 
 
