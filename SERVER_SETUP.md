@@ -16,7 +16,8 @@ Scope: steps 1–6 of the server-migration checklist. Only this file is committe
 | torch | `2.13.0+cu130`, CUDA 13.0, cuDNN 92000 (9.20.0), triton 3.7.1 |
 | torch arch list | `sm_75 sm_80 sm_86 sm_90 sm_100 sm_120`; device capability `(12, 0)` |
 | capture stack | TigerVNC `Xvnc` 1.13.1, ffmpeg 6.1.1-3ubuntu5, libgl1/libegl1/libglx 1.7.0, Mesa 25.2.8, libvulkan1 1.3.275, `libnvidia-gl-595` |
-| GitHub / git | `gh` is not authenticated (`gh auth login` needed), so the #108 comment could not be posted; its text is in `/tmp/novphy-108-comment.md`. No git identity is configured on this server; this commit used the repo author via `git -c user.name=… -c user.email=…`. |
+| GitHub / git | `gh` logged in as `Sino-Huang` (done by the owner); global git identity `Sukai Huang <hsk6808065@163.com>`; SSH remote `origin` reachable |
+| Java | OpenJDK 21.0.12.1 (`openjdk-21-jre-headless`, installed by the owner) |
 
 ## Pass/fail by step
 
@@ -27,7 +28,7 @@ Scope: steps 1–6 of the server-migration checklist. Only this file is committe
 | 3. Unit tests | PASS | `47 passed in 5.93s` (all five files) |
 | 4. Cross-hardware replication | **FAIL** | before the rewrite: 3/5 blocked by missing `/p` paths, 2/5 numeric disagreements (deltas below). After the rewrite: 5/5 fail on frozen-input hash bindings. **Cross-hardware replication did not pass.** |
 | 5. Training sanity | PASS | `--version 3 --dry-run` exit 0; compiled 4-member ensemble: 0.24–0.28 s per Δ = 1 full-horizon update (numbers below) |
-| 6. Capture stack | PARTIAL | Xvnc, ffmpeg, GL/Vulkan present; player runs 20 s with no crash, **software rendering (llvmpipe)**; **`java` missing** (the capture runs `java -jar game_playing_interface.jar`); **Unity editor has no license** |
+| 6. Capture stack | PARTIAL | Xvnc, ffmpeg, GL/Vulkan and Java 21 present; player runs 20 s with no crash, **software rendering (llvmpipe)**; **Unity editor has no license** |
 
 ## Changes made
 
@@ -42,7 +43,12 @@ Scope: steps 1–6 of the server-migration checklist. Only this file is committe
    - Backup of every original: `/mnt/array/sukaih/novphy-p-path-backup-20261003/originals.tar` (3.5 GB), plus `manifest.tsv` (path, sha256 before, sha256 after, occurrences) and `skipped_binary.txt`. To restore: `tar -xf originals.tar -C ~/Project/NovPhy`.
    - Git: 1,735 tracked files under `.local-artifacts/`/`data/` now show as modified (5 before; those are earlier, unrelated changes to `issue-92-cross-pool-audit-v1`). None are committed.
    - Not affected: the `#99`, `#100` and `#112` output directories that step 4 compares against. They hold no `/p` text, and their 8,198 files match a sha256 manifest taken before any validate and before the rewrite.
-3. **Nothing else.** No system packages, drivers, environment variables, symlinks or license files were changed. I edited no runner or module.
+3. **Git identity** (owner asked for it), copied from the author of the existing commits:
+   - `git config --global user.name "Sukai Huang"`
+   - `git config --global user.email "hsk6808065@163.com"`
+   - `gh auth setup-git` makes `gh` the credential helper for `https://github.com`, so HTTPS pushes use the gh login. `origin` itself is SSH and already works (`git ls-remote origin` succeeds).
+4. **Done by the owner, not by me:** `gh auth login`, and installed `openjdk-21-jre-headless` (21.0.12.1+1-1-24.04.4-Ubuntu).
+5. **Nothing else.** No other system packages, drivers, environment variables, symlinks or license files were changed. I edited no runner or module.
 
 ## Step 1 — paths
 
@@ -271,7 +277,9 @@ The rewrite changed the sha256 of the bound plans, so every validate now stops a
 ## Step 6 — capture stack
 
 - Present: `/usr/bin/Xvnc` (TigerVNC 1.13.1), `/usr/bin/ffmpeg` 6.1.1, libGL/libEGL/libGLX (glvnd 1.7.0), Mesa 25.2.8 (GL and Vulkan), libvulkan1, NVIDIA GL/Vulkan ICDs (`libnvidia-gl-595`), gcc/g++.
-- **Missing: `java`.** `scripts/smoke_physics_capture.py` launches `java -jar ./game_playing_interface.jar` (jar built with JDK 13.0.2). Installing a JRE needs root (e.g. `sudo apt install openjdk-17-jre-headless`). Not installed.
+- **Java:** `/usr/bin/java` is OpenJDK 21.0.12.1 (`openjdk-21-jre-headless`). `scripts/smoke_physics_capture.py` launches `java -jar ./game_playing_interface.jar` (built with JDK 13.0.2, `Main-Class: server.ABServer`).
+  - Compatibility: the jar's newest class files are major version 56 (Java 12); Java 21 reads up to 65.
+  - `java --dry-run -jar .local-artifacts/issue-77-n1-v1/player/game_playing_interface.jar` exits 0. That loads `server.ABServer` without running `main`, so no engine was started.
 - Player smoke (the one allowed launch):
   - Ran a `/tmp` copy of `.local-artifacts/issue-77-n1-v1/player/`, because the `9001.x86_64` wrapper renames files in its own directory.
   - Launched `./9001.x86_64 -logFile …` (wrapper adds `-force-glcore -screen-width 840 -screen-height 480`) for 20 s on a private `Xvnc :197`, with `LD_LIBRARY_PATH` stripped.
