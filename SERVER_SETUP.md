@@ -293,6 +293,11 @@ The rewrite changed the sha256 of the bound plans, so every validate now stops a
   - Second launch, for a rendering check: ffmpeg `x11grab` screenshots of the private display at 5, 12 and 20 s. All three show the correct Science Birds title screen (logo, birds, PLAY button, ground) filling the 840×480 player area, with 8,920 distinct colours. The renderer was again llvmpipe on Mesa 25.2.8.
   - The RTX 3090 workstation also rendered in software. A retained #87 attempt log shows `llvmpipe (LLVM 22.1.6)`, `Mesa 26.1.2-arch1.1`.
   - **Risk:** the Mesa/LLVM version differs (25.2.8/20.1 here vs 26.1.2/22.1 there), so frames captured here may not be byte-identical to the retained ones. The title-screen check shows that rendering works; it cannot show that in-level frames match the 3090, because that needs a capture run.
+  - **Decision (owner, 2026-10-03): keep CPU rendering (llvmpipe), not GPU.**
+    - All retained frames were rendered with llvmpipe, and the encoder was trained and scored on them.
+    - A 2D 840×480 scene gains little from a GPU.
+    - The capture's private `Xvnc` plus `-force-glcore` design has no GPU behind it, and keeping capture off the GPUs keeps them free for training.
+    - Still open: the Mesa version difference. One approved gameplay run that replays a retained deterministic capture and pixel-compares its `decision-frame.png` would settle it. If it differs, install Mesa 26.1.2 for the user (no root needed) and point the capture at it.
 - Unity editor `~/.local/share/novphy-unity/2019.4.41f2-6b23d448b533/editor/Editor/Unity` (`UNITY_2019_4_41F2` is unset):
   - Before re-activation: `-batchmode -quit -nographics -logFile -` exited 1 with `Failed to activate/update license Missing or bad username or password`; no `Unity_lic.ulf` existed anywhere.
   - After the owner re-activated through Hub, the same command **exits 0**. Log: `Successfully connected to LicensingClient`, `Serial number assigned to: "F4-HCSV-G8FX-6VYN-NB2J-XXXX"`, `Pro License: NO` (Personal), `Current license is already valid and activated`, `Exiting batchmode successfully now!`. The license file `UpdateDate` is 2026-10-04T03:27:31.
