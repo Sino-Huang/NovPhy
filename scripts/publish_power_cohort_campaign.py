@@ -84,7 +84,7 @@ def analyze(meta, expected_renderer):
     output = OUTPUT / meta["stream"]
     entry = pipeline.branch_entry(output, meta["identity"])
     row = {**meta, "status": entry["status"], "failure_class": entry.get("failure_class"),
-           "wall_seconds": entry.get("wall_seconds")}
+           "failure": entry.get("failure"), "wall_seconds": entry.get("wall_seconds")}
     if entry["status"] != "complete":
         return row
     result = campaign.read(output / "results" / f"{meta['identity']}.json")
@@ -158,6 +158,8 @@ def capture_accounting(plan, rows, state):
             "scheduled": len(items), "complete": len(complete), "failed": len(failed),
             "undispatched": sum(row["status"] == "unattempted" for row in items),
             "failure_classes": dict(Counter(row["failure_class"] for row in failed)),
+            "failures": dict(Counter(row["failure"] for row in failed)),
+            "failed_levels": dict(Counter(row["level"] for row in failed)),
             "typed_failure_share": round(len(failed) / max(1, len(complete) + len(failed)), 4),
             "renderer_mismatched": sum(not row["renderer_ok"] for row in complete),
             "window_violations": [row["identity"] for row in complete if not row["window_consistent"]],
