@@ -38,7 +38,7 @@ def process_rss(pid):
     total = 0
     for item in _process_tree(pid):
         try: total += int(_stat_fields(item)[21])*os.sysconf("SC_PAGE_SIZE")
-        except FileNotFoundError: pass
+        except (FileNotFoundError, ProcessLookupError): pass   # exited before open / between open and read
     return total/2**20
 
 

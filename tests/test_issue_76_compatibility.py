@@ -268,6 +268,17 @@ class CaptureTests(unittest.TestCase):
     def test_proc_memory_measurement_needs_no_optional_package(self):
         self.assertGreater(r.process_rss(os.getpid()),0)
 
+    def test_proc_memory_measurement_skips_a_process_that_exits_mid_read(self):
+        # /proc/<pid>/stat opened, then the process exits before read: ESRCH, not ENOENT.
+        def stat(pid):
+            if pid == 2:
+                raise ProcessLookupError(3, "No such process")
+            if pid == 3:
+                raise FileNotFoundError(2, "No such file or directory")
+            return ("S",) + ("0",) * 20 + ("10",)
+        with patch.object(r, "_process_tree", return_value=(1, 2, 3)), patch.object(r, "_stat_fields", stat):
+            self.assertEqual(r.process_rss(1), 10 * os.sysconf("SC_PAGE_SIZE") / 2**20)
+
     def test_registry_append_retries_short_writes(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory)/"registry"; path.write_bytes(b"")
