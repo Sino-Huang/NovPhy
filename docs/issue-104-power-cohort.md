@@ -130,7 +130,7 @@ Throughput: 12.7 s/branch amortized (single pass, including the cold-start ramp)
 - The #85 single-RTX-3090 hardware gate is carried as a single-GPU gate on the 4 × RTX 5090 server. Capture
   uses no GPU.
 
-## 6. Phase 2: campaign capture (running)
+## 6. Phase 2: campaign capture (complete)
 
 | Item | Location |
 | --- | --- |
@@ -138,8 +138,9 @@ Throughput: 12.7 s/branch amortized (single pass, including the cold-start ramp)
 | Report (capture accounting, mixed-verdict yield per level type) | `scripts/publish_power_cohort_campaign.py` |
 | Campaign directory | `.local-artifacts/issue-104-power-cohort-campaign-v1/` (one sub-directory per stream) |
 
-- Launched 2026-10-03T12:29Z on 16 workers. The manifest binds the plan, pipeline, runner, player, renderer
-  libraries, smoke summary and the frozen branch digest; a resumed `--run` refuses any difference.
+- Ran 2026-10-03T12:29Z → 2026-10-10T09:04Z on 16 workers. The manifest binds the plan, pipeline, runner,
+  player, renderer libraries, smoke summary and the frozen branch digest; a resumed `--run` refuses any
+  difference.
 - Streams run in the frozen order. The pipeline enforces S2 (free bytes) and S3 (the remaining artifact
   allowance is passed per stream). The runner enforces S1 (typed-failure share > 0.05 once ≥ 200 branches
   have finished, counted over every stream) and S4 (wall over closed runs plus the live run). A stop writes
@@ -150,15 +151,52 @@ Throughput: 12.7 s/branch amortized (single pass, including the cold-start ramp)
   must stay on one branch. Each stream directory is therefore created on one branch before its first
   capture (largest projected stream first, onto the branch with the most unreserved bytes); the plan is
   recorded in `campaign-manifest.json` under `placement`. Capture code and membership are unchanged.
-- **GPU.** Capture renders on the CPU (llvmpipe). No other GPU job runs while the campaign runs; the runner
-  samples every GPU every 300 s into `gpu-accounting.jsonl`, and the report counts samples with a compute
-  process.
+- **GPU.** Capture renders on the CPU (llvmpipe) and no campaign stage used a GPU. The runner sampled every
+  GPU every 300 s into `gpu-accounting.jsonl` (1 971 samples). **Deviation: an external job used the GPUs.**
+  From 2026-10-06T07:26Z to past the campaign end, a vLLM server of another project
+  (`Atten_Residual_LLM_Planning_Analysis`, `gemma-4-12B-it`, tensor parallel over all 4 GPUs, ~30 GB each)
+  ran; 1 169 samples show it. It was not started by this campaign and was not stopped. Exposure: #109
+  evaluation none, #110 evaluation 1 368 / 10 240 branches, #110 fit, #109 fit and #109 policy all.
+  Effect check (`load-replay-check.json`, EXPLORATORY): 160 #109 evaluation branches captured with idle
+  GPUs were re-captured while the vLLM job ran; stop kind, pig verdict and the full native trace (every
+  native step) are identical on 160 / 160. Branch wall rose 2.7 % (189.6 → 194.8 s, #110 evaluation
+  before / after onset); shot capture time, renderer and window checks are unchanged.
 - No outcome is read while the campaign runs: `--status` reports progress and typed failures only, and
   the report refuses a campaign that is not terminal (`complete.json` or a finalized `stop.json`).
 - The report computes the engine verdict in one pass over the retained chunks with the frozen #85 channel
   functions (the ones `capture_pipeline_v2.branch_outcome` applies), without re-validating every sample;
   on the 160 smoke novelty branches it matches `branch_outcome` on 160 / 160 (verdict, consistency, stop
   kind).
+
+### Results (`findings.md`, `summary.json`, `yield.csv`; `--validate` exit 0)
+
+| stream | scheduled | complete | typed failures | wall h | TiB |
+| --- | --- | --- | --- | --- | --- |
+| #109 evaluation | 11 680 | 11 680 | 0 | 37.7 | 0.86 |
+| #110 evaluation | 10 240 | 10 221 | 19 | 33.9 | 0.81 |
+| #110 fit | 10 240 | 10 208 | 32 | 34.9 | 0.80 |
+| #109 fit | 13 920 | 13 919 | 1 | 46.3 | 1.03 |
+| #109 policy | 3 480 | 3 480 | 0 | 11.6 | 0.25 |
+| total | 49 560 | 49 508 | 52 (0.105 %) | 164.5 | 3.75 |
+
+- No stop rule fired (S1 peak share far below 0.05; S4 164.5 h of 302.8 h; S3 3.75 of 5.63 TiB). Renderer
+  mismatches 0, #113 window-rule violations 0, channel consistency `agreement` on every complete branch.
+- Typed failures (no retries):
+  - 32 `initial shot omitted an authored object`: every candidate of `issue-110-evaluation-type010203-novel-005`
+    and `issue-110-fit-type010203-novel-006` (fan, level 2). At the decision step `block:0003` and
+    `novelty:0000` are missing from the scene, so the shared pre-decision state fails the slot check.
+  - 16 `supervisor_interrupted` (#110 fit, `type010404-*-004`): the supervisor crashed at 2026-10-07T03:13Z
+    with `ProcessLookupError` reading `/proc/<pid>/stat` of a worker that exited between open and read.
+    `process_rss` now skips it (commit cb852fb4, regression test); the in-flight branches stay typed
+    failures and `--run` resumed the stream.
+  - 1 each: worker SIGSEGV at start, PNG read error, shot wall cap (900 s), shot progress stall (120 s).
+- **Mixed-verdict yield (work item 2).** #109 evaluation mixed members vs the frozen design requirement:
+  grid 311 (need 293 at δ 0.02), offset 76 (32 at δ 0.05), angle 78 (55), power 47 (53 for the max over
+  the #96 contrast set; 36 for the primary). Power is the one inventory below its δ = 0.05 requirement.
+  Mixed share per level type: rolling type010103 grid 0.72, angle 0.82, offset 0.73, power 0.42; sliding
+  type010105 grid 0.84, angle 0.48, offset 0.53, power 0.37. #110 cells: 0 mixed levels in all 9
+  multiple-forces cells and in every level-8 (storm) cell (flagged at design), 0.25–1.0 elsewhere; full
+  table in `findings.md`.
 
 ## Reproduction
 
