@@ -1,0 +1,1073 @@
+{
+  "arms": {
+    "D1": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "per-Delta: the three Delta = 1 requests, shared over the descriptions",
+      "requests": [
+        "F-1-continuous",
+        "F-1-micro",
+        "F-1-macro"
+      ]
+    },
+    "D15": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "per-Delta: the three Delta = 15 requests, shared over the descriptions",
+      "requests": [
+        "F-15-continuous",
+        "F-15-micro",
+        "F-15-macro"
+      ]
+    },
+    "D5": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "per-Delta: the three Delta = 5 requests, shared over the descriptions",
+      "requests": [
+        "F-5-continuous",
+        "F-5-micro",
+        "F-5-macro"
+      ]
+    },
+    "J": {
+      "budgets": [
+        "full"
+      ],
+      "definition": "joint: all nine requests, round-robin (the #112 hybrid predictor)",
+      "requests": [
+        "F-1-continuous",
+        "F-1-micro",
+        "F-1-macro",
+        "F-5-continuous",
+        "F-5-micro",
+        "F-5-macro",
+        "F-15-continuous",
+        "F-15-micro",
+        "F-15-macro"
+      ]
+    },
+    "S-1-continuous": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-1-continuous only",
+      "requests": [
+        "F-1-continuous"
+      ]
+    },
+    "S-1-macro": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-1-macro only",
+      "requests": [
+        "F-1-macro"
+      ]
+    },
+    "S-1-micro": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-1-micro only",
+      "requests": [
+        "F-1-micro"
+      ]
+    },
+    "S-15-continuous": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-15-continuous only",
+      "requests": [
+        "F-15-continuous"
+      ]
+    },
+    "S-15-macro": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-15-macro only",
+      "requests": [
+        "F-15-macro"
+      ]
+    },
+    "S-15-micro": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-15-micro only",
+      "requests": [
+        "F-15-micro"
+      ]
+    },
+    "S-5-continuous": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-5-continuous only",
+      "requests": [
+        "F-5-continuous"
+      ]
+    },
+    "S-5-macro": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-5-macro only",
+      "requests": [
+        "F-5-macro"
+      ]
+    },
+    "S-5-micro": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-5-micro only",
+      "requests": [
+        "F-5-micro"
+      ]
+    }
+  },
+  "budgets": {
+    "full": "the joint model's full update count (9000), cycling the arm's requests; the curriculum and ramp follow the arm's own update count",
+    "request": "the joint model's per-request update count: exactly the joint run's updates of the arm's requests (1000 per request), each at the joint step that sets the horizon curriculum and the ranking ramp"
+  },
+  "caps": {
+    "gpu_seconds": 142488.2466615077,
+    "stop": "readiness_or_precision_insufficient",
+    "wall_seconds": 172800.0
+  },
+  "claim_boundary": "NovPhy only (items 1-3 of #117; CLEVRER and Physion-Dominoes are item 5); E99 carriers; decision-only ranking of retained engine-verdicted executions; fit lineages by LOLO and the 4 exposed held-out lineages once, descriptively; no engine access, rendering or capture; no closed-loop or competence claim",
+  "decision_rule": {
+    "claim_1_5x": "per (recipe, budget) and request: joint / specialist rollout-error ratio at t = 225 (LOLO): 'supported' (sharing costs no more than 1.5x) iff its upper bound < 1.5; 'not_supported_by_this_experiment' iff its lower bound > 1.5; otherwise, or with fewer than 3 lineages, readiness_or_precision_insufficient. Per (recipe, budget): supported iff every request is supported; not_supported iff any request is not_supported; otherwise readiness_or_precision_insufficient; readiness_or_precision_insufficient if a guard of that (recipe, budget) fails",
+    "labels": "LOLO: EXPLORATORY; held-out: DESCRIPTIVE",
+    "multiplicity": "9 requests x 3 recipes x 2 budgets of per-request intervals; nothing is selected; the trigger scans 9 requests (T1) and 2 AUC contrasts (T2) of one recipe and budget",
+    "v4_trigger": "the #112 v3 recipe (LC3) has an interference problem iff, at the per-request budget (the negative-transfer contrast: same updates of the request, with or without the other requests' updates), any of: T1 some request's joint / specialist t = 225 ratio has lower bound > 1.5; T2 the request-mean paired LOLO grid AUC joint - specialist, or that of the Gate-B unit F-15-macro, has upper bound < 0; T3 a joint member retires or skips more than 45 updates while no LC3 specialist or per-Delta member retires on the same request. If any fires, a v4 with a per-request mitigation named by the item-3 diagnosis is built under the #112 version policy and re-selected on LOLO; otherwise v3 stays the Gate-B recipe. The full budget is reported, not used by the trigger"
+  },
+  "disclosure": "Known before freeze: every #112 v1/v2/v3 table, including the v1 retirements (28 of 312, all Delta = 1 updates; their per-request attribution in the #112 closing comment), the v3 LOLO AUCs and rollout errors of the joint arms, and the ICLR shared-nine vs shared-three ratios quoted in #117. No specialist or per-Delta model of these recipes has been trained or scored. Held-out lineages 007/008/014/016 are exposed (v1 held-out look); here they are scored once, descriptively, after every LOLO record.",
+  "encoder": "E99 (#99 spatial slot parser); its carriers, windows, anchors and contexts as cached by #112 v3",
+  "engine_seconds": 0,
+  "folds": {
+    "fit_lineages": [
+      "issue-77-n1-001",
+      "issue-77-n1-002",
+      "issue-77-n1-003",
+      "issue-77-n1-004",
+      "issue-77-n1-005",
+      "issue-77-n1-006",
+      "issue-77-n1-009",
+      "issue-77-n1-010",
+      "issue-77-n1-011",
+      "issue-77-n1-012",
+      "issue-77-n1-013",
+      "issue-77-n1-015"
+    ],
+    "folds": [
+      "issue-77-n1-001",
+      "issue-77-n1-002",
+      "issue-77-n1-003",
+      "issue-77-n1-004",
+      "issue-77-n1-005",
+      "issue-77-n1-006",
+      "issue-77-n1-009",
+      "issue-77-n1-010",
+      "issue-77-n1-011",
+      "issue-77-n1-012",
+      "issue-77-n1-013",
+      "issue-77-n1-015",
+      "all"
+    ],
+    "members_per_unit": 39,
+    "rule": "the #112 rule: fold L trains on every fit lineage but L; fold 'all' on all 12"
+  },
+  "frozen_at": "2026-10-11T03:48:41Z",
+  "frozen_before_training_and_scoring": true,
+  "guards": {
+    "G1": "no training window, long window or ranking cell of a held-out lineage",
+    "G2": "every unit trained its full schedule; every member complete or retired as a typed failure",
+    "G3": "every scoring record carries the #111 SCORING_POLICY; --validate re-scores one LOLO and one held-out record and endpoint_replication passes",
+    "G4": "per (recipe, budget): nonfinite share <= 0.1 on LOLO grid cells of its units (else its tokens read readiness)",
+    "caps": "GPU and wall seconds within the caps",
+    "chronology": "plan frozen before the first update; every LOLO record scored before the first held-out record"
+  },
+  "hardware": "4x RTX 5090 (server migration, SERVER_SETUP.md), one training or scoring process per GPU; the #85 rule names a single RTX 3090. The joint arm is retrained here on the same hardware as every other arm instead of reusing the #112 checkpoints; the #112 v3 joint numbers are reported next to it as a cross-hardware replication reading.",
+  "identity": "issue-117-request-interference-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-112-decision-dynamics-v3/plan.json",
+      "name": "issue_112_v3_plan",
+      "sha256": "sha256:63b09061e3bb351a41543b146b0d5d00c2098e7d7bebf38feed35a480b502f51"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-dynamics-v3/data/training-data.pt",
+      "name": "issue_112_v3_training_data",
+      "sha256": "sha256:b95aa48721fcd2a6cf3a7f3062f4c80a839827c7ca93744cddd67f999e63665e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-dynamics-v3/data/anchors-fit.pt",
+      "name": "issue_112_v3_anchors_fit",
+      "sha256": "sha256:6160d4ad67cb6cd8068c33fdae90c3d6ed484756dbe526daf9c11c586f4e5500"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-dynamics-v3/data/contexts-fit.pt",
+      "name": "issue_112_v3_contexts_fit",
+      "sha256": "sha256:783b7b6a948bbc369504e7c95135fb1394370582effebd017dd4aac4b21d3e34"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/data/anchors-heldout.pt",
+      "name": "issue_112_v1_anchors_heldout",
+      "sha256": "sha256:a2dee1bc1aee81c8791c4ca0de4b54725c2a2cd38e90edfe6190a74e52a0db19"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/data/contexts-heldout.pt",
+      "name": "issue_112_v1_contexts_heldout",
+      "sha256": "sha256:dad9c8b8057c9c63f34b9a613d5f77999e683dd6181385e1e5c4f481d83ad3e6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-dynamics-v3/compute.json",
+      "name": "issue_112_v3_compute",
+      "sha256": "sha256:b3f6834c3312b248637ce0350e68ded241e2f05a71c140b56c775f449e63212a"
+    },
+    {
+      "artifact": "scripts/run_decision_relevant_dynamics.py",
+      "name": "issue_112_v1_runner",
+      "sha256": "sha256:22ef72c8dbe6d744f860c3b727ac7d9eb2813be635f622d1f7bb8743ba9ff98f"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_versions.py",
+      "name": "issue_112_versions_runner",
+      "sha256": "sha256:0ebdaf20945d1c0e0ac4b1462059af28f9cf8f544c54ea9f62e7ed4950803539"
+    },
+    {
+      "artifact": "world_model/training/decision_dynamics.py",
+      "name": "issue_112_v1_module",
+      "sha256": "sha256:14aa4587277377bb7d7b8bd4a1954366bb653fb0baf3a912c6fa52075ac1b794"
+    },
+    {
+      "artifact": "world_model/training/stable_decision_dynamics.py",
+      "name": "issue_112_v3_module",
+      "sha256": "sha256:8269589e0125f68573dd66e9baf641d9b9bc469069257969894483c62a13b4fa"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": "world_model/training/request_interference.py",
+      "name": "module",
+      "sha256": "sha256:486ff6a56182b5024af19d176ad806c996b61f1897fb806ef092c9da2543f061"
+    },
+    {
+      "artifact": ".local-artifacts/issue-117-request-interference-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:a6c3e29aeb778cf48e3aa852071105a90728aa1aac6b50cd35fc7b8b68803b41"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/training/B--continuous--group0.json",
+      "name": "issue_112_v1_training_B--continuous--group0",
+      "sha256": "sha256:2739eaa96afcc55b0939504b0088711443a66c2c2a7a7e12729a5b0f245980c7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/training/B--hybrid--group0.json",
+      "name": "issue_112_v1_training_B--hybrid--group0",
+      "sha256": "sha256:9805bb17117277415afb0975a83aa20553694d3b88062b68f08021a982794f72"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/training/C--continuous--group0.json",
+      "name": "issue_112_v1_training_C--continuous--group0",
+      "sha256": "sha256:0b25057938b0d70b31d81dfd700f78d25897d85c8d7e2c1da2d7c22afafe9b4b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/training/C--hybrid--group0.json",
+      "name": "issue_112_v1_training_C--hybrid--group0",
+      "sha256": "sha256:9c1fbb8e6083433825e00494bd103db83b8d39373634485b5ad3148d0ea5c2d4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/training/L--continuous--group0.json",
+      "name": "issue_112_v1_training_L--continuous--group0",
+      "sha256": "sha256:78dbd9d5fc95eb53cb51e24275e1458e7fa0043fb30c6c4621ed939eaec5a9eb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/training/L--continuous--group1.json",
+      "name": "issue_112_v1_training_L--continuous--group1",
+      "sha256": "sha256:516b7474c784602898dddf5aa4d55c789cb6a5c16d3b8e4ae76cde3bbfcacf16"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/training/L--hybrid--group0.json",
+      "name": "issue_112_v1_training_L--hybrid--group0",
+      "sha256": "sha256:96254c2845ddd60386f61bef420eb320c38d3ef102bbf9dc5433ad9248039d98"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/training/L--hybrid--group1.json",
+      "name": "issue_112_v1_training_L--hybrid--group1",
+      "sha256": "sha256:cbc0856052d8171cabc615f5c132fe0c626462388adcbbdd6b2838b1fc4533ad"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/training/LC--continuous--group0.json",
+      "name": "issue_112_v1_training_LC--continuous--group0",
+      "sha256": "sha256:4d84e3e6a04c945708b0e0c2d60d715db2a16a19a5a1b097508c2d2f6e4e432e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/training/LC--continuous--group1.json",
+      "name": "issue_112_v1_training_LC--continuous--group1",
+      "sha256": "sha256:e7c722fb333d9020e8e1bea90050c6b5f11dd1e988379df52e21535c6888c807"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/training/LC--hybrid--group0.json",
+      "name": "issue_112_v1_training_LC--hybrid--group0",
+      "sha256": "sha256:1a7050e37fb7bf6e8e786f86ff89b8da27ea49baa63436184b976a274a4f6648"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-relevant-dynamics-v1/training/LC--hybrid--group1.json",
+      "name": "issue_112_v1_training_LC--hybrid--group1",
+      "sha256": "sha256:6b16daf31a8556d55e568995f1b4f50aa19c594084661215bb995b37a41eb887"
+    }
+  ],
+  "issue": 117,
+  "module": "world_model/training/request_interference.py",
+  "parent_issue": 108,
+  "probes": {
+    "cadence": "after the update at which the joint step g crosses a multiple of 250 (every 250 updates for the joint and full-budget arms), after the last update, and before the first",
+    "gradients": "joint arm, each of the nine requests: the recipe's training loss at step g (curriculum horizon and ranking ramp) on a fixed training-pool batch (64 windows, 64 long windows, 2 ranking cells; drawn once by seed + 117001); its gradient before clipping: norm over all parameters, and the Gram matrix of the nine gradients on the shared trunk (conditioner.fuse., input_projection., blocks., output_norm., output_projection.) -> pairwise cosines",
+    "non_interference": "probes use their own generators and no optimizer state (smoke-verified)",
+    "updates": "every update: loss, its terms and the pre-clip gradient norm per member; every nonfinite loss or gradient norm is attributed to the request that update trained",
+    "validation": "every arm, each of its requests: on the member's left-out lineage (64 #77 windows, 64 long windows drawn once by seed + 117002, every ranking cell of the lineage): the #77 local loss, the long-horizon loss at 225 and the ranking loss (values, no gradient); fold 'all' members are in-sample and excluded"
+  },
+  "prohibited": [
+    "changing any recipe, arm, budget, schedule, probe or rule after training starts",
+    "retrying typed failures",
+    "reading a held-out record before every LOLO record exists",
+    "re-opening any prior disposition (#15-#100, #109, #111, #112)"
+  ],
+  "projection": {
+    "gpu_seconds": 71244.12333075385,
+    "group_sizes": {
+      "B": 39,
+      "LC1": 20,
+      "LC3": 20
+    },
+    "per_recipe": {
+      "B": {
+        "base_gb": 1.8237240319999999,
+        "data_gb": 1.810071344,
+        "gb_per_member": 0.14252288000000002,
+        "group_size": 39,
+        "groups": 1,
+        "projected_peak_gb": 7.382116352000001,
+        "seconds_per_update": {
+          "0": 0.006686983505005628,
+          "1": 0.014737645488139606,
+          "2": 0.018396350757029722,
+          "3": 0.007639694001227326,
+          "4": 0.015507898017403932,
+          "5": 0.012621769745237543,
+          "6": 0.008066492999205366,
+          "7": 0.007167675999426137,
+          "8": 0.013175808498090191
+        }
+      },
+      "LC1": {
+        "base_gb": 2.0446105599999997,
+        "data_gb": 1.810071344,
+        "gb_per_member": 0.8827850240000001,
+        "group_size": 20,
+        "groups": 2,
+        "projected_peak_gb": 19.700311040000003,
+        "seconds_per_update": {
+          "0": 0.27616198550231275,
+          "1": 0.2475846100014678,
+          "2": 0.27502885899912144,
+          "3": 0.06733329399730792,
+          "4": 0.07480731250370809,
+          "5": 0.10605653400125448,
+          "6": 0.046237412503614905,
+          "7": 0.043880789005015686,
+          "8": 0.044881034499667294
+        }
+      },
+      "LC3": {
+        "base_gb": 2.0426690560000003,
+        "data_gb": 1.810071344,
+        "gb_per_member": 0.8836410879999999,
+        "group_size": 20,
+        "groups": 2,
+        "projected_peak_gb": 19.715490816,
+        "seconds_per_update": {
+          "0": 0.2571925309962353,
+          "1": 0.25784176800425485,
+          "2": 0.2968639050045567,
+          "3": 0.07439883800316238,
+          "4": 0.06922728499921504,
+          "5": 0.07435909399964657,
+          "6": 0.02966820350411581,
+          "7": 0.03850243599390524,
+          "8": 0.042778060001182894
+        }
+      }
+    },
+    "unit_seconds": {
+      "B/D1/full": 119.46293925052487,
+      "B/D1/request": 39.820979750174956,
+      "B/D15/full": 85.22993249016508,
+      "B/D15/request": 28.409977496721694,
+      "B/D5/full": 107.3080852916064,
+      "B/D5/request": 35.7693617638688,
+      "B/J/full": 104.00031901076545,
+      "B/S-1-continuous/full": 60.18285154505065,
+      "B/S-1-continuous/request": 6.686983505005628,
+      "B/S-1-macro/full": 165.5671568132675,
+      "B/S-1-macro/request": 18.396350757029722,
+      "B/S-1-micro/full": 132.63880939325645,
+      "B/S-1-micro/request": 14.737645488139606,
+      "B/S-15-continuous/full": 72.59843699284829,
+      "B/S-15-continuous/request": 8.066492999205366,
+      "B/S-15-macro/full": 118.58227648281172,
+      "B/S-15-macro/request": 13.175808498090191,
+      "B/S-15-micro/full": 64.50908399483524,
+      "B/S-15-micro/request": 7.167675999426137,
+      "B/S-5-continuous/full": 68.75724601104594,
+      "B/S-5-continuous/request": 7.639694001227326,
+      "B/S-5-macro/full": 113.59592770713789,
+      "B/S-5-macro/request": 12.621769745237543,
+      "B/S-5-micro/full": 139.57108215663538,
+      "B/S-5-micro/request": 15.507898017403932,
+      "LC1/D1/full": 4792.652727017412,
+      "LC1/D1/request": 1597.550909005804,
+      "LC1/D15/full": 809.9954160497873,
+      "LC1/D15/request": 269.99847201659577,
+      "LC1/D5/full": 1489.182843013623,
+      "LC1/D5/request": 496.39428100454097,
+      "LC1/J/full": 2363.9436620269407,
+      "LC1/S-1-continuous/full": 4970.915739041629,
+      "LC1/S-1-continuous/request": 552.3239710046255,
+      "LC1/S-1-macro/full": 4950.519461984186,
+      "LC1/S-1-macro/request": 550.0577179982429,
+      "LC1/S-1-micro/full": 4456.522980026421,
+      "LC1/S-1-micro/request": 495.1692200029356,
+      "LC1/S-15-continuous/full": 832.2734250650683,
+      "LC1/S-15-continuous/request": 92.47482500722981,
+      "LC1/S-15-macro/full": 807.8586209940113,
+      "LC1/S-15-macro/request": 89.76206899933459,
+      "LC1/S-15-micro/full": 789.8542020902823,
+      "LC1/S-15-micro/request": 87.76157801003137,
+      "LC1/S-5-continuous/full": 1211.9992919515425,
+      "LC1/S-5-continuous/request": 134.66658799461584,
+      "LC1/S-5-macro/full": 1909.0176120225806,
+      "LC1/S-5-macro/request": 212.11306800250895,
+      "LC1/S-5-micro/full": 1346.5316250667456,
+      "LC1/S-5-micro/request": 149.61462500741618,
+      "LC3/D1/full": 4871.389224030281,
+      "LC3/D1/request": 1623.7964080100937,
+      "LC3/D15/full": 665.6921969952236,
+      "LC3/D15/request": 221.89739899840788,
+      "LC3/D5/full": 1307.911302012144,
+      "LC3/D5/request": 435.970434004048,
+      "LC3/J/full": 2281.6642410125496,
+      "LC3/S-1-continuous/full": 4629.465557932235,
+      "LC3/S-1-continuous/request": 514.3850619924706,
+      "LC3/S-1-macro/full": 5343.550290082021,
+      "LC3/S-1-macro/request": 593.7278100091135,
+      "LC3/S-1-micro/full": 4641.151824076587,
+      "LC3/S-1-micro/request": 515.6835360085097,
+      "LC3/S-15-continuous/full": 534.0276630740846,
+      "LC3/S-15-continuous/request": 59.33640700823162,
+      "LC3/S-15-macro/full": 770.0050800212921,
+      "LC3/S-15-macro/request": 85.55612000236579,
+      "LC3/S-15-micro/full": 693.0438478902943,
+      "LC3/S-15-micro/request": 77.00487198781047,
+      "LC3/S-5-continuous/full": 1339.1790840569229,
+      "LC3/S-5-continuous/request": 148.79767600632476,
+      "LC3/S-5-macro/full": 1338.4636919936383,
+      "LC3/S-5-macro/request": 148.71818799929315,
+      "LC3/S-5-micro/full": 1246.0911299858708,
+      "LC3/S-5-micro/request": 138.4545699984301
+    }
+  },
+  "question": "do the nine requests that share every weight of the #112 hybrid predictor interfere: what does sharing cost each request against a matched single-request specialist and a per-Delta model, is the cost asymmetric across Delta and description, does it show in the training dynamics, and does the #112 v3 (Gate-B) recipe have an interference problem that warrants a v4 before it is retrained on the #104 fit split?",
+  "recipes": {
+    "B": {
+      "definition": "#77 recipe: #112 v3 arm B (identical to v1 arm B; a nonfinite update would be skipped, which never happened in #112)",
+      "long": false,
+      "nonfinite": "skip",
+      "rank": false,
+      "truncation": null
+    },
+    "LC1": {
+      "definition": "#112 v1 arm LC: #77 loss + long-horizon recursive loss (curriculum 60 -> 225) + decision-contrastive ranking loss; full back-propagation; a member is retired at its first nonfinite loss or gradient norm",
+      "long": true,
+      "nonfinite": "retire",
+      "rank": true,
+      "truncation": null
+    },
+    "LC3": {
+      "definition": "#112 v3 arm LC, the Gate-B recipe: LC1 with truncated back-propagation every 45 transitions; a nonfinite update is skipped, retirement after 10 consecutive skips",
+      "long": true,
+      "nonfinite": "skip",
+      "rank": true,
+      "truncation": 45
+    }
+  },
+  "requests": [
+    "F-1-continuous",
+    "F-1-micro",
+    "F-1-macro",
+    "F-5-continuous",
+    "F-5-micro",
+    "F-5-macro",
+    "F-15-continuous",
+    "F-15-micro",
+    "F-15-macro"
+  ],
+  "runner": "scripts/run_request_interference.py",
+  "schema": "issue_117_plan_v1",
+  "scoring": {
+    "heldout": "after every LOLO record exists, once: fold-'all' members of every unit on the held-out lineages, every inventory and request, plus their N1 rollout error; DESCRIPTIVE",
+    "lolo": "fold L member of every unit on lineage L: every inventory cell (all items) x the unit's requests (m99.rollout_endpoints from L's E99 anchor to 225; EndpointCosts rows) and L's N1 rollout error at t = [15, 30, 60, 150, 225] (#100 engine-referenced metric); AUC per mixed cell"
+  },
+  "seeds": [
+    20260908,
+    20260909,
+    20260910
+  ],
+  "smoke_evidence": {
+    "checks": [
+      {
+        "control": "joint_schedule_is_the_issue_112_schedule",
+        "ok": true
+      },
+      {
+        "control": "per_request_budget_is_the_joint_runs_updates_of_the_arm",
+        "ok": true,
+        "update_counts": {
+          "D1": {
+            "full": 9000,
+            "request": 3000
+          },
+          "D15": {
+            "full": 9000,
+            "request": 3000
+          },
+          "D5": {
+            "full": 9000,
+            "request": 3000
+          },
+          "J": {
+            "full": 9000
+          },
+          "S-1-continuous": {
+            "full": 9000,
+            "request": 1000
+          },
+          "S-1-macro": {
+            "full": 9000,
+            "request": 1000
+          },
+          "S-1-micro": {
+            "full": 9000,
+            "request": 1000
+          },
+          "S-15-continuous": {
+            "full": 9000,
+            "request": 1000
+          },
+          "S-15-macro": {
+            "full": 9000,
+            "request": 1000
+          },
+          "S-15-micro": {
+            "full": 9000,
+            "request": 1000
+          },
+          "S-5-continuous": {
+            "full": 9000,
+            "request": 1000
+          },
+          "S-5-macro": {
+            "full": 9000,
+            "request": 1000
+          },
+          "S-5-micro": {
+            "full": 9000,
+            "request": 1000
+          }
+        }
+      },
+      {
+        "control": "requests_follow_cnn_hybrid_pairs",
+        "ok": true
+      },
+      {
+        "control": "B_joint_equals_issue_112_v3_B_with_probes",
+        "gradient_probe_requests": 9,
+        "max_abs_parameter_delta": 0.0,
+        "ok": true,
+        "probes": 4
+      },
+      {
+        "control": "LC1_joint_equals_issue_112_v1_LC_with_probes",
+        "gradient_probe_requests": 9,
+        "max_abs_parameter_delta": 0.0,
+        "ok": true,
+        "probes": 4
+      },
+      {
+        "control": "LC3_joint_equals_issue_112_v3_LC_with_probes",
+        "gradient_probe_requests": 9,
+        "max_abs_parameter_delta": 0.0,
+        "ok": true,
+        "probes": 4
+      },
+      {
+        "control": "B_m2_trains_finite",
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "B_m4_trains_finite",
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "LC1_m2_trains_finite",
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "LC1_m4_trains_finite",
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "LC3_m2_trains_finite",
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "LC3_m4_trains_finite",
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "restricted_scorer_reproduces_issue_112_v3_lolo_record",
+        "endpoint": {
+          "candidates": 16,
+          "max_abs_delta": {
+            "pig_displacement": 2.89881333381814e-07,
+            "pig_presence": 5.960464477539062e-07,
+            "tie_free": 5.913969947091147e-07
+          },
+          "pass": true,
+          "tolerance": 0.001
+        },
+        "ok": true,
+        "policy": {
+          "cudnn_allow_tf32": false,
+          "cudnn_benchmark": false,
+          "cudnn_deterministic": true,
+          "matmul_allow_tf32": false
+        },
+        "rollout_max_relative_delta": 6.278522430469848e-07
+      },
+      {
+        "control": "held_out_isolation",
+        "ok": true,
+        "training_members": [
+          "issue-77-n1-001",
+          "issue-77-n1-002",
+          "issue-77-n1-003",
+          "issue-77-n1-004",
+          "issue-77-n1-005",
+          "issue-77-n1-006",
+          "issue-77-n1-009",
+          "issue-77-n1-010",
+          "issue-77-n1-011",
+          "issue-77-n1-012",
+          "issue-77-n1-013",
+          "issue-77-n1-015"
+        ]
+      }
+    ],
+    "device": "NVIDIA GeForce RTX 5090",
+    "identity": "issue-117-request-interference-v1",
+    "memory_gb": {
+      "B_m2": 2.108769792,
+      "B_m4": 2.393815552,
+      "LC1_m2": 3.810180608,
+      "LC1_m4": 5.575750656,
+      "LC3_m2": 3.809951232,
+      "LC3_m4": 5.577233408
+    },
+    "ok": true,
+    "projection": {
+      "gpu_seconds": 71244.12333075385,
+      "group_sizes": {
+        "B": 39,
+        "LC1": 20,
+        "LC3": 20
+      },
+      "per_recipe": {
+        "B": {
+          "base_gb": 1.8237240319999999,
+          "data_gb": 1.810071344,
+          "gb_per_member": 0.14252288000000002,
+          "group_size": 39,
+          "groups": 1,
+          "projected_peak_gb": 7.382116352000001,
+          "seconds_per_update": {
+            "0": 0.006686983505005628,
+            "1": 0.014737645488139606,
+            "2": 0.018396350757029722,
+            "3": 0.007639694001227326,
+            "4": 0.015507898017403932,
+            "5": 0.012621769745237543,
+            "6": 0.008066492999205366,
+            "7": 0.007167675999426137,
+            "8": 0.013175808498090191
+          }
+        },
+        "LC1": {
+          "base_gb": 2.0446105599999997,
+          "data_gb": 1.810071344,
+          "gb_per_member": 0.8827850240000001,
+          "group_size": 20,
+          "groups": 2,
+          "projected_peak_gb": 19.700311040000003,
+          "seconds_per_update": {
+            "0": 0.27616198550231275,
+            "1": 0.2475846100014678,
+            "2": 0.27502885899912144,
+            "3": 0.06733329399730792,
+            "4": 0.07480731250370809,
+            "5": 0.10605653400125448,
+            "6": 0.046237412503614905,
+            "7": 0.043880789005015686,
+            "8": 0.044881034499667294
+          }
+        },
+        "LC3": {
+          "base_gb": 2.0426690560000003,
+          "data_gb": 1.810071344,
+          "gb_per_member": 0.8836410879999999,
+          "group_size": 20,
+          "groups": 2,
+          "projected_peak_gb": 19.715490816,
+          "seconds_per_update": {
+            "0": 0.2571925309962353,
+            "1": 0.25784176800425485,
+            "2": 0.2968639050045567,
+            "3": 0.07439883800316238,
+            "4": 0.06922728499921504,
+            "5": 0.07435909399964657,
+            "6": 0.02966820350411581,
+            "7": 0.03850243599390524,
+            "8": 0.042778060001182894
+          }
+        }
+      },
+      "unit_seconds": {
+        "B/D1/full": 119.46293925052487,
+        "B/D1/request": 39.820979750174956,
+        "B/D15/full": 85.22993249016508,
+        "B/D15/request": 28.409977496721694,
+        "B/D5/full": 107.3080852916064,
+        "B/D5/request": 35.7693617638688,
+        "B/J/full": 104.00031901076545,
+        "B/S-1-continuous/full": 60.18285154505065,
+        "B/S-1-continuous/request": 6.686983505005628,
+        "B/S-1-macro/full": 165.5671568132675,
+        "B/S-1-macro/request": 18.396350757029722,
+        "B/S-1-micro/full": 132.63880939325645,
+        "B/S-1-micro/request": 14.737645488139606,
+        "B/S-15-continuous/full": 72.59843699284829,
+        "B/S-15-continuous/request": 8.066492999205366,
+        "B/S-15-macro/full": 118.58227648281172,
+        "B/S-15-macro/request": 13.175808498090191,
+        "B/S-15-micro/full": 64.50908399483524,
+        "B/S-15-micro/request": 7.167675999426137,
+        "B/S-5-continuous/full": 68.75724601104594,
+        "B/S-5-continuous/request": 7.639694001227326,
+        "B/S-5-macro/full": 113.59592770713789,
+        "B/S-5-macro/request": 12.621769745237543,
+        "B/S-5-micro/full": 139.57108215663538,
+        "B/S-5-micro/request": 15.507898017403932,
+        "LC1/D1/full": 4792.652727017412,
+        "LC1/D1/request": 1597.550909005804,
+        "LC1/D15/full": 809.9954160497873,
+        "LC1/D15/request": 269.99847201659577,
+        "LC1/D5/full": 1489.182843013623,
+        "LC1/D5/request": 496.39428100454097,
+        "LC1/J/full": 2363.9436620269407,
+        "LC1/S-1-continuous/full": 4970.915739041629,
+        "LC1/S-1-continuous/request": 552.3239710046255,
+        "LC1/S-1-macro/full": 4950.519461984186,
+        "LC1/S-1-macro/request": 550.0577179982429,
+        "LC1/S-1-micro/full": 4456.522980026421,
+        "LC1/S-1-micro/request": 495.1692200029356,
+        "LC1/S-15-continuous/full": 832.2734250650683,
+        "LC1/S-15-continuous/request": 92.47482500722981,
+        "LC1/S-15-macro/full": 807.8586209940113,
+        "LC1/S-15-macro/request": 89.76206899933459,
+        "LC1/S-15-micro/full": 789.8542020902823,
+        "LC1/S-15-micro/request": 87.76157801003137,
+        "LC1/S-5-continuous/full": 1211.9992919515425,
+        "LC1/S-5-continuous/request": 134.66658799461584,
+        "LC1/S-5-macro/full": 1909.0176120225806,
+        "LC1/S-5-macro/request": 212.11306800250895,
+        "LC1/S-5-micro/full": 1346.5316250667456,
+        "LC1/S-5-micro/request": 149.61462500741618,
+        "LC3/D1/full": 4871.389224030281,
+        "LC3/D1/request": 1623.7964080100937,
+        "LC3/D15/full": 665.6921969952236,
+        "LC3/D15/request": 221.89739899840788,
+        "LC3/D5/full": 1307.911302012144,
+        "LC3/D5/request": 435.970434004048,
+        "LC3/J/full": 2281.6642410125496,
+        "LC3/S-1-continuous/full": 4629.465557932235,
+        "LC3/S-1-continuous/request": 514.3850619924706,
+        "LC3/S-1-macro/full": 5343.550290082021,
+        "LC3/S-1-macro/request": 593.7278100091135,
+        "LC3/S-1-micro/full": 4641.151824076587,
+        "LC3/S-1-micro/request": 515.6835360085097,
+        "LC3/S-15-continuous/full": 534.0276630740846,
+        "LC3/S-15-continuous/request": 59.33640700823162,
+        "LC3/S-15-macro/full": 770.0050800212921,
+        "LC3/S-15-macro/request": 85.55612000236579,
+        "LC3/S-15-micro/full": 693.0438478902943,
+        "LC3/S-15-micro/request": 77.00487198781047,
+        "LC3/S-5-continuous/full": 1339.1790840569229,
+        "LC3/S-5-continuous/request": 148.79767600632476,
+        "LC3/S-5-macro/full": 1338.4636919936383,
+        "LC3/S-5-macro/request": 148.71818799929315,
+        "LC3/S-5-micro/full": 1246.0911299858708,
+        "LC3/S-5-micro/request": 138.4545699984301
+      }
+    },
+    "reading": "infrastructure assertions only; nothing kept; no statistic; no held-out access",
+    "run_at": "2026-10-11T03:48:29Z",
+    "schema": "issue_117_smoke_v1",
+    "timings": {
+      "B_m2": {
+        "0": 0.010699208000005456,
+        "1": 0.01677379250031663,
+        "2": 0.01680560049999258,
+        "3": 0.010632513000018662,
+        "4": 0.016896951999569865,
+        "5": 0.0168474380002408,
+        "6": 0.010639102999903116,
+        "7": 0.017123395500220795,
+        "8": 0.016769766499692196
+      },
+      "B_m4": {
+        "0": 0.010482331000275735,
+        "1": 0.016663730499658413,
+        "2": 0.016891587000372965,
+        "3": 0.010470739000083995,
+        "4": 0.01682186800053387,
+        "5": 0.016619023499970353,
+        "6": 0.0105000429998654,
+        "7": 0.01658524850017784,
+        "8": 0.0165754984996056
+      },
+      "LC1_m2": {
+        "0": 0.22450759249977637,
+        "1": 0.2703545200001827,
+        "2": 0.2640512124999077,
+        "3": 0.06031607049999366,
+        "4": 0.07105876749983508,
+        "5": 0.0682743944998947,
+        "6": 0.028565043999606132,
+        "7": 0.03708159500001784,
+        "8": 0.03615499900024588
+      },
+      "LC1_m4": {
+        "0": 0.23024696950005819,
+        "1": 0.26782453000032547,
+        "2": 0.26527095099982034,
+        "3": 0.06109576199969524,
+        "4": 0.07147527250026542,
+        "5": 0.07247241000004578,
+        "6": 0.03052864050005155,
+        "7": 0.03783706100057316,
+        "8": 0.03712455850018159
+      },
+      "LC3_m2": {
+        "0": 0.2294298305000666,
+        "1": 0.2742792374997407,
+        "2": 0.26666836499953206,
+        "3": 0.060856304000026284,
+        "4": 0.07258115750028082,
+        "5": 0.06974345749995337,
+        "6": 0.029204982499777543,
+        "7": 0.03787723300001744,
+        "8": 0.036890674000005674
+      },
+      "LC3_m4": {
+        "0": 0.2325145749996409,
+        "1": 0.2724528520002423,
+        "2": 0.27002342500009036,
+        "3": 0.06236103000037474,
+        "4": 0.0722085050001624,
+        "5": 0.07025630599991928,
+        "6": 0.029256451500259573,
+        "7": 0.03794669999933831,
+        "8": 0.037544828000136476
+      },
+      "score_seconds_one_request": 0.16496506800012867
+    }
+  },
+  "statistics": {
+    "asymmetry": "per recipe and budget: the mean log ratio (and mean AUC difference) over the three descriptions of each Delta and over the three Deltas of each description; Delta = 1 minus Delta = 15 per lineage, bootstrapped",
+    "auc": "tie-free AUC per inventory, unit and request (m99.view; member-clustered bootstrap); paired joint - specialist, joint - per-Delta, per-Delta - specialist per request and request-mean",
+    "dynamics": "validation curves: mean over LOLO members per probe; gradient cosines: mean over members per probe and per phase [(0, 3000), (3000, 6000), (6000, 9000)]; share of negative cosines; pre-clip norms",
+    "rollout_ratio": "per (recipe, budget, request, t): per lineage, the mean over available seeds of each unit's branch-mean engine-referenced error; log(joint / specialist) per lineage; member-clustered bootstrap of the mean log ratio; reported as a geometric ratio exp(mean) [exp(low), exp(high)]; the same for joint / per-Delta and per-Delta / specialist"
+  },
+  "training": {
+    "data_streams": "the #112 per-member generators (windows: seed; long: seed + 112001; ranking: seed + 112002) and pools; every arm makes the #112 draws for each of its updates",
+    "group_sizes": {
+      "B": 39,
+      "LC1": 20,
+      "LC3": 20
+    },
+    "initialization": "torch.manual_seed(seed); s99.new_predictor('hybrid') (the #112 initialization)",
+    "long": {
+      "batch_size": 64,
+      "every": 500,
+      "first": 60,
+      "increment": 15,
+      "last": 225,
+      "seed_offset": 112001,
+      "starts": [
+        0,
+        15,
+        30,
+        45,
+        60
+      ],
+      "targets": "the E99 parsed carrier at every visited position start + j * delta, terminal absorption past the shot's last frame",
+      "truncation": "none (full back-propagation through the unrolled recursion)",
+      "weight": 1.0
+    },
+    "matched": "every arm: the CNNHybridPredictor architecture and parameter count (1 837 690); a request's updates touch only the parameters it reads",
+    "patience": 10,
+    "rank": {
+      "candidate_pad": 20,
+      "cells_per_step": 2,
+      "cost": "tie_free (scoring_harness.tie_free on tensors): pig presence - 0.1 x pig-slot center displacement between the anchor carrier and the rollout endpoint at 225",
+      "inventories": [
+        "grid",
+        "offset",
+        "angle",
+        "power"
+      ],
+      "ramp": 1000,
+      "seed_offset": 112002,
+      "start": 1000,
+      "temperature": 0.1,
+      "weight": 0.1
+    },
+    "recipe": {
+      "batch_size": 64,
+      "grad_clip": 1.0,
+      "learning_rate": 0.0001,
+      "steps": 9000,
+      "weight_decay": 0.0001
+    },
+    "truncation_LC3": 45
+  },
+  "units": [
+    "B/J/full",
+    "B/D1/request",
+    "B/D1/full",
+    "B/D5/request",
+    "B/D5/full",
+    "B/D15/request",
+    "B/D15/full",
+    "B/S-1-continuous/request",
+    "B/S-1-continuous/full",
+    "B/S-1-micro/request",
+    "B/S-1-micro/full",
+    "B/S-1-macro/request",
+    "B/S-1-macro/full",
+    "B/S-5-continuous/request",
+    "B/S-5-continuous/full",
+    "B/S-5-micro/request",
+    "B/S-5-micro/full",
+    "B/S-5-macro/request",
+    "B/S-5-macro/full",
+    "B/S-15-continuous/request",
+    "B/S-15-continuous/full",
+    "B/S-15-micro/request",
+    "B/S-15-micro/full",
+    "B/S-15-macro/request",
+    "B/S-15-macro/full",
+    "LC1/J/full",
+    "LC1/D1/request",
+    "LC1/D1/full",
+    "LC1/D5/request",
+    "LC1/D5/full",
+    "LC1/D15/request",
+    "LC1/D15/full",
+    "LC1/S-1-continuous/request",
+    "LC1/S-1-continuous/full",
+    "LC1/S-1-micro/request",
+    "LC1/S-1-micro/full",
+    "LC1/S-1-macro/request",
+    "LC1/S-1-macro/full",
+    "LC1/S-5-continuous/request",
+    "LC1/S-5-continuous/full",
+    "LC1/S-5-micro/request",
+    "LC1/S-5-micro/full",
+    "LC1/S-5-macro/request",
+    "LC1/S-5-macro/full",
+    "LC1/S-15-continuous/request",
+    "LC1/S-15-continuous/full",
+    "LC1/S-15-micro/request",
+    "LC1/S-15-micro/full",
+    "LC1/S-15-macro/request",
+    "LC1/S-15-macro/full",
+    "LC3/J/full",
+    "LC3/D1/request",
+    "LC3/D1/full",
+    "LC3/D5/request",
+    "LC3/D5/full",
+    "LC3/D15/request",
+    "LC3/D15/full",
+    "LC3/S-1-continuous/request",
+    "LC3/S-1-continuous/full",
+    "LC3/S-1-micro/request",
+    "LC3/S-1-micro/full",
+    "LC3/S-1-macro/request",
+    "LC3/S-1-macro/full",
+    "LC3/S-5-continuous/request",
+    "LC3/S-5-continuous/full",
+    "LC3/S-5-micro/request",
+    "LC3/S-5-micro/full",
+    "LC3/S-5-macro/request",
+    "LC3/S-5-macro/full",
+    "LC3/S-15-continuous/request",
+    "LC3/S-15-continuous/full",
+    "LC3/S-15-micro/request",
+    "LC3/S-15-micro/full",
+    "LC3/S-15-macro/request",
+    "LC3/S-15-macro/full"
+  ],
+  "validation_command": "python -u -m scripts.run_request_interference --validate",
+  "version": 1
+}
