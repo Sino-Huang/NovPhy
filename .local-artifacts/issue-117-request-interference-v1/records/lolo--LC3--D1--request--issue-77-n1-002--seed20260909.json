@@ -1,0 +1,104 @@
+{
+  "cell": {
+    "arm": "D1",
+    "budget": "request",
+    "fold": "issue-77-n1-002",
+    "recipe": "LC3",
+    "seed": 20260909
+  },
+  "engine_seconds": 0,
+  "inventories": {},
+  "plan_identity": "issue-117-request-interference-v1",
+  "rollout": {
+    "F-1-continuous": [
+      {
+        "errors": {
+          "15": {
+            "engine_position_mse": 0.02670406922698021,
+            "position_mse": 0.02295183576643467
+          },
+          "150": {
+            "engine_position_mse": 0.03827161714434624,
+            "position_mse": 0.04123818874359131
+          },
+          "225": {
+            "engine_position_mse": 0.03481658548116684,
+            "position_mse": 0.04134427756071091
+          },
+          "30": {
+            "engine_position_mse": 0.02817431464791298,
+            "position_mse": 0.02866276539862156
+          },
+          "60": {
+            "engine_position_mse": 0.03304339572787285,
+            "position_mse": 0.0381164588034153
+          }
+        },
+        "identity": "issue-77-n1-002-a11"
+      }
+    ],
+    "F-1-macro": [
+      {
+        "errors": {
+          "15": {
+            "engine_position_mse": 0.02345869690179825,
+            "position_mse": 0.02477184124290943
+          },
+          "150": {
+            "engine_position_mse": 0.03699108585715294,
+            "position_mse": 0.04145593196153641
+          },
+          "225": {
+            "engine_position_mse": 0.03425530716776848,
+            "position_mse": 0.04157157614827156
+          },
+          "30": {
+            "engine_position_mse": 0.026968736201524734,
+            "position_mse": 0.02921166457235813
+          },
+          "60": {
+            "engine_position_mse": 0.03260425105690956,
+            "position_mse": 0.03851478174328804
+          }
+        },
+        "identity": "issue-77-n1-002-a11"
+      }
+    ],
+    "F-1-micro": [
+      {
+        "errors": {
+          "15": {
+            "engine_position_mse": 0.026782428845763206,
+            "position_mse": 0.02153727598488331
+          },
+          "150": {
+            "engine_position_mse": 0.04139123111963272,
+            "position_mse": 0.042666707187891006
+          },
+          "225": {
+            "engine_position_mse": 0.037728697061538696,
+            "position_mse": 0.0428815595805645
+          },
+          "30": {
+            "engine_position_mse": 0.03171345591545105,
+            "position_mse": 0.028500331565737724
+          },
+          "60": {
+            "engine_position_mse": 0.03572332486510277,
+            "position_mse": 0.03846168890595436
+          }
+        },
+        "identity": "issue-77-n1-002-a11"
+      }
+    ]
+  },
+  "schema": "issue_117_lolo_record_v1",
+  "scored_at": "2026-10-11T09:19:06Z",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "typed_failure": null
+}

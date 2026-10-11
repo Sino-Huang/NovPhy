@@ -1645,6 +1645,68 @@ def training_overview(reports):
     return out
 
 
+EXCURSION_RATIO = 5.0
+EXCURSION_LAST = 3
+SPIKE_NORM = 1e3
+SPIKE_WINDOW = 500
+
+
+def end_state_tables(output, plan, held_per):
+    """POST HOC (added after every outcome; no token or trigger reads it). A member ends in an
+    excursion when, for some request, the median #77 local loss of its last EXCURSION_LAST updates
+    exceeds EXCURSION_RATIO x the median of that request's updates in [0.6 n, 0.95 n). For each such
+    member: the per-request ratios and the first update in its last SPIKE_WINDOW updates whose
+    pre-clip gradient norm exceeds SPIKE_NORM (the request that update trained). Also the held-out
+    rollout error at 225 of every joint fold-'all' member (the Gate-B checkpoint type), per seed."""
+    units = {}
+    for recipe, arm, budget, index, _ in unit_groups(plan):
+        payload = torch.load(updates_path(output, recipe, arm, budget, index), map_location="cpu", weights_only=True)
+        local, norms = payload["logs"]["local"], payload["logs"]["grad_norm"]
+        pairs = torch.tensor([p for p, _ in payload["schedule"]])
+        total = len(pairs)
+        block = units.setdefault(unit_key(recipe, arm, budget), {"members": 0, "excursions": []})
+        for i, (fold, seed) in enumerate(payload["members"]):
+            block["members"] += 1
+            if not bool(torch.isfinite(local[-1, i])):
+                continue
+            ratios = {}
+            for p in pairs.unique().tolist():
+                rows = (pairs == p).nonzero(as_tuple=True)[0]
+                reference = local[rows[(rows >= int(0.6 * total)) & (rows < int(0.95 * total))], i]
+                reference = reference[torch.isfinite(reference)]
+                ratios[REQUESTS[p]] = float(local[rows[-EXCURSION_LAST:], i].median() / reference.median())
+            if max(ratios.values()) < EXCURSION_RATIO:
+                continue
+            window = torch.arange(max(0, total - SPIKE_WINDOW), total)
+            spikes = window[norms[window, i] > SPIKE_NORM]
+            first = int(spikes[0]) if len(spikes) else None
+            block["excursions"].append({
+                "fold": fold, "seed": seed, "ratios": ratios,
+                "requests_elevated": sorted(r for r, v in ratios.items() if v >= EXCURSION_RATIO),
+                "first_spike_update": first, "first_spike_request": None if first is None else REQUESTS[int(pairs[first])],
+                "first_spike_norm": None if first is None else float(norms[first, i]),
+                "spike_requests": sorted({REQUESTS[int(pairs[k])] for k in spikes.tolist()})})
+    summary = {u: {"members": b["members"], "excursions": len(b["excursions"]),
+                   "every_request_elevated": sum(len(e["requests_elevated"]) == len(arm_requests(u.split("/")[1]))
+                                                 for e in b["excursions"])} for u, b in units.items()}
+    joint_all = {}
+    for recipe in RECIPES:
+        unit = unit_key(recipe, "J", "full")
+        joint_all[recipe] = {}
+        for k, seed in enumerate(SEEDS):
+            row = {}
+            for request in REQUESTS:
+                values = [v1.branch_mean(seeds[k], ENDPOINT, METRIC)[0]
+                          for seeds in held_per[(unit, request)].values() if seeds[k] is not None]
+                values = [v for v in values if v is not None]
+                row[request] = finite(float(np.mean(values))) if values else None
+            joint_all[recipe][str(seed)] = row
+    return {"label": "POST HOC (added after every outcome; no token or trigger reads it)",
+            "definition": end_state_tables.__doc__, "summary": summary,
+            "excursions": {u: b["excursions"] for u, b in units.items() if b["excursions"]},
+            "heldout_joint_fold_all": joint_all}
+
+
 # ---- decision ----
 
 def v4_trigger(auc, ratios, retirements, g4):
@@ -1720,7 +1782,8 @@ def compute_tables(output, plan, spot):
     auc = {inventory: auc_tables(cohort_rows(output, universe, inventory, "lolo")) for inventory in INVENTORIES}
     held_auc = {inventory: auc_tables(cohort_rows(output, universe, inventory, "heldout")) for inventory in INVENTORIES}
     curves, ratios = rollout_tables(rollout_per(output, "lolo"))
-    held_curves, held_ratios = rollout_tables(rollout_per(output, "heldout"))
+    held_per = rollout_per(output, "heldout")
+    held_curves, held_ratios = rollout_tables(held_per)
     retirements = retirement_tables(reports)
     policies_ok, scored, lolo_times, held_times = records_overview(output)
     g4 = {}
@@ -1766,7 +1829,8 @@ def compute_tables(output, plan, spot):
         "heldout": {"auc": held_auc, "rollout": held_curves, "ratios": held_ratios,
                     "label": "DESCRIPTIVE (exposed lineages, scored once after every LOLO record)"},
         "dynamics": {"validation": validation_curves(reports), "gradients": gradient_tables(reports),
-                     "grad_norms": grad_norm_tables(reports), "retirements": retirements},
+                     "grad_norms": grad_norm_tables(reports), "retirements": retirements,
+                     "end_state": end_state_tables(output, plan, held_per)},
         "replication_112_v3": replication_reading(auc, curves),
         "training": training_overview(reports),
         "compute": {"phases": ledger["phases"], "gpu_seconds": ledger["gpu_seconds_elapsed"],
@@ -1950,6 +2014,53 @@ def findings_md(plan, compute):
         add("| none | | | | | | | | |")
     add("")
     add(f"#112 v1 published retirements by request: {ret['issue_112_v1_counts']}.")
+    add("")
+    end = compute["dynamics"]["end_state"]
+    add(f"### End-of-training excursions ({end['label']})")
+    add("")
+    add(f"A member ends in an excursion when, for some request, the median #77 local loss of its last "
+        f"{EXCURSION_LAST} updates exceeds {EXCURSION_RATIO:g}× the median of that request's updates in the "
+        f"[0.6 n, 0.95 n) window; the spike is the first update of its last {SPIKE_WINDOW} with a pre-clip norm "
+        f"above {SPIKE_NORM:g}.")
+    add("")
+    add("| recipe | J | D1 req / full | D5 req / full | D15 req / full | S-1-* req / full | S-5-* req / full | "
+        "S-15-* req / full |")
+    add("| --- | --- | --- | --- | --- | --- | --- | --- |")
+    summary_ = end["summary"]
+
+    def excursion_count(recipe, arms, budget):
+        units = [unit_key(recipe, a, budget) for a in arms]
+        return f"{sum(summary_[u]['excursions'] for u in units)}/{sum(summary_[u]['members'] for u in units)}"
+    for recipe in RECIPES:
+        cells = [excursion_count(recipe, ["J"], "full")]
+        for d in DELTAS:
+            cells.append(" / ".join(excursion_count(recipe, [f"D{d}"], b) for b in ri.BUDGETS))
+        for d in DELTAS:
+            arms = [specialist_arm(r) for r in GROUPS[f"delta_{d}"]]
+            cells.append(" / ".join(excursion_count(recipe, arms, b) for b in ri.BUDGETS))
+        add(f"| {recipe} | " + " | ".join(cells) + " |")
+    add("")
+    add("Joint members that end in an excursion:")
+    add("")
+    add("| unit | fold | seed | requests elevated ≥ 5× | first spike (update, request, norm) | requests with spikes |")
+    add("| --- | --- | --- | --- | --- | --- |")
+    joint_rows = [(u, e) for u, rows in end["excursions"].items() if "/J/" in u for e in rows]
+    for u, e in joint_rows:
+        spike = ("none" if e["first_spike_update"] is None
+                 else f"{e['first_spike_update']}, {e['first_spike_request']}, {e['first_spike_norm']:.3g}")
+        add(f"| {u} | {e['fold']} | {e['seed']} | {len(e['requests_elevated'])}/9 | {spike} | "
+            f"{', '.join(short(r) for r in e['spike_requests'])} |")
+    if not joint_rows:
+        add("| none | | | | | |")
+    add("")
+    add("Held-out rollout error at t = 225 of each joint fold-'all' member (the Gate-B checkpoint type; mean over "
+        "the held-out lineages):")
+    add("")
+    add("| recipe | seed | " + " | ".join(short(r) for r in REQUESTS) + " |")
+    add("| --- | --- | " + " | ".join("---" for _ in REQUESTS) + " |")
+    for recipe, seeds in end["heldout_joint_fold_all"].items():
+        for seed, row in seeds.items():
+            add(f"| {recipe} | {seed} | " + " | ".join(num(row[r]) for r in REQUESTS) + " |")
     add("")
     add("## Cross-hardware replication of the #112 v3 joint arms (LOLO grid AUC / rollout at 225)")
     add("")

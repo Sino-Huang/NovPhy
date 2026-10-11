@@ -185,6 +185,12 @@ version whose G2 passed) is part of the v3 plan.
   the exposed lineages, the prior alone clears the target.
 - The held-out lineages were not re-scored for v3: v1 used their single post-freeze look. The unbiased test of the v3
   recipe is Gate B on the #104 sealed split.
+- **#117 check before the retrain** (`docs/issue-117-request-interference.md`): no interference between requests
+  under the v3 recipe. At the matched per-request budget the joint beats every single-request specialist on rollout
+  error at 225. Ranking shows no cost: grid AUC request-mean +0.006 [−0.050, +0.062], F-15-macro +0.076
+  [+0.028, +0.124]. The frozen v4 trigger did not fire, so v3
+  stays the Gate-B recipe. A separate stability risk: one of 39 joint members retrained in #117 ended training inside
+  a finite gradient excursion, and it was a fold-'all' member.
 
 ## Post-freeze changes (disclosed)
 

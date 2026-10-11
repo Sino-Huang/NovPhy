@@ -1,0 +1,30 @@
+{
+  "claim_boundary": "NovPhy only (items 1-3 of #117; CLEVRER and Physion-Dominoes are item 5); E99 carriers; decision-only ranking of retained engine-verdicted executions; fit lineages by LOLO and the 4 exposed held-out lineages once, descriptively; no engine access, rendering or capture; no closed-loop or competence claim",
+  "decision": {
+    "action": "keep_v3",
+    "budget": "request",
+    "interference_problem": false,
+    "reading": "v3 stays the Gate-B recipe: no pre-declared interference criterion fired",
+    "recipe": "LC3"
+  },
+  "dispositions": {
+    "B/full": "readiness_or_precision_insufficient",
+    "B/request": "supported",
+    "LC1/full": "readiness_or_precision_insufficient",
+    "LC1/request": "supported",
+    "LC3/full": "readiness_or_precision_insufficient",
+    "LC3/request": "supported"
+  },
+  "engine_seconds": 0,
+  "frozen_at": "2026-10-11T03:48:41Z",
+  "guards_pass": true,
+  "identity": "issue-117-request-interference-v1",
+  "question": "do the nine requests that share every weight of the #112 hybrid predictor interfere: what does sharing cost each request against a matched single-request specialist and a per-Delta model, is the cost asymmetric across Delta and description, does it show in the training dynamics, and does the #112 v3 (Gate-B) recipe have an interference problem that warrants a v4 before it is retrained on the #104 fit split?",
+  "schema": "issue_117_report_v1",
+  "triggers": {
+    "T1": false,
+    "T2": false,
+    "T3": false
+  },
+  "validation_command": "python -u -m scripts.run_request_interference --validate"
+}

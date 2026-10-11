@@ -1,0 +1,50 @@
+{
+  "cell": {
+    "arm": "S-15-micro",
+    "budget": "request",
+    "fold": "issue-77-n1-002",
+    "recipe": "LC1",
+    "seed": 20260909
+  },
+  "engine_seconds": 0,
+  "inventories": {},
+  "plan_identity": "issue-117-request-interference-v1",
+  "rollout": {
+    "F-15-micro": [
+      {
+        "errors": {
+          "15": {
+            "engine_position_mse": 0.014389741234481335,
+            "position_mse": 0.00042949794442392886
+          },
+          "150": {
+            "engine_position_mse": 0.026287754997611046,
+            "position_mse": 0.008539971895515919
+          },
+          "225": {
+            "engine_position_mse": 0.04660629481077194,
+            "position_mse": 0.026321513578295708
+          },
+          "30": {
+            "engine_position_mse": 0.01519289892166853,
+            "position_mse": 0.0008980308193713427
+          },
+          "60": {
+            "engine_position_mse": 0.015156662091612816,
+            "position_mse": 0.001544554135762155
+          }
+        },
+        "identity": "issue-77-n1-002-a11"
+      }
+    ]
+  },
+  "schema": "issue_117_lolo_record_v1",
+  "scored_at": "2026-10-11T09:20:49Z",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "typed_failure": null
+}
