@@ -1,0 +1,69 @@
+{
+  "kind": "pe",
+  "lambda": 0.01,
+  "plan_identity": "issue-101-decision-aware-policy-v1",
+  "policy_sha256": "sha256:093eb90eec394c567819fa887bb027e8af061a56bf227fa4496905956766d7e2",
+  "policy_split": {
+    "auc": {
+      "angle": 0.6652137816521377,
+      "grid": 0.7642116748499725
+    },
+    "auc_pooled": 0.7209371466856497,
+    "cells": 167,
+    "mean_macs_per_candidate": 80361510.71830411,
+    "pair_counts": [
+      4578,
+      0,
+      39507,
+      3124,
+      0,
+      77744,
+      4,
+      41,
+      6855
+    ]
+  },
+  "predictor_sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5",
+  "schema": "issue_101_training_report_v1",
+  "seed": 20260909,
+  "stats": {
+    "distil_seconds_0": 1.202101020840928,
+    "distil_seconds_1": 7.875839566113427,
+    "final_loss_0": 1.0238283663988113,
+    "final_loss_1": 1.0751275718212128,
+    "label_seconds_0": 49.211595956934616,
+    "label_seconds_1": 95.49352289293893,
+    "labels": {
+      "round_0": {
+        "label_counts": [
+          3850,
+          0,
+          93982,
+          4970,
+          0,
+          52599,
+          1886,
+          39,
+          51474
+        ],
+        "rows": 208800
+      },
+      "round_1": {
+        "label_counts": [
+          12541,
+          0,
+          89136,
+          4761,
+          0,
+          51086,
+          4481,
+          3343,
+          43452
+        ],
+        "rows": 208800
+      }
+    }
+  },
+  "trained_at": "2026-10-14T10:21:50Z",
+  "wall_seconds": 166.39672003383748
+}

@@ -1,0 +1,38 @@
+{
+  "kinds": {
+    "dec": {
+      "arm": "J-dec-1e-01",
+      "lambda": 0.1,
+      "policy_split_auc": {
+        "1e-01": 0.7335553003217674,
+        "1e-02": 0.6828138926941323,
+        "1e-03": 0.6651488564662218,
+        "1e-04": 0.6619103119103119
+      }
+    },
+    "pe": {
+      "arm": "J-pe-1e-04",
+      "lambda": 0.0001,
+      "policy_split_auc": {
+        "1e-02": 0.7219187000624127,
+        "1e-03": 0.7801940242060003,
+        "1e-04": 0.7207764623932289,
+        "1e-05": 0.7098046663914929
+      }
+    },
+    "pg": {
+      "arm": "J-pg-1e-01",
+      "lambda": 0.1,
+      "policy_split_auc": {
+        "1e-01": 0.7843643714901201,
+        "1e-02": 0.7843643714901201,
+        "1e-03": 0.7750730639952197,
+        "1e-04": 0.7764904423587059
+      }
+    }
+  },
+  "plan_identity": "issue-101-decision-aware-policy-v1",
+  "rule": "pe: the ICLR lambda 1e-4 (no selection). dec and pg: the lambda of the sweep with the largest seed-mean policy-split pooled AUC (greedy J rollouts from each policy level's anchor over the mixed grid and angle cells; training data only), ties to the larger lambda; selected after every group is trained and before any evaluation score",
+  "schema": "issue_101_selection_v1",
+  "selected_at": "2026-10-14T10:43:51Z"
+}
