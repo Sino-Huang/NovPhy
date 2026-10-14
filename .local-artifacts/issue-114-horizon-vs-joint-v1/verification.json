@@ -1,0 +1,28 @@
+{
+  "schema": "issue_114_verification_v1",
+  "validation_command": "CUDA_VISIBLE_DEVICES=0 python -u -m scripts.run_horizon_vs_joint --validate",
+  "final_validation_exit_code": 0,
+  "final_validation_reported_seconds": 278,
+  "byte_compared_artifacts": ["compute.json", "summary.json", "findings.md", "frontier.json", "frontier-grid.png"],
+  "deterministic_rollout_spot_check": {
+    "arms": ["Jcont-1e-04", "T-continuous", "Jascont-1e-04"],
+    "seed": 20260908,
+    "grid_cells": 311,
+    "retained_rows_equal": true,
+    "Jcont_and_T_schedules_equal": true
+  },
+  "additional_reporting_and_verification_ledger": [
+    {"phase": "initial-publication", "wall_seconds": 181.32, "gpu_allocation_seconds_charged": 181.32, "exit_code": 0},
+    {"phase": "validation-before-final-interpretation-annotation", "wall_seconds": 282.40, "gpu_allocation_seconds_charged": 282.40, "exit_code": 0},
+    {"phase": "final-annotated-publication", "wall_seconds": 179.72, "gpu_allocation_seconds_charged": 179.72, "exit_code": 0},
+    {"phase": "final-annotated-validation", "wall_seconds": 279.57, "gpu_allocation_seconds_charged": 279.57, "exit_code": 0}
+  ],
+  "additional_wall_seconds": 923.01,
+  "additional_gpu_allocation_seconds_charged": 923.01,
+  "experiment_gpu_seconds_in_compute_json": 34451.21727116173,
+  "experiment_plus_reporting_and_verification_gpu_allocation_seconds": 35374.22727116173,
+  "experiment_plus_reporting_and_verification_process_wall_seconds": 35374.22727116173,
+  "reused_issue_101_training_gpu_seconds_separately_disclosed": 2172.2181645869277,
+  "engine_seconds": 0,
+  "accounting_definition": "Additional durations are observed shell-tool wall times, conservatively charged as one assigned GPU's allocation for the whole process, including CPU report recomputation. This is not measured CUDA active time. This post-publication verification ledger is separate from compute.json to avoid making the byte-comparison self-referential. It is not new independent evaluation evidence."
+}

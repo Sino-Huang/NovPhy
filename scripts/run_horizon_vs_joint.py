@@ -640,14 +640,22 @@ def wrong_anchor_table(output, records, cells, arm):
         for seed in SEEDS:
             right = records[(arm, seed)]["inventories"][PRIMARY][member]["rows"]
             wrong = [wrong_records[seed][a]["rows"] for a in sorted(wrong_records[seed])]
-            wrong_auc = [a for a in (c2.auc(entry, w) for w in wrong) if a is not None]
+            wrong_views = [view(entry, w) for w in wrong]
+            wrong_auc = [v["auc"] for v in wrong_views if v["auc"] is not None]
+            wrong_top3 = [v["top3_hit"] for v in wrong_views if v["top3_hit"] is not None]
             rhos = [r for r in (c2.spearman_rows(right, w) for w in wrong) if r is not None]
             rows.append({"member": member, "seed": seed, "views": {"x": {
                 "right": c2.auc(entry, right), "wrong": float(np.mean(wrong_auc)) if wrong_auc else None,
+                "wrong_top3": float(np.mean(wrong_top3)) if wrong_top3 else None,
                 "stability": float(np.mean(rhos)) if rhos else None}}})
     block = c2.difference_block(rows, [(1, "x", "right"), (-1, "x", "wrong")])
+    measured = [result for members in wrong_records.values() for result in members.values()]
+    candidates = sum(result["candidates"] for result in measured)
     return {"arm": arm, "cells": len(rows), "wrong_anchors": len(gb.fit_anchors()),
             "right": c2.field_block(rows, "x", "right"), "wrong": c2.field_block(rows, "x", "wrong"),
+            "top3": c2.field_block(rows, "x", "wrong_top3"),
+            "mean_macs_per_candidate": sum(result["linear_macs"] for result in measured)/candidates,
+            "gpu_seconds_per_state": sum(result["gpu_seconds"] for result in measured)/len(measured),
             "right_minus_wrong": block, "stability": c2.field_block(rows, "x", "stability"), "token": c2.token(block)}
 
 
@@ -749,6 +757,8 @@ def compute_tables(output, plan):
     tables = {i: inventory_tables(records, rows[i], i, constants) for i in INVENTORIES}
     wrong = {arm: wrong_anchor_table(output, records, cells, arm) for arm in WRONG_ARMS}
     training = training_table(output)
+    incident_path = output / "execution-incident.json"
+    incident = read_json(incident_path) if incident_path.is_file() else None
     pool = dap.load_pool(P101)
     eval_roster = {lv["identity"] for lv in gb.evaluation_levels()}
     fit_roster = {lv["identity"] for lv in rt.fit_levels()}
@@ -791,6 +801,9 @@ def compute_tables(output, plan):
         "evaluation": gb.evaluation_accounting(branches, cells), "guards": guards,
         "primary": primary, "secondary": secondary, "per_call_macs": constants,
         "inventories": tables, "wrong_anchor": wrong, "training": training,
+        "execution_integrity": {"literal_single_score_pass": incident is None,
+                                "frozen_statistics_and_token_rules_unchanged": True,
+                                "incident": incident},
         "compute": {"phases": all_phases, "gpu_seconds": sum(b["gpu_seconds"] for b in all_phases.values()),
                     "wall_seconds": sum(b["wall_seconds"] for b in all_phases.values()), "engine_seconds": 0,
                     "reused_issue_101_training_gpu_seconds": reused,
@@ -828,8 +841,15 @@ def findings_md(plan, compute):
     p, s = compute["primary"], compute["secondary"]
     add("# Issue #114: horizon-only versus joint request selection at matched compute (#104 sealed #109 evaluation split)")
     add("")
-    add(f"Plan frozen {plan['frozen_at']} after a passed smoke, before any training or evaluation score; scored once "
-        f"in processes that did not train, under `deterministic_scoring()`; tie-free cost. Validation: `{VALIDATION_COMMAND}`.")
+    add(f"Plan frozen {plan['frozen_at']} after a passed smoke, before training and scoring. Retained scores use "
+        f"processes that did not train, `deterministic_scoring()` and tie-free cost. Validation: `{VALIDATION_COMMAND}`.")
+    execution = compute["execution_integrity"]
+    if not execution["literal_single_score_pass"]:
+        add("")
+        add("**Execution deviation:** accidentally duplicated fixed-arm scoring workers were terminated. Literal "
+            "scored-once compliance failed; deterministic recomputation is not new independent evidence. Numerical "
+            "dispositions below use the untouched frozen G1–G6 and token rules, not a post hoc relaxed rule. See "
+            "`execution-incident.json`. Timings include concurrent-worker contention and are not isolated-device latency.")
     add("")
     add(f"**Disposition — {p['claim']}: {p['token']}** ({p['contrast']}; δ = {DELTA}).")
     add("")
@@ -839,6 +859,8 @@ def findings_md(plan, compute):
         jc, cj = m["contrasts"]["Jcont"], m["contrasts"]["CJ"]
         add(f"| {name} ({mmacs(m['budget_macs_per_candidate'])}) | {cell(jc.get('estimate'))} | {jc['token']} | "
             f"{cell(cj.get('estimate'))} | {cj['token']} |")
+    add(f"| control: no-model action prior AUC | {cell(grid['rankers']['prior']['auc'])} | reference | — | — |")
+    add(f"| control: wrong-anchor J AUC (grid) | {cell(compute['wrong_anchor'][J_ICLR]['wrong'])} | reference | — | — |")
     add("")
     add(f"Secondary — {s['claim']}: **{s['token']}**.")
     add("")
@@ -861,6 +883,9 @@ def findings_md(plan, compute):
         add(f"| {compute['inventories'][PRIMARY]['contrasts'][name]['contrast']} | " + " | ".join(
             f"{cell(compute['inventories'][i]['contrasts'][name]['estimate'])} {compute['inventories'][i]['contrasts'][name]['token']}"
             for i in INVENTORIES) + " |")
+    add("| control: no-model action prior AUC | " + " | ".join(
+        cell(compute["inventories"][i]["rankers"]["prior"]["auc"]) for i in INVENTORIES) + " |")
+    add(f"| control: wrong-anchor J AUC | {cell(compute['wrong_anchor'][J_ICLR]['wrong'])} | grid only | grid only | grid only |")
     add("")
     add("## λ-swept frontiers (grid)")
     add("")
@@ -874,6 +899,10 @@ def findings_md(plan, compute):
     pr = grid["rankers"]["prior"]
     add(f"| no-model action prior | — | {cell(pr['auc'])} | {cell(pr['top3'])} | 0 | 0 | 0 | {pr['tied_cells']} | "
         f"{pr['tied_pairs']}/{pr['pairs']} |")
+    for control_arm in WRONG_ARMS:
+        control = compute["wrong_anchor"][control_arm]
+        add(f"| wrong-anchor {arm_label(control_arm)} | 1e-04 | {cell(control['wrong'])} | {cell(control['top3'])} | "
+            f"{mmacs(control['mean_macs_per_candidate'])} | — | {num(control['gpu_seconds_per_state'], 3)} | — | — |")
     add("")
     add(f"Top-3 chance on grid: {num(grid['rankers'][J_ICLR]['chance_top3'], 3)}. Frontier figure: `{FIGURE}`; "
         f"machine-readable points: `{FRONTIER_FILE}`.")
@@ -887,6 +916,12 @@ def findings_md(plan, compute):
             f"({' + '.join(f'{w:.3f}·{arm_label(a)}' for w, a in m['pieces'][f]) if m['pieces'][f] else 'below frontier'})"
             for f in FAMILIES) + ".")
     add("")
+    add("An endpoint clamp is an **at-most-budget contrast, not exact equal expenditure**. Both declared budgets "
+        "can reuse the same endpoint pair; equal estimates at the two budgets are not independent replications. "
+        "The frozen interpolation passes through every lambda point without outcome-based pruning; it is not "
+        "the best-AUC-at-or-below-budget envelope and does not establish Pareto dominance. The numerical token "
+        "must be read with these limitations and the execution-integrity disclosure above.")
+    add("")
     add("## Compute decomposition (grid, MACs per candidate and state; first − second)")
     add("")
     add("| λ | contrast | Δ MACs | (a) calls (horizon) | (b) per-call α | (b') trunk | (c) policy |")
@@ -895,6 +930,8 @@ def findings_md(plan, compute):
         for name, d in grid["decomposition"][tag(lam)].items():
             add(f"| {tag(lam)} | {arm_label(d['first'])} − {arm_label(d['second'])} | {mmacs(d['difference'])} | "
                 f"{mmacs(d['a_calls_horizon'])} | {mmacs(d['b_alpha'])} | {mmacs(d['b_trunk'])} | {mmacs(d['c_policy'])} |")
+    add(f"| control | no-model action prior: AUC {cell(pr['auc'])}, 0 model MACs | — | — | — | — | — |")
+    add(f"| control | wrong-anchor J: AUC {cell(compute['wrong_anchor'][J_ICLR]['wrong'])} | — | — | — | — | — |")
     add("")
     add("Counterfactual J-as-cont (J's schedule with every α replaced by continuous, same calls, no policy calls), grid:")
     add("")
@@ -905,6 +942,8 @@ def findings_md(plan, compute):
         c = grid["J_minus_ascont"][tag(lam)]
         add(f"| {tag(lam)} | {cell(j['auc'])} | {cell(a['auc'])} | {cell(c['estimate'])} {c['token']} | "
             f"{mmacs(j['mean_macs_per_candidate'])} | {mmacs(a['mean_macs_per_candidate'])} |")
+    add(f"| control | no-model action prior {cell(pr['auc'])} | — | — | 0 | — |")
+    add(f"| control | wrong-anchor J {cell(compute['wrong_anchor'][J_ICLR]['wrong'])} | — | — | — | — |")
     add("")
     add("## Schedules (grid, pooled over seeds)")
     add("")
@@ -914,6 +953,8 @@ def findings_md(plan, compute):
         sd = grid["schedules"][arm]
         add(f"| {arm_label(arm)} | {sd['modal_pair']} | {num(sd['non_modal_step_share'], 3)} | "
             f"{sd['cells_with_differing_schedules']}/{sd['cells']} |")
+    add(f"| control: no-model action prior AUC {cell(pr['auc'])} | no predictor | — | — |")
+    add(f"| control: wrong-anchor J AUC {cell(compute['wrong_anchor'][J_ICLR]['wrong'])} | wrong-anchor diagnostic | — | — |")
     add("")
     add("## Controls")
     add("")
@@ -923,6 +964,7 @@ def findings_md(plan, compute):
         w = compute["wrong_anchor"][arm]
         add(f"| {arm_label(arm)} | {cell(w['right'])} | {cell(w['wrong'])} | {cell(w['right_minus_wrong'])} | "
             f"{w['token']} | {cell(w['stability'])} |")
+    add(f"| no-model action prior | {cell(pr['auc'])} | anchor independent | — | reference | — |")
     add("")
     add(f"No-model action prior (grid): {cell(pr['auc'])}.")
     add("")
@@ -934,6 +976,9 @@ def findings_md(plan, compute):
     c = compute["compute"]
     add(f"Compute: {c['gpu_seconds']/3600:.2f} GPU h, {c['wall_seconds']/3600:.2f} process wall h ({c['hardware']}); "
         f"reused #101 J training {c['reused_issue_101_training_gpu_seconds']/3600:.2f} GPU h; 0 engine seconds.")
+    if not execution["literal_single_score_pass"]:
+        add("Discarded-run compute is an explicitly labelled conservative allocated-process upper bound in "
+            "`ledger/operational-discarded-upper-bound.json`, not measured CUDA active time.")
     add("")
     return "\n".join(lines)
 
@@ -947,6 +992,10 @@ def summary(plan, compute):
             "secondary": {k: compute["secondary"][k] for k in ("claim", "contrast", "token")},
             "secondary_estimates": {n: e.get("estimate") for n, e in compute["secondary"]["estimates"].items()},
             "budgets": grid["frontier"]["budgets"],
+            "frontier_interpretation": ("Endpoint clamps compare policies at most at the budget, not exact equal "
+                                        "expenditure. Reused endpoint pairs are not independent replications. "
+                                        "The all-lambda interpolant is not a best-AUC-under-budget envelope; "
+                                        "its frozen token does not establish Pareto dominance."),
             "contrasts": {i: {n: {"estimate": compute["inventories"][i]["contrasts"][n]["estimate"],
                                   "token": compute["inventories"][i]["contrasts"][n]["token"]} for n in CONTRASTS}
                           for i in INVENTORIES},
@@ -955,6 +1004,7 @@ def summary(plan, compute):
             "wrong_anchor": {a: {k: compute["wrong_anchor"][a][k] for k in ("right_minus_wrong", "token")}
                              for a in WRONG_ARMS},
             "guards": {k: v["pass"] for k, v in compute["guards"].items()},
+            "execution_integrity": compute["execution_integrity"],
             "compute": {k: compute["compute"][k] for k in ("gpu_seconds", "wall_seconds", "engine_seconds")},
             "selector_module": SELECTORS, "claim_boundary": plan["claim_boundary"]}
 
@@ -983,6 +1033,8 @@ def frontier_export(plan, compute):
                                                                           "gpu_seconds_per_state")} for i in INVENTORIES}
     out["prior"] = {i: {k: compute["inventories"][i]["rankers"]["prior"][k] for k in ("auc", "top3")} for i in INVENTORIES}
     out["matched"] = {i: compute["inventories"][i]["frontier"]["matched"] for i in INVENTORIES}
+    out["wrong_anchor_controls"] = compute["wrong_anchor"]
+    out["execution_integrity"] = compute["execution_integrity"]
     return out
 
 
@@ -1013,6 +1065,9 @@ def figure_bytes(compute):
             ax.scatter([r[xkey]], [r[ykey]["mean"]], color="tab:red", marker="*", s=50, label="T-cont (J restricted)")
             ax.axhline(grid["rankers"]["prior"][ykey]["mean"], color="grey", linestyle="--", linewidth=0.8,
                        label="no-model action prior")
+            if ykey == "auc":
+                ax.axhline(compute["wrong_anchor"][J_ICLR]["wrong"]["mean"], color="tab:purple", linestyle="--",
+                           linewidth=0.8, label="wrong-anchor J (grid)")
             ax.set_xscale("log")
             ax.xaxis.set_minor_formatter(ticker.NullFormatter())
             ax.set_xlabel(xlabel)

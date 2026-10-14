@@ -1,0 +1,916 @@
+{
+  "auc_grid": {
+    "C-F-1": 0.631574856012155,
+    "C-F-15": 0.7833716123105191,
+    "C-F-5": 0.690940642066044,
+    "CJ-1e-01": 0.6971977825675575,
+    "CJ-1e-02": 0.7119027988802908,
+    "CJ-1e-03": 0.6932566183370042,
+    "CJ-1e-04": 0.6999411092658681,
+    "CJ-1e-05": 0.7258053307892537,
+    "CJ-3e-02": 0.6898537154164163,
+    "CJ-3e-03": 0.6816997043685146,
+    "CJ-3e-04": 0.7114399177100141,
+    "D-1": 0.6850545131895615,
+    "D-15": 0.7618741387230132,
+    "D-5": 0.7377685908232532,
+    "F-1-continuous": 0.6771931890902952,
+    "F-1-macro": 0.6661138789756155,
+    "F-1-micro": 0.6500247341083353,
+    "F-15-continuous": 0.7622478985823037,
+    "F-15-macro": 0.7444057728623645,
+    "F-15-micro": 0.7601392176954878,
+    "F-5-continuous": 0.7485530546623794,
+    "F-5-macro": 0.7425575853228585,
+    "F-5-micro": 0.7445565331417421,
+    "J-1e-01": 0.7700134270873821,
+    "J-1e-02": 0.7129276939566329,
+    "J-1e-03": 0.7342329874484215,
+    "J-1e-04": 0.7057212348209133,
+    "J-1e-05": 0.704141785331496,
+    "J-3e-02": 0.7459332022032986,
+    "J-3e-03": 0.7250635038416389,
+    "J-3e-04": 0.7129204307660899,
+    "Jascont-1e-01": 0.7622478985823037,
+    "Jascont-1e-02": 0.7034217479555099,
+    "Jascont-1e-03": 0.7130435124004255,
+    "Jascont-1e-04": 0.7020635313239815,
+    "Jascont-1e-05": 0.7103490650114445,
+    "Jascont-3e-02": 0.7483131730720156,
+    "Jascont-3e-03": 0.70822467992886,
+    "Jascont-3e-04": 0.6952875634547662,
+    "Jcont-1e-01": 0.7573680160496882,
+    "Jcont-1e-02": 0.6975913689740055,
+    "Jcont-1e-03": 0.6871539678613635,
+    "Jcont-1e-04": 0.68559120407995,
+    "Jcont-1e-05": 0.6876873216101512,
+    "Jcont-3e-02": 0.7570933889261863,
+    "Jcont-3e-03": 0.6905884754759352,
+    "Jcont-3e-04": 0.6857651280480863,
+    "T-continuous": 0.7024846000730245,
+    "T-macro": 0.67758226054046,
+    "T-micro": 0.7043592884428896,
+    "prior": 0.7202981637869096
+  },
+  "budgets": {
+    "CJ_lambda_1e-04": 234671220.1828778,
+    "J_lambda_1e-04": 183958616.18006432
+  },
+  "claim_boundary": "one look at the sealed #109 evaluation split for policies trained on the #109 policy split; grid ranking primary, other inventories descriptive; tie-free cost; DESCRIPTIVE intervals; MACs are linear MACs, wall times are RTX 5090 GPU seconds; no closed-loop claim",
+  "compute": {
+    "engine_seconds": 0,
+    "gpu_seconds": 34451.21727116173,
+    "wall_seconds": 34451.21727116173
+  },
+  "contrasts": {
+    "angle": {
+      "CJ-prior": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            -0.07038332038332037,
+            -0.014243395493395523
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.04260554260554261,
+          "units": 234
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-CJ": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            -0.023536648536648545,
+            0.035776838901838866
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.0071872571872571836,
+          "units": 234
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-D-1": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            0.01696451696451696,
+            0.04594017094017092
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.031533281533281526,
+          "units": 234
+        },
+        "token": "supported"
+      },
+      "J-D-15": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            -0.053062678062678066,
+            0.03312289562289557
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.00854700854700855,
+          "units": 234
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-D-5": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            -0.050569800569800566,
+            0.030207523957523925
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.00955063455063455,
+          "units": 234
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-Jascont": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            0.0017806267806267778,
+            0.04801298238798237
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.02483164983164983,
+          "units": 234
+        },
+        "token": "supported"
+      },
+      "J-Jcont": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            -0.015347384097384108,
+            0.03231109168609168
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.008708883708883711,
+          "units": 234
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-T-continuous": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            -0.03383190883190883,
+            0.033670843045843044
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.00025900025900025994,
+          "units": 234
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-T-macro": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            0.1258741258741259,
+            0.1789707977207977
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.15209790209790208,
+          "units": 234
+        },
+        "token": "supported"
+      },
+      "J-T-micro": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            -0.0349002849002849,
+            0.026419645169645144
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.00443537943537944,
+          "units": 234
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-prior": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            -0.06054211991711992,
+            -0.008869949494949509
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.03541828541828543,
+          "units": 234
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "Jcont-T-continuous": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            -0.041569541569541575,
+            0.025028328153328113
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.008449883449883457,
+          "units": 234
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "Jcont-prior": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            -0.07090132090132088,
+            -0.016802641802641814
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.04412716912716914,
+          "units": 234
+        },
+        "token": "not_supported_by_this_experiment"
+      }
+    },
+    "grid": {
+      "CJ-prior": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            -0.04245876421720473,
+            0.0012855601882933061
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.02035705452104166,
+          "units": 933
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-CJ": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            4.410915986479695e-05,
+            0.011658878367077734
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.005780125555045179,
+          "units": 933
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-D-1": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            0.017269094339030025,
+            0.02406964418218437
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.020666721631351852,
+          "units": 933
+        },
+        "token": "supported"
+      },
+      "J-D-15": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            -0.06853676646683077,
+            -0.044119343054230514
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.056152903902100045,
+          "units": 933
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-D-5": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            -0.04157134219835184,
+            -0.022963543691035655
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.032047356002339926,
+          "units": 933
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-Jascont": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            -0.002077189066738904,
+            0.009473924164438634
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.003657703496931797,
+          "units": 933
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-Jcont": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            0.015439840170547574,
+            0.024816476842200324
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.02013003074096323,
+          "units": 933
+        },
+        "token": "supported"
+      },
+      "J-T-continuous": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            -0.007475177555563402,
+            0.013742790792630022
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.003236634747888773,
+          "units": 933
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-T-macro": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            0.022670002826755242,
+            0.03373402098080555
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.028138974280453373,
+          "units": 933
+        },
+        "token": "supported"
+      },
+      "J-T-micro": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            -0.008633170598604677,
+            0.011193312760836878
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.0013619463780235493,
+          "units": 933
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-prior": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            -0.03875246359571118,
+            0.008819444444444446
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.01457692896599649,
+          "units": 933
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "Jcont-T-continuous": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            -0.025984677612491125,
+            -0.008155772862364505
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.01689339599307445,
+          "units": 933
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "Jcont-prior": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            -0.060444313412561,
+            -0.009929534782830615
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.03470695970695972,
+          "units": 933
+        },
+        "token": "not_supported_by_this_experiment"
+      }
+    },
+    "offset": {
+      "CJ-prior": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            0.26184210526315793,
+            0.28771929824561404
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.2749512670565302,
+          "units": 228
+        },
+        "token": "supported"
+      },
+      "J-CJ": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            -0.06442495126705652,
+            0.01676413255360624
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.022758284600389866,
+          "units": 228
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-D-1": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            0.024561403508771937,
+            0.058771929824561406
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.042105263157894736,
+          "units": 228
+        },
+        "token": "supported"
+      },
+      "J-D-15": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            -0.10789473684210525,
+            0.00994152046783626
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.04883040935672514,
+          "units": 228
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-D-5": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            -0.08294346978557506,
+            0.03153021442495127
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.025487329434697857,
+          "units": 228
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-Jascont": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            0.0013157894736842164,
+            0.06315789473684212
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.0324561403508772,
+          "units": 228
+        },
+        "token": "supported"
+      },
+      "J-Jcont": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            -0.03825536062378168,
+            0.01832358674463938
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.010185185185185188,
+          "units": 228
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-T-continuous": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            -0.04912280701754385,
+            0.041666666666666685
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.0030701754385964847,
+          "units": 228
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-T-macro": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            0.18668859649122804,
+            0.24211257309941514
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.2148635477582846,
+          "units": 228
+        },
+        "token": "supported"
+      },
+      "J-T-micro": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            -0.0449317738791423,
+            0.022808235867446378
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.01028265107212476,
+          "units": 228
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-prior": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            0.20394736842105263,
+            0.29780701754385963
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.2521929824561403,
+          "units": 228
+        },
+        "token": "supported"
+      },
+      "Jcont-T-continuous": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            -0.03114035087719297,
+            0.04385964912280703
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.007115009746588702,
+          "units": 228
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "Jcont-prior": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            0.22904483430799227,
+            0.29361598440545805
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.2623781676413256,
+          "units": 228
+        },
+        "token": "supported"
+      }
+    },
+    "power": {
+      "CJ-prior": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            0.2559907822155862,
+            0.33762597984322507
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.29689768155613616,
+          "units": 141
+        },
+        "token": "supported"
+      },
+      "J-CJ": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            0.0017315747998838706,
+            0.019648708058562482
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.010690141429223173,
+          "units": 141
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-D-1": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            0.022344313798681098,
+            0.06338445108041972
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.04243913566421965,
+          "units": 141
+        },
+        "token": "supported"
+      },
+      "J-D-15": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            -0.003183194392600885,
+            0.02693843059184604
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.011198208286674139,
+          "units": 141
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-D-5": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            -0.0066256065696155275,
+            0.0166936253162457
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.005319148936170215,
+          "units": 141
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-Jascont": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            0.0028819833271121124,
+            0.014536933349923278
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.008875616938326912,
+          "units": 141
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-Jcont": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            0.01782381485628966,
+            0.03663265729335158
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.027155655095184767,
+          "units": 141
+        },
+        "token": "supported"
+      },
+      "J-T-continuous": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            0.004634813985317907,
+            0.019057691510099135
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.012100286176433996,
+          "units": 141
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-T-macro": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            0.010118825432375259,
+            0.034238521836506136
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.022448260130231004,
+          "units": 141
+        },
+        "token": "supported"
+      },
+      "J-T-micro": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            0.006324913939695583,
+            0.02972761395213804
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.01701505536891876,
+          "units": 141
+        },
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-prior": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            0.2695139148106674,
+            0.3462740035668367
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.3075878229853594,
+          "units": 141
+        },
+        "token": "supported"
+      },
+      "Jcont-T-continuous": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            -0.023817189249720046,
+            -0.006583872506324912
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.015055368918750776,
+          "units": 141
+        },
+        "token": "not_supported_by_this_experiment"
+      },
+      "Jcont-prior": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            0.23939021608394515,
+            0.32274687901787563
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.28043216789017456,
+          "units": 141
+        },
+        "token": "supported"
+      }
+    }
+  },
+  "execution_integrity": {
+    "frozen_statistics_and_token_rules_unchanged": true,
+    "incident": {
+      "claim_qualification": "Literal scored-once execution did not hold for the duplicated fixed-arm prefixes. Retained deterministic records are reproducibility-checked; inferential findings must disclose this operational deviation. Measured timing under accidental contention cannot be treated as an isolated-device latency benchmark.",
+      "compute_bound_definition": "8 duplicate workers: four observed at 1263 s and four at 407 s, plus one minute each allowance between observation and termination (7160 s); discarded diagnostic foreground scoring 240+120+42 s; first superseded smoke 45.86 s; smoke label probe 73.42 s; remainder rounds conservatively to 8200 s. These allocated-process wall seconds are conservatively charged as GPU seconds, not CUDA active time.",
+      "compute_status": "ESTIMATE: conservative allocated-process accounting bound, not a measurement of CUDA active seconds",
+      "compute_upper_bound_seconds": 8200,
+      "description": "The async shell tool reported completion of nohup child launch/wait commands while their scoring children remained alive as PPID 1. A second phase launch and a diagnostic relaunch ran the same frozen shards concurrently. Once the process table established this, eight duplicate workers were terminated and the original four were retained. No arm, lambda, checkpoint, label, contrast, or frozen rule changed and no outcome-dependent model selection was performed.",
+      "diagnostic_duplicate_launch_time_estimate_utc": "2026-10-14T12:33Z +/- 1 minute, inferred from process-table elapsed time difference",
+      "diagnostic_launch_handle": "unregistered foreground shell relaunch; observed children listed above",
+      "duplicate_cancellation_time_estimate_utc": "2026-10-14T12:40Z +/- 2 minutes; successful kill -TERM, exact UTC cancellation timestamp was not captured",
+      "first_duplicate_launch_time_estimate_utc": "2026-10-14T12:19Z +/- 1 minute (same elapsed time as the original batch)",
+      "frozen_evidence_changed": false,
+      "kind": "accidental_duplicate_deterministic_scoring",
+      "observed_duplicate_elapsed_seconds": {
+        "diagnostic_duplicate_batch_per_worker": 407,
+        "first_duplicate_batch_per_worker": 1263
+      },
+      "original_and_duplicate_launch_handle": "bg_38 (pass1 and pass2 launch commands returned before nohup children exited)",
+      "original_launch_time_estimate_utc": "2026-10-14T12:19Z +/- 1 minute, inferred from first retained scoring ledger wall times and worker elapsed times",
+      "overwrites_evidence": "Repeated completion lines confirm at least F-1-continuous--seed20260908.json and F-1-micro--seed20260909.json were written twice. Other completed shard-prefix records may also have been overwritten. Shared output paths and nonexclusive writes did not preserve every pre-overwrite timing/header. Deterministic endpoints are checked against #101, but discarded metadata cannot be reconstructed exactly.",
+      "process_snapshot_artifact": "artifact://418 lines 598-605,627-630",
+      "records_present_before_cancellation": [
+        "F-1-continuous--seed20260908.json",
+        "F-1-continuous--seed20260909.json",
+        "F-1-continuous--seed20260910.json",
+        "F-1-micro--seed20260908.json",
+        "F-1-micro--seed20260909.json",
+        "F-1-micro--seed20260910.json",
+        "F-1-macro--seed20260908.json",
+        "F-1-macro--seed20260909.json",
+        "F-5-continuous--seed20260908.json",
+        "F-5-continuous--seed20260910.json"
+      ],
+      "retained_workers": [
+        152158,
+        152207,
+        152256,
+        152305
+      ],
+      "schema": "issue_114_execution_incident_v1",
+      "terminated_duplicate_workers": [
+        152355,
+        152404,
+        152453,
+        152502,
+        156768,
+        156817,
+        156866,
+        156915
+      ],
+      "timestamp_evidence_recorded_at": "2026-10-14T12:44:42.093743+00:00",
+      "typed_model_failures_retried": false
+    },
+    "literal_single_score_pass": false
+  },
+  "frontier_interpretation": "Endpoint clamps compare policies at most at the budget, not exact equal expenditure. Reused endpoint pairs are not independent replications. The all-lambda interpolant is not a best-AUC-under-budget envelope; its frozen token does not establish Pareto dominance.",
+  "frozen_at": "2026-10-14T11:29:59Z",
+  "guards": {
+    "G1_isolation": true,
+    "G2_scoring_policy": true,
+    "G3_chronology": true,
+    "G4_checkpoint_binding": true,
+    "G5_replication_101_gate_b": true,
+    "G6_restricted_schedules": true
+  },
+  "identity": "issue-114-horizon-vs-joint-v1",
+  "primary": {
+    "claim": "adaptive alpha adds decision value beyond adaptive Delta at matched compute",
+    "contrast": "J - J-cont (grid AUC), frontiers interpolated at the MAC budgets of J's and C-J's lambda = 1e-4 points",
+    "token": "supported"
+  },
+  "primary_estimates": {
+    "CJ_lambda_1e-04": {
+      "clusters": 311,
+      "interval": [
+        0.015439840170547574,
+        0.024816476842200324
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.02013003074096323,
+      "units": 933
+    },
+    "J_lambda_1e-04": {
+      "clusters": 311,
+      "interval": [
+        0.015439840170547574,
+        0.024816476842200324
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.02013003074096323,
+      "units": 933
+    }
+  },
+  "schema": "issue_114_report_v1",
+  "secondary": {
+    "claim": "the hybrid J keeps its advantage over the horizon-only adaptive C-J at matched compute",
+    "contrast": "J - C-J (grid AUC) at the same two budgets",
+    "token": "not_supported_by_this_experiment"
+  },
+  "secondary_estimates": {
+    "CJ_lambda_1e-04": {
+      "clusters": 311,
+      "interval": [
+        4.410915986479695e-05,
+        0.011658878367077734
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.005780125555045179,
+      "units": 933
+    },
+    "J_lambda_1e-04": {
+      "clusters": 311,
+      "interval": [
+        0.005017999338628334,
+        0.017375483987354397
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.011107929723235588,
+      "units": 933
+    }
+  },
+  "selector_module": "world_model/training/request_selectors.py",
+  "validation_command": "python -u -m scripts.run_horizon_vs_joint --validate",
+  "wrong_anchor": {
+    "CJ-1e-04": {
+      "right_minus_wrong": {
+        "clusters": 311,
+        "interval": [
+          0.06861135277782683,
+          0.08212639596600106
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.07528218272289815,
+        "units": 933
+      },
+      "token": "supported"
+    },
+    "J-1e-04": {
+      "right_minus_wrong": {
+        "clusters": 311,
+        "interval": [
+          0.029944827909005944,
+          0.03729643026249234
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.0336212783509809,
+        "units": 933
+      },
+      "token": "supported"
+    },
+    "Jcont-1e-04": {
+      "right_minus_wrong": {
+        "clusters": 311,
+        "interval": [
+          0.011180778747348267,
+          0.01922573954288682
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.015166320111054819,
+        "units": 933
+      },
+      "token": "not_supported_by_this_experiment"
+    }
+  }
+}
