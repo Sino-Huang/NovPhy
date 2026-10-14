@@ -1,0 +1,810 @@
+{
+  "F_hindsight": "F-15-continuous",
+  "F_star": "F-5-micro",
+  "H_star": "H-5-micro",
+  "acceptance": {
+    "angle": {
+      "J-H*": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            0.04736467236467237,
+            0.15766640766640763
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.1041181041181041,
+          "units": 234
+        },
+        "second": "H-5-micro",
+        "token": "supported"
+      },
+      "J-J_diag": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            -0.058048433048433046,
+            0.0074155011655011455
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.02463739963739964,
+          "units": 234
+        },
+        "second": "J_diag",
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-J_monotone": {
+        "estimate": {
+          "clusters": 78,
+          "interval": [
+            -0.008547008547008548,
+            0.0003561253561253577
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.003917378917378918,
+          "units": 234
+        },
+        "second": "J_monotone",
+        "token": "not_supported_by_this_experiment"
+      }
+    },
+    "grid": {
+      "J-H*": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            -0.01878834277548104,
+            0.017022239104232676
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.0006010780930395029,
+          "units": 933
+        },
+        "second": "H-5-micro",
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-J_diag": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            -0.016389306031588995,
+            0.002639193157681898
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.006804824328940086,
+          "units": 933
+        },
+        "second": "J_diag",
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-J_monotone": {
+        "estimate": {
+          "clusters": 311,
+          "interval": [
+            0.0013723258699142949,
+            0.004285095933005902
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.0027727720653765667,
+          "units": 933
+        },
+        "second": "J_monotone",
+        "token": "not_supported_by_this_experiment"
+      }
+    },
+    "offset": {
+      "J-H*": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            -0.020175438596491218,
+            0.13157894736842105
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05721247563352824,
+          "units": 228
+        },
+        "second": "H-5-micro",
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-J_diag": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            -0.06164961013645226,
+            0.014134990253411275
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.021832358674463936,
+          "units": 228
+        },
+        "second": "J_diag",
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-J_monotone": {
+        "estimate": {
+          "clusters": 76,
+          "interval": [
+            -0.005701754385964912,
+            0.0013157894736842103
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.0021929824561403508,
+          "units": 228
+        },
+        "second": "J_monotone",
+        "token": "not_supported_by_this_experiment"
+      }
+    },
+    "power": {
+      "J-H*": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            -0.011913908589440492,
+            0.017492275310024483
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.0033490937746257026,
+          "units": 141
+        },
+        "second": "H-5-micro",
+        "token": "not_supported_by_this_experiment"
+      },
+      "J-J_diag": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            -0.0010270208618472852,
+            0.046224233752229275
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.020250093318402388,
+          "units": 141
+        },
+        "second": "J_diag",
+        "token": "readiness_or_precision_insufficient"
+      },
+      "J-J_monotone": {
+        "estimate": {
+          "clusters": 47,
+          "interval": [
+            -0.003950479034465593,
+            0.0008294969101240112
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.0016693625316245675,
+          "units": 141
+        },
+        "second": "J_monotone",
+        "token": "not_supported_by_this_experiment"
+      }
+    }
+  },
+  "claim_boundary": "one look at the sealed #109 evaluation split; grid ranking primary, other inventories and rollout error descriptive; tie-free cost; DESCRIPTIVE intervals; the hierarchical model is one matched instance of a tied-axes model, not every hierarchy; no closed-loop claim",
+  "compute": {
+    "engine_seconds": 0,
+    "gpu_seconds": 10385.627634595614,
+    "wall_seconds": 11981.512098541949
+  },
+  "disposition": {
+    "J_dec_reading": {
+      "contrast_tokens": {
+        "J-H*": "supported",
+        "J-J_diag": "supported",
+        "J-J_monotone": "not_supported_by_this_experiment"
+      },
+      "label": "DESCRIPTIVE (same rule on J_dec)",
+      "token": "not_supported_by_this_experiment"
+    },
+    "claim": "independent axes add value over tied axes",
+    "contrast_tokens": {
+      "J-H*": "not_supported_by_this_experiment",
+      "J-J_diag": "not_supported_by_this_experiment",
+      "J-J_monotone": "not_supported_by_this_experiment"
+    },
+    "rule": "on grid, for 'independent axes add value over tied axes': supported iff J - J_diag, J - J_monotone and J - H* are each supported (mean >= 0.02 with lower bound > 0); not_supported_by_this_experiment iff at least one of the three has upper bound < 0.02; otherwise readiness_or_precision_insufficient; any failed guard -> readiness_or_precision_insufficient. The same rule on J_dec is reported DESCRIPTIVE",
+    "token": "not_supported_by_this_experiment"
+  },
+  "frozen_at": "2026-10-14T11:43:40Z",
+  "grid_auc": {
+    "C-F-15": {
+      "clusters": 311,
+      "interval": [
+        0.7676081871861615,
+        0.7991644582641367
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7833716123105191,
+      "units": 933
+    },
+    "F-1-continuous": {
+      "clusters": 311,
+      "interval": [
+        0.6548081339881983,
+        0.6994093897349524
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6771931890902952,
+      "units": 933
+    },
+    "F-1-macro": {
+      "clusters": 311,
+      "interval": [
+        0.6434407794777569,
+        0.6892763261211815
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6661138789756155,
+      "units": 933
+    },
+    "F-1-micro": {
+      "clusters": 311,
+      "interval": [
+        0.6283395315831006,
+        0.6715766570871071
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6500247341083353,
+      "units": 933
+    },
+    "F-15-continuous": {
+      "clusters": 311,
+      "interval": [
+        0.7429007269079615,
+        0.7810535405109359
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7622478985823037,
+      "units": 933
+    },
+    "F-15-macro": {
+      "clusters": 311,
+      "interval": [
+        0.7269181497316545,
+        0.7620354551664841
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7444057728623645,
+      "units": 933
+    },
+    "F-15-micro": {
+      "clusters": 311,
+      "interval": [
+        0.7413492161643287,
+        0.7786554803717182
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7601392176954878,
+      "units": 933
+    },
+    "F-5-continuous": {
+      "clusters": 311,
+      "interval": [
+        0.7286234928879625,
+        0.7682942887766039
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7485530546623794,
+      "units": 933
+    },
+    "F-5-macro": {
+      "clusters": 311,
+      "interval": [
+        0.7237675445312101,
+        0.7620351705279358
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7425575853228585,
+      "units": 933
+    },
+    "F-5-micro": {
+      "clusters": 311,
+      "interval": [
+        0.7249923589272463,
+        0.7641712257910007
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7445565331417421,
+      "units": 933
+    },
+    "H-1-continuous": {
+      "clusters": 311,
+      "interval": [
+        0.49532942004405023,
+        0.5204886949420712
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.507975375821035,
+      "units": 933
+    },
+    "H-15-macro": {
+      "clusters": 311,
+      "interval": [
+        0.4020631681644543,
+        0.4298698956456191
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.4158950017470918,
+      "units": 933
+    },
+    "H-5-micro": {
+      "clusters": 311,
+      "interval": [
+        0.6875161115233461,
+        0.725131655143713
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7063223129139529,
+      "units": 933
+    },
+    "J": {
+      "clusters": 311,
+      "interval": [
+        0.6845815715188706,
+        0.7267283448955475
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7057212348209133,
+      "units": 933
+    },
+    "J_anti": {
+      "clusters": 311,
+      "interval": [
+        0.678989253422533,
+        0.7212338590312868
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7000769505592657,
+      "units": 933
+    },
+    "J_dec": {
+      "clusters": 311,
+      "interval": [
+        0.7277492108641626,
+        0.7637271160422284
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7459773702538975,
+      "units": 933
+    },
+    "J_dec_anti": {
+      "clusters": 311,
+      "interval": [
+        0.7429007269079615,
+        0.7810535405109359
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7622478985823037,
+      "units": 933
+    },
+    "J_dec_diag": {
+      "clusters": 311,
+      "interval": [
+        0.6785519308308697,
+        0.7110825392899348
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6945908860699858,
+      "units": 933
+    },
+    "J_dec_monotone": {
+      "clusters": 311,
+      "interval": [
+        0.7277184110102117,
+        0.7636666990565705
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7459059161631508,
+      "units": 933
+    },
+    "J_diag": {
+      "clusters": 311,
+      "interval": [
+        0.6922143014184815,
+        0.7328500416161187
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7125260591498533,
+      "units": 933
+    },
+    "J_monotone": {
+      "clusters": 311,
+      "interval": [
+        0.6818183986431576,
+        0.7241079231593701
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7029484627555367,
+      "units": 933
+    },
+    "TAWM-1": {
+      "clusters": 311,
+      "interval": [
+        0.4413988414229572,
+        0.47630391937465894
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.4587295698228174,
+      "units": 933
+    },
+    "TAWM-15": {
+      "clusters": 311,
+      "interval": [
+        0.5846092010883008,
+        0.6361389075376214
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6103117675464941,
+      "units": 933
+    },
+    "TAWM-5": {
+      "clusters": 311,
+      "interval": [
+        0.5757391523267729,
+        0.6259708530126536
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6006827399110356,
+      "units": 933
+    },
+    "TAWM-adaptive": {
+      "clusters": 311,
+      "interval": [
+        0.4304468530754703,
+        0.4691097291418835
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.44969239406538436,
+      "units": 933
+    },
+    "VLWM-1": {
+      "clusters": 311,
+      "interval": [
+        0.4257245327020247,
+        0.4694767312894323
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.44795570631583487,
+      "units": 933
+    },
+    "VLWM-15": {
+      "clusters": 311,
+      "interval": [
+        0.6187432668260642,
+        0.6658267621089164
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6421677286629055,
+      "units": 933
+    },
+    "VLWM-5": {
+      "clusters": 311,
+      "interval": [
+        0.5423329907855632,
+        0.5617611862949483
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.55204056393767,
+      "units": 933
+    },
+    "prior": {
+      "clusters": 311,
+      "interval": [
+        0.6964709285890959,
+        0.7442291129288716
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7202981637869096,
+      "units": 933
+    }
+  },
+  "guards": {
+    "G1_isolation": true,
+    "G2_scoring_policy": true,
+    "G3_chronology": true,
+    "G4_checkpoint_binding": true,
+    "G5_replication_101": true,
+    "G6_restriction_integrity": true,
+    "G7_nonfinite": true
+  },
+  "hierarchical": {
+    "hybrid_parameters": 1837690,
+    "parameters": 1840322,
+    "usable_seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "width": 202
+  },
+  "identity": "issue-105-hierarchy-baselines-v1",
+  "rollout_error_t225": {
+    "C-F-15": {
+      "clusters": 311,
+      "interval": [
+        0.061663640715438055,
+        0.07231419504876228
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.06697697948588877,
+      "units": 311
+    },
+    "F-1-continuous": {
+      "clusters": 311,
+      "interval": [
+        0.029804761841658412,
+        0.03202824037455491
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.030913051286241444,
+      "units": 311
+    },
+    "F-1-macro": {
+      "clusters": 311,
+      "interval": [
+        0.027080702268691036,
+        0.02906519482292995
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.028064578352237125,
+      "units": 311
+    },
+    "F-1-micro": {
+      "clusters": 311,
+      "interval": [
+        0.02913356455407333,
+        0.03142120209223124
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.03026522809694724,
+      "units": 311
+    },
+    "F-15-continuous": {
+      "clusters": 311,
+      "interval": [
+        0.03864633252268244,
+        0.04451606703698255
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.041544357202712254,
+      "units": 311
+    },
+    "F-15-macro": {
+      "clusters": 311,
+      "interval": [
+        0.044049823310236554,
+        0.05075928827383421
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.04737385682183366,
+      "units": 311
+    },
+    "F-15-micro": {
+      "clusters": 311,
+      "interval": [
+        0.03889517236954942,
+        0.04496496087231597
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.04190064973138859,
+      "units": 311
+    },
+    "F-5-continuous": {
+      "clusters": 311,
+      "interval": [
+        0.036121590429378445,
+        0.04049958315973806
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.03827779708915359,
+      "units": 311
+    },
+    "F-5-macro": {
+      "clusters": 311,
+      "interval": [
+        0.04198225377426786,
+        0.04739079771356872
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.04464986103207441,
+      "units": 311
+    },
+    "F-5-micro": {
+      "clusters": 311,
+      "interval": [
+        0.0352982301907785,
+        0.039707896621526975
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.03748016879663442,
+      "units": 311
+    },
+    "H-1-continuous": {
+      "clusters": 311,
+      "interval": [
+        4280.456745348456,
+        4431.944252497846
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 4353.682862006839,
+      "units": 311
+    },
+    "H-15-macro": {
+      "clusters": 311,
+      "interval": [
+        185.2112299330429,
+        187.17231406377826
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 186.17427994366756,
+      "units": 311
+    },
+    "H-5-micro": {
+      "clusters": 311,
+      "interval": [
+        0.10535780983085627,
+        0.11390133322245768
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.10962266343686179,
+      "units": 311
+    },
+    "J": {
+      "clusters": 311,
+      "interval": [
+        0.030329029137494946,
+        0.03311114073648186
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.03172705513801681,
+      "units": 311
+    },
+    "J_anti": {
+      "clusters": 311,
+      "interval": [
+        0.032693534593231745,
+        0.03576155034443491
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.03422798702293451,
+      "units": 311
+    },
+    "J_dec": {
+      "clusters": 311,
+      "interval": [
+        0.04059369800527437,
+        0.04657133339402141
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.04355371890765122,
+      "units": 311
+    },
+    "J_dec_anti": {
+      "clusters": 311,
+      "interval": [
+        0.03862918178239866,
+        0.04450098664115507
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.041530261034814935,
+      "units": 311
+    },
+    "J_dec_diag": {
+      "clusters": 311,
+      "interval": [
+        0.04347106514398833,
+        0.049772223638105254
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.04658262399714176,
+      "units": 311
+    },
+    "J_dec_monotone": {
+      "clusters": 311,
+      "interval": [
+        0.04059355753574896,
+        0.046571283187073674
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.043553465517350516,
+      "units": 311
+    },
+    "J_diag": {
+      "clusters": 311,
+      "interval": [
+        0.034250354963206484,
+        0.03808778040798498
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.03614400389666596,
+      "units": 311
+    },
+    "J_monotone": {
+      "clusters": 311,
+      "interval": [
+        0.030030876544945472,
+        0.03280536297867901
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.03142584895614424,
+      "units": 311
+    },
+    "TAWM-1": {
+      "clusters": 311,
+      "interval": [
+        5213.867011962392,
+        5413.877959572362
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 5312.407869402363,
+      "units": 311
+    },
+    "TAWM-15": {
+      "clusters": 311,
+      "interval": [
+        0.16044847798437162,
+        0.16602814487445627
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.1631960325953246,
+      "units": 311
+    },
+    "TAWM-5": {
+      "clusters": 311,
+      "interval": [
+        0.4430035716969827,
+        0.4639899265631986
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.45332413863107196,
+      "units": 311
+    },
+    "TAWM-adaptive": {
+      "clusters": 311,
+      "interval": [
+        697.4311880718163,
+        829.431920593202
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 763.3045052039535,
+      "units": 311
+    },
+    "VLWM-1": {
+      "clusters": 311,
+      "interval": [
+        12103.581408982518,
+        12382.948220601955
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 12240.265658723069,
+      "units": 311
+    },
+    "VLWM-15": {
+      "clusters": 311,
+      "interval": [
+        0.27364698485208655,
+        0.2866470736860835
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.2800960124334039,
+      "units": 311
+    },
+    "VLWM-5": {
+      "clusters": 311,
+      "interval": [
+        106.43104205763673,
+        109.4455820036024
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 107.932310127752,
+      "units": 311
+    }
+  },
+  "schema": "issue_105_report_v1",
+  "unsupported": {
+    "TAWM/VLWM diagonal, monotone and anti-diagonal arms": "the #78 ports are continuous-only (ContinuousDynamics, horizon conditioning only): no description axis alpha",
+    "TAWM/VLWM wrong-anchor control": "their carrier is the #71 parser's; the fit-split wrong-anchor pool exists only as E99 carriers",
+    "VLWM-adaptive": "#78 trained a horizon controller for TAWM only (its adaptive evaluation arm); no VLWM controller exists"
+  },
+  "validation_command": "python -u -m scripts.run_hierarchy_baselines --validate"
+}
