@@ -1,0 +1,19 @@
+[issue-117] LC3--J--full/group0 update 12/12 (step 11): horizon 60, mean loss 240.51622009277344, retired 0; 26s; eta 0s
+[issue-112-dynamics] LC/hybrid/group0 update 12/12: horizon 60, mean loss 240.51622009277344, retired 0; 1s; eta 0s
+/mnt/array/sukaih/Project/NovPhy/scripts/run_request_interference_ranking.py:918: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:822.)
+  return max(float((first.params[k] - second.params[k]).abs().max()) for k in first.params)
+[issue-117] LC3--J--full/group0 update 12/12 (step 11): horizon 225, mean loss 3493.561767578125, retired 0; 17s; eta 0s
+[issue-112-dynamics] LC/hybrid/group0 update 12/12: horizon 225, mean loss 3493.561767578125, retired 0; 2s; eta 0s
+[issue-117] LC3--S-1-continuous--full/group0 update 12/12 (step 11): horizon 225, mean loss 2317.566650390625, retired 0; 4s; eta 0s
+[issue-117] LC3--J--full/group0 update 45/45 (step 44): horizon 225, mean loss 6.368397235870361, retired 0; 6s; eta 0s
+[issue-117-ranking]   schedules: the joint schedule is the retrain's; per-request = the joint run's updates of the arm's requests at their joint steps; full = 9000: True
+[issue-117-ranking]   handoff_seeds_usable_hashes_and_fit_isolation: True
+[issue-117-ranking]   usability_rule_reproduces_the_retrain_member_table: True
+[issue-117-ranking]   train_unit_equals_retrain_train_group_schedule: True
+[issue-117-ranking]   train_unit_equals_retrain_train_group_full_cost: True
+[issue-117-ranking]   specialist_trains_finite_at_full_cost: True
+[issue-117-ranking]   joint_scoring_reproduces_gate_b_unit_rows: True
+[issue-117-ranking]   statistics_rehearsal_reproduces_gate_b: True
+[issue-117-ranking]   full_budget_fits_24h_on_4_gpus: True
+[issue-117-ranking] smoke PASSED; projected elapsed 4.5 h on 4 GPUs (training GPU 14.9 h, scoring GPU 2.9 h)

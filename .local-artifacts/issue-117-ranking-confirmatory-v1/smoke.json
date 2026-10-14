@@ -1,0 +1,344 @@
+{
+  "checks": [
+    {
+      "control": "schedules: the joint schedule is the retrain's; per-request = the joint run's updates of the arm's requests at their joint steps; full = 9000",
+      "ok": true,
+      "update_counts": {
+        "D1": {
+          "full": 9000,
+          "request": 3000
+        },
+        "D15": {
+          "full": 9000,
+          "request": 3000
+        },
+        "D5": {
+          "full": 9000,
+          "request": 3000
+        },
+        "S-1-continuous": {
+          "full": 9000,
+          "request": 1000
+        },
+        "S-1-macro": {
+          "full": 9000,
+          "request": 1000
+        },
+        "S-1-micro": {
+          "full": 9000,
+          "request": 1000
+        },
+        "S-15-continuous": {
+          "full": 9000,
+          "request": 1000
+        },
+        "S-15-macro": {
+          "full": 9000,
+          "request": 1000
+        },
+        "S-15-micro": {
+          "full": 9000,
+          "request": 1000
+        },
+        "S-5-continuous": {
+          "full": 9000,
+          "request": 1000
+        },
+        "S-5-macro": {
+          "full": 9000,
+          "request": 1000
+        },
+        "S-5-micro": {
+          "full": 9000,
+          "request": 1000
+        }
+      }
+    },
+    {
+      "control": "handoff_seeds_usable_hashes_and_fit_isolation",
+      "handoff_token": null,
+      "hashes": true,
+      "ok": true,
+      "usable_seeds": [
+        20260908,
+        20260909,
+        20260910
+      ]
+    },
+    {
+      "control": "usability_rule_reproduces_the_retrain_member_table",
+      "members": 6,
+      "ok": true
+    },
+    {
+      "control": "train_unit_equals_retrain_train_group_schedule",
+      "logs_equal": true,
+      "max_abs_parameter_delta": 0.0,
+      "ok": true
+    },
+    {
+      "control": "train_unit_equals_retrain_train_group_full_cost",
+      "logs_equal": true,
+      "max_abs_parameter_delta": 0.0,
+      "ok": true
+    },
+    {
+      "control": "specialist_trains_finite_at_full_cost",
+      "ok": true,
+      "skipped": 0
+    },
+    {
+      "control": "joint_scoring_reproduces_gate_b_unit_rows",
+      "ok": true,
+      "policy": {
+        "cudnn_allow_tf32": false,
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": true,
+        "matmul_allow_tf32": false
+      }
+    },
+    {
+      "control": "statistics_rehearsal_reproduces_gate_b",
+      "ok": true,
+      "prior": true,
+      "stability_max_abs_delta": 0.0,
+      "stand_in_contrast": {
+        "clusters": 311,
+        "interval": [
+          1.1863821264261804e-18,
+          1.6210774739804888e-17
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 8.613655073238535e-18,
+        "units": 622
+      },
+      "stand_in_contrast_is_zero": true,
+      "typed_failure_drops_one_seed": true,
+      "unit_auc": true,
+      "wrong_anchor_exact": true
+    },
+    {
+      "control": "full_budget_fits_24h_on_4_gpus",
+      "ok": true,
+      "projected_elapsed_seconds": 16025.84740597941
+    }
+  ],
+  "device": "NVIDIA GeForce RTX 5090",
+  "identity": "issue-117-ranking-confirmatory-v1",
+  "ok": true,
+  "projection": {
+    "note": "training at the full-cost update time (horizon 225 and ranking from update 0, an upper bound) plus 90 s per group; scoring from the smoke's joint F-15-macro time scaled by 225 / Delta transitions",
+    "projected_elapsed_seconds": 16025.84740597941,
+    "scoring": {
+      "assignment": {
+        "0": [
+          "J|20260908",
+          "D1/full|20260910",
+          "S-1-continuous/full|20260908",
+          "S-1-continuous/request|20260908",
+          "S-1-macro/full|20260908",
+          "S-1-macro/request|20260909",
+          "S-1-micro/full|20260910",
+          "D5/full|20260908",
+          "D5/request|20260909",
+          "D15/request|20260910",
+          "S-5-continuous/request|20260908",
+          "S-5-macro/full|20260909",
+          "S-5-macro/request|20260910",
+          "S-5-micro/request|20260908",
+          "S-15-continuous/request|20260908",
+          "S-15-macro/full|20260909",
+          "S-15-macro/request|20260910",
+          "S-15-micro/request|20260908"
+        ],
+        "1": [
+          "J|20260909",
+          "D1/request|20260908",
+          "S-1-continuous/full|20260909",
+          "S-1-continuous/request|20260909",
+          "S-1-macro/full|20260909",
+          "S-1-macro/request|20260910",
+          "S-1-micro/request|20260908",
+          "D5/full|20260909",
+          "D5/request|20260910",
+          "S-5-continuous/full|20260908",
+          "S-5-continuous/request|20260909",
+          "S-5-macro/full|20260910",
+          "S-5-micro/full|20260908",
+          "S-5-micro/request|20260909",
+          "S-15-continuous/request|20260909",
+          "S-15-macro/full|20260910",
+          "S-15-micro/full|20260908",
+          "S-15-micro/request|20260909"
+        ],
+        "2": [
+          "J|20260910",
+          "D1/request|20260909",
+          "S-1-continuous/full|20260910",
+          "S-1-continuous/request|20260910",
+          "S-1-macro/full|20260910",
+          "S-1-micro/full|20260908",
+          "S-1-micro/request|20260909",
+          "D5/full|20260910",
+          "D15/full|20260908",
+          "D15/full|20260909",
+          "D15/request|20260908",
+          "S-5-continuous/full|20260909",
+          "S-5-continuous/request|20260910",
+          "S-5-macro/request|20260908",
+          "S-5-micro/full|20260909",
+          "S-5-micro/request|20260910",
+          "S-15-continuous/request|20260910",
+          "S-15-macro/request|20260908",
+          "S-15-micro/full|20260909",
+          "S-15-micro/request|20260910"
+        ],
+        "3": [
+          "D1/full|20260908",
+          "D1/full|20260909",
+          "D1/request|20260910",
+          "S-1-macro/request|20260908",
+          "S-1-micro/full|20260909",
+          "S-1-micro/request|20260910",
+          "D5/request|20260908",
+          "D15/full|20260910",
+          "D15/request|20260909",
+          "S-5-continuous/full|20260910",
+          "S-5-macro/full|20260908",
+          "S-5-macro/request|20260909",
+          "S-5-micro/full|20260910",
+          "S-15-continuous/full|20260908",
+          "S-15-continuous/full|20260909",
+          "S-15-continuous/full|20260910",
+          "S-15-macro/full|20260908",
+          "S-15-macro/request|20260909",
+          "S-15-micro/full|20260910"
+        ]
+      },
+      "projected_gpu_seconds": 10427.022979678586,
+      "projected_seconds_per_worker": [
+        2609.8045820482075,
+        2609.8045820482075,
+        2609.8045820482075,
+        2597.6092335339636
+      ]
+    },
+    "training": {
+      "assignment": {
+        "0": [
+          "S-1-micro/full/20260908",
+          "S-1-macro/full/20260910",
+          "S-1-continuous/full/20260910",
+          "D1/request/20260910",
+          "S-5-macro/full/20260908",
+          "D5/full/20260909",
+          "S-5-continuous/full/20260910",
+          "S-15-macro/full/20260909",
+          "D15/full/20260910",
+          "S-1-macro/request/20260908",
+          "S-15-continuous/full/20260909",
+          "S-1-continuous/request/20260910",
+          "D15/request/20260908",
+          "D15/request/20260910",
+          "S-5-macro/request/20260908",
+          "S-5-continuous/request/20260909",
+          "S-15-micro/request/20260910",
+          "S-15-continuous/request/20260908"
+        ],
+        "1": [
+          "S-1-micro/full/20260909",
+          "D1/full/20260908",
+          "D1/full/20260910",
+          "S-5-micro/full/20260908",
+          "S-5-macro/full/20260909",
+          "D5/full/20260910",
+          "S-15-micro/full/20260908",
+          "S-15-micro/full/20260909",
+          "S-15-macro/full/20260910",
+          "S-1-micro/request/20260908",
+          "S-1-macro/request/20260909",
+          "S-15-continuous/full/20260910",
+          "D5/request/20260908",
+          "D15/request/20260909",
+          "S-5-micro/request/20260910",
+          "S-5-continuous/request/20260908",
+          "S-15-micro/request/20260909",
+          "S-15-macro/request/20260910"
+        ],
+        "2": [
+          "S-1-micro/full/20260910",
+          "D1/full/20260909",
+          "S-1-continuous/full/20260908",
+          "D1/request/20260908",
+          "S-5-micro/full/20260909",
+          "S-5-macro/full/20260910",
+          "S-5-continuous/full/20260908",
+          "S-15-micro/full/20260910",
+          "D15/full/20260908",
+          "S-1-micro/request/20260909",
+          "S-1-macro/request/20260910",
+          "S-1-continuous/request/20260908",
+          "D5/request/20260909",
+          "S-5-micro/request/20260908",
+          "S-5-macro/request/20260909",
+          "S-5-continuous/request/20260910",
+          "S-15-macro/request/20260908",
+          "S-15-continuous/request/20260909"
+        ],
+        "3": [
+          "S-1-macro/full/20260908",
+          "S-1-macro/full/20260909",
+          "S-1-continuous/full/20260909",
+          "D1/request/20260909",
+          "S-5-micro/full/20260910",
+          "D5/full/20260908",
+          "S-5-continuous/full/20260909",
+          "S-15-macro/full/20260908",
+          "D15/full/20260909",
+          "S-1-micro/request/20260910",
+          "S-15-continuous/full/20260908",
+          "S-1-continuous/request/20260909",
+          "D5/request/20260910",
+          "S-5-micro/request/20260909",
+          "S-5-macro/request/20260910",
+          "S-15-micro/request/20260908",
+          "S-15-macro/request/20260909",
+          "S-15-continuous/request/20260910"
+        ]
+      },
+      "projected_gpu_seconds": 53573.525442061946,
+      "projected_seconds_per_worker": [
+        13377.821111474186,
+        13377.268835091963,
+        13402.392671564594,
+        13416.042823931202
+      ]
+    }
+  },
+  "reading": "infrastructure assertions only; nothing kept; no statistic of a new model output; the only evaluation rows computed reproduce the published Gate-B unit records",
+  "run_at": "2026-10-14T16:12:19Z",
+  "schema": "issue_117_ranking_smoke_v1",
+  "scoring_timing": {
+    "joint_f15_macro_seconds_per_seed": [
+      12.252814325969666,
+      12.172889621928334,
+      12.16034159483388
+    ]
+  },
+  "timing": {
+    "peak_memory_gb": 9.874136576,
+    "seconds_per_update_full_cost": {
+      "0": 0.23767746903467923,
+      "1": 0.28602380002848804,
+      "2": 0.28186138067394495,
+      "3": 0.06279837642796338,
+      "4": 0.07494785496965051,
+      "5": 0.07241592952050269,
+      "6": 0.029617569991387427,
+      "7": 0.038410726585425436,
+      "8": 0.03752130805514753
+    },
+    "warmup_seconds": 1.1706841518171132
+  },
+  "wall_seconds": 184.32579608005472
+}
