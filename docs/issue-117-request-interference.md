@@ -165,3 +165,30 @@ stability-only change, a separate decision outside the interference question.
 Compute: 80 179 GPU s (training 78 373 s; LOLO scoring about 1 340 s over 4 GPUs; held-out about 470 s); engine
 seconds 0. Checkpoints (21 GB) and per-update logs (355 MB) stay local. Plan, smoke, ledger, records, training reports,
 tables and figures are tracked.
+
+## Confirmatory ranking on the #104 sealed split (after Gate B)
+
+Full report: `docs/issue-117-ranking-confirmatory.md`. Runner: `scripts/run_request_interference_ranking.py`. Freeze
+c8bd1bcb.
+
+The per-request ranking parts of items 1–2 were rerun confirmatory on the #109 evaluation split (Gate-B mixed cells,
+grid primary):
+
+- **Joint:** the Gate-B LC hybrid retrain.
+- **Specialists and per-Δ models:** trained here under LC3 with the #117 arm construction, on the same #109 fit
+  payload.
+
+Results:
+
+- **Disposition `supported`** on "sharing all weights does not cost per-request ranking on the sealed split" (δ = 0.02
+  non-inferiority, the LOLO T2 analogue). At the per-request budget:
+  - request-mean J − S is +0.085 [+0.074, +0.095];
+  - F-15-macro J − S is +0.056 [+0.044, +0.068];
+  - all nine requests are `supported`.
+- **Asymmetry:**
+  - Δ = 1 gains the most: J − S Δ=1 − Δ=15 is +0.030 [+0.016, +0.045].
+  - Δ = 1 gains from sharing across Δ.
+  - Δ = 5 and 15 gain from sharing across descriptions.
+- **Full budget (DESCRIPTIVE).** The 9000-update specialists and per-Δ models rank above the joint at Δ = 5/15 by
+  0.05–0.14, while the joint keeps Δ = 1.
+- **Controls.** The joint's request mean is +0.002 [−0.025, +0.027] over the no-model prior.

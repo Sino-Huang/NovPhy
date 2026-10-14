@@ -1,0 +1,100 @@
+{
+  "arm": "D1",
+  "budget": "request",
+  "final": {
+    "local": [
+      0.2444547712802887
+    ],
+    "long": [
+      0.1400599479675293
+    ],
+    "loss": [
+      0.5628946423530579
+    ],
+    "rank": [
+      1.783799409866333
+    ]
+  },
+  "gpu_seconds": 772.0353221939877,
+  "grad_norm_summary": {
+    "F-1-continuous": {
+      "max": [
+        5023886475264.0
+      ],
+      "median": [
+        12.238324165344238
+      ],
+      "p99": [
+        605628526.08
+      ],
+      "updates": 1000
+    },
+    "F-1-macro": {
+      "max": [
+        2023314161664.0
+      ],
+      "median": [
+        11.885052680969238
+      ],
+      "p99": [
+        41768929.159999974
+      ],
+      "updates": 1000
+    },
+    "F-1-micro": {
+      "max": [
+        772751032320.0
+      ],
+      "median": [
+        13.737068176269531
+      ],
+      "p99": [
+        68733400.55999999
+      ],
+      "updates": 1000
+    }
+  },
+  "group": 2,
+  "members": [
+    {
+      "complete": true,
+      "fold": "all",
+      "retired_at_step": null,
+      "retired_at_update": null,
+      "retired_request": null,
+      "seed": 20260910,
+      "skipped": 0
+    }
+  ],
+  "nonfinite_events": [],
+  "parameters_per_member": 1837690,
+  "peak_memory_gb": 9.849724416,
+  "plan_identity": "issue-117-ranking-confirmatory-v1",
+  "pool_sizes": [
+    {
+      "cell": 680,
+      "long": 69595,
+      "window": 220286
+    }
+  ],
+  "probes": [],
+  "recipe": "LC3",
+  "requests": [
+    "F-1-continuous",
+    "F-1-micro",
+    "F-1-macro"
+  ],
+  "schema": "issue_117_ranking_training_unit_v1",
+  "timed_seconds_per_update": null,
+  "trained_at": "2026-10-14T18:21:53Z",
+  "update_times": null,
+  "updates": 3000,
+  "validation_members": [
+    {
+      "fold": "all",
+      "in_sample": true,
+      "seed": 20260910,
+      "validation_cells": 0
+    }
+  ]
+}
