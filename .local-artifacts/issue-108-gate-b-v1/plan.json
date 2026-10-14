@@ -1,0 +1,425 @@
+{
+  "caps": {
+    "gpu_seconds": 7200.0,
+    "stop": "readiness_or_precision_insufficient",
+    "wall_seconds": 14400.0
+  },
+  "claim_boundary": "one look at the sealed #109 evaluation split for the frozen #112 v3 unit; grid ranking of 16 fixed candidates per level under the tie-free cost; DESCRIPTIVE intervals; no claim about closed-loop play, other inventories (descriptive) or novelty cells",
+  "controls": {
+    "action_prior": "no model (c2.prior_tables, held-out cohort): cost = minus the engine success frequency of the identical action over the fit split's executions in the same inventory (issue-112-v3-retrain-v1/fit-verdicts.json); an action never executed there costs 0",
+    "unit_minus_prior": "paired grid AUC per (level, seed), the prior value repeated per seed",
+    "wrong_anchor": "the unit's checkpoints roll the shared grid candidates out from every fit-split anchor (the retrain's anchors-fit.pt, the anchors the unit trained with; v2 held-out definition); per cell: right-anchor AUC minus the mean wrong-anchor AUC, and the mean Spearman of the candidate costs right vs wrong (rank stability)"
+  },
+  "decision_rule": {
+    "controls": "reported, not part of the gate; the unit - prior contrast and the wrong-anchor right - wrong use the same token rule",
+    "descriptive_inventories": "offset, angle, power: unit, C*, prior AUC and unit - C*; DESCRIPTIVE only",
+    "gate_b": "pass iff the unit's pooled grid AUC >= 0.65 and its lower bound > 0.55, and at most 10% of the unit's grid verdict slots are nonfinite (v1 G4); otherwise fail. Grid only.",
+    "pre_declared_contrast": "unit - C* paired grid AUC per (level, seed); supported iff mean >= 0.02 with lower > 0; not_supported_by_this_experiment iff upper < 0.02; otherwise readiness_or_precision_insufficient. Reported, not part of the gate."
+  },
+  "disclosure": "Known before the freeze: every #112 v1/v2/v3, #117 and retrain result, and the #104 campaign accounting with its mixed-verdict yield per inventory on this split (grid 311, offset 76, angle 78, power 47). No model output on any evaluation capture has been computed. Hardware: RTX 5090 instead of the #85 RTX 3090. Inputs bind the current bytes after the SERVER_SETUP path rewrite (the #104 plan.json differs from its committed bytes by that rewrite).",
+  "engine_seconds": 0,
+  "evaluation": {
+    "accounting": {
+      "branches": 11680,
+      "complete": 11680,
+      "incomplete_branches": [],
+      "levels": 400,
+      "levels_per_inventory": {
+        "angle": 120,
+        "grid": 400,
+        "offset": 120,
+        "power": 120
+      },
+      "mixed_cells": {
+        "angle": 78,
+        "grid": 311,
+        "offset": 76,
+        "power": 47
+      },
+      "typed_failures": [],
+      "verdict_slots_mixed": {
+        "angle": 1014,
+        "grid": 4976,
+        "offset": 836,
+        "power": 940
+      }
+    },
+    "anchors": "per level: E99 batch-1 parse (wlc.encode_carrier) of shot frame 0 of its first complete candidate in suffix order (run_decision_dynamics_retrain.anchor_branches / anchor_carrier), under deterministic_scoring(), parsed after the freeze",
+    "cells": "per level x inventory: its complete verdict-bearing candidates in inventory-ordinal order (run_decision_dynamics_retrain.ranking_cells rule); mixed-verdict cells only (t96.mixed)",
+    "excluded": {
+      "issue109-fit": "read only as the frozen fit-verdicts.json (action prior) and the retrain's fit anchors (wrong-anchor pool)",
+      "issue109-policy": "controller training split; never read",
+      "issue110-*": "not part of Gate B; never read"
+    },
+    "inventories": {
+      "angle": "DESCRIPTIVE only (the 120 levels captured with all 60 candidates)",
+      "grid": "Gate B (16 candidates, every evaluation level)",
+      "offset": "DESCRIPTIVE only (the 120 levels captured with all 60 candidates)",
+      "power": "DESCRIPTIVE only (the 120 levels captured with all 60 candidates)"
+    },
+    "split": "#109 evaluation split (issue-109-sealed-cohort-v1 splits.evaluation, 200 levels per family, families ['type010103', 'type010105']), captured by the #104 campaign stream issue109-evaluation; never fitted",
+    "typed_failures": "capture typed failures and incomplete branches are recorded and carry no verdict; never retried or replaced",
+    "verdicts": "engine pig-removal verdict of every complete issue109-evaluation branch from the #104 campaign report (branches.json, #85 channel); rows of other streams are dropped at load"
+  },
+  "frozen_at": "2026-10-14T09:36:20Z",
+  "frozen_before_evaluation_scoring": true,
+  "guards": {
+    "G1_isolation": "every scored branch is a issue109-evaluation capture of an evaluation-roster level; every wrong anchor is a fit-roster level",
+    "G2_scoring_policy": "every record and the anchor store carry the #111 SCORING_POLICY",
+    "G3_chronology": "plan frozen_at <= anchors parsed_at <= first record scored_at",
+    "G4_checkpoint_binding": "every scored checkpoint's sha256 equals the handoff",
+    "failure": "a failed guard refuses publication (no gate value)",
+    "validate": "--validate re-derives every table from the records and byte-compares the renderings; it re-scores the unit's first seed on every grid cell and re-parses one anchor (endpoint_replication / carrier_replication, tolerance 0.001)"
+  },
+  "handoff": {
+    "path": ".local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json",
+    "plan_identity": "issue-112-v3-retrain-v1",
+    "sha256": "sha256:94f6e888b3407dfd44f9fb99350c3d3e21d0ebc28e065618fd8b6da9d7897706",
+    "supersedes": ".local-artifacts/issue-112-decision-dynamics-v3/gate_b_handoff.json",
+    "token": "supported"
+  },
+  "identity": "issue-108-gate-b-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json",
+      "name": "issue_112_retrain_handoff",
+      "sha256": "sha256:94f6e888b3407dfd44f9fb99350c3d3e21d0ebc28e065618fd8b6da9d7897706"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/plan.json",
+      "name": "issue_112_retrain_plan",
+      "sha256": "sha256:2a5bb712de760d9b6948d9c847b9da6d3033fb91edb4e169c1405db8104aa88e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/compute.json",
+      "name": "issue_112_retrain_compute",
+      "sha256": "sha256:ae4ad3fd5fa38e4240a55f690a5c99fb3098696ec525881c048af09172d961f0"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/fit-verdicts.json",
+      "name": "issue_112_fit_verdicts",
+      "sha256": "sha256:528469bde86f6f95f5d8108b064c6e3b5399a579fd0a57b9339ed9a909a57593"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/data/anchors-fit.pt",
+      "name": "issue_112_fit_anchors",
+      "sha256": "sha256:92b8e294901ba1b612ffba4e528082611ff69328b211f5195a09ae9745418751"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-dynamics-v3/compute.json",
+      "name": "issue_112_v3_compute",
+      "sha256": "sha256:b3f6834c3312b248637ce0350e68ded241e2f05a71c140b56c775f449e63212a"
+    },
+    {
+      "artifact": "scripts/run_decision_relevant_dynamics.py",
+      "name": "issue_112_v1_runner",
+      "sha256": "sha256:22ef72c8dbe6d744f860c3b727ac7d9eb2813be635f622d1f7bb8743ba9ff98f"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_versions.py",
+      "name": "issue_112_versions_runner",
+      "sha256": "sha256:0ebdaf20945d1c0e0ac4b1462059af28f9cf8f544c54ea9f62e7ed4950803539"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_controls.py",
+      "name": "issue_112_controls_runner",
+      "sha256": "sha256:3b82ab2fb55179d29d1d97aa1c3c7aade059acd6cdf785181f8fadbab65a6345"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_retrain.py",
+      "name": "issue_112_retrain_runner",
+      "sha256": "sha256:0d92e282ec528d41958790d6ba444cd348a56a3854d4c7a1cd9e750de75978f9"
+    },
+    {
+      "artifact": "scripts/run_decision_chain_attribution.py",
+      "name": "issue_99_attribution_runner",
+      "sha256": "sha256:9e017a24b0e6b126ec68eb91586f454e05e1c259430d7057281977c349fcc43c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/encoder/encoder.pt",
+      "name": "issue_99_encoder",
+      "sha256": "sha256:cdbe677ab103e872ed6ac7777a3dc8b5aa0432f5771e8aa63a6e4e2d469bdd73"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json",
+      "name": "issue_109_cohort_plan",
+      "sha256": "sha256:e88b07903a10dcf492b8bb6c86f10e52b56183c6a3995337ea282dacee4d6dc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-v1/plan.json",
+      "name": "issue_104_plan",
+      "sha256": "sha256:337cc145e45ade78c1f43c526690da654229ff9eb8b4d3452aea212bd09a1c52"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "name": "issue_104_campaign_branches",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/summary.json",
+      "name": "issue_104_campaign_summary",
+      "sha256": "sha256:869dfe7986c746b2a3c576618a66cd5d892b96c8a92045fe2ec70c63422d778b"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:583818ea528c3b58a0e5cedaaa84434e223a565c534b6c6cc5a73ecf95924233"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260908/predictor.pt",
+      "name": "checkpoint_unit_20260908",
+      "sha256": "sha256:252ee2a7737cdf4979ecb9039a4ed8762fd06b58fcef13a344e1752beff058fb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260909/predictor.pt",
+      "name": "checkpoint_unit_20260909",
+      "sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260910/predictor.pt",
+      "name": "checkpoint_unit_20260910",
+      "sha256": "sha256:6d8bbf719bef9525eb705a530118be83ee35e0424a64cc44261f4d5b7fc5148f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260908/predictor.pt",
+      "name": "checkpoint_c_star_20260908",
+      "sha256": "sha256:ab9f2fe73450e04d865b53231a5cc6522ce96c5267254f11074c7993d99f308b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260909/predictor.pt",
+      "name": "checkpoint_c_star_20260909",
+      "sha256": "sha256:3d22eb5ef167fb059fef23bb8ff64bab0b97f8c0e97146c90f8911dba32db62a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260910/predictor.pt",
+      "name": "checkpoint_c_star_20260910",
+      "sha256": "sha256:007b1380f6dd3c0482528b96f2834ed17d6d78ab762ece62574ffd7887981143"
+    }
+  ],
+  "issue": 108,
+  "issue_64_authorized": false,
+  "prohibited": [
+    "training",
+    "reading issue109-policy or issue110 captures",
+    "re-scoring after publication",
+    "changing a unit, threshold, rule or control after the freeze",
+    "retrying or replacing a typed failure"
+  ],
+  "question": "does the #112 v3 Gate-B unit, retrained on the #109 fit split, rank the candidate launches of the sealed #109 evaluation split: pooled grid AUC >= 0.65 with lower bound > 0.55 (tie-free)?",
+  "related_issues": [
+    104,
+    109,
+    112
+  ],
+  "role": "Gate B: score the frozen #112 v3 Gate-B unit once on the #104 sealed #109 evaluation split",
+  "runner": "scripts/run_gate_b.py",
+  "runner_sha256_at_freeze": "sha256:9301be75ffe276a9f5e9fe1ed43d00818bacddbabeadf9a41eca8fdd7372c515",
+  "schema": "issue_108_gate_b_plan_v1",
+  "scoring": {
+    "bootstrap": {
+      "draws": 10000,
+      "generator": "PCG64 7201",
+      "kind": "member(level)-clustered percentile bootstrap",
+      "label": "DESCRIPTIVE",
+      "quantiles": [
+        0.025,
+        0.975
+      ]
+    },
+    "cell_auc": "m99.view: P(a pig-removing candidate has lower cost than a failing one), ties 0.5; nonfinite endpoints are excluded rows (typed failures) and counted",
+    "cost": "tie_free (scoring_harness.EndpointCosts.row against the anchor used)",
+    "operation": "per cell and checkpoint: m99.rollout_endpoints(model, None, z0, actions, t96.arm_spec(request)) from the level anchor to 225 over the cell's candidate actions (v1 endpoint_block for the unit's request only)",
+    "policy": "every anchor parse and rollout inside scoring_harness.deterministic_scoring(), in one process that did not train; each checkpoint is hash-checked against the handoff before loading",
+    "pooling": "cells are (level, seed) over the usable seeds; the pooled AUC is the mean of per-level seed means; per-seed AUCs use that seed's cells (v3 seed_aggregation)"
+  },
+  "smoke_evidence": {
+    "checks": [
+      {
+        "cells": 680,
+        "control": "cells_reproduce_retrain_ranking_cells",
+        "ok": true,
+        "per_inventory": {
+          "angle": 314,
+          "grid": 366
+        }
+      },
+      {
+        "control": "anchor_rule_reproduces_retrain_anchors",
+        "levels": [
+          "issue-109-sc-fit-type010103-001",
+          "issue-109-sc-fit-type010105-240"
+        ],
+        "max_abs_delta": 0.0,
+        "ok": true
+      },
+      {
+        "cells": [
+          "issue-109-sc-fit-type010103-002",
+          "issue-109-sc-fit-type010103-003",
+          "issue-109-sc-fit-type010103-004"
+        ],
+        "control": "unit_scoring_path_equals_v1_endpoint_block",
+        "ok": true,
+        "seed": 20260908
+      },
+      {
+        "cells": [
+          "issue-109-sc-fit-type010103-002",
+          "issue-109-sc-fit-type010103-003",
+          "issue-109-sc-fit-type010103-004"
+        ],
+        "control": "c_star_scoring_path_equals_v1_endpoint_block",
+        "ok": true,
+        "seed": 20260908
+      },
+      {
+        "control": "statistics_reproduce_v3_lolo",
+        "ok": true,
+        "unit_auc": {
+          "clusters": 11,
+          "interval": [
+            0.656417748917749,
+            0.7730880230880232
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.7152958152958153,
+          "units": 33
+        },
+        "unit_minus_c_star": {
+          "clusters": 11,
+          "interval": [
+            -0.0348502886002886,
+            0.14885461760461752
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.047691197691197715,
+          "units": 33
+        }
+      },
+      {
+        "control": "grid_actions_shared_and_equal_fit_grid",
+        "ok": true,
+        "ordinals": 16
+      },
+      {
+        "branches": 11680,
+        "control": "evaluation_stream_isolation",
+        "ok": true
+      },
+      {
+        "control": "handoff_checkpoints_bound",
+        "ok": true,
+        "token": "supported"
+      }
+    ],
+    "evaluation_accounting": {
+      "branches": 11680,
+      "complete": 11680,
+      "incomplete_branches": [],
+      "levels": 400,
+      "levels_per_inventory": {
+        "angle": 120,
+        "grid": 400,
+        "offset": 120,
+        "power": 120
+      },
+      "mixed_cells": {
+        "angle": 78,
+        "grid": 311,
+        "offset": 76,
+        "power": 47
+      },
+      "typed_failures": [],
+      "verdict_slots_mixed": {
+        "angle": 1014,
+        "grid": 4976,
+        "offset": 836,
+        "power": 940
+      }
+    },
+    "identity": "issue-108-gate-b-v1",
+    "ok": true,
+    "reading": "fit split and v3 records only; no evaluation-split anchor parse or model score; the evaluation accounting reads engine verdicts (mixed-cell counts, published by #104)",
+    "run_at": "2026-10-14T09:36:18Z",
+    "schema": "issue_108_gate_b_smoke_v1",
+    "timings": {
+      "c_star_seconds_per_cell": 0.05348867333183686,
+      "unit_seconds_per_cell": 0.24031857489090827
+    },
+    "wall_seconds": 4.946793935960159
+  },
+  "training": "none",
+  "units": {
+    "c_star": {
+      "arm": "LC",
+      "checkpoints": [
+        {
+          "path": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260908/predictor.pt",
+          "seed": 20260908,
+          "sha256": "sha256:ab9f2fe73450e04d865b53231a5cc6522ce96c5267254f11074c7993d99f308b",
+          "usable": true
+        },
+        {
+          "path": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260909/predictor.pt",
+          "seed": 20260909,
+          "sha256": "sha256:3d22eb5ef167fb059fef23bb8ff64bab0b97f8c0e97146c90f8911dba32db62a",
+          "usable": true
+        },
+        {
+          "path": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260910/predictor.pt",
+          "seed": 20260910,
+          "sha256": "sha256:007b1380f6dd3c0482528b96f2834ed17d6d78ab762ece62574ffd7887981143",
+          "usable": true
+        }
+      ],
+      "encoder": "E99",
+      "family": "continuous",
+      "request": "C-F-15",
+      "role": "C*: the pre-declared matched baseline, the continuous-family unit with the largest v3 selection score S (never a Gate-B candidate)",
+      "usable_seeds": [
+        20260908,
+        20260909,
+        20260910
+      ]
+    },
+    "unit": {
+      "arm": "LC",
+      "checkpoints": [
+        {
+          "path": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260908/predictor.pt",
+          "seed": 20260908,
+          "sha256": "sha256:252ee2a7737cdf4979ecb9039a4ed8762fd06b58fcef13a344e1752beff058fb",
+          "usable": true
+        },
+        {
+          "path": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260909/predictor.pt",
+          "seed": 20260909,
+          "sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5",
+          "usable": true
+        },
+        {
+          "path": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260910/predictor.pt",
+          "seed": 20260910,
+          "sha256": "sha256:6d8bbf719bef9525eb705a530118be83ee35e0424a64cc44261f4d5b7fc5148f",
+          "usable": true
+        }
+      ],
+      "encoder": "E99",
+      "family": "hybrid",
+      "request": "F-15-macro",
+      "role": "the Gate-B unit (hybrid; #112 v3 selection)",
+      "usable_seeds": [
+        20260908,
+        20260909,
+        20260910
+      ]
+    }
+  },
+  "validation_command": "python -u -m scripts.run_gate_b --validate",
+  "version": 1
+}

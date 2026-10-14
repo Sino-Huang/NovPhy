@@ -1,0 +1,116 @@
+{
+  "checks": [
+    {
+      "cells": 680,
+      "control": "cells_reproduce_retrain_ranking_cells",
+      "ok": true,
+      "per_inventory": {
+        "angle": 314,
+        "grid": 366
+      }
+    },
+    {
+      "control": "anchor_rule_reproduces_retrain_anchors",
+      "levels": [
+        "issue-109-sc-fit-type010103-001",
+        "issue-109-sc-fit-type010105-240"
+      ],
+      "max_abs_delta": 0.0,
+      "ok": true
+    },
+    {
+      "cells": [
+        "issue-109-sc-fit-type010103-002",
+        "issue-109-sc-fit-type010103-003",
+        "issue-109-sc-fit-type010103-004"
+      ],
+      "control": "unit_scoring_path_equals_v1_endpoint_block",
+      "ok": true,
+      "seed": 20260908
+    },
+    {
+      "cells": [
+        "issue-109-sc-fit-type010103-002",
+        "issue-109-sc-fit-type010103-003",
+        "issue-109-sc-fit-type010103-004"
+      ],
+      "control": "c_star_scoring_path_equals_v1_endpoint_block",
+      "ok": true,
+      "seed": 20260908
+    },
+    {
+      "control": "statistics_reproduce_v3_lolo",
+      "ok": true,
+      "unit_auc": {
+        "clusters": 11,
+        "interval": [
+          0.656417748917749,
+          0.7730880230880232
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.7152958152958153,
+        "units": 33
+      },
+      "unit_minus_c_star": {
+        "clusters": 11,
+        "interval": [
+          -0.0348502886002886,
+          0.14885461760461752
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.047691197691197715,
+        "units": 33
+      }
+    },
+    {
+      "control": "grid_actions_shared_and_equal_fit_grid",
+      "ok": true,
+      "ordinals": 16
+    },
+    {
+      "branches": 11680,
+      "control": "evaluation_stream_isolation",
+      "ok": true
+    },
+    {
+      "control": "handoff_checkpoints_bound",
+      "ok": true,
+      "token": "supported"
+    }
+  ],
+  "evaluation_accounting": {
+    "branches": 11680,
+    "complete": 11680,
+    "incomplete_branches": [],
+    "levels": 400,
+    "levels_per_inventory": {
+      "angle": 120,
+      "grid": 400,
+      "offset": 120,
+      "power": 120
+    },
+    "mixed_cells": {
+      "angle": 78,
+      "grid": 311,
+      "offset": 76,
+      "power": 47
+    },
+    "typed_failures": [],
+    "verdict_slots_mixed": {
+      "angle": 1014,
+      "grid": 4976,
+      "offset": 836,
+      "power": 940
+    }
+  },
+  "identity": "issue-108-gate-b-v1",
+  "ok": true,
+  "reading": "fit split and v3 records only; no evaluation-split anchor parse or model score; the evaluation accounting reads engine verdicts (mixed-cell counts, published by #104)",
+  "run_at": "2026-10-14T09:36:18Z",
+  "schema": "issue_108_gate_b_smoke_v1",
+  "timings": {
+    "c_star_seconds_per_cell": 0.05348867333183686,
+    "unit_seconds_per_cell": 0.24031857489090827
+  },
+  "wall_seconds": 4.946793935960159
+}
