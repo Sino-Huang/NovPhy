@@ -1,0 +1,539 @@
+{
+  "caps": {
+    "gpu_seconds": 57600.0,
+    "stop": "readiness_or_precision_insufficient",
+    "wall_seconds": 108000.0
+  },
+  "claim_boundary": "training of a frozen recipe on retained fit-split captures; no statistic, no ranking, no held-out access; Gate B is the test",
+  "data": {
+    "anchors": "per level: E99 batch-1 parse (wlc.encode_carrier) of the decision frame, shot frame 0 of its first complete candidate in suffix order, under deterministic_scoring()",
+    "branches": 13920,
+    "carriers": "E99 (the frozen #99 spatial slot parser, s99.load_adapter(s99.OUTPUT, 'E')) parse of every observation 0..min(last, 285), s99.carriers_for (prior position - 1)",
+    "complete_branches": 13919,
+    "excluded": {
+      "issue-77 N1 lineages": "the old fit split (exposed by #112 selection); replaced by the new split",
+      "issue109-evaluation, issue110-evaluation": "final evaluation; never fitted",
+      "issue109-policy": "controller (policy) training split (#109 split_roles)",
+      "issue110-fit": "the #104 fit_merge pools the #110 normal fit sides with #109 fit, but the Gate-B recipe fixes the E99 encoder, whose 18-slot contract v1 covers the #110 normal cells on only 25 of 40 templates (#110 doc); those levels need the contract-v2 encoder of the #107 track"
+    },
+    "labels": "s99.shot_labels (the #99 micro relations and macro labels per observed position)",
+    "levels": 480,
+    "long_windows": "v3 LONG starts 0, 15, 30, 45, 60 below the shot's last position",
+    "ranking_cells": "every fit level x inventory in (grid 16, angle 13) whose verdict-bearing candidates hold both a pig removal and a failure (t96.mixed); candidates in inventory-ordinal order, padded to 20; z0 the level anchor; actions the inventory actions",
+    "shot_order": "families, roster order, candidate suffix order (c00..c28); complete branches only",
+    "split": "#109 fit split (issue-109-sealed-cohort-v1, splits.fit: 240 levels per family, families ['type010103', 'type010105']), captured by the #104 campaign stream issue109-fit (capture_pipeline_v2, #113 window rule, Mesa 26.1.2 renderer)",
+    "typed_failures_excluded": [
+      {
+        "failure_class": "shot_progress_stall",
+        "key": "issue-109-sc-fit-type010105-049-c15"
+      }
+    ],
+    "verdicts": "engine pig-removal verdict of every complete issue109-fit branch from the #104 campaign report (branches.json, #85 channel); rows of other streams are dropped at load",
+    "windows": "s99.windows: starts 0..225 step 15 below the shot's last position, 60 transitions, terminal padding; stored as position indices into the carriers and labels (IndexedTrainData), equal to the materialized v3 window tensors (smoke)"
+  },
+  "decision_rule": {
+    "handoff": "Gate-B handoff ready (supported) iff G1 holds and the Gate-B unit and C* each keep at least one usable seed; otherwise readiness_or_precision_insufficient",
+    "usable_checkpoint": "a member is usable at Gate B iff it is complete (G2) and does not end in an excursion (G3); an unusable member is a typed terminal failure (retired / final_checkpoint_excursion), never retried or replaced"
+  },
+  "disclosure": "Known before the freeze: every #112 v1/v2/v3 and #117 result, the #104 campaign accounting and its mixed-verdict yield per level type (fit grid 365 / 480, angle 314 / 480). The recipe keeps the #77 update budget of 9000 updates although the new split holds about 19x the v3 windows and 25x its ranking cells; changing it would be a new version. Hardware: 4 x RTX 5090 (the #85 single-RTX-3090 gate is carried as one GPU per member). The SERVER_SETUP path rewrite changed bytes of #77/#96 plans; inputs here bind the current bytes. An external vLLM job used the GPUs while the fit stream was captured (no effect on 160/160 replays, #104).",
+  "engine_seconds": 0,
+  "frozen_at": "2026-10-14T05:29:10Z",
+  "frozen_before_data_and_training": true,
+  "guards": {
+    "G1_isolation": "every training shot, long window and ranking cell belongs to a complete branch of a #109 fit-roster level in stream issue109-fit; every ranking-cell action equals its shot's executed action",
+    "G2_stability": "every member reached 9000 updates without retirement and skipped at most 45",
+    "G3_end_state": "#117 end-state rule, declared before training: a member ends in an excursion when, for some request, the median #77 local loss of its last 3 updates of that request exceeds 5 x the median of that request's updates in [0.6 n, 0.95 n); the first spike is the first of its last 500 updates with a pre-clip norm above 1000"
+  },
+  "identity": "issue-112-v3-retrain-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-112-decision-dynamics-v3/plan.json",
+      "name": "issue_112_v3_plan",
+      "sha256": "sha256:63b09061e3bb351a41543b146b0d5d00c2098e7d7bebf38feed35a480b502f51"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-dynamics-v3/compute.json",
+      "name": "issue_112_v3_compute",
+      "sha256": "sha256:b3f6834c3312b248637ce0350e68ded241e2f05a71c140b56c775f449e63212a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-decision-dynamics-v3/gate_b_handoff.json",
+      "name": "issue_112_v3_handoff",
+      "sha256": "sha256:98e29d1f1735aa7dcbc8a18cf2ff49adf7724b885aa809043d30b9e618f14c3f"
+    },
+    {
+      "artifact": "scripts/run_decision_relevant_dynamics.py",
+      "name": "issue_112_v1_runner",
+      "sha256": "sha256:22ef72c8dbe6d744f860c3b727ac7d9eb2813be635f622d1f7bb8743ba9ff98f"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_versions.py",
+      "name": "issue_112_versions_runner",
+      "sha256": "sha256:0ebdaf20945d1c0e0ac4b1462059af28f9cf8f544c54ea9f62e7ed4950803539"
+    },
+    {
+      "artifact": "world_model/training/decision_dynamics.py",
+      "name": "issue_112_v1_module",
+      "sha256": "sha256:14aa4587277377bb7d7b8bd4a1954366bb653fb0baf3a912c6fa52075ac1b794"
+    },
+    {
+      "artifact": "world_model/training/stable_decision_dynamics.py",
+      "name": "issue_112_v3_module",
+      "sha256": "sha256:8269589e0125f68573dd66e9baf641d9b9bc469069257969894483c62a13b4fa"
+    },
+    {
+      "artifact": ".local-artifacts/issue-117-request-interference-v1/compute.json",
+      "name": "issue_117_compute",
+      "sha256": "sha256:d3e2c3b17e594be141e654baa7ea16de0e3d6118c7c414b63be6d8c1b6798497"
+    },
+    {
+      "artifact": ".local-artifacts/issue-77-n1-dynamics-v1/plan.json",
+      "name": "issue_77_dynamics_plan",
+      "sha256": "sha256:5a237208eb5935eed92c57e8c796ac61d0dd681cd1ee2033274ab4836d85510d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/encoder/encoder.pt",
+      "name": "issue_99_encoder",
+      "sha256": "sha256:cdbe677ab103e872ed6ac7777a3dc8b5aa0432f5771e8aa63a6e4e2d469bdd73"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json",
+      "name": "issue_109_cohort_plan",
+      "sha256": "sha256:e88b07903a10dcf492b8bb6c86f10e52b56183c6a3995337ea282dacee4d6dc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-v1/plan.json",
+      "name": "issue_104_plan",
+      "sha256": "sha256:337cc145e45ade78c1f43c526690da654229ff9eb8b4d3452aea212bd09a1c52"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "name": "issue_104_campaign_branches",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/summary.json",
+      "name": "issue_104_campaign_summary",
+      "sha256": "sha256:869dfe7986c746b2a3c576618a66cd5d892b96c8a92045fe2ec70c63422d778b"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:a85b2d16e3a380898bbf823d712692fededf790aee6b36d669490c5f6f124965"
+    }
+  ],
+  "issue": 112,
+  "issue_64_authorized": false,
+  "parent_issue": 108,
+  "prohibited": [
+    "reading any evaluation-split, policy-split or #110 capture",
+    "scoring any model",
+    "changing the recipe, the units, the data rule or a guard after the freeze",
+    "retrying or replacing a failed member"
+  ],
+  "question": "train the frozen #112 v3 Gate-B unit (LC : F-15-macro, hybrid, E99) and its pre-declared matched baseline C* (LC : C-F-15, continuous) on the #109 fit split captured by the #104 campaign, and hand the checkpoints to Gate B",
+  "recipe": {
+    "arm": "LC",
+    "definition": "#77 recipe + long-horizon supervision + decision-contrastive loss (v3: truncated back-propagation every 45 transitions, skip-on-nonfinite with retirement after 10 consecutive skips)",
+    "implementation": "scripts.run_decision_dynamics_retrain.implementation(): a private copy of the v1 runner with the v3 arms, loss constants, SkippingEnsemble (patience 10) and truncated recursion (45) taken from versions.implementation(3); train_group is the v1 function, unchanged",
+    "source": "issue-112-decision-dynamics-v3 plan.json (training block, version_spec)",
+    "training": {
+      "execution": "members of one (arm, family) are trained in lock-step groups by a vmapped, torch.compile'd transition (training process only; autotuning allowed)",
+      "group_sizes": {
+        "B_continuous": 39,
+        "B_hybrid": 39,
+        "C_continuous": 39,
+        "C_hybrid": 39,
+        "LC_continuous": 20,
+        "LC_hybrid": 20,
+        "L_continuous": 20,
+        "L_hybrid": 20
+      },
+      "initialization": "torch.manual_seed(seed); s99.new_predictor(family) (from scratch)",
+      "local_loss": "#74/#77 loss (run_issue_74_matched_dynamics.loss_for) in masked form (decision_dynamics.local_loss) on the #99 windows: starts 0..225 step 15, 60 transitions, terminal padding masked; batch of 64 windows sampled uniformly with replacement from the member's pool by torch.Generator().manual_seed(seed)",
+      "long_horizon": {
+        "arms": [
+          "L",
+          "LC"
+        ],
+        "batch_size": 64,
+        "definition": "windows at starts 0, 15, 30, 45, 60 of every fit shot (start below the shot's last position); the step's pair is unrolled horizon // delta transitions; loss = mean over visited positions of row-mean carrier MSE + 0.01 x the #77 carrier-bound penalty; horizon = min(225, 60 + 15 x floor(update / 500))",
+        "every": 500,
+        "first": 60,
+        "increment": 15,
+        "last": 225,
+        "seed_offset": 112001,
+        "starts": [
+          0,
+          15,
+          30,
+          45,
+          60
+        ],
+        "targets": "the E99 parsed carrier at every visited position start + j * delta, terminal absorption past the shot's last frame",
+        "truncation": "every 45 recursive transitions (stable_decision_dynamics)",
+        "weight": 1.0
+      },
+      "matched": "every arm: same architectures and parameter counts, same 9000 updates of 64 #77 windows",
+      "ranking": {
+        "arms": [
+          "C",
+          "LC"
+        ],
+        "candidate_pad": 20,
+        "cells": [
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-001"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-003"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-004"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-005"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-006"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-009"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-010"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-011"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-012"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-013"
+          },
+          {
+            "inventory": "grid",
+            "member": "issue-77-n1-015"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-001"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-003"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-004"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-005"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-006"
+          },
+          {
+            "inventory": "offset",
+            "member": "issue-77-n1-009"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-001"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-006"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-010"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-011"
+          },
+          {
+            "inventory": "angle",
+            "member": "issue-77-n1-012"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-004"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-005"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-006"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-009"
+          },
+          {
+            "inventory": "power",
+            "member": "issue-77-n1-013"
+          }
+        ],
+        "cells_per_step": 2,
+        "cost": "tie_free (scoring_harness.tie_free on tensors): pig presence - 0.1 x pig-slot center displacement between the anchor carrier and the rollout endpoint at 225",
+        "definition": "per update 2 mixed fit-lineage cells (member x inventory, sampled uniformly with replacement from the member's pool); every verdict-bearing candidate action is rolled out with the step's pair from the member's E99 anchor to 225; loss = mean over cells of the mean over (success, failure) pairs of softplus((cost_success - cost_failure) / 0.1); weight 0.1 x ramp, ramp 0 before update 1000 and linear to 1 by update 2000",
+        "inventories": [
+          "grid",
+          "offset",
+          "angle",
+          "power"
+        ],
+        "ramp": 1000,
+        "seed_offset": 112002,
+        "start": 1000,
+        "temperature": 0.1,
+        "verdict_source": "fit-lineage inventory executions only (#93 grid/offset, #94 power, #87/#89 angle oracle verdicts); no held-out verdict is read",
+        "weight": 0.1
+      },
+      "recipe": {
+        "batch_size": 64,
+        "grad_clip": 1.0,
+        "learning_rate": 0.0001,
+        "steps": 9000,
+        "weight_decay": 0.0001
+      },
+      "schedule": "PAIRS[step % 9]; the continuous family uses the same horizon",
+      "update": "one AdamW over stacked member parameters (elementwise, so per member); per-member gradient clipping to grad_clip; a member with a nonfinite loss or gradient norm is retired at that update (typed terminal failure, never scored)"
+    },
+    "unchanged": "losses, weights, curriculum, ramp, truncation, skip rule, optimizer, batch sizes, 9000 updates, initialization, seeds, encoder",
+    "version_spec": {
+      "arms": [
+        "B",
+        "L",
+        "C",
+        "LC"
+      ],
+      "change": "truncated back-propagation: the long-horizon and ranking recursions are detached after every 45 transitions (Delta = 5 and 15 unchanged; Delta = 1 in 45-frame gradient segments); a nonfinite update is skipped per member (parameters and AdamW moments untouched), and a member is retired only after 10 consecutive skips",
+      "diagnosis": "v1 retired 28/312 members (L 5/78, LC 23/78, B and C 0), every one on a Delta = 1 update at curriculum horizon >= 165. An instrumented replay of LC/continuous fold 006 seed 20260909 measured per-term gradient norms on Delta = 1 updates of up to 2.2e3 (long-horizon) and 1.1e4 (ranking) against at most 1.2 (#77 local): exploding gradients through up to 225 recursive transitions; an overflow retires the member. No Delta = 5 update (45 recursive transitions) of any of the 312 members was nonfinite.",
+      "long": {},
+      "parent": 1,
+      "patience": 10,
+      "rank": {},
+      "skip_cap": 45,
+      "truncation": 45,
+      "version": 3
+    }
+  },
+  "role": "retrain of the frozen #112 v3 recipe on the #104 fit split (the Gate-B checkpoints); no selection, no scoring, no statistic",
+  "runner": "scripts/run_decision_dynamics_retrain.py",
+  "runner_sha256_at_freeze": "sha256:709faabf1786fca495674cc238aff3deac63e31ceae5aff6ef2514a30586aaf5",
+  "schema": "issue_112_v3_retrain_plan_v1",
+  "smoke_evidence": {
+    "checks": [
+      {
+        "control": "indexed_windows_equal_v3_training_data",
+        "ok": true,
+        "positions": 208886,
+        "windows": 11780
+      },
+      {
+        "control": "hybrid_batches_equal_v3",
+        "folds": [
+          "all",
+          "issue-77-n1-001"
+        ],
+        "ok": true
+      },
+      {
+        "control": "hybrid_train_group_equals_v3",
+        "logged_updates": {
+          "grad_norm": 12,
+          "local": 12,
+          "skipped": 12
+        },
+        "max_parameter_delta": 0.0,
+        "ok": true,
+        "updates": 12
+      },
+      {
+        "control": "continuous_batches_equal_v3",
+        "folds": [
+          "all",
+          "issue-77-n1-001"
+        ],
+        "ok": true
+      },
+      {
+        "control": "continuous_train_group_equals_v3",
+        "logged_updates": {
+          "grad_norm": 12,
+          "local": 12,
+          "skipped": 12
+        },
+        "max_parameter_delta": 0.0,
+        "ok": true,
+        "updates": 12
+      },
+      {
+        "control": "new_shots_cover_positions",
+        "ends": [
+          285,
+          285,
+          285,
+          285,
+          285,
+          285
+        ],
+        "ok": true,
+        "shots": 6
+      },
+      {
+        "control": "executed_action_equals_inventory_action",
+        "ok": true
+      },
+      {
+        "control": "anchor_parse_deterministic",
+        "ok": true
+      },
+      {
+        "control": "anchor_equals_batched_frame0_carrier",
+        "ok": true,
+        "replication": [
+          {
+            "max_abs_nonmotion_delta": 2.0384788513183594e-05,
+            "max_motion_delta_times_elapsed_over_2": 0.0,
+            "pass": true,
+            "rows": 1,
+            "tolerance": 0.001
+          },
+          {
+            "max_abs_nonmotion_delta": 3.1113624572753906e-05,
+            "max_motion_delta_times_elapsed_over_2": 0.0,
+            "pass": true,
+            "rows": 1,
+            "tolerance": 0.001
+          }
+        ]
+      },
+      {
+        "control": "new_windows_built",
+        "long_windows": 30,
+        "ok": true,
+        "windows": 96
+      },
+      {
+        "branches": 13919,
+        "control": "fit_stream_isolation",
+        "ok": true,
+        "typed_failures_excluded": 1
+      }
+    ],
+    "identity": "issue-112-v3-retrain-v1",
+    "memory_gb": {
+      "continuous": 4.964649472,
+      "hybrid": 10.144124416
+    },
+    "ok": true,
+    "projection": {
+      "branches": 13919,
+      "continuous": {
+        "peak_gb": 4.964649472,
+        "training_seconds_upper_per_member": 2922.967483580578
+      },
+      "data_wall_seconds_4_processes": 4745.693834375755,
+      "hybrid": {
+        "peak_gb": 10.144124416,
+        "training_seconds_upper_per_member": 2954.998455767054
+      },
+      "positions": 3904309,
+      "training_gpu_seconds_upper": 17633.897818042897,
+      "windows": 220286
+    },
+    "reading": "infrastructure assertions only; nothing kept; no statistic; no verdict read",
+    "run_at": "2026-10-14T05:28:40Z",
+    "schema": "issue_112_v3_retrain_smoke_v1",
+    "timings": {
+      "carrier_seconds_per_shot": 1.025842248656166,
+      "continuous_seconds_per_update": 0.32477416484228644,
+      "hybrid_seconds_per_update": 0.3283331617518949,
+      "label_seconds_per_shot": 13.638030991811926
+    }
+  },
+  "training": {
+    "execution": "one member per train_group call, torch.compile'd vmapped transition; groups spread over the 4 GPUs (one process per GPU); training process only",
+    "folds": "fold 'all' only (every fit level); no leave-one-out folds: nothing is selected",
+    "group_size": 1,
+    "groups": [
+      {
+        "family": "hybrid",
+        "fold": "all",
+        "index": 0,
+        "seed": 20260908
+      },
+      {
+        "family": "hybrid",
+        "fold": "all",
+        "index": 1,
+        "seed": 20260909
+      },
+      {
+        "family": "hybrid",
+        "fold": "all",
+        "index": 2,
+        "seed": 20260910
+      },
+      {
+        "family": "continuous",
+        "fold": "all",
+        "index": 0,
+        "seed": 20260908
+      },
+      {
+        "family": "continuous",
+        "fold": "all",
+        "index": 1,
+        "seed": 20260909
+      },
+      {
+        "family": "continuous",
+        "fold": "all",
+        "index": 2,
+        "seed": 20260910
+      }
+    ],
+    "logging": "every update: the #77 local loss, the pre-clip gradient norm and the skip flag per member (values only)"
+  },
+  "units": {
+    "c_star": {
+      "arm": "LC",
+      "family": "continuous",
+      "request": "C-F-15",
+      "source": "v3 compute.json baseline_contrast.c_star (the largest-S continuous unit)"
+    },
+    "gate_b": {
+      "arm": "LC",
+      "encoder": "E99",
+      "family": "hybrid",
+      "request": "F-15-macro"
+    }
+  },
+  "validation_command": "python -u -m scripts.run_decision_dynamics_retrain --validate",
+  "version": 1
+}
