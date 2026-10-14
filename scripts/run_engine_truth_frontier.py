@@ -82,7 +82,8 @@ PRIMARY = gb.GATE_INVENTORY
 PRIMARY_COST = harness.PRIMARY_COST
 DELTA = v1.DELTA
 STOP_TOKEN = v1.STOP_TOKEN
-TIMING_SEED = SEEDS[0]
+TIMING_SEED = SEEDS[0]  # smoke sample and validation spot check
+TIMING_SEEDS = SEEDS  # post-freeze amendment (AMENDMENT): the timing pass covers every seed
 ICLR_LAMBDA = dap.ICLR_LAMBDA
 SETS = ("primary", "secondary")
 PRIOR = "prior"
@@ -132,6 +133,23 @@ GROUP_STYLE = {
     "prior": ("red", "_"),
 }
 PRIMARY_ONLY = ("OL-pe", "OL-dec")
+AMENDMENT = {
+    "at": "2026-10-14T15:18:02Z",
+    "after": ("the first publication of the frozen runner (all 70 seed-20260908 timing and 204 secondary records "
+              "complete; compute.json, summary.json and findings.md written once)"),
+    "what": ("the primary timing pass (wall axis, and G1 reuse fidelity) is extended from seed 20260908 to all three "
+             "seeds; the wall column pools every seed's timing records, as the MAC column pools every seed's records"),
+    "why": ("each seed is a separately trained policy, so seed 20260908 alone does not represent the all-seed MAC column "
+            "of the same policy: grid transition calls per candidate at seed 20260908 vs pooled were 196 vs 121 for "
+            "J-1e-04 and 21 vs 124.5 for CJ-1e-04; the frozen seed-only wall gave a J / C-J wall ratio of 16.7 that "
+            "describes seed 20260908, not the policies"),
+    "unchanged": ("cells, retained and secondary records, AUC and top-3, MACs, every MAC-axis frontier, bootstrap share "
+                  "and verdict, and the ICLR-sentence token (its rule uses MACs); only the wall axis (AUC x wall and "
+                  "top-3 x wall frontiers, wall columns and the wall ratio) and the G1 coverage change"),
+    "superseded": "superseded/ keeps the first publication's findings.md, summary.json and compute.json",
+    "execution": ("one additional launch of --score on 4 GPUs (one process each) for the seed-20260909/10 timing "
+                  "tasks; existing records are skipped, nothing is overwritten; PIDs in logs/score-pids.txt"),
+}
 EXCLUDED = {
     "J-as-cont (#114)": "a counterfactual replay of J's recorded schedules; it needs J to run first, so it is not a "
                         "deployable policy",
@@ -388,8 +406,8 @@ def ordered(cells):
 # paths, ledger
 # ---------------------------------------------------------------------------
 
-def timing_path(output, pid):
-    return Path(output) / "records" / f"timing--{pid}--seed{TIMING_SEED}.json"
+def timing_path(output, pid, seed):
+    return Path(output) / "records" / f"timing--{pid}--seed{seed}.json"
 
 
 def secondary_path(output, pid, seed):
@@ -451,23 +469,23 @@ def record_base(schema, entry, seed, arm, policy_state, set_name):
             "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES")}
 
 
-def timing_record(entry, policy_state):
-    """Every primary cell of seed 20260908 re-scored in one process per GPU after a discarded warm-up
-    cell: synchronized rollout seconds per state, MACs and calls, and digests of rows and schedules
-    (compared with the retained record at publication)."""
+def timing_record(entry, seed, policy_state):
+    """Every primary cell of one seed re-scored in one process per GPU after a discarded warm-up cell:
+    synchronized rollout seconds per state, MACs and calls, and digests of rows and schedules (compared
+    with the retained record at publication)."""
     cells = primary_cells()
     store = primary_anchors()
     costs = dap.endpoint_costs()
     began = time.monotonic()
-    arm = load_arm(entry, TIMING_SEED, cells)
-    base = record_base(SCHEMA_TIMING, entry, TIMING_SEED, arm, policy_state, "primary-timing")
+    arm = load_arm(entry, seed, cells)
+    base = record_base(SCHEMA_TIMING, entry, seed, arm, policy_state, "primary-timing")
     if arm["model"] is None:
         return {**base, "inventories": {}, "seconds": time.monotonic() - began}
     order = ordered(cells)
-    run_cell(arm, *order[0], store, costs, TIMING_SEED)  # warm-up, discarded
+    run_cell(arm, *order[0], store, costs, seed)  # warm-up, discarded
     inventories = {i: {} for i in INVENTORIES}
     for inventory, member, cell in order:
-        block = run_cell(arm, inventory, member, cell, store, costs, TIMING_SEED)
+        block = run_cell(arm, inventory, member, cell, store, costs, seed)
         inventories[inventory][member] = {
             "seconds": block["gpu_seconds"], "candidates": block["candidates"], "linear_macs": block["linear_macs"],
             "transition_calls": block["transition_calls"], "controller_calls": block["controller_calls"],
@@ -496,10 +514,11 @@ def secondary_record(output, entry, seed, policy_state):
             "seconds": time.monotonic() - began}
 
 
-def read_timing(output, pid):
-    record = read_json(timing_path(output, pid))
-    if record.get("schema") != SCHEMA_TIMING or record.get("plan_identity") != IDENTITY or record["policy"] != pid:
-        raise ValueError(f"timing record {pid} binding differs")
+def read_timing(output, pid, seed):
+    record = read_json(timing_path(output, pid, seed))
+    if (record.get("schema") != SCHEMA_TIMING or record.get("plan_identity") != IDENTITY or record["policy"] != pid
+            or record["seed"] != seed):
+        raise ValueError(f"timing record {pid}/{seed} binding differs")
     return record
 
 
@@ -512,7 +531,7 @@ def read_secondary(output, pid, seed):
 
 
 def score_tasks():
-    timing = [("timing", e["id"], TIMING_SEED) for e in entries_for("primary")]
+    timing = [("timing", e["id"], s) for s in TIMING_SEEDS for e in entries_for("primary")]
     secondary = [("secondary", e["id"], s) for e in entries_for("secondary") for s in SEEDS]
     return timing, secondary
 
@@ -524,7 +543,7 @@ def score(output, workers, worker):
         raise ValueError("secondary F77 anchors missing; run --anchors first")
     timing, secondary = score_tasks()
     for kind, pid, seed in timing[worker::workers] + secondary[worker::workers]:
-        path = timing_path(output, pid) if kind == "timing" else secondary_path(output, pid, seed)
+        path = timing_path(output, pid, seed) if kind == "timing" else secondary_path(output, pid, seed)
         if path.is_file():
             continue
         totals = ledger_totals(output)
@@ -534,7 +553,7 @@ def score(output, workers, worker):
         began = time.monotonic()
         with harness.deterministic_scoring() as policy_state:
             entry = entry_of(pid)
-            record = (timing_record(entry, policy_state) if kind == "timing"
+            record = (timing_record(entry, seed, policy_state) if kind == "timing"
                       else secondary_record(output, entry, seed, policy_state))
         write_json(path, record)
         torch.cuda.empty_cache()
@@ -663,11 +682,12 @@ def compute_columns(records, inventory, pid, wall_source):
         out["seconds_per_state"] = out["recorded_seconds_per_state"]
         out["seconds_source"] = "this scoring (one process per GPU, warm-up discarded), all seeds"
     else:
-        timed = list(wall_source["inventories"][inventory].values()) if not wall_source.get("typed_failure") else []
+        timed = [t for record in wall_source if not record.get("typed_failure")
+                 for t in record["inventories"][inventory].values()]
         out["seconds_per_state"] = float(np.mean([t["seconds"] for t in timed])) if timed else None
         out["seconds_per_candidate"] = (sum(t["seconds"] for t in timed) / sum(t["candidates"] for t in timed)
                                         if timed else None)
-        out["seconds_source"] = f"uniform timing pass, seed {TIMING_SEED} (one process per GPU, warm-up discarded)"
+        out["seconds_source"] = "uniform timing pass, all seeds (one process per GPU, warm-up discarded)"
     return out
 
 
@@ -716,7 +736,8 @@ def inventory_table(records, cells, inventory, stats, set_name, timing, guards_o
         if pid == PRIOR:
             block.update(PRIOR_COMPUTE)
         else:
-            block.update(compute_columns(records, inventory, pid, timing[pid] if timing is not None else None))
+            block.update(compute_columns(records, inventory, pid,
+                                         [timing[(pid, s)] for s in TIMING_SEEDS] if timing is not None else None))
         policies[pid] = {"group": group_of(pid), **block}
     frontiers = {combo: frontier_block(rows, pids, policies, combo, guards_ok) for combo in COMBOS}
     return {"cells": len(rows), "members": len({r["member"] for r in rows}), "policies": policies,
@@ -765,26 +786,26 @@ def iclr_assessment(table, rows, guards_ok):
 # ---------------------------------------------------------------------------
 
 def reuse_fidelity(primary, timing):
-    """Timing-pass digests, MACs and calls equal the retained record on every seed-20260908 cell."""
+    """Timing-pass digests, MACs and calls equal the retained record on every cell of every timed seed."""
     checked, mismatches = 0, []
     for entry in entries_for("primary"):
         pid = entry["id"]
-        stored = primary[(pid, TIMING_SEED)]
-        fresh = timing[pid]
-        if fresh.get("typed_failure") or stored.get("typed_failure"):
-            if bool(fresh.get("typed_failure")) != bool(stored.get("typed_failure")):
-                mismatches.append({"policy": pid, "cell": "typed_failure"})
-            continue
-        for inventory in INVENTORIES:
-            for member, cell in stored["inventories"][inventory].items():
-                f = fresh["inventories"][inventory].get(member)
-                checked += 1
-                same = (f is not None and f["rows_sha256"] == digest(cell["rows"])
-                        and f["schedules_sha256"] == digest(cell.get("schedules"))
-                        and all(f[k] == cell[k] for k in ("linear_macs", "transition_calls", "controller_calls",
-                                                          "candidates")))
-                if not same:
-                    mismatches.append({"policy": pid, "inventory": inventory, "member": member})
+        for seed in TIMING_SEEDS:
+            stored, fresh = primary[(pid, seed)], timing[(pid, seed)]
+            if fresh.get("typed_failure") or stored.get("typed_failure"):
+                if bool(fresh.get("typed_failure")) != bool(stored.get("typed_failure")):
+                    mismatches.append({"policy": pid, "seed": seed, "cell": "typed_failure"})
+                continue
+            for inventory in INVENTORIES:
+                for member, cell in stored["inventories"][inventory].items():
+                    f = fresh["inventories"][inventory].get(member)
+                    checked += 1
+                    same = (f is not None and f["rows_sha256"] == digest(cell["rows"])
+                            and f["schedules_sha256"] == digest(cell.get("schedules"))
+                            and all(f[k] == cell[k] for k in ("linear_macs", "transition_calls", "controller_calls",
+                                                              "candidates")))
+                    if not same:
+                        mismatches.append({"policy": pid, "seed": seed, "inventory": inventory, "member": member})
     return {"cells_checked": checked, "mismatches": mismatches[:20], "mismatch_count": len(mismatches),
             "pass": bool(checked and not mismatches)}
 
@@ -831,7 +852,7 @@ def record_manifest(output):
         paths += [("retained-primary", retained_path(entry["source"], entry["arm"], s)) for s in SEEDS]
     for pair in cross_pairs():
         paths += [("retained-cross-check", retained_path(source, arm, s)) for source, arm in pair for s in SEEDS]
-    paths += [("new-timing", timing_path(output, e["id"])) for e in entries_for("primary")]
+    paths += [("new-timing", timing_path(output, e["id"], s)) for s in TIMING_SEEDS for e in entries_for("primary")]
     paths += [("new-secondary", secondary_path(output, e["id"], s)) for e in entries_for("secondary") for s in SEEDS]
     paths += [("anchors", p) for p in (gb.anchors_path(GATE_B), hb.f77_anchors_path(P105), *secondary_e99_paths(),
                                         f77_store_path(output))]
@@ -851,7 +872,7 @@ def compute_tables(output, plan):
     output = Path(output)
     cache = load_retained()
     primary = {(e["id"], s): cache[(e["source"], e["arm"], s)] for e in entries_for("primary") for s in SEEDS}
-    timing = {e["id"]: read_timing(output, e["id"]) for e in entries_for("primary")}
+    timing = {(e["id"], s): read_timing(output, e["id"], s) for e in entries_for("primary") for s in TIMING_SEEDS}
     secondary = {(e["id"], s): read_secondary(output, e["id"], s) for e in entries_for("secondary") for s in SEEDS}
     fit = read_json(gb.FIT_VERDICTS)["branches"]
     stats = {i: gb.prior_stats(fit, i) for i in INVENTORIES}
@@ -901,7 +922,7 @@ def compute_tables(output, plan):
         "schema": SCHEMA_COMPUTE, "identity": IDENTITY, "frozen_at": plan["frozen_at"], "guards": guards,
         "guards_pass": guards_ok, "policies": [dict(e) for e in catalogue()] + [{"id": PRIOR, "group": "prior",
                                                                                  "source": "gate_b rule", "arm": None}],
-        "excluded": EXCLUDED, "evaluation": gb.evaluation_accounting(*gb.evaluation_set()),
+        "excluded": EXCLUDED, "amendment": AMENDMENT, "evaluation": gb.evaluation_accounting(*gb.evaluation_set()),
         "secondary_mixed_cells": universe_counts, "sets": sets, "iclr_sentence": iclr,
         "compute": {"phases": grouped, "gpu_seconds": sum(b["gpu_seconds"] for b in all_phases.values()),
                     "wall_seconds": sum(b["wall_seconds"] for b in all_phases.values()), "engine_seconds": 0,
@@ -988,7 +1009,7 @@ def findings_md(plan, compute):
     add(f"## Primary set: #109 evaluation split, Gate-B grid ({grid['members']} levels × {len(SEEDS)} seeds)")
     add("")
     add("MACs: linear MACs per candidate rollout to step 225 (predictor + policy calls), retained records, all seeds. "
-        f"Wall: synchronized rollout seconds per state (all candidates batched), uniform timing pass, seed {TIMING_SEED}, "
+        "Wall: synchronized rollout seconds per state (all candidates batched), uniform timing pass over all three seeds, "
         "one process per RTX 5090, warm-up cell discarded. Frontier column: on/off for AUC×MACs (with the bootstrap "
         "frontier share), AUC×wall, top-3×MACs, top-3×wall. Verdict: the strongest dominator (highest AUC among "
         "policies with no more MACs), dominator − policy AUC, δ token, bootstrap frontier share.")
@@ -1029,6 +1050,11 @@ def findings_md(plan, compute):
         + ".")
     add(f"- Hardware: {c['hardware']}.")
     add("")
+    add("## Post-freeze amendment (wall axis only)")
+    add("")
+    for key in ("at", "after", "what", "why", "unchanged", "superseded", "execution"):
+        add(f"- {key}: {AMENDMENT[key]}.")
+    add("")
     add("## Excluded")
     add("")
     for name, why in EXCLUDED.items():
@@ -1044,6 +1070,7 @@ def summary(plan, compute):
 
     return {"schema": SCHEMA_REPORT, "identity": IDENTITY, "frozen_at": plan["frozen_at"],
             "validation_command": VALIDATION_COMMAND, "guards_pass": compute["guards_pass"],
+            "amendment": {k: AMENDMENT[k] for k in ("at", "what")},
             "iclr_sentence": {s: {k: compute["iclr_sentence"][s][k] for k in ("token", "mac_ratio", "wall_ratio",
                                                                                "a_third", "noninferior")}
                               | {"auc_J_minus_CJ": compute["iclr_sentence"][s]["auc_contrast_J_minus_CJ"]["estimate"]}
@@ -1101,12 +1128,15 @@ def frontier_axes(ax, table, combo, title, label_frontier=True):
         lo, hi = p[yblock]["interval"]
         ax.errorbar([x], [p[yblock]["mean"]], yerr=[[p[yblock]["mean"] - lo], [hi - p[yblock]["mean"]]], fmt="none",
                     ecolor=color, alpha=0.35, linewidth=0.8)
+        filled = marker not in ("x", "_", "+")
         ax.scatter([x], [p[yblock]["mean"]], color=color, marker=marker, s=60 if pid in on else 22,
-                   edgecolors="black" if pid in on else "none", linewidths=0.8,
+                   edgecolors=("black" if pid in on else "none") if filled else None,
+                   linewidths=0.8 if filled else 1.4,
                    label=GROUPS[p["group"]] if p["group"] not in seen else None, zorder=3)
         seen.add(p["group"])
         if pid in on and label_frontier:
-            ax.annotate(pid, (x, p[yblock]["mean"]), fontsize=6, xytext=(3, 3), textcoords="offset points")
+            ax.annotate(pid, (x, p[yblock]["mean"]), fontsize=6, xytext=(4, 4 + 9 * on.index(pid)),
+                        textcoords="offset points", arrowprops={"arrowstyle": "-", "linewidth": 0.4})
     pts = sorted((policies[p][xkey] if policies[p][xkey] > 0 else floor, policies[p][yblock]["mean"]) for p in on)
     if pts:
         ax.step([q[0] for q in pts], [q[1] for q in pts], where="post", color="black", linewidth=0.8, zorder=2)

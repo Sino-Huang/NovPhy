@@ -1,0 +1,13 @@
+worker 0 pid 216721 gpu 0 launched 2026-10-14T15:00:58Z
+worker 1 pid 216730 gpu 1 launched 2026-10-14T15:00:58Z
+worker 2 pid 216787 gpu 2 launched 2026-10-14T15:00:58Z
+worker 3 pid 216843 gpu 3 launched 2026-10-14T15:00:58Z
+ 216723       1 00:08       python -u -m scripts.run_engine_truth_frontier --score --workers 4 --worker 0
+ 216779       1 00:08       python -u -m scripts.run_engine_truth_frontier --score --workers 4 --worker 1
+ 216838       1 00:08       python -u -m scripts.run_engine_truth_frontier --score --workers 4 --worker 2
+ 216896       1 00:08       python -u -m scripts.run_engine_truth_frontier --score --workers 4 --worker 3
+# amendment launch (timing seeds 20260909/10) 2026-10-14T15:18:40Z
+ 222087       1 00:03       python -u -m scripts.run_engine_truth_frontier --score --workers 4 --worker 0
+ 222136       1 00:03       python -u -m scripts.run_engine_truth_frontier --score --workers 4 --worker 1
+ 222185       1 00:03       python -u -m scripts.run_engine_truth_frontier --score --workers 4 --worker 2
+ 222234       1 00:03       python -u -m scripts.run_engine_truth_frontier --score --workers 4 --worker 3

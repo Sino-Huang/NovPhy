@@ -1,0 +1,414 @@
+{
+  "compute": {
+    "engine_seconds": 0,
+    "gpu_seconds": 2969.4534046207555,
+    "wall_seconds": 2969.4534046207555
+  },
+  "frontiers": {
+    "primary": {
+      "angle": {
+        "auc_macs": [
+          "F-5-micro",
+          "J-1e-03",
+          "J-3e-03",
+          "prior"
+        ],
+        "auc_wall": [
+          "F-5-micro",
+          "J-1e-03",
+          "prior"
+        ],
+        "top3_macs": [
+          "J-1e-03",
+          "Jcont-1e-02",
+          "prior"
+        ],
+        "top3_wall": [
+          "J-1e-03",
+          "prior"
+        ]
+      },
+      "grid": {
+        "auc_macs": [
+          "F-15-continuous",
+          "C-F-15",
+          "J-1e-01",
+          "prior"
+        ],
+        "auc_wall": [
+          "C-F-15",
+          "prior"
+        ],
+        "top3_macs": [
+          "F-15-continuous",
+          "prior"
+        ],
+        "top3_wall": [
+          "F-15-continuous",
+          "C-F-15",
+          "prior"
+        ]
+      },
+      "offset": {
+        "auc_macs": [
+          "F-5-micro",
+          "F-15-continuous",
+          "J-1e-03",
+          "J-3e-03",
+          "H-15-macro",
+          "prior"
+        ],
+        "auc_wall": [
+          "F-5-micro",
+          "F-15-continuous",
+          "C-F-15",
+          "J-1e-03",
+          "H-15-macro",
+          "prior"
+        ],
+        "top3_macs": [
+          "F-15-continuous",
+          "J-1e-03",
+          "prior"
+        ],
+        "top3_wall": [
+          "F-15-continuous",
+          "C-F-15",
+          "J-1e-03",
+          "prior"
+        ]
+      },
+      "power": {
+        "auc_macs": [
+          "F-15-continuous",
+          "F-15-macro",
+          "J-1e-01",
+          "J-pg-1e-04",
+          "prior"
+        ],
+        "auc_wall": [
+          "F-5-macro",
+          "F-15-micro",
+          "C-F-15",
+          "J-1e-01",
+          "J-pg-1e-04",
+          "TAWM-15",
+          "VLWM-15",
+          "prior"
+        ],
+        "top3_macs": [
+          "F-15-continuous",
+          "C-F-15",
+          "CJ-3e-03",
+          "prior"
+        ],
+        "top3_wall": [
+          "C-F-15",
+          "CJ-3e-03",
+          "VLWM-15",
+          "prior"
+        ]
+      }
+    },
+    "secondary": {
+      "angle": {
+        "auc_macs": [
+          "F-15-continuous",
+          "J-1e-03",
+          "J-3e-02",
+          "prior"
+        ],
+        "auc_wall": [
+          "F-15-continuous",
+          "C-F-15",
+          "J-1e-03",
+          "J-3e-02",
+          "prior"
+        ],
+        "top3_macs": [
+          "F-15-continuous",
+          "J-1e-03",
+          "J-3e-02",
+          "prior"
+        ],
+        "top3_wall": [
+          "F-15-continuous",
+          "C-F-15",
+          "CJ-1e-05",
+          "J-1e-03",
+          "J-3e-02",
+          "prior"
+        ]
+      },
+      "grid": {
+        "auc_macs": [
+          "F-15-continuous",
+          "C-F-15",
+          "J-1e-01",
+          "prior"
+        ],
+        "auc_wall": [
+          "C-F-15",
+          "prior"
+        ],
+        "top3_macs": [
+          "F-15-continuous",
+          "C-F-15",
+          "prior"
+        ],
+        "top3_wall": [
+          "C-F-15",
+          "prior"
+        ]
+      },
+      "offset": {
+        "auc_macs": [
+          "F-15-continuous",
+          "Jcont-1e-02",
+          "H-15-macro",
+          "prior"
+        ],
+        "auc_wall": [
+          "F-15-continuous",
+          "C-F-15",
+          "Jcont-1e-02",
+          "H-15-macro",
+          "VLWM-15",
+          "prior"
+        ],
+        "top3_macs": [
+          "F-15-continuous",
+          "Jcont-1e-02",
+          "prior"
+        ],
+        "top3_wall": [
+          "F-15-continuous",
+          "C-F-15",
+          "Jcont-1e-02",
+          "prior"
+        ]
+      },
+      "power": {
+        "auc_macs": [
+          "F-15-continuous",
+          "CJ-3e-03",
+          "J-1e-03",
+          "J-1e-01",
+          "J-pg-1e-04",
+          "prior"
+        ],
+        "auc_wall": [
+          "F-15-continuous",
+          "C-F-15",
+          "CJ-3e-03",
+          "J-1e-03",
+          "J-1e-01",
+          "J-pg-1e-04",
+          "J-pg-1e-01",
+          "prior"
+        ],
+        "top3_macs": [
+          "F-15-continuous",
+          "CJ-3e-03",
+          "M-dec",
+          "J_dec_diag",
+          "prior"
+        ],
+        "top3_wall": [
+          "C-F-15",
+          "CJ-3e-03",
+          "J-dec-1e-01",
+          "J_dec_diag",
+          "prior"
+        ]
+      }
+    }
+  },
+  "frozen_at": "2026-10-14T15:00:15Z",
+  "guards_pass": true,
+  "iclr_sentence": {
+    "primary": {
+      "a_third": false,
+      "auc_J_minus_CJ": {
+        "clusters": 311,
+        "interval": [
+          4.410915986479695e-05,
+          0.011658878367077734
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.005780125555045179,
+        "units": 933
+      },
+      "mac_ratio": 0.7838993466548925,
+      "noninferior": true,
+      "token": "not_supported_by_this_experiment",
+      "wall_ratio": 16.738340753008462
+    },
+    "secondary": {
+      "a_third": false,
+      "auc_J_minus_CJ": {
+        "clusters": 14,
+        "interval": [
+          -0.004195011337868473,
+          0.05238095238095241
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.021882086167800463,
+        "units": 42
+      },
+      "mac_ratio": 0.7856447430585253,
+      "noninferior": true,
+      "token": "not_supported_by_this_experiment",
+      "wall_ratio": 1.6565381352023583
+    }
+  },
+  "identity": "issue-103-engine-truth-frontier-v1",
+  "schema": "issue_103_report_v1",
+  "validation_command": "python -u -m scripts.run_engine_truth_frontier --validate",
+  "verdicts_grid": {
+    "primary": {
+      "C-F-1": "dominated by C-F-15 (62 dominating; C-F-15 - C-F-1 = 0.1518 [0.1358, 0.1679], supported; bootstrap frontier share 0.00)",
+      "C-F-15": "on the frontier (bootstrap share 1.00)",
+      "C-F-5": "dominated by C-F-15 (33 dominating; C-F-15 - C-F-5 = 0.0924 [0.0843, 0.1007], supported; bootstrap frontier share 0.00)",
+      "CJ-1e-01": "dominated by C-F-15 (21 dominating; C-F-15 - CJ-1e-01 = 0.0862 [0.0768, 0.0954], supported; bootstrap frontier share 0.00)",
+      "CJ-1e-02": "dominated by C-F-15 (23 dominating; C-F-15 - CJ-1e-02 = 0.0715 [0.0632, 0.0799], supported; bootstrap frontier share 0.00)",
+      "CJ-1e-03": "dominated by C-F-15 (36 dominating; C-F-15 - CJ-1e-03 = 0.0901 [0.0787, 0.1017], supported; bootstrap frontier share 0.00)",
+      "CJ-1e-04": "dominated by C-F-15 (39 dominating; C-F-15 - CJ-1e-04 = 0.0834 [0.0729, 0.0941], supported; bootstrap frontier share 0.00)",
+      "CJ-1e-05": "dominated by C-F-15 (19 dominating; C-F-15 - CJ-1e-05 = 0.0576 [0.0486, 0.0668], supported; bootstrap frontier share 0.00)",
+      "CJ-3e-02": "dominated by C-F-15 (23 dominating; C-F-15 - CJ-3e-02 = 0.0935 [0.0842, 0.1031], supported; bootstrap frontier share 0.00)",
+      "CJ-3e-03": "dominated by C-F-15 (37 dominating; C-F-15 - CJ-3e-03 = 0.1017 [0.0920, 0.1114], supported; bootstrap frontier share 0.00)",
+      "CJ-3e-04": "dominated by C-F-15 (30 dominating; C-F-15 - CJ-3e-04 = 0.0719 [0.0612, 0.0827], supported; bootstrap frontier share 0.00)",
+      "D-1": "dominated by C-F-15 (54 dominating; C-F-15 - D-1 = 0.0983 [0.0841, 0.1130], supported; bootstrap frontier share 0.00)",
+      "D-15": "dominated by J-1e-01 (3 dominating; J-1e-01 - D-15 = 0.0081 [0.0052, 0.0110], not_supported_by_this_experiment; bootstrap frontier share 0.00)",
+      "D-5": "dominated by C-F-15 (20 dominating; C-F-15 - D-5 = 0.0456 [0.0356, 0.0556], supported; bootstrap frontier share 0.00)",
+      "F-1-continuous": "dominated by C-F-15 (57 dominating; C-F-15 - F-1-continuous = 0.1062 [0.0915, 0.1215], supported; bootstrap frontier share 0.00)",
+      "F-1-macro": "dominated by C-F-15 (58 dominating; C-F-15 - F-1-macro = 0.1173 [0.1025, 0.1327], supported; bootstrap frontier share 0.00)",
+      "F-1-micro": "dominated by C-F-15 (60 dominating; C-F-15 - F-1-micro = 0.1333 [0.1153, 0.1508], supported; bootstrap frontier share 0.00)",
+      "F-15-continuous": "on the frontier (bootstrap share 1.00)",
+      "F-15-macro": "dominated by F-15-continuous (1 dominating; F-15-continuous - F-15-macro = 0.0178 [0.0121, 0.0236], readiness_or_precision_insufficient; bootstrap frontier share 0.00)",
+      "F-15-micro": "dominated by J-1e-01 (6 dominating; J-1e-01 - F-15-micro = 0.0099 [0.0067, 0.0130], not_supported_by_this_experiment; bootstrap frontier share 0.00)",
+      "F-5-continuous": "dominated by C-F-15 (13 dominating; C-F-15 - F-5-continuous = 0.0348 [0.0259, 0.0439], supported; bootstrap frontier share 0.00)",
+      "F-5-macro": "dominated by C-F-15 (19 dominating; C-F-15 - F-5-macro = 0.0408 [0.0335, 0.0482], supported; bootstrap frontier share 0.00)",
+      "F-5-micro": "dominated by C-F-15 (18 dominating; C-F-15 - F-5-micro = 0.0388 [0.0296, 0.0479], supported; bootstrap frontier share 0.00)",
+      "H-1-continuous": "dominated by C-F-15 (65 dominating; C-F-15 - H-1-continuous = 0.2754 [0.2565, 0.2950], supported; bootstrap frontier share 0.00)",
+      "H-15-macro": "dominated by prior (1 dominating; prior - H-15-macro = 0.3044 [0.2725, 0.3365], supported; bootstrap frontier share 0.00)",
+      "H-5-micro": "dominated by C-F-15 (24 dominating; C-F-15 - H-5-micro = 0.0770 [0.0642, 0.0893], supported; bootstrap frontier share 0.00)",
+      "J-1e-01": "on the frontier (bootstrap share 1.00)",
+      "J-1e-02": "dominated by C-F-15 (22 dominating; C-F-15 - J-1e-02 = 0.0704 [0.0580, 0.0826], supported; bootstrap frontier share 0.00)",
+      "J-1e-03": "dominated by C-F-15 (16 dominating; C-F-15 - J-1e-03 = 0.0491 [0.0387, 0.0595], supported; bootstrap frontier share 0.00)",
+      "J-1e-04": "dominated by C-F-15 (33 dominating; C-F-15 - J-1e-04 = 0.0777 [0.0655, 0.0902], supported; bootstrap frontier share 0.00)",
+      "J-1e-05": "dominated by C-F-15 (34 dominating; C-F-15 - J-1e-05 = 0.0792 [0.0700, 0.0888], supported; bootstrap frontier share 0.00)",
+      "J-3e-02": "dominated by J-1e-01 (8 dominating; J-1e-01 - J-3e-02 = 0.0241 [0.0200, 0.0282], supported; bootstrap frontier share 0.00)",
+      "J-3e-03": "dominated by C-F-15 (16 dominating; C-F-15 - J-3e-03 = 0.0583 [0.0468, 0.0694], supported; bootstrap frontier share 0.00)",
+      "J-3e-04": "dominated by C-F-15 (27 dominating; C-F-15 - J-3e-04 = 0.0705 [0.0588, 0.0820], supported; bootstrap frontier share 0.00)",
+      "J-dec-1e-01": "dominated by J-1e-01 (7 dominating; J-1e-01 - J-dec-1e-01 = 0.0240 [0.0208, 0.0273], supported; bootstrap frontier share 0.00)",
+      "J-dec-1e-02": "dominated by C-F-15 (21 dominating; C-F-15 - J-dec-1e-02 = 0.0773 [0.0669, 0.0875], supported; bootstrap frontier share 0.00)",
+      "J-dec-1e-03": "dominated by C-F-15 (22 dominating; C-F-15 - J-dec-1e-03 = 0.0936 [0.0816, 0.1059], supported; bootstrap frontier share 0.00)",
+      "J-dec-1e-04": "dominated by C-F-15 (26 dominating; C-F-15 - J-dec-1e-04 = 0.1027 [0.0897, 0.1160], supported; bootstrap frontier share 0.00)",
+      "J-pg-1e-01": "dominated by J-1e-01 (3 dominating; J-1e-01 - J-pg-1e-01 = 0.0089 [0.0055, 0.0123], not_supported_by_this_experiment; bootstrap frontier share 0.00)",
+      "J-pg-1e-02": "dominated by J-1e-01 (3 dominating; J-1e-01 - J-pg-1e-02 = 0.0089 [0.0055, 0.0123], not_supported_by_this_experiment; bootstrap frontier share 0.00)",
+      "J-pg-1e-03": "dominated by J-1e-01 (7 dominating; J-1e-01 - J-pg-1e-03 = 0.0171 [0.0128, 0.0213], readiness_or_precision_insufficient; bootstrap frontier share 0.00)",
+      "J-pg-1e-04": "dominated by C-F-15 (2 dominating; C-F-15 - J-pg-1e-04 = 0.0191 [0.0120, 0.0262], readiness_or_precision_insufficient; bootstrap frontier share 0.00)",
+      "J_anti": "dominated by C-F-15 (38 dominating; C-F-15 - J_anti = 0.0833 [0.0719, 0.0950], supported; bootstrap frontier share 0.00)",
+      "J_dec_anti": "dominated by F-15-continuous (1 dominating; F-15-continuous - J_dec_anti = 0.0000 [0.0000, 0.0000], not_supported_by_this_experiment; bootstrap frontier share 0.00)",
+      "J_dec_diag": "dominated by J-1e-01 (15 dominating; J-1e-01 - J_dec_diag = 0.0754 [0.0592, 0.0912], supported; bootstrap frontier share 0.00)",
+      "J_dec_monotone": "dominated by J-1e-01 (8 dominating; J-1e-01 - J_dec_monotone = 0.0241 [0.0208, 0.0274], supported; bootstrap frontier share 0.00)",
+      "J_diag": "dominated by C-F-15 (28 dominating; C-F-15 - J_diag = 0.0708 [0.0599, 0.0817], supported; bootstrap frontier share 0.00)",
+      "J_monotone": "dominated by C-F-15 (36 dominating; C-F-15 - J_monotone = 0.0804 [0.0683, 0.0930], supported; bootstrap frontier share 0.00)",
+      "Jcont-1e-01": "dominated by J-1e-01 (5 dominating; J-1e-01 - Jcont-1e-01 = 0.0126 [0.0095, 0.0158], not_supported_by_this_experiment; bootstrap frontier share 0.00)",
+      "Jcont-1e-02": "dominated by C-F-15 (17 dominating; C-F-15 - Jcont-1e-02 = 0.0858 [0.0737, 0.0979], supported; bootstrap frontier share 0.00)",
+      "Jcont-1e-03": "dominated by C-F-15 (38 dominating; C-F-15 - Jcont-1e-03 = 0.0962 [0.0830, 0.1098], supported; bootstrap frontier share 0.00)",
+      "Jcont-1e-04": "dominated by C-F-15 (42 dominating; C-F-15 - Jcont-1e-04 = 0.0978 [0.0851, 0.1114], supported; bootstrap frontier share 0.00)",
+      "Jcont-1e-05": "dominated by C-F-15 (39 dominating; C-F-15 - Jcont-1e-05 = 0.0957 [0.0836, 0.1082], supported; bootstrap frontier share 0.00)",
+      "Jcont-3e-02": "dominated by C-F-15 (9 dominating; C-F-15 - Jcont-3e-02 = 0.0263 [0.0184, 0.0343], supported; bootstrap frontier share 0.00)",
+      "Jcont-3e-03": "dominated by C-F-15 (31 dominating; C-F-15 - Jcont-3e-03 = 0.0928 [0.0811, 0.1047], supported; bootstrap frontier share 0.00)",
+      "Jcont-3e-04": "dominated by C-F-15 (35 dominating; C-F-15 - Jcont-3e-04 = 0.0976 [0.0852, 0.1104], supported; bootstrap frontier share 0.00)",
+      "M-dec": "dominated by J-1e-01 (7 dominating; J-1e-01 - M-dec = 0.0246 [0.0213, 0.0279], supported; bootstrap frontier share 0.00)",
+      "M-pe": "dominated by C-F-15 (30 dominating; C-F-15 - M-pe = 0.0770 [0.0645, 0.0899], supported; bootstrap frontier share 0.00)",
+      "OL-dec": "dominated by J-1e-01 (6 dominating; J-1e-01 - OL-dec = 0.0209 [0.0177, 0.0243], supported; bootstrap frontier share 0.00)",
+      "OL-pe": "dominated by C-F-15 (40 dominating; C-F-15 - OL-pe = 0.0903 [0.0780, 0.1031], supported; bootstrap frontier share 0.00)",
+      "T-continuous": "dominated by C-F-15 (37 dominating; C-F-15 - T-continuous = 0.0809 [0.0677, 0.0941], supported; bootstrap frontier share 0.00)",
+      "T-macro": "dominated by C-F-15 (56 dominating; C-F-15 - T-macro = 0.1058 [0.0922, 0.1199], supported; bootstrap frontier share 0.00)",
+      "T-micro": "dominated by C-F-15 (32 dominating; C-F-15 - T-micro = 0.0790 [0.0658, 0.0923], supported; bootstrap frontier share 0.00)",
+      "TAWM-1": "dominated by C-F-15 (67 dominating; C-F-15 - TAWM-1 = 0.3246 [0.2958, 0.3542], supported; bootstrap frontier share 0.00)",
+      "TAWM-15": "dominated by C-F-15 (19 dominating; C-F-15 - TAWM-15 = 0.1731 [0.1527, 0.1927], supported; bootstrap frontier share 0.00)",
+      "TAWM-5": "dominated by C-F-15 (42 dominating; C-F-15 - TAWM-5 = 0.1827 [0.1627, 0.2022], supported; bootstrap frontier share 0.00)",
+      "TAWM-adaptive": "dominated by C-F-15 (59 dominating; C-F-15 - TAWM-adaptive = 0.3337 [0.3040, 0.3638], supported; bootstrap frontier share 0.00)",
+      "VLWM-1": "dominated by C-F-15 (69 dominating; C-F-15 - VLWM-1 = 0.3354 [0.3047, 0.3662], supported; bootstrap frontier share 0.00)",
+      "VLWM-15": "dominated by C-F-15 (18 dominating; C-F-15 - VLWM-15 = 0.1412 [0.1256, 0.1564], supported; bootstrap frontier share 0.00)",
+      "VLWM-5": "dominated by C-F-15 (43 dominating; C-F-15 - VLWM-5 = 0.2313 [0.2151, 0.2479], supported; bootstrap frontier share 0.00)",
+      "prior": "on the frontier (bootstrap share 1.00)"
+    },
+    "secondary": {
+      "C-F-1": "dominated by C-F-15 (60 dominating; C-F-15 - C-F-1 = 0.1698 [0.0951, 0.2448], supported; bootstrap frontier share 0.00)",
+      "C-F-15": "on the frontier (bootstrap share 0.69)",
+      "C-F-5": "dominated by C-F-15 (31 dominating; C-F-15 - C-F-5 = 0.0878 [0.0488, 0.1265], supported; bootstrap frontier share 0.00)",
+      "CJ-1e-01": "dominated by C-F-15 (20 dominating; C-F-15 - CJ-1e-01 = 0.0863 [0.0439, 0.1315], supported; bootstrap frontier share 0.00)",
+      "CJ-1e-02": "dominated by C-F-15 (21 dominating; C-F-15 - CJ-1e-02 = 0.0711 [0.0382, 0.1058], supported; bootstrap frontier share 0.00)",
+      "CJ-1e-03": "dominated by C-F-15 (41 dominating; C-F-15 - CJ-1e-03 = 0.0993 [0.0506, 0.1510], supported; bootstrap frontier share 0.00)",
+      "CJ-1e-04": "dominated by C-F-15 (42 dominating; C-F-15 - CJ-1e-04 = 0.0957 [0.0482, 0.1477], supported; bootstrap frontier share 0.00)",
+      "CJ-1e-05": "dominated by C-F-15 (19 dominating; C-F-15 - CJ-1e-05 = 0.0694 [0.0257, 0.1132], supported; bootstrap frontier share 0.00)",
+      "CJ-3e-02": "dominated by C-F-15 (24 dominating; C-F-15 - CJ-3e-02 = 0.0986 [0.0615, 0.1341], supported; bootstrap frontier share 0.00)",
+      "CJ-3e-03": "dominated by C-F-15 (37 dominating; C-F-15 - CJ-3e-03 = 0.1105 [0.0714, 0.1503], supported; bootstrap frontier share 0.00)",
+      "CJ-3e-04": "dominated by C-F-15 (35 dominating; C-F-15 - CJ-3e-04 = 0.0803 [0.0321, 0.1355], supported; bootstrap frontier share 0.00)",
+      "D-1": "dominated by C-F-15 (41 dominating; C-F-15 - D-1 = 0.0933 [0.0337, 0.1599], supported; bootstrap frontier share 0.00)",
+      "D-15": "dominated by J-1e-01 (1 dominating; J-1e-01 - D-15 = 0.0093 [-0.0028, 0.0222], readiness_or_precision_insufficient; bootstrap frontier share 0.04)",
+      "D-5": "dominated by C-F-15 (20 dominating; C-F-15 - D-5 = 0.0510 [0.0057, 0.1007], supported; bootstrap frontier share 0.00)",
+      "F-1-continuous": "dominated by C-F-15 (55 dominating; C-F-15 - F-1-continuous = 0.1124 [0.0410, 0.1897], supported; bootstrap frontier share 0.00)",
+      "F-1-macro": "dominated by C-F-15 (53 dominating; C-F-15 - F-1-macro = 0.1044 [0.0517, 0.1736], supported; bootstrap frontier share 0.00)",
+      "F-1-micro": "dominated by C-F-15 (59 dominating; C-F-15 - F-1-micro = 0.1671 [0.0755, 0.2617], supported; bootstrap frontier share 0.00)",
+      "F-15-continuous": "on the frontier (bootstrap share 0.74)",
+      "F-15-macro": "dominated by F-15-continuous (1 dominating; F-15-continuous - F-15-macro = 0.0030 [-0.0315, 0.0313], readiness_or_precision_insufficient; bootstrap frontier share 0.26)",
+      "F-15-micro": "dominated by J-1e-01 (7 dominating; J-1e-01 - F-15-micro = 0.0171 [0.0010, 0.0347], readiness_or_precision_insufficient; bootstrap frontier share 0.00)",
+      "F-5-continuous": "dominated by C-F-15 (11 dominating; C-F-15 - F-5-continuous = 0.0307 [-0.0109, 0.0797], readiness_or_precision_insufficient; bootstrap frontier share 0.00)",
+      "F-5-macro": "dominated by C-F-15 (9 dominating; C-F-15 - F-5-macro = 0.0264 [-0.0065, 0.0629], readiness_or_precision_insufficient; bootstrap frontier share 0.05)",
+      "F-5-micro": "dominated by C-F-15 (13 dominating; C-F-15 - F-5-micro = 0.0353 [-0.0051, 0.0841], readiness_or_precision_insufficient; bootstrap frontier share 0.00)",
+      "H-1-continuous": "dominated by C-F-15 (62 dominating; C-F-15 - H-1-continuous = 0.2372 [0.1643, 0.3127], supported; bootstrap frontier share 0.00)",
+      "H-15-macro": "dominated by prior (1 dominating; prior - H-15-macro = 0.3171 [0.1723, 0.4636], supported; bootstrap frontier share 0.00)",
+      "H-5-micro": "dominated by C-F-15 (27 dominating; C-F-15 - H-5-micro = 0.0954 [0.0480, 0.1460], supported; bootstrap frontier share 0.00)",
+      "J-1e-01": "on the frontier (bootstrap share 0.75)",
+      "J-1e-02": "dominated by C-F-15 (19 dominating; C-F-15 - J-1e-02 = 0.0665 [0.0133, 0.1244], supported; bootstrap frontier share 0.00)",
+      "J-1e-03": "dominated by C-F-15 (13 dominating; C-F-15 - J-1e-03 = 0.0394 [-0.0020, 0.0863], readiness_or_precision_insufficient; bootstrap frontier share 0.01)",
+      "J-1e-04": "dominated by C-F-15 (30 dominating; C-F-15 - J-1e-04 = 0.0738 [0.0197, 0.1358], supported; bootstrap frontier share 0.00)",
+      "J-1e-05": "dominated by C-F-15 (30 dominating; C-F-15 - J-1e-05 = 0.0735 [0.0317, 0.1231], supported; bootstrap frontier share 0.00)",
+      "J-3e-02": "dominated by J-1e-01 (10 dominating; J-1e-01 - J-3e-02 = 0.0320 [0.0101, 0.0578], supported; bootstrap frontier share 0.00)",
+      "J-3e-03": "dominated by C-F-15 (17 dominating; C-F-15 - J-3e-03 = 0.0778 [0.0272, 0.1338], supported; bootstrap frontier share 0.00)",
+      "J-3e-04": "dominated by C-F-15 (25 dominating; C-F-15 - J-3e-04 = 0.0700 [0.0185, 0.1268], supported; bootstrap frontier share 0.00)",
+      "J-dec-1e-01": "dominated by J-1e-01 (7 dominating; J-1e-01 - J-dec-1e-01 = 0.0267 [0.0140, 0.0394], supported; bootstrap frontier share 0.00)",
+      "J-dec-1e-02": "dominated by C-F-15 (26 dominating; C-F-15 - J-dec-1e-02 = 0.0986 [0.0475, 0.1650], supported; bootstrap frontier share 0.00)",
+      "J-dec-1e-03": "dominated by C-F-15 (20 dominating; C-F-15 - J-dec-1e-03 = 0.0885 [0.0330, 0.1445], supported; bootstrap frontier share 0.00)",
+      "J-dec-1e-04": "dominated by C-F-15 (24 dominating; C-F-15 - J-dec-1e-04 = 0.0986 [0.0480, 0.1550], supported; bootstrap frontier share 0.00)",
+      "J-pg-1e-01": "dominated by J-1e-01 (2 dominating; J-1e-01 - J-pg-1e-01 = 0.0130 [-0.0058, 0.0323], readiness_or_precision_insufficient; bootstrap frontier share 0.08)",
+      "J-pg-1e-02": "dominated by J-1e-01 (2 dominating; J-1e-01 - J-pg-1e-02 = 0.0130 [-0.0058, 0.0323], readiness_or_precision_insufficient; bootstrap frontier share 0.08)",
+      "J-pg-1e-03": "dominated by J-1e-01 (8 dominating; J-1e-01 - J-pg-1e-03 = 0.0242 [0.0031, 0.0472], supported; bootstrap frontier share 0.00)",
+      "J-pg-1e-04": "dominated by C-F-15 (2 dominating; C-F-15 - J-pg-1e-04 = 0.0146 [-0.0180, 0.0519], readiness_or_precision_insufficient; bootstrap frontier share 0.07)",
+      "J_anti": "dominated by C-F-15 (22 dominating; C-F-15 - J_anti = 0.0609 [0.0104, 0.1259], supported; bootstrap frontier share 0.00)",
+      "J_dec_anti": "dominated by J-1e-01 (2 dominating; J-1e-01 - J_dec_anti = 0.0126 [-0.0002, 0.0270], readiness_or_precision_insufficient; bootstrap frontier share 0.00)",
+      "J_dec_diag": "dominated by J-1e-01 (14 dominating; J-1e-01 - J_dec_diag = 0.0601 [-0.0032, 0.1196], readiness_or_precision_insufficient; bootstrap frontier share 0.03)",
+      "J_dec_monotone": "dominated by J-1e-01 (7 dominating; J-1e-01 - J_dec_monotone = 0.0267 [0.0140, 0.0394], supported; bootstrap frontier share 0.00)",
+      "J_diag": "dominated by C-F-15 (24 dominating; C-F-15 - J_diag = 0.0690 [0.0189, 0.1256], supported; bootstrap frontier share 0.00)",
+      "J_monotone": "dominated by C-F-15 (31 dominating; C-F-15 - J_monotone = 0.0770 [0.0218, 0.1401], supported; bootstrap frontier share 0.00)",
+      "Jcont-1e-01": "dominated by J-1e-01 (5 dominating; J-1e-01 - Jcont-1e-01 = 0.0241 [0.0077, 0.0422], supported; bootstrap frontier share 0.00)",
+      "Jcont-1e-02": "dominated by C-F-15 (17 dominating; C-F-15 - Jcont-1e-02 = 0.0941 [0.0367, 0.1580], supported; bootstrap frontier share 0.00)",
+      "Jcont-1e-03": "dominated by C-F-15 (33 dominating; C-F-15 - Jcont-1e-03 = 0.0899 [0.0335, 0.1517], supported; bootstrap frontier share 0.00)",
+      "Jcont-1e-04": "dominated by C-F-15 (42 dominating; C-F-15 - Jcont-1e-04 = 0.1053 [0.0403, 0.1743], supported; bootstrap frontier share 0.00)",
+      "Jcont-1e-05": "dominated by C-F-15 (40 dominating; C-F-15 - Jcont-1e-05 = 0.0989 [0.0426, 0.1615], supported; bootstrap frontier share 0.00)",
+      "Jcont-3e-02": "dominated by C-F-15 (2 dominating; C-F-15 - Jcont-3e-02 = 0.0185 [-0.0198, 0.0619], readiness_or_precision_insufficient; bootstrap frontier share 0.13)",
+      "Jcont-3e-03": "dominated by C-F-15 (33 dominating; C-F-15 - Jcont-3e-03 = 0.1034 [0.0464, 0.1678], supported; bootstrap frontier share 0.00)",
+      "Jcont-3e-04": "dominated by C-F-15 (27 dominating; C-F-15 - Jcont-3e-04 = 0.0838 [0.0304, 0.1411], supported; bootstrap frontier share 0.00)",
+      "M-dec": "dominated by J-1e-01 (9 dominating; J-1e-01 - M-dec = 0.0284 [0.0152, 0.0413], supported; bootstrap frontier share 0.00)",
+      "M-pe": "dominated by C-F-15 (24 dominating; C-F-15 - M-pe = 0.0683 [0.0067, 0.1378], supported; bootstrap frontier share 0.00)",
+      "T-continuous": "dominated by C-F-15 (41 dominating; C-F-15 - T-continuous = 0.0977 [0.0324, 0.1729], supported; bootstrap frontier share 0.00)",
+      "T-macro": "dominated by C-F-15 (44 dominating; C-F-15 - T-macro = 0.0967 [0.0481, 0.1591], supported; bootstrap frontier share 0.00)",
+      "T-micro": "dominated by C-F-15 (42 dominating; C-F-15 - T-micro = 0.1043 [0.0345, 0.1862], supported; bootstrap frontier share 0.00)",
+      "TAWM-1": "dominated by C-F-15 (68 dominating; C-F-15 - TAWM-1 = 0.3837 [0.2717, 0.5014], supported; bootstrap frontier share 0.00)",
+      "TAWM-15": "dominated by C-F-15 (18 dominating; C-F-15 - TAWM-15 = 0.2032 [0.1103, 0.2995], supported; bootstrap frontier share 0.00)",
+      "TAWM-5": "dominated by C-F-15 (41 dominating; C-F-15 - TAWM-5 = 0.2021 [0.1156, 0.2918], supported; bootstrap frontier share 0.00)",
+      "TAWM-adaptive": "dominated by C-F-15 (56 dominating; C-F-15 - TAWM-adaptive = 0.3685 [0.2522, 0.4857], supported; bootstrap frontier share 0.00)",
+      "VLWM-1": "dominated by C-F-15 (65 dominating; C-F-15 - VLWM-1 = 0.3002 [0.1588, 0.4345], supported; bootstrap frontier share 0.00)",
+      "VLWM-15": "dominated by C-F-15 (17 dominating; C-F-15 - VLWM-15 = 0.1663 [0.0917, 0.2454], supported; bootstrap frontier share 0.00)",
+      "VLWM-5": "dominated by C-F-15 (43 dominating; C-F-15 - VLWM-5 = 0.2568 [0.2067, 0.3087], supported; bootstrap frontier share 0.00)",
+      "prior": "on the frontier (bootstrap share 1.00)"
+    }
+  }
+}
