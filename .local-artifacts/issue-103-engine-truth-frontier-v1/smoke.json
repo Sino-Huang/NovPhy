@@ -1,0 +1,650 @@
+{
+  "checks": [
+    {
+      "control": "frontier_mechanics_synthetic",
+      "expected": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        true
+      ],
+      "ok": true,
+      "pareto": [
+        true,
+        true,
+        false,
+        true,
+        false,
+        true
+      ],
+      "shares": [
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "cells": [
+        [
+          "grid",
+          "issue-109-sc-evaluation-type010103-001"
+        ],
+        [
+          "grid",
+          "issue-109-sc-evaluation-type010103-002"
+        ],
+        [
+          "offset",
+          "issue-109-sc-evaluation-type010103-001"
+        ],
+        [
+          "angle",
+          "issue-109-sc-evaluation-type010103-001"
+        ],
+        [
+          "power",
+          "issue-109-sc-evaluation-type010103-001"
+        ]
+      ],
+      "control": "reuse_equality_sample",
+      "ok": true,
+      "policies": 70,
+      "seed": 20260908,
+      "unequal": []
+    },
+    {
+      "control": "secondary_e99_anchor_reparse",
+      "max_abs_difference": 5.364418029785156e-07,
+      "member": "issue-77-n1-001",
+      "members": 15,
+      "members_with_e99": 15,
+      "ok": true
+    },
+    {
+      "control": "secondary_f77_parse_deterministic",
+      "member": "issue-77-n1-001",
+      "ok": true
+    },
+    {
+      "control": "secondary_mechanics",
+      "inventory": "grid",
+      "member": "issue-77-n1-001",
+      "ok": true,
+      "policies": [
+        {
+          "candidates": 16,
+          "policy": "F-15-macro",
+          "rows": 16,
+          "seconds": 0.011908693006262183
+        },
+        {
+          "candidates": 16,
+          "policy": "J-1e-04",
+          "rows": 16,
+          "seconds": 0.28815398714505136
+        },
+        {
+          "candidates": 16,
+          "policy": "CJ-1e-04",
+          "rows": 16,
+          "seconds": 0.015023209853097796
+        },
+        {
+          "candidates": 16,
+          "policy": "J-dec-1e-01",
+          "rows": 16,
+          "seconds": 0.013424438890069723
+        },
+        {
+          "candidates": 16,
+          "policy": "J_diag",
+          "rows": 16,
+          "seconds": 0.18962134490720928
+        },
+        {
+          "candidates": 16,
+          "policy": "H-5-micro",
+          "rows": 16,
+          "seconds": 0.03648463706485927
+        },
+        {
+          "candidates": 16,
+          "policy": "TAWM-15",
+          "rows": 16,
+          "seconds": 0.008367555914446712
+        },
+        {
+          "candidates": 16,
+          "policy": "TAWM-adaptive",
+          "rows": 16,
+          "seconds": 0.06683374987915158
+        }
+      ],
+      "reading": "rollouts and costs only; no verdict or AUC computed"
+    },
+    {
+      "control": "secondary_universe",
+      "members": 15,
+      "mixed_cells": {
+        "angle": 7,
+        "grid": 14,
+        "offset": 9,
+        "power": 8
+      },
+      "ok": true
+    },
+    {
+      "cells_checked": 43008,
+      "control": "cross_source_identity_retained",
+      "mismatch_count": 0,
+      "ok": true
+    }
+  ],
+  "identity": "issue-103-engine-truth-frontier-v1",
+  "ok": true,
+  "projection": {
+    "elapsed_hours_on_4_gpus": 0.5055702845243245,
+    "gpus": 4,
+    "overhead_seconds": 4200.0,
+    "secondary_rollout_seconds": 545.5261687578632,
+    "timing_rollout_seconds": 2534.68592839241,
+    "total_gpu_seconds": 7280.212097150274
+  },
+  "reading": "re-scored retained primary outputs (published before this ticket) on a cell sample; secondary-set anchors and rollout mechanics without verdicts; synthetic frontier checks",
+  "reuse": [
+    {
+      "arm": "F-1-continuous",
+      "equal": true,
+      "policy": "F-1-continuous",
+      "seconds": 1.003511554095894,
+      "source": "101"
+    },
+    {
+      "arm": "F-1-micro",
+      "equal": true,
+      "policy": "F-1-micro",
+      "seconds": 0.961203611921519,
+      "source": "101"
+    },
+    {
+      "arm": "F-1-macro",
+      "equal": true,
+      "policy": "F-1-macro",
+      "seconds": 0.8271734991576523,
+      "source": "101"
+    },
+    {
+      "arm": "F-5-continuous",
+      "equal": true,
+      "policy": "F-5-continuous",
+      "seconds": 0.15287440619431436,
+      "source": "101"
+    },
+    {
+      "arm": "F-5-micro",
+      "equal": true,
+      "policy": "F-5-micro",
+      "seconds": 0.19431363116018474,
+      "source": "101"
+    },
+    {
+      "arm": "F-5-macro",
+      "equal": true,
+      "policy": "F-5-macro",
+      "seconds": 0.16983348689973354,
+      "source": "101"
+    },
+    {
+      "arm": "F-15-continuous",
+      "equal": true,
+      "policy": "F-15-continuous",
+      "seconds": 0.052508935797959566,
+      "source": "101"
+    },
+    {
+      "arm": "F-15-micro",
+      "equal": true,
+      "policy": "F-15-micro",
+      "seconds": 0.06514624506235123,
+      "source": "101"
+    },
+    {
+      "arm": "F-15-macro",
+      "equal": true,
+      "policy": "F-15-macro",
+      "seconds": 0.05789044126868248,
+      "source": "101"
+    },
+    {
+      "arm": "C-F-1",
+      "equal": true,
+      "policy": "C-F-1",
+      "seconds": 0.5706325911451131,
+      "source": "114"
+    },
+    {
+      "arm": "C-F-5",
+      "equal": true,
+      "policy": "C-F-5",
+      "seconds": 0.11800055298954248,
+      "source": "114"
+    },
+    {
+      "arm": "C-F-15",
+      "equal": true,
+      "policy": "C-F-15",
+      "seconds": 0.03956541884690523,
+      "source": "101"
+    },
+    {
+      "arm": "CJ-1e-05",
+      "equal": true,
+      "policy": "CJ-1e-05",
+      "seconds": 0.0780579571146518,
+      "source": "114"
+    },
+    {
+      "arm": "CJ-1e-04",
+      "equal": true,
+      "policy": "CJ-1e-04",
+      "seconds": 0.07350261695683002,
+      "source": "114"
+    },
+    {
+      "arm": "CJ-3e-04",
+      "equal": true,
+      "policy": "CJ-3e-04",
+      "seconds": 0.07301167794503272,
+      "source": "114"
+    },
+    {
+      "arm": "CJ-1e-03",
+      "equal": true,
+      "policy": "CJ-1e-03",
+      "seconds": 0.07262003887444735,
+      "source": "114"
+    },
+    {
+      "arm": "CJ-3e-03",
+      "equal": true,
+      "policy": "CJ-3e-03",
+      "seconds": 0.07333709672093391,
+      "source": "114"
+    },
+    {
+      "arm": "CJ-1e-02",
+      "equal": true,
+      "policy": "CJ-1e-02",
+      "seconds": 0.05407176516018808,
+      "source": "114"
+    },
+    {
+      "arm": "CJ-3e-02",
+      "equal": true,
+      "policy": "CJ-3e-02",
+      "seconds": 0.053128897212445736,
+      "source": "114"
+    },
+    {
+      "arm": "CJ-1e-01",
+      "equal": true,
+      "policy": "CJ-1e-01",
+      "seconds": 0.053518312983214855,
+      "source": "114"
+    },
+    {
+      "arm": "J-pe-1e-05",
+      "equal": true,
+      "policy": "J-1e-05",
+      "seconds": 1.0399012020789087,
+      "source": "101"
+    },
+    {
+      "arm": "J-pe-1e-04",
+      "equal": true,
+      "policy": "J-1e-04",
+      "seconds": 1.4346010750159621,
+      "source": "101"
+    },
+    {
+      "arm": "J-3e-04",
+      "equal": true,
+      "policy": "J-3e-04",
+      "seconds": 0.14638172113336623,
+      "source": "114"
+    },
+    {
+      "arm": "J-pe-1e-03",
+      "equal": true,
+      "policy": "J-1e-03",
+      "seconds": 0.11063909600488842,
+      "source": "101"
+    },
+    {
+      "arm": "J-3e-03",
+      "equal": true,
+      "policy": "J-3e-03",
+      "seconds": 0.11999509483575821,
+      "source": "114"
+    },
+    {
+      "arm": "J-pe-1e-02",
+      "equal": true,
+      "policy": "J-1e-02",
+      "seconds": 0.1666823870036751,
+      "source": "101"
+    },
+    {
+      "arm": "J-3e-02",
+      "equal": true,
+      "policy": "J-3e-02",
+      "seconds": 0.10069235693663359,
+      "source": "114"
+    },
+    {
+      "arm": "J-1e-01",
+      "equal": true,
+      "policy": "J-1e-01",
+      "seconds": 0.06489599985070527,
+      "source": "114"
+    },
+    {
+      "arm": "Jcont-1e-05",
+      "equal": true,
+      "policy": "Jcont-1e-05",
+      "seconds": 0.12830059812404215,
+      "source": "114"
+    },
+    {
+      "arm": "Jcont-1e-04",
+      "equal": true,
+      "policy": "Jcont-1e-04",
+      "seconds": 0.17117289151065052,
+      "source": "114"
+    },
+    {
+      "arm": "Jcont-3e-04",
+      "equal": true,
+      "policy": "Jcont-3e-04",
+      "seconds": 0.20029124128632247,
+      "source": "114"
+    },
+    {
+      "arm": "Jcont-1e-03",
+      "equal": true,
+      "policy": "Jcont-1e-03",
+      "seconds": 0.15715166414156556,
+      "source": "114"
+    },
+    {
+      "arm": "Jcont-3e-03",
+      "equal": true,
+      "policy": "Jcont-3e-03",
+      "seconds": 0.10256905574351549,
+      "source": "114"
+    },
+    {
+      "arm": "Jcont-1e-02",
+      "equal": true,
+      "policy": "Jcont-1e-02",
+      "seconds": 0.11916597792878747,
+      "source": "114"
+    },
+    {
+      "arm": "Jcont-3e-02",
+      "equal": true,
+      "policy": "Jcont-3e-02",
+      "seconds": 0.18608261202462018,
+      "source": "114"
+    },
+    {
+      "arm": "Jcont-1e-01",
+      "equal": true,
+      "policy": "Jcont-1e-01",
+      "seconds": 0.06608242890797555,
+      "source": "114"
+    },
+    {
+      "arm": "T-continuous",
+      "equal": true,
+      "policy": "T-continuous",
+      "seconds": 0.9542845492251217,
+      "source": "114"
+    },
+    {
+      "arm": "T-micro",
+      "equal": true,
+      "policy": "T-micro",
+      "seconds": 1.2762505949940532,
+      "source": "114"
+    },
+    {
+      "arm": "T-macro",
+      "equal": true,
+      "policy": "T-macro",
+      "seconds": 0.7547278958372772,
+      "source": "114"
+    },
+    {
+      "arm": "D-1",
+      "equal": true,
+      "policy": "D-1",
+      "seconds": 1.6028038060758263,
+      "source": "114"
+    },
+    {
+      "arm": "D-5",
+      "equal": true,
+      "policy": "D-5",
+      "seconds": 0.3261166587471962,
+      "source": "114"
+    },
+    {
+      "arm": "D-15",
+      "equal": true,
+      "policy": "D-15",
+      "seconds": 0.08361938199959695,
+      "source": "114"
+    },
+    {
+      "arm": "J-dec-1e-04",
+      "equal": true,
+      "policy": "J-dec-1e-04",
+      "seconds": 0.19488309207372367,
+      "source": "101"
+    },
+    {
+      "arm": "J-dec-1e-03",
+      "equal": true,
+      "policy": "J-dec-1e-03",
+      "seconds": 0.2467879878822714,
+      "source": "101"
+    },
+    {
+      "arm": "J-dec-1e-02",
+      "equal": true,
+      "policy": "J-dec-1e-02",
+      "seconds": 0.35508785396814346,
+      "source": "101"
+    },
+    {
+      "arm": "J-dec-1e-01",
+      "equal": true,
+      "policy": "J-dec-1e-01",
+      "seconds": 0.06475069699808955,
+      "source": "101"
+    },
+    {
+      "arm": "J-pg-1e-04",
+      "equal": true,
+      "policy": "J-pg-1e-04",
+      "seconds": 0.19002453400753438,
+      "source": "101"
+    },
+    {
+      "arm": "J-pg-1e-03",
+      "equal": true,
+      "policy": "J-pg-1e-03",
+      "seconds": 0.07884960994124413,
+      "source": "101"
+    },
+    {
+      "arm": "J-pg-1e-02",
+      "equal": true,
+      "policy": "J-pg-1e-02",
+      "seconds": 0.07099803793244064,
+      "source": "101"
+    },
+    {
+      "arm": "J-pg-1e-01",
+      "equal": true,
+      "policy": "J-pg-1e-01",
+      "seconds": 0.07045340002514422,
+      "source": "101"
+    },
+    {
+      "arm": "M-pe",
+      "equal": true,
+      "policy": "M-pe",
+      "seconds": 1.6051642280071974,
+      "source": "101"
+    },
+    {
+      "arm": "M-dec",
+      "equal": true,
+      "policy": "M-dec",
+      "seconds": 0.0710420950781554,
+      "source": "101"
+    },
+    {
+      "arm": "OL-pe",
+      "equal": true,
+      "policy": "OL-pe",
+      "seconds": 0.7656628142576665,
+      "source": "101"
+    },
+    {
+      "arm": "OL-dec",
+      "equal": true,
+      "policy": "OL-dec",
+      "seconds": 0.060543106170371175,
+      "source": "101"
+    },
+    {
+      "arm": "J_diag",
+      "equal": true,
+      "policy": "J_diag",
+      "seconds": 0.873775549698621,
+      "source": "105"
+    },
+    {
+      "arm": "J_monotone",
+      "equal": true,
+      "policy": "J_monotone",
+      "seconds": 1.603116516256705,
+      "source": "105"
+    },
+    {
+      "arm": "J_anti",
+      "equal": true,
+      "policy": "J_anti",
+      "seconds": 1.0381821857299656,
+      "source": "105"
+    },
+    {
+      "arm": "J_dec_diag",
+      "equal": true,
+      "policy": "J_dec_diag",
+      "seconds": 0.16141488309949636,
+      "source": "105"
+    },
+    {
+      "arm": "J_dec_monotone",
+      "equal": true,
+      "policy": "J_dec_monotone",
+      "seconds": 0.07298169517889619,
+      "source": "105"
+    },
+    {
+      "arm": "J_dec_anti",
+      "equal": true,
+      "policy": "J_dec_anti",
+      "seconds": 0.07227776618674397,
+      "source": "105"
+    },
+    {
+      "arm": "H-1-continuous",
+      "equal": true,
+      "policy": "H-1-continuous",
+      "seconds": 1.1426491511519998,
+      "source": "105"
+    },
+    {
+      "arm": "H-5-micro",
+      "equal": true,
+      "policy": "H-5-micro",
+      "seconds": 0.17822439409792423,
+      "source": "105"
+    },
+    {
+      "arm": "H-15-macro",
+      "equal": true,
+      "policy": "H-15-macro",
+      "seconds": 0.031943348003551364,
+      "source": "105"
+    },
+    {
+      "arm": "TAWM-1",
+      "equal": true,
+      "policy": "TAWM-1",
+      "seconds": 0.5625782026909292,
+      "source": "105"
+    },
+    {
+      "arm": "TAWM-5",
+      "equal": true,
+      "policy": "TAWM-5",
+      "seconds": 0.11438854155130684,
+      "source": "105"
+    },
+    {
+      "arm": "TAWM-15",
+      "equal": true,
+      "policy": "TAWM-15",
+      "seconds": 0.03943555732257664,
+      "source": "105"
+    },
+    {
+      "arm": "VLWM-1",
+      "equal": true,
+      "policy": "VLWM-1",
+      "seconds": 0.5598184561822563,
+      "source": "105"
+    },
+    {
+      "arm": "VLWM-5",
+      "equal": true,
+      "policy": "VLWM-5",
+      "seconds": 0.1146098233293742,
+      "source": "105"
+    },
+    {
+      "arm": "VLWM-15",
+      "equal": true,
+      "policy": "VLWM-15",
+      "seconds": 0.03910777508281171,
+      "source": "105"
+    },
+    {
+      "arm": "TAWM-adaptive",
+      "equal": true,
+      "policy": "TAWM-adaptive",
+      "seconds": 0.31772994063794613,
+      "source": "105"
+    }
+  ],
+  "run_at": "2026-10-14T15:00:01Z",
+  "schema": "issue_103_engine_truth_frontier_smoke_v1",
+  "wall_seconds": 37.65574582805857
+}
