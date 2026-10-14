@@ -1,0 +1,65 @@
+{
+  "checks": [
+    {
+      "control": "hierarchical_capacity_interface_training",
+      "final_loss_finite": true,
+      "hybrid_parameters": 1837690,
+      "level_macs": {
+        "H-1-continuous": 1825594,
+        "H-15-macro": 527842,
+        "H-5-micro": 1299072
+      },
+      "off_diagonal_rejected": 6,
+      "ok": true,
+      "parameters": 1840322,
+      "peak_memory_gb": 10.311321088,
+      "relative_difference": 0.001432232857554865,
+      "shapes_ok": true,
+      "smoke_updates": 12,
+      "smoke_wall_seconds": 18.53994758799672,
+      "timed_seconds_per_update_full_cost": 0.33009577631795156,
+      "width": 202
+    },
+    {
+      "cells": 3,
+      "control": "rollout_paths_and_restrictions",
+      "fixed_and_joint_equal": true,
+      "monotone_rule": true,
+      "ok": true,
+      "restricted_in_set": true
+    },
+    {
+      "control": "external_78_load_parse_rollout",
+      "f77_parse_deterministic": true,
+      "f77_parse_seconds": 0.14446058252360672,
+      "ok": true,
+      "rollouts_finite": true
+    },
+    {
+      "branches": 3,
+      "control": "engine_truth_equals_shot_labels",
+      "ok": true,
+      "seconds": 55.144290463998914
+    },
+    {
+      "J": "J-pe-1e-04",
+      "J_dec": "J-dec-1e-01",
+      "control": "inputs_bound",
+      "gate_b": "pass",
+      "ok": true
+    }
+  ],
+  "identity": "issue-105-hierarchy-baselines-v1",
+  "ok": true,
+  "projection": {
+    "elapsed_hours_on_2_gpus": 2.0378591611923182,
+    "note": "training projected at the full-cost (horizon 225 + ranking) update time: an upper bound",
+    "scoring_gpu_seconds_estimate": 5760.0,
+    "total_gpu_seconds": 14672.585960584693,
+    "training_gpu_seconds_upper": 8912.585960584693
+  },
+  "reading": "fit-split cells, anchors and branches, the #101 policies and the #78 checkpoints; no evaluation-split model output",
+  "run_at": "2026-10-14T11:43:33Z",
+  "schema": "issue_105_hierarchy_baselines_smoke_v1",
+  "wall_seconds": 85.66925196908414
+}
