@@ -1,0 +1,229 @@
+{
+  "c_star": {
+    "arm": "LC",
+    "family": "continuous",
+    "request": "C-F-15"
+  },
+  "c_star_per_seed_grid_auc": {
+    "20260908": {
+      "clusters": 311,
+      "interval": [
+        0.8090866930497156,
+        0.8431429543125686
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.8261728089702365,
+      "units": 311
+    },
+    "20260909": {
+      "clusters": 311,
+      "interval": [
+        0.7127077959553845,
+        0.7535528190994429
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.733401057677585,
+      "units": 311
+    },
+    "20260910": {
+      "clusters": 311,
+      "interval": [
+        0.7687825518532915,
+        0.8120352196035476
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7905409702837356,
+      "units": 311
+    }
+  },
+  "c_star_pooled_grid_auc": {
+    "clusters": 311,
+    "interval": [
+      0.7676081871861615,
+      0.7991644582641367
+    ],
+    "label": "DESCRIPTIVE",
+    "mean": 0.7833716123105191,
+    "units": 933
+  },
+  "cells": {
+    "grid": 933,
+    "grid_levels": 311,
+    "mixed_cells": {
+      "angle": 78,
+      "grid": 311,
+      "offset": 76,
+      "power": 47
+    }
+  },
+  "claim_boundary": "one look at the sealed #109 evaluation split for the frozen #112 v3 unit; grid ranking of 16 fixed candidates per level under the tie-free cost; DESCRIPTIVE intervals; no claim about closed-loop play, other inventories (descriptive) or novelty cells",
+  "compute": {
+    "engine_seconds": 0,
+    "gpu_seconds": 64.3528757209424,
+    "wall_seconds": 64.35287501011044
+  },
+  "contrast_unit_minus_c_star": {
+    "cells": 933,
+    "estimate": {
+      "clusters": 311,
+      "interval": [
+        -0.04423486704435258,
+        -0.03376433989376112
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": -0.038965839448154564,
+      "units": 933
+    },
+    "label": "DESCRIPTIVE (pre-declared)",
+    "members": 311,
+    "token": "not_supported_by_this_experiment"
+  },
+  "controls": {
+    "action_prior_grid_auc": {
+      "clusters": 311,
+      "interval": [
+        0.6964709285890959,
+        0.7442291129288716
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7202981637869096,
+      "units": 933
+    },
+    "unit_minus_action_prior": {
+      "cells": 933,
+      "estimate": {
+        "clusters": 311,
+        "interval": [
+          -0.0007964652799861782,
+          0.0486952168945738
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.02410760907545474,
+        "units": 933
+      },
+      "members": 311,
+      "token": "readiness_or_precision_insufficient"
+    },
+    "wrong_anchor": {
+      "right": {
+        "clusters": 311,
+        "interval": [
+          0.7269181497316545,
+          0.7620354551664841
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.7444057728623645,
+        "units": 933
+      },
+      "right_minus_wrong": {
+        "clusters": 311,
+        "interval": [
+          0.12159542443942563,
+          0.14304212523736234
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.13221767986538885,
+        "units": 933
+      },
+      "stability": {
+        "clusters": 311,
+        "interval": [
+          0.5801614694980352,
+          0.6035414372977218
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.5918365605888657,
+        "units": 933
+      },
+      "token": "supported",
+      "wrong": {
+        "clusters": 311,
+        "interval": [
+          0.5966466885474371,
+          0.627507059056446
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.6121880929969756,
+        "units": 933
+      },
+      "wrong_anchors": 480
+    }
+  },
+  "frozen_at": "2026-10-14T09:36:20Z",
+  "gate_b": "pass",
+  "gate_b_rule": "pass iff the unit's pooled grid AUC >= 0.65 and its lower bound > 0.55, and at most 10% of the unit's grid verdict slots are nonfinite (v1 G4); otherwise fail. Grid only.",
+  "guards": {
+    "G1_isolation": true,
+    "G2_scoring_policy": true,
+    "G3_chronology": true,
+    "G4_checkpoint_binding": true
+  },
+  "identity": "issue-108-gate-b-v1",
+  "per_seed_grid_auc": {
+    "20260908": {
+      "clusters": 311,
+      "interval": [
+        0.6917169151855648,
+        0.7361769460443094
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7140619294960131,
+      "units": 311
+    },
+    "20260909": {
+      "clusters": 311,
+      "interval": [
+        0.7825813133811527,
+        0.819872295443035
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.8010977232842185,
+      "units": 311
+    },
+    "20260910": {
+      "clusters": 311,
+      "interval": [
+        0.69611085591793,
+        0.7404332149629578
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7180576658068619,
+      "units": 311
+    }
+  },
+  "pooled_grid_auc": {
+    "clusters": 311,
+    "interval": [
+      0.7269181497316545,
+      0.7620354551664841
+    ],
+    "label": "DESCRIPTIVE",
+    "mean": 0.7444057728623645,
+    "units": 933
+  },
+  "schema": "issue_108_gate_b_report_v1",
+  "typed_failures": {
+    "capture": [],
+    "checkpoints": {
+      "c_star": {
+        "20260908": null,
+        "20260909": null,
+        "20260910": null
+      },
+      "unit": {
+        "20260908": null,
+        "20260909": null,
+        "20260910": null
+      }
+    },
+    "incomplete_branches": [],
+    "nonfinite_share_unit_grid": 0.0
+  },
+  "unit": {
+    "arm": "LC",
+    "encoder": "E99",
+    "family": "hybrid",
+    "request": "F-15-macro"
+  },
+  "validation_command": "python -u -m scripts.run_gate_b --validate"
+}

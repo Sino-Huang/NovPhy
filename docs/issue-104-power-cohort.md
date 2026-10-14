@@ -202,6 +202,7 @@ Throughput: 12.7 s/branch amortized (single pass, including the cold-start ramp)
   `.local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json`, carries the Gate-B unit and C* checkpoints, three
   usable seeds each, and supersedes the v3 handoff named in this plan's `gate_b` block. The `issue110-fit` normal
   sides named in `fit_merge` are not in it: the recipe fixes the 18-slot E99 encoder.
+- **Gate B (executed):** pass, unit grid AUC 0.7444 [0.7269, 0.7620]; see `docs/issue-108-gate-b.md`.
 
 ## Reproduction
 
