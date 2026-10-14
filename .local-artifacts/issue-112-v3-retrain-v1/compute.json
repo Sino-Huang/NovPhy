@@ -1,0 +1,687 @@
+{
+  "compute": {
+    "engine_seconds": 0,
+    "gpu_seconds": 32423.486124742543,
+    "phases": {
+      "assemble": {
+        "cells": 680,
+        "gpu_seconds": 0.0,
+        "last_at": "2026-10-14T07:17:36Z",
+        "shots": 13919,
+        "wall_seconds": 55.59566643112339
+      },
+      "data-worker0": {
+        "gpu_seconds": 6356.779574163957,
+        "last_at": "2026-10-14T07:15:33Z",
+        "shots": 3480,
+        "wall_seconds": 6356.779574163957
+      },
+      "data-worker1": {
+        "gpu_seconds": 6372.150733072078,
+        "last_at": "2026-10-14T07:15:49Z",
+        "shots": 3480,
+        "wall_seconds": 6372.150733072078
+      },
+      "data-worker2": {
+        "gpu_seconds": 6327.0991205321625,
+        "last_at": "2026-10-14T07:15:04Z",
+        "shots": 3480,
+        "wall_seconds": 6327.0991205321625
+      },
+      "data-worker3": {
+        "gpu_seconds": 6412.040789455175,
+        "last_at": "2026-10-14T07:16:28Z",
+        "shots": 3479,
+        "wall_seconds": 6412.040789455175
+      },
+      "train-continuous-group0": {
+        "gpu_seconds": 984.8691363630351,
+        "last_at": "2026-10-14T07:34:22Z",
+        "wall_seconds": 985.8310292179231
+      },
+      "train-continuous-group1": {
+        "gpu_seconds": 1044.1844274359755,
+        "last_at": "2026-10-14T07:56:59Z",
+        "wall_seconds": 1044.3384620440193
+      },
+      "train-continuous-group2": {
+        "gpu_seconds": 1043.799301308114,
+        "last_at": "2026-10-14T07:57:09Z",
+        "wall_seconds": 1043.925650070887
+      },
+      "train-hybrid-group0": {
+        "gpu_seconds": 1290.2939926690888,
+        "last_at": "2026-10-14T07:39:35Z",
+        "wall_seconds": 1291.2726213780697
+      },
+      "train-hybrid-group1": {
+        "gpu_seconds": 1299.884319175966,
+        "last_at": "2026-10-14T07:39:44Z",
+        "wall_seconds": 1300.7584764759522
+      },
+      "train-hybrid-group2": {
+        "gpu_seconds": 1292.3847305669915,
+        "last_at": "2026-10-14T07:39:37Z",
+        "wall_seconds": 1293.2813624120317
+      }
+    },
+    "wall_seconds": 32483.07348525338
+  },
+  "data": {
+    "G1": true,
+    "branches": 13920,
+    "levels": 480,
+    "long_windows": 69595,
+    "positions": 3904309,
+    "ranking_cells": {
+      "angle": 314,
+      "grid": 366
+    },
+    "ranking_levels": 425,
+    "shots": 13919,
+    "training_data_sha256": "sha256:5fd69f23a6ce3260c36bd16d9efa46ed3fe35a1078b8dd56a67340d9022e2ba3",
+    "typed_failures_excluded": 1,
+    "v3_reference": {
+      "long_windows": 3725,
+      "ranking_cells": 27,
+      "shots": 745,
+      "windows": 11780
+    },
+    "windows": 220286
+  },
+  "frozen_at": "2026-10-14T05:29:10Z",
+  "guards": {
+    "G1_isolation": true,
+    "G2_stability": true,
+    "G3_end_state": {
+      "continuous/20260908": true,
+      "continuous/20260909": true,
+      "continuous/20260910": true,
+      "hybrid/20260908": true,
+      "hybrid/20260909": true,
+      "hybrid/20260910": true
+    }
+  },
+  "handoff": {
+    "rule": "Gate-B handoff ready (supported) iff G1 holds and the Gate-B unit and C* each keep at least one usable seed; otherwise readiness_or_precision_insufficient",
+    "token": "supported"
+  },
+  "identity": "issue-112-v3-retrain-v1",
+  "members": [
+    {
+      "complete": true,
+      "end_state": {
+        "excursion": false,
+        "first_spike_norm": null,
+        "first_spike_request": null,
+        "first_spike_update": null,
+        "ratios": {
+          "F-1-continuous": 1.169473814025903,
+          "F-1-macro": 0.9083106404749821,
+          "F-1-micro": 1.024442467093566,
+          "F-15-continuous": 1.1536444050256403,
+          "F-15-macro": 1.1284692996572685,
+          "F-15-micro": 0.983865059394021,
+          "F-5-continuous": 1.1599389261068414,
+          "F-5-macro": 0.9221978887709122,
+          "F-5-micro": 1.0483743459140482
+        },
+        "requests_elevated": [],
+        "spike_requests": []
+      },
+      "family": "hybrid",
+      "final_trace": {
+        "grad_norm": [
+          1.487991452217102
+        ],
+        "local": [
+          0.1286488026380539
+        ],
+        "long": [
+          0.00898117758333683
+        ],
+        "loss": [
+          0.17514364421367645
+        ],
+        "rank": [
+          0.3751365542411804
+        ]
+      },
+      "gpu_seconds": 1290.2939926690888,
+      "index": 0,
+      "logged_updates": 9000,
+      "max_pre_clip_norm": 424130.25,
+      "max_pre_clip_norm_update": 7507,
+      "median_local_last_100_per_request": {
+        "F-1-continuous": 0.005206559551879764,
+        "F-1-macro": 0.14033611118793488,
+        "F-1-micro": 0.010633178986608982,
+        "F-15-continuous": 0.0049468157812952995,
+        "F-15-macro": 0.10611728206276894,
+        "F-15-micro": 0.01118833338841796,
+        "F-5-continuous": 0.004923959029838443,
+        "F-5-macro": 0.12991009652614594,
+        "F-5-micro": 0.011165488976985216
+      },
+      "peak_memory_gb": 9.863439872,
+      "pool_sizes": {
+        "cell": 680,
+        "long": 69595,
+        "window": 220286
+      },
+      "retired_at": null,
+      "seed": 20260908,
+      "sha256": "sha256:252ee2a7737cdf4979ecb9039a4ed8762fd06b58fcef13a344e1752beff058fb",
+      "skipped": 0,
+      "spike_updates_after_500": [
+        7508
+      ],
+      "typed_failure": null,
+      "updates_above_spike_norm": {
+        "F-1-continuous": 39,
+        "F-1-macro": 32,
+        "F-1-micro": 33,
+        "F-15-continuous": 0,
+        "F-15-macro": 0,
+        "F-15-micro": 0,
+        "F-5-continuous": 0,
+        "F-5-macro": 0,
+        "F-5-micro": 0
+      },
+      "usable": true
+    },
+    {
+      "complete": true,
+      "end_state": {
+        "excursion": false,
+        "first_spike_norm": null,
+        "first_spike_request": null,
+        "first_spike_update": null,
+        "ratios": {
+          "F-1-continuous": 1.9790408395459442,
+          "F-1-macro": 1.1028788663103009,
+          "F-1-micro": 1.4099305733040655,
+          "F-15-continuous": 1.1998283064203676,
+          "F-15-macro": 1.142454084987688,
+          "F-15-micro": 1.2052332060850526,
+          "F-5-continuous": 1.2375168747724064,
+          "F-5-macro": 0.7682881574276762,
+          "F-5-micro": 1.526146418780741
+        },
+        "requests_elevated": [],
+        "spike_requests": []
+      },
+      "family": "hybrid",
+      "final_trace": {
+        "grad_norm": [
+          1.7911781072616577
+        ],
+        "local": [
+          0.15498743951320648
+        ],
+        "long": [
+          0.007634564768522978
+        ],
+        "loss": [
+          0.1976502239704132
+        ],
+        "rank": [
+          0.35028213262557983
+        ]
+      },
+      "gpu_seconds": 1299.884319175966,
+      "index": 1,
+      "logged_updates": 9000,
+      "max_pre_clip_norm": 4006.68798828125,
+      "max_pre_clip_norm_update": 108,
+      "median_local_last_100_per_request": {
+        "F-1-continuous": 0.0056920337956398726,
+        "F-1-macro": 0.14283090829849243,
+        "F-1-micro": 0.011154841631650925,
+        "F-15-continuous": 0.005401239963248372,
+        "F-15-macro": 0.10662324354052544,
+        "F-15-micro": 0.011023375205695629,
+        "F-5-continuous": 0.0055254194885492325,
+        "F-5-macro": 0.1329248771071434,
+        "F-5-micro": 0.011043203994631767
+      },
+      "peak_memory_gb": 9.863439872,
+      "pool_sizes": {
+        "cell": 680,
+        "long": 69595,
+        "window": 220286
+      },
+      "retired_at": null,
+      "seed": 20260909,
+      "sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5",
+      "skipped": 0,
+      "spike_updates_after_500": [],
+      "typed_failure": null,
+      "updates_above_spike_norm": {
+        "F-1-continuous": 40,
+        "F-1-macro": 34,
+        "F-1-micro": 34,
+        "F-15-continuous": 0,
+        "F-15-macro": 0,
+        "F-15-micro": 0,
+        "F-5-continuous": 0,
+        "F-5-macro": 0,
+        "F-5-micro": 0
+      },
+      "usable": true
+    },
+    {
+      "complete": true,
+      "end_state": {
+        "excursion": false,
+        "first_spike_norm": null,
+        "first_spike_request": null,
+        "first_spike_update": null,
+        "ratios": {
+          "F-1-continuous": 1.8133622582934594,
+          "F-1-macro": 0.9285216730007894,
+          "F-1-micro": 1.3236175329921023,
+          "F-15-continuous": 1.185078687580378,
+          "F-15-macro": 1.1482906756990217,
+          "F-15-micro": 1.0155534676528457,
+          "F-5-continuous": 1.513550190943808,
+          "F-5-macro": 0.9986255191364434,
+          "F-5-micro": 0.9120102080525845
+        },
+        "requests_elevated": [],
+        "spike_requests": []
+      },
+      "family": "hybrid",
+      "final_trace": {
+        "grad_norm": [
+          3.241488218307495
+        ],
+        "local": [
+          0.12256747484207153
+        ],
+        "long": [
+          0.009043470956385136
+        ],
+        "loss": [
+          0.19462080299854279
+        ],
+        "rank": [
+          0.6300985813140869
+        ]
+      },
+      "gpu_seconds": 1292.3847305669915,
+      "index": 2,
+      "logged_updates": 9000,
+      "max_pre_clip_norm": 4324.20263671875,
+      "max_pre_clip_norm_update": 83,
+      "median_local_last_100_per_request": {
+        "F-1-continuous": 0.004697916330769658,
+        "F-1-macro": 0.14578816294670105,
+        "F-1-micro": 0.01022164337337017,
+        "F-15-continuous": 0.0049562761560082436,
+        "F-15-macro": 0.10605917125940323,
+        "F-15-micro": 0.010567243210971355,
+        "F-5-continuous": 0.00494972406886518,
+        "F-5-macro": 0.13253653049468994,
+        "F-5-micro": 0.010699480772018433
+      },
+      "peak_memory_gb": 9.863439872,
+      "pool_sizes": {
+        "cell": 680,
+        "long": 69595,
+        "window": 220286
+      },
+      "retired_at": null,
+      "seed": 20260910,
+      "sha256": "sha256:6d8bbf719bef9525eb705a530118be83ee35e0424a64cc44261f4d5b7fc5148f",
+      "skipped": 0,
+      "spike_updates_after_500": [],
+      "typed_failure": null,
+      "updates_above_spike_norm": {
+        "F-1-continuous": 39,
+        "F-1-macro": 35,
+        "F-1-micro": 34,
+        "F-15-continuous": 0,
+        "F-15-macro": 0,
+        "F-15-micro": 0,
+        "F-5-continuous": 0,
+        "F-5-macro": 0,
+        "F-5-micro": 0
+      },
+      "usable": true
+    },
+    {
+      "complete": true,
+      "end_state": {
+        "excursion": false,
+        "first_spike_norm": 670317.9375,
+        "first_spike_request": "C-F-1",
+        "first_spike_update": 8541,
+        "ratios": {
+          "C-F-1": 0.7205923713673885,
+          "C-F-15": 0.7874124170536431,
+          "C-F-5": 0.532598200198787
+        },
+        "requests_elevated": [],
+        "spike_requests": [
+          "C-F-1",
+          "C-F-5"
+        ]
+      },
+      "family": "continuous",
+      "final_trace": {
+        "grad_norm": [
+          1.2109163999557495
+        ],
+        "local": [
+          0.00550847128033638
+        ],
+        "long": [
+          0.00550865987315774
+        ],
+        "loss": [
+          0.042092397809028625
+        ],
+        "rank": [
+          0.31075266003608704
+        ]
+      },
+      "gpu_seconds": 984.8691363630351,
+      "index": 0,
+      "logged_updates": 9000,
+      "max_pre_clip_norm": 4380241408.0,
+      "max_pre_clip_norm_update": 8041,
+      "median_local_last_100_per_request": {
+        "C-F-1": 0.005048773251473904,
+        "C-F-15": 0.004692490911111236,
+        "C-F-5": 0.005277093732729554
+      },
+      "peak_memory_gb": 4.746207744,
+      "pool_sizes": {
+        "cell": 680,
+        "long": 69595,
+        "window": 220286
+      },
+      "retired_at": null,
+      "seed": 20260908,
+      "sha256": "sha256:ab9f2fe73450e04d865b53231a5cc6522ce96c5267254f11074c7993d99f308b",
+      "skipped": 0,
+      "spike_updates_after_500": [
+        2748,
+        2756,
+        2757,
+        6278,
+        6279,
+        6283,
+        6284,
+        6286,
+        6287,
+        6288,
+        6958,
+        6959,
+        6960,
+        7655,
+        7656,
+        7661,
+        7664,
+        7665,
+        7669,
+        7670,
+        7671,
+        7672,
+        7673,
+        7674,
+        7678,
+        7679,
+        7680,
+        7681,
+        7682,
+        7687,
+        7688,
+        7689,
+        7690,
+        7691,
+        7692,
+        7697,
+        7698,
+        7699,
+        7700,
+        7701,
+        7705,
+        7706,
+        7708,
+        7710,
+        7718,
+        7719,
+        7723,
+        7724,
+        7725,
+        7726,
+        7727,
+        7728,
+        7732,
+        7733,
+        7734,
+        7735,
+        7736,
+        7737,
+        7741,
+        7753,
+        7755,
+        7759,
+        7998,
+        8002,
+        8004,
+        8005,
+        8007,
+        8011,
+        8012,
+        8024,
+        8025,
+        8029,
+        8030,
+        8031,
+        8032,
+        8033,
+        8034,
+        8035,
+        8037,
+        8038,
+        8039,
+        8040,
+        8041,
+        8042,
+        8043,
+        8056,
+        8057,
+        8058,
+        8059,
+        8060,
+        8061,
+        8065,
+        8066,
+        8067,
+        8068,
+        8069,
+        8070,
+        8074,
+        8075,
+        8076,
+        8078,
+        8542,
+        8543,
+        8544,
+        8545,
+        8546,
+        8547,
+        8551,
+        8552
+      ],
+      "typed_failure": null,
+      "updates_above_spike_norm": {
+        "C-F-1": 135,
+        "C-F-15": 2,
+        "C-F-5": 53
+      },
+      "usable": true
+    },
+    {
+      "complete": true,
+      "end_state": {
+        "excursion": false,
+        "first_spike_norm": null,
+        "first_spike_request": null,
+        "first_spike_update": null,
+        "ratios": {
+          "C-F-1": 1.1496450552632147,
+          "C-F-15": 1.1825725885686138,
+          "C-F-5": 0.9151117933990282
+        },
+        "requests_elevated": [],
+        "spike_requests": []
+      },
+      "family": "continuous",
+      "final_trace": {
+        "grad_norm": [
+          4.165910720825195
+        ],
+        "local": [
+          0.006697655655443668
+        ],
+        "long": [
+          0.012659266591072083
+        ],
+        "loss": [
+          0.05039161443710327
+        ],
+        "rank": [
+          0.31034693121910095
+        ]
+      },
+      "gpu_seconds": 1044.1844274359755,
+      "index": 1,
+      "logged_updates": 9000,
+      "max_pre_clip_norm": 4577.85400390625,
+      "max_pre_clip_norm_update": 63,
+      "median_local_last_100_per_request": {
+        "C-F-1": 0.005144323455169797,
+        "C-F-15": 0.004569563781842589,
+        "C-F-5": 0.005087318131700158
+      },
+      "peak_memory_gb": 9.863439872,
+      "pool_sizes": {
+        "cell": 680,
+        "long": 69595,
+        "window": 220286
+      },
+      "retired_at": null,
+      "seed": 20260909,
+      "sha256": "sha256:3d22eb5ef167fb059fef23bb8ff64bab0b97f8c0e97146c90f8911dba32db62a",
+      "skipped": 0,
+      "spike_updates_after_500": [],
+      "typed_failure": null,
+      "updates_above_spike_norm": {
+        "C-F-1": 92,
+        "C-F-15": 0,
+        "C-F-5": 0
+      },
+      "usable": true
+    },
+    {
+      "complete": true,
+      "end_state": {
+        "excursion": false,
+        "first_spike_norm": null,
+        "first_spike_request": null,
+        "first_spike_update": null,
+        "ratios": {
+          "C-F-1": 1.4747529964732087,
+          "C-F-15": 0.9189019632542187,
+          "C-F-5": 0.8883417122740934
+        },
+        "requests_elevated": [],
+        "spike_requests": []
+      },
+      "family": "continuous",
+      "final_trace": {
+        "grad_norm": [
+          2.4544196128845215
+        ],
+        "local": [
+          0.004511146806180477
+        ],
+        "long": [
+          0.006152649875730276
+        ],
+        "loss": [
+          0.04144642502069473
+        ],
+        "rank": [
+          0.30782628059387207
+        ]
+      },
+      "gpu_seconds": 1043.799301308114,
+      "index": 2,
+      "logged_updates": 9000,
+      "max_pre_clip_norm": 5729499.5,
+      "max_pre_clip_norm_update": 4971,
+      "median_local_last_100_per_request": {
+        "C-F-1": 0.005292246118187904,
+        "C-F-15": 0.0046853176318109035,
+        "C-F-5": 0.004539463669061661
+      },
+      "peak_memory_gb": 9.863439872,
+      "pool_sizes": {
+        "cell": 680,
+        "long": 69595,
+        "window": 220286
+      },
+      "retired_at": null,
+      "seed": 20260910,
+      "sha256": "sha256:007b1380f6dd3c0482528b96f2834ed17d6d78ab762ece62574ffd7887981143",
+      "skipped": 0,
+      "spike_updates_after_500": [
+        1936,
+        4969,
+        4970,
+        4971,
+        4972,
+        4973
+      ],
+      "typed_failure": null,
+      "updates_above_spike_norm": {
+        "C-F-1": 86,
+        "C-F-15": 0,
+        "C-F-5": 2
+      },
+      "usable": true
+    }
+  ],
+  "schema": "issue_112_v3_retrain_compute_v1",
+  "units": {
+    "c_star": {
+      "arm": "LC",
+      "family": "continuous",
+      "request": "C-F-15",
+      "source": "v3 compute.json baseline_contrast.c_star (the largest-S continuous unit)"
+    },
+    "gate_b": {
+      "arm": "LC",
+      "encoder": "E99",
+      "family": "hybrid",
+      "request": "F-15-macro"
+    }
+  },
+  "usable_seeds": {
+    "continuous": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "hybrid": [
+      20260908,
+      20260909,
+      20260910
+    ]
+  }
+}

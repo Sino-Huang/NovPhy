@@ -1,0 +1,23 @@
+/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/site-packages/torch/_inductor/compile_fx.py:321: UserWarning: TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
+  warnings.warn(
+[issue-112-dynamics] LC/hybrid/group0 update 12/12: horizon 225, mean loss 3480.226318359375, retired 0; 40s; eta 0s
+[issue-112-dynamics] LC/hybrid/group0 update 12/12: horizon 225, mean loss 3480.226318359375, retired 0; 2s; eta 0s
+/mnt/array/sukaih/Project/NovPhy/scripts/run_decision_dynamics_retrain.py:540: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:822.)
+  return max(float((first.params[k] - second.params[k]).abs().max()) for k in first.params)
+[issue-112-dynamics] LC/continuous/group0 update 12/12: horizon 225, mean loss 3439.44287109375, retired 0; 45s; eta 0s
+[issue-112-dynamics] LC/continuous/group0 update 12/12: horizon 225, mean loss 3439.44287109375, retired 0; 2s; eta 0s
+[issue-112-dynamics] LC/hybrid/group0 update 21/21: horizon 225, mean loss 3138.268310546875, retired 0; 162s; eta 0s
+[issue-112-dynamics] LC/continuous/group0 update 21/21: horizon 225, mean loss 2474.981201171875, retired 0; 47s; eta 0s
+[issue-112-retrain] smoke PASSED; projected data 1.32 h wall, training 4.90 GPU h (upper)
+[issue-112-retrain]   indexed_windows_equal_v3_training_data: True
+[issue-112-retrain]   hybrid_batches_equal_v3: True
+[issue-112-retrain]   hybrid_train_group_equals_v3: True
+[issue-112-retrain]   continuous_batches_equal_v3: True
+[issue-112-retrain]   continuous_train_group_equals_v3: True
+[issue-112-retrain]   new_shots_cover_positions: True
+[issue-112-retrain]   executed_action_equals_inventory_action: True
+[issue-112-retrain]   anchor_parse_deterministic: True
+[issue-112-retrain]   anchor_equals_batched_frame0_carrier: True
+[issue-112-retrain]   new_windows_built: True
+[issue-112-retrain]   fit_stream_isolation: True

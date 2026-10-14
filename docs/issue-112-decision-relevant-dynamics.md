@@ -8,6 +8,7 @@ Parent: #108. Shared rules of #85 apply; #111 scoring contract adopted. Prior di
 | v1 (frozen 2026-09-27T13:08:12Z, before training and scoring; recipe frozen by selection 21:22:45Z, before any held-out record) | `scripts/run_decision_relevant_dynamics.py`, `world_model/training/decision_dynamics.py` | `.local-artifacts/issue-112-decision-relevant-dynamics-v1/` |
 | v2 controls (frozen 2026-09-27T21:36:19Z, **after** every v1 outcome) | `scripts/run_decision_dynamics_controls.py` | `.local-artifacts/issue-112-controls-v2/` |
 | v3 stable recipe (frozen 2026-09-28T01:18:40Z, after every v1/v2 outcome; LOLO only; **the Gate-B recipe**) | `scripts/run_decision_dynamics_versions.py --version 3`, `world_model/training/stable_decision_dynamics.py` | `.local-artifacts/issue-112-decision-dynamics-v3/` |
+| v3 retrain on the #104 fit split (frozen 2026-10-14T05:29:10Z, before data and training; **the Gate-B checkpoints**) | `scripts/run_decision_dynamics_retrain.py` | `.local-artifacts/issue-112-v3-retrain-v1/` |
 
 Validation (all exit 0, `conda activate novphy && source env.sh`):
 
@@ -15,7 +16,8 @@ Validation (all exit 0, `conda activate novphy && source env.sh`):
 python -u -m scripts.run_decision_relevant_dynamics --validate
 python -u -m scripts.run_decision_dynamics_controls --validate   # also runs the v1 --validate
 python -u -m scripts.run_decision_dynamics_versions --version 3 --validate
-pytest tests/test_issue_112_decision_dynamics.py tests/test_issue_112_stable_dynamics.py
+python -u -m scripts.run_decision_dynamics_retrain --validate
+pytest tests/test_issue_112_decision_dynamics.py tests/test_issue_112_stable_dynamics.py tests/test_issue_112_retrain.py
 ```
 
 Zero engine seconds. Every scoring phase and `--validate` runs under `deterministic_scoring()` in a process that did not
@@ -191,6 +193,67 @@ version whose G2 passed) is part of the v3 plan.
   [+0.028, +0.124]. The frozen v4 trigger did not fire, so v3
   stays the Gate-B recipe. A separate stability risk: one of 39 joint members retrained in #117 ended training inside
   a finite gradient excursion, and it was a fold-'all' member.
+- **Superseded for Gate B by the retrain (§7):** the checkpoints above were trained on the 12 #77 N1 lineages; Gate B
+  scores the §7 checkpoints of the same recipe and unit.
+
+## 7. v3 retrain on the #104 fit split (the Gate-B checkpoints)
+
+Runner `scripts/run_decision_dynamics_retrain.py`; plan frozen 2026-10-14T05:29:10Z (commit b1cd71fe) after a passed
+smoke, before any data build or training. Nothing is selected or scored; no evaluation-split, policy-split or #110
+capture is read. Findings: `.local-artifacts/issue-112-v3-retrain-v1/findings.md`.
+
+- **Recipe:** v3 arm LC, unchanged (losses, weights, curriculum, ramp, truncation 45, skip rule, optimizer, 9000
+  updates, initialization, seeds, E99 encoder). The runner loads a private copy of the v1 implementation with the v3
+  spec taken from `run_decision_dynamics_versions.implementation(3)`; `train_group` is the v1 function.
+- **Units:** the Gate-B unit LC : F-15-macro (hybrid) and the pre-declared baseline C* = LC : C-F-15 (continuous;
+  v3 `baseline_contrast`), fold 'all', seeds 20260908–10, one member per group on one RTX 5090.
+- **Data:** the #109 fit split as captured by the #104 campaign (stream `issue109-fit`): 480 levels, 13 919 complete
+  branches (1 typed failure, `shot_progress_stall`, excluded). E99 carriers and #99 labels of every position
+  0..min(last, 285); anchors are E99 batch-1 parses of each level's decision frame (shot frame 0 of its first complete
+  candidate). Ranking cells are the mixed grid / angle cells with the campaign's engine verdicts.
+- **Excluded:** `issue109-policy` (controller training split); `issue110-fit`, whose normal sides the #104 plan pools
+  with #109 fit, because the recipe fixes E99 and its 18-slot contract v1 covers the #110 normal cells on only 25 of
+  40 templates (#110); the old #77 N1 fit lineages.
+- **Smoke (before the freeze):** windows stored as position indices gather exactly the 11 780 materialized v3 windows;
+  window, long and ranking batches equal the v3 `TrainData` draws; 12 updates of `train_group` on both give
+  parameter delta 0 for both families. Anchors equal the batched frame-0 carriers within 3.1e-5.
+
+| | retrain | v3 |
+| --- | --- | --- |
+| levels / shots | 480 / 13 919 | 12 / 745 |
+| windows / long windows | 220 286 / 69 595 | 11 780 / 3 725 |
+| ranking cells | 680 (grid 366, angle 314) over 425 levels | 27 |
+
+The recipe keeps the #77 budget of 9000 updates. Each window is therefore drawn about 2.6 times on average (v3: 49), and
+each ranking cell enters the ranking loss about 24 times (v3: 593). Changing the budget would be a new version.
+
+| member | complete / skipped | updates with pre-clip norm > 1e3 (after update 500) | end-state ratio (max over requests) | usable |
+| --- | --- | --- | --- | --- |
+| hybrid 20260908 | yes / 0 | 104 (1: update 7508, 4.2e5) | 1.17 | yes |
+| hybrid 20260909 | yes / 0 | 108 (0) | 1.98 | yes |
+| hybrid 20260910 | yes / 0 | 108 (0) | 1.81 | yes |
+| continuous 20260908 | yes / 0 | 190 (109: updates 2748–8552, up to 4.4e9 at 8042) | 0.79 | yes |
+| continuous 20260909 | yes / 0 | 92 (0) | 1.18 | yes |
+| continuous 20260910 | yes / 0 | 88 (6: updates 1936–4973) | 1.47 | yes |
+
+- **G1** (fit-stream branches of fit-roster levels only): pass. **G2** (no retirement, at most 45 skips): pass, 0
+  skipped updates. **G3** (the #117 end-state rule, declared before training): no member ends in an excursion.
+- Nearly all large pre-clip norms fall in the first 500 updates, on Δ = 1, and are clipped. C* seed 20260908 went
+  through a finite excursion on Δ = 1 and Δ = 5: 39 updates in 7998–8078 (up to 4.4e9 at 8042) and 8 in 8542–8552.
+  It recovered: its last updates sit at 0.79× its reference loss, so it is usable under the pre-declared rule. The
+  Gate-B unit's members show no late excursion (one isolated spike, 4.2e5 at update 7508 of seed 20260908).
+- **Handoff:** `.local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json`, token `supported`; it supersedes the v3
+  handoff. All three seeds are usable for the unit and for C*. Load them with
+  `scripts.run_decision_dynamics_retrain.implementation().load_member(OUTPUT, 'LC', family, 'all', seed)`. Gate B must
+  parse evaluation anchors with the same rule. The fit verdict table for the no-model action prior is
+  `fit-verdicts.json`.
+- **Compute:** training 7 260 GPU s (985–1 300 s per member, peak 9.9 GB); data build 25 468 s on 4 GPU processes
+  (CPU-bound label parsing, 10 label workers each); 0 engine seconds. Shot caches and the training payload (8.3 GB
+  each) and checkpoints stay local; the plan, smoke, compute, findings, summary, handoff and fit verdicts are tracked.
+- **Disclosures:** RTX 5090 instead of the #85 RTX 3090 (one GPU per member). Inputs bind the current bytes after the
+  SERVER_SETUP path rewrite. After the outcomes, before publication, the findings gained descriptive columns (where
+  the largest pre-clip norm fell, the large-norm count per request, and its updates after 500); no guard, rule or
+  token reads them.
 
 ## Post-freeze changes (disclosed)
 

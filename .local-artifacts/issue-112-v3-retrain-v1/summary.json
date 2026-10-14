@@ -1,0 +1,47 @@
+{
+  "claim_boundary": "training of a frozen recipe on retained fit-split captures; no statistic, no ranking, no held-out access; Gate B is the test",
+  "engine_seconds": 0,
+  "frozen_at": "2026-10-14T05:29:10Z",
+  "guards": {
+    "G1_isolation": true,
+    "G2_stability": true,
+    "G3_end_state": {
+      "continuous/20260908": true,
+      "continuous/20260909": true,
+      "continuous/20260910": true,
+      "hybrid/20260908": true,
+      "hybrid/20260909": true,
+      "hybrid/20260910": true
+    }
+  },
+  "handoff_token": "supported",
+  "identity": "issue-112-v3-retrain-v1",
+  "schema": "issue_112_v3_retrain_report_v1",
+  "units": {
+    "c_star": {
+      "arm": "LC",
+      "family": "continuous",
+      "request": "C-F-15",
+      "source": "v3 compute.json baseline_contrast.c_star (the largest-S continuous unit)"
+    },
+    "gate_b": {
+      "arm": "LC",
+      "encoder": "E99",
+      "family": "hybrid",
+      "request": "F-15-macro"
+    }
+  },
+  "usable_seeds": {
+    "continuous": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "hybrid": [
+      20260908,
+      20260909,
+      20260910
+    ]
+  },
+  "validation_command": "python -u -m scripts.run_decision_dynamics_retrain --validate"
+}

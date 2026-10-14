@@ -197,6 +197,11 @@ Throughput: 12.7 s/branch amortized (single pass, including the cold-start ramp)
   type010105 grid 0.84, angle 0.48, offset 0.53, power 0.37. #110 cells: 0 mixed levels in all 9
   multiple-forces cells and in every level-8 (storm) cell (flagged at design), 0.25–1.0 elsewhere; full
   table in `findings.md`.
+- **Gate-B retrain (after the campaign).** The #112 v3 recipe was retrained on the `issue109-fit` stream only
+  (`docs/issue-112-decision-relevant-dynamics.md` §7, `scripts/run_decision_dynamics_retrain.py`). Its handoff,
+  `.local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json`, carries the Gate-B unit and C* checkpoints, three
+  usable seeds each, and supersedes the v3 handoff named in this plan's `gate_b` block. The `issue110-fit` normal
+  sides named in `fit_merge` are not in it: the recipe fixes the 18-slot E99 encoder.
 
 ## Reproduction
 

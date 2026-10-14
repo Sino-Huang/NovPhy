@@ -950,6 +950,12 @@ def member_table(output):
                      "final_trace": {k: last[k] for k in ("loss", "local", "long", "rank", "grad_norm")},
                      "median_local_last_100_per_request": tail,
                      "max_pre_clip_norm": float(norms[torch.isfinite(norms)].max()),
+                     "max_pre_clip_norm_update": int(torch.nan_to_num(norms, nan=-1.0, posinf=-1.0).argmax()),
+                     "updates_above_spike_norm": {r: sum(1 for i, q in enumerate(requests)
+                                                         if q == r and float(norms[i]) > SPIKE_NORM)
+                                                  for r in sorted(set(requests))},
+                     "spike_updates_after_500": [i + 1 for i in (norms > SPIKE_NORM).nonzero().flatten().tolist()
+                                                 if i >= 500],
                      "end_state": end_state,
                      "sha256": sha256_of(impl.member_path(output, ARM, family, "all", seed))})
     return rows
@@ -1052,7 +1058,8 @@ def findings_md(plan, compute):
     add("")
     add("## Members (arm LC, fold 'all', 9000 updates)")
     add("")
-    add("| unit | seed | complete | skipped | max pre-clip norm | final local / long / rank | end state | usable |")
+    add("| unit | seed | complete | skipped | max pre-clip norm (update, request) | final local / long / rank | end state "
+        "| usable |")
     add("| --- | --- | --- | --- | --- | --- | --- | --- |")
     for m in compute["members"]:
         unit = f"{m['family']} {UNITS[m['family']]}"
@@ -1065,8 +1072,20 @@ def findings_md(plan, compute):
             end = f"excursion ({', '.join(state['requests_elevated'])})"
         else:
             end = f"no excursion (max ratio {max(state['ratios'].values()):.2f})"
-        add(f"| {unit} | {m['seed']} | {m['complete']} | {m['skipped']} | {fmt(m['max_pre_clip_norm'], 3)} | {terms} | "
+        peak = m["max_pre_clip_norm_update"]
+        add(f"| {unit} | {m['seed']} | {m['complete']} | {m['skipped']} | {m['max_pre_clip_norm']:.3g} ({peak + 1}, "
+            f"{step_requests(m['family'])[peak]}) | {terms} | "
             f"{end} | {m['usable']} |")
+    add("")
+    add(f"Updates with a pre-clip gradient norm above {SPIKE_NORM:g} (clipped to the recipe's grad_clip; per request "
+        "with any):")
+    add("")
+    for m in compute["members"]:
+        spikes = {r: n for r, n in m["updates_above_spike_norm"].items() if n}
+        late = m["spike_updates_after_500"]
+        add(f"- {m['family']} {m['seed']}: {sum(spikes.values())} of {m['logged_updates']}"
+            + (f" ({', '.join(f'{r} {n}' for r, n in spikes.items())})" if spikes else "")
+            + (f"; after update 500: {len(late)}, updates {late[0]}–{late[-1]}" if late else "; none after update 500"))
     add("")
     add("Median #77 local loss over each request's last 100 updates:")
     add("")
