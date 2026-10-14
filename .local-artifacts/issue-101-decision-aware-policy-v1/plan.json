@@ -1,0 +1,525 @@
+{
+  "arms": {
+    "F_hindsight": "in-inventory best fixed arm by member-mean AUC (outcome-selected contrast target)",
+    "F_star": "cross-fit r-dagger: fixed arm with the best mean member-mean AUC over the other three inventories",
+    "J": "J-pe-1e-04",
+    "M": "factorized selector (t96) on J / J_dec weights",
+    "OL": "t96 open loop: per seed the pooled request frequencies of J / J_dec over every evaluation cell of all four inventories and every candidate; one PCG64(7202) stream per OL arm in the frozen order (inventory, level, seed)",
+    "c_star": "C-F-15",
+    "controls": "no-model action prior (Gate-B rule, fit-verdicts.json); wrong-anchor control of J_dec (480 fit anchors, grid)",
+    "fixed": [
+      "F-1-continuous",
+      "F-1-micro",
+      "F-1-macro",
+      "F-5-continuous",
+      "F-5-micro",
+      "F-5-macro",
+      "F-15-continuous",
+      "F-15-micro",
+      "F-15-macro"
+    ],
+    "policies": [
+      "J-pe-1e-05",
+      "J-pe-1e-04",
+      "J-pe-1e-03",
+      "J-pe-1e-02",
+      "J-dec-1e-04",
+      "J-dec-1e-03",
+      "J-dec-1e-02",
+      "J-dec-1e-01",
+      "J-pg-1e-04",
+      "J-pg-1e-03",
+      "J-pg-1e-02",
+      "J-pg-1e-01"
+    ]
+  },
+  "caps": {
+    "gpu_seconds": 144000.0,
+    "projection": {
+      "data_gpu_seconds": 1796.7336501460522,
+      "elapsed_hours_on_4_gpus": 2.433126306615272,
+      "per_group_seconds": {
+        "dec": 265.711717430929,
+        "pe": 581.3791660498828,
+        "pg": 1022.9328802786767
+      },
+      "scoring_gpu_seconds_estimate": 10800.0,
+      "total_gpu_seconds": 35037.018815259915,
+      "training_gpu_seconds": 22440.285165113863
+    },
+    "scope_rule": "if the projected elapsed wall exceeds 36 h, cut to the acceptance minimum (pe and dec at 4 lambdas, pg dropped) and record why on #101",
+    "wall_seconds_summed_over_processes": 216000.0
+  },
+  "claim_boundary": "one look at the sealed #109 evaluation split for request policies trained on the #109 policy split; grid ranking primary, other inventories descriptive; tie-free cost; DESCRIPTIVE intervals; no closed-loop claim",
+  "decision_rule": {
+    "primary": "J_dec - F_hindsight paired grid AUC per (level, seed): supported iff mean >= 0.02 with lower bound > 0; not_supported_by_this_experiment iff upper < 0.02; otherwise readiness_or_precision_insufficient; any failed guard -> readiness_or_precision_insufficient",
+    "secondary": "J_dec - M_dec, J_dec - OL_dec, J_dec - F*, J_dec - J, J - F_hindsight, J - M, J - OL, J_pg - F_hindsight, J_pg - J_dec, J_dec - prior, J_dec - C* per inventory with the same token rule; offset, angle, power DESCRIPTIVE",
+    "selection": "pe: the ICLR lambda 1e-4 (no selection). dec and pg: the lambda of the sweep with the largest seed-mean policy-split pooled AUC (greedy J rollouts from each policy level's anchor over the mixed grid and angle cells; training data only), ties to the larger lambda; selected after every group is trained and before any evaluation score"
+  },
+  "disclosure": "Known before the freeze: Gate B (pass; unit 0.7444, C* 0.7834, prior 0.7203 on grid), every #96/#100/#112 result. No policy has been trained on the #112 predictors; no policy output on an evaluation capture exists. Hardware: RTX 5090 instead of the #85 RTX 3090. The decision-label lambda grid was set from the smoke's label distribution on four policy levels (training data).",
+  "engine_seconds": 0,
+  "evaluation": {
+    "anchors": "the Gate-B anchor store (issue-108-gate-b-v1/data/anchors-evaluation.pt)",
+    "cell_auc": "m99.view; cells (level, seed); bootstrap over levels (10000 draws, PCG64 7201)",
+    "cost": "tie_free (EndpointCosts.row against the anchor)",
+    "descriptive": [
+      "offset",
+      "angle",
+      "power"
+    ],
+    "primary_inventory": "grid",
+    "split": "the #109 evaluation split as in Gate B (stream issue109-evaluation, mixed cells)"
+  },
+  "frozen_at": "2026-10-14T10:04:00Z",
+  "frozen_before_training_and_scoring": true,
+  "guards": {
+    "G1_isolation": "pool = policy roster, disjoint from fit and evaluation rosters; scored cells are evaluation levels",
+    "G2_scoring_policy": "every record carries the #111 SCORING_POLICY",
+    "G3_chronology": "frozen_at <= first training <= last training <= selection <= first score",
+    "G4_checkpoint_binding": "every scored policy's sha256 equals its training report",
+    "G5_gate_b_replication": "F-15-macro and C-F-15 rows equal the Gate-B unit and C* records exactly",
+    "failure": "a failed guard turns every token into readiness_or_precision_insufficient"
+  },
+  "identity": "issue-101-decision-aware-policy-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json",
+      "name": "issue_112_retrain_handoff",
+      "sha256": "sha256:94f6e888b3407dfd44f9fb99350c3d3e21d0ebc28e065618fd8b6da9d7897706"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/fit-verdicts.json",
+      "name": "issue_112_fit_verdicts",
+      "sha256": "sha256:528469bde86f6f95f5d8108b064c6e3b5399a579fd0a57b9339ed9a909a57593"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/data/anchors-fit.pt",
+      "name": "issue_112_fit_anchors",
+      "sha256": "sha256:92b8e294901ba1b612ffba4e528082611ff69328b211f5195a09ae9745418751"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/plan.json",
+      "name": "gate_b_plan",
+      "sha256": "sha256:90bd1cce20c40ea825872b6c02d46ae393de45e6e3fa4dcd647f7ef39b2a9659"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/summary.json",
+      "name": "gate_b_summary",
+      "sha256": "sha256:a6cef412e0164cd6565d04884c07d7077f912d9da194a3a888a626cdf62a8539"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/compute.json",
+      "name": "gate_b_compute",
+      "sha256": "sha256:505e7e27a55b4082cc87b54a4392de18b1d7c39214e9b71e59562c4d807ad038"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/data/anchors-evaluation.pt",
+      "name": "gate_b_anchors",
+      "sha256": "sha256:3712282711523e4135c4daf033778f2b9222c3db3068bf8f2d7124b4f9d143ed"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260908.json",
+      "name": "gate_b_record_unit_20260908",
+      "sha256": "sha256:c81ad5cbfdec6f875d1f4396a7cef2e7b7acb8d4b9083b7b7a52aca3f514525a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260909.json",
+      "name": "gate_b_record_unit_20260909",
+      "sha256": "sha256:412dabc64cf9b9b4aad035040fb19d8d2383373b128567b16b3ca0b58e8d5139"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260910.json",
+      "name": "gate_b_record_unit_20260910",
+      "sha256": "sha256:a56d08075232b1112a305f045ff208687fde8cb81b3f39df755809b37e770cfa"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/c_star--seed20260908.json",
+      "name": "gate_b_record_c_star_20260908",
+      "sha256": "sha256:b96d768bb25ef79cde0e3eea27b070401cb555fa1bd6ca7aae3b730d1f0c33cb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/c_star--seed20260909.json",
+      "name": "gate_b_record_c_star_20260909",
+      "sha256": "sha256:2e003d59b908ad68d34db11189653a90b243c8f089990f31d91291c1cdcdfb9f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/c_star--seed20260910.json",
+      "name": "gate_b_record_c_star_20260910",
+      "sha256": "sha256:438104bda7b121a3bd69c135fb4951abeca077d97289497d150794917a7c93b3"
+    },
+    {
+      "artifact": "scripts/run_gate_b.py",
+      "name": "gate_b_runner",
+      "sha256": "sha256:9301be75ffe276a9f5e9fe1ed43d00818bacddbabeadf9a41eca8fdd7372c515"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_retrain.py",
+      "name": "issue_112_retrain_runner",
+      "sha256": "sha256:0d92e282ec528d41958790d6ba444cd348a56a3854d4c7a1cd9e750de75978f9"
+    },
+    {
+      "artifact": "scripts/run_decision_relevant_dynamics.py",
+      "name": "issue_112_v1_runner",
+      "sha256": "sha256:22ef72c8dbe6d744f860c3b727ac7d9eb2813be635f622d1f7bb8743ba9ff98f"
+    },
+    {
+      "artifact": "scripts/run_decision_chain_attribution.py",
+      "name": "issue_99_attribution_runner",
+      "sha256": "sha256:9e017a24b0e6b126ec68eb91586f454e05e1c259430d7057281977c349fcc43c"
+    },
+    {
+      "artifact": "scripts/run_tau_ad_within_checkpoint.py",
+      "name": "issue_96_runner",
+      "sha256": "sha256:9cf1ffe4c6ec61ecf15bb3c911425929a00491c725b07f9880b2e84792b685bf"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/encoder/encoder.pt",
+      "name": "issue_99_encoder",
+      "sha256": "sha256:cdbe677ab103e872ed6ac7777a3dc8b5aa0432f5771e8aa63a6e4e2d469bdd73"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json",
+      "name": "issue_109_cohort_plan",
+      "sha256": "sha256:e88b07903a10dcf492b8bb6c86f10e52b56183c6a3995337ea282dacee4d6dc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-v1/plan.json",
+      "name": "issue_104_plan",
+      "sha256": "sha256:337cc145e45ade78c1f43c526690da654229ff9eb8b4d3452aea212bd09a1c52"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "name": "issue_104_campaign_branches",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": "world_model/training/request_policy.py",
+      "name": "request_policy_module",
+      "sha256": "sha256:34fbce1e66532e3501b372bf6ed4bb1a496619a9a6accbdc066358933a01042c"
+    },
+    {
+      "artifact": "world_model/training/matched_dynamics.py",
+      "name": "matched_dynamics",
+      "sha256": "sha256:6c96384926c205250f00dd67c9a21760215cc675b10fff82b5aa3ce314eb4bc6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:f199dc67c1019cfdaacae9e024f6ee79403d2accf567d358f2224c20aac4aba7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260908/predictor.pt",
+      "name": "checkpoint_unit_20260908",
+      "sha256": "sha256:252ee2a7737cdf4979ecb9039a4ed8762fd06b58fcef13a344e1752beff058fb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260909/predictor.pt",
+      "name": "checkpoint_unit_20260909",
+      "sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260910/predictor.pt",
+      "name": "checkpoint_unit_20260910",
+      "sha256": "sha256:6d8bbf719bef9525eb705a530118be83ee35e0424a64cc44261f4d5b7fc5148f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260908/predictor.pt",
+      "name": "checkpoint_c_star_20260908",
+      "sha256": "sha256:ab9f2fe73450e04d865b53231a5cc6522ce96c5267254f11074c7993d99f308b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260909/predictor.pt",
+      "name": "checkpoint_c_star_20260909",
+      "sha256": "sha256:3d22eb5ef167fb059fef23bb8ff64bab0b97f8c0e97146c90f8911dba32db62a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260910/predictor.pt",
+      "name": "checkpoint_c_star_20260910",
+      "sha256": "sha256:007b1380f6dd3c0482528b96f2834ed17d6d78ab762ece62574ffd7887981143"
+    }
+  ],
+  "issue": 101,
+  "kinds": {
+    "dec": {
+      "labels": "request_policy.decision_rows: per mixed policy cell, every candidate rolled out from the level anchor under the continuation (F-15-macro in round 0, the round-0 policy in the DAgger round); at each visited state and each feasible request: deviate, continue to 225, Q = the candidate's pairwise softplus ranking loss (T = 0.1) against the other candidates' continuation costs + lambda x work of the remaining transitions / work(15,cont); label = argmin Q",
+      "lambdas": [
+        0.0001,
+        0.001,
+        0.01,
+        0.1
+      ],
+      "name": "decision-valued DP"
+    },
+    "distillation": {
+      "batch_size": 128,
+      "learning_rate": 0.001,
+      "loss": "cross-entropy",
+      "rounds": 2,
+      "sampler": "CPU Generator(seed + 7700 + round)",
+      "steps_per_round": 1800,
+      "unit": "policy level (roster order), step s -> unit s % units"
+    },
+    "pe": {
+      "labels": "ICLR eq. dp (matched_dynamics.controller_labels with lambda as a parameter): the first 60-frame window of every pool shot (3480), Delta x one-step carrier MSE + lambda x work / work(15,cont), backward DP; DAgger round 1 on contexts visited by the round-0 policy",
+      "lambdas": [
+        1e-05,
+        0.0001,
+        0.001,
+        0.01
+      ],
+      "name": "prediction-error DP (ICLR eq. dp)"
+    },
+    "pg": {
+      "lambdas": [
+        0.0001,
+        0.001,
+        0.01,
+        0.1
+      ],
+      "name": "policy gradient on per-cell AUC",
+      "training": "request_policy.policy_gradient: 3600 AdamW updates (lr 0.0003, clip 1.0), 8 cells x 8 sampled schedule draws per update; reward = cell tie-free AUC - lambda x mean work units; advantage vs the cell's mean draw"
+    }
+  },
+  "policy": {
+    "architecture": "Linear(242,128)-SiLU-Linear(128,9) (= MatchedController(False))",
+    "init": "torch.manual_seed(seed + 7700)",
+    "remaining_feature": "clamp60: min(remaining, 60) / 60 (ICLR)"
+  },
+  "pool": {
+    "accounting": {
+      "branches": 3480,
+      "cell_levels": 108,
+      "complete": 3480,
+      "disjoint_from_fit_and_evaluation": true,
+      "levels": 120,
+      "mixed_cells": {
+        "angle": 73,
+        "grid": 94
+      },
+      "pig_removed": 199,
+      "typed_failures": []
+    },
+    "anchors": "per level: E99 batch-1 parse of shot frame 0 of its first complete candidate (retrain rule)",
+    "cells": "per level x {grid, angle}: complete verdict-bearing candidates, ordinal order, mixed only",
+    "shots": "E99 carriers (s99.carriers_for, positions 0..min(frames-1, 285)) of every complete branch, under deterministic_scoring()",
+    "split": "#109 policy split (issue-109-sealed-cohort-v1 splits.policy, 60 levels per family), captured by the #104 campaign stream issue109-policy; split_roles.policy = controller (policy) training. It replaces the 3 #77 controller lineages (owner comment on #101). The fit split stays predictor-only; the evaluation split is held out"
+  },
+  "predictors": {
+    "c_star": "LC continuous C-F-15 (Gate-B C*), scored as a fixed reference arm only",
+    "unit": "LC hybrid fold 'all' (Gate-B handoff checkpoints, hash-checked), seeds [20260908, 20260909, 20260910]; every policy pairs predictor seed s with policy seed s"
+  },
+  "prohibited": [
+    "reading evaluation captures for training or selection",
+    "re-scoring after publication",
+    "changing a lambda, rule or arm after the freeze",
+    "retrying or replacing a typed failure"
+  ],
+  "question": "does a request policy trained on decision value (J_dec) rank the candidate launches of the sealed #109 evaluation split better than the best fixed request in hindsight, and do jointness (J_dec - M) and state dependence (J_dec - OL) then carry ranking value?",
+  "related_issues": [
+    96,
+    104,
+    108,
+    109,
+    111,
+    112,
+    114,
+    116,
+    119,
+    121
+  ],
+  "request_set": [
+    "1-continuous",
+    "1-micro",
+    "1-macro",
+    "5-continuous",
+    "5-micro",
+    "5-macro",
+    "15-continuous",
+    "15-micro",
+    "15-macro"
+  ],
+  "role": "train request policies on decision value vs prediction error; score once on the sealed #109 evaluation split",
+  "runner": "scripts/run_decision_aware_policy.py",
+  "runner_sha256_at_freeze": "sha256:8d743b07483afad73d935b8454ae2540f6341eab9f03ba85bfc66827ca2f1a5b",
+  "schema": "issue_101_decision_aware_policy_plan_v1",
+  "shared_module": {
+    "path": "world_model/training/request_policy.py",
+    "sha256_at_freeze": "sha256:34fbce1e66532e3501b372bf6ed4bb1a496619a9a6accbdc066358933a01042c"
+  },
+  "smoke_evidence": {
+    "checks": [
+      {
+        "control": "request_policy_equals_matched_controller",
+        "init_equal": true,
+        "ok": true
+      },
+      {
+        "control": "window_rows_equal_issue77_label_lineage",
+        "informational_equal_to_stored_issue77_labels": false,
+        "informational_stored_label_mismatches": 38,
+        "lineages": [
+          "issue-77-n1-005",
+          "issue-77-n1-010",
+          "issue-77-n1-015"
+        ],
+        "note": "stored #77 labels were computed on the #85 RTX 3090; the gating comparison is the #77 code path re-run on this hardware",
+        "ok": true,
+        "rounds": [
+          0,
+          1
+        ]
+      },
+      {
+        "control": "distil_round_equals_issue77_train_control",
+        "lineages": [
+          "issue-77-n1-005",
+          "issue-77-n1-010",
+          "issue-77-n1-015"
+        ],
+        "ok": true,
+        "steps_per_round": 1800
+      },
+      {
+        "cells": 3,
+        "control": "rollout_endpoints_equals_m99",
+        "ok": true
+      },
+      {
+        "brute_force": {
+          "max_abs_q_delta": 3.1743914259418915e-06,
+          "rows_checked": 12
+        },
+        "control": "decision_labels_brute_force_and_scale",
+        "dagger_round_seconds": 0.645849501946941,
+        "dagger_rows": 2901,
+        "ok": true,
+        "per_lambda": {
+          "1e-01": [
+            103,
+            0,
+            94,
+            0,
+            0,
+            0,
+            938,
+            60,
+            110
+          ],
+          "1e-02": [
+            565,
+            77,
+            393,
+            0,
+            0,
+            0,
+            124,
+            39,
+            107
+          ],
+          "1e-03": [
+            573,
+            139,
+            420,
+            0,
+            0,
+            0,
+            45,
+            23,
+            105
+          ],
+          "1e-04": [
+            567,
+            159,
+            416,
+            0,
+            0,
+            0,
+            37,
+            21,
+            105
+          ]
+        },
+        "pg_finite": true,
+        "pg_seconds_per_step": 0.28414802229963243,
+        "q_spread_quantiles_at_lambda": {
+          "lambda": 0.001,
+          "q10_50_90": [
+            0.07129360735416412,
+            0.432905912399292,
+            0.9480937123298645
+          ]
+        },
+        "round0_seconds": 0.2779247770085931,
+        "rows": 1305
+      },
+      {
+        "branches": 3480,
+        "cell_levels": 108,
+        "complete": 3480,
+        "control": "policy_pool_accounting",
+        "disjoint_from_fit_and_evaluation": true,
+        "levels": 120,
+        "mixed_cells": {
+          "angle": 73,
+          "grid": 94
+        },
+        "ok": true,
+        "pig_removed": 199,
+        "typed_failures": []
+      },
+      {
+        "anchors": 400,
+        "control": "gate_b_inputs_bound",
+        "gate_b": "pass",
+        "ok": true
+      }
+    ],
+    "identity": "issue-101-decision-aware-policy-v1",
+    "ok": true,
+    "pool_accounting": {
+      "branches": 3480,
+      "cell_levels": 108,
+      "complete": 3480,
+      "disjoint_from_fit_and_evaluation": true,
+      "levels": 120,
+      "mixed_cells": {
+        "angle": 73,
+        "grid": 94
+      },
+      "pig_removed": 199,
+      "typed_failures": []
+    },
+    "projection": {
+      "data_gpu_seconds": 1796.7336501460522,
+      "elapsed_hours_on_4_gpus": 2.433126306615272,
+      "per_group_seconds": {
+        "dec": 265.711717430929,
+        "pe": 581.3791660498828,
+        "pg": 1022.9328802786767
+      },
+      "scoring_gpu_seconds_estimate": 10800.0,
+      "total_gpu_seconds": 35037.018815259915,
+      "training_gpu_seconds": 22440.285165113863
+    },
+    "reading": "#77 artefacts, fit-split cells and anchors, and the first policy levels with a mixed cell (training data); no evaluation-split model output",
+    "run_at": "2026-10-14T10:03:58Z",
+    "schema": "issue_101_decision_aware_policy_smoke_v1",
+    "timings": {
+      "dec_dagger_seconds_per_cell": 0.1076415836578235,
+      "dec_round0_seconds_per_cell": 0.046320796168098845,
+      "pe_rows_per_window": 60.0,
+      "pe_window_seconds_round1": 0.0490487307542935,
+      "pg_seconds_per_step": 0.28414802229963243,
+      "policy_shot_parse_seconds": 0.5163027730304748,
+      "smoke_cells": 6
+    },
+    "wall_seconds": 22.610778904985636
+  },
+  "validation_command": "python -u -m scripts.run_decision_aware_policy --validate",
+  "version": 1
+}
