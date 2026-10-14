@@ -1,0 +1,891 @@
+{
+  "checks": [
+    {
+      "cells": 3,
+      "control": "selectors_equal_request_policy_and_t96_kinds",
+      "ok": true
+    },
+    {
+      "control": "training_path_reproduces_issue101_J",
+      "distil_rounds_equal": true,
+      "distil_seconds_two_rounds": 3.424395665060729,
+      "ok": true,
+      "restricted_all_nine_equals_window_rows": true,
+      "round0_labels_equal": true,
+      "units": 3
+    },
+    {
+      "control": "C-J policy equals MatchedController(True)",
+      "ok": true
+    },
+    {
+      "branches": 3480,
+      "cell_levels": 108,
+      "complete": 3480,
+      "control": "policy_pool_accounting",
+      "disjoint_from_fit_and_evaluation": true,
+      "levels": 120,
+      "mixed_cells": {
+        "angle": 73,
+        "grid": 94
+      },
+      "ok": true,
+      "pig_removed": 199,
+      "typed_failures": []
+    },
+    {
+      "anchors": 400,
+      "control": "gate_b_inputs_bound",
+      "gate_b": "pass",
+      "ok": true
+    },
+    {
+      "control": "issue101_J_policies_present",
+      "ok": true,
+      "reports": 12
+    }
+  ],
+  "identity": "issue-114-horizon-vs-joint-v1",
+  "label_distributions": {
+    "per_family_lambda": {
+      "CJ": {
+        "0e+00": {
+          "all_positions": [
+            2447,
+            1996,
+            777
+          ],
+          "positions_0_to_5": [
+            265,
+            128,
+            129
+          ]
+        },
+        "1e+00": {
+          "all_positions": [
+            2472,
+            1376,
+            1372
+          ],
+          "positions_0_to_5": [
+            159,
+            127,
+            236
+          ]
+        },
+        "1e+01": {
+          "all_positions": [
+            2688,
+            1270,
+            1262
+          ],
+          "positions_0_to_5": [
+            170,
+            119,
+            233
+          ]
+        },
+        "1e-01": {
+          "all_positions": [
+            2416,
+            1414,
+            1390
+          ],
+          "positions_0_to_5": [
+            158,
+            129,
+            235
+          ]
+        },
+        "1e-02": {
+          "all_positions": [
+            2423,
+            1484,
+            1313
+          ],
+          "positions_0_to_5": [
+            176,
+            176,
+            170
+          ]
+        },
+        "1e-03": {
+          "all_positions": [
+            2516,
+            1449,
+            1255
+          ],
+          "positions_0_to_5": [
+            257,
+            121,
+            144
+          ]
+        },
+        "1e-04": {
+          "all_positions": [
+            2440,
+            1928,
+            852
+          ],
+          "positions_0_to_5": [
+            263,
+            127,
+            132
+          ]
+        },
+        "1e-05": {
+          "all_positions": [
+            2440,
+            1996,
+            784
+          ],
+          "positions_0_to_5": [
+            263,
+            128,
+            131
+          ]
+        },
+        "1e-06": {
+          "all_positions": [
+            2445,
+            1997,
+            778
+          ],
+          "positions_0_to_5": [
+            264,
+            128,
+            130
+          ]
+        },
+        "3e-01": {
+          "all_positions": [
+            2435,
+            1400,
+            1385
+          ],
+          "positions_0_to_5": [
+            158,
+            129,
+            235
+          ]
+        },
+        "3e-02": {
+          "all_positions": [
+            2415,
+            1432,
+            1373
+          ],
+          "positions_0_to_5": [
+            165,
+            133,
+            224
+          ]
+        },
+        "3e-03": {
+          "all_positions": [
+            2497,
+            1448,
+            1275
+          ],
+          "positions_0_to_5": [
+            245,
+            132,
+            145
+          ]
+        },
+        "3e-04": {
+          "all_positions": [
+            2522,
+            1527,
+            1171
+          ],
+          "positions_0_to_5": [
+            256,
+            126,
+            140
+          ]
+        }
+      },
+      "J": {
+        "0e+00": {
+          "all_positions": [
+            38,
+            1942,
+            457,
+            35,
+            1114,
+            283,
+            54,
+            1289,
+            8
+          ],
+          "positions_0_to_5": [
+            9,
+            216,
+            28,
+            9,
+            42,
+            59,
+            8,
+            147,
+            4
+          ]
+        },
+        "1e+00": {
+          "all_positions": [
+            2331,
+            0,
+            0,
+            1395,
+            0,
+            0,
+            1494,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            160,
+            0,
+            0,
+            102,
+            0,
+            0,
+            260,
+            0,
+            0
+          ]
+        },
+        "1e+01": {
+          "all_positions": [
+            2505,
+            0,
+            0,
+            1317,
+            0,
+            0,
+            1398,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            166,
+            0,
+            0,
+            99,
+            0,
+            0,
+            257,
+            0,
+            0
+          ]
+        },
+        "1e-01": {
+          "all_positions": [
+            2295,
+            0,
+            1,
+            1413,
+            0,
+            6,
+            1504,
+            0,
+            1
+          ],
+          "positions_0_to_5": [
+            160,
+            0,
+            0,
+            102,
+            0,
+            2,
+            258,
+            0,
+            0
+          ]
+        },
+        "1e-02": {
+          "all_positions": [
+            1541,
+            1,
+            809,
+            818,
+            1,
+            621,
+            1392,
+            1,
+            36
+          ],
+          "positions_0_to_5": [
+            132,
+            0,
+            68,
+            92,
+            0,
+            62,
+            162,
+            1,
+            5
+          ]
+        },
+        "1e-03": {
+          "all_positions": [
+            98,
+            303,
+            2030,
+            282,
+            380,
+            739,
+            186,
+            1189,
+            13
+          ],
+          "positions_0_to_5": [
+            58,
+            33,
+            166,
+            21,
+            17,
+            71,
+            27,
+            125,
+            4
+          ]
+        },
+        "1e-04": {
+          "all_positions": [
+            44,
+            1832,
+            556,
+            37,
+            1064,
+            325,
+            57,
+            1296,
+            9
+          ],
+          "positions_0_to_5": [
+            15,
+            202,
+            37,
+            10,
+            38,
+            62,
+            9,
+            145,
+            4
+          ]
+        },
+        "1e-05": {
+          "all_positions": [
+            39,
+            1932,
+            460,
+            36,
+            1107,
+            294,
+            54,
+            1290,
+            8
+          ],
+          "positions_0_to_5": [
+            10,
+            215,
+            28,
+            10,
+            41,
+            59,
+            8,
+            147,
+            4
+          ]
+        },
+        "1e-06": {
+          "all_positions": [
+            39,
+            1938,
+            458,
+            35,
+            1115,
+            284,
+            54,
+            1289,
+            8
+          ],
+          "positions_0_to_5": [
+            10,
+            215,
+            28,
+            9,
+            42,
+            59,
+            8,
+            147,
+            4
+          ]
+        },
+        "3e-01": {
+          "all_positions": [
+            2305,
+            0,
+            0,
+            1410,
+            0,
+            0,
+            1505,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            159,
+            0,
+            0,
+            104,
+            0,
+            0,
+            259,
+            0,
+            0
+          ]
+        },
+        "3e-02": {
+          "all_positions": [
+            2285,
+            0,
+            10,
+            1430,
+            0,
+            35,
+            1446,
+            0,
+            14
+          ],
+          "positions_0_to_5": [
+            163,
+            0,
+            2,
+            130,
+            0,
+            13,
+            210,
+            0,
+            4
+          ]
+        },
+        "3e-03": {
+          "all_positions": [
+            460,
+            23,
+            1934,
+            517,
+            16,
+            854,
+            954,
+            444,
+            18
+          ],
+          "positions_0_to_5": [
+            97,
+            0,
+            157,
+            32,
+            2,
+            73,
+            106,
+            50,
+            5
+          ]
+        },
+        "3e-04": {
+          "all_positions": [
+            57,
+            1649,
+            730,
+            37,
+            937,
+            436,
+            71,
+            1293,
+            10
+          ],
+          "positions_0_to_5": [
+            27,
+            179,
+            48,
+            10,
+            36,
+            64,
+            10,
+            144,
+            4
+          ]
+        }
+      },
+      "Jcont": {
+        "0e+00": {
+          "all_positions": [
+            2407,
+            0,
+            0,
+            1449,
+            0,
+            0,
+            1364,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            259,
+            0,
+            0,
+            96,
+            0,
+            0,
+            167,
+            0,
+            0
+          ]
+        },
+        "1e+00": {
+          "all_positions": [
+            2331,
+            0,
+            0,
+            1395,
+            0,
+            0,
+            1494,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            160,
+            0,
+            0,
+            102,
+            0,
+            0,
+            260,
+            0,
+            0
+          ]
+        },
+        "1e+01": {
+          "all_positions": [
+            2505,
+            0,
+            0,
+            1317,
+            0,
+            0,
+            1398,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            166,
+            0,
+            0,
+            99,
+            0,
+            0,
+            257,
+            0,
+            0
+          ]
+        },
+        "1e-01": {
+          "all_positions": [
+            2296,
+            0,
+            0,
+            1419,
+            0,
+            0,
+            1505,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            160,
+            0,
+            0,
+            104,
+            0,
+            0,
+            258,
+            0,
+            0
+          ]
+        },
+        "1e-02": {
+          "all_positions": [
+            2333,
+            0,
+            0,
+            1478,
+            0,
+            0,
+            1409,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            203,
+            0,
+            0,
+            149,
+            0,
+            0,
+            170,
+            0,
+            0
+          ]
+        },
+        "1e-03": {
+          "all_positions": [
+            2409,
+            0,
+            0,
+            1430,
+            0,
+            0,
+            1381,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            259,
+            0,
+            0,
+            96,
+            0,
+            0,
+            167,
+            0,
+            0
+          ]
+        },
+        "1e-04": {
+          "all_positions": [
+            2408,
+            0,
+            0,
+            1444,
+            0,
+            0,
+            1368,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            259,
+            0,
+            0,
+            96,
+            0,
+            0,
+            167,
+            0,
+            0
+          ]
+        },
+        "1e-05": {
+          "all_positions": [
+            2410,
+            0,
+            0,
+            1447,
+            0,
+            0,
+            1363,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            259,
+            0,
+            0,
+            96,
+            0,
+            0,
+            167,
+            0,
+            0
+          ]
+        },
+        "1e-06": {
+          "all_positions": [
+            2410,
+            0,
+            0,
+            1447,
+            0,
+            0,
+            1363,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            259,
+            0,
+            0,
+            96,
+            0,
+            0,
+            167,
+            0,
+            0
+          ]
+        },
+        "3e-01": {
+          "all_positions": [
+            2305,
+            0,
+            0,
+            1410,
+            0,
+            0,
+            1505,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            159,
+            0,
+            0,
+            104,
+            0,
+            0,
+            259,
+            0,
+            0
+          ]
+        },
+        "3e-02": {
+          "all_positions": [
+            2295,
+            0,
+            0,
+            1468,
+            0,
+            0,
+            1457,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            165,
+            0,
+            0,
+            143,
+            0,
+            0,
+            214,
+            0,
+            0
+          ]
+        },
+        "3e-03": {
+          "all_positions": [
+            2392,
+            0,
+            0,
+            1434,
+            0,
+            0,
+            1394,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            256,
+            0,
+            0,
+            97,
+            0,
+            0,
+            169,
+            0,
+            0
+          ]
+        },
+        "3e-04": {
+          "all_positions": [
+            2408,
+            0,
+            0,
+            1440,
+            0,
+            0,
+            1372,
+            0,
+            0
+          ],
+          "positions_0_to_5": [
+            259,
+            0,
+            0,
+            96,
+            0,
+            0,
+            167,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "round0_seconds_per_unit": 0.2447920938113975,
+    "round1_seconds_per_unit": 0.9260773109272122,
+    "units": 3
+  },
+  "ok": true,
+  "per_call_macs": {
+    "continuous": {
+      "1-continuous": 1852200,
+      "15-continuous": 1852200,
+      "5-continuous": 1852200
+    },
+    "hybrid": {
+      "1-continuous": 1432448,
+      "1-macro": 1464704,
+      "1-micro": 1795456,
+      "15-continuous": 1432448,
+      "15-macro": 1464704,
+      "15-micro": 1795456,
+      "5-continuous": 1432448,
+      "5-macro": 1464704,
+      "5-micro": 1795456
+    },
+    "policy": {
+      "CJ": 32095,
+      "J": 32128,
+      "Jcont": 32128
+    }
+  },
+  "pool_accounting": {
+    "branches": 3480,
+    "cell_levels": 108,
+    "complete": 3480,
+    "disjoint_from_fit_and_evaluation": true,
+    "levels": 120,
+    "mixed_cells": {
+      "angle": 73,
+      "grid": 94
+    },
+    "pig_removed": 199,
+    "typed_failures": []
+  },
+  "projection": {
+    "elapsed_hours_on_2_gpus": 2.889817541166364,
+    "issue101_pe_group_seconds": 194.52810493996367,
+    "scoring_gpu_seconds_estimate": 9135.0,
+    "total_gpu_seconds": 20806.68629639782,
+    "training_gpu_seconds": 11671.68629639782,
+    "training_groups": 60
+  },
+  "reading": "#101 artefacts, fit-split cells and anchors, policy-split windows (training data); no evaluation-split model output",
+  "run_at": "2026-10-14T11:29:53Z",
+  "schema": "issue_114_horizon_vs_joint_smoke_v1",
+  "wall_seconds": 54.342353479005396
+}

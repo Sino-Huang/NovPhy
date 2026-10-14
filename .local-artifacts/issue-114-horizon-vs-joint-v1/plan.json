@@ -1,0 +1,1674 @@
+{
+  "arms": {
+    "as_continuous": "per lambda: J's recorded per-candidate schedule with every (Delta, alpha) replaced by (Delta, continuous), replayed on the hybrid trunk without policy calls; a candidate whose J endpoint is a typed failure keeps the failure",
+    "continuous_fixed": [
+      "C-F-1",
+      "C-F-5",
+      "C-F-15"
+    ],
+    "controls": "no-model action prior (Gate-B rule, fit-verdicts.json) in every table; wrong-anchor control (480 fit anchors x grid candidates) of J-1e-04, Jcont-1e-04, CJ-1e-04",
+    "fixed": [
+      "F-1-continuous",
+      "F-1-micro",
+      "F-1-macro",
+      "F-5-continuous",
+      "F-5-micro",
+      "F-5-macro",
+      "F-15-continuous",
+      "F-15-micro",
+      "F-15-macro"
+    ],
+    "policies": [
+      "J-1e-05",
+      "J-1e-04",
+      "J-3e-04",
+      "J-1e-03",
+      "J-3e-03",
+      "J-1e-02",
+      "J-3e-02",
+      "J-1e-01",
+      "Jcont-1e-05",
+      "Jcont-1e-04",
+      "Jcont-3e-04",
+      "Jcont-1e-03",
+      "Jcont-3e-03",
+      "Jcont-1e-02",
+      "Jcont-3e-02",
+      "Jcont-1e-01",
+      "CJ-1e-05",
+      "CJ-1e-04",
+      "CJ-3e-04",
+      "CJ-1e-03",
+      "CJ-3e-03",
+      "CJ-1e-02",
+      "CJ-3e-02",
+      "CJ-1e-01"
+    ],
+    "restricted": {
+      "D-1": [
+        "1-continuous",
+        "1-micro",
+        "1-macro"
+      ],
+      "D-15": [
+        "15-continuous",
+        "15-micro",
+        "15-macro"
+      ],
+      "D-5": [
+        "5-continuous",
+        "5-micro",
+        "5-macro"
+      ],
+      "T-continuous": [
+        "1-continuous",
+        "5-continuous",
+        "15-continuous"
+      ],
+      "T-macro": [
+        "1-macro",
+        "5-macro",
+        "15-macro"
+      ],
+      "T-micro": [
+        "1-micro",
+        "5-micro",
+        "15-micro"
+      ]
+    },
+    "restricted_policy": "#101 J (pe, lambda 1e-04); argmax over the allowed subset of the same logits (request_selectors.restricted_spec), no retraining"
+  },
+  "caps": {
+    "gpu_seconds": 43200.0,
+    "projection": {
+      "elapsed_hours_on_2_gpus": 2.889817541166364,
+      "issue101_pe_group_seconds": 194.52810493996367,
+      "scoring_gpu_seconds_estimate": 9135.0,
+      "total_gpu_seconds": 20806.68629639782,
+      "training_gpu_seconds": 11671.68629639782,
+      "training_groups": 60
+    },
+    "scope_rule": "if the projected elapsed wall exceeds 24 h on 2 GPUs, cut to the acceptance minimum (5 lambdas per family) and record why on #114",
+    "wall_seconds_summed_over_processes": 86400.0
+  },
+  "claim_boundary": "one look at the sealed #109 evaluation split for policies trained on the #109 policy split; grid ranking primary, other inventories descriptive; tie-free cost; DESCRIPTIVE intervals; MACs are linear MACs, wall times are RTX 5090 GPU seconds; no closed-loop claim",
+  "decision_rule": {
+    "primary": "claim 'adaptive alpha adds decision value beyond adaptive Delta at matched compute': J - J-cont paired grid AUC per (level, seed), each frontier interpolated piecewise linearly in log10 mean MACs per candidate (every lambda point, sorted by MACs, no outcome-based pruning, no extrapolation) at two budgets: the MACs of J's and of C-J's lambda = 1e-4 points. Per budget the delta rule: supported iff mean >= 0.02 and lower > 0; not_supported_by_this_experiment iff upper < 0.02; else readiness_or_precision_insufficient. A budget above a frontier's largest MACs uses that frontier's largest-MAC point (the policy cannot spend more; flagged); a budget below its smallest MACs gives readiness_or_precision_insufficient (no extrapolation). Disposition: supported iff supported at both budgets; not_supported_by_this_experiment iff not supported at either; else readiness_or_precision_insufficient; any failed guard -> readiness_or_precision_insufficient",
+    "secondary": "J - C-J at the same budgets with the same rule (does the hybrid keep its advantage over the horizon-only adaptive baseline at matched compute?); at lambda = 1e-4 (unmatched): J - J-cont, J - T-cont, J - C-J, J - J-as-cont, J - T-micro/macro, J - D-1/5/15, J-cont - T-cont and each policy - prior, every inventory, same token rule; offset, angle, power DESCRIPTIVE"
+  },
+  "disclosure": "Known before the freeze: Gate B (unit 0.7444, C* 0.7834, prior 0.7203 on grid), the #101 results (J at lambdas 1e-5..1e-2 on this split: grid AUC 0.704/0.706/0.734/0.713 at 181M/184M/34M/50M MACs; F-15-continuous 0.762, F-1-continuous 0.677) and every #96/#100/#112 result. No J-cont or C-J policy and no restricted-argmax arm has been scored on an evaluation capture. Hardware: RTX 5090 instead of the #85 RTX 3090.",
+  "engine_seconds": 0,
+  "evaluation": {
+    "anchors": "the Gate-B anchor store",
+    "descriptive": [
+      "offset",
+      "angle",
+      "power"
+    ],
+    "primary_inventory": "grid",
+    "split": "the #109 evaluation split as in Gate B (stream issue109-evaluation, mixed cells)"
+  },
+  "frozen_at": "2026-10-14T11:29:59Z",
+  "frozen_before_training_and_scoring": true,
+  "guards": {
+    "G1_isolation": "pool = policy roster, disjoint from fit and evaluation rosters",
+    "G2_scoring_policy": "every record carries the #111 SCORING_POLICY",
+    "G3_chronology": "frozen_at <= first training <= last training <= first score",
+    "G4_checkpoint_binding": "every scored policy's sha256 equals its training report (#101 for reused J)",
+    "G5_replication_101_gate_b": "fixed and reused-J rows (and schedules) equal the #101 records; F-15-macro and C-F-15 equal the Gate-B unit and C* records",
+    "G6_restricted_schedules": "restricted and J-cont schedules use only their allowed requests",
+    "failure": "a failed guard turns the dispositions into readiness_or_precision_insufficient"
+  },
+  "identity": "issue-114-horizon-vs-joint-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json",
+      "name": "issue_112_retrain_handoff",
+      "sha256": "sha256:94f6e888b3407dfd44f9fb99350c3d3e21d0ebc28e065618fd8b6da9d7897706"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/fit-verdicts.json",
+      "name": "issue_112_fit_verdicts",
+      "sha256": "sha256:528469bde86f6f95f5d8108b064c6e3b5399a579fd0a57b9339ed9a909a57593"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/data/anchors-fit.pt",
+      "name": "issue_112_fit_anchors",
+      "sha256": "sha256:92b8e294901ba1b612ffba4e528082611ff69328b211f5195a09ae9745418751"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/plan.json",
+      "name": "gate_b_plan",
+      "sha256": "sha256:90bd1cce20c40ea825872b6c02d46ae393de45e6e3fa4dcd647f7ef39b2a9659"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/summary.json",
+      "name": "gate_b_summary",
+      "sha256": "sha256:a6cef412e0164cd6565d04884c07d7077f912d9da194a3a888a626cdf62a8539"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/data/anchors-evaluation.pt",
+      "name": "gate_b_anchors",
+      "sha256": "sha256:3712282711523e4135c4daf033778f2b9222c3db3068bf8f2d7124b4f9d143ed"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260908.json",
+      "name": "gate_b_record_unit_20260908",
+      "sha256": "sha256:c81ad5cbfdec6f875d1f4396a7cef2e7b7acb8d4b9083b7b7a52aca3f514525a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260909.json",
+      "name": "gate_b_record_unit_20260909",
+      "sha256": "sha256:412dabc64cf9b9b4aad035040fb19d8d2383373b128567b16b3ca0b58e8d5139"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260910.json",
+      "name": "gate_b_record_unit_20260910",
+      "sha256": "sha256:a56d08075232b1112a305f045ff208687fde8cb81b3f39df755809b37e770cfa"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/c_star--seed20260908.json",
+      "name": "gate_b_record_c_star_20260908",
+      "sha256": "sha256:b96d768bb25ef79cde0e3eea27b070401cb555fa1bd6ca7aae3b730d1f0c33cb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/c_star--seed20260909.json",
+      "name": "gate_b_record_c_star_20260909",
+      "sha256": "sha256:2e003d59b908ad68d34db11189653a90b243c8f089990f31d91291c1cdcdfb9f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/c_star--seed20260910.json",
+      "name": "gate_b_record_c_star_20260910",
+      "sha256": "sha256:438104bda7b121a3bd69c135fb4951abeca077d97289497d150794917a7c93b3"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/plan.json",
+      "name": "issue_101_plan",
+      "sha256": "sha256:9674987323778442cd8537c45e71e64d04c78f5ed43b9d296eb011962e187f08"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/compute.json",
+      "name": "issue_101_compute",
+      "sha256": "sha256:29dad1e7d4aff733835424f20f67eb849aa196a62b1393b4c793d29e6e0db8ba"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/data/pool.pt",
+      "name": "issue_101_pool",
+      "sha256": "sha256:5858bc037190240b04f1721b4daa3d4bbc3b2dcc4ebc598d44dd09c970714f19"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-05/seed-20260908/policy.pt",
+      "name": "issue_101_J_1e-05_20260908_policy",
+      "sha256": "sha256:d1ddeb8758699705064c0adcdccd2c2d64f6ca69a0d8e48d99bb646b07b11d15"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-05/seed-20260908/report.json",
+      "name": "issue_101_J_1e-05_20260908_report",
+      "sha256": "sha256:bdf614b591fb9224caabc6f8b353508cb601cf61323fc49603d75ad4c4b1a540"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-05/seed-20260909/policy.pt",
+      "name": "issue_101_J_1e-05_20260909_policy",
+      "sha256": "sha256:7c1532ae5aa090902e6a56a76ed8159870acc079514d6cc4e14ddbb6918323a9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-05/seed-20260909/report.json",
+      "name": "issue_101_J_1e-05_20260909_report",
+      "sha256": "sha256:759d84ff01b1ce23d6753ed2ddf59aa9c27951f46c219f0ce0733f923b3a2395"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-05/seed-20260910/policy.pt",
+      "name": "issue_101_J_1e-05_20260910_policy",
+      "sha256": "sha256:8106445fbb9af1688dcd2f19377ba7331e02ee77b0b7362ba5f96e30916bde9b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-05/seed-20260910/report.json",
+      "name": "issue_101_J_1e-05_20260910_report",
+      "sha256": "sha256:09ca04e022d27d569c4a3ff590d8e7f9f5ae2c06fbddee5057bc64eb561c6d69"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260908/policy.pt",
+      "name": "issue_101_J_1e-04_20260908_policy",
+      "sha256": "sha256:23b782645e2254ea4a1fa9714962487a3bdb87f1502b925c954675a7362b5489"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260908/report.json",
+      "name": "issue_101_J_1e-04_20260908_report",
+      "sha256": "sha256:b56fb5cdc723aa42ba001c9eaf974adf2d256aef8c72b23ff0765bcde322d890"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260909/policy.pt",
+      "name": "issue_101_J_1e-04_20260909_policy",
+      "sha256": "sha256:5a5c07df026545e33f557dd52b773c1c40779e685fa3a8d7dd56b887341762d4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260909/report.json",
+      "name": "issue_101_J_1e-04_20260909_report",
+      "sha256": "sha256:79920da3c9f6cf3f338c7ac9c2d392b18ed57c121935cacb3afebc92358da66f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260910/policy.pt",
+      "name": "issue_101_J_1e-04_20260910_policy",
+      "sha256": "sha256:faf929406d183c3d26d34132eba1c2e525117b5228bec5a00f55d7117651e358"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260910/report.json",
+      "name": "issue_101_J_1e-04_20260910_report",
+      "sha256": "sha256:a1439ad7a4949eee6c15626e294ec22cbf8dcbb5b516e8127a94a6319394bbc7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-03/seed-20260908/policy.pt",
+      "name": "issue_101_J_1e-03_20260908_policy",
+      "sha256": "sha256:103ff3eb6ce53283383fffea7951677278c7a92ec383016711978c54fc812197"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-03/seed-20260908/report.json",
+      "name": "issue_101_J_1e-03_20260908_report",
+      "sha256": "sha256:c4458fc97731042870e788b7f6c5f2641ee617b35494aaed59a382552c0e2ae0"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-03/seed-20260909/policy.pt",
+      "name": "issue_101_J_1e-03_20260909_policy",
+      "sha256": "sha256:0a02bc33b22b2cf6bac825a18128a81d46322205c5304e7041849e754d86bfb1"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-03/seed-20260909/report.json",
+      "name": "issue_101_J_1e-03_20260909_report",
+      "sha256": "sha256:7823f7216b6759370b12db8b8bc3d49c2aa8eab4329ffb4139f56615e7fbfc31"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-03/seed-20260910/policy.pt",
+      "name": "issue_101_J_1e-03_20260910_policy",
+      "sha256": "sha256:a27c490bb2e7010189e7db8213251cda54eecb84166f96f39478634c6c173916"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-03/seed-20260910/report.json",
+      "name": "issue_101_J_1e-03_20260910_report",
+      "sha256": "sha256:fa8ac794db5f7f84dca12df992440286d75fcd3b361177a18054aee7c994fe52"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-02/seed-20260908/policy.pt",
+      "name": "issue_101_J_1e-02_20260908_policy",
+      "sha256": "sha256:2048f78db11f87f04c40575e507761c555fc244bd10ca07116ad72f7a77fe682"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-02/seed-20260908/report.json",
+      "name": "issue_101_J_1e-02_20260908_report",
+      "sha256": "sha256:ffcfc869a4467f849c96d45758204816796024ee17044f9ccbba754457d5797a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-02/seed-20260909/policy.pt",
+      "name": "issue_101_J_1e-02_20260909_policy",
+      "sha256": "sha256:093eb90eec394c567819fa887bb027e8af061a56bf227fa4496905956766d7e2"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-02/seed-20260909/report.json",
+      "name": "issue_101_J_1e-02_20260909_report",
+      "sha256": "sha256:e4863f05c6c8697b5392921997f75817f205d446b7d7ed753618e985f242b439"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-02/seed-20260910/policy.pt",
+      "name": "issue_101_J_1e-02_20260910_policy",
+      "sha256": "sha256:e9bd4ab143e19f6099322c29ab671cccad563bb93366ed9bf983878bf2867f45"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-02/seed-20260910/report.json",
+      "name": "issue_101_J_1e-02_20260910_report",
+      "sha256": "sha256:05a89862ec7b0976e83bc39d37fd34f96315c1446074ded574099ea8df259f1d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-continuous--seed20260908.json",
+      "name": "issue_101_record_F-1-continuous_20260908",
+      "sha256": "sha256:221f46f6b1cb8e94a0d51bbd380c40e697d0856e544ba42c6009a711c651ea80"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-continuous--seed20260909.json",
+      "name": "issue_101_record_F-1-continuous_20260909",
+      "sha256": "sha256:103f433b617b45a75a5776ec40d6d5b7b67c7eb3104c7bd0ac6569b6c2680f58"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-continuous--seed20260910.json",
+      "name": "issue_101_record_F-1-continuous_20260910",
+      "sha256": "sha256:ba4a833ebe72d8595cacffa7aa06827cb0f5e030d3cc1a090eb09784b34ba634"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-micro--seed20260908.json",
+      "name": "issue_101_record_F-1-micro_20260908",
+      "sha256": "sha256:9bd34f5845e550fa3c89fa710bfe545bf6ccc5f6463aa62aeca150e4502f814d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-micro--seed20260909.json",
+      "name": "issue_101_record_F-1-micro_20260909",
+      "sha256": "sha256:a56a71e64073f96843b60ec8953a363f7633a3c5392f8e4463c937746ef422fc"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-micro--seed20260910.json",
+      "name": "issue_101_record_F-1-micro_20260910",
+      "sha256": "sha256:1b50fbe549f88e91370223a7ac0a0060248e34f007977d7bd9118d280e643e8f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-macro--seed20260908.json",
+      "name": "issue_101_record_F-1-macro_20260908",
+      "sha256": "sha256:3ed0543226d68cce056fdcb5eb1a20726ca041d9bc5ad8c172d9aec1c376c581"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-macro--seed20260909.json",
+      "name": "issue_101_record_F-1-macro_20260909",
+      "sha256": "sha256:964c5c4667cf0a3c98c525b7aae8766b50ee13c362ee619a1e7e623cab3c96a6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-macro--seed20260910.json",
+      "name": "issue_101_record_F-1-macro_20260910",
+      "sha256": "sha256:e29d226c6d765cc65e2d54f6d5b5c996d4c7cc63386e41ab2b5e55b584c6515e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-continuous--seed20260908.json",
+      "name": "issue_101_record_F-5-continuous_20260908",
+      "sha256": "sha256:02d779c9eda06bc28aaf82ed6b3ce376ae811f76fc7e3ced8d7c39f288cd1ca4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-continuous--seed20260909.json",
+      "name": "issue_101_record_F-5-continuous_20260909",
+      "sha256": "sha256:33c84bb82e3695774cbd49ef89e49f4a8b78dcf16fec0bc08905bc25ccd86500"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-continuous--seed20260910.json",
+      "name": "issue_101_record_F-5-continuous_20260910",
+      "sha256": "sha256:c1f641af72de26e67cd6bef62439efb7fa5abc1b5652e899411560954cfb0c0b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-micro--seed20260908.json",
+      "name": "issue_101_record_F-5-micro_20260908",
+      "sha256": "sha256:cc660411483385452a645f6b9d96e07eca52a669059b34060b827f4c5adb242e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-micro--seed20260909.json",
+      "name": "issue_101_record_F-5-micro_20260909",
+      "sha256": "sha256:d246d0733996154ad407284d5853cdcfbd0d4ff099240afb85390ceae238723e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-micro--seed20260910.json",
+      "name": "issue_101_record_F-5-micro_20260910",
+      "sha256": "sha256:319008dc3b378a9f1197cfaa46b05e83727e6d49b4491c7c10bc69f87ebfe0a8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-macro--seed20260908.json",
+      "name": "issue_101_record_F-5-macro_20260908",
+      "sha256": "sha256:62a1e784a1a5a85dec5ffd7603705e16577ac4e58321d0a8e3f8a83d37c1e570"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-macro--seed20260909.json",
+      "name": "issue_101_record_F-5-macro_20260909",
+      "sha256": "sha256:abea3f1f0f43ca893afa8d20116eeaa9355cf2331da959a5bcc38028d074bbd9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-macro--seed20260910.json",
+      "name": "issue_101_record_F-5-macro_20260910",
+      "sha256": "sha256:27c45ee918379bb6e337d7758af023f26cf3a8d6579dbf53f3f815a3bdb00a66"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-continuous--seed20260908.json",
+      "name": "issue_101_record_F-15-continuous_20260908",
+      "sha256": "sha256:5754e343b92ebdfd3a7ce19bff04d18568f423c8a25513b354e5bb8a3c52ea58"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-continuous--seed20260909.json",
+      "name": "issue_101_record_F-15-continuous_20260909",
+      "sha256": "sha256:ef0bf24d0d091a5207ad602815cc9068a5b6b9d56d6e54521db60bad67e05929"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-continuous--seed20260910.json",
+      "name": "issue_101_record_F-15-continuous_20260910",
+      "sha256": "sha256:a5d808842db00920a1122e485d99620d39a70c60e14a0405f81f1d117bdf9165"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-micro--seed20260908.json",
+      "name": "issue_101_record_F-15-micro_20260908",
+      "sha256": "sha256:38cb308c6cdbe221212492dcdcdf97fc30e746a68da872a01905a6144f782129"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-micro--seed20260909.json",
+      "name": "issue_101_record_F-15-micro_20260909",
+      "sha256": "sha256:51c3c6af3c4a8959ea64ea849c3eb223655530b8e9ebb1925b0cd9c1c24a9107"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-micro--seed20260910.json",
+      "name": "issue_101_record_F-15-micro_20260910",
+      "sha256": "sha256:81479915da5ed2fe3947526c5840d352cb99c782db1437dba965f7257e347880"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-macro--seed20260908.json",
+      "name": "issue_101_record_F-15-macro_20260908",
+      "sha256": "sha256:8e32bec6b799a89649a2ca893f6379b1e2f589dd0d76f260772079e5b7425ad9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-macro--seed20260909.json",
+      "name": "issue_101_record_F-15-macro_20260909",
+      "sha256": "sha256:eb5b1a502de92c8623d770d143ae793b009a98f2db4b35b99906c2e51152c6b8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-macro--seed20260910.json",
+      "name": "issue_101_record_F-15-macro_20260910",
+      "sha256": "sha256:4ad288ee4cafd0e424d4fbadd0713a89953d357a7cce245d7604826ca2688e80"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/C-F-15--seed20260908.json",
+      "name": "issue_101_record_C-F-15_20260908",
+      "sha256": "sha256:bd68a23576589c36dd4b0ac4ca6525622ea9ceddb7add5e57de19de11710a563"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/C-F-15--seed20260909.json",
+      "name": "issue_101_record_C-F-15_20260909",
+      "sha256": "sha256:930b75428977e13a9a3305ca4e4cb893e05b5791b8b37f134b629187f4ac9488"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/C-F-15--seed20260910.json",
+      "name": "issue_101_record_C-F-15_20260910",
+      "sha256": "sha256:8654ece9daaf041918af4e7ea70e40b5b1a004bea75549e99f3da81f735b09fd"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-05--seed20260908.json",
+      "name": "issue_101_record_J-pe-1e-05_20260908",
+      "sha256": "sha256:a05acd709cd9cb635bf26ae48a6ceca919afa8ad3c5acee5ce573c426565d4ec"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-05--seed20260909.json",
+      "name": "issue_101_record_J-pe-1e-05_20260909",
+      "sha256": "sha256:f594d59a6621cc4a81ea9185ab86204a991199eb4cdcd8d18ba1c32c58662a09"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-05--seed20260910.json",
+      "name": "issue_101_record_J-pe-1e-05_20260910",
+      "sha256": "sha256:fa0f6805dfd6cb249078d36bd72bbc72b14b4ec13764b8b27852c366fc2a9d4f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-04--seed20260908.json",
+      "name": "issue_101_record_J-pe-1e-04_20260908",
+      "sha256": "sha256:c05bf14aec2ad0b42b4acb0cb389d192eab60d1d49f94c998339c522cfbd1082"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-04--seed20260909.json",
+      "name": "issue_101_record_J-pe-1e-04_20260909",
+      "sha256": "sha256:697591eb02a3bcf124359514b8c191973ce4439133389680251ea1d4bc823ea7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-04--seed20260910.json",
+      "name": "issue_101_record_J-pe-1e-04_20260910",
+      "sha256": "sha256:5360981b6b913f99e927f1f4a597fc8eac6aebbbd9bf9230a103b08477b7f9cc"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-03--seed20260908.json",
+      "name": "issue_101_record_J-pe-1e-03_20260908",
+      "sha256": "sha256:5e860e85b5604c851835cfe88c06ee407728dbbd14638e72e028abb336274566"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-03--seed20260909.json",
+      "name": "issue_101_record_J-pe-1e-03_20260909",
+      "sha256": "sha256:3fbaca57bb76028a5d1fba2f7040a8533ce9816229e7f497b5ab5c648d80d308"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-03--seed20260910.json",
+      "name": "issue_101_record_J-pe-1e-03_20260910",
+      "sha256": "sha256:a20b2ed549be666639c7d9b57d1e8b832e700aa92b522b07f987616d7d8ab8ce"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-02--seed20260908.json",
+      "name": "issue_101_record_J-pe-1e-02_20260908",
+      "sha256": "sha256:d6a10a7621b28dc21a67726e1a9289c64ac9e607426ee7cc77656051cd6831a1"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-02--seed20260909.json",
+      "name": "issue_101_record_J-pe-1e-02_20260909",
+      "sha256": "sha256:d03c706c58367467dcdcc3d350e96e20324a885878a44cf6df4230cdccc6947b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-02--seed20260910.json",
+      "name": "issue_101_record_J-pe-1e-02_20260910",
+      "sha256": "sha256:f914b8b910c86c704cd6db12c2c7a40c1820eaf7539b7ec4fc3b912451f44767"
+    },
+    {
+      "artifact": "scripts/run_decision_aware_policy.py",
+      "name": "issue_101_runner",
+      "sha256": "sha256:8d743b07483afad73d935b8454ae2540f6341eab9f03ba85bfc66827ca2f1a5b"
+    },
+    {
+      "artifact": "scripts/run_gate_b.py",
+      "name": "gate_b_runner",
+      "sha256": "sha256:9301be75ffe276a9f5e9fe1ed43d00818bacddbabeadf9a41eca8fdd7372c515"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_retrain.py",
+      "name": "issue_112_retrain_runner",
+      "sha256": "sha256:0d92e282ec528d41958790d6ba444cd348a56a3854d4c7a1cd9e750de75978f9"
+    },
+    {
+      "artifact": "scripts/run_decision_relevant_dynamics.py",
+      "name": "issue_112_v1_runner",
+      "sha256": "sha256:22ef72c8dbe6d744f860c3b727ac7d9eb2813be635f622d1f7bb8743ba9ff98f"
+    },
+    {
+      "artifact": "scripts/run_decision_chain_attribution.py",
+      "name": "issue_99_attribution_runner",
+      "sha256": "sha256:9e017a24b0e6b126ec68eb91586f454e05e1c259430d7057281977c349fcc43c"
+    },
+    {
+      "artifact": "scripts/run_tau_ad_within_checkpoint.py",
+      "name": "issue_96_runner",
+      "sha256": "sha256:9cf1ffe4c6ec61ecf15bb3c911425929a00491c725b07f9880b2e84792b685bf"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json",
+      "name": "issue_109_cohort_plan",
+      "sha256": "sha256:e88b07903a10dcf492b8bb6c86f10e52b56183c6a3995337ea282dacee4d6dc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "name": "issue_104_campaign_branches",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": "world_model/training/request_policy.py",
+      "name": "request_policy_module",
+      "sha256": "sha256:34fbce1e66532e3501b372bf6ed4bb1a496619a9a6accbdc066358933a01042c"
+    },
+    {
+      "artifact": "world_model/training/request_selectors.py",
+      "name": "request_selectors_module",
+      "sha256": "sha256:0bcd9bdeca2a97739d92bead14071c7dcd1792f47507b50044164b6925bd3a3f"
+    },
+    {
+      "artifact": "world_model/training/matched_dynamics.py",
+      "name": "matched_dynamics",
+      "sha256": "sha256:6c96384926c205250f00dd67c9a21760215cc675b10fff82b5aa3ce314eb4bc6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-114-horizon-vs-joint-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:fea47aa74439971cfbe388b945ae63a70e809044ce6623e02a16bfb531d8e9a6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260908/predictor.pt",
+      "name": "checkpoint_unit_20260908",
+      "sha256": "sha256:252ee2a7737cdf4979ecb9039a4ed8762fd06b58fcef13a344e1752beff058fb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260909/predictor.pt",
+      "name": "checkpoint_unit_20260909",
+      "sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260910/predictor.pt",
+      "name": "checkpoint_unit_20260910",
+      "sha256": "sha256:6d8bbf719bef9525eb705a530118be83ee35e0424a64cc44261f4d5b7fc5148f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260908/predictor.pt",
+      "name": "checkpoint_c_star_20260908",
+      "sha256": "sha256:ab9f2fe73450e04d865b53231a5cc6522ce96c5267254f11074c7993d99f308b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260909/predictor.pt",
+      "name": "checkpoint_c_star_20260909",
+      "sha256": "sha256:3d22eb5ef167fb059fef23bb8ff64bab0b97f8c0e97146c90f8911dba32db62a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/continuous/fold-all/seed-20260910/predictor.pt",
+      "name": "checkpoint_c_star_20260910",
+      "sha256": "sha256:007b1380f6dd3c0482528b96f2834ed17d6d78ab762ece62574ffd7887981143"
+    }
+  ],
+  "issue": 114,
+  "metrics": {
+    "auc": "tie-free cost, m99.view; per (level, seed); member-clustered bootstrap 10000 draws PCG64 7201",
+    "decomposition": "first - second = (a) (n1 - n2) c2 [calls, horizon] + (b) n1 (c1 - c2) [per-call; for C-J split into alpha n1 (c1 - c_cont,hybrid) and trunk n1 (c_cont,hybrid - c2)] + (c) p1 m1 - p2 m2 [policy]; n calls, c mean predictor MACs per call, p policy calls, m policy MACs per call",
+    "macs": "linear MACs per candidate rollout (predictor calls x per-call MACs + policy calls x policy MACs)",
+    "ties": "all-tied cells and tied success-failure pairs per arm",
+    "top3": "hit iff a success is among the three lowest-cost admissible candidates (cost, ordinal)",
+    "wall": "CUDA-synchronized GPU seconds per state (per cell rollout of all candidates)"
+  },
+  "per_call_macs": {
+    "continuous": {
+      "1-continuous": 1852200,
+      "15-continuous": 1852200,
+      "5-continuous": 1852200
+    },
+    "hybrid": {
+      "1-continuous": 1432448,
+      "1-macro": 1464704,
+      "1-micro": 1795456,
+      "15-continuous": 1432448,
+      "15-macro": 1464704,
+      "15-micro": 1795456,
+      "5-continuous": 1432448,
+      "5-macro": 1464704,
+      "5-micro": 1795456
+    },
+    "policy": {
+      "CJ": 32095,
+      "J": 32128,
+      "Jcont": 32128
+    }
+  },
+  "policies": {
+    "CJ": {
+      "labels": "#77 prediction-error DP on the C* predictor",
+      "name": "C-J (horizon-only adaptive on the LC continuous C* predictor)",
+      "policy": "242 -> 131 -> 3 (= MatchedController(True))",
+      "request_set": [
+        "1-continuous",
+        "5-continuous",
+        "15-continuous"
+      ]
+    },
+    "J": {
+      "labels": "#77 prediction-error DP (request_policy.window_rows) with lambda as the compute weight",
+      "name": "J (all nine requests, hybrid trunk)",
+      "request_set": [
+        "1-continuous",
+        "1-micro",
+        "1-macro",
+        "5-continuous",
+        "5-micro",
+        "5-macro",
+        "15-continuous",
+        "15-micro",
+        "15-macro"
+      ],
+      "reused_from_issue_101": [
+        "1e-05",
+        "1e-04",
+        "1e-03",
+        "1e-02"
+      ],
+      "trained_here": [
+        "3e-04",
+        "3e-03",
+        "3e-02",
+        "1e-01"
+      ]
+    },
+    "Jcont": {
+      "labels": "request_selectors.restricted_window_rows: the same DP and DAgger contexts over R_cont only; the work term counts the full policy",
+      "name": "J-cont (R_cont on the hybrid trunk, six logits masked)",
+      "policy": "request_selectors.MaskedRequestPolicy: the 242 -> 128 -> 9 policy, logits outside R_cont = -inf (same parameters and initialization as J)",
+      "request_set": [
+        "1-continuous",
+        "5-continuous",
+        "15-continuous"
+      ]
+    },
+    "lambda_grid_reason": "8 values from 1e-5 to 1e-1 (>= 5 required) including the ICLR 1e-4 and the four #101 J values; the ICLR operating points (#74: hybrid 118.7M, continuous_adaptive 356.0M MACs per candidate and state, both at lambda 1e-4) are reproduced by recipe at 1e-4. Smoke label mixes on policy units (training data; probes 0, 1e-6, 0.3, 1, 10): below 1e-5 the labels equal 1e-5's (the DP is error-dominated) and above 1e-1 they saturate (Delta = 15 wherever the window allows), so the grid spans each policy's reachable MAC range; resolution is densest where J's labels change (1e-4 .. 1e-1)",
+    "lambdas": [
+      "1e-05",
+      "1e-04",
+      "3e-04",
+      "1e-03",
+      "3e-03",
+      "1e-02",
+      "3e-02",
+      "1e-01"
+    ],
+    "recipe": {
+      "batch_size": 128,
+      "init": "torch.manual_seed(seed + 7700)",
+      "learning_rate": 0.001,
+      "remaining_feature": "clamp60",
+      "rounds": 2,
+      "sampler": "CPU Generator(seed + 7700 + round)",
+      "steps_per_round": 1800,
+      "unit": "policy level"
+    }
+  },
+  "pool": {
+    "accounting": {
+      "branches": 3480,
+      "cell_levels": 108,
+      "complete": 3480,
+      "disjoint_from_fit_and_evaluation": true,
+      "levels": 120,
+      "mixed_cells": {
+        "angle": 73,
+        "grid": 94
+      },
+      "pig_removed": 199,
+      "typed_failures": []
+    },
+    "source": "the #101 pool (issue-101 data/pool.pt): #109 policy split, 120 levels, 3480 shots, first 60-frame window per shot; unit = policy level"
+  },
+  "predictors": {
+    "continuous": "LC continuous fold 'all' Gate-B C* checkpoints (C-J, C-F-*)",
+    "hybrid": "LC hybrid fold 'all' Gate-B unit checkpoints (J, J-cont, restricted arms, J-as-cont)",
+    "pairing": "policy seed s uses predictor seed s",
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ]
+  },
+  "prohibited": [
+    "reading evaluation captures for training",
+    "re-scoring after publication",
+    "changing a lambda, rule or arm after the freeze",
+    "retrying or replacing a typed failure"
+  ],
+  "question": "does choosing the description alpha add ranking value beyond choosing the horizon Delta when the horizon-only policies get the same compute?",
+  "related_issues": [
+    74,
+    96,
+    100,
+    101,
+    103,
+    104,
+    105,
+    108,
+    109,
+    111,
+    112
+  ],
+  "role": "horizon-only versus joint request selection at matched compute; one score on the sealed #109 evaluation split",
+  "runner": "scripts/run_horizon_vs_joint.py",
+  "runner_sha256_at_freeze": "sha256:2aef734aefd0e192296f17c506bd11d1e6af867f59b4a3a03afd785440d79966",
+  "schema": "issue_114_horizon_vs_joint_plan_v1",
+  "selector_module": {
+    "path": "world_model/training/request_selectors.py",
+    "sha256_at_freeze": "sha256:0bcd9bdeca2a97739d92bead14071c7dcd1792f47507b50044164b6925bd3a3f"
+  },
+  "smoke_evidence": {
+    "checks": [
+      {
+        "cells": 3,
+        "control": "selectors_equal_request_policy_and_t96_kinds",
+        "ok": true
+      },
+      {
+        "control": "training_path_reproduces_issue101_J",
+        "distil_rounds_equal": true,
+        "distil_seconds_two_rounds": 3.424395665060729,
+        "ok": true,
+        "restricted_all_nine_equals_window_rows": true,
+        "round0_labels_equal": true,
+        "units": 3
+      },
+      {
+        "control": "C-J policy equals MatchedController(True)",
+        "ok": true
+      },
+      {
+        "branches": 3480,
+        "cell_levels": 108,
+        "complete": 3480,
+        "control": "policy_pool_accounting",
+        "disjoint_from_fit_and_evaluation": true,
+        "levels": 120,
+        "mixed_cells": {
+          "angle": 73,
+          "grid": 94
+        },
+        "ok": true,
+        "pig_removed": 199,
+        "typed_failures": []
+      },
+      {
+        "anchors": 400,
+        "control": "gate_b_inputs_bound",
+        "gate_b": "pass",
+        "ok": true
+      },
+      {
+        "control": "issue101_J_policies_present",
+        "ok": true,
+        "reports": 12
+      }
+    ],
+    "identity": "issue-114-horizon-vs-joint-v1",
+    "label_distributions": {
+      "per_family_lambda": {
+        "CJ": {
+          "0e+00": {
+            "all_positions": [
+              2447,
+              1996,
+              777
+            ],
+            "positions_0_to_5": [
+              265,
+              128,
+              129
+            ]
+          },
+          "1e+00": {
+            "all_positions": [
+              2472,
+              1376,
+              1372
+            ],
+            "positions_0_to_5": [
+              159,
+              127,
+              236
+            ]
+          },
+          "1e+01": {
+            "all_positions": [
+              2688,
+              1270,
+              1262
+            ],
+            "positions_0_to_5": [
+              170,
+              119,
+              233
+            ]
+          },
+          "1e-01": {
+            "all_positions": [
+              2416,
+              1414,
+              1390
+            ],
+            "positions_0_to_5": [
+              158,
+              129,
+              235
+            ]
+          },
+          "1e-02": {
+            "all_positions": [
+              2423,
+              1484,
+              1313
+            ],
+            "positions_0_to_5": [
+              176,
+              176,
+              170
+            ]
+          },
+          "1e-03": {
+            "all_positions": [
+              2516,
+              1449,
+              1255
+            ],
+            "positions_0_to_5": [
+              257,
+              121,
+              144
+            ]
+          },
+          "1e-04": {
+            "all_positions": [
+              2440,
+              1928,
+              852
+            ],
+            "positions_0_to_5": [
+              263,
+              127,
+              132
+            ]
+          },
+          "1e-05": {
+            "all_positions": [
+              2440,
+              1996,
+              784
+            ],
+            "positions_0_to_5": [
+              263,
+              128,
+              131
+            ]
+          },
+          "1e-06": {
+            "all_positions": [
+              2445,
+              1997,
+              778
+            ],
+            "positions_0_to_5": [
+              264,
+              128,
+              130
+            ]
+          },
+          "3e-01": {
+            "all_positions": [
+              2435,
+              1400,
+              1385
+            ],
+            "positions_0_to_5": [
+              158,
+              129,
+              235
+            ]
+          },
+          "3e-02": {
+            "all_positions": [
+              2415,
+              1432,
+              1373
+            ],
+            "positions_0_to_5": [
+              165,
+              133,
+              224
+            ]
+          },
+          "3e-03": {
+            "all_positions": [
+              2497,
+              1448,
+              1275
+            ],
+            "positions_0_to_5": [
+              245,
+              132,
+              145
+            ]
+          },
+          "3e-04": {
+            "all_positions": [
+              2522,
+              1527,
+              1171
+            ],
+            "positions_0_to_5": [
+              256,
+              126,
+              140
+            ]
+          }
+        },
+        "J": {
+          "0e+00": {
+            "all_positions": [
+              38,
+              1942,
+              457,
+              35,
+              1114,
+              283,
+              54,
+              1289,
+              8
+            ],
+            "positions_0_to_5": [
+              9,
+              216,
+              28,
+              9,
+              42,
+              59,
+              8,
+              147,
+              4
+            ]
+          },
+          "1e+00": {
+            "all_positions": [
+              2331,
+              0,
+              0,
+              1395,
+              0,
+              0,
+              1494,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              160,
+              0,
+              0,
+              102,
+              0,
+              0,
+              260,
+              0,
+              0
+            ]
+          },
+          "1e+01": {
+            "all_positions": [
+              2505,
+              0,
+              0,
+              1317,
+              0,
+              0,
+              1398,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              166,
+              0,
+              0,
+              99,
+              0,
+              0,
+              257,
+              0,
+              0
+            ]
+          },
+          "1e-01": {
+            "all_positions": [
+              2295,
+              0,
+              1,
+              1413,
+              0,
+              6,
+              1504,
+              0,
+              1
+            ],
+            "positions_0_to_5": [
+              160,
+              0,
+              0,
+              102,
+              0,
+              2,
+              258,
+              0,
+              0
+            ]
+          },
+          "1e-02": {
+            "all_positions": [
+              1541,
+              1,
+              809,
+              818,
+              1,
+              621,
+              1392,
+              1,
+              36
+            ],
+            "positions_0_to_5": [
+              132,
+              0,
+              68,
+              92,
+              0,
+              62,
+              162,
+              1,
+              5
+            ]
+          },
+          "1e-03": {
+            "all_positions": [
+              98,
+              303,
+              2030,
+              282,
+              380,
+              739,
+              186,
+              1189,
+              13
+            ],
+            "positions_0_to_5": [
+              58,
+              33,
+              166,
+              21,
+              17,
+              71,
+              27,
+              125,
+              4
+            ]
+          },
+          "1e-04": {
+            "all_positions": [
+              44,
+              1832,
+              556,
+              37,
+              1064,
+              325,
+              57,
+              1296,
+              9
+            ],
+            "positions_0_to_5": [
+              15,
+              202,
+              37,
+              10,
+              38,
+              62,
+              9,
+              145,
+              4
+            ]
+          },
+          "1e-05": {
+            "all_positions": [
+              39,
+              1932,
+              460,
+              36,
+              1107,
+              294,
+              54,
+              1290,
+              8
+            ],
+            "positions_0_to_5": [
+              10,
+              215,
+              28,
+              10,
+              41,
+              59,
+              8,
+              147,
+              4
+            ]
+          },
+          "1e-06": {
+            "all_positions": [
+              39,
+              1938,
+              458,
+              35,
+              1115,
+              284,
+              54,
+              1289,
+              8
+            ],
+            "positions_0_to_5": [
+              10,
+              215,
+              28,
+              9,
+              42,
+              59,
+              8,
+              147,
+              4
+            ]
+          },
+          "3e-01": {
+            "all_positions": [
+              2305,
+              0,
+              0,
+              1410,
+              0,
+              0,
+              1505,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              159,
+              0,
+              0,
+              104,
+              0,
+              0,
+              259,
+              0,
+              0
+            ]
+          },
+          "3e-02": {
+            "all_positions": [
+              2285,
+              0,
+              10,
+              1430,
+              0,
+              35,
+              1446,
+              0,
+              14
+            ],
+            "positions_0_to_5": [
+              163,
+              0,
+              2,
+              130,
+              0,
+              13,
+              210,
+              0,
+              4
+            ]
+          },
+          "3e-03": {
+            "all_positions": [
+              460,
+              23,
+              1934,
+              517,
+              16,
+              854,
+              954,
+              444,
+              18
+            ],
+            "positions_0_to_5": [
+              97,
+              0,
+              157,
+              32,
+              2,
+              73,
+              106,
+              50,
+              5
+            ]
+          },
+          "3e-04": {
+            "all_positions": [
+              57,
+              1649,
+              730,
+              37,
+              937,
+              436,
+              71,
+              1293,
+              10
+            ],
+            "positions_0_to_5": [
+              27,
+              179,
+              48,
+              10,
+              36,
+              64,
+              10,
+              144,
+              4
+            ]
+          }
+        },
+        "Jcont": {
+          "0e+00": {
+            "all_positions": [
+              2407,
+              0,
+              0,
+              1449,
+              0,
+              0,
+              1364,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              259,
+              0,
+              0,
+              96,
+              0,
+              0,
+              167,
+              0,
+              0
+            ]
+          },
+          "1e+00": {
+            "all_positions": [
+              2331,
+              0,
+              0,
+              1395,
+              0,
+              0,
+              1494,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              160,
+              0,
+              0,
+              102,
+              0,
+              0,
+              260,
+              0,
+              0
+            ]
+          },
+          "1e+01": {
+            "all_positions": [
+              2505,
+              0,
+              0,
+              1317,
+              0,
+              0,
+              1398,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              166,
+              0,
+              0,
+              99,
+              0,
+              0,
+              257,
+              0,
+              0
+            ]
+          },
+          "1e-01": {
+            "all_positions": [
+              2296,
+              0,
+              0,
+              1419,
+              0,
+              0,
+              1505,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              160,
+              0,
+              0,
+              104,
+              0,
+              0,
+              258,
+              0,
+              0
+            ]
+          },
+          "1e-02": {
+            "all_positions": [
+              2333,
+              0,
+              0,
+              1478,
+              0,
+              0,
+              1409,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              203,
+              0,
+              0,
+              149,
+              0,
+              0,
+              170,
+              0,
+              0
+            ]
+          },
+          "1e-03": {
+            "all_positions": [
+              2409,
+              0,
+              0,
+              1430,
+              0,
+              0,
+              1381,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              259,
+              0,
+              0,
+              96,
+              0,
+              0,
+              167,
+              0,
+              0
+            ]
+          },
+          "1e-04": {
+            "all_positions": [
+              2408,
+              0,
+              0,
+              1444,
+              0,
+              0,
+              1368,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              259,
+              0,
+              0,
+              96,
+              0,
+              0,
+              167,
+              0,
+              0
+            ]
+          },
+          "1e-05": {
+            "all_positions": [
+              2410,
+              0,
+              0,
+              1447,
+              0,
+              0,
+              1363,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              259,
+              0,
+              0,
+              96,
+              0,
+              0,
+              167,
+              0,
+              0
+            ]
+          },
+          "1e-06": {
+            "all_positions": [
+              2410,
+              0,
+              0,
+              1447,
+              0,
+              0,
+              1363,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              259,
+              0,
+              0,
+              96,
+              0,
+              0,
+              167,
+              0,
+              0
+            ]
+          },
+          "3e-01": {
+            "all_positions": [
+              2305,
+              0,
+              0,
+              1410,
+              0,
+              0,
+              1505,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              159,
+              0,
+              0,
+              104,
+              0,
+              0,
+              259,
+              0,
+              0
+            ]
+          },
+          "3e-02": {
+            "all_positions": [
+              2295,
+              0,
+              0,
+              1468,
+              0,
+              0,
+              1457,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              165,
+              0,
+              0,
+              143,
+              0,
+              0,
+              214,
+              0,
+              0
+            ]
+          },
+          "3e-03": {
+            "all_positions": [
+              2392,
+              0,
+              0,
+              1434,
+              0,
+              0,
+              1394,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              256,
+              0,
+              0,
+              97,
+              0,
+              0,
+              169,
+              0,
+              0
+            ]
+          },
+          "3e-04": {
+            "all_positions": [
+              2408,
+              0,
+              0,
+              1440,
+              0,
+              0,
+              1372,
+              0,
+              0
+            ],
+            "positions_0_to_5": [
+              259,
+              0,
+              0,
+              96,
+              0,
+              0,
+              167,
+              0,
+              0
+            ]
+          }
+        }
+      },
+      "round0_seconds_per_unit": 0.2447920938113975,
+      "round1_seconds_per_unit": 0.9260773109272122,
+      "units": 3
+    },
+    "ok": true,
+    "per_call_macs": {
+      "continuous": {
+        "1-continuous": 1852200,
+        "15-continuous": 1852200,
+        "5-continuous": 1852200
+      },
+      "hybrid": {
+        "1-continuous": 1432448,
+        "1-macro": 1464704,
+        "1-micro": 1795456,
+        "15-continuous": 1432448,
+        "15-macro": 1464704,
+        "15-micro": 1795456,
+        "5-continuous": 1432448,
+        "5-macro": 1464704,
+        "5-micro": 1795456
+      },
+      "policy": {
+        "CJ": 32095,
+        "J": 32128,
+        "Jcont": 32128
+      }
+    },
+    "pool_accounting": {
+      "branches": 3480,
+      "cell_levels": 108,
+      "complete": 3480,
+      "disjoint_from_fit_and_evaluation": true,
+      "levels": 120,
+      "mixed_cells": {
+        "angle": 73,
+        "grid": 94
+      },
+      "pig_removed": 199,
+      "typed_failures": []
+    },
+    "projection": {
+      "elapsed_hours_on_2_gpus": 2.889817541166364,
+      "issue101_pe_group_seconds": 194.52810493996367,
+      "scoring_gpu_seconds_estimate": 9135.0,
+      "total_gpu_seconds": 20806.68629639782,
+      "training_gpu_seconds": 11671.68629639782,
+      "training_groups": 60
+    },
+    "reading": "#101 artefacts, fit-split cells and anchors, policy-split windows (training data); no evaluation-split model output",
+    "run_at": "2026-10-14T11:29:53Z",
+    "schema": "issue_114_horizon_vs_joint_smoke_v1",
+    "wall_seconds": 54.342353479005396
+  },
+  "validation_command": "python -u -m scripts.run_horizon_vs_joint --validate",
+  "version": 1
+}
