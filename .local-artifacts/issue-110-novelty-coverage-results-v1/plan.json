@@ -1,0 +1,958 @@
+{
+  "action_contract": {
+    "bounds": {
+      "drag_x_magnitude": [
+        10,
+        160
+      ],
+      "drag_y": [
+        -80,
+        80
+      ],
+      "release_time_ms": [
+        600,
+        1000
+      ],
+      "tap_time_ms": [
+        0,
+        1000
+      ]
+    },
+    "encoding": "[drag_x / 480, drag_y / 480, release_time_ms / 1000, tap_time_ms / 1000, 1] (v1, unchanged)",
+    "level_5": "candidates are the #93 grid mirrored (drag_x -> -drag_x), same suffixes"
+  },
+  "anchor_rule_v2": "the v2 carrier of shot frame 0 (decision state, native step 30000): the condition's encoder parse with no prior (header [0, 0], no motion), its scene head over the one-frame history (scene availability 0)",
+  "bootstrap": {
+    "draws": 10000,
+    "label": "DESCRIPTIVE",
+    "quantiles": [
+      0.025,
+      0.975
+    ],
+    "seed": 7201
+  },
+  "claim_boundary": "Rollout error and identifiability are DESCRIPTIVE. Zero-shot and few-shot are separate conditions, never pooled. No decision or ranking claim is made here (#107).",
+  "encoder": {
+    "architecture": "SpatialSlotParserV2 (E99 SpatialSlotParser, 28 queries, 9 kinds, 3 relations, 3 macros)",
+    "carrier": "2 header + 4 scene + 13 x 28 = 370 (TemporalVisualCarrierAdapter features, thresholds 0.5, temperatures 1)",
+    "few_shot_recipe": {
+      "batch_size": 64,
+      "grad_clip": 1.0,
+      "learning_rate": 0.0001,
+      "predictor_schedule": "the LC end state (long horizon 225, full ranking weight)",
+      "seed": 11000001,
+      "updates": 2000,
+      "weight_decay": 0.0001
+    },
+    "scene_head": {
+      "availability": "1 iff the full 15-frame history exists (position >= 14)",
+      "batch_size": 64,
+      "few_shot": "from the zero-shot head, lr 1e-4, the few-shot batch and updates",
+      "grad_clip": 1.0,
+      "hidden": 128,
+      "history": 15,
+      "inputs": "header + slot columns of the last 15 carriers and their 1-frame differences, left-padded with the shot's first frame",
+      "learning_rate": 0.001,
+      "outputs": "gravity_y_normalized (MSE), storm_active (BCE, sigmoid)",
+      "seed": 11000002,
+      "updates": 2000,
+      "weight_decay": 0.0001
+    },
+    "zero_shot_recipe": {
+      "attention_heads": 4,
+      "attention_layers": 2,
+      "batch_size": 64,
+      "epochs": 12,
+      "grad_clip": 1.0,
+      "hidden_dim": 128,
+      "image_height": 240,
+      "image_width": 320,
+      "learning_rate": 0.001,
+      "seed": 9900001,
+      "weight_decay": 0.0001
+    }
+  },
+  "engine_seconds": 0,
+  "frozen_at": "2026-10-15T23:05:36Z",
+  "guards": {
+    "G1_isolation": "no evaluation level in any training or adaptation set; no novel shot in zero-shot training",
+    "G2_labels": "smoke label equality and repaired fan labels agree on every exercised fan template",
+    "G3_training": "every condition keeps >= 1 usable hybrid member",
+    "G4_scoring": "every record under deterministic_scoring; record hashes match the manifest",
+    "failure": "a failed guard turns every token into readiness_or_precision_insufficient"
+  },
+  "hardware": "4x RTX 5090 (the #85 rules name an RTX 3090)",
+  "identifiability": {
+    "batch_size": 256,
+    "bins": 1024,
+    "bootstrap": "level-clustered, 10 000 draws on score-quantile bins; draws lacking a class are discarded",
+    "ceiling": "the same probe on engine features (presence, x, y, vx, vy of every slot)",
+    "folds": "leave one fit level out (gravity-inverted: one pair ordinal, both sides) + a final probe on the whole fit roster scored once on the evaluation roster",
+    "force_on_bodies": {
+      "Fan": [
+        "bird",
+        "block",
+        "pig"
+      ],
+      "turbulence": [
+        "bird",
+        "block"
+      ]
+    },
+    "hidden": 64,
+    "inputs": "zero-shot v2 carriers (header + slots, no scene columns) of the last k frames + 1-frame differences, per-fold standardized; force-on samples (frame, body) over the bodies the law can act on (FORCE_ON_KINDS) and adds the body slot one-hot",
+    "ks": [
+      1,
+      5,
+      15
+    ],
+    "learning_rate": 0.001,
+    "lower": 0.65,
+    "minimum_class_frames": 20,
+    "primary_k": 15,
+    "rule": {
+      "guard": "fewer than 20 positive or 20 negative frames -> readiness_or_precision_insufficient",
+      "identifiable": "point >= 0.75 and lower bound > 0.65",
+      "label_invalid": "engine-feature ceiling below 0.75 -> the label, not the encoder, is at fault",
+      "not_identifiable": "upper bound < 0.75",
+      "otherwise": "readiness_or_precision_insufficient"
+    },
+    "seed": 1100001,
+    "targets": [
+      {
+        "cell": "0/single_force",
+        "pairs": [
+          "pair-type010301",
+          "pair-type010701"
+        ],
+        "sides": [
+          "normal"
+        ],
+        "target": "external-force-active",
+        "task": "0-single_force--external-force-active"
+      },
+      {
+        "cell": "0/single_force",
+        "pairs": [
+          "pair-type010301",
+          "pair-type010701"
+        ],
+        "sides": [
+          "normal"
+        ],
+        "target": "force-on",
+        "task": "0-single_force--force-on"
+      },
+      {
+        "cell": "0/multiple_forces",
+        "pairs": [
+          "pair-type010302",
+          "pair-type010702"
+        ],
+        "sides": [
+          "normal"
+        ],
+        "target": "external-force-active",
+        "task": "0-multiple_forces--external-force-active"
+      },
+      {
+        "cell": "0/multiple_forces",
+        "pairs": [
+          "pair-type010302",
+          "pair-type010702"
+        ],
+        "sides": [
+          "normal"
+        ],
+        "target": "force-on",
+        "task": "0-multiple_forces--force-on"
+      },
+      {
+        "cell": "0/rolling",
+        "pairs": [
+          "pair-type010303",
+          "pair-type010703"
+        ],
+        "sides": [
+          "normal"
+        ],
+        "target": "external-force-active",
+        "task": "0-rolling--external-force-active"
+      },
+      {
+        "cell": "0/rolling",
+        "pairs": [
+          "pair-type010303",
+          "pair-type010703"
+        ],
+        "sides": [
+          "normal"
+        ],
+        "target": "force-on",
+        "task": "0-rolling--force-on"
+      },
+      {
+        "cell": "0/falling",
+        "pairs": [
+          "pair-type010304",
+          "pair-type010704"
+        ],
+        "sides": [
+          "normal"
+        ],
+        "target": "external-force-active",
+        "task": "0-falling--external-force-active"
+      },
+      {
+        "cell": "0/falling",
+        "pairs": [
+          "pair-type010304",
+          "pair-type010704"
+        ],
+        "sides": [
+          "normal"
+        ],
+        "target": "force-on",
+        "task": "0-falling--force-on"
+      },
+      {
+        "cell": "0/sliding",
+        "pairs": [
+          "pair-type010305",
+          "pair-type010705"
+        ],
+        "sides": [
+          "normal"
+        ],
+        "target": "external-force-active",
+        "task": "0-sliding--external-force-active"
+      },
+      {
+        "cell": "0/sliding",
+        "pairs": [
+          "pair-type010305",
+          "pair-type010705"
+        ],
+        "sides": [
+          "normal"
+        ],
+        "target": "force-on",
+        "task": "0-sliding--force-on"
+      },
+      {
+        "cell": "2/single_force",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "2-single_force--external-force-active"
+      },
+      {
+        "cell": "2/single_force",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "2-single_force--force-on"
+      },
+      {
+        "cell": "2/multiple_forces",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "2-multiple_forces--external-force-active"
+      },
+      {
+        "cell": "2/multiple_forces",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "2-multiple_forces--force-on"
+      },
+      {
+        "cell": "2/rolling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "2-rolling--external-force-active"
+      },
+      {
+        "cell": "2/rolling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "2-rolling--force-on"
+      },
+      {
+        "cell": "2/falling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "2-falling--external-force-active"
+      },
+      {
+        "cell": "2/falling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "2-falling--force-on"
+      },
+      {
+        "cell": "2/sliding",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "2-sliding--external-force-active"
+      },
+      {
+        "cell": "2/sliding",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "2-sliding--force-on"
+      },
+      {
+        "cell": "3/single_force",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "3-single_force--external-force-active"
+      },
+      {
+        "cell": "3/single_force",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "3-single_force--force-on"
+      },
+      {
+        "cell": "3/multiple_forces",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "3-multiple_forces--external-force-active"
+      },
+      {
+        "cell": "3/multiple_forces",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "3-multiple_forces--force-on"
+      },
+      {
+        "cell": "3/rolling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "3-rolling--external-force-active"
+      },
+      {
+        "cell": "3/rolling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "3-rolling--force-on"
+      },
+      {
+        "cell": "3/falling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "3-falling--external-force-active"
+      },
+      {
+        "cell": "3/falling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "3-falling--force-on"
+      },
+      {
+        "cell": "3/sliding",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "3-sliding--external-force-active"
+      },
+      {
+        "cell": "3/sliding",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "3-sliding--force-on"
+      },
+      {
+        "cell": "4/single_force",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "4-single_force--external-force-active"
+      },
+      {
+        "cell": "4/multiple_forces",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "4-multiple_forces--external-force-active"
+      },
+      {
+        "cell": "4/rolling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "4-rolling--external-force-active"
+      },
+      {
+        "cell": "4/falling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "4-falling--external-force-active"
+      },
+      {
+        "cell": "4/sliding",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "4-sliding--external-force-active"
+      },
+      {
+        "cell": "6/single_force",
+        "pairs": null,
+        "sides": [
+          "novel",
+          "normal"
+        ],
+        "target": "gravity-inverted",
+        "task": "6-single_force--gravity-inverted"
+      },
+      {
+        "cell": "6/multiple_forces",
+        "pairs": null,
+        "sides": [
+          "novel",
+          "normal"
+        ],
+        "target": "gravity-inverted",
+        "task": "6-multiple_forces--gravity-inverted"
+      },
+      {
+        "cell": "6/rolling",
+        "pairs": null,
+        "sides": [
+          "novel",
+          "normal"
+        ],
+        "target": "gravity-inverted",
+        "task": "6-rolling--gravity-inverted"
+      },
+      {
+        "cell": "6/falling",
+        "pairs": null,
+        "sides": [
+          "novel",
+          "normal"
+        ],
+        "target": "gravity-inverted",
+        "task": "6-falling--gravity-inverted"
+      },
+      {
+        "cell": "6/sliding",
+        "pairs": null,
+        "sides": [
+          "novel",
+          "normal"
+        ],
+        "target": "gravity-inverted",
+        "task": "6-sliding--gravity-inverted"
+      },
+      {
+        "cell": "7/single_force",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "7-single_force--external-force-active"
+      },
+      {
+        "cell": "7/single_force",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "7-single_force--force-on"
+      },
+      {
+        "cell": "7/multiple_forces",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "7-multiple_forces--external-force-active"
+      },
+      {
+        "cell": "7/multiple_forces",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "7-multiple_forces--force-on"
+      },
+      {
+        "cell": "7/rolling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "7-rolling--external-force-active"
+      },
+      {
+        "cell": "7/rolling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "7-rolling--force-on"
+      },
+      {
+        "cell": "7/falling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "7-falling--external-force-active"
+      },
+      {
+        "cell": "7/falling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "7-falling--force-on"
+      },
+      {
+        "cell": "7/sliding",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "7-sliding--external-force-active"
+      },
+      {
+        "cell": "7/sliding",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "force-on",
+        "task": "7-sliding--force-on"
+      },
+      {
+        "cell": "8/single_force",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "8-single_force--external-force-active"
+      },
+      {
+        "cell": "8/single_force",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "storm-active",
+        "task": "8-single_force--storm-active"
+      },
+      {
+        "cell": "8/multiple_forces",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "8-multiple_forces--external-force-active"
+      },
+      {
+        "cell": "8/multiple_forces",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "storm-active",
+        "task": "8-multiple_forces--storm-active"
+      },
+      {
+        "cell": "8/rolling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "8-rolling--external-force-active"
+      },
+      {
+        "cell": "8/rolling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "storm-active",
+        "task": "8-rolling--storm-active"
+      },
+      {
+        "cell": "8/falling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "8-falling--external-force-active"
+      },
+      {
+        "cell": "8/falling",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "storm-active",
+        "task": "8-falling--storm-active"
+      },
+      {
+        "cell": "8/sliding",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "external-force-active",
+        "task": "8-sliding--external-force-active"
+      },
+      {
+        "cell": "8/sliding",
+        "pairs": null,
+        "sides": [
+          "novel"
+        ],
+        "target": "storm-active",
+        "task": "8-sliding--storm-active"
+      }
+    ],
+    "threshold": 0.75,
+    "updates": 2000,
+    "verdict_basis": "the evaluation-roster AUROC at k = 15 (LOLO reported)"
+  },
+  "identity": "issue-110-novelty-coverage-results-v1",
+  "inputs": [
+    {
+      "artifact": "world_model/data/novelty_contract.py",
+      "name": "contract_module",
+      "sha256": "sha256:cbfbd855293334d3dfce1e5f27805871e865ae6fda1582a50e0460d0a04bba15"
+    },
+    {
+      "artifact": "world_model/data/novelty_labels_v2.py",
+      "name": "labels_module",
+      "sha256": "sha256:edc74c70744e2675bbae1f3f2296f40b5c23bd6868f18d56bc53f561cf0346a6"
+    },
+    {
+      "artifact": "world_model/training/novelty_v2.py",
+      "name": "models_module",
+      "sha256": "sha256:c3a1710eecda74918e6bb5dd7573d9a260f36e6f10c5716d13338a95dc1b300f"
+    },
+    {
+      "artifact": "world_model/training/spatial_slot_parser.py",
+      "name": "spatial_slot_parser",
+      "sha256": "sha256:4a1fb427c258880007d7d7f1e98400f1ea94db758c2b4b0dd81bfc7f5bd289f6"
+    },
+    {
+      "artifact": "world_model/training/cnn_hybrid.py",
+      "name": "cnn_hybrid",
+      "sha256": "sha256:d72fac36e5e2b1eed30e84c2f149049b4215c321910279b2abb5d621b17a1b51"
+    },
+    {
+      "artifact": "world_model/training/matched_dynamics.py",
+      "name": "matched_dynamics",
+      "sha256": "sha256:6c96384926c205250f00dd67c9a21760215cc675b10fff82b5aa3ce314eb4bc6"
+    },
+    {
+      "artifact": "world_model/training/decision_dynamics.py",
+      "name": "decision_dynamics",
+      "sha256": "sha256:14aa4587277377bb7d7b8bd4a1954366bb653fb0baf3a912c6fa52075ac1b794"
+    },
+    {
+      "artifact": "world_model/training/stable_decision_dynamics.py",
+      "name": "stable_decision_dynamics",
+      "sha256": "sha256:8269589e0125f68573dd66e9baf641d9b9bc469069257969894483c62a13b4fa"
+    },
+    {
+      "artifact": "scripts/run_decision_relevant_dynamics.py",
+      "name": "issue_112_v1_runner",
+      "sha256": "sha256:22ef72c8dbe6d744f860c3b727ac7d9eb2813be635f622d1f7bb8743ba9ff98f"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_versions.py",
+      "name": "issue_112_versions_runner",
+      "sha256": "sha256:0ebdaf20945d1c0e0ac4b1462059af28f9cf8f544c54ea9f62e7ed4950803539"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_retrain.py",
+      "name": "issue_112_retrain_runner",
+      "sha256": "sha256:0d92e282ec528d41958790d6ba444cd348a56a3854d4c7a1cd9e750de75978f9"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": "scripts/run_novelty_coverage.py",
+      "name": "runner",
+      "sha256": "sha256:2d493536b631cde1d04e640ad9b9ec5b3c456146b868f4a3e857d0b22774eb3f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-110-novelty-coverage-v1/plan.json",
+      "name": "issue_110_design_plan",
+      "sha256": "sha256:9c3678e653b9a97e3bd2c432617e3efa726debf1bf17ec42e4791919363b9224"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "name": "issue_104_campaign_branches",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-capture-smoke-v1/summary.json",
+      "name": "issue_104_smoke_summary",
+      "sha256": "sha256:4ec22ed67ad6209cf576330f6c8dc27375dec0c6dc8d60fae2f35495e03d3a27"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json",
+      "name": "issue_109_cohort_plan",
+      "sha256": "sha256:e88b07903a10dcf492b8bb6c86f10e52b56183c6a3995337ea282dacee4d6dc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-113-capture-window-v1/spec.json",
+      "name": "issue_113_window_spec",
+      "sha256": "sha256:929f5bc6d7d9b42b010e7a87653331f3636c68e8ec51f856b61b945238aa076d"
+    }
+  ],
+  "issue": 110,
+  "labeler_repair": {
+    "evidence": "repair/fan-repair.json (residual acceleration, smoke + fit fan captures)",
+    "frozen_contract_untouched": "world_model/data/novelty_contract.py is unchanged; the repaired law lives in novelty_labels_v2.py",
+    "law": {
+      "label": "force-on(novelty:0000, body) at a step iff the body is dynamic, not a platform, and the bounding box of its non-trigger colliders in the trigger frame intersects the recorded trigger box",
+      "replaces": "contract.FORCE_LAWS['bird_zone_push'] (ABFan: -right * 25 on the launched bird, 2 x 1.5 left zone)",
+      "rule": "force = transform.right * 50 on every non-platform rigidbody inside the Fan's trigger box (BoxCollider2D size (windWidth * 2, windHeight) = (8, 1), centred on the fan); no speed gate, no launch condition",
+      "script": "Fan.cs (attached, enabled); ABFan.cs is attached to the prefab but disabled (m_Enabled: 0)",
+      "serialized": {
+        "fanForce": 50.0,
+        "windHeight": 1.0,
+        "windWidth": 4.0
+      },
+      "types": [
+        "Fan"
+      ]
+    }
+  },
+  "labels": {
+    "approximations": {
+      "event_wind": "flying-or-dying bird approximated by 'launched and still active'",
+      "fan": "force-on(novelty:0000, body) at a step iff the body is dynamic, not a platform, and the bounding box of its non-trigger colliders in the trigger frame intersects the recorded trigger box",
+      "radial_linear": "trigger overlap approximated by centre distance < radius; 'removed after a collision until re-entry' approximated by 'not in contact with the magnet at this step'",
+      "region_push": "trigger overlap approximated by the body centre lying inside the box"
+    },
+    "macros": [
+      "steady-state",
+      "structure-unstable",
+      "external-force-active"
+    ],
+    "module": "world_model/data/novelty_labels_v2.py",
+    "per_delta_rule": "a predicate requested at Delta is true when it holds at any frame in (t, t + Delta]; the label of a prediction landing at window position j is the OR of the per-frame labels at j - Delta + 1 .. j (clamped to the shot's first frame); its mask is the OR of the per-frame masks",
+    "relations": [
+      "contact",
+      "supports",
+      "force-on"
+    ],
+    "scene_targets": [
+      "gravity_y / 9.8",
+      "storm-active (first destroyed bird <= step, Storm levels)"
+    ],
+    "v1_equivalence": "on the v1 slots the v2 labels equal the #99 / #112 labels (smoke)"
+  },
+  "membership": {
+    "branches": 34400,
+    "complete": 34348,
+    "evaluation": "issue110-evaluation, both sides, never fitted (zero-shot and few-shot scored)",
+    "few_shot_encoder_images": {
+      "rule": "every complete novel fit shot of the level; stride 5",
+      "shots": {
+        "1": 640,
+        "2": 624,
+        "3": 640,
+        "4": 631,
+        "5": 640,
+        "6": 640,
+        "7": 640,
+        "8": 640
+      }
+    },
+    "few_shot_training": "issue110-fit novel sides of the novelty level's five pairs",
+    "order": "stream, pair, roster ordinal, side (normal, novel), candidate suffix",
+    "streams": [
+      "issue110-fit",
+      "issue110-evaluation",
+      "issue109-fit"
+    ],
+    "zero_shot_encoder_images": {
+      "rule": "normal fit shots at grid ordinals 0, 5, 10, 15; image stride 5 (E99)",
+      "shots": 3198
+    },
+    "zero_shot_training": "split fit, normal side: issue110-fit normal sides + issue109-fit"
+  },
+  "objective": {
+    "decision_cost_unit": "single pig per level (all 80 templates author exactly one pig)",
+    "every_level": "first-shot success = engine pig removal (the #85 channel's pig_removed); decision cost = the #99 tie-free cost on pig:0000 (presence - 0.1 * displacement), lower is better; terminal kinds native_clear / native_fail / stable_without_clear / right_censored",
+    "level_7": "unchanged. The changed goal is the air-turbulence agent's: InverseAirTurbulence pushes down (turbulenceForce -10) where NonNovelAirTurbulence pushes up (+1.5). The engine clear condition (every pig dead) and fail condition (birds exhausted) do not change"
+  },
+  "predictor": {
+    "continuous_width": {
+      "continuous_parameters": 2844674,
+      "hybrid_parameters": 2850731,
+      "relative_error": 0.002124718186317825,
+      "width": 568
+    },
+    "families": [
+      "hybrid",
+      "continuous"
+    ],
+    "few_shot": {
+      "batch_size": 64,
+      "grad_clip": 1.0,
+      "learning_rate": 0.0001,
+      "predictor_schedule": "the LC end state (long horizon 225, full ranking weight)",
+      "seed": 11000001,
+      "updates": 2000,
+      "weight_decay": 0.0001
+    },
+    "ranking_cells": "every training level x inventory with both verdicts (#112 retrain rule); a few-shot level without one has a zero ranking term",
+    "recipe": "#112 v3 LC (retrain implementation: logging v3 ensemble, truncation 45, LONG, RANK, 9000 updates, batch 64, lr 1e-4, wd 1e-4, clip 1.0), group size 1",
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "usable": "complete, skips <= 45, no #117 end-of-training excursion"
+  },
+  "question": "Can contract v2 (28 slots, scene state, novelty entity, symmetric action contract, declared level-7 objective) carry every NovPhy scenario x novelty cell through the E99 encoder and the #112 v3 LC predictor, and with what rollout error, zero-shot from normal training and few-shot per novelty level?",
+  "readiness": {
+    "multiple_forces": "rollout error only (no single-shot decision headroom)",
+    "supported": "smoke gate supported, every captured level fits v2, at least one complete evaluation level, finite zero-shot rollout errors for all nine requests with at least one usable hybrid seed, and every guard holds"
+  },
+  "repair_sha256": "sha256:e75f2b5e06192a3dedb6221250fc37cf39fcfd1cb4eaa9ef07152bc69e95abfd",
+  "rollout_error": {
+    "aggregation": "branch -> mean over usable seeds; level -> mean over its complete branches; cell -> level-clustered bootstrap",
+    "anchor": "the v2 anchor rule",
+    "conditions": {
+      "few_shot": "levels of novelty-level-k pairs (both sides) under the level-k adaptation",
+      "zero_shot": "every evaluation level"
+    },
+    "contrast": "novel minus paired normal (same pair and ordinal), level-clustered bootstrap",
+    "descriptive_requests": [
+      "C-F-1",
+      "C-F-5",
+      "C-F-15"
+    ],
+    "metric": "masked_carrier_mse: mean squared error over the 13 features of every engine-present slot plus gravity_y_normalized and storm_active; position_mse: slot centers only",
+    "pooling": "never pooled across conditions",
+    "reference": "persistence (the anchor carrier held fixed)",
+    "requests": [
+      "F-1-continuous",
+      "F-1-micro",
+      "F-1-macro",
+      "F-5-continuous",
+      "F-5-micro",
+      "F-5-macro",
+      "F-15-continuous",
+      "F-15-micro",
+      "F-15-macro"
+    ],
+    "target": "engine-projected v2 carrier at min(t, end)",
+    "times": [
+      15,
+      60,
+      225
+    ]
+  },
+  "runner": "scripts/run_novelty_coverage.py",
+  "schema": "issue_110_results_plan_v1",
+  "smoke": {
+    "passed": true,
+    "projection": {
+      "carrier_hours_4gpu": 0.6497522428217861,
+      "encoder_hours": 0.12117506268188298,
+      "few_shot_training_hours_4gpu": 0.8957613173406572,
+      "labels_hours": 0.11074834022301618,
+      "total_wall_hours_upper": 6.449257951072836,
+      "zero_shot_training_hours_4gpu": 0.6718209880054928
+    }
+  },
+  "smoke_sha256": "sha256:2b42f77a985e98be83841dd319b9ab604d60522ae720cf3994900ba0c7120e12",
+  "validation_command": "python -u -m scripts.run_novelty_coverage --validate"
+}

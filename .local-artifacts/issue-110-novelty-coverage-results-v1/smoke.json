@@ -1,0 +1,310 @@
+{
+  "auroc_check": {
+    "bootstrap": [
+      0.73121140625,
+      0.79163828125
+    ],
+    "perfect": 1.0,
+    "ties": 0.5
+  },
+  "carriers": {
+    "engine_pig_presence_at_0": 1.0,
+    "engine_shape": [
+      286,
+      370
+    ],
+    "finite": true,
+    "pig_presence_column": 175,
+    "seconds_per_shot": 0.18839465803466737,
+    "shape": [
+      286,
+      370
+    ]
+  },
+  "created_at": "2026-10-15T23:01:00Z",
+  "fan_repair": {
+    "fit/type010201": {
+      "legacy": "disagree",
+      "repaired": "agree"
+    },
+    "fit/type010202": {
+      "legacy": "disagree",
+      "repaired": "agree"
+    },
+    "fit/type010203": {
+      "legacy": "disagree",
+      "repaired": "agree"
+    },
+    "fit/type010204": {
+      "legacy": "disagree",
+      "repaired": "agree"
+    },
+    "fit/type010205": {
+      "legacy": "disagree",
+      "repaired": "agree"
+    },
+    "smoke/type010201": {
+      "legacy": "disagree",
+      "repaired": "not_exercised"
+    },
+    "smoke/type010202": {
+      "legacy": "disagree",
+      "repaired": "agree"
+    },
+    "smoke/type010203": {
+      "legacy": "disagree",
+      "repaired": "agree"
+    },
+    "smoke/type010204": {
+      "legacy": "disagree",
+      "repaired": "agree"
+    },
+    "smoke/type010205": {
+      "legacy": "not_exercised",
+      "repaired": "not_exercised"
+    }
+  },
+  "label_equality": {
+    "images_equal_s99": true,
+    "retrain_cache_equal": 20,
+    "retrain_cache_shots": 20,
+    "s99_centers_max_abs": 0.0,
+    "s99_presence_equal": true
+  },
+  "label_seconds_per_shot": 0.5107295065600839,
+  "labels_per_level": {
+    "0": {
+      "action": [
+        -0.0833333358168602,
+        0.010416666977107525,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "branch": "issue-110-fit-type010101-normal-001-c00",
+      "external_force_frames": 0,
+      "force_on_frames": 0,
+      "gravity_y": -1.0,
+      "novelty_present_frames": 0,
+      "outside_v2": [],
+      "side": "left",
+      "source": null,
+      "storm_frames": 0
+    },
+    "1": {
+      "action": [
+        -0.0833333358168602,
+        0.010416666977107525,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "branch": "issue-110-fit-type010101-novel-001-c00",
+      "external_force_frames": 0,
+      "force_on_frames": 0,
+      "gravity_y": -1.0,
+      "novelty_present_frames": 0,
+      "outside_v2": [],
+      "side": "left",
+      "source": null,
+      "storm_frames": 0
+    },
+    "2": {
+      "action": [
+        -0.0833333358168602,
+        0.010416666977107525,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "branch": "issue-110-fit-type010201-novel-001-c00",
+      "external_force_frames": 0,
+      "force_on_frames": 0,
+      "gravity_y": -1.0,
+      "novelty_present_frames": 286,
+      "outside_v2": [],
+      "side": "left",
+      "source": "Fan",
+      "storm_frames": 0
+    },
+    "3": {
+      "action": [
+        -0.0833333358168602,
+        0.010416666977107525,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "branch": "issue-110-fit-type010301-novel-001-c00",
+      "external_force_frames": 0,
+      "force_on_frames": 0,
+      "gravity_y": -1.0,
+      "novelty_present_frames": 286,
+      "outside_v2": [],
+      "side": "left",
+      "source": "NovelAirTurbulence",
+      "storm_frames": 0
+    },
+    "4": {
+      "action": [
+        -0.0833333358168602,
+        0.010416666977107525,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "branch": "issue-110-fit-type010401-novel-001-c00",
+      "external_force_frames": 173,
+      "force_on_frames": 173,
+      "gravity_y": -1.0,
+      "novelty_present_frames": 286,
+      "outside_v2": [],
+      "side": "left",
+      "source": "Magnet",
+      "storm_frames": 0
+    },
+    "5": {
+      "action": [
+        0.0833333358168602,
+        0.010416666977107525,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "branch": "issue-110-fit-type010501-novel-001-c00",
+      "external_force_frames": 0,
+      "force_on_frames": 0,
+      "gravity_y": -1.0,
+      "novelty_present_frames": 0,
+      "outside_v2": [],
+      "side": "right",
+      "source": null,
+      "storm_frames": 0
+    },
+    "6": {
+      "action": [
+        -0.0833333358168602,
+        0.010416666977107525,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "branch": "issue-110-fit-type010601-novel-001-c00",
+      "external_force_frames": 0,
+      "force_on_frames": 0,
+      "gravity_y": 0.6122449040412903,
+      "novelty_present_frames": 0,
+      "outside_v2": [],
+      "side": "left",
+      "source": "InverseGravity",
+      "storm_frames": 0
+    },
+    "7": {
+      "action": [
+        -0.0833333358168602,
+        0.010416666977107525,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "branch": "issue-110-fit-type010701-novel-001-c00",
+      "external_force_frames": 0,
+      "force_on_frames": 0,
+      "gravity_y": -1.0,
+      "novelty_present_frames": 286,
+      "outside_v2": [],
+      "side": "left",
+      "source": "InverseAirTurbulence",
+      "storm_frames": 0
+    },
+    "8": {
+      "action": [
+        -0.0833333358168602,
+        0.010416666977107525,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "branch": "issue-110-fit-type010801-novel-001-c00",
+      "external_force_frames": 0,
+      "force_on_frames": 0,
+      "gravity_y": -1.0,
+      "novelty_present_frames": 0,
+      "outside_v2": [],
+      "side": "left",
+      "source": "Storm",
+      "storm_frames": 0
+    }
+  },
+  "membership": {
+    "branches": 34400,
+    "by_stream": {
+      "issue109-fit": 13919,
+      "issue110-evaluation": 10221,
+      "issue110-fit": 10208
+    },
+    "complete": 34348,
+    "few_image_shots": {
+      "1": 640,
+      "2": 624,
+      "3": 640,
+      "4": 631,
+      "5": 640,
+      "6": 640,
+      "7": 640,
+      "8": 640
+    },
+    "zero_image_shots": 3198
+  },
+  "passed": true,
+  "per_delta_symbols": {
+    "equals_window_any": true,
+    "shape": [
+      1,
+      4,
+      61,
+      28,
+      28,
+      3
+    ]
+  },
+  "plan_identity": "issue-110-novelty-coverage-results-v1",
+  "predictors": {
+    "continuous": {
+      "basis": "updates 21-40 of 40 at the most expensive LC update (horizon 225, ranking on)",
+      "parameters": 2844674,
+      "peak_memory_gb": 5.362725376,
+      "seconds_per_update": 0.1184584044967778
+    },
+    "continuous_width": {
+      "continuous_parameters": 2844674,
+      "hybrid_parameters": 2850731,
+      "relative_error": 0.002124718186317825,
+      "width": 568
+    },
+    "hybrid": {
+      "basis": "updates 21-40 of 40 at the most expensive LC update (horizon 225, ranking on)",
+      "parameters": 2850731,
+      "peak_memory_gb": 5.362725376,
+      "seconds_per_update": 0.13436419760109858
+    }
+  },
+  "projection": {
+    "carrier_hours_4gpu": 0.6497522428217861,
+    "encoder_hours": 0.12117506268188298,
+    "few_shot_training_hours_4gpu": 0.8957613173406572,
+    "labels_hours": 0.11074834022301618,
+    "total_wall_hours_upper": 6.449257951072836,
+    "zero_shot_training_hours_4gpu": 0.6718209880054928
+  },
+  "schema": "issue_110_results_smoke_v1",
+  "scoring": {
+    "finite": true,
+    "times": [
+      15,
+      60,
+      225
+    ]
+  },
+  "wall_seconds": 170.09962350083515
+}
