@@ -1,2 +1,18 @@
 smoke-1 351742 launched-about 2026-10-15T00:03:31Z
 smoke-2 foreground (observation re-derivation only, no engine dispatch) 2026-10-15T00:19:04Z
+anchors foreground 2026-10-15T00:20:14Z
+decide-shot1-w0 371287 2026-10-15T00:20:23Z
+decide-shot1-w1 371289 2026-10-15T00:20:23Z
+decide-shot1-w2 371291 2026-10-15T00:20:23Z
+decide-shot1-w3 371293 2026-10-15T00:20:23Z
+execute-shot1  2026-10-15T01:10:45Z
+decide-shot1 note: tail --pid wait hung on reaped-late children (zombies of the waiting shell); all 4 workers had exited 0 with 44/44 records; nothing relaunched
+execute-shot1 pid 383769 (recorded via pgrep; the launch line above lost $!)
+execute-shot1 incident 2026-10-15T02:26:31Z: supervisor raised 'worker did not establish its process group' (spawn child re-imported the heavy runner main module under load avg ~90 > 5 s start window) at 362/2883; 14 live workers sealed supervisor_interrupted, 1 attempt without result (sealed on resume); orphan Xvnc 569822 killed; no live workers remained; stage resumed with a -c launcher (spawned workers no longer re-import the runner; code unchanged)
+execute-shot1-resume pid 570785 2026-10-15T02:26:36Z
+decide-shot2 pids 1628402 1628403 1628404 1628405  2026-10-15T11:56:16Z
+execute-shot2 pid 1631198 2026-10-15T12:01:41Z
+decide-shot3 pids 2131238 2131239 2131240 2131241  2026-10-15T16:28:24Z
+execute-shot3 pid 2132941 2026-10-15T16:33:08Z
+gallery + posthoc-frames launched 2026-10-15T20:31:26Z
+publish + validate foreground 2026-10-15T21:59:49Z

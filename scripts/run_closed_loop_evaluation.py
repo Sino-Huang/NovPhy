@@ -782,8 +782,9 @@ def observe(ctx, executions):
 
 
 def engine_totals(output):
-    phases = ledger_phases(output)
-    return sum(p.get("campaign_wall_seconds", 0.0) for p in phases.values())
+    """Campaign wall so far (raw run-logs; includes interrupted launches)."""
+    root = Path(output) / "engine" / "run-log"
+    return sum(read_json(p)["wall_seconds"] for p in root.glob("*.json")) if root.is_dir() else 0.0
 
 
 def execute_shot(ctx, shot, ledger_output):
@@ -1273,12 +1274,28 @@ def record_manifest(ctx):
         for path in sorted((engine / sub).glob("*.json")):
             add(path, role)
     add(n2_anchor_path(output), "n2_anchor_store")
+    if posthoc_path(output).is_file():
+        add(posthoc_path(output), "posthoc_decision_frames")
     add(gb.anchors_path(gb.OUTPUT), "n1_anchor_store")
     add(CAMPAIGN / "branches.json", "recorded_104_rows")
     if (ctx["gallery"] / "manifest.json").is_file():
         add(ctx["gallery"] / "manifest.json", "gallery_manifest")
     return {"schema": SCHEMA_MANIFEST, "identity": IDENTITY, "files": files, "count": len(files),
             "roles": {role: sum(1 for f in files if f["role"] == role) for role in sorted({f["role"] for f in files})}}
+
+
+def engine_accounting(engine, totals):
+    """Engine compute from the raw campaign run-logs (campaign wall, 16 workers) and receipts (per-execution worker
+    wall). An interrupted launch writes its run-log but no ledger entry, so the raw files are authoritative."""
+    runs = [read_json(p) for p in sorted((engine / "run-log").glob("*.json"))]
+    receipts = [read_json(p) for p in sorted((engine / "receipts").glob("*.json"))]
+    return {"engine_seconds": sum(r.get("wall_seconds") or 0.0 for r in receipts),
+            "engine_campaign_wall_seconds": sum(r["wall_seconds"] for r in runs),
+            "engine_campaign_runs": [{k: r[k] for k in ("wall_seconds", "attempts", "interrupted", "finished_at_utc",
+                                                        "artifact_bytes_added")} for r in runs],
+            "artifact_bytes_added": sum(r["artifact_bytes_added"] for r in runs),
+            "ledger_engine_seconds": totals["engine_seconds"],
+            "ledger_campaign_wall_seconds": totals["campaign_wall_seconds"]}
 
 
 def compute_tables(ctx, plan):
@@ -1296,12 +1313,13 @@ def compute_tables(ctx, plan):
         "schema": SCHEMA_COMPUTE, "identity": IDENTITY, "frozen_at": plan["frozen_at"],
         "semantics": plan["semantics"], "pass_criterion": PASS_FIELD, "shot_budget": SHOT_BUDGET,
         "tables": tables, "guards": guard, "cross_check": cross_check(verdicts),
+        "posthoc_decision_frames": (read_json(posthoc_path(ctx["output"])) if posthoc_path(ctx["output"]).is_file()
+                                    else None),
         "executions": {"live": len(verdicts), "levels_touched": {k: len(v) for k, v in distinct.items()},
                        "episodes": len(eps),
                        "chosen_choices": sum(len(s) for s in (e["shots"] for e in eps))},
         "compute": {"gpu_seconds": totals["gpu_seconds"], "wall_seconds": totals["wall_seconds"],
-                    "engine_seconds": totals["engine_seconds"],
-                    "engine_campaign_wall_seconds": totals["campaign_wall_seconds"],
+                    **engine_accounting(ctx["engine"], totals),
                     "smoke": smoke_totals, "phases": ledger_phases(ctx["output"]),
                     "caps": {"gpu_seconds": GPU_CAP_SECONDS, "engine_campaign_wall_seconds": ENGINE_WALL_CAP_SECONDS,
                              "artifact_bytes": ARTIFACT_CAP_BYTES},
@@ -1408,6 +1426,15 @@ def findings_md(plan, compute):
             add(f"| {set_name} | {arm} | {cell(a['pass3'])} | {cell(a['recorded_pass3'])} | "
                 f"{a['replay_differs_cells']} |")
     add("")
+    p = compute["posthoc_decision_frames"]
+    if p:
+        add("## POST-HOC: decision-frame sensitivity (declared after G4 failed; changes no token)")
+        add("")
+        add(f"Levels whose live decision frame parsed beyond the tolerance: {', '.join(p['levels'])}. Re-ranking "
+            f"from each distinct live decision frame with every model arm and seed keeps the first pick in "
+            f"{p['same_first']}/{p['comparisons']} and the first three picks in {p['same_first_three']}/"
+            f"{p['comparisons']} comparisons.")
+        add("")
     add("## Guards")
     add("")
     for name, block in g.items():
@@ -1779,6 +1806,63 @@ def publish(output):
     return 0
 
 
+def posthoc_path(output):
+    return Path(output) / "records" / "posthoc-decision-frames.json"
+
+
+def posthoc_frames(output):
+    """POST-HOC (declared after G4 failed; changes no token): on every level where a live decision frame parsed more
+    than the tolerance away from the planner's anchor, re-rank the grid from each distinct live decision frame with
+    every model arm x seed and report whether the first three picks (the episode's possible shots; exclusion
+    follows the ranking order) or the first pick would change."""
+    output = Path(output)
+    load_plan(output)
+    ctx = main_context(output)
+    decisions, verdicts = load_decisions(ctx), load_verdicts(output)
+    exceed = sorted({v["level"] for v in verdicts.values()
+                     if v["decision_frame"] and v["decision_frame"]["max_abs_diff"] > TOLERANCE})
+    began = time.monotonic()
+    rows = []
+    with harness.deterministic_scoring() as policy:
+        adapter = s99.load_adapter(s99.OUTPUT, "E")
+        frames = {}
+        for level in exceed:
+            groups = {}
+            for v in sorted(verdicts.values(), key=lambda v: v["execution"]):
+                if v["level"] == level and v["decision_frame"]:
+                    groups.setdefault(v["frames"]["live"]["first"], []).append(v)
+            frames[level] = [{"frame_sha256": sha, "executions": [v["execution"] for v in group],
+                              "max_abs_diff": group[0]["decision_frame"]["max_abs_diff"],
+                              "z": rt.anchor_carrier(adapter, ctx["engine"] / "attempts" / group[0]["execution"])}
+                             for sha, group in sorted(groups.items())]
+        costs = dap.endpoint_costs()
+        for pid in MODEL_ARMS:
+            for seed in SEEDS:
+                arm = etf.load_arm(etf.entry_of(pid), seed, None)
+                for level in exceed:
+                    base = decisions[(1, pid, seed)]["levels"][level]["ranking"]
+                    for frame in frames[level]:
+                        block = etf.run_cell(arm, INVENTORY, level, ctx["levels"][level], {"E99": {level: frame["z"]}},
+                                             costs, seed)
+                        ranking = model_ranking(block["rows"])
+                        rows.append({"arm": pid, "seed": seed, "level": level, "frame_sha256": frame["frame_sha256"],
+                                     "max_abs_diff": frame["max_abs_diff"], "same_first": ranking[0] == base[0],
+                                     "same_first_three": ranking[:SHOT_BUDGET] == base[:SHOT_BUDGET]})
+                torch.cuda.empty_cache()
+    record = {"schema": "issue_102_posthoc_decision_frames_v1", "plan_identity": IDENTITY, "label": "POST-HOC",
+              "scoring_policy": policy, "computed_at": utc_now(), "levels": exceed,
+              "frames": {lv: [{k: f[k] for k in ("frame_sha256", "executions", "max_abs_diff")} for f in fs]
+                         for lv, fs in frames.items()},
+              "rows": rows, "same_first": sum(r["same_first"] for r in rows),
+              "same_first_three": sum(r["same_first_three"] for r in rows), "comparisons": len(rows)}
+    write_json(posthoc_path(output), record)
+    wall = time.monotonic() - began
+    mark(output, "posthoc-decision-frames", wall, wall, comparisons=len(rows))
+    log(f"post-hoc decision frames: {record['same_first_three']}/{len(rows)} same first-three picks, "
+        f"{record['same_first']}/{len(rows)} same first pick ({wall:.0f}s)")
+    return 0
+
+
 def spot_checks(ctx):
     """Re-decide one arm x seed on the first N1 levels and recompute live verdicts of a sample (exact)."""
     decisions = load_decisions(ctx)
@@ -1850,7 +1934,8 @@ def status(output):
 
 
 MODES = {"dry-run": dry_run, "smoke": smoke, "prepare": prepare, "anchors": anchors, "decide": decide,
-         "execute": execute, "gallery": gallery, "publish": publish, "validate": validate, "status": status}
+         "execute": execute, "gallery": gallery, "posthoc-frames": posthoc_frames, "publish": publish,
+         "validate": validate, "status": status}
 
 
 def main():
