@@ -21,10 +21,13 @@ AMENDMENTS = {
                    "cross-inventory qualification in findings.md")},
     "scripts/run_novelty_coverage.py": {
         "issue": 110, "replaces": ("sha256:86307b1c3bf45dfb806d934e1c19ce7adc2d60275cb19fb14ec0e4026e8683fa",),
-        "sha256": "sha256:65eb80a4b708d0d9876f9e41891ed10a8e361095c407f494c4b9bae4e6f4df62",
+        "sha256": "sha256:57b2e1415c366d7c950fbd9972be82e14a9d09550cea73beafca3de812754bfe",
         "change": ("load_plan verifies every pinned input, smoke.json and the repair record; --repair refuses after "
                    "the freeze; a failed guard invalidates every probe verdict and readiness status; scoring-policy "
-                   "coverage and encoder-training summary published; --probe records its scoring policy")},
+                   "coverage and encoder-training summary published; --probe records its scoring policy; "
+                   "--probe-reproducibility (owner decision 2026-10-16) retrains every probe under "
+                   "deterministic_scoring() into probe-reproducibility/ and the publication reports it beside the "
+                   "published probes with the G4 literal-text failure")},
     "scripts/run_horizon_vs_joint.py": {
         "issue": 114, "replaces": ("sha256:d14edbeed0377b606e9897074b1cbd01ef21905ce9430bbd2866eb29af715bc5",),
         "sha256": "sha256:e632248e8be86763a52f873cc6c02cf8e84880bdefeae9761f2d5d95c1e478cb",

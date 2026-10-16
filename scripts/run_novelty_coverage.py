@@ -1528,6 +1528,80 @@ def probe(output, workers, worker):
     return 0
 
 
+# probe reproducibility (post-freeze, owner decision 2026-10-16; phase-A review B2) --------------------
+
+REPRO = "probe-reproducibility"
+
+
+def repro_path(output, task):
+    return Path(output) / REPRO / "records" / f"{task}.json"
+
+
+def probe_reproducibility(output, workers, worker):
+    """Retrain and re-score every identifiability probe exactly as --probe defines it (features, seeds,
+    folds, k), with training and scoring under deterministic_scoring(), into probe-reproducibility/: a
+    non-replacing reproducibility check of the published probe records, which are never rewritten. Own
+    ledger; existing outputs are kept."""
+    output = Path(output)
+    load_plan(output)
+    if not (output / "summary.json").is_file():
+        raise ValueError("the reproducibility check follows the frozen publication")
+    began = time.monotonic()
+    mine = [t for k, t in enumerate(probe_targets()) if k % workers == worker and not repro_path(output, t["task"]).is_file()]
+    for task in mine:
+        started = time.monotonic()
+        with heavy().harness.deterministic_scoring() as policy:
+            record = run_probe_task(output, task)
+        write_json(repro_path(output, task["task"]), {**record, "scoring_policy": policy,
+                                                      "role": "post-freeze reproducibility check (not a replacement)"})
+        log(f"probe reproducibility {task['task']}: {time.monotonic() - started:.0f}s")
+    wall = time.monotonic() - began
+    write_json(output / REPRO / "ledger" / f"worker{worker}.json",
+               {"wall_seconds": wall, "gpu_seconds": wall, "tasks": len(mine), "at": utc_now()})
+    return 0
+
+
+def repro_manifest(output):
+    output = Path(output)
+    return {"schema": "issue_110_probe_reproducibility_manifest_v1",
+            "records": {str(p.relative_to(output)): sha256_of(p)
+                        for p in sorted((output / REPRO / "records").glob("*.json"))}}
+
+
+def reproducibility_table(output):
+    """Published probe verdicts (k = 15) next to the deterministic retrain; per-class agreement and the
+    largest |delta AUROC| over every task, kind and k."""
+    rows, deltas = [], []
+    for task in probe_targets():
+        published = read_json(probe_path(output, task["task"]))
+        retrained = read_json(repro_path(output, task["task"]))
+        k = str(PROBE["primary_k"])
+        sides = {}
+        for name, record in (("published", published), ("retrain", retrained)):
+            carrier, engine = record["kinds"]["carrier"][k]["evaluation"], record["kinds"]["engine"][k]["evaluation"]
+            sides[name] = {"auroc": carrier["auroc"], "lower": (carrier["interval"] or [None])[0],
+                           "verdict": verdict(carrier, engine)}
+        for kind in ("carrier", "engine"):
+            for kk in PROBE["ks"]:
+                for part in ("lolo_fit", "evaluation"):
+                    a = published["kinds"][kind][str(kk)][part]["auroc"]
+                    b = retrained["kinds"][kind][str(kk)][part]["auroc"]
+                    if a is not None and b is not None:
+                        deltas.append(abs(a - b))
+        rows.append({"task": task["task"], **sides, "agree": sides["published"]["verdict"] == sides["retrain"]["verdict"]})
+    classes = sorted({r["published"]["verdict"] for r in rows})
+    return {"label": ("post-freeze reproducibility check (owner decision 2026-10-16): every probe retrained and "
+                      "re-scored under deterministic_scoring() with the frozen features, seeds, folds and k; reported "
+                      "beside the published records, not swapped in"),
+            "rows": rows, "agree": sum(r["agree"] for r in rows), "tasks": len(rows),
+            "agreement_by_published_verdict": {c: {"tasks": sum(r["published"]["verdict"] == c for r in rows),
+                                                   "agree": sum(r["agree"] for r in rows if r["published"]["verdict"] == c)}
+                                               for c in classes},
+            "max_abs_delta_auroc": max(deltas) if deltas else None, "auroc_pairs_compared": len(deltas),
+            "scoring_policy_all": all(read_json(repro_path(output, t["task"])).get("scoring_policy")
+                                      == heavy().harness.SCORING_POLICY for t in probe_targets())}
+
+
 # ---------------------------------------------------------------------------
 # smoke (pre-freeze; nothing kept)
 # ---------------------------------------------------------------------------
@@ -2012,24 +2086,36 @@ def invalidate(obj):
 
 
 PROBE_SCORING_NOTE = (
-    "the identifiability probes (MLP probes trained and scored in-process by --probe) ran without "
-    "deterministic_scoring() and their records carry no scoring policy; the frozen G4 check iterates the rollout "
-    "records only, so the plan's G4 text ('every record under deterministic_scoring') does not hold for the probe "
-    "records. The probe models were not retained, so the verdicts cannot be re-scored without retraining, which a "
-    "post-freeze change may not do; they are reported as recorded. A fresh process importing this runner runs with "
-    "matmul TF32 off (as SCORING_POLICY) and cuDNN deterministic off / cuDNN TF32 on; the probes use no cuDNN "
-    "operation. Borderline verdicts are not guaranteed to reproduce. G4 and every token are unchanged")
+    "G4's literal text ('every record under deterministic_scoring') FAILED for the 60 published identifiability probe "
+    "records: --probe trained and scored them outside deterministic_scoring() and they store no scoring policy. The "
+    "frozen G4 computation, over the rollout records, passes and is unchanged; this failure is reported separately. "
+    "By owner decision (2026-10-16) the frozen cascade (a failed guard turns every token into "
+    "readiness_or_precision_insufficient) is not applied: the readiness and rollout tokens stand. Every "
+    "identifiability verdict carries this G4 qualification and its reproducibility result: all probes were retrained "
+    "and re-scored under deterministic_scoring() with the frozen features, seeds, folds and k (probe-reproducibility/), "
+    "reported beside the published records, not swapped in")
+G4_QUALIFICATION = "published probe scored outside deterministic_scoring() (G4 literal text failed; cascade not applied)"
 
 
 def scoring_coverage(output, compute):
-    """Which records the frozen G4 scoring-policy check covers (phase-A review B2)."""
+    """G4 coverage of the published records (phase-A review B2, owner decision 2026-10-16)."""
     policy = heavy().harness.SCORING_POLICY
     probes = [read_json(probe_path(output, t["task"])) for t in probe_targets()]
     return {"rollout_records": len(score_tasks()), "rollout_policy_checked_by_G4": True,
             "G4_scoring": compute["guards"]["G4_scoring"], "probe_records": len(probes),
             "probe_records_with_scoring_policy": sum(r.get("scoring_policy") == policy for r in probes),
-            "probe_policy_checked_by_G4": False, "note": PROBE_SCORING_NOTE}
+            "probe_policy_checked_by_G4": False, "G4_literal_text_probe_records": "failed",
+            "failed_guard_cascade_applied": False, "cascade_decision": "owner decision 2026-10-16",
+            "note": PROBE_SCORING_NOTE}
 
+
+def qualified_identifiability(compute, repro):
+    """Every identifiability verdict with its G4 qualification and reproducibility result."""
+    retrain = {r["task"]: r for r in repro["rows"]}
+    return {task: {"verdict": v["verdict"], "G4": G4_QUALIFICATION,
+                   "reproducibility": {"retrain_verdict": retrain[task]["retrain"]["verdict"],
+                                       "agree": retrain[task]["agree"]}}
+            for task, v in compute["identifiability"].items()}
 
 
 def compute_tables(output, plan):
@@ -2184,7 +2270,7 @@ def interval_text(block, digits=4):
     return f"{fmt(block['mean'], digits)} [{fmt(block['interval'][0], digits)}, {fmt(block['interval'][1], digits)}]"
 
 
-def findings_md(plan, compute, coverage, encoders):
+def findings_md(plan, compute, coverage, encoders, repro):
     lines = []
     add = lines.append
     add("# #110 results: contract-v2 coverage of all 45 NovPhy cells")
@@ -2195,14 +2281,20 @@ def findings_md(plan, compute, coverage, encoders):
     supported = sum(r["status"] == "supported" for r in compute["readiness"])
     add(f"**Readiness: {supported} / 45 cells supported.**")
     add("")
-    add("| cell | status | reasons | flags | eval levels | mixed levels | identifiability (k = 15) |")
+    add("| cell | status | reasons | flags | eval levels | mixed levels | identifiability (k = 15): published verdict "
+        "[deterministic retrain verdict] |")
     add("| --- | --- | --- | --- | --- | --- | --- |")
+    retrain = {r["task"]: r["retrain"]["verdict"] for r in repro["rows"]}
     for r in compute["readiness"]:
-        ident = "; ".join(f"{t}: {v}" for t, v in r["identifiability"].items()) or "not required"
+        ident = "; ".join(f"{t}: {v} [{retrain[r['cell'].replace('/', '-') + '--' + t]}]"
+                          for t, v in r["identifiability"].items()) or "not required"
         room = r["headroom"] or {}
         add(f"| {r['cell']} | {r['status']} | {', '.join(r['reasons']) or '-'} | "
             f"{'; '.join(f.split(':')[0] for f in r['flags']) or '-'} | {room.get('evaluation_levels', 0)} | "
             f"{room.get('mixed_levels', 0)} | {ident} |")
+    add("")
+    add(f"Every identifiability verdict is qualified: {G4_QUALIFICATION}. The bracketed verdict is the post-freeze "
+        "deterministic retrain (reproducibility check, not a replacement); see the G4 section below.")
     add("")
     add("## Rollout error at 225 frames (masked carrier MSE, level-clustered bootstrap)")
     add("")
@@ -2251,11 +2343,25 @@ def findings_md(plan, compute, coverage, encoders):
             add(f"- {condition}: {e['updates']} updates from {e['initialization']}, loss (mean of 100 updates) "
                 f"{e['loss_first_100']:.5f} → {e['loss_last_100']:.5f}.")
     add("")
-    add("## Scoring-policy coverage (phase-A review)")
+    add("## G4 and identifiability probe reproducibility (phase-A review, owner decision 2026-10-16)")
     add("")
-    add(f"G4 checks the scoring policy of the {coverage['rollout_records']} rollout records; "
-        f"{coverage['probe_records_with_scoring_policy']} of the {coverage['probe_records']} identifiability probe "
-        f"records carry one. Note: {coverage['note']}.")
+    add(f"G4 (frozen computation) checks the scoring policy of the {coverage['rollout_records']} rollout records: "
+        f"{'pass' if coverage['G4_scoring'] else 'FAIL'}; {coverage['probe_records_with_scoring_policy']} of the "
+        f"{coverage['probe_records']} published identifiability probe records carry one. {coverage['note']}.")
+    add("")
+    add(f"Reproducibility ({repro['label']}): verdict agreement {repro['agree']} / {repro['tasks']} (k = "
+        f"{PROBE['primary_k']}); per published verdict: "
+        + ", ".join(f"{c} {v['agree']}/{v['tasks']}" for c, v in repro["agreement_by_published_verdict"].items())
+        + f"; max |Δ AUROC| over {repro['auroc_pairs_compared']} task × kind × k × fold AUROCs "
+        f"{fmt(repro['max_abs_delta_auroc'])}; retrain under SCORING_POLICY: {repro['scoring_policy_all']}.")
+    add("")
+    add("| task | published AUROC | published lower | published verdict | retrain AUROC | retrain lower | retrain verdict "
+        "| agree |")
+    add("| --- | --- | --- | --- | --- | --- | --- | --- |")
+    for r in repro["rows"]:
+        p, q = r["published"], r["retrain"]
+        add(f"| {r['task']} | {fmt(p['auroc'])} | {fmt(p['lower'])} | {p['verdict']} | {fmt(q['auroc'])} | "
+            f"{fmt(q['lower'])} | {q['verdict']} | {'yes' if r['agree'] else '**no**'} |")
     add("")
     c = compute["compute"]
     add(f"Compute: {c['gpu_seconds']:.0f} GPU s, {c['wall_seconds']:.0f} process wall s, 0 engine s.")
@@ -2298,7 +2404,7 @@ def readiness_csv(compute):
     return buffer.getvalue()
 
 
-def summary(plan, compute, coverage):
+def summary(plan, compute, coverage, repro):
     return {"schema": "issue_110_results_summary_v1", "identity": IDENTITY, "frozen_at": plan["frozen_at"],
             "validation_command": VALIDATION_COMMAND, "guards": compute["guards"],
             "supported_cells": sum(r["status"] == "supported" for r in compute["readiness"]),
@@ -2307,7 +2413,11 @@ def summary(plan, compute, coverage):
             **({"insufficient": [{"cell": r["cell"], "reasons": r["reasons"]} for r in compute["readiness"]
                                  if r["status"] == STOP_TOKEN]} if not compute["guards_ok"] else {}),
             "identifiability": {k: v["verdict"] for k, v in compute["identifiability"].items()},
+            "identifiability_qualified": qualified_identifiability(compute, repro),
             "scoring_coverage": coverage,
+            "probe_reproducibility": {k: repro[k] for k in ("label", "agree", "tasks", "agreement_by_published_verdict",
+                                                            "max_abs_delta_auroc", "auroc_pairs_compared",
+                                                            "scoring_policy_all")},
             "claim_boundary": plan["claim_boundary"], "engine_seconds": 0}
 
 
@@ -2328,11 +2438,18 @@ def encoder_training(output):
 def rendered(output, plan, compute):
     coverage = scoring_coverage(output, compute)
     encoders = encoder_training(output)
-    return {"compute.json": json_text(compute), "summary.json": json_text(summary(plan, compute, coverage)),
-            "findings.md": findings_md(plan, compute, coverage, encoders), "rollout-error.csv": rollout_csv(compute),
+    repro = reproducibility_table(output)
+    ledger = [read_json(p) for p in sorted((Path(output) / REPRO / "ledger").glob("*.json"))]
+    repro_file = {**repro, "compute": {"gpu_seconds": sum(b["gpu_seconds"] for b in ledger),
+                                       "wall_seconds": sum(b["wall_seconds"] for b in ledger), "engine_seconds": 0},
+                  "manifest": repro_manifest(output)}
+    return {"compute.json": json_text(compute), "summary.json": json_text(summary(plan, compute, coverage, repro)),
+            "findings.md": findings_md(plan, compute, coverage, encoders, repro),
+            "rollout-error.csv": rollout_csv(compute),
             "readiness.csv": readiness_csv(compute), "handoff_107.json": json_text(handoff(output, plan, compute)),
             "records-manifest.json": json_text(record_manifest(output)),
-            "encoder-training.json": json_text(encoders)}
+            "encoder-training.json": json_text(encoders),
+            "probe-reproducibility.json": json_text(repro_file)}
 
 
 def publish(output):
@@ -2386,8 +2503,8 @@ def dry_run(output):
 MODES = {"dry-run": dry_run, "repair": repair, "smoke": smoke, "prepare": prepare, "labels": run_labels,
          "encoder": encoder, "fewshot-encoder": fewshot_encoder, "carriers": carriers, "scene": scene,
          "assemble": assemble, "train": train, "fewshot-train": fewshot_train, "score": score, "probe": probe,
-         "publish": publish, "validate": validate}
-SHARDED = {"fewshot-encoder", "carriers", "train", "fewshot-train", "score", "probe"}
+         "probe-reproducibility": probe_reproducibility, "publish": publish, "validate": validate}
+SHARDED = {"fewshot-encoder", "carriers", "train", "fewshot-train", "score", "probe", "probe-reproducibility"}
 
 
 def main():

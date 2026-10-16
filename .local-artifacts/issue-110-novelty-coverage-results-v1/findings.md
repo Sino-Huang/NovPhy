@@ -4,53 +4,55 @@
 
 **Readiness: 45 / 45 cells supported.**
 
-| cell | status | reasons | flags | eval levels | mixed levels | identifiability (k = 15) |
+| cell | status | reasons | flags | eval levels | mixed levels | identifiability (k = 15): published verdict [deterministic retrain verdict] |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0/single_force | supported | - | - | 64 | 26 | external-force-active: not_identifiable; force-on: readiness_or_precision_insufficient |
-| 0/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 64 | 0 | external-force-active: not_identifiable; force-on: readiness_or_precision_insufficient |
-| 0/rolling | supported | - | - | 64 | 33 | external-force-active: not_identifiable; force-on: not_identifiable |
-| 0/falling | supported | - | - | 64 | 37 | external-force-active: identifiable; force-on: identifiable |
-| 0/sliding | supported | - | - | 64 | 39 | external-force-active: not_identifiable; force-on: readiness_or_precision_insufficient |
+| 0/single_force | supported | - | - | 64 | 26 | external-force-active: not_identifiable [not_identifiable]; force-on: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 0/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 64 | 0 | external-force-active: not_identifiable [not_identifiable]; force-on: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 0/rolling | supported | - | - | 64 | 33 | external-force-active: not_identifiable [not_identifiable]; force-on: not_identifiable [not_identifiable] |
+| 0/falling | supported | - | - | 64 | 37 | external-force-active: identifiable [identifiable]; force-on: identifiable [identifiable] |
+| 0/sliding | supported | - | - | 64 | 39 | external-force-active: not_identifiable [not_identifiable]; force-on: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
 | 1/single_force | supported | - | - | 8 | 5 | not required |
 | 1/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | not required |
 | 1/rolling | supported | - | - | 8 | 4 | not required |
 | 1/falling | supported | - | - | 8 | 3 | not required |
 | 1/sliding | supported | - | - | 8 | 8 | not required |
-| 2/single_force | supported | - | - | 8 | 1 | external-force-active: readiness_or_precision_insufficient; force-on: readiness_or_precision_insufficient |
-| 2/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: not_identifiable; force-on: readiness_or_precision_insufficient |
-| 2/rolling | supported | - | - | 7 | 4 | external-force-active: not_identifiable; force-on: readiness_or_precision_insufficient |
-| 2/falling | supported | - | - | 8 | 8 | external-force-active: not_identifiable; force-on: readiness_or_precision_insufficient |
-| 2/sliding | supported | - | - | 8 | 4 | external-force-active: not_identifiable; force-on: not_identifiable |
-| 3/single_force | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: not_identifiable; force-on: readiness_or_precision_insufficient |
-| 3/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: not_identifiable; force-on: identifiable |
-| 3/rolling | supported | - | - | 8 | 4 | external-force-active: not_identifiable; force-on: label_invalid |
-| 3/falling | supported | - | - | 8 | 2 | external-force-active: identifiable; force-on: identifiable |
-| 3/sliding | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: label_invalid; force-on: readiness_or_precision_insufficient |
-| 4/single_force | supported | - | - | 8 | 8 | external-force-active: label_invalid |
-| 4/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: label_invalid |
-| 4/rolling | supported | - | - | 8 | 8 | external-force-active: not_identifiable |
-| 4/falling | supported | - | - | 8 | 2 | external-force-active: not_identifiable |
-| 4/sliding | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: label_invalid |
+| 2/single_force | supported | - | - | 8 | 1 | external-force-active: readiness_or_precision_insufficient [readiness_or_precision_insufficient]; force-on: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 2/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: not_identifiable [not_identifiable]; force-on: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 2/rolling | supported | - | - | 7 | 4 | external-force-active: not_identifiable [not_identifiable]; force-on: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 2/falling | supported | - | - | 8 | 8 | external-force-active: not_identifiable [not_identifiable]; force-on: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 2/sliding | supported | - | - | 8 | 4 | external-force-active: not_identifiable [not_identifiable]; force-on: not_identifiable [not_identifiable] |
+| 3/single_force | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: not_identifiable [not_identifiable]; force-on: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 3/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: not_identifiable [not_identifiable]; force-on: identifiable [identifiable] |
+| 3/rolling | supported | - | - | 8 | 4 | external-force-active: not_identifiable [not_identifiable]; force-on: label_invalid [label_invalid] |
+| 3/falling | supported | - | - | 8 | 2 | external-force-active: identifiable [identifiable]; force-on: identifiable [identifiable] |
+| 3/sliding | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: label_invalid [label_invalid]; force-on: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 4/single_force | supported | - | - | 8 | 8 | external-force-active: label_invalid [label_invalid] |
+| 4/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: label_invalid [label_invalid] |
+| 4/rolling | supported | - | - | 8 | 8 | external-force-active: not_identifiable [not_identifiable] |
+| 4/falling | supported | - | - | 8 | 2 | external-force-active: not_identifiable [not_identifiable] |
+| 4/sliding | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: label_invalid [label_invalid] |
 | 5/single_force | supported | - | - | 8 | 2 | not required |
 | 5/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | not required |
 | 5/rolling | supported | - | - | 8 | 5 | not required |
 | 5/falling | supported | - | - | 8 | 6 | not required |
 | 5/sliding | supported | - | - | 8 | 4 | not required |
-| 6/single_force | supported | - | - | 8 | 7 | gravity-inverted: identifiable |
-| 6/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | gravity-inverted: identifiable |
-| 6/rolling | supported | - | - | 8 | 3 | gravity-inverted: identifiable |
-| 6/falling | supported | - | - | 8 | 6 | gravity-inverted: identifiable |
-| 6/sliding | supported | - | - | 8 | 6 | gravity-inverted: readiness_or_precision_insufficient |
-| 7/single_force | supported | - | - | 8 | 6 | external-force-active: not_identifiable; force-on: readiness_or_precision_insufficient |
-| 7/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: readiness_or_precision_insufficient; force-on: identifiable |
-| 7/rolling | supported | - | - | 8 | 5 | external-force-active: not_identifiable; force-on: not_identifiable |
-| 7/falling | supported | - | - | 8 | 8 | external-force-active: readiness_or_precision_insufficient; force-on: identifiable |
-| 7/sliding | supported | - | - | 8 | 3 | external-force-active: not_identifiable; force-on: readiness_or_precision_insufficient |
-| 8/single_force | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: not_identifiable; storm-active: identifiable |
-| 8/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: label_invalid; storm-active: readiness_or_precision_insufficient |
-| 8/rolling | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: readiness_or_precision_insufficient; storm-active: readiness_or_precision_insufficient |
-| 8/falling | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: readiness_or_precision_insufficient; storm-active: identifiable |
-| 8/sliding | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: label_invalid; storm-active: identifiable |
+| 6/single_force | supported | - | - | 8 | 7 | gravity-inverted: identifiable [identifiable] |
+| 6/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | gravity-inverted: identifiable [identifiable] |
+| 6/rolling | supported | - | - | 8 | 3 | gravity-inverted: identifiable [identifiable] |
+| 6/falling | supported | - | - | 8 | 6 | gravity-inverted: identifiable [identifiable] |
+| 6/sliding | supported | - | - | 8 | 6 | gravity-inverted: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 7/single_force | supported | - | - | 8 | 6 | external-force-active: not_identifiable [not_identifiable]; force-on: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 7/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: readiness_or_precision_insufficient [readiness_or_precision_insufficient]; force-on: identifiable [identifiable] |
+| 7/rolling | supported | - | - | 8 | 5 | external-force-active: not_identifiable [not_identifiable]; force-on: not_identifiable [not_identifiable] |
+| 7/falling | supported | - | - | 8 | 8 | external-force-active: readiness_or_precision_insufficient [readiness_or_precision_insufficient]; force-on: identifiable [identifiable] |
+| 7/sliding | supported | - | - | 8 | 3 | external-force-active: not_identifiable [not_identifiable]; force-on: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 8/single_force | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: not_identifiable [not_identifiable]; storm-active: identifiable [identifiable] |
+| 8/multiple_forces | supported | - | rollout_error_only; no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: label_invalid [label_invalid]; storm-active: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 8/rolling | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: readiness_or_precision_insufficient [readiness_or_precision_insufficient]; storm-active: readiness_or_precision_insufficient [readiness_or_precision_insufficient] |
+| 8/falling | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: readiness_or_precision_insufficient [readiness_or_precision_insufficient]; storm-active: identifiable [identifiable] |
+| 8/sliding | supported | - | no_mixed_verdict_evaluation_level | 8 | 0 | external-force-active: label_invalid [label_invalid]; storm-active: identifiable [identifiable] |
+
+Every identifiability verdict is qualified: published probe scored outside deterministic_scoring() (G4 literal text failed; cascade not applied). The bracketed verdict is the post-freeze deterministic retrain (reproducibility check, not a replacement); see the G4 section below.
 
 ## Rollout error at 225 frames (masked carrier MSE, level-clustered bootstrap)
 
@@ -234,8 +236,73 @@ v2: 80 / 80 templates fit on every captured level; v1: 19 / 80.
 - few-shot-7: 2000 updates from zero-shot, loss (mean of 100 updates) 14.51560 → 7.33351.
 - few-shot-8: 2000 updates from zero-shot, loss (mean of 100 updates) 6.89766 → 4.25960.
 
-## Scoring-policy coverage (phase-A review)
+## G4 and identifiability probe reproducibility (phase-A review, owner decision 2026-10-16)
 
-G4 checks the scoring policy of the 1278 rollout records; 0 of the 60 identifiability probe records carry one. Note: the identifiability probes (MLP probes trained and scored in-process by --probe) ran without deterministic_scoring() and their records carry no scoring policy; the frozen G4 check iterates the rollout records only, so the plan's G4 text ('every record under deterministic_scoring') does not hold for the probe records. The probe models were not retained, so the verdicts cannot be re-scored without retraining, which a post-freeze change may not do; they are reported as recorded. A fresh process importing this runner runs with matmul TF32 off (as SCORING_POLICY) and cuDNN deterministic off / cuDNN TF32 on; the probes use no cuDNN operation. Borderline verdicts are not guaranteed to reproduce. G4 and every token are unchanged.
+G4 (frozen computation) checks the scoring policy of the 1278 rollout records: pass; 0 of the 60 published identifiability probe records carry one. G4's literal text ('every record under deterministic_scoring') FAILED for the 60 published identifiability probe records: --probe trained and scored them outside deterministic_scoring() and they store no scoring policy. The frozen G4 computation, over the rollout records, passes and is unchanged; this failure is reported separately. By owner decision (2026-10-16) the frozen cascade (a failed guard turns every token into readiness_or_precision_insufficient) is not applied: the readiness and rollout tokens stand. Every identifiability verdict carries this G4 qualification and its reproducibility result: all probes were retrained and re-scored under deterministic_scoring() with the frozen features, seeds, folds and k (probe-reproducibility/), reported beside the published records, not swapped in.
+
+Reproducibility (post-freeze reproducibility check (owner decision 2026-10-16): every probe retrained and re-scored under deterministic_scoring() with the frozen features, seeds, folds and k; reported beside the published records, not swapped in): verdict agreement 60 / 60 (k = 15); per published verdict: identifiable 14/14, label_invalid 7/7, not_identifiable 20/20, readiness_or_precision_insufficient 19/19; max |Δ AUROC| over 702 task × kind × k × fold AUROCs 0.0000; retrain under SCORING_POLICY: True.
+
+| task | published AUROC | published lower | published verdict | retrain AUROC | retrain lower | retrain verdict | agree |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0-single_force--external-force-active | 0.6223 | 0.5391 | not_identifiable | 0.6223 | 0.5391 | not_identifiable | yes |
+| 0-single_force--force-on | 0.6835 | 0.5892 | readiness_or_precision_insufficient | 0.6835 | 0.5892 | readiness_or_precision_insufficient | yes |
+| 0-multiple_forces--external-force-active | 0.6528 | 0.5846 | not_identifiable | 0.6528 | 0.5846 | not_identifiable | yes |
+| 0-multiple_forces--force-on | 0.7080 | 0.6306 | readiness_or_precision_insufficient | 0.7080 | 0.6306 | readiness_or_precision_insufficient | yes |
+| 0-rolling--external-force-active | 0.6040 | 0.4823 | not_identifiable | 0.6040 | 0.4823 | not_identifiable | yes |
+| 0-rolling--force-on | 0.5680 | 0.4442 | not_identifiable | 0.5680 | 0.4442 | not_identifiable | yes |
+| 0-falling--external-force-active | 0.8433 | 0.7745 | identifiable | 0.8433 | 0.7745 | identifiable | yes |
+| 0-falling--force-on | 0.8472 | 0.7778 | identifiable | 0.8472 | 0.7778 | identifiable | yes |
+| 0-sliding--external-force-active | 0.6455 | 0.5687 | not_identifiable | 0.6455 | 0.5687 | not_identifiable | yes |
+| 0-sliding--force-on | 0.7305 | 0.6341 | readiness_or_precision_insufficient | 0.7305 | 0.6341 | readiness_or_precision_insufficient | yes |
+| 2-single_force--external-force-active | 0.6110 | 0.5067 | readiness_or_precision_insufficient | 0.6110 | 0.5067 | readiness_or_precision_insufficient | yes |
+| 2-single_force--force-on | 0.6820 | 0.5967 | readiness_or_precision_insufficient | 0.6820 | 0.5967 | readiness_or_precision_insufficient | yes |
+| 2-multiple_forces--external-force-active | 0.5589 | 0.4594 | not_identifiable | 0.5589 | 0.4594 | not_identifiable | yes |
+| 2-multiple_forces--force-on | 0.6172 | 0.4822 | readiness_or_precision_insufficient | 0.6172 | 0.4822 | readiness_or_precision_insufficient | yes |
+| 2-rolling--external-force-active | 0.5801 | 0.4340 | not_identifiable | 0.5801 | 0.4340 | not_identifiable | yes |
+| 2-rolling--force-on | 0.7241 | 0.6699 | readiness_or_precision_insufficient | 0.7241 | 0.6699 | readiness_or_precision_insufficient | yes |
+| 2-falling--external-force-active | 0.6485 | 0.5873 | not_identifiable | 0.6485 | 0.5873 | not_identifiable | yes |
+| 2-falling--force-on | 0.7228 | 0.6637 | readiness_or_precision_insufficient | 0.7228 | 0.6637 | readiness_or_precision_insufficient | yes |
+| 2-sliding--external-force-active | 0.6422 | 0.5593 | not_identifiable | 0.6422 | 0.5593 | not_identifiable | yes |
+| 2-sliding--force-on | 0.6321 | 0.5653 | not_identifiable | 0.6321 | 0.5653 | not_identifiable | yes |
+| 3-single_force--external-force-active | 0.6087 | 0.5252 | not_identifiable | 0.6087 | 0.5252 | not_identifiable | yes |
+| 3-single_force--force-on | 0.7170 | 0.5769 | readiness_or_precision_insufficient | 0.7170 | 0.5769 | readiness_or_precision_insufficient | yes |
+| 3-multiple_forces--external-force-active | 0.6644 | 0.6287 | not_identifiable | 0.6644 | 0.6287 | not_identifiable | yes |
+| 3-multiple_forces--force-on | 0.7848 | 0.7567 | identifiable | 0.7848 | 0.7567 | identifiable | yes |
+| 3-rolling--external-force-active | 0.6513 | 0.5520 | not_identifiable | 0.6513 | 0.5520 | not_identifiable | yes |
+| 3-rolling--force-on | 0.6574 | 0.5508 | label_invalid | 0.6574 | 0.5508 | label_invalid | yes |
+| 3-falling--external-force-active | 0.8328 | 0.7559 | identifiable | 0.8328 | 0.7559 | identifiable | yes |
+| 3-falling--force-on | 0.8291 | 0.7300 | identifiable | 0.8291 | 0.7300 | identifiable | yes |
+| 3-sliding--external-force-active | 0.5583 | 0.4484 | label_invalid | 0.5583 | 0.4484 | label_invalid | yes |
+| 3-sliding--force-on | 0.6303 | 0.5126 | readiness_or_precision_insufficient | 0.6303 | 0.5126 | readiness_or_precision_insufficient | yes |
+| 4-single_force--external-force-active | 0.5195 | 0.4753 | label_invalid | 0.5195 | 0.4753 | label_invalid | yes |
+| 4-multiple_forces--external-force-active | 0.6228 | 0.5728 | label_invalid | 0.6228 | 0.5728 | label_invalid | yes |
+| 4-rolling--external-force-active | 0.5257 | 0.4548 | not_identifiable | 0.5257 | 0.4548 | not_identifiable | yes |
+| 4-falling--external-force-active | 0.5690 | 0.5020 | not_identifiable | 0.5690 | 0.5020 | not_identifiable | yes |
+| 4-sliding--external-force-active | 0.7373 | 0.5725 | label_invalid | 0.7373 | 0.5725 | label_invalid | yes |
+| 6-single_force--gravity-inverted | 0.9977 | 0.9879 | identifiable | 0.9977 | 0.9879 | identifiable | yes |
+| 6-multiple_forces--gravity-inverted | 0.9380 | 0.8565 | identifiable | 0.9380 | 0.8565 | identifiable | yes |
+| 6-rolling--gravity-inverted | 0.9998 | 0.9993 | identifiable | 0.9998 | 0.9993 | identifiable | yes |
+| 6-falling--gravity-inverted | 0.9651 | 0.8902 | identifiable | 0.9651 | 0.8902 | identifiable | yes |
+| 6-sliding--gravity-inverted | 0.7332 | 0.4657 | readiness_or_precision_insufficient | 0.7332 | 0.4657 | readiness_or_precision_insufficient | yes |
+| 7-single_force--external-force-active | 0.5789 | 0.4275 | not_identifiable | 0.5789 | 0.4275 | not_identifiable | yes |
+| 7-single_force--force-on | 0.6405 | 0.5278 | readiness_or_precision_insufficient | 0.6405 | 0.5278 | readiness_or_precision_insufficient | yes |
+| 7-multiple_forces--external-force-active | 0.6695 | 0.5766 | readiness_or_precision_insufficient | 0.6695 | 0.5766 | readiness_or_precision_insufficient | yes |
+| 7-multiple_forces--force-on | 0.7770 | 0.7198 | identifiable | 0.7770 | 0.7198 | identifiable | yes |
+| 7-rolling--external-force-active | 0.5706 | 0.4398 | not_identifiable | 0.5706 | 0.4398 | not_identifiable | yes |
+| 7-rolling--force-on | 0.6350 | 0.5497 | not_identifiable | 0.6350 | 0.5497 | not_identifiable | yes |
+| 7-falling--external-force-active | 0.7667 | 0.6083 | readiness_or_precision_insufficient | 0.7667 | 0.6083 | readiness_or_precision_insufficient | yes |
+| 7-falling--force-on | 0.8485 | 0.7118 | identifiable | 0.8485 | 0.7118 | identifiable | yes |
+| 7-sliding--external-force-active | 0.5874 | 0.4956 | not_identifiable | 0.5874 | 0.4956 | not_identifiable | yes |
+| 7-sliding--force-on | 0.6767 | 0.5963 | readiness_or_precision_insufficient | 0.6767 | 0.5963 | readiness_or_precision_insufficient | yes |
+| 8-single_force--external-force-active | 0.2657 | 0.1226 | not_identifiable | 0.2657 | 0.1226 | not_identifiable | yes |
+| 8-single_force--storm-active | 0.8877 | 0.6573 | identifiable | 0.8877 | 0.6573 | identifiable | yes |
+| 8-multiple_forces--external-force-active | 0.6988 | 0.4497 | label_invalid | 0.6988 | 0.4497 | label_invalid | yes |
+| 8-multiple_forces--storm-active | 0.6476 | 0.2956 | readiness_or_precision_insufficient | 0.6476 | 0.2956 | readiness_or_precision_insufficient | yes |
+| 8-rolling--external-force-active | 0.0026 | 0.0016 | readiness_or_precision_insufficient | 0.0026 | 0.0016 | readiness_or_precision_insufficient | yes |
+| 8-rolling--storm-active | 0.6310 | 0.0034 | readiness_or_precision_insufficient | 0.6310 | 0.0034 | readiness_or_precision_insufficient | yes |
+| 8-falling--external-force-active | n/a | n/a | readiness_or_precision_insufficient | n/a | n/a | readiness_or_precision_insufficient | yes |
+| 8-falling--storm-active | 0.9395 | 0.8365 | identifiable | 0.9395 | 0.8365 | identifiable | yes |
+| 8-sliding--external-force-active | 0.8522 | 0.6995 | label_invalid | 0.8522 | 0.6995 | label_invalid | yes |
+| 8-sliding--storm-active | 0.8483 | 0.7000 | identifiable | 0.8483 | 0.7000 | identifiable | yes |
 
 Compute: 35444 GPU s, 37337 process wall s, 0 engine s.

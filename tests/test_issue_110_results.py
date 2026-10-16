@@ -199,5 +199,15 @@ class PhaseAReviewFixes(unittest.TestCase):
                 r.repair(out)
 
 
+    def test_identifiability_verdicts_carry_g4_qualification_and_reproducibility(self):
+        from scripts import run_novelty_coverage as r
+        compute = {"identifiability": {"t": {"verdict": "identifiable"}}}
+        repro = {"rows": [{"task": "t", "retrain": {"verdict": "identifiable"}, "agree": True}]}
+        out = r.qualified_identifiability(compute, repro)["t"]
+        self.assertEqual(out["verdict"], "identifiable")
+        self.assertEqual(out["G4"], r.G4_QUALIFICATION)
+        self.assertEqual(out["reproducibility"], {"retrain_verdict": "identifiable", "agree": True})
+
+
 if __name__ == "__main__":
     unittest.main()

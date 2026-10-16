@@ -1,0 +1,938 @@
+{
+  "agree": 60,
+  "agreement_by_published_verdict": {
+    "identifiable": {
+      "agree": 14,
+      "tasks": 14
+    },
+    "label_invalid": {
+      "agree": 7,
+      "tasks": 7
+    },
+    "not_identifiable": {
+      "agree": 20,
+      "tasks": 20
+    },
+    "readiness_or_precision_insufficient": {
+      "agree": 19,
+      "tasks": 19
+    }
+  },
+  "auroc_pairs_compared": 702,
+  "compute": {
+    "engine_seconds": 0,
+    "gpu_seconds": 1528.8800743140746,
+    "wall_seconds": 1528.8800743140746
+  },
+  "label": "post-freeze reproducibility check (owner decision 2026-10-16): every probe retrained and re-scored under deterministic_scoring() with the frozen features, seeds, folds and k; reported beside the published records, not swapped in",
+  "manifest": {
+    "records": {
+      "probe-reproducibility/records/0-falling--external-force-active.json": "sha256:2554d1a6e481dc991301baafd0d643ea68cdb5a61b27899c887b2d6557aa3c57",
+      "probe-reproducibility/records/0-falling--force-on.json": "sha256:b0b51c0487dcbb269c45e59b6205fb68dbab7eb2e52b12cbbf83d656f9c2f645",
+      "probe-reproducibility/records/0-multiple_forces--external-force-active.json": "sha256:7440bf888d119e96902f233a7327a5cf179464d0ba9a1ee1124947fb0a585c3e",
+      "probe-reproducibility/records/0-multiple_forces--force-on.json": "sha256:d8bf2e9607521732ba3a0dcf08cd5f1488face6c51cb38a11f275a2db3619a07",
+      "probe-reproducibility/records/0-rolling--external-force-active.json": "sha256:7044f1ea692c915ef7407df419e76d49d5bc3d3fccbaa711f97f9518ac43b2cb",
+      "probe-reproducibility/records/0-rolling--force-on.json": "sha256:943fda635dcbb66f35ec0ad8490003b5aca76191fdf37047395136b4f7ea3060",
+      "probe-reproducibility/records/0-single_force--external-force-active.json": "sha256:de94301596561fda32308a54c4cd0aef04b14f4fd1c621220e0f6827dffac040",
+      "probe-reproducibility/records/0-single_force--force-on.json": "sha256:dda4c648668b8b6e799853b51f170f6dc662ae0862928359b1a32c2fc8542b57",
+      "probe-reproducibility/records/0-sliding--external-force-active.json": "sha256:171ca32a6635c09eb36a2ec8d082b43c7251ac92e25df99af5e49d432bafdc1b",
+      "probe-reproducibility/records/0-sliding--force-on.json": "sha256:06ff6c6e805c17eff8485637b3eba4ad42a9437e7679f9ddc609860f94d5b18d",
+      "probe-reproducibility/records/2-falling--external-force-active.json": "sha256:7b7c01f17daad2862a416d47be556f8075e21d8683b138471b2a16d9e2895404",
+      "probe-reproducibility/records/2-falling--force-on.json": "sha256:c215a4d2342c017021a76d85d54b13e3db0eb2bd71fca157f83e931fe34deec1",
+      "probe-reproducibility/records/2-multiple_forces--external-force-active.json": "sha256:f5d7ca154504921c7b155673357328013647314792ab45b7b3ab7ba657eb73f0",
+      "probe-reproducibility/records/2-multiple_forces--force-on.json": "sha256:184f4337f8e2daa7a9e38ff609b2960016ef3609406678bb6c7d0ab558c61fe2",
+      "probe-reproducibility/records/2-rolling--external-force-active.json": "sha256:6be83372d90593962cfb9348d9e9941fc07e8284f0769fb2423451c245885f17",
+      "probe-reproducibility/records/2-rolling--force-on.json": "sha256:1b8cc892f11cf610d4d1503a16d2529530f051fa1b611bea8285e1acd2bab171",
+      "probe-reproducibility/records/2-single_force--external-force-active.json": "sha256:dc6b5abbe43b709545d12d19aef8a3136dca2139f57473b3f44ad048e6171a6e",
+      "probe-reproducibility/records/2-single_force--force-on.json": "sha256:6f1b5e6f5b28676721e1fa255f5cab07a78ab084845058931b9c871fd283f0dc",
+      "probe-reproducibility/records/2-sliding--external-force-active.json": "sha256:08214fd6245208ae7aca58406041ae7e0b69df0adc7c4bd9c30aa981a3a6e7f4",
+      "probe-reproducibility/records/2-sliding--force-on.json": "sha256:224f4c0c8e2915c689b4192ef88912801650bebd81b93667b290fd63a87dc181",
+      "probe-reproducibility/records/3-falling--external-force-active.json": "sha256:07a3f28cbf153a28cad398d5972df1a9012220754363f463637fdffaf9d7c9c2",
+      "probe-reproducibility/records/3-falling--force-on.json": "sha256:1f845b6f7b1335ce422cc81d3df7269f307e31909c976bf2cbbc3ae3a70ff61b",
+      "probe-reproducibility/records/3-multiple_forces--external-force-active.json": "sha256:062f8cbd9cf17aa2c744bff242022445034904bbf9ac6c5cf61383b93a130ed4",
+      "probe-reproducibility/records/3-multiple_forces--force-on.json": "sha256:f007a1cd14ea74c83fd9d428914e5ea78d25b21f2a772563d4ff6e7a4c3af41a",
+      "probe-reproducibility/records/3-rolling--external-force-active.json": "sha256:60666ab7fcc4c6a46f35e8d1d37c94ef509e465bab2a40acf55993edc408e072",
+      "probe-reproducibility/records/3-rolling--force-on.json": "sha256:9d6c462269970449379efee29baf455cf1dca7cb446f809bc1032efd6484f992",
+      "probe-reproducibility/records/3-single_force--external-force-active.json": "sha256:3db537b68f381d2ae1438e7a26de42d8753462b5ac04b273066df0527a4bcd2d",
+      "probe-reproducibility/records/3-single_force--force-on.json": "sha256:d4e1e21960518abb3378358190a36161d3581a0077fd25639dc4b57034e7e6ce",
+      "probe-reproducibility/records/3-sliding--external-force-active.json": "sha256:dfa3f07358466c23c3069c0b5ea2085e96a388ab0a366aa454d098901b7e67e4",
+      "probe-reproducibility/records/3-sliding--force-on.json": "sha256:7a671ab1a0d551620c80628cfcd827306d651637ce5411f4c4a14db0a46a914a",
+      "probe-reproducibility/records/4-falling--external-force-active.json": "sha256:b2566ea999e65d6c7728b6bec151da88c77108bed299ad18187a390398349780",
+      "probe-reproducibility/records/4-multiple_forces--external-force-active.json": "sha256:417576d3b4f7ab9d9a16963300cdf2c4dda680bfc8fcf6e2bc3fcc76041ba7dc",
+      "probe-reproducibility/records/4-rolling--external-force-active.json": "sha256:ac042a1892056813a3e516f0dc746ca29cfa2ca8350afe57ecc548e200e121bc",
+      "probe-reproducibility/records/4-single_force--external-force-active.json": "sha256:9a78554d24048bd4aff810b6e6b9e1a7a3cc9f25723c6be5acc498b3f79a50ec",
+      "probe-reproducibility/records/4-sliding--external-force-active.json": "sha256:5ac202acf932ef696d0112640a9532ede3f7e68452f423d519fa7308a22fac78",
+      "probe-reproducibility/records/6-falling--gravity-inverted.json": "sha256:1e803088a6d78c199e1b4fefa9fd54d425aaed256281fc5b32a3ad6417faa60f",
+      "probe-reproducibility/records/6-multiple_forces--gravity-inverted.json": "sha256:166bf4e3658f77a8c5953e2483722693780d13295953b70455c82c06c1a2c90a",
+      "probe-reproducibility/records/6-rolling--gravity-inverted.json": "sha256:ac043bee2bbdfb3f69e575149dffd443fa89da4bb348af1d8f0b7777dc92768c",
+      "probe-reproducibility/records/6-single_force--gravity-inverted.json": "sha256:ffe43a19dceabd8d783501d1d6dfa050a0d101dc123608bf615312c7c206427c",
+      "probe-reproducibility/records/6-sliding--gravity-inverted.json": "sha256:09ee895df3217f4af8fd033c74053cbed6a6b05e3ae78450fab0d5ab83899f38",
+      "probe-reproducibility/records/7-falling--external-force-active.json": "sha256:d776da71d77a8e2b8a54157af8ce2d9c50b9600e62ee7add5b1a3b5dea5b0581",
+      "probe-reproducibility/records/7-falling--force-on.json": "sha256:b8f67ecbb6a3bd5d983310ea6bfaffbcf25ecee0aed07b7ca4517d0a313e815d",
+      "probe-reproducibility/records/7-multiple_forces--external-force-active.json": "sha256:bb08d2d40846976a915d427e67355d3bfbefc2b14e10e16a0aa18f76ee4052e0",
+      "probe-reproducibility/records/7-multiple_forces--force-on.json": "sha256:f1707fe2bb56efd385ded3da4fd3ac0932df5ff1ca5bbeaff78258b12ee4809b",
+      "probe-reproducibility/records/7-rolling--external-force-active.json": "sha256:ed398398c318492e8425e966700d29d6a93dfc5cc52ce7e1a91c5a197d89c22b",
+      "probe-reproducibility/records/7-rolling--force-on.json": "sha256:f1830bdcb56b82a1845dc5b3cd00c9c8dca5c9fbabf94489a9fe438bf2167ad5",
+      "probe-reproducibility/records/7-single_force--external-force-active.json": "sha256:ccd08a561f4ce86fc366952d762c90bb69863e3cb617fee6fe015a870a33162d",
+      "probe-reproducibility/records/7-single_force--force-on.json": "sha256:bea9aa5d466344a7216a008052901e548c40e5f5c60daade860df6b0a2754749",
+      "probe-reproducibility/records/7-sliding--external-force-active.json": "sha256:1133298439bbddc244a045bf2eb98226d311839e119ede5f0fbc3a5cb74eccc4",
+      "probe-reproducibility/records/7-sliding--force-on.json": "sha256:430f893e5476b3b2d178c1572089f9843f1fc4ae0416aec1fb9c768b65d9ec05",
+      "probe-reproducibility/records/8-falling--external-force-active.json": "sha256:a3bf86592471e76e84705c1deeb8908237badbd538f78d7595078b8cd5706404",
+      "probe-reproducibility/records/8-falling--storm-active.json": "sha256:b2320fa3d1ca0f06294a70ea719e57a0a37830aa642b1fbe2e8607dd8e3282c8",
+      "probe-reproducibility/records/8-multiple_forces--external-force-active.json": "sha256:5e0e1cb90ebacc3e7f472c996ac88c5c5541d9f028750ff96bb3778493b1d0a4",
+      "probe-reproducibility/records/8-multiple_forces--storm-active.json": "sha256:2436077d276d68cf7e45104caab876f73c5cf1b060f3ebfd091f0b41cfecb3cb",
+      "probe-reproducibility/records/8-rolling--external-force-active.json": "sha256:6edd448f28f44f136d16741c920c1fa4ff8f73cb7e146e3f3d9ce68f624a2876",
+      "probe-reproducibility/records/8-rolling--storm-active.json": "sha256:f884a2b1c54eb844764f414f8bf452413d268ce023a0e06fbd2563ceebfda3d0",
+      "probe-reproducibility/records/8-single_force--external-force-active.json": "sha256:c0b52ba54a4bde4ba29c90ee1693be75c3bbebae6477bf720e0c6985bc4e001d",
+      "probe-reproducibility/records/8-single_force--storm-active.json": "sha256:4d290ca4ce83f5e08409b7e3bdb6efb0d6be2b86bb7e431d85b806fb76c8ebdf",
+      "probe-reproducibility/records/8-sliding--external-force-active.json": "sha256:8b3efe363d782bddf5ca37220a862373ed4b15ead262945b5d196f07467b8bf7",
+      "probe-reproducibility/records/8-sliding--storm-active.json": "sha256:4c28b0b07b1b342aab923a988411a8b1d7b0416e350bffae98bdbf434a48ca70"
+    },
+    "schema": "issue_110_probe_reproducibility_manifest_v1"
+  },
+  "max_abs_delta_auroc": 0.0,
+  "rows": [
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6222571188667332,
+        "lower": 0.5391182184715692,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.6222571188667332,
+        "lower": 0.5391182184715692,
+        "verdict": "not_identifiable"
+      },
+      "task": "0-single_force--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.683545522019661,
+        "lower": 0.5892493524318838,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.683545522019661,
+        "lower": 0.5892493524318838,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "0-single_force--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6527780356088094,
+        "lower": 0.5845582550223164,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.6527780356088094,
+        "lower": 0.5845582550223164,
+        "verdict": "not_identifiable"
+      },
+      "task": "0-multiple_forces--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.7080404612402811,
+        "lower": 0.6305617972867882,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.7080404612402811,
+        "lower": 0.6305617972867882,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "0-multiple_forces--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6040447683126129,
+        "lower": 0.4822799336497094,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.6040447683126129,
+        "lower": 0.4822799336497094,
+        "verdict": "not_identifiable"
+      },
+      "task": "0-rolling--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.5680336122752915,
+        "lower": 0.4441550741162024,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.5680336122752915,
+        "lower": 0.4441550741162024,
+        "verdict": "not_identifiable"
+      },
+      "task": "0-rolling--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.8433332140035474,
+        "lower": 0.774469742769073,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.8433332140035474,
+        "lower": 0.774469742769073,
+        "verdict": "identifiable"
+      },
+      "task": "0-falling--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.8472156338572756,
+        "lower": 0.7777932180923742,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.8472156338572756,
+        "lower": 0.7777932180923742,
+        "verdict": "identifiable"
+      },
+      "task": "0-falling--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6455350648387791,
+        "lower": 0.5687336776082232,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.6455350648387791,
+        "lower": 0.5687336776082232,
+        "verdict": "not_identifiable"
+      },
+      "task": "0-sliding--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.7304780921002322,
+        "lower": 0.6340654860746422,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.7304780921002322,
+        "lower": 0.6340654860746422,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "0-sliding--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6110482452880268,
+        "lower": 0.5066547760993027,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.6110482452880268,
+        "lower": 0.5066547760993027,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "2-single_force--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6819813241929378,
+        "lower": 0.5966666780170384,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.6819813241929378,
+        "lower": 0.5966666780170384,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "2-single_force--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.5588775541385793,
+        "lower": 0.45936731879629494,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.5588775541385793,
+        "lower": 0.45936731879629494,
+        "verdict": "not_identifiable"
+      },
+      "task": "2-multiple_forces--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6171551646039819,
+        "lower": 0.48223175230778276,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.6171551646039819,
+        "lower": 0.48223175230778276,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "2-multiple_forces--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.5801137322611503,
+        "lower": 0.4340104736834528,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.5801137322611503,
+        "lower": 0.4340104736834528,
+        "verdict": "not_identifiable"
+      },
+      "task": "2-rolling--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.7241158420046286,
+        "lower": 0.6699335908003136,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.7241158420046286,
+        "lower": 0.6699335908003136,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "2-rolling--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6485042362072517,
+        "lower": 0.5873257068566471,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.6485042362072517,
+        "lower": 0.5873257068566471,
+        "verdict": "not_identifiable"
+      },
+      "task": "2-falling--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.7228285464889445,
+        "lower": 0.6637372602325255,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.7228285464889445,
+        "lower": 0.6637372602325255,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "2-falling--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6421751915591006,
+        "lower": 0.5593035765503545,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.6421751915591006,
+        "lower": 0.5593035765503545,
+        "verdict": "not_identifiable"
+      },
+      "task": "2-sliding--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6321402724119767,
+        "lower": 0.5652748610544382,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.6321402724119767,
+        "lower": 0.5652748610544382,
+        "verdict": "not_identifiable"
+      },
+      "task": "2-sliding--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.608740700344389,
+        "lower": 0.5252273792775267,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.608740700344389,
+        "lower": 0.5252273792775267,
+        "verdict": "not_identifiable"
+      },
+      "task": "3-single_force--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.7169986665624567,
+        "lower": 0.5769239161323443,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.7169986665624567,
+        "lower": 0.5769239161323443,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "3-single_force--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.66439003280456,
+        "lower": 0.6287105709719238,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.66439003280456,
+        "lower": 0.6287105709719238,
+        "verdict": "not_identifiable"
+      },
+      "task": "3-multiple_forces--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.7848269253848198,
+        "lower": 0.7566780957404233,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.7848269253848198,
+        "lower": 0.7566780957404233,
+        "verdict": "identifiable"
+      },
+      "task": "3-multiple_forces--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.651274770643672,
+        "lower": 0.5520441988386865,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.651274770643672,
+        "lower": 0.5520441988386865,
+        "verdict": "not_identifiable"
+      },
+      "task": "3-rolling--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6574285122404885,
+        "lower": 0.5508042809124809,
+        "verdict": "label_invalid"
+      },
+      "retrain": {
+        "auroc": 0.6574285122404885,
+        "lower": 0.5508042809124809,
+        "verdict": "label_invalid"
+      },
+      "task": "3-rolling--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.8327731124903924,
+        "lower": 0.7558989762389627,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.8327731124903924,
+        "lower": 0.7558989762389627,
+        "verdict": "identifiable"
+      },
+      "task": "3-falling--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.829113128568222,
+        "lower": 0.7300014909911511,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.829113128568222,
+        "lower": 0.7300014909911511,
+        "verdict": "identifiable"
+      },
+      "task": "3-falling--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.5583349104973242,
+        "lower": 0.44836450547752005,
+        "verdict": "label_invalid"
+      },
+      "retrain": {
+        "auroc": 0.5583349104973242,
+        "lower": 0.44836450547752005,
+        "verdict": "label_invalid"
+      },
+      "task": "3-sliding--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6302842947372744,
+        "lower": 0.5125638529238665,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.6302842947372744,
+        "lower": 0.5125638529238665,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "3-sliding--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.5195352257347102,
+        "lower": 0.4752762384949834,
+        "verdict": "label_invalid"
+      },
+      "retrain": {
+        "auroc": 0.5195352257347102,
+        "lower": 0.4752762384949834,
+        "verdict": "label_invalid"
+      },
+      "task": "4-single_force--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6227854692321733,
+        "lower": 0.5728126140652908,
+        "verdict": "label_invalid"
+      },
+      "retrain": {
+        "auroc": 0.6227854692321733,
+        "lower": 0.5728126140652908,
+        "verdict": "label_invalid"
+      },
+      "task": "4-multiple_forces--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.525689546897777,
+        "lower": 0.45477799286877174,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.525689546897777,
+        "lower": 0.45477799286877174,
+        "verdict": "not_identifiable"
+      },
+      "task": "4-rolling--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.5689661596318195,
+        "lower": 0.5020065824803134,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.5689661596318195,
+        "lower": 0.5020065824803134,
+        "verdict": "not_identifiable"
+      },
+      "task": "4-falling--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.737316103413847,
+        "lower": 0.5725424922295851,
+        "verdict": "label_invalid"
+      },
+      "retrain": {
+        "auroc": 0.737316103413847,
+        "lower": 0.5725424922295851,
+        "verdict": "label_invalid"
+      },
+      "task": "4-sliding--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.99765198615144,
+        "lower": 0.9878737463725558,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.99765198615144,
+        "lower": 0.9878737463725558,
+        "verdict": "identifiable"
+      },
+      "task": "6-single_force--gravity-inverted"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.937951705422774,
+        "lower": 0.8564625214544505,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.937951705422774,
+        "lower": 0.8564625214544505,
+        "verdict": "identifiable"
+      },
+      "task": "6-multiple_forces--gravity-inverted"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.9997676739677552,
+        "lower": 0.9993090171711921,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.9997676739677552,
+        "lower": 0.9993090171711921,
+        "verdict": "identifiable"
+      },
+      "task": "6-rolling--gravity-inverted"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.9650834177079788,
+        "lower": 0.8902085864122361,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.9650834177079788,
+        "lower": 0.8902085864122361,
+        "verdict": "identifiable"
+      },
+      "task": "6-falling--gravity-inverted"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.7332400174223836,
+        "lower": 0.4656702910199778,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.7332400174223836,
+        "lower": 0.4656702910199778,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "6-sliding--gravity-inverted"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.5788651734031447,
+        "lower": 0.42750518353296874,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.5788651734031447,
+        "lower": 0.42750518353296874,
+        "verdict": "not_identifiable"
+      },
+      "task": "7-single_force--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6405409006128431,
+        "lower": 0.5278059505939202,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.6405409006128431,
+        "lower": 0.5278059505939202,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "7-single_force--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6695114701213346,
+        "lower": 0.5766459294008912,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.6695114701213346,
+        "lower": 0.5766459294008912,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "7-multiple_forces--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.7770195237016455,
+        "lower": 0.7198225038237045,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.7770195237016455,
+        "lower": 0.7198225038237045,
+        "verdict": "identifiable"
+      },
+      "task": "7-multiple_forces--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.5705604709413988,
+        "lower": 0.439764775515446,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.5705604709413988,
+        "lower": 0.439764775515446,
+        "verdict": "not_identifiable"
+      },
+      "task": "7-rolling--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6349632007860967,
+        "lower": 0.5497406752433741,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.6349632007860967,
+        "lower": 0.5497406752433741,
+        "verdict": "not_identifiable"
+      },
+      "task": "7-rolling--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.7666528620695738,
+        "lower": 0.6083170134786342,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.7666528620695738,
+        "lower": 0.6083170134786342,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "7-falling--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.8485485951922971,
+        "lower": 0.7118189555794059,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.8485485951922971,
+        "lower": 0.7118189555794059,
+        "verdict": "identifiable"
+      },
+      "task": "7-falling--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.5874008367564338,
+        "lower": 0.49564605565683717,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.5874008367564338,
+        "lower": 0.49564605565683717,
+        "verdict": "not_identifiable"
+      },
+      "task": "7-sliding--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6766908087437155,
+        "lower": 0.5962686544732659,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.6766908087437155,
+        "lower": 0.5962686544732659,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "7-sliding--force-on"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.26565737748349094,
+        "lower": 0.12257432270709424,
+        "verdict": "not_identifiable"
+      },
+      "retrain": {
+        "auroc": 0.26565737748349094,
+        "lower": 0.12257432270709424,
+        "verdict": "not_identifiable"
+      },
+      "task": "8-single_force--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.8877393862974404,
+        "lower": 0.6572839986954289,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.8877393862974404,
+        "lower": 0.6572839986954289,
+        "verdict": "identifiable"
+      },
+      "task": "8-single_force--storm-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6988113098672821,
+        "lower": 0.44971943002319675,
+        "verdict": "label_invalid"
+      },
+      "retrain": {
+        "auroc": 0.6988113098672821,
+        "lower": 0.44971943002319675,
+        "verdict": "label_invalid"
+      },
+      "task": "8-multiple_forces--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6475899746814027,
+        "lower": 0.2956426188096892,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.6475899746814027,
+        "lower": 0.2956426188096892,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "8-multiple_forces--storm-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.0025619128949615714,
+        "lower": 0.0016229747201056308,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.0025619128949615714,
+        "lower": 0.0016229747201056308,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "8-rolling--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.6309928465561803,
+        "lower": 0.003374323628803424,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": 0.6309928465561803,
+        "lower": 0.003374323628803424,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "8-rolling--storm-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": null,
+        "lower": null,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "retrain": {
+        "auroc": null,
+        "lower": null,
+        "verdict": "readiness_or_precision_insufficient"
+      },
+      "task": "8-falling--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.939465755357795,
+        "lower": 0.8365429730624862,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.939465755357795,
+        "lower": 0.8365429730624862,
+        "verdict": "identifiable"
+      },
+      "task": "8-falling--storm-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.8521774776738352,
+        "lower": 0.6994852699594787,
+        "verdict": "label_invalid"
+      },
+      "retrain": {
+        "auroc": 0.8521774776738352,
+        "lower": 0.6994852699594787,
+        "verdict": "label_invalid"
+      },
+      "task": "8-sliding--external-force-active"
+    },
+    {
+      "agree": true,
+      "published": {
+        "auroc": 0.8483216903130919,
+        "lower": 0.7000036725157699,
+        "verdict": "identifiable"
+      },
+      "retrain": {
+        "auroc": 0.8483216903130919,
+        "lower": 0.7000036725157699,
+        "verdict": "identifiable"
+      },
+      "task": "8-sliding--storm-active"
+    }
+  ],
+  "scoring_policy_all": true,
+  "tasks": 60
+}
