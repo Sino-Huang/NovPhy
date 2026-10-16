@@ -8,8 +8,8 @@ Parent: #108. The binding shared rules of #85 apply, and #105 adopts the #111 sc
 | Hierarchical model | `world_model/training/hierarchical_dynamics.py` |
 | Selector kinds | `world_model/training/request_selectors.py` (#114, 82a5878e; hash-bound, not edited here) |
 | Artifacts | `.local-artifacts/issue-105-hierarchy-baselines-v1/` (`findings.md`, `summary.json`, `compute.json`, `plan.json`, `smoke.json`, `ledger/`, `records/`, `training/`, `models/`, `data/`) |
-| Freeze | Plan frozen 2026-10-14T11:43:40Z (commit 0601a9e0), after a passed smoke and before any training, truth build or evaluation score. The runner and module bytes are unchanged since the freeze. |
-| Validation | `python -u -m scripts.run_hierarchy_baselines --validate` exits 0. `pytest tests/test_issue_105_hierarchy_baselines.py` passes (8 tests). |
+| Freeze | Plan frozen 2026-10-14T11:43:40Z (commit 0601a9e0), after a passed smoke and before any training, truth build or evaluation score. The module bytes are unchanged since the freeze. The runner changed after the publication for failed-guard reporting and the amendment-aware input check only (see "Post-freeze runner edits"). |
+| Validation | `python -u -m scripts.run_hierarchy_baselines --validate` exits 0. `pytest tests/test_issue_105_hierarchy_baselines.py` passes (9 tests). |
 
 Gate B passed, so this is the confirmatory reading on the #104 sealed #109 evaluation split. It uses the Gate-B cells (mixed only: grid 311, offset 76, angle 78, power 47 levels, × 3 seeds) and the Gate-B anchors. Grid is primary. Offset, angle, power and the rollout error are DESCRIPTIVE. Intervals are percentile bootstraps clustered by level: 10 000 draws, PCG64 7201, DESCRIPTIVE. The margin is δ = 0.02. Zero engine seconds.
 
@@ -93,8 +93,8 @@ Paired by level:
 - **The test is weak in one direction: J itself carries little request value here.**
   - J trails the best fixed request (F-15-continuous) by 0.057 on grid, and it trails the no-model action prior by 0.015.
   - A tied-axes restriction cannot lose value that the unrestricted policy does not have. "Not supported" therefore means no measurable value of independence for the ICLR J on this split. It does not show that tied axes are as good as a policy that exploits independence.
-- **For J_dec, the diagonal restriction hurts, and the anti-diagonal helps.**
-  - J_dec − J_dec_diag is +0.05 to +0.07 on every inventory (supported). But J_dec_anti, which collapses to (15, continuous) at almost every step, beats J_dec by 0.016 on grid.
+- **For J_dec, the diagonal restriction hurts. The anti-diagonal is numerically higher, but below δ.**
+  - J_dec − J_dec_diag is +0.05 to +0.07 on every inventory (supported). J_dec_anti collapses to (15, continuous) at almost every step. On grid it is numerically higher than J_dec by 0.016 (J_dec − J_dec_anti = −0.0163 [−0.0203, −0.0122]). That is below δ, so no ≥ 0.02 advantage is established.
   - The gain comes from reaching the coarse-horizon continuous request (15, cont), which lies off the diagonal. A hierarchy with continuous description at the coarsest level would reach it too. This reading is DESCRIPTIVE, and the disposition rule uses J only.
 - **The trained hierarchical model is usable only at its middle level.**
   - H-5-micro ranks like J on grid (J − H\* −0.001), loses on angle (+0.104 for J) and is anchor-dependent (right − wrong +0.136, supported).
@@ -139,7 +139,7 @@ Paired by level:
   - `supported` iff J − J_diag, J − J_monotone and J − H\* are each supported;
   - `not_supported_by_this_experiment` iff at least one has upper bound < δ;
   - otherwise `readiness_or_precision_insufficient`;
-  - a failed guard gives the stop token.
+  - a failed guard gives the stop token. This frozen wording covers the disposition and the J_dec reading only. Since the phase-A fix, a failed guard also adds a `guard_failure` block to `compute.json`, `summary.json` and `findings.md`. The block names the failed guards and states that no other token in the publication (the contrast tokens beside the disposition, and the inventory, rollout-error and wrong-anchor contrasts) is interpretable. The frozen rule itself is unchanged. All guards pass, so the block is absent and no published file changed.
 - **Guards** (all pass):
   - G1 isolation;
   - G2 scoring policy;
@@ -193,3 +193,11 @@ A rehearsal of every post-freeze mode then ran on 24 fit levels with a 12-update
 - Hardware: RTX 5090 instead of the #85 RTX 3090.
 - **Known before the freeze:** Gate B, every #101 result (J 0.706, J_dec 0.746, F_hindsight 0.762, J modal (1, macro)), and #96/#78/#100/#112. No restricted arm, hierarchical model or #78 port output on an evaluation capture existed.
 - **The hierarchical model is one matched instance of a tied-axes model.** Its Δ = 1 and Δ = 15 levels diverge under recursion. A different hierarchy (shared trunk, other coupling, continuous description at the coarse level) could behave differently.
+- **H\* and F\* are cross-inventory selections, not member-disjoint cross-fits.** As in #101, the same evaluation levels appear in several inventories. The selection is made once, before the bootstrap, so intervals that involve H\* or F\* are conditional on it.
+
+## Post-freeze runner edits (disclosure)
+
+Commit `28b3764c` changed `scripts/run_hierarchy_baselines.py` after the publication. The edits concern reporting and input validation only. No evidence changed, and every published file is byte-identical (`--validate` exits 0).
+
+- **Failed-guard reporting.** `guard_failure()` adds an explicit statement whenever a guard fails: secondary tokens are then not interpretable. The frozen rule, which invalidates the disposition and the J_dec reading only, is kept.
+- **Input check.** `load_plan` checks the pinned #101 runner through `scripts/post_freeze_amendments.py`. It accepts exactly the frozen bytes or the disclosed #101 amendment. The #103 plan pins this runner, and the same registry lists its amended bytes.
