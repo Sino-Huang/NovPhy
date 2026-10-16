@@ -95,3 +95,11 @@ def test_fixed_rollout_lands_on_the_endpoint():
         assert z.shape == (4, 236)
         assert timing["transition_calls"] == 4 * (225 // pair.delta)
         assert timing["linear_macs"] == timing["transition_calls"] * hd.linear_macs(model, pair)
+
+
+def test_failed_guard_is_reported_and_secondary_tokens_flagged():
+    from scripts import run_hierarchy_baselines as hb
+    assert hb.guard_failure({"G1": {"pass": True}, "G2": {"pass": True}}) is None
+    failure = hb.guard_failure({"G1": {"pass": True}, "G5_replication_101": {"pass": False}})
+    assert failure["failed_guards"] == ["G5_replication_101"]
+    assert failure["secondary_tokens_interpretable"] is False and hb.STOP_TOKEN in failure["note"]

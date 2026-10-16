@@ -45,6 +45,7 @@ import types
 import numpy as np
 import torch
 
+from scripts import post_freeze_amendments as amendments
 from scripts import run_decision_aware_policy as p101
 from scripts import run_decision_chain_attribution as m99
 from scripts import run_decision_dynamics_controls as c2
@@ -826,6 +827,21 @@ def disposition(grid, guards_ok):
     return STOP_TOKEN, tokens
 
 
+GUARD_FAILURE_NOTE = (f"the frozen rule turns the disposition and the J_dec reading into {STOP_TOKEN}; every other "
+                      "token in this publication (the contrast tokens listed beside them, inventory, rollout-error "
+                      "and wrong-anchor contrasts) is not interpretable either and must not be cited as a result")
+
+
+def guard_failure(guards):
+    """Explicit report of a failed guard (phase-A review): the frozen wording invalidates only the
+    dispositions, so the publication states that its secondary tokens are not interpretable. None if
+    every guard passes (the publication is then unchanged)."""
+    failed = sorted(name for name, g in guards.items() if not g["pass"])
+    if not failed:
+        return None
+    return {"failed_guards": failed, "secondary_tokens_interpretable": False, "note": GUARD_FAILURE_NOTE}
+
+
 def compute_tables(output, plan):
     output = Path(output)
     branches, cells = gb.evaluation_set()
@@ -880,6 +896,7 @@ def compute_tables(output, plan):
     g6 = guards["G6_restriction_integrity"]
     g6["pass"] = g6["restricted_violations"] == 0 and g6["monotone_violations"] == 0
     guards_ok = all(g["pass"] for g in guards.values())
+    failure = guard_failure(guards)
     token, tokens = disposition(grid, guards_ok)
     dec_token, dec_tokens = disposition({"contrasts": {
         "J-J_diag": grid["contrasts"]["J_dec-J_dec_diag"], "J-J_monotone": grid["contrasts"]["J_dec-J_dec_monotone"],
@@ -904,6 +921,7 @@ def compute_tables(output, plan):
                                           "label": "DESCRIPTIVE (same rule on J_dec)"}},
         "inventories": tables, "rollout_error": rollout_, "wrong_anchor": wrong,
         "unsupported": UNSUPPORTED,
+        **({"guard_failure": failure} if failure else {}),
         "compute": {"phases": all_phases, "gpu_seconds": sum(b["gpu_seconds"] for b in all_phases.values()),
                     "wall_seconds": sum(b["wall_seconds"] for b in all_phases.values()), "engine_seconds": 0,
                     "hardware": "2 x RTX 5090 (GPUs 2, 3; one process per GPU)"},
@@ -940,6 +958,10 @@ def findings_md(plan, compute):
     d = compute["disposition"]
     add("# Issue #105: independent axes vs hierarchy on the #104 sealed #109 evaluation split")
     add("")
+    if "guard_failure" in compute:
+        add(f"**Guard failure ({', '.join(compute['guard_failure']['failed_guards'])}): "
+            f"{compute['guard_failure']['note']}.**")
+        add("")
     add(f"Plan frozen {plan['frozen_at']} after a passed smoke, before training and scoring; scored once in processes "
         f"that did not train, under `deterministic_scoring()`. Validation: `{VALIDATION_COMMAND}`. Intervals: "
         "level-clustered percentile bootstrap (10 000 draws), DESCRIPTIVE; margin δ = 0.02; zero engine seconds.")
@@ -1046,6 +1068,7 @@ def summary(plan, compute):
             "hierarchical": {k: compute["hierarchical"][k] for k in ("parameters", "hybrid_parameters", "width",
                                                                      "usable_seeds")},
             "guards": {k: v["pass"] for k, v in compute["guards"].items()},
+            **({"guard_failure": compute["guard_failure"]} if "guard_failure" in compute else {}),
             "compute": {k: compute["compute"][k] for k in ("gpu_seconds", "wall_seconds", "engine_seconds")},
             "claim_boundary": plan["claim_boundary"]}
 
@@ -1385,7 +1408,7 @@ def load_plan(output):
     if not plan.get("frozen_before_training_and_scoring") or not plan["smoke_evidence"].get("ok"):
         raise ValueError("plan.json does not declare a passed-smoke freeze")
     for entry in plan["inputs"]:
-        if sha256_of(ROOT / entry["artifact"]) != entry["sha256"]:
+        if not amendments.matches(entry["artifact"], entry["sha256"], sha256_of(ROOT / entry["artifact"])):
             raise ValueError(f"frozen input {entry['name']} changed after the freeze")
     return plan
 
