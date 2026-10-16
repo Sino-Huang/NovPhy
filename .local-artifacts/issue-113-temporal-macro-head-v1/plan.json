@@ -1,0 +1,228 @@
+{
+  "caps": {
+    "gpu_seconds": 144000.0,
+    "stop": "readiness_or_precision_insufficient",
+    "wall_seconds": 172800.0
+  },
+  "contrasts": [
+    {
+      "first": "temporal",
+      "meaning": "temporal head - current head (Acceptance 3/4)",
+      "second": "as_is"
+    },
+    {
+      "first": "temporal",
+      "meaning": "temporal-context effect (same labels, same width)",
+      "second": "single"
+    },
+    {
+      "first": "single",
+      "meaning": "label effect (same single-frame architecture)",
+      "second": "as_is"
+    }
+  ],
+  "decision_rule": {
+    "margin": 0.05,
+    "not_supported_by_this_experiment": "every guard passes and not supported",
+    "readiness_or_precision_insufficient": "any guard fails (then every token is this one)",
+    "sources_with_tokens": [
+      "engine",
+      "predicted"
+    ],
+    "statistic": "held-out macro F1 difference (seed means), paired level-clustered bootstrap, 10000 draws PCG64(11302), DESCRIPTIVE",
+    "supported": "every guard passes AND lower bound > 0 AND point >= margin"
+  },
+  "engine_seconds": 0,
+  "frozen_at": "2026-10-16T13:54:57Z",
+  "git_head_at_freeze": "f14993c79cb0e1709d501869980e9f5e19417f1c",
+  "grouped_leave_out": {
+    "assignment": "per family, sorted levels permuted by PCG64(11301) and dealt round-robin",
+    "candidates": {
+      "single": [
+        "K1-mix0",
+        "K1-mix50"
+      ],
+      "temporal": [
+        "K2-mix0",
+        "K2-mix50",
+        "K3-mix0",
+        "K3-mix50",
+        "K4-mix0",
+        "K4-mix50"
+      ]
+    },
+    "current_head": "in-sample on fit (the Gate-B predictor was trained on the fit split); the predicted source uses the in-sample Gate-B seed 20260908",
+    "folds": 5,
+    "groups": "levels (480 fit levels)",
+    "mix": "share of each training batch whose landing carrier is the paired Gate-B member's one-step prediction from the observed anchor (CV: seed 20260908; final head seed i: Gate-B seed i)",
+    "rule": "for every candidate (K, mix): per source (engine, predicted) and per (predicate, Delta) the threshold is the first maximiser of the pooled out-of-fold F1 over [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.98, 0.99]; the candidate's score is the mean of its engine and predicted macro F1 (mean over predicates x Delta, every phase) at those thresholds. Temporal head: the best K in {2, 3, 4} x mix in {0, 0.5}; single-frame head: the best mix for K = 1; ties to the smaller K, then the smaller mix. Fit split only; the rollout source reads the predicted thresholds.",
+    "thresholds": [
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9,
+      0.95,
+      0.98,
+      0.99
+    ]
+  },
+  "guards": [
+    "G1 the fresh fit parse (deterministic_scoring policy) agrees with the v3 retrain carriers on positions 0..285: >= 0.9 of rows within the scoring_harness parse tolerance (a pipeline error fails every row; the v3 data mode ran under torch's default flags, cuDNN TF32 allowed, so slots near a presence or kind boundary differ numerically: the smoke saw 95 % of rows within tolerance and one kind-index flip)",
+    "G2 Gate-B unit checkpoints equal the handoff sha256",
+    "G3 no evaluation-split byte read before this freeze (scan and carrier start times after frozen_at)",
+    "G4 carrier rows equal summary frames for every shot",
+    "G5 each scoring worker's first record replays identically",
+    "G6 every held-out readout finite",
+    "G7 summed GPU and process wall seconds within the caps"
+  ],
+  "head_architecture": {
+    "clip": 10.0,
+    "hidden": 128,
+    "loss": "class-balanced BCE (pos_weight = negatives / positives per predicate x Delta)",
+    "per_delta_mlp": true
+  },
+  "heads": {
+    "as_is": "the Gate-B member's own macro_head unchanged: gated steady-state value read as settle at every Delta, gated structure-unstable value read as structure change at every Delta, threshold 0.5 (#100 READ_THRESHOLD)",
+    "single": "TemporalMacroHead(1): the same-capacity single-frame head trained on the new labels, training mix in [0.0, 0.5] selected by the same rule",
+    "temporal": "TemporalMacroHead(K), K in [2, 3, 4] (stride-Delta history) x training mix in [0.0, 0.5], selected by grouped leave-out"
+  },
+  "identity": "issue-113-temporal-macro-head-v1",
+  "inputs": [
+    {
+      "path": "scripts/run_observable_macro.py",
+      "sha256": "sha256:f5b75df9d9418579a8cfd6aeb3f8efad1e7afdff67041fc130c30a52981821e4"
+    },
+    {
+      "path": "world_model/training/temporal_macro_head.py",
+      "sha256": "sha256:182cfca6bf3727ee3cefb883eabc011521a6b2aad618d500ec408820fe46c3c5"
+    },
+    {
+      "path": "world_model/data/observable_macro.py",
+      "sha256": "sha256:956d4163b340e117084a4fa8f0c2d90cefe169805069f49724a6f08b58a5fa16"
+    },
+    {
+      "path": ".local-artifacts/issue-113-macro-predicates-v1/plan.json",
+      "sha256": "sha256:7d998dcc17cf75d5442c7ea32ab9d79bd07eac1e26041782bb29ef59df86c0a0"
+    },
+    {
+      "path": ".local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json",
+      "sha256": "sha256:94f6e888b3407dfd44f9fb99350c3d3e21d0ebc28e065618fd8b6da9d7897706"
+    },
+    {
+      "path": ".local-artifacts/issue-99-slot-encoder-fix-v1/encoder/encoder.pt",
+      "sha256": "sha256:cdbe677ab103e872ed6ac7777a3dc8b5aa0432f5771e8aa63a6e4e2d469bdd73"
+    },
+    {
+      "path": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "path": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260908/predictor.pt",
+      "sha256": "sha256:252ee2a7737cdf4979ecb9039a4ed8762fd06b58fcef13a344e1752beff058fb"
+    },
+    {
+      "path": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260909/predictor.pt",
+      "sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5"
+    },
+    {
+      "path": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260910/predictor.pt",
+      "sha256": "sha256:6d8bbf719bef9525eb705a530118be83ee35e0424a64cc44261f4d5b7fc5148f"
+    }
+  ],
+  "interface": "Issue #113 item 3: a macro head with temporal context for the observable macro predicates.\n\nInterface (declared before training; it is the same for engine-parsed and predicted carriers):\n\n    head(history, delta) -> logits [B, 2]  (observable_macro.PREDICATES at that Delta)\n\n``history`` is [B, K, 236]: ``history[:, -1]`` is the carrier being read at the landing frame f\n(an engine-parsed carrier, or a predicted one), and ``history[:, -1 - j]`` is the carrier at frame\nf - j * Delta, clamped at frame 0 (the decision frame absorbs earlier positions). The history\nstride is the request's own Delta, so a Delta-step rollout supplies it natively: at the n-th\npredicted landing a + n * Delta of a rollout anchored at frame a, the history holds the rollout's\nearlier landings and, before a, the observed context carriers (``rollout_history``). K = 1 is the\nsingle-frame head (the landing carrier only).\n\nFeatures: the landing carrier and the K - 1 stride-Delta motion differences\n(z_f - z_{f-Delta}, z_{f-Delta} - z_{f-2 Delta}, ...), standardised with training statistics and\nclipped to +-CLIP (terminal frames of early-ending shots carry very large motion values). One MLP\nper Delta: Linear(K * 236, HIDDEN) -> SiLU -> Linear(HIDDEN, 2); HIDDEN = 128 is the width of the\ncurrent single-frame ``CNNHybridPredictor.macro_head``.\n\nLoss: class-balanced binary cross-entropy (pos_weight = negatives / positives per predicate and\nDelta over the training rows), masked by label availability.\n",
+  "issue": 113,
+  "item": 3,
+  "item1_frozen_at": "2026-10-16T13:31:48Z",
+  "labels": {
+    "definitions": {
+      "debounce_frames": 1,
+      "debounce_rule": "smallest debounce k in [1, 2, 3, 5, 10, 15, 20, 25, 30, 35] frames whose relapse rate (share of settle_k frames f with f + 15 <= last frame that have a moving frame in (f, f + 15]) is <= 0.05, pooled over the #104 fit stream and the retained N1, #93 and #94 captures",
+      "deltas": [
+        1,
+        5,
+        15
+      ],
+      "label_index": "labels are indexed by the landing frame f = t + Delta of a Delta request issued at frame t",
+      "phases": [
+        "pre_contact",
+        "cascade",
+        "settled"
+      ],
+      "predicates": [
+        "settle",
+        "structure-change"
+      ],
+      "relation_to_110": "#110 ORs single-frame labels over (f-Delta, f]; #113 does not adopt it: structure change compares debounced endpoints, settle requires rest over the whole window",
+      "rest": "every present, simulated, dynamic body (birds included) has |v| <= 0.01 u/s and |omega| <= 0.01 deg/s (the engine stable_entered thresholds); moving[f] = some native step of frame f's interval (s_(f-1), s_f] is not at rest",
+      "rest_angular_deg": 0.01,
+      "rest_speed": 0.01,
+      "settle": "settle_Delta(f) = the launched bird was removed (engine entity_destroyed) at or before s_(f-D) AND moving[f-D+1..f] all false, with D = max(debounce, Delta); available iff f >= D",
+      "settle_window_frames": {
+        "1": 1,
+        "15": 15,
+        "5": 5
+      },
+      "structure-change": "structure-change_Delta(f) = S(f) != S(f-Delta), S(f) = the directed non-bird (supporter, supported) entity pairs present on more than half of the native steps of frame f's interval (frame 0: its single step); available iff f >= Delta"
+    },
+    "module": "world_model/data/observable_macro.py"
+  },
+  "order": [
+    "--carriers (4 GPU workers: fit and evaluation, whole shots)",
+    "--scan-evaluation",
+    "--assemble fit",
+    "--cv (4 workers)",
+    "--select3",
+    "--final (4 workers)",
+    "--assemble evaluation",
+    "--score (4 workers)",
+    "--publish3"
+  ],
+  "owner_decisions": [
+    "item 1 (frozen predicates) runs first and is frozen before any head training",
+    "item 3's held-out score uses item 4's pre-declared readout target: macro F1 per redefined predicate on the #104 held-out split (#109 evaluation stream), with the #100 audit machinery (readout counts and phases)"
+  ],
+  "prohibited": [
+    "reading evaluation-split labels before this freeze",
+    "changing a recipe, rule or threshold grid after this freeze",
+    "retrying typed failures",
+    "relaunching over live workers"
+  ],
+  "question": "does a macro head with temporal context read the frozen observable macro predicates from E99 carriers, engine-parsed and predicted by the Gate-B predictor, better than the current single-frame head; and what is the held-out macro F1 per redefined predicate (the #113 item-4 readout target)?",
+  "schema": "issue_113_temporal_head_plan_v1",
+  "scoring": {
+    "pairing": "head seed i with Gate-B unit seed i (20260908..10); seed-mean estimates",
+    "readout": "tp/fp/fn/tn per level x predicate x Delta x phase (pre_contact, cascade, settled)",
+    "reference": "#100 macro bar F1 >= 0.7, reported only",
+    "sources": {
+      "engine": "teacher-forced: the history and the landing carrier are E99 parses of the observed frames",
+      "predicted": "one Delta-step Gate-B prediction (pair (Delta, macro)) from the observed carrier at the anchor f - Delta; the history before the landing is observed (the #100 'after one Delta prediction' audit form; the first step of a Delta-step rollout)",
+      "rollout": "open-loop Gate-B rollout from the decision frame at stride Delta (pair (Delta, macro)); landing frames n * Delta up to the shot's last frame; the history is the rollout's own earlier landings (the #112 deployment form; DESCRIPTIVE)"
+    },
+    "split": "#109 evaluation stream issue109-evaluation (all complete shots, every frame), scored once after the final heads exist",
+    "target": "item 4: macro F1 per redefined predicate (F1 per predicate x Delta and their mean), temporal head, engine source primary; predicted and rollout sources reported"
+  },
+  "smoke": {
+    "path": ".local-artifacts/issue-113-temporal-macro-head-v1/smoke.json",
+    "sha256": "sha256:b85d1a42d44345969f446a55ca37937e9e38ac44895927869138605fc7d12213"
+  },
+  "training": {
+    "batch_per_delta": 2048,
+    "data": "every frame of every complete #104 issue109-fit shot (13 919): this ticket's deterministic E99 parse (scoring_harness policy, s99.carriers_for) of positions 0..last; the v3 retrain carriers (0..285) are the G1 reference",
+    "determinism": "training and scoring run under scoring_harness.deterministic_scoring()",
+    "lr": 0.001,
+    "normalisation_rows": 200000,
+    "optimizer": "AdamW",
+    "schedule": "cosine to 0",
+    "seeds": {
+      "final": [
+        20260908,
+        20260909,
+        20260910
+      ],
+      "grouped_leave_out": 20260908
+    },
+    "steps": 6000,
+    "weight_decay": 0.0001
+  }
+}
