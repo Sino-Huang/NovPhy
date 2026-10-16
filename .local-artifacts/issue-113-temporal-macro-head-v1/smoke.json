@@ -1,0 +1,120 @@
+{
+  "at": "2026-10-16T13:37:12Z",
+  "checks": [
+    {
+      "check": "gate_b_checkpoints",
+      "ok": true
+    },
+    {
+      "check": "G1_v3_comparison",
+      "max_abs_nonmotion_delta": 1.0,
+      "max_motion_scaled": 0.0012849421235384129,
+      "ok": true,
+      "pass": true,
+      "row_pass_rate": 0.9513497026079,
+      "rows": 6557,
+      "rows_pass": 6238,
+      "shots": 24
+    },
+    {
+      "check": "training_K1-mix0_finite",
+      "ok": true
+    },
+    {
+      "check": "training_K4-mix50_finite",
+      "ok": true
+    },
+    {
+      "check": "replay_temporal_engine",
+      "ok": true
+    },
+    {
+      "check": "replay_temporal_predicted",
+      "ok": true
+    },
+    {
+      "check": "replay_temporal_rollout",
+      "ok": true
+    },
+    {
+      "check": "replay_single_engine",
+      "ok": true
+    },
+    {
+      "check": "replay_single_predicted",
+      "ok": true
+    },
+    {
+      "check": "replay_single_rollout",
+      "ok": true
+    },
+    {
+      "check": "replay_as_is_engine",
+      "ok": true
+    },
+    {
+      "check": "replay_as_is_predicted",
+      "ok": true
+    },
+    {
+      "check": "replay_as_is_rollout",
+      "ok": true
+    }
+  ],
+  "identity": "issue-113-temporal-macro-head-v1",
+  "kept": "nothing but this record (scratch removed; fit split only)",
+  "ok": true,
+  "projection": {
+    "carrier_gpu_seconds": 46110.94455704269,
+    "evaluation_frames_estimate": 5829892.549752138,
+    "evaluation_shots": 11680,
+    "fit_frames": 6947455,
+    "parse_frames_per_second_per_gpu": 277.10010437859506,
+    "scoring_gpu_seconds": 10210.338203305708,
+    "total_gpu_seconds": 60138.509901684,
+    "training_gpu_seconds": 3817.2271413356066,
+    "wall_seconds_on_4_gpus": 15034.627475421,
+    "within_48h_on_4_gpus": true
+  },
+  "rows": 11212,
+  "schema": "issue_113_temporal_head_smoke_v1",
+  "shots": [
+    "issue-109-sc-fit-type010103-001-c00",
+    "issue-109-sc-fit-type010103-020-c28",
+    "issue-109-sc-fit-type010103-040-c27",
+    "issue-109-sc-fit-type010103-060-c26",
+    "issue-109-sc-fit-type010103-080-c25",
+    "issue-109-sc-fit-type010103-100-c24",
+    "issue-109-sc-fit-type010103-120-c23",
+    "issue-109-sc-fit-type010103-140-c22",
+    "issue-109-sc-fit-type010103-160-c21",
+    "issue-109-sc-fit-type010103-180-c20",
+    "issue-109-sc-fit-type010103-200-c19",
+    "issue-109-sc-fit-type010103-220-c18",
+    "issue-109-sc-fit-type010103-240-c17",
+    "issue-109-sc-fit-type010105-020-c16",
+    "issue-109-sc-fit-type010105-040-c15",
+    "issue-109-sc-fit-type010105-060-c15",
+    "issue-109-sc-fit-type010105-080-c14",
+    "issue-109-sc-fit-type010105-100-c13",
+    "issue-109-sc-fit-type010105-120-c12",
+    "issue-109-sc-fit-type010105-140-c11",
+    "issue-109-sc-fit-type010105-160-c10",
+    "issue-109-sc-fit-type010105-180-c09",
+    "issue-109-sc-fit-type010105-200-c08",
+    "issue-109-sc-fit-type010105-220-c07"
+  ],
+  "timings": {
+    "score_as_is_engine_seconds_per_row": 1.3667799772803024e-05,
+    "score_as_is_predicted_seconds_per_row": 1.4474720220156931e-05,
+    "score_as_is_rollout_seconds_per_row": 6.77062508974409e-05,
+    "score_single_engine_seconds_per_row": 1.990402309583514e-05,
+    "score_single_predicted_seconds_per_row": 1.4956029878096617e-05,
+    "score_single_rollout_seconds_per_row": 7.204269461866696e-05,
+    "score_temporal_engine_seconds_per_row": 2.7011824467578586e-05,
+    "score_temporal_predicted_seconds_per_row": 2.3823420784116866e-05,
+    "score_temporal_rollout_seconds_per_row": 7.174292730388128e-05,
+    "train_K1_seconds_per_step": 0.013830533120781183,
+    "train_K4_seconds_per_step": 0.009193445960991085
+  }
+}
