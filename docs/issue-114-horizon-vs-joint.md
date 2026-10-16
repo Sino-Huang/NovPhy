@@ -100,6 +100,8 @@ The primary claim is **adaptive alpha adds decision value beyond adaptive delta 
 
 Frozen guards: G1 split isolation, G2 deterministic scoring policy, G3 freeze/training/scoring chronology, G4 checkpoint binding, G5 replication against #101 and Gate B, G6 schedule-subset compliance. Execution-integrity disclosure is separate; the accidental duplicate launches do not justify changing these rules or manufacturing a supported token.
 
+The frozen failure wording turns only the primary and secondary dispositions into `readiness_or_precision_insufficient`. That rule is kept. Since the phase-A fix, a failed guard also adds a `guard_failure` block to `compute.json`, `summary.json` and `findings.md`. The block names the failed guards and states that no other token in the publication (fixed-lambda, matched-budget, restricted-arm, inventory and wrong-anchor contrasts) is interpretable. Every retained guard passes, so the block is absent and no published file changed.
+
 ## Published results on the sealed evaluation split
 
 The full per-inventory table, every lambda point, tie counts, matched contrasts, schedules and controls are in `findings.md` and `compute.json`. Grid has 311 level clusters × 3 seeds (933 cells; 14,928 candidates and 18,945 success/failure pairs). The following are the `1e-4` operating points; intervals are member-clustered and DESCRIPTIVE.
@@ -178,3 +180,10 @@ z_end, timing = rs.rollout_endpoints(
 The binding conventions require a declared frozen compute cap. This plan declared 12 GPU-allocation hours and 24 summed process-wall hours; the pre-freeze projection was 5.8 GPU hours, approximately 2.9 elapsed hours on two GPUs. The cap is an experiment stop/accounting limit, not permission to omit acceptance items; no acceptance scope has been reduced.
 
 Training and scoring used assigned GPUs 0 and 1 (two processes per GPU); GPU-allocation/process wall accounting is conservative, not utilization-weighted. Hardware is RTX 5090 rather than the historical RTX 3090. Reused #101 training is separately disclosed, not double-charged as newly executed training. Terminal artifacts, timing records and the execution incident remain in the output directory. Delegated decisions were posted on #114 before publication.
+
+## Post-freeze runner edits (disclosure)
+
+Commit `3834c53e` changed `scripts/run_horizon_vs_joint.py` after the publication. The edits concern reporting and input validation only. No evidence changed, and every published file is byte-identical (`--validate` exits 0).
+
+- **Failed-guard reporting.** `guard_failure()` adds an explicit statement whenever a guard fails: secondary tokens are then not interpretable. The frozen rule, which invalidates the primary and secondary dispositions only, is kept.
+- **Input check.** `load_plan` checks the pinned #101 runner through `scripts/post_freeze_amendments.py`. It accepts exactly the frozen bytes or the disclosed #101 amendment. The #103 plan pins this runner, and the same registry lists its amended bytes.
