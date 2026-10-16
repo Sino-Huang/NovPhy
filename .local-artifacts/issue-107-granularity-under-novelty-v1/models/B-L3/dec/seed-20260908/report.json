@@ -1,0 +1,81 @@
+{
+  "condition": "few-shot-3",
+  "in_sample": {
+    "auc_mean": 0.7788690476190476,
+    "cells": 8,
+    "mean_macs_per_candidate": 24153390.0,
+    "pair_counts": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1089,
+      6,
+      825
+    ]
+  },
+  "init": {
+    "policy_sha256": "sha256:fb0d8435456e92a89abe9ac70f994a9a6be904f9fdbc458075ccad64fb93f934",
+    "report": ".local-artifacts/issue-107-granularity-under-novelty-v1/models/normal/dec/seed-20260908/report.json"
+  },
+  "kind": "dec",
+  "lambda": 0.1,
+  "level": 3,
+  "parameters": 49417,
+  "plan_identity": "issue-107-granularity-under-novelty-v1",
+  "policy_sha256": "sha256:168dab3cca063c7ea286caae9da25e133f5990d66dd2b4708a3087e19497e076",
+  "pool": "fs-L3",
+  "predictor_sha256": "sha256:f4bedba4f7855ca34be56245caac92ea9a2040ca7e44e984e0ad6ad3031456e1",
+  "schema": "issue_107_training_report_v1",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "seed": 20260908,
+  "stats": {
+    "distil_seconds_0": 16.587517203064635,
+    "distil_seconds_1": 19.931448335992172,
+    "final_loss_0": 0.4490044166644414,
+    "final_loss_1": 0.47022588501373924,
+    "label_seconds_0": 0.47059713886119425,
+    "label_seconds_1": 0.6930720580276102,
+    "labels": {
+      "round_0": {
+        "label_counts": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          839,
+          116,
+          963
+        ],
+        "rows": 1920
+      },
+      "round_1": {
+        "label_counts": [
+          0,
+          0,
+          0,
+          11,
+          0,
+          1,
+          919,
+          44,
+          945
+        ],
+        "rows": 1920
+      }
+    }
+  },
+  "trained_at": "2026-10-16T03:02:44Z",
+  "typed_failure": null,
+  "variant": "B",
+  "wall_seconds": 38.303152305074036
+}

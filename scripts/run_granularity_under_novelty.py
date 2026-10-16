@@ -267,7 +267,7 @@ def n1_levels():
                        "items": [{"ordinal": it["ordinal"], "action": it["action"], "key": it["key"]}
                                  for it in entry["inventory"]],
                        "verdicts": dict(entry["verdicts"]), "anchor_key": first[member]["key"],
-                       "anchor_attempt": first[member]["attempt"]}
+                       "anchor_attempt": first[member]["attempt"], "anchor_action": first[member]["candidate"]["action"]}
     return out
 
 
@@ -293,9 +293,8 @@ def shot_tasks():
     tasks = [{"key": b["key"], "member": b["member"], "attempt": b["attempt"], "action": b["candidate"]["action"],
               "role": "policy"} for b in policy_branches()]
     for member, level in n1_levels().items():
-        item = next(it for it in level["items"] if it["key"] == level["anchor_key"])
         tasks.append({"key": level["anchor_key"], "member": member, "attempt": level["anchor_attempt"],
-                      "action": item["action"], "role": "n1-anchor"})
+                      "action": level["anchor_action"], "role": "n1-anchor"})
     return tasks
 
 
@@ -1251,8 +1250,12 @@ def adaptation_cost(output):
             rows.append({"level": k, "seed": seed, "predictor_member_gpu_seconds": predictor,
                          "encoder_gpu_seconds": encoder, "scene_head_gpu_seconds": scene,
                          **{f"policy_{kind}_gpu_seconds": load_report(output, "P", k, kind, seed)["wall_seconds"]
+                            for kind in KINDS},
+                         **{f"both_policy_{kind}_gpu_seconds": load_report(output, "B", k, kind, seed)["wall_seconds"]
                             for kind in KINDS}})
-    totals = {key: sum(r[key] for r in rows) for key in rows[0] if key.endswith("gpu_seconds")}
+    shared = ("encoder_gpu_seconds", "scene_head_gpu_seconds")  # one adaptation per level, shared by the seeds
+    totals = {key: sum(r[key] for r in rows if key not in shared or r["seed"] == SEEDS[0])
+              for key in rows[0] if key.endswith("gpu_seconds")}
     parameters = {"policy": load_report(output, "N", None, "dec", SEEDS[0]).get("parameters"),
                   "predictor": nc.nv().parameter_count(nc.nv().HybridPredictorV2())}
     return {"rows": rows, "totals": totals, "parameters": parameters,
@@ -1581,7 +1584,8 @@ def findings_md(plan, compute):
             f"{iv(auc_of(p, 'few_shot', 'both:J_dec')) if few else '-'} | "
             f"{p['zero_shot']['F_hindsight']}: {iv(auc_of(p, 'zero_shot', 'zs:' + p['zero_shot']['F_hindsight']))} |")
     add("")
-    add("## Adaptation cost (GPU s, summed over levels 1-7 x 3 seeds)")
+    add("## Adaptation cost (GPU s, summed over levels 1-7 x 3 seeds; the shared encoder and scene-head "
+        "adaptations once per level)")
     add("")
     cost = compute["adaptation_cost"]
     for key, value in cost["totals"].items():
