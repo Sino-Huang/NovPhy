@@ -1,7 +1,9 @@
 {
   "amendment": {
     "at": "2026-10-14T15:18:02Z",
-    "what": "the primary timing pass (wall axis, and G1 reuse fidelity) is extended from seed 20260908 to all three seeds; the wall column pools every seed's timing records, as the MAC column pools every seed's records"
+    "posthoc_wall_ratio_primary": 1.6328899030196344,
+    "status": "post-hoc DESCRIPTIVE (phase-A review B0, 2026-10-16): the frozen seed-20260908 timing pass is restored as the confirmatory wall axis (wall columns, AUC x wall and top-3 x wall frontiers, the ICLR wall ratio, G1 over the frozen seed), equal to the first publication kept in superseded/; the three-seed wall columns, wall ratio, wall frontiers and all-seed reuse check are reported only under posthoc_wall and are not a confirmatory result",
+    "what": "the timing pass was extended from the frozen seed 20260908 to all three seeds: 140 further timing records (seeds 20260909/10), new timing data collected after the freeze and after the first publication"
   },
   "compute": {
     "engine_seconds": 0,
@@ -50,7 +52,6 @@
         "top3_wall": [
           "F-15-continuous",
           "C-F-15",
-          "VLWM-15",
           "prior"
         ]
       },
@@ -92,10 +93,12 @@
           "prior"
         ],
         "auc_wall": [
+          "F-5-macro",
           "F-15-micro",
           "C-F-15",
           "J-1e-01",
           "J-pg-1e-04",
+          "TAWM-15",
           "VLWM-15",
           "prior"
         ],
@@ -106,7 +109,6 @@
           "prior"
         ],
         "top3_wall": [
-          "C-F-5",
           "C-F-15",
           "CJ-3e-03",
           "VLWM-15",
@@ -246,7 +248,7 @@
       "mac_ratio": 0.7838993466548925,
       "noninferior": true,
       "token": "not_supported_by_this_experiment",
-      "wall_ratio": 1.6328899030196344
+      "wall_ratio": 16.738340753008462
     },
     "secondary": {
       "a_third": false,

@@ -42,6 +42,7 @@ import time
 import numpy as np
 import torch
 
+from scripts import post_freeze_amendments as amendments
 from scripts import run_decision_aware_policy as dap
 from scripts import run_decision_chain_attribution as m99
 from scripts import run_decision_dynamics_controls as c2
@@ -82,8 +83,9 @@ PRIMARY = gb.GATE_INVENTORY
 PRIMARY_COST = harness.PRIMARY_COST
 DELTA = v1.DELTA
 STOP_TOKEN = v1.STOP_TOKEN
-TIMING_SEED = SEEDS[0]  # smoke sample and validation spot check
-TIMING_SEEDS = SEEDS  # post-freeze amendment (AMENDMENT): the timing pass covers every seed
+TIMING_SEED = SEEDS[0]  # the frozen timing pass (confirmatory wall axis and G1); smoke sample, validation spot check
+FROZEN_TIMING_SEEDS = (TIMING_SEED,)
+TIMING_SEEDS = SEEDS  # post-freeze amendment (AMENDMENT): timing records exist for every seed; post-hoc DESCRIPTIVE
 ICLR_LAMBDA = dap.ICLR_LAMBDA
 SETS = ("primary", "secondary")
 PRIOR = "prior"
@@ -137,15 +139,19 @@ AMENDMENT = {
     "at": "2026-10-14T15:18:02Z",
     "after": ("the first publication of the frozen runner (all 70 seed-20260908 timing and 204 secondary records "
               "complete; compute.json, summary.json and findings.md written once)"),
-    "what": ("the primary timing pass (wall axis, and G1 reuse fidelity) is extended from seed 20260908 to all three "
-             "seeds; the wall column pools every seed's timing records, as the MAC column pools every seed's records"),
-    "why": ("each seed is a separately trained policy, so seed 20260908 alone does not represent the all-seed MAC column "
-            "of the same policy: grid transition calls per candidate at seed 20260908 vs pooled were 196 vs 121 for "
-            "J-1e-04 and 21 vs 124.5 for CJ-1e-04; the frozen seed-only wall gave a J / C-J wall ratio of 16.7 that "
-            "describes seed 20260908, not the policies"),
+    "what": ("the timing pass was extended from the frozen seed 20260908 to all three seeds: 140 further timing "
+             "records (seeds 20260909/10), new timing data collected after the freeze and after the first publication"),
+    "why": ("judged after the first publication was seen: each seed is a separately trained policy, so seed 20260908 "
+            "alone does not represent the all-seed MAC column of the same policy (grid transition calls per candidate "
+            "at seed 20260908 vs pooled were 196 vs 121 for J-1e-04 and 21 vs 124.5 for CJ-1e-04), and the frozen "
+            "seed-only J / C-J wall ratio of 16.7 describes seed 20260908"),
+    "status": ("post-hoc DESCRIPTIVE (phase-A review B0, 2026-10-16): the frozen seed-20260908 timing pass is restored "
+               "as the confirmatory wall axis (wall columns, AUC x wall and top-3 x wall frontiers, the ICLR wall "
+               "ratio, G1 over the frozen seed), equal to the first publication kept in superseded/; the three-seed "
+               "wall columns, wall ratio, wall frontiers and all-seed reuse check are reported only under posthoc_wall "
+               "and are not a confirmatory result"),
     "unchanged": ("cells, retained and secondary records, AUC and top-3, MACs, every MAC-axis frontier, bootstrap share "
-                  "and verdict, and the ICLR-sentence token (its rule uses MACs); only the wall axis (AUC x wall and "
-                  "top-3 x wall frontiers, wall columns and the wall ratio) and the G1 coverage change"),
+                  "and verdict, and the ICLR-sentence token (its rule uses MACs)"),
     "superseded": "superseded/ keeps the first publication's findings.md, summary.json and compute.json",
     "execution": ("one additional launch of --score on 4 GPUs (one process each) for the seed-20260909/10 timing "
                   "tasks; existing records are skipped, nothing is overwritten; PIDs in logs/score-pids.txt"),
@@ -667,7 +673,21 @@ def ranker(rows, pid):
             "nonfinite": sum(v["nonfinite"] for v in views), "verdict_slots": slots}
 
 
-def compute_columns(records, inventory, pid, wall_source):
+def wall_columns(wall_source, inventory, seeds):
+    """Wall seconds of a policy from its timing records of ``seeds``: the frozen seed-20260908 pass
+    (confirmatory), or every seed (the post-freeze re-timing, post-hoc DESCRIPTIVE)."""
+    timed = [t for record in wall_source if not record.get("typed_failure")
+             for t in record["inventories"][inventory].values()]
+    return {"seconds_per_state": float(np.mean([t["seconds"] for t in timed])) if timed else None,
+            "seconds_per_candidate": (sum(t["seconds"] for t in timed) / sum(t["candidates"] for t in timed)
+                                      if timed else None),
+            "seconds_source": (f"uniform timing pass, seed {TIMING_SEED} (one process per GPU, warm-up discarded)"
+                               if tuple(seeds) == FROZEN_TIMING_SEEDS else
+                               "post-hoc DESCRIPTIVE: uniform timing pass, all seeds (one process per GPU, warm-up "
+                               "discarded)")}
+
+
+def compute_columns(records, inventory, pid, wall_source, seeds=FROZEN_TIMING_SEEDS):
     results = [r["inventories"][inventory][m] for s in SEEDS for r in [records[(pid, s)]] if not r.get("typed_failure")
                for m in r["inventories"][inventory]]
     candidates = sum(r["candidates"] for r in results)
@@ -682,12 +702,7 @@ def compute_columns(records, inventory, pid, wall_source):
         out["seconds_per_state"] = out["recorded_seconds_per_state"]
         out["seconds_source"] = "this scoring (one process per GPU, warm-up discarded), all seeds"
     else:
-        timed = [t for record in wall_source if not record.get("typed_failure")
-                 for t in record["inventories"][inventory].values()]
-        out["seconds_per_state"] = float(np.mean([t["seconds"] for t in timed])) if timed else None
-        out["seconds_per_candidate"] = (sum(t["seconds"] for t in timed) / sum(t["candidates"] for t in timed)
-                                        if timed else None)
-        out["seconds_source"] = "uniform timing pass, all seeds (one process per GPU, warm-up discarded)"
+        out.update(wall_columns(wall_source, inventory, seeds))
     return out
 
 
@@ -737,11 +752,23 @@ def inventory_table(records, cells, inventory, stats, set_name, timing, guards_o
             block.update(PRIOR_COMPUTE)
         else:
             block.update(compute_columns(records, inventory, pid,
-                                         [timing[(pid, s)] for s in TIMING_SEEDS] if timing is not None else None))
+                                         [timing[(pid, s)] for s in FROZEN_TIMING_SEEDS] if timing is not None else None))
         policies[pid] = {"group": group_of(pid), **block}
     frontiers = {combo: frontier_block(rows, pids, policies, combo, guards_ok) for combo in COMBOS}
     return {"cells": len(rows), "members": len({r["member"] for r in rows}), "policies": policies,
             "frontiers": frontiers}, rows
+
+
+def posthoc_wall_table(table, rows, timing, inventory, guards_ok):
+    """Post-hoc DESCRIPTIVE wall axis of a primary inventory from the three-seed re-timing (AMENDMENT):
+    per-policy wall columns and the wall-axis frontiers; not a confirmatory result."""
+    pids = list(table["policies"])
+    policies = {pid: {**p, **(wall_columns([timing[(pid, s)] for s in TIMING_SEEDS], inventory, TIMING_SEEDS)
+                                if pid != PRIOR else {})} for pid, p in table["policies"].items()}
+    walls = [combo for combo, (xkey, _) in COMBOS.items() if xkey == "seconds_per_state"]
+    return {"policies": {pid: {k: p[k] for k in ("seconds_per_state", "seconds_per_candidate", "seconds_source")
+                               if k in p} for pid, p in policies.items()},
+            "frontiers": {combo: frontier_block(rows, pids, policies, combo, guards_ok) for combo in walls}}
 
 
 def iclr_assessment(table, rows, guards_ok):
@@ -785,12 +812,13 @@ def iclr_assessment(table, rows, guards_ok):
 # guards
 # ---------------------------------------------------------------------------
 
-def reuse_fidelity(primary, timing):
-    """Timing-pass digests, MACs and calls equal the retained record on every cell of every timed seed."""
+def reuse_fidelity(primary, timing, seeds):
+    """Timing-pass digests, MACs and calls equal the retained record on every cell of every timed seed in
+    ``seeds`` (G1: the frozen seed; the post-hoc re-timing reports all seeds)."""
     checked, mismatches = 0, []
     for entry in entries_for("primary"):
         pid = entry["id"]
-        for seed in TIMING_SEEDS:
+        for seed in seeds:
             stored, fresh = primary[(pid, seed)], timing[(pid, seed)]
             if fresh.get("typed_failure") or stored.get("typed_failure"):
                 if bool(fresh.get("typed_failure")) != bool(stored.get("typed_failure")):
@@ -852,7 +880,8 @@ def record_manifest(output):
         paths += [("retained-primary", retained_path(entry["source"], entry["arm"], s)) for s in SEEDS]
     for pair in cross_pairs():
         paths += [("retained-cross-check", retained_path(source, arm, s)) for source, arm in pair for s in SEEDS]
-    paths += [("new-timing", timing_path(output, e["id"], s)) for s in TIMING_SEEDS for e in entries_for("primary")]
+    paths += [("new-timing" if s in FROZEN_TIMING_SEEDS else "posthoc-timing", timing_path(output, e["id"], s))
+              for s in TIMING_SEEDS for e in entries_for("primary")]
     paths += [("new-secondary", secondary_path(output, e["id"], s)) for e in entries_for("secondary") for s in SEEDS]
     paths += [("anchors", p) for p in (gb.anchors_path(GATE_B), hb.f77_anchors_path(P105), *secondary_e99_paths(),
                                         f77_store_path(output))]
@@ -876,17 +905,19 @@ def compute_tables(output, plan):
     secondary = {(e["id"], s): read_secondary(output, e["id"], s) for e in entries_for("secondary") for s in SEEDS}
     fit = read_json(gb.FIT_VERDICTS)["branches"]
     stats = {i: gb.prior_stats(fit, i) for i in INVENTORIES}
-    new_records = list(timing.values()) + list(secondary.values())
+    new_records = [timing[(e["id"], s)] for e in entries_for("primary") for s in FROZEN_TIMING_SEEDS] + list(
+        secondary.values())
     scored_at = sorted(r["scored_at"] for r in new_records)
     universe_counts = {i: len(c["mixed"]) for i, c in secondary_cells().items()}
     store = load_secondary_anchors(output)
     guards = {
-        "G1_reuse_fidelity": reuse_fidelity(primary, timing),
+        "G1_reuse_fidelity": reuse_fidelity(primary, timing, FROZEN_TIMING_SEEDS),
         "G2_cross_source_identity": cross_source(cache),
         "G3_scoring_policy": {"pass": all(r.get("scoring_policy") == harness.SCORING_POLICY
                                           for r in list(cache.values()) + new_records)},
         "G4_input_binding": {"pass": True, "inputs": len(plan["inputs"]),
-                             "note": "load_plan re-hashed every frozen input before this computation"},
+                             "note": ("load_plan re-hashed every frozen input before this computation (the disclosed "
+                                      "post-freeze runner amendments: scripts/post_freeze_amendments.py)")},
         "G5_chronology": {"plan_frozen_at": plan["frozen_at"], "first_new_record": scored_at[0],
                           "pass": plan["frozen_at"] <= scored_at[0]},
         "G6_secondary_inputs": {"mixed_cells": universe_counts, "frozen": plan["secondary"]["mixed_cells"],
@@ -912,18 +943,33 @@ def compute_tables(output, plan):
     grouped = {}
     for name, block in all_phases.items():
         key = name.split("-")[0] if name.startswith(("timing", "secondary")) else name
+        if key == "timing" and not name.endswith(f"seed{TIMING_SEED}"):
+            key = "timing-posthoc"
         g = grouped.setdefault(key, {"wall_seconds": 0.0, "gpu_seconds": 0.0, "phases": 0})
         g["wall_seconds"] += block["wall_seconds"]
         g["gpu_seconds"] += block["gpu_seconds"]
         g["phases"] += 1
     reused = {source: sum(cache[(src, arm, s)].get("seconds", 0.0) for (src, arm, s) in cache if src == source)
               for source in ("101", "114", "105", "gate_b")}
+    posthoc_timing = [timing[(e["id"], s)] for e in entries_for("primary") for s in TIMING_SEEDS
+                      if s not in FROZEN_TIMING_SEEDS]
+    posthoc = {inventory: posthoc_wall_table(sets["primary"][inventory], rows_of[("primary", inventory)], timing,
+                                             inventory, guards_ok) for inventory in INVENTORIES}
+    grid_wall = posthoc[PRIMARY]["policies"]
     return {
         "schema": SCHEMA_COMPUTE, "identity": IDENTITY, "frozen_at": plan["frozen_at"], "guards": guards,
         "guards_pass": guards_ok, "policies": [dict(e) for e in catalogue()] + [{"id": PRIOR, "group": "prior",
                                                                                  "source": "gate_b rule", "arm": None}],
         "excluded": EXCLUDED, "amendment": AMENDMENT, "evaluation": gb.evaluation_accounting(*gb.evaluation_set()),
         "secondary_mixed_cells": universe_counts, "sets": sets, "iclr_sentence": iclr,
+        "posthoc_wall": {
+            "label": ("post-hoc DESCRIPTIVE, not confirmatory: the primary-set wall axis from the post-freeze "
+                      "three-seed re-timing (AMENDMENT); the confirmatory wall axis is the frozen seed-20260908 pass "
+                      "in sets/iclr_sentence"),
+            "seeds": list(TIMING_SEEDS), "primary": posthoc,
+            "iclr_wall_ratio_primary": grid_wall[ICLR_J]["seconds_per_state"] / grid_wall[ICLR_CJ]["seconds_per_state"],
+            "reuse_fidelity_all_seeds": reuse_fidelity(primary, timing, TIMING_SEEDS),
+            "scoring_policy_all_seeds": all(r.get("scoring_policy") == harness.SCORING_POLICY for r in posthoc_timing)},
         "compute": {"phases": grouped, "gpu_seconds": sum(b["gpu_seconds"] for b in all_phases.values()),
                     "wall_seconds": sum(b["wall_seconds"] for b in all_phases.values()), "engine_seconds": 0,
                     "reused_record_scoring_seconds": reused,
@@ -1009,8 +1055,9 @@ def findings_md(plan, compute):
     add(f"## Primary set: #109 evaluation split, Gate-B grid ({grid['members']} levels × {len(SEEDS)} seeds)")
     add("")
     add("MACs: linear MACs per candidate rollout to step 225 (predictor + policy calls), retained records, all seeds. "
-        "Wall: synchronized rollout seconds per state (all candidates batched), uniform timing pass over all three seeds, "
-        "one process per RTX 5090, warm-up cell discarded. Frontier column: on/off for AUC×MACs (with the bootstrap "
+        f"Wall: synchronized rollout seconds per state (all candidates batched), the frozen uniform timing pass, seed "
+        f"{TIMING_SEED}, one process per RTX 5090, warm-up cell discarded (the post-freeze three-seed re-timing is "
+        "post-hoc DESCRIPTIVE, below). Frontier column: on/off for AUC×MACs (with the bootstrap "
         "frontier share), AUC×wall, top-3×MACs, top-3×wall. Verdict: the strongest dominator (highest AUC among "
         "policies with no more MACs), dominator − policy AUC, δ token, bootstrap frontier share.")
     add("")
@@ -1050,10 +1097,28 @@ def findings_md(plan, compute):
         + ".")
     add(f"- Hardware: {c['hardware']}.")
     add("")
-    add("## Post-freeze amendment (wall axis only)")
+    add("## Post-freeze amendment: three-seed re-timing (post-hoc DESCRIPTIVE)")
     add("")
-    for key in ("at", "after", "what", "why", "unchanged", "superseded", "execution"):
+    for key in ("at", "after", "what", "why", "status", "unchanged", "superseded", "execution"):
         add(f"- {key}: {AMENDMENT[key]}.")
+    add("")
+    p = compute["posthoc_wall"]
+    add(f"Post-hoc DESCRIPTIVE wall axis (seeds {', '.join(map(str, p['seeds']))}; not confirmatory): {ICLR_J} / "
+        f"{ICLR_CJ} wall ratio {p['iclr_wall_ratio_primary']:.3f} on the primary grid (frozen seed-{TIMING_SEED} "
+        f"ratio above: {num(compute['iclr_sentence']['primary']['wall_ratio'], 3)}); all-seed reuse fidelity "
+        f"{p['reuse_fidelity_all_seeds']['cells_checked']} cells, {p['reuse_fidelity_all_seeds']['mismatch_count']} "
+        "mismatches.")
+    add("")
+    add("| Inventory | AUC × wall (three seeds) | Top-3 × wall (three seeds) |")
+    add("| --- | --- | --- |")
+    for inventory in INVENTORIES:
+        f = p["primary"][inventory]["frontiers"]
+        add(f"| {inventory} | {', '.join(f['auc_wall']['on'])} | {', '.join(f['top3_wall']['on'])} |")
+    add("")
+    add("| Policy (grid) | Wall s / state, frozen seed (confirmatory) | Wall s / state, three seeds (post-hoc) |")
+    add("| --- | --- | --- |")
+    for pid, q in p["primary"][PRIMARY]["policies"].items():
+        add(f"| {pid} | {secs(grid['policies'][pid]['seconds_per_state'])} | {secs(q.get('seconds_per_state'))} |")
     add("")
     add("## Excluded")
     add("")
@@ -1070,7 +1135,8 @@ def summary(plan, compute):
 
     return {"schema": SCHEMA_REPORT, "identity": IDENTITY, "frozen_at": plan["frozen_at"],
             "validation_command": VALIDATION_COMMAND, "guards_pass": compute["guards_pass"],
-            "amendment": {k: AMENDMENT[k] for k in ("at", "what")},
+            "amendment": {**{k: AMENDMENT[k] for k in ("at", "what", "status")},
+                          "posthoc_wall_ratio_primary": compute["posthoc_wall"]["iclr_wall_ratio_primary"]},
             "iclr_sentence": {s: {k: compute["iclr_sentence"][s][k] for k in ("token", "mac_ratio", "wall_ratio",
                                                                                "a_third", "noninferior")}
                               | {"auc_J_minus_CJ": compute["iclr_sentence"][s]["auc_contrast_J_minus_CJ"]["estimate"]}
@@ -1442,7 +1508,7 @@ def load_plan(output):
     if not plan.get("frozen_before_new_scoring") or not plan["smoke_evidence"].get("ok"):
         raise ValueError("plan.json does not declare a passed-smoke freeze")
     for entry in plan["inputs"]:
-        if sha256_of(ROOT / entry["artifact"]) != entry["sha256"]:
+        if not amendments.matches(entry["artifact"], entry["sha256"], sha256_of(ROOT / entry["artifact"])):
             raise ValueError(f"frozen input {entry['name']} changed after the freeze")
     return plan
 

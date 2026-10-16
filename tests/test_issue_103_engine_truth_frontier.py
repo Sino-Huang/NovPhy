@@ -73,3 +73,31 @@ def test_shares_use_the_p94_draw_matrix():
     draws = generator.integers(0, 5, size=(300, 5))
     expected = float(np.mean(np.array(values)[draws].mean(axis=1) > 0.7537))
     assert abs(shares[1] - expected) < 1e-12
+
+
+def test_wall_axis_frozen_seed_is_confirmatory_and_three_seeds_post_hoc():
+    record = {"inventories": {"grid": {"m": {"seconds": 2.0, "candidates": 4}}}}
+    other = {"inventories": {"grid": {"m": {"seconds": 6.0, "candidates": 4}}}}
+    frozen = etf.wall_columns([record], "grid", etf.FROZEN_TIMING_SEEDS)
+    posthoc = etf.wall_columns([record, other], "grid", etf.TIMING_SEEDS)
+    assert frozen["seconds_per_state"] == 2.0 and frozen["seconds_per_candidate"] == 0.5
+    assert frozen["seconds_source"].startswith(f"uniform timing pass, seed {etf.TIMING_SEED}")
+    assert posthoc["seconds_per_state"] == 4.0 and posthoc["seconds_source"].startswith("post-hoc DESCRIPTIVE")
+    assert etf.FROZEN_TIMING_SEEDS == (etf.SEEDS[0],)
+
+
+def test_published_confirmatory_tables_equal_the_frozen_first_publication():
+    """B0: the confirmatory sets, ICLR assessment and G1 equal superseded/ (the first, frozen-runner
+    publication); the three-seed wall axis appears only under posthoc_wall."""
+    import json
+    from pathlib import Path
+    import pytest
+    root = Path(etf.OUTPUT)
+    if not (root / "superseded" / "compute.json").is_file():
+        pytest.skip("retained #103 publication not present")
+    first = json.loads((root / "superseded" / "compute.json").read_text())
+    now = json.loads((root / "compute.json").read_text())
+    for key in ("sets", "iclr_sentence", "policies", "excluded", "evaluation", "secondary_mixed_cells"):
+        assert now[key] == first[key], key
+    assert now["guards"]["G1_reuse_fidelity"] == first["guards"]["G1_reuse_fidelity"]
+    assert now["posthoc_wall"]["seeds"] == list(etf.SEEDS)
