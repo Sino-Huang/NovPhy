@@ -6,9 +6,9 @@ Parent: #108. The binding shared rules of #85 apply, and #101 adopts the #111 sc
 | --- | --- |
 | Runner | `scripts/run_decision_aware_policy.py` |
 | Shared module | `world_model/training/request_policy.py` (API below; reused by #114, #116, #119 and #121) |
-| Artifacts | `.local-artifacts/issue-101-decision-aware-policy-v1/` (`findings.md`, `summary.json`, `compute.json`, `selection.json`, `models/*/lam-*/seed-*/report.json`, `records/`) |
-| Freeze | Plan frozen 2026-10-14T10:04:00Z (commit 9bff8308), after a passed smoke and before any data, training or evaluation score. The runner and module bytes are unchanged since the freeze. |
-| Validation | `python -u -m scripts.run_decision_aware_policy --validate` exits 0. `pytest tests/test_issue_101_decision_aware_policy.py` passes (12 tests). |
+| Artifacts | `.local-artifacts/issue-101-decision-aware-policy-v1/` (`findings.md`, `summary.json`, `compute.json`, `selection.json`, `models/*/lam-*/seed-*/report.json`, `records/`, `records-manifest.json`) |
+| Freeze | Plan frozen 2026-10-14T10:04:00Z (commit 9bff8308), after a passed smoke and before any data, training or evaluation score. The module bytes are unchanged since the freeze. The runner changed after the publication for guard propagation, the record manifest and reporting only (see "Post-freeze runner edits"). |
+| Validation | `python -u -m scripts.run_decision_aware_policy --validate` exits 0. `pytest tests/test_issue_101_decision_aware_policy.py` passes (15 tests). |
 
 Intervals are percentile bootstraps clustered by level (member): 10 000 draws, PCG64 7201, DESCRIPTIVE. The margin is δ = 0.02. Zero engine seconds.
 
@@ -27,19 +27,21 @@ J_dec is `J-dec-1e-01`, the λ chosen on the policy split. J (ICLR) is `J-pe-1e-
 | Contrast (AUC difference, paired by level and seed) | grid | offset | angle | power |
 | --- | --- | --- | --- | --- |
 | J_dec − F_hindsight | **−0.016 [−0.020, −0.012]** | −0.152 [−0.176, −0.128] | −0.157 [−0.180, −0.135] | −0.019 [−0.035, −0.006] |
-| J_dec − F* (cross-fit r†) | +0.001 [−0.005, +0.008] | −0.152 [−0.176, −0.128] | −0.157 [−0.180, −0.135] | −0.019 [−0.035, −0.006] |
-| J_dec − M_dec (jointness) | +0.001 [−0.001, +0.002] | +0.001 [−0.004, +0.006] | +0.003 [−0.002, +0.009] | +0.000 [−0.001, +0.002] |
+| J_dec − F* (cross-inventory r†, see below) | +0.001 [−0.005, +0.008] | −0.152 [−0.176, −0.128] | −0.157 [−0.180, −0.135] | −0.019 [−0.035, −0.006] |
+| J_dec − M_dec (jointness) | +0.001 [−0.001, +0.002] | +0.001 [−0.004, +0.006] | +0.003 [−0.002, +0.009] | +0.000 [−0.001, +0.001] |
 | J_dec − OL_dec (state dependence) | −0.003 [−0.006, +0.000] | −0.023 [−0.032, −0.014] | −0.023 [−0.032, −0.013] | −0.012 [−0.025, −0.003] |
-| J_dec − J (ICLR) | **+0.040 [+0.030, +0.052] supported** | −0.062 [−0.114, −0.009] | −0.078 [−0.118, −0.037] | −0.013 [−0.031, +0.002] |
+| J_dec − J (ICLR) | **+0.040 [+0.029, +0.052] supported** | −0.062 [−0.114, −0.009] | −0.078 [−0.118, −0.037] | −0.013 [−0.031, +0.002] |
 | J − F_hindsight | −0.057 [−0.068, −0.046] | −0.090 [−0.126, −0.055] | −0.079 [−0.106, −0.054] | −0.006 [−0.014, +0.001] |
-| J − M | −0.001 [−0.003, +0.002] | +0.039 [+0.015, +0.063] supported | −0.002 [−0.018, +0.015] | +0.032 [+0.015, +0.050] supported |
+| J − M | −0.001 [−0.003, +0.002] | +0.038 [+0.014, +0.063] supported | −0.002 [−0.018, +0.015] | +0.031 [+0.015, +0.050] supported |
 | J − OL | +0.013 [+0.010, +0.016] | +0.080 [+0.061, +0.098] supported | +0.050 [+0.034, +0.065] supported | +0.011 [+0.003, +0.019] |
 | J_pg − F_hindsight | −0.001 [−0.003, +0.001] | −0.033 [−0.060, −0.006] | −0.064 [−0.087, −0.039] | −0.008 [−0.015, 0.000] |
-| J_pg − J_dec | +0.015 [+0.011, +0.020] | +0.119 [+0.108, +0.131] supported | +0.093 [+0.081, +0.107] supported | +0.012 [−0.000, +0.026] |
+| J_pg − J_dec | +0.015 [+0.011, +0.019] | +0.119 [+0.107, +0.131] supported | +0.093 [+0.081, +0.107] supported | +0.012 [−0.000, +0.026] |
 
 Tokens follow the δ rule: `supported` iff the mean is ≥ δ and the lower bound is > 0. Every unmarked cell above is `not_supported_by_this_experiment`, except J_pg − J_dec on power, which is `readiness_or_precision_insufficient`.
 
 F_hindsight is F-15-continuous on grid and F-5-micro on the other three inventories. F* is F-5-micro on every inventory. Offset, angle and power are DESCRIPTIVE.
+
+**F* is cross-inventory selection, not independent cross-fitting.** #101 Work 3 asks for "cross-fit r†". The runner applies #96's literal rule: the best fixed request on the other three inventories. The same evaluation levels appear in several inventories, however. In the Gate-B seed-20260908 record, the grid shares 65 levels with angle, 57 with offset and 31 with power. F* is therefore not member-disjoint cross-fitting, and the rule does not remove selection optimism. F* is selected once, before the bootstrap, and F_hindsight is selected on the target inventory itself. Every J − F* and J − F_hindsight interval is therefore conditional on that selection. A member-disjoint estimate would need a separately declared analysis. It is not part of the frozen results. The primary J_dec − F_hindsight disposition is unaffected, because F_hindsight is labelled hindsight.
 
 ### λ sweep (grid): MAC vs AUC for each policy type
 
@@ -78,13 +80,14 @@ The no-model action prior scores 0.720.
 - **J_dec beats the ICLR J on grid: +0.040, `supported`.**
   - The gain matches J_dec's coarser schedules. J (λ = 1e-4) is 79 % (1, macro) and costs 184M MACs per rollout; J_dec costs 23M.
   - On offset and angle, J_dec ranks worse than J.
-- **Jointness and state dependence still carry no ranking value.**
+- **Jointness and state dependence add no ≥ δ ranking advantage for these selected policies.**
   - J_dec − M_dec ≈ 0 on every inventory.
   - J_dec − OL_dec ≤ 0 everywhere. Open-loop draws from J_dec's own request frequencies rank as well on grid, and better on offset, angle and power.
   - For the ICLR J, J − OL is positive (supported on offset and angle) and J − M is supported on offset and power. Against a better fixed request, however, J trails F_hindsight by 0.057 on grid.
+  - These are contrasts of the selected J and J_dec. They do not show that jointness or state dependence is worthless in general.
 - **The policy-gradient alternative collapses to a fixed request.**
   - At λ ≥ 1e-2, each seed requests one pair at every step, for every candidate (0 of 933 cells differ): (15, macro) for seed 20260908, and (15, continuous) for seeds 20260909 and 20260910. The grid schedule table pools the three seeds into a 2 : 1 mix, but no seed mixes requests.
-  - J_pg therefore ties F_hindsight (−0.001 [−0.003, +0.001]) and beats J_dec by +0.015 on grid.
+  - J_pg is within 0.003 of F_hindsight (−0.001 [−0.003, +0.001]). This is a small difference, not a demonstrated equivalence. J_pg − J_dec is +0.015 [+0.011, +0.019] on grid: a positive difference below δ (`not_supported_by_this_experiment`). No ≥ 0.02 advantage of J_pg over the selected decision policy is demonstrated.
   - Optimizing the per-cell AUC end to end (Work 2) does not recover state-dependent request value either. The gap between DP and PG comes from choosing the coarsest Δ consistently, not from state dependence.
 - **The trained policy still depends on the anchor.** In the wrong-anchor control, J_dec from the 480 fit-split anchors scores 0.618, against 0.746 from the right anchor. Right − wrong is +0.128 [0.117, 0.139] (`supported`), and rank stability is 0.60.
 - Every hybrid policy trails C* (C-F-15, 0.783): J_dec − C* = −0.037 on grid. This repeats the Gate-B finding that the matched continuous model ranks better.
@@ -121,6 +124,7 @@ All three kinds use the same 242 → 128 → 9 MLP, initialized with `torch.manu
   - Rollout: every candidate of every mixed policy cell is rolled out from the level anchor under a continuation. Round 0 uses F-15-macro (with a same-α fallback near the end); round 1 (DAgger) uses the round-0 policy.
   - Q value: at each visited state, each feasible request i is tried, and the rollout then continues to step 225. Q(i) is the candidate's pairwise softplus ranking loss (T = 0.1) against the other candidates' continuation costs, plus λ × (work of the remaining transitions) / work(15, continuous).
   - Label: argmin Q. This is a one-step lookahead over a base policy, i.e. approximate DP.
+  - **Surrogate qualification.** Work 1 asks for "the change in within-cell ranking loss ... plus λ·MAC". The owner's delegation comment and the frozen plan instead adopt the candidate-normalized loss above, and the code implements that declared surrogate. Dropping the candidate's baseline loss does not change the argmin. The candidate-normalized loss is not, however, numerically the mean full-cell ranking-loss change. For a successful candidate, the full-cell change is the candidate's change divided by the number of successes; for a failed candidate, it is divided by the number of failures. With λ fixed, this changes the ranking/compute trade-off. The #112 reference, `decision_dynamics.pairwise_ranking`, averages over all success–failure pairs. In 140 of the 167 mixed policy cells there is only one success, so the difference matters. Every dec result here describes this surrogate. These results do not show that decision-valued DP labels in general fail, and they do not show that the original cell-loss-delta requirement is met exactly. Testing a class-normalized formulation would need its own frozen plan.
   - Training: the same distillation recipe as pe.
   - Round 0 has 36 795 rows. Round 1 has 37k–467k rows, depending on λ and seed.
 - **pg (policy gradient, Work 2).**
@@ -140,7 +144,7 @@ All three kinds use the same 242 → 128 → 9 MLP, initialized with `torch.manu
   - J for every (kind, λ), i.e. 12 policies;
   - M (factorized selector, t96) of J and of J_dec;
   - OL of J and of J_dec. Each OL arm draws from its J arm's pooled per-seed request frequencies over every cell of all four inventories and every candidate, with one PCG64(7202) stream in the frozen order (inventory, level, seed).
-  - F* (cross-fit r†) and F_hindsight are selected by member-mean AUC, as in t96.
+  - F* (cross-inventory r†, the #96 rule; not member-disjoint, see above) and F_hindsight are selected by member-mean AUC, as in t96.
   - Controls: the no-model action prior (Gate-B rule) and J_dec's wrong-anchor control (480 fit anchors × 16 grid candidates).
 - **Cells and anchors:** the Gate-B cells (mixed only: grid 311, offset 76, angle 78, power 47) and the Gate-B anchor store, unchanged.
 - **Scoring path:** `request_policy.rollout_endpoints`, the same ops in the same order as `m99.rollout_endpoints`, plus the OL schedule kind. It runs per cell under `deterministic_scoring()`.
@@ -152,8 +156,8 @@ All three kinds use the same 242 → 128 → 9 MLP, initialized with `torch.manu
   - G4 policy checkpoint hashes equal their training reports;
   - G5 the F-15-macro and C-F-15 rows equal the Gate-B unit and C* records exactly (all 2 × 3 × 512 cell blocks).
 
-  All pass.
-- **Validation:** `--validate` re-derives every table and the selection from the records and training reports, byte-compares `compute.json`, `summary.json` and `findings.md`, and re-scores J_dec seed 20260908 on all 311 grid cells. Rows and schedules match exactly.
+  All pass. The frozen `guards.failure` rule says that a failed guard turns every token into `readiness_or_precision_insufficient`. The runner as published applied that only to the primary token. Since the phase-A fix, it also applies the rule to every inventory contrast and to the wrong-anchor token. With all guards passing, this changes no published value.
+- **Validation:** `--validate` re-derives every table and the selection from the records and training reports. It byte-compares `compute.json`, `summary.json`, `findings.md` and `records-manifest.json`, the content hashes of all 81 raw records. It also re-scores J_dec seed 20260908 on all 311 grid cells. Rows and schedules match exactly.
 
 ### Smoke (pre-freeze)
 
@@ -217,3 +221,19 @@ Runner-level reuse:
 - **λ grid caveat.** The dec/pg λ grid was set from smoke label distributions on four policy levels (training data).
 - **Selection caveat.** The policy-split selection AUCs are in-sample, because the training labels used those verdicts. The selection compares λ values within a kind only.
 - **Training is not bit-reproducible.** Training ran under deterministic flags, but bit reproducibility of training is not claimed: the CUDA sampler of `pg` and the GPU kernels are assumed deterministic, not verified. The published records and policies are the retained ones.
+
+## Review qualifications (phase-A review)
+
+- **Raw records.** The 81 records (26 arms × 3 seeds plus 3 wrong-anchor records, 196 MiB) stay local in `records/`. The committed `records-manifest.json` binds each of them by size and sha256. `--validate` recomputes that manifest from the files and byte-compares it with the committed copy. The records were not regenerated.
+- **G3 chronology.** G3 reads `trained_at`, which `train_group` writes when a group completes; it is not a start receipt. The retained chronology is: freeze 10:04:00, training completions 10:15:41–10:43:48, selection 10:43:51, first score 10:43:53 UTC. This supports selection before scoring. G3 alone does not prove that training began after the freeze. No contrary chronology was observed.
+- **Selection table.** The selection is reconstructed from the AUC aggregates in the committed training reports, not from retained per-cell policy-split rows. This shows that the reported aggregates agree; it is not an independent audit of each selection AUC.
+- **Checkpoint retrieval.** The 36 policy checkpoints and the Gate-B predictors are bound by sha256 in the training reports and the Gate-B handoff. Their payloads stay in the local `.local-artifacts/` tree of the main checkout (`models/<kind>/lam-<λ>/seed-<s>/policy.pt`) and are not committed.
+
+## Post-freeze runner edits (disclosure)
+
+Commit `a48dea6c` changed `scripts/run_decision_aware_policy.py` after the publication. Every edit concerns reporting, guard propagation or validation, and no evidence changed. The records, models, selection and plan are untouched, and `compute.json` and `summary.json` are byte-identical.
+
+- **Guard propagation.** `invalidate()` applies the frozen `guards.failure` rule to every inventory contrast and to the wrong-anchor token (spec review finding 1).
+- **Record manifest.** `--publish` writes `records-manifest.json` (81 records, sizes and sha256), and `--validate` byte-compares it.
+- **Reporting.** `findings.md` gains a paragraph that F* is cross-inventory selection, not member-disjoint cross-fitting, with selection-conditional intervals. This is the only change to a published file.
+- **Downstream pins.** The #107, #114, #105, #103 and #117 plans pin this runner by sha256. `scripts/post_freeze_amendments.py` lists the amended bytes, and their `load_plan` accepts exactly the frozen or the amended bytes. Each of those runners' `--validate` still regenerates its publication byte for byte through this module.
