@@ -157,5 +157,47 @@ class Statistics(unittest.TestCase):
         self.assertEqual(r.verdict(good, {"auroc": 0.7}), "label_invalid")
 
 
+
+class PhaseAReviewFixes(unittest.TestCase):
+    """Fail-closed publication and freeze enforcement of the #110 runner (phase-A review F1, B1)."""
+
+    def test_a_failed_guard_turns_every_probe_verdict_insufficient(self):
+        from scripts import run_novelty_coverage as r
+        probes = {"t": {"cell": "2/falling", "verdict": "identifiable",
+                        "by_k": {"1": {"verdict": "not_identifiable", "carrier": {"evaluation": {"auroc": 0.6}}},
+                                 "15": {"verdict": "label_invalid", "engine": {"evaluation": {"auroc": 0.7}}}}}}
+        out = r.invalidate(probes)
+        self.assertEqual(out["t"]["verdict"], r.STOP_TOKEN)
+        self.assertEqual({k: v["verdict"] for k, v in out["t"]["by_k"].items()}, {"1": r.STOP_TOKEN, "15": r.STOP_TOKEN})
+        self.assertEqual(out["t"]["by_k"]["1"]["carrier"], probes["t"]["by_k"]["1"]["carrier"])
+
+    def test_load_plan_refuses_drift_of_inputs_smoke_and_repair(self):
+        import tempfile
+        from pathlib import Path
+        from scripts import run_novelty_coverage as r
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            (out / "repair").mkdir()
+            pinned, runner = out / "pinned.txt", out / "runner.py"
+            for path, text in ((pinned, "a"), (runner, "r"), (out / "smoke.json", "{}"),
+                               (out / "repair" / "fan-repair.json", "{}")):
+                path.write_text(text)
+            plan = {"schema": r.SCHEMA_PLAN, "identity": r.IDENTITY,
+                    "inputs": [{"name": "x", "artifact": str(pinned), "sha256": r.sha256_of(pinned)},
+                               {"name": "runner", "artifact": str(runner), "sha256": "sha256:frozen-runner"}],
+                    "smoke_sha256": r.sha256_of(out / "smoke.json"),
+                    "repair_sha256": r.sha256_of(out / "repair" / "fan-repair.json")}
+            (out / "plan.json").write_text(r.json_text(plan))
+            self.assertEqual(r.load_plan(out)["identity"], r.IDENTITY)
+            for path in (pinned, out / "smoke.json", out / "repair" / "fan-repair.json"):
+                original = path.read_text()
+                path.write_text(original + " ")
+                with self.assertRaises(ValueError):
+                    r.load_plan(out)
+                path.write_text(original)
+            with self.assertRaises(ValueError):
+                r.repair(out)
+
+
 if __name__ == "__main__":
     unittest.main()

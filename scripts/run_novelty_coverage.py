@@ -358,12 +358,24 @@ def mark(output, phase, wall, gpu, **extra):
 
 
 def load_plan(output):
-    path = Path(output) / "plan.json"
+    """The frozen plan, refusing on drift of any pinned input (mirrors Gate B; the runner itself is
+    excluded as in #102: its post-freeze edits are reporting-only and disclosed), of smoke.json or of
+    the labeler-repair record (the G2 input)."""
+    output = Path(output)
+    path = output / "plan.json"
     if not path.is_file():
         raise ValueError("plan.json missing; run --repair, --smoke and --prepare first")
     plan = read_json(path)
     if plan.get("schema") != SCHEMA_PLAN or plan.get("identity") != IDENTITY:
         raise ValueError("plan binding differs")
+    changed = [e["name"] for e in plan["inputs"] if e["name"] != "runner"
+               and sha256_of(ROOT / e["artifact"]) != e["sha256"]]
+    if sha256_of(output / "smoke.json") != plan["smoke_sha256"]:
+        changed.append("smoke.json")
+    if sha256_of(output / "repair" / "fan-repair.json") != plan["repair_sha256"]:
+        changed.append("repair/fan-repair.json")
+    if changed:
+        raise ValueError(f"frozen inputs changed after the freeze: {changed}")
     return plan
 
 
@@ -424,6 +436,8 @@ def repair(output):
     """Residual acceleration of contact-free bodies vs the legacy and repaired fan labels on every
     fan capture of the #104 smoke and of the issue110-fit stream (novel sides of pair-type0102xx)."""
     output = Path(output)
+    if (output / "plan.json").is_file():
+        raise ValueError("plan.json already frozen; the labeler repair is a pre-freeze step")
     began = time.monotonic()
     smoke = sorted((SMOKE104 / "attempts").glob("issue-110-smoke-type0102*-novel-*"))
     jobs = [(str(a), str(DESIGN / "levels" / (a.name.rsplit("-", 1)[0] + ".xml"))) for a in smoke]
@@ -1503,7 +1517,11 @@ def probe(output, workers, worker):
     mine = [t for k, t in enumerate(probe_targets()) if k % workers == worker and not probe_path(output, t["task"]).is_file()]
     for task in mine:
         started = time.monotonic()
-        write_json(probe_path(output, task["task"]), run_probe_task(output, task))
+        # phase-A review (B2): any probe written from now on is scored under deterministic_scoring() and
+        # records the policy; the 60 retained probe records predate this and carry none (scoring_coverage)
+        with heavy().harness.deterministic_scoring() as policy:
+            record = run_probe_task(output, task)
+        write_json(probe_path(output, task["task"]), {**record, "scoring_policy": policy})
         log(f"probe {task['task']}: {time.monotonic() - started:.0f}s")
     wall = time.monotonic() - began
     mark(output, f"probe-worker{worker}", wall, wall, tasks=len(mine))
@@ -1983,6 +2001,37 @@ def probe_tables(output):
     return out
 
 
+def invalidate(obj):
+    """A failed guard turns every verdict into readiness_or_precision_insufficient (frozen guards.failure),
+    including each probe's by-k verdicts; AUROCs, intervals and counts are kept."""
+    if isinstance(obj, dict):
+        return {k: STOP_TOKEN if k == "verdict" else invalidate(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [invalidate(v) for v in obj]
+    return obj
+
+
+PROBE_SCORING_NOTE = (
+    "the identifiability probes (MLP probes trained and scored in-process by --probe) ran without "
+    "deterministic_scoring() and their records carry no scoring policy; the frozen G4 check iterates the rollout "
+    "records only, so the plan's G4 text ('every record under deterministic_scoring') does not hold for the probe "
+    "records. The probe models were not retained, so the verdicts cannot be re-scored without retraining, which a "
+    "post-freeze change may not do; they are reported as recorded. A fresh process importing this runner runs with "
+    "matmul TF32 off (as SCORING_POLICY) and cuDNN deterministic off / cuDNN TF32 on; the probes use no cuDNN "
+    "operation. Borderline verdicts are not guaranteed to reproduce. G4 and every token are unchanged")
+
+
+def scoring_coverage(output, compute):
+    """Which records the frozen G4 scoring-policy check covers (phase-A review B2)."""
+    policy = heavy().harness.SCORING_POLICY
+    probes = [read_json(probe_path(output, t["task"])) for t in probe_targets()]
+    return {"rollout_records": len(score_tasks()), "rollout_policy_checked_by_G4": True,
+            "G4_scoring": compute["guards"]["G4_scoring"], "probe_records": len(probes),
+            "probe_records_with_scoring_policy": sum(r.get("scoring_policy") == policy for r in probes),
+            "probe_policy_checked_by_G4": False, "note": PROBE_SCORING_NOTE}
+
+
+
 def compute_tables(output, plan):
     output = Path(output)
     usable_rows = [member_status(output, c, f, s) for c in condition_levels() for f in FAMILIES for s in SEEDS]
@@ -2013,6 +2062,8 @@ def compute_tables(output, plan):
     g4 = policies and manifest_matches(output, manifest)
     guards = {"G1_isolation": g1, "G2_labels": bool(g2), "G3_training": g3, "G4_scoring": bool(g4)}
     guards_ok = all(guards.values())
+    if not guards_ok:
+        probes = invalidate(probes)
     # readiness
     template_fit = {r["template"]: r for r in fit}
     readiness = []
@@ -2033,7 +2084,7 @@ def compute_tables(output, plan):
             reasons.append("no_finite_zero_shot_rollout")
         if not guards_ok:
             reasons.append("guard_failed")
-        status = "supported" if not reasons else "unsupported"
+        status = STOP_TOKEN if not guards_ok else "supported" if not reasons else "unsupported"
         flags = []
         if scenario == "multiple_forces":
             flags.append("rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs)")
@@ -2087,7 +2138,9 @@ def handoff(output, plan, compute):
         "schema": SCHEMA_HANDOFF, "identity": IDENTITY, "frozen_at": plan["frozen_at"], "consumer": 107, "token": token,
         "supported_cells": [r["cell"] for r in supported],
         "unsupported_cells": [{"cell": r["cell"], "reasons": r["reasons"]} for r in compute["readiness"]
-                              if r["status"] != "supported"],
+                              if r["status"] == "unsupported"],
+        **({"insufficient_cells": [{"cell": r["cell"], "reasons": r["reasons"]} for r in compute["readiness"]
+                                   if r["status"] == STOP_TOKEN]} if not compute["guards_ok"] else {}),
         "cells": {r["cell"]: {"flags": r["flags"], "headroom": r["headroom"], "identifiability": r["identifiability"],
                               "templates": r["templates"], "few_shot_condition": r["few_shot"]}
                   for r in compute["readiness"]},
@@ -2131,7 +2184,7 @@ def interval_text(block, digits=4):
     return f"{fmt(block['mean'], digits)} [{fmt(block['interval'][0], digits)}, {fmt(block['interval'][1], digits)}]"
 
 
-def findings_md(plan, compute):
+def findings_md(plan, compute, coverage, encoders):
     lines = []
     add = lines.append
     add("# #110 results: contract-v2 coverage of all 45 NovPhy cells")
@@ -2188,6 +2241,22 @@ def findings_md(plan, compute):
         add(f"| {m['condition']} | {m['family']} | {m['seed']} | {m['usable']} | {m['skips']} | "
             f"{(m['end_state'] or {}).get('excursion')} | {m['gpu_seconds']:.0f} |")
     add("")
+    add("## Encoder training (`encoder-training.json`, read from the checkpoints)")
+    add("")
+    zero = encoders["encoders"][ZERO]["reports"]
+    add(f"- {ZERO}: {len(zero)} epochs, mean loss {zero[0]['mean_loss']:.5f} (epoch 1) → {zero[-1]['mean_loss']:.5f} "
+        f"(epoch {zero[-1]['epoch']}).")
+    for condition, e in encoders["encoders"].items():
+        if condition != ZERO:
+            add(f"- {condition}: {e['updates']} updates from {e['initialization']}, loss (mean of 100 updates) "
+                f"{e['loss_first_100']:.5f} → {e['loss_last_100']:.5f}.")
+    add("")
+    add("## Scoring-policy coverage (phase-A review)")
+    add("")
+    add(f"G4 checks the scoring policy of the {coverage['rollout_records']} rollout records; "
+        f"{coverage['probe_records_with_scoring_policy']} of the {coverage['probe_records']} identifiability probe "
+        f"records carry one. Note: {coverage['note']}.")
+    add("")
     c = compute["compute"]
     add(f"Compute: {c['gpu_seconds']:.0f} GPU s, {c['wall_seconds']:.0f} process wall s, 0 engine s.")
     add("")
@@ -2229,21 +2298,41 @@ def readiness_csv(compute):
     return buffer.getvalue()
 
 
-def summary(plan, compute):
+def summary(plan, compute, coverage):
     return {"schema": "issue_110_results_summary_v1", "identity": IDENTITY, "frozen_at": plan["frozen_at"],
             "validation_command": VALIDATION_COMMAND, "guards": compute["guards"],
             "supported_cells": sum(r["status"] == "supported" for r in compute["readiness"]),
             "unsupported": [{"cell": r["cell"], "reasons": r["reasons"]} for r in compute["readiness"]
-                            if r["status"] != "supported"],
+                            if r["status"] == "unsupported"],
+            **({"insufficient": [{"cell": r["cell"], "reasons": r["reasons"]} for r in compute["readiness"]
+                                 if r["status"] == STOP_TOKEN]} if not compute["guards_ok"] else {}),
             "identifiability": {k: v["verdict"] for k, v in compute["identifiability"].items()},
+            "scoring_coverage": coverage,
             "claim_boundary": plan["claim_boundary"], "engine_seconds": 0}
 
 
+def encoder_training(output):
+    """Training summaries stored in the encoder checkpoints (no weights): the zero-shot E99-recipe epoch
+    reports and each few-shot adaptation's first/last-100-update losses (phase-A review: a committed
+    source for the encoder-loss numbers quoted in the #110 document)."""
+    out = {}
+    for condition in condition_levels():
+        path = encoder_path(output, condition)
+        payload = torch.load(path, map_location="cpu", weights_only=True)
+        keep = ("reports", "gpu_seconds", "training_frames", "training_shots", "parameters", "updates",
+                "epochs_started", "loss_first_100", "loss_last_100", "initialization", "complete")
+        out[condition] = {"checkpoint": checkpoint(path), **{k: payload[k] for k in keep if k in payload}}
+    return {"schema": "issue_110_encoder_training_v1", "identity": IDENTITY, "encoders": out}
+
+
 def rendered(output, plan, compute):
-    return {"compute.json": json_text(compute), "summary.json": json_text(summary(plan, compute)),
-            "findings.md": findings_md(plan, compute), "rollout-error.csv": rollout_csv(compute),
+    coverage = scoring_coverage(output, compute)
+    encoders = encoder_training(output)
+    return {"compute.json": json_text(compute), "summary.json": json_text(summary(plan, compute, coverage)),
+            "findings.md": findings_md(plan, compute, coverage, encoders), "rollout-error.csv": rollout_csv(compute),
             "readiness.csv": readiness_csv(compute), "handoff_107.json": json_text(handoff(output, plan, compute)),
-            "records-manifest.json": json_text(record_manifest(output))}
+            "records-manifest.json": json_text(record_manifest(output)),
+            "encoder-training.json": json_text(encoders)}
 
 
 def publish(output):
@@ -2262,7 +2351,8 @@ def publish(output):
 
 def validate(output):
     """Re-derive every published file from the retained records (byte for byte), check the record
-    manifest, and re-score two rollout records and one probe task in this process."""
+    manifest, and re-score two rollout records in this process (the identifiability probes are not
+    re-scored: their models were not retained, and re-running a probe retrains it)."""
     output = Path(output)
     plan = load_plan(output)
     stored = {name: (output / name).read_text() for name in ("records-manifest.json",)}

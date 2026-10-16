@@ -72,6 +72,15 @@
   },
   "identity": "issue-110-novelty-coverage-results-v1",
   "schema": "issue_110_results_summary_v1",
+  "scoring_coverage": {
+    "G4_scoring": true,
+    "note": "the identifiability probes (MLP probes trained and scored in-process by --probe) ran without deterministic_scoring() and their records carry no scoring policy; the frozen G4 check iterates the rollout records only, so the plan's G4 text ('every record under deterministic_scoring') does not hold for the probe records. The probe models were not retained, so the verdicts cannot be re-scored without retraining, which a post-freeze change may not do; they are reported as recorded. A fresh process importing this runner runs with matmul TF32 off (as SCORING_POLICY) and cuDNN deterministic off / cuDNN TF32 on; the probes use no cuDNN operation. Borderline verdicts are not guaranteed to reproduce. G4 and every token are unchanged",
+    "probe_policy_checked_by_G4": false,
+    "probe_records": 60,
+    "probe_records_with_scoring_policy": 0,
+    "rollout_policy_checked_by_G4": true,
+    "rollout_records": 1278
+  },
   "supported_cells": 45,
   "unsupported": [],
   "validation_command": "python -u -m scripts.run_novelty_coverage --validate"

@@ -222,4 +222,20 @@ v2: 80 / 80 templates fit on every captured level; v1: 19 / 80.
 | few-shot-8 | continuous | 20260909 | True | 0 | False | 250 |
 | few-shot-8 | continuous | 20260910 | True | 0 | False | 238 |
 
+## Encoder training (`encoder-training.json`, read from the checkpoints)
+
+- zero-shot: 12 epochs, mean loss 10.49831 (epoch 1) → 7.64830 (epoch 12).
+- few-shot-1: 2000 updates from zero-shot, loss (mean of 100 updates) 14.67307 → 6.08210.
+- few-shot-2: 2000 updates from zero-shot, loss (mean of 100 updates) 12.50681 → 5.98685.
+- few-shot-3: 2000 updates from zero-shot, loss (mean of 100 updates) 9.73934 → 4.15984.
+- few-shot-4: 2000 updates from zero-shot, loss (mean of 100 updates) 14.02166 → 8.06459.
+- few-shot-5: 2000 updates from zero-shot, loss (mean of 100 updates) 8.29411 → 5.03005.
+- few-shot-6: 2000 updates from zero-shot, loss (mean of 100 updates) 10.93934 → 5.45027.
+- few-shot-7: 2000 updates from zero-shot, loss (mean of 100 updates) 14.51560 → 7.33351.
+- few-shot-8: 2000 updates from zero-shot, loss (mean of 100 updates) 6.89766 → 4.25960.
+
+## Scoring-policy coverage (phase-A review)
+
+G4 checks the scoring policy of the 1278 rollout records; 0 of the 60 identifiability probe records carry one. Note: the identifiability probes (MLP probes trained and scored in-process by --probe) ran without deterministic_scoring() and their records carry no scoring policy; the frozen G4 check iterates the rollout records only, so the plan's G4 text ('every record under deterministic_scoring') does not hold for the probe records. The probe models were not retained, so the verdicts cannot be re-scored without retraining, which a post-freeze change may not do; they are reported as recorded. A fresh process importing this runner runs with matmul TF32 off (as SCORING_POLICY) and cuDNN deterministic off / cuDNN TF32 on; the probes use no cuDNN operation. Borderline verdicts are not guaranteed to reproduce. G4 and every token are unchanged.
+
 Compute: 35444 GPU s, 37337 process wall s, 0 engine s.
