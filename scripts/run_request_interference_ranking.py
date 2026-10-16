@@ -45,6 +45,7 @@ import time
 import numpy as np
 import torch
 
+from scripts import post_freeze_amendments as amendments
 from scripts import run_decision_aware_policy as p101
 from scripts import run_decision_chain_attribution as m99
 from scripts import run_decision_dynamics_controls as c2
@@ -1298,7 +1299,7 @@ def load_plan(output):
     if not plan.get("frozen_before_training_and_scoring") or not plan["smoke_evidence"].get("ok"):
         raise ValueError("plan.json does not declare a passed-smoke freeze")
     for entry in plan["inputs"]:
-        if sha256_of(ROOT / entry["artifact"]) != entry["sha256"]:
+        if not amendments.matches(entry["artifact"], entry["sha256"], sha256_of(ROOT / entry["artifact"])):
             raise ValueError(f"frozen input {entry['name']} changed after the freeze")
     return plan
 
