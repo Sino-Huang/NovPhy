@@ -1,0 +1,1202 @@
+{
+  "arms": {
+    "D": "D = description-only restriction of J at J's modal Delta on the policy split (#96 rule, ties lower)",
+    "J": "#101 pe DP lambda 1e-4 policy trained for each predictor (Gate-B: the #101 J itself)",
+    "T": "T = horizon-only restriction of J (T-continuous, #114): no description request, no feedback",
+    "controls": {
+      "prior": "no-model action prior (Gate-B rule, fit-verdicts.json)",
+      "wrong_anchor": "J from the 480 fit-split anchors over the 16 grid candidates"
+    },
+    "fixed": "F-{1,5,15}-alpha of the predictor's description"
+  },
+  "caps": {
+    "gpu_seconds": 288000.0,
+    "projection": {
+      "calibration_gpu_seconds": 3188.1997189074755,
+      "elapsed_hours_on_4_gpus": 10.73169712665258,
+      "heads_gpu_seconds": 3600.0,
+      "note": "training projected at the full-cost (horizon 225 + ranking) update time: an upper bound",
+      "policies_gpu_seconds": 8146.635999307036,
+      "scoring_gpu_seconds": 59026.20000000018,
+      "total_gpu_seconds": 154536.43862379715,
+      "training_gpu_seconds_upper": 80575.40290558245,
+      "within_limit": true
+    },
+    "scope_rule": "if the projected elapsed time on 4 GPUs exceeds 48.0 h, finish blocked with the projection; never cut scope",
+    "wall_seconds_summed_over_processes": 432000.0
+  },
+  "claim_boundary": "one look at the sealed #109 evaluation split; grid ranking primary, other inventories, rollout error and readouts descriptive; tie-free cost; DESCRIPTIVE intervals; NovPhy only; the label-free arm is one discrete bottleneck, not every unsupervised predicate learner",
+  "decision_rule": {
+    "D_arm": "D = description-only restriction of J at J's modal Delta on the policy split (#96 rule, ties lower)",
+    "T_arm": "T = horizon-only restriction of J (T-continuous, #114): no description request, no feedback",
+    "contrast_tokens": "delta superiority, DESCRIPTIVE: supported iff mean >= 0.02 with lower bound > 0; not_supported_by_this_experiment iff upper < 0.02; otherwise readiness_or_precision_insufficient; a failed guard turns every token into readiness_or_precision_insufficient",
+    "disposition": "per description, on grid, for 'the description axis keeps its value without engine-labelled predicates': label-free bottleneck predictor (mi-free / ma-free) vs the engine-labelled reference (Gate-B / ma-ref), paired by (level, seed), member-clustered: C1 = (J - T)_free - (J - T)_ref and C2 = the mean over Delta in {1,5,15} of F-Delta-alpha_free - F-Delta-alpha_ref; supported iff both lower bounds > -delta (non-inferiority at delta = 0.02); not_supported_by_this_experiment iff either upper bound < -delta; otherwise readiness_or_precision_insufficient; any failed guard -> readiness_or_precision_insufficient. The reference's own J - T (delta superiority token) and J_free - J_ref are reported beside it",
+    "feedback_f1": "the #100 readout (gated value >= 0.5; contact on the upper triangle, supports directed; macro per predicate on available frames) of the adapter input actually delivered at every description request of the arm's rollouts, against the executed branch's engine labels at the matching frame (clamped to the branch's last frame); pooled counts, mean over the two channels; level bootstrap",
+    "gauss_calibration": "sigma per target fraction [0.8, 0.6, 0.4, 0.2] of the default delivered F1, bisection in log10 sigma on [1e-2, 1e2] (12 halvings), on the fixed description requests from the first 24 fit-split grid cells (sorted level), fit engine labels; a target outside the reachable range takes the nearer end (flagged)",
+    "readout_f1": "the #100 audit form on the grid branches of the evaluation split: the predictor's own head on the E99 parse of every frame 0..min(225, last) (parsed) and after one Delta-step prediction from the parsed frame f - Delta (predicted); macro on the #113 predicates of the request's Delta column",
+    "rollout_error": "DESCRIPTIVE: #100 engine_position_mse at t = 225 on every mixed grid candidate's own branch; branch mean per (level, seed), seed mean per level, level bootstrap; paired per level"
+  },
+  "disclosure": "Known before the freeze: Gate B (unit 0.7444, prior 0.7203 on grid), #101 (J grid 0.706, 79 % (1, macro)), #114 (J - T-continuous +0.003 grid), #117, #105, #100 (E99 micro edge F1 0.989, macro 0) and #113 (temporal head held-out macro F1 0.157 engine / 0.113 predicted / 0.015 rollout, current head 0.000). No intervention, retrain or label-free output on an evaluation capture existed. Hardware: RTX 5090 instead of the #85 RTX 3090. Pre-freeze: the analysis and rendering code (compute_tables, findings, figure, handoff) was exercised on synthetic random rows over fit-split cells posing as the evaluation set (no model output, no evaluation capture); a first smoke passed on a runner revision that differed only in the findings layout and the guard-function split, and was rerun on the frozen runner.",
+  "engine_seconds": 0,
+  "evaluation": {
+    "accounting": {
+      "branches": 11680,
+      "complete": 11680,
+      "incomplete_branches": [],
+      "levels": 400,
+      "levels_per_inventory": {
+        "angle": 120,
+        "grid": 400,
+        "offset": 120,
+        "power": 120
+      },
+      "mixed_cells": {
+        "angle": 78,
+        "grid": 311,
+        "offset": 76,
+        "power": 47
+      },
+      "typed_failures": [],
+      "verdict_slots_mixed": {
+        "angle": 1014,
+        "grid": 4976,
+        "offset": 836,
+        "power": 940
+      }
+    },
+    "anchors": "the Gate-B E99 anchor store",
+    "cell_auc": "m99.view; cells (level, seed); bootstrap over levels (10000 draws, PCG64 7201)",
+    "cost": "tie_free (EndpointCosts.row against the anchor)",
+    "descriptive": [
+      "offset",
+      "angle",
+      "power"
+    ],
+    "engine_truth": "built after the freeze: s99.shot_labels of every mixed-cell branch at positions 0..min(225, last); #113 predicates and carriers of the same frames",
+    "primary_inventory": "grid",
+    "split": "the #109 evaluation split as in Gate B (stream issue109-evaluation, mixed cells)"
+  },
+  "frozen_at": "2026-10-16T17:34:11Z",
+  "frozen_before_training_and_scoring": true,
+  "guards": {
+    "G1_isolation": "payload / labelled subsets / perception heads on fit levels; scored cells evaluation",
+    "G2_scoring_policy": "every record and calibration carries the #111 SCORING_POLICY",
+    "G3_chronology": "frozen_at <= heads, training <= calibration <= first score; truth after the freeze",
+    "G4_checkpoint_binding": "Gate-B, trained member, policy and head hashes equal their reports",
+    "G5_replication": "Gate-B default-feedback J, fixed micro, T-continuous and D rows (and schedules) equal the #101 / #114 records exactly",
+    "G6_intervention_integrity": "oracle delivered F1 exactly 1 (fp = fn = 0), removed delivers zeros, realized flip rates within 5 binomial SDs of p",
+    "G7_nonfinite": "Gate-B and ma-ref default J grid nonfinite share <= 0.1",
+    "G8_label_integrity": "label-free arms read no labels; labelled subsets inside the fit roster",
+    "failure": "a failed guard turns every token into readiness_or_precision_insufficient"
+  },
+  "identity": "issue-115-predicate-feedback-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json",
+      "name": "issue_112_retrain_handoff",
+      "sha256": "sha256:94f6e888b3407dfd44f9fb99350c3d3e21d0ebc28e065618fd8b6da9d7897706"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/fit-verdicts.json",
+      "name": "issue_112_fit_verdicts",
+      "sha256": "sha256:528469bde86f6f95f5d8108b064c6e3b5399a579fd0a57b9339ed9a909a57593"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/data/anchors-fit.pt",
+      "name": "issue_112_fit_anchors",
+      "sha256": "sha256:92b8e294901ba1b612ffba4e528082611ff69328b211f5195a09ae9745418751"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/compute.json",
+      "name": "issue_112_retrain_compute",
+      "sha256": "sha256:ae4ad3fd5fa38e4240a55f690a5c99fb3098696ec525881c048af09172d961f0"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/plan.json",
+      "name": "issue_112_retrain_plan",
+      "sha256": "sha256:2a5bb712de760d9b6948d9c847b9da6d3033fb91edb4e169c1405db8104aa88e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/plan.json",
+      "name": "gate_b_plan",
+      "sha256": "sha256:90bd1cce20c40ea825872b6c02d46ae393de45e6e3fa4dcd647f7ef39b2a9659"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/summary.json",
+      "name": "gate_b_summary",
+      "sha256": "sha256:a6cef412e0164cd6565d04884c07d7077f912d9da194a3a888a626cdf62a8539"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/data/anchors-evaluation.pt",
+      "name": "gate_b_anchors",
+      "sha256": "sha256:3712282711523e4135c4daf033778f2b9222c3db3068bf8f2d7124b4f9d143ed"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/plan.json",
+      "name": "issue_101_plan",
+      "sha256": "sha256:9674987323778442cd8537c45e71e64d04c78f5ed43b9d296eb011962e187f08"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/selection.json",
+      "name": "issue_101_selection",
+      "sha256": "sha256:e98e1ffb9214cec34bae79777c2c842efcdd139c3760b831ac1d2caa4b1ae285"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/data/pool.pt",
+      "name": "issue_101_pool",
+      "sha256": "sha256:5858bc037190240b04f1721b4daa3d4bbc3b2dcc4ebc598d44dd09c970714f19"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260908/policy.pt",
+      "name": "issue_101_policy_pe_1e-04_20260908",
+      "sha256": "sha256:23b782645e2254ea4a1fa9714962487a3bdb87f1502b925c954675a7362b5489"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260909/policy.pt",
+      "name": "issue_101_policy_pe_1e-04_20260909",
+      "sha256": "sha256:5a5c07df026545e33f557dd52b773c1c40779e685fa3a8d7dd56b887341762d4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260910/policy.pt",
+      "name": "issue_101_policy_pe_1e-04_20260910",
+      "sha256": "sha256:faf929406d183c3d26d34132eba1c2e525117b5228bec5a00f55d7117651e358"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260908/report.json",
+      "name": "issue_101_report_pe_1e-04_20260908",
+      "sha256": "sha256:b56fb5cdc723aa42ba001c9eaf974adf2d256aef8c72b23ff0765bcde322d890"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260909/report.json",
+      "name": "issue_101_report_pe_1e-04_20260909",
+      "sha256": "sha256:79920da3c9f6cf3f338c7ac9c2d392b18ed57c121935cacb3afebc92358da66f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260910/report.json",
+      "name": "issue_101_report_pe_1e-04_20260910",
+      "sha256": "sha256:a1439ad7a4949eee6c15626e294ec22cbf8dcbb5b516e8127a94a6319394bbc7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-114-horizon-vs-joint-v1/plan.json",
+      "name": "issue_114_plan",
+      "sha256": "sha256:e81253427fcd586c7a828175852e4b4ac5eaa1e3dcd56d2215dc06d5d1f5ab49"
+    },
+    {
+      "artifact": ".local-artifacts/issue-113-temporal-macro-head-v1/plan.json",
+      "name": "issue_113_head_plan",
+      "sha256": "sha256:167e078352080c30941e2ff7b69e47e958226c2f874ac9ef10049f2eb41b9f69"
+    },
+    {
+      "artifact": ".local-artifacts/issue-113-temporal-macro-head-v1/selection.json",
+      "name": "issue_113_selection",
+      "sha256": "sha256:921092ae160689361acc805b24919cd05d8d85c438d24b962ef22f155ef24f8d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-113-temporal-macro-head-v1/data/fit.meta.json",
+      "name": "issue_113_fit_meta",
+      "sha256": "sha256:27a898e946b6507f281c8a1eab2c126598538afbb3a01bd35eef8702eb4b1912"
+    },
+    {
+      "artifact": ".local-artifacts/issue-113-temporal-macro-head-v1/data/evaluation.meta.json",
+      "name": "issue_113_evaluation_meta",
+      "sha256": "sha256:68842a3eb13f0abe05b6e7c939b3522bdef5557551772b82bcd728d1b37bc2aa"
+    },
+    {
+      "artifact": ".local-artifacts/issue-113-temporal-macro-head-v1/models/final--K4-mix50--seed20260908.pt",
+      "name": "issue_113_head_20260908",
+      "sha256": "sha256:583e6fe29194697b46aa262ad7b3173bad47a001946de9d10c1e64e5ea1a0344"
+    },
+    {
+      "artifact": ".local-artifacts/issue-113-temporal-macro-head-v1/models/final--K4-mix50--seed20260909.pt",
+      "name": "issue_113_head_20260909",
+      "sha256": "sha256:56ced5e4369293788ef383099c432d3c0560f151f45e76eb311451f33a64669a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-113-temporal-macro-head-v1/models/final--K4-mix50--seed20260910.pt",
+      "name": "issue_113_head_20260910",
+      "sha256": "sha256:6d198167b6173e07d80693cdcf2975279a3a35be2989216d8ec93c5a56b9c777"
+    },
+    {
+      "artifact": "scripts/run_gate_b.py",
+      "name": "gate_b_runner",
+      "sha256": "sha256:9301be75ffe276a9f5e9fe1ed43d00818bacddbabeadf9a41eca8fdd7372c515"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_retrain.py",
+      "name": "issue_112_retrain_runner",
+      "sha256": "sha256:0d92e282ec528d41958790d6ba444cd348a56a3854d4c7a1cd9e750de75978f9"
+    },
+    {
+      "artifact": "scripts/run_decision_relevant_dynamics.py",
+      "name": "issue_112_v1_runner",
+      "sha256": "sha256:22ef72c8dbe6d744f860c3b727ac7d9eb2813be635f622d1f7bb8743ba9ff98f"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_versions.py",
+      "name": "issue_112_versions_runner",
+      "sha256": "sha256:0ebdaf20945d1c0e0ac4b1462059af28f9cf8f544c54ea9f62e7ed4950803539"
+    },
+    {
+      "artifact": "scripts/run_decision_aware_policy.py",
+      "name": "issue_101_runner",
+      "sha256": "sha256:00415b79fb0f4485269ff2107c9828770c51e9268cd629edd0a2ba3bd0c74ea4"
+    },
+    {
+      "artifact": "scripts/run_observable_macro.py",
+      "name": "issue_113_runner",
+      "sha256": "sha256:f5b75df9d9418579a8cfd6aeb3f8efad1e7afdff67041fc130c30a52981821e4"
+    },
+    {
+      "artifact": "scripts/run_horizon_vs_joint.py",
+      "name": "issue_114_runner",
+      "sha256": "sha256:e632248e8be86763a52f873cc6c02cf8e84880bdefeae9761f2d5d95c1e478cb"
+    },
+    {
+      "artifact": "scripts/run_decision_chain_attribution.py",
+      "name": "issue_99_attribution_runner",
+      "sha256": "sha256:9e017a24b0e6b126ec68eb91586f454e05e1c259430d7057281977c349fcc43c"
+    },
+    {
+      "artifact": "scripts/run_tau_ad_within_checkpoint.py",
+      "name": "issue_96_runner",
+      "sha256": "sha256:9cf1ffe4c6ec61ecf15bb3c911425929a00491c725b07f9880b2e84792b685bf"
+    },
+    {
+      "artifact": "scripts/run_readout_fidelity_jepa.py",
+      "name": "issue_100_runner",
+      "sha256": "sha256:7323ebb62c72ea82e8effa25903a7169fd2b06b2ab6f43c721cd6f8fd556b9f1"
+    },
+    {
+      "artifact": "scripts/run_slot_encoder_fix.py",
+      "name": "issue_99_runner",
+      "sha256": "sha256:e256d0908c459b403826b07a39fa4bfa7d50692ede7db692b000d322aa422ddf"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json",
+      "name": "issue_109_cohort_plan",
+      "sha256": "sha256:e88b07903a10dcf492b8bb6c86f10e52b56183c6a3995337ea282dacee4d6dc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-v1/plan.json",
+      "name": "issue_104_plan",
+      "sha256": "sha256:337cc145e45ade78c1f43c526690da654229ff9eb8b4d3452aea212bd09a1c52"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "name": "issue_104_campaign_branches",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": "world_model/training/predicate_feedback.py",
+      "name": "predicate_feedback_module",
+      "sha256": "sha256:16dbba68a5bc12679e8b3f70751412d61b92c237bf4b155291761a579b8536a6"
+    },
+    {
+      "artifact": "world_model/training/request_selectors.py",
+      "name": "request_selectors_module",
+      "sha256": "sha256:0bcd9bdeca2a97739d92bead14071c7dcd1792f47507b50044164b6925bd3a3f"
+    },
+    {
+      "artifact": "world_model/training/request_policy.py",
+      "name": "request_policy_module",
+      "sha256": "sha256:34fbce1e66532e3501b372bf6ed4bb1a496619a9a6accbdc066358933a01042c"
+    },
+    {
+      "artifact": "world_model/training/temporal_macro_head.py",
+      "name": "temporal_head_module",
+      "sha256": "sha256:182cfca6bf3727ee3cefb883eabc011521a6b2aad618d500ec408820fe46c3c5"
+    },
+    {
+      "artifact": "world_model/data/observable_macro.py",
+      "name": "observable_macro_module",
+      "sha256": "sha256:956d4163b340e117084a4fa8f0c2d90cefe169805069f49724a6f08b58a5fa16"
+    },
+    {
+      "artifact": "world_model/training/matched_dynamics.py",
+      "name": "matched_dynamics",
+      "sha256": "sha256:6c96384926c205250f00dd67c9a21760215cc675b10fff82b5aa3ce314eb4bc6"
+    },
+    {
+      "artifact": "world_model/training/decision_dynamics.py",
+      "name": "decision_dynamics",
+      "sha256": "sha256:14aa4587277377bb7d7b8bd4a1954366bb653fb0baf3a912c6fa52075ac1b794"
+    },
+    {
+      "artifact": "world_model/training/stable_decision_dynamics.py",
+      "name": "stable_decision_dynamics",
+      "sha256": "sha256:8269589e0125f68573dd66e9baf641d9b9bc469069257969894483c62a13b4fa"
+    },
+    {
+      "artifact": "world_model/training/cnn_hybrid.py",
+      "name": "cnn_hybrid",
+      "sha256": "sha256:d72fac36e5e2b1eed30e84c2f149049b4215c321910279b2abb5d621b17a1b51"
+    },
+    {
+      "artifact": ".local-artifacts/issue-115-predicate-feedback-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:110f5b743284c19f6b1cbac9d0c81f9abcf106789a5285d7c5deee049e49c794"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260908/predictor.pt",
+      "name": "checkpoint_unit_20260908",
+      "sha256": "sha256:252ee2a7737cdf4979ecb9039a4ed8762fd06b58fcef13a344e1752beff058fb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260909/predictor.pt",
+      "name": "checkpoint_unit_20260909",
+      "sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260910/predictor.pt",
+      "name": "checkpoint_unit_20260910",
+      "sha256": "sha256:6d8bbf719bef9525eb705a530118be83ee35e0424a64cc44261f4d5b7fc5148f"
+    }
+  ],
+  "interventions": {
+    "definitions": {
+      "default": "the model's own heads (symbolic_features of the current carrier)",
+      "flipXX": "the oracle with symmetric flips at p = XX/100 (contact per unordered pair), drawn per call",
+      "gaussXX": "the model's logits + sigma N(0,1) (contact noise symmetric), sigma calibrated to XX % of the default delivered F1 on the fit split",
+      "oracle": "engine labels of the executed candidate branch at the matching frame (micro: #99 relations & relation_mask, channel availability = any labelled pair; macro: the #113 predicate of the request's Delta and its positional availability), through the same adapter",
+      "removed": "adapter input zero",
+      "shuffled": "the model's feedback of the next candidate (ordinal, cyclic) of the same anchor at the same iteration",
+      "temporal": "macro: the #113 temporal head K4-mix50 (seed-paired) on the row's own stride-Delta rollout history (latest visited state at or before each history frame), binary at the #113 selected predicted-source thresholds, positional availability"
+    },
+    "kinds": {
+      "macro": [
+        "default",
+        "oracle",
+        "flip05",
+        "flip10",
+        "flip20",
+        "flip40",
+        "gauss80",
+        "gauss60",
+        "gauss40",
+        "gauss20",
+        "removed",
+        "shuffled",
+        "temporal"
+      ],
+      "micro": [
+        "default",
+        "oracle",
+        "flip05",
+        "flip10",
+        "flip20",
+        "flip40",
+        "gauss80",
+        "gauss60",
+        "gauss40",
+        "gauss20",
+        "removed",
+        "shuffled"
+      ]
+    },
+    "macro_on": "ma-ref",
+    "micro_on": "gateb",
+    "random_streams": "per (predictor, feedback, seed, arm, inventory, level): CUDA generator seeded by sha256"
+  },
+  "issue": 115,
+  "modules": {
+    "predicate_feedback": {
+      "path": "world_model/training/predicate_feedback.py",
+      "sha256_at_freeze": "sha256:16dbba68a5bc12679e8b3f70751412d61b92c237bf4b155291761a579b8536a6"
+    }
+  },
+  "predictors": {
+    "gateb": {
+      "class": "hybrid",
+      "description": "micro",
+      "labels": [
+        "engine"
+      ],
+      "text": "the Gate-B LC hybrid (handoff checkpoints, #112 v3 retrain on the #109 fit split)",
+      "trained": false
+    },
+    "ma-flip05": {
+      "class": "delta_macro",
+      "description": "macro",
+      "labels": [
+        "flip",
+        0.05
+      ],
+      "text": "engine macro labels with symmetric flips at p = 0.05",
+      "trained": true
+    },
+    "ma-flip10": {
+      "class": "delta_macro",
+      "description": "macro",
+      "labels": [
+        "flip",
+        0.1
+      ],
+      "text": "engine macro labels with symmetric flips at p = 0.1",
+      "trained": true
+    },
+    "ma-flip20": {
+      "class": "delta_macro",
+      "description": "macro",
+      "labels": [
+        "flip",
+        0.2
+      ],
+      "text": "engine macro labels with symmetric flips at p = 0.2",
+      "trained": true
+    },
+    "ma-flip40": {
+      "class": "delta_macro",
+      "description": "macro",
+      "labels": [
+        "flip",
+        0.4
+      ],
+      "text": "engine macro labels with symmetric flips at p = 0.4",
+      "trained": true
+    },
+    "ma-free": {
+      "class": "binary_delta_macro",
+      "description": "macro",
+      "labels": [
+        "none"
+      ],
+      "text": "label-free binary macro bottleneck (no macro symbolic loss)",
+      "trained": true
+    },
+    "ma-learned": {
+      "class": "delta_macro",
+      "description": "macro",
+      "labels": [
+        "learned",
+        25
+      ],
+      "text": "macro targets = readings of a perception head trained on the 25 % labelled levels and frozen",
+      "trained": true
+    },
+    "ma-low10": {
+      "class": "delta_macro",
+      "description": "macro",
+      "labels": [
+        "low",
+        10
+      ],
+      "text": "macro heads supervised on the labels of 10 % of fit levels",
+      "trained": true
+    },
+    "ma-low25": {
+      "class": "delta_macro",
+      "description": "macro",
+      "labels": [
+        "low",
+        25
+      ],
+      "text": "macro heads supervised on the labels of 25 % of fit levels",
+      "trained": true
+    },
+    "ma-ref": {
+      "class": "delta_macro",
+      "description": "macro",
+      "labels": [
+        "engine"
+      ],
+      "text": "LC hybrid with the Delta-indexed macro head on the #113 observable predicates",
+      "trained": true
+    },
+    "mi-flip05": {
+      "class": "hybrid",
+      "description": "micro",
+      "labels": [
+        "flip",
+        0.05
+      ],
+      "text": "engine micro labels with symmetric flips at p = 0.05",
+      "trained": true
+    },
+    "mi-flip10": {
+      "class": "hybrid",
+      "description": "micro",
+      "labels": [
+        "flip",
+        0.1
+      ],
+      "text": "engine micro labels with symmetric flips at p = 0.1",
+      "trained": true
+    },
+    "mi-flip20": {
+      "class": "hybrid",
+      "description": "micro",
+      "labels": [
+        "flip",
+        0.2
+      ],
+      "text": "engine micro labels with symmetric flips at p = 0.2",
+      "trained": true
+    },
+    "mi-flip40": {
+      "class": "hybrid",
+      "description": "micro",
+      "labels": [
+        "flip",
+        0.4
+      ],
+      "text": "engine micro labels with symmetric flips at p = 0.4",
+      "trained": true
+    },
+    "mi-free": {
+      "class": "binary_micro",
+      "description": "micro",
+      "labels": [
+        "none"
+      ],
+      "text": "label-free binary micro bottleneck (no micro symbolic loss)",
+      "trained": true
+    },
+    "mi-learned": {
+      "class": "hybrid",
+      "description": "micro",
+      "labels": [
+        "learned",
+        25
+      ],
+      "text": "micro targets = readings of a perception head trained on the 25 % labelled levels and frozen",
+      "trained": true
+    },
+    "mi-low10": {
+      "class": "hybrid",
+      "description": "micro",
+      "labels": [
+        "low",
+        10
+      ],
+      "text": "micro heads supervised on the labels of 10 % of fit levels",
+      "trained": true
+    },
+    "mi-low25": {
+      "class": "hybrid",
+      "description": "micro",
+      "labels": [
+        "low",
+        25
+      ],
+      "text": "micro heads supervised on the labels of 25 % of fit levels",
+      "trained": true
+    }
+  },
+  "prohibited": [
+    "reading evaluation captures for training, calibration or selection",
+    "re-scoring after publication",
+    "changing an arm, rule or recipe after the freeze",
+    "retrying or replacing a typed failure"
+  ],
+  "question": "how much does the description axis depend on the quality of the predicates fed back at runtime and on engine supervision of the predicate heads, up to heads trained with no engine labels?",
+  "related_issues": [
+    85,
+    96,
+    99,
+    100,
+    101,
+    104,
+    106,
+    108,
+    109,
+    111,
+    112,
+    113,
+    114,
+    117
+  ],
+  "role": "predicate-feedback interventions, label-noise / low-label / learned / label-free retrains of the LC hybrid, micro and macro; ranking confirmatory on the sealed #109 evaluation split (Gate B passed)",
+  "runner": "scripts/run_predicate_feedback_robustness.py",
+  "runner_sha256_at_freeze": "sha256:87655498f700bfd773d1a16ff3e4dfc9d6508841c49f031ca44310b6fb3dbe04",
+  "schema": "issue_115_predicate_feedback_plan_v1",
+  "smoke_evidence": {
+    "checks": [
+      {
+        "control": "default_training_path_equals_retrain",
+        "local_losses_equal": true,
+        "max_parameter_delta": 0.0,
+        "ok": true,
+        "updates": 12
+      },
+      {
+        "control": "perception_heads",
+        "macro_available_is_positional": true,
+        "macro_rows_mapped": 3904309,
+        "macro_seconds_20_steps": 4.8797602851409465,
+        "macro_thresholds": [
+          [
+            0.6000000238418579,
+            0.5,
+            0.6000000238418579
+          ],
+          [
+            0.6000000238418579,
+            0.699999988079071,
+            0.6000000238418579
+          ]
+        ],
+        "micro_seconds_50_steps": 2.276802625041455,
+        "micro_thresholds": [
+          0.5,
+          0.5
+        ],
+        "ok": true,
+        "payload_positions": 3904309,
+        "pseudo_shape": [
+          50000,
+          2,
+          3
+        ]
+      },
+      {
+        "arms": [
+          {
+            "build_seconds": 16.367208439856768,
+            "final_loss_finite": true,
+            "label_report": {
+              "description": "micro",
+              "eligible": 398187384,
+              "flipped": 19913808,
+              "kind": "flip",
+              "label_f1": 0.6093690238875504,
+              "p": 0.05,
+              "realized_rate": 0.05001114751541199,
+              "symbols_sha256": "sha256:4e8d4c13fc4570526198be1a175c1cb3cc6464dff3c6b6c2538d92d506fbc136"
+            },
+            "name": "mi-flip05",
+            "parameters": 1837690,
+            "peak_memory_gb": 9.848774144,
+            "seconds_per_update_full_cost": 0.20521551925533763
+          },
+          {
+            "build_seconds": 2.5064398020040244,
+            "final_loss_finite": true,
+            "label_report": {
+              "description": "micro",
+              "k": 10,
+              "kind": "low",
+              "labelled_levels": 48,
+              "labelled_positions": 386067,
+              "positions": 3904309,
+              "symbols_sha256": "sha256:2dfb129389bae962a80545aa8191729aed000a4ffe01f23bf21561302899ec9d"
+            },
+            "name": "mi-low10",
+            "parameters": 1837690,
+            "peak_memory_gb": 9.852686848,
+            "seconds_per_update_full_cost": 0.15880181023385376
+          },
+          {
+            "build_seconds": 5.058438654989004,
+            "final_loss_finite": true,
+            "label_report": {
+              "description": "micro",
+              "head_sha256": "sha256:5df3e40eb9197b4ecb61740827ce597b19eeded249150d6d020983095525f5a4",
+              "kind": "learned",
+              "label_f1": 0.8671000874055297,
+              "symbols_sha256": "sha256:8dcf8b4455503fd363509086ae396380910eaef0d03062f919bba1803ee7b0f4"
+            },
+            "name": "mi-learned",
+            "parameters": 1837690,
+            "peak_memory_gb": 9.849266688,
+            "seconds_per_update_full_cost": 0.16082563800349212
+          },
+          {
+            "build_seconds": 2.4796464240644127,
+            "final_loss_finite": true,
+            "label_report": {
+              "description": "micro",
+              "kind": "none",
+              "labels_read": false,
+              "symbols_sha256": "sha256:7df382759575049a8c7bef25429feee08f6c7855c18b9b862e4095836a7e254e"
+            },
+            "name": "mi-free",
+            "parameters": 1837690,
+            "peak_memory_gb": 9.842898432,
+            "seconds_per_update_full_cost": 0.15642565116286278
+          },
+          {
+            "build_seconds": 2.568801812827587,
+            "final_loss_finite": true,
+            "label_report": {
+              "description": "macro",
+              "kind": "engine",
+              "symbols_sha256": "sha256:060b3175883095b51c834a29477abb5fc68b7c63b4ad9d44823f725dca01ca22"
+            },
+            "name": "ma-ref",
+            "parameters": 1838722,
+            "peak_memory_gb": 9.8800512,
+            "seconds_per_update_full_cost": 0.16361001091233143
+          },
+          {
+            "build_seconds": 2.7243449131492525,
+            "final_loss_finite": true,
+            "label_report": {
+              "description": "macro",
+              "eligible": 22841256,
+              "flipped": 1142150,
+              "kind": "flip",
+              "label_f1": 0.17503770856396725,
+              "p": 0.05,
+              "realized_rate": 0.050003817653460035,
+              "symbols_sha256": "sha256:3dae62d5417aed7b248b558989ae3b94d595fc56d4f92b8044bcc377d87a3680"
+            },
+            "name": "ma-flip05",
+            "parameters": 1838722,
+            "peak_memory_gb": 9.8800512,
+            "seconds_per_update_full_cost": 0.16227096117412051
+          },
+          {
+            "build_seconds": 2.598660930991173,
+            "final_loss_finite": true,
+            "label_report": {
+              "description": "macro",
+              "k": 10,
+              "kind": "low",
+              "labelled_levels": 48,
+              "labelled_positions": 386067,
+              "positions": 3904309,
+              "symbols_sha256": "sha256:7b1af81085d4d612fd0ce96f320d4a9eb3a21225d2e60a852a1392419543c2da"
+            },
+            "name": "ma-low10",
+            "parameters": 1838722,
+            "peak_memory_gb": 9.884351488,
+            "seconds_per_update_full_cost": 0.2512754703251024
+          },
+          {
+            "build_seconds": 2.623532772064209,
+            "final_loss_finite": true,
+            "label_report": {
+              "description": "macro",
+              "head_sha256": "sha256:9e74b10b481f728e341385d02fe1a9fc3a63bfc602dbac2b69fbc4145297bb27",
+              "kind": "learned",
+              "label_f1": 0.0,
+              "symbols_sha256": "sha256:d6a3cca0b90bbb83aa26e5f8b20097727d5b138f601f3f6725166f4b10aae0e3"
+            },
+            "name": "ma-learned",
+            "parameters": 1838722,
+            "peak_memory_gb": 9.8800512,
+            "seconds_per_update_full_cost": 0.1613042133200603
+          },
+          {
+            "build_seconds": 2.575085698859766,
+            "final_loss_finite": true,
+            "label_report": {
+              "description": "macro",
+              "kind": "none",
+              "labels_read": false,
+              "symbols_sha256": "sha256:060b3175883095b51c834a29477abb5fc68b7c63b4ad9d44823f725dca01ca22"
+            },
+            "name": "ma-free",
+            "parameters": 1838722,
+            "peak_memory_gb": 9.8800512,
+            "seconds_per_update_full_cost": 0.1601805865066126
+          }
+        ],
+        "control": "variant_labels_and_training",
+        "hybrid_parameters": 1837690,
+        "ok": true
+      },
+      {
+        "control": "policy_labels_equal_101",
+        "ok": true,
+        "projected_label_round_seconds": 49.8689803853631,
+        "units": 2
+      },
+      {
+        "cells": 3,
+        "control": "feedback_rollouts_fit",
+        "default_equals_selectors": true,
+        "interventions": {
+          "default": {
+            "f1": 0.8306709416554902,
+            "finite": true,
+            "flip_rate": null,
+            "removed_nonzero": 0
+          },
+          "flip05": {
+            "f1": 0.5956168341126935,
+            "finite": true,
+            "flip_rate": 0.05057166423951094,
+            "removed_nonzero": 0
+          },
+          "flip10": {
+            "f1": 0.4162729769480374,
+            "finite": true,
+            "flip_rate": 0.10056336796237322,
+            "removed_nonzero": 0
+          },
+          "flip20": {
+            "f1": 0.24823731019098383,
+            "finite": true,
+            "flip_rate": 0.19964394607635827,
+            "removed_nonzero": 0
+          },
+          "flip40": {
+            "f1": 0.11119552355580622,
+            "finite": true,
+            "flip_rate": 0.40001881229015096,
+            "removed_nonzero": 0
+          },
+          "gauss20": {
+            "f1": 0.8318918986437132,
+            "finite": true,
+            "flip_rate": null,
+            "removed_nonzero": 0
+          },
+          "gauss40": {
+            "f1": 0.8383289026593976,
+            "finite": true,
+            "flip_rate": null,
+            "removed_nonzero": 0
+          },
+          "gauss60": {
+            "f1": 0.8466729909965809,
+            "finite": true,
+            "flip_rate": null,
+            "removed_nonzero": 0
+          },
+          "gauss80": {
+            "f1": 0.8547075967606068,
+            "finite": true,
+            "flip_rate": null,
+            "removed_nonzero": 0
+          },
+          "oracle": {
+            "f1": 1.0,
+            "finite": true,
+            "flip_rate": null,
+            "removed_nonzero": 0
+          },
+          "removed": {
+            "f1": 0.0,
+            "finite": true,
+            "flip_rate": null,
+            "removed_nonzero": 0
+          },
+          "shuffled": {
+            "f1": 0.8307318760430734,
+            "finite": true,
+            "flip_rate": null,
+            "removed_nonzero": 0
+          }
+        },
+        "ok": true
+      },
+      {
+        "control": "macro_feedback_rollouts_fit",
+        "ok": true,
+        "results": {
+          "default": true,
+          "default_equals_selectors": true,
+          "flip05": true,
+          "flip10": true,
+          "flip20": true,
+          "flip40": true,
+          "gauss20": true,
+          "gauss40": true,
+          "gauss60": true,
+          "gauss80": true,
+          "oracle": true,
+          "removed": true,
+          "shuffled": true,
+          "temporal": true
+        }
+      },
+      {
+        "branches": 2,
+        "control": "truth_worker_equals_shot_cache",
+        "ok": true,
+        "seconds_per_shot": 10.935959147522226
+      },
+      {
+        "control": "readout_counts_equal_100",
+        "ok": true
+      },
+      {
+        "control": "calibration_curve",
+        "default_f1": 0.7942994452856672,
+        "f1_sigma_0.01": 0.7943259819882396,
+        "f1_sigma_100": 0.08732417758547892,
+        "ok": true,
+        "seconds_per_evaluation_2_cells": 0.7907241366337985
+      },
+      {
+        "J": "J-pe-1e-04",
+        "control": "inputs_bound",
+        "gate_b": "pass",
+        "ok": true
+      }
+    ],
+    "identity": "issue-115-predicate-feedback-v1",
+    "ok": true,
+    "projection": {
+      "calibration_gpu_seconds": 3188.1997189074755,
+      "elapsed_hours_on_4_gpus": 10.73169712665258,
+      "heads_gpu_seconds": 3600.0,
+      "note": "training projected at the full-cost (horizon 225 + ranking) update time: an upper bound",
+      "policies_gpu_seconds": 8146.635999307036,
+      "scoring_gpu_seconds": 59026.20000000018,
+      "total_gpu_seconds": 154536.43862379715,
+      "training_gpu_seconds_upper": 80575.40290558245,
+      "within_limit": true
+    },
+    "reading": "fit-split cells, anchors, shots and labels, the #101 policies, the #113 heads; no evaluation-split capture or model output",
+    "run_at": "2026-10-16T17:33:58Z",
+    "schema": "issue_115_predicate_feedback_smoke_v1",
+    "wall_seconds": 294.6493185039144
+  },
+  "training": {
+    "arms": {
+      "ma-flip05": {
+        "class": "delta_macro",
+        "labels": [
+          "flip",
+          0.05
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": true,
+          "micro": "labels",
+          "weighted": []
+        }
+      },
+      "ma-flip10": {
+        "class": "delta_macro",
+        "labels": [
+          "flip",
+          0.1
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": true,
+          "micro": "labels",
+          "weighted": []
+        }
+      },
+      "ma-flip20": {
+        "class": "delta_macro",
+        "labels": [
+          "flip",
+          0.2
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": true,
+          "micro": "labels",
+          "weighted": []
+        }
+      },
+      "ma-flip40": {
+        "class": "delta_macro",
+        "labels": [
+          "flip",
+          0.4
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": true,
+          "micro": "labels",
+          "weighted": []
+        }
+      },
+      "ma-free": {
+        "class": "binary_delta_macro",
+        "labels": [
+          "none"
+        ],
+        "spec": {
+          "macro": "none",
+          "macro_delta": true,
+          "micro": "labels",
+          "weighted": []
+        }
+      },
+      "ma-learned": {
+        "class": "delta_macro",
+        "labels": [
+          "learned",
+          25
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": true,
+          "micro": "labels",
+          "weighted": []
+        }
+      },
+      "ma-low10": {
+        "class": "delta_macro",
+        "labels": [
+          "low",
+          10
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": true,
+          "micro": "labels",
+          "weighted": [
+            "macro"
+          ]
+        }
+      },
+      "ma-low25": {
+        "class": "delta_macro",
+        "labels": [
+          "low",
+          25
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": true,
+          "micro": "labels",
+          "weighted": [
+            "macro"
+          ]
+        }
+      },
+      "ma-ref": {
+        "class": "delta_macro",
+        "labels": [
+          "engine"
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": true,
+          "micro": "labels",
+          "weighted": []
+        }
+      },
+      "mi-flip05": {
+        "class": "hybrid",
+        "labels": [
+          "flip",
+          0.05
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": false,
+          "micro": "labels",
+          "weighted": []
+        }
+      },
+      "mi-flip10": {
+        "class": "hybrid",
+        "labels": [
+          "flip",
+          0.1
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": false,
+          "micro": "labels",
+          "weighted": []
+        }
+      },
+      "mi-flip20": {
+        "class": "hybrid",
+        "labels": [
+          "flip",
+          0.2
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": false,
+          "micro": "labels",
+          "weighted": []
+        }
+      },
+      "mi-flip40": {
+        "class": "hybrid",
+        "labels": [
+          "flip",
+          0.4
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": false,
+          "micro": "labels",
+          "weighted": []
+        }
+      },
+      "mi-free": {
+        "class": "binary_micro",
+        "labels": [
+          "none"
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": false,
+          "micro": "none",
+          "weighted": []
+        }
+      },
+      "mi-learned": {
+        "class": "hybrid",
+        "labels": [
+          "learned",
+          25
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": false,
+          "micro": "labels",
+          "weighted": []
+        }
+      },
+      "mi-low10": {
+        "class": "hybrid",
+        "labels": [
+          "low",
+          10
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": false,
+          "micro": "labels",
+          "weighted": [
+            "micro"
+          ]
+        }
+      },
+      "mi-low25": {
+        "class": "hybrid",
+        "labels": [
+          "low",
+          25
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": false,
+          "micro": "labels",
+          "weighted": [
+            "micro"
+          ]
+        }
+      }
+    },
+    "data": "the v3 retrain payload (#109 fit split: 13 919 shots, 680 ranking cells), hash-checked",
+    "label_constructions": {
+      "flip": "symmetric flips of the engine labels on labelled entries at rate p, one draw per (arm, seed) from torch.Generator(sha256('labels', arm, seed)); micro contact per unordered pair",
+      "learned": "micro: MicroPerceptionHead (the micro head's architecture) trained on the 25 % subset's v3 carriers and engine labels ({'steps': 6000, 'batch': 4096, 'lr': 0.001, 'weight_decay': 0.0001, 'schedule': 'cosine to 0', 'optimizer': 'AdamW', 'threshold_rows': 200000}), thresholds per channel = in-sample best F1 over the #113 grid; targets = readings on every payload position, mask = both slots present in the carrier and the head's channel availability. macro: the #113 temporal head recipe ({'history': 4, 'mix': 0.5, 'recipe': 'the #113 train_head recipe (selected K4-mix50)'}) on the 25 % subset rows of the #113 fit data, thresholds per (predicate, Delta) = in-sample best engine F1; targets on every payload position, positional availability",
+      "low": "the description's symbolic terms (labels and availability) weighted by the position's level being in the labelled subset: per generator family the sorted fit levels permuted by PCG64(11501), first ceil(k % x n) labelled (nested)",
+      "none": "no symbolic loss for the description; binary straight-through codes (pf.binary_ste)"
+    },
+    "macro_labels": "the #113 frozen observable predicates (settle_Delta, structure-change_Delta) of every payload position, Delta-indexed macro head (4 outputs per Delta: +1032 parameters)",
+    "policy": "#101 pe recipe: rp.new_policy(seed), 2 DAgger rounds of rp.window_rows (lambda 1e-4) on the #101 pool, rp.distil_round, under deterministic_scoring; policy-split evaluation fixes D",
+    "recipe": "#112 v3 LC exactly as the Gate-B retrain (rt.implementation): #77 local loss + long-horizon supervision to 225 + decision-contrastive ranking loss, truncation 45, skip-on-nonfinite (patience 10), AdamW lr 1e-4 wd 1e-4, clip 1, batch 64, 9000 updates, PAIRS[step % 9], init torch.manual_seed(seed), fold 'all', one member per group; symbolic loss weight 0.1, pos_weight 5 (pf.local_loss = decision_dynamics.local_loss under the default spec)",
+    "seeds": [
+      20260908,
+      20260909,
+      20260910
+    ],
+    "typed_failures": "an unusable member is a typed terminal failure: not retrained, no policy, its cells drop",
+    "usable": "complete, at most 45 skipped updates, no #117 end-of-training excursion (rt.excursion)"
+  },
+  "validation_command": "python -u -m scripts.run_predicate_feedback_robustness --validate",
+  "version": 1
+}

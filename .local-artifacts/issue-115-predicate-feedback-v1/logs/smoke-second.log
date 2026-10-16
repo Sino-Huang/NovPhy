@@ -1,0 +1,25 @@
+[issue-112-dynamics] LC/smoke-default/group0 update 12/12: horizon 225, mean loss 3493.561767578125, retired 0; 35s; eta 0s
+[issue-112-dynamics] LC/hybrid/group0 update 12/12: horizon 225, mean loss 3493.561767578125, retired 0; 2s; eta 0s
+/mnt/array/sukaih/Project/NovPhy/scripts/run_predicate_feedback_robustness.py:2044: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:822.)
+  delta = max(float((params_a[k] - b.params[k]).abs().max()) for k in params_a)
+[issue-112-dynamics] LC/mi-flip05/group0 update 21/21: horizon 225, mean loss 2707.984130859375, retired 0; 4s; eta 0s
+[issue-112-dynamics] LC/mi-low10/group0 update 21/21: horizon 225, mean loss 2708.056884765625, retired 0; 3s; eta 0s
+[issue-112-dynamics] LC/mi-learned/group0 update 21/21: horizon 225, mean loss 2707.973388671875, retired 0; 3s; eta 0s
+[issue-112-dynamics] LC/mi-free/group0 update 21/21: horizon 225, mean loss 2801.288330078125, retired 0; 37s; eta 0s
+[issue-112-dynamics] LC/ma-ref/group0 update 21/21: horizon 225, mean loss 2688.185546875, retired 0; 43s; eta 0s
+[issue-112-dynamics] LC/ma-flip05/group0 update 21/21: horizon 225, mean loss 2688.27392578125, retired 0; 3s; eta 0s
+[issue-112-dynamics] LC/ma-low10/group0 update 21/21: horizon 225, mean loss 2688.224365234375, retired 0; 4s; eta 0s
+[issue-112-dynamics] LC/ma-learned/group0 update 21/21: horizon 225, mean loss 2688.203857421875, retired 0; 3s; eta 0s
+[issue-112-dynamics] LC/ma-free/group0 update 21/21: horizon 225, mean loss 2737.44775390625, retired 0; 40s; eta 0s
+[issue-115] smoke PASSED (293s); projection {'training_gpu_seconds_upper': 79900.22586245323, 'policies_gpu_seconds': 8144.96530495584, 'scoring_gpu_seconds': 59026.20000000018, 'calibration_gpu_seconds': 3172.579329058528, 'heads_gpu_seconds': 3600.0, 'total_gpu_seconds': 153843.97049646778, 'elapsed_hours_on_4_gpus': 10.683609062254707, 'within_limit': True, 'note': 'training projected at the full-cost (horizon 225 + ranking) update time: an upper bound'}
+[issue-115]   default_training_path_equals_retrain: True
+[issue-115]   perception_heads: True
+[issue-115]   variant_labels_and_training: True
+[issue-115]   policy_labels_equal_101: True
+[issue-115]   feedback_rollouts_fit: True
+[issue-115]   macro_feedback_rollouts_fit: True
+[issue-115]   truth_worker_equals_shot_cache: True
+[issue-115]   readout_counts_equal_100: True
+[issue-115]   calibration_curve: True
+[issue-115]   inputs_bound: True

@@ -1,0 +1,336 @@
+{
+  "checks": [
+    {
+      "control": "default_training_path_equals_retrain",
+      "local_losses_equal": true,
+      "max_parameter_delta": 0.0,
+      "ok": true,
+      "updates": 12
+    },
+    {
+      "control": "perception_heads",
+      "macro_available_is_positional": true,
+      "macro_rows_mapped": 3904309,
+      "macro_seconds_20_steps": 4.8797602851409465,
+      "macro_thresholds": [
+        [
+          0.6000000238418579,
+          0.5,
+          0.6000000238418579
+        ],
+        [
+          0.6000000238418579,
+          0.699999988079071,
+          0.6000000238418579
+        ]
+      ],
+      "micro_seconds_50_steps": 2.276802625041455,
+      "micro_thresholds": [
+        0.5,
+        0.5
+      ],
+      "ok": true,
+      "payload_positions": 3904309,
+      "pseudo_shape": [
+        50000,
+        2,
+        3
+      ]
+    },
+    {
+      "arms": [
+        {
+          "build_seconds": 16.367208439856768,
+          "final_loss_finite": true,
+          "label_report": {
+            "description": "micro",
+            "eligible": 398187384,
+            "flipped": 19913808,
+            "kind": "flip",
+            "label_f1": 0.6093690238875504,
+            "p": 0.05,
+            "realized_rate": 0.05001114751541199,
+            "symbols_sha256": "sha256:4e8d4c13fc4570526198be1a175c1cb3cc6464dff3c6b6c2538d92d506fbc136"
+          },
+          "name": "mi-flip05",
+          "parameters": 1837690,
+          "peak_memory_gb": 9.848774144,
+          "seconds_per_update_full_cost": 0.20521551925533763
+        },
+        {
+          "build_seconds": 2.5064398020040244,
+          "final_loss_finite": true,
+          "label_report": {
+            "description": "micro",
+            "k": 10,
+            "kind": "low",
+            "labelled_levels": 48,
+            "labelled_positions": 386067,
+            "positions": 3904309,
+            "symbols_sha256": "sha256:2dfb129389bae962a80545aa8191729aed000a4ffe01f23bf21561302899ec9d"
+          },
+          "name": "mi-low10",
+          "parameters": 1837690,
+          "peak_memory_gb": 9.852686848,
+          "seconds_per_update_full_cost": 0.15880181023385376
+        },
+        {
+          "build_seconds": 5.058438654989004,
+          "final_loss_finite": true,
+          "label_report": {
+            "description": "micro",
+            "head_sha256": "sha256:5df3e40eb9197b4ecb61740827ce597b19eeded249150d6d020983095525f5a4",
+            "kind": "learned",
+            "label_f1": 0.8671000874055297,
+            "symbols_sha256": "sha256:8dcf8b4455503fd363509086ae396380910eaef0d03062f919bba1803ee7b0f4"
+          },
+          "name": "mi-learned",
+          "parameters": 1837690,
+          "peak_memory_gb": 9.849266688,
+          "seconds_per_update_full_cost": 0.16082563800349212
+        },
+        {
+          "build_seconds": 2.4796464240644127,
+          "final_loss_finite": true,
+          "label_report": {
+            "description": "micro",
+            "kind": "none",
+            "labels_read": false,
+            "symbols_sha256": "sha256:7df382759575049a8c7bef25429feee08f6c7855c18b9b862e4095836a7e254e"
+          },
+          "name": "mi-free",
+          "parameters": 1837690,
+          "peak_memory_gb": 9.842898432,
+          "seconds_per_update_full_cost": 0.15642565116286278
+        },
+        {
+          "build_seconds": 2.568801812827587,
+          "final_loss_finite": true,
+          "label_report": {
+            "description": "macro",
+            "kind": "engine",
+            "symbols_sha256": "sha256:060b3175883095b51c834a29477abb5fc68b7c63b4ad9d44823f725dca01ca22"
+          },
+          "name": "ma-ref",
+          "parameters": 1838722,
+          "peak_memory_gb": 9.8800512,
+          "seconds_per_update_full_cost": 0.16361001091233143
+        },
+        {
+          "build_seconds": 2.7243449131492525,
+          "final_loss_finite": true,
+          "label_report": {
+            "description": "macro",
+            "eligible": 22841256,
+            "flipped": 1142150,
+            "kind": "flip",
+            "label_f1": 0.17503770856396725,
+            "p": 0.05,
+            "realized_rate": 0.050003817653460035,
+            "symbols_sha256": "sha256:3dae62d5417aed7b248b558989ae3b94d595fc56d4f92b8044bcc377d87a3680"
+          },
+          "name": "ma-flip05",
+          "parameters": 1838722,
+          "peak_memory_gb": 9.8800512,
+          "seconds_per_update_full_cost": 0.16227096117412051
+        },
+        {
+          "build_seconds": 2.598660930991173,
+          "final_loss_finite": true,
+          "label_report": {
+            "description": "macro",
+            "k": 10,
+            "kind": "low",
+            "labelled_levels": 48,
+            "labelled_positions": 386067,
+            "positions": 3904309,
+            "symbols_sha256": "sha256:7b1af81085d4d612fd0ce96f320d4a9eb3a21225d2e60a852a1392419543c2da"
+          },
+          "name": "ma-low10",
+          "parameters": 1838722,
+          "peak_memory_gb": 9.884351488,
+          "seconds_per_update_full_cost": 0.2512754703251024
+        },
+        {
+          "build_seconds": 2.623532772064209,
+          "final_loss_finite": true,
+          "label_report": {
+            "description": "macro",
+            "head_sha256": "sha256:9e74b10b481f728e341385d02fe1a9fc3a63bfc602dbac2b69fbc4145297bb27",
+            "kind": "learned",
+            "label_f1": 0.0,
+            "symbols_sha256": "sha256:d6a3cca0b90bbb83aa26e5f8b20097727d5b138f601f3f6725166f4b10aae0e3"
+          },
+          "name": "ma-learned",
+          "parameters": 1838722,
+          "peak_memory_gb": 9.8800512,
+          "seconds_per_update_full_cost": 0.1613042133200603
+        },
+        {
+          "build_seconds": 2.575085698859766,
+          "final_loss_finite": true,
+          "label_report": {
+            "description": "macro",
+            "kind": "none",
+            "labels_read": false,
+            "symbols_sha256": "sha256:060b3175883095b51c834a29477abb5fc68b7c63b4ad9d44823f725dca01ca22"
+          },
+          "name": "ma-free",
+          "parameters": 1838722,
+          "peak_memory_gb": 9.8800512,
+          "seconds_per_update_full_cost": 0.1601805865066126
+        }
+      ],
+      "control": "variant_labels_and_training",
+      "hybrid_parameters": 1837690,
+      "ok": true
+    },
+    {
+      "control": "policy_labels_equal_101",
+      "ok": true,
+      "projected_label_round_seconds": 49.8689803853631,
+      "units": 2
+    },
+    {
+      "cells": 3,
+      "control": "feedback_rollouts_fit",
+      "default_equals_selectors": true,
+      "interventions": {
+        "default": {
+          "f1": 0.8306709416554902,
+          "finite": true,
+          "flip_rate": null,
+          "removed_nonzero": 0
+        },
+        "flip05": {
+          "f1": 0.5956168341126935,
+          "finite": true,
+          "flip_rate": 0.05057166423951094,
+          "removed_nonzero": 0
+        },
+        "flip10": {
+          "f1": 0.4162729769480374,
+          "finite": true,
+          "flip_rate": 0.10056336796237322,
+          "removed_nonzero": 0
+        },
+        "flip20": {
+          "f1": 0.24823731019098383,
+          "finite": true,
+          "flip_rate": 0.19964394607635827,
+          "removed_nonzero": 0
+        },
+        "flip40": {
+          "f1": 0.11119552355580622,
+          "finite": true,
+          "flip_rate": 0.40001881229015096,
+          "removed_nonzero": 0
+        },
+        "gauss20": {
+          "f1": 0.8318918986437132,
+          "finite": true,
+          "flip_rate": null,
+          "removed_nonzero": 0
+        },
+        "gauss40": {
+          "f1": 0.8383289026593976,
+          "finite": true,
+          "flip_rate": null,
+          "removed_nonzero": 0
+        },
+        "gauss60": {
+          "f1": 0.8466729909965809,
+          "finite": true,
+          "flip_rate": null,
+          "removed_nonzero": 0
+        },
+        "gauss80": {
+          "f1": 0.8547075967606068,
+          "finite": true,
+          "flip_rate": null,
+          "removed_nonzero": 0
+        },
+        "oracle": {
+          "f1": 1.0,
+          "finite": true,
+          "flip_rate": null,
+          "removed_nonzero": 0
+        },
+        "removed": {
+          "f1": 0.0,
+          "finite": true,
+          "flip_rate": null,
+          "removed_nonzero": 0
+        },
+        "shuffled": {
+          "f1": 0.8307318760430734,
+          "finite": true,
+          "flip_rate": null,
+          "removed_nonzero": 0
+        }
+      },
+      "ok": true
+    },
+    {
+      "control": "macro_feedback_rollouts_fit",
+      "ok": true,
+      "results": {
+        "default": true,
+        "default_equals_selectors": true,
+        "flip05": true,
+        "flip10": true,
+        "flip20": true,
+        "flip40": true,
+        "gauss20": true,
+        "gauss40": true,
+        "gauss60": true,
+        "gauss80": true,
+        "oracle": true,
+        "removed": true,
+        "shuffled": true,
+        "temporal": true
+      }
+    },
+    {
+      "branches": 2,
+      "control": "truth_worker_equals_shot_cache",
+      "ok": true,
+      "seconds_per_shot": 10.935959147522226
+    },
+    {
+      "control": "readout_counts_equal_100",
+      "ok": true
+    },
+    {
+      "control": "calibration_curve",
+      "default_f1": 0.7942994452856672,
+      "f1_sigma_0.01": 0.7943259819882396,
+      "f1_sigma_100": 0.08732417758547892,
+      "ok": true,
+      "seconds_per_evaluation_2_cells": 0.7907241366337985
+    },
+    {
+      "J": "J-pe-1e-04",
+      "control": "inputs_bound",
+      "gate_b": "pass",
+      "ok": true
+    }
+  ],
+  "identity": "issue-115-predicate-feedback-v1",
+  "ok": true,
+  "projection": {
+    "calibration_gpu_seconds": 3188.1997189074755,
+    "elapsed_hours_on_4_gpus": 10.73169712665258,
+    "heads_gpu_seconds": 3600.0,
+    "note": "training projected at the full-cost (horizon 225 + ranking) update time: an upper bound",
+    "policies_gpu_seconds": 8146.635999307036,
+    "scoring_gpu_seconds": 59026.20000000018,
+    "total_gpu_seconds": 154536.43862379715,
+    "training_gpu_seconds_upper": 80575.40290558245,
+    "within_limit": true
+  },
+  "reading": "fit-split cells, anchors, shots and labels, the #101 policies, the #113 heads; no evaluation-split capture or model output",
+  "run_at": "2026-10-16T17:33:58Z",
+  "schema": "issue_115_predicate_feedback_smoke_v1",
+  "wall_seconds": 294.6493185039144
+}
