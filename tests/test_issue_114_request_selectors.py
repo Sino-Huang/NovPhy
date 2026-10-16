@@ -273,3 +273,11 @@ def test_restricted_window_rows_run_the_dp_over_the_allowed_requests_only():
     # the masked policy trains on the restricted labels with a finite loss
     losses = rp.distil_round(policy, [aggregated], 0, seed=10, steps=5, batch_size=16, device="cpu")
     assert all(torch.isfinite(torch.tensor(losses)))
+
+
+def test_failed_guard_is_reported_and_secondary_tokens_flagged():
+    from scripts import run_horizon_vs_joint as hvj
+    assert hvj.guard_failure({"G1": {"pass": True}}) is None
+    failure = hvj.guard_failure({"G2_scoring_policy": {"pass": False}, "G1": {"pass": True}})
+    assert failure["failed_guards"] == ["G2_scoring_policy"]
+    assert failure["secondary_tokens_interpretable"] is False and hvj.STOP_TOKEN in failure["note"]
