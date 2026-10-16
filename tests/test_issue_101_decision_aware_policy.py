@@ -254,3 +254,62 @@ def test_schedule_kind_equals_fixed_and_records_schedules():
     expected = sum(linear_macs(model, PAIRS[k]) for s in joint["schedules"] for k in s)
     assert joint["linear_macs"] == expected+joint["controller_calls"]*rp.policy_macs(policy)
     assert joint["controller_calls"] == sum(len(s) for s in joint["schedules"])
+
+
+# ---------------------------------------------------------------------------
+# publication: failed-guard propagation, post-freeze amendment registry (phase-A review)
+# ---------------------------------------------------------------------------
+
+def tokens_of(obj):
+    if isinstance(obj, dict):
+        return [v for k, v in obj.items() if k == "token" and not isinstance(v, dict)] + [
+            t for v in obj.values() for t in tokens_of(v)]
+    if isinstance(obj, list):
+        return [t for v in obj for t in tokens_of(v)]
+    return []
+
+
+def test_a_failed_guard_turns_every_token_insufficient():
+    from scripts import run_decision_aware_policy as dap
+    tables = {"grid": {"contrasts": {"J_dec-J": {"token": "supported", "estimate": {"mean": 0.04}}},
+                       "lambda_sweep": {"dec": [{"lambda": 0.1, "minus_F_hindsight": {"mean": -0.016}}]}}}
+    wrong = {"right_minus_wrong": {"mean": 0.13}, "token": "supported"}
+    out_tables, out_wrong = dap.invalidate(tables), dap.invalidate(wrong)
+    assert out_tables["grid"]["contrasts"]["J_dec-J"] == {"token": dap.STOP_TOKEN, "estimate": {"mean": 0.04}}
+    assert out_tables["grid"]["lambda_sweep"] == tables["grid"]["lambda_sweep"]
+    assert out_wrong == {"right_minus_wrong": {"mean": 0.13}, "token": dap.STOP_TOKEN}
+
+
+def test_failed_guard_publication_carries_no_other_token():
+    """The published #101 compute, as the failed-guard path would leave it: every token in the summary
+    and the findings table is readiness_or_precision_insufficient; estimates are unchanged."""
+    import json
+    from pathlib import Path
+    import pytest
+    from scripts import run_decision_aware_policy as dap
+    path = Path(dap.OUTPUT) / "compute.json"
+    if not path.is_file():
+        pytest.skip("retained #101 publication not present")
+    compute = json.loads(path.read_text())
+    failed = {**compute, "inventories": dap.invalidate(compute["inventories"]),
+              "wrong_anchor": dap.invalidate(compute["wrong_anchor"]),
+              "primary": {**compute["primary"], "token": dap.STOP_TOKEN}}
+    plan = {"frozen_at": compute["frozen_at"], "claim_boundary": "test"}
+    tokens = tokens_of(dap.summary(plan, failed)) + tokens_of(failed)
+    assert tokens and set(tokens) == {dap.STOP_TOKEN}
+    assert dap.summary(plan, failed)["contrasts"]["grid"]["J_dec-J"]["estimate"] == \
+        compute["inventories"]["grid"]["contrasts"]["J_dec-J"]["estimate"]
+
+
+def test_post_freeze_amendments_accept_only_frozen_or_listed_bytes():
+    import hashlib
+    from scripts import post_freeze_amendments as pfa
+    for artifact, entry in pfa.AMENDMENTS.items():
+        current = "sha256:" + hashlib.sha256(open(artifact, "rb").read()).hexdigest()
+        assert current == entry["sha256"], f"{artifact}: amended bytes changed without a registry update"
+        for frozen in entry["replaces"]:
+            assert pfa.matches(artifact, frozen, entry["sha256"])
+            assert pfa.matches(artifact, frozen, frozen)
+            assert not pfa.matches(artifact, frozen, "sha256:" + "0" * 64)
+        assert not pfa.matches(artifact, "sha256:" + "1" * 64, entry["sha256"])
+    assert not pfa.matches("scripts/run_gate_b.py", "sha256:a", "sha256:b")

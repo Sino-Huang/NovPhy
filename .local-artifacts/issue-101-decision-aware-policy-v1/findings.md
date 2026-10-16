@@ -23,6 +23,8 @@ Plan frozen 2026-10-14T10:04:00Z after a passed smoke, before any training or ev
 
 Targets: grid: F_hindsight F-15-continuous, F* (cross-fit r†) F-5-micro; offset: F_hindsight F-5-micro, F* (cross-fit r†) F-5-micro; angle: F_hindsight F-5-micro, F* (cross-fit r†) F-5-micro; power: F_hindsight F-5-micro, F* (cross-fit r†) F-5-micro.
 
+F* is cross-inventory selection (the #96 rule: best fixed request on the other three inventories), not member-disjoint cross-fitting: the same levels appear in several inventories, so selection optimism is not removed, and every F* and F_hindsight interval is conditional on the selection (the selection is not repeated inside the bootstrap).
+
 ## Rankers (grid)
 
 | arm | AUC | MACs / candidate | tied pair share | nonfinite share |

@@ -77,6 +77,7 @@ SCHEMA_SELECTION = "issue_101_selection_v1"
 SCHEMA_RECORD = "issue_101_record_v1"
 SCHEMA_COMPUTE = "issue_101_compute_v1"
 SCHEMA_REPORT = "issue_101_report_v1"
+SCHEMA_MANIFEST = "issue_101_record_manifest_v1"
 VALIDATION_COMMAND = "python -u -m scripts.run_decision_aware_policy --validate"
 RUNNER = "scripts/run_decision_aware_policy.py"
 MODULE = "world_model/training/request_policy.py"
@@ -748,6 +749,19 @@ def load_records(output):
     return {(arm, s): read_record(output, arm, s) for arm in ARMS for s in SEEDS}
 
 
+def record_manifest(output):
+    """Content hashes of the 81 raw records (26 arms and the wrong-anchor control x 3 seeds) every
+    published number is derived from (phase-A review: a committed link from the publication to them)."""
+    output = Path(output)
+    paths = [record_path(output, arm, s) for arm in (*ARMS, "wrong-anchor") for s in SEEDS]
+    present = sorted(output.glob("records/*.json"))
+    if sorted(paths) != present:
+        raise ValueError(f"records/ holds {len(present)} files, expected exactly the {len(paths)} named records")
+    return {"schema": SCHEMA_MANIFEST, "identity": IDENTITY, "count": len(paths),
+            "records": {str(p.relative_to(output)): {"bytes": p.stat().st_size, "sha256": sha256_of(p)}
+                        for p in present}}
+
+
 def view_rows(records, cells, inventory, stats):
     rows = []
     for member, entry in sorted(cells[inventory]["mixed"].items()):
@@ -855,6 +869,16 @@ def wrong_anchor_table(output, records, cells, selection):
             "token": c2.token(block)}
 
 
+def invalidate(obj):
+    """A failed guard turns every token into readiness_or_precision_insufficient (frozen guards.failure);
+    estimates, diagnostics and guard evidence are kept."""
+    if isinstance(obj, dict):
+        return {k: STOP_TOKEN if k == "token" else invalidate(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [invalidate(v) for v in obj]
+    return obj
+
+
 def gate_b_replication(records):
     """F-15-macro and C-F-15 rows equal the Gate-B unit / C* records on every cell and seed."""
     same = True
@@ -916,6 +940,8 @@ def compute_tables(output, plan):
         "G5_gate_b_replication": replication,
     }
     guards_ok = all(g["pass"] for g in guards.values())
+    if not guards_ok:
+        tables, wrong = invalidate(tables), invalidate(wrong)
     grid = tables[PRIMARY]
     primary = grid["contrasts"]["J_dec-F_hindsight"]
     phases = ledger_phases(output)
@@ -982,6 +1008,11 @@ def findings_md(plan, compute):
     add("")
     add("Targets: " + "; ".join(f"{i}: F_hindsight {compute['inventories'][i]['F_hindsight']}, F* (cross-fit r†) "
                                  f"{compute['inventories'][i]['F_star']}" for i in INVENTORIES) + ".")
+    add("")
+    add("F* is cross-inventory selection (the #96 rule: best fixed request on the other three inventories), not "
+        "member-disjoint cross-fitting: the same levels appear in several inventories, so selection optimism is not "
+        "removed, and every F* and F_hindsight interval is conditional on the selection (the selection is not "
+        "repeated inside the bootstrap).")
     add("")
     add("## Rankers (grid)")
     add("")
@@ -1051,6 +1082,11 @@ def summary(plan, compute):
 def rendered(plan, compute):
     return {"compute.json": json_text(compute), "summary.json": json_text(summary(plan, compute)),
             "findings.md": findings_md(plan, compute)}
+
+
+def published(output, plan, compute):
+    """Every published file: the renderings plus the raw-record manifest."""
+    return {**rendered(plan, compute), "records-manifest.json": json_text(record_manifest(output))}
 
 
 # ---------------------------------------------------------------------------
@@ -1489,7 +1525,7 @@ def publish(output):
     output = Path(output)
     plan = load_plan(output)
     compute = compute_tables(output, plan)
-    for name, text in rendered(plan, compute).items():
+    for name, text in published(output, plan, compute).items():
         (output / name).write_text(text)
     log(f"published: primary {compute['primary']['token']} ({fmt_interval(compute['primary']['estimate'])})")
     return 0
@@ -1521,7 +1557,7 @@ def validate(output):
     began = time.monotonic()
     plan = load_plan(output)
     compute = compute_tables(output, plan)
-    for name, text in rendered(plan, compute).items():
+    for name, text in published(output, plan, compute).items():
         if (output / name).read_bytes() != text.encode():
             raise ValueError(f"published {name} differs from the recomputation")
     if selection_table(output) != load_selection(output)["kinds"]:
@@ -1529,8 +1565,9 @@ def validate(output):
     spot = spot_checks(output)
     if not spot["pass"]:
         raise ValueError(f"deterministic re-scoring does not replicate the retained records: {spot}")
-    log(f"validation passed ({time.monotonic()-began:.0f}s): tables re-derived and byte-compared, selection "
-        f"re-derived, {spot['arm']} seed {spot['seed']} re-scored exactly; primary {compute['primary']['token']}")
+    log(f"validation passed ({time.monotonic()-began:.0f}s): tables and the 81-record manifest re-derived and "
+        f"byte-compared, selection re-derived, {spot['arm']} seed {spot['seed']} re-scored exactly; primary "
+        f"{compute['primary']['token']}")
     return 0
 
 
