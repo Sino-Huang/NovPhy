@@ -283,6 +283,178 @@ Shift of the horizon marginal (percentage points, Delta = 1 / 5 / 15) vs the pai
 | novel 1-7 pooled | both:J | -2 [-4, +0] | +0 [-0, +1] | +2 [-0, +4] | -10 [-14, -5] | -10 [-13, -7] | +20 [+17, +23] |
 | novel 1-7 pooled | both:J_dec | +1 [+0, +1] | +1 [+1, +2] | -2 [-3, -1] | -5 [-7, -2] | +1 [-0, +1] | +4 [+2, +7] |
 
+## Request shares on every supported cell (post-freeze DESCRIPTIVE supplement)
+
+post-freeze DESCRIPTIVE supplement (phase-A review F2), outcome-free: request shares of the frozen policies on every #110-supported cell. The frozen scope's records give the in-scope cells; the supported cells the frozen scope excluded (no mixed-verdict level, or rollout-error only; all of level 8) were rolled out after the publication with the same frozen policies, worlds and anchor rule, zero engine seconds, under deterministic_scoring(), for request shares only (supplement/). No verdict is read, no AUC, contrast or token is formed, and the frozen tables, scope and dispositions are unchanged. Policy-only and both-retuned policies exist only for the levels the frozen scope trained them on (1-7). 186 supplement records, 141 GPU s, 0 engine s; hashes in `supplement/manifest.json`. Horizon (Delta 1 / 5 / 15) and description (continuous / micro / macro) marginals, % of rollout steps; shift vs the same kind's normal policy on the paired normal side.
+
+| novelty type | arm | units | Delta 1 | Delta 5 | Delta 15 | continuous | micro | macro | TV shift vs paired normal | moves toward | moves away |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0: normal (paired normal sides) | zs:J | 960 | 61 | 2 | 37 | 55 | 39 | 6 | n/a | - | - |
+| 0: normal (paired normal sides) | zs:J_dec | 960 | 0 | 0 | 100 | 72 | 2 | 27 | n/a | - | - |
+| 1: appearance (pink pig/blocks) | zs:J | 120 | 72 | 4 | 24 | 72 | 26 | 2 | 0.12 [0.07, 0.17] | 1-continuous, 5-continuous, 5-micro | 1-micro, 15-micro, 15-macro |
+| 1: appearance (pink pig/blocks) | zs:J_dec | 120 | 0 | 0 | 100 | 77 | 2 | 21 | 0.09 [0.06, 0.13] | 15-continuous | 15-macro |
+| 1: appearance (pink pig/blocks) | policy:J | 120 | 68 | 19 | 12 | 40 | 17 | 43 | 0.62 [0.60, 0.64] | 1-macro, 5-micro, 5-macro, 15-continuous, 15-macro | 1-continuous, 15-micro |
+| 1: appearance (pink pig/blocks) | policy:J_dec | 120 | 0 | 0 | 100 | 82 | 2 | 16 | 0.13 [0.10, 0.17] | 15-continuous | 15-macro |
+| 1: appearance (pink pig/blocks) | predictor:J | 120 | 73 | 3 | 25 | 47 | 7 | 46 | 0.66 [0.65, 0.68] | 1-macro, 5-macro, 15-continuous | 1-continuous, 1-micro, 5-continuous, 5-micro, 15-micro, 15-macro |
+| 1: appearance (pink pig/blocks) | predictor:J_dec | 120 | 0 | 0 | 100 | 80 | 1 | 19 | 0.30 [0.27, 0.33] | 15-continuous | 15-micro, 15-macro |
+| 1: appearance (pink pig/blocks) | both:J | 120 | 63 | 1 | 36 | 35 | 28 | 37 | 0.68 [0.66, 0.71] | 1-micro, 1-macro, 5-macro, 15-continuous, 15-macro | 1-continuous, 5-continuous, 5-micro, 15-micro |
+| 1: appearance (pink pig/blocks) | both:J_dec | 120 | 0 | 8 | 92 | 78 | 0 | 22 | 0.33 [0.30, 0.37] | 5-continuous | 15-micro |
+| 2: fan (bird push) | zs:J | 117 | 64 | 2 | 34 | 57 | 38 | 5 | 0.13 [0.10, 0.16] | - | - |
+| 2: fan (bird push) | zs:J_dec | 117 | 0 | 0 | 100 | 65 | 2 | 33 | 0.14 [0.10, 0.18] | - | - |
+| 2: fan (bird push) | policy:J | 117 | 79 | 3 | 18 | 53 | 19 | 27 | 0.45 [0.40, 0.49] | 1-macro, 5-continuous, 5-macro, 15-continuous, 15-macro | 1-continuous, 5-micro, 15-micro |
+| 2: fan (bird push) | policy:J_dec | 117 | 0 | 0 | 100 | 70 | 5 | 26 | 0.18 [0.15, 0.22] | 15-continuous, 15-micro | 15-macro |
+| 2: fan (bird push) | predictor:J | 117 | 59 | 9 | 32 | 18 | 22 | 61 | 0.75 [0.72, 0.78] | 1-macro, 5-macro, 15-continuous, 15-macro | 1-continuous, 1-micro, 5-continuous, 5-micro, 15-micro |
+| 2: fan (bird push) | predictor:J_dec | 117 | 0 | 0 | 100 | 76 | 1 | 24 | 0.40 [0.36, 0.44] | 15-continuous | 15-micro, 15-macro |
+| 2: fan (bird push) | both:J | 117 | 52 | 1 | 46 | 51 | 38 | 12 | 0.47 [0.44, 0.51] | 15-continuous, 15-macro | 1-continuous, 5-continuous |
+| 2: fan (bird push) | both:J_dec | 117 | 0 | 0 | 100 | 64 | 2 | 34 | 0.42 [0.39, 0.46] | - | - |
+| 3: stronger air turbulence | zs:J | 120 | 39 | 0 | 61 | 27 | 62 | 11 | 0.24 [0.20, 0.29] | 1-micro, 15-micro | 1-continuous, 1-macro |
+| 3: stronger air turbulence | zs:J_dec | 120 | 0 | 0 | 100 | 73 | 1 | 26 | 0.14 [0.11, 0.17] | - | - |
+| 3: stronger air turbulence | policy:J | 120 | 57 | 2 | 41 | 39 | 32 | 29 | 0.46 [0.43, 0.49] | 1-continuous, 1-macro, 5-micro, 15-macro | 1-micro, 15-continuous, 15-micro |
+| 3: stronger air turbulence | policy:J_dec | 120 | 0 | 0 | 100 | 56 | 10 | 34 | 0.28 [0.25, 0.32] | 15-micro | 15-continuous |
+| 3: stronger air turbulence | predictor:J | 120 | 57 | 3 | 40 | 19 | 33 | 49 | 0.54 [0.51, 0.57] | 1-macro, 5-macro | 1-continuous, 1-micro, 15-micro, 15-macro |
+| 3: stronger air turbulence | predictor:J_dec | 120 | 0 | 0 | 100 | 53 | 1 | 46 | 0.36 [0.32, 0.40] | 15-macro | 15-continuous |
+| 3: stronger air turbulence | both:J | 120 | 54 | 8 | 38 | 49 | 31 | 20 | 0.63 [0.59, 0.66] | 1-continuous, 5-continuous, 5-micro, 5-macro, 15-macro | 15-micro |
+| 3: stronger air turbulence | both:J_dec | 120 | 9 | 1 | 90 | 56 | 0 | 44 | 0.37 [0.31, 0.42] | 1-continuous, 1-macro, 5-continuous, 5-macro | 15-continuous, 15-micro |
+| 4: magnet | zs:J | 120 | 61 | 2 | 37 | 49 | 46 | 5 | 0.10 [0.07, 0.13] | - | - |
+| 4: magnet | zs:J_dec | 120 | 0 | 0 | 100 | 68 | 2 | 30 | 0.13 [0.09, 0.17] | - | - |
+| 4: magnet | policy:J | 120 | 79 | 4 | 18 | 40 | 37 | 23 | 0.48 [0.45, 0.51] | 1-micro, 1-macro, 5-continuous, 5-macro, 15-macro | 1-continuous, 15-continuous, 15-micro |
+| 4: magnet | policy:J_dec | 120 | 3 | 4 | 93 | 77 | 5 | 19 | 0.26 [0.23, 0.31] | 1-continuous, 1-macro, 5-continuous, 5-macro, 15-micro | 15-macro |
+| 4: magnet | predictor:J | 120 | 60 | 0 | 40 | 12 | 34 | 54 | 0.69 [0.67, 0.72] | 1-macro, 5-macro, 15-continuous | 1-continuous, 1-micro, 5-continuous, 5-micro, 15-macro |
+| 4: magnet | predictor:J_dec | 120 | 0 | 0 | 100 | 77 | 0 | 23 | 0.35 [0.31, 0.39] | 15-continuous | 15-micro, 15-macro |
+| 4: magnet | both:J | 120 | 48 | 7 | 45 | 53 | 17 | 29 | 0.77 [0.71, 0.83] | 1-macro, 5-macro, 15-continuous, 15-macro | 1-continuous, 1-micro, 5-continuous, 5-micro, 15-micro |
+| 4: magnet | both:J_dec | 120 | 0 | 0 | 100 | 62 | 2 | 36 | 0.50 [0.45, 0.54] | 5-macro, 15-macro | 15-continuous |
+| 5: right slingshot (mirrored layout) | zs:J | 120 | 53 | 1 | 46 | 45 | 53 | 2 | 0.28 [0.25, 0.31] | 1-micro, 15-micro | 1-continuous, 1-macro, 5-continuous, 5-micro |
+| 5: right slingshot (mirrored layout) | zs:J_dec | 120 | 0 | 0 | 100 | 89 | 2 | 10 | 0.18 [0.15, 0.21] | 15-continuous, 15-micro | 15-macro |
+| 5: right slingshot (mirrored layout) | policy:J | 120 | 68 | 16 | 16 | 44 | 30 | 26 | 0.52 [0.48, 0.57] | 1-micro, 1-macro, 5-continuous, 5-micro, 5-macro, 15-continuous | 1-continuous, 15-micro |
+| 5: right slingshot (mirrored layout) | policy:J_dec | 120 | 0 | 0 | 100 | 70 | 3 | 27 | 0.18 [0.15, 0.21] | 1-macro, 15-micro | - |
+| 5: right slingshot (mirrored layout) | predictor:J | 120 | 83 | 5 | 13 | 37 | 3 | 59 | 0.71 [0.70, 0.73] | 1-macro, 5-macro, 15-macro | 1-continuous, 1-micro, 5-continuous, 5-micro, 15-micro |
+| 5: right slingshot (mirrored layout) | predictor:J_dec | 120 | 0 | 0 | 100 | 54 | 2 | 44 | 0.41 [0.39, 0.43] | 15-micro, 15-macro | 15-continuous |
+| 5: right slingshot (mirrored layout) | both:J | 120 | 62 | 0 | 37 | 43 | 37 | 20 | 0.57 [0.54, 0.60] | 1-micro, 1-macro, 5-macro, 15-continuous, 15-macro | 1-continuous, 5-continuous, 5-micro, 15-micro |
+| 5: right slingshot (mirrored layout) | both:J_dec | 120 | 1 | 0 | 99 | 67 | 5 | 28 | 0.40 [0.38, 0.43] | 1-continuous, 1-macro, 5-continuous, 5-macro, 15-micro | 15-continuous |
+| 6: inverse gravity | zs:J | 120 | 69 | 4 | 28 | 69 | 30 | 1 | 0.23 [0.18, 0.28] | 1-continuous, 5-continuous | 1-micro, 1-macro, 5-micro |
+| 6: inverse gravity | zs:J_dec | 120 | 0 | 0 | 100 | 88 | 2 | 10 | 0.13 [0.07, 0.19] | 15-continuous | 15-macro |
+| 6: inverse gravity | policy:J | 120 | 51 | 23 | 26 | 43 | 10 | 47 | 0.65 [0.62, 0.69] | 1-macro, 5-continuous, 5-macro, 15-continuous, 15-macro | 1-continuous, 1-micro, 5-micro, 15-micro |
+| 6: inverse gravity | policy:J_dec | 120 | 0 | 0 | 100 | 86 | 2 | 12 | 0.14 [0.09, 0.19] | 5-continuous, 5-macro, 15-continuous | 15-macro |
+| 6: inverse gravity | predictor:J | 120 | 70 | 1 | 29 | 13 | 29 | 58 | 0.68 [0.65, 0.71] | 1-macro, 5-macro | 1-continuous, 1-micro, 5-continuous, 5-micro |
+| 6: inverse gravity | predictor:J_dec | 120 | 0 | 0 | 100 | 78 | 1 | 21 | 0.25 [0.21, 0.29] | - | 15-micro |
+| 6: inverse gravity | both:J | 120 | 54 | 2 | 44 | 17 | 24 | 59 | 0.71 [0.69, 0.73] | 1-macro, 5-macro, 15-macro | 1-continuous, 1-micro, 5-continuous, 5-micro, 15-micro |
+| 6: inverse gravity | both:J_dec | 120 | 0 | 0 | 100 | 67 | 1 | 32 | 0.40 [0.34, 0.46] | 15-macro | 15-continuous, 15-micro |
+| 7: inverse air turbulence | zs:J | 120 | 46 | 0 | 54 | 34 | 52 | 14 | 0.15 [0.10, 0.21] | 15-macro | - |
+| 7: inverse air turbulence | zs:J_dec | 120 | 0 | 0 | 100 | 71 | 2 | 27 | 0.08 [0.04, 0.12] | 15-micro, 15-macro | 15-continuous |
+| 7: inverse air turbulence | policy:J | 120 | 61 | 2 | 37 | 34 | 26 | 41 | 0.52 [0.48, 0.55] | 1-macro, 5-continuous, 5-macro, 15-macro | 1-micro, 15-micro |
+| 7: inverse air turbulence | policy:J_dec | 120 | 0 | 0 | 100 | 59 | 5 | 36 | 0.29 [0.25, 0.33] | 15-micro, 15-macro | 15-continuous |
+| 7: inverse air turbulence | predictor:J | 120 | 81 | 0 | 19 | 2 | 15 | 83 | 0.73 [0.70, 0.75] | 1-macro, 5-macro, 15-macro | 1-continuous, 1-micro, 5-micro, 15-continuous, 15-micro |
+| 7: inverse air turbulence | predictor:J_dec | 120 | 0 | 0 | 100 | 70 | 2 | 28 | 0.37 [0.34, 0.40] | 15-macro | 15-continuous |
+| 7: inverse air turbulence | both:J | 120 | 68 | 3 | 29 | 55 | 38 | 7 | 0.66 [0.63, 0.69] | 1-continuous, 1-micro, 5-continuous, 5-micro, 5-macro, 15-continuous, 15-macro | 1-macro, 15-micro |
+| 7: inverse air turbulence | both:J_dec | 120 | 0 | 0 | 100 | 65 | 3 | 32 | 0.30 [0.26, 0.34] | 15-micro, 15-macro | 15-continuous |
+| 8: storm | zs:J | 120 | 68 | 3 | 28 | 66 | 31 | 3 | 0.18 [0.14, 0.22] | - | 15-continuous |
+| 8: storm | zs:J_dec | 120 | 0 | 0 | 100 | 72 | 2 | 26 | 0.13 [0.10, 0.16] | - | - |
+| 8: storm | predictor:J | 120 | 69 | 0 | 31 | 0 | 31 | 69 | 0.87 [0.83, 0.90] | 1-macro, 15-micro | 1-continuous, 1-micro, 5-continuous, 5-micro, 15-continuous |
+| 8: storm | predictor:J_dec | 120 | 0 | 0 | 100 | 61 | 1 | 37 | 0.27 [0.22, 0.33] | 15-macro | 15-continuous, 15-micro |
+| novel 1-8 pooled (every supported cell) | zs:J | 957 | 59 | 2 | 39 | 53 | 42 | 5 | 0.18 [0.16, 0.20] | 1-micro, 15-micro | 1-continuous, 1-macro |
+| novel 1-8 pooled (every supported cell) | zs:J_dec | 957 | 0 | 0 | 100 | 75 | 2 | 23 | 0.13 [0.11, 0.14] | 15-continuous | 15-macro |
+| novel 1-8 pooled (every supported cell) | policy:J | 837 | 66 | 10 | 24 | 42 | 24 | 34 | 0.53 [0.51, 0.54] | 1-micro, 1-macro, 5-continuous, 5-micro, 5-macro, 15-continuous, 15-macro | 1-continuous, 15-micro |
+| novel 1-8 pooled (every supported cell) | policy:J_dec | 837 | 0 | 1 | 99 | 71 | 4 | 24 | 0.21 [0.19, 0.23] | 1-continuous, 1-macro, 5-continuous, 5-micro, 5-macro, 15-micro | 15-macro |
+| novel 1-8 pooled (every supported cell) | predictor:J | 957 | 69 | 3 | 28 | 18 | 22 | 60 | 0.70 [0.69, 0.72] | 1-macro, 5-macro, 15-continuous, 15-macro | 1-continuous, 1-micro, 5-continuous, 5-micro, 15-micro |
+| novel 1-8 pooled (every supported cell) | predictor:J_dec | 957 | 0 | 0 | 100 | 69 | 1 | 30 | 0.34 [0.33, 0.36] | 15-macro | 15-continuous, 15-micro |
+| novel 1-8 pooled (every supported cell) | both:J | 837 | 57 | 3 | 39 | 43 | 30 | 26 | 0.64 [0.63, 0.66] | 1-micro, 1-macro, 5-macro, 15-continuous, 15-macro | 1-continuous, 5-continuous, 15-micro |
+| novel 1-8 pooled (every supported cell) | both:J_dec | 837 | 1 | 1 | 97 | 66 | 2 | 33 | 0.39 [0.37, 0.41] | 1-continuous, 1-macro, 5-continuous, 5-macro, 15-macro | 15-continuous |
+
+Per cell, zero-shot J_dec and J (source: retained frozen-scope records or the supplement):
+
+| cell | source | arm | Delta 1 | Delta 5 | Delta 15 | continuous | micro | macro |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0/single_force | retained | zs:J_dec | 0 | 0 | 100 | 82 | 2 | 16 |
+| 0/single_force | retained | zs:J | 68 | 2 | 30 | 69 | 28 | 3 |
+| 0/multiple_forces | supplement | zs:J_dec | 0 | 0 | 100 | 80 | 2 | 18 |
+| 0/multiple_forces | supplement | zs:J | 65 | 2 | 33 | 67 | 31 | 2 |
+| 0/rolling | retained | zs:J_dec | 0 | 0 | 100 | 67 | 1 | 32 |
+| 0/rolling | retained | zs:J | 58 | 2 | 41 | 47 | 45 | 9 |
+| 0/falling | retained | zs:J_dec | 0 | 0 | 100 | 67 | 1 | 32 |
+| 0/falling | retained | zs:J | 56 | 2 | 42 | 44 | 48 | 8 |
+| 0/sliding | retained | zs:J_dec | 0 | 0 | 100 | 63 | 2 | 35 |
+| 0/sliding | retained | zs:J | 57 | 2 | 41 | 47 | 45 | 9 |
+| 1/single_force | retained | zs:J_dec | 0 | 0 | 100 | 83 | 2 | 15 |
+| 1/single_force | retained | zs:J | 79 | 5 | 16 | 82 | 17 | 0 |
+| 1/multiple_forces | supplement | zs:J_dec | 0 | 0 | 100 | 82 | 2 | 16 |
+| 1/multiple_forces | supplement | zs:J | 77 | 4 | 19 | 80 | 20 | 0 |
+| 1/rolling | retained | zs:J_dec | 0 | 0 | 100 | 72 | 0 | 28 |
+| 1/rolling | retained | zs:J | 66 | 2 | 32 | 63 | 34 | 3 |
+| 1/falling | retained | zs:J_dec | 0 | 0 | 100 | 74 | 2 | 24 |
+| 1/falling | retained | zs:J | 67 | 6 | 28 | 63 | 33 | 4 |
+| 1/sliding | retained | zs:J_dec | 0 | 0 | 100 | 77 | 2 | 21 |
+| 1/sliding | retained | zs:J | 71 | 2 | 27 | 74 | 25 | 1 |
+| 2/single_force | retained | zs:J_dec | 0 | 0 | 100 | 78 | 2 | 20 |
+| 2/single_force | retained | zs:J | 74 | 2 | 24 | 77 | 23 | 0 |
+| 2/multiple_forces | supplement | zs:J_dec | 0 | 0 | 100 | 72 | 2 | 25 |
+| 2/multiple_forces | supplement | zs:J | 70 | 2 | 28 | 74 | 25 | 1 |
+| 2/rolling | retained | zs:J_dec | 0 | 0 | 100 | 62 | 2 | 35 |
+| 2/rolling | retained | zs:J | 59 | 2 | 39 | 39 | 54 | 7 |
+| 2/falling | retained | zs:J_dec | 0 | 0 | 100 | 62 | 0 | 38 |
+| 2/falling | retained | zs:J | 63 | 3 | 35 | 54 | 41 | 6 |
+| 2/sliding | retained | zs:J_dec | 0 | 0 | 100 | 52 | 1 | 47 |
+| 2/sliding | retained | zs:J | 56 | 1 | 43 | 38 | 52 | 10 |
+| 3/single_force | supplement | zs:J_dec | 0 | 0 | 100 | 80 | 1 | 19 |
+| 3/single_force | supplement | zs:J | 41 | 1 | 58 | 40 | 54 | 6 |
+| 3/multiple_forces | supplement | zs:J_dec | 0 | 0 | 100 | 76 | 2 | 22 |
+| 3/multiple_forces | supplement | zs:J | 40 | 0 | 60 | 36 | 51 | 14 |
+| 3/rolling | retained | zs:J_dec | 0 | 1 | 99 | 79 | 1 | 21 |
+| 3/rolling | retained | zs:J | 44 | 0 | 55 | 28 | 63 | 9 |
+| 3/falling | retained | zs:J_dec | 0 | 0 | 100 | 74 | 0 | 26 |
+| 3/falling | retained | zs:J | 34 | 0 | 66 | 18 | 76 | 6 |
+| 3/sliding | supplement | zs:J_dec | 0 | 0 | 100 | 56 | 1 | 42 |
+| 3/sliding | supplement | zs:J | 36 | 0 | 64 | 16 | 64 | 20 |
+| 4/single_force | retained | zs:J_dec | 0 | 0 | 100 | 69 | 2 | 29 |
+| 4/single_force | retained | zs:J | 67 | 1 | 31 | 67 | 29 | 4 |
+| 4/multiple_forces | supplement | zs:J_dec | 0 | 0 | 100 | 77 | 2 | 21 |
+| 4/multiple_forces | supplement | zs:J | 70 | 2 | 27 | 73 | 27 | 1 |
+| 4/rolling | retained | zs:J_dec | 0 | 0 | 100 | 61 | 2 | 37 |
+| 4/rolling | retained | zs:J | 56 | 1 | 43 | 38 | 55 | 7 |
+| 4/falling | retained | zs:J_dec | 0 | 0 | 100 | 66 | 2 | 32 |
+| 4/falling | retained | zs:J | 57 | 2 | 40 | 36 | 59 | 5 |
+| 4/sliding | supplement | zs:J_dec | 0 | 0 | 100 | 64 | 3 | 32 |
+| 4/sliding | supplement | zs:J | 54 | 1 | 45 | 33 | 61 | 6 |
+| 5/single_force | retained | zs:J_dec | 0 | 0 | 100 | 89 | 2 | 8 |
+| 5/single_force | retained | zs:J | 52 | 0 | 48 | 44 | 54 | 2 |
+| 5/multiple_forces | supplement | zs:J_dec | 0 | 0 | 100 | 87 | 3 | 10 |
+| 5/multiple_forces | supplement | zs:J | 51 | 0 | 48 | 42 | 56 | 2 |
+| 5/rolling | retained | zs:J_dec | 0 | 0 | 100 | 88 | 2 | 10 |
+| 5/rolling | retained | zs:J | 55 | 2 | 44 | 47 | 52 | 1 |
+| 5/falling | retained | zs:J_dec | 0 | 0 | 100 | 87 | 0 | 13 |
+| 5/falling | retained | zs:J | 51 | 2 | 47 | 42 | 55 | 2 |
+| 5/sliding | retained | zs:J_dec | 0 | 0 | 100 | 92 | 2 | 6 |
+| 5/sliding | retained | zs:J | 54 | 0 | 46 | 50 | 49 | 1 |
+| 6/single_force | retained | zs:J_dec | 0 | 0 | 100 | 87 | 2 | 11 |
+| 6/single_force | retained | zs:J | 72 | 4 | 24 | 76 | 23 | 1 |
+| 6/multiple_forces | supplement | zs:J_dec | 0 | 0 | 100 | 87 | 2 | 11 |
+| 6/multiple_forces | supplement | zs:J | 74 | 3 | 22 | 77 | 22 | 1 |
+| 6/rolling | retained | zs:J_dec | 0 | 0 | 100 | 90 | 2 | 8 |
+| 6/rolling | retained | zs:J | 64 | 4 | 32 | 62 | 37 | 1 |
+| 6/falling | retained | zs:J_dec | 0 | 0 | 100 | 87 | 2 | 10 |
+| 6/falling | retained | zs:J | 71 | 3 | 26 | 73 | 26 | 2 |
+| 6/sliding | retained | zs:J_dec | 0 | 0 | 100 | 88 | 3 | 9 |
+| 6/sliding | retained | zs:J | 62 | 4 | 34 | 59 | 40 | 1 |
+| 7/single_force | retained | zs:J_dec | 0 | 0 | 100 | 85 | 2 | 13 |
+| 7/single_force | retained | zs:J | 51 | 0 | 49 | 49 | 43 | 8 |
+| 7/multiple_forces | supplement | zs:J_dec | 0 | 0 | 100 | 85 | 2 | 13 |
+| 7/multiple_forces | supplement | zs:J | 50 | 0 | 49 | 47 | 46 | 7 |
+| 7/rolling | retained | zs:J_dec | 0 | 0 | 100 | 53 | 2 | 44 |
+| 7/rolling | retained | zs:J | 39 | 0 | 60 | 24 | 53 | 23 |
+| 7/falling | retained | zs:J_dec | 0 | 0 | 100 | 69 | 1 | 29 |
+| 7/falling | retained | zs:J | 50 | 0 | 50 | 28 | 58 | 14 |
+| 7/sliding | retained | zs:J_dec | 0 | 1 | 99 | 62 | 1 | 37 |
+| 7/sliding | retained | zs:J | 41 | 0 | 59 | 22 | 61 | 17 |
+| 8/single_force | supplement | zs:J_dec | 0 | 0 | 100 | 75 | 2 | 22 |
+| 8/single_force | supplement | zs:J | 72 | 1 | 27 | 74 | 26 | 1 |
+| 8/multiple_forces | supplement | zs:J_dec | 0 | 0 | 100 | 80 | 2 | 18 |
+| 8/multiple_forces | supplement | zs:J | 71 | 3 | 26 | 72 | 27 | 2 |
+| 8/rolling | supplement | zs:J_dec | 0 | 0 | 100 | 71 | 1 | 28 |
+| 8/rolling | supplement | zs:J | 66 | 2 | 32 | 60 | 36 | 4 |
+| 8/falling | supplement | zs:J_dec | 0 | 0 | 100 | 58 | 1 | 41 |
+| 8/falling | supplement | zs:J | 62 | 1 | 36 | 56 | 38 | 6 |
+| 8/sliding | supplement | zs:J_dec | 0 | 0 | 100 | 77 | 1 | 21 |
+| 8/sliding | supplement | zs:J | 72 | 8 | 20 | 70 | 27 | 3 |
+
 ## Wrong-anchor control (right - wrong anchor AUC)
 
 | population | zs:J | zs:J_dec | policy:J | policy:J_dec | predictor:J | predictor:J_dec | both:J | both:J_dec |

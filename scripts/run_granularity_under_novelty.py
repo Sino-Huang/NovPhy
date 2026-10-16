@@ -23,11 +23,14 @@ request_policy.py, executed as a private copy at the 370-value v2 carrier; the m
 4. ``--publish``: ranking AUC per arm and novelty type (zero-shot and few-shot never pooled), request
    shares and their shift vs the paired normal sides and N1, wrong-anchor and no-model prior controls,
    the pre-declared disposition, compute.json / summary.json / findings.md / records-manifest.json.
+5. ``--share-supplement`` (post-freeze, phase-A review F2; DESCRIPTIVE, outcome-free): the frozen policies'
+   request rollouts on the supported cells the frozen scope excluded, for request shares on every supported
+   cell (supplement/, own ledger and manifest); no verdict, AUC or token. Runs after the publication.
 
-Modes: --dry-run --smoke --prepare --data --assemble --train-normal --train-fewshot --score --publish
---validate. --data, --train-normal, --train-fewshot and --score take --workers N --worker K (one process
-per GPU; CUDA_VISIBLE_DEVICES set by the caller). Zero engine seconds. Intervals: member (evaluation
-level)-clustered percentile bootstrap (10000 draws, PCG64 7201), DESCRIPTIVE.
+Modes: --dry-run --smoke --prepare --data --assemble --train-normal --train-fewshot --score
+--share-supplement --publish --validate. --data, --train-normal, --train-fewshot and --score take --workers N
+--worker K (one process per GPU; CUDA_VISIBLE_DEVICES set by the caller). Zero engine seconds. Intervals:
+member (evaluation level)-clustered percentile bootstrap (10000 draws, PCG64 7201), DESCRIPTIVE.
 """
 from __future__ import annotations
 
@@ -45,6 +48,7 @@ import types
 import numpy as np
 import torch
 
+from scripts import post_freeze_amendments as amendments
 from scripts import run_novelty_coverage as nc
 
 ROOT = nc.ROOT
@@ -65,6 +69,11 @@ SCHEMA_RECORD = "issue_107_record_v1"
 SCHEMA_COMPUTE = "issue_107_compute_v1"
 SCHEMA_SUMMARY = "issue_107_summary_v1"
 SCHEMA_MANIFEST = "issue_107_record_manifest_v1"
+SCHEMA_SUPPLEMENT_EVAL = "issue_107_share_supplement_anchors_v1"
+SCHEMA_SUPPLEMENT_RECORD = "issue_107_share_supplement_record_v1"
+SCHEMA_SUPPLEMENT_MANIFEST = "issue_107_share_supplement_manifest_v1"
+SUPPLEMENT = "supplement"                    # post-freeze request-share supplement (phase-A review F2)
+SUPPLEMENT_MANIFEST = "supplement/manifest.json"
 RUNNER = "scripts/run_granularity_under_novelty.py"
 MODULE = "world_model/training/request_policy.py"
 VALIDATION_COMMAND = "python -u -m scripts.run_granularity_under_novelty --validate"
@@ -171,6 +180,16 @@ def in_scope_cells():
     return [cell for cell in handoff()["supported_cells"] if cell_scope(cell)[0]]
 
 
+def supplement_cells():
+    """Supported cells outside the frozen scope: no AUC (no mixed level, or rollout-error only), but the
+    frozen policies' request shares are outcome-free (post-freeze DESCRIPTIVE supplement, phase-A F2)."""
+    return [cell for cell in handoff()["supported_cells"] if not cell_scope(cell)[0]]
+
+
+def supplement_groups():
+    return tuple(f"L{k}" for k in sorted({cell_level(c) for c in supplement_cells()}))
+
+
 def scope_table():
     out = {}
     for cell in handoff()["supported_cells"]:
@@ -231,7 +250,16 @@ def eval_levels(group):
     issue110-evaluation branches of in-scope cells only."""
     if group == "n1":
         return n1_levels()
-    scope = set(in_scope_cells())
+    return levels_of(group, frozenset(in_scope_cells()))
+
+
+@functools.lru_cache(maxsize=None)
+def supplement_levels(group):
+    """The same, over the supported cells the frozen scope excluded (the request-share supplement)."""
+    return levels_of(group, frozenset(supplement_cells()))
+
+
+def levels_of(group, scope):
     out = {}
     for b in usable():
         if b["stream"] != nc.STREAM_EVAL or b["cell"] not in scope:
@@ -559,8 +587,8 @@ def fewshot_pool(world, k):
             "window_length": torch.stack([w["length"] for w in windows]), "cells": fewshot_cells(branches, anchors)}
 
 
-def eval_anchors(output, group, world):
-    levels = eval_levels(group)
+def eval_anchors(output, group, world, levels=None):
+    levels = eval_levels(group) if levels is None else levels
     if group == "n1":
         anchors = {lv: read_shot(output, meta["anchor_key"])["carriers"][0].clone() for lv, meta in levels.items()}
         condition = ZERO
@@ -803,12 +831,15 @@ def policy_of(name, group):
     return variant, (None if variant == "N" else group_level(group)), kind
 
 
-def score_record(output, group, world, name, seed, model, scoring_policy):
+def score_record(output, group, world, name, seed, model, scoring_policy, store=None, levels=None,
+                 schema=SCHEMA_RECORD):
+    """One arm x seed on a group's levels (the frozen evaluation store by default; the request-share
+    supplement passes its own store, levels and schema)."""
     h = heavy()
-    store = load_eval(output, group, world)
-    levels = eval_levels(group)
+    store = load_eval(output, group, world) if store is None else store
+    levels = eval_levels(group) if levels is None else levels
     condition = store["condition"]
-    base = {"schema": SCHEMA_RECORD, "plan_identity": IDENTITY, "scoring_policy": scoring_policy,
+    base = {"schema": schema, "plan_identity": IDENTITY, "scoring_policy": scoring_policy,
             "scored_at": utc_now(), "group": group, "world": world, "condition": condition, "arm": name,
             "seed": seed, "engine_seconds": 0,
             "predictor_sha256": handoff()["checkpoints"]["predictors"][predictor_key(condition, seed)]["sha256"]}
@@ -875,6 +906,100 @@ def record_manifest(output):
     files = sorted(output.glob("records/**/*.json"))
     return {"schema": SCHEMA_MANIFEST, "identity": IDENTITY,
             "records": {str(p.relative_to(output)): sha256_of(p) for p in files}}
+
+
+# request-share supplement (post-freeze, DESCRIPTIVE, outcome-free; phase-A review F2) -----------------
+
+def supplement_tasks():
+    """The frozen policy arms (no fixed request: its shares are fixed by construction) on the supplement
+    levels; retuned policies only where the frozen scope trained them (levels 1-7)."""
+    return [(group, world, name, seed) for group in supplement_groups() for world in worlds_of(group)
+            for name in names_of(group, world) if name not in FIXED_ARMS
+            and (name.startswith("N-") or group_level(group) in novel_levels()) for seed in SEEDS]
+
+
+def supplement_eval_path(output, group, world):
+    return Path(output) / SUPPLEMENT / "data" / f"eval-{group}-{world}.pt"
+
+
+def supplement_record_path(output, group, world, name, seed):
+    return Path(output) / SUPPLEMENT / "records" / group / world / f"{name}--seed{seed}.json"
+
+
+def load_supplement_eval(output, group, world):
+    payload = torch.load(supplement_eval_path(output, group, world), map_location="cpu", weights_only=True)
+    if (payload.get("schema") != SCHEMA_SUPPLEMENT_EVAL or payload.get("plan_identity") != IDENTITY
+            or (payload["group"], payload["world"]) != (group, world)):
+        raise ValueError(f"supplement anchors {group}/{world} binding differ")
+    return payload
+
+
+def share_supplement(output):
+    """Roll the frozen policies out on the supplement levels for their request schedules: the #110
+    anchor carriers (handoff-hashed encoder and scene head), the handoff-hashed worlds, the frozen
+    policies (hash-bound to their training reports), deterministic_scoring(), zero engine seconds.
+    Writes only under supplement/ (its own ledger); existing files are kept, never rewritten."""
+    output = Path(output)
+    load_plan(output)
+    if not (output / "summary.json").is_file():
+        raise ValueError("the supplement follows the frozen publication")
+    h = heavy()
+    root = output / SUPPLEMENT
+    for group in supplement_groups():
+        for world in worlds_of(group):
+            path = supplement_eval_path(output, group, world)
+            if path.is_file():
+                continue
+            began = time.monotonic()
+            with torch.no_grad(), h.harness.deterministic_scoring() as scoring_policy:
+                payload = eval_anchors(output, group, world, supplement_levels(group))
+            atomic_torch(path, {"schema": SCHEMA_SUPPLEMENT_EVAL, "plan_identity": IDENTITY, "group": group,
+                                "world": world, "scoring_policy": scoring_policy, **payload})
+            wall = time.monotonic() - began
+            write_json(root / "ledger" / f"anchors-{group}-{world}.json",
+                       {"wall_seconds": wall, "gpu_seconds": wall, "at": utc_now()})
+            log(f"supplement anchors {group}/{world}: {len(payload['levels'])} levels")
+    loaded = {}
+    for group, world, name, seed in supplement_tasks():
+        path = supplement_record_path(output, group, world, name, seed)
+        if path.is_file():
+            continue
+        condition = condition_of(world, group_level(group))
+        began = time.monotonic()
+        with h.harness.deterministic_scoring() as scoring_policy:
+            if (condition, seed) not in loaded:
+                loaded.clear()
+                torch.cuda.empty_cache()
+                loaded[(condition, seed)] = load_world(condition, seed)
+            record = score_record(output, group, world, name, seed, loaded[(condition, seed)], scoring_policy,
+                                  store=load_supplement_eval(output, group, world), levels=supplement_levels(group),
+                                  schema=SCHEMA_SUPPLEMENT_RECORD)
+        write_json(path, record)
+        wall = time.monotonic() - began
+        write_json(root / "ledger" / f"score-{group}-{world}-{name}-seed{seed}.json",
+                   {"wall_seconds": wall, "gpu_seconds": wall, "at": utc_now()})
+        log(f"supplement {group}/{world}/{name}/{seed} ({wall:.1f}s)")
+    write_json(root / "manifest.json", supplement_manifest(output))
+    return 0
+
+
+def read_supplement(output, group, world, name, seed):
+    record = read_json(supplement_record_path(output, group, world, name, seed))
+    if (record.get("schema") != SCHEMA_SUPPLEMENT_RECORD or record.get("plan_identity") != IDENTITY
+            or (record["group"], record["world"], record["arm"], record["seed"]) != (group, world, name, seed)):
+        raise ValueError(f"supplement record {group}/{world}/{name}/{seed} binding differs")
+    return record
+
+
+def load_supplement(output):
+    return {t: read_supplement(output, *t) for t in supplement_tasks()}
+
+
+def supplement_manifest(output):
+    output = Path(output)
+    files = sorted((output / SUPPLEMENT).glob("records/**/*.json")) + sorted((output / SUPPLEMENT).glob("data/*.pt"))
+    return {"schema": SCHEMA_SUPPLEMENT_MANIFEST, "identity": IDENTITY,
+            "files": {str(p.relative_to(output)): sha256_of(p) for p in files}}
 
 
 # ---------------------------------------------------------------------------
@@ -1055,15 +1180,16 @@ def level_shares(record, level):
     return [c / total for c in counts] if total else None
 
 
-def share_rows(records, group):
-    """(level, seed) -> {policy key: share vector} over every evaluation level of the group."""
+def share_rows(records, group, levels=None):
+    """(level, seed) -> {policy key: share vector} over every evaluation level of the group (``levels``:
+    the frozen scope's by default); arms without a record (no such policy) are skipped."""
     out = []
-    for level, meta in eval_levels(group).items():
+    for level, meta in (eval_levels(group) if levels is None else levels).items():
         for seed in SEEDS:
             shares = {}
             for world in worlds_of(group):
                 for name in names_of(group, world):
-                    if name in FIXED_ARMS:
+                    if name in FIXED_ARMS or (group, world, name, seed) not in records:
                         continue
                     shares[view_key(world, name)] = level_shares(records[(group, world, name, seed)], level)
             out.append({"member": level, "seed": seed, "cell": meta["cell"], "meta": meta, "shares": shares})
@@ -1144,6 +1270,45 @@ def share_tables(records):
         keys = ("zs:J", "zs:J_dec") if cell_level(cell) == 0 else POLICY_KEYS
         out["cells"][cell] = {key: share_block(population, key, None if cell_level(cell) == 0
                                                else ref_for(key.split(":")[1])) for key in keys}
+    return out
+
+
+SUPPLEMENT_LABEL = (
+    "post-freeze DESCRIPTIVE supplement (phase-A review F2), outcome-free: request shares of the frozen policies on "
+    "every #110-supported cell. The frozen scope's records give the in-scope cells; the supported cells the frozen "
+    "scope excluded (no mixed-verdict level, or rollout-error only; all of level 8) were rolled out after the "
+    "publication with the same frozen policies, worlds and anchor rule, zero engine seconds, under "
+    "deterministic_scoring(), for request shares only (supplement/). No verdict is read, no AUC, contrast or token is "
+    "formed, and the frozen tables, scope and dispositions are unchanged. Policy-only and both-retuned policies "
+    "exist only for the levels the frozen scope trained them on (1-7)")
+
+
+def supplement_share_tables(records, supplement):
+    """Request shares on every supported cell: in-scope cells from the retained records, the other
+    supported cells from the supplement records; per cell, per novelty level and pooled novel 1-8."""
+    rows = {g: share_rows(records, g) for g in groups() if g != "n1"}
+    for g in supplement_groups():
+        rows[g] = rows.get(g, []) + share_rows(supplement, g, supplement_levels(g))
+    reference = normal_reference(rows["L0"])
+
+    def ref_for(kind):
+        return lambda r: reference.get((r["meta"]["pair"], r["meta"]["ordinal"], r["seed"], f"zs:{kind}"))
+
+    def blocks(population, normal):
+        if normal:
+            return {key: share_block(population, key) for key in ("zs:J", "zs:J_dec")}
+        return {key: share_block(population, key, ref_for(key.split(":")[1])) for key in POLICY_KEYS}
+
+    names = sorted(rows, key=group_level)
+    excluded = set(supplement_cells())
+    out = {"label": SUPPLEMENT_LABEL, "levels": {}, "cells": {},
+           "source": {cell: "supplement" if cell in excluded else "retained" for cell in handoff()["supported_cells"]}}
+    for name in names:
+        out["levels"][name] = blocks(rows[name], group_level(name) == 0)
+    out["levels"]["novel"] = blocks([r for name in names if group_level(name) for r in rows[name]], False)
+    for cell in handoff()["supported_cells"]:
+        population = [r for r in rows[f"L{cell_level(cell)}"] if r["cell"] == cell]
+        out["cells"][cell] = blocks(population, cell_level(cell) == 0)
     return out
 
 
@@ -1263,6 +1428,16 @@ def adaptation_cost(output):
                       for kind in KINDS}}
 
 
+def invalidate(obj):
+    """A failed guard turns every token into readiness_or_precision_insufficient (frozen guards.failure);
+    estimates, AUCs and shares are kept."""
+    if isinstance(obj, dict):
+        return {k: STOP_TOKEN if k == "token" else invalidate(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [invalidate(v) for v in obj]
+    return obj
+
+
 def disposition(populations, cost, guards_ok):
     """Pre-declared: 'request selection is a cheap adaptation surface under novelty' on the pooled
     novel levels, J_dec primary (J secondary, same rule)."""
@@ -1353,6 +1528,12 @@ def compute_tables(output, plan):
     cost = adaptation_cost(output)
     guards = guard_checks(output, plan, records, training)
     guards_ok = all(g["pass"] for g in guards.values())
+    dispositions = disposition(populations, cost, guards_ok)
+    wrong = wrong_tables(records)
+    if not guards_ok:  # frozen guards.failure: every token, not only the disposition
+        populations, cells, wrong = invalidate(populations), invalidate(cells), invalidate(wrong)
+    supplement = load_supplement(output)
+    supplement_ledger = [read_json(p) for p in sorted((output / SUPPLEMENT / "ledger").glob("*.json"))]
     phases = ledger_phases(output)
     smoke = read_json(output / "smoke.json")
     all_phases = {"smoke": {"wall_seconds": smoke["wall_seconds"], "gpu_seconds": smoke["wall_seconds"]},
@@ -1369,10 +1550,15 @@ def compute_tables(output, plan):
         "scope": tokens_scope, "groups": {g: {"levels": len(eval_levels(g)),
                                               "mixed_levels": sum(mixed(m) for m in eval_levels(g).values())}
                                           for g in groups()},
-        "guards": guards, "disposition": disposition(populations, cost, guards_ok),
+        "guards": guards, "disposition": dispositions,
         "populations": populations, "cells": cells,
         "shares": share_tables(records), "issue101_reference": issue101_reference(),
-        "wrong_anchor": wrong_tables(records), "training": training, "adaptation_cost": cost,
+        "shares_supported_cells": {
+            **supplement_share_tables(records, supplement),
+            "records": len(supplement), "manifest": SUPPLEMENT_MANIFEST,
+            "compute": {"gpu_seconds": sum(b["gpu_seconds"] for b in supplement_ledger),
+                        "wall_seconds": sum(b["wall_seconds"] for b in supplement_ledger), "engine_seconds": 0}},
+        "wrong_anchor": wrong, "training": training, "adaptation_cost": cost,
         "typed_failures": sorted(f"{g}/{w}/{n}/{s}" for (g, w, n, s), r in records.items() if r["typed_failure"]),
         "compute": {"stages": dict(sorted(stage.items())),
                     "gpu_seconds": sum(b["gpu_seconds"] for b in all_phases.values()),
@@ -1561,6 +1747,37 @@ def findings_md(plan, compute):
             add(f"| {population_label(name)} | {key} | " + " | ".join(signed_pct(x) for x in b["delta_shift"]) + " | "
                 + " | ".join(signed_pct(x) for x in b["alpha_shift"]) + " |")
     add("")
+    s = compute["shares_supported_cells"]
+    add("## Request shares on every supported cell (post-freeze DESCRIPTIVE supplement)")
+    add("")
+    add(f"{s['label']}. {s['records']} supplement records, {s['compute']['gpu_seconds']:.0f} GPU s, 0 engine s; "
+        f"hashes in `{s['manifest']}`. Horizon (Delta 1 / 5 / 15) and description (continuous / micro / macro) "
+        "marginals, % of rollout steps; shift vs the same kind's normal policy on the paired normal side.")
+    add("")
+    add("| novelty type | arm | units | Delta 1 | Delta 5 | Delta 15 | continuous | micro | macro | TV shift vs paired "
+        "normal | moves toward | moves away |")
+    add("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+    for name, blocks in s["levels"].items():
+        for key, b in blocks.items():
+            if b is None:
+                continue
+            label = "novel 1-8 pooled (every supported cell)" if name == "novel" else population_label(name)
+            add(f"| {label} | {key} | {b['units']} | " + " | ".join(pct(x) for x in b["delta_shares"]) + " | "
+                + " | ".join(pct(x) for x in b["alpha_shares"]) + f" | {iv(b.get('total_variation'), 2)} | "
+                f"{', '.join(b.get('moves_toward', [])) or '-'} | {', '.join(b.get('moves_away', [])) or '-'} |")
+    add("")
+    add("Per cell, zero-shot J_dec and J (source: retained frozen-scope records or the supplement):")
+    add("")
+    add("| cell | source | arm | Delta 1 | Delta 5 | Delta 15 | continuous | micro | macro |")
+    add("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+    for cell, blocks in s["cells"].items():
+        for key in ("zs:J_dec", "zs:J"):
+            b = blocks.get(key)
+            if b is None:
+                continue
+            add(f"| {cell} | {s['source'][cell]} | {key} | " + " | ".join(pct(x) for x in b["delta_shares"]) + " | "
+                + " | ".join(pct(x) for x in b["alpha_shares"]) + " |")
+    add("")
     add("## Wrong-anchor control (right - wrong anchor AUC)")
     add("")
     add("| population | " + " | ".join(POLICY_KEYS) + " |")
@@ -1622,7 +1839,14 @@ def summary(plan, compute):
                               if "few_shot" in p else {})}
                     for name, p in pops.items()},
             "compute": {k: compute["compute"][k] for k in ("gpu_seconds", "wall_seconds", "engine_seconds")},
-            "typed_failures": compute["typed_failures"]}
+            "typed_failures": compute["typed_failures"],
+            "shares_supported_cells": {
+                "label": compute["shares_supported_cells"]["label"],
+                "source": compute["shares_supported_cells"]["source"],
+                "levels": {name: {key: {"delta": [b["mean"] for b in v["delta_shares"]],
+                                        "alpha": [b["mean"] for b in v["alpha_shares"]]}
+                                  for key, v in blocks.items() if v is not None}
+                           for name, blocks in compute["shares_supported_cells"]["levels"].items()}}}
 
 
 def rendered(plan, compute):
@@ -2012,7 +2236,7 @@ def load_plan(output):
     if not plan.get("frozen_before_training_and_scoring") or not plan["smoke_evidence"].get("ok"):
         raise ValueError("plan.json does not declare a passed-smoke freeze")
     for entry in plan["inputs"]:
-        if sha256_of(ROOT / entry["artifact"]) != entry["sha256"]:
+        if not amendments.matches(entry["artifact"], entry["sha256"], sha256_of(ROOT / entry["artifact"])):
             raise ValueError(f"frozen input {entry['name']} changed after the freeze")
     return plan
 
@@ -2052,7 +2276,8 @@ def publish(output):
 
 
 def spot_checks(output):
-    """Re-score two records in this process (exact rows and schedules) and re-parse two prefix shots."""
+    """Re-score two records and one request-share supplement record in this process (exact rows and
+    schedules) and re-parse two prefix shots."""
     h = heavy()
     k = max(novel_levels(), key=lambda k: sum(mixed(m) for m in eval_levels(f"L{k}").values()))
     seed = SEEDS[0]
@@ -2066,6 +2291,17 @@ def spot_checks(output):
                    and fresh["levels"][lv].get("schedules") == record["levels"][lv].get("schedules")
                    for lv in record["levels"])
         out.append({"record": f"{group}/{world}/{name}/{seed}", "pass": bool(same)})
+    group, world, name = "L8", "fs", "N-dec"  # a storm cell, few-shot world: request-share supplement
+    record = read_supplement(output, group, world, name, seed)
+    with h.harness.deterministic_scoring() as scoring_policy:
+        model = load_world(condition_of(world, 8), seed)
+        fresh = score_record(output, group, world, name, seed, model, scoring_policy,
+                             store=load_supplement_eval(output, group, world), levels=supplement_levels(group),
+                             schema=SCHEMA_SUPPLEMENT_RECORD)
+    out.append({"supplement": f"{group}/{world}/{name}/{seed}",
+                "pass": all(fresh["levels"][lv]["rows"] == record["levels"][lv]["rows"]
+                            and fresh["levels"][lv]["schedules"] == record["levels"][lv]["schedules"]
+                            for lv in record["levels"])})
     tasks = shot_tasks()
     with torch.no_grad():
         encoder, scene_head = zero_world_parsers()
@@ -2081,6 +2317,8 @@ def validate(output):
     plan = load_plan(output)
     if read_json(output / "records-manifest.json") != record_manifest(output):
         raise ValueError("raw records differ from records-manifest.json")
+    if read_json(output / SUPPLEMENT_MANIFEST) != supplement_manifest(output):
+        raise ValueError(f"request-share supplement files differ from {SUPPLEMENT_MANIFEST}")
     compute = compute_tables(output, plan)
     for name, text in rendered(plan, compute).items():
         if (output / name).read_bytes() != text.encode():
@@ -2101,8 +2339,8 @@ def dry_run(output):
 
 
 MODES = {"dry-run": dry_run, "smoke": smoke, "prepare": prepare, "data": data, "assemble": assemble,
-         "train-normal": train_normal, "train-fewshot": train_fewshot, "score": score, "publish": publish,
-         "validate": validate}
+         "train-normal": train_normal, "train-fewshot": train_fewshot, "score": score,
+         "share-supplement": share_supplement, "publish": publish, "validate": validate}
 SHARDED = ("data", "train-normal", "train-fewshot", "score")
 
 

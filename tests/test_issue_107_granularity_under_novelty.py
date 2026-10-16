@@ -110,3 +110,44 @@ def test_disposition_rule():
     assert g.disposition(flat, cheap, True)["J_dec"]["token"] == "not_supported_by_this_experiment"
     wide = populations(block(0.03, -0.01, 0.07), block(0.0, -0.01, 0.01))
     assert g.disposition(wide, cheap, True)["J_dec"]["token"] == g.STOP_TOKEN
+
+
+def test_a_failed_guard_turns_every_token_insufficient():
+    populations = {"novel": {"zero_shot": {"contrasts": {"J_dec - prior": {"token": "supported", "mean": 0.1}}},
+                             "few_shot": {"contrasts": {"J: both - predictor": {"token": "not_supported_by_this_experiment"}}}}}
+    wrong = {"L6": {"zs:J_dec": {"right_minus_wrong": {"mean": 0.2}, "token": "supported"}}}
+    out = g.invalidate({"populations": populations, "wrong": wrong, "cells": [{"token": "supported"}]})
+    assert out["populations"]["novel"]["zero_shot"]["contrasts"]["J_dec - prior"] == {"token": g.STOP_TOKEN, "mean": 0.1}
+    assert out["populations"]["novel"]["few_shot"]["contrasts"]["J: both - predictor"]["token"] == g.STOP_TOKEN
+    assert out["wrong"]["L6"]["zs:J_dec"] == {"right_minus_wrong": {"mean": 0.2}, "token": g.STOP_TOKEN}
+    assert out["cells"] == [{"token": g.STOP_TOKEN}]
+
+
+def test_share_rows_skip_arms_without_a_record():
+    rle = g.heavy().t96.rle
+    meta = {"cell": "8/falling", "pair": "p", "ordinal": 1}
+    seed = g.SEEDS[0]
+    records = {("L8", "zs", "N-dec", s): {"typed_failure": None, "levels": {"lv": {"schedules": {"0": rle([8, 8])}}}}
+               for s in g.SEEDS}
+    rows = g.share_rows(records, "L8", {"lv": meta})
+    assert len(rows) == len(g.SEEDS)
+    assert rows[0]["seed"] == seed and set(rows[0]["shares"]) == {"zs:J_dec"}
+    assert rows[0]["shares"]["zs:J_dec"][8] == 1.0
+
+
+def test_request_share_supplement_scope():
+    """Supplement: the supported cells the frozen scope excluded, frozen policies only (no fixed arm),
+    retuned policies only on levels that have them; the frozen scope is unchanged."""
+    from pathlib import Path
+    if not Path(g.HANDOFF).is_file():
+        pytest.skip("#110 handoff not present")
+    supplement, scope = set(g.supplement_cells()), set(g.in_scope_cells())
+    assert not supplement & scope and supplement | scope == set(g.handoff()["supported_cells"])
+    assert len(supplement) == 16 and {c for c in supplement if c.startswith("8/")} == {
+        f"8/{s}" for s in ("falling", "multiple_forces", "rolling", "single_force", "sliding")}
+    tasks = g.supplement_tasks()
+    assert not any(name in g.FIXED_ARMS for _, _, name, _ in tasks)
+    assert not any(group == "L8" and not name.startswith("N-") for group, _, name, _ in tasks)
+    assert {(w, n) for grp, w, n, _ in tasks if grp == "L3"} == {
+        ("zs", "N-pe"), ("zs", "N-dec"), ("zs", "P-pe"), ("zs", "P-dec"),
+        ("fs", "N-pe"), ("fs", "N-dec"), ("fs", "B-pe"), ("fs", "B-dec")}
