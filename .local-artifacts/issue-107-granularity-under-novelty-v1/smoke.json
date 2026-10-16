@@ -1,0 +1,632 @@
+{
+  "accounting": {
+    "fewshot_pools": {
+      "1": {
+        "levels": 40,
+        "shots": 640
+      },
+      "2": {
+        "levels": 39,
+        "shots": 624
+      },
+      "3": {
+        "levels": 40,
+        "shots": 640
+      },
+      "4": {
+        "levels": 40,
+        "shots": 631
+      },
+      "5": {
+        "levels": 40,
+        "shots": 640
+      },
+      "6": {
+        "levels": 40,
+        "shots": 640
+      },
+      "7": {
+        "levels": 40,
+        "shots": 640
+      }
+    },
+    "groups": {
+      "L0": {
+        "levels": 256,
+        "mixed_levels": 135
+      },
+      "L1": {
+        "levels": 32,
+        "mixed_levels": 20
+      },
+      "L2": {
+        "levels": 31,
+        "mixed_levels": 17
+      },
+      "L3": {
+        "levels": 16,
+        "mixed_levels": 6
+      },
+      "L4": {
+        "levels": 24,
+        "mixed_levels": 18
+      },
+      "L5": {
+        "levels": 32,
+        "mixed_levels": 17
+      },
+      "L6": {
+        "levels": 32,
+        "mixed_levels": 22
+      },
+      "L7": {
+        "levels": 32,
+        "mixed_levels": 22
+      },
+      "n1": {
+        "levels": 400,
+        "mixed_levels": 311
+      }
+    },
+    "in_scope_cells": [
+      "0/single_force",
+      "0/rolling",
+      "0/falling",
+      "0/sliding",
+      "1/single_force",
+      "1/rolling",
+      "1/falling",
+      "1/sliding",
+      "2/single_force",
+      "2/rolling",
+      "2/falling",
+      "2/sliding",
+      "3/rolling",
+      "3/falling",
+      "4/single_force",
+      "4/rolling",
+      "4/falling",
+      "5/single_force",
+      "5/rolling",
+      "5/falling",
+      "5/sliding",
+      "6/single_force",
+      "6/rolling",
+      "6/falling",
+      "6/sliding",
+      "7/single_force",
+      "7/rolling",
+      "7/falling",
+      "7/sliding"
+    ],
+    "novel_levels": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "novel_levels_total": 199,
+    "novel_levels_with_paired_normal": 199,
+    "policy_pool": {
+      "branches": 3480,
+      "cell_levels": 108,
+      "complete": 3480,
+      "disjoint_from_fit_and_evaluation": true,
+      "levels": 120,
+      "mixed_cells": {
+        "angle": 73,
+        "grid": 94
+      },
+      "pig_removed": 199,
+      "typed_failures": []
+    }
+  },
+  "at": "2026-10-16T02:46:31Z",
+  "checks": {
+    "fixed_equals_110_rollout": true,
+    "handoff_inventories_equal": true,
+    "handoff_mixed_levels_equal": true,
+    "handoff_predictors_usable": true,
+    "module_sha256": "sha256:34fbce1e66532e3501b372bf6ed4bb1a496619a9a6accbdc066358933a01042c",
+    "normal_labels_finite": true,
+    "pig_columns": true,
+    "policy_actions_equal": true,
+    "prefix_replication": true,
+    "prior_grid_ordinal_one_to_one": true,
+    "prior_mirrored_ordinals": true,
+    "private_module_equals_101_module": true,
+    "v2_policy_input_width": true
+  },
+  "fewshot_labels": {
+    "dec-0": {
+      "finite": true,
+      "rows": 480
+    },
+    "dec-1": {
+      "finite": true,
+      "rows": 6990
+    },
+    "pe-0": {
+      "finite": true,
+      "rows": 1920
+    },
+    "pe-1": {
+      "finite": true,
+      "rows": 1920
+    }
+  },
+  "fewshot_smoke": {
+    "cells": 2,
+    "level": 7,
+    "levels": [
+      "issue-110-fit-type010701-novel-001",
+      "issue-110-fit-type010701-novel-002"
+    ]
+  },
+  "identity": "issue-107-granularity-under-novelty-v1",
+  "in_sample": {
+    "auc_mean": 0.3833333333333333,
+    "cells": 2,
+    "mean_macs_per_candidate": 23769600.0,
+    "pair_counts": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      435,
+      0,
+      0
+    ]
+  },
+  "labels": {
+    "dec-0": {
+      "label_counts": [
+        0,
+        0,
+        0,
+        5,
+        0,
+        8,
+        382,
+        2,
+        38
+      ],
+      "rows": 435,
+      "seconds": 0.27276762295514345
+    },
+    "dec-1": {
+      "label_counts": [
+        0,
+        0,
+        0,
+        13,
+        0,
+        2,
+        318,
+        2,
+        100
+      ],
+      "rows": 435,
+      "seconds": 0.21092034177854657
+    },
+    "pe-0": {
+      "label_counts": [
+        119,
+        42,
+        679,
+        40,
+        69,
+        668,
+        67,
+        43,
+        13
+      ],
+      "rows": 1740,
+      "seconds": 0.4407073559705168
+    },
+    "pe-1": {
+      "label_counts": [
+        351,
+        48,
+        509,
+        50,
+        64,
+        593,
+        74,
+        39,
+        12
+      ],
+      "rows": 1740,
+      "seconds": 0.5682230340316892
+    }
+  },
+  "ok": true,
+  "prefix_replication": {
+    "pass": true,
+    "samples": [
+      {
+        "condition": "zero-shot",
+        "end": 285,
+        "equal": true,
+        "key": "issue-110-fit-type010101-normal-001-c00",
+        "max_abs": 0.0,
+        "positions": 64
+      },
+      {
+        "condition": "zero-shot",
+        "end": 285,
+        "equal": true,
+        "key": "issue-110-fit-type010101-novel-001-c00",
+        "max_abs": 0.0,
+        "positions": 64
+      },
+      {
+        "condition": "few-shot-1",
+        "end": 285,
+        "equal": true,
+        "key": "issue-110-fit-type010101-novel-001-c01",
+        "max_abs": 0.0,
+        "positions": 64
+      },
+      {
+        "condition": "few-shot-7",
+        "end": 285,
+        "equal": true,
+        "key": "issue-110-fit-type010701-novel-001-c00",
+        "max_abs": 0.0,
+        "positions": 64
+      }
+    ]
+  },
+  "projection": {
+    "data_gpu_seconds": 799.2046438388783,
+    "elapsed_hours_on_4_gpus": 1.033899619486345,
+    "fewshot_training_gpu_seconds": 4984.045259885425,
+    "normal_training_gpu_seconds": 755.8183173125144,
+    "scoring_blocks": 37170,
+    "scoring_gpu_seconds": 8349.086299566552,
+    "total_gpu_seconds": 14888.15452060337
+  },
+  "schema": "issue_107_smoke_v1",
+  "scope": {
+    "0/falling": {
+      "evaluation_levels": 64,
+      "in_scope": true,
+      "mixed_levels": 37,
+      "reason": null,
+      "token": null
+    },
+    "0/multiple_forces": {
+      "evaluation_levels": 64,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs)",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "0/rolling": {
+      "evaluation_levels": 64,
+      "in_scope": true,
+      "mixed_levels": 33,
+      "reason": null,
+      "token": null
+    },
+    "0/single_force": {
+      "evaluation_levels": 64,
+      "in_scope": true,
+      "mixed_levels": 26,
+      "reason": null,
+      "token": null
+    },
+    "0/sliding": {
+      "evaluation_levels": 64,
+      "in_scope": true,
+      "mixed_levels": 39,
+      "reason": null,
+      "token": null
+    },
+    "1/falling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 3,
+      "reason": null,
+      "token": null
+    },
+    "1/multiple_forces": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs)",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "1/rolling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 4,
+      "reason": null,
+      "token": null
+    },
+    "1/single_force": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 5,
+      "reason": null,
+      "token": null
+    },
+    "1/sliding": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 8,
+      "reason": null,
+      "token": null
+    },
+    "2/falling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 8,
+      "reason": null,
+      "token": null
+    },
+    "2/multiple_forces": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs)",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "2/rolling": {
+      "evaluation_levels": 7,
+      "in_scope": true,
+      "mixed_levels": 4,
+      "reason": null,
+      "token": null
+    },
+    "2/single_force": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 1,
+      "reason": null,
+      "token": null
+    },
+    "2/sliding": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 4,
+      "reason": null,
+      "token": null
+    },
+    "3/falling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 2,
+      "reason": null,
+      "token": null
+    },
+    "3/multiple_forces": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs)",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "3/rolling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 4,
+      "reason": null,
+      "token": null
+    },
+    "3/single_force": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "no_mixed_verdict_evaluation_level: no decision headroom on the evaluation grid",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "3/sliding": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "no_mixed_verdict_evaluation_level: no decision headroom on the evaluation grid",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "4/falling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 2,
+      "reason": null,
+      "token": null
+    },
+    "4/multiple_forces": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs)",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "4/rolling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 8,
+      "reason": null,
+      "token": null
+    },
+    "4/single_force": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 8,
+      "reason": null,
+      "token": null
+    },
+    "4/sliding": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "no_mixed_verdict_evaluation_level: no decision headroom on the evaluation grid",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "5/falling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 6,
+      "reason": null,
+      "token": null
+    },
+    "5/multiple_forces": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs)",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "5/rolling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 5,
+      "reason": null,
+      "token": null
+    },
+    "5/single_force": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 2,
+      "reason": null,
+      "token": null
+    },
+    "5/sliding": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 4,
+      "reason": null,
+      "token": null
+    },
+    "6/falling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 6,
+      "reason": null,
+      "token": null
+    },
+    "6/multiple_forces": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs)",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "6/rolling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 3,
+      "reason": null,
+      "token": null
+    },
+    "6/single_force": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 7,
+      "reason": null,
+      "token": null
+    },
+    "6/sliding": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 6,
+      "reason": null,
+      "token": null
+    },
+    "7/falling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 8,
+      "reason": null,
+      "token": null
+    },
+    "7/multiple_forces": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs)",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "7/rolling": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 5,
+      "reason": null,
+      "token": null
+    },
+    "7/single_force": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 6,
+      "reason": null,
+      "token": null
+    },
+    "7/sliding": {
+      "evaluation_levels": 8,
+      "in_scope": true,
+      "mixed_levels": 3,
+      "reason": null,
+      "token": null
+    },
+    "8/falling": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "no_mixed_verdict_evaluation_level: no decision headroom on the evaluation grid",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "8/multiple_forces": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs)",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "8/rolling": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "no_mixed_verdict_evaluation_level: no decision headroom on the evaluation grid",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "8/single_force": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "no_mixed_verdict_evaluation_level: no decision headroom on the evaluation grid",
+      "token": "readiness_or_precision_insufficient"
+    },
+    "8/sliding": {
+      "evaluation_levels": 8,
+      "in_scope": false,
+      "mixed_levels": 0,
+      "reason": "no_mixed_verdict_evaluation_level: no decision headroom on the evaluation grid",
+      "token": "readiness_or_precision_insufficient"
+    }
+  },
+  "timings": {
+    "dec_distil_seconds_per_step": 0.0007028866481656829,
+    "dec_round0_seconds_per_cell": 0.13638381147757173,
+    "dec_round1_seconds_per_cell": 0.10546017088927329,
+    "fixed_1_block_seconds": 0.14809237397275865,
+    "in_sample_seconds_per_cell": 0.01502238493412733,
+    "joint_block_seconds": 0.22461894806474447,
+    "pe_distil_seconds_per_step": 0.012566645451200505,
+    "pe_round0_seconds_per_window": 0.015196805378293684,
+    "pe_round1_seconds_per_window": 0.01959389772523066,
+    "policy_shot_parse_seconds": 0.20598057830898925,
+    "prefix_parse_seconds": [
+      0.3695020289160311,
+      0.17863554297946393,
+      0.35278150206431746,
+      0.1978154859971255
+    ]
+  },
+  "wall_seconds": 18.099008389981464
+}
