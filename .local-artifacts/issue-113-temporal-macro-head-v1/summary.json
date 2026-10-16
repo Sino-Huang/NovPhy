@@ -1,0 +1,777 @@
+{
+  "engine_seconds": 0,
+  "frozen_at": "2026-10-16T13:54:57Z",
+  "grouped_leave_out": {
+    "K1-mix0|engine|all": {
+      "estimate": 0.084806,
+      "interval": [
+        0.079257,
+        0.090065
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K1-mix0|predicted|all": {
+      "estimate": 0.018767,
+      "interval": [
+        0.016236,
+        0.021403
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K1-mix50|engine|all": {
+      "estimate": 0.076328,
+      "interval": [
+        0.070656,
+        0.082259
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K1-mix50|predicted|all": {
+      "estimate": 0.080101,
+      "interval": [
+        0.075667,
+        0.084544
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K2-mix0|engine|all": {
+      "estimate": 0.108392,
+      "interval": [
+        0.104653,
+        0.112179
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K2-mix0|predicted|all": {
+      "estimate": 0.014645,
+      "interval": [
+        0.01369,
+        0.015638
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K2-mix50|engine|all": {
+      "estimate": 0.099303,
+      "interval": [
+        0.095844,
+        0.102892
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K2-mix50|predicted|all": {
+      "estimate": 0.083117,
+      "interval": [
+        0.078231,
+        0.088022
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K3-mix0|engine|all": {
+      "estimate": 0.158405,
+      "interval": [
+        0.152804,
+        0.163988
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K3-mix0|predicted|all": {
+      "estimate": 0.013915,
+      "interval": [
+        0.013,
+        0.014881
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K3-mix50|engine|all": {
+      "estimate": 0.139254,
+      "interval": [
+        0.134606,
+        0.143837
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K3-mix50|predicted|all": {
+      "estimate": 0.095897,
+      "interval": [
+        0.090916,
+        0.101004
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K4-mix0|engine|all": {
+      "estimate": 0.194375,
+      "interval": [
+        0.187893,
+        0.200949
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K4-mix0|predicted|all": {
+      "estimate": 0.014461,
+      "interval": [
+        0.013352,
+        0.015745
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K4-mix50|engine|all": {
+      "estimate": 0.164793,
+      "interval": [
+        0.158894,
+        0.170602
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "K4-mix50|predicted|all": {
+      "estimate": 0.117206,
+      "interval": [
+        0.110628,
+        0.123795
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "as_is|engine|all": {
+      "estimate": 0.0,
+      "interval": [
+        0.0,
+        0.0
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    },
+    "as_is|predicted|all": {
+      "estimate": 0.0,
+      "interval": [
+        0.0,
+        0.0
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+    }
+  },
+  "guards": {
+    "G1_carrier_replication": true,
+    "G2_gate_b_checkpoints": true,
+    "G3_evaluation_isolation": true,
+    "G4_frame_alignment": true,
+    "G5_deterministic_rescore": true,
+    "G6_finite": true,
+    "G7_compute_caps": true
+  },
+  "guards_pass": true,
+  "heldout": {
+    "as_is|engine|all": {
+      "macro_f1": {
+        "estimate": 1.5e-05,
+        "interval": [
+          0.0,
+          4.6e-05
+        ],
+        "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+      },
+      "settle|1": {
+        "estimate": 3.1e-05,
+        "interval": [
+          0.0,
+          8.6e-05
+        ]
+      },
+      "settle|15": {
+        "estimate": 3.7e-05,
+        "interval": [
+          0.0,
+          0.000118
+        ]
+      },
+      "settle|5": {
+        "estimate": 2.4e-05,
+        "interval": [
+          0.0,
+          7.8e-05
+        ]
+      },
+      "structure-change|1": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "structure-change|15": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "structure-change|5": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "as_is|predicted|all": {
+      "macro_f1": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ],
+        "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+      },
+      "settle|1": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "settle|15": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "settle|5": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "structure-change|1": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "structure-change|15": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "structure-change|5": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "as_is|rollout|all": {
+      "macro_f1": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ],
+        "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+      },
+      "settle|1": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "settle|15": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "settle|5": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "structure-change|1": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "structure-change|15": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "structure-change|5": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "single|engine|all": {
+      "macro_f1": {
+        "estimate": 0.082095,
+        "interval": [
+          0.077749,
+          0.086854
+        ],
+        "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+      },
+      "settle|1": {
+        "estimate": 0.069786,
+        "interval": [
+          0.065801,
+          0.074293
+        ]
+      },
+      "settle|15": {
+        "estimate": 0.073073,
+        "interval": [
+          0.070784,
+          0.075361
+        ]
+      },
+      "settle|5": {
+        "estimate": 0.064662,
+        "interval": [
+          0.060639,
+          0.069575
+        ]
+      },
+      "structure-change|1": {
+        "estimate": 0.034355,
+        "interval": [
+          0.028526,
+          0.042232
+        ]
+      },
+      "structure-change|15": {
+        "estimate": 0.166883,
+        "interval": [
+          0.156349,
+          0.17696
+        ]
+      },
+      "structure-change|5": {
+        "estimate": 0.083813,
+        "interval": [
+          0.071193,
+          0.098329
+        ]
+      }
+    },
+    "single|predicted|all": {
+      "macro_f1": {
+        "estimate": 0.074703,
+        "interval": [
+          0.06985,
+          0.079845
+        ],
+        "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+      },
+      "settle|1": {
+        "estimate": 0.064674,
+        "interval": [
+          0.059328,
+          0.070282
+        ]
+      },
+      "settle|15": {
+        "estimate": 0.047296,
+        "interval": [
+          0.041952,
+          0.052962
+        ]
+      },
+      "settle|5": {
+        "estimate": 0.061554,
+        "interval": [
+          0.054987,
+          0.068373
+        ]
+      },
+      "structure-change|1": {
+        "estimate": 0.047925,
+        "interval": [
+          0.042661,
+          0.053685
+        ]
+      },
+      "structure-change|15": {
+        "estimate": 0.115601,
+        "interval": [
+          0.104893,
+          0.126671
+        ]
+      },
+      "structure-change|5": {
+        "estimate": 0.111169,
+        "interval": [
+          0.100154,
+          0.122841
+        ]
+      }
+    },
+    "single|rollout|all": {
+      "macro_f1": {
+        "estimate": 0.017824,
+        "interval": [
+          0.016872,
+          0.018853
+        ],
+        "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+      },
+      "settle|1": {
+        "estimate": 0.010263,
+        "interval": [
+          0.009568,
+          0.010973
+        ]
+      },
+      "settle|15": {
+        "estimate": 0.008994,
+        "interval": [
+          0.007894,
+          0.010104
+        ]
+      },
+      "settle|5": {
+        "estimate": 0.015001,
+        "interval": [
+          0.013601,
+          0.016469
+        ]
+      },
+      "structure-change|1": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "structure-change|15": {
+        "estimate": 0.056988,
+        "interval": [
+          0.052773,
+          0.061471
+        ]
+      },
+      "structure-change|5": {
+        "estimate": 0.015696,
+        "interval": [
+          0.013987,
+          0.017419
+        ]
+      }
+    },
+    "temporal|engine|all": {
+      "macro_f1": {
+        "estimate": 0.157424,
+        "interval": [
+          0.151118,
+          0.163564
+        ],
+        "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+      },
+      "settle|1": {
+        "estimate": 0.086467,
+        "interval": [
+          0.082192,
+          0.090897
+        ]
+      },
+      "settle|15": {
+        "estimate": 0.226426,
+        "interval": [
+          0.20687,
+          0.245929
+        ]
+      },
+      "settle|5": {
+        "estimate": 0.145467,
+        "interval": [
+          0.133544,
+          0.157376
+        ]
+      },
+      "structure-change|1": {
+        "estimate": 0.049824,
+        "interval": [
+          0.046112,
+          0.053245
+        ]
+      },
+      "structure-change|15": {
+        "estimate": 0.266297,
+        "interval": [
+          0.253922,
+          0.278167
+        ]
+      },
+      "structure-change|5": {
+        "estimate": 0.170062,
+        "interval": [
+          0.159776,
+          0.179894
+        ]
+      }
+    },
+    "temporal|predicted|all": {
+      "macro_f1": {
+        "estimate": 0.112786,
+        "interval": [
+          0.106588,
+          0.119286
+        ],
+        "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+      },
+      "settle|1": {
+        "estimate": 0.06922,
+        "interval": [
+          0.062737,
+          0.075917
+        ]
+      },
+      "settle|15": {
+        "estimate": 0.148578,
+        "interval": [
+          0.129606,
+          0.169426
+        ]
+      },
+      "settle|5": {
+        "estimate": 0.07081,
+        "interval": [
+          0.064199,
+          0.077851
+        ]
+      },
+      "structure-change|1": {
+        "estimate": 0.052392,
+        "interval": [
+          0.04743,
+          0.057533
+        ]
+      },
+      "structure-change|15": {
+        "estimate": 0.195563,
+        "interval": [
+          0.181919,
+          0.209
+        ]
+      },
+      "structure-change|5": {
+        "estimate": 0.140151,
+        "interval": [
+          0.127771,
+          0.152623
+        ]
+      }
+    },
+    "temporal|rollout|all": {
+      "macro_f1": {
+        "estimate": 0.014662,
+        "interval": [
+          0.013879,
+          0.015488
+        ],
+        "label": "DESCRIPTIVE level-clustered percentile bootstrap"
+      },
+      "settle|1": {
+        "estimate": 0.0,
+        "interval": [
+          0.0,
+          0.0
+        ]
+      },
+      "settle|15": {
+        "estimate": 0.009154,
+        "interval": [
+          0.008293,
+          0.010057
+        ]
+      },
+      "settle|5": {
+        "estimate": 0.007418,
+        "interval": [
+          0.006256,
+          0.008654
+        ]
+      },
+      "structure-change|1": {
+        "estimate": 8.8e-05,
+        "interval": [
+          3.4e-05,
+          0.000158
+        ]
+      },
+      "structure-change|15": {
+        "estimate": 0.05019,
+        "interval": [
+          0.047242,
+          0.053357
+        ]
+      },
+      "structure-change|5": {
+        "estimate": 0.021122,
+        "interval": [
+          0.019412,
+          0.022899
+        ]
+      }
+    }
+  },
+  "heldout_contrasts": {
+    "single-as_is|engine": {
+      "estimate": 0.08208,
+      "interval": [
+        0.077735,
+        0.086825
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap",
+      "margin": 0.05,
+      "meaning": "label effect (same single-frame architecture)",
+      "token": "supported"
+    },
+    "single-as_is|predicted": {
+      "estimate": 0.074703,
+      "interval": [
+        0.06985,
+        0.079845
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap",
+      "margin": 0.05,
+      "meaning": "label effect (same single-frame architecture)",
+      "token": "supported"
+    },
+    "single-as_is|rollout": {
+      "estimate": 0.017824,
+      "interval": [
+        0.016872,
+        0.018853
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap",
+      "margin": 0.05,
+      "meaning": "label effect (same single-frame architecture)",
+      "token": null
+    },
+    "temporal-as_is|engine": {
+      "estimate": 0.157409,
+      "interval": [
+        0.151103,
+        0.163542
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap",
+      "margin": 0.05,
+      "meaning": "temporal head - current head (Acceptance 3/4)",
+      "token": "supported"
+    },
+    "temporal-as_is|predicted": {
+      "estimate": 0.112786,
+      "interval": [
+        0.106588,
+        0.119286
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap",
+      "margin": 0.05,
+      "meaning": "temporal head - current head (Acceptance 3/4)",
+      "token": "supported"
+    },
+    "temporal-as_is|rollout": {
+      "estimate": 0.014662,
+      "interval": [
+        0.013879,
+        0.015488
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap",
+      "margin": 0.05,
+      "meaning": "temporal head - current head (Acceptance 3/4)",
+      "token": null
+    },
+    "temporal-single|engine": {
+      "estimate": 0.075329,
+      "interval": [
+        0.068491,
+        0.081739
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap",
+      "margin": 0.05,
+      "meaning": "temporal-context effect (same labels, same width)",
+      "token": "supported"
+    },
+    "temporal-single|predicted": {
+      "estimate": 0.038083,
+      "interval": [
+        0.033973,
+        0.042133
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap",
+      "margin": 0.05,
+      "meaning": "temporal-context effect (same labels, same width)",
+      "token": "not_supported_by_this_experiment"
+    },
+    "temporal-single|rollout": {
+      "estimate": -0.003162,
+      "interval": [
+        -0.004007,
+        -0.00234
+      ],
+      "label": "DESCRIPTIVE level-clustered percentile bootstrap",
+      "margin": 0.05,
+      "meaning": "temporal-context effect (same labels, same width)",
+      "token": null
+    }
+  },
+  "identity": "issue-113-temporal-macro-head-v1",
+  "item4_readout_target": "macro F1 per redefined predicate on the #104 held-out split (#109 evaluation stream): the held-out rows of this summary; temporal head, engine source = teacher-forced",
+  "schema": "issue_113_temporal_head_summary_v1",
+  "selected": {
+    "single": "K1-mix50",
+    "temporal": "K4-mix50"
+  },
+  "thresholds": {
+    "as_is": 0.5,
+    "single": {
+      "engine": {
+        "settle|1": 0.8,
+        "settle|15": 0.9,
+        "settle|5": 0.8,
+        "structure-change|1": 0.7,
+        "structure-change|15": 0.7,
+        "structure-change|5": 0.7
+      },
+      "predicted": {
+        "settle|1": 0.7,
+        "settle|15": 0.8,
+        "settle|5": 0.8,
+        "structure-change|1": 0.9,
+        "structure-change|15": 0.8,
+        "structure-change|5": 0.9
+      }
+    },
+    "temporal": {
+      "engine": {
+        "settle|1": 0.8,
+        "settle|15": 0.7,
+        "settle|5": 0.8,
+        "structure-change|1": 0.7,
+        "structure-change|15": 0.9,
+        "structure-change|5": 0.9
+      },
+      "predicted": {
+        "settle|1": 0.8,
+        "settle|15": 0.9,
+        "settle|5": 0.8,
+        "structure-change|1": 0.9,
+        "structure-change|15": 0.9,
+        "structure-change|5": 0.9
+      }
+    }
+  }
+}
