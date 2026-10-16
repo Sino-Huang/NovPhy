@@ -67,3 +67,11 @@ def test_episode_view_pass_at_k():
     view = cl.episode_view({"shots": shots, "outcome": "passed"}, {"pass_shot": 2})
     assert (view["pass1"], view["pass2"], view["pass3"]) == (0.0, 1.0, 1.0)
     assert view["shots_to_pass"] == 2.0 and view["replay_differs"] == 0.0
+
+
+def test_validate_detects_a_changed_smoke(tmp_path):
+    (tmp_path / "smoke.json").write_text("{}")
+    plan = {"smoke": {"path": "smoke.json", "sha256": cl.sha256_of(tmp_path / "smoke.json")}}
+    assert cl.smoke_matches(tmp_path, plan)
+    (tmp_path / "smoke.json").write_text("{} ")
+    assert not cl.smoke_matches(tmp_path, plan)

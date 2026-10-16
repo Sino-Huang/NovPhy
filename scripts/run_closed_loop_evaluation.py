@@ -1738,6 +1738,11 @@ def load_plan(output):
     return plan
 
 
+def smoke_matches(output, plan):
+    """smoke.json still has the bytes the frozen plan pinned (phase-A review B4)."""
+    return sha256_of(Path(output) / plan["smoke"]["path"]) == plan["smoke"]["sha256"]
+
+
 def prepare(output):
     output = Path(output)
     if (output / "plan.json").is_file():
@@ -1892,6 +1897,8 @@ def validate(output):
     compute = compute_tables(ctx, plan)
     problems = [name for name, text in rendered(ctx, plan, compute).items()
                 if not (output / name).is_file() or (output / name).read_text() != text]
+    if not smoke_matches(output, plan):
+        problems.append("smoke.json differs from the hash pinned in plan.json")
     decisions, verdicts = load_decisions(ctx), load_verdicts(output)
     eps = episodes(ctx, decisions, verdicts)
     gallery_path = ctx["gallery"] / "manifest.json"
