@@ -5,11 +5,11 @@ Parent: #108. Gate B passed. The binding #85 rules apply, and the #111 determini
 | Deliverable | Location |
 | --- | --- |
 | Runner | `scripts/run_engine_truth_frontier.py` |
-| Tests | `tests/test_issue_103_engine_truth_frontier.py` (Pareto set, batched Pareto against brute force, cluster means, bootstrap frontier shares; 6 tests) |
+| Tests | `tests/test_issue_103_engine_truth_frontier.py` (Pareto set, batched Pareto against brute force, cluster means, bootstrap frontier shares, frozen vs post-hoc wall axis, confirmatory tables equal the first publication; 8 tests) |
 | Artifacts | `.local-artifacts/issue-103-engine-truth-frontier-v1/`. Committed: `findings.md`, `frontier-table.csv`, `frontier-primary.png`, `frontier-secondary.png`, `frontier-inventories.png`, `compute.json`, `summary.json`, `manifest.json`, `plan.json`, `smoke.json`, `ledger/`, `superseded/`. Kept local: `records/` (274 new records, 79 MB). |
 | Freeze | `74d6006e`, 2026-10-14T15:00:15Z. The smoke passed before any new scoring. |
-| Post-freeze amendment | Wall axis only (§ Amendment). |
-| Validation | `python -u -m scripts.run_engine_truth_frontier --validate` exits 0 (47 s). All 8 published files, figures included, are regenerated and byte-compared. J and C-J (λ 1e-4) are re-scored on every secondary cell of seed 20260908, with exactly equal rows and schedules. |
+| Post-freeze amendment | Three-seed re-timing of the wall axis. It is post-hoc DESCRIPTIVE only; the confirmatory wall axis is the frozen seed-20260908 pass (§ Amendment). |
+| Validation | `python -u -m scripts.run_engine_truth_frontier --validate` exits 0. All 8 published files, figures included, are regenerated and byte-compared. J and C-J (λ 1e-4) are re-scored on every secondary cell of seed 20260908, with exactly equal rows and schedules. |
 | MANUSCRIPT ticket | #122 |
 
 ## Result
@@ -25,12 +25,13 @@ On engine verdicts, with the transferred ICLR operating recipe (λ = 1e-4 for bo
 | Primary grid (311 levels × 3 seeds) | J | C-J (horizon-only adaptive, C*) | Ratio / difference |
 | --- | --- | --- | --- |
 | Linear MACs per candidate-state | 184.0M | 234.7M | **0.784** (the rule needs ≤ 0.40) |
-| Wall seconds per state (uniform timing) | 0.138 | 0.085 | 1.63 |
+| Wall seconds per state (frozen timing pass, seed 20260908) | 0.242 | 0.014 | 16.74 |
+| Wall seconds per state (post-hoc three-seed re-timing, DESCRIPTIVE) | 0.138 | 0.085 | 1.63 |
 | Tie-free AUC | 0.706 [0.685, 0.727] | 0.700 [0.683, 0.717] | J − C-J **+0.006 [0.000, 0.012]** |
 
 **"Matches" holds; "at a third of its compute" does not.**
 - J is non-inferior at δ: the lower bound is above −0.02. The positive difference is below δ, so it is not a win.
-- J costs 0.78× C-J's MACs, not a third. C-J is also faster per state in wall time.
+- J costs 0.78× C-J's MACs, not a third. C-J is also faster per state in wall time, on the frozen timing pass (ratio 16.74, seed 20260908 only) and on the post-hoc three-seed re-timing (1.63). The seed-20260908 C-J policy makes far fewer transition calls than the pooled one, so the frozen wall ratio describes that seed. The token uses MACs and is unaffected.
 - The declared secondary set agrees: #93 grid MAC ratio 0.786, J − C-J +0.022 [−0.004, 0.052].
 
 **Both operating points are off the frontier.**
@@ -56,9 +57,9 @@ MANUSCRIPT ticket **#122** asks for the sentence to be replaced in the camera-re
 | Secondary offset / angle / power | See `findings.md`. Each frontier contains F-15-continuous and the prior, plus 1 to 4 adaptive or fixed points. |
 
 Other axis pairs on the primary grid:
-- AUC × wall: {prior, C-F-15}.
+- AUC × wall (frozen seed-20260908 timing): {prior, C-F-15}. The post-hoc three-seed re-timing gives the same set.
 - Top-3 × MACs: {prior, F-15-continuous}.
-- Top-3 × wall: {prior, F-15-continuous, C-F-15, VLWM-15}.
+- Top-3 × wall (frozen seed-20260908 timing): {prior, F-15-continuous, C-F-15}. The post-hoc three-seed re-timing adds VLWM-15 (DESCRIPTIVE).
 
 ![primary frontier](../.local-artifacts/issue-103-engine-truth-frontier-v1/frontier-primary.png)
 
@@ -77,78 +78,78 @@ How to read the frontier:
 
 Each dominated policy names its strongest dominator: the policy with the highest AUC among those with no more MACs. The paired dominator − policy difference is member-clustered, with its δ token. The share is the fraction of bootstrap draws in which the policy is on the frontier. A `not_supported_by_this_experiment` or `readiness_or_precision_insufficient` token means the point dominance has no AUC margin of at least δ behind it.
 
-| Policy | AUC | Top-3 | MACs | Wall s/state | Tied pairs | Share | Verdict |
+| Policy | AUC | Top-3 | MACs | Wall s/state (frozen seed 20260908) | Tied pairs | Share | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | F-1-continuous | 0.677 [0.655, 0.699] | 0.433 [0.388, 0.479] | 322.3M | 0.147 | 0/18945 | 0.00 | dominated by C-F-15 (+0.106 [+0.091, +0.122], `supported`) |
-| F-1-micro | 0.650 [0.628, 0.672] | 0.422 [0.378, 0.468] | 404.0M | 0.190 | 0/18945 | 0.00 | dominated by C-F-15 (+0.133 [+0.115, +0.151], `supported`) |
-| F-1-macro | 0.666 [0.643, 0.689] | 0.444 [0.389, 0.498] | 329.6M | 0.164 | 0/18945 | 0.00 | dominated by C-F-15 (+0.117 [+0.103, +0.133], `supported`) |
+| F-1-micro | 0.650 [0.628, 0.672] | 0.422 [0.378, 0.468] | 404.0M | 0.187 | 0/18945 | 0.00 | dominated by C-F-15 (+0.133 [+0.115, +0.151], `supported`) |
+| F-1-macro | 0.666 [0.643, 0.689] | 0.444 [0.389, 0.498] | 329.6M | 0.165 | 0/18945 | 0.00 | dominated by C-F-15 (+0.117 [+0.103, +0.133], `supported`) |
 | F-5-continuous | 0.749 [0.729, 0.768] | 0.586 [0.537, 0.637] | 64.5M | 0.030 | 0/18945 | 0.00 | dominated by C-F-15 (+0.035 [+0.026, +0.044], `supported`) |
 | F-5-micro | 0.745 [0.725, 0.764] | 0.566 [0.520, 0.614] | 80.8M | 0.037 | 0/18945 | 0.00 | dominated by C-F-15 (+0.039 [+0.030, +0.048], `supported`) |
 | F-5-macro | 0.743 [0.724, 0.762] | 0.535 [0.488, 0.584] | 65.9M | 0.033 | 0/18945 | 0.00 | dominated by C-F-15 (+0.041 [+0.034, +0.048], `supported`) |
 | F-15-continuous | 0.762 [0.743, 0.781] | 0.618 [0.572, 0.667] | 21.5M | 0.010 | 0/18945 | 1.00 | **on the frontier** |
 | F-15-micro | 0.760 [0.741, 0.779] | 0.593 [0.547, 0.641] | 26.9M | 0.013 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.010 [+0.007, +0.013], `not_supported_by_this_experiment`) |
 | F-15-macro (Gate-B unit) | 0.744 [0.727, 0.762] | 0.549 [0.505, 0.594] | 22.0M | 0.011 | 0/18945 | 0.00 | dominated by F-15-continuous (+0.018 [+0.012, +0.024], `readiness_or_precision_insufficient`) |
-| C-F-1 | 0.632 [0.614, 0.649] | 0.353 [0.328, 0.378] | 416.7M | 0.112 | 0/18945 | 0.00 | dominated by C-F-15 (+0.152 [+0.136, +0.168], `supported`) |
-| C-F-5 | 0.691 [0.676, 0.706] | 0.448 [0.415, 0.481] | 83.3M | 0.022 | 0/18945 | 0.00 | dominated by C-F-15 (+0.092 [+0.084, +0.101], `supported`) |
+| C-F-1 | 0.632 [0.614, 0.649] | 0.353 [0.328, 0.378] | 416.7M | 0.113 | 0/18945 | 0.00 | dominated by C-F-15 (+0.152 [+0.136, +0.168], `supported`) |
+| C-F-5 | 0.691 [0.676, 0.706] | 0.448 [0.415, 0.481] | 83.3M | 0.023 | 0/18945 | 0.00 | dominated by C-F-15 (+0.092 [+0.084, +0.101], `supported`) |
 | C-F-15 (C*) | 0.783 [0.768, 0.799] | 0.602 [0.562, 0.643] | 27.8M | 0.008 | 0/18945 | 1.00 | **on the frontier** |
-| C-J λ 1e-5 | 0.726 [0.710, 0.742] | 0.493 [0.457, 0.531] | 48.0M | 0.020 | 0/18945 | 0.00 | dominated by C-F-15 (+0.058 [+0.049, +0.067], `supported`) |
-| C-J λ 1e-4 | 0.700 [0.683, 0.717] | 0.447 [0.415, 0.480] | 234.7M | 0.085 | 0/18945 | 0.00 | dominated by C-F-15 (+0.083 [+0.073, +0.094], `supported`) |
-| C-J λ 3e-4 | 0.711 [0.694, 0.729] | 0.475 [0.438, 0.512] | 245.7M | 0.086 | 0/18945 | 0.00 | dominated by C-F-15 (+0.072 [+0.061, +0.083], `supported`) |
-| C-J λ 1e-3 | 0.693 [0.677, 0.710] | 0.493 [0.456, 0.531] | 172.9M | 0.062 | 0/18945 | 0.00 | dominated by C-F-15 (+0.090 [+0.079, +0.102], `supported`) |
-| C-J λ 3e-3 | 0.682 [0.667, 0.696] | 0.445 [0.413, 0.478] | 82.2M | 0.039 | 0/18945 | 0.00 | dominated by C-F-15 (+0.102 [+0.092, +0.111], `supported`) |
-| C-J λ 1e-2 | 0.712 [0.698, 0.726] | 0.496 [0.461, 0.532] | 49.6M | 0.024 | 0/18945 | 0.00 | dominated by C-F-15 (+0.071 [+0.063, +0.080], `supported`) |
-| C-J λ 3e-2 | 0.690 [0.677, 0.703] | 0.433 [0.400, 0.467] | 45.2M | 0.018 | 0/18945 | 0.00 | dominated by C-F-15 (+0.094 [+0.084, +0.103], `supported`) |
-| C-J λ 1e-1 | 0.697 [0.683, 0.711] | 0.476 [0.440, 0.511] | 44.2M | 0.018 | 0/18945 | 0.00 | dominated by C-F-15 (+0.086 [+0.077, +0.095], `supported`) |
-| J λ 1e-5 | 0.704 [0.684, 0.724] | 0.507 [0.464, 0.551] | 181.2M | 0.113 | 0/18945 | 0.00 | dominated by C-F-15 (+0.079 [+0.070, +0.089], `supported`) |
-| J λ 1e-4 (ICLR) | 0.706 [0.685, 0.727] | 0.510 [0.462, 0.561] | 184.0M | 0.138 | 0/18945 | 0.00 | dominated by C-F-15 (+0.078 [+0.066, +0.090], `supported`) |
-| J λ 3e-4 | 0.713 [0.692, 0.734] | 0.520 [0.474, 0.568] | 85.5M | 0.080 | 0/18945 | 0.00 | dominated by C-F-15 (+0.070 [+0.059, +0.082], `supported`) |
-| J λ 1e-3 | 0.734 [0.714, 0.755] | 0.588 [0.541, 0.638] | 34.4M | 0.022 | 0/18945 | 0.00 | dominated by C-F-15 (+0.049 [+0.039, +0.060], `supported`) |
-| J λ 3e-3 | 0.725 [0.705, 0.745] | 0.563 [0.519, 0.608] | 33.6M | 0.022 | 0/18945 | 0.00 | dominated by C-F-15 (+0.058 [+0.047, +0.069], `supported`) |
-| J λ 1e-2 | 0.713 [0.693, 0.733] | 0.520 [0.478, 0.563] | 49.5M | 0.043 | 0/18945 | 0.00 | dominated by C-F-15 (+0.070 [+0.058, +0.083], `supported`) |
-| J λ 3e-2 | 0.746 [0.727, 0.764] | 0.571 [0.527, 0.615] | 25.2M | 0.016 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.024 [+0.020, +0.028], `supported`) |
+| C-J λ 1e-5 | 0.726 [0.710, 0.742] | 0.493 [0.457, 0.531] | 48.0M | 0.015 | 0/18945 | 0.00 | dominated by C-F-15 (+0.058 [+0.049, +0.067], `supported`) |
+| C-J λ 1e-4 | 0.700 [0.683, 0.717] | 0.447 [0.415, 0.480] | 234.7M | 0.014 | 0/18945 | 0.00 | dominated by C-F-15 (+0.083 [+0.073, +0.094], `supported`) |
+| C-J λ 3e-4 | 0.711 [0.694, 0.729] | 0.475 [0.438, 0.512] | 245.7M | 0.014 | 0/18945 | 0.00 | dominated by C-F-15 (+0.072 [+0.061, +0.083], `supported`) |
+| C-J λ 1e-3 | 0.693 [0.677, 0.710] | 0.493 [0.456, 0.531] | 172.9M | 0.014 | 0/18945 | 0.00 | dominated by C-F-15 (+0.090 [+0.079, +0.102], `supported`) |
+| C-J λ 3e-3 | 0.682 [0.667, 0.696] | 0.445 [0.413, 0.478] | 82.2M | 0.014 | 0/18945 | 0.00 | dominated by C-F-15 (+0.102 [+0.092, +0.111], `supported`) |
+| C-J λ 1e-2 | 0.712 [0.698, 0.726] | 0.496 [0.461, 0.532] | 49.6M | 0.011 | 0/18945 | 0.00 | dominated by C-F-15 (+0.071 [+0.063, +0.080], `supported`) |
+| C-J λ 3e-2 | 0.690 [0.677, 0.703] | 0.433 [0.400, 0.467] | 45.2M | 0.011 | 0/18945 | 0.00 | dominated by C-F-15 (+0.094 [+0.084, +0.103], `supported`) |
+| C-J λ 1e-1 | 0.697 [0.683, 0.711] | 0.476 [0.440, 0.511] | 44.2M | 0.011 | 0/18945 | 0.00 | dominated by C-F-15 (+0.086 [+0.077, +0.095], `supported`) |
+| J λ 1e-5 | 0.704 [0.684, 0.724] | 0.507 [0.464, 0.551] | 181.2M | 0.183 | 0/18945 | 0.00 | dominated by C-F-15 (+0.079 [+0.070, +0.089], `supported`) |
+| J λ 1e-4 (ICLR) | 0.706 [0.685, 0.727] | 0.510 [0.462, 0.561] | 184.0M | 0.242 | 0/18945 | 0.00 | dominated by C-F-15 (+0.078 [+0.066, +0.090], `supported`) |
+| J λ 3e-4 | 0.713 [0.692, 0.734] | 0.520 [0.474, 0.568] | 85.5M | 0.028 | 0/18945 | 0.00 | dominated by C-F-15 (+0.070 [+0.059, +0.082], `supported`) |
+| J λ 1e-3 | 0.734 [0.714, 0.755] | 0.588 [0.541, 0.638] | 34.4M | 0.021 | 0/18945 | 0.00 | dominated by C-F-15 (+0.049 [+0.039, +0.060], `supported`) |
+| J λ 3e-3 | 0.725 [0.705, 0.745] | 0.563 [0.519, 0.608] | 33.6M | 0.021 | 0/18945 | 0.00 | dominated by C-F-15 (+0.058 [+0.047, +0.069], `supported`) |
+| J λ 1e-2 | 0.713 [0.693, 0.733] | 0.520 [0.478, 0.563] | 49.5M | 0.035 | 0/18945 | 0.00 | dominated by C-F-15 (+0.070 [+0.058, +0.083], `supported`) |
+| J λ 3e-2 | 0.746 [0.727, 0.764] | 0.571 [0.527, 0.615] | 25.2M | 0.017 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.024 [+0.020, +0.028], `supported`) |
 | J λ 1e-1 | 0.770 [0.751, 0.788] | 0.606 [0.559, 0.654] | 22.1M | 0.013 | 0/18945 | 1.00 | **on the frontier** |
-| J-cont λ 1e-5 | 0.688 [0.666, 0.709] | 0.467 [0.423, 0.513] | 118.1M | 0.076 | 0/18945 | 0.00 | dominated by C-F-15 (+0.096 [+0.084, +0.108], `supported`) |
-| J-cont λ 1e-4 | 0.686 [0.665, 0.706] | 0.466 [0.422, 0.512] | 122.7M | 0.084 | 0/18945 | 0.00 | dominated by C-F-15 (+0.098 [+0.085, +0.111], `supported`) |
-| J-cont λ 3e-4 | 0.686 [0.665, 0.707] | 0.452 [0.409, 0.496] | 80.3M | 0.080 | 0/18945 | 0.00 | dominated by C-F-15 (+0.098 [+0.085, +0.110], `supported`) |
-| J-cont λ 1e-3 | 0.687 [0.666, 0.709] | 0.488 [0.442, 0.535] | 91.9M | 0.083 | 0/18945 | 0.00 | dominated by C-F-15 (+0.096 [+0.083, +0.110], `supported`) |
-| J-cont λ 3e-3 | 0.691 [0.670, 0.711] | 0.483 [0.439, 0.528] | 71.5M | 0.068 | 0/18945 | 0.00 | dominated by C-F-15 (+0.093 [+0.081, +0.105], `supported`) |
-| J-cont λ 1e-2 | 0.698 [0.676, 0.719] | 0.514 [0.471, 0.561] | 33.1M | 0.022 | 0/18945 | 0.00 | dominated by C-F-15 (+0.086 [+0.074, +0.098], `supported`) |
-| J-cont λ 3e-2 | 0.757 [0.738, 0.776] | 0.588 [0.540, 0.639] | 35.3M | 0.021 | 0/18945 | 0.00 | dominated by C-F-15 (+0.026 [+0.018, +0.034], `supported`) |
+| J-cont λ 1e-5 | 0.688 [0.666, 0.709] | 0.467 [0.423, 0.513] | 118.1M | 0.033 | 0/18945 | 0.00 | dominated by C-F-15 (+0.096 [+0.084, +0.108], `supported`) |
+| J-cont λ 1e-4 | 0.686 [0.665, 0.706] | 0.466 [0.422, 0.512] | 122.7M | 0.048 | 0/18945 | 0.00 | dominated by C-F-15 (+0.098 [+0.085, +0.111], `supported`) |
+| J-cont λ 3e-4 | 0.686 [0.665, 0.707] | 0.452 [0.409, 0.496] | 80.3M | 0.053 | 0/18945 | 0.00 | dominated by C-F-15 (+0.098 [+0.085, +0.110], `supported`) |
+| J-cont λ 1e-3 | 0.687 [0.666, 0.709] | 0.488 [0.442, 0.535] | 91.9M | 0.038 | 0/18945 | 0.00 | dominated by C-F-15 (+0.096 [+0.083, +0.110], `supported`) |
+| J-cont λ 3e-3 | 0.691 [0.670, 0.711] | 0.483 [0.439, 0.528] | 71.5M | 0.021 | 0/18945 | 0.00 | dominated by C-F-15 (+0.093 [+0.081, +0.105], `supported`) |
+| J-cont λ 1e-2 | 0.698 [0.676, 0.719] | 0.514 [0.471, 0.561] | 33.1M | 0.029 | 0/18945 | 0.00 | dominated by C-F-15 (+0.086 [+0.074, +0.098], `supported`) |
+| J-cont λ 3e-2 | 0.757 [0.738, 0.776] | 0.588 [0.540, 0.639] | 35.3M | 0.037 | 0/18945 | 0.00 | dominated by C-F-15 (+0.026 [+0.018, +0.034], `supported`) |
 | J-cont λ 1e-1 | 0.757 [0.738, 0.776] | 0.615 [0.568, 0.663] | 22.1M | 0.013 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.013 [+0.010, +0.016], `not_supported_by_this_experiment`) |
-| T-continuous | 0.702 [0.681, 0.724] | 0.535 [0.491, 0.581] | 196.1M | 0.125 | 0/18945 | 0.00 | dominated by C-F-15 (+0.081 [+0.068, +0.094], `supported`) |
-| T-micro | 0.704 [0.683, 0.726] | 0.495 [0.448, 0.543] | 167.1M | 0.105 | 0/18945 | 0.00 | dominated by C-F-15 (+0.079 [+0.066, +0.092], `supported`) |
-| T-macro | 0.678 [0.655, 0.700] | 0.463 [0.411, 0.517] | 280.0M | 0.193 | 0/18945 | 0.00 | dominated by C-F-15 (+0.106 [+0.092, +0.120], `supported`) |
-| D-1 | 0.685 [0.663, 0.707] | 0.436 [0.384, 0.490] | 343.0M | 0.260 | 0/18945 | 0.00 | dominated by C-F-15 (+0.098 [+0.084, +0.113], `supported`) |
-| D-5 | 0.738 [0.719, 0.757] | 0.550 [0.505, 0.596] | 73.6M | 0.055 | 0/18945 | 0.00 | dominated by C-F-15 (+0.046 [+0.036, +0.056], `supported`) |
+| T-continuous | 0.702 [0.681, 0.724] | 0.535 [0.491, 0.581] | 196.1M | 0.139 | 0/18945 | 0.00 | dominated by C-F-15 (+0.081 [+0.068, +0.094], `supported`) |
+| T-micro | 0.704 [0.683, 0.726] | 0.495 [0.448, 0.543] | 167.1M | 0.251 | 0/18945 | 0.00 | dominated by C-F-15 (+0.079 [+0.066, +0.092], `supported`) |
+| T-macro | 0.678 [0.655, 0.700] | 0.463 [0.411, 0.517] | 280.0M | 0.150 | 0/18945 | 0.00 | dominated by C-F-15 (+0.106 [+0.092, +0.120], `supported`) |
+| D-1 | 0.685 [0.663, 0.707] | 0.436 [0.384, 0.490] | 343.0M | 0.303 | 0/18945 | 0.00 | dominated by C-F-15 (+0.098 [+0.084, +0.113], `supported`) |
+| D-5 | 0.738 [0.719, 0.757] | 0.550 [0.505, 0.596] | 73.6M | 0.056 | 0/18945 | 0.00 | dominated by C-F-15 (+0.046 [+0.036, +0.056], `supported`) |
 | D-15 | 0.762 [0.743, 0.780] | 0.592 [0.544, 0.641] | 25.5M | 0.017 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.008 [+0.005, +0.011], `not_supported_by_this_experiment`) |
-| J_dec λ 1e-4 | 0.681 [0.662, 0.700] | 0.398 [0.358, 0.439] | 46.3M | 0.047 | 0/18945 | 0.00 | dominated by C-F-15 (+0.103 [+0.090, +0.116], `supported`) |
-| J_dec λ 1e-3 | 0.690 [0.671, 0.709] | 0.406 [0.365, 0.447] | 39.3M | 0.039 | 0/18945 | 0.00 | dominated by C-F-15 (+0.094 [+0.082, +0.106], `supported`) |
-| J_dec λ 1e-2 | 0.706 [0.686, 0.726] | 0.496 [0.458, 0.534] | 47.4M | 0.048 | 0/18945 | 0.00 | dominated by C-F-15 (+0.077 [+0.067, +0.088], `supported`) |
-| J_dec λ 1e-1 (#101 J_dec) | 0.746 [0.728, 0.764] | 0.576 [0.531, 0.622] | 22.7M | 0.016 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.024 [+0.021, +0.027], `supported`) |
-| J_pg λ 1e-4 | 0.764 [0.745, 0.783] | 0.594 [0.544, 0.644] | 45.2M | 0.025 | 0/18945 | 0.00 | dominated by C-F-15 (+0.019 [+0.012, +0.026], `readiness_or_precision_insufficient`) |
+| J_dec λ 1e-4 | 0.681 [0.662, 0.700] | 0.398 [0.358, 0.439] | 46.3M | 0.041 | 0/18945 | 0.00 | dominated by C-F-15 (+0.103 [+0.090, +0.116], `supported`) |
+| J_dec λ 1e-3 | 0.690 [0.671, 0.709] | 0.406 [0.365, 0.447] | 39.3M | 0.041 | 0/18945 | 0.00 | dominated by C-F-15 (+0.094 [+0.082, +0.106], `supported`) |
+| J_dec λ 1e-2 | 0.706 [0.686, 0.726] | 0.496 [0.458, 0.534] | 47.4M | 0.072 | 0/18945 | 0.00 | dominated by C-F-15 (+0.077 [+0.067, +0.088], `supported`) |
+| J_dec λ 1e-1 (#101 J_dec) | 0.746 [0.728, 0.764] | 0.576 [0.531, 0.622] | 22.7M | 0.013 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.024 [+0.021, +0.027], `supported`) |
+| J_pg λ 1e-4 | 0.764 [0.745, 0.783] | 0.594 [0.544, 0.644] | 45.2M | 0.037 | 0/18945 | 0.00 | dominated by C-F-15 (+0.019 [+0.012, +0.026], `readiness_or_precision_insufficient`) |
 | J_pg λ 1e-3 | 0.753 [0.734, 0.772] | 0.595 [0.549, 0.642] | 25.7M | 0.015 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.017 [+0.013, +0.021], `readiness_or_precision_insufficient`) |
 | J_pg λ 1e-2 | 0.761 [0.742, 0.780] | 0.611 [0.565, 0.658] | 22.1M | 0.013 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.009 [+0.005, +0.012], `not_supported_by_this_experiment`) |
-| J_pg λ 1e-1 (#101 J_pg) | 0.761 [0.742, 0.780] | 0.611 [0.565, 0.658] | 22.1M | 0.013 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.009 [+0.005, +0.012], `not_supported_by_this_experiment`) |
-| M-pe | 0.706 [0.685, 0.728] | 0.501 [0.451, 0.552] | 175.4M | 0.148 | 0/18945 | 0.00 | dominated by C-F-15 (+0.077 [+0.065, +0.090], `supported`) |
-| M-dec | 0.745 [0.727, 0.763] | 0.580 [0.535, 0.626] | 22.7M | 0.018 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.025 [+0.021, +0.028], `supported`) |
-| OL-pe | 0.693 [0.672, 0.715] | 0.488 [0.436, 0.540] | 185.1M | 0.093 | 0/18945 | 0.00 | dominated by C-F-15 (+0.090 [+0.078, +0.103], `supported`) |
+| J_pg λ 1e-1 (#101 J_pg) | 0.761 [0.742, 0.780] | 0.611 [0.565, 0.658] | 22.1M | 0.014 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.009 [+0.005, +0.012], `not_supported_by_this_experiment`) |
+| M-pe | 0.706 [0.685, 0.728] | 0.501 [0.451, 0.552] | 175.4M | 0.254 | 0/18945 | 0.00 | dominated by C-F-15 (+0.077 [+0.065, +0.090], `supported`) |
+| M-dec | 0.745 [0.727, 0.763] | 0.580 [0.535, 0.626] | 22.7M | 0.015 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.025 [+0.021, +0.028], `supported`) |
+| OL-pe | 0.693 [0.672, 0.715] | 0.488 [0.436, 0.540] | 185.1M | 0.147 | 0/18945 | 0.00 | dominated by C-F-15 (+0.090 [+0.078, +0.103], `supported`) |
 | OL-dec | 0.749 [0.731, 0.767] | 0.580 [0.536, 0.625] | 22.2M | 0.011 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.021 [+0.018, +0.024], `supported`) |
-| J_diag | 0.713 [0.692, 0.733] | 0.579 [0.529, 0.629] | 110.5M | 0.079 | 0/18945 | 0.00 | dominated by C-F-15 (+0.071 [+0.060, +0.082], `supported`) |
-| J_monotone | 0.703 [0.682, 0.724] | 0.492 [0.443, 0.542] | 186.7M | 0.155 | 0/18945 | 0.00 | dominated by C-F-15 (+0.080 [+0.068, +0.093], `supported`) |
-| J_anti | 0.700 [0.679, 0.721] | 0.497 [0.447, 0.549] | 221.3M | 0.157 | 0/18945 | 0.00 | dominated by C-F-15 (+0.083 [+0.072, +0.095], `supported`) |
-| J_dec_diag | 0.695 [0.679, 0.711] | 0.492 [0.458, 0.527] | 26.6M | 0.021 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.075 [+0.059, +0.091], `supported`) |
-| J_dec_monotone | 0.746 [0.728, 0.764] | 0.576 [0.531, 0.622] | 22.7M | 0.018 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.024 [+0.021, +0.027], `supported`) |
-| J_dec_anti | 0.762 [0.743, 0.781] | 0.618 [0.572, 0.667] | 22.1M | 0.015 | 0/18945 | 0.00 | dominated by F-15-continuous (+0.000 [+0.000, +0.000], `not_supported_by_this_experiment`): identical rankings, more MACs (policy calls) |
+| J_diag | 0.713 [0.692, 0.733] | 0.579 [0.529, 0.629] | 110.5M | 0.123 | 0/18945 | 0.00 | dominated by C-F-15 (+0.071 [+0.060, +0.082], `supported`) |
+| J_monotone | 0.703 [0.682, 0.724] | 0.492 [0.443, 0.542] | 186.7M | 0.269 | 0/18945 | 0.00 | dominated by C-F-15 (+0.080 [+0.068, +0.093], `supported`) |
+| J_anti | 0.700 [0.679, 0.721] | 0.497 [0.447, 0.549] | 221.3M | 0.206 | 0/18945 | 0.00 | dominated by C-F-15 (+0.083 [+0.072, +0.095], `supported`) |
+| J_dec_diag | 0.695 [0.679, 0.711] | 0.492 [0.458, 0.527] | 26.6M | 0.033 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.075 [+0.059, +0.091], `supported`) |
+| J_dec_monotone | 0.746 [0.728, 0.764] | 0.576 [0.531, 0.622] | 22.7M | 0.015 | 0/18945 | 0.00 | dominated by J-1e-01 (+0.024 [+0.021, +0.027], `supported`) |
+| J_dec_anti | 0.762 [0.743, 0.781] | 0.618 [0.572, 0.667] | 22.1M | 0.014 | 0/18945 | 0.00 | dominated by F-15-continuous (+0.000 [+0.000, +0.000], `not_supported_by_this_experiment`): identical rankings, more MACs (policy calls) |
 | H-1-continuous | 0.508 [0.495, 0.520] | 0.215 [0.190, 0.241] | 410.8M | 0.224 | 0/18945 | 0.00 | dominated by C-F-15 (+0.275 [+0.256, +0.295], `supported`) |
-| H-5-micro | 0.706 [0.688, 0.725] | 0.494 [0.449, 0.540] | 58.5M | 0.035 | 0/18945 | 0.00 | dominated by C-F-15 (+0.077 [+0.064, +0.089], `supported`) |
+| H-5-micro | 0.706 [0.688, 0.725] | 0.494 [0.449, 0.540] | 58.5M | 0.036 | 0/18945 | 0.00 | dominated by C-F-15 (+0.077 [+0.064, +0.089], `supported`) |
 | H-15-macro | 0.416 [0.402, 0.430] | 0.069 [0.054, 0.084] | 7.9M | 0.006 | 0/18945 | 0.00 | dominated by prior (+0.304 [+0.272, +0.337], `supported`) |
-| TAWM-1 | 0.459 [0.441, 0.476] | 0.133 [0.110, 0.156] | 416.7M | 0.112 | 0/18945 | 0.00 | dominated by C-F-15 (+0.325 [+0.296, +0.354], `supported`) |
+| TAWM-1 | 0.459 [0.441, 0.476] | 0.133 [0.110, 0.156] | 416.7M | 0.111 | 0/18945 | 0.00 | dominated by C-F-15 (+0.325 [+0.296, +0.354], `supported`) |
 | TAWM-5 | 0.601 [0.576, 0.626] | 0.369 [0.322, 0.416] | 83.3M | 0.022 | 0/18945 | 0.00 | dominated by C-F-15 (+0.183 [+0.163, +0.202], `supported`) |
 | TAWM-15 | 0.610 [0.585, 0.636] | 0.412 [0.357, 0.466] | 27.8M | 0.008 | 0/18945 | 0.00 | dominated by C-F-15 (+0.173 [+0.153, +0.193], `supported`) |
-| VLWM-1 | 0.448 [0.426, 0.469] | 0.140 [0.116, 0.166] | 416.7M | 0.111 | 0/18945 | 0.00 | dominated by C-F-15 (+0.335 [+0.305, +0.366], `supported`) |
+| VLWM-1 | 0.448 [0.426, 0.469] | 0.140 [0.116, 0.166] | 416.7M | 0.113 | 0/18945 | 0.00 | dominated by C-F-15 (+0.335 [+0.305, +0.366], `supported`) |
 | VLWM-5 | 0.552 [0.542, 0.562] | 0.238 [0.211, 0.266] | 83.3M | 0.023 | 0/18945 | 0.00 | dominated by C-F-15 (+0.231 [+0.215, +0.248], `supported`) |
 | VLWM-15 | 0.642 [0.619, 0.666] | 0.452 [0.401, 0.505] | 27.8M | 0.008 | 0/18945 | 0.00 | dominated by C-F-15 (+0.141 [+0.126, +0.156], `supported`) |
-| TAWM-adaptive | 0.450 [0.430, 0.469] | 0.154 [0.130, 0.180] | 236.0M | 0.088 | 0/18945 | 0.00 | dominated by C-F-15 (+0.334 [+0.304, +0.364], `supported`) |
+| TAWM-adaptive | 0.450 [0.430, 0.469] | 0.154 [0.130, 0.180] | 236.0M | 0.078 | 0/18945 | 0.00 | dominated by C-F-15 (+0.334 [+0.304, +0.364], `supported`) |
 | No-model action prior | 0.720 [0.696, 0.744] | 0.418 [0.363, 0.473] | 0 | 0 (not timed) | 42/18945 | 1.00 | **on the frontier** |
 
 Ties:
@@ -199,13 +200,13 @@ Excluded:
 
 Primary numbers come from each policy's canonical retained record. Those records score exactly these cells, anchors, predictors and policies under the #111 contract. Every policy is loaded through its source runner's hash-checked loaders and scored with that runner's own scoring block. Fidelity is checked at three levels:
 - **Smoke (pre-freeze):** all 70 policies re-scored on 5 primary cells (2 grid plus one per other inventory, seed 20260908). Rows, schedules, MACs and calls are equal.
-- **G1:** the timing pass re-scores every primary cell of every seed for every policy and matches the retained records exactly: 107,520 cells, 0 mismatches.
+- **G1 (frozen):** the seed-20260908 timing pass re-scores every primary cell for every policy and matches the retained records exactly: 35,840 cells, 0 mismatches. The post-hoc three-seed re-timing extends this check to 107,520 cells, also with 0 mismatches. That extension is reported under `posthoc_wall` and is not a guard.
 - **G2:** arms recorded by two sources are identical: 43,008 cells, 0 mismatches. The pairs are the fixed arms and C-F-15 across #101/#114/#105, the four shared J λ in #101 and #114, #105 J and J_dec against #101, and the Gate-B unit and C* against #101.
 
 `manifest.json` lists the sha256 and size of all 715 raw files the numbers come from:
 - 210 retained primary records;
 - 84 cross-check records;
-- 210 timing records;
+- 70 frozen timing records (seed 20260908) and 140 post-hoc timing records (seeds 20260909/10);
 - 204 secondary records;
 - 5 anchor stores;
 - 2 verdict sources.
@@ -221,13 +222,13 @@ Primary numbers come from each policy's canonical retained record. Those records
 
 ## Amendment and execution disclosure
 
-- **Post-freeze amendment, wall axis only** (2026-10-14T15:18Z, after the first publication).
-  - The frozen timing pass covered seed 20260908 only. Each seed is a separately trained policy, so that seed did not represent the all-seed MAC column. On grid at seed 20260908, J-1e-04 made 196 transition calls per candidate against 121 pooled, and C-J-1e-04 made 21 against 124.5. The resulting J / C-J wall ratio of 16.7 described seed 20260908, not the policies.
-  - The timing pass now covers all three seeds, in one extra 4-GPU launch that skipped existing records and overwrote nothing.
-  - Unchanged: cells, records, AUC and top-3, MACs, every MAC-axis frontier, share and verdict, and the ICLR token (its rule uses MACs).
-  - Changed: wall columns, the wall ratio, the AUC × wall and top-3 × wall frontiers, and G1 coverage. G1 grew from 35,840 to 107,520 cells.
-  - The first publication is kept in `superseded/`. The amendment text is part of `compute.json` and `findings.md`.
-  - Two renderer-only fixes followed: frontier labels are staggered, and edge colours are dropped for unfilled markers.
+- **Post-freeze timing amendment, now post-hoc DESCRIPTIVE** (2026-10-14T15:18Z, after the first publication).
+  - The frozen timing pass covered seed 20260908 only. After the first publication was seen, that seed was judged unrepresentative. Each seed is a separately trained policy, and on grid at seed 20260908 J-1e-04 made 196 transition calls per candidate against 121 pooled, and C-J-1e-04 made 21 against 124.5. The frozen J / C-J wall ratio of 16.7 therefore describes seed 20260908.
+  - The timing pass was then extended to all three seeds: 140 new timing records in one extra 4-GPU launch, which skipped existing records and overwrote nothing. These are **new data collected after the freeze**, so evidence did change on the wall axis. The binding rules allow no such post-freeze collection (standards review B0).
+  - **Restoration (phase-A review, commit `33a81126`).** The frozen seed-20260908 pass is again the confirmatory wall axis: the wall columns, the AUC × wall and top-3 × wall frontiers, the ICLR wall ratio (16.74) and G1 (35,840 cells). `compute.json` `sets`, `iclr_sentence` and G1 equal the first publication kept in `superseded/`, and a test checks this. The three-seed wall columns, wall ratio (1.63), wall frontiers and the 107,520-cell reuse check are reported only under `posthoc_wall` in `compute.json`, in `summary.json` and in the `findings.md` amendment section. They are labelled post-hoc DESCRIPTIVE and are not a confirmatory result. The post-hoc timing compute is booked separately as `timing-posthoc` in the ledger grouping.
+  - Unchanged throughout: cells, retained and secondary records, AUC and top-3, MACs, every MAC-axis frontier, share and verdict, and the ICLR token (its rule uses MACs).
+  - Renderer-only fixes after the first publication: frontier labels are staggered, and edge colours are dropped for unfilled markers.
+  - Post-freeze runner edits for the restoration are reporting only (the wall-source selection, the `posthoc_wall` block and labels, the timing roles in `manifest.json`). `load_plan` also checks the pinned #101/#114/#105 runners through `scripts/post_freeze_amendments.py`, which accepts exactly their frozen or disclosed amended bytes. No record was written or rescored.
 - **Scoring launches.** Two launches of `--score`, each on 4 GPUs with one process per GPU. PIDs are in `logs/score-pids.txt`. Both ran to completion, with no duplicate workers and no relaunch over live workers. During the first launch, a multi-PID `kill -0` wait loop returned early. A check showed that worker 0 was still alive, so it was waited on and nothing was relaunched.
 - **Known before the freeze.** Every primary AUC, MAC and recorded wall value, and the #74 table. No Gate-B-predictor policy output existed on the secondary set, and the frontier, shares, verdicts and ICLR token had not been computed.
 - **Hardware.** RTX 5090 instead of the #85 RTX 3090. Wall seconds are specific to this hardware.
