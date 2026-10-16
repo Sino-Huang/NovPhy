@@ -195,3 +195,9 @@ The worst-case projection was 7,040 executions and 23.4 h; the frozen cap was 48
 `python -u -m scripts.run_closed_loop_evaluation --validate` regenerates `compute.json`, `summary.json`, `findings.md`, `closed-loop-table.csv`, `manifest.json` and the gallery `manifest.json` from the raw records and byte-compares them. It also checks:
 - re-deciding the Gate-B unit (seed 20260908) on 20 levels reproduces the recorded row digests;
 - recomputing 12 live verdicts (pig removal, stop kind, frame and native-trace comparison) from the retained engine attempts matches the records.
+
+## Post-freeze runner edit (phase-A review)
+
+Commit `b5ac0fad` adds one validation check: `--validate` now compares `smoke.json` with the sha256 pinned in `plan.json` (`smoke_matches`). Before this, smoke.json was the only published file whose later modification `--validate` could not detect. The retained smoke.json matches its pin. No evidence changed: every published file is byte-identical, and `--validate` exits 0.
+
+The supervisor crash and resume are handled by recording 16 typed `supervisor_interrupted` failures, with no retries, plus the global G4 veto. These failures can affect the observed episode outcomes, so this handling is conservative; it does not show that the crash had no effect on the evidence.
