@@ -116,7 +116,7 @@ bound is below 0.
 
 | | J − S | J − D |
 | --- | --- | --- |
-| request mean | +0.015 [−0.001, +0.030] | −0.052 [−0.060, −0.043] |
+| request mean | +0.015 [−0.001, +0.030] | −0.051 [−0.060, −0.043] |
 | Δ = 1 | +0.140 [+0.120, +0.161] | +0.071 [+0.057, +0.085] |
 | Δ = 5 | −0.029 [−0.044, −0.014] | −0.122 [−0.136, −0.109] |
 | Δ = 15 | −0.105 [−0.122, −0.088] | −0.103 [−0.120, −0.086] |
@@ -216,3 +216,10 @@ manifest are committed.
   - NovPhy only. Item 5 (CLEVRER, Physion-Dominoes) is deferred to section (b).
   - Item 4 (mitigation probe) is not run, because item 3 found no conflict and nothing here calls for it.
   - The Gate-B recipe is unchanged.
+- **Post-freeze runner edit.** Commit `03068193` changed only `load_plan` in
+  `scripts/run_request_interference_ranking.py`. It now checks the pinned #101 runner through
+  `scripts/post_freeze_amendments.py`, which accepts exactly the frozen bytes or the disclosed #101 amendment (guard
+  propagation, record manifest and reporting). No evidence changed: every published file is byte-identical, and
+  `--validate` exits 0.
+- **Rounding correction (phase-A review).** The full-budget request-mean J − D mean was first printed as −0.052. The
+  recorded value is −0.0514602939, which is −0.051 at three decimals. The interval and the token are unchanged.
