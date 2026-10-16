@@ -1,0 +1,150 @@
+{
+  "cell": "8/rolling",
+  "engine_seconds": 0,
+  "kinds": {
+    "carrier": {
+      "1": {
+        "evaluation": {
+          "auroc": 0.4663197123923615,
+          "interval": [
+            0.0011977531802412028,
+            0.8451050324906668
+          ],
+          "levels": 8,
+          "negatives": 36284,
+          "positives": 18
+        },
+        "lolo_fit": {
+          "auroc": 0.9560971480723771,
+          "interval": [
+            0.6865878200120253,
+            0.9999434357483689
+          ],
+          "levels": 8,
+          "negatives": 36396,
+          "positives": 161
+        }
+      },
+      "15": {
+        "evaluation": {
+          "auroc": 0.6309928465561803,
+          "interval": [
+            0.003374323628803424,
+            0.8906398202271976
+          ],
+          "levels": 8,
+          "negatives": 36284,
+          "positives": 18
+        },
+        "lolo_fit": {
+          "auroc": 0.6696434117734595,
+          "interval": [
+            0.08621427281300383,
+            0.9923436580964818
+          ],
+          "levels": 8,
+          "negatives": 36396,
+          "positives": 161
+        }
+      },
+      "5": {
+        "evaluation": {
+          "auroc": 0.5052885263170789,
+          "interval": [
+            0.0024005486968449933,
+            0.8546718718869347
+          ],
+          "levels": 8,
+          "negatives": 36284,
+          "positives": 18
+        },
+        "lolo_fit": {
+          "auroc": 0.7876855282028808,
+          "interval": [
+            0.24799230073704687,
+            0.9986742770167427
+          ],
+          "levels": 8,
+          "negatives": 36396,
+          "positives": 161
+        }
+      }
+    },
+    "engine": {
+      "1": {
+        "evaluation": {
+          "auroc": 0.410586545646076,
+          "interval": [
+            0.241689130891435,
+            0.999559980199109
+          ],
+          "levels": 8,
+          "negatives": 36284,
+          "positives": 18
+        },
+        "lolo_fit": {
+          "auroc": 0.7492981789685441,
+          "interval": [
+            0.24495058040266404,
+            1.0
+          ],
+          "levels": 8,
+          "negatives": 36396,
+          "positives": 161
+        }
+      },
+      "15": {
+        "evaluation": {
+          "auroc": 0.8527136233907814,
+          "interval": [
+            0.6682073266260312,
+            0.9996835268864549
+          ],
+          "levels": 8,
+          "negatives": 36284,
+          "positives": 18
+        },
+        "lolo_fit": {
+          "auroc": 0.7445721289418877,
+          "interval": [
+            0.24541206081750688,
+            0.997201979217551
+          ],
+          "levels": 8,
+          "negatives": 36396,
+          "positives": 161
+        }
+      },
+      "5": {
+        "evaluation": {
+          "auroc": 0.4108231053785568,
+          "interval": [
+            0.24162179175575293,
+            0.999559616866674
+          ],
+          "levels": 8,
+          "negatives": 36284,
+          "positives": 18
+        },
+        "lolo_fit": {
+          "auroc": 0.745367725209036,
+          "interval": [
+            0.24453208393331757,
+            0.9994257334441232
+          ],
+          "levels": 8,
+          "negatives": 36396,
+          "positives": 161
+        }
+      }
+    }
+  },
+  "pairs": null,
+  "plan_identity": "issue-110-novelty-coverage-results-v1",
+  "schema": "issue_110_probe_record_v1",
+  "sides": [
+    "novel"
+  ],
+  "target": "storm-active",
+  "task": "8-rolling--storm-active"
+}

@@ -1,0 +1,98 @@
+{
+  "arm": "LC",
+  "family": "hybrid",
+  "gpu_seconds": 283.7968557639979,
+  "group": "few-shot-6-seed20260910",
+  "members": [
+    {
+      "complete": true,
+      "fold": "few-shot-6",
+      "retired_at": null,
+      "seed": 20260910
+    }
+  ],
+  "parameters_per_member": 2850731,
+  "peak_memory_gb": 2.146995712,
+  "plan_identity": "issue-110-novelty-coverage-results-v1",
+  "pool_sizes": [
+    {
+      "cell": 21,
+      "long": 3200,
+      "window": 10240
+    }
+  ],
+  "schema": "issue_110_v2_training_group_v1",
+  "steps": 2000,
+  "timed_seconds_per_update": null,
+  "trace": [
+    {
+      "grad_norm": [
+        1.026037335395813
+      ],
+      "horizon": 225,
+      "local": [
+        0.07553207129240036
+      ],
+      "long": [
+        0.008951057679951191
+      ],
+      "loss": [
+        0.13234864175319672
+      ],
+      "rank": [
+        0.4786550998687744
+      ],
+      "rank_weight": 0.1,
+      "retired": [
+        false
+      ],
+      "step": 900
+    },
+    {
+      "grad_norm": [
+        2.0646488666534424
+      ],
+      "horizon": 225,
+      "local": [
+        0.12455771863460541
+      ],
+      "long": [
+        0.010620431043207645
+      ],
+      "loss": [
+        0.23433326184749603
+      ],
+      "rank": [
+        0.9915511012077332
+      ],
+      "rank_weight": 0.1,
+      "retired": [
+        false
+      ],
+      "step": 1800
+    },
+    {
+      "grad_norm": [
+        9.059206008911133
+      ],
+      "horizon": 225,
+      "local": [
+        0.03716255724430084
+      ],
+      "long": [
+        0.050303809344768524
+      ],
+      "loss": [
+        0.13363954424858093
+      ],
+      "rank": [
+        0.46173182129859924
+      ],
+      "rank_weight": 0.1,
+      "retired": [
+        false
+      ],
+      "step": 2000
+    }
+  ]
+}

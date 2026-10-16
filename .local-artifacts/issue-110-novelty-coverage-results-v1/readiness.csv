@@ -1,0 +1,46 @@
+cell,status,reasons,flags,evaluation_levels,mixed_levels,identifiability
+0/single_force,supported,,,64,26,external-force-active=not_identifiable;force-on=readiness_or_precision_insufficient
+0/multiple_forces,supported,,rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs);no_mixed_verdict_evaluation_level,64,0,external-force-active=not_identifiable;force-on=readiness_or_precision_insufficient
+0/rolling,supported,,,64,33,external-force-active=not_identifiable;force-on=not_identifiable
+0/falling,supported,,,64,37,external-force-active=identifiable;force-on=identifiable
+0/sliding,supported,,,64,39,external-force-active=not_identifiable;force-on=readiness_or_precision_insufficient
+1/single_force,supported,,,8,5,
+1/multiple_forces,supported,,rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs);no_mixed_verdict_evaluation_level,8,0,
+1/rolling,supported,,,8,4,
+1/falling,supported,,,8,3,
+1/sliding,supported,,,8,8,
+2/single_force,supported,,,8,1,external-force-active=readiness_or_precision_insufficient;force-on=readiness_or_precision_insufficient
+2/multiple_forces,supported,,rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs);no_mixed_verdict_evaluation_level,8,0,external-force-active=not_identifiable;force-on=readiness_or_precision_insufficient
+2/rolling,supported,,,7,4,external-force-active=not_identifiable;force-on=readiness_or_precision_insufficient
+2/falling,supported,,,8,8,external-force-active=not_identifiable;force-on=readiness_or_precision_insufficient
+2/sliding,supported,,,8,4,external-force-active=not_identifiable;force-on=not_identifiable
+3/single_force,supported,,no_mixed_verdict_evaluation_level,8,0,external-force-active=not_identifiable;force-on=readiness_or_precision_insufficient
+3/multiple_forces,supported,,rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs);no_mixed_verdict_evaluation_level,8,0,external-force-active=not_identifiable;force-on=identifiable
+3/rolling,supported,,,8,4,external-force-active=not_identifiable;force-on=label_invalid
+3/falling,supported,,,8,2,external-force-active=identifiable;force-on=identifiable
+3/sliding,supported,,no_mixed_verdict_evaluation_level,8,0,external-force-active=label_invalid;force-on=readiness_or_precision_insufficient
+4/single_force,supported,,,8,8,external-force-active=label_invalid
+4/multiple_forces,supported,,rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs);no_mixed_verdict_evaluation_level,8,0,external-force-active=label_invalid
+4/rolling,supported,,,8,8,external-force-active=not_identifiable
+4/falling,supported,,,8,2,external-force-active=not_identifiable
+4/sliding,supported,,no_mixed_verdict_evaluation_level,8,0,external-force-active=label_invalid
+5/single_force,supported,,,8,2,
+5/multiple_forces,supported,,rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs);no_mixed_verdict_evaluation_level,8,0,
+5/rolling,supported,,,8,5,
+5/falling,supported,,,8,6,
+5/sliding,supported,,,8,4,
+6/single_force,supported,,,8,7,gravity-inverted=identifiable
+6/multiple_forces,supported,,rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs);no_mixed_verdict_evaluation_level,8,0,gravity-inverted=identifiable
+6/rolling,supported,,,8,3,gravity-inverted=identifiable
+6/falling,supported,,,8,6,gravity-inverted=identifiable
+6/sliding,supported,,,8,6,gravity-inverted=readiness_or_precision_insufficient
+7/single_force,supported,,,8,6,external-force-active=not_identifiable;force-on=readiness_or_precision_insufficient
+7/multiple_forces,supported,,rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs);no_mixed_verdict_evaluation_level,8,0,external-force-active=readiness_or_precision_insufficient;force-on=identifiable
+7/rolling,supported,,,8,5,external-force-active=not_identifiable;force-on=not_identifiable
+7/falling,supported,,,8,8,external-force-active=readiness_or_precision_insufficient;force-on=identifiable
+7/sliding,supported,,,8,3,external-force-active=not_identifiable;force-on=readiness_or_precision_insufficient
+8/single_force,supported,,no_mixed_verdict_evaluation_level,8,0,external-force-active=not_identifiable;storm-active=identifiable
+8/multiple_forces,supported,,rollout_error_only: degenerate single-shot pig-removal verdicts (multi-hit pigs);no_mixed_verdict_evaluation_level,8,0,external-force-active=label_invalid;storm-active=readiness_or_precision_insufficient
+8/rolling,supported,,no_mixed_verdict_evaluation_level,8,0,external-force-active=readiness_or_precision_insufficient;storm-active=readiness_or_precision_insufficient
+8/falling,supported,,no_mixed_verdict_evaluation_level,8,0,external-force-active=readiness_or_precision_insufficient;storm-active=identifiable
+8/sliding,supported,,no_mixed_verdict_evaluation_level,8,0,external-force-active=label_invalid;storm-active=identifiable

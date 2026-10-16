@@ -1878,6 +1878,7 @@ def rollout_tables(output, usable):
         records[(condition, level)] = read_json(rollout_path(output, condition, level))
     per = {key: level_values(r, usable) for key, r in records.items()}
     per_pos = {key: level_values(r, usable, "position_mse") for key, r in records.items()}
+    normal_of = {(k[0], r["pair"], r["ordinal"]): k for k, r in records.items() if r["side"] == "normal"}
     tables = {}
     for cell in cells():
         level_k = int(cell.split("/")[0])
@@ -1899,8 +1900,7 @@ def rollout_tables(output, usable):
                         paired = []
                         for k in keys:
                             r = records[k]
-                            mate = next((kk for kk, rr in records.items() if kk[0] == condition and rr["pair"] == r["pair"]
-                                         and rr["ordinal"] == r["ordinal"] and rr["side"] == "normal"), None)
+                            mate = normal_of.get((condition, r["pair"], r["ordinal"]))
                             a = per[k][request][t]["value"]
                             b = None if mate is None else per[mate][request][t]["value"]
                             if a is not None and b is not None:
@@ -1999,8 +1999,8 @@ def compute_tables(output, plan):
     for condition in condition_levels():
         payload = load_data(output, condition)
         training_keys |= set(payload["shot_keys"])
-        if condition == ZERO and any(next(b for b in complete() if b["key"] == k)["side"] == "novel"
-                                     for k in payload["shot_keys"]):
+        side = {b["key"]: b["side"] for b in complete()}
+        if condition == ZERO and any(side[k] == "novel" for k in payload["shot_keys"]):
             raise ValueError("a novel shot entered the zero-shot training data")
     evaluation_keys = {b["key"] for b in complete() if b["stream"] == STREAM_EVAL}
     images = set(zero_image_keys()) | {k for level in LEVELS for k in few_image_keys(level)}
