@@ -1,0 +1,117 @@
+{
+  "definitions": {
+    "debounce_frames": 1,
+    "debounce_rule": "smallest debounce k in [1, 2, 3, 5, 10, 15, 20, 25, 30, 35] frames whose relapse rate (share of settle_k frames f with f + 15 <= last frame that have a moving frame in (f, f + 15]) is <= 0.05, pooled over the #104 fit stream and the retained N1, #93 and #94 captures",
+    "deltas": [
+      1,
+      5,
+      15
+    ],
+    "label_index": "labels are indexed by the landing frame f = t + Delta of a Delta request issued at frame t",
+    "phases": [
+      "pre_contact",
+      "cascade",
+      "settled"
+    ],
+    "predicates": [
+      "settle",
+      "structure-change"
+    ],
+    "relation_to_110": "#110 ORs single-frame labels over (f-Delta, f]; #113 does not adopt it: structure change compares debounced endpoints, settle requires rest over the whole window",
+    "rest": "every present, simulated, dynamic body (birds included) has |v| <= 0.01 u/s and |omega| <= 0.01 deg/s (the engine stable_entered thresholds); moving[f] = some native step of frame f's interval (s_(f-1), s_f] is not at rest",
+    "rest_angular_deg": 0.01,
+    "rest_speed": 0.01,
+    "settle": "settle_Delta(f) = the launched bird was removed (engine entity_destroyed) at or before s_(f-D) AND moving[f-D+1..f] all false, with D = max(debounce, Delta); available iff f >= D",
+    "settle_window_frames": {
+      "1": 1,
+      "15": 15,
+      "5": 5
+    },
+    "structure-change": "structure-change_Delta(f) = S(f) != S(f-Delta), S(f) = the directed non-bird (supporter, supported) entity pairs present on more than half of the native steps of frame f's interval (frame 0: its single step); available iff f >= Delta"
+  },
+  "engine_seconds": 0,
+  "frozen_at": "2026-10-16T13:31:48Z",
+  "git_head_at_freeze": "3cdffed9064229d7dc9746f2198b20a51597aa2f",
+  "identity": "issue-113-macro-predicates-v1",
+  "inputs": [
+    {
+      "path": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "path": ".local-artifacts/issue-113-capture-window-v1/spec.json",
+      "sha256": "sha256:929f5bc6d7d9b42b010e7a87653331f3636c68e8ec51f856b61b945238aa076d"
+    }
+  ],
+  "issue": 113,
+  "item": 1,
+  "label_module": {
+    "frozen_constant": "DEBOUNCE_FRAMES = 1",
+    "path": "world_model/data/observable_macro.py",
+    "sha256": "sha256:956d4163b340e117084a4fa8f0c2d90cefe169805069f49724a6f08b58a5fa16"
+  },
+  "outputs": {
+    "labels": "not stored: every label is a pure function of a stored summary (observable_macro.shot_labels(load_summary(path)))",
+    "prevalence": "per source x level type x phase x predicate x Delta: available frames, positive frames, shots with a positive; terminal reasons; onsets"
+  },
+  "parent": 108,
+  "prohibited": [
+    "reading any issue109-evaluation trace or label before the item-3 freeze",
+    "changing a definition after this freeze",
+    "retrying typed failures"
+  ],
+  "question": "redefine the macro predicates so they are observable at their own request horizon: settle with an explicit debounce, structure change as the per-Delta aggregated support-set difference with no single-step spike, declared per Delta in {1, 5, 15}",
+  "runner_at_freeze": {
+    "note": "informational: the item-3 modes are added to this runner after this freeze and the item-3 plan pins it; --validate regenerates every item-1 record byte for byte from the pinned label module",
+    "path": "scripts/run_observable_macro.py",
+    "sha256": "sha256:22e46168566d2ddc0069eec707b63d91a4ff78a84e354b0cd28943035db35bee"
+  },
+  "schema": "issue_113_macro_predicates_plan_v1",
+  "selection": {
+    "chosen_debounce_frames": 1,
+    "path": ".local-artifacts/issue-113-macro-predicates-v1/selection.json",
+    "sha256": "sha256:f4ac0f786cf1b324c23f0703e1a308bf55635c41e5ff782ca85ab24fc91d9222",
+    "sources": [
+      "fit",
+      "n1",
+      "i93",
+      "i94"
+    ]
+  },
+  "smoke": {
+    "path": ".local-artifacts/issue-113-macro-predicates-v1/smoke.json",
+    "sha256": "sha256:4793ae063f77426cc8965913b4850e89ec23a3bd534f6ac526eb37560b47675f"
+  },
+  "sources": {
+    "fit": {
+      "name": "#104 stream issue109-fit (#109 fit split)",
+      "shots": 13919
+    },
+    "i93": {
+      "name": "#93 oracle captures (grid + offset)",
+      "shots": 391
+    },
+    "i94": {
+      "name": "#94 oracle captures (angle x power)",
+      "shots": 295
+    },
+    "n1": {
+      "name": "#77 N1 captures (issue-77-n1-v1, complete shots)",
+      "shots": 178
+    },
+    "policy": {
+      "name": "#104 stream issue109-policy (#109 policy split)",
+      "shots": 3480
+    }
+  },
+  "summaries_manifest": {
+    "path": ".local-artifacts/issue-113-macro-predicates-v1/summaries-manifest.json",
+    "sha256": "sha256:0110b2bedc947428b08db1b9801ac2e3dcf3beb849466a8afe2c60bb4820371b",
+    "sources": [
+      "fit",
+      "n1",
+      "i93",
+      "i94"
+    ]
+  }
+}
