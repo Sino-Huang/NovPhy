@@ -1,0 +1,10 @@
+train worker 0 pid 1757012 launched 2026-10-17T03:02:57Z
+train worker 1 pid 1757014 launched 2026-10-17T03:02:57Z
+train worker 2 pid 1757110 launched 2026-10-17T03:02:57Z
+train worker 3 pid 1757112 launched 2026-10-17T03:02:57Z
+note 2026-10-17T03:03:23Z: the four processes above were killed by the tool shell at launch (empty logs, no output written); relaunched detached with setsid below
+train worker 0 pid 1758098 launched 2026-10-17T03:03:23Z
+train worker 1 pid 1758100 launched 2026-10-17T03:03:23Z
+train worker 2 pid 1758102 launched 2026-10-17T03:03:23Z
+train worker 3 pid 1758104 launched 2026-10-17T03:03:23Z
+correction 2026-10-17T03:04:30Z: the note above is wrong. The first launch was alive: the PIDs recorded at 03:02:57Z are the launching nohup wrappers (process-group leaders); the python worker PIDs of that launch are 1757013 (worker 0), 1757062 (worker 1), 1757111 (worker 2), 1757160 (worker 3). Their logs were empty only because they were still importing. The duplicate launch at 03:03:23Z (python PIDs 1758099, 1758101, 1758103, 1758105) ran concurrently for about 40 s while loading the training payload, before its first update; it was killed at 03:04:10Z and wrote nothing but directories. Its shell redirection truncated train-worker{0..3}.log, so those logs start mid-stream. The first launch is the only training launch.

@@ -1,0 +1,252 @@
+{
+  "chunk": 256,
+  "config": "R_18/total",
+  "heads": {
+    "factorised": {
+      "dagger_peak_memory_gb": 0.18683136,
+      "dagger_seconds": 1.1912642049137503,
+      "distil_seconds": [
+        1.8888053172267973,
+        1.6650541960261762
+      ],
+      "final_loss_0": 2.5788190523783365,
+      "final_loss_1": 2.307017187277476,
+      "in_sample_accuracy": {
+        "round0_rows": {
+          "alpha": 0.6990470909841139,
+          "delta": 0.4980671033629049,
+          "exact": 0.388771404992779,
+          "rows": 775520
+        },
+        "round1_rows": {
+          "alpha": 0.7004887043532082,
+          "delta": 0.587200845884052,
+          "exact": 0.44654425417784194,
+          "rows": 775520
+        }
+      },
+      "label_change_round1_vs_round0": 0.2715378068908603,
+      "macs_per_call": 33383,
+      "parameters": 33525,
+      "policy_sha256": "sha256:696faad5466b233b9d0536f5b673d365202b53f451241607df5f40cbcf41852f",
+      "round1": {
+        "alpha_counts": [
+          235455,
+          134424,
+          405641
+        ],
+        "counts": [
+          73240,
+          8798,
+          99755,
+          18009,
+          2685,
+          23900,
+          20460,
+          3633,
+          44800,
+          35280,
+          23684,
+          186300,
+          26467,
+          60510,
+          48185,
+          61999,
+          35114,
+          2701
+        ],
+        "delta_counts": [
+          181793,
+          44594,
+          68893,
+          245264,
+          135162,
+          99814
+        ],
+        "delta_entropy_bits": 2.383020843177661,
+        "entropy_bits": 3.571986626804866,
+        "entropy_max_bits": 4.169925001442312,
+        "evaluations": 13780800,
+        "gpu_seconds": 1.9492837579455227,
+        "peak_memory_gb": 1.218822656,
+        "positions": 775520
+      },
+      "wall_seconds": 7.176918104989454,
+      "width": 133
+    },
+    "flat": {
+      "dagger_peak_memory_gb": 0.187992064,
+      "dagger_seconds": 0.9511216038372368,
+      "distil_seconds": [
+        1.1933373380452394,
+        1.339381257072091
+      ],
+      "final_loss_0": 2.306051069498062,
+      "final_loss_1": 2.0110360900561015,
+      "in_sample_accuracy": {
+        "round0_rows": {
+          "alpha": 0.662645708685785,
+          "delta": 0.4753455745822158,
+          "exact": 0.4108907571693831,
+          "rows": 775520
+        },
+        "round1_rows": {
+          "alpha": 0.6766634000412627,
+          "delta": 0.5684456880544667,
+          "exact": 0.4783512997730555,
+          "rows": 775520
+        }
+      },
+      "label_change_round1_vs_round0": 0.28887842995667423,
+      "macs_per_call": 33280,
+      "parameters": 33426,
+      "policy_sha256": "sha256:a49e90f4d40636eab5f60f56ba2c9def62995f854a50dd00fb2fa77c95b54c54",
+      "round1": {
+        "alpha_counts": [
+          238634,
+          130153,
+          406733
+        ],
+        "counts": [
+          80170,
+          8857,
+          102638,
+          19901,
+          2830,
+          22495,
+          20371,
+          3607,
+          44438,
+          34585,
+          23036,
+          187211,
+          25387,
+          58188,
+          47233,
+          58220,
+          33635,
+          2718
+        ],
+        "delta_counts": [
+          191665,
+          45226,
+          68416,
+          244832,
+          130808,
+          94573
+        ],
+        "delta_entropy_bits": 2.3749119863439954,
+        "entropy_bits": 3.560798187531953,
+        "entropy_max_bits": 4.169925001442312,
+        "evaluations": 13780800,
+        "gpu_seconds": 2.0065746961627156,
+        "peak_memory_gb": 1.218816,
+        "positions": 775520
+      },
+      "wall_seconds": 5.726746418047696,
+      "width": 128
+    }
+  },
+  "labelled_at": "2026-10-17T14:08:55Z",
+  "lambda": 0.0001,
+  "plan_identity": "issue-116-request-set-scaling-v1",
+  "pool_sha256": "sha256:90892903179a9f423789c6ee5064fa8936acf45c29c3d89b9587ad10531e5c72",
+  "predictor_sha256": "sha256:b07f6d4c7f7e8a19e523af25bc8163b7d1d696c881b53ed9f786c94373820ac7",
+  "requests": 18,
+  "round0": {
+    "alpha_counts": [
+      234727,
+      139225,
+      401568
+    ],
+    "counts": [
+      50776,
+      3804,
+      41820,
+      23256,
+      3233,
+      28974,
+      25524,
+      4775,
+      58701,
+      40181,
+      26696,
+      216574,
+      26592,
+      62896,
+      52941,
+      68398,
+      37821,
+      2558
+    ],
+    "delta_counts": [
+      96400,
+      55463,
+      89000,
+      283451,
+      142429,
+      108777
+    ],
+    "delta_entropy_bits": 2.38173817462572,
+    "entropy_bits": 3.5496857906359853,
+    "entropy_max_bits": 4.169925001442312,
+    "evaluations": 13780800,
+    "gpu_seconds": 1.9265426869969815,
+    "peak_memory_gb": 1.163931648,
+    "positions": 775520
+  },
+  "schema": "issue_116_labels_v1",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "seed": 20260908,
+  "timing_window_60": {
+    "alpha_counts": [
+      68515,
+      31314,
+      108971
+    ],
+    "counts": [
+      21884,
+      2036,
+      17397,
+      9025,
+      1250,
+      11352,
+      9462,
+      1830,
+      20139,
+      10542,
+      7021,
+      48615,
+      6686,
+      12524,
+      10397,
+      10916,
+      6653,
+      1071
+    ],
+    "delta_counts": [
+      41317,
+      21627,
+      31431,
+      66178,
+      29607,
+      18640
+    ],
+    "delta_entropy_bits": 2.4487260654046143,
+    "entropy_bits": 3.6706575908334496,
+    "entropy_max_bits": 4.169925001442312,
+    "evaluations": 3445200,
+    "gpu_seconds": 0.46177358995191753,
+    "peak_memory_gb": 0.36594688,
+    "positions": 208800
+  },
+  "typed_failure": null,
+  "wall_seconds": 15.835792838828638,
+  "window_frames": 226,
+  "windows": 3480
+}

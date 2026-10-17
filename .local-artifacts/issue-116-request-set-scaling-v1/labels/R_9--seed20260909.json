@@ -1,0 +1,204 @@
+{
+  "chunk": 256,
+  "config": "R_9",
+  "heads": {
+    "factorised": {
+      "dagger_peak_memory_gb": 0.186822144,
+      "dagger_seconds": 1.0763990262057632,
+      "distil_seconds": [
+        1.9953929369803518,
+        2.312985674943775
+      ],
+      "final_loss_0": 0.7685096889734269,
+      "final_loss_1": 0.7418435325225194,
+      "in_sample_accuracy": {
+        "round0_rows": {
+          "alpha": 0.9887688260779863,
+          "delta": 0.6617121415308438,
+          "exact": 0.6554621415308438,
+          "rows": 775520
+        },
+        "round1_rows": {
+          "alpha": 0.9250489993810604,
+          "delta": 0.7558025582834743,
+          "exact": 0.6863188570249639,
+          "rows": 775520
+        }
+      },
+      "label_change_round1_vs_round0": 0.2771276047039406,
+      "macs_per_call": 32240,
+      "parameters": 32376,
+      "policy_sha256": "sha256:b21d97bd30afd51f7da48a60aff9eedd815918eabc5b1e6323457e3cbd73c469",
+      "round1": {
+        "alpha_counts": [
+          41919,
+          44668,
+          688933
+        ],
+        "counts": [
+          40564,
+          40969,
+          240351,
+          1204,
+          2333,
+          411435,
+          151,
+          1366,
+          37147
+        ],
+        "delta_counts": [
+          321884,
+          414972,
+          38664
+        ],
+        "delta_entropy_bits": 1.2249598306179985,
+        "entropy_bits": 1.7239128635877834,
+        "entropy_max_bits": 3.169925001442312,
+        "evaluations": 6859080,
+        "gpu_seconds": 1.1133768509607762,
+        "peak_memory_gb": 1.214647808,
+        "positions": 775520
+      },
+      "wall_seconds": 6.766142191132531,
+      "width": 130
+    },
+    "flat": {
+      "dagger_peak_memory_gb": 0.186815488,
+      "dagger_seconds": 0.9312907019630075,
+      "distil_seconds": [
+        1.6545736151747406,
+        1.2965686169918627
+      ],
+      "final_loss_0": 0.7659699807564417,
+      "final_loss_1": 0.7184149965643882,
+      "in_sample_accuracy": {
+        "round0_rows": {
+          "alpha": 0.9883445945945946,
+          "delta": 0.6690027336496802,
+          "exact": 0.6627604703940582,
+          "rows": 775520
+        },
+        "round1_rows": {
+          "alpha": 0.917018258716732,
+          "delta": 0.7594259335671549,
+          "exact": 0.6823537755312564,
+          "rows": 775520
+        }
+      },
+      "label_change_round1_vs_round0": 0.2716680420878894,
+      "macs_per_call": 32128,
+      "parameters": 32265,
+      "policy_sha256": "sha256:1c611ac0253349e0699feee12a44ef2414e98d3a7d0cb1b5ff6cdeca590ae73a",
+      "round1": {
+        "alpha_counts": [
+          41942,
+          44619,
+          688959
+        ],
+        "counts": [
+          40574,
+          41046,
+          243384,
+          1212,
+          2214,
+          413088,
+          156,
+          1359,
+          32487
+        ],
+        "delta_counts": [
+          325004,
+          416514,
+          34002
+        ],
+        "delta_entropy_bits": 1.2052726698903105,
+        "entropy_bits": 1.704797790254553,
+        "entropy_max_bits": 3.169925001442312,
+        "evaluations": 6859080,
+        "gpu_seconds": 1.1197894848883152,
+        "peak_memory_gb": 1.214641152,
+        "positions": 775520
+      },
+      "wall_seconds": 5.217076675966382,
+      "width": 128
+    }
+  },
+  "labelled_at": "2026-10-17T14:09:09Z",
+  "lambda": 0.0001,
+  "plan_identity": "issue-116-request-set-scaling-v1",
+  "pool_sha256": "sha256:90892903179a9f423789c6ee5064fa8936acf45c29c3d89b9587ad10531e5c72",
+  "predictor_sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5",
+  "requests": 9,
+  "round0": {
+    "alpha_counts": [
+      5952,
+      6060,
+      763508
+    ],
+    "counts": [
+      4271,
+      3348,
+      246045,
+      1460,
+      1690,
+      484601,
+      221,
+      1022,
+      32862
+    ],
+    "delta_counts": [
+      253664,
+      487751,
+      34105
+    ],
+    "delta_entropy_bits": 1.1463254020259919,
+    "entropy_bits": 1.2701331032670016,
+    "entropy_max_bits": 3.169925001442312,
+    "evaluations": 6859080,
+    "gpu_seconds": 1.096649497980252,
+    "peak_memory_gb": 1.159766016,
+    "positions": 775520
+  },
+  "schema": "issue_116_labels_v1",
+  "scoring_policy": {
+    "cudnn_allow_tf32": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "matmul_allow_tf32": false
+  },
+  "seed": 20260909,
+  "timing_window_60": {
+    "alpha_counts": [
+      5151,
+      4982,
+      198667
+    ],
+    "counts": [
+      3697,
+      2786,
+      90224,
+      1257,
+      1342,
+      99905,
+      197,
+      854,
+      8538
+    ],
+    "delta_counts": [
+      96707,
+      102504,
+      9589
+    ],
+    "delta_entropy_bits": 1.2223175758754672,
+    "entropy_bits": 1.5398000244945862,
+    "entropy_max_bits": 3.169925001442312,
+    "evaluations": 1691280,
+    "gpu_seconds": 0.2622815838549286,
+    "peak_memory_gb": 0.363802624,
+    "positions": 208800
+  },
+  "typed_failure": null,
+  "wall_seconds": 14.0368609118741,
+  "window_frames": 226,
+  "windows": 3480
+}

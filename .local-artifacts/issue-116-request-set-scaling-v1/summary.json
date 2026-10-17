@@ -1,0 +1,182 @@
+{
+  "claim_boundary": "one look at the sealed #109 evaluation split; LC (#112 v3) recipe only; prediction-error DP labels (lambda 1e-4) only; grid primary; tie-free cost; DESCRIPTIVE intervals; NovPhy only; sub-frame Delta unsupported",
+  "dispositions": {
+    "dp_labeller_tractable_at_225": "supported",
+    "larger_or_continuous_delta_improves_ranking": "readiness_or_precision_insufficient",
+    "sub_frame_delta": "unsupported"
+  },
+  "dp_round0_gpu_seconds": {
+    "R_18/request": 2.0140284785302356,
+    "R_18/total": 1.977997368356834,
+    "R_30/request": 2.9301507647614926,
+    "R_30/total": 2.9652260379710547,
+    "R_9": 1.1508780970082928,
+    "R_cont/request": 17.91310839331709,
+    "R_cont/total": 18.117005044672016
+  },
+  "engine_seconds": 0,
+  "frozen_at": "2026-10-17T03:02:25Z",
+  "gpu_seconds": 156485.74002776295,
+  "grid_J_flat_auc": {
+    "R_18/request": {
+      "clusters": 311,
+      "interval": [
+        0.6180452987526942,
+        0.6589058984959305
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6381179110278788,
+      "units": 622
+    },
+    "R_18/total": {
+      "clusters": 311,
+      "interval": [
+        0.6032402221751096,
+        0.6274637527531418
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6151839942836728,
+      "units": 933
+    },
+    "R_30/request": {
+      "clusters": 311,
+      "interval": [
+        0.736762835235504,
+        0.7613550856074972
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7490628521175144,
+      "units": 933
+    },
+    "R_30/total": {
+      "clusters": 311,
+      "interval": [
+        0.527338349842369,
+        0.5592879374109277
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.5431349108197983,
+      "units": 933
+    },
+    "R_9": {
+      "clusters": 311,
+      "interval": [
+        0.6559989242625899,
+        0.7001063566658423
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6781305332752278,
+      "units": 933
+    },
+    "R_cont/request": {
+      "clusters": 311,
+      "interval": [
+        0.9354107285176417,
+        0.9580256586928614
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.9473455983102286,
+      "units": 933
+    },
+    "R_cont/total": {
+      "clusters": 311,
+      "interval": [
+        0.686666367305435,
+        0.7105305171784272
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6986657322670184,
+      "units": 933
+    }
+  },
+  "grid_J_flat_minus_R_9": {
+    "R_18/request": {
+      "clusters": 311,
+      "interval": [
+        -0.05559456821313734,
+        -0.029627162762210998
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": -0.04235038808993793,
+      "units": 622
+    },
+    "R_18/total": {
+      "clusters": 311,
+      "interval": [
+        -0.07688695236524819,
+        -0.0490591174634583
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": -0.06294653899155507,
+      "units": 933
+    },
+    "R_30/request": {
+      "clusters": 311,
+      "interval": [
+        0.04906575739373167,
+        0.09238725859706566
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.07093231884228668,
+      "units": 933
+    },
+    "R_30/total": {
+      "clusters": 311,
+      "interval": [
+        -0.15435937677899092,
+        -0.11582159935455758
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": -0.1349956224554295,
+      "units": 933
+    },
+    "R_cont/request": {
+      "clusters": 311,
+      "interval": [
+        0.24539585369971223,
+        0.29258936178148404
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.26921506503500076,
+      "units": 933
+    },
+    "R_cont/total": {
+      "clusters": 311,
+      "interval": [
+        -0.001590349182792916,
+        0.04232533989768716
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.020535198991790626,
+      "units": 933
+    }
+  },
+  "guards_pass": true,
+  "identity": "issue-116-request-set-scaling-v1",
+  "prior_grid_auc": {
+    "clusters": 311,
+    "interval": [
+      0.6964709285890959,
+      0.7442291129288716
+    ],
+    "label": "DESCRIPTIVE",
+    "mean": 0.7202981637869096,
+    "units": 933
+  },
+  "ranking_tokens": {
+    "R_18/request": "not_supported_by_this_experiment",
+    "R_18/total": "not_supported_by_this_experiment",
+    "R_30/request": "supported",
+    "R_30/total": "not_supported_by_this_experiment",
+    "R_cont/request": "supported",
+    "R_cont/total": "readiness_or_precision_insufficient"
+  },
+  "schema": "issue_116_report_v1",
+  "typed_failures": [
+    {
+      "config": "R_18/request",
+      "seed": 20260908,
+      "typed_failure": "final_checkpoint_excursion"
+    }
+  ]
+}
