@@ -1,0 +1,26 @@
+[issue-112-dynamics] LC/hybrid/group0 update 12/12: horizon 60, mean loss 240.51622009277344, retired 0; 26s; eta 0s
+/mnt/array/sukaih/Project/NovPhy/scripts/run_request_set_scaling.py:1645: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:822.)
+  return max(float((first.params[k] - second.params[k]).abs().max()) for k in first.params)
+[issue-112-dynamics] LC/hybrid/group0 update 12/12: horizon 225, mean loss 3493.561767578125, retired 0; 17s; eta 0s
+[issue-116]   request_sets_schedules_clock_endpoint_rule: True
+[issue-116]   handoff_seeds_hashes_and_split_isolation: True
+[issue-116]   usability_rule_reproduces_the_retrain_member_table: True
+[issue-116]   policy_heads_matched_masked_normalized: True
+[issue-116]   generalised_predictor_equals_cnn_hybrid_on_R_9: True
+[issue-116]   window_rule_reproduces_the_payload_windows: True
+[issue-116]   R_9_training_equals_retrain_train_group_schedule: True
+[issue-116]   R_9_training_equals_retrain_train_group_full_cost: True
+[issue-116]   R_cont_and_R_30_train_finite_at_every_timing_delta: True
+[issue-116]   dp_labels_reproduce_issue_101_window_rows_observed: True
+[issue-116]   dp_labels_reproduce_issue_101_window_rows_dagger: True
+[issue-116]   pruned_dp_on_grid_and_never_below_the_exact_optimum: True
+[issue-116]   R_9_fixed_rows_reproduce_gate_b_unit_records: True
+[issue-116]   R_9_fixed_rows_reproduce_issue_101_records_grid: True
+[issue-116]   issue_101_J_reproduces_through_the_generalised_rollout: True
+[issue-116]   truth_store_indexes_grid_branches_and_reproduces_issue_115_engine_mse: True
+[issue-116]   statistics_rehearsal_reproduces_gate_b: True
+[issue-116]   label_and_score_stages_run_end_to_end_R_9: True
+[issue-116]   label_and_score_stages_run_end_to_end_R_cont--total: True
+[issue-116]   projection_within_48h_on_4_gpus: True
+[issue-116] smoke PASSED; projected elapsed 7.1 h on 4 GPUs (training GPU 15.0 h, labelling 2.0 h, scoring 10.6 h)

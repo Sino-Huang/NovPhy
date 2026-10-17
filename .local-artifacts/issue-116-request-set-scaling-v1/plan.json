@@ -1,0 +1,2069 @@
+{
+  "caps": {
+    "elapsed_limit_hours": 48.0,
+    "gpu_seconds": 691200.0
+  },
+  "claim_boundary": "one look at the sealed #109 evaluation split; LC (#112 v3) recipe only; prediction-error DP labels (lambda 1e-4) only; grid primary; tie-free cost; DESCRIPTIVE intervals; NovPhy only; sub-frame Delta unsupported",
+  "data": {
+    "policy_pool_windows_sha256": "sha256:90892903179a9f423789c6ee5064fa8936acf45c29c3d89b9587ad10531e5c72",
+    "training_data_sha256": "sha256:5fd69f23a6ce3260c36bd16d9efa46ed3fe35a1078b8dd56a67340d9022e2ba3",
+    "truth_store_sha256": "sha256:c7466205a02e9adb381adafbb36c81134ab60bbef8c50b754272850974a329a5"
+  },
+  "decision_rule": {
+    "disposition_dp": "'the DP labeller stays tractable at |R| = 225': supported iff every usable R_cont predictor's exact round-0 prediction-error DP over the #109 policy pool (N = 3480 start-0 windows, L = 225 frames, chunk 256) completes on one RTX 5090 within 3600 GPU s and its seconds per carrier evaluation are at most 2 x the R_9 mean (no super-linear growth in |R|); not_supported_by_this_experiment iff any R_cont pass fails either; readiness_or_precision_insufficient if no R_cont predictor is usable",
+    "disposition_ranking": "'a larger or continuous Delta set improves ranking over R_9': per set R in {R_18, R_30, R_cont} and budget b in {total, request}, the grid tie-free AUC of the flat-head policy J-flat(R, b) minus J-flat(R_9), paired by (level, seed), level-clustered bootstrap; delta superiority token (mean >= 0.02 and lower > 0 supported; upper < 0.02 not_supported_by_this_experiment; else readiness_or_precision_insufficient). Overall: supported iff some set is supported under both budgets; not_supported_by_this_experiment iff every (set, budget) token is not_supported_by_this_experiment; otherwise readiness_or_precision_insufficient",
+    "guard_failure": "a failed guard turns every token into readiness_or_precision_insufficient",
+    "pairing": "cells (level, seed): seed s of every configuration pairs with Gate-B seed s; a typed-failure member drops its seed's cells from every contrast that reads it; the bootstrap resamples levels",
+    "secondary": "DESCRIPTIVE with the same delta token reported: heads (J-factorised / J-ordinal - J-flat per set), the fixed R_9-request mean of each set - R_9, J-flat - prior, right - wrong anchor; offset, angle and power; rollout error, label accuracy, MACs, Delta histograms, DP cost",
+    "sub_frame_delta": {
+      "reason": "one carrier frame is 50 native engine steps (the #104 / #109 capture stride, frames 30000 + 50 i); a Delta below one frame has no observed target in any existing capture, and a finer-stride capture is outside the frozen #109 / #104 plan (an owner decision, not this ticket)",
+      "token": "unsupported"
+    }
+  },
+  "disclosure": "Known before the freeze: Gate B (unit 0.7444, C* 0.7834, prior 0.7203 on grid); #101 (J 0.706, fixed F-15-continuous 0.762, F-15-macro 0.744 on grid); #117 (full-budget Delta = 5 / 15 specialists rank above the joint by 0.05-0.14; Delta = 1 joint rows barely use the anchor). No predictor or policy over a set other than R_9 existed, and no #109 policy trained on 225-frame labels. The smoke rescored only published models on the evaluation cells (Gate-B unit, #101 fixed requests and J, #115 F-15-micro) to reproduce their records. Hardware: RTX 5090 instead of the #85 RTX 3090.",
+  "dp_labels": {
+    "chunk": 256,
+    "kind": "prediction error (ICLR eq. dp; #101 pe): c(t, i) = Delta_i x one-step carrier MSE + lambda x work(pair_i, flat policy of R) / work(15, continuous)",
+    "lambda": 0.0001,
+    "mac_term": "the set's flat policy (width 128) for every head, so round-0 labels depend on (predictor, R) only",
+    "pool": "the #109 policy split as built by #101 (3480 shots, 120 levels, E99 carriers)",
+    "pruned": {
+      "deltas": [
+        1,
+        2,
+        3,
+        5,
+        7,
+        11,
+        16,
+        23,
+        34,
+        51,
+        75
+      ],
+      "rule": "round-half-up of 12 geometric points from 1 to 75; candidate requests = grid x alpha; R_cont only; disagreement with the exact labels on every labelled position"
+    },
+    "timing_pass": "exact round-0 labels on the first 60 frames (cost only)",
+    "window": "start-0 windows of 225 frames (rp.first_window rule, terminal absorption), the deployment horizon, so every Delta <= 75 is feasible"
+  },
+  "engine_seconds": 0,
+  "evaluation": {
+    "accounting": {
+      "branches": 11680,
+      "complete": 11680,
+      "incomplete_branches": [],
+      "levels": 400,
+      "levels_per_inventory": {
+        "angle": 120,
+        "grid": 400,
+        "offset": 120,
+        "power": 120
+      },
+      "mixed_cells": {
+        "angle": 78,
+        "grid": 311,
+        "offset": 76,
+        "power": 47
+      },
+      "typed_failures": [],
+      "verdict_slots_mixed": {
+        "angle": 1014,
+        "grid": 4976,
+        "offset": 836,
+        "power": 940
+      }
+    },
+    "anchors": "the Gate-B E99 anchor store",
+    "arms": "per configuration and seed: every fixed request of R (endpoint rule) and every head's greedy policy J (joint argmax); the wrong-anchor control of J-flat (16 grid candidates from the 480 fit anchors)",
+    "cost": "tie_free (EndpointCosts.row against the anchor); cell AUC m99.view",
+    "descriptive": [
+      "offset",
+      "angle",
+      "power"
+    ],
+    "label_accuracy": "exact DP labels of the head's predictor on every grid evaluation branch (E99 parses 0..min(225, last) from the #115 store, observed contexts, remaining = frames to the window end); share of positions whose greedy request equals the label (exact, Delta, alpha); branch mean, level mean over seeds, level bootstrap",
+    "macs": "linear MACs per candidate rollout (predictor + policy), policy MACs per call, Delta histograms",
+    "primary_inventory": "grid",
+    "rollout_error": "#100 engine_position_mse of every mixed grid candidate's endpoint (t = 225) against its own branch at min(225, last frame), the #115 engine-truth store (hash-bound)",
+    "split": "the #109 evaluation split as in Gate B (stream issue109-evaluation, mixed cells)"
+  },
+  "execution": {
+    "labelling": {
+      "assignment": {
+        "0": [
+          "R_cont/request|20260908",
+          "R_cont/total|20260909",
+          "R_30/total|20260909",
+          "R_18/request|20260910",
+          "R_9|20260908"
+        ],
+        "1": [
+          "R_cont/request|20260909",
+          "R_cont/total|20260910",
+          "R_30/total|20260910",
+          "R_18/total|20260908",
+          "R_9|20260909"
+        ],
+        "2": [
+          "R_cont/request|20260910",
+          "R_30/request|20260908",
+          "R_30/request|20260910",
+          "R_18/request|20260908",
+          "R_18/total|20260909",
+          "R_9|20260910"
+        ],
+        "3": [
+          "R_cont/total|20260908",
+          "R_30/request|20260909",
+          "R_30/total|20260908",
+          "R_18/request|20260909",
+          "R_18/total|20260910"
+        ]
+      },
+      "projected_gpu_seconds": 7359.492956082802,
+      "projected_seconds_per_worker": [
+        1785.957869458245,
+        1785.957869458245,
+        2058.446136048995,
+        1729.131081117317
+      ]
+    },
+    "rule": "each stage launched once (one process per GPU, worker PIDs recorded under logs/), then waited on; no relaunch over live workers; a crashed worker resumes its own assignment (training resumes from its progress checkpoint)",
+    "scoring": {
+      "assignment": {
+        "0": [
+          "R_cont/request|20260908|policies",
+          "R_cont/total|20260909|policies",
+          "R_cont/total|20260909|fixed",
+          "R_18/request|20260910|policies",
+          "R_30/request|20260908|policies",
+          "R_30/total|20260909|policies",
+          "R_9|20260910|policies",
+          "R_30/total|20260909|fixed",
+          "R_18/request|20260910|fixed",
+          "R_9|20260908|fixed",
+          "R_9|20260910|fixed"
+        ],
+        "1": [
+          "R_cont/request|20260909|policies",
+          "R_cont/total|20260910|policies",
+          "R_cont/total|20260910|fixed",
+          "R_18/total|20260908|policies",
+          "R_30/request|20260909|policies",
+          "R_30/total|20260910|policies",
+          "R_30/request|20260908|fixed",
+          "R_30/request|20260909|fixed",
+          "R_30/total|20260910|fixed",
+          "R_18/total|20260908|fixed",
+          "R_9|20260909|fixed"
+        ],
+        "2": [
+          "R_cont/request|20260910|policies",
+          "R_cont/request|20260908|fixed",
+          "R_cont/request|20260910|fixed",
+          "R_18/request|20260908|policies",
+          "R_18/total|20260909|policies",
+          "R_30/request|20260910|policies",
+          "R_9|20260908|policies",
+          "R_30/request|20260910|fixed",
+          "R_18/request|20260908|fixed",
+          "R_18/total|20260909|fixed"
+        ],
+        "3": [
+          "R_cont/total|20260908|policies",
+          "R_cont/request|20260909|fixed",
+          "R_cont/total|20260908|fixed",
+          "R_18/request|20260909|policies",
+          "R_18/total|20260910|policies",
+          "R_30/total|20260908|policies",
+          "R_9|20260909|policies",
+          "R_30/total|20260908|fixed",
+          "R_18/request|20260909|fixed",
+          "R_18/total|20260910|fixed"
+        ]
+      },
+      "projected_gpu_seconds": 38190.51818049637,
+      "projected_seconds_per_worker": [
+        9649.317590205215,
+        9430.139546446013,
+        9555.530521922576,
+        9555.530521922576
+      ]
+    },
+    "training": {
+      "assignment": {
+        "0": [
+          "R_cont/request|20260908",
+          "R_18/request|20260909",
+          "R_18/total|20260908",
+          "R_30/total|20260909"
+        ],
+        "1": [
+          "R_cont/request|20260909",
+          "R_18/request|20260910",
+          "R_18/total|20260909",
+          "R_30/total|20260910"
+        ],
+        "2": [
+          "R_cont/request|20260910",
+          "R_cont/total|20260908",
+          "R_cont/total|20260910",
+          "R_30/total|20260908"
+        ],
+        "3": [
+          "R_30/request|20260908",
+          "R_30/request|20260909",
+          "R_30/request|20260910",
+          "R_18/request|20260908",
+          "R_cont/total|20260909",
+          "R_18/total|20260910"
+        ]
+      },
+      "projected_gpu_seconds": 54025.19731471237,
+      "projected_seconds_per_worker": [
+        13838.955365204727,
+        13838.955365204727,
+        13351.93567587874,
+        12995.350908424181
+      ]
+    },
+    "workers": 4
+  },
+  "frozen_at": "2026-10-17T03:02:25Z",
+  "frozen_before_training_and_scoring": true,
+  "generalisation": {
+    "module": "world_model/training/request_sets.py",
+    "predictor": "request_sets.predictor_class(R): CNNHybridPredictor whose carrier accepts exactly R; same parameters (1 837 690), state dict and ops; PairConditioner encodes any integer Delta",
+    "replication_guard": "smoke: R_9 training equals the retrain train_group bit for bit (schedule and full cost, 12 updates); the R_9 fixed-request rows equal the Gate-B unit and #101 records; the #101 J reproduces through the generalised rollout; the DP labels equal request_policy.window_rows in both DAgger rounds; G5 re-checks every R_9 fixed row"
+  },
+  "guards": {
+    "G1_isolation": "fit payload members, policy-pool levels and evaluation levels are disjoint; wrong anchors are fit levels",
+    "G2_scoring_policy": "every record and every label report carries the #111 SCORING_POLICY",
+    "G3_chronology": "frozen_at <= every training; every training and labelling <= the first score",
+    "G4_binding": "predictor hashes = training records (R_9: handoff); policy hashes = label reports; training payload, policy-pool windows and truth store = the frozen hashes",
+    "G5_replication": "every R_9 fixed-request row equals the Gate-B unit / #101 records (all seeds and inventories)",
+    "G6_training_integrity": "every member's schedule is its frozen schedule and every update is logged",
+    "G7_nonfinite": "every J-flat grid nonfinite share <= 0.1",
+    "failure": "a failed guard turns every token into readiness_or_precision_insufficient"
+  },
+  "identity": "issue-116-request-set-scaling-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/gate_b_handoff.json",
+      "name": "issue_112_retrain_handoff",
+      "sha256": "sha256:94f6e888b3407dfd44f9fb99350c3d3e21d0ebc28e065618fd8b6da9d7897706"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/plan.json",
+      "name": "issue_112_retrain_plan",
+      "sha256": "sha256:2a5bb712de760d9b6948d9c847b9da6d3033fb91edb4e169c1405db8104aa88e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/compute.json",
+      "name": "issue_112_retrain_compute",
+      "sha256": "sha256:ae4ad3fd5fa38e4240a55f690a5c99fb3098696ec525881c048af09172d961f0"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/fit-verdicts.json",
+      "name": "issue_112_fit_verdicts",
+      "sha256": "sha256:528469bde86f6f95f5d8108b064c6e3b5399a579fd0a57b9339ed9a909a57593"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/data/anchors-fit.pt",
+      "name": "issue_112_fit_anchors",
+      "sha256": "sha256:92b8e294901ba1b612ffba4e528082611ff69328b211f5195a09ae9745418751"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/updates/LC--hybrid--group0.pt",
+      "name": "issue_112_retrain_updates_hybrid_0",
+      "sha256": "sha256:4912878ec0f69bfc5ba0da4c216b2f0f1fa3538a7da9f3a9f7524ea36f847155"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/updates/LC--hybrid--group1.pt",
+      "name": "issue_112_retrain_updates_hybrid_1",
+      "sha256": "sha256:2e0299be00aa2c9ea78266799b031ffb030cad6a34ec54d20674890d6746e175"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/updates/LC--hybrid--group2.pt",
+      "name": "issue_112_retrain_updates_hybrid_2",
+      "sha256": "sha256:b1e2dea9017d3587d03a551b3bd012fa074324e4a84383222ca8221ea61e5942"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/updates/LC--continuous--group0.pt",
+      "name": "issue_112_retrain_updates_continuous_0",
+      "sha256": "sha256:3b97e119ffb2f1ec74d1f2920811e58c3273633202741a4ce39748a8716d2399"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/updates/LC--continuous--group1.pt",
+      "name": "issue_112_retrain_updates_continuous_1",
+      "sha256": "sha256:94a83d83462afb7da6d2fc7323feb0115395c8f150206b232b2d1bb26ec7dad2"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/updates/LC--continuous--group2.pt",
+      "name": "issue_112_retrain_updates_continuous_2",
+      "sha256": "sha256:e6f8de17b0bd1d1db61ffc891ad7756ce1458739636791e50ffc02612efab585"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/plan.json",
+      "name": "gate_b_plan",
+      "sha256": "sha256:90bd1cce20c40ea825872b6c02d46ae393de45e6e3fa4dcd647f7ef39b2a9659"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/compute.json",
+      "name": "gate_b_compute",
+      "sha256": "sha256:505e7e27a55b4082cc87b54a4392de18b1d7c39214e9b71e59562c4d807ad038"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/data/anchors-evaluation.pt",
+      "name": "gate_b_anchors",
+      "sha256": "sha256:3712282711523e4135c4daf033778f2b9222c3db3068bf8f2d7124b4f9d143ed"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260908.json",
+      "name": "gate_b_record_unit_20260908",
+      "sha256": "sha256:c81ad5cbfdec6f875d1f4396a7cef2e7b7acb8d4b9083b7b7a52aca3f514525a"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260909.json",
+      "name": "gate_b_record_unit_20260909",
+      "sha256": "sha256:412dabc64cf9b9b4aad035040fb19d8d2383373b128567b16b3ca0b58e8d5139"
+    },
+    {
+      "artifact": ".local-artifacts/issue-108-gate-b-v1/records/unit--seed20260910.json",
+      "name": "gate_b_record_unit_20260910",
+      "sha256": "sha256:a56d08075232b1112a305f045ff208687fde8cb81b3f39df755809b37e770cfa"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/plan.json",
+      "name": "issue_101_plan",
+      "sha256": "sha256:9674987323778442cd8537c45e71e64d04c78f5ed43b9d296eb011962e187f08"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/data/pool.pt",
+      "name": "issue_101_pool",
+      "sha256": "sha256:5858bc037190240b04f1721b4daa3d4bbc3b2dcc4ebc598d44dd09c970714f19"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-continuous--seed20260908.json",
+      "name": "issue_101_record_F-1-continuous_20260908",
+      "sha256": "sha256:221f46f6b1cb8e94a0d51bbd380c40e697d0856e544ba42c6009a711c651ea80"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-continuous--seed20260909.json",
+      "name": "issue_101_record_F-1-continuous_20260909",
+      "sha256": "sha256:103f433b617b45a75a5776ec40d6d5b7b67c7eb3104c7bd0ac6569b6c2680f58"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-continuous--seed20260910.json",
+      "name": "issue_101_record_F-1-continuous_20260910",
+      "sha256": "sha256:ba4a833ebe72d8595cacffa7aa06827cb0f5e030d3cc1a090eb09784b34ba634"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-micro--seed20260908.json",
+      "name": "issue_101_record_F-1-micro_20260908",
+      "sha256": "sha256:9bd34f5845e550fa3c89fa710bfe545bf6ccc5f6463aa62aeca150e4502f814d"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-micro--seed20260909.json",
+      "name": "issue_101_record_F-1-micro_20260909",
+      "sha256": "sha256:a56a71e64073f96843b60ec8953a363f7633a3c5392f8e4463c937746ef422fc"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-micro--seed20260910.json",
+      "name": "issue_101_record_F-1-micro_20260910",
+      "sha256": "sha256:1b50fbe549f88e91370223a7ac0a0060248e34f007977d7bd9118d280e643e8f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-macro--seed20260908.json",
+      "name": "issue_101_record_F-1-macro_20260908",
+      "sha256": "sha256:3ed0543226d68cce056fdcb5eb1a20726ca041d9bc5ad8c172d9aec1c376c581"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-macro--seed20260909.json",
+      "name": "issue_101_record_F-1-macro_20260909",
+      "sha256": "sha256:964c5c4667cf0a3c98c525b7aae8766b50ee13c362ee619a1e7e623cab3c96a6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-1-macro--seed20260910.json",
+      "name": "issue_101_record_F-1-macro_20260910",
+      "sha256": "sha256:e29d226c6d765cc65e2d54f6d5b5c996d4c7cc63386e41ab2b5e55b584c6515e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-continuous--seed20260908.json",
+      "name": "issue_101_record_F-5-continuous_20260908",
+      "sha256": "sha256:02d779c9eda06bc28aaf82ed6b3ce376ae811f76fc7e3ced8d7c39f288cd1ca4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-continuous--seed20260909.json",
+      "name": "issue_101_record_F-5-continuous_20260909",
+      "sha256": "sha256:33c84bb82e3695774cbd49ef89e49f4a8b78dcf16fec0bc08905bc25ccd86500"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-continuous--seed20260910.json",
+      "name": "issue_101_record_F-5-continuous_20260910",
+      "sha256": "sha256:c1f641af72de26e67cd6bef62439efb7fa5abc1b5652e899411560954cfb0c0b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-micro--seed20260908.json",
+      "name": "issue_101_record_F-5-micro_20260908",
+      "sha256": "sha256:cc660411483385452a645f6b9d96e07eca52a669059b34060b827f4c5adb242e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-micro--seed20260909.json",
+      "name": "issue_101_record_F-5-micro_20260909",
+      "sha256": "sha256:d246d0733996154ad407284d5853cdcfbd0d4ff099240afb85390ceae238723e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-micro--seed20260910.json",
+      "name": "issue_101_record_F-5-micro_20260910",
+      "sha256": "sha256:319008dc3b378a9f1197cfaa46b05e83727e6d49b4491c7c10bc69f87ebfe0a8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-macro--seed20260908.json",
+      "name": "issue_101_record_F-5-macro_20260908",
+      "sha256": "sha256:62a1e784a1a5a85dec5ffd7603705e16577ac4e58321d0a8e3f8a83d37c1e570"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-macro--seed20260909.json",
+      "name": "issue_101_record_F-5-macro_20260909",
+      "sha256": "sha256:abea3f1f0f43ca893afa8d20116eeaa9355cf2331da959a5bcc38028d074bbd9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-5-macro--seed20260910.json",
+      "name": "issue_101_record_F-5-macro_20260910",
+      "sha256": "sha256:27c45ee918379bb6e337d7758af023f26cf3a8d6579dbf53f3f815a3bdb00a66"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-continuous--seed20260908.json",
+      "name": "issue_101_record_F-15-continuous_20260908",
+      "sha256": "sha256:5754e343b92ebdfd3a7ce19bff04d18568f423c8a25513b354e5bb8a3c52ea58"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-continuous--seed20260909.json",
+      "name": "issue_101_record_F-15-continuous_20260909",
+      "sha256": "sha256:ef0bf24d0d091a5207ad602815cc9068a5b6b9d56d6e54521db60bad67e05929"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-continuous--seed20260910.json",
+      "name": "issue_101_record_F-15-continuous_20260910",
+      "sha256": "sha256:a5d808842db00920a1122e485d99620d39a70c60e14a0405f81f1d117bdf9165"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-micro--seed20260908.json",
+      "name": "issue_101_record_F-15-micro_20260908",
+      "sha256": "sha256:38cb308c6cdbe221212492dcdcdf97fc30e746a68da872a01905a6144f782129"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-micro--seed20260909.json",
+      "name": "issue_101_record_F-15-micro_20260909",
+      "sha256": "sha256:51c3c6af3c4a8959ea64ea849c3eb223655530b8e9ebb1925b0cd9c1c24a9107"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-micro--seed20260910.json",
+      "name": "issue_101_record_F-15-micro_20260910",
+      "sha256": "sha256:81479915da5ed2fe3947526c5840d352cb99c782db1437dba965f7257e347880"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-macro--seed20260908.json",
+      "name": "issue_101_record_F-15-macro_20260908",
+      "sha256": "sha256:8e32bec6b799a89649a2ca893f6379b1e2f589dd0d76f260772079e5b7425ad9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-macro--seed20260909.json",
+      "name": "issue_101_record_F-15-macro_20260909",
+      "sha256": "sha256:eb5b1a502de92c8623d770d143ae793b009a98f2db4b35b99906c2e51152c6b8"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/F-15-macro--seed20260910.json",
+      "name": "issue_101_record_F-15-macro_20260910",
+      "sha256": "sha256:4ad288ee4cafd0e424d4fbadd0713a89953d357a7cce245d7604826ca2688e80"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-04--seed20260908.json",
+      "name": "issue_101_record_J-pe-1e-04_20260908",
+      "sha256": "sha256:c05bf14aec2ad0b42b4acb0cb389d192eab60d1d49f94c998339c522cfbd1082"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-04--seed20260909.json",
+      "name": "issue_101_record_J-pe-1e-04_20260909",
+      "sha256": "sha256:697591eb02a3bcf124359514b8c191973ce4439133389680251ea1d4bc823ea7"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/records/J-pe-1e-04--seed20260910.json",
+      "name": "issue_101_record_J-pe-1e-04_20260910",
+      "sha256": "sha256:5360981b6b913f99e927f1f4a597fc8eac6aebbbd9bf9230a103b08477b7f9cc"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260908/policy.pt",
+      "name": "issue_101_policy_pe_20260908",
+      "sha256": "sha256:23b782645e2254ea4a1fa9714962487a3bdb87f1502b925c954675a7362b5489"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260909/policy.pt",
+      "name": "issue_101_policy_pe_20260909",
+      "sha256": "sha256:5a5c07df026545e33f557dd52b773c1c40779e685fa3a8d7dd56b887341762d4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-101-decision-aware-policy-v1/models/pe/lam-1e-04/seed-20260910/policy.pt",
+      "name": "issue_101_policy_pe_20260910",
+      "sha256": "sha256:faf929406d183c3d26d34132eba1c2e525117b5228bec5a00f55d7117651e358"
+    },
+    {
+      "artifact": ".local-artifacts/issue-115-predicate-feedback-v1/data/engine-truth.pt",
+      "name": "issue_115_engine_truth",
+      "sha256": "sha256:c7466205a02e9adb381adafbb36c81134ab60bbef8c50b754272850974a329a5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-115-predicate-feedback-v1/plan.json",
+      "name": "issue_115_plan",
+      "sha256": "sha256:bd69cb3b9bb5a1940a09853f777b79729d245af9f0b82c2d632001b8c660553a"
+    },
+    {
+      "artifact": "scripts/run_request_interference_ranking.py",
+      "name": "issue_117_ranking_runner",
+      "sha256": "sha256:dffb01367b07c8170483f9bff1c18fe64185895852524d500fe8a2888b4080cd"
+    },
+    {
+      "artifact": "scripts/run_gate_b.py",
+      "name": "gate_b_runner",
+      "sha256": "sha256:9301be75ffe276a9f5e9fe1ed43d00818bacddbabeadf9a41eca8fdd7372c515"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_retrain.py",
+      "name": "issue_112_retrain_runner",
+      "sha256": "sha256:0d92e282ec528d41958790d6ba444cd348a56a3854d4c7a1cd9e750de75978f9"
+    },
+    {
+      "artifact": "scripts/run_decision_relevant_dynamics.py",
+      "name": "issue_112_v1_runner",
+      "sha256": "sha256:22ef72c8dbe6d744f860c3b727ac7d9eb2813be635f622d1f7bb8743ba9ff98f"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_versions.py",
+      "name": "issue_112_versions_runner",
+      "sha256": "sha256:0ebdaf20945d1c0e0ac4b1462059af28f9cf8f544c54ea9f62e7ed4950803539"
+    },
+    {
+      "artifact": "scripts/run_decision_aware_policy.py",
+      "name": "issue_101_runner",
+      "sha256": "sha256:00415b79fb0f4485269ff2107c9828770c51e9268cd629edd0a2ba3bd0c74ea4"
+    },
+    {
+      "artifact": "scripts/run_decision_chain_attribution.py",
+      "name": "issue_99_attribution_runner",
+      "sha256": "sha256:9e017a24b0e6b126ec68eb91586f454e05e1c259430d7057281977c349fcc43c"
+    },
+    {
+      "artifact": "scripts/run_decision_dynamics_controls.py",
+      "name": "issue_112_controls_runner",
+      "sha256": "sha256:3b82ab2fb55179d29d1d97aa1c3c7aade059acd6cdf785181f8fadbab65a6345"
+    },
+    {
+      "artifact": "scripts/run_tau_ad_within_checkpoint.py",
+      "name": "issue_96_runner",
+      "sha256": "sha256:9cf1ffe4c6ec61ecf15bb3c911425929a00491c725b07f9880b2e84792b685bf"
+    },
+    {
+      "artifact": ".local-artifacts/issue-99-slot-encoder-fix-v1/encoder/encoder.pt",
+      "name": "issue_99_encoder",
+      "sha256": "sha256:cdbe677ab103e872ed6ac7777a3dc8b5aa0432f5771e8aa63a6e4e2d469bdd73"
+    },
+    {
+      "artifact": ".local-artifacts/issue-109-sealed-cohort-v1/plan.json",
+      "name": "issue_109_cohort_plan",
+      "sha256": "sha256:e88b07903a10dcf492b8bb6c86f10e52b56183c6a3995337ea282dacee4d6dc9"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-v1/plan.json",
+      "name": "issue_104_plan",
+      "sha256": "sha256:337cc145e45ade78c1f43c526690da654229ff9eb8b4d3452aea212bd09a1c52"
+    },
+    {
+      "artifact": ".local-artifacts/issue-104-power-cohort-campaign-v1/branches.json",
+      "name": "issue_104_campaign_branches",
+      "sha256": "sha256:1a6d883ffb28813676abc7bb65ee042ceb4af1464fc3cf6fc47472b5d8474624"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": "world_model/training/decision_dynamics.py",
+      "name": "decision_dynamics",
+      "sha256": "sha256:14aa4587277377bb7d7b8bd4a1954366bb653fb0baf3a912c6fa52075ac1b794"
+    },
+    {
+      "artifact": "world_model/training/stable_decision_dynamics.py",
+      "name": "stable_decision_dynamics",
+      "sha256": "sha256:8269589e0125f68573dd66e9baf641d9b9bc469069257969894483c62a13b4fa"
+    },
+    {
+      "artifact": "world_model/training/request_policy.py",
+      "name": "request_policy",
+      "sha256": "sha256:34fbce1e66532e3501b372bf6ed4bb1a496619a9a6accbdc066358933a01042c"
+    },
+    {
+      "artifact": "world_model/training/matched_dynamics.py",
+      "name": "matched_dynamics",
+      "sha256": "sha256:6c96384926c205250f00dd67c9a21760215cc675b10fff82b5aa3ce314eb4bc6"
+    },
+    {
+      "artifact": "world_model/training/cnn_hybrid.py",
+      "name": "cnn_hybrid",
+      "sha256": "sha256:d72fac36e5e2b1eed30e84c2f149049b4215c321910279b2abb5d621b17a1b51"
+    },
+    {
+      "artifact": "world_model/model/predictor.py",
+      "name": "predictor",
+      "sha256": "sha256:1a37118447894532a3645fcf06560b38b74d88fd10555c580cba5c0ef4dcd3f8"
+    },
+    {
+      "artifact": "world_model/training/request_sets.py",
+      "name": "request_sets",
+      "sha256": "sha256:666c232851b8b631775020ebfc8ffff9558c77931fe49bdc9da66ccf30034882"
+    },
+    {
+      "artifact": ".local-artifacts/issue-116-request-set-scaling-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:638f607ff0d7ac7b035408cfa40c2e96be074c50e9f95947372c058d9c0f83d4"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260908/predictor.pt",
+      "name": "checkpoint_unit_20260908",
+      "sha256": "sha256:252ee2a7737cdf4979ecb9039a4ed8762fd06b58fcef13a344e1752beff058fb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260909/predictor.pt",
+      "name": "checkpoint_unit_20260909",
+      "sha256": "sha256:c8026b4954f2d5c966b74a5f085ecc8b68dca97717a59ab61d29ada248920dd5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-112-v3-retrain-v1/models/LC/hybrid/fold-all/seed-20260910/predictor.pt",
+      "name": "checkpoint_unit_20260910",
+      "sha256": "sha256:6d8bbf719bef9525eb705a530118be83ee35e0424a64cc44261f4d5b7fc5148f"
+    }
+  ],
+  "issue": 116,
+  "module": "world_model/training/request_sets.py",
+  "module_sha256_at_freeze": "sha256:666c232851b8b631775020ebfc8ffff9558c77931fe49bdc9da66ccf30034882",
+  "policies": {
+    "definitions": {
+      "factorised": "trunk -> Delta head x alpha head; joint log-probabilities",
+      "flat": "request_policy.RequestPolicy(R, 128, clamp60): |R|-way (the current design)",
+      "ordinal": "trunk -> cumulative-logit Delta head (one score, ordered thresholds) x alpha head"
+    },
+    "heads": {
+      "R_18": [
+        "flat",
+        "factorised"
+      ],
+      "R_30": [
+        "flat",
+        "factorised"
+      ],
+      "R_9": [
+        "flat",
+        "factorised"
+      ],
+      "R_cont": [
+        "flat",
+        "factorised",
+        "ordinal"
+      ]
+    },
+    "matching": "factorised / ordinal hidden width chosen so the parameter count is closest to the set's flat head",
+    "parameters": {
+      "R_18": {
+        "factorised": 33525,
+        "flat": 33426
+      },
+      "R_30": {
+        "factorised": 35085,
+        "flat": 34974
+      },
+      "R_9": {
+        "factorised": 32376,
+        "flat": 32265
+      },
+      "R_cont": {
+        "factorised": 60105,
+        "flat": 60129,
+        "ordinal": 60099
+      }
+    },
+    "recipe": "#101 pe: torch.manual_seed(seed + 7700) init; round 0 on observed-context labels; round 1 on the head's own DAgger contexts; rp.distil_round (2 x 1800 steps, batch 128, AdamW 1e-3, unit = policy level); cross-entropy on the joint scores (sum of factor NLLs for factorised / ordinal)",
+    "remaining_feature": "clamp60",
+    "seed_pairing": "policy seed s uses predictor seed s",
+    "widths": {
+      "R_18": {
+        "factorised": 133,
+        "flat": 128
+      },
+      "R_30": {
+        "factorised": 137,
+        "flat": 128
+      },
+      "R_9": {
+        "factorised": 130,
+        "flat": 128
+      },
+      "R_cont": {
+        "factorised": 187,
+        "flat": 128,
+        "ordinal": 243
+      }
+    }
+  },
+  "prohibited": [
+    "reading evaluation captures for training or selection",
+    "re-scoring after publication",
+    "changing a set, budget, head, rule or recipe after the freeze",
+    "retrying or replacing a typed failure"
+  ],
+  "question": "what happens to rollout error, ranking, DP labelling cost and policy accuracy when the request set grows beyond R_9 = {1, 5, 15} x alpha, up to an effectively continuous Delta?",
+  "records": "records, label files, update logs and checkpoints stay local; records-manifest.json (sha256 of every record, label report, round-0 label file and update log) is committed",
+  "related_issues": [
+    101,
+    104,
+    108,
+    109,
+    111,
+    112,
+    114,
+    117,
+    119,
+    121
+  ],
+  "request_sets": {
+    "R_18": {
+      "alphas": [
+        "continuous",
+        "micro",
+        "macro"
+      ],
+      "deltas": [
+        1,
+        2,
+        3,
+        5,
+        10,
+        15
+      ],
+      "order": "Delta-major, alpha continuous/micro/macro (R_9 = cnn_hybrid.PAIRS)",
+      "size": 18
+    },
+    "R_30": {
+      "alphas": [
+        "continuous",
+        "micro",
+        "macro"
+      ],
+      "deltas": [
+        1,
+        2,
+        3,
+        5,
+        8,
+        10,
+        15,
+        25,
+        45,
+        75
+      ],
+      "order": "Delta-major, alpha continuous/micro/macro (R_9 = cnn_hybrid.PAIRS)",
+      "size": 30
+    },
+    "R_9": {
+      "alphas": [
+        "continuous",
+        "micro",
+        "macro"
+      ],
+      "deltas": [
+        1,
+        5,
+        15
+      ],
+      "order": "Delta-major, alpha continuous/micro/macro (R_9 = cnn_hybrid.PAIRS)",
+      "size": 9
+    },
+    "R_cont": {
+      "alphas": [
+        "continuous",
+        "micro",
+        "macro"
+      ],
+      "deltas": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75
+      ],
+      "order": "Delta-major, alpha continuous/micro/macro (R_9 = cnn_hybrid.PAIRS)",
+      "size": 225
+    }
+  },
+  "role": "#116 Work 1-6 in full, including the ranking comparison across request sets, confirmatory on the #104 sealed #109 evaluation split after Gate B passed",
+  "runner": "scripts/run_request_set_scaling.py",
+  "runner_sha256_at_freeze": "sha256:bd64264c5fadca2d151981837d49c19867c1b232835aaeb8333855eee2467853",
+  "schema": "issue_116_plan_v1",
+  "smoke_evidence": {
+    "checks": [
+      {
+        "control": "request_sets_schedules_clock_endpoint_rule",
+        "endpoint_rule": {
+          "R_18": {
+            "nondividing": [
+              {
+                "delta": 2,
+                "fallback": [
+                  1
+                ],
+                "transitions": 113
+              },
+              {
+                "delta": 10,
+                "fallback": [
+                  5
+                ],
+                "transitions": 23
+              }
+            ]
+          },
+          "R_30": {
+            "nondividing": [
+              {
+                "delta": 2,
+                "fallback": [
+                  1
+                ],
+                "transitions": 113
+              },
+              {
+                "delta": 8,
+                "fallback": [
+                  1
+                ],
+                "transitions": 29
+              },
+              {
+                "delta": 10,
+                "fallback": [
+                  5
+                ],
+                "transitions": 23
+              }
+            ]
+          },
+          "R_9": {
+            "nondividing": []
+          },
+          "R_cont": {
+            "nondividing": [
+              {
+                "delta": 2,
+                "fallback": [
+                  1
+                ],
+                "transitions": 113
+              },
+              {
+                "delta": 4,
+                "fallback": [
+                  1
+                ],
+                "transitions": 57
+              },
+              {
+                "delta": 6,
+                "fallback": [
+                  3
+                ],
+                "transitions": 38
+              },
+              {
+                "delta": 7,
+                "fallback": [
+                  1
+                ],
+                "transitions": 33
+              },
+              {
+                "delta": 8,
+                "fallback": [
+                  1
+                ],
+                "transitions": 29
+              },
+              {
+                "delta": 10,
+                "fallback": [
+                  5
+                ],
+                "transitions": 23
+              },
+              {
+                "delta": 11,
+                "fallback": [
+                  5
+                ],
+                "transitions": 21
+              },
+              {
+                "delta": 12,
+                "fallback": [
+                  9
+                ],
+                "transitions": 19
+              },
+              {
+                "delta": 13,
+                "fallback": [
+                  4
+                ],
+                "transitions": 18
+              },
+              {
+                "delta": 14,
+                "fallback": [
+                  1
+                ],
+                "transitions": 17
+              },
+              {
+                "delta": 16,
+                "fallback": [
+                  1
+                ],
+                "transitions": 15
+              },
+              {
+                "delta": 17,
+                "fallback": [
+                  4
+                ],
+                "transitions": 14
+              },
+              {
+                "delta": 18,
+                "fallback": [
+                  9
+                ],
+                "transitions": 13
+              },
+              {
+                "delta": 19,
+                "fallback": [
+                  16
+                ],
+                "transitions": 12
+              },
+              {
+                "delta": 20,
+                "fallback": [
+                  5
+                ],
+                "transitions": 12
+              },
+              {
+                "delta": 21,
+                "fallback": [
+                  15
+                ],
+                "transitions": 11
+              },
+              {
+                "delta": 22,
+                "fallback": [
+                  5
+                ],
+                "transitions": 11
+              },
+              {
+                "delta": 23,
+                "fallback": [
+                  18
+                ],
+                "transitions": 10
+              },
+              {
+                "delta": 24,
+                "fallback": [
+                  9
+                ],
+                "transitions": 10
+              },
+              {
+                "delta": 26,
+                "fallback": [
+                  17
+                ],
+                "transitions": 9
+              },
+              {
+                "delta": 27,
+                "fallback": [
+                  9
+                ],
+                "transitions": 9
+              },
+              {
+                "delta": 28,
+                "fallback": [
+                  1
+                ],
+                "transitions": 9
+              },
+              {
+                "delta": 29,
+                "fallback": [
+                  22
+                ],
+                "transitions": 8
+              },
+              {
+                "delta": 30,
+                "fallback": [
+                  15
+                ],
+                "transitions": 8
+              },
+              {
+                "delta": 31,
+                "fallback": [
+                  8
+                ],
+                "transitions": 8
+              },
+              {
+                "delta": 32,
+                "fallback": [
+                  1
+                ],
+                "transitions": 8
+              },
+              {
+                "delta": 33,
+                "fallback": [
+                  27
+                ],
+                "transitions": 7
+              },
+              {
+                "delta": 34,
+                "fallback": [
+                  21
+                ],
+                "transitions": 7
+              },
+              {
+                "delta": 35,
+                "fallback": [
+                  15
+                ],
+                "transitions": 7
+              },
+              {
+                "delta": 36,
+                "fallback": [
+                  9
+                ],
+                "transitions": 7
+              },
+              {
+                "delta": 37,
+                "fallback": [
+                  3
+                ],
+                "transitions": 7
+              },
+              {
+                "delta": 38,
+                "fallback": [
+                  35
+                ],
+                "transitions": 6
+              },
+              {
+                "delta": 39,
+                "fallback": [
+                  30
+                ],
+                "transitions": 6
+              },
+              {
+                "delta": 40,
+                "fallback": [
+                  25
+                ],
+                "transitions": 6
+              },
+              {
+                "delta": 41,
+                "fallback": [
+                  20
+                ],
+                "transitions": 6
+              },
+              {
+                "delta": 42,
+                "fallback": [
+                  15
+                ],
+                "transitions": 6
+              },
+              {
+                "delta": 43,
+                "fallback": [
+                  10
+                ],
+                "transitions": 6
+              },
+              {
+                "delta": 44,
+                "fallback": [
+                  5
+                ],
+                "transitions": 6
+              },
+              {
+                "delta": 46,
+                "fallback": [
+                  41
+                ],
+                "transitions": 5
+              },
+              {
+                "delta": 47,
+                "fallback": [
+                  37
+                ],
+                "transitions": 5
+              },
+              {
+                "delta": 48,
+                "fallback": [
+                  33
+                ],
+                "transitions": 5
+              },
+              {
+                "delta": 49,
+                "fallback": [
+                  29
+                ],
+                "transitions": 5
+              },
+              {
+                "delta": 50,
+                "fallback": [
+                  25
+                ],
+                "transitions": 5
+              },
+              {
+                "delta": 51,
+                "fallback": [
+                  21
+                ],
+                "transitions": 5
+              },
+              {
+                "delta": 52,
+                "fallback": [
+                  17
+                ],
+                "transitions": 5
+              },
+              {
+                "delta": 53,
+                "fallback": [
+                  13
+                ],
+                "transitions": 5
+              },
+              {
+                "delta": 54,
+                "fallback": [
+                  9
+                ],
+                "transitions": 5
+              },
+              {
+                "delta": 55,
+                "fallback": [
+                  5
+                ],
+                "transitions": 5
+              },
+              {
+                "delta": 56,
+                "fallback": [
+                  1
+                ],
+                "transitions": 5
+              },
+              {
+                "delta": 57,
+                "fallback": [
+                  54
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 58,
+                "fallback": [
+                  51
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 59,
+                "fallback": [
+                  48
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 60,
+                "fallback": [
+                  45
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 61,
+                "fallback": [
+                  42
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 62,
+                "fallback": [
+                  39
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 63,
+                "fallback": [
+                  36
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 64,
+                "fallback": [
+                  33
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 65,
+                "fallback": [
+                  30
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 66,
+                "fallback": [
+                  27
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 67,
+                "fallback": [
+                  24
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 68,
+                "fallback": [
+                  21
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 69,
+                "fallback": [
+                  18
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 70,
+                "fallback": [
+                  15
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 71,
+                "fallback": [
+                  12
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 72,
+                "fallback": [
+                  9
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 73,
+                "fallback": [
+                  6
+                ],
+                "transitions": 4
+              },
+              {
+                "delta": 74,
+                "fallback": [
+                  3
+                ],
+                "transitions": 4
+              }
+            ]
+          }
+        },
+        "ok": true,
+        "pruned_deltas": [
+          1,
+          2,
+          3,
+          5,
+          7,
+          11,
+          16,
+          23,
+          34,
+          51,
+          75
+        ],
+        "sizes": {
+          "R_18": 18,
+          "R_30": 30,
+          "R_9": 9,
+          "R_cont": 225
+        },
+        "update_counts": {
+          "R_18/request": 18000,
+          "R_18/total": 9000,
+          "R_30/request": 30000,
+          "R_30/total": 9000,
+          "R_9": 9000,
+          "R_cont/request": 225000,
+          "R_cont/total": 9000
+        }
+      },
+      {
+        "control": "handoff_seeds_hashes_and_split_isolation",
+        "handoff_token": null,
+        "hashes": true,
+        "ok": true,
+        "policy_levels": 120,
+        "usable_seeds": [
+          20260908,
+          20260909,
+          20260910
+        ]
+      },
+      {
+        "control": "usability_rule_reproduces_the_retrain_member_table",
+        "members": 6,
+        "ok": true
+      },
+      {
+        "control": "policy_heads_matched_masked_normalized",
+        "heads": {
+          "R_18": {
+            "factorised": {
+              "first_loss": 2.9039807319641113,
+              "flat_parameters": 33426,
+              "last_loss": 1.1911835670471191,
+              "macs_per_call": 33383,
+              "masked": true,
+              "matched": true,
+              "normalized": true,
+              "parameters": 33525,
+              "width": 133
+            },
+            "flat": {
+              "first_loss": 2.8899502754211426,
+              "flat_parameters": 33426,
+              "last_loss": 1.355170726776123,
+              "macs_per_call": 33280,
+              "masked": true,
+              "matched": true,
+              "normalized": true,
+              "parameters": 33426,
+              "width": 128
+            }
+          },
+          "R_30": {
+            "factorised": {
+              "first_loss": 3.2784862518310547,
+              "flat_parameters": 34974,
+              "last_loss": 1.4422638416290283,
+              "macs_per_call": 34935,
+              "masked": true,
+              "matched": true,
+              "normalized": true,
+              "parameters": 35085,
+              "width": 137
+            },
+            "flat": {
+              "first_loss": 3.290998935699463,
+              "flat_parameters": 34974,
+              "last_loss": 1.5348789691925049,
+              "macs_per_call": 34816,
+              "masked": true,
+              "matched": true,
+              "normalized": true,
+              "parameters": 34974,
+              "width": 128
+            }
+          },
+          "R_9": {
+            "factorised": {
+              "first_loss": 2.167698860168457,
+              "flat_parameters": 32265,
+              "last_loss": 0.8536688089370728,
+              "macs_per_call": 32240,
+              "masked": true,
+              "matched": true,
+              "normalized": true,
+              "parameters": 32376,
+              "width": 130
+            },
+            "flat": {
+              "first_loss": 2.160675525665283,
+              "flat_parameters": 32265,
+              "last_loss": 0.8268907070159912,
+              "macs_per_call": 32128,
+              "masked": true,
+              "matched": true,
+              "normalized": true,
+              "parameters": 32265,
+              "width": 128
+            }
+          },
+          "R_cont": {
+            "factorised": {
+              "first_loss": 4.88313102722168,
+              "flat_parameters": 60129,
+              "last_loss": 2.202373504638672,
+              "macs_per_call": 59840,
+              "masked": true,
+              "matched": true,
+              "normalized": true,
+              "parameters": 60105,
+              "width": 187
+            },
+            "flat": {
+              "first_loss": 5.114119529724121,
+              "flat_parameters": 60129,
+              "last_loss": 2.884953022003174,
+              "macs_per_call": 59776,
+              "masked": true,
+              "matched": true,
+              "normalized": true,
+              "parameters": 60129,
+              "width": 128
+            },
+            "ordinal": {
+              "first_loss": 5.051975250244141,
+              "flat_parameters": 60129,
+              "last_loss": 3.5969138145446777,
+              "macs_per_call": 59778,
+              "masked": true,
+              "matched": true,
+              "normalized": true,
+              "parameters": 60099,
+              "width": 243
+            }
+          }
+        },
+        "ok": true
+      },
+      {
+        "carrier_equal": true,
+        "carrier_equal_in_R_cont_class": true,
+        "control": "generalised_predictor_equals_cnn_hybrid_on_R_9",
+        "delta_75_finite": true,
+        "ok": true,
+        "rejects_outside_R": true,
+        "state_dict_equal": true
+      },
+      {
+        "control": "window_rule_reproduces_the_payload_windows",
+        "extended": {
+          "16": {
+            "local_steps_histogram": [
+              640,
+              826,
+              905,
+              13991,
+              203924
+            ],
+            "window": 64
+          },
+          "25": {
+            "local_steps_histogram": [
+              1069,
+              1446,
+              14671,
+              27350,
+              175750
+            ],
+            "window": 100
+          },
+          "45": {
+            "local_steps_histogram": [
+              2220,
+              28885,
+              41757,
+              41311,
+              106113
+            ],
+            "window": 180
+          },
+          "75": {
+            "local_steps_histogram": [
+              17186,
+              69595,
+              67810,
+              65695,
+              0
+            ],
+            "window": 300
+          }
+        },
+        "ok": true,
+        "same": true
+      },
+      {
+        "control": "R_9_training_equals_retrain_train_group_schedule",
+        "logs_equal": true,
+        "max_abs_parameter_delta": 0.0,
+        "ok": true
+      },
+      {
+        "control": "R_9_training_equals_retrain_train_group_full_cost",
+        "logs_equal": true,
+        "max_abs_parameter_delta": 0.0,
+        "ok": true
+      },
+      {
+        "control": "R_cont_and_R_30_train_finite_at_every_timing_delta",
+        "ok": true,
+        "r30_delta75_trace": [
+          {
+            "clock": 4500,
+            "grad_norm": [
+              12.570910453796387
+            ],
+            "horizon": 150,
+            "local": [
+              1.0685030221939087
+            ],
+            "long": [
+              0.4796288311481476
+            ],
+            "loss": [
+              1.6194170713424683
+            ],
+            "rank": [
+              0.7128523588180542
+            ],
+            "rank_weight": 0.1,
+            "retired": [
+              false
+            ],
+            "step": 2
+          }
+        ],
+        "skipped": 0
+      },
+      {
+        "bit_equal": true,
+        "chunked_agreement": 0.9975574712643678,
+        "chunked_dagger_agreement": null,
+        "control": "dp_labels_reproduce_issue_101_window_rows_observed",
+        "ok": true,
+        "rows": 6960
+      },
+      {
+        "bit_equal": true,
+        "chunked_agreement": 1.0,
+        "chunked_dagger_agreement": 1.0,
+        "control": "dp_labels_reproduce_issue_101_window_rows_dagger",
+        "ok": true,
+        "rows": 6960
+      },
+      {
+        "control": "pruned_dp_on_grid_and_never_below_the_exact_optimum",
+        "no_better": true,
+        "ok": true,
+        "on_grid": true
+      },
+      {
+        "control": "R_9_fixed_rows_reproduce_gate_b_unit_records",
+        "ok": true
+      },
+      {
+        "control": "R_9_fixed_rows_reproduce_issue_101_records_grid",
+        "ok": true
+      },
+      {
+        "control": "issue_101_J_reproduces_through_the_generalised_rollout",
+        "ok": true
+      },
+      {
+        "control": "truth_store_indexes_grid_branches_and_reproduces_issue_115_engine_mse",
+        "grid_keys_equal": true,
+        "max_abs_engine_mse_delta": 0.0,
+        "ok": true
+      },
+      {
+        "control": "statistics_rehearsal_reproduces_gate_b",
+        "dp_rule_on_stand_in": "supported",
+        "ok": true,
+        "prior": true,
+        "ranking_rule_on_zero_contrasts": "not_supported_by_this_experiment",
+        "stability_max_abs_delta": 0.0,
+        "stand_in_contrasts_zero": true,
+        "typed_failure_drops_one_seed": true,
+        "unit_auc": true,
+        "wrong_anchor_exact": true
+      },
+      {
+        "cells": 3,
+        "control": "label_and_score_stages_run_end_to_end_R_9",
+        "fixed_seconds": 1.631106282118708,
+        "heads": {
+          "factorised": {
+            "final_loss_0": 1.3509496827920278,
+            "final_loss_1": 1.291588165362676,
+            "label_change_round1_vs_round0": 0.24497622334713914,
+            "parameters": 32376,
+            "width": 130
+          },
+          "flat": {
+            "final_loss_0": 1.186878458658854,
+            "final_loss_1": 1.126227823893229,
+            "label_change_round1_vs_round0": 0.1965025310630465,
+            "parameters": 32265,
+            "width": 128
+          }
+        },
+        "label_seconds": 5.866777377901599,
+        "ok": true,
+        "policies_seconds": 35.70400822884403,
+        "windows": 58
+      },
+      {
+        "cells": 3,
+        "control": "label_and_score_stages_run_end_to_end_R_cont--total",
+        "fixed_seconds": 7.104298680089414,
+        "heads": {
+          "factorised": {
+            "final_loss_0": 2.513802750905355,
+            "final_loss_1": 2.412191621462504,
+            "label_change_round1_vs_round0": 0.20493940788464488,
+            "parameters": 60105,
+            "width": 187
+          },
+          "flat": {
+            "final_loss_0": 2.3858293890953064,
+            "final_loss_1": 2.2331508537133535,
+            "label_change_round1_vs_round0": 0.20938794293603313,
+            "parameters": 60129,
+            "width": 128
+          },
+          "ordinal": {
+            "final_loss_0": 3.0214576959609984,
+            "final_loss_1": 2.5903274496396382,
+            "label_change_round1_vs_round0": 0.22127626936646724,
+            "parameters": 60099,
+            "width": 243
+          }
+        },
+        "label_seconds": 12.400206060847268,
+        "ok": true,
+        "policies_seconds": 149.47915935702622,
+        "windows": 58
+      },
+      {
+        "control": "projection_within_48h_on_4_gpus",
+        "ok": true,
+        "projected_elapsed_seconds": 25546.719091458937
+      }
+    ],
+    "device": "NVIDIA GeForce RTX 5090",
+    "dp_timing": {
+      "R_9": {
+        "evaluations": 504576,
+        "peak_memory_gb": 1.171824128,
+        "seconds": 0.07948695705272257
+      },
+      "R_cont": {
+        "evaluations": 10828800,
+        "peak_memory_gb": 1.221661696,
+        "seconds": 1.302771666785702
+      },
+      "pruned": {
+        "disagreement": 0.8177992325782893,
+        "seconds": 0.22528595989570022
+      }
+    },
+    "identity": "issue-116-request-set-scaling-v1",
+    "ok": true,
+    "pool_windows_sha256": "sha256:90892903179a9f423789c6ee5064fa8936acf45c29c3d89b9587ad10531e5c72",
+    "projection": {
+      "labelling": {
+        "assignment": {
+          "0": [
+            "R_cont/request|20260908",
+            "R_cont/total|20260909",
+            "R_30/total|20260909",
+            "R_18/request|20260910",
+            "R_9|20260908"
+          ],
+          "1": [
+            "R_cont/request|20260909",
+            "R_cont/total|20260910",
+            "R_30/total|20260910",
+            "R_18/total|20260908",
+            "R_9|20260909"
+          ],
+          "2": [
+            "R_cont/request|20260910",
+            "R_30/request|20260908",
+            "R_30/request|20260910",
+            "R_18/request|20260908",
+            "R_18/total|20260909",
+            "R_9|20260910"
+          ],
+          "3": [
+            "R_cont/total|20260908",
+            "R_30/request|20260909",
+            "R_30/total|20260908",
+            "R_18/request|20260909",
+            "R_18/total|20260910"
+          ]
+        },
+        "projected_gpu_seconds": 7359.492956082802,
+        "projected_seconds_per_worker": [
+          1785.957869458245,
+          1785.957869458245,
+          2058.446136048995,
+          1729.131081117317
+        ]
+      },
+      "projected_elapsed_seconds": 25546.719091458937,
+      "scoring": {
+        "assignment": {
+          "0": [
+            "R_cont/request|20260908|policies",
+            "R_cont/total|20260909|policies",
+            "R_cont/total|20260909|fixed",
+            "R_18/request|20260910|policies",
+            "R_30/request|20260908|policies",
+            "R_30/total|20260909|policies",
+            "R_9|20260910|policies",
+            "R_30/total|20260909|fixed",
+            "R_18/request|20260910|fixed",
+            "R_9|20260908|fixed",
+            "R_9|20260910|fixed"
+          ],
+          "1": [
+            "R_cont/request|20260909|policies",
+            "R_cont/total|20260910|policies",
+            "R_cont/total|20260910|fixed",
+            "R_18/total|20260908|policies",
+            "R_30/request|20260909|policies",
+            "R_30/total|20260910|policies",
+            "R_30/request|20260908|fixed",
+            "R_30/request|20260909|fixed",
+            "R_30/total|20260910|fixed",
+            "R_18/total|20260908|fixed",
+            "R_9|20260909|fixed"
+          ],
+          "2": [
+            "R_cont/request|20260910|policies",
+            "R_cont/request|20260908|fixed",
+            "R_cont/request|20260910|fixed",
+            "R_18/request|20260908|policies",
+            "R_18/total|20260909|policies",
+            "R_30/request|20260910|policies",
+            "R_9|20260908|policies",
+            "R_30/request|20260910|fixed",
+            "R_18/request|20260908|fixed",
+            "R_18/total|20260909|fixed"
+          ],
+          "3": [
+            "R_cont/total|20260908|policies",
+            "R_cont/request|20260909|fixed",
+            "R_cont/total|20260908|fixed",
+            "R_18/request|20260909|policies",
+            "R_18/total|20260910|policies",
+            "R_30/total|20260908|policies",
+            "R_9|20260909|policies",
+            "R_30/total|20260908|fixed",
+            "R_18/request|20260909|fixed",
+            "R_18/total|20260910|fixed"
+          ]
+        },
+        "projected_gpu_seconds": 38190.51818049637,
+        "projected_seconds_per_worker": [
+          9649.317590205215,
+          9430.139546446013,
+          9555.530521922576,
+          9555.530521922576
+        ]
+      },
+      "seconds_per_update_model": {
+        "a": 0.01930430509512697,
+        "b_over_delta": 0.2742163141696901,
+        "compile_overhead": 5.021480591071304
+      },
+      "training": {
+        "assignment": {
+          "0": [
+            "R_cont/request|20260908",
+            "R_18/request|20260909",
+            "R_18/total|20260908",
+            "R_30/total|20260909"
+          ],
+          "1": [
+            "R_cont/request|20260909",
+            "R_18/request|20260910",
+            "R_18/total|20260909",
+            "R_30/total|20260910"
+          ],
+          "2": [
+            "R_cont/request|20260910",
+            "R_cont/total|20260908",
+            "R_cont/total|20260910",
+            "R_30/total|20260908"
+          ],
+          "3": [
+            "R_30/request|20260908",
+            "R_30/request|20260909",
+            "R_30/request|20260910",
+            "R_18/request|20260908",
+            "R_cont/total|20260909",
+            "R_18/total|20260910"
+          ]
+        },
+        "projected_gpu_seconds": 54025.19731471237,
+        "projected_seconds_per_worker": [
+          13838.955365204727,
+          13838.955365204727,
+          13351.93567587874,
+          12995.350908424181
+        ]
+      }
+    },
+    "reading": "infrastructure assertions only; nothing kept; no statistic of a new model output; the only evaluation rows computed reproduce published Gate-B, #101 and #115 records",
+    "run_at": "2026-10-17T03:01:56Z",
+    "schema": "issue_116_smoke_v1",
+    "scoring_timing": {
+      "F_15_macro_seconds_per_seed": [
+        5.255136413965374,
+        5.242975553963333,
+        5.2378139949869365
+      ],
+      "J_grid_seconds": 68.27337993681431,
+      "grid_seconds_per_request": {
+        "F-1-continuous": 37.781370647018775,
+        "F-1-macro": 43.20632279291749,
+        "F-1-micro": 50.82192043797113,
+        "F-15-continuous": 2.805366578977555,
+        "F-15-micro": 3.710337520809844,
+        "F-5-continuous": 7.88927114685066,
+        "F-5-macro": 8.818038924830034,
+        "F-5-micro": 10.338875061832368
+      }
+    },
+    "training_timing": {
+      "first_update_seconds": {
+        "1": 6.568670503795147,
+        "10": 5.135764248203486,
+        "15": 5.271560586988926,
+        "2": 6.144418436102569,
+        "25": 4.075854827882722,
+        "3": 5.149619043106213,
+        "45": 5.339499351102859,
+        "5": 4.068457596935332,
+        "75": 4.166459436062723,
+        "8": 5.145816427888349
+      },
+      "peak_memory_gb": 10.448323072,
+      "steady_seconds": {
+        "1": 0.2932946835644543,
+        "10": 0.047062348457984626,
+        "15": 0.036937138880603015,
+        "2": 0.15768871793989092,
+        "25": 0.029971782118082047,
+        "3": 0.11005083448253572,
+        "45": 0.025671249954029918,
+        "5": 0.07292343699373305,
+        "75": 0.023665658896788955,
+        "8": 0.05404869606718421
+      }
+    },
+    "wall_seconds": 724.2503576721065
+  },
+  "training": {
+    "budgets": {
+      "R_9": "both budgets are the Gate-B joint (9000 updates, 1000 per request): not retrained",
+      "request": "1000 x |R| updates (1000 per request, the Gate-B joint's per-request count)",
+      "total": "9000 updates (the Gate-B count): 9000 / |R| updates per request",
+      "update_counts": {
+        "R_18/request": 18000,
+        "R_18/total": 9000,
+        "R_30/request": 30000,
+        "R_30/total": 9000,
+        "R_9": 9000,
+        "R_cont/request": 225000,
+        "R_cont/total": 9000
+      }
+    },
+    "curriculum_clock": "update u of an n-update run reads the horizon curriculum and the ranking ramp at u * 9000 // n (identity at 9000 updates)",
+    "data": {
+      "definition": "the retrain's #109 fit payload (13 919 shots, 680 ranking cells)",
+      "payload": ".local-artifacts/issue-112-v3-retrain-v1/data/training-data.pt"
+    },
+    "endpoint_rule": "fixed requests (ranking term in training and every fixed-request scoring rollout): floor(225 / Delta) transitions of the request, then the #101 same-alpha fallback (the largest Delta' in R with Delta' <= remaining) until exactly 225; Delta | 225 is the fixed request itself. Policies mask Delta > remaining",
+    "local_window": "an update of Delta reads a window of max(60, 4 Delta) transitions at the drawn window start (same index draw), so every Delta keeps four local transitions where the shot allows; Delta <= 15 is the payload window",
+    "long_horizon": "floor(horizon / Delta) transitions of the trained pair; none when Delta > horizon",
+    "recipe": "#112 v3 LC (the Gate-B recipe): #77 local loss, long-horizon recursion to the curriculum horizon, decision-contrastive ranking, truncation every 45 transitions, skip-on-nonfinite ensemble (patience 10); fold 'all', one member per (configuration, seed), seeds [20260908, 20260909, 20260910]",
+    "recipe_constants": {
+      "long": {
+        "batch_size": 64,
+        "every": 500,
+        "first": 60,
+        "increment": 15,
+        "last": 225,
+        "seed_offset": 112001,
+        "starts": [
+          0,
+          15,
+          30,
+          45,
+          60
+        ],
+        "targets": "the E99 parsed carrier at every visited position start + j * delta, terminal absorption past the shot's last frame",
+        "truncation": "every 45 recursive transitions (stable_decision_dynamics)",
+        "weight": 1.0
+      },
+      "rank": {
+        "candidate_pad": 20,
+        "cells_per_step": 2,
+        "cost": "tie_free (scoring_harness.tie_free on tensors): pig presence - 0.1 x pig-slot center displacement between the anchor carrier and the rollout endpoint at 225",
+        "inventories": [
+          "grid",
+          "offset",
+          "angle",
+          "power"
+        ],
+        "ramp": 1000,
+        "seed_offset": 112002,
+        "start": 1000,
+        "temperature": 0.1,
+        "weight": 0.1
+      },
+      "s99": {
+        "batch_size": 64,
+        "grad_clip": 1.0,
+        "learning_rate": 0.0001,
+        "steps": 9000,
+        "weight_decay": 0.0001
+      }
+    },
+    "schedule": "round robin over R in declared order (R_9: PAIRS[step % 9], the retrain schedule)",
+    "usable": "complete, at most 45 skipped updates per 9000 (scaled to the member's updates), every update logged, no #117 end-of-training excursion (rt.excursion over its own schedule); an unusable member is a typed terminal failure, never retried or replaced, and gets no policy"
+  },
+  "validation_command": "python -u -m scripts.run_request_set_scaling --validate",
+  "version": 1
+}
