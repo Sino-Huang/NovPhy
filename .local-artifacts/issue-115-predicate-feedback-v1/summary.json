@@ -1,0 +1,931 @@
+{
+  "claim_boundary": "one look at the sealed #109 evaluation split; grid ranking primary, other inventories, rollout error and readouts descriptive; tie-free cost; DESCRIPTIVE intervals; NovPhy only; the label-free arm is one discrete bottleneck, not every unsupervised predicate learner",
+  "compute": {
+    "engine_seconds": 0,
+    "gpu_seconds": 213539.48944152799,
+    "wall_seconds": 218340.24749476346
+  },
+  "dispositions": {
+    "macro": {
+      "J_label_free_minus_reference": {
+        "clusters": 311,
+        "interval": [
+          0.0004193952706814502,
+          0.032564239975815534
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.01662799508458674,
+        "units": 933
+      },
+      "claim": "the description axis keeps its value without engine-labelled predicates (macro)",
+      "contrast_tokens": {
+        "F_mean": "readiness_or_precision_insufficient",
+        "J-T": "supported"
+      },
+      "contrasts": {
+        "F_mean": {
+          "clusters": 311,
+          "interval": [
+            -0.024808608385778804,
+            0.01670402138649726
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.003956410387278567,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            0.040684644044772664,
+            0.06346255432670223
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05188116635061973,
+          "units": 933
+        }
+      },
+      "label_free": "ma-free",
+      "reference": "ma-ref",
+      "reference_description_value_J_minus_T": {
+        "clusters": 311,
+        "interval": [
+          -0.01232792618242779,
+          -0.0031021921094268423
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": -0.007688381643365568,
+        "token": "not_supported_by_this_experiment",
+        "units": 933
+      },
+      "token": "readiness_or_precision_insufficient"
+    },
+    "micro": {
+      "J_label_free_minus_reference": {
+        "clusters": 311,
+        "interval": [
+          -0.0001943737755634947,
+          0.016221099372224764
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.008114750558480457,
+        "units": 933
+      },
+      "claim": "the description axis keeps its value without engine-labelled predicates (micro)",
+      "contrast_tokens": {
+        "F_mean": "supported",
+        "J-T": "supported"
+      },
+      "contrasts": {
+        "F_mean": {
+          "clusters": 311,
+          "interval": [
+            0.006559928846906343,
+            0.03258024516866961
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.01969149107412774,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.014585963786124565,
+            0.008246287920725208
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.0034172329992265735,
+          "units": 933
+        }
+      },
+      "label_free": "mi-free",
+      "reference": "gateb",
+      "reference_description_value_J_minus_T": {
+        "clusters": 311,
+        "interval": [
+          -0.007475177555563402,
+          0.013742790792630022
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.003236634747888773,
+        "token": "not_supported_by_this_experiment",
+        "units": 933
+      },
+      "token": "supported"
+    }
+  },
+  "dose_response_grid": {
+    "macro": {
+      "default": {
+        "J": 0.678145255958761,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.01232792618242779,
+            -0.0031021921094268423
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.007688381643365568,
+          "units": 933
+        },
+        "feedback_f1": 0.0,
+        "rollout_J": 0.05453505737335407
+      },
+      "flip05": {
+        "J": 0.644735560973503,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.05102807517598514,
+            -0.03174282710858274
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.041098076628623255,
+          "units": 933
+        },
+        "feedback_f1": 0.11902445024037853,
+        "rollout_J": 0.05485451178190104
+      },
+      "flip10": {
+        "J": 0.6385006026485126,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.057784422615612334,
+            -0.037030331672614644
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.047333034953613726,
+          "units": 933
+        },
+        "feedback_f1": 0.0644630898823024,
+        "rollout_J": 0.055471252358040596
+      },
+      "flip20": {
+        "J": 0.6398201476979613,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.05855321170433711,
+            -0.03333073723347036
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.04601348990416515,
+          "units": 933
+        },
+        "feedback_f1": 0.030937378850601348,
+        "rollout_J": 0.05737109856424652
+      },
+      "flip40": {
+        "J": 0.6243042059762317,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.07586206710402853,
+            -0.047317041211735744
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.06152943162589465,
+          "units": 933
+        },
+        "feedback_f1": 0.01212822140482381,
+        "rollout_J": 0.0679861910821478
+      },
+      "gauss20": {
+        "J": 0.6782498851630685,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.012217152711525705,
+            -0.0030165453517543572
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.007583752439057907,
+          "units": 933
+        },
+        "feedback_f1": 0.0,
+        "rollout_J": 0.05453477387236451
+      },
+      "gauss40": {
+        "J": 0.6781069769815751,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.012377762466186906,
+            -0.003143768967723953
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.007726660620551297,
+          "units": 933
+        },
+        "feedback_f1": 0.0,
+        "rollout_J": 0.054535305452018554
+      },
+      "gauss60": {
+        "J": 0.6780355228908285,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.01247765096639695,
+            -0.0032031111974841946
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.007798114711297994,
+          "units": 933
+        },
+        "feedback_f1": 0.0,
+        "rollout_J": 0.05453525419239027
+      },
+      "gauss80": {
+        "J": 0.678145255958761,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.012318645984240841,
+            -0.003091356214346571
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.007688381643365568,
+          "units": 933
+        },
+        "feedback_f1": 0.0,
+        "rollout_J": 0.05453489449167694
+      },
+      "oracle": {
+        "J": 0.6643169263748042,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.027537425061540815,
+            -0.015750307213329724
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.021516711227322162,
+          "units": 933
+        },
+        "feedback_f1": 1.0,
+        "rollout_J": 0.05460042433078381
+      },
+      "removed": {
+        "J": 0.6744567329776333,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.015875209552862295,
+            -0.006979229238071687
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.011376904624493055,
+          "units": 933
+        },
+        "feedback_f1": 0.0,
+        "rollout_J": 0.05393552995227271
+      },
+      "shuffled": {
+        "J": 0.6799800949318635,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.01016513943362818,
+            -0.0016112701160932769
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.005853542670262929,
+          "units": 933
+        },
+        "feedback_f1": 0.0,
+        "rollout_J": 0.05454958553411713
+      },
+      "temporal": {
+        "J": 0.6508172070873035,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.04528079592790204,
+            -0.024797131236038
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.035016430514822804,
+          "units": 933
+        },
+        "feedback_f1": 0.008982857274036833,
+        "rollout_J": 0.0630504413194802
+      }
+    },
+    "micro": {
+      "default": {
+        "J": 0.7057212348209133,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.007475177555563402,
+            0.013742790792630022
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.003236634747888773,
+          "units": 933
+        },
+        "feedback_f1": 0.8527227977616846,
+        "rollout_J": 0.03172705513801681
+      },
+      "flip05": {
+        "J": 0.6357865250148208,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.07972064198752303,
+            -0.053384371969580985
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.06669807505820367,
+          "units": 933
+        },
+        "feedback_f1": 0.6096795741370831,
+        "rollout_J": 0.03231676292170326
+      },
+      "flip10": {
+        "J": 0.6392010097797879,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.07583433938337476,
+            -0.050653618443007524
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.06328359029323659,
+          "units": 933
+        },
+        "feedback_f1": 0.4306724614311184,
+        "rollout_J": 0.032843965284008465
+      },
+      "flip20": {
+        "J": 0.6469418041765309,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.06831564648284906,
+            -0.04258190719605511
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.05554279589649363,
+          "units": 933
+        },
+        "feedback_f1": 0.2556622765355405,
+        "rollout_J": 0.034071046117681525
+      },
+      "flip40": {
+        "J": 0.6460011228499974,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.06911759596245128,
+            -0.04414266869250793
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.056483477223027066,
+          "units": 933
+        },
+        "feedback_f1": 0.11579256725270065,
+        "rollout_J": 0.03805398167869332
+      },
+      "gauss20": {
+        "J": 0.6761987208932546,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.038598734241821066,
+            -0.013838164336556626
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.026285879179769857,
+          "units": 933
+        },
+        "feedback_f1": 0.1755493938825275,
+        "rollout_J": 0.03497848658126262
+      },
+      "gauss40": {
+        "J": 0.6851614980232343,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.02970335264949413,
+            -0.004951282640189393
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.017323102049790158,
+          "units": 933
+        },
+        "feedback_f1": 0.3396265812734781,
+        "rollout_J": 0.03295875176360988
+      },
+      "gauss60": {
+        "J": 0.6912570816107794,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.022172788358479675,
+            -0.0004791301053358978
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.011227518462245152,
+          "units": 933
+        },
+        "feedback_f1": 0.4993154214382788,
+        "rollout_J": 0.03229988304473002
+      },
+      "gauss80": {
+        "J": 0.700341762560412,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.01333508533267376,
+            0.008709139645634821
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.002142837512612436,
+          "units": 933
+        },
+        "feedback_f1": 0.6611711827290334,
+        "rollout_J": 0.031857576323262624
+      },
+      "oracle": {
+        "J": 0.624943759348904,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.09054617720614504,
+            -0.06471606814050544
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.07754084072412047,
+          "units": 933
+        },
+        "feedback_f1": 1.0,
+        "rollout_J": 0.03179442292254919
+      },
+      "removed": {
+        "J": 0.7080870719134384,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.004590032154340837,
+            0.015511745756922607
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.005602471840413965,
+          "units": 933
+        },
+        "feedback_f1": 0.0,
+        "rollout_J": 0.03238101904002235
+      },
+      "shuffled": {
+        "J": 0.7066960727732433,
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.007052366622302315,
+            0.015151736884051996
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.004211472700218683,
+          "units": 933
+        },
+        "feedback_f1": 0.8513812477335627,
+        "rollout_J": 0.031837946663600084
+      }
+    }
+  },
+  "frozen_at": "2026-10-16T17:34:11Z",
+  "guards": {
+    "G1_isolation": true,
+    "G2_scoring_policy": true,
+    "G3_chronology": true,
+    "G4_checkpoint_binding": true,
+    "G5_replication": true,
+    "G6_intervention_integrity": true,
+    "G7_nonfinite": true,
+    "G8_label_integrity": true
+  },
+  "identity": "issue-115-predicate-feedback-v1",
+  "predictors_grid": {
+    "macro": {
+      "ma-flip05": {
+        "J": 0.7437687714215044,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.05198112846424743,
+            -0.03733977794267184
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.04470022653302397,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            0.000757261227518463,
+            0.015170086255295258
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.007995594973086932,
+          "units": 933
+        }
+      },
+      "ma-flip10": {
+        "J": 0.7247419604332788,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.021458365232480996,
+            -0.0006600473481502518
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.011239296609071532,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            0.007982663549383803,
+            0.025229438300177844
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.016678052208598828,
+          "units": 933
+        }
+      },
+      "ma-flip20": {
+        "J": 0.5978620700485652,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.050262485817148206,
+            -0.03801217271474506
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.044147242539525504,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.009841235488341598,
+            -0.003442865191257477
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.0066468008590195105,
+          "units": 933
+        }
+      },
+      "ma-flip40": {
+        "J": 0.675704431331441,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.001381429395898849,
+            0.000919299082482362
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.0002222143701243379,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.004589035919421768,
+            0.0022674895665249395
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.0012104008888574765,
+          "units": 933
+        }
+      },
+      "ma-free": {
+        "J": 0.6947732510433475,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            0.010340913552328341,
+            0.029669858544456616
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.02009077025154195,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            0.03458766670985321,
+            0.05401823747884842
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.04419278470725417,
+          "units": 933
+        }
+      },
+      "ma-learned": {
+        "J": 0.7283755187292165,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.028188447404685346,
+            -0.01551739435983809
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.02177268961834878,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            0.02047894361801115,
+            0.029988840205882012
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.025266087967052604,
+          "units": 933
+        }
+      },
+      "ma-low10": {
+        "J": 0.6766531610583058,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.009784857425532667,
+            0.010802018185458695
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.0004952710740492102,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            0.041086043288615634,
+            0.06797486052711132
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05456540601235135,
+          "units": 933
+        }
+      },
+      "ma-low25": {
+        "J": 0.6991069220168898,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.01548952922747135,
+            -0.004926180464765678
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.010231676148074863,
+          "units": 622
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            0.02363369080008952,
+            0.03475733336866778
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.029097617280897034,
+          "units": 622
+        }
+      },
+      "ma-ref": {
+        "J": 0.678145255958761,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.035068264175981224,
+            -0.02413458593924832
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.029645595561994285,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.01232792618242779,
+            -0.0031021921094268423
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.007688381643365568,
+          "units": 933
+        }
+      }
+    },
+    "micro": {
+      "gateb": {
+        "J": 0.7057212348209133,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.015227813897428045,
+            -0.009735713107899606
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.012508391929613796,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.007475177555563402,
+            0.013742790792630022
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.003236634747888773,
+          "units": 933
+        }
+      },
+      "mi-flip05": {
+        "J": 0.653996128915743,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.02312407983227919,
+            -0.012137812169966518
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.017434405537299427,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            0.03491319996545077,
+            0.053308049578146034
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.04396193302945715,
+          "units": 933
+        }
+      },
+      "mi-flip10": {
+        "J": 0.7065831988661571,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            0.010731535791825186,
+            0.02024980958662631
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.015433690996391965,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            0.048629259272346084,
+            0.06498380504811371
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.05685272212603401,
+          "units": 933
+        }
+      },
+      "mi-flip20": {
+        "J": 0.633258738403433,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            0.0005999984295804202,
+            0.006215936617865877
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.0034437338295859174,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            0.01547430106513708,
+            0.029884225724257876
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.022660761889057704,
+          "units": 933
+        }
+      },
+      "mi-flip40": {
+        "J": 0.6605078736911534,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.005881059365786056,
+            0.0037430018177606566
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.0010048722267371791,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.002369193864370707,
+            0.006815635686214466
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.0021585417083809432,
+          "units": 933
+        }
+      },
+      "mi-free": {
+        "J": 0.7138359853793936,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.000253779803619039,
+            0.009973955572830163
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.004825703057214306,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.005024483822715342,
+            0.004659508497932926
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.0001805982513378091,
+          "units": 933
+        }
+      },
+      "mi-learned": {
+        "J": 0.6904969985355838,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            -0.010937206773219637,
+            0.006035446332873982
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.0023057685437106704,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            0.021635415317087348,
+            0.03214675374643221
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.02693544397724463,
+          "units": 933
+        }
+      },
+      "mi-low10": {
+        "J": 0.6413882116454463,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            0.009524570195792061,
+            0.019538409518313052
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.014540711164505374,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            0.029925635725474953,
+            0.043108871300189616
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.03647476139437554,
+          "units": 933
+        }
+      },
+      "mi-low25": {
+        "J": 0.6629349571471759,
+        "J-D": {
+          "clusters": 311,
+          "interval": [
+            0.002433159016760303,
+            0.01174327860421108
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.007034694494501571,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.02463975065663169,
+            -0.010655630543090355
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.017848014793352417,
+          "units": 933
+        }
+      }
+    }
+  },
+  "schema": "issue_115_report_v1",
+  "validation_command": "python -u -m scripts.run_predicate_feedback_robustness --validate"
+}

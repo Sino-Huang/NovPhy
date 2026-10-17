@@ -1,0 +1,104 @@
+{
+  "arm": {
+    "micro": {
+      "checkpoints": [
+        {
+          "path": ".local-artifacts/issue-115-predicate-feedback-v1/models/LC/mi-free/fold-all/seed-20260908/predictor.pt",
+          "seed": 20260908,
+          "sha256": "sha256:dfdf66d672f0eefcf65810208e3dcc3343e0fc4b34eabafc887b947ff2359265",
+          "usable": true
+        },
+        {
+          "path": ".local-artifacts/issue-115-predicate-feedback-v1/models/LC/mi-free/fold-all/seed-20260909/predictor.pt",
+          "seed": 20260909,
+          "sha256": "sha256:45a286894ba08a422f99e243a45151411cd5f800a68b8a25318c157f8a83c209",
+          "usable": true
+        },
+        {
+          "path": ".local-artifacts/issue-115-predicate-feedback-v1/models/LC/mi-free/fold-all/seed-20260910/predictor.pt",
+          "seed": 20260910,
+          "sha256": "sha256:659327c1ee6553dce85c263079dfeff05dc6394056d9dc49d2ce0cf35aeecf94",
+          "usable": true
+        }
+      ],
+      "class": "binary_micro",
+      "predictor": "mi-free",
+      "recipe": "#112 v3 LC exactly as the Gate-B retrain (rt.implementation): #77 local loss + long-horizon supervision to 225 + decision-contrastive ranking loss, truncation 45, skip-on-nonfinite (patience 10), AdamW lr 1e-4 wd 1e-4, clip 1, batch 64, 9000 updates, PAIRS[step % 9], init torch.manual_seed(seed), fold 'all', one member per group; symbolic loss weight 0.1, pos_weight 5 (pf.local_loss = decision_dynamics.local_loss under the default spec)",
+      "spec": {
+        "class": "binary_micro",
+        "labels": [
+          "none"
+        ],
+        "spec": {
+          "macro": "labels",
+          "macro_delta": false,
+          "micro": "none",
+          "weighted": []
+        }
+      }
+    }
+  },
+  "descriptions": [
+    "micro"
+  ],
+  "dispositions": {
+    "micro": {
+      "J_label_free_minus_reference": {
+        "clusters": 311,
+        "interval": [
+          -0.0001943737755634947,
+          0.016221099372224764
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.008114750558480457,
+        "units": 933
+      },
+      "claim": "the description axis keeps its value without engine-labelled predicates (micro)",
+      "contrast_tokens": {
+        "F_mean": "supported",
+        "J-T": "supported"
+      },
+      "contrasts": {
+        "F_mean": {
+          "clusters": 311,
+          "interval": [
+            0.006559928846906343,
+            0.03258024516866961
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": 0.01969149107412774,
+          "units": 933
+        },
+        "J-T": {
+          "clusters": 311,
+          "interval": [
+            -0.014585963786124565,
+            0.008246287920725208
+          ],
+          "label": "DESCRIPTIVE",
+          "mean": -0.0034172329992265735,
+          "units": 933
+        }
+      },
+      "label_free": "mi-free",
+      "reference": "gateb",
+      "reference_description_value_J_minus_T": {
+        "clusters": 311,
+        "interval": [
+          -0.007475177555563402,
+          0.013742790792630022
+        ],
+        "label": "DESCRIPTIVE",
+        "mean": 0.003236634747888773,
+        "token": "not_supported_by_this_experiment",
+        "units": 933
+      },
+      "token": "supported"
+    }
+  },
+  "frozen_at": "2026-10-16T17:34:11Z",
+  "identity": "issue-115-predicate-feedback-v1",
+  "note": "the label-free discrete bottleneck (binary codes trained only through the prediction loss) is offered to #106 as an extra description arm for CLEVRER / Physion; #106 does not wait for it",
+  "schema": "issue_115_handoff_106_v1",
+  "to": 106
+}
