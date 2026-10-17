@@ -1,0 +1,328 @@
+{
+  "checks": [
+    {
+      "control": "joint_schedule_is_the_issue_79_84_cycle",
+      "ok": true
+    },
+    {
+      "control": "per_request_budget_is_the_joint_runs_updates_of_the_arm",
+      "ok": true,
+      "update_counts": {
+        "D1": {
+          "full": 9000,
+          "request": 3000
+        },
+        "D15": {
+          "full": 9000,
+          "request": 3000
+        },
+        "D5": {
+          "full": 9000,
+          "request": 3000
+        },
+        "J": {
+          "full": 9000
+        },
+        "S-1-continuous": {
+          "full": 9000,
+          "request": 1500
+        },
+        "S-1-micro": {
+          "full": 9000,
+          "request": 1500
+        },
+        "S-15-continuous": {
+          "full": 9000,
+          "request": 1500
+        },
+        "S-15-micro": {
+          "full": 9000,
+          "request": 1500
+        },
+        "S-5-continuous": {
+          "full": 9000,
+          "request": 1500
+        },
+        "S-5-micro": {
+          "full": 9000,
+          "request": 1500
+        }
+      }
+    },
+    {
+      "control": "clevrer_recipe_B_is_the_issue_79_recipe",
+      "ok": true
+    },
+    {
+      "control": "physion_recipe_B_is_the_issue_84_recipe",
+      "ok": true
+    },
+    {
+      "control": "clevrer_fold_pools_exclude_their_scene",
+      "frames": {
+        "10000": 128,
+        "10001": 128,
+        "10002": 128,
+        "10003": 128,
+        "10004": 128,
+        "10005": 128,
+        "10006": 128,
+        "10007": 128,
+        "10008": 128,
+        "10009": 128,
+        "10010": 128,
+        "10011": 128
+      },
+      "long_windows": 96,
+      "ok": true,
+      "windows": 480
+    },
+    {
+      "control": "physion_fold_pools_exclude_their_scene",
+      "frames": {
+        "0": 151,
+        "1": 207,
+        "10": 211,
+        "11": 170,
+        "2": 170,
+        "3": 151,
+        "4": 242,
+        "5": 178,
+        "6": 151,
+        "7": 182,
+        "8": 151,
+        "9": 151
+      },
+      "long_windows": 96,
+      "ok": true,
+      "windows": 480
+    },
+    {
+      "control": "clevrer_B_joint_equals_issue_79_hybrid_training",
+      "max_abs_parameter_delta": 1.6577541828155518e-06,
+      "ok": true,
+      "updates": 12
+    },
+    {
+      "control": "physion_B_joint_equals_issue_84_hybrid_training",
+      "max_abs_parameter_delta": 4.805624485015869e-07,
+      "ok": true,
+      "updates": 12
+    },
+    {
+      "control": "B_m13_trains_finite",
+      "ok": true,
+      "retired": 0
+    },
+    {
+      "control": "B_m39_trains_finite",
+      "ok": true,
+      "retired": 0
+    },
+    {
+      "control": "LC_m13_trains_finite",
+      "ok": true,
+      "retired": 0
+    },
+    {
+      "control": "LC_m39_trains_finite",
+      "ok": true,
+      "retired": 0
+    },
+    {
+      "compared": 96,
+      "control": "clevrer_scorer_reproduces_issue_79_eval_records",
+      "max_relative_delta": 1.3590795283646782e-05,
+      "ok": true,
+      "policy": {
+        "cudnn_allow_tf32": false,
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": true,
+        "matmul_allow_tf32": false
+      }
+    },
+    {
+      "compared": 96,
+      "control": "physion_scorer_reproduces_issue_84_eval_records",
+      "max_relative_delta": 2.264926488413429e-05,
+      "ok": true,
+      "policy": {
+        "cudnn_allow_tf32": false,
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": true,
+        "matmul_allow_tf32": false
+      }
+    },
+    {
+      "control": "projected_wall_within_48h_on_4_gpus",
+      "ok": true,
+      "projected_wall_hours": 2.0128828001907095
+    }
+  ],
+  "device": "NVIDIA GeForce RTX 5090",
+  "identity": "issue-117-item5-benchmarks-v1",
+  "memory_gb": {
+    "B_m13": 1.216272896,
+    "B_m39": 2.990627328,
+    "LC_m13": 5.111099392,
+    "LC_m39": 14.34651136
+  },
+  "ok": true,
+  "projection": {
+    "gpu_seconds": 28985.512322746217,
+    "group_sizes": {
+      "B": 39,
+      "LC": 39
+    },
+    "per_recipe": {
+      "B": {
+        "base_gb": 0.32909568,
+        "gb_per_member": 0.06824440123076923,
+        "group_size": 39,
+        "groups": 1,
+        "projected_peak_gb": 2.990627328,
+        "seconds_per_update": {
+          "0": 0.016752205090597272,
+          "1": 0.025470780907198787,
+          "2": 0.01677261618897319,
+          "3": 0.025462509132921696,
+          "4": 0.016734638949856162,
+          "5": 0.025514656910672784
+        }
+      },
+      "LC": {
+        "base_gb": 0.4933934080000002,
+        "gb_per_member": 0.3552081526153846,
+        "group_size": 39,
+        "groups": 1,
+        "projected_peak_gb": 14.346511359999997,
+        "seconds_per_update": {
+          "0": 0.20726921502500772,
+          "1": 0.2669155339244753,
+          "2": 0.05696513690054417,
+          "3": 0.07460034708492458,
+          "4": 0.030591681832447648,
+          "5": 0.042103798128664494
+        }
+      }
+    },
+    "unit_seconds": {
+      "clevrer/B/D1/full": 190.00343699008226,
+      "clevrer/B/D1/request": 63.33447899669409,
+      "clevrer/B/D15/full": 190.12183137238026,
+      "clevrer/B/D15/request": 63.37394379079342,
+      "clevrer/B/D5/full": 190.05806394852698,
+      "clevrer/B/D5/request": 63.352687982842326,
+      "clevrer/B/J/full": 190.06111077032983,
+      "clevrer/B/S-1-continuous/full": 150.76984581537545,
+      "clevrer/B/S-1-continuous/request": 25.128307635895908,
+      "clevrer/B/S-1-micro/full": 229.23702816478908,
+      "clevrer/B/S-1-micro/request": 38.20617136079818,
+      "clevrer/B/S-15-continuous/full": 150.61175054870546,
+      "clevrer/B/S-15-continuous/request": 25.101958424784243,
+      "clevrer/B/S-15-micro/full": 229.63191219605505,
+      "clevrer/B/S-15-micro/request": 38.271985366009176,
+      "clevrer/B/S-5-continuous/full": 150.9535457007587,
+      "clevrer/B/S-5-continuous/request": 25.158924283459783,
+      "clevrer/B/S-5-micro/full": 229.16258219629526,
+      "clevrer/B/S-5-micro/request": 38.193763699382544,
+      "clevrer/LC/D1/full": 2133.8313702726737,
+      "clevrer/LC/D1/request": 711.2771234242246,
+      "clevrer/LC/D15/full": 327.12965982500464,
+      "clevrer/LC/D15/request": 109.04321994166821,
+      "clevrer/LC/D5/full": 592.0446779346094,
+      "clevrer/LC/D5/request": 197.34822597820312,
+      "clevrer/LC/J/full": 1017.6685693440959,
+      "clevrer/LC/S-1-continuous/full": 1865.4229352250695,
+      "clevrer/LC/S-1-continuous/request": 310.9038225375116,
+      "clevrer/LC/S-1-micro/full": 2402.239805320278,
+      "clevrer/LC/S-1-micro/request": 400.37330088671297,
+      "clevrer/LC/S-15-continuous/full": 275.32513649202883,
+      "clevrer/LC/S-15-continuous/request": 45.88752274867147,
+      "clevrer/LC/S-15-micro/full": 378.93418315798044,
+      "clevrer/LC/S-15-micro/request": 63.15569719299674,
+      "clevrer/LC/S-5-continuous/full": 512.6862321048975,
+      "clevrer/LC/S-5-continuous/request": 85.44770535081625,
+      "clevrer/LC/S-5-micro/full": 671.4031237643212,
+      "clevrer/LC/S-5-micro/request": 111.90052062738687,
+      "physion/B/D1/full": 190.00343699008226,
+      "physion/B/D1/request": 63.33447899669409,
+      "physion/B/D15/full": 190.12183137238026,
+      "physion/B/D15/request": 63.37394379079342,
+      "physion/B/D5/full": 190.05806394852698,
+      "physion/B/D5/request": 63.352687982842326,
+      "physion/B/J/full": 190.06111077032983,
+      "physion/B/S-1-continuous/full": 150.76984581537545,
+      "physion/B/S-1-continuous/request": 25.128307635895908,
+      "physion/B/S-1-micro/full": 229.23702816478908,
+      "physion/B/S-1-micro/request": 38.20617136079818,
+      "physion/B/S-15-continuous/full": 150.61175054870546,
+      "physion/B/S-15-continuous/request": 25.101958424784243,
+      "physion/B/S-15-micro/full": 229.63191219605505,
+      "physion/B/S-15-micro/request": 38.271985366009176,
+      "physion/B/S-5-continuous/full": 150.9535457007587,
+      "physion/B/S-5-continuous/request": 25.158924283459783,
+      "physion/B/S-5-micro/full": 229.16258219629526,
+      "physion/B/S-5-micro/request": 38.193763699382544,
+      "physion/LC/D1/full": 2133.8313702726737,
+      "physion/LC/D1/request": 711.2771234242246,
+      "physion/LC/D15/full": 327.12965982500464,
+      "physion/LC/D15/request": 109.04321994166821,
+      "physion/LC/D5/full": 592.0446779346094,
+      "physion/LC/D5/request": 197.34822597820312,
+      "physion/LC/J/full": 1017.6685693440959,
+      "physion/LC/S-1-continuous/full": 1865.4229352250695,
+      "physion/LC/S-1-continuous/request": 310.9038225375116,
+      "physion/LC/S-1-micro/full": 2402.239805320278,
+      "physion/LC/S-1-micro/request": 400.37330088671297,
+      "physion/LC/S-15-continuous/full": 275.32513649202883,
+      "physion/LC/S-15-continuous/request": 45.88752274867147,
+      "physion/LC/S-15-micro/full": 378.93418315798044,
+      "physion/LC/S-15-micro/request": 63.15569719299674,
+      "physion/LC/S-5-continuous/full": 512.6862321048975,
+      "physion/LC/S-5-continuous/request": 85.44770535081625,
+      "physion/LC/S-5-micro/full": 671.4031237643212,
+      "physion/LC/S-5-micro/request": 111.90052062738687
+    },
+    "wall_hours_4_gpus": 2.0128828001907095
+  },
+  "reading": "infrastructure assertions only; nothing kept; no statistic of any trained arm",
+  "run_at": "2026-10-17T16:08:46Z",
+  "schema": "issue_117_item5_smoke_v1",
+  "timings": {
+    "B_m13": {
+      "0": 0.011276852805167437,
+      "1": 0.017647576984018087,
+      "2": 0.010762772057205439,
+      "3": 0.01759522990323603,
+      "4": 0.011018194956704974,
+      "5": 0.017671042820438743
+    },
+    "B_m39": {
+      "0": 0.016752205090597272,
+      "1": 0.025470780907198787,
+      "2": 0.01677261618897319,
+      "3": 0.025462509132921696,
+      "4": 0.016734638949856162,
+      "5": 0.025514656910672784
+    },
+    "LC_m13": {
+      "0": 0.12288518412970006,
+      "1": 0.149212250020355,
+      "2": 0.036178772104904056,
+      "3": 0.044964698841795325,
+      "4": 0.01995747210457921,
+      "5": 0.027264070929959416
+    },
+    "LC_m39": {
+      "0": 0.20726921502500772,
+      "1": 0.2669155339244753,
+      "2": 0.05696513690054417,
+      "3": 0.07460034708492458,
+      "4": 0.030591681832447648,
+      "5": 0.042103798128664494
+    },
+    "score_clevrer_seconds_24_rollouts": 0.09733834001235664,
+    "score_physion_seconds_24_rollouts": 0.08659786102361977
+  }
+}

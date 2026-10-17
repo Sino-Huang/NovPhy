@@ -1,0 +1,1038 @@
+{
+  "arms": {
+    "D1": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "per-Delta: the two Delta = 1 requests, shared over the descriptions",
+      "requests": [
+        "F-1-continuous",
+        "F-1-micro"
+      ]
+    },
+    "D15": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "per-Delta: the two Delta = 15 requests, shared over the descriptions",
+      "requests": [
+        "F-15-continuous",
+        "F-15-micro"
+      ]
+    },
+    "D5": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "per-Delta: the two Delta = 5 requests, shared over the descriptions",
+      "requests": [
+        "F-5-continuous",
+        "F-5-micro"
+      ]
+    },
+    "J": {
+      "budgets": [
+        "full"
+      ],
+      "definition": "joint: all six requests, round-robin (the #79 / #84 hybrid predictor)",
+      "requests": [
+        "F-1-continuous",
+        "F-1-micro",
+        "F-5-continuous",
+        "F-5-micro",
+        "F-15-continuous",
+        "F-15-micro"
+      ]
+    },
+    "S-1-continuous": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-1-continuous only",
+      "requests": [
+        "F-1-continuous"
+      ]
+    },
+    "S-1-micro": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-1-micro only",
+      "requests": [
+        "F-1-micro"
+      ]
+    },
+    "S-15-continuous": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-15-continuous only",
+      "requests": [
+        "F-15-continuous"
+      ]
+    },
+    "S-15-micro": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-15-micro only",
+      "requests": [
+        "F-15-micro"
+      ]
+    },
+    "S-5-continuous": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-5-continuous only",
+      "requests": [
+        "F-5-continuous"
+      ]
+    },
+    "S-5-micro": {
+      "budgets": [
+        "request",
+        "full"
+      ],
+      "definition": "specialist: request F-5-micro only",
+      "requests": [
+        "F-5-micro"
+      ]
+    }
+  },
+  "budgets": {
+    "full": "the joint model's full update count (9000), cycling the arm's requests; the curriculum follows the arm's own update count",
+    "request": "the joint model's per-request update count: exactly the joint run's updates of the arm's requests (1500 per request), each at the joint step that sets the LC horizon curriculum"
+  },
+  "caps": {
+    "gpu_seconds": 57971.024645492435,
+    "stop": "readiness_or_precision_insufficient"
+  },
+  "claim_boundary": "#117 item 5 only: CLEVRER (#79) and Physion-Dominoes (#84) annotation-derived carriers (engine features in, no perception), 12 scenes each, continuous and micro requests (no macro level); recursive rollout error only; no ranking, planning or closed-loop claim; the in-sample cohort repeats the ICLR setting and is DESCRIPTIVE; zero engine seconds",
+  "data": {
+    "clevrer": {
+      "carrier": "clevrer-annotation-feature-carrier-v1",
+      "clip_frames": {
+        "10000": 128,
+        "10001": 128,
+        "10002": 128,
+        "10003": 128,
+        "10004": 128,
+        "10005": 128,
+        "10006": 128,
+        "10007": 128,
+        "10008": 128,
+        "10009": 128,
+        "10010": 128,
+        "10011": 128
+      },
+      "scenes": [
+        "10000",
+        "10001",
+        "10002",
+        "10003",
+        "10004",
+        "10005",
+        "10006",
+        "10007",
+        "10008",
+        "10009",
+        "10010",
+        "10011"
+      ],
+      "source": ".local-artifacts/issue-79-clevrer-boundary-v1",
+      "windows": "40 x 61-frame windows per scene (#79 / #84 frozen starts), 480 in all"
+    },
+    "physion": {
+      "carrier": "physion-dominoes-annotation-feature-carrier-v1",
+      "clip_frames": {
+        "0": 151,
+        "1": 207,
+        "10": 211,
+        "11": 170,
+        "2": 170,
+        "3": 151,
+        "4": 242,
+        "5": 178,
+        "6": 151,
+        "7": 182,
+        "8": 151,
+        "9": 151
+      },
+      "scenes": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11"
+      ],
+      "source": ".local-artifacts/issue-84-third-family-v1",
+      "windows": "40 x 61-frame windows per scene (#79 / #84 frozen starts), 480 in all"
+    }
+  },
+  "decision_rule": {
+    "claim_1_5x": "'sharing all weights costs no more than 1.5x per-request rollout error at the endpoint (t = 120) against a matched specialist', per benchmark, recipe and budget, on the leave-one-scene-out cohort: per request, the joint / specialist ratio at t = 120 is 'supported' iff its upper bound < 1.5, 'not_supported_by_this_experiment' iff its lower bound > 1.5, otherwise (or with fewer than 3 scenes) readiness_or_precision_insufficient. Per (benchmark, recipe, budget): supported iff every request is supported; not_supported iff any request is not_supported; otherwise readiness_or_precision_insufficient; readiness_or_precision_insufficient for every token of a (benchmark, recipe, budget) whose guard fails, and for every token if G1, G2, G3 or the chronology guard fails",
+    "headline": "the disposition per benchmark and recipe is the per-request-budget token (the negative-transfer contrast: the request's same updates with or without the other requests', as in the NovPhy #117 reading); the full-budget token is reported beside it",
+    "labels": "leave-one-scene-out: EXPLORATORY; in-sample: DESCRIPTIVE",
+    "multiplicity": "6 requests x 2 recipes x 2 budgets x 2 benchmarks of per-request intervals; nothing is selected",
+    "ranking": "ranking AUC: unsupported (neither CLEVRER nor Physion-Dominoes has an engine-verdicted candidate inventory (a set of alternative actions from one state with executed outcomes): CLEVRER ships passive videos with annotations, the Physion-Dominoes prefix ships passive trials; the #79 / #84 carriers hold the null action only, so no per-inventory ranking AUC can be computed)"
+  },
+  "disclosure": "Known before freeze: the #79 / #84 published joint (hybrid) and continuous-only numbers, the ICLR tab:res:rollout ratios quoted in #117 (in-sample, 120 frames), and every NovPhy #117 item 1-3 result (joint / specialist <= 1.5 at the per-request budget for B / LC1 / LC3; Delta = 1 gains most from sharing under LC). No specialist or per-Delta model has been trained or scored on either benchmark.",
+  "engine_seconds": 0,
+  "folds": {
+    "members_per_unit": 39,
+    "rule": "leave-one-scene-out: fold s trains on the 11 other scenes of its benchmark; fold 'all' on all 12 (the #79 / #84 training set)"
+  },
+  "frozen_at": "2026-10-17T16:09:11Z",
+  "frozen_before_training_and_scoring": true,
+  "guards": {
+    "G1": "no training window or long window of a fold's left-out scene (pool scenes recorded per member)",
+    "G2": "every unit trained its full schedule; every member complete or retired as a typed failure",
+    "G3": "every record carries the #111 SCORING_POLICY; --validate re-scores two records (one per benchmark) and they equal the retained records",
+    "G4": "per (benchmark, recipe, budget): the share of leave-one-scene-out (member, request) cells with no finite t = 120 error (retired member or nonfinite rollout) <= 0.1",
+    "caps": "GPU seconds within the cap",
+    "chronology": "plan frozen before the first update; scoring after every unit trained"
+  },
+  "hardware": "4x RTX 5090 (one training or scoring process per GPU); the #85 rule names a single RTX 3090. The joint arm is retrained here with every other arm, not reused from #79 / #84; their published in-sample numbers are reported next to it as a replication reading.",
+  "identity": "issue-117-item5-benchmarks-v1",
+  "inputs": [
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/plan.json",
+      "name": "issue_79_plan",
+      "sha256": "sha256:ad4893640c259e8f9dbec7f81aa3704be50abda93544711860b53c84a8104c8b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/clevrer-data.json",
+      "name": "issue_79_data",
+      "sha256": "sha256:76b13b4f764a1a2347bc7513e2cbea15d1778517efcf8aa7176f6d948751e15e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/summary.json",
+      "name": "issue_79_summary",
+      "sha256": "sha256:b4aae6c3d85ada4cac43d91c5c35433973ab35f39f952f25b809e16a82059103"
+    },
+    {
+      "artifact": "world_model/training/clevrer_boundary.py",
+      "name": "issue_79_carrier_module",
+      "sha256": "sha256:ded21277f2a64e29e4609485ecda153a35fc7b763cdb3fad23f16183ed473803"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/shards/scene-10000.pt",
+      "name": "issue_79_shard_scene-10000",
+      "sha256": "sha256:a7cef06f64967e40d9b132d024ad5797a0dbf65d68bdd14f30cb21f8c900c528"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/shards/scene-10001.pt",
+      "name": "issue_79_shard_scene-10001",
+      "sha256": "sha256:ae153a29e5f0fc39d7793c6d0505b61a737f2dab0d814d1b3b153ac6444f871e"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/shards/scene-10002.pt",
+      "name": "issue_79_shard_scene-10002",
+      "sha256": "sha256:a6154fb101131db71f90acb8edfe0c0754ca4e579fa63b2c3f10c681fc53001f"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/shards/scene-10003.pt",
+      "name": "issue_79_shard_scene-10003",
+      "sha256": "sha256:7ef2cc13008a6f91451bd3398004ff99c08bb9d10b5073fb6c5bf4d159d761c6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/shards/scene-10004.pt",
+      "name": "issue_79_shard_scene-10004",
+      "sha256": "sha256:8a45f6b452d8176ea266e0a4b3b69aa5b97d909eb1d13d1e816163c1518e4acb"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/shards/scene-10005.pt",
+      "name": "issue_79_shard_scene-10005",
+      "sha256": "sha256:e49522577bbad8c2a48f891b2dd630720fa5046b469050c8b24da282663f52a2"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/shards/scene-10006.pt",
+      "name": "issue_79_shard_scene-10006",
+      "sha256": "sha256:48d5082774ecfe0e0b47700cf0e51f8b9716cdebfa02f8ab1dafdff6d49a5181"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/shards/scene-10007.pt",
+      "name": "issue_79_shard_scene-10007",
+      "sha256": "sha256:e15732b6002e1581d21e36caa5b596a4f7b624e4377b878b6a3815f9cce318a0"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/shards/scene-10008.pt",
+      "name": "issue_79_shard_scene-10008",
+      "sha256": "sha256:780d8b8cdb2de542bb2e3c35e299fc4ec2c7f58ab04ceaaf88852522ecdd27b6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/shards/scene-10009.pt",
+      "name": "issue_79_shard_scene-10009",
+      "sha256": "sha256:9bee50f8ee76c640412a3f1345e453712fb3991ff2a73ed2f1e6d43fd200230b"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/shards/scene-10010.pt",
+      "name": "issue_79_shard_scene-10010",
+      "sha256": "sha256:28b1ffb7819decc78adaa7804f248072d92f3e7c31720ec22bed1890b33ab8fe"
+    },
+    {
+      "artifact": ".local-artifacts/issue-79-clevrer-boundary-v1/shards/scene-10011.pt",
+      "name": "issue_79_shard_scene-10011",
+      "sha256": "sha256:0446c063e8300e13bac9c35aedb7d8d067aa6a891a72eb0cf92f14796c18dfef"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/plan.json",
+      "name": "issue_84_plan",
+      "sha256": "sha256:2cc28d7eabf740f40dadb6f2d0ae755cba6b3b3616d74a29e470c51150f476ce"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/physion-data.json",
+      "name": "issue_84_data",
+      "sha256": "sha256:557df8200f4c80e42a6272c53d0538d19ffa581124e0a6c6949413b50dfcd597"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/summary.json",
+      "name": "issue_84_summary",
+      "sha256": "sha256:b52551b6ab58559b3d8faa852b1459d2cc9886e9b52b3f1cb337a2e73a4c114f"
+    },
+    {
+      "artifact": "world_model/training/third_family_boundary.py",
+      "name": "issue_84_carrier_module",
+      "sha256": "sha256:05a02ae57c8934b7c0ecf314bd8ae5cc7268a788f636a76d19cf9c3522a01506"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/shards/scene-0.pt",
+      "name": "issue_84_shard_scene-0",
+      "sha256": "sha256:b864bb8fef8b69b920544b4f679d808fd4faec208a883d4ab0aa390c3fa45d65"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/shards/scene-1.pt",
+      "name": "issue_84_shard_scene-1",
+      "sha256": "sha256:e6d5438fd4ddf89bd0e24d93bd9854e3db4ca0dc6faa3a6a1d4bacfd48ae0eb5"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/shards/scene-2.pt",
+      "name": "issue_84_shard_scene-2",
+      "sha256": "sha256:1eaeaa19ba7e5adb996f25eb3d6cd6328392418d430cdbf94dd60cf43f543d8c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/shards/scene-3.pt",
+      "name": "issue_84_shard_scene-3",
+      "sha256": "sha256:fd199f4d4639ffbd76e5b90bc0cb98081eca86323c0a5591a9e576019fec3eaa"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/shards/scene-4.pt",
+      "name": "issue_84_shard_scene-4",
+      "sha256": "sha256:2058b0333376746cb5e983759106da69bbb27c5a7d80710b6c49cb0b2918552c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/shards/scene-5.pt",
+      "name": "issue_84_shard_scene-5",
+      "sha256": "sha256:e1dd1e08f12e5435c8fdf16637d2e4471c29f62c05c54ccd7b55304116f2aee6"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/shards/scene-6.pt",
+      "name": "issue_84_shard_scene-6",
+      "sha256": "sha256:29f1d2bf794de012e9bbc17f4237677ad6d25752950346abbe0f9b714dac2a27"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/shards/scene-7.pt",
+      "name": "issue_84_shard_scene-7",
+      "sha256": "sha256:63ac2209faa20b20ff8013fe6cc253435584c041e68df35b7499e8abbc7a2d15"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/shards/scene-8.pt",
+      "name": "issue_84_shard_scene-8",
+      "sha256": "sha256:e5aefac6a5d52c4dfb32ad61d4c6dac59f692e0c6e58f875291c8b248c498da0"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/shards/scene-9.pt",
+      "name": "issue_84_shard_scene-9",
+      "sha256": "sha256:8c6143ff3407b0bde6d321bc3735dc22d78edf91a5eff32686300a1d9e6edc90"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/shards/scene-10.pt",
+      "name": "issue_84_shard_scene-10",
+      "sha256": "sha256:73b952e8e6e654232c68fd8f3271dfa8af5dd5f9ad8a160e7fffaba2bf7ace43"
+    },
+    {
+      "artifact": ".local-artifacts/issue-84-third-family-v1/shards/scene-11.pt",
+      "name": "issue_84_shard_scene-11",
+      "sha256": "sha256:c06ac8065685ec5e069f38c761630b3c3558c15adb2ab37b134a08ed5719bd23"
+    },
+    {
+      "artifact": "world_model/training/cnn_hybrid.py",
+      "name": "cnn_hybrid",
+      "sha256": "sha256:d72fac36e5e2b1eed30e84c2f149049b4215c321910279b2abb5d621b17a1b51"
+    },
+    {
+      "artifact": "world_model/training/decision_dynamics.py",
+      "name": "decision_dynamics",
+      "sha256": "sha256:14aa4587277377bb7d7b8bd4a1954366bb653fb0baf3a912c6fa52075ac1b794"
+    },
+    {
+      "artifact": "world_model/training/stable_decision_dynamics.py",
+      "name": "stable_decision_dynamics",
+      "sha256": "sha256:8269589e0125f68573dd66e9baf641d9b9bc469069257969894483c62a13b4fa"
+    },
+    {
+      "artifact": "world_model/training/request_interference.py",
+      "name": "request_interference_module",
+      "sha256": "sha256:486ff6a56182b5024af19d176ad806c996b61f1897fb806ef092c9da2543f061"
+    },
+    {
+      "artifact": "world_model/planning/scoring_harness.py",
+      "name": "scoring_harness",
+      "sha256": "sha256:59a231d3f9bb769a3a0716d84ef48e27a494d23f72f8c6e019d1b25ff4223e7c"
+    },
+    {
+      "artifact": ".local-artifacts/issue-117-item5-benchmarks-v1/smoke.json",
+      "name": "smoke",
+      "sha256": "sha256:547c3f46e00212cc4217d280fcb873aa768d8e24f5c88cedf9efd62f28d71ec0"
+    }
+  ],
+  "issue": 117,
+  "item": 5,
+  "pairs": [
+    [
+      1,
+      "continuous"
+    ],
+    [
+      1,
+      "micro"
+    ],
+    [
+      5,
+      "continuous"
+    ],
+    [
+      5,
+      "micro"
+    ],
+    [
+      15,
+      "continuous"
+    ],
+    [
+      15,
+      "micro"
+    ]
+  ],
+  "parent_issue": 108,
+  "prohibited": [
+    "changing any recipe, arm, budget, schedule or rule after training starts",
+    "retrying typed failures",
+    "re-scoring a record",
+    "re-opening any prior disposition"
+  ],
+  "projection": {
+    "gpu_seconds": 28985.512322746217,
+    "group_sizes": {
+      "B": 39,
+      "LC": 39
+    },
+    "per_recipe": {
+      "B": {
+        "base_gb": 0.32909568,
+        "gb_per_member": 0.06824440123076923,
+        "group_size": 39,
+        "groups": 1,
+        "projected_peak_gb": 2.990627328,
+        "seconds_per_update": {
+          "0": 0.016752205090597272,
+          "1": 0.025470780907198787,
+          "2": 0.01677261618897319,
+          "3": 0.025462509132921696,
+          "4": 0.016734638949856162,
+          "5": 0.025514656910672784
+        }
+      },
+      "LC": {
+        "base_gb": 0.4933934080000002,
+        "gb_per_member": 0.3552081526153846,
+        "group_size": 39,
+        "groups": 1,
+        "projected_peak_gb": 14.346511359999997,
+        "seconds_per_update": {
+          "0": 0.20726921502500772,
+          "1": 0.2669155339244753,
+          "2": 0.05696513690054417,
+          "3": 0.07460034708492458,
+          "4": 0.030591681832447648,
+          "5": 0.042103798128664494
+        }
+      }
+    },
+    "unit_seconds": {
+      "clevrer/B/D1/full": 190.00343699008226,
+      "clevrer/B/D1/request": 63.33447899669409,
+      "clevrer/B/D15/full": 190.12183137238026,
+      "clevrer/B/D15/request": 63.37394379079342,
+      "clevrer/B/D5/full": 190.05806394852698,
+      "clevrer/B/D5/request": 63.352687982842326,
+      "clevrer/B/J/full": 190.06111077032983,
+      "clevrer/B/S-1-continuous/full": 150.76984581537545,
+      "clevrer/B/S-1-continuous/request": 25.128307635895908,
+      "clevrer/B/S-1-micro/full": 229.23702816478908,
+      "clevrer/B/S-1-micro/request": 38.20617136079818,
+      "clevrer/B/S-15-continuous/full": 150.61175054870546,
+      "clevrer/B/S-15-continuous/request": 25.101958424784243,
+      "clevrer/B/S-15-micro/full": 229.63191219605505,
+      "clevrer/B/S-15-micro/request": 38.271985366009176,
+      "clevrer/B/S-5-continuous/full": 150.9535457007587,
+      "clevrer/B/S-5-continuous/request": 25.158924283459783,
+      "clevrer/B/S-5-micro/full": 229.16258219629526,
+      "clevrer/B/S-5-micro/request": 38.193763699382544,
+      "clevrer/LC/D1/full": 2133.8313702726737,
+      "clevrer/LC/D1/request": 711.2771234242246,
+      "clevrer/LC/D15/full": 327.12965982500464,
+      "clevrer/LC/D15/request": 109.04321994166821,
+      "clevrer/LC/D5/full": 592.0446779346094,
+      "clevrer/LC/D5/request": 197.34822597820312,
+      "clevrer/LC/J/full": 1017.6685693440959,
+      "clevrer/LC/S-1-continuous/full": 1865.4229352250695,
+      "clevrer/LC/S-1-continuous/request": 310.9038225375116,
+      "clevrer/LC/S-1-micro/full": 2402.239805320278,
+      "clevrer/LC/S-1-micro/request": 400.37330088671297,
+      "clevrer/LC/S-15-continuous/full": 275.32513649202883,
+      "clevrer/LC/S-15-continuous/request": 45.88752274867147,
+      "clevrer/LC/S-15-micro/full": 378.93418315798044,
+      "clevrer/LC/S-15-micro/request": 63.15569719299674,
+      "clevrer/LC/S-5-continuous/full": 512.6862321048975,
+      "clevrer/LC/S-5-continuous/request": 85.44770535081625,
+      "clevrer/LC/S-5-micro/full": 671.4031237643212,
+      "clevrer/LC/S-5-micro/request": 111.90052062738687,
+      "physion/B/D1/full": 190.00343699008226,
+      "physion/B/D1/request": 63.33447899669409,
+      "physion/B/D15/full": 190.12183137238026,
+      "physion/B/D15/request": 63.37394379079342,
+      "physion/B/D5/full": 190.05806394852698,
+      "physion/B/D5/request": 63.352687982842326,
+      "physion/B/J/full": 190.06111077032983,
+      "physion/B/S-1-continuous/full": 150.76984581537545,
+      "physion/B/S-1-continuous/request": 25.128307635895908,
+      "physion/B/S-1-micro/full": 229.23702816478908,
+      "physion/B/S-1-micro/request": 38.20617136079818,
+      "physion/B/S-15-continuous/full": 150.61175054870546,
+      "physion/B/S-15-continuous/request": 25.101958424784243,
+      "physion/B/S-15-micro/full": 229.63191219605505,
+      "physion/B/S-15-micro/request": 38.271985366009176,
+      "physion/B/S-5-continuous/full": 150.9535457007587,
+      "physion/B/S-5-continuous/request": 25.158924283459783,
+      "physion/B/S-5-micro/full": 229.16258219629526,
+      "physion/B/S-5-micro/request": 38.193763699382544,
+      "physion/LC/D1/full": 2133.8313702726737,
+      "physion/LC/D1/request": 711.2771234242246,
+      "physion/LC/D15/full": 327.12965982500464,
+      "physion/LC/D15/request": 109.04321994166821,
+      "physion/LC/D5/full": 592.0446779346094,
+      "physion/LC/D5/request": 197.34822597820312,
+      "physion/LC/J/full": 1017.6685693440959,
+      "physion/LC/S-1-continuous/full": 1865.4229352250695,
+      "physion/LC/S-1-continuous/request": 310.9038225375116,
+      "physion/LC/S-1-micro/full": 2402.239805320278,
+      "physion/LC/S-1-micro/request": 400.37330088671297,
+      "physion/LC/S-15-continuous/full": 275.32513649202883,
+      "physion/LC/S-15-continuous/request": 45.88752274867147,
+      "physion/LC/S-15-micro/full": 378.93418315798044,
+      "physion/LC/S-15-micro/request": 63.15569719299674,
+      "physion/LC/S-5-continuous/full": 512.6862321048975,
+      "physion/LC/S-5-continuous/request": 85.44770535081625,
+      "physion/LC/S-5-micro/full": 671.4031237643212,
+      "physion/LC/S-5-micro/request": 111.90052062738687
+    },
+    "wall_hours_4_gpus": 2.0128828001907095
+  },
+  "question": "#117 items 1-2 on CLEVRER and Physion-Dominoes: what does sharing every weight of the six-request hybrid predictor (continuous and micro x Delta in {1, 5, 15}) cost each request in recursive rollout error against a matched single-request specialist and a per-Delta model, under the #77 recipe and the adapted #112 LC recipe, at the per-request and full budgets, and is the cost asymmetric across Delta and description?",
+  "recipes": {
+    "B": {
+      "definition": "#77 recipe, as #79 / #84 ran it: four local transitions of the requested pair, their recursion and the carrier bound on 61-frame windows; micro requests add 0.1 x the symbolic losses; 9000 updates, batch 64, AdamW 1e-4 / 1e-4, clip 1; a nonfinite update is skipped, retirement after 10 consecutive skips",
+      "long": false
+    },
+    "LC": {
+      "definition": "#112 v3 LC adapted to the 120-frame endpoint: B + long-horizon recursive loss (weight 1, curriculum 30 -> 120), truncated back-propagation every 45 transitions, skip-on-nonfinite (retire after 10 consecutive skips). The decision-contrastive ranking term is dropped: it needs engine-verdicted candidate inventories, which neither benchmark has",
+      "long": true
+    }
+  },
+  "requests": [
+    "F-1-continuous",
+    "F-1-micro",
+    "F-5-continuous",
+    "F-5-micro",
+    "F-15-continuous",
+    "F-15-micro"
+  ],
+  "runner": "scripts/run_request_interference_benchmarks.py",
+  "schema": "issue_117_item5_plan_v1",
+  "scoring": {
+    "insample": "fold-'all' members on all 12 scenes (48 units): the #79 / #84 and ICLR tab:res:rollout setting; DESCRIPTIVE",
+    "lolo": "fold-s members on scene s (4 units): EXPLORATORY, the primary cohort",
+    "nonfinite": "a nonfinite recursive carrier or statistic is recorded as None and counted (G4)",
+    "ranking": {
+      "reason": "neither CLEVRER nor Physion-Dominoes has an engine-verdicted candidate inventory (a set of alternative actions from one state with executed outcomes): CLEVRER ships passive videos with annotations, the Physion-Dominoes prefix ships passive trials; the #79 / #84 carriers hold the null action only, so no per-inventory ranking AUC can be computed",
+      "token": "unsupported"
+    },
+    "rollout": "fixed-pair recursive rollout from the true carrier at contexts [0, 1, 2, 3]; errors at t = [15, 30, 60, 120] (#79 field_errors; position MSE under the camera mask on CLEVRER, every declared object on Physion-Dominoes); batched over units"
+  },
+  "seeds": [
+    20260908,
+    20260909,
+    20260910
+  ],
+  "smoke_evidence": {
+    "checks": [
+      {
+        "control": "joint_schedule_is_the_issue_79_84_cycle",
+        "ok": true
+      },
+      {
+        "control": "per_request_budget_is_the_joint_runs_updates_of_the_arm",
+        "ok": true,
+        "update_counts": {
+          "D1": {
+            "full": 9000,
+            "request": 3000
+          },
+          "D15": {
+            "full": 9000,
+            "request": 3000
+          },
+          "D5": {
+            "full": 9000,
+            "request": 3000
+          },
+          "J": {
+            "full": 9000
+          },
+          "S-1-continuous": {
+            "full": 9000,
+            "request": 1500
+          },
+          "S-1-micro": {
+            "full": 9000,
+            "request": 1500
+          },
+          "S-15-continuous": {
+            "full": 9000,
+            "request": 1500
+          },
+          "S-15-micro": {
+            "full": 9000,
+            "request": 1500
+          },
+          "S-5-continuous": {
+            "full": 9000,
+            "request": 1500
+          },
+          "S-5-micro": {
+            "full": 9000,
+            "request": 1500
+          }
+        }
+      },
+      {
+        "control": "clevrer_recipe_B_is_the_issue_79_recipe",
+        "ok": true
+      },
+      {
+        "control": "physion_recipe_B_is_the_issue_84_recipe",
+        "ok": true
+      },
+      {
+        "control": "clevrer_fold_pools_exclude_their_scene",
+        "frames": {
+          "10000": 128,
+          "10001": 128,
+          "10002": 128,
+          "10003": 128,
+          "10004": 128,
+          "10005": 128,
+          "10006": 128,
+          "10007": 128,
+          "10008": 128,
+          "10009": 128,
+          "10010": 128,
+          "10011": 128
+        },
+        "long_windows": 96,
+        "ok": true,
+        "windows": 480
+      },
+      {
+        "control": "physion_fold_pools_exclude_their_scene",
+        "frames": {
+          "0": 151,
+          "1": 207,
+          "10": 211,
+          "11": 170,
+          "2": 170,
+          "3": 151,
+          "4": 242,
+          "5": 178,
+          "6": 151,
+          "7": 182,
+          "8": 151,
+          "9": 151
+        },
+        "long_windows": 96,
+        "ok": true,
+        "windows": 480
+      },
+      {
+        "control": "clevrer_B_joint_equals_issue_79_hybrid_training",
+        "max_abs_parameter_delta": 1.6577541828155518e-06,
+        "ok": true,
+        "updates": 12
+      },
+      {
+        "control": "physion_B_joint_equals_issue_84_hybrid_training",
+        "max_abs_parameter_delta": 4.805624485015869e-07,
+        "ok": true,
+        "updates": 12
+      },
+      {
+        "control": "B_m13_trains_finite",
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "B_m39_trains_finite",
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "LC_m13_trains_finite",
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "control": "LC_m39_trains_finite",
+        "ok": true,
+        "retired": 0
+      },
+      {
+        "compared": 96,
+        "control": "clevrer_scorer_reproduces_issue_79_eval_records",
+        "max_relative_delta": 1.3590795283646782e-05,
+        "ok": true,
+        "policy": {
+          "cudnn_allow_tf32": false,
+          "cudnn_benchmark": false,
+          "cudnn_deterministic": true,
+          "matmul_allow_tf32": false
+        }
+      },
+      {
+        "compared": 96,
+        "control": "physion_scorer_reproduces_issue_84_eval_records",
+        "max_relative_delta": 2.264926488413429e-05,
+        "ok": true,
+        "policy": {
+          "cudnn_allow_tf32": false,
+          "cudnn_benchmark": false,
+          "cudnn_deterministic": true,
+          "matmul_allow_tf32": false
+        }
+      },
+      {
+        "control": "projected_wall_within_48h_on_4_gpus",
+        "ok": true,
+        "projected_wall_hours": 2.0128828001907095
+      }
+    ],
+    "device": "NVIDIA GeForce RTX 5090",
+    "identity": "issue-117-item5-benchmarks-v1",
+    "memory_gb": {
+      "B_m13": 1.216272896,
+      "B_m39": 2.990627328,
+      "LC_m13": 5.111099392,
+      "LC_m39": 14.34651136
+    },
+    "ok": true,
+    "projection": {
+      "gpu_seconds": 28985.512322746217,
+      "group_sizes": {
+        "B": 39,
+        "LC": 39
+      },
+      "per_recipe": {
+        "B": {
+          "base_gb": 0.32909568,
+          "gb_per_member": 0.06824440123076923,
+          "group_size": 39,
+          "groups": 1,
+          "projected_peak_gb": 2.990627328,
+          "seconds_per_update": {
+            "0": 0.016752205090597272,
+            "1": 0.025470780907198787,
+            "2": 0.01677261618897319,
+            "3": 0.025462509132921696,
+            "4": 0.016734638949856162,
+            "5": 0.025514656910672784
+          }
+        },
+        "LC": {
+          "base_gb": 0.4933934080000002,
+          "gb_per_member": 0.3552081526153846,
+          "group_size": 39,
+          "groups": 1,
+          "projected_peak_gb": 14.346511359999997,
+          "seconds_per_update": {
+            "0": 0.20726921502500772,
+            "1": 0.2669155339244753,
+            "2": 0.05696513690054417,
+            "3": 0.07460034708492458,
+            "4": 0.030591681832447648,
+            "5": 0.042103798128664494
+          }
+        }
+      },
+      "unit_seconds": {
+        "clevrer/B/D1/full": 190.00343699008226,
+        "clevrer/B/D1/request": 63.33447899669409,
+        "clevrer/B/D15/full": 190.12183137238026,
+        "clevrer/B/D15/request": 63.37394379079342,
+        "clevrer/B/D5/full": 190.05806394852698,
+        "clevrer/B/D5/request": 63.352687982842326,
+        "clevrer/B/J/full": 190.06111077032983,
+        "clevrer/B/S-1-continuous/full": 150.76984581537545,
+        "clevrer/B/S-1-continuous/request": 25.128307635895908,
+        "clevrer/B/S-1-micro/full": 229.23702816478908,
+        "clevrer/B/S-1-micro/request": 38.20617136079818,
+        "clevrer/B/S-15-continuous/full": 150.61175054870546,
+        "clevrer/B/S-15-continuous/request": 25.101958424784243,
+        "clevrer/B/S-15-micro/full": 229.63191219605505,
+        "clevrer/B/S-15-micro/request": 38.271985366009176,
+        "clevrer/B/S-5-continuous/full": 150.9535457007587,
+        "clevrer/B/S-5-continuous/request": 25.158924283459783,
+        "clevrer/B/S-5-micro/full": 229.16258219629526,
+        "clevrer/B/S-5-micro/request": 38.193763699382544,
+        "clevrer/LC/D1/full": 2133.8313702726737,
+        "clevrer/LC/D1/request": 711.2771234242246,
+        "clevrer/LC/D15/full": 327.12965982500464,
+        "clevrer/LC/D15/request": 109.04321994166821,
+        "clevrer/LC/D5/full": 592.0446779346094,
+        "clevrer/LC/D5/request": 197.34822597820312,
+        "clevrer/LC/J/full": 1017.6685693440959,
+        "clevrer/LC/S-1-continuous/full": 1865.4229352250695,
+        "clevrer/LC/S-1-continuous/request": 310.9038225375116,
+        "clevrer/LC/S-1-micro/full": 2402.239805320278,
+        "clevrer/LC/S-1-micro/request": 400.37330088671297,
+        "clevrer/LC/S-15-continuous/full": 275.32513649202883,
+        "clevrer/LC/S-15-continuous/request": 45.88752274867147,
+        "clevrer/LC/S-15-micro/full": 378.93418315798044,
+        "clevrer/LC/S-15-micro/request": 63.15569719299674,
+        "clevrer/LC/S-5-continuous/full": 512.6862321048975,
+        "clevrer/LC/S-5-continuous/request": 85.44770535081625,
+        "clevrer/LC/S-5-micro/full": 671.4031237643212,
+        "clevrer/LC/S-5-micro/request": 111.90052062738687,
+        "physion/B/D1/full": 190.00343699008226,
+        "physion/B/D1/request": 63.33447899669409,
+        "physion/B/D15/full": 190.12183137238026,
+        "physion/B/D15/request": 63.37394379079342,
+        "physion/B/D5/full": 190.05806394852698,
+        "physion/B/D5/request": 63.352687982842326,
+        "physion/B/J/full": 190.06111077032983,
+        "physion/B/S-1-continuous/full": 150.76984581537545,
+        "physion/B/S-1-continuous/request": 25.128307635895908,
+        "physion/B/S-1-micro/full": 229.23702816478908,
+        "physion/B/S-1-micro/request": 38.20617136079818,
+        "physion/B/S-15-continuous/full": 150.61175054870546,
+        "physion/B/S-15-continuous/request": 25.101958424784243,
+        "physion/B/S-15-micro/full": 229.63191219605505,
+        "physion/B/S-15-micro/request": 38.271985366009176,
+        "physion/B/S-5-continuous/full": 150.9535457007587,
+        "physion/B/S-5-continuous/request": 25.158924283459783,
+        "physion/B/S-5-micro/full": 229.16258219629526,
+        "physion/B/S-5-micro/request": 38.193763699382544,
+        "physion/LC/D1/full": 2133.8313702726737,
+        "physion/LC/D1/request": 711.2771234242246,
+        "physion/LC/D15/full": 327.12965982500464,
+        "physion/LC/D15/request": 109.04321994166821,
+        "physion/LC/D5/full": 592.0446779346094,
+        "physion/LC/D5/request": 197.34822597820312,
+        "physion/LC/J/full": 1017.6685693440959,
+        "physion/LC/S-1-continuous/full": 1865.4229352250695,
+        "physion/LC/S-1-continuous/request": 310.9038225375116,
+        "physion/LC/S-1-micro/full": 2402.239805320278,
+        "physion/LC/S-1-micro/request": 400.37330088671297,
+        "physion/LC/S-15-continuous/full": 275.32513649202883,
+        "physion/LC/S-15-continuous/request": 45.88752274867147,
+        "physion/LC/S-15-micro/full": 378.93418315798044,
+        "physion/LC/S-15-micro/request": 63.15569719299674,
+        "physion/LC/S-5-continuous/full": 512.6862321048975,
+        "physion/LC/S-5-continuous/request": 85.44770535081625,
+        "physion/LC/S-5-micro/full": 671.4031237643212,
+        "physion/LC/S-5-micro/request": 111.90052062738687
+      },
+      "wall_hours_4_gpus": 2.0128828001907095
+    },
+    "reading": "infrastructure assertions only; nothing kept; no statistic of any trained arm",
+    "run_at": "2026-10-17T16:08:46Z",
+    "schema": "issue_117_item5_smoke_v1",
+    "timings": {
+      "B_m13": {
+        "0": 0.011276852805167437,
+        "1": 0.017647576984018087,
+        "2": 0.010762772057205439,
+        "3": 0.01759522990323603,
+        "4": 0.011018194956704974,
+        "5": 0.017671042820438743
+      },
+      "B_m39": {
+        "0": 0.016752205090597272,
+        "1": 0.025470780907198787,
+        "2": 0.01677261618897319,
+        "3": 0.025462509132921696,
+        "4": 0.016734638949856162,
+        "5": 0.025514656910672784
+      },
+      "LC_m13": {
+        "0": 0.12288518412970006,
+        "1": 0.149212250020355,
+        "2": 0.036178772104904056,
+        "3": 0.044964698841795325,
+        "4": 0.01995747210457921,
+        "5": 0.027264070929959416
+      },
+      "LC_m39": {
+        "0": 0.20726921502500772,
+        "1": 0.2669155339244753,
+        "2": 0.05696513690054417,
+        "3": 0.07460034708492458,
+        "4": 0.030591681832447648,
+        "5": 0.042103798128664494
+      },
+      "score_clevrer_seconds_24_rollouts": 0.09733834001235664,
+      "score_physion_seconds_24_rollouts": 0.08659786102361977
+    }
+  },
+  "statistics": {
+    "asymmetry": "per recipe and budget: the mean log ratio over the requests of each Delta (2) and of each description (3), and over all six; Delta = 1 over Delta = 15 and continuous over micro as ratios of ratios per scene, bootstrapped",
+    "declared_endpoint": 120,
+    "labels": "leave-one-scene-out: EXPLORATORY; in-sample: DESCRIPTIVE",
+    "rollout_error": "per (unit, request, t, scene): mean over contexts, then mean over the seeds with a finite value; mean over scenes, scene-clustered bootstrap",
+    "rollout_ratio": "per (benchmark, recipe, budget, request, t): per scene log(first / second) of the seed-mean errors; scene-clustered bootstrap (10 000 draws, PCG64 7201) of the mean log ratio; geometric ratio exp(mean) [exp(low), exp(high)]; per-seed geometric ratios reported beside (the spread over seeds); comparisons J/S, J/D, D/S"
+  },
+  "training": {
+    "batch_size": 64,
+    "data_streams": "per member: windows drawn by torch.Generator(seed) from the fold pool (fold 'all': exactly the #79 / #84 draws), long windows by seed + 112001",
+    "grad_clip": 1.0,
+    "group_sizes": {
+      "B": 39,
+      "LC": 39
+    },
+    "initialization": "torch.manual_seed(seed); CNNHybridPredictor() (the #79 / #84 initialization)",
+    "learning_rate": 0.0001,
+    "long_LC": {
+      "adaptation": "#112 LONG: starts [0, 15, 30, 45, 60] with s + 225 <= 285 (shot length), curriculum 60 -> 225 by +15 every 500 updates (cap at update 5500 of 9000), weight 1, 64 rows; here the endpoint is 120 frames: curriculum 30 -> 120 by +15 every 900 updates (cap at update 5400 of 9000, the same 0.6 of training), every horizon a multiple of 15 (so of every Delta); the v3 truncation stays 45 transitions (a gradient-path length, not a frame count)",
+      "batch_size": 64,
+      "every": 900,
+      "first": 30,
+      "increment": 15,
+      "last": 120,
+      "seed_offset": 112001,
+      "starts": "8 evenly spread starts s_i = i * L // 7 over [0, L], L = n - 1 - 120 (n: the scene's clip frames), so every target s + j * Delta (j * Delta <= 120) is a real frame; CLEVRER (n = 128): s = 0..7; Physion-Dominoes: n = 151..242",
+      "starts_per_scene": 8,
+      "targets": "the annotation carrier at every visited position s + j * Delta, j = 1 .. horizon // Delta",
+      "truncation": 45,
+      "weight": 1.0
+    },
+    "matched": "every arm: the CNNHybridPredictor architecture and parameter count (1 837 690); a request's update touches only the parameters it reads",
+    "patience": 10,
+    "steps": 9000,
+    "weight_decay": 0.0001
+  },
+  "units": [
+    "clevrer/B/J/full",
+    "clevrer/B/D1/request",
+    "clevrer/B/D1/full",
+    "clevrer/B/D5/request",
+    "clevrer/B/D5/full",
+    "clevrer/B/D15/request",
+    "clevrer/B/D15/full",
+    "clevrer/B/S-1-continuous/request",
+    "clevrer/B/S-1-continuous/full",
+    "clevrer/B/S-1-micro/request",
+    "clevrer/B/S-1-micro/full",
+    "clevrer/B/S-5-continuous/request",
+    "clevrer/B/S-5-continuous/full",
+    "clevrer/B/S-5-micro/request",
+    "clevrer/B/S-5-micro/full",
+    "clevrer/B/S-15-continuous/request",
+    "clevrer/B/S-15-continuous/full",
+    "clevrer/B/S-15-micro/request",
+    "clevrer/B/S-15-micro/full",
+    "clevrer/LC/J/full",
+    "clevrer/LC/D1/request",
+    "clevrer/LC/D1/full",
+    "clevrer/LC/D5/request",
+    "clevrer/LC/D5/full",
+    "clevrer/LC/D15/request",
+    "clevrer/LC/D15/full",
+    "clevrer/LC/S-1-continuous/request",
+    "clevrer/LC/S-1-continuous/full",
+    "clevrer/LC/S-1-micro/request",
+    "clevrer/LC/S-1-micro/full",
+    "clevrer/LC/S-5-continuous/request",
+    "clevrer/LC/S-5-continuous/full",
+    "clevrer/LC/S-5-micro/request",
+    "clevrer/LC/S-5-micro/full",
+    "clevrer/LC/S-15-continuous/request",
+    "clevrer/LC/S-15-continuous/full",
+    "clevrer/LC/S-15-micro/request",
+    "clevrer/LC/S-15-micro/full",
+    "physion/B/J/full",
+    "physion/B/D1/request",
+    "physion/B/D1/full",
+    "physion/B/D5/request",
+    "physion/B/D5/full",
+    "physion/B/D15/request",
+    "physion/B/D15/full",
+    "physion/B/S-1-continuous/request",
+    "physion/B/S-1-continuous/full",
+    "physion/B/S-1-micro/request",
+    "physion/B/S-1-micro/full",
+    "physion/B/S-5-continuous/request",
+    "physion/B/S-5-continuous/full",
+    "physion/B/S-5-micro/request",
+    "physion/B/S-5-micro/full",
+    "physion/B/S-15-continuous/request",
+    "physion/B/S-15-continuous/full",
+    "physion/B/S-15-micro/request",
+    "physion/B/S-15-micro/full",
+    "physion/LC/J/full",
+    "physion/LC/D1/request",
+    "physion/LC/D1/full",
+    "physion/LC/D5/request",
+    "physion/LC/D5/full",
+    "physion/LC/D15/request",
+    "physion/LC/D15/full",
+    "physion/LC/S-1-continuous/request",
+    "physion/LC/S-1-continuous/full",
+    "physion/LC/S-1-micro/request",
+    "physion/LC/S-1-micro/full",
+    "physion/LC/S-5-continuous/request",
+    "physion/LC/S-5-continuous/full",
+    "physion/LC/S-5-micro/request",
+    "physion/LC/S-5-micro/full",
+    "physion/LC/S-15-continuous/request",
+    "physion/LC/S-15-continuous/full",
+    "physion/LC/S-15-micro/request",
+    "physion/LC/S-15-micro/full"
+  ],
+  "validation_command": "python -u -m scripts.run_request_interference_benchmarks --validate",
+  "version": 1
+}
