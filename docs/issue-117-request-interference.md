@@ -192,3 +192,25 @@ Results:
 - **Full budget (DESCRIPTIVE).** The 9000-update specialists and per-Δ models rank above the joint at Δ = 5/15 by
   0.05–0.14, while the joint keeps Δ = 1.
 - **Controls.** The joint's request mean is +0.002 [−0.025, +0.027] over the no-model prior.
+
+## Item 5: CLEVRER and Physion-Dominoes
+
+Full report: `docs/issue-117-item5-benchmarks.md`. Runner: `scripts/run_request_interference_benchmarks.py`. Freeze
+845215d2.
+
+Items 1–2 were repeated for the six continuous and micro requests on the #79 / #84 annotation carriers. The design:
+- recipes B and LC (the #112 v3 LC adapted to the 120-frame endpoint, without the ranking term);
+- J, D and S arms at both budgets;
+- 12 scenes left out one at a time plus fold 'all', × 3 seeds (2964 members).
+
+The 1.5× disposition (joint / specialist at t = 120, per-request budget, LOSO) is:
+
+| benchmark | B | LC |
+| --- | --- | --- |
+| CLEVRER | `supported` (request mean 0.04) | `supported` (0.37) |
+| Physion-Dominoes | `supported` (0.08) | `readiness_or_precision_insufficient`: F-15-continuous 1.58 [0.79, 3.08] |
+
+- Δ = 1 does not degrade more than Δ = 15 at the per-request budget in any of the four cells.
+- At the full budget the 9000-update specialists beat the joint on Physion-Dominoes. The tokens there are
+  `not_supported_by_this_experiment` for both recipes.
+- Ranking AUC is `unsupported`: neither benchmark has an engine-verdicted candidate inventory.

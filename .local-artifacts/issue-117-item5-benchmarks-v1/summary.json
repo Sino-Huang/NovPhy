@@ -1,0 +1,198 @@
+{
+  "claim_boundary": "#117 item 5 only: CLEVRER (#79) and Physion-Dominoes (#84) annotation-derived carriers (engine features in, no perception), 12 scenes each, continuous and micro requests (no macro level); recursive rollout error only; no ranking, planning or closed-loop claim; the in-sample cohort repeats the ICLR setting and is DESCRIPTIVE; zero engine seconds",
+  "dispositions": {
+    "clevrer/B/full": "readiness_or_precision_insufficient",
+    "clevrer/B/request": "supported",
+    "clevrer/LC/full": "supported",
+    "clevrer/LC/request": "supported",
+    "physion/B/full": "not_supported_by_this_experiment",
+    "physion/B/request": "supported",
+    "physion/LC/full": "not_supported_by_this_experiment",
+    "physion/LC/request": "readiness_or_precision_insufficient"
+  },
+  "engine_seconds": 0,
+  "frozen_at": "2026-10-17T16:09:11Z",
+  "gpu_seconds": 25272.373827924253,
+  "guards_pass": true,
+  "headline": {
+    "clevrer/B": {
+      "full_budget_token": "readiness_or_precision_insufficient",
+      "token": "supported"
+    },
+    "clevrer/LC": {
+      "full_budget_token": "supported",
+      "token": "supported"
+    },
+    "physion/B": {
+      "full_budget_token": "not_supported_by_this_experiment",
+      "token": "supported"
+    },
+    "physion/LC": {
+      "full_budget_token": "not_supported_by_this_experiment",
+      "token": "readiness_or_precision_insufficient"
+    }
+  },
+  "identity": "issue-117-item5-benchmarks-v1",
+  "joint_over_specialist_request_mean": {
+    "clevrer/B/full": {
+      "clusters": 12,
+      "interval": [
+        0.7267869797438213,
+        1.1249052454741564
+      ],
+      "label": "DESCRIPTIVE",
+      "log_interval": [
+        -0.319121857117256,
+        0.11769880586395967
+      ],
+      "log_mean": -0.09938916038733198,
+      "per_seed": [
+        0.8750078013492423,
+        0.8049923711316256,
+        1.0430083028223998
+      ],
+      "ratio": 0.9053902974170426
+    },
+    "clevrer/B/request": {
+      "clusters": 12,
+      "interval": [
+        0.02862484343603768,
+        0.043300206421467646
+      ],
+      "label": "DESCRIPTIVE",
+      "log_interval": [
+        -3.553480286606091,
+        -3.1395978767456185
+      ],
+      "log_mean": -3.3415635952358467,
+      "per_seed": [
+        0.038402069112822984,
+        0.03235328063668036,
+        0.033667145090928816
+      ],
+      "ratio": 0.03538159195943321
+    },
+    "clevrer/LC/full": {
+      "clusters": 12,
+      "interval": [
+        0.57990549228846,
+        0.8658220620695536
+      ],
+      "label": "DESCRIPTIVE",
+      "log_interval": [
+        -0.5448901330487831,
+        -0.1440758625830941
+      ],
+      "log_mean": -0.32940834842426164,
+      "per_seed": [
+        0.8380477341894106,
+        0.830879310160769,
+        0.7837968202223825
+      ],
+      "ratio": 0.7193492116466633
+    },
+    "clevrer/LC/request": {
+      "clusters": 12,
+      "interval": [
+        0.32966019713698885,
+        0.4200985363638951
+      ],
+      "label": "DESCRIPTIVE",
+      "log_interval": [
+        -1.109692860678169,
+        -0.8672659848312105
+      ],
+      "log_mean": -0.9871684806645341,
+      "per_seed": [
+        0.3358416995958958,
+        0.48637078374515696,
+        0.7051689413711554
+      ],
+      "ratio": 0.372630308572568
+    },
+    "physion/B/full": {
+      "clusters": 12,
+      "interval": [
+        3.03070957532178,
+        4.710040587582575
+      ],
+      "label": "DESCRIPTIVE",
+      "log_interval": [
+        1.1087967753791699,
+        1.5496965253123387
+      ],
+      "log_mean": 1.3309653112875244,
+      "per_seed": [
+        3.9439389086437604,
+        3.2937424660056913,
+        4.389221669708131
+      ],
+      "ratio": 3.784695033633444
+    },
+    "physion/B/request": {
+      "clusters": 12,
+      "interval": [
+        0.061672594395426224,
+        0.09740051660789709
+      ],
+      "label": "DESCRIPTIVE",
+      "log_interval": [
+        -2.7859156218604295,
+        -2.3289237643651974
+      ],
+      "log_mean": -2.556825504843595,
+      "per_seed": [
+        0.09578679359638542,
+        0.06759841440762629,
+        0.07362295487513594
+      ],
+      "ratio": 0.07755053389605317
+    },
+    "physion/LC/full": {
+      "clusters": 12,
+      "interval": [
+        0.4634094378024116,
+        1.4715112193587625
+      ],
+      "label": "DESCRIPTIVE",
+      "log_interval": [
+        -0.7691443007639523,
+        0.38628991309913224
+      ],
+      "log_mean": -0.16560058318566767,
+      "per_seed": [
+        1.5685834514123302,
+        0.7484085224490199,
+        1.4274522051415026
+      ],
+      "ratio": 0.8473846262730971
+    },
+    "physion/LC/request": {
+      "clusters": 12,
+      "interval": [
+        0.08026612415138054,
+        0.2188601076631917
+      ],
+      "label": "DESCRIPTIVE",
+      "log_interval": [
+        -2.5224076131497943,
+        -1.5193225310647396
+      ],
+      "log_mean": -2.063768760585541,
+      "per_seed": [
+        0.10648980558404811,
+        0.4183897300759501,
+        0.16342904447256767
+      ],
+      "ratio": 0.12697453041040513
+    }
+  },
+  "question": "#117 items 1-2 on CLEVRER and Physion-Dominoes: what does sharing every weight of the six-request hybrid predictor (continuous and micro x Delta in {1, 5, 15}) cost each request in recursive rollout error against a matched single-request specialist and a per-Delta model, under the #77 recipe and the adapted #112 LC recipe, at the per-request and full budgets, and is the cost asymmetric across Delta and description?",
+  "ranking": {
+    "reason": "neither CLEVRER nor Physion-Dominoes has an engine-verdicted candidate inventory (a set of alternative actions from one state with executed outcomes): CLEVRER ships passive videos with annotations, the Physion-Dominoes prefix ships passive trials; the #79 / #84 carriers hold the null action only, so no per-inventory ranking AUC can be computed",
+    "token": "unsupported"
+  },
+  "schema": "issue_117_item5_report_v1",
+  "typed_failures": 0,
+  "validation_command": "python -u -m scripts.run_request_interference_benchmarks --validate"
+}

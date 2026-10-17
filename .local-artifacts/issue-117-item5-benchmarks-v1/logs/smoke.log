@@ -1,0 +1,26 @@
+/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/site-packages/torch/_inductor/compile_fx.py:321: UserWarning: TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
+  warnings.warn(
+[issue-117-item5] clevrer--B--J--full/group0 update 12/12 (step 11): horizon None, mean loss 0.6994246244430542, retired 0; 41s; eta 0s
+[issue-79] train seed=20260908 arm=hybrid step=12/9000 loss=0.670729 elapsed=0.4s eta=288.8s memory={'peak_cpu_rss_mib': 2449.8046875, 'peak_cuda_allocated_mib': 515.60546875}
+[issue-117-item5] physion--B--J--full/group0 update 12/12 (step 11): horizon None, mean loss 0.7035536766052246, retired 0; 0s; eta 0s
+[issue-84] train seed=20260908 arm=hybrid step=12/9000 loss=0.670835 elapsed=0.2s eta=163.3s memory={'peak_cpu_rss_mib': 2708.05859375, 'peak_cuda_allocated_mib': 515.60546875}
+[issue-117-item5] clevrer--B--J--full/group0 update 36/36 (step 35): horizon None, mean loss 0.3882155120372772, retired 0; 44s; eta 0s
+[issue-117-item5] clevrer--B--J--full/group0 update 36/36 (step 35): horizon None, mean loss 0.3878830373287201, retired 0; 41s; eta 0s
+[issue-117-item5] clevrer--LC--J--full/group0 update 36/36 (step 35): horizon 120, mean loss 2.144669532775879, retired 0; 20s; eta 0s
+[issue-117-item5] clevrer--LC--J--full/group0 update 36/36 (step 35): horizon 120, mean loss 2.1320128440856934, retired 0; 21s; eta 0s
+[issue-117-item5] smoke PASSED; projected GPU hours 8.1; wall on 4 GPUs 2.0 h; group sizes {'B': 39, 'LC': 39}
+[issue-117-item5]   joint_schedule_is_the_issue_79_84_cycle: True
+[issue-117-item5]   per_request_budget_is_the_joint_runs_updates_of_the_arm: True
+[issue-117-item5]   clevrer_recipe_B_is_the_issue_79_recipe: True
+[issue-117-item5]   physion_recipe_B_is_the_issue_84_recipe: True
+[issue-117-item5]   clevrer_fold_pools_exclude_their_scene: True
+[issue-117-item5]   physion_fold_pools_exclude_their_scene: True
+[issue-117-item5]   clevrer_B_joint_equals_issue_79_hybrid_training: True
+[issue-117-item5]   physion_B_joint_equals_issue_84_hybrid_training: True
+[issue-117-item5]   B_m13_trains_finite: True
+[issue-117-item5]   B_m39_trains_finite: True
+[issue-117-item5]   LC_m13_trains_finite: True
+[issue-117-item5]   LC_m39_trains_finite: True
+[issue-117-item5]   clevrer_scorer_reproduces_issue_79_eval_records: True
+[issue-117-item5]   physion_scorer_reproduces_issue_84_eval_records: True
+[issue-117-item5]   projected_wall_within_48h_on_4_gpus: True
