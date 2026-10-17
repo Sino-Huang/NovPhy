@@ -1,0 +1,92 @@
+{
+ "approved_scope": "owner decision on #106: CLEVRER videos and question/answer JSONs (train, validation; test only if needed for the question protocol)",
+ "benchmark": "clevrer",
+ "extracted": {
+  "train": {
+   "bytes": 12356048482,
+   "directory": "data/clevrer/videos/extracted",
+   "mp4_files": 10000
+  },
+  "validation": {
+   "bytes": 6206653214,
+   "directory": "data/clevrer/videos/extracted",
+   "mp4_files": 5000
+  }
+ },
+ "files": [
+  {
+   "bytes": 12354893389,
+   "bytes_match": true,
+   "http_etag": "2e068b64d-59db378b1c46e",
+   "name": "videos/video_train.zip",
+   "role": "encoder + predictor training",
+   "sha256": "c7401bc86f7ff230bda3b193619f41a79828bed1f0890948b16dd57c89dfdd3f",
+   "url": "https://data.csail.mit.edu/clevrer/videos/train/video_train.zip"
+  },
+  {
+   "bytes": 6206059321,
+   "bytes_match": true,
+   "http_etag": "171e8f339-59db35a74239f",
+   "name": "videos/video_validation.zip",
+   "role": "held-out rollout scoring and QA",
+   "sha256": "07f6d48bd708c80428684fcf17a7874f6c01fbb82a59b2f79ede199a63db7aae",
+   "url": "https://data.csail.mit.edu/clevrer/videos/validation/video_validation.zip"
+  },
+  {
+   "bytes": 86651938,
+   "bytes_match": true,
+   "http_etag": "52a3422-5a84144633347",
+   "name": "questions/train.json",
+   "role": "QA answer-head training",
+   "sha256": "11181da673d223f41fb596aacfbbd3ff83d39af7f09a3210549e98cb283714b4",
+   "url": "https://data.csail.mit.edu/clevrer/questions/train.json"
+  },
+  {
+   "bytes": 43327533,
+   "bytes_match": true,
+   "http_etag": "295202d-5a84144719eff",
+   "name": "questions/validation.json",
+   "role": "QA evaluation",
+   "sha256": "fdf841678a476655b906165e6ee4b0ed1516785c5ab927c8d0a4614e4e27e10d",
+   "url": "https://data.csail.mit.edu/clevrer/questions/validation.json"
+  },
+  {
+   "bytes": 17649911,
+   "bytes_match": true,
+   "http_etag": "10d50f7-5a841444c00b9",
+   "name": "questions/test.json",
+   "role": "checked only: test answers are withheld (evaluation server), so the test split cannot score the question protocol",
+   "sha256": "551716ab736a956dbde17dd0df5e2defdccc580f8f1b78df972fe30e0e074a24",
+   "url": "https://data.csail.mit.edu/clevrer/questions/test.json"
+  },
+  {
+   "bytes": 156761889,
+   "bytes_match": true,
+   "name": "annotations/annotation_train.zip",
+   "role": "already on disk since 2026-09-21 (#79)",
+   "sha256": "e7f9185ad3dde8139b839b00f0f75483374dd0325a3cbec2dac882078497784c",
+   "url": "https://data.csail.mit.edu/clevrer/annotations/train/annotation_train.zip"
+  },
+  {
+   "bytes": 78386966,
+   "bytes_match": true,
+   "name": "annotations/annotation_validation.zip",
+   "role": "already on disk since 2026-09-21 (#79)",
+   "sha256": "d89e74714dff7a1117fd113b54af99fbbc51583ebd742c788c484d708eb426d2",
+   "url": "https://data.csail.mit.edu/clevrer/annotations/validation/annotation_validation.zip"
+  }
+ ],
+ "not_downloaded": {
+  "derender_proposals.zip": "object masks: outside the approved scope and would give the encoder annotation-derived masks",
+  "videos/video_test.zip (6 149 404 859 B)": "test answers withheld; not needed for the question protocol"
+ },
+ "pre_download_recorded_at": "2026-10-18T05:04:13+1100",
+ "provenance": {
+  "licence": "CC0 (README.txt: \"Our dataset is under the CC0\")",
+  "readme": "https://data.csail.mit.edu/clevrer/README.txt",
+  "source": "CLEVRER (Yi, Gan et al., ICLR 2020), http://clevrer.csail.mit.edu/"
+ },
+ "schema": "issue_106_data_manifest_v1",
+ "total_bytes": 18943730947,
+ "verified_at": "2026-10-17T19:41:13Z"
+}

@@ -1,0 +1,66 @@
+{
+ "schema": "issue_106_data_manifest_v1",
+ "benchmark": "clevrer",
+ "stage": "pre-download (sizes measured by HTTP HEAD)",
+ "recorded_at": "2026-10-18T05:04:13+1100",
+ "provenance": {
+  "source": "CLEVRER (Yi, Gan et al., ICLR 2020), http://clevrer.csail.mit.edu/",
+  "readme": "https://data.csail.mit.edu/clevrer/README.txt",
+  "licence": "CC0 (README.txt: \"Our dataset is under the CC0\")"
+ },
+ "approved_scope": "owner decision on #106: CLEVRER videos and question/answer JSONs (train, validation; test only if needed for the question protocol)",
+ "files": [
+  {
+   "name": "videos/video_train.zip",
+   "url": "https://data.csail.mit.edu/clevrer/videos/train/video_train.zip",
+   "bytes": 12354893389,
+   "http_etag": "2e068b64d-59db378b1c46e",
+   "role": "encoder + predictor training"
+  },
+  {
+   "name": "videos/video_validation.zip",
+   "url": "https://data.csail.mit.edu/clevrer/videos/validation/video_validation.zip",
+   "bytes": 6206059321,
+   "http_etag": "171e8f339-59db35a74239f",
+   "role": "held-out rollout scoring and QA"
+  },
+  {
+   "name": "questions/train.json",
+   "url": "https://data.csail.mit.edu/clevrer/questions/train.json",
+   "bytes": 86651938,
+   "http_etag": "52a3422-5a84144633347",
+   "role": "QA answer-head training"
+  },
+  {
+   "name": "questions/validation.json",
+   "url": "https://data.csail.mit.edu/clevrer/questions/validation.json",
+   "bytes": 43327533,
+   "http_etag": "295202d-5a84144719eff",
+   "role": "QA evaluation"
+  },
+  {
+   "name": "questions/test.json",
+   "url": "https://data.csail.mit.edu/clevrer/questions/test.json",
+   "bytes": 17649911,
+   "http_etag": "10d50f7-5a841444c00b9",
+   "role": "checked only: test answers are withheld (evaluation server), so the test split cannot score the question protocol"
+  },
+  {
+   "name": "annotations/annotation_train.zip",
+   "url": "https://data.csail.mit.edu/clevrer/annotations/train/annotation_train.zip",
+   "bytes": 156761889,
+   "role": "already on disk since 2026-09-21 (#79)"
+  },
+  {
+   "name": "annotations/annotation_validation.zip",
+   "url": "https://data.csail.mit.edu/clevrer/annotations/validation/annotation_validation.zip",
+   "bytes": 78386966,
+   "role": "already on disk since 2026-09-21 (#79)"
+  }
+ ],
+ "not_downloaded": {
+  "videos/video_test.zip (6 149 404 859 B)": "test answers withheld; not needed for the question protocol",
+  "derender_proposals.zip": "object masks: outside the approved scope and would give the encoder annotation-derived masks"
+ },
+ "total_bytes": 18943730947
+}

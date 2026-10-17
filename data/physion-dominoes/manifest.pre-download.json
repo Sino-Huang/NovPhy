@@ -1,0 +1,59 @@
+{
+ "schema": "issue_106_data_manifest_v1",
+ "benchmark": "physion-dominoes",
+ "stage": "pre-download (sizes measured by S3 ListObjectsV2 / HEAD)",
+ "recorded_at": "2026-10-18T05:04:13+1100",
+ "provenance": {
+  "source": "Physion (Bear et al., NeurIPS 2021 Datasets and Benchmarks), official S3 bucket physics-benchmarking-neurips2021-dataset",
+  "readme": "https://github.com/cogtoolslab/physics-benchmarking-neurips2021/blob/master/README.md",
+  "licence": "MIT (repository LICENSE, Copyright (c) 2019 Cognitive Tools Lab); the dataset release carries no separate licence statement"
+ },
+ "approved_scope": "owner decision on #106: full Dominoes release (dynamics training) plus its OCP readout-training and testing sets; other Physion scenarios out of scope",
+ "files": [
+  {
+   "name": "Dominoes_dynamics_training_HDF5s.tar.gz",
+   "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/Dominoes_dynamics_training_HDF5s.tar.gz",
+   "bytes": 40538620810,
+   "s3_etag": "89bcf175ded62905512c7f6462b9558d-2417",
+   "role": "dynamics training (encoder + predictor)",
+   "note": "first 2 147 483 648 B already on disk since 2026-09-21 (prefix sha256 c37b8e3e...52f), resumed by HTTP range"
+  },
+  {
+   "name": "Dominoes_readout_training_HDF5s.tar.gz",
+   "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/Dominoes_readout_training_HDF5s.tar.gz",
+   "bytes": 20180963523,
+   "s3_etag": "f70a30030c692c003d5c2dab1e64c3c7-1203",
+   "role": "OCP readout training"
+  },
+  {
+   "name": "Dominoes_testing_HDF5s.tar.gz",
+   "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/Dominoes_testing_HDF5s.tar.gz",
+   "bytes": 39333918824,
+   "s3_etag": "cf06f22b5c3834f97d07bfda5de87cdf-4689",
+   "role": "OCP testing"
+  },
+  {
+   "name": "manual_stim_evaluation_glitchy_test_stims.txt",
+   "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/manual_stim_evaluation_glitchy_test_stims.txt",
+   "bytes": 1102,
+   "s3_etag": "ca853cf6a6e7f11b48741fe20663bf0c",
+   "role": "protocol metadata: test stimuli flagged as glitchy by the Physion authors"
+  }
+ ],
+ "out_of_scope": [
+  "Collide",
+  "Contain",
+  "Drape",
+  "Drop",
+  "Link",
+  "Roll",
+  "Support (all dynamics/readout/testing archives)",
+  "PhysionTest.tar.gz / PhysionTestHDF5.tar.gz (all-scenario, 408 GB)",
+  "PhysionTrainMP4s.tar.gz",
+  "Physion.zip (PhysionTest-Core, all scenarios)",
+  "Physion_Dominoes.zip",
+  "model_human_results.zip",
+  "physion_example_data.zip"
+ ],
+ "total_bytes": 100053504259
+}

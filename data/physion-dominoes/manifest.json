@@ -1,0 +1,88 @@
+{
+ "approved_scope": "owner decision on #106: full Dominoes release (dynamics training) plus its OCP readout-training and testing sets; other Physion scenarios out of scope",
+ "benchmark": "physion-dominoes",
+ "extracted": {
+  "dynamics": {
+   "bytes": 64467822613,
+   "directory": "data/physion-dominoes/extracted/dynamics",
+   "hdf5_files": 2000
+  },
+  "readout": {
+   "bytes": 32043125308,
+   "directory": "data/physion-dominoes/extracted/readout",
+   "hdf5_files": 996
+  },
+  "testing": {
+   "bytes": 43297485496,
+   "directory": "data/physion-dominoes/extracted/testing",
+   "hdf5_files": 300
+  }
+ },
+ "files": [
+  {
+   "bytes": 40538620810,
+   "bytes_match": true,
+   "name": "Dominoes_dynamics_training_HDF5s.tar.gz",
+   "note": "first 2 147 483 648 B already on disk since 2026-09-21 (prefix sha256 c37b8e3e...52f), resumed by HTTP range",
+   "role": "dynamics training (encoder + predictor)",
+   "s3_etag": "89bcf175ded62905512c7f6462b9558d-2417",
+   "s3_etag_match": true,
+   "sha256": "4b4031153e4a20f1c00569118969cef1188df7d2f7c1235af477d246a85c2103",
+   "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/Dominoes_dynamics_training_HDF5s.tar.gz"
+  },
+  {
+   "bytes": 20180963523,
+   "bytes_match": true,
+   "name": "Dominoes_readout_training_HDF5s.tar.gz",
+   "role": "OCP readout training",
+   "s3_etag": "f70a30030c692c003d5c2dab1e64c3c7-1203",
+   "s3_etag_match": true,
+   "sha256": "6f4aabf417c32c6a5f2514912a122c5a31ae9f1467546157bca62f1b12d9f305",
+   "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/Dominoes_readout_training_HDF5s.tar.gz"
+  },
+  {
+   "bytes": 39333918824,
+   "bytes_match": true,
+   "name": "Dominoes_testing_HDF5s.tar.gz",
+   "role": "OCP testing",
+   "s3_etag": "cf06f22b5c3834f97d07bfda5de87cdf-4689",
+   "s3_etag_match": true,
+   "sha256": "a8a8c7c2b032058d548847a3d3f626e9403934a1b53a06189d995cf6af464673",
+   "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/Dominoes_testing_HDF5s.tar.gz"
+  },
+  {
+   "bytes": 1102,
+   "bytes_match": true,
+   "name": "manual_stim_evaluation_glitchy_test_stims.txt",
+   "role": "protocol metadata: test stimuli flagged as glitchy by the Physion authors",
+   "s3_etag": "ca853cf6a6e7f11b48741fe20663bf0c",
+   "s3_etag_match": true,
+   "sha256": "dbbc6c33f70fa331ec77ef28f75cf1b8875b7040e62e5adc7350a92e06cc5e71",
+   "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/manual_stim_evaluation_glitchy_test_stims.txt"
+  }
+ ],
+ "out_of_scope": [
+  "Collide",
+  "Contain",
+  "Drape",
+  "Drop",
+  "Link",
+  "Roll",
+  "Support (all dynamics/readout/testing archives)",
+  "PhysionTest.tar.gz / PhysionTestHDF5.tar.gz (all-scenario, 408 GB)",
+  "PhysionTrainMP4s.tar.gz",
+  "Physion.zip (PhysionTest-Core, all scenarios)",
+  "Physion_Dominoes.zip",
+  "model_human_results.zip",
+  "physion_example_data.zip"
+ ],
+ "pre_download_recorded_at": "2026-10-18T05:04:13+1100",
+ "provenance": {
+  "licence": "MIT (repository LICENSE, Copyright (c) 2019 Cognitive Tools Lab); the dataset release carries no separate licence statement",
+  "readme": "https://github.com/cogtoolslab/physics-benchmarking-neurips2021/blob/master/README.md",
+  "source": "Physion (Bear et al., NeurIPS 2021 Datasets and Benchmarks), official S3 bucket physics-benchmarking-neurips2021-dataset"
+ },
+ "schema": "issue_106_data_manifest_v1",
+ "total_bytes": 100053504259,
+ "verified_at": "2026-10-17T19:45:36Z"
+}

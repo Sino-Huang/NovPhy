@@ -1,0 +1,185 @@
+{
+ "benchmarks": {
+  "clevrer": {
+   "approved_scope": "owner decision on #106: CLEVRER videos and question/answer JSONs (train, validation; test only if needed for the question protocol)",
+   "benchmark": "clevrer",
+   "extracted": {
+    "train": {
+     "bytes": 12356048482,
+     "directory": "data/clevrer/videos/extracted",
+     "mp4_files": 10000
+    },
+    "validation": {
+     "bytes": 6206653214,
+     "directory": "data/clevrer/videos/extracted",
+     "mp4_files": 5000
+    }
+   },
+   "files": [
+    {
+     "bytes": 12354893389,
+     "bytes_match": true,
+     "http_etag": "2e068b64d-59db378b1c46e",
+     "name": "videos/video_train.zip",
+     "role": "encoder + predictor training",
+     "sha256": "c7401bc86f7ff230bda3b193619f41a79828bed1f0890948b16dd57c89dfdd3f",
+     "url": "https://data.csail.mit.edu/clevrer/videos/train/video_train.zip"
+    },
+    {
+     "bytes": 6206059321,
+     "bytes_match": true,
+     "http_etag": "171e8f339-59db35a74239f",
+     "name": "videos/video_validation.zip",
+     "role": "held-out rollout scoring and QA",
+     "sha256": "07f6d48bd708c80428684fcf17a7874f6c01fbb82a59b2f79ede199a63db7aae",
+     "url": "https://data.csail.mit.edu/clevrer/videos/validation/video_validation.zip"
+    },
+    {
+     "bytes": 86651938,
+     "bytes_match": true,
+     "http_etag": "52a3422-5a84144633347",
+     "name": "questions/train.json",
+     "role": "QA answer-head training",
+     "sha256": "11181da673d223f41fb596aacfbbd3ff83d39af7f09a3210549e98cb283714b4",
+     "url": "https://data.csail.mit.edu/clevrer/questions/train.json"
+    },
+    {
+     "bytes": 43327533,
+     "bytes_match": true,
+     "http_etag": "295202d-5a84144719eff",
+     "name": "questions/validation.json",
+     "role": "QA evaluation",
+     "sha256": "fdf841678a476655b906165e6ee4b0ed1516785c5ab927c8d0a4614e4e27e10d",
+     "url": "https://data.csail.mit.edu/clevrer/questions/validation.json"
+    },
+    {
+     "bytes": 17649911,
+     "bytes_match": true,
+     "http_etag": "10d50f7-5a841444c00b9",
+     "name": "questions/test.json",
+     "role": "checked only: test answers are withheld (evaluation server), so the test split cannot score the question protocol",
+     "sha256": "551716ab736a956dbde17dd0df5e2defdccc580f8f1b78df972fe30e0e074a24",
+     "url": "https://data.csail.mit.edu/clevrer/questions/test.json"
+    },
+    {
+     "bytes": 156761889,
+     "bytes_match": true,
+     "name": "annotations/annotation_train.zip",
+     "role": "already on disk since 2026-09-21 (#79)",
+     "sha256": "e7f9185ad3dde8139b839b00f0f75483374dd0325a3cbec2dac882078497784c",
+     "url": "https://data.csail.mit.edu/clevrer/annotations/train/annotation_train.zip"
+    },
+    {
+     "bytes": 78386966,
+     "bytes_match": true,
+     "name": "annotations/annotation_validation.zip",
+     "role": "already on disk since 2026-09-21 (#79)",
+     "sha256": "d89e74714dff7a1117fd113b54af99fbbc51583ebd742c788c484d708eb426d2",
+     "url": "https://data.csail.mit.edu/clevrer/annotations/validation/annotation_validation.zip"
+    }
+   ],
+   "not_downloaded": {
+    "derender_proposals.zip": "object masks: outside the approved scope and would give the encoder annotation-derived masks",
+    "videos/video_test.zip (6 149 404 859 B)": "test answers withheld; not needed for the question protocol"
+   },
+   "pre_download_recorded_at": "2026-10-18T05:04:13+1100",
+   "provenance": {
+    "licence": "CC0 (README.txt: \"Our dataset is under the CC0\")",
+    "readme": "https://data.csail.mit.edu/clevrer/README.txt",
+    "source": "CLEVRER (Yi, Gan et al., ICLR 2020), http://clevrer.csail.mit.edu/"
+   },
+   "schema": "issue_106_data_manifest_v1",
+   "total_bytes": 18943730947,
+   "verified_at": "2026-10-17T19:41:13Z"
+  },
+  "physion-dominoes": {
+   "approved_scope": "owner decision on #106: full Dominoes release (dynamics training) plus its OCP readout-training and testing sets; other Physion scenarios out of scope",
+   "benchmark": "physion-dominoes",
+   "extracted": {
+    "dynamics": {
+     "bytes": 64467822613,
+     "directory": "data/physion-dominoes/extracted/dynamics",
+     "hdf5_files": 2000
+    },
+    "readout": {
+     "bytes": 32043125308,
+     "directory": "data/physion-dominoes/extracted/readout",
+     "hdf5_files": 996
+    },
+    "testing": {
+     "bytes": 43297485496,
+     "directory": "data/physion-dominoes/extracted/testing",
+     "hdf5_files": 300
+    }
+   },
+   "files": [
+    {
+     "bytes": 40538620810,
+     "bytes_match": true,
+     "name": "Dominoes_dynamics_training_HDF5s.tar.gz",
+     "note": "first 2 147 483 648 B already on disk since 2026-09-21 (prefix sha256 c37b8e3e...52f), resumed by HTTP range",
+     "role": "dynamics training (encoder + predictor)",
+     "s3_etag": "89bcf175ded62905512c7f6462b9558d-2417",
+     "s3_etag_match": true,
+     "sha256": "4b4031153e4a20f1c00569118969cef1188df7d2f7c1235af477d246a85c2103",
+     "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/Dominoes_dynamics_training_HDF5s.tar.gz"
+    },
+    {
+     "bytes": 20180963523,
+     "bytes_match": true,
+     "name": "Dominoes_readout_training_HDF5s.tar.gz",
+     "role": "OCP readout training",
+     "s3_etag": "f70a30030c692c003d5c2dab1e64c3c7-1203",
+     "s3_etag_match": true,
+     "sha256": "6f4aabf417c32c6a5f2514912a122c5a31ae9f1467546157bca62f1b12d9f305",
+     "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/Dominoes_readout_training_HDF5s.tar.gz"
+    },
+    {
+     "bytes": 39333918824,
+     "bytes_match": true,
+     "name": "Dominoes_testing_HDF5s.tar.gz",
+     "role": "OCP testing",
+     "s3_etag": "cf06f22b5c3834f97d07bfda5de87cdf-4689",
+     "s3_etag_match": true,
+     "sha256": "a8a8c7c2b032058d548847a3d3f626e9403934a1b53a06189d995cf6af464673",
+     "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/Dominoes_testing_HDF5s.tar.gz"
+    },
+    {
+     "bytes": 1102,
+     "bytes_match": true,
+     "name": "manual_stim_evaluation_glitchy_test_stims.txt",
+     "role": "protocol metadata: test stimuli flagged as glitchy by the Physion authors",
+     "s3_etag": "ca853cf6a6e7f11b48741fe20663bf0c",
+     "s3_etag_match": true,
+     "sha256": "dbbc6c33f70fa331ec77ef28f75cf1b8875b7040e62e5adc7350a92e06cc5e71",
+     "url": "https://physics-benchmarking-neurips2021-dataset.s3.amazonaws.com/manual_stim_evaluation_glitchy_test_stims.txt"
+    }
+   ],
+   "out_of_scope": [
+    "Collide",
+    "Contain",
+    "Drape",
+    "Drop",
+    "Link",
+    "Roll",
+    "Support (all dynamics/readout/testing archives)",
+    "PhysionTest.tar.gz / PhysionTestHDF5.tar.gz (all-scenario, 408 GB)",
+    "PhysionTrainMP4s.tar.gz",
+    "Physion.zip (PhysionTest-Core, all scenarios)",
+    "Physion_Dominoes.zip",
+    "model_human_results.zip",
+    "physion_example_data.zip"
+   ],
+   "pre_download_recorded_at": "2026-10-18T05:04:13+1100",
+   "provenance": {
+    "licence": "MIT (repository LICENSE, Copyright (c) 2019 Cognitive Tools Lab); the dataset release carries no separate licence statement",
+    "readme": "https://github.com/cogtoolslab/physics-benchmarking-neurips2021/blob/master/README.md",
+    "source": "Physion (Bear et al., NeurIPS 2021 Datasets and Benchmarks), official S3 bucket physics-benchmarking-neurips2021-dataset"
+   },
+   "schema": "issue_106_data_manifest_v1",
+   "total_bytes": 100053504259,
+   "verified_at": "2026-10-17T19:45:36Z"
+  }
+ },
+ "schema": "issue_106_data_manifest_v1"
+}
