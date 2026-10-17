@@ -1,0 +1,256 @@
+{
+  "checks": [
+    {
+      "checks": {
+        "labels_0": true,
+        "labels_1": true,
+        "policy_split_evaluation": true,
+        "policy_state": true,
+        "round_0_losses": true,
+        "round_0_state": true,
+        "round_1_losses": true,
+        "round_1_state": true
+      },
+      "control": "variant_a_reproduces_101_J_training",
+      "ok": true,
+      "seed": 20260908,
+      "wall_seconds": 169.9394720699638
+    },
+    {
+      "a_init_equals_request_policy": true,
+      "abc_rows_equal_request_policy": true,
+      "b_equals_min_form": true,
+      "control": "input_variants",
+      "d_default_elapsed": true,
+      "dagger_elapsed_is_window_frame": true,
+      "features": {
+        "a": [
+          0.016667,
+          0.5,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "b": [
+          0.004444,
+          0.133333,
+          0.266667,
+          0.271111,
+          0.733333,
+          1.0
+        ],
+        "c": [
+          0.127874,
+          0.633514,
+          0.758389,
+          0.761389,
+          0.943078,
+          1.0
+        ],
+        "d": [
+          0.016667,
+          0.5,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "ok": true,
+      "rollout_remaining_is_endpoint_minus_position": true,
+      "window_rows_elapsed_column": true
+    },
+    {
+      "branches": 3480,
+      "cell_levels": 108,
+      "complete": 3480,
+      "control": "policy_pool_accounting",
+      "disjoint_from_fit_and_evaluation": true,
+      "levels": 120,
+      "mixed_cells": {
+        "angle": 73,
+        "grid": 94
+      },
+      "ok": true,
+      "pig_removed": 199,
+      "typed_failures": []
+    },
+    {
+      "anchors": 400,
+      "control": "gate_b_inputs_bound",
+      "gate_b": "pass",
+      "ok": true
+    },
+    {
+      "control": "issue101_records_match_manifest",
+      "ok": true,
+      "pass": true,
+      "records": 33
+    },
+    {
+      "control": "issue101_jdec_lambda",
+      "lambda": 0.1,
+      "ok": true
+    }
+  ],
+  "identity": "issue-119-remaining-frames-v1",
+  "label_window_timing": {
+    "b_L225_round0": {
+      "label_counts": [
+        83,
+        5701,
+        2669,
+        66,
+        3634,
+        1706,
+        429,
+        11756,
+        16
+      ],
+      "rows": 26060,
+      "seconds_per_window": 0.040401190930800836
+    },
+    "b_L225_round1": {
+      "label_counts": [
+        2690,
+        9208,
+        3582,
+        4214,
+        355,
+        17,
+        4897,
+        1044,
+        53
+      ],
+      "rows": 26060,
+      "seconds_per_window": 0.16267173385432246
+    },
+    "b_L60_round0": {
+      "label_counts": [
+        80,
+        2158,
+        1017,
+        58,
+        1206,
+        619,
+        67,
+        1746,
+        9
+      ],
+      "rows": 6960,
+      "seconds_per_window": 0.013764491949053803
+    },
+    "b_L60_round1": {
+      "label_counts": [
+        108,
+        708,
+        215,
+        1201,
+        161,
+        2,
+        3700,
+        814,
+        51
+      ],
+      "rows": 6960,
+      "seconds_per_window": 0.046186326396780025
+    },
+    "d_L225_round0": {
+      "label_counts": [
+        83,
+        5697,
+        2669,
+        66,
+        3636,
+        1706,
+        429,
+        11758,
+        16
+      ],
+      "rows": 26060,
+      "seconds_per_window": 0.04010529564653427
+    },
+    "d_L225_round1": {
+      "label_counts": [
+        102,
+        6606,
+        2298,
+        67,
+        3235,
+        1461,
+        437,
+        11835,
+        19
+      ],
+      "rows": 26060,
+      "seconds_per_window": 0.0466891709566598
+    },
+    "d_L60_round0": {
+      "label_counts": [
+        80,
+        2161,
+        1016,
+        58,
+        1204,
+        620,
+        66,
+        1746,
+        9
+      ],
+      "rows": 6960,
+      "seconds_per_window": 0.013639716931281546
+    },
+    "d_L60_round1": {
+      "label_counts": [
+        80,
+        2388,
+        957,
+        57,
+        1077,
+        546,
+        66,
+        1777,
+        12
+      ],
+      "rows": 6960,
+      "seconds_per_window": 0.015448389594956976
+    },
+    "units": 4,
+    "windows": 116
+  },
+  "ok": true,
+  "pool_accounting": {
+    "branches": 3480,
+    "cell_levels": 108,
+    "complete": 3480,
+    "disjoint_from_fit_and_evaluation": true,
+    "levels": 120,
+    "mixed_cells": {
+      "angle": 73,
+      "grid": 94
+    },
+    "pig_removed": 199,
+    "typed_failures": []
+  },
+  "projection": {
+    "accuracy_gpu_seconds_estimate": 1440.0,
+    "elapsed_hours_on_4_gpus": 0.7494926849071164,
+    "issue101_dec_group_seconds": 6.592518154066056,
+    "issue101_pe_group_seconds": 194.52810493996367,
+    "long_to_short_label_time_ratio": 3.3873253174572464,
+    "scoring_gpu_seconds_estimate": 3045.0,
+    "total_gpu_seconds": 10792.694662662476,
+    "training_gpu_seconds": 6307.694662662476
+  },
+  "reading": "#101 artefacts (pool, shots, J policy, labels, records), fit-split anchors and cells, policy-split windows (training data); no evaluation-split model output",
+  "run_at": "2026-10-17T23:45:28Z",
+  "schema": "issue_119_remaining_frames_smoke_v1",
+  "shot_lengths_225": {
+    "mean_length": 222.85057067871094,
+    "min_length": 140,
+    "reaching_225": 3326,
+    "shots": 3480
+  },
+  "wall_seconds": 216.06520846299827
+}
