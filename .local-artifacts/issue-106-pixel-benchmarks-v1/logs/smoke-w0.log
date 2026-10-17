@@ -1,0 +1,46 @@
+[21:14:47] homography: {'points': 13445, 'inlier_fraction': 0.9343250278914095, 'residual_px_quantiles': {'0.5': 0.5706200400415911, '0.9': 4.14619722759606, '0.95': 7.748337242338284}}
+[21:14:57] clevrer encoder epoch 0: loss 19.1984 (1s)
+[21:14:57] clevrer encoder epoch 1: loss 15.7688 (1s)
+[21:14:57] clevrer encoder epoch 2: loss 13.5248 (1s)
+[21:14:57] clevrer encoder epoch 3: loss 12.2187 (1s)
+[21:14:57] clevrer encoder epoch 4: loss 11.3319 (1s)
+[21:14:57] clevrer encoder epoch 5: loss 10.6872 (1s)
+[21:14:57] clevrer encoder epoch 6: loss 10.3449 (1s)
+/mnt/array/sukaih/Project/NovPhy/scripts/run_pixel_benchmarks.py:702: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:213.)
+  images = torch.from_numpy(np.ascontiguousarray(frames)).to(DEVICE).permute(0, 3, 1, 2)
+[21:15:03] physion encoder epoch 0: loss 26.3935 (0s)
+[21:15:03] physion encoder epoch 1: loss 17.8664 (0s)
+[21:15:03] physion encoder epoch 2: loss 14.4957 (0s)
+[21:15:03] physion encoder epoch 3: loss 12.6997 (0s)
+[21:15:03] physion encoder epoch 4: loss 11.4651 (0s)
+[21:15:03] physion encoder epoch 5: loss 10.5250 (0s)
+[21:15:03] physion encoder epoch 6: loss 9.7243 (1s)
+[21:15:03] physion encoder epoch 7: loss 8.9827 (1s)
+[21:15:03] physion encoder epoch 8: loss 8.3025 (1s)
+[21:15:03] physion encoder epoch 9: loss 7.7050 (1s)
+/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/site-packages/torch/_inductor/compile_fx.py:321: UserWarning: TensorFloat32 tensor cores for float32 matrix multiplication available but not enabled. Consider setting `torch.set_float32_matmul_precision('high')` for better performance.
+  warnings.warn(
+[21:17:59] smoke passed=True checks={'carrier_shape': True, 'position_mse_equals_field_errors': True, 'clevrer_hybrid_finite': True, 'clevrer_label-free_finite': True, 'clevrer_rollout_deterministic': True, 'clevrer_jcont_continuous_only': True, 'clevrer_rollout_equals_request_policy': True, 'clevrer_qa_runs': True, 'physion_hybrid_finite': True, 'physion_label-free_finite': True, 'physion_rollout_deterministic': True, 'physion_jcont_continuous_only': True, 'physion_rollout_equals_request_policy': True, 'physion_ocp_runs': True}
+[21:17:59] projection: {'encoder': 0.21, 'parse': 0.15, 'train': 0.68, 'policy': 1.95, 'score': 2.8, 'total': 5.8}
+[21:48:47] homography: {'points': 13445, 'inlier_fraction': 0.9343250278914095, 'residual_px_quantiles': {'0.5': 0.5706200400415911, '0.9': 4.14619722759606, '0.95': 7.748337242338284}}
+[21:48:58] clevrer encoder epoch 0: loss 19.1984 (1s)
+[21:48:58] clevrer encoder epoch 1: loss 15.7688 (1s)
+[21:48:58] clevrer encoder epoch 2: loss 13.5248 (1s)
+[21:48:58] clevrer encoder epoch 3: loss 12.2187 (1s)
+[21:48:58] clevrer encoder epoch 4: loss 11.3319 (1s)
+[21:48:58] clevrer encoder epoch 5: loss 10.6872 (1s)
+[21:48:58] clevrer encoder epoch 6: loss 10.3449 (1s)
+/mnt/array/sukaih/Project/NovPhy/scripts/run_pixel_benchmarks.py:712: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:213.)
+  images = torch.from_numpy(np.ascontiguousarray(frames)).to(DEVICE).permute(0, 3, 1, 2)
+[21:49:04] physion encoder epoch 0: loss 26.3935 (0s)
+[21:49:04] physion encoder epoch 1: loss 17.8664 (0s)
+[21:49:04] physion encoder epoch 2: loss 14.4958 (0s)
+[21:49:04] physion encoder epoch 3: loss 12.6998 (0s)
+[21:49:04] physion encoder epoch 4: loss 11.4651 (0s)
+[21:49:04] physion encoder epoch 5: loss 10.5250 (0s)
+[21:49:04] physion encoder epoch 6: loss 9.7243 (0s)
+[21:49:04] physion encoder epoch 7: loss 8.9828 (0s)
+[21:49:04] physion encoder epoch 8: loss 8.3026 (0s)
+[21:49:04] physion encoder epoch 9: loss 7.7050 (0s)
+[21:50:43] smoke passed=True checks={'carrier_shape': True, 'position_mse_equals_field_errors': True, 'clevrer_hybrid_finite': True, 'clevrer_label-free_finite': True, 'clevrer_rollout_deterministic': True, 'clevrer_jcont_continuous_only': True, 'clevrer_rollout_equals_request_policy': True, 'clevrer_qa_runs': True, 'physion_hybrid_finite': True, 'physion_label-free_finite': True, 'physion_rollout_deterministic': True, 'physion_jcont_continuous_only': True, 'physion_rollout_equals_request_policy': True, 'physion_ocp_runs': True}
+[21:50:43] projection: {'encoder': 0.2, 'parse': 0.16, 'train': 0.67, 'policy': 1.92, 'score': 2.69, 'total': 5.63}

@@ -1,0 +1,37 @@
+{
+ "schema": "issue_106_amendments_v1",
+ "amendments": [
+  {
+   "id": "A1",
+   "at": "2026-10-17T22:03:00Z",
+   "stage": "parse (first launch); no predictor, policy or score had run; encoders trained on dynamics frames only (256 x 256, unaffected)",
+   "change": "the Physion testing HDF5s store 512 x 512 frames (dynamics and readout: 256 x 256); the frozen definition is a 256 x 256 parser input, but physion_trial passed the stored frames through, so the parser raised on the first testing trial (typed shape error, all four parse workers). Fix: testing frames are resized to 256 x 256 with the PIL box filter, and the segmentation presence threshold (16 pixels at 256 x 256) is scaled to the stored area; testing labels are re-derived. The runner gains the amendment registry (load_plan accepts module hashes chained from the frozen ones) and lists amendments in summary.json. CLEVRER parse outputs written before the failure are kept.",
+   "modules": {
+    "world_model/data/pixel_benchmarks.py": {
+     "replaces": "b495dfe77dc4c274fe8ce32a1576348b1794ac2ac7bb65fb66da5a0ecc0a9a09",
+     "sha256": "4c2b8e5359e75a3df7dbc8db3757d847655cf8f07b83dff41fd75959ed04346c"
+    },
+    "scripts/run_pixel_benchmarks.py": {
+     "replaces": "60e9371d95f0e285583008c298647742ee3a2fc3dcf68050d512bb639edaf84a",
+     "sha256": "cc868cba940c72acc6e282809a02974e13323c610281f888cf24527ebb910d27"
+    }
+   }
+  },
+  {
+   "id": "A2",
+   "at": "2026-10-17T23:07:40Z",
+   "stage": "after score and the first publish; frozen records, tokens and readouts unchanged",
+   "change": "EXPLORATORY readout mode `explore` added (post-hoc, no disposition): the frozen CLEVRER QA readout sat at its floor (max gated micro contact value 0.051 < threshold 0.5 on every validation video; parsed max-over-frames existence admits 362 phantom objects vs 1911 real in 400 videos, so 38 % of choices are unresolvable), giving identical decisions for every arm; the Physion predicate rule likewise never fired. The exploratory readout uses a 5-frame existence rule and thresholds fitted on the training (CLEVRER) / readout (Physion) split. slot_attributes gains min_frames (default 1 = frozen behaviour); findings.md gains label-free tables, parser fidelity and the exploratory section.",
+   "modules": {
+    "scripts/run_pixel_benchmarks.py": {
+     "replaces": "cc868cba940c72acc6e282809a02974e13323c610281f888cf24527ebb910d27",
+     "sha256": "7d8f18fd1c43b62fe56467394793e2899dcf463ab8515d9ce2aa96c06fed34cf"
+    },
+    "world_model/training/pixel_carrier.py": {
+     "replaces": "bf34939649e8cc5d5d5357450a9e28de249755e5c42cac5e9a20b08138ee4a62",
+     "sha256": "5efd891e635fcddac1aeb951fdc46b031ff760ea4acae70b807d6f15e7d7d2a3"
+    }
+   }
+  }
+ ]
+}

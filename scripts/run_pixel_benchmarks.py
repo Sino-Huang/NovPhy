@@ -365,10 +365,24 @@ def module_hashes():
     return {m: sha256_of(ROOT / m) for m in MODULES}
 
 
+def accepted_hashes(output, plan):
+    """Frozen module hashes plus the disclosed post-freeze amendments chained onto them
+    (<output>/amendments.json: per amendment, module -> {replaces, sha256})."""
+    accepted = {m: {h} for m, h in plan["inputs"]["modules"].items()}
+    path = Path(output) / "amendments.json"
+    if path.is_file():
+        for amendment in read_json(path)["amendments"]:
+            for module, change in amendment["modules"].items():
+                if change["replaces"] in accepted.get(module, set()):
+                    accepted[module].add(change["sha256"])
+    return accepted
+
+
 def load_plan(output, *, check=True):
     plan = read_json(Path(output) / "plan.json")
     if check:
-        drift = {m: h for m, h in module_hashes().items() if plan["inputs"]["modules"].get(m) != h}
+        accepted = accepted_hashes(output, plan)
+        drift = {m: h for m, h in module_hashes().items() if h not in accepted.get(m, set())}
         if drift:
             raise SystemExit(f"input drift after freeze: {sorted(drift)}")
         if sha256_of(Path(output) / "smoke.json") != plan["inputs"]["smoke_sha256"]:
@@ -1373,6 +1387,226 @@ def score(output, workers, worker):
     return 0
 
 
+# =========================================================================== exploratory readouts (post-freeze)
+
+EXPLORE = {
+    "status": "EXPLORATORY: designed after the frozen readouts were seen at their floor (amendment A2); the "
+              "frozen tokens are unchanged and these numbers carry no disposition",
+    "existence_frames": 5,
+    "threshold_quantiles": 101,
+    "clevrer": "objects exist if parsed presence >= 0.5 on >= 5 frames (the frozen rule, one frame, admits "
+               "single-frame phantom objects); predictive: the higher of the two choice scores (argmax of the max "
+               "gated contact value over the rollout landings, ties to the lower choice); counterfactual: option "
+               "'happens' iff its score >= tau, tau fitted per arm and member on the training split's "
+               "counterfactual options (the score quantile, 101 levels, of best training option accuracy)",
+    "physion": "OCP predicate score = max over rollout landings of the gated ocp-contact value at the landing's "
+               "Delta; tau fitted per arm and member on the readout split (best readout accuracy over 101 score "
+               "quantiles), applied to the testing split",
+}
+
+
+def load_questions_split(plan, split):
+    videos = set(plan["membership"]["clevrer"][split]["scenes"])
+    payload = json.loads(pb.CLEVRER_QUESTIONS[split].read_text())
+    return {int(v["scene_index"]): [q for q in v["questions"] if q["question_type"] in ("predictive", "counterfactual")]
+            for v in payload if int(v["scene_index"]) in videos}
+
+
+def qa_raw(model, policies, videos, parsed, questions):
+    """``qa_scores`` with raw scores: per arm the two predictive choice scores and every counterfactual option
+    score (max of the observed reading up to the start frame and the imagined rollout), with the answers,
+    negations and video clusters (objects exist on >= EXPLORE['existence_frames'] frames)."""
+    attributes = {v: pc.slot_attributes(parsed[v]["presence"].float(), parsed[v]["kinds"].float(),
+                                        EXPLORE["existence_frames"]) for v in videos}
+    observed = {v: pc.contact_values(model, parsed[v]["carrier"].to(DEVICE)) for v in videos}
+    removals, meta = set(), {"predictive": [], "counterfactual": []}
+    for v in videos:
+        for q in questions[v]:
+            negate = "negate" in q["program"]
+            pairs = [pc.choice_pair(c, attributes[v]) for c in q["choices"]]
+            answers = [c["answer"] == "correct" for c in q["choices"]]
+            if q["question_type"] == "predictive":
+                meta["predictive"].append({"video": v, "negate": negate, "pairs": pairs, "answers": answers})
+            else:
+                removed = pc.resolve_objects(q["program"], attributes[v])
+                key = (v, removed[0] if removed else None)
+                removals.add(key)
+                meta["counterfactual"].append({"video": v, "negate": negate, "pairs": pairs, "answers": answers,
+                                               "removal": key})
+    starts = {}
+    for v, x in removals:
+        hits = [] if x is None else (observed[v][:, x].max(-1).values >= QA["threshold"]).nonzero(as_tuple=True)[0]
+        starts[(v, x)] = None if not len(hits) else max(0, int(hits[0]) - 1)
+    active = sorted((r for r in removals if starts[r] is not None), key=lambda r: (r[0], r[1]))
+    index = {r: i for i, r in enumerate(active)}
+
+    def pair_score(table, row, pair):
+        return float(torch.maximum(table[row, pair[0], pair[1]], table[row, pair[1], pair[0]]))
+    out = {"items": {"predictive": [m["video"] for m in meta["predictive"]],
+                     "counterfactual_option": [m["video"] for m in meta["counterfactual"] for _ in m["answers"]]},
+           "predictive_answers": [m["answers"] for m in meta["predictive"]],
+           "predictive_negate": [m["negate"] for m in meta["predictive"]],
+           "counterfactual_answers": [a for m in meta["counterfactual"] for a in m["answers"]],
+           "counterfactual_negate": [m["negate"] for m in meta["counterfactual"] for _ in m["answers"]],
+           "unresolved_choices": sum(p is None for m in meta["predictive"] + meta["counterfactual"]
+                                     for p in m["pairs"])}
+    video_row = {v: i for i, v in enumerate(videos)}
+    for arm in ARMS:
+        policy, spec = policies.get(arm), arm_spec(arm)
+        z0 = torch.stack([parsed[v]["carrier"][QA["predictive_start"]] for v in videos]).to(DEVICE)
+        _, _, _, landings = pc.rollout(model, policy, z0, QA["predictive_horizon"], spec, record=True)
+        predictive, _ = contact_max(model, landings, len(videos))
+        counter = None
+        if active:
+            z0 = []
+            for v, x in active:
+                z = parsed[v]["carrier"][starts[(v, x)]].clone()
+                z[2 + 13 * x] = 0.0
+                z[2 + 13 * x + 5:2 + 13 * x + 11] = 0.0
+                z0.append(z)
+            ends = torch.tensor([pb.CLEVRER_FRAMES - 1 - starts[r] for r in active], device=DEVICE)
+            _, _, _, cf_landings = pc.rollout(model, policy, torch.stack(z0).to(DEVICE), ends, spec, record=True)
+            counter, _ = contact_max(model, cf_landings, len(active), ends)
+        predictive_scores = [[0.0 if p is None else pair_score(predictive, video_row[m["video"]], p) for p in m["pairs"]]
+                             for m in meta["predictive"]]
+        option_scores = []
+        for m in meta["counterfactual"]:
+            start = starts[m["removal"]]
+            for p in m["pairs"]:
+                if p is None:
+                    option_scores.append(0.0)
+                elif start is None:
+                    option_scores.append(float(torch.maximum(observed[m["video"]][:, p[0], p[1]],
+                                                             observed[m["video"]][:, p[1], p[0]]).max()))
+                else:
+                    seen = float(torch.maximum(observed[m["video"]][:start + 1, p[0], p[1]],
+                                               observed[m["video"]][:start + 1, p[1], p[0]]).max())
+                    option_scores.append(max(seen, pair_score(counter, index[m["removal"]], p)))
+        out[arm] = {"predictive_scores": [[round(s, 8) for s in row] for row in predictive_scores],
+                    "counterfactual_scores": [round(s, 8) for s in option_scores]}
+    return out
+
+
+def ocp_predicate_scores(model, policy, spec, carriers):
+    """Max over rollout landings of the gated ocp-contact value at the landing's Delta, per trial."""
+    z0 = torch.stack([absorbed(c, OCP["start"]) for c in carriers]).to(DEVICE)
+    _, _, _, landings = pc.rollout(model, policy, z0, OCP["endpoint"], spec, record=True)
+    best = torch.zeros(len(carriers), device=DEVICE)
+    for index, _, z, chosen in landings:
+        for pair_index in chosen.unique().tolist():
+            sel = chosen == pair_index
+            values = pc.macro_values(model, z[sel], PAIRS[pair_index].delta)[:, 0]
+            best[index[sel]] = torch.maximum(best[index[sel]], values)
+    return [round(float(v), 8) for v in best.cpu()]
+
+
+def explore_cells():
+    return [("clevrer", "hybrid", s) for s in SEEDS] + [("physion", f, s) for f in FAMILIES for s in SEEDS]
+
+
+def explore(output, workers, worker):
+    output = Path(output)
+    plan = load_plan(output)
+    began = time.monotonic()
+    loaded = {}
+    for i, (bench, family, seed) in enumerate(explore_cells()):
+        path = output / "exploratory" / f"{member_tag(bench, family, seed)}.json"
+        if i % workers != worker or path.is_file():
+            continue
+        if bench not in loaded:
+            loaded = {bench: (load_parsed(output, bench), load_labels(output, bench))}
+        parsed, labels = loaded[bench]
+        t0, started = time.monotonic(), utc_now()
+        model = load_member(output, bench, family, seed)
+        policies = {k: load_policy(output, bench, family, seed, k) for k in ("J", "J-cont")}
+        with harness.deterministic_scoring() as scoring_policy:
+            if bench == "clevrer":
+                body = {split: qa_raw(model, policies, plan["membership"]["clevrer"][split]["scenes"], parsed,
+                                      load_questions_split(plan, split)) for split in ("train", "validation")}
+            else:
+                body = {}
+                for split in ("readout", "testing"):
+                    keys = [f"{split}/{Path(p).stem}" for p in plan["membership"]["physion"][split]["trials"]]
+                    carriers = [parsed[k]["carrier"] for k in keys]
+                    body[split] = {"labels": [bool(labels[split][k]["ocp"]) for k in keys],
+                                   **{arm: ocp_predicate_scores(model, policies.get(arm), arm_spec(arm), carriers)
+                                      for arm in ARMS}}
+        write_json(path, {"schema": SCHEMA["record"], "plan_identity": IDENTITY, "status": EXPLORE["status"],
+                          "scoring_policy": scoring_policy, "cell": {"bench": bench, "family": family, "seed": seed},
+                          "started_at": started, "scored_at": utc_now(), "wall_seconds": time.monotonic() - t0,
+                          **body})
+        log(f"explored {bench}/{family}/{seed} ({time.monotonic() - t0:.0f}s)")
+    wall = time.monotonic() - began
+    mark(output, f"explore-w{worker}", wall, wall)
+    return 0
+
+
+def fit_threshold(scores, correct_if_true):
+    """tau among the 101 score quantiles (and +inf) maximizing the accuracy of 'true iff score >= tau';
+    correct_if_true[i] = the decision 'true' is correct for item i. Ties to the first (lowest) tau."""
+    scores, target = np.asarray(scores), np.asarray(correct_if_true, bool)
+    candidates = np.unique(np.concatenate([np.quantile(scores, np.linspace(0, 1, EXPLORE["threshold_quantiles"])),
+                                           [np.inf]]))
+    accuracy = [((scores >= tau) == target).mean() for tau in candidates]
+    return float(candidates[int(np.argmax(accuracy))])
+
+
+def exploratory_tables(output):
+    output = Path(output)
+    out = {"status": EXPLORE["status"], "rules": EXPLORE, "clevrer": {}, "physion": {}}
+    rows = {}
+    for bench, family, seed in explore_cells():
+        path = output / "exploratory" / f"{member_tag(bench, family, seed)}.json"
+        if path.is_file():
+            rows[(bench, family, seed)] = read_json(path)
+    clevrer = [rows[k] for k in sorted(rows) if k[0] == "clevrer"]
+    if clevrer:
+        values, taus = {arm: [] for arm in ARMS}, {arm: [] for arm in ARMS}
+        for record in clevrer:
+            train, val = record["train"], record["validation"]
+            for arm in ARMS:
+                tau = fit_threshold(train[arm]["counterfactual_scores"],
+                                    [a != n for a, n in zip(train["counterfactual_answers"], train["counterfactual_negate"])])
+                taus[arm].append(tau)
+                predictive = []
+                for scores, answers, negate in zip(val[arm]["predictive_scores"], val["predictive_answers"],
+                                                   val["predictive_negate"]):
+                    pick = int(np.argmin(scores) if negate else np.argmax(scores))
+                    predictive.append(int(answers[pick]))
+                options = [int((s >= tau) == (a != n)) for s, a, n in zip(val[arm]["counterfactual_scores"],
+                                                                       val["counterfactual_answers"],
+                                                                       val["counterfactual_negate"])]
+                values[arm].append((predictive, options))
+        items = clevrer[0]["validation"]["items"]
+        groups = {"option": items["predictive"] + items["counterfactual_option"], "predictive": items["predictive"],
+                  "counterfactual_option": items["counterfactual_option"]}
+
+        def matrix(arm, metric):
+            return np.array([p + o if metric == "option" else (p if metric == "predictive" else o)
+                             for p, o in values[arm]], np.float64)
+        out["clevrer"]["table"] = {arm: {m: boot(matrix(arm, m), groups[m]) for m in groups} | {"tau": taus[arm]}
+                                   for arm in ARMS}
+        out["clevrer"]["contrasts"] = {f"J - {other}": {m: boot(matrix("J", m) - matrix(other, m), groups[m])
+                                                        for m in groups} for other in ("J-cont",) + REQUESTS}
+        out["clevrer"]["unresolved_choices"] = {"validation": clevrer[0]["validation"]["unresolved_choices"],
+                                                "train": clevrer[0]["train"]["unresolved_choices"]}
+    for family in FAMILIES:
+        physion = [rows[k] for k in sorted(rows) if k[0] == "physion" and k[1] == family]
+        if not physion:
+            continue
+        values = {arm: [] for arm in ARMS}
+        for record in physion:
+            for arm in ARMS:
+                tau = fit_threshold(record["readout"][arm], record["readout"]["labels"])
+                values[arm].append([int((s >= tau) == y) for s, y in zip(record["testing"][arm],
+                                                                        record["testing"]["labels"])])
+        table = {arm: boot(np.array(values[arm], np.float64)) for arm in ARMS}
+        contrasts = {f"J - {other}": boot(np.array(values["J"], np.float64) - np.array(values[other], np.float64))
+                     for other in ("J-cont",) + REQUESTS}
+        out["physion"][family] = {"table": table, "contrasts": contrasts}
+    return out
+
+
 # =========================================================================== publish
 
 
@@ -1612,7 +1846,10 @@ def build_publication(output):
                "tables": tables, "contrasts": contrasts, "tokens": tokens,
                "primary": {b: tokens[b]["J - J-cont"] for b in BENCHES},
                "fidelity": fidelity_table(output),
-               "records": len(records)}
+               "records": len(records),
+               "amendments": (read_json(output / "amendments.json")["amendments"]
+                              if (output / "amendments.json").is_file() else []),
+               "exploratory": exploratory_tables(output) if (output / "exploratory").is_dir() else None}
     compute = compute_summary(output)
     return summary, compute, findings(summary, compute, plan)
 
@@ -1626,32 +1863,64 @@ def findings(summary, compute, plan):
     for bench in BENCHES:
         c = summary["contrasts"][bench]["J - J-cont"]
         lines.append(f"- {bench}: J − J-cont {fmt(c)} → `{summary['tokens'][bench]['J - J-cont']}`")
-    lines += ["", "## Rollout error (position MSE vs parsed carrier, hybrid; DESCRIPTIVE seed x clip intervals)", ""]
-    for bench in BENCHES:
-        table = summary["tables"]["rollout"][bench]["hybrid"]
-        if not table:
-            continue
-        endpoints = [str(e) for e in ENDPOINTS[bench]]
-        lines += [f"### {bench}", "", "| arm | " + " | ".join(f"t={e}" for e in endpoints) + " |",
-                  "|---|" + "---|" * len(endpoints)]
-        for arm in ARMS:
-            lines.append(f"| {arm} | " + " | ".join(fmt_sci(table[arm][e]["parsed"]) for e in endpoints) + " |")
-        lines.append("")
-    lines += ["## Downstream accuracy vs MACs (hybrid; DESCRIPTIVE seed x item intervals)", ""]
-    for bench in BENCHES:
-        table = summary["tables"]["decisions"][bench]["hybrid"]
-        if not table:
-            continue
-        metric = "option" if bench == "clevrer" else "readout"
-        lines += [f"### {bench} ({metric})", "", "| arm | accuracy | MACs per decision |", "|---|---|---|"]
-        for arm, row in table.items():
-            lines.append(f"| {arm} | {fmt(row[metric] if metric in row else row['readout'])} | "
-                         f"{row['macs_per_decision']:.3e} |")
-        lines.append("")
-    lines += ["## Contrasts", ""]
+    for family in FAMILIES:
+        lines += ["", f"## Rollout error, {family} (position MSE vs the parsed carrier; DESCRIPTIVE seed x clip "
+                      "intervals; annotation-truth MSE in summary.json)", ""]
+        for bench in BENCHES:
+            table = summary["tables"]["rollout"][bench][family]
+            if not table:
+                continue
+            endpoints = [str(e) for e in ENDPOINTS[bench]]
+            lines += [f"### {bench}", "", "| arm | " + " | ".join(f"t={e}" for e in endpoints) + " |",
+                      "|---|" + "---|" * len(endpoints)]
+            for arm in ARMS:
+                lines.append(f"| {arm} | " + " | ".join(fmt_sci(table[arm][e]["parsed"]) for e in endpoints) + " |")
+            lines.append("")
+    for family in FAMILIES:
+        lines += [f"## Downstream accuracy vs MACs, {family} (DESCRIPTIVE seed x item intervals)", ""]
+        for bench in BENCHES:
+            table = summary["tables"]["decisions"][bench][family]
+            if not table:
+                lines += [f"### {bench}: unsupported for this family", ""]
+                continue
+            metrics = ("option", "predictive", "counterfactual_option") if bench == "clevrer" else ("readout",
+                                                                                                    "predicate_rule")
+            lines += [f"### {bench}", "", "| arm | " + " | ".join(metrics) + " | MACs per decision |",
+                      "|---|" + "---|" * (len(metrics) + 1)]
+            for arm, row in table.items():
+                lines.append(f"| {arm} | " + " | ".join(fmt(row.get(m)) for m in metrics)
+                             + f" | {row['macs_per_decision']:.3e} |")
+            lines.append("")
+    lines += ["## Contrasts (frozen rule, margin 0.02)", ""]
     for bench in BENCHES:
         for name, stat in summary["contrasts"][bench].items():
             lines.append(f"- {bench}: {name}: {fmt(stat, 4)} → `{summary['tokens'][bench][name]}`")
+    lines += ["", "## Parser fidelity (pixels vs annotation targets)", "",
+              "| benchmark / split | clips | presence F1 | center error (native px) | kind accuracy |",
+              "|---|---|---|---|---|"]
+    for key, row in summary["fidelity"].items():
+        lines.append(f"| {key} | {row['clips']} | {row['presence_f1']:.4f} | {row['center_error_px']:.1f} | "
+                     f"{row['kind_accuracy']:.4f} |")
+    explore_ = summary.get("exploratory")
+    if explore_:
+        lines += ["", "## EXPLORATORY readouts (post-freeze, amendment A2; no disposition)", "", explore_["status"], ""]
+        if explore_["clevrer"]:
+            lines += ["### CLEVRER (hybrid)", "", "| arm | option | predictive | counterfactual option |",
+                      "|---|---|---|---|"]
+            for arm, row in explore_["clevrer"]["table"].items():
+                lines.append(f"| {arm} | {fmt(row['option'])} | {fmt(row['predictive'])} | "
+                             f"{fmt(row['counterfactual_option'])} |")
+            lines += [""] + [f"- {name}: option {fmt(c['option'], 4)}; predictive {fmt(c['predictive'], 4)}; "
+                             f"counterfactual option {fmt(c['counterfactual_option'], 4)}"
+                             for name, c in explore_["clevrer"]["contrasts"].items()] + [""]
+        for family, block in explore_["physion"].items():
+            lines += [f"### Physion OCP predicate score, readout-fitted threshold ({family})", "",
+                      "| arm | test accuracy |", "|---|---|"]
+            lines += [f"| {arm} | {fmt(stat)} |" for arm, stat in block["table"].items()]
+            lines += [""] + [f"- {name}: {fmt(c, 4)}" for name, c in block["contrasts"].items()] + [""]
+    if summary["amendments"]:
+        lines += ["", "## Post-freeze amendments", ""]
+        lines += [f"- {a['id']}: {a['change']}" for a in summary["amendments"]]
     lines += ["", f"Compute: {compute['gpu_seconds_total']:.0f} GPU s; engine seconds 0.", ""]
     return "\n".join(lines)
 
@@ -1659,7 +1928,7 @@ def findings(summary, compute, plan):
 def manifest_records(output):
     output = Path(output)
     files = sorted(list((output / "records").glob("*.json")) + list((output / "training").glob("*.json"))
-                   + list((output / "models").rglob("*.json")))
+                   + list((output / "models").rglob("*.json")) + list((output / "exploratory").glob("*.json")))
     return {"schema": SCHEMA["manifest"], "files": {str(p.relative_to(output)): sha256_of(p) for p in files}}
 
 
@@ -1963,7 +2232,7 @@ def projection(t):
 # =========================================================================== main
 
 MODES = {"manifest", "smoke", "freeze", "prepare", "encoder", "parse", "train", "policy", "score", "spot", "publish",
-         "validate"}
+         "validate", "explore"}
 
 
 def main(argv=None):
@@ -1992,7 +2261,7 @@ def main(argv=None):
     if mode == "spot":
         return spot(output)
     return {"prepare": prepare, "encoder": encoder, "parse": parse_stage, "train": train, "policy": policy_stage,
-            "score": score}[mode](output, args.workers, args.worker)
+            "score": score, "explore": explore}[mode](output, args.workers, args.worker)
 
 
 if __name__ == "__main__":

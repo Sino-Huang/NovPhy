@@ -1,0 +1,54 @@
+{
+ "engine_seconds": 0,
+ "gpu_seconds_total": 12010.2,
+ "hardware": "4 x RTX 5090 (32 GB); 48 CPU threads",
+ "note": "GPU seconds = wall seconds of the GPU-holding worker process; manifest / prepare are CPU-only",
+ "phases": {
+  "encoder": {
+   "entries": 2,
+   "gpu_seconds": 306.5,
+   "wall_seconds_sum": 306.5
+  },
+  "explore": {
+   "entries": 4,
+   "gpu_seconds": 153.3,
+   "wall_seconds_sum": 153.3
+  },
+  "manifest": {
+   "entries": 1,
+   "gpu_seconds": 0.0,
+   "wall_seconds_sum": 639.7
+  },
+  "parse": {
+   "entries": 4,
+   "gpu_seconds": 299.5,
+   "wall_seconds_sum": 299.5
+  },
+  "policy": {
+   "entries": 4,
+   "gpu_seconds": 2155.1,
+   "wall_seconds_sum": 2155.1
+  },
+  "prepare": {
+   "entries": 4,
+   "gpu_seconds": 0.0,
+   "wall_seconds_sum": 425.2
+  },
+  "score": {
+   "entries": 4,
+   "gpu_seconds": 6633.8,
+   "wall_seconds_sum": 6633.8
+  },
+  "spot": {
+   "entries": 1,
+   "gpu_seconds": 26.8,
+   "wall_seconds_sum": 26.8
+  },
+  "train": {
+   "entries": 4,
+   "gpu_seconds": 2435.1,
+   "wall_seconds_sum": 2435.1
+  }
+ },
+ "schema": "issue_106_compute_v1"
+}

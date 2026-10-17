@@ -336,7 +336,9 @@ def physion_header(path):
 
 def physion_trial(path, *, images=True, segmentation=True):
     """One trial at the carrier stride. Native-frame physics for labels; images [T, 256, 256, 3] at
-    native frames 3f; segmentation-derived presence/centers (training targets / annotation truth)."""
+    native frames 3f (stored frames of another size, the 512 x 512 testing set, are resized with the box
+    filter); segmentation-derived presence/centers (training targets / annotation truth) at the stored
+    resolution, with the presence pixel threshold scaled to the 256 x 256 area."""
     import h5py
     from PIL import Image
     with h5py.File(path, "r") as h:
@@ -369,8 +371,12 @@ def physion_trial(path, *, images=True, segmentation=True):
                "velocity": velocity, "angular": angular, "contact_zone": contact_zone, "contacts": contacts,
                "carrier_native": np.array(carrier_native, np.int64)}
         if images:
-            out["images"] = np.stack([np.asarray(Image.open(io.BytesIO(h["frames"][frames[k]]["images/_img"][()]))
-                                                 .convert("RGB")) for k in carrier_native])
+            def rgb(k):
+                image = Image.open(io.BytesIO(h["frames"][frames[k]]["images/_img"][()])).convert("RGB")
+                if image.size != PHYSION_IMAGE[::-1]:
+                    image = image.resize(PHYSION_IMAGE[::-1], Image.BOX)
+                return np.asarray(image)
+            out["images"] = np.stack([rgb(k) for k in carrier_native])
         if segmentation:
             colors = static["object_segmentation_colors"][()].astype(np.int64)
             key = colors @ np.array([65536, 256, 1])
@@ -380,9 +386,10 @@ def physion_trial(path, *, images=True, segmentation=True):
                 seg = np.asarray(Image.open(io.BytesIO(h["frames"][frames[k]]["images/_id"][()])).convert("RGB"))
                 code = seg.astype(np.int64) @ np.array([65536, 256, 1])
                 hgt, wid = code.shape
+                minimum = PHYSION_MIN_PIXELS * hgt * wid / (PHYSION_IMAGE[0] * PHYSION_IMAGE[1])
                 for i in range(n):
                     yy, xx = np.nonzero(code == key[i])
-                    if len(yy) >= PHYSION_MIN_PIXELS:
+                    if len(yy) >= minimum:
                         presence[t, i] = True
                         centers[t, i] = ((xx.mean() + 0.5) / wid, (yy.mean() + 0.5) / hgt)
             kinds = np.full((len(carrier_native), SLOTS), -1, np.int64)

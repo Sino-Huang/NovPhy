@@ -1,0 +1,355 @@
+{
+ "launches": [
+  {
+   "stage": "manifest",
+   "worker": 0,
+   "pid": 2142707,
+   "gpu": null,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode manifest",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/manifest-w0.log",
+   "at": "2026-10-17T19:40:34Z"
+  },
+  {
+   "stage": "smoke",
+   "worker": 0,
+   "pid": 2164455,
+   "gpu": 0,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode smoke",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/smoke-w0.log",
+   "at": "2026-10-17T21:14:19Z"
+  },
+  {
+   "stage": "freeze",
+   "worker": 0,
+   "pid": 2205400,
+   "gpu": null,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode freeze",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/freeze-w0.log",
+   "at": "2026-10-17T21:45:31Z"
+  },
+  {
+   "stage": "smoke",
+   "worker": 0,
+   "pid": 2223169,
+   "gpu": 0,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode smoke",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/smoke-w0.log",
+   "at": "2026-10-17T21:48:17Z"
+  },
+  {
+   "stage": "freeze",
+   "worker": 0,
+   "pid": 2263588,
+   "gpu": null,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode freeze",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/freeze-w0.log",
+   "at": "2026-10-17T21:50:46Z"
+  },
+  {
+   "stage": "prepare",
+   "worker": 0,
+   "pid": 2269557,
+   "gpu": null,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode prepare --workers 2 --worker 0",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/prepare-w0.log",
+   "at": "2026-10-17T21:51:57Z"
+  },
+  {
+   "stage": "prepare",
+   "worker": 1,
+   "pid": 2269558,
+   "gpu": null,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode prepare --workers 2 --worker 1",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/prepare-w1.log",
+   "at": "2026-10-17T21:51:57Z"
+  },
+  {
+   "stage": "encoder",
+   "worker": 0,
+   "pid": 2798124,
+   "gpu": 0,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode encoder --workers 2 --worker 0",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/encoder-w0.log",
+   "at": "2026-10-17T21:55:54Z"
+  },
+  {
+   "stage": "encoder",
+   "worker": 1,
+   "pid": 2798125,
+   "gpu": 1,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode encoder --workers 2 --worker 1",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/encoder-w1.log",
+   "at": "2026-10-17T21:55:54Z"
+  },
+  {
+   "stage": "parse",
+   "worker": 0,
+   "pid": 2798866,
+   "gpu": 0,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode parse --workers 4 --worker 0",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/parse-w0.log",
+   "at": "2026-10-17T21:58:55Z"
+  },
+  {
+   "stage": "parse",
+   "worker": 1,
+   "pid": 2798867,
+   "gpu": 1,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode parse --workers 4 --worker 1",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/parse-w1.log",
+   "at": "2026-10-17T21:58:55Z"
+  },
+  {
+   "stage": "parse",
+   "worker": 2,
+   "pid": 2798868,
+   "gpu": 2,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode parse --workers 4 --worker 2",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/parse-w2.log",
+   "at": "2026-10-17T21:58:55Z"
+  },
+  {
+   "stage": "parse",
+   "worker": 3,
+   "pid": 2798869,
+   "gpu": 3,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode parse --workers 4 --worker 3",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/parse-w3.log",
+   "at": "2026-10-17T21:58:55Z"
+  },
+  {
+   "stage": "prepare",
+   "worker": 0,
+   "pid": 3575089,
+   "gpu": null,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode prepare --workers 2 --worker 0",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/prepare-w0.log",
+   "at": "2026-10-17T22:03:09Z"
+  },
+  {
+   "stage": "prepare",
+   "worker": 1,
+   "pid": 3575090,
+   "gpu": null,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode prepare --workers 2 --worker 1",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/prepare-w1.log",
+   "at": "2026-10-17T22:03:09Z"
+  },
+  {
+   "stage": "parse",
+   "worker": 0,
+   "pid": 3576821,
+   "gpu": 0,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode parse --workers 4 --worker 0",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/parse-w0.log",
+   "at": "2026-10-17T22:03:17Z"
+  },
+  {
+   "stage": "parse",
+   "worker": 1,
+   "pid": 3576822,
+   "gpu": 1,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode parse --workers 4 --worker 1",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/parse-w1.log",
+   "at": "2026-10-17T22:03:17Z"
+  },
+  {
+   "stage": "parse",
+   "worker": 2,
+   "pid": 3576823,
+   "gpu": 2,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode parse --workers 4 --worker 2",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/parse-w2.log",
+   "at": "2026-10-17T22:03:17Z"
+  },
+  {
+   "stage": "parse",
+   "worker": 3,
+   "pid": 3576824,
+   "gpu": 3,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode parse --workers 4 --worker 3",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/parse-w3.log",
+   "at": "2026-10-17T22:03:17Z"
+  },
+  {
+   "stage": "train",
+   "worker": 0,
+   "pid": 3579364,
+   "gpu": 0,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode train --workers 4 --worker 0",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/train-w0.log",
+   "at": "2026-10-17T22:04:52Z"
+  },
+  {
+   "stage": "train",
+   "worker": 1,
+   "pid": 3579365,
+   "gpu": 1,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode train --workers 4 --worker 1",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/train-w1.log",
+   "at": "2026-10-17T22:04:52Z"
+  },
+  {
+   "stage": "train",
+   "worker": 2,
+   "pid": 3579366,
+   "gpu": 2,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode train --workers 4 --worker 2",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/train-w2.log",
+   "at": "2026-10-17T22:04:52Z"
+  },
+  {
+   "stage": "train",
+   "worker": 3,
+   "pid": 3579367,
+   "gpu": 3,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode train --workers 4 --worker 3",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/train-w3.log",
+   "at": "2026-10-17T22:04:52Z"
+  },
+  {
+   "stage": "policy",
+   "worker": 0,
+   "pid": 3583226,
+   "gpu": 0,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode policy --workers 4 --worker 0",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/policy-w0.log",
+   "at": "2026-10-17T22:16:10Z"
+  },
+  {
+   "stage": "policy",
+   "worker": 1,
+   "pid": 3583227,
+   "gpu": 1,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode policy --workers 4 --worker 1",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/policy-w1.log",
+   "at": "2026-10-17T22:16:10Z"
+  },
+  {
+   "stage": "policy",
+   "worker": 2,
+   "pid": 3583228,
+   "gpu": 2,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode policy --workers 4 --worker 2",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/policy-w2.log",
+   "at": "2026-10-17T22:16:10Z"
+  },
+  {
+   "stage": "policy",
+   "worker": 3,
+   "pid": 3583229,
+   "gpu": 3,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode policy --workers 4 --worker 3",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/policy-w3.log",
+   "at": "2026-10-17T22:16:10Z"
+  },
+  {
+   "stage": "score",
+   "worker": 0,
+   "pid": 3585432,
+   "gpu": 0,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode score --workers 4 --worker 0",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/score-w0.log",
+   "at": "2026-10-17T22:27:00Z"
+  },
+  {
+   "stage": "score",
+   "worker": 1,
+   "pid": 3585433,
+   "gpu": 1,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode score --workers 4 --worker 1",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/score-w1.log",
+   "at": "2026-10-17T22:27:00Z"
+  },
+  {
+   "stage": "score",
+   "worker": 2,
+   "pid": 3585434,
+   "gpu": 2,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode score --workers 4 --worker 2",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/score-w2.log",
+   "at": "2026-10-17T22:27:00Z"
+  },
+  {
+   "stage": "score",
+   "worker": 3,
+   "pid": 3585435,
+   "gpu": 3,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode score --workers 4 --worker 3",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/score-w3.log",
+   "at": "2026-10-17T22:27:00Z"
+  },
+  {
+   "stage": "spot",
+   "worker": 0,
+   "pid": 3592957,
+   "gpu": 0,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode spot",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/spot-w0.log",
+   "at": "2026-10-17T22:58:05Z"
+  },
+  {
+   "stage": "publish",
+   "worker": 0,
+   "pid": 3594460,
+   "gpu": null,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode publish",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/publish-w0.log",
+   "at": "2026-10-17T22:58:39Z"
+  },
+  {
+   "stage": "explore",
+   "worker": 0,
+   "pid": 3596285,
+   "gpu": 0,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode explore --workers 4 --worker 0",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/explore-w0.log",
+   "at": "2026-10-17T23:07:40Z"
+  },
+  {
+   "stage": "explore",
+   "worker": 1,
+   "pid": 3596286,
+   "gpu": 1,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode explore --workers 4 --worker 1",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/explore-w1.log",
+   "at": "2026-10-17T23:07:40Z"
+  },
+  {
+   "stage": "explore",
+   "worker": 2,
+   "pid": 3596287,
+   "gpu": 2,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode explore --workers 4 --worker 2",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/explore-w2.log",
+   "at": "2026-10-17T23:07:40Z"
+  },
+  {
+   "stage": "explore",
+   "worker": 3,
+   "pid": 3596288,
+   "gpu": 3,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode explore --workers 4 --worker 3",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/explore-w3.log",
+   "at": "2026-10-17T23:07:40Z"
+  },
+  {
+   "stage": "publish",
+   "worker": 0,
+   "pid": 3596772,
+   "gpu": null,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --mode publish",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/publish-w0.log",
+   "at": "2026-10-17T23:08:40Z"
+  },
+  {
+   "stage": "validate",
+   "worker": 0,
+   "pid": 3598307,
+   "gpu": null,
+   "cmd": "-u -m scripts.run_pixel_benchmarks --validate",
+   "log": "/mnt/array/sukaih/Project/NovPhy/.local-artifacts/issue-106-pixel-benchmarks-v1/logs/validate-w0.log",
+   "at": "2026-10-17T23:16:32Z"
+  }
+ ]
+}

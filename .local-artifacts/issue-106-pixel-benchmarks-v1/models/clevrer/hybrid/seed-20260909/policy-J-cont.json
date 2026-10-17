@@ -1,0 +1,47 @@
+{
+ "bench": "clevrer",
+ "family": "hybrid",
+ "kind": "J-cont",
+ "policy_macs": 32128,
+ "schema": "issue_106_report_v1",
+ "scoring_policy": {
+  "cudnn_allow_tf32": false,
+  "cudnn_benchmark": false,
+  "cudnn_deterministic": true,
+  "matmul_allow_tf32": false
+ },
+ "seed": 20260909,
+ "sha256": "d828fa9227fec9657758a0e64624fc7f9dc8dd844c93ca519c91866680fbec20",
+ "stats": {
+  "distil_seconds_0": 3.891650553094223,
+  "distil_seconds_1": 3.0808435399085283,
+  "final_loss_0": 0.6173290034135183,
+  "final_loss_1": 0.7686671167612076,
+  "label_seconds_0": 6.2388770040124655,
+  "label_seconds_1": 33.24593060393818,
+  "label_shares_0": [
+   0.7714030146598816,
+   0.0,
+   0.0,
+   0.17636719346046448,
+   0.0,
+   0.0,
+   0.05222981795668602,
+   0.0,
+   0.0
+  ],
+  "label_shares_1": [
+   0.5843424201011658,
+   0.0,
+   0.0,
+   0.21225586533546448,
+   0.0,
+   0.0,
+   0.20340169966220856,
+   0.0,
+   0.0
+  ]
+ },
+ "trained_at": "2026-10-17T22:17:11Z",
+ "wall_seconds": 59.963262050179765
+}

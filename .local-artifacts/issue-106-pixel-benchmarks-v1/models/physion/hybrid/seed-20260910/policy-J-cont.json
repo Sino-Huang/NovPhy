@@ -1,0 +1,47 @@
+{
+ "bench": "physion",
+ "family": "hybrid",
+ "kind": "J-cont",
+ "policy_macs": 32128,
+ "schema": "issue_106_report_v1",
+ "scoring_policy": {
+  "cudnn_allow_tf32": false,
+  "cudnn_benchmark": false,
+  "cudnn_deterministic": true,
+  "matmul_allow_tf32": false
+ },
+ "seed": 20260910,
+ "sha256": "8f2448c8fb17924a17ba75dbfb2798707cf997f86516bf60c1c6147b4c2874e2",
+ "stats": {
+  "distil_seconds_0": 2.6103953740093857,
+  "distil_seconds_1": 7.223164486931637,
+  "final_loss_0": 0.7605739712715149,
+  "final_loss_1": 0.816001683473587,
+  "label_seconds_0": 6.011768711032346,
+  "label_seconds_1": 30.61738879000768,
+  "label_shares_0": [
+   0.6447253227233887,
+   0.0,
+   0.0,
+   0.2598995268344879,
+   0.0,
+   0.0,
+   0.09537515789270401,
+   0.0,
+   0.0
+  ],
+  "label_shares_1": [
+   0.40336450934410095,
+   0.0,
+   0.0,
+   0.20267443358898163,
+   0.0,
+   0.0,
+   0.3939610719680786,
+   0.0,
+   0.0
+  ]
+ },
+ "trained_at": "2026-10-17T22:21:44Z",
+ "wall_seconds": 48.41511251288466
+}

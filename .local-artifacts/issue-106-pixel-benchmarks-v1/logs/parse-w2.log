@@ -1,0 +1,41 @@
+/mnt/array/sukaih/Project/NovPhy/scripts/run_pixel_benchmarks.py:712: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:213.)
+  images = torch.from_numpy(np.ascontiguousarray(frames)).to(DEVICE).permute(0, 3, 1, 2)
+[21:59:16] clevrer parse w2: 500/2354
+[21:59:30] clevrer parse w2: 1000/2354
+[21:59:42] clevrer parse w2: 1500/2354
+[21:59:56] clevrer parse w2: 2000/2354
+[22:00:06] clevrer parse w2: 2354 clips
+[22:00:51] physion parse w2: 500/786
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/mnt/array/sukaih/Project/NovPhy/scripts/run_pixel_benchmarks.py", line 1999, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/mnt/array/sukaih/Project/NovPhy/scripts/run_pixel_benchmarks.py", line 1994, in main
+    return {"prepare": prepare, "encoder": encoder, "parse": parse_stage, "train": train, "policy": policy_stage,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/NovPhy/scripts/run_pixel_benchmarks.py", line 764, in parse_stage
+    carrier, presence, kinds, centers = parse_clip(model, bench, frames)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/NovPhy/scripts/run_pixel_benchmarks.py", line 715, in parse_clip
+    out = pc.parse(model, images[start:start + 256], pc.KINDS[bench])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/NovPhy/world_model/training/pixel_carrier.py", line 85, in parse
+    output = model(images)
+             ^^^^^^^^^^^^^
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1778, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/srv/home/shua0171/miniconda3/envs/novphy/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1789, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/array/sukaih/Project/NovPhy/world_model/training/spatial_slot_parser.py", line 66, in forward
+    features = features + self.position(self.coordinates)[None]
+               ~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+RuntimeError: The size of tensor a (4096) must match the size of tensor b (1024) at non-singleton dimension 1
+[22:04:04] physion parse w2: 500/786
+[22:04:32] physion parse w2: 786 clips

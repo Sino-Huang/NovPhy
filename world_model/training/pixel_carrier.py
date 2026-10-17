@@ -211,11 +211,12 @@ def readout_macs(model, kind):
 # --------------------------------------------------------------------------- CLEVRER QA
 
 
-def slot_attributes(presence, kinds):
-    """Parsed attributes per slot over one video: exists (max presence >= 0.5), shape (argmax of the
-    presence-weighted mean kind probabilities); colour and material come from the slot key."""
+def slot_attributes(presence, kinds, min_frames=1):
+    """Parsed attributes per slot over one video: exists (presence >= 0.5 on at least ``min_frames``
+    frames; the frozen readout uses 1, i.e. max presence >= 0.5), shape (argmax of the presence-weighted
+    mean kind probabilities); colour and material come from the slot key."""
     from world_model.data import pixel_benchmarks as pb
-    exists = presence.max(0).values >= PRESENCE_THRESHOLD
+    exists = (presence >= PRESENCE_THRESHOLD).sum(0) >= min_frames
     weights = presence[..., None]
     shape = (kinds * weights).sum(0).argmax(-1)
     out = []
