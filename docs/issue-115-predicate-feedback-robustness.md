@@ -7,10 +7,10 @@ Parent: #108 (pass branch). The shared rules of #85 apply, and the #111 scoring 
 | --- | --- |
 | Runner | `scripts/run_predicate_feedback_robustness.py` |
 | Module | `world_model/training/predicate_feedback.py`. It holds the feedback interventions, the carrier step with a given adapter input, the predictor variants, the label-use spec of the training loss, the corruptions and the readout counts |
-| Tests | `tests/test_issue_115_predicate_feedback.py` (16 tests): corruption calibration, oracle alignment, the bottleneck, the loss spec, temporal history |
+| Tests | `tests/test_issue_115_predicate_feedback.py` (17 tests): corruption calibration, oracle alignment, the bottleneck, the loss spec, temporal history, guard propagation on the publication |
 | Artifacts | `.local-artifacts/issue-115-predicate-feedback-v1/`. `findings.md` has every table. Also `compute.json`, `summary.json`, `dose-response.svg`, `records-manifest.json`, `handoff_106.json`, `plan.json`, `smoke.json`, `logs/`, `ledger/`, `calibration/`, training reports |
 | Freeze | Plan frozen 2026-10-16T17:34:11Z, commit c7289d67. The freeze followed a passed smoke and came before any training update, evaluation byte or score |
-| Validation | `python -u -m scripts.run_predicate_feedback_robustness --validate` (exit 0); `pytest tests/test_issue_115_predicate_feedback.py` (16 passed) |
+| Validation | `python -u -m scripts.run_predicate_feedback_robustness --validate` (exit 0); `pytest tests/test_issue_115_predicate_feedback.py` (17 passed) |
 | #106 handoff | `.local-artifacts/issue-115-predicate-feedback-v1/handoff_106.json`: the micro label-free bottleneck `mi-free`, with the qualification under "Dispositions" |
 
 Engine seconds: 0. Intervals are level-clustered percentile bootstraps (10 000 draws, PCG64 7201). They are DESCRIPTIVE.
@@ -353,8 +353,19 @@ It exits 0 (1 166 s).
   - Each stage was launched once (PIDs in `logs/*-pids.txt`). The heads worker 2 finished in 21 s, before its PID was
     recorded (see its log).
   - Nothing was relaunched or retried. The typed failure was not replaced. No runner or module byte changed after the
-    freeze.
+    freeze until the post-publication fix below.
 - **Interpretation limits.**
   - The label-free readout is by channel identity.
   - "Shuffled" is a weak corruption on this split.
   - The dispositions concern one discrete bottleneck on NovPhy, not every unsupervised predicate learner.
+
+## Post-freeze runner edit (phase-B/C review; disclosure)
+
+Commit `97f43c7e` changed `scripts/run_predicate_feedback_robustness.py` after the publication, for guard propagation only.
+The frozen rule is "a failed guard turns every token into `readiness_or_precision_insufficient`". The publication masked
+each disposition's overall token but left its `contrast_tokens` map (J − T and F mean) and the reference J − T token
+unchanged. `apply_guard_failure` now turns every token of `dispositions` into the stop token as well, beside the
+dose-response, predictor and wrong-anchor tables; estimates stay. A test forces each guard false on the published
+`compute.json` and checks every token of `compute.json` and `summary.json`. Every retained guard passes, so no evidence,
+number or token changed: `--validate` regenerates every published file byte for byte and exits 0. The runner is listed in
+`scripts/post_freeze_amendments.py`.
