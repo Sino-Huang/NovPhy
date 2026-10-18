@@ -1,0 +1,137 @@
+{
+  "additive_over_fused_t225": {
+    "F-1-continuous": 1.3388571651253456,
+    "F-1-macro": 1.4181929801809716,
+    "F-1-micro": 1.5089263428159136,
+    "F-15-continuous": 1.355286899962783,
+    "F-15-macro": 1.1446956232893424,
+    "F-15-micro": 1.3314649300806947,
+    "F-5-continuous": 1.8398312853645218,
+    "F-5-macro": 1.5286680637159595,
+    "F-5-micro": 2.019129605143229
+  },
+  "dispositions": {
+    "additive_within_1_5x": "not_supported_by_this_experiment",
+    "interaction_decision_value": "supported"
+  },
+  "engine_seconds": 0,
+  "frozen_at": "2026-10-18T02:09:12Z",
+  "gpu_seconds": 16148.26347015053,
+  "grid_J_auc": {
+    "additive": {
+      "clusters": 311,
+      "interval": [
+        0.671827752454762,
+        0.7132531192458845
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6925644559085073,
+      "units": 933
+    },
+    "factored": {
+      "clusters": 311,
+      "interval": [
+        0.6308984223172327,
+        0.6690413177390669
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6496937681825141,
+      "units": 622
+    },
+    "fused": {
+      "clusters": 311,
+      "interval": [
+        0.6845815715188706,
+        0.7267283448955475
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.7057212348209133,
+      "units": 933
+    }
+  },
+  "grid_contrasts_request_mean": {
+    "factored-additive": {
+      "clusters": 311,
+      "interval": [
+        -0.012273062102242169,
+        0.005787131098626271
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": -0.003275502632415821,
+      "units": 622
+    },
+    "fused-additive": {
+      "clusters": 311,
+      "interval": [
+        0.04113157836764484,
+        0.05928382051238429
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.05006737536212351,
+      "units": 933
+    },
+    "fused-factored": {
+      "clusters": 311,
+      "interval": [
+        0.049380220009239306,
+        0.0556333166803424
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.05247756590200321,
+      "units": 622
+    }
+  },
+  "grid_request_mean_auc": {
+    "additive": {
+      "clusters": 311,
+      "interval": [
+        0.6529908509972818,
+        0.6905181484884058
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6716872762424745,
+      "units": 933
+    },
+    "factored": {
+      "clusters": 311,
+      "interval": [
+        0.6664525407752899,
+        0.7013437393260543
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.6838143070458184,
+      "units": 622
+    },
+    "fused": {
+      "clusters": 311,
+      "interval": [
+        0.7028904657428238,
+        0.7405555506479944
+      ],
+      "label": "DESCRIPTIVE",
+      "mean": 0.721754651604598,
+      "units": 933
+    }
+  },
+  "guards": {
+    "G1_isolation": true,
+    "G2_scoring_policy": true,
+    "G3_chronology": true,
+    "G4_checkpoint_binding": true,
+    "G5_replication": true,
+    "G6_engine_truth": true,
+    "G7_nonfinite": true
+  },
+  "identity": "issue-121-request-code-v1",
+  "prior_grid": {
+    "clusters": 311,
+    "interval": [
+      0.6964709285890959,
+      0.7442291129288716
+    ],
+    "label": "DESCRIPTIVE",
+    "mean": 0.7202981637869096,
+    "units": 933
+  },
+  "schema": "issue_121_report_v1"
+}

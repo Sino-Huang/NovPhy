@@ -1612,27 +1612,29 @@ def publish(output):
 
 
 def spot_checks(output):
-    """Re-score, in this process, the first seed of additive F-1-macro (rows and engine errors at every t) and
-    factored J (rows and schedules) on every grid cell."""
+    """Re-score, in this process, on every grid cell: additive F-1-macro (rows and engine errors at every t) and
+    factored J (rows and schedules), each at its first seed whose record is not a typed failure (post-freeze
+    amendment A1: the frozen check took the first seed, which is a typed failure for factored)."""
     load_plan(output)
     _, cells = gb.evaluation_set()
     anchors = gb.load_anchors(GATE_B)["anchors"]
     store = load_truth(output)
-    seed = SEEDS[0]
     grid = {**{i: {"mixed": {}} for i in INVENTORIES}, PRIMARY: cells[PRIMARY]}
     results = {}
     with harness.deterministic_scoring() as policy_state:
         for arm, ranker in (("additive", "F-1-macro"), ("factored", "J")):
-            kept = read_record(record_path(output, arm, ranker, seed))
-            if kept["typed_failure"]:
+            seed = next((s for s in SEEDS if not read_record(record_path(output, arm, ranker, s))["typed_failure"]),
+                        None)
+            if seed is None:
                 results[f"{arm}|{ranker}"] = None
                 continue
+            kept = read_record(record_path(output, arm, ranker, seed))
             fresh = score_record(output, grid, anchors, store, arm, ranker, seed, policy_state)
             fields = ("rows", "engine_mse", "schedules", "linear_macs")
-            results[f"{arm}|{ranker}"] = all(
+            results[f"{arm}|{ranker}|seed{seed}"] = all(
                 fresh["inventories"][PRIMARY][m].get(f) == kept["inventories"][PRIMARY][m].get(f)
                 for m in cells[PRIMARY]["mixed"] for f in fields)
-    return {"seed": seed, "checks": results, "pass": all(v is not False for v in results.values())}
+    return {"checks": results, "pass": all(v is not False for v in results.values())}
 
 
 def validate(output):
@@ -1647,7 +1649,7 @@ def validate(output):
     if not spot["pass"]:
         raise ValueError(f"deterministic re-scoring does not replicate the retained records: {spot}")
     log(f"validation passed ({time.monotonic() - began:.0f}s): tables re-derived and byte-compared; re-scored "
-        f"{spot['checks']} seed {spot['seed']}")
+        f"{spot['checks']}")
     return 0
 
 

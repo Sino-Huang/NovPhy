@@ -1,0 +1,16 @@
+train-0 3663431 2026-10-18T02:09:49Z
+train-1 3663432 2026-10-18T02:09:49Z
+train-2 3663433 2026-10-18T02:09:49Z
+train-3 3663434 2026-10-18T02:09:49Z
+truth 3663435 2026-10-18T02:09:49Z
+train-0 pid 3663431 exit 127 at 2026-10-18T02:09:49Z
+train-1 pid 3663432 exit 127 at 2026-10-18T02:09:49Z
+train-2 pid 3663433 exit 127 at 2026-10-18T02:09:49Z
+train-3 pid 3663434 exit 127 at 2026-10-18T02:09:49Z
+truth pid 3663435 exit 127 at 2026-10-18T02:09:49Z
+note 2026-10-18T02:10:04Z: the launcher's wait ran in a pipeline subshell (not the workers' parent), so the 'exit 127' lines above are wait errors, not worker exits; the five workers were alive at +7 s and are awaited by PID (kill -0) instead; completion is confirmed from the training/policy reports and the truth store
+pid 3663431 ended 2026-10-18T03:04:07Z
+pid 3663432 ended 2026-10-18T03:05:07Z
+pid 3663433 ended 2026-10-18T03:05:07Z
+pid 3663434 ended 2026-10-18T03:05:07Z
+pid 3663435 ended 2026-10-18T03:05:07Z
